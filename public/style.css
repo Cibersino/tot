@@ -1,0 +1,325 @@
+:root {
+  /* General */
+  --gap: 4px;
+  --control-height: 26px;
+  --bg-color: #f4ecd8;
+  
+  /* Dimensiones */
+  --sidebar-width: 420px;
+  --logo-width: 220px;
+  --logo-height: 56px;
+
+  /* Espaciado (Padding) */
+  --section-padding-vertical: 4px;
+  --section-padding-horizontal: 6px;
+  --section-heading-gap: 4px;
+
+  /* Colores y estilos para secciones */
+  --selector-bg: var(--bg-color);
+  --velocity-bg: var(--bg-color);
+  --results-bg: var(--bg-color);
+  --cron-bg: var(--bg-color);
+  --spare-bg: var(--bg-color);
+  --section-border: #e9e6de;
+  --section-radius: 6px;
+  --section-shadow: 0 1px 0 rgba(0,0,0,0.03);
+}
+
+/* Body, background */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #fdf6e3;
+}
+
+/* Títulos */
+.section-title {
+  margin: 0;
+  padding: 0;
+  line-height: 1.08;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  color: #222;
+  align-self: stretch;
+  display: block;
+}
+
+/* Contenedor Principal */
+.app-container {
+  position: relative;
+  height: 100vh;
+  padding: calc(var(--logo-height) + 8px) 8px 8px 8px;
+}
+
+/* Estilo común para Secciones */
+.app-container > section,
+.app-container > aside {
+  position: absolute;
+  padding: var(--section-padding-vertical) var(--section-padding-horizontal);
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+  background: var(--selector-bg);
+}
+
+/* Botones globales */
+.btn-standard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  height: 30px;
+  line-height: 1;
+  font-size: 15px;
+  border-radius: 5px;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
+  box-shadow: none;
+  user-select: none;
+}
+
+.btn-standard:hover {
+  background: #f4f4f4;
+  box-shadow: var(--section-shadow);
+}
+
+.btn-standard:active {
+  transform: translateY(1px);
+}
+
+.btn-standard:focus {
+  outline: 3px solid rgb(30 130 230 / .12);
+  outline-offset: 2px;
+}
+
+/* Logo (fijo) */
+.logo-container {
+  position: fixed;
+  top: 6px;
+  left: 4px;
+  width: var(--logo-width);
+  height: var(--logo-height);
+  display: flex;
+  align-items: flex-start;
+  z-index: 30;
+  pointer-events: none;
+}
+
+#appLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: auto;
+}
+
+/* SECCIÓN SELECTOR DE TEXTO */
+.selector-text {
+  top: 66px;
+  left: 4px;
+  right: 0;
+  height: 143px;
+  width: 811px;
+  background: var(--selector-bg);
+  border: 1px solid var(--section-border);
+  box-sizing: border-box;
+}
+
+/* Previsualización del Texto */
+pre#textPreview {
+  background: #fafafa;
+  color: #333;
+  padding: 6px;
+  border: 1px solid #eee;
+  height: 82px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 12px;
+  line-height: 1.15;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+/* SECCIÓN VELOCIDAD DE LECTURA */
+.velocity {
+  top: 214px;
+  left: 4px;
+  height: 155px;
+  width: 395px;
+  background: var(--velocity-bg);
+  border: 1px solid var(--section-border);
+  gap: 6px;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.velocity .wpm-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.velocity #wpmInput {
+  width: 56px;
+  height: var(--control-height);
+  padding: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* Slider WPM */
+.wpm-slider {
+  width: 100%;
+  margin-top: 2px;
+}
+
+/* Preset selector */
+select#presets {
+  height: 30px;
+  width: 180px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+/* Descripción de presets */
+.preset-description {
+  margin-top: 6px;
+  min-height: 22px;
+  color: #444;
+  font-size: 13px;
+}
+
+/* SECCIÓN RESULTADOS DEL CONTEO */
+.results {
+  top: 214px;
+  left: 404px;
+  height: 155px;
+  width: 411px;
+  background: var(--results-bg);
+  border: 1px solid var(--section-border);
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.result-highlight {
+  background: #ffb6c1;
+  border: 1px dashed #e6c07a;
+  padding: 6px;
+  border-radius: 6px;
+  margin-top: 4px;
+  margin-bottom: 20px;
+}
+
+.big-time {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.help-row {
+  position: absolute;
+  bottom: 60px;
+  right: 6px; 
+}
+
+/* SECCIÓN CRONÓMETRO */
+.cronometro {
+  top: 374px;
+  left: 4px;
+  height: 89px;
+  width: 331px;
+  background: var(--cron-bg);
+  border: 1px solid var(--section-border);
+  padding: 4px;
+  gap: 6px;
+  box-sizing: border-box;
+}
+
+.cronometro .timer-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.cronometro .timer-box {
+  height: 16px;
+  width: 66px;
+  padding: 4px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.cronometro .realwpm {
+  font-size: 16px;
+  color: #333;
+}
+
+.cronometro .timer-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* VF Variant Button */
+.vf-variant {
+  border-color: #c94b3f;
+  background: #fff6f5;
+  color: #8b2a24;
+  font-weight: 700;
+  margin-left: 45px;
+}
+
+.vf-variant:hover {
+  background: #ffefee;
+}
+
+/* SECCION DISPONIBLE */
+.spare {
+  top: 374px;
+  left: 340px;
+  height: 89px;
+  width: 475px;
+  background: var(--spare-bg);
+  border: 1px dashed #f0f0f0;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .app-container {
+    padding: 8px;
+  }
+
+  .selector-text,
+  .velocity,
+  .results,
+  .cronometro,
+  .spare {
+    position: relative;
+    width: 100%;
+  }
+}

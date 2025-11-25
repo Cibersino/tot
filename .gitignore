@@ -1,0 +1,28 @@
+# Ignorar carpetas de desarrollo y temporales
+/(temp) docs desarrollo app/
+
+# Node / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+build-output/
+dist/
+out/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Electron / app user config (no versionear datos de usuario)
+config/current_text.json
+config/modal_state.json
+config/user_settings.json
+
+# Logs
+*.log

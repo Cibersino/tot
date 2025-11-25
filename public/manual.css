@@ -1,0 +1,121 @@
+:root {
+  --bg: #fff;
+  --toolbar-bg: #f6f6f6;
+  --border: #e6e6e6;
+  --gap: 8px;
+  --bottom-height: 52px; /* altura de la barra inferior */
+}
+
+/* Normalize básicos */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  box-sizing: border-box;
+}
+
+/* Layout: columna vertical, textarea flexible */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  gap: 0;
+}
+
+/* Área de texto: ocupa todo el espacio disponible */
+#editorArea {
+  width: 100%;
+  flex: 1 1 auto;                 /* crecer y ocupar el espacio */
+  min-height: 0;                  /* importante para que el flex funcione en algunos entornos */
+  box-sizing: border-box;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.45;
+  resize: none;
+  border: none;
+  outline: none;
+  background: #fff;
+  color: #222;
+  /* Afinar scroll interno si hay contenido */
+  overflow: auto;
+}
+
+/* Barra inferior fija en el pie del modal */
+.bottom-bar {
+  height: var(--bottom-height);
+  min-height: var(--bottom-height);
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--toolbar-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Controles izquierdos (CALCULAR + checkbox) */
+.bottom-bar .left-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Botón CALCULAR */
+#btnCalc {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f4f4f4;
+  cursor: pointer;
+  font-weight: 600;
+  height: 36px;
+}
+#btnCalc[disabled] {
+  opacity: 0.65;
+  cursor: default;
+}
+
+/* Checkbox label */
+.calc-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
+
+/* Botón vaciar (alineado a la derecha) */
+#btnTrash {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  height: 36px;
+  border-radius: 6px;
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+}
+#btnTrash:hover {
+  background: #fff5f5;
+  border-color: #e6bebe;
+}
+
+/* Pequeñas adaptaciones para ventanas pequeñas */
+@media (max-width: 560px) {
+  .bottom-bar {
+    padding: 6px;
+    gap: 8px;
+  }
+  #btnCalc, #btnTrash {
+    padding: 6px 8px;
+    height: 32px;
+  }
+  .calc-label { font-size: 13px; }
+  #editorArea { padding: 10px; font-size: 14px; }
+}

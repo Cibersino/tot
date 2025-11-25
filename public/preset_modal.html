@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Nuevo preset</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 12px; }
+    label { display:block; margin-top:10px; }
+    input[type="text"], input[type="number"], textarea {
+      width: 100%; box-sizing: border-box; padding:6px; margin-top:4px;
+      font-size: 14px;
+    }
+    textarea { resize: none; height: 64px; }
+    .buttons { margin-top:12px; text-align:right; }
+    button { margin-left:8px; padding:6px 10px; }
+    .hint { font-size:12px; color:#666; margin-top:6px; }
+    #charCount {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h3>Crear nuevo preset</h3>
+
+  <label>
+    Nombre:
+    <input id="presetName" type="text" placeholder="ej. 250wpm" maxlength="60" />
+  </label>
+
+  <label>
+    WPM:
+    <input id="presetWpm" type="number" min="50" max="2000" value="200" />
+  </label>
+
+  <label>
+    Descripción:
+    <textarea id="presetDesc" maxlength="120" placeholder="Descripción breve..."></textarea>
+  </label>
+
+  <div id="charCount">120 caracteres restantes</div>
+
+  <div class="hint">Los presets personalizados se guardan en la configuración del usuario.</div>
+
+  <div class="buttons">
+    <button id="btnCancel">Cancelar</button>
+    <button id="btnSave">Guardar</button>
+  </div>
+
+  <script src="preset_modal.js"></script>
+</body>
+</html>

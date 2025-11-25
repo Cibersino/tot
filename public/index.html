@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>toT — Reading Meter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Logo -->
+  <div class="logo-container" aria-hidden="true">
+    <img id="appLogo" src="./assets/logo-tot.svg" alt="toT — Reading Meter" />
+  </div>
+
+  <!-- Contenedor principal -->
+  <div class="app-container">
+
+    <!-- 1) SELECTOR DE TEXTO -->
+    <section class="selector-text" aria-labelledby="selector-title">
+      <h3 id="selector-title" class="section-title">Primera y última parte del texto analizado:</h3>
+      <pre id="textPreview">(vacío)</pre>
+      <div class="controls">
+        <button id="btnCountClipboard" class="btn-standard" title="Reemplazar texto con el portapapeles">Sobrescribir portapapeles</button>
+        <button id="btnAppendClipboardNewLine" class="btn-standard" title="Pegar portapapeles al final del texto en nueva línea">Pegar portapapeles nueva línea</button>
+        <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto completo">Editor manual</button>
+        <button id="btnEmptyMain" class="btn-standard" title="Vaciar texto vigente">🗑</button>
+      </div>
+    </section>
+
+    <!-- 2) VELOCIDAD DE LECTURA -->
+    <aside class="velocity" aria-labelledby="vel-title">
+      <h4 id="vel-title" class="section-title">VELOCIDAD DE LECTURA</h4>
+      <div class="wpm-row">
+        <input id="wpmInput" type="number" min="100" max="500" value="200" />
+        <span>palabras por minuto (WPM)</span>
+      </div>
+      <input id="wpmSlider" class="wpm-slider" type="range" min="100" max="500" value="200" />
+      <div class="presets-row">
+        <select id="presets" aria-label="Presets de velocidad">
+          <option value="200">Presets</option>
+        </select>
+        <button id="btnNewPreset" class="btn-standard" title="Crear un nuevo preset">Nuevo</button>
+        <button id="btnEditPreset" class="btn-standard" title="Editar preset seleccionado">Editar</button>
+        <button id="btnDeletePreset" class="btn-standard" title="Eliminar preset seleccionado">🗑️</button>
+        <button id="btnResetDefaultPresets" class="btn-standard" title="Restaurar presets por defecto">R</button>
+      </div>
+      <div id="presetDescription" class="preset-description" aria-live="polite"></div>
+    </aside>
+
+    <!-- 3) RESULTADOS DEL CONTEO -->
+    <aside class="results" aria-labelledby="results-title">
+      <h4 id="results-title" class="section-title">RESULTADOS DEL CONTEO</h4>
+      <div class="result-highlight" role="status" aria-live="polite">
+        <div class="big-time" id="resTime">⏱ Tiempo estimado de lectura: 0h 0m 0s</div>
+      </div>
+      <div class="result-list">
+        <div id="resWords">- Palabras: 0</div>
+        <div id="resCharsNoSpace">- Caracteres (sin espacio): 0</div>
+        <div id="resChars">- Caracteres: 0</div>
+      </div>
+      <div class="help-row">
+        <button id="btnHelp" class="btn-standard" title="Información (pendiente)">?</button>
+      </div>
+    </aside>
+
+    <!-- 4) CRONÓMETRO -->
+    <section class="cronometro" aria-labelledby="cron-title">
+      <h4 id="cron-title" class="section-title">CRONÓMETRO</h4>
+      <div class="timer-row">
+        <input id="timerDisplay" class="timer-box" type="text" value="00:00:00" />
+        <div class="realwpm">Velocidad real: <span id="realWpmDisplay"></span></div>
+      </div>
+      <div class="timer-controls" role="group" aria-label="Controles del cronómetro">
+        <button id="timerStart" class="btn-standard">Start</button>
+        <button id="timerStop" class="btn-standard">Stop/Calcular</button>
+        <button id="timerReset" class="btn-standard">Reset</button>
+        <button id="btnVF" class="btn-standard vf-variant" title="Ventana flotante">VF</button>
+      </div>
+    </section>
+
+    <!-- 5) SECCIÓN DISPONIBLE -->
+    <section class="spare" aria-label="Sección disponible">
+      <!-- Espacio reservado para funciones futuras -->
+    </section>
+
+  </div>
+
+  <script src="renderer.js"></script>
+  <script src="preset_modal.js"></script>
+</body>
+</html>

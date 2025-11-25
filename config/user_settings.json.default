@@ -1,0 +1,14 @@
+{
+  "language": "",
+  "presets": [],
+  "numberFormatting": {
+    "es": {
+      "separadorMiles": ".",
+      "separadorDecimal": ","
+    },
+    "en": {
+      "separadorMiles": ",",
+      "separadorDecimal": "."
+    }
+  }
+}

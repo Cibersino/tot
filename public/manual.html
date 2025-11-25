@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Editor — Texto completo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="manual.css" />
+</head>
+<body>
+  <!-- El textarea ocupa todo el espacio disponible -->
+  <textarea id="editorArea" placeholder="Escribe o pega aquí..."></textarea>
+
+  <!-- Barra inferior: CALCULAR | checkbox | VACÍAR (alineado a la derecha) -->
+  <div id="bottomBar" class="bottom-bar" role="region" aria-label="Controles del editor">
+    <div class="left-controls">
+      <button id="btnCalc" class="btn-calc" disabled>CALCULAR</button>
+      <label class="calc-label"><input id="calcWhileTyping" type="checkbox" checked /> Calcular mientras escribe</label>
+    </div>
+
+    <div class="right-controls">
+      <button id="btnTrash" class="btn-trash" title="Vaciar">vaciar 🗑️</button>
+    </div>
+  </div>
+
+  <script src="manual.js"></script>
+</body>
+</html>
