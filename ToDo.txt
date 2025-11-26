@@ -1,0 +1,122 @@
+### TO DO Y PLAN GENERAL ###
+
+# ÍTEM ACTUAL #
+
+* Revisar y limpiar código existente *
+- Comprobar que todos los archivos cargan correctamente en VS Code.
+- Revisar paths y nombres de archivos para consistencia.
+- Eliminar duplicados o archivos temporales si los hay.
+
+Pasos:
+......
+
+# Más adelante #
+
+* Barra superior de pantalla principal *
+
+Botones
+- ¿Cómo usar la app?
+  - Guía básica
+  - Instrucciones completas
+  - Preguntas frecuentes
+  - Aplicaciones complementarias
+    - Test de velocidad de lectura
+	- Contador de palabras en imágenes y pdfs
+  - Links de interés
+- Preferencias
+  - Idioma
+  - Diseño
+    - Skins
+	- Ventana flotante (seleccionar ubicación y transparencia)
+	- Fuentes (fuente y tamaño letra. general, ventana texto completo, ventana flotante.)
+	- Colores (fondo de cada ventana, etc)
+  - Shortcuts (cambiar el del portapapeles por defecto, start/stop cronómetro, activación/desactivación ventana flotante)
+  - Presets por defecto (abre carpeta presets)
+- Comunidad
+  - Discord
+  - Avisos y novedades
+- COLABORA ($)
+- ?
+  - Actualizar a última versión
+  - Readme
+  - Créditos
+  - Acerca de (versión, contacto, etc)
+
+* Calculos *
+- ¡Advertencia sobre el método de conteo de palabras!
+- Analizar nuevos métodos de conteo, más precisos
+- Averiguar sistema OCR como extractor de palabras en imaganes.
+
+* Ventana flotante *
+- Activar y desactivar desde el cronómetro con el botón "VF".
+
+* Internacionalización *
+- Archivos de 18i.
+
+* Otros *
+- Agregar soporte multilenguaje
+- Implementar semiauto-update
+- Construir versión portable
+- Short-cuts
+
+* Nuevas funciones *
+- Test de lectura
+- Calculador de palabras insertas en imágenes
+
+* Estilos/skins *
+
+* Mejorar Readme * 
+
+* Revisar seguridad de la aplicación y legalidad *
+
+* Empaquetado multiplataforma (Windows, macOS y Linux) *
+- Empaquetado para Windows, versión de prueba *
+- Reemplazar el ícono de Electron que aparece en las ventanas (en la esquina superior izquierda) por un ícono propio. ¿Es posible?
+
+# PLAN GENERAL #
+
+OBJETIVO DE LA APLICACIÓN
+- Construir una aplicación de escritorio multiplataforma (Windows, macOS y Linux) que permita:
+- Leer texto seleccionado o proveniente del portapapeles.
+- Contar caracteres con espacio, sin espacio y palabras.
+- Estimar tiempo de lectura usando un parámetro ajustable por el usuario.
+- Usar un sistema de presets de velocidad, incluyendo:
+  - Presets por defecto (ej. 180–250 WPM).
+  - Presets personalizados múltiples, cada uno con nombre definido por el usuario.
+  - Poder guardar nuevos presets desde el cronómetro.
+- Incluir un cronómetro preciso para estimar velocidad de lectura real.
+- Soporte de idiomas seleccionables para la interfaz.
+- Interfaz simple, portable y fácil de mantener.
+
+TECNOLOGÍA ELEGIDA (Propuesta original)
+
+Tecnología base
+Electron + portable build + sistema de semiauto-update mínimo.
+
+Arquitectura
+Electron con main.js, preload.js (IPC seguro) y frontend estático.
+
+COMPONENTES
+
+Frontend
+- HTML minimalista.
+- CSS simple (o Tailwind opcional).
+- renderer.js para toda la lógica del UI y los llamados IPC.
+
+Backend en Electron
+- main.js: manejo de ventanas, inicialización y lógica central.
+- preload.js: API segura (IPC + portapapeles + configuración).
+- Persistencia con JSON.
+- (Opcional) updater.js para la lógica del semiauto-update.
+
+Empaquetado
+- Portable build para Windows/Linux/macOS.
+- Sin instalador.
+- Carpeta final: build-output/.
+
+Semiauto-update
+- Archivo local VERSION.
+- Archivo remoto con versión más reciente.
+- Comparación al inicio.
+- Si hay actualización: mostrar notificación y link.
+
