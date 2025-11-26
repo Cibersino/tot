@@ -14,7 +14,7 @@ Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar 
 ## Instalación y ejecución ##
 
 git clone <repo>
-cd readingtime*app
+cd tot-readingmeter*
 npm install
 npm start
 
