@@ -13,6 +13,10 @@
 
 # Más adelante #
 
+- Inserción de logo de Cibersin
+
+* Revisión y depuración del código*
+
 * Calculos *
 - ¡Advertencia sobre el método de conteo de palabras!
 - Analizar nuevos métodos de conteo, más precisos
