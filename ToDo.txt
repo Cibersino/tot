@@ -4,16 +4,12 @@
 
 * Barra superior de pantalla principal *
 
-Implementación de funciones de botones básicos:
 - Readme
-- Acerca de
-- Guía básica
 - Instrucciones completas
-- Preguntas frecuentes
-- Presets por defecto
-
-Pasos:
-......
+- Preguntas frecuentes (FAQ)
+- Acerca de
+- Presets por defecto (abre carpeta presets)
+- Guía básica 
 
 # Más adelante #
 
