@@ -2,45 +2,40 @@
 
 # ÍTEM ACTUAL #
 
-* Revisar y limpiar código existente *
-- Comprobar que todos los archivos cargan correctamente en VS Code.
-- Revisar paths y nombres de archivos para consistencia.
-- Eliminar duplicados o archivos temporales si los hay.
-
-Pasos:
-......
-
-# Más adelante #
-
 * Barra superior de pantalla principal *
 
 Botones
 - ¿Cómo usar la app?
-  - Guía básica
+  - Guía básica 
   - Instrucciones completas
-  - Preguntas frecuentes
-  - Aplicaciones complementarias
-    - Test de velocidad de lectura
-	- Contador de palabras en imágenes y pdfs
-  - Links de interés
+  - Preguntas frecuentes (FAQ)
+- Herramientas
+  - Cargador de archivo de textos
+  - Contador de palabras en imágenes y pdfs
+  - Test de velocidad de lectura
 - Preferencias
   - Idioma
   - Diseño
     - Skins
-	- Ventana flotante (seleccionar ubicación y transparencia)
-	- Fuentes (fuente y tamaño letra. general, ventana texto completo, ventana flotante.)
-	- Colores (fondo de cada ventana, etc)
+	  - Ventana flotante (seleccionar ubicación y transparencia)
+	  - Fuentes (fuente y tamaño letra. general, ventana texto completo, ventana flotante.)
+	  - Colores (fondo de cada ventana, etc)
   - Shortcuts (cambiar el del portapapeles por defecto, start/stop cronómetro, activación/desactivación ventana flotante)
   - Presets por defecto (abre carpeta presets)
 - Comunidad
   - Discord
   - Avisos y novedades
+- Links de interés
 - COLABORA ($)
 - ?
   - Actualizar a última versión
   - Readme
-  - Créditos
-  - Acerca de (versión, contacto, etc)
+  - Acerca de (versión, créditos, contacto, etc)
+
+Pasos:
+......
+
+# Más adelante #
 
 * Calculos *
 - ¡Advertencia sobre el método de conteo de palabras!
