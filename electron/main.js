@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -8,7 +8,7 @@ const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
 const MODAL_STATE_FILE = path.join(CONFIG_DIR, 'modal_state.json');
 
-// New: language modal assets
+// Language modal assets
 const LANGUAGE_MODAL_HTML = path.join(__dirname, '../public/language_modal.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 
@@ -90,8 +90,8 @@ function createMainWindow() {
     {
       label: 'Herramientas',
       submenu: [
-        { label: 'Cargador de archivo de textos', click: () => mainWin.webContents.send('menu-click', 'cargador_textos') },
-        { label: 'Contador de palabras en imágenes y pdfs', click: () => mainWin.webContents.send('menu-click', 'contador_imagen_pdf') },
+        { label: 'Cargador de archivo de texto', click: () => mainWin.webContents.send('menu-click', 'cargador_texto') },
+        { label: 'Cargador de imágenes con texto', click: () => mainWin.webContents.send('menu-click', 'contador_imagen') },
         { label: 'Test de velocidad de lectura', click: () => mainWin.webContents.send('menu-click', 'test_velocidad') }
       ]
     },
@@ -103,7 +103,7 @@ function createMainWindow() {
           label: 'Diseño',
           submenu: [
             { label: 'Skins', click: () => mainWin.webContents.send('menu-click', 'diseno_skins') },
-            { label: 'Ventana flotante', click: () => mainWin.webContents.send('menu-click', 'diseno_ventana_flotante') },
+            { label: 'Cronómetro flotante', click: () => mainWin.webContents.send('menu-click', 'diseno_crono_flotante') },
             { label: 'Fuentes', click: () => mainWin.webContents.send('menu-click', 'diseno_fuentes') },
             { label: 'Colores', click: () => mainWin.webContents.send('menu-click', 'diseno_colores') }
           ]
@@ -116,7 +116,7 @@ function createMainWindow() {
       label: 'Comunidad',
       submenu: [
         { label: 'Discord', click: () => mainWin.webContents.send('menu-click', 'discord') },
-        { label: 'Avisos y novedades', click: () => mainWin.webContents.send('menu-click', 'avisos_novedades') }
+        { label: 'Avisos y novedades', click: () => mainWin.webContents.send('menu-click', 'avisos') }
       ]
     },
     { label: 'Links de interés', click: () => mainWin.webContents.send('menu-click', 'links_interes') },
@@ -316,7 +316,7 @@ function createPresetWindow(initialData) {
   });
 }
 
-/* --- New: Language modal handling --- */
+/* --- Language modal handling --- */
 
 // Save language selection into settings file (and ensure numberFormatting defaults)
 ipcMain.handle('set-language', async (_event, lang) => {
@@ -815,6 +815,31 @@ ipcMain.handle('set-current-text', (_, text) => {
   // Also inform editor if needed (avoid echo loops; editor handles heuristics)
   if (editorWin && !editorWin.isDestroyed()) {
     editorWin.webContents.send('manual-text-updated', currentText);
+  }
+});
+
+// --- Abrir README.md en la app por defecto del sistema ---
+ipcMain.handle('open-readme', async () => {
+  try {
+    // Ajusta la ruta si tu README.md está en otra ubicación
+    const readmePath = path.join(__dirname, '..', 'README.md');
+
+    // shell.openPath devuelve '' en éxito, o string con mensaje de error
+    const result = await shell.openPath(readmePath);
+
+    if (typeof result === 'string' && result.length > 0) {
+      console.error('open-readme: shell.openPath error:', result);
+      // Opcional: mostrar dialogo nativo
+      try { await dialog.showMessageBox(mainWin || null, { type: 'error', message: `No se pudo abrir README.md:\n${result}` }); } catch (e) { console.error(e); }
+      return { ok: false, error: result };
+    }
+
+    console.log('open-readme: README abierto:', readmePath);
+    return { ok: true };
+  } catch (err) {
+    console.error('open-readme: excepción:', err);
+    try { await dialog.showMessageBox(mainWin || null, { type: 'error', message: `Error abriendo README.md:\n${String(err)}` }); } catch (e) { }
+    return { ok: false, error: String(err) };
   }
 });
 

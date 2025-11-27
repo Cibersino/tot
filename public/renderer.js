@@ -244,13 +244,115 @@ const loadPresets = async () => {
     // Ejemplo: acción para 'guia_basica'
     window.menuActions.registerMenuAction('guia_basica', () => {
       console.log("Botón 'Guía básica' pulsado - acción temporal (registrada vía menuActions)");
-      alert("Guía básica pulsada (acción temporal)");
+      alert("WIP: Aquí se mostrará la guía básica en una futura versión.");
     });
 
     // Puedes registrar más acciones de ejemplo aquí:
     window.menuActions.registerMenuAction('instrucciones_completas', () => {
-      console.log("Instrucciones completas - acción temporal (registrada vía menuActions)");
+      console.log("Instrucciones completas pulsada - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se mostrarán las instrucciones completas en una futura versión.");
       // TODO: reemplazar por navegación/modal real
+    });
+
+    window.menuActions.registerMenuAction('faq', () => {
+      console.log("FAQ pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se mostrarán las FAQ en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('cargador_texto', () => {
+      console.log("Cargador de archivo de texto pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá el cargador de archivos de texto en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('contador_imagen', () => {
+      console.log("Cargador de imágenes con texto pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá el cargador de imágenes con texto en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('test_velocidad', () => {
+      console.log("Test de velocidad de lectura pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá el test de velocidad de lectura en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('preferencias_idioma', () => {
+      console.log("Idioma pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá el selector de idioma en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('diseno_skins', () => {
+      console.log("Skins pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá el selector de skins en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('diseno_crono_flotante', () => {
+      console.log("Cronómetro flotante pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá la configuración del cronómetro flotante en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('diseno_fuentes', () => {
+      console.log("Fuentes pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá el selector de fuentes en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('diseno_colores', () => {
+      console.log("Colores pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá el selector de colores en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('presets_por_defecto', () => {
+      console.log("Presets por defecto pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá la carpeta de presets por defecto en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('avisos', () => {
+      console.log("Avisos y novedades pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se mostrarán los avisos y novedades en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('discord', () => {
+      console.log("Discord pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se abrirá el enlace a Discord en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('links_interes', () => {
+      console.log("Links de interés pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se mostrarán los links de interés en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('colabora', () => {
+      console.log("COLABORA ($) pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se mostrará la información para colaborar en una futura versión.");
+    });
+
+    window.menuActions.registerMenuAction('actualizar_version', () => {
+      console.log("Actualizar a última versión pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se iniciará el proceso de actualización en una futura versión.");
+    });
+ 
+    // Registrar acción real para 'readme' (abrir README.md con app por defecto)
+    window.menuActions.registerMenuAction('readme', async () => {
+      try {
+        if (!window.electronAPI || typeof window.electronAPI.openReadme !== 'function') {
+          console.error('openReadme no disponible en electronAPI');
+          alert('Funcionalidad Readme no disponible.');
+          return;
+        }
+
+        const res = await window.electronAPI.openReadme();
+        if (!res || !res.ok) {
+          console.error('openReadme falló:', res);
+          alert('No se pudo abrir README.md. Revisa la consola para más detalles.');
+        }
+        // si ok => no hace falta más (README abre en app externa)
+      } catch (err) {
+        console.error('Error en acción readme:', err);
+        alert('Error al intentar abrir README.md. Revisa la consola.');
+      }
+    });
+
+    window.menuActions.registerMenuAction('acerca_de', () => {
+      console.log("Acerca de pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se mostrará la información 'Acerca de' en una futura versión.");
     });
 
     // Ejemplo genérico para ver payloads no registrados explícitamente:

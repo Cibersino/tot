@@ -4,36 +4,11 @@
 
 * Barra superior de pantalla principal *
 
-Botones
-- ¿Cómo usar la app?
-  - Guía básica 
-  - Instrucciones completas
-  - Preguntas frecuentes (FAQ)
-- Herramientas
-  - Cargador de archivo de textos
-  - Contador de palabras en imágenes y pdfs
-  - Test de velocidad de lectura
-- Preferencias
-  - Idioma
-  - Diseño
-    - Skins
-	  - Ventana flotante (seleccionar ubicación y transparencia)
-	  - Fuentes (fuente y tamaño letra. general, ventana texto completo, ventana flotante.)
-	  - Colores (fondo de cada ventana, etc)
-  - Shortcuts (cambiar el del portapapeles por defecto, start/stop cronómetro, activación/desactivación ventana flotante)
-  - Presets por defecto (abre carpeta presets)
-- Comunidad
-  - Discord
-  - Avisos y novedades
-- Links de interés
-- COLABORA ($)
-- ?
-  - Actualizar a última versión
-  - Readme
-  - Acerca de (versión, créditos, contacto, etc)
-
-Pasos:
-......
+- Guía básica 
+- Instrucciones completas
+- Preguntas frecuentes (FAQ)
+- Acerca de
+- Presets por defecto (abre carpeta presets)
 
 # Más adelante #
 
