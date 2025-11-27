@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -77,6 +77,82 @@ function createMainWindow() {
 
   mainWin.loadFile(path.join(__dirname, '../public/index.html'));
 
+  // --- BARRA SUPERIOR PERSONALIZADA (insertada aquí) ---
+  const menuTemplate = [
+    {
+      label: '¿Cómo usar la app?',
+      submenu: [
+        { label: 'Guía básica', click: () => mainWin.webContents.send('menu-click', 'guia_basica') },
+        { label: 'Instrucciones completas', click: () => mainWin.webContents.send('menu-click', 'instrucciones_completas') },
+        { label: 'Preguntas frecuentes (FAQ)', click: () => mainWin.webContents.send('menu-click', 'faq') }
+      ]
+    },
+    {
+      label: 'Herramientas',
+      submenu: [
+        { label: 'Cargador de archivo de textos', click: () => mainWin.webContents.send('menu-click', 'cargador_textos') },
+        { label: 'Contador de palabras en imágenes y pdfs', click: () => mainWin.webContents.send('menu-click', 'contador_imagen_pdf') },
+        { label: 'Test de velocidad de lectura', click: () => mainWin.webContents.send('menu-click', 'test_velocidad') }
+      ]
+    },
+    {
+      label: 'Preferencias',
+      submenu: [
+        { label: 'Idioma', click: () => mainWin.webContents.send('menu-click', 'preferencias_idioma') },
+        {
+          label: 'Diseño',
+          submenu: [
+            { label: 'Skins', click: () => mainWin.webContents.send('menu-click', 'diseno_skins') },
+            { label: 'Ventana flotante', click: () => mainWin.webContents.send('menu-click', 'diseno_ventana_flotante') },
+            { label: 'Fuentes', click: () => mainWin.webContents.send('menu-click', 'diseno_fuentes') },
+            { label: 'Colores', click: () => mainWin.webContents.send('menu-click', 'diseno_colores') }
+          ]
+        },
+        { label: 'Shortcuts', click: () => mainWin.webContents.send('menu-click', 'shortcuts') },
+        { label: 'Presets por defecto', click: () => mainWin.webContents.send('menu-click', 'presets_por_defecto') }
+      ]
+    },
+    {
+      label: 'Comunidad',
+      submenu: [
+        { label: 'Discord', click: () => mainWin.webContents.send('menu-click', 'discord') },
+        { label: 'Avisos y novedades', click: () => mainWin.webContents.send('menu-click', 'avisos_novedades') }
+      ]
+    },
+    { label: 'Links de interés', click: () => mainWin.webContents.send('menu-click', 'links_interes') },
+    { label: 'COLABORA ($)', click: () => mainWin.webContents.send('menu-click', 'colabora') },
+    {
+      label: '?',
+      submenu: [
+        { label: 'Actualizar a última versión', click: () => mainWin.webContents.send('menu-click', 'actualizar_version') },
+        { label: 'Readme', click: () => mainWin.webContents.send('menu-click', 'readme') },
+        { label: 'Acerca de', click: () => mainWin.webContents.send('menu-click', 'acerca_de') }
+      ]
+    }
+  ];
+
+  if (!app.isPackaged) {
+    // añadimos una sección "Desarrollo" con Toggle DevTools y Reload
+    menuTemplate.push({
+      label: 'Desarrollo',
+      submenu: [
+        { role: 'reload', label: 'Recargar' },
+        { role: 'forcereload', label: 'Forzar recarga' },
+        {
+          label: 'Toggle DevTools',
+          accelerator: 'Ctrl+Shift+I',
+          click: () => {
+            if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.toggleDevTools();
+          }
+        }
+      ]
+    });
+  }
+
+  const appMenu = Menu.buildFromTemplate(menuTemplate);
+  Menu.setApplicationMenu(appMenu);
+  // --- FIN BARRA SUPERIOR ---
+
   // Al iniciarse el cierre de la ventana principal, cerrar ordenadamente ventanas dependientes.
   // No prevenimos el cierre; solo solicitamos el cierre de editor/preset si existen.
   mainWin.on('close', () => {
@@ -140,7 +216,7 @@ function createEditorWindow() {
     }
   });
 
-  // Aquí eliminamos la barra de menú
+  // Aquí eliminamos la barra de menú (ventana modal/editor)
   editorWin.setMenu(null);
 
   editorWin.loadFile(path.join(__dirname, '../public/manual.html'));
@@ -274,7 +350,7 @@ ipcMain.handle('set-language', async (_event, lang) => {
 // Create language selection window (small, light)
 function createLanguageWindow() {
   if (langWin && !langWin.isDestroyed()) {
-    try { langWin.focus(); } catch (e) {}
+    try { langWin.focus(); } catch (e) { }
     return;
   }
 
@@ -800,7 +876,7 @@ app.whenReady().then(() => {
         console.error("Error creando mainWin tras seleccionar idioma:", e);
       } finally {
         // close language window if still open (modal already likely closed by renderer)
-        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) {}
+        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { }
       }
     });
 
