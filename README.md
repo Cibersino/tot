@@ -1,5 +1,5 @@
 ### toT — Reading Meter ###
-**Versión:** 0.0.4 (2025/11/24)  
+**Versión:** 0.0.5 (2025/11/27)  
 
 Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar tiempos de lectura, cronometrar lecturas y gestionar presets de velocidad (WPM).
 
