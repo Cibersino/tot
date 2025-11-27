@@ -13,7 +13,7 @@ Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar 
 
 ## Instalación y ejecución ##
 
-git clone <repo>
+git clone https://github.com/Cibersino/tot-readingmeter.git
 cd tot-readingmeter*
 npm install
 npm start
@@ -29,9 +29,10 @@ npm start
 * `public/preset_modal.js` — scripts para el modal de presets (Nuevo/Editar).
 * `config/user_settings.json` — guarda presets personalizados y configuración de usuario.
 * `config/current_text.json` — almacena el texto actual al cerrar la app.
-* public/manual.js — scripts del editor de texto completo.
-* public/style.css y public/manual.css — estilos para la pantalla principal y editor.
-* public/index.html, public/manual.html, public/preset_modal.html — vistas principales y modales.
+* `public/manual.js` — scripts del editor de texto completo.
+* `public/js/menu.js` — router interno de acciones del menú.
+* `public/style.css` y `public/manual.css` — estilos para la pantalla principal y editor.
+* `public/index.html`, `public/manual.html`, `public/preset_modal.html` — vistas principales y modales.
 
 ## Changelog ##
 
@@ -61,9 +62,65 @@ npm start
 	* Interruptor del cálculo automático (antes siempre activo).
 * Limpieza parcial (muy parcial) del código fuente.
 
-**0.0.5** ()
+**0.0.5** (2025/11/27)
 
-* Selector de idioma primer arranque.
+* Nuevo Menu / barra superior
+- Se habilitó la barra superior, reemplazando la barra por defecto de Electron.
+- Se crearon los botones de la barra superior:
+  - ¿Cómo usar la app?
+    - Guía básica 
+    - Instrucciones completas
+    - Preguntas frecuentes (FAQ)
+  - Herramientas
+    - Cargador de archivo de textos
+    - Contador de palabras en imágenes
+    - Test de velocidad de lectura
+  - Preferencias
+    - Idioma
+    - Diseño
+      - Skins
+	    - Ventana flotante
+	    - Fuentes
+	    - Colores
+    - Shortcuts
+    - Presets por defecto
+  - Comunidad
+    - Discord
+    - Avisos y novedades
+  - Links de interés
+  - COLABORA ($)
+  - ?
+    - Actualizar a última versión
+    - Readme
+    - Acerca de
+- Código: Se habilitó un sistema de flujo para la barra superior. Por ahora sin funciones reales.
+- Flujo claro: main → preload → menu.js → renderer (acciones).
+  - Lógica de ventanas de main.js:
+    - Captura clicks reales de la barra superior.
+    - Envia un evento único "menu-click" con el id correspondiente.
+  - Seguridad y encapsulación en preload.js:
+    - Se creó un listener único y estable para los botones del menú.
+  - Enrutamiento del menú con menu.js:
+    - Nuevo módulo public/js/menu.js
+    - Implementa un router interno de acciones (menuActions).
+    - Recibe todos los eventos menu-click desde preload.js.
+    - Reenvía el actionId a las funciones registradas.
+    - Incluye manejo explícito para acciones no registradas (warning en consola).
+  - Ajustes en renderer.js. 
+    - Se implementaron acciones temporales (avisos WIP) para los nuevos botones.
+- Ajustes en index.html. Se agregó <script src="./js/menu.js"></script> antes de renderer.js, garantizando el registro previo del router.
+
+* Nuevo selector de idioma primer arranque.
+
+* Optimización del código de sistema de presets, manteniendo la misma funcionalidad.
+  - Se eliminó la inclusión de preset_modal.js en index.html; ahora se carga únicamente en preset_modal.html.
+  - Se envolvió la lógica del modal en DOMContentLoaded y se añadieron chequeos de existencia de elementos para evitar errores.
+
+* Calibración del rango del WMP de 100-500 a 50-500.
+
+* Logos nuevos
+  - Mejora de logo toT
+  - Inserción de logo Cibersin
 
 ## Autor y Créditos ##
 

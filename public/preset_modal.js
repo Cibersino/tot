@@ -67,8 +67,8 @@
         alert('El nombre no puede estar vacío.');
         return null;
       }
-      if (!Number.isFinite(wpm) || wpm <= 0) {
-        alert('WPM debe ser un número mayor que 0.');
+      if (!Number.isFinite(wpm) || wpm < 50 || wpm > 500) {
+        alert('WPM debe ser un número entre 50 y 500.');
         return null;
       }
       return { name, wpm: Math.round(wpm), description: desc };
