@@ -4,11 +4,12 @@
 
 * Barra superior de pantalla principal *
 
-- Guía básica 
+- Readme
 - Instrucciones completas
 - Preguntas frecuentes (FAQ)
 - Acerca de
 - Presets por defecto (abre carpeta presets)
+- Guía básica 
 
 # Más adelante #
 

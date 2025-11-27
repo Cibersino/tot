@@ -328,26 +328,10 @@ const loadPresets = async () => {
       console.log("Actualizar a última versión pulsado - acción temporal (registrada vía menuActions)");
       alert("WIP: Aquí se iniciará el proceso de actualización en una futura versión.");
     });
- 
-    // Registrar acción real para 'readme' (abrir README.md con app por defecto)
-    window.menuActions.registerMenuAction('readme', async () => {
-      try {
-        if (!window.electronAPI || typeof window.electronAPI.openReadme !== 'function') {
-          console.error('openReadme no disponible en electronAPI');
-          alert('Funcionalidad Readme no disponible.');
-          return;
-        }
 
-        const res = await window.electronAPI.openReadme();
-        if (!res || !res.ok) {
-          console.error('openReadme falló:', res);
-          alert('No se pudo abrir README.md. Revisa la consola para más detalles.');
-        }
-        // si ok => no hace falta más (README abre en app externa)
-      } catch (err) {
-        console.error('Error en acción readme:', err);
-        alert('Error al intentar abrir README.md. Revisa la consola.');
-      }
+    window.menuActions.registerMenuAction('readme', () => {
+      console.log("Readme pulsado - acción temporal (registrada vía menuActions)");
+      alert("WIP: Aquí se mostrará el README en una futura versión.");
     });
 
     window.menuActions.registerMenuAction('acerca_de', () => {

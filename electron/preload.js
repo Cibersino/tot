@@ -35,9 +35,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Force clear editor (invocado por renderer cuando el usuario presiona "Vaciar" en la pantalla principal)
   forceClearEditor: () => ipcRenderer.invoke('force-clear-editor'),
 
-  // electron/preload.js  -> dentro de contextBridge.exposeInMainWorld('electronAPI', { ... })
-  openReadme: () => ipcRenderer.invoke('open-readme'),
-
   // ======================= NUEVO: listener estable para barra superior =======================
   onMenuClick: (cb) => {
     const channel = 'menu-click';

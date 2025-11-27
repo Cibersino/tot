@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -815,31 +815,6 @@ ipcMain.handle('set-current-text', (_, text) => {
   // Also inform editor if needed (avoid echo loops; editor handles heuristics)
   if (editorWin && !editorWin.isDestroyed()) {
     editorWin.webContents.send('manual-text-updated', currentText);
-  }
-});
-
-// --- Abrir README.md en la app por defecto del sistema ---
-ipcMain.handle('open-readme', async () => {
-  try {
-    // Ajusta la ruta si tu README.md está en otra ubicación
-    const readmePath = path.join(__dirname, '..', 'README.md');
-
-    // shell.openPath devuelve '' en éxito, o string con mensaje de error
-    const result = await shell.openPath(readmePath);
-
-    if (typeof result === 'string' && result.length > 0) {
-      console.error('open-readme: shell.openPath error:', result);
-      // Opcional: mostrar dialogo nativo
-      try { await dialog.showMessageBox(mainWin || null, { type: 'error', message: `No se pudo abrir README.md:\n${result}` }); } catch (e) { console.error(e); }
-      return { ok: false, error: result };
-    }
-
-    console.log('open-readme: README abierto:', readmePath);
-    return { ok: true };
-  } catch (err) {
-    console.error('open-readme: excepción:', err);
-    try { await dialog.showMessageBox(mainWin || null, { type: 'error', message: `Error abriendo README.md:\n${String(err)}` }); } catch (e) { }
-    return { ok: false, error: String(err) };
   }
 });
 
