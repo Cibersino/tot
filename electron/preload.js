@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openEditor: () => ipcRenderer.invoke('open-editor'),
   // openPresetModal acepta un argumento opcional: número (wpm) o un objeto { wpm, mode, preset }
   openPresetModal: (payload) => ipcRenderer.invoke('open-preset-modal', payload),
+  openDefaultPresetsFolder: () => ipcRenderer.invoke("open-default-presets-folder"),
   getCurrentText: () => ipcRenderer.invoke('get-current-text'),
   setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
   onCurrentTextUpdated: (cb) => {

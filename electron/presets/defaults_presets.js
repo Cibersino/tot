@@ -1,7 +1,7 @@
 module.exports = [
   {
     name: "default",
-    wpm: 240,
-    description: ""
+    wpm: 250,
+    description: "Default preset."
   }
 ];

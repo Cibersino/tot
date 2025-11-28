@@ -1,21 +1,25 @@
 ### TO DO Y PLAN GENERAL ###
 
-Límite de current text
+Pendientes varios:
+- Limitar current text
 
 # ÍTEM ACTUAL #
 
 * Barra superior de pantalla principal *
 
 LISTO:
-- Modal html funcional para: guía básica (TEMPORAL), instrucciones, faq, readme y acerca de.
+- Modal html funcional para: guía básica, instrucciones, faq, readme y acerca de.
+- Botón Presets por defecto (abre carpeta presets)
 
 FALTA:
-- Presets por defecto (abre carpeta presets)
-- Guía básica (un video o algo similar)
+- Modificar htmls de los botones con información: guía básica, instrucciones, faq, readme y acerca de.
+- NOTA: Verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
 
-NOTA: Resto del menú quedaría pendiente para más adelante
+Resto del menú quedaría pendiente para más adelante
 
 # Más adelante #
+
+* Revisar limite de palabras del texto vigente *
 
 * Habilitar botones faltantes del menú *
 
@@ -68,6 +72,7 @@ NOTA: Resto del menú quedaría pendiente para más adelante
 * Mejorar Readme * 
 
 * Revisar seguridad de la aplicación y legalidad *
+ - Licencia de la fuente kremlin duma para logo Cibersin
 
 * Empaquetado multiplataforma (Windows, macOS y Linux) *
 - Empaquetado para Windows, versión de prueba *
