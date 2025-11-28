@@ -23,6 +23,7 @@ Thumbs.db
 config/current_text.json
 config/modal_state.json
 config/user_settings.json
+config/presets_defaults/
 
 # Logs
 *.log
