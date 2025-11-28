@@ -1,21 +1,21 @@
 ### TO DO Y PLAN GENERAL ###
 
-Límite de current text
+Pendientes varios:
+- Limitar current text
 
 # ÍTEM ACTUAL #
 
 * Barra superior de pantalla principal *
 
 LISTO:
-- Modal html funcional para: guía básica (TEMPORAL), instrucciones, faq, readme y acerca de.
+- Modal html funcional para: guía básica, instrucciones, faq, readme y acerca de.
+- Botón Presets por defecto (abre carpeta presets)
 
 FALTA:
-- Botón Presets por defecto (abre carpeta presets)
-- Botón Guía básica (un video o algo similar)
-- Modificar htmls de los botones con información: guía básica (TEMPORAL), instrucciones, faq, readme y acerca de.
-  - NOTA: Verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
+- Modificar htmls de los botones con información: guía básica, instrucciones, faq, readme y acerca de.
+- NOTA: Verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
 
-NOTA: Resto del menú quedaría pendiente para más adelante
+Resto del menú quedaría pendiente para más adelante
 
 # Más adelante #
 
