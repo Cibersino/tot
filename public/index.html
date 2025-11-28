@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta http-equiv="Content-Security-Policy"
-  content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';">
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';">
   <meta charset="UTF-8" />
   <title>toT — Reading Meter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <!-- Logos -->
   <div class="logo-container" aria-hidden="true">
@@ -23,8 +25,10 @@
       <h3 id="selector-title" class="section-title">Primera y última parte del texto analizado:</h3>
       <pre id="textPreview">(vacío)</pre>
       <div class="controls">
-        <button id="btnCountClipboard" class="btn-standard" title="Reemplazar texto con el portapapeles">Sobrescribir portapapeles</button>
-        <button id="btnAppendClipboardNewLine" class="btn-standard" title="Pegar portapapeles al final del texto en nueva línea">Pegar portapapeles nueva línea</button>
+        <button id="btnCountClipboard" class="btn-standard" title="Reemplazar texto con el portapapeles">Sobrescribir
+          portapapeles</button>
+        <button id="btnAppendClipboardNewLine" class="btn-standard"
+          title="Pegar portapapeles al final del texto en nueva línea">Pegar portapapeles nueva línea</button>
         <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto completo">Editor manual</button>
         <button id="btnEmptyMain" class="btn-standard" title="Vaciar texto vigente">🗑</button>
       </div>
@@ -85,10 +89,26 @@
     <section class="spare" aria-label="Sección disponible">
       <!-- Espacio reservado para funciones futuras -->
     </section>
+    <!-- INFO MODAL MENÚ -->
+    <div id="infoModal" class="info-modal" aria-hidden="true" role="dialog" aria-labelledby="infoModalTitle"
+      aria-modal="true">
+      <div class="info-modal-backdrop" id="infoModalBackdrop"></div>
+      <div class="info-modal-panel" role="document">
+        <header class="info-modal-header">
+          <h2 id="infoModalTitle">Info</h2>
+          <button id="infoModalClose" class="btn-standard" aria-label="Cerrar">Cerrar</button>
+        </header>
+        <main id="infoModalContent" class="info-modal-content" tabindex="0">
+          <!-- Contenido cargado dinámicamente -->
+          <div class="info-loading">Cargando...</div>
+        </main>
+      </div>
+    </div>
 
   </div>
 
   <script src="./js/menu.js"></script>
   <script src="renderer.js"></script>
 </body>
+
 </html>
