@@ -360,9 +360,29 @@ const loadPresets = async () => {
       alert("WIP: Aquí se abrirá el selector de colores en una futura versión.");
     });
 
-    window.menuActions.registerMenuAction('presets_por_defecto', () => {
-      console.log("Presets por defecto pulsado - acción temporal (registrada vía menuActions)");
-      alert("WIP: Aquí se abrirá la carpeta de presets por defecto en una futura versión.");
+    window.menuActions.registerMenuAction("presets_por_defecto", async () => {
+      try {
+        if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== "function") {
+          console.warn("openDefaultPresetsFolder no disponible en electronAPI");
+          alert("No es posible abrir la carpeta de presets en este entorno.");
+          return;
+        }
+
+        const res = await window.electronAPI.openDefaultPresetsFolder();
+        if (res && res.ok) {
+          // carpeta abierta correctamente; no mostrar notificación intrusiva
+          console.debug("Carpeta config/presets_defaults abierta en el explorador.");
+          return;
+        }
+
+        // en caso de fallo, informar al usuario
+        const errMsg = res && res.error ? String(res.error) : "Desconocido";
+        console.error("No se pudo abrir carpeta presets por defecto:", errMsg);
+        alert("No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.");
+      } catch (err) {
+        console.error("Error abriendo carpeta presets por defecto:", err);
+        alert("Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.");
+      }
     });
 
     window.menuActions.registerMenuAction('avisos', () => {
