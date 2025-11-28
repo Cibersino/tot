@@ -1,19 +1,44 @@
 ### TO DO Y PLAN GENERAL ###
 
+Límite de current text
+
 # ÍTEM ACTUAL #
 
 * Barra superior de pantalla principal *
 
-- Readme
-- Instrucciones completas
-- Preguntas frecuentes (FAQ)
-- Acerca de
+LISTO:
+- Modal html funcional para: guía básica (TEMPORAL), instrucciones, faq, readme y acerca de.
+
+FALTA:
 - Presets por defecto (abre carpeta presets)
-- Guía básica 
+- Guía básica (un video o algo similar)
+
+NOTA: Resto del menú quedaría pendiente para más adelante
 
 # Más adelante #
 
-- Inserción de logo de Cibersin
+* Habilitar botones faltantes del menú *
+
+- Herramientas
+  - Cargador de archivo de textos
+  - Contador de palabras en imágenes
+  - Test de velocidad de lectura
+- Preferencias
+  - Idioma
+  - Diseño
+    - Skins
+	  - Ventana flotante (seleccionar ubicación y transparencia)
+	  - Fuentes (fuente y tamaño letra. general, ventana texto completo, ventana flotante.)
+	  - Colores (fondo de cada ventana, etc)
+  - Shortcuts (cambiar el del portapapeles por defecto, start/stop cronómetro, activación/desactivación ventana flotante)
+  - Presets por defecto (abre carpeta presets)
+- Comunidad
+  - Discord
+  - Avisos y novedades
+- Links de interés
+- COLABORA ($)
+- ?
+  - Actualizar a última versión
 
 * Revisión y depuración del código*
 

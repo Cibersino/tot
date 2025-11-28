@@ -238,26 +238,87 @@ const loadPresets = async () => {
   } catch (e) {
     console.error("Error inicializando renderer:", e);
   }
+  /* --- Info modal utility --- */
+  const infoModal = document.getElementById("infoModal");
+  const infoModalBackdrop = document.getElementById("infoModalBackdrop");
+  const infoModalClose = document.getElementById("infoModalClose");
+  const infoModalTitle = document.getElementById("infoModalTitle");
+  const infoModalContent = document.getElementById("infoModalContent");
+
+  function closeInfoModal() {
+    try {
+      if (!infoModal || !infoModalContent) return;
+      infoModal.setAttribute("aria-hidden", "true");
+      infoModalContent.innerHTML = '<div class="info-loading">Cargando...</div>';
+    } catch (e) {
+      console.error("Error cerrando modal info:", e);
+    }
+  }
+
+  if (infoModalClose) infoModalClose.addEventListener("click", closeInfoModal);
+  if (infoModalBackdrop) infoModalBackdrop.addEventListener("click", closeInfoModal);
+
+  window.addEventListener("keydown", (ev) => {
+    if (!infoModal) return;
+    if (ev.key === "Escape" && infoModal.getAttribute("aria-hidden") === "false") {
+      closeInfoModal();
+    }
+  });
+
+  async function fetchText(path) {
+    try {
+      const res = await fetch(path, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.text();
+    } catch (e) {
+      console.debug("fetchText error:", path, e);
+      return null;
+    }
+  }
+
+  async function showInfoModal(key, opts = {}) {
+    // key: 'readme' | 'instrucciones' | 'faq' | 'acerca'
+    const titles = {
+      readme: "Readme",
+      instrucciones: "Instrucciones completas",
+      guia_basica: "Guía básica",
+      faq: "Preguntas frecuentes (FAQ)",
+      acerca_de: "Acerca de"
+    };
+
+    if (!infoModal || !infoModalTitle || !infoModalContent) return;
+
+    infoModalTitle.textContent = titles[key] || (opts.title || "Información");
+    infoModal.setAttribute("aria-hidden", "false");
+
+    // Intentar cargar ./info/<key>.html primero
+    const tryHtml = await fetchText(`./info/${key}.html`);
+    if (tryHtml !== null) {
+      infoModalContent.innerHTML = tryHtml;
+      if (infoModalContent && typeof infoModalContent.focus === "function") {
+        infoModalContent.focus();
+      }
+      return;
+    }
+
+    // Si no hay archivo, mostrar texto por defecto
+    infoModalContent.innerHTML =
+      `<p>No hay contenido disponible para "${infoModalTitle.textContent}".</p>`;
+
+    if (infoModalContent && typeof infoModalContent.focus === "function") {
+      infoModalContent.focus();
+    }
+  }
+
   // ======================= BARRA SUPERIOR: registrar acciones con menuActions =======================
   // Asegúrate de que menu.js fue cargado (script incluido antes de renderer.js)
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
-    // Ejemplo: acción para 'guia_basica'
-    window.menuActions.registerMenuAction('guia_basica', () => {
-      console.log("Botón 'Guía básica' pulsado - acción temporal (registrada vía menuActions)");
-      alert("WIP: Aquí se mostrará la guía básica en una futura versión.");
-    });
-
-    // Puedes registrar más acciones de ejemplo aquí:
-    window.menuActions.registerMenuAction('instrucciones_completas', () => {
-      console.log("Instrucciones completas pulsada - acción temporal (registrada vía menuActions)");
-      alert("WIP: Aquí se mostrarán las instrucciones completas en una futura versión.");
-      // TODO: reemplazar por navegación/modal real
-    });
-
-    window.menuActions.registerMenuAction('faq', () => {
-      console.log("FAQ pulsado - acción temporal (registrada vía menuActions)");
-      alert("WIP: Aquí se mostrarán las FAQ en una futura versión.");
-    });
+    // Registrar acción para "guia_basica"
+    window.menuActions.registerMenuAction("guia_basica", () => { showInfoModal("guia_basica") });
+    // Registrar acción para "instrucciones_completas"
+    window.menuActions.registerMenuAction("instrucciones_completas", () => { showInfoModal("instrucciones") });
+    // Registrar acción para "faq"
+    window.menuActions.registerMenuAction("faq", () => { showInfoModal("faq") });
 
     window.menuActions.registerMenuAction('cargador_texto', () => {
       console.log("Cargador de archivo de texto pulsado - acción temporal (registrada vía menuActions)");
@@ -328,16 +389,10 @@ const loadPresets = async () => {
       console.log("Actualizar a última versión pulsado - acción temporal (registrada vía menuActions)");
       alert("WIP: Aquí se iniciará el proceso de actualización en una futura versión.");
     });
-
-    window.menuActions.registerMenuAction('readme', () => {
-      console.log("Readme pulsado - acción temporal (registrada vía menuActions)");
-      alert("WIP: Aquí se mostrará el README en una futura versión.");
-    });
-
-    window.menuActions.registerMenuAction('acerca_de', () => {
-      console.log("Acerca de pulsado - acción temporal (registrada vía menuActions)");
-      alert("WIP: Aquí se mostrará la información 'Acerca de' en una futura versión.");
-    });
+    // Registrar acción para "acerca_de"
+    window.menuActions.registerMenuAction("readme", () => { showInfoModal("readme") });
+    // Registrar acción para "acerca_de"
+    window.menuActions.registerMenuAction("acerca_de", () => { showInfoModal("acerca_de") });
 
     // Ejemplo genérico para ver payloads no registrados explícitamente:
     // (opcional) registrar un "catch-all" no es necesario; menu.js ya loguea payloads sin handler.
