@@ -1,5 +1,5 @@
 ### toT — Reading Meter ###
-**Versión:** 0.0.5 (2025/11/27)  
+**Versión:** 0.0.6 (2025/11/28)  
 
 Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar tiempos de lectura, cronometrar lecturas y gestionar presets de velocidad (WPM).
 
@@ -66,7 +66,7 @@ npm start
 
 * Nuevo Menu / barra superior
 - Se habilitó la barra superior, reemplazando la barra por defecto de Electron.
-- Se crearon los botones de la barra superior:
+- Se crearon (visualmente) los botones de la barra superior:
   - ¿Cómo usar la app?
     - Guía básica 
     - Instrucciones completas
@@ -93,6 +93,7 @@ npm start
     - Actualizar a última versión
     - Readme
     - Acerca de
+
 - Código: Se habilitó un sistema de flujo para la barra superior. Por ahora sin funciones reales.
 - Flujo claro: main → preload → menu.js → renderer (acciones).
   - Lógica de ventanas de main.js:
@@ -121,6 +122,34 @@ npm start
 * Logos nuevos
   - Mejora de logo toT
   - Inserción de logo Cibersin
+
+**0.0.6** (2025/11/28)
+
+* Menú
+
+- Habilitados funcionalmente botones del menú / barra superior:
+
+  - Informativos: Guía básica, Instrucciones completas, FAQ, Readme y Acerca de.
+    - Todos usan un infomodal compartido que carga su HTML correspondiente.
+    - Si no se encuentra el HTML, muestra un aviso: "No hay contenido disponible para ...".
+    - Archivos agregados: guia_basica.html, instrucciones.html, faq.html, readme.html, acerca_de.html
+    
+    NOTAS: 
+    - Por el momento HMLS solo tienen un texto de prueba.
+      - Al editarlos hay que verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
+
+    - Botón Presets por defecto.
+      - Abre la carpeta config/presets_defaults en el explorador del sistema operativo.
+        - El usuario puede modificar o eliminar los archivos .json con seguridad, sin romper la app.
+          - Si modifica un archivo, al próximo arranque la app considerará nuevos presets por defecto para las operaciones normales en la ventana principal. (Ejemplo: Al presionar el botón "R" en la sección de Selector de velocidad de lectura, se restauran los presets por defecto según los archivos de esa carpeta, modificados o no).
+          - Si el usuario elimina un archivo desde la carpeta (no desde la ventana principal), al próximo arranque la app restaurará el archivo de instalación.
+
+Nota técnica:
+- Usamos shell.openPath(...) (expuesto por shell en electron) para abrir la carpeta en el explorador nativo. En entornos empaquetados (asar), shell.openPath funciona si la ruta apuntada está fuera del asar (la carpeta config/ está fuera), por lo que no debería presentar problemas.
+
+* Modificaciones menores de diseño para ajustar el layout.
+
+* El preset default general cambió su wpm de 240 a 250 y tiene nueva descripción.
 
 ## Autor y Créditos ##
 
