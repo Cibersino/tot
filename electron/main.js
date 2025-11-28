@@ -41,6 +41,54 @@ function saveJson(filePath, obj) {
 
 ensureConfigDir();
 
+// --- Presets defaults: copia inicial (JS -> JSON) en config/presets_defaults ---
+const PRESETS_SOURCE_DIR = path.join(__dirname, "presets"); // carpeta original: electron/presets
+const CONFIG_PRESETS_DIR = path.join(CONFIG_DIR, "presets_defaults");
+
+function ensureConfigPresetsDir() {
+  try {
+    fs.existsSync(CONFIG_PRESETS_DIR) || fs.mkdirSync(CONFIG_PRESETS_DIR, { recursive: true });
+  } catch (err) {
+    console.error("No se pudo crear config/presets_defaults:", err);
+  }
+}
+
+function copyDefaultPresetsIfMissing() {
+  try {
+    ensureConfigPresetsDir();
+
+    const files = [
+      "defaults_presets.js",
+      "defaults_presets_en.js",
+      "defaults_presets_es.js"
+    ];
+
+    files.forEach((fname) => {
+      const src = path.join(PRESETS_SOURCE_DIR, fname);
+      const dest = path.join(CONFIG_PRESETS_DIR, fname.replace(/\.js$/i, ".json"));
+
+      // Sólo copiar si existe el JS fuente y NO existe el .json destino
+      if (fs.existsSync(src) && !fs.existsSync(dest)) {
+        try {
+          // require del módulo JS que exporta el array
+          // (se espera que module.exports = [ ... ] )
+          let arr = require(src);
+          if (!Array.isArray(arr)) arr = Array.isArray(arr.default) ? arr.default : [];
+          fs.writeFileSync(dest, JSON.stringify(arr, null, 2), "utf8");
+          console.debug(`Copied default preset: ${src} -> ${dest}`);
+        } catch (err) {
+          console.error(`Error convirtiendo preset ${src} a JSON:`, err);
+        }
+      }
+    });
+  } catch (err) {
+    console.error("Error en copyDefaultPresetsIfMissing:", err);
+  }
+}
+
+// Ejecutar la copia inicial (no sobrescribe archivos existentes)
+copyDefaultPresetsIfMissing();
+
 let mainWin = null;
 let editorWin = null;
 let presetWin = null; // ventana modal para nuevo/editar preset
@@ -466,22 +514,54 @@ ipcMain.handle('get-settings', () => {
   }
 });
 
-// Provide default presets from electron/presets/*.js
-ipcMain.handle('get-default-presets', () => {
+// Provide default presets
+ipcMain.handle("get-default-presets", () => {
   try {
-    const presetsDir = path.join(__dirname, 'presets');
-    const generalPath = path.join(presetsDir, 'defaults_presets.js');
-    const enPath = path.join(presetsDir, 'defaults_presets_en.js');
-    const esPath = path.join(presetsDir, 'defaults_presets_es.js');
+    // Preferir JSON en config/presets_defaults, si existen.
+    ensureConfigPresetsDir();
 
-    // Use require to load JS modules if they exist
-    const general = fs.existsSync(generalPath) ? require(generalPath) : [];
-    const en = fs.existsSync(enPath) ? require(enPath) : [];
-    const es = fs.existsSync(esPath) ? require(esPath) : [];
+    const generalJson = path.join(CONFIG_PRESETS_DIR, "defaults_presets.json");
+    const enJson = path.join(CONFIG_PRESETS_DIR, "defaults_presets_en.json");
+    const esJson = path.join(CONFIG_PRESETS_DIR, "defaults_presets_es.json");
 
-    return { general: Array.isArray(general) ? general : [], languagePresets: { en: Array.isArray(en) ? en : [], es: Array.isArray(es) ? es : [] } };
+    let general = [];
+    let en = [];
+    let es = [];
+
+    if (fs.existsSync(generalJson)) {
+      try { general = JSON.parse(fs.readFileSync(generalJson, "utf8")); }
+      catch (err) { console.error("Error parseando", generalJson, err); general = []; }
+    } else {
+      // Fallback: leer original JS (como antes)
+      const n = path.join(PRESETS_SOURCE_DIR, "defaults_presets.js");
+      general = fs.existsSync(n) ? require(n) : [];
+    }
+
+    if (fs.existsSync(enJson)) {
+      try { en = JSON.parse(fs.readFileSync(enJson, "utf8")); }
+      catch (err) { console.error("Error parseando", enJson, err); en = []; }
+    } else {
+      const n = path.join(PRESETS_SOURCE_DIR, "defaults_presets_en.js");
+      en = fs.existsSync(n) ? require(n) : [];
+    }
+
+    if (fs.existsSync(esJson)) {
+      try { es = JSON.parse(fs.readFileSync(esJson, "utf8")); }
+      catch (err) { console.error("Error parseando", esJson, err); es = []; }
+    } else {
+      const n = path.join(PRESETS_SOURCE_DIR, "defaults_presets_es.js");
+      es = fs.existsSync(n) ? require(n) : [];
+    }
+
+    return {
+      general: Array.isArray(general) ? general : [],
+      languagePresets: {
+        en: Array.isArray(en) ? en : [],
+        es: Array.isArray(es) ? es : []
+      }
+    };
   } catch (e) {
-    console.error("Error proporcionando default presets:", e);
+    console.error("Error proporcionando default presets (get-default-presets):", e);
     return { general: [], languagePresets: { en: [], es: [] } };
   }
 });
