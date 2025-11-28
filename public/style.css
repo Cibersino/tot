@@ -3,7 +3,7 @@
   --gap: 4px;
   --control-height: 26px;
   --bg-color: #f4ecd8;
-  
+
   /* Dimensiones */
   --sidebar-width: 420px;
   --logo-width: 220px;
@@ -22,11 +22,12 @@
   --spare-bg: var(--bg-color);
   --section-border: #e9e6de;
   --section-radius: 6px;
-  --section-shadow: 0 1px 0 rgba(0,0,0,0.03);
+  --section-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
 }
 
 /* Body, background */
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -57,8 +58,8 @@ html, body {
 }
 
 /* Estilo común para Secciones */
-.app-container > section,
-.app-container > aside {
+.app-container>section,
+.app-container>aside {
   position: absolute;
   padding: var(--section-padding-vertical) var(--section-padding-horizontal);
   border-radius: var(--section-radius);
@@ -135,7 +136,7 @@ html, body {
   left: 4px;
   right: 0;
   height: 143px;
-  width: 811px;
+  width: 819px;
   background: var(--selector-bg);
   border: 1px solid var(--section-border);
   box-sizing: border-box;
@@ -147,7 +148,7 @@ pre#textPreview {
   color: #333;
   padding: 6px;
   border: 1px solid #eee;
-  height: 82px;
+  height: 84px;
   overflow-y: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -165,7 +166,7 @@ pre#textPreview {
   top: 214px;
   left: 4px;
   height: 155px;
-  width: 395px;
+  width: 398px;
   background: var(--velocity-bg);
   border: 1px solid var(--section-border);
   gap: 6px;
@@ -215,9 +216,9 @@ select#presets {
 /* SECCIÓN RESULTADOS DEL CONTEO */
 .results {
   top: 214px;
-  left: 404px;
+  left: 407px;
   height: 155px;
-  width: 411px;
+  width: 416px;
   background: var(--results-bg);
   border: 1px solid var(--section-border);
   padding: 4px;
@@ -247,7 +248,7 @@ select#presets {
 .help-row {
   position: absolute;
   bottom: 60px;
-  right: 6px; 
+  right: 6px;
 }
 
 /* SECCIÓN CRONÓMETRO */
@@ -309,11 +310,75 @@ select#presets {
   top: 374px;
   left: 340px;
   height: 89px;
-  width: 475px;
+  width: 483px;
   background: var(--spare-bg);
   border: 1px dashed #f0f0f0;
   padding: 4px;
   box-sizing: border-box;
+}
+
+/* Info modal menú */
+.info-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center
+}
+
+.info-modal[aria-hidden="false"] {
+  display: flex
+}
+
+.info-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(1px)
+}
+
+.info-modal-panel {
+  position: relative;
+  max-width: 860px;
+  width: calc(100% - 32px);
+  max-height: 80vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  z-index: 1001;
+  padding: 18px;
+  box-sizing: border-box
+}
+
+.info-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px
+}
+
+.info-modal-header h2 {
+  margin: 0;
+  font-size: 1.1rem
+}
+
+.info-modal-content {
+  font-size: 14px;
+  color: #222;
+  line-height: 1.45
+}
+
+.info-modal-content pre {
+  white-space: pre-wrap;
+  word-break: break-word
+}
+
+.info-loading {
+  color: #666;
+  font-style: italic;
+  padding: 8px
 }
 
 /* Responsive */
