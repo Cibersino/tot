@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -563,6 +563,25 @@ ipcMain.handle("get-default-presets", () => {
   } catch (e) {
     console.error("Error proporcionando default presets (get-default-presets):", e);
     return { general: [], languagePresets: { en: [], es: [] } };
+  }
+});
+// --- Abrir carpeta editable de presets por defecto en el explorador ---
+ipcMain.handle("open-default-presets-folder", async () => {
+  try {
+    // Aseguramos que la carpeta exista
+    ensureConfigPresetsDir();
+
+    // shell.openPath devuelve '' en éxito, o un string con error
+    const result = await shell.openPath(CONFIG_PRESETS_DIR);
+    if (typeof result === "string" && result.length > 0) {
+      // error (result contiene un mensaje)
+      console.error("shell.openPath() returned error:", result);
+      return { ok: false, error: String(result) };
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error("Error opening presets_defaults folder:", err);
+    return { ok: false, error: String(err) };
   }
 });
 
