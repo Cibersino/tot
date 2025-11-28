@@ -1,25 +1,41 @@
 ### TO DO Y PLAN GENERAL ###
 
-Pendientes varios:
-- Limitar current text
-
 # ÍTEM ACTUAL #
 
-* Barra superior de pantalla principal *
+* Revisar límite de caracteres del current text *
 
-LISTO:
-- Modal html funcional para: guía básica, instrucciones, faq, readme y acerca de.
-- Botón Presets por defecto (abre carpeta presets)
-
-FALTA:
-- Modificar htmls de los botones con información: guía básica, instrucciones, faq, readme y acerca de.
-- NOTA: Verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
-
-Resto del menú quedaría pendiente para más adelante
+* Calculos *
+- ¡Advertencia sobre el método de conteo de palabras!
+- Analizar nuevos métodos de conteo, más precisos
 
 # Más adelante #
 
-* Revisar limite de palabras del texto vigente *
+* Ventana flotante *
+- Activar y desactivar desde el cronómetro con el botón "VF".
+
+* Revisión y depuración del código*
+
+* Internacionalización *
+- Archivos de 18i.
+
+* Otros *
+- Agregar soporte multilenguaje
+- Implementar semiauto-update
+- Construir versión portable
+- Short-cuts
+
+* Nuevas funciones *
+- Test de lectura
+- Calculador de palabras en archivos de texto
+- Calculador de palabras insertas en imágenes
+  - Averiguar sistema OCR como extractor de palabras en imágenes.
+
+* Estilos/skins *
+
+* Mejorar Readme * 
+
+* Revisar seguridad de la aplicación y legalidad *
+ - Licencia de la fuente kremlin duma para logo Cibersin
 
 * Habilitar botones faltantes del menú *
 
@@ -44,35 +60,11 @@ Resto del menú quedaría pendiente para más adelante
 - ?
   - Actualizar a última versión
 
+* Actualización de botones informativos del menú *
+- Modificar htmls de los botones con información: guía básica, instrucciones, faq, readme y acerca de.
+  - NOTA: Verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
+
 * Revisión y depuración del código*
-
-* Calculos *
-- ¡Advertencia sobre el método de conteo de palabras!
-- Analizar nuevos métodos de conteo, más precisos
-- Averiguar sistema OCR como extractor de palabras en imaganes.
-
-* Ventana flotante *
-- Activar y desactivar desde el cronómetro con el botón "VF".
-
-* Internacionalización *
-- Archivos de 18i.
-
-* Otros *
-- Agregar soporte multilenguaje
-- Implementar semiauto-update
-- Construir versión portable
-- Short-cuts
-
-* Nuevas funciones *
-- Test de lectura
-- Calculador de palabras insertas en imágenes
-
-* Estilos/skins *
-
-* Mejorar Readme * 
-
-* Revisar seguridad de la aplicación y legalidad *
- - Licencia de la fuente kremlin duma para logo Cibersin
 
 * Empaquetado multiplataforma (Windows, macOS y Linux) *
 - Empaquetado para Windows, versión de prueba *
