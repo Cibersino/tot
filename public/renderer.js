@@ -28,6 +28,10 @@ const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets')
 const presetDescription = document.getElementById('presetDescription');
 
 let currentText = "";
+
+// Límite local en renderer para evitar concatenaciones que creen strings demasiado grandes
+const MAX_TEXT_CHARS = 10000000;
+
 let wpm = Number(wpmSlider.value);
 let currentPresetName = null;
 
@@ -480,36 +484,59 @@ wpmInput.addEventListener('keydown', (e) => {
   }
 });
 
-// ======================= Botones (básicos) =======================
-btnCountClipboard.addEventListener('click', async () => {
+// ======================= Botón "Sobreescribir con portapapeles" =======================
+btnCountClipboard.addEventListener("click", async () => {
   try {
-    const text = await window.electronAPI.readClipboard();
-    await window.electronAPI.setCurrentText(text || "");
-    updatePreviewAndResults(text || "");
-  } catch (e) {
-    console.error("clipboard error:", e);
+    let clip = await window.electronAPI.readClipboard() || "";
+    if (clip.length > MAX_TEXT_CHARS) {
+      console.warn("Contenido del portapapeles supera 10000000 chars — será truncado.");
+      clip = clip.slice(0, MAX_TEXT_CHARS);
+      alert("El texto del portapapeles supera el tamaño máximo permitido y será truncado.");
+    }
+
+    // enviar objeto con meta (overwrite)
+    const resp = await window.electronAPI.setCurrentText({
+      text: clip,
+      meta: { source: "main-window", action: "overwrite", clipboardText: clip }
+    });
+
+    updatePreviewAndResults(resp && resp.text ? resp.text : clip);
+    resp && resp.truncated && alert("El texto fue truncado para ajustarse al límite máximo de la aplicación.");
+  } catch (err) {
+    console.error("clipboard error:", err);
   }
 });
 
 // ======================= Botón "Pegar portapapeles nueva línea" =======================
-btnAppendClipboardNewLine.addEventListener('click', async () => {
+btnAppendClipboardNewLine.addEventListener("click", async () => {
   try {
     const clip = await window.electronAPI.readClipboard() || "";
     const current = await window.electronAPI.getCurrentText() || "";
 
-    let newText;
-    if (!current) {
-      newText = clip;
-    } else {
-      // ensure there's exactly one newline between blocks (if current doesn't end with newline)
-      const endsWithNL = current.endsWith('\n') || current.endsWith('\r');
-      newText = current + (endsWithNL ? '\n' : '\n\n') + clip;
+    let joiner = "";
+    if (current) joiner = current.endsWith("\n") || current.endsWith("\r") ? "\n" : "\n\n";
+
+    const available = MAX_TEXT_CHARS - current.length;
+    if (available <= 0) {
+      alert("No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.");
+      return;
     }
 
-    await window.electronAPI.setCurrentText(newText);
-    updatePreviewAndResults(newText);
-  } catch (e) {
-    console.error("Error pegando portapapeles en nueva línea:", e);
+    let toAdd = clip.slice(0, available);
+    if (toAdd.length < clip.length) alert("El texto pegado se ha truncado para no exceder el tamaño máximo permitido.");
+
+    const newFull = current + (current ? joiner : "") + toAdd;
+
+    // enviar objeto con meta (append_newline)
+    const resp = await window.electronAPI.setCurrentText({
+      text: newFull,
+      meta: { source: "main-window", action: "append_newline", clipboardText: clip }
+    });
+
+    updatePreviewAndResults(resp && resp.text ? resp.text : newFull);
+    resp && resp.truncated && alert("El texto fue truncado para ajustarse al límite máximo de la aplicación.");
+  } catch (err) {
+    console.error("Error pegando portapapeles en nueva línea:", err);
     alert("Ocurrió un error al pegar el portapapeles. Revisa la consola.");
   }
 });
@@ -518,24 +545,20 @@ btnEdit.addEventListener('click', () => {
   window.electronAPI.openEditor();
 });
 
-// ======================= Botón VACIAR (pantalla principal) =======================
-btnEmptyMain.addEventListener('click', async () => {
+// ======================= Botón Vaciar (pantalla principal) =======================
+btnEmptyMain.addEventListener("click", async () => {
   try {
-    // Clear memory and update preview
-    await window.electronAPI.setCurrentText("");
-    updatePreviewAndResults("");
+    const resp = await window.electronAPI.setCurrentText({
+      text: "",
+      meta: { source: "main-window", action: "overwrite" }
+    });
 
-    // Force clear editor window irrespective of focus
-    if (window.electronAPI && typeof window.electronAPI.forceClearEditor === 'function') {
-      try {
-        await window.electronAPI.forceClearEditor();
-      } catch (e) {
-        // Non-fatal: log
-        console.error("Error invocando forceClearEditor:", e);
-      }
+    updatePreviewAndResults(resp && resp.text ? resp.text : "");
+    if (window.electronAPI && typeof window.electronAPI.forceClearEditor === "function") {
+      try { await window.electronAPI.forceClearEditor(); } catch (e) { console.error("Error invocando forceClearEditor:", e); }
     }
-  } catch (e) {
-    console.error("Error vaciando texto desde pantalla principal:", e);
+  } catch (err) {
+    console.error("Error vaciando texto desde pantalla principal:", err);
     alert("Ocurrió un error al vaciar el texto. Revisa la consola.");
   }
 });
@@ -548,8 +571,8 @@ if (btnHelp) {
   });
 }
 
-// Nuevo: abrir modal para crear preset (main crea la ventana modal)
-// Ahora se envía el WPM actual al main para que lo propague al modal
+// Abrir modal para crear preset (main crea la ventana modal)
+// Envía el WPM actual al main para que lo propague al modal
 btnNewPreset.addEventListener('click', () => {
   try {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {

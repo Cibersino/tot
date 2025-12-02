@@ -41,6 +41,9 @@ function saveJson(filePath, obj) {
 
 ensureConfigDir();
 
+// --- límite máximo de texto vigente (10 MB ~ 10.000.000 chars)
+const MAX_TEXT_CHARS = 10000000;
+
 // --- Presets defaults: copia inicial (JS -> JSON) en config/presets_defaults ---
 const PRESETS_SOURCE_DIR = path.join(__dirname, "presets"); // carpeta original: electron/presets
 const CONFIG_PRESETS_DIR = path.join(CONFIG_DIR, "presets_defaults");
@@ -89,18 +92,23 @@ function copyDefaultPresetsIfMissing() {
 // Ejecutar la copia inicial (no sobrescribe archivos existentes)
 copyDefaultPresetsIfMissing();
 
-let mainWin = null;
-let editorWin = null;
-let presetWin = null; // ventana modal para nuevo/editar preset
-let currentText = "";
-
-// Language modal window reference
-let langWin = null;
+let mainWin = null, // ventana principal
+  editorWin = null, // ventana modal para edición del texto vigente
+  presetWin = null, // ventana modal para nuevo/editar preset wpm
+  currentText = "", // texto vigente
+  langWin = null; // ventana modal selección de idioma (primer arranque)
 
 // Load current text from file at startup (if exists)
 try {
-  const ct = loadJson(CURRENT_TEXT_FILE, { text: "" });
-  currentText = ct.text || "";
+  const obj = loadJson(CURRENT_TEXT_FILE, { text: "" });
+  let txt = String(obj.text || "");
+  if (txt.length > MAX_TEXT_CHARS) {
+    console.warn(`current_text.json excede MAX_TEXT_CHARS (${txt.length}). Se truncará a ${MAX_TEXT_CHARS} caracteres.`);
+    txt = txt.slice(0, MAX_TEXT_CHARS);
+    // Guardar la versión truncada para mantener coherencia entre sesiones
+    saveJson(CURRENT_TEXT_FILE, { text: txt });
+  }
+  currentText = txt;
 } catch (e) {
   currentText = "";
 }
@@ -271,7 +279,7 @@ function createEditorWindow() {
 
   // Show: if no modal_state exists, open maximized the first time
   const stateExists = fs.existsSync(MODAL_STATE_FILE);
-  editorWin.once('ready-to-show', () => {
+  editorWin.once("ready-to-show", () => {
     if (!stateExists) {
       editorWin.maximize();
     } else {
@@ -279,10 +287,21 @@ function createEditorWindow() {
         editorWin.maximize();
       }
     }
+
     editorWin.show();
 
-    // Send initial text immediately when ready
-    editorWin.webContents.send('manual-init-text', currentText || "");
+    // Enviar objeto estructurado al preload
+    try {
+      editorWin.webContents.send("manual-init-text", {
+        text: currentText || "",
+        meta: {
+          source: "main",
+          action: "init"
+        }
+      });
+    } catch (err) {
+      console.error("Error enviando manual-init-text:", err);
+    }
   });
 
   editorWin.on('close', () => {
@@ -454,12 +473,16 @@ function createLanguageWindow() {
 /* IPC handlers (existing ones kept unchanged) */
 
 // Open editor window (or focus + send current text)
-ipcMain.handle('open-editor', () => {
+ipcMain.handle("open-editor", () => {
   if (!editorWin || editorWin.isDestroyed()) {
     createEditorWindow();
   } else {
     editorWin.show();
-    editorWin.webContents.send('manual-init-text', currentText || "");
+    try {
+      editorWin.webContents.send("manual-init-text", { text: currentText || "", meta: { source: "main", action: "init" } });
+    } catch (err) {
+      console.error("Error enviando manual-init-text desde open-editor:", err);
+    }
   }
 });
 
@@ -903,17 +926,44 @@ ipcMain.handle('get-current-text', () => {
 });
 
 // Set current text in memory (realtime updates from editor). Not persisted to disk here.
-ipcMain.handle('set-current-text', (_, text) => {
-  currentText = text || "";
+ipcMain.handle("set-current-text", (event, payload) => {
+  try {
+    let incomingMeta = null;
+    let text = "";
 
-  // Notify main renderer (index) to update preview/results
-  if (mainWin && !mainWin.isDestroyed()) {
-    mainWin.webContents.send('current-text-updated', currentText);
-  }
+    // aceptar payload tipo { text, meta } o string simple
+    if (payload && typeof payload === "object" && Object.prototype.hasOwnProperty.call(payload, "text")) {
+      text = String(payload.text || "");
+      incomingMeta = payload.meta || null;
+    } else {
+      text = String(payload || "");
+    }
 
-  // Also inform editor if needed (avoid echo loops; editor handles heuristics)
-  if (editorWin && !editorWin.isDestroyed()) {
-    editorWin.webContents.send('manual-text-updated', currentText);
+    let truncated = false;
+    if (text.length > MAX_TEXT_CHARS) {
+      text = text.slice(0, MAX_TEXT_CHARS);
+      truncated = true;
+      console.warn("set-current-text: entrada truncada a " + MAX_TEXT_CHARS + " caracteres.");
+    }
+
+    currentText = text;
+
+    // Notificar main window (compatibilidad anterior)
+    if (mainWin && !mainWin.isDestroyed()) {
+      try { mainWin.webContents.send("current-text-updated", currentText); } catch (err) { console.error("Error enviando current-text-updated a mainWin:", err); }
+    }
+
+    // Notificar modal/editor con objeto que incluye meta (para que el modal use la edición nativa)
+    if (editorWin && !editorWin.isDestroyed()) {
+      try {
+        editorWin.webContents.send("manual-text-updated", { text: currentText, meta: incomingMeta || { source: "main", action: "set" } });
+      } catch (err) { console.error("Error enviando manual-text-updated a editorWin:", err); }
+    }
+
+    return { ok: true, truncated: truncated, length: currentText.length, text: currentText };
+  } catch (err) {
+    console.error("Error en set-current-text:", err);
+    return { ok: false, error: String(err) };
   }
 });
 
