@@ -178,7 +178,6 @@ Nota técnica:
 ## Autor y Créditos ##
 
 * Librerías / Frameworks: Electron, Node.js.
-* Herramientas utilizadas: OpenAI ChatGPT.
 
 Desarrollador: Cibersino
 

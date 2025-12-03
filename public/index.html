@@ -60,10 +60,20 @@
       <div class="result-highlight" role="status" aria-live="polite">
         <div class="big-time" id="resTime">⏱ Tiempo estimado de lectura: 0h 0m 0s</div>
       </div>
-      <div class="result-list">
-        <div id="resWords">- Palabras: 0</div>
-        <div id="resCharsNoSpace">- Caracteres (sin espacio): 0</div>
-        <div id="resChars">- Caracteres: 0</div>
+      <!-- Row: resultados (izq) + toggle (derecha) -->
+      <div class="results-row">
+        <div class="result-list">
+          <div id="resWords">- Palabras: 0</div>
+          <div id="resCharsNoSpace">- Caracteres (sin espacio): 0</div>
+          <div id="resChars">- Caracteres: 0</div>
+        </div>
+        <div class="toggle-wrapper" aria-hidden="false">
+          <label class="toggle-label" for="toggleModoPreciso">Modo preciso</label>
+          <label class="switch">
+            <input type="checkbox" id="toggleModoPreciso" role="switch" aria-checked="true">
+            <span class="slider round" aria-hidden="true"></span>
+          </label>
+        </div>
       </div>
       <div class="help-row">
         <button id="btnHelp" class="btn-standard" title="Información (pendiente)">?</button>

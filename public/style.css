@@ -215,23 +215,25 @@ select#presets {
 
 /* SECCIÓN RESULTADOS DEL CONTEO */
 .results {
+  position: relative;          /* necesario para que .help-row absolute funcione */
   top: 214px;
   left: 407px;
   height: 155px;
   width: 416px;
   background: var(--results-bg);
   border: 1px solid var(--section-border);
-  padding: 4px;
+  padding: 8px 10px;          /* algo más de padding para respiración */
   box-sizing: border-box;
 }
 
+/* highlight (sin cambios importantes) */
 .result-highlight {
   background: #ffb6c1;
   border: 1px dashed #e6c07a;
   padding: 6px;
   border-radius: 6px;
   margin-top: 4px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .big-time {
@@ -239,15 +241,92 @@ select#presets {
   font-size: 18px;
 }
 
+/* Nueva fila que contiene la lista de resultados (izquierda) y el toggle (derecha) */
+.results-row {
+  display: flex;
+  align-items: flex-start;    /* alineamos al top para que el switch quede a la altura de "Palabras" */
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+/* Lista de resultados: columna, sin alterar la alineación vertical del conjunto */
 .result-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1 1 auto;             /* ocupa el espacio disponible a la izquierda */
+  min-width: 0;               /* evita overflow en contenedores pequeños */
+  color: var(--text-color);
+  font-size: 1.00rem;
 }
 
+/* Wrapper del toggle alineado a la derecha */
+.toggle-wrapper {
+  display: flex;
+  align-items: flex-start;    /* top-align con la primera línea de result-list */
+  gap: 8px;
+  margin-left: 8px;
+  flex: 0 0 auto;             /* toma sólo el ancho que necesita */
+}
+
+/* Ajuste semántico de la etiqueta del toggle */
+.toggle-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.1;           /* mejor alineamiento con el knob */
+  margin-top: 2px;            /* pequeña corrección para alinear texto con primera línea */
+  color: var(--text-color);
+}
+
+/* Estilo estándar de switch (igual al tuyo, con ligeros ajustes) */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  transition: .18s;
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .18s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: #4caf50;
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Mantener ayuda en la esquina inferior derecha */
 .help-row {
   position: absolute;
-  bottom: 60px;
+  bottom: 6px;
   right: 6px;
 }
 

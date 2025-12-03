@@ -12,6 +12,8 @@ const resCharsNoSpace = document.getElementById('resCharsNoSpace');
 const resWords = document.getElementById('resWords');
 const resTime = document.getElementById('resTime');
 
+const toggleModoPreciso = document.getElementById('toggleModoPreciso');
+
 const wpmSlider = document.getElementById('wpmSlider');
 const wpmInput = document.getElementById('wpmInput');
 
@@ -358,6 +360,7 @@ const loadPresets = async () => {
         }
         if (settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo) {
           modoConteo = settingsCache.modeConteo;
+          if (toggleModoPreciso) toggleModoPreciso.checked = (modoConteo === 'preciso');
         }
       } catch (err) {
         console.error("Error manejando settings change:", err);
@@ -370,6 +373,71 @@ const loadPresets = async () => {
       } else if (typeof window.electronAPI.onSettingsUpdated === 'function') {
         window.electronAPI.onSettingsUpdated(settingsChangeHandler);
       } // si no existe, no hay listener disponible y no pasa nada
+    }
+
+    // ------------------------------
+    // Inicializar y vincular toggle "Modo preciso"
+    // ------------------------------
+    try {
+      if (toggleModoPreciso) {
+        // Asegurar estado inicial del switch según el modo en memoria (cargado al inicio)
+        toggleModoPreciso.checked = (modoConteo === 'preciso');
+
+        // Cuando el usuario cambie el switch:
+        toggleModoPreciso.addEventListener('change', async () => {
+          try {
+            const nuevoModo = toggleModoPreciso.checked ? 'preciso' : 'simple';
+
+            // Actualizar estado en memoria (inmediato)
+            setModoConteo(nuevoModo);
+
+            toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
+
+            // Reconteo inmediato del texto actual
+            updatePreviewAndResults(currentText);
+
+            // Intentar persistir en settings vía IPC (si preload/main implementaron setModeConteo)
+            if (window.electronAPI && typeof window.electronAPI.setModeConteo === 'function') {
+              try {
+                await window.electronAPI.setModeConteo(nuevoModo);
+              } catch (ipcErr) {
+                console.error("Error persistiendo modeConteo mediante setModeConteo:", ipcErr);
+              }
+            } else {
+              // Fallback: si no existe setModeConteo, intentar escribir settings completo (si expuesto)
+              if (window.electronAPI && typeof window.electronAPI.updateSettings === 'function') {
+                try {
+                  // leer settingsCache, actualizar y enviar
+                  const copy = Object.assign({}, settingsCache || {});
+                  copy.modeConteo = nuevoModo;
+                  await window.electronAPI.updateSettings(copy);
+                } catch (updateErr) {
+                  console.warn("updateSettings no disponible o falló:", updateErr);
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Error manejando cambio del toggleModoPreciso:", err);
+          }
+        });
+
+        // Si el settings cambia desde main, sincronizamos el switch al nuevo valor
+        // (esto complementa settingsChangeHandler; repetimos por seguridad local)
+        const syncToggleFromSettings = (s) => {
+          try {
+            if (!toggleModoPreciso) return;
+            const modo = (s && s.modeConteo) ? s.modeConteo : modoConteo;
+            toggleModoPreciso.checked = (modo === 'preciso');
+          } catch (err) {
+            console.error("Error sincronizando toggle desde settings:", err);
+          }
+        };
+
+        // Ejecutar sincronización inmediata con settingsCache (ya cargado)
+        try { syncToggleFromSettings(settingsCache || {}); } catch (e) { /* noop */ }
+      }
+    } catch (ex) {
+      console.error("Error inicializando toggleModoPreciso:", ex);
     }
 
   } catch (e) {
