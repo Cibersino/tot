@@ -32,6 +32,11 @@ let currentText = "";
 // Límite local en renderer para evitar concatenaciones que creen strings demasiado grandes
 let MAX_TEXT_CHARS = 1e7; // valor por defecto hasta que main responda
 
+// --- Cache y estado global para conteo / idioma ---
+let modoConteo = "preciso";   // preciso por defecto; puede ser "simple"
+let idiomaActual = "es";      // se inicializa al arrancar
+let settingsCache = {};       // caché de settings (numberFormatting, language, etc.)
+
 (async () => {
   try {
     const cfg = await window.electronAPI.getAppConfig();
@@ -39,7 +44,17 @@ let MAX_TEXT_CHARS = 1e7; // valor por defecto hasta que main responda
   } catch (e) {
     console.error("No se pudo obtener getAppConfig, usando defaults:", e);
   }
-  // ... el resto de tu init existente
+
+  // Cargar settings del usuario UNA VEZ al iniciar renderer
+  try {
+    const settings = await window.electronAPI.getSettings();
+    settingsCache = settings || {};
+    idiomaActual = settingsCache.language || "es";
+    if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
+  } catch (e) {
+    console.error("No se pudo obtener user settings al inicio:", e);
+    // idiomaActual queda en "es" por defecto
+  }
 })();
 
 let wpm = Number(wpmSlider.value);
@@ -49,11 +64,86 @@ let currentPresetName = null;
 let allPresetsCache = [];
 
 // ======================= Conteo de texto =======================
-function contarTexto(texto) {
+// Version simple
+function contarTextoSimple(texto, language) {
   const conEspacios = texto.length;
   const sinEspacios = texto.replace(/\s+/g, '').length;
   const palabras = texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length;
   return { conEspacios, sinEspacios, palabras };
+}
+
+function hasIntlSegmenter() {
+  return typeof Intl !== "undefined" && typeof Intl.Segmenter === "function";
+}
+
+function contarTextoPrecisoFallback(texto, language) {
+  // Fallback razonable: graphemes mediante spread (mejor que length) y palabras por regex simple
+  const graphemes = [...texto]; // no perfecto para todos los combining clusters pero superior a length
+  const conEspacios = graphemes.length;
+  const sinEspacios = graphemes.filter(c => !/\s/.test(c)).length;
+
+  // simple word extraction: sequences separated by whitespace (degradado al antiguo)
+  const palabras = texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length;
+
+  return { conEspacios, sinEspacios, palabras };
+}
+
+// Version precisa usando Intl.Segmenter
+// Fallback y comprobación de soporte
+function hasIntlSegmenter() {
+  return typeof Intl !== "undefined" && typeof Intl.Segmenter === "function";
+}
+
+function contarTextoPrecisoFallback(texto, language) {
+  // Fallback razonable: spread para mejores graphemes que .length y split básico
+  const graphemes = [...texto];
+  const conEspacios = graphemes.length;
+  const sinEspacios = graphemes.filter(c => !/\s/.test(c)).length;
+  const palabras = texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length;
+  return { conEspacios, sinEspacios, palabras };
+}
+
+// Versión precisa con fallback automático
+function contarTextoPreciso(texto, language) {
+  if (!hasIntlSegmenter()) {
+    // motor antiguo: usar fallback seguro
+    return contarTextoPrecisoFallback(texto, language);
+  }
+
+  // Si Intl.Segmenter existe, usar la implementación precisa
+  const segGraf = new Intl.Segmenter(language, { granularity: "grapheme" });
+  const grafemas = [...segGraf.segment(texto)];
+
+  const conEspacios = grafemas.length;
+  const sinEspacios = grafemas.filter(g => !/\s/.test(g.segment)).length;
+
+  const segPal = new Intl.Segmenter(language, { granularity: "word" });
+  const palabras = [...segPal.segment(texto)]
+    .filter(seg => seg.isWordLike)
+    .length;
+
+  return { conEspacios, sinEspacios, palabras };
+}
+
+// Dispatcher que selecciona el modo (simple/preciso). Preciso por defecto.
+function contarTexto(texto) {
+  // usar idiomaActual cargado al inicio
+  return (modoConteo === "simple")
+    ? contarTextoSimple(texto, idiomaActual)
+    : contarTextoPreciso(texto, idiomaActual);
+}
+
+// Helpers para actualizar modo / idioma desde otras partes (p. ej. menú)
+function setModoConteo(nuevoModo) {
+  if (nuevoModo === "simple" || nuevoModo === "preciso") {
+    modoConteo = nuevoModo;
+  }
+}
+
+function setIdiomaActual(nuevoIdioma) {
+  if (typeof nuevoIdioma === "string" && nuevoIdioma.length > 0) {
+    idiomaActual = nuevoIdioma;
+  }
 }
 
 // ======================= Formato HHh MMm SSs =======================
@@ -69,17 +159,23 @@ function formatTimeFromWords(words, wpm) {
   return `${hours}h ${minutes}m ${seconds}s`;
 }
 
-// ======================= Obtener configuraciones de idioma =======================
-const obtenerIdiomaActivo = async () => {
-  const settings = await window.electronAPI.getSettings();
-  return settings.language || 'es';  // Devolver el idioma actual, por defecto 'es'
-};
-
-// ======================= Obtener separadores de números según el idioma =======================
+// ======================= Obtener separadores de números según el idioma (usa cache) =======================
 const obtenerSeparadoresDeNumeros = async (idioma) => {
-  const settings = await window.electronAPI.getSettings();
-  const formatSettings = settings.numberFormatting || {};
-  return formatSettings[idioma] || formatSettings['es'];  // Default a español si no se encuentra el idioma
+  // Usa settingsCache cargado al inicio (si no está, aplicamos defaults por idioma)
+  const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
+
+  if (!nf) {
+    // Defaults sencillos: español vs english
+    if (idioma && idioma.toLowerCase().startsWith('en')) {
+      return { separadorMiles: ',', separadorDecimal: '.' };
+    } else {
+      return { separadorMiles: '.', separadorDecimal: ',' };
+    }
+  }
+
+  return nf[idioma] || nf['es'] || (idioma && idioma.toLowerCase().startsWith('en')
+    ? { separadorMiles: ',', separadorDecimal: '.' }
+    : { separadorMiles: '.', separadorDecimal: ',' });
 };
 
 // ======================= Formatear número con separadores de miles y decimales =======================
@@ -112,7 +208,7 @@ async function updatePreviewAndResults(text) {
   }
 
   const stats = contarTexto(currentText);
-  const idioma = await obtenerIdiomaActivo();
+  const idioma = idiomaActual; // cacheado al iniciar y actualizado por listener si aplica
   const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma);
 
   // Formatear las cifras según el idioma
@@ -127,7 +223,7 @@ async function updatePreviewAndResults(text) {
 
 // ======================= Mostrar velocidad real (WPM) =======================
 async function mostrarVelocidadReal(realWpm) {
-  const idioma = await obtenerIdiomaActivo();
+  const idioma = idiomaActual;
   const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma);
   // Aplicar el mismo formato a la velocidad real
   const velocidadFormateada = formatearNumero(realWpm, separadorMiles, separadorDecimal);
@@ -248,6 +344,33 @@ const loadPresets = async () => {
 
     // Actualizar vista final con el posible WPM inicial
     updatePreviewAndResults(t || "");
+
+    // --- Listener para cambios de settings desde main/preload (opcional) ---
+    // Si el main/preload expone un evento, lo usamos para mantener settingsCache e idiomaActual actualizados.
+    const settingsChangeHandler = (newSettings) => {
+      try {
+        settingsCache = newSettings || {};
+        const nuevoIdioma = settingsCache.language || 'es';
+        if (nuevoIdioma !== idiomaActual) {
+          idiomaActual = nuevoIdioma;
+          // refrescar la vista con posible nuevo formato/segmentación
+          updatePreviewAndResults(currentText);
+        }
+        if (settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo) {
+          modoConteo = settingsCache.modeConteo;
+        }
+      } catch (err) {
+        console.error("Error manejando settings change:", err);
+      }
+    };
+
+    if (window.electronAPI) {
+      if (typeof window.electronAPI.onSettingsChanged === 'function') {
+        window.electronAPI.onSettingsChanged(settingsChangeHandler);
+      } else if (typeof window.electronAPI.onSettingsUpdated === 'function') {
+        window.electronAPI.onSettingsUpdated(settingsChangeHandler);
+      } // si no existe, no hay listener disponible y no pasa nada
+    }
 
   } catch (e) {
     console.error("Error inicializando renderer:", e);

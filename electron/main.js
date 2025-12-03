@@ -39,6 +39,19 @@ function saveJson(filePath, obj) {
   }
 }
 
+// Normalizar settings: asegurar campos por defecto sin sobrescribir los existentes
+function normalizeSettings(s) {
+  s = s || {};
+  if (typeof s.language !== 'string') s.language = "";
+  if (!Array.isArray(s.presets)) s.presets = [];
+  if (typeof s.numberFormatting !== 'object') s.numberFormatting = (s.numberFormatting || {});
+  // persistir modo de conteo por defecto: "preciso"
+  if (!s.modeConteo || (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple')) {
+    s.modeConteo = 'preciso';
+  }
+  return s;
+}
+
 ensureConfigDir();
 
 // --- límite máximo de texto vigente (10 MB ~ 10.000.000 chars)
@@ -388,7 +401,9 @@ function createPresetWindow(initialData) {
 // Save language selection into settings file (and ensure numberFormatting defaults)
 ipcMain.handle('set-language', async (_event, lang) => {
   try {
-    const settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
+    let settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
+    settings = normalizeSettings(settings);
+
     const chosen = String(lang || '').trim();
     settings.language = chosen;
 
@@ -400,17 +415,51 @@ ipcMain.handle('set-language', async (_event, lang) => {
       } else if (chosen === 'en') {
         settings.numberFormatting[chosen] = { separadorMiles: ",", separadorDecimal: "." };
       } else {
-        // Fallback defaults
         settings.numberFormatting[chosen] = { separadorMiles: ",", separadorDecimal: "." };
       }
     }
 
+    // Save normalized settings (includes modeConteo if no estaba)
     saveJson(SETTINGS_FILE, settings);
 
+    // Notificar renderers con el objeto settings correcto
+    try {
+      if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
+      if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
+      if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
+    } catch (notifyErr) {
+      console.error("Error notificando settings-updated:", notifyErr);
+    }
+
     return { ok: true, language: chosen };
-  } catch (e) {
-    console.error("Error guardando language:", e);
-    return { ok: false, error: String(e) };
+  } catch (err) {
+    console.error("Error guardando language:", err);
+    return { ok: false, error: String(err) };
+  }
+});
+
+ipcMain.handle('set-mode-conteo', async (_event, mode) => {
+  try {
+    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    settings = normalizeSettings(settings);
+
+    settings.modeConteo = (mode === 'simple') ? 'simple' : 'preciso';
+
+    saveJson(SETTINGS_FILE, settings);
+
+    // Notificar renderers del cambio
+    try {
+      if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
+      if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
+      if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
+    } catch (notifyErr) {
+      console.error("Error notificando settings-updated (set-mode-conteo):", notifyErr);
+    }
+
+    return { ok: true, mode: settings.modeConteo };
+  } catch (err) {
+    console.error("Error en set-mode-conteo:", err);
+    return { ok: false, error: String(err) };
   }
 });
 
@@ -501,7 +550,8 @@ ipcMain.handle('open-preset-modal', (_event, payload) => {
 // Handle preset creation request from preset modal
 ipcMain.handle('create-preset', (_event, preset) => {
   try {
-    const settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    settings = normalizeSettings(settings);
     settings.presets = settings.presets || [];
 
     // If preset name already exists in user's presets, overwrite that one
@@ -513,7 +563,14 @@ ipcMain.handle('create-preset', (_event, preset) => {
     }
 
     saveJson(SETTINGS_FILE, settings);
-
+    // Notificar a los renderers que settings cambiaron (settings-updated)
+    try {
+      if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
+      if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
+      if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
+    } catch (notifyErr) {
+      console.error("Error notificando settings-updated:", notifyErr);
+    }
     // Notify main window renderer that a preset was created/updated
     if (mainWin && !mainWin.isDestroyed()) {
       mainWin.webContents.send('preset-created', preset);
@@ -641,7 +698,8 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
     }
 
     // Proceed with deletion logic
-    const settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    settings = normalizeSettings(settings);
     settings.presets = settings.presets || [];
     const lang = settings.language || 'es';
 
@@ -676,6 +734,14 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
           settings.disabled_default_presets[lang].push(name);
         }
         saveJson(SETTINGS_FILE, settings);
+        // Notificar a los renderers que settings cambiaron (settings-updated)
+        try {
+          if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
+          if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
+          if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
+        } catch (notifyErr) {
+          console.error("Error notificando settings-updated:", notifyErr);
+        }
         // Notify main window renderer (optional)
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('preset-deleted', { name, action: 'deleted_and_ignored' });
@@ -685,6 +751,14 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
         // Personalized only: delete it
         settings.presets.splice(idxUser, 1);
         saveJson(SETTINGS_FILE, settings);
+        // Notificar a los renderers que settings cambiaron (settings-updated)
+        try {
+          if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
+          if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
+          if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
+        } catch (notifyErr) {
+          console.error("Error notificando settings-updated:", notifyErr);
+        }
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('preset-deleted', { name, action: 'deleted_custom' });
         }
@@ -698,6 +772,14 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
           settings.disabled_default_presets[lang].push(name);
         }
         saveJson(SETTINGS_FILE, settings);
+        // Notificar a los renderers que settings cambiaron (settings-updated)
+        try {
+          if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
+          if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
+          if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
+        } catch (notifyErr) {
+          console.error("Error notificando settings-updated:", notifyErr);
+        }
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('preset-deleted', { name, action: 'ignored_default' });
         }
@@ -717,7 +799,8 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
 // Request to restore defaults (generales + idioma activo)
 ipcMain.handle('request-restore-defaults', async (_event) => {
   try {
-    const settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    settings = normalizeSettings(settings);
     settings.presets = settings.presets || [];
     const lang = settings.language || 'es';
 
@@ -789,7 +872,14 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
 
     // Save
     saveJson(SETTINGS_FILE, settings);
-
+    // Notificar a los renderers que settings cambiaron (settings-updated)
+    try {
+      if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
+      if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
+      if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
+    } catch (notifyErr) {
+      console.error("Error notificando settings-updated:", notifyErr);
+    }
     // Notify renderer (optional)
     if (mainWin && !mainWin.isDestroyed()) {
       mainWin.webContents.send('preset-restored', { removedCustom, unignored, language: lang });
@@ -840,7 +930,8 @@ ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
     }
 
     // Proceed: perform silent deletion of originalName (same semantics as request-delete-preset but WITHOUT dialogs)
-    const settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    settings = normalizeSettings(settings);
     settings.presets = settings.presets || [];
     const lang = settings.language || 'es';
 
@@ -904,7 +995,14 @@ ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
 
     // Save settings once
     saveJson(SETTINGS_FILE, settings);
-
+    // Notificar a los renderers que settings cambiaron (settings-updated)
+    try {
+      if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
+      if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
+      if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
+    } catch (notifyErr) {
+      console.error("Error notificando settings-updated:", notifyErr);
+    }
     // Notify renderer about deletion and creation
     if (mainWin && !mainWin.isDestroyed()) {
       if (deletedAction && deletedAction !== 'not_found') {
@@ -1020,29 +1118,27 @@ function persistCurrentTextOnQuit() {
 
 app.whenReady().then(() => {
   // On startup, check settings.language and possibly prompt
-  const settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
+let settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
+settings = normalizeSettings(settings);
 
-  if (!settings.language || settings.language === "") {
-    // Show language selector modal before creating main window
-    createLanguageWindow();
+// Si normalize añadió defaults (p. ej. modeConteo), guardamos de vuelta para persistirlo
+// (esto garantiza que user_settings.json contenga modeConteo desde el primer arranque).
+saveJson(SETTINGS_FILE, settings);
 
-    // Listen once for language selection event (sent from modal preload)
-    ipcMain.once('language-selected', (_evt, lang) => {
-      try {
-        // create main window once language chosen
-        if (!mainWin) createMainWindow();
-      } catch (e) {
-        console.error("Error creando mainWin tras seleccionar idioma:", e);
-      } finally {
-        // close language window if still open (modal already likely closed by renderer)
-        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { }
-      }
-    });
-
-  } else {
-    // Language present, proceed normally
-    createMainWindow();
-  }
+if (!settings.language || settings.language === "") {
+  createLanguageWindow();
+  ipcMain.once('language-selected', (_evt, lang) => {
+    try {
+      if (!mainWin) createMainWindow();
+    } catch (e) {
+      console.error("Error creando mainWin tras seleccionar idioma:", e);
+    } finally {
+      try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) {}
+    }
+  });
+} else {
+  createMainWindow();
+}
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();

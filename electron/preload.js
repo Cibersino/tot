@@ -37,7 +37,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Force clear editor (invocado por renderer cuando el usuario presiona "Vaciar" en la pantalla principal)
   forceClearEditor: () => ipcRenderer.invoke('force-clear-editor'),
 
-  // ======================= NUEVO: listener estable para barra superior =======================
+  // ======================= Listener estable para barra superior =======================
   onMenuClick: (cb) => {
     const channel = 'menu-click';
     const wrapper = (_e, payload) => {
@@ -53,5 +53,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
         console.error('Error removing menu listener:', e);
       }
     };
+  },
+
+  setModeConteo: (mode) => ipcRenderer.invoke('set-mode-conteo', mode),
+
+  onSettingsChanged: (cb) => {
+    const listener = (ev, newSettings) => {
+      try { cb(newSettings); } catch (err) { console.error("settings callback error:", err); }
+    };
+    ipcRenderer.on('settings-updated', listener);
+    // devolver función para remover listener si el caller la usa
+    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (e) { console.error("removeListener error:", e); } };
   }
+
 });
