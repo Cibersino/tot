@@ -1,5 +1,5 @@
 ### toT — Reading Meter ###
-**Versión:** 0.0.6 (2025/11/28)  
+**Versión:** 0.0.7 (2025/12/02)  
 
 Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar tiempos de lectura, cronometrar lecturas y gestionar presets de velocidad (WPM).
 
@@ -150,6 +150,30 @@ Nota técnica:
 * Modificaciones menores de diseño para ajustar el layout.
 
 * El preset default general cambió su wpm de 240 a 250 y tiene nueva descripción.
+
+**0.0.7** (2025/12/02)
+
+* Mejoras principales
+  - Limita el tamaño máximo del texto vigente a MAX_TEXT_CHARS = 10_000_000 y mejora la robustez del flujo de edición entre la ventana principal y el modal editor.
+
+* Cambios en main.js
+  - Añadido MAX_TEXT_CHARS = 10_000_000 y truncado automático al cargar current_text.json.
+  - Exposición de MAX_TEXT_CHARS a través de get-app-config (IPC) como fuente de verdad para UI y modal.
+  - set-current-text ahora acepta objetos { text, meta } y devuelve { ok, truncated, length, text }. El truncado se registra en consola y se comunica en la respuesta.
+  - manual-init-text y manual-text-updated ahora envían payloads { text, meta } para que el editor modal aplique actualizaciones diferenciales cuando corresponda (preservando undo/redo).
+  - Compatibilidad hacia atrás: set-current-text sigue aceptando strings para no romper integraciones existentes.
+
+* Cambios en renderer.js
+  - UI principal envía setCurrentText con { text, meta } y consume la respuesta { ok, truncated, length, text } para sincronizar preview y avisos.
+  - btnAppendClipboardNewLine corta el texto añadido a la capacidad restante para evitar exceder el límite.
+  - Mejor interoperabilidad con el editor modal gracias a metadata (source, action) en los payloads.
+
+* Cambios en manual.js
+  - Introduce showNotice para mensajes no bloqueantes en el editor.
+  - Inserciones pequeñas por paste/drop usan técnicas nativas (execCommand / setRangeText) para mantener undo/redo cuando sea posible.
+  - Estandariza setCurrentText como { text, meta } con metadata source/action.
+  - Lógica applyExternalUpdate mejorada para manejar append_newline, init, overwrite y differential inserts.
+  - Truncado y feedback sincronizado: paste/drop/input se truncarán localmente y se notificará al usuario; el main confirma truncado via respuesta.
 
 ## Autor y Créditos ##
 
