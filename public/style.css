@@ -256,7 +256,7 @@ select#presets {
   top: 374px;
   left: 4px;
   height: 89px;
-  width: 331px;
+  width: 340px;
   background: var(--cron-bg);
   border: 1px solid var(--section-border);
   padding: 4px;
@@ -308,9 +308,9 @@ select#presets {
 /* SECCION DISPONIBLE */
 .spare {
   top: 374px;
-  left: 340px;
+  left: 349px;
   height: 89px;
-  width: 483px;
+  width: 474px;
   background: var(--spare-bg);
   border: 1px dashed #f0f0f0;
   padding: 4px;

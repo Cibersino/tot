@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openDefaultPresetsFolder: () => ipcRenderer.invoke("open-default-presets-folder"),
   getCurrentText: () => ipcRenderer.invoke('get-current-text'),
   setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
+  getAppConfig: () => ipcRenderer.invoke("get-app-config"),
   onCurrentTextUpdated: (cb) => {
     ipcRenderer.on('current-text-updated', (_e, text) => cb(text));
   },
