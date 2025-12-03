@@ -1,5 +1,5 @@
 ### toT — Reading Meter ###
-**Versión:** 0.0.7 (2025/12/02)  
+**Versión:** 0.0.8 (2025/12/03)  
 
 Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar tiempos de lectura, cronometrar lecturas y gestionar presets de velocidad (WPM).
 
@@ -174,6 +174,106 @@ Nota técnica:
   - Estandariza setCurrentText como { text, meta } con metadata source/action.
   - Lógica applyExternalUpdate mejorada para manejar append_newline, init, overwrite y differential inserts.
   - Truncado y feedback sincronizado: paste/drop/input se truncarán localmente y se notificará al usuario; el main confirma truncado via respuesta.
+
+**0.0.8** (2025/12/03)
+
+### Nueva funcionalidad: Modo de conteo de texto
+
+* **Modo preciso vs. modo simple**
+
+  * Se añadió un toggle visual (switch) “Modo preciso” en la sección de **Resultados del conteo**.
+  * Switch activado → modo de conteo **preciso**.
+    Switch desactivado → modo de conteo **simple**.
+  * Cambiar el modo recalcula automáticamente el texto vigente.
+  * La preferencia se guarda de forma persistente en `user_settings.json`.
+  * La configuración se aplica al inicio de la app, garantizando coherencia.
+
+### Funciones de conteo
+
+* **`contarTextoSimple(texto)`**
+
+  * Basado en regex y `length`.
+  * Bajo costo computacional.
+  * Compatible con todos los entornos.
+  * Mantiene el comportamiento histórico.
+
+* **`contarTextoPreciso(texto, language)`**
+
+  * Basado en `Intl.Segmenter`.
+  * Segmentación real de grafemas y palabras.
+  * Compatible con Unicode extendido (emojis, alfabetos no latinos, ligaduras).
+  * Fallback si `Intl.Segmenter` no existe:
+
+    * Grafemas con spread.
+    * Palabras por `\b` / `\s+`.
+  * Variable global `modoConteo` selecciona el método apropiado.
+
+* Ambas funciones retornan un objeto uniforme:
+
+```js
+{
+  conEspacios: Number,
+  sinEspacios: Number,
+  palabras: Number
+}
+```
+
+Esto permite cambiar de modo sin afectar el resto del renderer.
+
+### Soporte multilenguaje
+
+* Variable global `idiomaActual` cargada desde `settingsCache.language`.
+* Función `setIdiomaActual(nuevoIdioma)` permite cambios dinámicos de idioma.
+* `Intl.Segmenter` utiliza el idioma correcto.
+* La app puede cambiar idioma dinámicamente y el conteo se adapta sin reinicio.
+
+### Persistencia y sincronización
+
+* `modeConteo` agregado a `user_settings.json`.
+* Cambios emitidos vía IPC (`settings-updated`) al renderer para refrescar UI.
+* Handlers que modifican `user_settings.json` emiten `settings-updated` automáticamente:
+
+  * `set-language`
+  * `create-preset`
+  * `edit-preset`
+  * `request-delete-preset`
+  * `request-restore-defaults`
+* Esto garantiza sincronización inmediata entre **main** y **renderer**.
+
+### Funciones auxiliares
+
+```js
+function setModoConteo(nuevoModo) {
+  if (nuevoModo === "simple" || nuevoModo === "preciso") {
+    modoConteo = nuevoModo;
+  }
+}
+
+function setIdiomaActual(nuevoIdioma) {
+  if (typeof nuevoIdioma === "string" && nuevoIdioma.length > 0) {
+    idiomaActual = nuevoIdioma;
+  }
+}
+```
+
+* Preparadas para uso desde Menú o cualquier otra parte de la app.
+
+### Interfaz de usuario
+
+* Switch “Modo preciso” integrado en **Resultados del conteo**:
+
+  * Ahora alineado a la derecha, junto a la etiqueta.
+  * Palabras, caracteres con/sin espacio permanecen en la misma línea.
+* Diseño refinado y consistente con la sección de resultados.
+* Preparada para ajustes estéticos (tamaño del switch, espaciado).
+
+### Resumen de la base técnica
+
+* Dos sistemas de conteo coexistentes.
+* Modo preciso profesional y Unicode-aware.
+* Persistencia y sincronización automáticas.
+* Arquitectura lista para soporte multilenguaje.
+* Código optimizado para velocidad (no se leen repetidamente los settings).
 
 ## Autor y Créditos ##
 
