@@ -1,6 +1,6 @@
 {
   "name": "toT — Reading Meter",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Contador y estimador de tiempo de lectura",
   "main": "electron/main.js",
   "scripts": {

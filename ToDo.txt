@@ -2,8 +2,6 @@
 
 # ÍTEM ACTUAL #
 
-* Revisar límite de caracteres del current text *
-
 * Calculos *
 - ¡Advertencia sobre el método de conteo de palabras!
 - Analizar nuevos métodos de conteo, más precisos
