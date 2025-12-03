@@ -4,6 +4,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('manualAPI', {
   getCurrentText: () => ipcRenderer.invoke('get-current-text'),
   setCurrentText: (t) => ipcRenderer.invoke('set-current-text', t),
+  getAppConfig: () => ipcRenderer.invoke("get-app-config"),
   onInitText: (cb) => {
     ipcRenderer.on('manual-init-text', (_e, text) => cb(text));
   },

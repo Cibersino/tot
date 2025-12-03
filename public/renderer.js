@@ -30,7 +30,17 @@ const presetDescription = document.getElementById('presetDescription');
 let currentText = "";
 
 // Límite local en renderer para evitar concatenaciones que creen strings demasiado grandes
-const MAX_TEXT_CHARS = 10000000;
+let MAX_TEXT_CHARS = 1e7; // valor por defecto hasta que main responda
+
+(async () => {
+  try {
+    const cfg = await window.electronAPI.getAppConfig();
+    if (cfg && cfg.maxTextChars) MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
+  } catch (e) {
+    console.error("No se pudo obtener getAppConfig, usando defaults:", e);
+  }
+  // ... el resto de tu init existente
+})();
 
 let wpm = Number(wpmSlider.value);
 let currentPresetName = null;
@@ -522,9 +532,7 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
       return;
     }
 
-    let toAdd = clip.slice(0, available);
-    if (toAdd.length < clip.length) alert("El texto pegado se ha truncado para no exceder el tamaño máximo permitido.");
-
+    const toAdd = clip.slice(0, available);
     const newFull = current + (current ? joiner : "") + toAdd;
 
     // enviar objeto con meta (append_newline)
@@ -534,7 +542,11 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
     });
 
     updatePreviewAndResults(resp && resp.text ? resp.text : newFull);
-    resp && resp.truncated && alert("El texto fue truncado para ajustarse al límite máximo de la aplicación.");
+
+    // notificar truncado solo si main lo confirma
+    if (resp && resp.truncated) {
+      alert("El texto fue truncado para ajustarse al límite máximo de la aplicación.");
+    }
   } catch (err) {
     console.error("Error pegando portapapeles en nueva línea:", err);
     alert("Ocurrió un error al pegar el portapapeles. Revisa la consola.");
