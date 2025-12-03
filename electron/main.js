@@ -995,6 +995,16 @@ ipcMain.handle('get-modal-state', () => {
   return loadJson(MODAL_STATE_FILE, {});
 });
 
+// Exponer configuración (MAX_TEXT_CHARS) vía IPC
+ipcMain.handle("get-app-config", async () => {
+  try {
+    return { ok: true, maxTextChars: MAX_TEXT_CHARS };
+  } catch (e) {
+    console.error("Error en get-app-config:", e);
+    return { ok: false, error: String(e), maxTextChars: 1e7 };
+  }
+});
+
 // App lifecycle: persist currentText only on quit (user requirement)
 function persistCurrentTextOnQuit() {
   try {

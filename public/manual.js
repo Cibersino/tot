@@ -1,9 +1,20 @@
 // public/manual.js
 console.log("Manual editor starting...");
 
-const MAX_TEXT_CHARS = 1e7; // Límite absoluto del tamaño del texto en el editor. Si el contenido total supera este valor, se trunca. Previene cuelgues, lags extremos y OOM.
-const PASTE_ALLOW_LIMIT = 1e3; // Umbral que determina si se permite que el navegador haga la inserción nativa en paste/drop.
+let MAX_TEXT_CHARS = 1e7; // Límite absoluto del tamaño del texto en el editor. Si el contenido total supera este valor, se trunca. Previene cuelgues, lags extremos y OOM.
+const PASTE_ALLOW_LIMIT = 1e4; // Umbral que determina si se permite que el editor de texto haga la inserción nativa en paste/drop.
 const SMALL_UPDATE_THRESHOLD = 2e5; // Define cuándo una actualización externa (desde main) debe aplicarse con mecanismo nativo (rápido, conserva undo/redo) o mediante reemplazo completo del value (más seguro pero incompatible con undo/redo).
+
+(async () => {
+  try {
+    const cfg = await window.manualAPI.getAppConfig();
+    if (cfg && cfg.maxTextChars) MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
+    // si quieres exponer otros umbrales desde main más adelante, puedes agregarlos al cfg
+  } catch (e) {
+    console.error("manual: no se pudo obtener getAppConfig, usando defaults:", e);
+  }
+  // rest of init (getCurrentText etc.) — ya tienes un init existente, integra con el tuyo
+})();
 
 const editor = document.getElementById("editorArea");
 const btnTrash = document.getElementById("btnTrash");
