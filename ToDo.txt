@@ -2,9 +2,7 @@
 
 # ÍTEM ACTUAL #
 
-* Calculos *
-- ¡Advertencia sobre el método de conteo de palabras!
-- Analizar nuevos métodos de conteo, más precisos
+- Un mismo modal para todo los infomenú
 
 # Más adelante #
 
@@ -14,10 +12,18 @@
 * Revisión y depuración del código*
 
 * Internacionalización *
+- Agregar soporte multilenguaje
+- Selector de idioma en el menú
+En renderer.js tenemos este helper:
+
+function setIdiomaActual(nuevoIdioma) {
+  if (typeof nuevoIdioma === "string" && nuevoIdioma.length > 0) {
+    idiomaActual = nuevoIdioma;
+  }
+}
 - Archivos de 18i.
 
 * Otros *
-- Agregar soporte multilenguaje
 - Implementar semiauto-update
 - Construir versión portable
 - Short-cuts
