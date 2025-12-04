@@ -908,6 +908,22 @@ function formatTimer(ms) {
   return `${hours}:${minutes}:${seconds}`;
 }
 
+// Reusable: calcula y muestra la velocidad real usando `elapsed` y el texto actual
+function actualizarVelocidadReal() {
+  // contarTexto y mostrarVelocidadReal deben existir en el scope (ya las usas).
+  const stats = contarTexto(currentText);
+  const words = stats?.palabras || 0;
+  const secondsTotal = elapsed / 1000;
+
+  if (words > 0 && secondsTotal > 0) {
+    const realWpm = (words / secondsTotal) * 60;
+    mostrarVelocidadReal(realWpm);
+  } else {
+    // Limpia visual si no hay datos válidos
+    realWpmDisplay.textContent = "";
+  }
+}
+
 function tick() {
   const now = performance.now();
   const ms = elapsed + (now - startTime);
@@ -924,23 +940,15 @@ tToggle.addEventListener('click', () => {
 
     tToggle.textContent = '⏸';
   } else {
-    // STOP + CALCULAR
+    // STOP + CALCULAR (delegado)
     running = false;
     elapsed += performance.now() - startTime;
     if (rafId) cancelAnimationFrame(rafId);
 
     tToggle.textContent = '▶';
 
-    const stats = contarTexto(currentText);
-    const words = stats.palabras;
-    const secondsTotal = elapsed / 1000;
-
-    if (words > 0 && secondsTotal > 0) {
-      const realWpm = (words / secondsTotal) * 60;
-      mostrarVelocidadReal(realWpm);
-    } else {
-      realWpmDisplay.textContent = "";
-    }
+    // Reutiliza la función común
+    actualizarVelocidadReal();
   }
 });
 
@@ -982,8 +990,13 @@ function applyManualTime() {
 
   if (ms !== null) {
     elapsed = ms;
+    // si está corriendo, re-sincronizamos startTime para que el tick siga desde el nuevo punto
     if (running) startTime = performance.now();
+
     timerDisplay.value = formatTimer(elapsed);
+
+    // Reutiliza la función de cálculo (Enter o blur -> recalcular)
+    actualizarVelocidadReal();
   } else {
     timerDisplay.value = formatTimer(elapsed);
   }
