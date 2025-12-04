@@ -892,8 +892,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
 
 // ======================= Cronómetro =======================
 const timerDisplay = document.getElementById('timerDisplay');
-const tStart = document.getElementById('timerStart');
-const tStop = document.getElementById('timerStop');
+const tToggle = document.getElementById('timerToggle');
 const tReset = document.getElementById('timerReset');
 
 let running = false;
@@ -916,30 +915,32 @@ function tick() {
   rafId = requestAnimationFrame(tick);
 }
 
-tStart.addEventListener('click', () => {
+tToggle.addEventListener('click', () => {
   if (!running) {
+    // START
     running = true;
     startTime = performance.now();
     rafId = requestAnimationFrame(tick);
-  }
-});
 
-tStop.addEventListener('click', () => {
-  if (running) {
+    tToggle.textContent = '⏸';
+  } else {
+    // STOP + CALCULAR
     running = false;
     elapsed += performance.now() - startTime;
     if (rafId) cancelAnimationFrame(rafId);
-  }
 
-  const stats = contarTexto(currentText);
-  const words = stats.palabras;
-  const secondsTotal = elapsed / 1000;
+    tToggle.textContent = '▶';
 
-  if (words > 0 && secondsTotal > 0) {
-    const realWpm = (words / secondsTotal) * 60;
-    mostrarVelocidadReal(realWpm);
-  } else {
-    realWpmDisplay.textContent = "";
+    const stats = contarTexto(currentText);
+    const words = stats.palabras;
+    const secondsTotal = elapsed / 1000;
+
+    if (words > 0 && secondsTotal > 0) {
+      const realWpm = (words / secondsTotal) * 60;
+      mostrarVelocidadReal(realWpm);
+    } else {
+      realWpmDisplay.textContent = "";
+    }
   }
 });
 
@@ -948,8 +949,12 @@ tReset.addEventListener('click', () => {
   startTime = 0;
   elapsed = 0;
   if (rafId) cancelAnimationFrame(rafId);
+
   timerDisplay.value = "00:00:00";
   realWpmDisplay.textContent = "";
+
+  // El botón principal vuelve a ▶
+  tToggle.textContent = '▶';
 });
 
 // VF button (por ahora no hace nada funcional)
