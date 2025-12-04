@@ -109,7 +109,8 @@ let mainWin = null, // ventana principal
   editorWin = null, // ventana modal para edición del texto vigente
   presetWin = null, // ventana modal para nuevo/editar preset wpm
   currentText = "", // texto vigente
-  langWin = null; // ventana modal selección de idioma (primer arranque)
+  langWin = null, // ventana modal selección de idioma (primer arranque)
+  floatingWin = null; // ventana flotante (cronómetro)
 
 // Load current text from file at startup (if exists)
 try {
@@ -519,7 +520,99 @@ function createLanguageWindow() {
   });
 }
 
-/* IPC handlers (existing ones kept unchanged) */
+// ----------------- Ventana flotante (PIP) -----------------
+const FLOATER_PRELOAD = path.join(__dirname, 'flotante_preload.js');
+// Ruta del HTML del flotante: colocarlo en ../public para seguir la convención
+const FLOATER_HTML = path.join(__dirname, '../public/flotante.html');
+
+async function createFloatingWindow(options = {}) {
+  if (floatingWin && !floatingWin.isDestroyed()) {
+    return floatingWin;
+  }
+
+  const bwOpts = {
+    width: 220,
+    height: 70,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    movable: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    focusable: true,
+    webPreferences: {
+      preload: FLOATER_PRELOAD,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  };
+
+  floatingWin = new BrowserWindow(Object.assign({}, bwOpts, options));
+  // Cargar el HTML minimalista del flotante (coloca flotante.html en ../public)
+  try {
+    floatingWin.loadFile(FLOATER_HTML);
+  } catch (e) {
+    console.error("Error cargando flotante HTML:", e);
+  }
+
+  floatingWin.on('closed', () => {
+    floatingWin = null;
+    // Notificar al renderer principal si necesita limpiar estado
+    if (mainWin && mainWin.webContents) {
+      try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }
+    }
+  });
+
+  return floatingWin;
+}
+
+// IPC: abrir flotante
+ipcMain.handle('floating-open', async () => {
+  try {
+    await createFloatingWindow();
+    return { ok: true };
+  } catch (e) {
+    console.error("floating-open error:", e);
+    return { ok: false, error: String(e) };
+  }
+});
+
+// IPC: cerrar flotante
+ipcMain.handle('floating-close', async () => {
+  try {
+    if (floatingWin && !floatingWin.isDestroyed()) {
+      floatingWin.close();
+      floatingWin = null;
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error("floating-close error:", e);
+    return { ok: false, error: String(e) };
+  }
+});
+
+// IPC: reenviar estado del renderer principal al flotante
+ipcMain.on('floating-state', (_ev, state) => {
+  try {
+    if (floatingWin && !floatingWin.isDestroyed()) {
+      floatingWin.webContents.send('flotante-state', state);
+    }
+  } catch (e) {
+    console.error("Error reenviando floating-state al flotante:", e);
+  }
+});
+
+// IPC: comandos desde el flotante -> reenvío al renderer principal
+ipcMain.on('flotante-command', (_ev, cmd) => {
+  try {
+    if (mainWin && mainWin.webContents) {
+      mainWin.webContents.send('flotante-command', cmd);
+    }
+  } catch (e) {
+    console.error("Error reenviando flotante-command al main renderer:", e);
+  }
+});
 
 // Open editor window (or focus + send current text)
 ipcMain.handle("open-editor", () => {
