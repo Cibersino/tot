@@ -197,7 +197,7 @@ async function updatePreviewAndResults(text) {
   const previousText = currentText;      // texto antes del cambio
   currentText = text || "";              // nuevo texto (normalizado)
   const textChanged = previousText !== currentText;
-  
+
   const displayText = currentText.replace(/\r?\n/g, '   ');
   const n = displayText.length;
 
@@ -979,11 +979,102 @@ tToggle.addEventListener('click', () => {
 
 tReset.addEventListener('click', resetTimer);
 
-// VF button (por ahora no hace nada funcional)
-if (btnVF) {
-  btnVF.addEventListener('click', () => {
-    console.log("VF button clicked - functionality pending.");
-    // Placeholder for future functionality
+// --- Floating window control (VF) ---
+let floatingOpen = false;
+let floatingIntervalId = null;
+
+// función que empaqueta y envía estado al main (se reenviará al flotante)
+function sendFloatingStateNow() {
+  // enviamos `elapsed`, `running` y `display` (display es formato HH:MM:SS)
+  const state = {
+    elapsed,
+    running,
+    display: timerDisplay ? timerDisplay.value : formatTimer(elapsed)
+  };
+  if (window.electronAPI && typeof window.electronAPI.sendFloatingState === 'function') {
+    window.electronAPI.sendFloatingState(state);
+  }
+}
+
+// abrir flotante
+async function openFloating() {
+  if (!window.electronAPI || typeof window.electronAPI.openFloatingWindow !== 'function') {
+    console.warn("openFloatingWindow no disponible en electronAPI");
+    return;
+  }
+  try {
+    await window.electronAPI.openFloatingWindow();
+    floatingOpen = true;
+
+    // enviar inmediatamente el estado actual
+    sendFloatingStateNow();
+
+    // enviar cada 1000ms (1s) para que flotante muestre versión estática
+    if (floatingIntervalId) clearInterval(floatingIntervalId);
+    floatingIntervalId = setInterval(sendFloatingStateNow, 1000);
+  } catch (e) {
+    console.error("Error abriendo flotante:", e);
+  }
+}
+
+// cerrar flotante
+async function closeFloating() {
+  if (!window.electronAPI || typeof window.electronAPI.closeFloatingWindow !== 'function') {
+    console.warn("closeFloatingWindow no disponible en electronAPI");
+    return;
+  }
+  try {
+    await window.electronAPI.closeFloatingWindow();
+  } catch (e) {
+    console.error("Error cerrando flotante:", e);
+  } finally {
+    floatingOpen = false;
+    if (floatingIntervalId) {
+      clearInterval(floatingIntervalId);
+      floatingIntervalId = null;
+    }
+  }
+}
+
+// toggle VF desde la UI
+btnVF && btnVF.addEventListener('click', async () => {
+  if (!floatingOpen) {
+    await openFloating();
+    // opcional: cambiar estilo del botón VF para indicar ON
+    btnVF.classList && btnVF.classList.add('vf-on');
+  } else {
+    await closeFloating();
+    btnVF.classList && btnVF.classList.remove('vf-on');
+  }
+});
+
+// Escuchar comandos provenientes del flotante (main reenvía)
+if (window.electronAPI && typeof window.electronAPI.onFloatingCommand === 'function') {
+  window.electronAPI.onFloatingCommand((cmd) => {
+    try {
+      if (!cmd || !cmd.cmd) return;
+      if (cmd.cmd === 'toggle') {
+        // simula click del tToggle (mismo efecto)
+        tToggle.click();
+      } else if (cmd.cmd === 'reset') {
+        // usar la función centralizada resetTimer()
+        resetTimer();
+      }
+    } catch (e) {
+      console.error("Error handling floating command:", e);
+    }
+  });
+}
+
+// Si el flotante se cierra desde main (o se destruye), limpiamos timers locales
+if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'function') {
+  window.electronAPI.onFloatingClosed(() => {
+    floatingOpen = false;
+    if (floatingIntervalId) {
+      clearInterval(floatingIntervalId);
+      floatingIntervalId = null;
+    }
+    btnVF.classList && btnVF.classList.remove('vf-on');
   });
 }
 
