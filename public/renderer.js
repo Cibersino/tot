@@ -220,7 +220,7 @@ async function updatePreviewAndResults(text) {
   const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
   resChars.textContent = `Caracteres: ${caracteresFormateado}`;
-  resCharsNoSpace.textContent = `Caracteres (sin espacio): ${caracteresSinEspaciosFormateado}`;
+  resCharsNoSpace.textContent = `Chars s/space: ${caracteresSinEspaciosFormateado}`;
   resWords.textContent = `Palabras: ${palabrasFormateado}`;
   resTime.textContent = `⏱ Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
 
@@ -928,7 +928,7 @@ function actualizarVelocidadReal() {
     mostrarVelocidadReal(realWpm);
   } else {
     // Limpia visual si no hay datos válidos
-    realWpmDisplay.textContent = "";
+    realWpmDisplay.innerHTML = "&nbsp;";
   }
 }
 
@@ -943,7 +943,7 @@ function resetTimer() {
   }
 
   if (timerDisplay) timerDisplay.value = "00:00:00";
-  if (realWpmDisplay) realWpmDisplay.textContent = "";
+  if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
 
   // El botón principal vuelve a ▶ (si existe)
   if (tToggle) tToggle.textContent = '▶';

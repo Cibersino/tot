@@ -4,25 +4,6 @@
 
 * Ventana flotante del cronómetro *
 
-Mejoras previas al cronómetro:
-
-- Unificar acciones de los botones "Start" y "Stop/Calcular" en un solo botón toggeable.
-  - Este botón debe cambiar visualmente entre "▶"y "⏸" (debería estar condicionado, como diremos después, por el botón de reset). 
-- Este nuevo botón toggeable que unifica las acciones debe: 
-  - Si el cronómetro no está activado, funcionar como actualmente funciona "Start". 
-  - Si el cronómetro está activado, este botón funciene como actualmente funciona "Stop/Calcular.
-- Hay que eliminar los viejos botones "Start" y "Stop/Calcular", que el nuevo botón reemplaza.
-- Cambiar visualización de botón "Reset" por un botón "⏹" (stop). En este último caso, al presionar stop, debe también cambiar a "▶" el botón anterior.
-
-- Al cambiar directamente el input del cronómetro debe actualizarse el calculo de la velocidad real. 
-  - Esto ya sea con la tecla Enter o saliendose del input. 
-  - Utilizar la misma función, sin repetirla si es posible, que ya está disponible en renderer y que usa el botón toggueable start/pause al pausar.
-
-- Cualquier cambio del texto vigente, debe resetear el cronometro.
-  - Encontrar la vía más simple y solida para gatillar esta acción.
-
-Ventana flotante:
-
 - Crear una ventana flotante de superposición (o PIP) que permita ver e interactuar con el cronómetro en una ventana pequeña que flota sobre otras aplicaciones.
   - La ventana, si es posible, debe estar activa y permitir al usuario interactuar con ella de forma inmediata (haciendo clics en los botones y a través de shorcuts del teclado).
   - En ella deben aparecer el cronómetro (activo) y los botones "⏯" y "⏮". Nada más.
