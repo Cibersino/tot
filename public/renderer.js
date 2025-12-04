@@ -194,8 +194,10 @@ const formatearNumero = (numero, separadorMiles, separadorDecimal) => {
 
 // ======================= Actualizar vista y resultados =======================
 async function updatePreviewAndResults(text) {
-  currentText = text || "";
-
+  const previousText = currentText;      // texto antes del cambio
+  currentText = text || "";              // nuevo texto (normalizado)
+  const textChanged = previousText !== currentText;
+  
   const displayText = currentText.replace(/\r?\n/g, '   ');
   const n = displayText.length;
 
@@ -221,6 +223,12 @@ async function updatePreviewAndResults(text) {
   resCharsNoSpace.textContent = `Caracteres (sin espacio): ${caracteresSinEspaciosFormateado}`;
   resWords.textContent = `Palabras: ${palabrasFormateado}`;
   resTime.textContent = `⏱ Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
+
+  // Si detectamos que el texto cambió respecto al estado anterior -> resetear cronómetro
+  if (textChanged) {
+    // Llamada única y concentrada a la acción de reset (misma que el botón ⏹)
+    resetTimer();
+  }
 }
 
 // ======================= Mostrar velocidad real (WPM) =======================
@@ -924,6 +932,23 @@ function actualizarVelocidadReal() {
   }
 }
 
+// --------- Reset del cronómetro (misma acción que el botón ⏹) ----------
+function resetTimer() {
+  running = false;
+  startTime = 0;
+  elapsed = 0;
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
+  if (timerDisplay) timerDisplay.value = "00:00:00";
+  if (realWpmDisplay) realWpmDisplay.textContent = "";
+
+  // El botón principal vuelve a ▶ (si existe)
+  if (tToggle) tToggle.textContent = '▶';
+}
+
 function tick() {
   const now = performance.now();
   const ms = elapsed + (now - startTime);
@@ -952,18 +977,7 @@ tToggle.addEventListener('click', () => {
   }
 });
 
-tReset.addEventListener('click', () => {
-  running = false;
-  startTime = 0;
-  elapsed = 0;
-  if (rafId) cancelAnimationFrame(rafId);
-
-  timerDisplay.value = "00:00:00";
-  realWpmDisplay.textContent = "";
-
-  // El botón principal vuelve a ▶
-  tToggle.textContent = '▶';
-});
+tReset.addEventListener('click', resetTimer);
 
 // VF button (por ahora no hace nada funcional)
 if (btnVF) {
