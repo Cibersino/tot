@@ -19,7 +19,7 @@ const wpmInput = document.getElementById('wpmInput');
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
 
-const btnVF = document.getElementById('btnVF');
+const toggleVF = document.getElementById('toggleVF');
 
 // Referencias a elementos para presets
 const presetsSelect = document.getElementById('presets');
@@ -1064,13 +1064,19 @@ let floatingOpen = false;
 async function openFloating() {
   if (!window.electronAPI || typeof window.electronAPI.openFloatingWindow !== 'function') {
     console.warn("openFloatingWindow no disponible en electronAPI");
+    // asegurar coherencia visual
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
     return;
   }
   try {
     await window.electronAPI.openFloatingWindow();
     floatingOpen = true;
-    // Indicador visual manejado por UI; main envía crono-state inmediatamente al abrir
-    btnVF.classList && btnVF.classList.add('vf-on');
+
+    // actualizar switch (UI)
+    if (toggleVF) {
+      toggleVF.checked = true;
+      toggleVF.setAttribute('aria-checked', 'true');
+    }
 
     // pedir estado inicial vía invoke (main devuelve getCronoState)
     if (typeof window.electronAPI.getCronoState === 'function') {
@@ -1095,6 +1101,8 @@ async function openFloating() {
     }
   } catch (e) {
     console.error("Error abriendo flotante:", e);
+    // revertir switch si hay error
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
   }
 }
 
@@ -1102,6 +1110,7 @@ async function openFloating() {
 async function closeFloating() {
   if (!window.electronAPI || typeof window.electronAPI.closeFloatingWindow !== 'function') {
     console.warn("closeFloatingWindow no disponible en electronAPI");
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
     return;
   }
   try {
@@ -1110,27 +1119,31 @@ async function closeFloating() {
     console.error("Error cerrando flotante:", e);
   } finally {
     floatingOpen = false;
-    btnVF.classList && btnVF.classList.remove('vf-on');
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
   }
 }
 
-// toggle VF desde la UI
-btnVF && btnVF.addEventListener('click', async () => {
-  if (!floatingOpen) {
-    await openFloating();
-    // opcional: cambiar estilo del botón VF para indicar ON
-    btnVF.classList && btnVF.classList.add('vf-on');
-  } else {
-    await closeFloating();
-    btnVF.classList && btnVF.classList.remove('vf-on');
-  }
-});
+// toggle VF desde la UI (switch)
+if (toggleVF) {
+  toggleVF.addEventListener('change', async (ev) => {
+    const wantOpen = !!toggleVF.checked;
+    // optimista: reflejar aria-checked inmediatamente
+    toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
+
+    if (wantOpen) {
+      await openFloating();
+      // openFloating maneja revert en caso de error
+    } else {
+      await closeFloating();
+    }
+  });
+}
 
 // Si el flotante se cierra desde main (o se destruye), limpiamos timers locales
 if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'function') {
   window.electronAPI.onFloatingClosed(() => {
     floatingOpen = false;
-    btnVF.classList && btnVF.classList.remove('vf-on');
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
   });
 }
 

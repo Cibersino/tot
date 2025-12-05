@@ -264,22 +264,22 @@ select#presets {
 /* Wrapper del toggle alineado a la derecha */
 .toggle-wrapper {
   display: flex;
-  align-items: flex-start;    /* top-align con la primera línea de result-list */
+  align-items: flex-start;
   gap: 8px;
   margin-left: 8px;
-  flex: 0 0 auto;             /* toma sólo el ancho que necesita */
+  flex: 0 0 auto;
 }
 
 /* Ajuste semántico de la etiqueta del toggle */
 .toggle-label {
   font-size: 0.9rem;
   font-weight: 500;
-  line-height: 1.1;           /* mejor alineamiento con el knob */
-  margin-top: 2px;            /* pequeña corrección para alinear texto con primera línea */
+  line-height: 1.1;
+  margin-top: 2px;
   color: var(--text-color);
 }
 
-/* Estilo estándar de switch (igual al tuyo, con ligeros ajustes) */
+/* Estilo estándar de switch */
 .switch {
   position: relative;
   display: inline-block;
@@ -371,17 +371,23 @@ select#presets {
   align-items: center;
 }
 
-/* VF Variant Button */
-.vf-variant {
-  border-color: #c94b3f;
-  background: #fff6f5;
-  color: #8b2a24;
-  font-weight: 700;
-  margin-left: 2px;
+/* Wrapper específico del switch VF */
+.vf-switch-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto; /* empuja el switch hacia el borde derecho del grupo */
+  flex: 0 0 auto;
 }
 
-.vf-variant:hover {
-  background: #ffefee;
+/* Etiqueta "VF" situada a la derecha del switch */
+.vf-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+  user-select: none;
+  margin-left: 2px;
+  line-height: 1;
 }
 
 /* SECCION DISPONIBLE */
