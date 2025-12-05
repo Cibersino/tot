@@ -1072,19 +1072,26 @@ async function openFloating() {
     // Indicador visual manejado por UI; main envía crono-state inmediatamente al abrir
     btnVF.classList && btnVF.classList.add('vf-on');
 
-    // opcional: pedir estado inicial vía invoke (main devuelve getCronoState)
+    // pedir estado inicial vía invoke (main devuelve getCronoState)
     if (typeof window.electronAPI.getCronoState === 'function') {
       try {
         const state = await window.electronAPI.getCronoState();
         if (state) {
-          // sincronizar UI inmediatamente
-          elapsed = state.elapsed || 0;
+          // sincronizar UI inmediatamente, pero NO forzar recálculo de WPM
+          elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
           running = !!state.running;
-          if (timerDisplay) timerDisplay.value = state.display || formatTimer(elapsed);
+
+          if (timerDisplay && !timerEditing) {
+            timerDisplay.value = state.display || formatTimer(elapsed);
+          }
           if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
-          actualizarVelocidadRealFromElapsed(elapsed);
+
+          lastComputedElapsedForWpm = elapsed;
+          prevRunning = running;
         }
-      } catch (e) { /* noop */ }
+      } catch (e) {
+        /* noop */
+      }
     }
   } catch (e) {
     console.error("Error abriendo flotante:", e);
