@@ -224,10 +224,21 @@ async function updatePreviewAndResults(text) {
   resWords.textContent = `Palabras: ${palabrasFormateado}`;
   resTime.textContent = `⏱ Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
 
-  // Si detectamos que el texto cambió respecto al estado anterior -> resetear cronómetro
+  // Si detectamos que el texto cambió respecto al estado anterior -> resetear cronómetro en main
   if (textChanged) {
-    // Llamada única y concentrada a la acción de reset (misma que el botón ⏹)
-    resetTimer();
+    try {
+      if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
+        // Pedimos a main que reseteé el crono (autoridad). También hacemos UI reset inmediato.
+        window.electronAPI.sendCronoReset();
+        uiResetTimer();
+      } else {
+        // Fallback local si no hay IPC (rare)
+        uiResetTimer();
+      }
+    } catch (err) {
+      console.error("Error pidiendo reset del crono tras cambio de texto:", err);
+      uiResetTimer();
+    }
   }
 }
 
@@ -235,16 +246,38 @@ async function updatePreviewAndResults(text) {
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
     try {
-      elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
-      running = !!state.running;
-      if (timerDisplay) timerDisplay.value = state && state.display ? state.display : formatTimer(elapsed);
+      // Normalizar estado recibido
+      const newElapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
+      const newRunning = !!state.running;
+      // Actualizar mirrors locales
+      elapsed = newElapsed;
+      running = newRunning;
+
+      // Actualizar display SOLO si el usuario NO está editando el campo
+      if (timerDisplay && !timerEditing) {
+        timerDisplay.value = (state && state.display) ? state.display : formatTimer(elapsed);
+      }
+
+      // Actualizar botón toggle
       if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
-      // actualizar velocidad real con el elapsed recibido
-      actualizarVelocidadRealFromElapsed(elapsed);
-      // UI reset handling if elapsed===0 & not running
+
+      // WPM: calcular SOLO cuando el crono está parado (running === false).
+      // También queremos recalcular si hubo una transición running:true -> false (se acaba de pausar).
+      if (!running) {
+        // cuando está parado, recalculamos la velocidad
+        actualizarVelocidadRealFromElapsed(elapsed);
+      } else {
+        // si está corriendo, no recalculamos en cada broadcast
+        // (si deseas limpiar la WPM en vuelo, podrías hacerlo aquí; lo dejamos intacto)
+      }
+
+      // UI reset handling: si elapsed===0 y no está corriendo, forzamos la UI de reset
       if (!running && elapsed === 0) {
         uiResetTimer();
       }
+
+      // Actualizar prevRunning para detectar transiciones en la próxima emisión
+      prevRunning = running;
     } catch (e) {
       console.error("Error manejando crono-state en renderer:", e);
     }
@@ -920,13 +953,28 @@ btnResetDefaultPresets.addEventListener('click', async () => {
 
 // ======================= Cronómetro =======================
 const timerDisplay = document.getElementById('timerDisplay');
+
+// Evitar que los broadcasts de main sobrescriban la edición en curso
+if (timerDisplay) {
+  timerDisplay.addEventListener('focus', () => {
+    timerEditing = true;
+  });
+  timerDisplay.addEventListener('blur', () => {
+    // el blur ejecutará applyManualTime (ya registrado) que actualizará el crono en main
+    timerEditing = false;
+  });
+}
+
 const tToggle = document.getElementById('timerToggle');
 const tReset = document.getElementById('timerReset');
 
 // Mirror local del estado del crono (se sincroniza desde main vía onCronoState)
 let elapsed = 0;
 let running = false;
-// notamos que main es la fuente de verdad; renderer usa estos como espejo para la UI
+// Flag para detectar transición y evitar recálculos continuos
+let prevRunning = false;
+// Indica si el usuario está editando manualmente el campo del timer (para evitar sobrescrituras)
+let timerEditing = false;
 
 function formatTimer(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -965,11 +1013,15 @@ function actualizarVelocidadRealFromElapsed(ms) {
 }
 
 // --------- Reset del cronómetro (misma acción que el botón ⏹) ----------
-// Nota: esta función ahora solo actualiza UI local; la acción de reset real se pide al main.
+// Reset visual local (no autoritativo): usado como respuesta rápida mientras main broadcastea
 function uiResetTimer() {
+  // Sync local mirrors
+  elapsed = 0;
+  running = false;
+  prevRunning = false;
+
   if (timerDisplay) timerDisplay.value = "00:00:00";
   if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
-  // El botón principal vuelve a ▶ (si existe)
   if (tToggle) tToggle.textContent = '▶';
 }
 
@@ -1077,17 +1129,30 @@ function applyManualTime() {
   const ms = parseTimerInput(timerDisplay.value);
 
   if (ms !== null) {
+    // Si tenemos API, pedir a main que aplique el elapsed (autoridad)...
     if (window.electronAPI && typeof window.electronAPI.setCronoElapsed === 'function') {
-      window.electronAPI.setCronoElapsed(ms);
+      try {
+        // Marcar que ya no estamos editando (blur ya lo hace, pero aseguramos)
+        timerEditing = false;
+        window.electronAPI.setCronoElapsed(ms);
+        // Mostrar inmediatamente el valor aplicado y recalcular WPM localmente (comportamiento antiguo)
+        if (timerDisplay) timerDisplay.value = formatTimer(ms);
+        actualizarVelocidadRealFromElapsed(ms);
+      } catch (e) {
+        console.error("Error enviando setCronoElapsed:", e);
+        // Fallback local
+        elapsed = ms;
+        if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
+        actualizarVelocidadRealFromElapsed(elapsed);
+      }
     } else {
-      // fallback local
+      // Fallback local (no main available)
       elapsed = ms;
-    // si está corriendo, re-sincronizamos startTime para que el tick siga desde el nuevo punto
       if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
-    // Reutiliza la función de cálculo (Enter o blur -> recalcular)
       actualizarVelocidadRealFromElapsed(elapsed);
     }
   } else {
+    // entrada inválida -> restaurar valor visible al último estado
     if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
   }
 }
