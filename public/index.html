@@ -90,7 +90,13 @@
       <div class="timer-controls" role="group" aria-label="Controles del cronómetro">
         <button id="timerToggle" class="btn-standard">▶</button>
         <button id="timerReset" class="btn-standard">⏹</button>
-        <button id="btnVF" class="btn-standard vf-variant" title="Ventana flotante">VF</button>
+        <div class="vf-switch-wrapper" aria-label="Ventana flotante">
+          <label class="switch" title="Ventana flotante">
+            <input type="checkbox" id="toggleVF" role="switch" aria-checked="false">
+            <span class="slider round" aria-hidden="true"></span>
+          </label>
+          <span class="vf-label" aria-hidden="true">VF</span>
+        </div>
       </div>
     </section>
 
