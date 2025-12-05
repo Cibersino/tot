@@ -30,7 +30,6 @@ html,body {
   font-size: 18px;
   width: 110px;
   text-align: left;
-  -webkit-app-region: no-drag; /* permitir clicks en el texto? no necesario */
 }
 
 .controls {
