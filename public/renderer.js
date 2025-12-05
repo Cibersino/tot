@@ -231,6 +231,26 @@ async function updatePreviewAndResults(text) {
   }
 }
 
+// Escuchar estado del crono desde main (autoridad)
+if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
+  window.electronAPI.onCronoState((state) => {
+    try {
+      elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
+      running = !!state.running;
+      if (timerDisplay) timerDisplay.value = state && state.display ? state.display : formatTimer(elapsed);
+      if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
+      // actualizar velocidad real con el elapsed recibido
+      actualizarVelocidadRealFromElapsed(elapsed);
+      // UI reset handling if elapsed===0 & not running
+      if (!running && elapsed === 0) {
+        uiResetTimer();
+      }
+    } catch (e) {
+      console.error("Error manejando crono-state en renderer:", e);
+    }
+  });
+}
+
 // ======================= Mostrar velocidad real (WPM) =======================
 async function mostrarVelocidadReal(realWpm) {
   const idioma = idiomaActual;
@@ -903,10 +923,10 @@ const timerDisplay = document.getElementById('timerDisplay');
 const tToggle = document.getElementById('timerToggle');
 const tReset = document.getElementById('timerReset');
 
-let running = false;
-let startTime = 0;
+// Mirror local del estado del crono (se sincroniza desde main vía onCronoState)
 let elapsed = 0;
-let rafId = null;
+let running = false;
+// notamos que main es la fuente de verdad; renderer usa estos como espejo para la UI
 
 function formatTimer(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -932,69 +952,47 @@ function actualizarVelocidadReal() {
   }
 }
 
-// --------- Reset del cronómetro (misma acción que el botón ⏹) ----------
-function resetTimer() {
-  running = false;
-  startTime = 0;
-  elapsed = 0;
-  if (rafId) {
-    cancelAnimationFrame(rafId);
-    rafId = null;
+function actualizarVelocidadRealFromElapsed(ms) {
+  const secondsTotal = (ms || 0) / 1000;
+  const stats = contarTexto(currentText);
+  const words = stats?.palabras || 0;
+  if (words > 0 && secondsTotal > 0) {
+    const realWpm = (words / secondsTotal) * 60;
+    mostrarVelocidadReal(realWpm);
+  } else {
+    realWpmDisplay.innerHTML = "&nbsp;";
   }
+}
 
+// --------- Reset del cronómetro (misma acción que el botón ⏹) ----------
+// Nota: esta función ahora solo actualiza UI local; la acción de reset real se pide al main.
+function uiResetTimer() {
   if (timerDisplay) timerDisplay.value = "00:00:00";
   if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
-
   // El botón principal vuelve a ▶ (si existe)
   if (tToggle) tToggle.textContent = '▶';
 }
 
-function tick() {
-  const now = performance.now();
-  const ms = elapsed + (now - startTime);
-  timerDisplay.value = formatTimer(ms);
-  rafId = requestAnimationFrame(tick);
-}
-
 tToggle.addEventListener('click', () => {
-  if (!running) {
-    // START
-    running = true;
-    startTime = performance.now();
-    rafId = requestAnimationFrame(tick);
-
-    tToggle.textContent = '⏸';
+  if (window.electronAPI && typeof window.electronAPI.sendCronoToggle === 'function') {
+    window.electronAPI.sendCronoToggle();
   } else {
-    // STOP + CALCULAR (delegado)
-    running = false;
-    elapsed += performance.now() - startTime;
-    if (rafId) cancelAnimationFrame(rafId);
-
-    tToggle.textContent = '▶';
-
-    // Reutiliza la función común
-    actualizarVelocidadReal();
+    // Fallback local: invertir estado visual (no authoritative)
+    running = !running;
+    tToggle.textContent = running ? '⏸' : '▶';
   }
 });
 
-tReset.addEventListener('click', resetTimer);
+tReset.addEventListener('click', () => {
+  if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
+    window.electronAPI.sendCronoReset();
+  } else {
+    uiResetTimer(); // fallback local (temporal)
+  }
+});
 
 // --- Floating window control (VF) ---
 let floatingOpen = false;
-let floatingIntervalId = null;
-
-// función que empaqueta y envía estado al main (se reenviará al flotante)
-function sendFloatingStateNow() {
-  // enviamos `elapsed`, `running` y `display` (display es formato HH:MM:SS)
-  const state = {
-    elapsed,
-    running,
-    display: timerDisplay ? timerDisplay.value : formatTimer(elapsed)
-  };
-  if (window.electronAPI && typeof window.electronAPI.sendFloatingState === 'function') {
-    window.electronAPI.sendFloatingState(state);
-  }
-}
 
 // abrir flotante
 async function openFloating() {
@@ -1005,13 +1003,23 @@ async function openFloating() {
   try {
     await window.electronAPI.openFloatingWindow();
     floatingOpen = true;
+    // Indicador visual manejado por UI; main envía crono-state inmediatamente al abrir
+    btnVF.classList && btnVF.classList.add('vf-on');
 
-    // enviar inmediatamente el estado actual
-    sendFloatingStateNow();
-
-    // enviar cada 1000ms (1s) para que flotante muestre versión estática
-    if (floatingIntervalId) clearInterval(floatingIntervalId);
-    floatingIntervalId = setInterval(sendFloatingStateNow, 1000);
+    // opcional: pedir estado inicial vía invoke (main devuelve getCronoState)
+    if (typeof window.electronAPI.getCronoState === 'function') {
+      try {
+        const state = await window.electronAPI.getCronoState();
+        if (state) {
+          // sincronizar UI inmediatamente
+          elapsed = state.elapsed || 0;
+          running = !!state.running;
+          if (timerDisplay) timerDisplay.value = state.display || formatTimer(elapsed);
+          if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
+          actualizarVelocidadRealFromElapsed(elapsed);
+        }
+      } catch (e) { /* noop */ }
+    }
   } catch (e) {
     console.error("Error abriendo flotante:", e);
   }
@@ -1029,10 +1037,7 @@ async function closeFloating() {
     console.error("Error cerrando flotante:", e);
   } finally {
     floatingOpen = false;
-    if (floatingIntervalId) {
-      clearInterval(floatingIntervalId);
-      floatingIntervalId = null;
-    }
+    btnVF.classList && btnVF.classList.remove('vf-on');
   }
 }
 
@@ -1048,32 +1053,10 @@ btnVF && btnVF.addEventListener('click', async () => {
   }
 });
 
-// Escuchar comandos provenientes del flotante (main reenvía)
-if (window.electronAPI && typeof window.electronAPI.onFloatingCommand === 'function') {
-  window.electronAPI.onFloatingCommand((cmd) => {
-    try {
-      if (!cmd || !cmd.cmd) return;
-      if (cmd.cmd === 'toggle') {
-        // simula click del tToggle (mismo efecto)
-        tToggle.click();
-      } else if (cmd.cmd === 'reset') {
-        // usar la función centralizada resetTimer()
-        resetTimer();
-      }
-    } catch (e) {
-      console.error("Error handling floating command:", e);
-    }
-  });
-}
-
 // Si el flotante se cierra desde main (o se destruye), limpiamos timers locales
 if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'function') {
   window.electronAPI.onFloatingClosed(() => {
     floatingOpen = false;
-    if (floatingIntervalId) {
-      clearInterval(floatingIntervalId);
-      floatingIntervalId = null;
-    }
     btnVF.classList && btnVF.classList.remove('vf-on');
   });
 }
@@ -1094,16 +1077,18 @@ function applyManualTime() {
   const ms = parseTimerInput(timerDisplay.value);
 
   if (ms !== null) {
-    elapsed = ms;
+    if (window.electronAPI && typeof window.electronAPI.setCronoElapsed === 'function') {
+      window.electronAPI.setCronoElapsed(ms);
+    } else {
+      // fallback local
+      elapsed = ms;
     // si está corriendo, re-sincronizamos startTime para que el tick siga desde el nuevo punto
-    if (running) startTime = performance.now();
-
-    timerDisplay.value = formatTimer(elapsed);
-
+      if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
     // Reutiliza la función de cálculo (Enter o blur -> recalcular)
-    actualizarVelocidadReal();
+      actualizarVelocidadRealFromElapsed(elapsed);
+    }
   } else {
-    timerDisplay.value = formatTimer(elapsed);
+    if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
   }
 }
 

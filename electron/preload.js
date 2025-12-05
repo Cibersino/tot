@@ -65,25 +65,27 @@ const api = {
         // devolver función para remover listener si el caller la usa
         return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (e) { console.error('removeListener error:', e); } };
     },
-    
-    // ------------------ NUEVAS APIs para la ventana flotante ------------------
+
+    // Cronómetro central API (renderer <-> main)
+    sendCronoToggle: () => ipcRenderer.send('crono-toggle'),
+    sendCronoReset: () => ipcRenderer.send('crono-reset'),
+    setCronoElapsed: (ms) => ipcRenderer.send('crono-set-elapsed', ms),
+    getCronoState: () => ipcRenderer.invoke('crono-get-state'),
+    onCronoState: (cb) => {
+        const wrapper = (_e, state) => { try { cb(state); } catch (err) { console.error("onCronoState callback error:", err); } };
+        ipcRenderer.on('crono-state', wrapper);
+        return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (e) { console.error("removeListener error (crono-state):", e); } };
+    },
+
+    // ------------------ NUEVAS APIs para la ventana flotante (actualizado) ------------------
     openFloatingWindow: async () => {
         return ipcRenderer.invoke('floating-open');
     },
     closeFloatingWindow: async () => {
         return ipcRenderer.invoke('floating-close');
     },
-    // Enviar estado desde renderer principal hacia main (que reenvía al flotante)
-    sendFloatingState: (state) => {
-        ipcRenderer.send('floating-state', state);
-    },
-    // Escucha comandos que vienen desde el flotante (main reenvía al renderer principal)
-    onFloatingCommand: (cb) => {
-        const listener = (_ev, cmd) => { try { cb(cmd); } catch (e) { console.error('floating command callback error:', e); } };
-        ipcRenderer.on('flotante-command', listener);
-        return () => { try { ipcRenderer.removeListener('flotante-command', listener); } catch (e) { console.error('removeListener error:', e); } };
-    },
-    // Notifica cierre de flotante (opcional)
+
+    // Mantener listener para notificar que el flotante fue cerrado (main emite 'flotante-closed')
     onFloatingClosed: (cb) => {
         const listener = () => { try { cb(); } catch (e) { console.error('floating closed callback error:', e); } };
         ipcRenderer.on('flotante-closed', listener);

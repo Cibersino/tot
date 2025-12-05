@@ -567,10 +567,111 @@ async function createFloatingWindow(options = {}) {
   return floatingWin;
 }
 
+/* ---------------- Cronómetro central en main (timekeeping + broadcast) ----------------*/
+
+let crono = {
+  running: false,
+  elapsed: 0,
+  startTs: null
+};
+
+let cronoInterval = null;
+const CRONO_BROADCAST_MS = 250; // ajustable: 250ms o 1000ms si quieres menor carga
+
+function formatTimerMs(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+  const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+function getCronoState() {
+  const elapsedNow = crono.running ? (crono.elapsed + (Date.now() - crono.startTs)) : crono.elapsed;
+  return { elapsed: elapsedNow, running: !!crono.running, display: formatTimerMs(elapsedNow) };
+}
+
+function broadcastCronoState() {
+  const state = getCronoState();
+  try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
+  try { if (floatingWin && !floatingWin.isDestroyed()) floatingWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
+  try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
+}
+
+function ensureCronoInterval() {
+  if (cronoInterval) return;
+  cronoInterval = setInterval(() => {
+    broadcastCronoState();
+    // opción: parar el interval si nadie escucha y no está corriendo
+    if (!crono.running && !mainWin && !floatingWin && !editorWin) {
+      clearInterval(cronoInterval);
+      cronoInterval = null;
+    }
+  }, CRONO_BROADCAST_MS);
+}
+
+function startCrono() {
+  if (!crono.running) {
+    crono.running = true;
+    crono.startTs = Date.now();
+    ensureCronoInterval();
+    broadcastCronoState();
+  }
+}
+
+function stopCrono() {
+  if (crono.running) {
+    crono.elapsed = crono.elapsed + (Date.now() - crono.startTs);
+    crono.startTs = null;
+    crono.running = false;
+    broadcastCronoState();
+  }
+}
+
+function resetCrono() {
+  crono.running = false;
+  crono.startTs = null;
+  crono.elapsed = 0;
+  broadcastCronoState();
+}
+
+function setCronoElapsed(ms) {
+  const n = Number(ms) || 0;
+  crono.elapsed = n;
+  if (crono.running) crono.startTs = Date.now();
+  broadcastCronoState();
+}
+
+ipcMain.handle('crono-get-state', () => {
+  return getCronoState();
+});
+
+ipcMain.on('crono-toggle', () => {
+  try {
+    if (crono.running) stopCrono(); else startCrono();
+  } catch (e) {
+    console.error("Error en crono-toggle:", e);
+  }
+});
+
+ipcMain.on('crono-reset', () => {
+  try { resetCrono(); } catch (e) { console.error("Error en crono-reset:", e); }
+});
+
+ipcMain.on('crono-set-elapsed', (_ev, ms) => {
+  try { setCronoElapsed(ms); } catch (e) { console.error("Error en crono-set-elapsed:", e); }
+});
+
+app.on('will-quit', () => {
+  try { if (cronoInterval) { clearInterval(cronoInterval); cronoInterval = null; } } catch (e) { /* noop */ }
+});
+
 // IPC: abrir flotante
 ipcMain.handle('floating-open', async () => {
   try {
     await createFloatingWindow();
+    try { broadcastCronoState(); } catch (e) {/*noop*/ }
+    if (crono.running) ensureCronoInterval();
     return { ok: true };
   } catch (e) {
     console.error("floating-open error:", e);
@@ -592,25 +693,20 @@ ipcMain.handle('floating-close', async () => {
   }
 });
 
-// IPC: reenviar estado del renderer principal al flotante
-ipcMain.on('floating-state', (_ev, state) => {
-  try {
-    if (floatingWin && !floatingWin.isDestroyed()) {
-      floatingWin.webContents.send('flotante-state', state);
-    }
-  } catch (e) {
-    console.error("Error reenviando floating-state al flotante:", e);
-  }
-});
-
-// IPC: comandos desde el flotante -> reenvío al renderer principal
+// IPC: comandos desde el flotante
 ipcMain.on('flotante-command', (_ev, cmd) => {
   try {
-    if (mainWin && mainWin.webContents) {
-      mainWin.webContents.send('flotante-command', cmd);
+    if (!cmd || !cmd.cmd) return;
+    if (cmd.cmd === 'toggle') {
+      if (crono.running) stopCrono(); else startCrono();
+    } else if (cmd.cmd === 'reset') {
+      resetCrono();
+    } else if (cmd.cmd === 'set' && typeof cmd.value !== 'undefined') {
+      setCronoElapsed(Number(cmd.value) || 0);
     }
+    // broadcastCronoState() ya es llamado por las funciones anteriores
   } catch (e) {
-    console.error("Error reenviando flotante-command al main renderer:", e);
+    console.error("Error procesando flotante-command en main:", e);
   }
 });
 
@@ -1211,27 +1307,27 @@ function persistCurrentTextOnQuit() {
 
 app.whenReady().then(() => {
   // On startup, check settings.language and possibly prompt
-let settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
-settings = normalizeSettings(settings);
+  let settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
+  settings = normalizeSettings(settings);
 
-// Si normalize añadió defaults (p. ej. modeConteo), guardamos de vuelta para persistirlo
-// (esto garantiza que user_settings.json contenga modeConteo desde el primer arranque).
-saveJson(SETTINGS_FILE, settings);
+  // Si normalize añadió defaults (p. ej. modeConteo), guardamos de vuelta para persistirlo
+  // (esto garantiza que user_settings.json contenga modeConteo desde el primer arranque).
+  saveJson(SETTINGS_FILE, settings);
 
-if (!settings.language || settings.language === "") {
-  createLanguageWindow();
-  ipcMain.once('language-selected', (_evt, lang) => {
-    try {
-      if (!mainWin) createMainWindow();
-    } catch (e) {
-      console.error("Error creando mainWin tras seleccionar idioma:", e);
-    } finally {
-      try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) {}
-    }
-  });
-} else {
-  createMainWindow();
-}
+  if (!settings.language || settings.language === "") {
+    createLanguageWindow();
+    ipcMain.once('language-selected', (_evt, lang) => {
+      try {
+        if (!mainWin) createMainWindow();
+      } catch (e) {
+        console.error("Error creando mainWin tras seleccionar idioma:", e);
+      } finally {
+        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { }
+      }
+    });
+  } else {
+    createMainWindow();
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
