@@ -231,13 +231,16 @@ async function updatePreviewAndResults(text) {
         // Pedimos a main que reseteé el crono (autoridad). También hacemos UI reset inmediato.
         window.electronAPI.sendCronoReset();
         uiResetTimer();
+        lastComputedElapsedForWpm = 0;
       } else {
         // Fallback local si no hay IPC (rare)
         uiResetTimer();
+        lastComputedElapsedForWpm = 0;
       }
     } catch (err) {
       console.error("Error pidiendo reset del crono tras cambio de texto:", err);
       uiResetTimer();
+      lastComputedElapsedForWpm = 0;
     }
   }
 }
@@ -249,11 +252,12 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       // Normalizar estado recibido
       const newElapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
       const newRunning = !!state.running;
+
       // Actualizar mirrors locales
       elapsed = newElapsed;
       running = newRunning;
 
-      // Actualizar display SOLO si el usuario NO está editando el campo
+      // Actualizar display SOLO si el usuario NO está editando el campo; sin embargo, si hubo transición running:true -> false, recalculamos WPM aunque se esté editando.
       if (timerDisplay && !timerEditing) {
         timerDisplay.value = (state && state.display) ? state.display : formatTimer(elapsed);
       }
@@ -261,22 +265,30 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       // Actualizar botón toggle
       if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
 
-      // WPM: calcular SOLO cuando el crono está parado (running === false).
-      // También queremos recalcular si hubo una transición running:true -> false (se acaba de pausar).
-      if (!running) {
-        // cuando está parado, recalculamos la velocidad
+      // WPM: recalcular en los casos relevantes:
+      //  - transición running:true -> false (pausa): recalcular siempre
+      //  - o si estamos parados (running===false) y elapsed cambió desde la última vez que calculamos
+      const becamePaused = (prevRunning === true && running === false);
+      if (becamePaused) {
+        // recalcular WPM inmediatamente al pausar (comportamiento antiguo)
         actualizarVelocidadRealFromElapsed(elapsed);
-      } else {
-        // si está corriendo, no recalculamos en cada broadcast
-        // (si deseas limpiar la WPM en vuelo, podrías hacerlo aquí; lo dejamos intacto)
+        lastComputedElapsedForWpm = elapsed;
+      } else if (!running) {
+        // estamos parados; solo recalcular si elapsed cambió desde la última vez que calculamos
+        if (lastComputedElapsedForWpm === null || lastComputedElapsedForWpm !== elapsed) {
+          actualizarVelocidadRealFromElapsed(elapsed);
+          lastComputedElapsedForWpm = elapsed;
+        }
       }
+      // Si running === true -> no recalculamos (evitamos updates continuos)
 
       // UI reset handling: si elapsed===0 y no está corriendo, forzamos la UI de reset
       if (!running && elapsed === 0) {
         uiResetTimer();
+        lastComputedElapsedForWpm = 0;
       }
 
-      // Actualizar prevRunning para detectar transiciones en la próxima emisión
+      // Actualizar prevRunning
       prevRunning = running;
     } catch (e) {
       console.error("Error manejando crono-state en renderer:", e);
@@ -975,6 +987,8 @@ let running = false;
 let prevRunning = false;
 // Indica si el usuario está editando manualmente el campo del timer (para evitar sobrescrituras)
 let timerEditing = false;
+// Último elapsed para el que calculamos WPM (evitar recálculos repetidos)
+let lastComputedElapsedForWpm = null;
 
 function formatTimer(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -1138,18 +1152,21 @@ function applyManualTime() {
         // Mostrar inmediatamente el valor aplicado y recalcular WPM localmente (comportamiento antiguo)
         if (timerDisplay) timerDisplay.value = formatTimer(ms);
         actualizarVelocidadRealFromElapsed(ms);
+        lastComputedElapsedForWpm = ms;
       } catch (e) {
         console.error("Error enviando setCronoElapsed:", e);
         // Fallback local
         elapsed = ms;
         if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
         actualizarVelocidadRealFromElapsed(elapsed);
+        lastComputedElapsedForWpm = elapsed;
       }
     } else {
       // Fallback local (no main available)
       elapsed = ms;
       if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
       actualizarVelocidadRealFromElapsed(elapsed);
+      lastComputedElapsedForWpm = elapsed;
     }
   } else {
     // entrada inválida -> restaurar valor visible al último estado
