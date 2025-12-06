@@ -2,28 +2,12 @@
 
 # ÍTEM ACTUAL #
 
-* Ventana flotante del cronómetro *
-
-- Crear una ventana flotante de superposición (o PIP) que permita ver e interactuar con el cronómetro en una ventana pequeña que flota sobre otras aplicaciones.
-  - La ventana, si es posible, debe estar activa y permitir al usuario interactuar con ella de forma inmediata (haciendo clics en los botones y a través de shorcuts del teclado).
-  - En ella deben aparecer el cronómetro (activo) y los botones "⏯" y "⏮". Nada más.
-  - Que sea muy discreta, muy pequeña y ojala semitransparente.
-  - Con dimensiones fijas y que el usuario pueda moverla y fijarla en cualquier parte de la pantalla.
-- Activar y desactivar desde el cronómetro con el botón "VF" desde la ventana principal. Este botón debe funcionar como un switch.
-- La app debe iniciar siempre con la ventana flotante desactivada.
-- En lo posible, que esta nueva funcionalidad no se mezcle demasiado con el resto del código de la app, para poder facilitar la mantención y el orden.
-
-# Más adelante #
-
-* Short-cuts *
-- Actualmente tenemos un botón de Short-cuts en el menú que no está funcional.
-- Habilitar este botón para que abra una lista de shortcuts del teclado que sea editable por el usuario.
-  - Tomar como base los short-cuts implementados para la ventana flotante del cronómetro.
-
 * Pulir informativos del Menú *
  - Hasta ahora los botones del menú guía básica, instrucciones, faq, readme y acerca de, llevan a sus propios html respectivos en la carpeta public/info/.
  - Ver la posibilidad de que todos estos usen un mismo html, llevandolos a sus sección respectiva.
   - NOTA: Verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
+
+# Más adelante #
 
 * Internacionalización *
 - Agregar soporte multilenguaje
@@ -39,7 +23,14 @@ function setIdiomaActual(nuevoIdioma) {
 
 * Implementar semiauto-update *
 
-* Revisión y depuración del código*
+* Revisión y depuración del código *
+
+* Integración a extensiones de navegadores *
+
+* Atajos del teclado *
+- Actualmente tenemos un botón de Short-cuts en el menú que no está funcional.
+- Habilitar este botón para que abra una lista de shortcuts del teclado que sea editable por el usuario.
+- ¿Atajos del teclado sin focus en la ventana principal?
 
 * Nuevas funciones *
 
@@ -78,6 +69,8 @@ function setIdiomaActual(nuevoIdioma) {
 * Estilos/skins *
 
 * Mejorar Readme * 
+- listar bugs (o crear un archivo nuevo de bugs)
+- mudar changelog a nuevo archivo
 
 * Revisar seguridad de la aplicación y legalidad *
  - Licencia de la fuente kremlin duma para logo Cibersin
@@ -115,6 +108,8 @@ function setIdiomaActual(nuevoIdioma) {
 - Reemplazar el ícono de Electron que aparece en las ventanas (en la esquina superior izquierda) por un ícono propio. ¿Es posible?
 - Empaquetado para Windows, versión de prueba *
 - Construir versión portable
+
+* Conversión para aplicaciones para dispositivos moviles y kindle *
 
 # PLAN GENERAL #
 

@@ -1,5 +1,5 @@
 ### toT — Reading Meter ###
-**Versión:** 0.0.8 (2025/12/03)  
+**Versión:** 0.0.9 (2025/12/05)  
 
 Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar tiempos de lectura, cronometrar lecturas y gestionar presets de velocidad (WPM).
 
@@ -176,39 +176,36 @@ Nota técnica:
   - Truncado y feedback sincronizado: paste/drop/input se truncarán localmente y se notificará al usuario; el main confirma truncado via respuesta.
 
 **0.0.8** (2025/12/03)
+Nueva funcionalidad: Modo de conteo de texto
+(y avance en soporte multilenguaje)
 
-### Nueva funcionalidad: Modo de conteo de texto
+* Modo preciso vs. modo simple
 
-* **Modo preciso vs. modo simple**
+- Se añadió un toggle visual (switch) “Modo preciso” en la sección de **Resultados del conteo**.
+- Switch activado → modo de conteo **preciso**. Switch desactivado → modo de conteo **simple**.
+- Cambiar el modo recalcula automáticamente el texto vigente.
+- La preferencia se guarda de forma persistente en `user_settings.json`.
+- La configuración se aplica al inicio de la app, garantizando coherencia.
 
-  * Se añadió un toggle visual (switch) “Modo preciso” en la sección de **Resultados del conteo**.
-  * Switch activado → modo de conteo **preciso**.
-    Switch desactivado → modo de conteo **simple**.
-  * Cambiar el modo recalcula automáticamente el texto vigente.
-  * La preferencia se guarda de forma persistente en `user_settings.json`.
-  * La configuración se aplica al inicio de la app, garantizando coherencia.
+* Funciones de conteo
 
-### Funciones de conteo
+- `contarTextoSimple(texto)`
+  - Basado en regex y `length`.
+  - Bajo costo computacional.
+  - Compatible con todos los entornos.
+  - Mantiene el comportamiento histórico.
 
-* **`contarTextoSimple(texto)`**
+- `contarTextoPreciso(texto, language)`
+  - Basado en `Intl.Segmenter`.
+  - Segmentación real de grafemas y palabras.
+  - Compatible con Unicode extendido (emojis, alfabetos no latinos, ligaduras).
+  - Fallback si `Intl.Segmenter` no existe:
+    - Grafemas con spread.
+    - Palabras por `\b` / `\s+`.
 
-  * Basado en regex y `length`.
-  * Bajo costo computacional.
-  * Compatible con todos los entornos.
-  * Mantiene el comportamiento histórico.
+- Variable global `modoConteo` selecciona el método apropiado.
 
-* **`contarTextoPreciso(texto, language)`**
-
-  * Basado en `Intl.Segmenter`.
-  * Segmentación real de grafemas y palabras.
-  * Compatible con Unicode extendido (emojis, alfabetos no latinos, ligaduras).
-  * Fallback si `Intl.Segmenter` no existe:
-
-    * Grafemas con spread.
-    * Palabras por `\b` / `\s+`.
-  * Variable global `modoConteo` selecciona el método apropiado.
-
-* Ambas funciones retornan un objeto uniforme:
+- Ambas funciones retornan un objeto uniforme:
 
 ```js
 {
@@ -217,30 +214,31 @@ Nota técnica:
   palabras: Number
 }
 ```
+- Esto permite cambiar de modo sin afectar el resto del renderer.
 
-Esto permite cambiar de modo sin afectar el resto del renderer.
+* Soporte multilenguaje
 
-### Soporte multilenguaje
+- Variable global `idiomaActual` cargada desde `settingsCache.language`.
+- Función `setIdiomaActual(nuevoIdioma)` permite cambios dinámicos de idioma.
+- `Intl.Segmenter` utiliza el idioma correcto.
+- La app puede cambiar idioma dinámicamente y el conteo se adapta sin reinicio.
 
-* Variable global `idiomaActual` cargada desde `settingsCache.language`.
-* Función `setIdiomaActual(nuevoIdioma)` permite cambios dinámicos de idioma.
-* `Intl.Segmenter` utiliza el idioma correcto.
-* La app puede cambiar idioma dinámicamente y el conteo se adapta sin reinicio.
+* Persistencia y sincronización
 
-### Persistencia y sincronización
+- `modeConteo` agregado a `user_settings.json`.
 
-* `modeConteo` agregado a `user_settings.json`.
-* Cambios emitidos vía IPC (`settings-updated`) al renderer para refrescar UI.
-* Handlers que modifican `user_settings.json` emiten `settings-updated` automáticamente:
+- Cambios emitidos vía IPC (`settings-updated`) al renderer para refrescar UI.
 
-  * `set-language`
-  * `create-preset`
-  * `edit-preset`
-  * `request-delete-preset`
-  * `request-restore-defaults`
-* Esto garantiza sincronización inmediata entre **main** y **renderer**.
+- Handlers que modifican `user_settings.json` emiten `settings-updated` automáticamente:
+  - `set-language`
+  - `create-preset`
+  - `edit-preset`
+  - `request-delete-preset`
+  - `request-restore-defaults`
 
-### Funciones auxiliares
+- Esto garantiza sincronización inmediata entre **main** y **renderer**.
+
+* Funciones auxiliares
 
 ```js
 function setModoConteo(nuevoModo) {
@@ -255,25 +253,56 @@ function setIdiomaActual(nuevoIdioma) {
   }
 }
 ```
+- Preparadas para uso desde Menú o cualquier otra parte de la app.
 
-* Preparadas para uso desde Menú o cualquier otra parte de la app.
+* Interfaz de usuario
 
-### Interfaz de usuario
+- Switch “Modo preciso” integrado en **Resultados del conteo**:
 
-* Switch “Modo preciso” integrado en **Resultados del conteo**:
+  - Ahora alineado a la derecha, junto a la etiqueta.
+  - Palabras, caracteres con/sin espacio permanecen en la misma línea.
+- Diseño refinado y consistente con la sección de resultados.
+- Preparada para ajustes estéticos (tamaño del switch, espaciado).
 
-  * Ahora alineado a la derecha, junto a la etiqueta.
-  * Palabras, caracteres con/sin espacio permanecen en la misma línea.
-* Diseño refinado y consistente con la sección de resultados.
-* Preparada para ajustes estéticos (tamaño del switch, espaciado).
+* Resumen de la base técnica
 
-### Resumen de la base técnica
+- Dos sistemas de conteo coexistentes.
+- Modo preciso profesional y Unicode-aware.
+- Persistencia y sincronización automáticas.
+- Arquitectura lista para soporte multilenguaje.
+- Código optimizado para velocidad (no se leen repetidamente los settings).
 
-* Dos sistemas de conteo coexistentes.
-* Modo preciso profesional y Unicode-aware.
-* Persistencia y sincronización automáticas.
-* Arquitectura lista para soporte multilenguaje.
-* Código optimizado para velocidad (no se leen repetidamente los settings).
+**0.0.9** (2025/12/05)
+Implementación Ventana Flotante del Cronómetro 
++ migración del cronómetro al main process
+
+* Resumen ejecutivo 
+Se implementó una ventana flotante (VF) funcional y controlable que requirió mover la autoría del cronómetro al main process; el resultado es un cronómetro fiable y sincronizado entre ventana principal y VF, con UX y recursos optimizados.
+
+* Resultado final
+
+- Cronómetro ahora autoritativo en `main`; `renderer` y `flotante` son clientes (comandos → `main`, `crono-state` desde `main` → clientes).
+- VF (ventana flotante) implementada como `BrowserWindow` minimalista, movible, siempre-on-top, semitransparente, con controles ▶ / ⏸ / ⏹ y sin mostrar velocidad.
+- Interacción inmediata desde VF: comandos aplican en `main` y estado se difunde a ambas vistas.
+- Comportamiento y UX replican la versión anterior (antes en renderer) pero robusto frente a throttling/background.
+
+* Archivos afectados
+
+- `main.js` — añadido cronómetro central (`crono`), handlers `crono-toggle`, `crono-reset`, `crono-set-elapsed`, broadcast (`crono-state`) y `createFloatingWindow()` actualizado (posicionamiento).
+- `preload.js` — exposiciones IPC nuevas: `sendCronoToggle`, `sendCronoReset`, `setCronoElapsed`, `getCronoState`, `onCronoState`, `openFloatingWindow`, `closeFloatingWindow`.
+- `renderer.js` — adaptado para espejo (`elapsed`, `running`), `onCronoState` handler, `timerEditing` logic, reemplazo de VF button por switch, WPM logic y `updatePreviewAndResults()` gatillando `resetTimer()`.
+- `flotante_preload.js` / `flotante.js` — listeners y envíos de comandos (`flotante-command`) a `main`; render minimalista (timer + toggle + reset).
+- `index.html` / `style.css` — reemplazo del botón VF por el `switch` y reutilización de estilos existentes `.switch` / `.slider`; estilos de cronómetro y timer-controls limpios.
+
+* Bugs abiertos y prioridad
+
+- VF desaparece al hacer clic sobre ella cuando hay otra aplicación en fullscreen (ej: slideshow, juego) — prioridad baja.
+- Observación: comportamiento dependiente del SO/gestor de ventanas; por diseño se permitió que la VF ceda topmost en fullscreen (requisito inicial). Queda por investigar si preferimos forzar visibilidad (posibles conflictos en UX/OS).
+
+* Notas técnicas y decisión clave
+
+- Decisión arquitectural: mantener la lógica de timekeeping en `main` (Date.now + interval) es la pieza esencial que resolvió el problema de sincronización y throttling.
+- Se priorizó fiabilidad y consistencia por sobre una implementación que dejara el cronómetro en renderer.
 
 ## Autor y Créditos ##
 
