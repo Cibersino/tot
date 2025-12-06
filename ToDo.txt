@@ -2,13 +2,6 @@
 
 # ÍTEM ACTUAL #
 
-* Pulir informativos del Menú *
- - Hasta ahora los botones del menú guía básica, instrucciones, faq, readme y acerca de, llevan a sus propios html respectivos en la carpeta public/info/.
- - Ver la posibilidad de que todos estos usen un mismo html, llevandolos a sus sección respectiva.
-  - NOTA: Verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
-
-# Más adelante #
-
 * Internacionalización *
 - Agregar soporte multilenguaje
 - Selector de idioma en el menú
@@ -21,16 +14,12 @@ function setIdiomaActual(nuevoIdioma) {
 }
 - Archivos de 18i.
 
+# Más adelante #
+
 * Implementar semiauto-update *
 
 * Revisión y depuración del código *
-
-* Integración a extensiones de navegadores *
-
-* Atajos del teclado *
-- Actualmente tenemos un botón de Short-cuts en el menú que no está funcional.
-- Habilitar este botón para que abra una lista de shortcuts del teclado que sea editable por el usuario.
-- ¿Atajos del teclado sin focus en la ventana principal?
+- EsLint
 
 * Nuevas funciones *
 
@@ -38,9 +27,10 @@ function setIdiomaActual(nuevoIdioma) {
   - Archivos de imagen:
     - Ejemplo: foto de una página común de un libro
     - Esto permitiría hacer una función que estime el total del libro tras:
+      - Que el usuario confirme si la extracción fue exitosa
       - Preguntar cantidad de páginas totales del libro
       - Copiar el texto extraido al portapapeles
-      - Usar funcion "Pegar portapapeles nueva línea" la misma cantidad de iteraciones que las páginas del libro.
+      - Usar función "Pegar portapapeles nueva línea" la misma cantidad de iteraciones que las páginas del libro.
     - posibilidad de sacar una foto mediante la camara del dispositivo
   - archivos de texto:
     - formatos simples (txt, doc, docx, rtf, etc)
@@ -66,14 +56,9 @@ function setIdiomaActual(nuevoIdioma) {
       Descripción: Velocidad testeada del usuario.
     - El usuario puede modificar, guardar y cerrar el modal, con las mismas consecuencias que tiene toda creación de Nuevo preset.
 
-* Estilos/skins *
-
 * Mejorar Readme * 
 - listar bugs (o crear un archivo nuevo de bugs)
 - mudar changelog a nuevo archivo
-
-* Revisar seguridad de la aplicación y legalidad *
- - Licencia de la fuente kremlin duma para logo Cibersin
 
 * Habilitar botones faltantes del menú *
 
@@ -98,11 +83,23 @@ function setIdiomaActual(nuevoIdioma) {
 - ?
   - Actualizar a última versión
 
-* Actualización de botones informativos del menú *
-- Modificar htmls de los botones con información: guía básica, instrucciones, faq, readme y acerca de.
-  - NOTA: Verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
+* Integración a extensiones de navegadores *
+
+* Estilos/skins *
+
+* Revisar seguridad de la aplicación y legalidad *
+ - Licencia de la fuente kremlin duma para logo Cibersin
+ - Fuentes usadas
+ - Apis usadas
 
 * Revisión y depuración del código*
+
+* Atajos del teclado *
+- Actualmente tenemos un botón de Short-cuts en el menú que no está funcional.
+- Habilitar este botón para que abra una lista de shortcuts del teclado que sea editable por el usuario.
+- ¿Atajos del teclado sin focus en la ventana principal?
+
+* Revisión y depuración del código *
 
 * Empaquetado multiplataforma (Windows, macOS y Linux) *
 - Reemplazar el ícono de Electron que aparece en las ventanas (en la esquina superior izquierda) por un ícono propio. ¿Es posible?

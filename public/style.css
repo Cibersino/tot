@@ -135,7 +135,7 @@ body {
   top: 67px;
   left: 4px;
   right: 0;
-  height: 146px;
+  height: 156px;
   width: 819px;
   background: var(--selector-bg);
   border: 1px solid var(--section-border);
@@ -148,22 +148,23 @@ pre#textPreview {
   color: #333;
   padding: 6px;
   border: 1px solid #eee;
-  height: 84px;
+  height: 94px;
   overflow-y: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-break: break-word;
   margin: 0;
   box-sizing: border-box;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.15;
+  font-family: 'Baskervville', serif;
   margin-top: 4px;
   margin-bottom: 4px;
 }
 
 /* SECCIÓN VELOCIDAD DE LECTURA */
 .velocity {
-  top: 218px;
+  top: 228px;
   left: 4px;
   height: 155px;
   width: 398px;
@@ -216,7 +217,7 @@ select#presets {
 /* SECCIÓN RESULTADOS DEL CONTEO */
 .results {
   position: relative;          /* necesario para que .help-row absolute funcione */
-  top: 218px;
+  top: 228px;
   left: 407px;
   height: 155px;
   width: 416px;
@@ -332,7 +333,7 @@ select#presets {
 
 /* SECCIÓN CRONÓMETRO */
 .cronometro {
-  top: 378px;
+  top: 388px;
   left: 4px;
   height: 98px;
   width: 232px;
@@ -392,7 +393,7 @@ select#presets {
 
 /* SECCION DISPONIBLE */
 .spare {
-  top: 378px;
+  top: 388px;
   left: 241px;
   height: 98px;
   width: 582px;
@@ -412,7 +413,7 @@ select#presets {
   justify-content: center
 }
 
-.info-modal[aria-hidden="false"] {
+.info-modal[aria-hidden="false"] {  
   display: flex
 }
 
@@ -424,40 +425,74 @@ select#presets {
 }
 
 .info-modal-panel {
+  --info-header-height: 48px;
   position: relative;
   max-width: 860px;
   width: calc(100% - 32px);
-  max-height: 80vh;
+  max-height: 85vh;
   overflow: auto;
-  background: #fff;
+  background: #fdf6e3;
   border-radius: 8px;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
   z-index: 1001;
-  padding: 18px;
-  box-sizing: border-box
+  padding: 0 18px 18px;
+  box-sizing: border-box;
+  font-family: 'Baskervville', serif;
 }
 
 .info-modal-header {
+  position: sticky;
+  top: 0;                         /* permanece en la parte superior del panel */
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px
+  justify-content: flex-end;      /* botón "Cerrar" a la derecha */
+  height: var(--info-header-height);
+  padding: 0 12px;                /* espacio horizontal para el botón */
+  z-index: 1002;                  /* por encima del contenido */
+  background: transparent;        /* deja el contenido visible debajo si quieres */
 }
 
 .info-modal-header h2 {
-  margin: 0;
-  font-size: 1.1rem
+  display: none
 }
 
 .info-modal-content {
-  font-size: 14px;
+  font-size: 24px;
   color: #222;
-  line-height: 1.45
+  line-height: 1.45;
+  margin-top: calc(-1 * var(--info-header-height));
+}
+
+.info-modal-content h1 {
+  font-size: 28px;
+}
+
+.info-modal-content h2 {
+  font-size: 26px;
+}
+
+.info-modal-content h3 {
+  font-size: 20px;
+  font-style: italic;
+  padding-top: 0
 }
 
 .info-modal-content pre {
   white-space: pre-wrap;
   word-break: break-word
+}
+
+.info-section {
+  background-color: var(--bg-color);
+  text-align: justify
+}
+
+.info-section div {
+  margin: 10px;
+}
+
+.info-modal-content:focus {
+  outline: none !important;
 }
 
 .info-loading {

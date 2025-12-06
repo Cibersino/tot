@@ -206,8 +206,8 @@ async function updatePreviewAndResults(text) {
   } else if (n <= 200) {
     textPreview.textContent = displayText;
   } else {
-    const start = displayText.slice(0, 275);
-    const end = displayText.slice(-275);
+    const start = displayText.slice(0, 320); // PREVIEW TEXTO VIGENTE VENTANA PRINCIPAL
+    const end = displayText.slice(-320);
     textPreview.textContent = `${start}... | ...${end}`;
   }
 
@@ -555,8 +555,8 @@ const loadPresets = async () => {
   }
 
   async function showInfoModal(key, opts = {}) {
-    // key: 'readme' | 'instrucciones' | 'faq' | 'acerca'
-    const titles = {
+    // key: 'readme' | 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
+    const sectionTitles = {
       readme: "Readme",
       instrucciones: "Instrucciones completas",
       guia_basica: "Guía básica",
@@ -566,35 +566,94 @@ const loadPresets = async () => {
 
     if (!infoModal || !infoModalTitle || !infoModalContent) return;
 
-    infoModalTitle.textContent = titles[key] || (opts.title || "Información");
+    // Decide qué archivo cargar según la key.
+    // Unificamos guia_basica, instrucciones y faq en ./info/instrucciones.html
+    let fileToLoad = null;
+    let sectionId = null;
+
+    if (key === 'readme') {
+      fileToLoad = './info/readme.html';
+    } else if (key === 'acerca_de' || key === 'acerca_de') {
+      fileToLoad = './info/acerca_de.html';
+    } else if (key === 'guia_basica' || key === 'instrucciones' || key === 'faq') {
+      fileToLoad = './info/instrucciones.html';
+      // mapear key a id del bloque dentro de instrucciones.html
+      const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
+      sectionId = mapping[key] || 'instrucciones';
+    } else {
+      // fallback: intentar cargar ./info/<key>.html (compatibilidad)
+      fileToLoad = `./info/${key}.html`;
+    }
+
+    // Título del modal: mostrar el título de la sección (no "Info" genérico)
+    infoModalTitle.textContent = sectionTitles[key] || (opts.title || "Información");
+
+    // Abrir modal
     infoModal.setAttribute("aria-hidden", "false");
 
-    // Intentar cargar ./info/<key>.html primero
-    const tryHtml = await fetchText(`./info/${key}.html`);
-    if (tryHtml !== null) {
-      infoModalContent.innerHTML = tryHtml;
-      if (infoModalContent && typeof infoModalContent.focus === "function") {
-        infoModalContent.focus();
-      }
+    // Cargar HTML
+    const tryHtml = await fetchText(fileToLoad);
+    if (tryHtml === null) {
+      // fallback: indicar falta de contenido
+      infoModalContent.innerHTML =
+        `<p>No hay contenido disponible para "${infoModalTitle.textContent}".</p>`;
+      if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
       return;
     }
 
-    // Si no hay archivo, mostrar texto por defecto
-    infoModalContent.innerHTML =
-      `<p>No hay contenido disponible para "${infoModalTitle.textContent}".</p>`;
+    // Poner contenido (documento completo)
+    infoModalContent.innerHTML = tryHtml;
 
-    if (infoModalContent && typeof infoModalContent.focus === "function") {
-      infoModalContent.focus();
+    // Asegurar que el panel empieza en top antes de hacer scroll
+    const panel = document.querySelector('.info-modal-panel');
+    if (panel) panel.scrollTop = 0;
+
+    // Si se pidió una sección concreta, scrollear para que aparezca *arriba* del panel
+    if (sectionId) {
+      // Esperar al siguiente frame para que el DOM parseado esté layoutado
+      requestAnimationFrame(() => {
+        try {
+          const target = infoModalContent.querySelector(`#${sectionId}`);
+          if (!target) {
+            // si no existe el id, no hacemos nada más
+            if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
+            return;
+          }
+
+          try {
+            target.scrollIntoView({ behavior: 'auto', block: 'start' });
+          } catch (err) {
+            // Fallback defensivo: calcular top relativo sin compensar por header
+            const panelRect = panel.getBoundingClientRect();
+            const targetRect = target.getBoundingClientRect();
+            const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
+            const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
+            panel.scrollTo({ top: finalTop, behavior: 'auto' });
+          }
+
+          // finalmente, dar foco al contenido para que el lector pueda usar teclado
+          if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
+        } catch (e) {
+          console.error("Error desplazando modal a sección:", e);
+          if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
+        }
+      });
+    } else {
+      // No hay sección: solo enfocar el contenido (documento entero)
+      if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
     }
   }
 
   // ======================= BARRA SUPERIOR: registrar acciones con menuActions =======================
   // Asegúrate de que menu.js fue cargado (script incluido antes de renderer.js)
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
+
     // Registrar acción para "guia_basica"
     window.menuActions.registerMenuAction("guia_basica", () => { showInfoModal("guia_basica") });
+
     // Registrar acción para "instrucciones_completas"
     window.menuActions.registerMenuAction("instrucciones_completas", () => { showInfoModal("instrucciones") });
+
     // Registrar acción para "faq"
     window.menuActions.registerMenuAction("faq", () => { showInfoModal("faq") });
 
@@ -687,8 +746,9 @@ const loadPresets = async () => {
       console.log("Actualizar a última versión pulsado - acción temporal (registrada vía menuActions)");
       alert("WIP: Aquí se iniciará el proceso de actualización en una futura versión.");
     });
-    // Registrar acción para "acerca_de"
+    // Registrar acción para "readme"
     window.menuActions.registerMenuAction("readme", () => { showInfoModal("readme") });
+
     // Registrar acción para "acerca_de"
     window.menuActions.registerMenuAction("acerca_de", () => { showInfoModal("acerca_de") });
 
