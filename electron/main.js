@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -109,7 +109,8 @@ let mainWin = null, // ventana principal
   editorWin = null, // ventana modal para edición del texto vigente
   presetWin = null, // ventana modal para nuevo/editar preset wpm
   currentText = "", // texto vigente
-  langWin = null; // ventana modal selección de idioma (primer arranque)
+  langWin = null, // ventana modal selección de idioma (primer arranque)
+  floatingWin = null; // ventana flotante (cronómetro)
 
 // Load current text from file at startup (if exists)
 try {
@@ -130,7 +131,7 @@ function createMainWindow() {
   // Nota: useContentSize:true hace que width/height se apliquen al contenido (sin incluir bordes)
   mainWin = new BrowserWindow({
     width: 828,
-    height: 470,
+    height: 480,
     useContentSize: true,
     resizable: false,      // ventana no redimensionable por el usuario
     maximizable: false,    // no permitir maximizar (mantener dimensiones fijas)
@@ -519,7 +520,256 @@ function createLanguageWindow() {
   });
 }
 
-/* IPC handlers (existing ones kept unchanged) */
+// ----------------- Ventana flotante (PIP) -----------------
+const FLOATER_PRELOAD = path.join(__dirname, 'flotante_preload.js');
+// Ruta del HTML del flotante: colocarlo en ../public para seguir la convención
+const FLOATER_HTML = path.join(__dirname, '../public/flotante.html');
+
+async function createFloatingWindow(options = {}) {
+  // Si ya existe y no fue destruida, devolverla (no recrear)
+  if (floatingWin && !floatingWin.isDestroyed()) {
+    // Si se pidió forzar posición nueva, aplicarla
+    if (options && (typeof options.x === 'number' || typeof options.y === 'number')) {
+      try { floatingWin.setBounds({ x: options.x || floatingWin.getBounds().x, y: options.y || floatingWin.getBounds().y }); } catch (e) { /* noop */ }
+    }
+    return floatingWin;
+  }
+
+  const bwOpts = {
+    width: 220,
+    height: 70,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    movable: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    focusable: true,
+    webPreferences: {
+      preload: FLOATER_PRELOAD,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  };
+
+  // Valores de margen para que la VF no quede pegada exactamente al borde ni sobre los scrollbars.
+  // Ajusta estos valores si lo deseas (en px).
+  const DEFAULT_MARGIN_RIGHT = 30; // un poco a la izquierda del extremo derecho para evitar scrollbars
+  const DEFAULT_MARGIN_BOTTOM = 20;  // espacio encima de la barra de tareas / dock
+
+  // Calcular posición por defecto en base al monitor principal (workArea excluye taskbar/dock)
+  let pos = {};
+  try {
+    const display = screen.getPrimaryDisplay();
+    const wa = display && display.workArea ? display.workArea : null;
+
+    if (wa) {
+      // Si el usuario no forzó x/y via options, calculamos la esquina inferior derecha del workArea.
+      const marginRight = typeof options.marginRight === 'number' ? options.marginRight : DEFAULT_MARGIN_RIGHT;
+      const marginBottom = typeof options.marginBottom === 'number' ? options.marginBottom : DEFAULT_MARGIN_BOTTOM;
+
+      const x = wa.x + wa.width - bwOpts.width - marginRight;
+      const y = wa.y + wa.height - bwOpts.height - marginBottom;
+
+      pos.x = x;
+      pos.y = y;
+    }
+  } catch (e) {
+    console.warn("No se pudo calcular posición desde screen.getPrimaryDisplay(); flotar en posición por defecto.", e);
+  }
+
+  // Si se pasaron explícitamente x/y en options, respetarlas (permitir override)
+  if (typeof options.x === 'number') pos.x = options.x;
+  if (typeof options.y === 'number') pos.y = options.y;
+
+  // Combinar opciones calculadas con bwOpts, permitiendo que caller sobreescriba
+  const createOpts = Object.assign({}, bwOpts, pos, options);
+
+  floatingWin = new BrowserWindow(createOpts);
+
+  // Cargar el HTML del flotante
+  try {
+    await floatingWin.loadFile(FLOATER_HTML);
+  } catch (e) {
+    console.error("Error cargando flotante HTML:", e);
+  }
+
+  // Si la ventana se creó pero quedó offscreen o fuera de bounds (raro), aseguramos que esté dentro de la pantalla
+  try {
+    const bounds = floatingWin.getBounds();
+    const display = screen.getDisplayMatching(bounds);
+    if (display && display.workArea) {
+      const wa = display.workArea;
+      // Ajustar por si quedó parcialmente fuera (lo mantenemos simple)
+      let nx = bounds.x, ny = bounds.y;
+      if (bounds.x < wa.x) nx = wa.x + DEFAULT_MARGIN_RIGHT;
+      if (bounds.y < wa.y) ny = wa.y + DEFAULT_MARGIN_BOTTOM;
+      if ((bounds.x + bounds.width) > (wa.x + wa.width)) nx = wa.x + wa.width - bounds.width - DEFAULT_MARGIN_RIGHT;
+      if ((bounds.y + bounds.height) > (wa.y + wa.height)) ny = wa.y + wa.height - bounds.height - DEFAULT_MARGIN_BOTTOM;
+      if (nx !== bounds.x || ny !== bounds.y) {
+        floatingWin.setBounds({ x: nx, y: ny });
+      }
+    }
+  } catch (e) {
+    // noop
+  }
+
+  // Notificar cierre para que el renderer principal pueda limpiar estado
+  floatingWin.on('closed', () => {
+    floatingWin = null;
+    // Notificar al renderer principal si necesita limpiar estado
+    if (mainWin && mainWin.webContents) {
+      try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }
+    }
+  });
+
+  // Opcional: si la app quiere que la flotante no robe foco en ciertos flujos, se podría usar showInactive() en vez de show(), pero en tu caso quieres interacción inmediata, así que dejamos que sea focusable=true y que tome foco al abrir.
+  return floatingWin;
+}
+
+/* ---------------- Cronómetro central en main (timekeeping + broadcast) ----------------*/
+
+let crono = {
+  running: false,
+  elapsed: 0,
+  startTs: null
+};
+
+let cronoInterval = null;
+const CRONO_BROADCAST_MS = 1000; // ajustable si quieres menor carga
+
+function formatTimerMs(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+  const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+function getCronoState() {
+  const elapsedNow = crono.running ? (crono.elapsed + (Date.now() - crono.startTs)) : crono.elapsed;
+  return { elapsed: elapsedNow, running: !!crono.running, display: formatTimerMs(elapsedNow) };
+}
+
+function broadcastCronoState() {
+  const state = getCronoState();
+  try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
+  try { if (floatingWin && !floatingWin.isDestroyed()) floatingWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
+  try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
+}
+
+function ensureCronoInterval() {
+  if (cronoInterval) return;
+  cronoInterval = setInterval(() => {
+    broadcastCronoState();
+    // opción: parar el interval si nadie escucha y no está corriendo
+    if (!crono.running && !mainWin && !floatingWin && !editorWin) {
+      clearInterval(cronoInterval);
+      cronoInterval = null;
+    }
+  }, CRONO_BROADCAST_MS);
+}
+
+function startCrono() {
+  if (!crono.running) {
+    crono.running = true;
+    crono.startTs = Date.now();
+    ensureCronoInterval();
+    broadcastCronoState();
+  }
+}
+
+function stopCrono() {
+  if (crono.running) {
+    crono.elapsed = crono.elapsed + (Date.now() - crono.startTs);
+    crono.startTs = null;
+    crono.running = false;
+    broadcastCronoState();
+  }
+}
+
+function resetCrono() {
+  crono.running = false;
+  crono.startTs = null;
+  crono.elapsed = 0;
+  broadcastCronoState();
+}
+
+function setCronoElapsed(ms) {
+  const n = Number(ms) || 0;
+  crono.elapsed = n;
+  if (crono.running) crono.startTs = Date.now();
+  broadcastCronoState();
+}
+
+ipcMain.handle('crono-get-state', () => {
+  return getCronoState();
+});
+
+ipcMain.on('crono-toggle', () => {
+  try {
+    if (crono.running) stopCrono(); else startCrono();
+  } catch (e) {
+    console.error("Error en crono-toggle:", e);
+  }
+});
+
+ipcMain.on('crono-reset', () => {
+  try { resetCrono(); } catch (e) { console.error("Error en crono-reset:", e); }
+});
+
+ipcMain.on('crono-set-elapsed', (_ev, ms) => {
+  try { setCronoElapsed(ms); } catch (e) { console.error("Error en crono-set-elapsed:", e); }
+});
+
+app.on('will-quit', () => {
+  try { if (cronoInterval) { clearInterval(cronoInterval); cronoInterval = null; } } catch (e) { /* noop */ }
+});
+
+// IPC: abrir flotante
+ipcMain.handle('floating-open', async () => {
+  try {
+    await createFloatingWindow();
+    try { broadcastCronoState(); } catch (e) {/*noop*/ }
+    if (crono.running) ensureCronoInterval();
+    return { ok: true };
+  } catch (e) {
+    console.error("floating-open error:", e);
+    return { ok: false, error: String(e) };
+  }
+});
+
+// IPC: cerrar flotante
+ipcMain.handle('floating-close', async () => {
+  try {
+    if (floatingWin && !floatingWin.isDestroyed()) {
+      floatingWin.close();
+      floatingWin = null;
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error("floating-close error:", e);
+    return { ok: false, error: String(e) };
+  }
+});
+
+// IPC: comandos desde el flotante
+ipcMain.on('flotante-command', (_ev, cmd) => {
+  try {
+    if (!cmd || !cmd.cmd) return;
+    if (cmd.cmd === 'toggle') {
+      if (crono.running) stopCrono(); else startCrono();
+    } else if (cmd.cmd === 'reset') {
+      resetCrono();
+    } else if (cmd.cmd === 'set' && typeof cmd.value !== 'undefined') {
+      setCronoElapsed(Number(cmd.value) || 0);
+    }
+    // broadcastCronoState() ya es llamado por las funciones anteriores
+  } catch (e) {
+    console.error("Error procesando flotante-command en main:", e);
+  }
+});
 
 // Open editor window (or focus + send current text)
 ipcMain.handle("open-editor", () => {
@@ -1118,27 +1368,27 @@ function persistCurrentTextOnQuit() {
 
 app.whenReady().then(() => {
   // On startup, check settings.language and possibly prompt
-let settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
-settings = normalizeSettings(settings);
+  let settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
+  settings = normalizeSettings(settings);
 
-// Si normalize añadió defaults (p. ej. modeConteo), guardamos de vuelta para persistirlo
-// (esto garantiza que user_settings.json contenga modeConteo desde el primer arranque).
-saveJson(SETTINGS_FILE, settings);
+  // Si normalize añadió defaults (p. ej. modeConteo), guardamos de vuelta para persistirlo
+  // (esto garantiza que user_settings.json contenga modeConteo desde el primer arranque).
+  saveJson(SETTINGS_FILE, settings);
 
-if (!settings.language || settings.language === "") {
-  createLanguageWindow();
-  ipcMain.once('language-selected', (_evt, lang) => {
-    try {
-      if (!mainWin) createMainWindow();
-    } catch (e) {
-      console.error("Error creando mainWin tras seleccionar idioma:", e);
-    } finally {
-      try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) {}
-    }
-  });
-} else {
-  createMainWindow();
-}
+  if (!settings.language || settings.language === "") {
+    createLanguageWindow();
+    ipcMain.once('language-selected', (_evt, lang) => {
+      try {
+        if (!mainWin) createMainWindow();
+      } catch (e) {
+        console.error("Error creando mainWin tras seleccionar idioma:", e);
+      } finally {
+        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { }
+      }
+    });
+  } else {
+    createMainWindow();
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();

@@ -19,7 +19,7 @@ const wpmInput = document.getElementById('wpmInput');
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
 
-const btnVF = document.getElementById('btnVF');
+const toggleVF = document.getElementById('toggleVF');
 
 // Referencias a elementos para presets
 const presetsSelect = document.getElementById('presets');
@@ -194,7 +194,9 @@ const formatearNumero = (numero, separadorMiles, separadorDecimal) => {
 
 // ======================= Actualizar vista y resultados =======================
 async function updatePreviewAndResults(text) {
-  currentText = text || "";
+  const previousText = currentText;      // texto antes del cambio
+  currentText = text || "";              // nuevo texto (normalizado)
+  const textChanged = previousText !== currentText;
 
   const displayText = currentText.replace(/\r?\n/g, '   ');
   const n = displayText.length;
@@ -218,9 +220,80 @@ async function updatePreviewAndResults(text) {
   const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
   resChars.textContent = `Caracteres: ${caracteresFormateado}`;
-  resCharsNoSpace.textContent = `Caracteres (sin espacio): ${caracteresSinEspaciosFormateado}`;
+  resCharsNoSpace.textContent = `Chars s/space: ${caracteresSinEspaciosFormateado}`;
   resWords.textContent = `Palabras: ${palabrasFormateado}`;
   resTime.textContent = `⏱ Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
+
+  // Si detectamos que el texto cambió respecto al estado anterior -> resetear cronómetro en main
+  if (textChanged) {
+    try {
+      if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
+        // Pedimos a main que reseteé el crono (autoridad). También hacemos UI reset inmediato.
+        window.electronAPI.sendCronoReset();
+        uiResetTimer();
+        lastComputedElapsedForWpm = 0;
+      } else {
+        // Fallback local si no hay IPC (rare)
+        uiResetTimer();
+        lastComputedElapsedForWpm = 0;
+      }
+    } catch (err) {
+      console.error("Error pidiendo reset del crono tras cambio de texto:", err);
+      uiResetTimer();
+      lastComputedElapsedForWpm = 0;
+    }
+  }
+}
+
+// Escuchar estado del crono desde main (autoridad)
+if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
+  window.electronAPI.onCronoState((state) => {
+    try {
+      // Normalizar estado recibido
+      const newElapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
+      const newRunning = !!state.running;
+
+      // Actualizar mirrors locales
+      elapsed = newElapsed;
+      running = newRunning;
+
+      // Actualizar display SOLO si el usuario NO está editando el campo; sin embargo, si hubo transición running:true -> false, recalculamos WPM aunque se esté editando.
+      if (timerDisplay && !timerEditing) {
+        timerDisplay.value = (state && state.display) ? state.display : formatTimer(elapsed);
+      }
+
+      // Actualizar botón toggle
+      if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
+
+      // WPM: recalcular en los casos relevantes:
+      //  - transición running:true -> false (pausa): recalcular siempre
+      //  - o si estamos parados (running===false) y elapsed cambió desde la última vez que calculamos
+      const becamePaused = (prevRunning === true && running === false);
+      if (becamePaused) {
+        // recalcular WPM inmediatamente al pausar (comportamiento antiguo)
+        actualizarVelocidadRealFromElapsed(elapsed);
+        lastComputedElapsedForWpm = elapsed;
+      } else if (!running) {
+        // estamos parados; solo recalcular si elapsed cambió desde la última vez que calculamos
+        if (lastComputedElapsedForWpm === null || lastComputedElapsedForWpm !== elapsed) {
+          actualizarVelocidadRealFromElapsed(elapsed);
+          lastComputedElapsedForWpm = elapsed;
+        }
+      }
+      // Si running === true -> no recalculamos (evitamos updates continuos)
+
+      // UI reset handling: si elapsed===0 y no está corriendo, forzamos la UI de reset
+      if (!running && elapsed === 0 && !timerEditing) {
+        uiResetTimer();
+        lastComputedElapsedForWpm = 0;
+      }
+
+      // Actualizar prevRunning
+      prevRunning = running;
+    } catch (e) {
+      console.error("Error manejando crono-state en renderer:", e);
+    }
+  });
 }
 
 // ======================= Mostrar velocidad real (WPM) =======================
@@ -892,14 +965,30 @@ btnResetDefaultPresets.addEventListener('click', async () => {
 
 // ======================= Cronómetro =======================
 const timerDisplay = document.getElementById('timerDisplay');
-const tStart = document.getElementById('timerStart');
-const tStop = document.getElementById('timerStop');
+
+// Evitar que los broadcasts de main sobrescriban la edición en curso
+if (timerDisplay) {
+  timerDisplay.addEventListener('focus', () => {
+    timerEditing = true;
+  });
+  timerDisplay.addEventListener('blur', () => {
+    // el blur ejecutará applyManualTime (ya registrado) que actualizará el crono en main
+    timerEditing = false;
+  });
+}
+
+const tToggle = document.getElementById('timerToggle');
 const tReset = document.getElementById('timerReset');
 
-let running = false;
-let startTime = 0;
+// Mirror local del estado del crono (se sincroniza desde main vía onCronoState)
 let elapsed = 0;
-let rafId = null;
+let running = false;
+// Flag para detectar transición y evitar recálculos continuos
+let prevRunning = false;
+// Indica si el usuario está editando manualmente el campo del timer (para evitar sobrescrituras)
+let timerEditing = false;
+// Último elapsed para el que calculamos WPM (evitar recálculos repetidos)
+let lastComputedElapsedForWpm = null;
 
 function formatTimer(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -909,54 +998,152 @@ function formatTimer(ms) {
   return `${hours}:${minutes}:${seconds}`;
 }
 
-function tick() {
-  const now = performance.now();
-  const ms = elapsed + (now - startTime);
-  timerDisplay.value = formatTimer(ms);
-  rafId = requestAnimationFrame(tick);
-}
-
-tStart.addEventListener('click', () => {
-  if (!running) {
-    running = true;
-    startTime = performance.now();
-    rafId = requestAnimationFrame(tick);
-  }
-});
-
-tStop.addEventListener('click', () => {
-  if (running) {
-    running = false;
-    elapsed += performance.now() - startTime;
-    if (rafId) cancelAnimationFrame(rafId);
-  }
-
+// Reusable: calcula y muestra la velocidad real usando `elapsed` y el texto actual
+function actualizarVelocidadReal() {
+  // contarTexto y mostrarVelocidadReal deben existir en el scope (ya las usas).
   const stats = contarTexto(currentText);
-  const words = stats.palabras;
+  const words = stats?.palabras || 0;
   const secondsTotal = elapsed / 1000;
 
   if (words > 0 && secondsTotal > 0) {
     const realWpm = (words / secondsTotal) * 60;
     mostrarVelocidadReal(realWpm);
   } else {
-    realWpmDisplay.textContent = "";
+    // Limpia visual si no hay datos válidos
+    realWpmDisplay.innerHTML = "&nbsp;";
+  }
+}
+
+function actualizarVelocidadRealFromElapsed(ms) {
+  const secondsTotal = (ms || 0) / 1000;
+  const stats = contarTexto(currentText);
+  const words = stats?.palabras || 0;
+  if (words > 0 && secondsTotal > 0) {
+    const realWpm = (words / secondsTotal) * 60;
+    mostrarVelocidadReal(realWpm);
+  } else {
+    realWpmDisplay.innerHTML = "&nbsp;";
+  }
+}
+
+// --------- Reset del cronómetro (misma acción que el botón ⏹) ----------
+// Reset visual local (no autoritativo): usado como respuesta rápida mientras main broadcastea
+function uiResetTimer() {
+  // Sync local mirrors
+  elapsed = 0;
+  running = false;
+  prevRunning = false;
+
+  if (timerDisplay) timerDisplay.value = "00:00:00";
+  if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
+  if (tToggle) tToggle.textContent = '▶';
+}
+
+tToggle.addEventListener('click', () => {
+  if (window.electronAPI && typeof window.electronAPI.sendCronoToggle === 'function') {
+    window.electronAPI.sendCronoToggle();
+  } else {
+    // Fallback local: invertir estado visual (no authoritative)
+    running = !running;
+    tToggle.textContent = running ? '⏸' : '▶';
   }
 });
 
 tReset.addEventListener('click', () => {
-  running = false;
-  startTime = 0;
-  elapsed = 0;
-  if (rafId) cancelAnimationFrame(rafId);
-  timerDisplay.value = "00:00:00";
-  realWpmDisplay.textContent = "";
+  if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
+    window.electronAPI.sendCronoReset();
+  } else {
+    uiResetTimer(); // fallback local (temporal)
+  }
 });
 
-// VF button (por ahora no hace nada funcional)
-if (btnVF) {
-  btnVF.addEventListener('click', () => {
-    console.log("VF button clicked - functionality pending.");
-    // Placeholder for future functionality
+// --- Floating window control (VF) ---
+let floatingOpen = false;
+
+// abrir flotante
+async function openFloating() {
+  if (!window.electronAPI || typeof window.electronAPI.openFloatingWindow !== 'function') {
+    console.warn("openFloatingWindow no disponible en electronAPI");
+    // asegurar coherencia visual
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+    return;
+  }
+  try {
+    await window.electronAPI.openFloatingWindow();
+    floatingOpen = true;
+
+    // actualizar switch (UI)
+    if (toggleVF) {
+      toggleVF.checked = true;
+      toggleVF.setAttribute('aria-checked', 'true');
+    }
+
+    // pedir estado inicial vía invoke (main devuelve getCronoState)
+    if (typeof window.electronAPI.getCronoState === 'function') {
+      try {
+        const state = await window.electronAPI.getCronoState();
+        if (state) {
+          // sincronizar UI inmediatamente, pero NO forzar recálculo de WPM
+          elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
+          running = !!state.running;
+
+          if (timerDisplay && !timerEditing) {
+            timerDisplay.value = state.display || formatTimer(elapsed);
+          }
+          if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
+
+          lastComputedElapsedForWpm = elapsed;
+          prevRunning = running;
+        }
+      } catch (e) {
+        /* noop */
+      }
+    }
+  } catch (e) {
+    console.error("Error abriendo flotante:", e);
+    // revertir switch si hay error
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+  }
+}
+
+// cerrar flotante
+async function closeFloating() {
+  if (!window.electronAPI || typeof window.electronAPI.closeFloatingWindow !== 'function') {
+    console.warn("closeFloatingWindow no disponible en electronAPI");
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+    return;
+  }
+  try {
+    await window.electronAPI.closeFloatingWindow();
+  } catch (e) {
+    console.error("Error cerrando flotante:", e);
+  } finally {
+    floatingOpen = false;
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+  }
+}
+
+// toggle VF desde la UI (switch)
+if (toggleVF) {
+  toggleVF.addEventListener('change', async (ev) => {
+    const wantOpen = !!toggleVF.checked;
+    // optimista: reflejar aria-checked inmediatamente
+    toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
+
+    if (wantOpen) {
+      await openFloating();
+      // openFloating maneja revert en caso de error
+    } else {
+      await closeFloating();
+    }
+  });
+}
+
+// Si el flotante se cierra desde main (o se destruye), limpiamos timers locales
+if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'function') {
+  window.electronAPI.onFloatingClosed(() => {
+    floatingOpen = false;
+    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
   });
 }
 
@@ -976,11 +1163,34 @@ function applyManualTime() {
   const ms = parseTimerInput(timerDisplay.value);
 
   if (ms !== null) {
-    elapsed = ms;
-    if (running) startTime = performance.now();
-    timerDisplay.value = formatTimer(elapsed);
+    // Si tenemos API, pedir a main que aplique el elapsed (autoridad)...
+    if (window.electronAPI && typeof window.electronAPI.setCronoElapsed === 'function') {
+      try {
+        // Marcar que ya no estamos editando (blur ya lo hace, pero aseguramos)
+        timerEditing = false;
+        window.electronAPI.setCronoElapsed(ms);
+        // Mostrar inmediatamente el valor aplicado y recalcular WPM localmente (comportamiento antiguo)
+        if (timerDisplay) timerDisplay.value = formatTimer(ms);
+        actualizarVelocidadRealFromElapsed(ms);
+        lastComputedElapsedForWpm = ms;
+      } catch (e) {
+        console.error("Error enviando setCronoElapsed:", e);
+        // Fallback local
+        elapsed = ms;
+        if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
+        actualizarVelocidadRealFromElapsed(elapsed);
+        lastComputedElapsedForWpm = elapsed;
+      }
+    } else {
+      // Fallback local (no main available)
+      elapsed = ms;
+      if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
+      actualizarVelocidadRealFromElapsed(elapsed);
+      lastComputedElapsedForWpm = elapsed;
+    }
   } else {
-    timerDisplay.value = formatTimer(elapsed);
+    // entrada inválida -> restaurar valor visible al último estado
+    if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
   }
 }
 
