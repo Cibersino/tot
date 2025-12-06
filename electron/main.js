@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -526,7 +526,12 @@ const FLOATER_PRELOAD = path.join(__dirname, 'flotante_preload.js');
 const FLOATER_HTML = path.join(__dirname, '../public/flotante.html');
 
 async function createFloatingWindow(options = {}) {
+  // Si ya existe y no fue destruida, devolverla (no recrear)
   if (floatingWin && !floatingWin.isDestroyed()) {
+    // Si se pidió forzar posición nueva, aplicarla
+    if (options && (typeof options.x === 'number' || typeof options.y === 'number')) {
+      try { floatingWin.setBounds({ x: options.x || floatingWin.getBounds().x, y: options.y || floatingWin.getBounds().y }); } catch (e) { /* noop */ }
+    }
     return floatingWin;
   }
 
@@ -548,14 +553,69 @@ async function createFloatingWindow(options = {}) {
     }
   };
 
-  floatingWin = new BrowserWindow(Object.assign({}, bwOpts, options));
-  // Cargar el HTML minimalista del flotante (coloca flotante.html en ../public)
+  // Valores de margen para que la VF no quede pegada exactamente al borde ni sobre los scrollbars.
+  // Ajusta estos valores si lo deseas (en px).
+  const DEFAULT_MARGIN_RIGHT = 30; // un poco a la izquierda del extremo derecho para evitar scrollbars
+  const DEFAULT_MARGIN_BOTTOM = 20;  // espacio encima de la barra de tareas / dock
+
+  // Calcular posición por defecto en base al monitor principal (workArea excluye taskbar/dock)
+  let pos = {};
   try {
-    floatingWin.loadFile(FLOATER_HTML);
+    const display = screen.getPrimaryDisplay();
+    const wa = display && display.workArea ? display.workArea : null;
+
+    if (wa) {
+      // Si el usuario no forzó x/y via options, calculamos la esquina inferior derecha del workArea.
+      const marginRight = typeof options.marginRight === 'number' ? options.marginRight : DEFAULT_MARGIN_RIGHT;
+      const marginBottom = typeof options.marginBottom === 'number' ? options.marginBottom : DEFAULT_MARGIN_BOTTOM;
+
+      const x = wa.x + wa.width - bwOpts.width - marginRight;
+      const y = wa.y + wa.height - bwOpts.height - marginBottom;
+
+      pos.x = x;
+      pos.y = y;
+    }
+  } catch (e) {
+    console.warn("No se pudo calcular posición desde screen.getPrimaryDisplay(); flotar en posición por defecto.", e);
+  }
+
+  // Si se pasaron explícitamente x/y en options, respetarlas (permitir override)
+  if (typeof options.x === 'number') pos.x = options.x;
+  if (typeof options.y === 'number') pos.y = options.y;
+
+  // Combinar opciones calculadas con bwOpts, permitiendo que caller sobreescriba
+  const createOpts = Object.assign({}, bwOpts, pos, options);
+
+  floatingWin = new BrowserWindow(createOpts);
+
+  // Cargar el HTML del flotante
+  try {
+    await floatingWin.loadFile(FLOATER_HTML);
   } catch (e) {
     console.error("Error cargando flotante HTML:", e);
   }
 
+  // Si la ventana se creó pero quedó offscreen o fuera de bounds (raro), aseguramos que esté dentro de la pantalla
+  try {
+    const bounds = floatingWin.getBounds();
+    const display = screen.getDisplayMatching(bounds);
+    if (display && display.workArea) {
+      const wa = display.workArea;
+      // Ajustar por si quedó parcialmente fuera (lo mantenemos simple)
+      let nx = bounds.x, ny = bounds.y;
+      if (bounds.x < wa.x) nx = wa.x + DEFAULT_MARGIN_RIGHT;
+      if (bounds.y < wa.y) ny = wa.y + DEFAULT_MARGIN_BOTTOM;
+      if ((bounds.x + bounds.width) > (wa.x + wa.width)) nx = wa.x + wa.width - bounds.width - DEFAULT_MARGIN_RIGHT;
+      if ((bounds.y + bounds.height) > (wa.y + wa.height)) ny = wa.y + wa.height - bounds.height - DEFAULT_MARGIN_BOTTOM;
+      if (nx !== bounds.x || ny !== bounds.y) {
+        floatingWin.setBounds({ x: nx, y: ny });
+      }
+    }
+  } catch (e) {
+    // noop
+  }
+
+  // Notificar cierre para que el renderer principal pueda limpiar estado
   floatingWin.on('closed', () => {
     floatingWin = null;
     // Notificar al renderer principal si necesita limpiar estado
@@ -564,6 +624,7 @@ async function createFloatingWindow(options = {}) {
     }
   });
 
+  // Opcional: si la app quiere que la flotante no robe foco en ciertos flujos, se podría usar showInactive() en vez de show(), pero en tu caso quieres interacción inmediata, así que dejamos que sea focusable=true y que tome foco al abrir.
   return floatingWin;
 }
 
