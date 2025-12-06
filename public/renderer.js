@@ -283,7 +283,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       // Si running === true -> no recalculamos (evitamos updates continuos)
 
       // UI reset handling: si elapsed===0 y no está corriendo, forzamos la UI de reset
-      if (!running && elapsed === 0) {
+      if (!running && elapsed === 0 && !timerEditing) {
         uiResetTimer();
         lastComputedElapsedForWpm = 0;
       }

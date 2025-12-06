@@ -637,7 +637,7 @@ let crono = {
 };
 
 let cronoInterval = null;
-const CRONO_BROADCAST_MS = 1000; // ajustable: 250ms o 1000ms si quieres menor carga
+const CRONO_BROADCAST_MS = 1000; // ajustable si quieres menor carga
 
 function formatTimerMs(ms) {
   const totalSeconds = Math.floor(ms / 1000);
