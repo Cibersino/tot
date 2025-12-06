@@ -131,7 +131,7 @@ function createMainWindow() {
   // Nota: useContentSize:true hace que width/height se apliquen al contenido (sin incluir bordes)
   mainWin = new BrowserWindow({
     width: 828,
-    height: 480,
+    height: 490,
     useContentSize: true,
     resizable: false,      // ventana no redimensionable por el usuario
     maximizable: false,    // no permitir maximizar (mantener dimensiones fijas)

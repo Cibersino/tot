@@ -206,8 +206,8 @@ async function updatePreviewAndResults(text) {
   } else if (n <= 200) {
     textPreview.textContent = displayText;
   } else {
-    const start = displayText.slice(0, 275);
-    const end = displayText.slice(-275);
+    const start = displayText.slice(0, 320); // PREVIEW TEXTO VIGENTE VENTANA PRINCIPAL
+    const end = displayText.slice(-320);
     textPreview.textContent = `${start}... | ...${end}`;
   }
 

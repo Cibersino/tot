@@ -135,7 +135,7 @@ body {
   top: 67px;
   left: 4px;
   right: 0;
-  height: 146px;
+  height: 156px;
   width: 819px;
   background: var(--selector-bg);
   border: 1px solid var(--section-border);
@@ -148,22 +148,23 @@ pre#textPreview {
   color: #333;
   padding: 6px;
   border: 1px solid #eee;
-  height: 84px;
+  height: 94px;
   overflow-y: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-break: break-word;
   margin: 0;
   box-sizing: border-box;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.15;
+  font-family: 'Baskervville', serif;
   margin-top: 4px;
   margin-bottom: 4px;
 }
 
 /* SECCIÓN VELOCIDAD DE LECTURA */
 .velocity {
-  top: 218px;
+  top: 228px;
   left: 4px;
   height: 155px;
   width: 398px;
@@ -216,7 +217,7 @@ select#presets {
 /* SECCIÓN RESULTADOS DEL CONTEO */
 .results {
   position: relative;          /* necesario para que .help-row absolute funcione */
-  top: 218px;
+  top: 228px;
   left: 407px;
   height: 155px;
   width: 416px;
@@ -332,7 +333,7 @@ select#presets {
 
 /* SECCIÓN CRONÓMETRO */
 .cronometro {
-  top: 378px;
+  top: 388px;
   left: 4px;
   height: 98px;
   width: 232px;
@@ -392,7 +393,7 @@ select#presets {
 
 /* SECCION DISPONIBLE */
 .spare {
-  top: 378px;
+  top: 388px;
   left: 241px;
   height: 98px;
   width: 582px;

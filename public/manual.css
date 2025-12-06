@@ -11,7 +11,6 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
   background: var(--bg);
   box-sizing: border-box;
 }
@@ -31,14 +30,14 @@ body {
   min-height: 0;                  /* importante para que el flex funcione en algunos entornos */
   box-sizing: border-box;
   padding: 12px;
-  font-size: 15px;
+  font-family: 'Baskervville', serif;
+  font-size: 18px;
   line-height: 1.45;
   resize: none;
   border: none;
   outline: none;
   background: #fff;
   color: #222;
-  /* Afinar scroll interno si hay contenido */
   overflow: auto;
 }
 
