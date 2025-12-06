@@ -2,14 +2,12 @@
 
 # ÍTEM ACTUAL #
 
-- Un mismo modal para todo los infomenú
+* Pulir informativos del Menú *
+ - Hasta ahora los botones del menú guía básica, instrucciones, faq, readme y acerca de, llevan a sus propios html respectivos en la carpeta public/info/.
+ - Ver la posibilidad de que todos estos usen un mismo html, llevandolos a sus sección respectiva.
+  - NOTA: Verificar que ningún HTML dentro de public/info/ incluya scripts inline para cumplir CSP, aunque con el setup actual no genera problemas.
 
 # Más adelante #
-
-* Ventana flotante *
-- Activar y desactivar desde el cronómetro con el botón "VF".
-
-* Revisión y depuración del código*
 
 * Internacionalización *
 - Agregar soporte multilenguaje
@@ -23,20 +21,56 @@ function setIdiomaActual(nuevoIdioma) {
 }
 - Archivos de 18i.
 
-* Otros *
-- Implementar semiauto-update
-- Construir versión portable
-- Short-cuts
+* Implementar semiauto-update *
+
+* Revisión y depuración del código *
+
+* Integración a extensiones de navegadores *
+
+* Atajos del teclado *
+- Actualmente tenemos un botón de Short-cuts en el menú que no está funcional.
+- Habilitar este botón para que abra una lista de shortcuts del teclado que sea editable por el usuario.
+- ¿Atajos del teclado sin focus en la ventana principal?
 
 * Nuevas funciones *
-- Test de lectura
-- Calculador de palabras en archivos de texto
-- Calculador de palabras insertas en imágenes
-  - Averiguar sistema OCR como extractor de palabras en imágenes.
+
+- Extractores de caracteres y palabras en:
+  - Archivos de imagen:
+    - Ejemplo: foto de una página común de un libro
+    - Esto permitiría hacer una función que estime el total del libro tras:
+      - Preguntar cantidad de páginas totales del libro
+      - Copiar el texto extraido al portapapeles
+      - Usar funcion "Pegar portapapeles nueva línea" la misma cantidad de iteraciones que las páginas del libro.
+    - posibilidad de sacar una foto mediante la camara del dispositivo
+  - archivos de texto:
+    - formatos simples (txt, doc, docx, rtf, etc)
+    - formatos complejos como pdf:
+      - con texto seleccionable
+      - sin texto seleccionable:
+        - hechos de imagenes
+        - protegido
+  - (Averiguar sistema OCR como extractor de palabras)
+
+- Test de velocidad de lectura:
+  - Al abrir este test, primero se informa al usuario en que consiste (avisando que se sobrescribirá el texto vigente, entre otras cosas).
+  - Se le ofrece un botón para comenzar. El botón:
+    - Abre una ventana con un texto aleatorio (entre un pool de textos) de dificultad normal pensado para que un lector adulto promedio lo lea en 2 minutos.
+    - El mismo texto sobrescribe el texto vigente de la app (lo mismo que hace el botón "Sobrescribe con portapapeles" con los textos en portapapeles).
+    - Comienza inmediatamente a correr el cronómetro de la app (lo mismo que hace el botón "Start" o play/pause toggle).
+  - El usuario al finalizar la lectura puede pulsar un botón de finalizar. El botón:
+    - Detiene el cronómetro de la app y calcula (lo mismo que hace el botón "Stop/Calcular" play/pause toggle).
+    - Agrega al input WPM de la sección Velocidad de lectura el WPM calculado.
+    - Abre el modal de creación de presets (misma acción que el botón "Nuevo") con prerrellenado editable que dice:
+      Nombre: Test
+      WPM: se deja que sea el mismo que el input, como lo hace el botón Nuevo normalmente.
+      Descripción: Velocidad testeada del usuario.
+    - El usuario puede modificar, guardar y cerrar el modal, con las mismas consecuencias que tiene toda creación de Nuevo preset.
 
 * Estilos/skins *
 
 * Mejorar Readme * 
+- listar bugs (o crear un archivo nuevo de bugs)
+- mudar changelog a nuevo archivo
 
 * Revisar seguridad de la aplicación y legalidad *
  - Licencia de la fuente kremlin duma para logo Cibersin
@@ -71,8 +105,11 @@ function setIdiomaActual(nuevoIdioma) {
 * Revisión y depuración del código*
 
 * Empaquetado multiplataforma (Windows, macOS y Linux) *
-- Empaquetado para Windows, versión de prueba *
 - Reemplazar el ícono de Electron que aparece en las ventanas (en la esquina superior izquierda) por un ícono propio. ¿Es posible?
+- Empaquetado para Windows, versión de prueba *
+- Construir versión portable
+
+* Conversión para aplicaciones para dispositivos moviles y kindle *
 
 # PLAN GENERAL #
 

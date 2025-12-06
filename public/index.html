@@ -63,9 +63,9 @@
       <!-- Row: resultados (izq) + toggle (derecha) -->
       <div class="results-row">
         <div class="result-list">
-          <div id="resWords">- Palabras: 0</div>
-          <div id="resCharsNoSpace">- Caracteres (sin espacio): 0</div>
-          <div id="resChars">- Caracteres: 0</div>
+          <div id="resWords">Palabras: 0</div>
+          <div id="resCharsNoSpace">Chars s/espace: 0</div>
+          <div id="resChars">Caracteres: 0</div>
         </div>
         <div class="toggle-wrapper" aria-hidden="false">
           <label class="toggle-label" for="toggleModoPreciso">Modo preciso</label>
@@ -85,13 +85,18 @@
       <h4 id="cron-title" class="section-title">CRONÓMETRO</h4>
       <div class="timer-row">
         <input id="timerDisplay" class="timer-box" type="text" value="00:00:00" />
-        <div class="realwpm">Velocidad real: <span id="realWpmDisplay"></span></div>
+        <div class="realwpm">Velocidad:<br><span id="realWpmDisplay">&nbsp;</span></div>
       </div>
       <div class="timer-controls" role="group" aria-label="Controles del cronómetro">
-        <button id="timerStart" class="btn-standard">Start</button>
-        <button id="timerStop" class="btn-standard">Stop/Calcular</button>
-        <button id="timerReset" class="btn-standard">Reset</button>
-        <button id="btnVF" class="btn-standard vf-variant" title="Ventana flotante">VF</button>
+        <button id="timerToggle" class="btn-standard">▶</button>
+        <button id="timerReset" class="btn-standard">⏹</button>
+        <div class="vf-switch-wrapper" aria-label="Ventana flotante">
+          <label class="switch" title="Ventana flotante">
+            <input type="checkbox" id="toggleVF" role="switch" aria-checked="false">
+            <span class="slider round" aria-hidden="true"></span>
+          </label>
+          <span class="vf-label" aria-hidden="true">VF</span>
+        </div>
       </div>
     </section>
 
