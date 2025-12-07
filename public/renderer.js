@@ -161,23 +161,48 @@ function formatTimeFromWords(words, wpm) {
   return `${hours}h ${minutes}m ${seconds}s`;
 }
 
+// ======================= Number format defaults (i18n fallback) =======================
+const numberFormatDefaults = {};
+const loadNumberFormatDefaults = async (idioma) => {
+  const lang = (idioma || "").toLowerCase() || "es";
+  if (numberFormatDefaults[lang]) return numberFormatDefaults[lang];
+  try {
+    const resp = await fetch(`../i18n/${lang}/numberFormat.json`);
+    if (resp && resp.ok) {
+      const data = await resp.json();
+      if (data && data.numberFormat) {
+        numberFormatDefaults[lang] = data.numberFormat;
+        return data.numberFormat;
+      }
+    }
+  } catch (e) {
+    // noop
+  }
+  if (lang.startsWith("en")) return { thousands: ",", decimal: "." };
+  return { thousands: ".", decimal: "," };
+};
+
 // ======================= Obtener separadores de números según el idioma (usa cache) =======================
 const obtenerSeparadoresDeNumeros = async (idioma) => {
-  // Usa settingsCache cargado al inicio (si no está, aplicamos defaults por idioma)
+  // 1) User preference from settings
   const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
+  if (nf && nf[idioma]) return nf[idioma];
 
-  if (!nf) {
-    // Defaults sencillos: español vs english
-    if (idioma && idioma.toLowerCase().startsWith('en')) {
-      return { separadorMiles: ',', separadorDecimal: '.' };
-    } else {
-      return { separadorMiles: '.', separadorDecimal: ',' };
+  // 2) Default from i18n numberFormat
+  try {
+    const def = await loadNumberFormatDefaults(idioma || "es");
+    if (def && def.thousands && def.decimal) {
+      return { separadorMiles: def.thousands, separadorDecimal: def.decimal };
     }
+  } catch (e) {
+    // noop
   }
 
-  return nf[idioma] || nf['es'] || (idioma && idioma.toLowerCase().startsWith('en')
-    ? { separadorMiles: ',', separadorDecimal: '.' }
-    : { separadorMiles: '.', separadorDecimal: ',' });
+  // 3) Fallback simple
+  if (idioma && idioma.toLowerCase().startsWith('en')) {
+    return { separadorMiles: ',', separadorDecimal: '.' };
+  }
+  return { separadorMiles: '.', separadorDecimal: ',' };
 };
 
 // ======================= Formatear número con separadores de miles y decimales =======================

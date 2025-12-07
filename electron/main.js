@@ -12,6 +12,22 @@ const MODAL_STATE_FILE = path.join(CONFIG_DIR, 'modal_state.json');
 const LANGUAGE_MODAL_HTML = path.join(__dirname, '../public/language_modal.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 
+// Helpers: load numberFormat defaults from i18n (per language)
+function loadNumberFormatDefaults(lang) {
+  const baseDir = path.join(__dirname, '..', 'i18n');
+  const file = path.join(baseDir, lang || 'es', 'numberFormat.json');
+  try {
+    if (fs.existsSync(file)) {
+      const data = require(file);
+      return (data && data.numberFormat) ? data.numberFormat : null;
+    }
+  } catch (err) {
+    // noop: fall back handled by callers
+    return null;
+  }
+  return null;
+}
+
 function ensureConfigDir() {
   try {
     if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
@@ -48,6 +64,19 @@ function normalizeSettings(s) {
   // persistir modo de conteo por defecto: "preciso"
   if (!s.modeConteo || (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple')) {
     s.modeConteo = 'preciso';
+  }
+  // Ensure numberFormatting has defaults for current language (from i18n if available)
+  const lang = (s.language && typeof s.language === 'string' && s.language.trim()) ? s.language.trim() : 'es';
+  if (!s.numberFormatting[lang]) {
+    const nf = loadNumberFormatDefaults(lang);
+    if (nf && nf.thousands && nf.decimal) {
+      s.numberFormatting[lang] = { separadorMiles: nf.thousands, separadorDecimal: nf.decimal };
+    } else {
+      // fallback simple
+      s.numberFormatting[lang] = lang === 'en'
+        ? { separadorMiles: ",", separadorDecimal: "." }
+        : { separadorMiles: ".", separadorDecimal: "," };
+    }
   }
   return s;
 }
@@ -411,12 +440,13 @@ ipcMain.handle('set-language', async (_event, lang) => {
     // Ensure numberFormatting has sensible defaults for es/en if missing
     settings.numberFormatting = settings.numberFormatting || {};
     if (!settings.numberFormatting[chosen]) {
-      if (chosen === 'es') {
-        settings.numberFormatting[chosen] = { separadorMiles: ".", separadorDecimal: "," };
+      const nf = loadNumberFormatDefaults(chosen);
+      if (nf && nf.thousands && nf.decimal) {
+        settings.numberFormatting[chosen] = { separadorMiles: nf.thousands, separadorDecimal: nf.decimal };
       } else if (chosen === 'en') {
         settings.numberFormatting[chosen] = { separadorMiles: ",", separadorDecimal: "." };
       } else {
-        settings.numberFormatting[chosen] = { separadorMiles: ",", separadorDecimal: "." };
+        settings.numberFormatting[chosen] = { separadorMiles: ".", separadorDecimal: "," };
       }
     }
 
@@ -506,7 +536,12 @@ function createLanguageWindow() {
         settings.language = 'es';
         settings.numberFormatting = settings.numberFormatting || {};
         if (!settings.numberFormatting['es']) {
-          settings.numberFormatting['es'] = { separadorMiles: ".", separadorDecimal: "," };
+          const nf = loadNumberFormatDefaults('es');
+          if (nf && nf.thousands && nf.decimal) {
+            settings.numberFormatting['es'] = { separadorMiles: nf.thousands, separadorDecimal: nf.decimal };
+          } else {
+            settings.numberFormatting['es'] = { separadorMiles: ".", separadorDecimal: "," };
+          }
         }
         saveJson(SETTINGS_FILE, settings);
       }

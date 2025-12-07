@@ -1,0 +1,47 @@
+﻿{
+  "main": {
+    "menu": {
+      "como_usar": "How to use the app?",
+      "guia_basica": "Basic guide",
+      "instrucciones_completas": "Complete instructions",
+      "faq": "Frequently Asked Questions (FAQ)",
+      "herramientas": "Tools",
+      "cargador_texto": "Text file loader",
+      "cargador_imagen": "Image text loader",
+      "test_velocidad": "Reading speed test",
+      "preferencias": "Preferences",
+      "idioma": "Language",
+      "diseno": "Design",
+      "skins": "Skins",
+      "crono_flotante": "Floating stopwatch",
+      "fuentes": "Fonts",
+      "colores": "Colors",
+      "shortcuts": "Shortcuts",
+      "presets_por_defecto": "Default presets",
+      "comunidad": "Community",
+      "discord": "Discord",
+      "avisos": "News & updates",
+      "links_interes": "Useful links",
+      "colabora": "CONTRIBUTE ($)",
+      "ayuda": "?",
+      "actualizar_version": "Update to latest version",
+      "readme": "Readme",
+      "acerca_de": "About",
+      "desarrollo": "Development",
+      "recargar": "Reload",
+      "forcereload": "Force reload",
+      "toggle_devtools": "Toggle DevTools"
+    },
+    "dialog": {
+      "ok": "OK",
+      "yes": "Yes",
+      "no": "No",
+      "delete_preset_title": "Delete preset",
+      "delete_preset_message": "Delete preset \"{name}\"?",
+      "delete_preset_none": "No preset selected to delete",
+      "restore_defaults_title": "Restore presets",
+      "restore_defaults_message": "Restore default presets (general and language \"{lang}\") to original? This will revert removals and changes to default presets for the active language.",
+      "edit_preset_none": "No preset selected to edit"
+    }
+  }
+}
