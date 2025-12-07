@@ -7,7 +7,7 @@
         "overwrite_clipboard": "Sobrescribir portapapeles",
         "append_clipboard_newline": "Pegar portapapeles nueva línea",
         "edit": "Editor manual",
-        "clear": "Vaciar texto vigente"
+        "clear": "🗑"
       },
       "speed": {
         "title": "VELOCIDAD DE LECTURA",
@@ -15,14 +15,14 @@
         "presets_placeholder": "Presets",
         "new": "Nuevo",
         "edit": "Editar",
-        "delete": "Eliminar preset seleccionado",
-        "reset_defaults": "Restaurar presets por defecto"
+        "delete": "🗑",
+        "reset_defaults": "R"
       },
       "results": {
         "title": "RESULTADOS DEL CONTEO",
         "time": "Tiempo estimado de lectura: {h}h {m}m {s}s",
         "words": "Palabras: {n}",
-        "chars_no_space": "Chars s/espace: {n}",
+        "chars_no_space": "Chars w/space: {n}",
         "chars": "Caracteres: {n}",
         "precise_mode": "Modo preciso"
       },

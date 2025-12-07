@@ -39,6 +39,73 @@ let modoConteo = "preciso";   // preciso por defecto; puede ser "simple"
 let idiomaActual = "es";      // se inicializa al arrancar
 let settingsCache = {};       // caché de settings (numberFormatting, language, etc.)
 
+// --- i18n renderer translations cache ---
+let rendererTranslations = null;
+let rendererTranslationsLang = null;
+
+async function loadRendererTranslations(lang) {
+  const target = (lang || "").toLowerCase() || "es";
+  if (rendererTranslations && rendererTranslationsLang === target) return rendererTranslations;
+  try {
+    const resp = await fetch(`../i18n/${target}/renderer.json`);
+    if (resp && resp.ok) {
+      const raw = await resp.text();
+      const cleaned = raw.replace(/^\uFEFF/, ""); // strip BOM if present
+      const data = JSON.parse(cleaned || "{}");
+      rendererTranslations = data;
+      rendererTranslationsLang = target;
+      return data;
+    }
+  } catch (e) {
+    console.warn("No se pudieron cargar traducciones de renderer:", e);
+  }
+  rendererTranslations = null;
+  rendererTranslationsLang = null;
+  return null;
+}
+
+function tRenderer(path, fallback) {
+  if (!rendererTranslations) return fallback;
+  const parts = path.split(".");
+  let cur = rendererTranslations;
+  for (const p of parts) {
+    if (cur && Object.prototype.hasOwnProperty.call(cur, p)) {
+      cur = cur[p];
+    } else {
+      return fallback;
+    }
+  }
+  return (typeof cur === "string") ? cur : fallback;
+}
+
+function msgRenderer(path, params = {}, fallback = "") {
+  let str = tRenderer(path, fallback);
+  if (!str) return fallback;
+  Object.keys(params || {}).forEach(k => {
+    const val = params[k];
+    str = str.replace(new RegExp(`\\{${k}\\}`, "g"), String(val));
+  });
+  return str;
+}
+
+function applyTranslations() {
+  if (!rendererTranslations) return;
+  // Botones principales
+  if (btnCountClipboard) btnCountClipboard.textContent = tRenderer("renderer.main.buttons.overwrite_clipboard", btnCountClipboard.textContent || "");
+  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.textContent = tRenderer("renderer.main.buttons.append_clipboard_newline", btnAppendClipboardNewLine.textContent || "");
+  if (btnEdit) btnEdit.textContent = tRenderer("renderer.main.buttons.edit", btnEdit.textContent || "");
+  if (btnEmptyMain) btnEmptyMain.textContent = tRenderer("renderer.main.buttons.clear", btnEmptyMain.textContent || "");
+
+  // Presets
+  if (btnNewPreset) btnNewPreset.textContent = tRenderer("renderer.main.speed.new", btnNewPreset.textContent || "");
+  if (btnEditPreset) btnEditPreset.textContent = tRenderer("renderer.main.speed.edit", btnEditPreset.textContent || "");
+  if (btnDeletePreset) btnDeletePreset.textContent = tRenderer("renderer.main.speed.delete", btnDeletePreset.textContent || "");
+  if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer("renderer.main.speed.reset_defaults", btnResetDefaultPresets.textContent || "");
+
+  // Toggle flotante
+  if (toggleVF) toggleVF.textContent = tRenderer("renderer.main.timer.floating", toggleVF.textContent || "");
+}
+
 (async () => {
   try {
     const cfg = await window.electronAPI.getAppConfig();
@@ -53,6 +120,16 @@ let settingsCache = {};       // caché de settings (numberFormatting, language,
     settingsCache = settings || {};
     idiomaActual = settingsCache.language || "es";
     if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
+
+    // Cargar traducciones del renderer y aplicarlas
+    try {
+      await loadRendererTranslations(idiomaActual);
+      applyTranslations();
+      // Refrescar la vista inicial con las traducciones cargadas
+      updatePreviewAndResults(currentText);
+    } catch (e) {
+      console.warn("No se pudieron aplicar traducciones iniciales en renderer:", e);
+    }
   } catch (e) {
     console.error("No se pudo obtener user settings al inicio:", e);
     // idiomaActual queda en "es" por defecto
@@ -149,15 +226,18 @@ function setIdiomaActual(nuevoIdioma) {
 }
 
 // ======================= Formato HHh MMm SSs =======================
-function formatTimeFromWords(words, wpm) {
-  if (!wpm || wpm <= 0) return "0h 0m 0s";
-
+function getTimeParts(words, wpm) {
+  if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };
   const totalSeconds = Math.round((words / wpm) * 60);
+  return {
+    hours: Math.floor(totalSeconds / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60
+  };
+}
 
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
+function formatTimeFromWords(words, wpm) {
+  const { hours, minutes, seconds } = getTimeParts(words, wpm);
   return `${hours}h ${minutes}m ${seconds}s`;
 }
 
@@ -227,7 +307,8 @@ async function updatePreviewAndResults(text) {
   const n = displayText.length;
 
   if (n === 0) {
-    textPreview.textContent = "(Pegue texto con “Pegar portapapeles” o pulse “Editar” para ingresarlo manualmente)";
+    const emptyMsg = tRenderer("renderer.main.selector_empty", "(empty)");
+    textPreview.textContent = emptyMsg;
   } else if (n <= 200) {
     textPreview.textContent = displayText;
   } else {
@@ -244,10 +325,14 @@ async function updatePreviewAndResults(text) {
   const caracteresFormateado = formatearNumero(stats.conEspacios, separadorMiles, separadorDecimal);
   const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
-  resChars.textContent = `Caracteres: ${caracteresFormateado}`;
-  resCharsNoSpace.textContent = `Chars s/space: ${caracteresSinEspaciosFormateado}`;
-  resWords.textContent = `Palabras: ${palabrasFormateado}`;
-  resTime.textContent = `⏱ Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
+
+  resChars.textContent = msgRenderer("renderer.main.results.chars", { n: caracteresFormateado }, `Caracteres: ${caracteresFormateado}`);
+  resCharsNoSpace.textContent = msgRenderer("renderer.main.results.chars_no_space", { n: caracteresSinEspaciosFormateado }, `Chars s/space: ${caracteresSinEspaciosFormateado}`);
+  resWords.textContent = msgRenderer("renderer.main.results.words", { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
+
+  const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
+  const timeFallback = `⏱ Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
+  resTime.textContent = msgRenderer("renderer.main.results.time", { h: hours, m: minutes, s: seconds }, timeFallback);
 
   // Si detectamos que el texto cambió respecto al estado anterior -> resetear cronómetro en main
   if (textChanged) {
@@ -453,8 +538,15 @@ const loadPresets = async () => {
         const nuevoIdioma = settingsCache.language || 'es';
         if (nuevoIdioma !== idiomaActual) {
           idiomaActual = nuevoIdioma;
-          // refrescar la vista con posible nuevo formato/segmentación
-          updatePreviewAndResults(currentText);
+          // recargar traducciones, aplicarlas y luego refrescar vista
+          loadRendererTranslations(idiomaActual)
+            .then(() => {
+              applyTranslations();
+              updatePreviewAndResults(currentText);
+            })
+            .catch(() => {
+              updatePreviewAndResults(currentText);
+            });
         }
         if (settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo) {
           modoConteo = settingsCache.modeConteo;

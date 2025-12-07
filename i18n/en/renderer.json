@@ -7,7 +7,7 @@
         "overwrite_clipboard": "Overwrite clipboard",
         "append_clipboard_newline": "Paste clipboard new line",
         "edit": "Manual editor",
-        "clear": "Clear current text"
+        "clear": "🗑"
       },
       "speed": {
         "title": "READING SPEED",
@@ -15,14 +15,14 @@
         "presets_placeholder": "Presets",
         "new": "New",
         "edit": "Edit",
-        "delete": "Delete selected preset",
-        "reset_defaults": "Restore default presets"
+        "delete": "🗑",
+        "reset_defaults": "R"
       },
       "results": {
         "title": "COUNT RESULTS",
         "time": "Estimated reading time: {h}h {m}m {s}s",
         "words": "Words: {n}",
-        "chars_no_space": "Chars w/o space: {n}",
+        "chars_no_space": "Chars w/space: {n}",
         "chars": "Characters: {n}",
         "precise_mode": "Precise mode"
       },
