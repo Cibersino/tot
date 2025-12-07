@@ -18,6 +18,10 @@ const wpmSlider = document.getElementById('wpmSlider');
 const wpmInput = document.getElementById('wpmInput');
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
+const selectorTitle = document.getElementById('selector-title');
+const velTitle = document.getElementById('vel-title');
+const resultsTitle = document.getElementById('results-title');
+const cronTitle = document.getElementById('cron-title');
 
 const toggleVF = document.getElementById('toggleVF');
 
@@ -104,6 +108,45 @@ function applyTranslations() {
 
   // Toggle flotante
   if (toggleVF) toggleVF.textContent = tRenderer("renderer.main.timer.floating", toggleVF.textContent || "");
+
+  // Títulos de secciones
+  if (selectorTitle) selectorTitle.textContent = tRenderer("renderer.main.selector_title", selectorTitle.textContent || "");
+  if (velTitle) velTitle.textContent = tRenderer("renderer.main.speed.title", velTitle.textContent || "");
+  if (resultsTitle) resultsTitle.textContent = tRenderer("renderer.main.results.title", resultsTitle.textContent || "");
+  if (cronTitle) cronTitle.textContent = tRenderer("renderer.main.timer.title", cronTitle.textContent || "");
+
+  // Labels dentro de velocidad
+  const wpmLabel = document.querySelector(".wpm-row span");
+  if (wpmLabel) wpmLabel.textContent = tRenderer("renderer.main.speed.wpm_label", wpmLabel.textContent || "");
+  if (presetsSelect) {
+    const placeholderOpt = presetsSelect.querySelector("option");
+    if (placeholderOpt) {
+      placeholderOpt.textContent = tRenderer("renderer.main.speed.presets_placeholder", placeholderOpt.textContent || "");
+    }
+  }
+
+  // Resultados: label modo preciso
+  const togglePrecisoLabel = document.querySelector(".toggle-wrapper .toggle-label");
+  if (togglePrecisoLabel) {
+    togglePrecisoLabel.textContent = tRenderer("renderer.main.results.precise_mode", togglePrecisoLabel.textContent || "");
+  }
+
+  // Cronómetro: label velocidad y aria-label controles
+  const realWpmLabel = document.querySelector(".realwpm");
+  if (realWpmLabel && realWpmLabel.firstChild) {
+    realWpmLabel.firstChild.textContent = tRenderer("renderer.main.timer.speed", realWpmLabel.firstChild.textContent || "");
+  }
+  const timerControls = document.querySelector(".timer-controls");
+  if (timerControls) {
+    const ariaLabel = tRenderer("renderer.main.timer.controls_label", timerControls.getAttribute("aria-label") || "");
+    if (ariaLabel) timerControls.setAttribute("aria-label", ariaLabel);
+  }
+
+  // Botón de ayuda (titulo)
+  if (btnHelp) {
+    const helpTitle = tRenderer("renderer.main.help.title", btnHelp.getAttribute("title") || "");
+    if (helpTitle) btnHelp.setAttribute("title", helpTitle);
+  }
 }
 
 (async () => {
