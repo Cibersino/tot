@@ -99,15 +99,26 @@ function applyTranslations() {
   if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.textContent = tRenderer("renderer.main.buttons.append_clipboard_newline", btnAppendClipboardNewLine.textContent || "");
   if (btnEdit) btnEdit.textContent = tRenderer("renderer.main.buttons.edit", btnEdit.textContent || "");
   if (btnEmptyMain) btnEmptyMain.textContent = tRenderer("renderer.main.buttons.clear", btnEmptyMain.textContent || "");
+  // Tooltips de botones principales
+  if (btnCountClipboard) btnCountClipboard.title = tRenderer("renderer.main.tooltips.overwrite_clipboard", btnCountClipboard.title || "");
+  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.title = tRenderer("renderer.main.tooltips.append_clipboard_newline", btnAppendClipboardNewLine.title || "");
+  if (btnEdit) btnEdit.title = tRenderer("renderer.main.tooltips.edit", btnEdit.title || "");
+  if (btnEmptyMain) btnEmptyMain.title = tRenderer("renderer.main.tooltips.clear", btnEmptyMain.title || "");
 
   // Presets
   if (btnNewPreset) btnNewPreset.textContent = tRenderer("renderer.main.speed.new", btnNewPreset.textContent || "");
   if (btnEditPreset) btnEditPreset.textContent = tRenderer("renderer.main.speed.edit", btnEditPreset.textContent || "");
   if (btnDeletePreset) btnDeletePreset.textContent = tRenderer("renderer.main.speed.delete", btnDeletePreset.textContent || "");
   if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer("renderer.main.speed.reset_defaults", btnResetDefaultPresets.textContent || "");
+  if (btnNewPreset) btnNewPreset.title = tRenderer("renderer.main.tooltips.new_preset", btnNewPreset.title || "");
+  if (btnEditPreset) btnEditPreset.title = tRenderer("renderer.main.tooltips.edit_preset", btnEditPreset.title || "");
+  if (btnDeletePreset) btnDeletePreset.title = tRenderer("renderer.main.tooltips.delete_preset", btnDeletePreset.title || "");
+  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer("renderer.main.tooltips.reset_presets", btnResetDefaultPresets.title || "");
 
   // Toggle flotante
   if (toggleVF) toggleVF.textContent = tRenderer("renderer.main.timer.floating", toggleVF.textContent || "");
+  const vfSwitchLabel = document.querySelector(".vf-switch-wrapper label.switch");
+  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer("renderer.main.tooltips.floating_window", vfSwitchLabel.title || "");
 
   // Títulos de secciones
   if (selectorTitle) selectorTitle.textContent = tRenderer("renderer.main.selector_title", selectorTitle.textContent || "");
@@ -144,7 +155,7 @@ function applyTranslations() {
 
   // Botón de ayuda (titulo)
   if (btnHelp) {
-    const helpTitle = tRenderer("renderer.main.help.title", btnHelp.getAttribute("title") || "");
+    const helpTitle = tRenderer("renderer.main.tooltips.help_button", btnHelp.getAttribute("title") || "");
     if (helpTitle) btnHelp.setAttribute("title", helpTitle);
   }
 }
