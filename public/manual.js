@@ -13,6 +13,18 @@ const SMALL_UPDATE_THRESHOLD = 2e5; // Define cuándo una actualización externa
   } catch (e) {
     console.error("manual: no se pudo obtener getAppConfig, usando defaults:", e);
   }
+  try {
+    if (window.manualAPI && typeof window.manualAPI.getSettings === "function") {
+      const settings = await window.manualAPI.getSettings();
+      if (settings && settings.language) {
+        idiomaActual = settings.language || "es";
+      }
+    }
+    await loadEditorTranslations(idiomaActual);
+    await applyEditorTranslations();
+  } catch (e) {
+    console.warn("manual: no se pudieron aplicar traducciones iniciales:", e);
+  }
   // rest of init (getCurrentText etc.) — ya tienes un init existente, integra con el tuyo
 })();
 
@@ -20,10 +32,71 @@ const editor = document.getElementById("editorArea");
 const btnTrash = document.getElementById("btnTrash");
 const calcWhileTyping = document.getElementById("calcWhileTyping");
 const btnCalc = document.getElementById("btnCalc");
+const calcLabel = document.querySelector(".calc-label");
+const bottomBar = document.getElementById("bottomBar");
 
 let debounceTimer = null;
 const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
+
+// --- i18n loader for modal editor ---
+let idiomaActual = "es";
+let editorTranslations = null;
+let editorTranslationsLang = null;
+
+async function loadEditorTranslations(lang) {
+  const target = (lang || "").toLowerCase() || "es";
+  if (editorTranslations && editorTranslationsLang === target) return editorTranslations;
+  try {
+    const resp = await fetch(`../i18n/${target}/renderer.json`);
+    if (resp && resp.ok) {
+      const raw = await resp.text();
+      const cleaned = raw.replace(/^\uFEFF/, "");
+      const data = JSON.parse(cleaned || "{}");
+      editorTranslations = data;
+      editorTranslationsLang = target;
+      return data;
+    }
+  } catch (e) {
+    console.warn("No se pudieron cargar traducciones para manual:", e);
+  }
+  editorTranslations = null;
+  editorTranslationsLang = null;
+  return null;
+}
+
+function tEditor(path, fallback) {
+  if (!editorTranslations) return fallback;
+  const parts = path.split(".");
+  let cur = editorTranslations;
+  for (const p of parts) {
+    if (cur && Object.prototype.hasOwnProperty.call(cur, p)) {
+      cur = cur[p];
+    } else {
+      return fallback;
+    }
+  }
+  return (typeof cur === "string") ? cur : fallback;
+}
+
+async function applyEditorTranslations() {
+  if (!editorTranslations) return;
+  document.title = tEditor("renderer.modal_editor.title", document.title);
+  if (editor) editor.setAttribute("placeholder", tEditor("renderer.modal_editor.placeholder", editor.getAttribute("placeholder") || ""));
+  if (btnCalc) btnCalc.textContent = tEditor("renderer.modal_editor.calc_button", btnCalc.textContent || "");
+  if (calcLabel) {
+    const chk = calcLabel.querySelector("input");
+    calcLabel.textContent = tEditor("renderer.modal_editor.calc_while_typing", calcLabel.textContent || "");
+    if (chk) calcLabel.prepend(chk);
+  }
+  if (btnTrash) {
+    btnTrash.textContent = tEditor("renderer.modal_editor.clear", btnTrash.textContent || "");
+    btnTrash.title = tEditor("renderer.modal_editor.clear_title", btnTrash.title || btnTrash.textContent || "");
+  }
+  if (bottomBar) {
+    bottomBar.setAttribute("aria-label", tEditor("renderer.modal_editor.title", bottomBar.getAttribute("aria-label") || ""));
+  }
+}
 
 /* ---------- Notices ---------- */
 function ensureNoticeContainer() {
