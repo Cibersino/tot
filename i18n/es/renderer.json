@@ -43,7 +43,8 @@
         "title": "CRONÓMETRO",
         "speed": "Velocidad:",
         "controls_label": "Controles del cronómetro",
-        "floating": "Ventana flotante"
+        "floating": "Ventana flotante",
+        "floating_short": "VF"
       },
       "spare": { "title": "Sección disponible" },
       "info_modal": { "title": "Info", "close": "Cerrar", "loading": "Cargando..." }

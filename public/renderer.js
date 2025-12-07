@@ -153,6 +153,12 @@ function applyTranslations() {
     if (ariaLabel) timerControls.setAttribute("aria-label", ariaLabel);
   }
 
+  // Etiqueta abreviada de la ventana flotante
+  const vfLabel = document.querySelector(".vf-label");
+  if (vfLabel) {
+    vfLabel.textContent = tRenderer("renderer.main.timer.floating_short", vfLabel.textContent || vfLabel.textContent);
+  }
+
   // Botón de ayuda (titulo)
   if (btnHelp) {
     const helpTitle = tRenderer("renderer.main.tooltips.help_button", btnHelp.getAttribute("title") || "");

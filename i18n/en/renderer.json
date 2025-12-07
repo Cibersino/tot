@@ -43,7 +43,8 @@
         "title": "STOPWATCH",
         "speed": "Speed:",
         "controls_label": "Stopwatch controls",
-        "floating": "Floating window"
+        "floating": "Floating window",
+        "floating_short": "FW"
       },
       "spare": { "title": "Available section" },
       "info_modal": { "title": "Info", "close": "Close", "loading": "Loading..." }
