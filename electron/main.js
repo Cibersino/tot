@@ -18,7 +18,9 @@ function loadNumberFormatDefaults(lang) {
   const file = path.join(baseDir, lang || 'es', 'numberFormat.json');
   try {
     if (fs.existsSync(file)) {
-      const data = require(file);
+      const raw = fs.readFileSync(file, 'utf8');
+      const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
+      const data = JSON.parse(cleaned || '{}');
       return (data && data.numberFormat) ? data.numberFormat : null;
     }
   } catch (err) {
@@ -26,6 +28,21 @@ function loadNumberFormatDefaults(lang) {
     return null;
   }
   return null;
+}
+
+// Helpers: load main (menu/dialog) translations from i18n
+function loadMainTranslations(lang) {
+  const baseDir = path.join(__dirname, '..', 'i18n');
+  const file = path.join(baseDir, lang || 'es', 'main.json');
+  try {
+    if (!fs.existsSync(file)) return null;
+    const raw = fs.readFileSync(file, 'utf8');
+    const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
+    return JSON.parse(cleaned || '{}');
+  } catch (err) {
+    console.error('Error cargando traducciones de main.json:', err);
+    return null;
+  }
 }
 
 function ensureConfigDir() {
@@ -83,7 +100,7 @@ function normalizeSettings(s) {
 
 ensureConfigDir();
 
-// --- límite máximo de texto vigente (10 MB ~ 10.000.000 chars)
+// --- Maximum current text size (10 MB ~ 10,000,000 chars)
 const MAX_TEXT_CHARS = 10000000;
 
 // --- Presets defaults: copia inicial (JS -> JSON) en config/presets_defaults ---
@@ -112,10 +129,10 @@ function copyDefaultPresetsIfMissing() {
       const src = path.join(PRESETS_SOURCE_DIR, fname);
       const dest = path.join(CONFIG_PRESETS_DIR, fname.replace(/\.js$/i, ".json"));
 
-      // Sólo copiar si existe el JS fuente y NO existe el .json destino
+      // Only copy if the source JS exists and the destination JSON is missing
       if (fs.existsSync(src) && !fs.existsSync(dest)) {
         try {
-          // require del módulo JS que exporta el array
+          // Require the JS module that exports the array
           // (se espera que module.exports = [ ... ] )
           let arr = require(src);
           if (!Array.isArray(arr)) arr = Array.isArray(arr.default) ? arr.default : [];
@@ -131,24 +148,105 @@ function copyDefaultPresetsIfMissing() {
   }
 }
 
-// Ejecutar la copia inicial (no sobrescribe archivos existentes)
+// Run initial copy (does not overwrite existing files)
 copyDefaultPresetsIfMissing();
 
-let mainWin = null, // ventana principal
-  editorWin = null, // ventana modal para edición del texto vigente
-  presetWin = null, // ventana modal para nuevo/editar preset wpm
-  currentText = "", // texto vigente
-  langWin = null, // ventana modal selección de idioma (primer arranque)
-  floatingWin = null; // ventana flotante (cronómetro)
+let mainWin = null, // main window
+  editorWin = null, // modal window to edit current text
+  presetWin = null, // modal window for new/edit preset wpm
+  currentText = "", // current text
+  langWin = null, // language selection modal (first launch)
+  floatingWin = null; // floating stopwatch window
+let currentLanguage = 'es';
+
+// Build menu with i18n translations (main.json)
+function buildAppMenu(lang) {
+  const tr = loadMainTranslations(lang || 'es');
+  const tMain = (tr && tr.main) ? tr.main : {};
+  const m = tMain.menu || {};
+
+  const menuTemplate = [
+    {
+      label: m.como_usar || 'Como usar la app?',
+      submenu: [
+        { label: m.guia_basica || 'Guia basica', click: () => mainWin && mainWin.webContents.send('menu-click', 'guia_basica') },
+        { label: m.instrucciones_completas || 'Instrucciones completas', click: () => mainWin && mainWin.webContents.send('menu-click', 'instrucciones_completas') },
+        { label: m.faq || 'FAQ', click: () => mainWin && mainWin.webContents.send('menu-click', 'faq') }
+      ]
+    },
+    {
+      label: m.herramientas || 'Tools',
+      submenu: [
+        { label: m.cargador_texto || 'Cargador de archivo de texto', click: () => mainWin && mainWin.webContents.send('menu-click', 'cargador_texto') },
+        { label: m.cargador_imagen || 'Cargador de imagenes con texto', click: () => mainWin && mainWin.webContents.send('menu-click', 'contador_imagen') },
+        { label: m.test_velocidad || 'Reading speed test', click: () => mainWin && mainWin.webContents.send('menu-click', 'test_velocidad') }
+      ]
+    },
+    {
+      label: m.preferencias || 'Preferences',
+      submenu: [
+        { label: m.idioma || 'Language', click: () => createLanguageWindow() },
+        {
+          label: m.diseno || 'Diseno',
+          submenu: [
+            { label: m.skins || 'Skins', click: () => mainWin && mainWin.webContents.send('menu-click', 'diseno_skins') },
+            { label: m.crono_flotante || 'Cronometro flotante', click: () => mainWin && mainWin.webContents.send('menu-click', 'diseno_crono_flotante') },
+            { label: m.fuentes || 'Fonts', click: () => mainWin && mainWin.webContents.send('menu-click', 'diseno_fuentes') },
+            { label: m.colores || 'Colors', click: () => mainWin && mainWin.webContents.send('menu-click', 'diseno_colores') }
+          ]
+        },
+        { label: m.shortcuts || 'Shortcuts', click: () => mainWin && mainWin.webContents.send('menu-click', 'shortcuts') },
+        { label: m.presets_por_defecto || 'Default presets', click: () => mainWin && mainWin.webContents.send('menu-click', 'presets_por_defecto') }
+      ]
+    },
+    {
+      label: m.comunidad || 'Community',
+      submenu: [
+        { label: m.discord || 'Discord', click: () => mainWin && mainWin.webContents.send('menu-click', 'discord') },
+        { label: m.avisos || 'News & updates', click: () => mainWin && mainWin.webContents.send('menu-click', 'avisos') }
+      ]
+    },
+    { label: m.links_interes || 'Links de interes', click: () => mainWin && mainWin.webContents.send('menu-click', 'links_interes') },
+    { label: m.colabora || 'CONTRIBUTE ($)', click: () => mainWin && mainWin.webContents.send('menu-click', 'colabora') },
+    {
+      label: m.ayuda || '?',
+      submenu: [
+        { label: m.actualizar_version || 'Actualizar a ultima version', click: () => mainWin && mainWin.webContents.send('menu-click', 'actualizar_version') },
+        { label: m.readme || 'Readme', click: () => mainWin && mainWin.webContents.send('menu-click', 'readme') },
+        { label: m.acerca_de || 'About', click: () => mainWin && mainWin.webContents.send('menu-click', 'acerca_de') }
+      ]
+    }
+  ];
+
+  if (!app.isPackaged) {
+    menuTemplate.push({
+      label: m.desarrollo || 'Development',
+      submenu: [
+        { role: 'reload', label: m.recargar || 'Reload' },
+        { role: 'forcereload', label: m.forcereload || 'Force reload' },
+        {
+          label: m.toggle_devtools || 'Toggle DevTools',
+          accelerator: 'Ctrl+Shift+I',
+          click: () => {
+            if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.toggleDevTools();
+          }
+        }
+      ]
+    });
+  }
+
+  const appMenu = Menu.buildFromTemplate(menuTemplate);
+  Menu.setApplicationMenu(appMenu);
+}
 
 // Load current text from file at startup (if exists)
 try {
   const obj = loadJson(CURRENT_TEXT_FILE, { text: "" });
   let txt = String(obj.text || "");
   if (txt.length > MAX_TEXT_CHARS) {
-    console.warn(`current_text.json excede MAX_TEXT_CHARS (${txt.length}). Se truncará a ${MAX_TEXT_CHARS} caracteres.`);
+    console.warn(`current_text.json exceeds MAX_TEXT_CHARS (${txt.length}). It will be truncated to ${MAX_TEXT_CHARS} characters.`);
     txt = txt.slice(0, MAX_TEXT_CHARS);
-    // Guardar la versión truncada para mantener coherencia entre sesiones
+    // Save the truncated version to keep sessions consistent
     saveJson(CURRENT_TEXT_FILE, { text: txt });
   }
   currentText = txt;
@@ -176,80 +274,8 @@ function createMainWindow() {
 
   mainWin.loadFile(path.join(__dirname, '../public/index.html'));
 
-  // --- BARRA SUPERIOR PERSONALIZADA (insertada aquí) ---
-  const menuTemplate = [
-    {
-      label: '¿Cómo usar la app?',
-      submenu: [
-        { label: 'Guía básica', click: () => mainWin.webContents.send('menu-click', 'guia_basica') },
-        { label: 'Instrucciones completas', click: () => mainWin.webContents.send('menu-click', 'instrucciones_completas') },
-        { label: 'Preguntas frecuentes (FAQ)', click: () => mainWin.webContents.send('menu-click', 'faq') }
-      ]
-    },
-    {
-      label: 'Herramientas',
-      submenu: [
-        { label: 'Cargador de archivo de texto', click: () => mainWin.webContents.send('menu-click', 'cargador_texto') },
-        { label: 'Cargador de imágenes con texto', click: () => mainWin.webContents.send('menu-click', 'contador_imagen') },
-        { label: 'Test de velocidad de lectura', click: () => mainWin.webContents.send('menu-click', 'test_velocidad') }
-      ]
-    },
-    {
-      label: 'Preferencias',
-      submenu: [
-        { label: 'Idioma', click: () => mainWin.webContents.send('menu-click', 'preferencias_idioma') },
-        {
-          label: 'Diseño',
-          submenu: [
-            { label: 'Skins', click: () => mainWin.webContents.send('menu-click', 'diseno_skins') },
-            { label: 'Cronómetro flotante', click: () => mainWin.webContents.send('menu-click', 'diseno_crono_flotante') },
-            { label: 'Fuentes', click: () => mainWin.webContents.send('menu-click', 'diseno_fuentes') },
-            { label: 'Colores', click: () => mainWin.webContents.send('menu-click', 'diseno_colores') }
-          ]
-        },
-        { label: 'Shortcuts', click: () => mainWin.webContents.send('menu-click', 'shortcuts') },
-        { label: 'Presets por defecto', click: () => mainWin.webContents.send('menu-click', 'presets_por_defecto') }
-      ]
-    },
-    {
-      label: 'Comunidad',
-      submenu: [
-        { label: 'Discord', click: () => mainWin.webContents.send('menu-click', 'discord') },
-        { label: 'Avisos y novedades', click: () => mainWin.webContents.send('menu-click', 'avisos') }
-      ]
-    },
-    { label: 'Links de interés', click: () => mainWin.webContents.send('menu-click', 'links_interes') },
-    { label: 'COLABORA ($)', click: () => mainWin.webContents.send('menu-click', 'colabora') },
-    {
-      label: '?',
-      submenu: [
-        { label: 'Actualizar a última versión', click: () => mainWin.webContents.send('menu-click', 'actualizar_version') },
-        { label: 'Readme', click: () => mainWin.webContents.send('menu-click', 'readme') },
-        { label: 'Acerca de', click: () => mainWin.webContents.send('menu-click', 'acerca_de') }
-      ]
-    }
-  ];
-
-  if (!app.isPackaged) {
-    // añadimos una sección "Desarrollo" con Toggle DevTools y Reload
-    menuTemplate.push({
-      label: 'Desarrollo',
-      submenu: [
-        { role: 'reload', label: 'Recargar' },
-        { role: 'forcereload', label: 'Forzar recarga' },
-        {
-          label: 'Toggle DevTools',
-          accelerator: 'Ctrl+Shift+I',
-          click: () => {
-            if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.toggleDevTools();
-          }
-        }
-      ]
-    });
-  }
-
-  const appMenu = Menu.buildFromTemplate(menuTemplate);
-  Menu.setApplicationMenu(appMenu);
+  // --- BARRA SUPERIOR PERSONALIZADA (traducciones i18n) ---
+  buildAppMenu(currentLanguage);
   // --- FIN BARRA SUPERIOR ---
 
   // Al iniciarse el cierre de la ventana principal, cerrar ordenadamente ventanas dependientes.
@@ -276,11 +302,11 @@ function createMainWindow() {
     }
   });
 
-  // Cuando la ventana principal ya quedó destruida...
+  // When the main window is already destroyed...
   mainWin.on('closed', () => {
     mainWin = null;
 
-    // Forzar salida ordenada de la aplicación
+    // Force an orderly application exit
     try {
       app.quit();
     } catch (e) {
@@ -315,7 +341,7 @@ function createEditorWindow() {
     }
   });
 
-  // Aquí eliminamos la barra de menú (ventana modal/editor)
+  // Remove the menu bar on the modal/editor window
   editorWin.setMenu(null);
 
   editorWin.loadFile(path.join(__dirname, '../public/manual.html'));
@@ -436,6 +462,7 @@ ipcMain.handle('set-language', async (_event, lang) => {
 
     const chosen = String(lang || '').trim();
     settings.language = chosen;
+    currentLanguage = chosen || 'es';
 
     // Ensure numberFormatting has sensible defaults for es/en if missing
     settings.numberFormatting = settings.numberFormatting || {};
@@ -452,6 +479,9 @@ ipcMain.handle('set-language', async (_event, lang) => {
 
     // Save normalized settings (includes modeConteo if no estaba)
     saveJson(SETTINGS_FILE, settings);
+
+    // Rebuild menu with the new language
+    buildAppMenu(currentLanguage);
 
     // Notificar renderers con el objeto settings correcto
     try {
@@ -550,20 +580,20 @@ function createLanguageWindow() {
     } finally {
       langWin = null;
       // Ensure main window is created after modal closure
-      try { if (!mainWin) createMainWindow(); } catch (e) { console.error("Error creando mainWin después del modal:", e); }
+      try { if (!mainWin) createMainWindow(); } catch (e) { console.error("Error creating mainWin after the modal:", e); }
     }
   });
 }
 
 // ----------------- Ventana flotante (PIP) -----------------
 const FLOATER_PRELOAD = path.join(__dirname, 'flotante_preload.js');
-// Ruta del HTML del flotante: colocarlo en ../public para seguir la convención
+// Floating window HTML path: place it in ../public to keep the convention
 const FLOATER_HTML = path.join(__dirname, '../public/flotante.html');
 
 async function createFloatingWindow(options = {}) {
   // Si ya existe y no fue destruida, devolverla (no recrear)
   if (floatingWin && !floatingWin.isDestroyed()) {
-    // Si se pidió forzar posición nueva, aplicarla
+    // Apply a forced position if it was requested
     if (options && (typeof options.x === 'number' || typeof options.y === 'number')) {
       try { floatingWin.setBounds({ x: options.x || floatingWin.getBounds().x, y: options.y || floatingWin.getBounds().y }); } catch (e) { /* noop */ }
     }
@@ -593,14 +623,14 @@ async function createFloatingWindow(options = {}) {
   const DEFAULT_MARGIN_RIGHT = 30; // un poco a la izquierda del extremo derecho para evitar scrollbars
   const DEFAULT_MARGIN_BOTTOM = 20;  // espacio encima de la barra de tareas / dock
 
-  // Calcular posición por defecto en base al monitor principal (workArea excluye taskbar/dock)
+  // Calculate default position using the primary display workArea (excludes taskbar/dock)
   let pos = {};
   try {
     const display = screen.getPrimaryDisplay();
     const wa = display && display.workArea ? display.workArea : null;
 
     if (wa) {
-      // Si el usuario no forzó x/y via options, calculamos la esquina inferior derecha del workArea.
+      // If the user did not force x/y via options, place it at the bottom-right of the workArea.
       const marginRight = typeof options.marginRight === 'number' ? options.marginRight : DEFAULT_MARGIN_RIGHT;
       const marginBottom = typeof options.marginBottom === 'number' ? options.marginBottom : DEFAULT_MARGIN_BOTTOM;
 
@@ -611,10 +641,10 @@ async function createFloatingWindow(options = {}) {
       pos.y = y;
     }
   } catch (e) {
-    console.warn("No se pudo calcular posición desde screen.getPrimaryDisplay(); flotar en posición por defecto.", e);
+    console.warn("Could not compute position from screen.getPrimaryDisplay(); using default floating position.", e);
   }
 
-  // Si se pasaron explícitamente x/y en options, respetarlas (permitir override)
+  // If x/y were provided explicitly in options, respect them (allow override)
   if (typeof options.x === 'number') pos.x = options.x;
   if (typeof options.y === 'number') pos.y = options.y;
 
@@ -630,13 +660,13 @@ async function createFloatingWindow(options = {}) {
     console.error("Error cargando flotante HTML:", e);
   }
 
-  // Si la ventana se creó pero quedó offscreen o fuera de bounds (raro), aseguramos que esté dentro de la pantalla
+  // If the window was created offscreen or out of bounds, ensure it stays inside the screen
   try {
     const bounds = floatingWin.getBounds();
     const display = screen.getDisplayMatching(bounds);
     if (display && display.workArea) {
       const wa = display.workArea;
-      // Ajustar por si quedó parcialmente fuera (lo mantenemos simple)
+      // Adjust if it ended up partially offscreen (keep it simple)
       let nx = bounds.x, ny = bounds.y;
       if (bounds.x < wa.x) nx = wa.x + DEFAULT_MARGIN_RIGHT;
       if (bounds.y < wa.y) ny = wa.y + DEFAULT_MARGIN_BOTTOM;
@@ -659,11 +689,11 @@ async function createFloatingWindow(options = {}) {
     }
   });
 
-  // Opcional: si la app quiere que la flotante no robe foco en ciertos flujos, se podría usar showInactive() en vez de show(), pero en tu caso quieres interacción inmediata, así que dejamos que sea focusable=true y que tome foco al abrir.
+  // Optional: if the floating window should not steal focus, use showInactive(); here we want immediate interaction so we keep focusable=true and let it take focus.
   return floatingWin;
 }
 
-/* ---------------- Cronómetro central en main (timekeeping + broadcast) ----------------*/
+/* ---------------- Main stopwatch (timekeeping + broadcast) ----------------*/
 
 let crono = {
   running: false,
@@ -698,7 +728,7 @@ function ensureCronoInterval() {
   if (cronoInterval) return;
   cronoInterval = setInterval(() => {
     broadcastCronoState();
-    // opción: parar el interval si nadie escucha y no está corriendo
+    // Option: stop the interval if nobody listens and the timer is not running
     if (!crono.running && !mainWin && !floatingWin && !editorWin) {
       clearInterval(cronoInterval);
       cronoInterval = null;
@@ -936,7 +966,7 @@ ipcMain.handle("open-default-presets-folder", async () => {
     // Aseguramos que la carpeta exista
     ensureConfigPresetsDir();
 
-    // shell.openPath devuelve '' en éxito, o un string con error
+    // shell.openPath returns '' on success, or an error string
     const result = await shell.openPath(CONFIG_PRESETS_DIR);
     if (typeof result === "string" && result.length > 0) {
       // error (result contiene un mensaje)
@@ -1336,7 +1366,7 @@ ipcMain.handle("set-current-text", (event, payload) => {
       try { mainWin.webContents.send("current-text-updated", currentText); } catch (err) { console.error("Error enviando current-text-updated a mainWin:", err); }
     }
 
-    // Notificar modal/editor con objeto que incluye meta (para que el modal use la edición nativa)
+    // Notify modal/editor with an object that includes meta (so the modal can use native editing)
     if (editorWin && !editorWin.isDestroyed()) {
       try {
         editorWin.webContents.send("manual-text-updated", { text: currentText, meta: incomingMeta || { source: "main", action: "set" } });
@@ -1378,7 +1408,7 @@ ipcMain.handle('get-modal-state', () => {
   return loadJson(MODAL_STATE_FILE, {});
 });
 
-// Exponer configuración (MAX_TEXT_CHARS) vía IPC
+// Expose configuration (MAX_TEXT_CHARS) via IPC
 ipcMain.handle("get-app-config", async () => {
   try {
     return { ok: true, maxTextChars: MAX_TEXT_CHARS };
@@ -1405,8 +1435,9 @@ app.whenReady().then(() => {
   // On startup, check settings.language and possibly prompt
   let settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
   settings = normalizeSettings(settings);
+  currentLanguage = settings.language || 'es';
 
-  // Si normalize añadió defaults (p. ej. modeConteo), guardamos de vuelta para persistirlo
+  // If normalize added defaults (e.g., modeConteo), save back to persist them
   // (esto garantiza que user_settings.json contenga modeConteo desde el primer arranque).
   saveJson(SETTINGS_FILE, settings);
 
