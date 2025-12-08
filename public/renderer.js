@@ -129,13 +129,6 @@ function applyTranslations() {
   // Labels dentro de velocidad
   const wpmLabel = document.querySelector(".wpm-row span");
   if (wpmLabel) wpmLabel.textContent = tRenderer("renderer.main.speed.wpm_label", wpmLabel.textContent || "");
-  if (presetsSelect) {
-    const placeholderOpt = presetsSelect.querySelector("option");
-    if (placeholderOpt) {
-      placeholderOpt.textContent = tRenderer("renderer.main.speed.presets_placeholder", placeholderOpt.textContent || "");
-    }
-  }
-
   // Resultados: label modo preciso
   const togglePrecisoLabel = document.querySelector(".toggle-wrapper .toggle-label");
   if (togglePrecisoLabel) {
