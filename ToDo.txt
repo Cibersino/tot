@@ -2,11 +2,9 @@
 
 # ÍTEM ACTUAL #
 
-
+* Implementar semiauto-update *
 
 # Más adelante #
-
-* Implementar semiauto-update *
 
 * Revisión y depuración del código *
 - Ordenar arbol de carpetas, archivos y códigos
