@@ -7,7 +7,7 @@
         "overwrite_clipboard": "Sobrescribir portapapeles",
         "append_clipboard_newline": "Pegar portapapeles nueva línea",
         "edit": "Editor manual",
-        "clear": "🗑"
+        "clear": "Vaciar texto vigente"
       },
       "tooltips": {
         "overwrite_clipboard": "Reemplazar texto con el portapapeles",
@@ -27,14 +27,14 @@
         "presets_placeholder": "Presets",
         "new": "Nuevo",
         "edit": "Editar",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "delete": "Eliminar preset seleccionado",
+        "reset_defaults": "Restaurar presets por defecto"
       },
       "results": {
         "title": "RESULTADOS DEL CONTEO",
         "time": "Tiempo estimado de lectura: {h}h {m}m {s}s",
         "words": "Palabras: {n}",
-        "chars_no_space": "Chars w/space: {n}",
+        "chars_no_space": "Chars s/espace: {n}",
         "chars": "Caracteres: {n}",
         "precise_mode": "Modo preciso"
       },
@@ -57,26 +57,28 @@
       "note": "La selección se guardará y se usará en próximos inicios de la aplicación."
     },
     "modal_preset": {
-      "title": "Nuevo preset",
-      "heading": "Crear nuevo preset",
+      "title_new": "Nuevo preset",
+      "title_edit": "Editar preset",
+      "heading_new": "Crear nuevo preset",
+      "heading_edit": "Editar preset seleccionado",
       "name": "Nombre:",
       "wpm": "WPM:",
       "description": "Descripción:",
       "placeholder": "Descripción breve...",
-      "char_count": "120 caracteres restantes",
+      "char_count": "{remaining} caracteres restantes",
       "hint": "Los presets personalizados se guardan en la configuración del usuario.",
       "cancel": "Cancelar",
       "save": "Guardar"
     },
     "modal_editor": {
-      "title": "Editor — Texto completo",
+      "title": "Editor - Texto completo",
       "placeholder": "Escribe o pega aquí...",
       "calc_button": "CALCULAR",
       "calc_while_typing": "Calcular mientras escribe",
-      "clear": "vaciar 🗑️",
+      "clear": "Vaciar",
       "clear_title": "Vaciar"
     },
-    "modal_floating": { "title": "toT — Cronómetro (flotante)" },
+    "modal_floating": { "title": "toT - Cronómetro (flotante)" },
     "alerts": {
       "wip": "WIP: Aquí se abrirá {feature} en una futura versión.",
       "no_presets_folder": "No es posible abrir la carpeta de presets en este entorno.",

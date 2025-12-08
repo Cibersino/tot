@@ -7,7 +7,7 @@
         "overwrite_clipboard": "Overwrite clipboard",
         "append_clipboard_newline": "Paste clipboard new line",
         "edit": "Manual editor",
-        "clear": "🗑"
+        "clear": "Clear current text"
       },
       "tooltips": {
         "overwrite_clipboard": "Replace current text with clipboard",
@@ -27,14 +27,14 @@
         "presets_placeholder": "Presets",
         "new": "New",
         "edit": "Edit",
-        "delete": "🗑",
-        "reset_defaults": "R"
+        "delete": "Delete selected preset",
+        "reset_defaults": "Restore default presets"
       },
       "results": {
         "title": "COUNT RESULTS",
         "time": "Estimated reading time: {h}h {m}m {s}s",
         "words": "Words: {n}",
-        "chars_no_space": "Chars w/space: {n}",
+        "chars_no_space": "Chars w/o space: {n}",
         "chars": "Characters: {n}",
         "precise_mode": "Precise mode"
       },
@@ -57,26 +57,28 @@
       "note": "The selection will be saved and used next time the app starts."
     },
     "modal_preset": {
-      "title": "New preset",
-      "heading": "Create new preset",
+      "title_new": "New preset",
+      "title_edit": "Edit preset",
+      "heading_new": "Create new preset",
+      "heading_edit": "Edit selected preset",
       "name": "Name:",
       "wpm": "WPM:",
       "description": "Description:",
       "placeholder": "Short description...",
-      "char_count": "120 characters left",
+      "char_count": "{remaining} characters left",
       "hint": "Custom presets are stored in user settings.",
       "cancel": "Cancel",
       "save": "Save"
     },
     "modal_editor": {
-      "title": "Editor — Full text",
+      "title": "Editor - Full text",
       "placeholder": "Type or paste here...",
       "calc_button": "CALCULATE",
       "calc_while_typing": "Calculate while typing",
-      "clear": "clear 🗑️",
+      "clear": "Clear",
       "clear_title": "Clear"
     },
-    "modal_floating": { "title": "toT — Stopwatch (floating)" },
+    "modal_floating": { "title": "toT - Stopwatch (floating)" },
     "alerts": {
       "wip": "WIP: This feature will open in a future version: {feature}.",
       "no_presets_folder": "Cannot open presets folder in this environment.",

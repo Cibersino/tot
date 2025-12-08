@@ -45,6 +45,44 @@ function loadMainTranslations(lang) {
   }
 }
 
+function getDialogTexts(lang) {
+  const langCode = (lang || 'es').toLowerCase() || 'es';
+  const tr = loadMainTranslations(langCode);
+  const tMain = (tr && tr.main) ? tr.main : {};
+  return tMain.dialog || {};
+}
+
+// Helpers: presets defaults (general + por idioma si existe)
+function sanitizeLangCode(lang) {
+  if (typeof lang !== 'string') return '';
+  const base = lang.trim().toLowerCase().split(/[-_]/)[0];
+  return /^[a-z0-9]+$/.test(base) ? base : '';
+}
+
+function loadPresetArray(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return [];
+    let data = require(filePath);
+    if (!Array.isArray(data) && data && Array.isArray(data.default)) data = data.default;
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error(`Error loading preset file ${filePath}:`, err);
+    return [];
+  }
+}
+
+function loadDefaultPresetsCombined(lang) {
+  const presetsDir = path.join(__dirname, 'presets');
+  const combined = loadPresetArray(path.join(presetsDir, 'defaults_presets.js')).slice();
+  const langCode = sanitizeLangCode(lang);
+  if (langCode) {
+    const langFile = path.join(presetsDir, `defaults_presets_${langCode}.js`);
+    const langPresets = loadPresetArray(langFile);
+    if (langPresets.length) combined.push(...langPresets);
+  }
+  return combined;
+}
+
 function ensureConfigDir() {
   try {
     if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
@@ -119,30 +157,28 @@ function copyDefaultPresetsIfMissing() {
   try {
     ensureConfigPresetsDir();
 
-    const files = [
-      "defaults_presets.js",
-      "defaults_presets_en.js",
-      "defaults_presets_es.js"
-    ];
+    if (fs.existsSync(PRESETS_SOURCE_DIR)) {
+      const entries = fs.readdirSync(PRESETS_SOURCE_DIR);
+      entries
+        .filter(name => /^defaults_presets.*\.js$/i.test(name))
+        .forEach((fname) => {
+          const src = path.join(PRESETS_SOURCE_DIR, fname);
+          const dest = path.join(CONFIG_PRESETS_DIR, fname.replace(/\.js$/i, ".json"));
 
-    files.forEach((fname) => {
-      const src = path.join(PRESETS_SOURCE_DIR, fname);
-      const dest = path.join(CONFIG_PRESETS_DIR, fname.replace(/\.js$/i, ".json"));
-
-      // Only copy if the source JS exists and the destination JSON is missing
-      if (fs.existsSync(src) && !fs.existsSync(dest)) {
-        try {
-          // Require the JS module that exports the array
-          // (se espera que module.exports = [ ... ] )
-          let arr = require(src);
-          if (!Array.isArray(arr)) arr = Array.isArray(arr.default) ? arr.default : [];
-          fs.writeFileSync(dest, JSON.stringify(arr, null, 2), "utf8");
-          console.debug(`Copied default preset: ${src} -> ${dest}`);
-        } catch (err) {
-          console.error(`Error convirtiendo preset ${src} a JSON:`, err);
-        }
-      }
-    });
+          // Only copy if the source JS exists and the destination JSON is missing
+          if (fs.existsSync(src) && !fs.existsSync(dest)) {
+            try {
+              // Require the JS module that exports the array
+              let arr = require(src);
+              if (!Array.isArray(arr)) arr = Array.isArray(arr.default) ? arr.default : [];
+              fs.writeFileSync(dest, JSON.stringify(arr, null, 2), "utf8");
+              console.debug(`Copied default preset: ${src} -> ${dest}`);
+            } catch (err) {
+              console.error(`Error convirtiendo preset ${src} a JSON:`, err);
+            }
+          }
+        });
+    }
   } catch (err) {
     console.error("Error en copyDefaultPresetsIfMissing:", err);
   }
@@ -983,14 +1019,21 @@ ipcMain.handle("open-default-presets-folder", async () => {
 // Request to delete a preset (handles native dialogs + persistence)
 ipcMain.handle('request-delete-preset', async (_event, name) => {
   try {
+    // Cargar settings y textos de diálogo antes de cualquier mensaje
+    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    settings = normalizeSettings(settings);
+    const dialogTexts = getDialogTexts(settings.language || 'es');
+    const yesLabel = dialogTexts.yes || 'Sí, continuar';
+    const noLabel = dialogTexts.no || 'No, cancelar';
+
     // If no name provided, show information dialog and exit
     if (!name) {
       try {
         await dialog.showMessageBox(mainWin || null, {
           type: 'none',
-          buttons: ['Aceptar'],
+          buttons: [dialogTexts.ok || 'Aceptar'],
           defaultId: 0,
-          message: 'No hay ningún preset seleccionado para borrar'
+          message: dialogTexts.delete_preset_none || 'No hay ningún preset seleccionado para borrar'
         });
       } catch (e) {
         console.error("Error mostrando dialog no-selection:", e);
@@ -999,12 +1042,13 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
     }
 
     // Ask confirmation
+    console.log('[i18n debug delete] buttons:', yesLabel, noLabel);
     const conf = await dialog.showMessageBox(mainWin || null, {
       type: 'none',
-      buttons: ['Sí', 'No'],
+      buttons: [yesLabel, noLabel],
       defaultId: 1,
       cancelId: 1,
-      message: `¿Eliminar el preset "${name}"?`
+      message: (dialogTexts.delete_preset_message || `¿Eliminar el preset "{name}"?`).replace('{name}', name)
     });
 
     if (conf.response !== 0) {
@@ -1013,24 +1057,12 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
     }
 
     // Proceed with deletion logic
-    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
-    settings = normalizeSettings(settings);
+    // settings ya cargado arriba
     settings.presets = settings.presets || [];
     const lang = settings.language || 'es';
 
     // Load default presets (same sources as get-default-presets)
-    const presetsDir = path.join(__dirname, 'presets');
-    const generalPath = path.join(presetsDir, 'defaults_presets.js');
-    const enPath = path.join(presetsDir, 'defaults_presets_en.js');
-    const esPath = path.join(presetsDir, 'defaults_presets_es.js');
-
-    const general = fs.existsSync(generalPath) ? require(generalPath) : [];
-    const en = fs.existsSync(enPath) ? require(enPath) : [];
-    const es = fs.existsSync(esPath) ? require(esPath) : [];
-
-    const defaultsCombined = Array.isArray(general) ? general.slice() : [];
-    const langPresets = (lang === 'en') ? (Array.isArray(en) ? en : []) : (lang === 'es' ? (Array.isArray(es) ? es : []) : []);
-    if (Array.isArray(langPresets)) defaultsCombined.push(...langPresets);
+    const defaultsCombined = loadDefaultPresetsCombined(lang);
 
     // Normalize structures
     const idxUser = settings.presets.findIndex(p => p.name === name);
@@ -1120,12 +1152,15 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
     const lang = settings.language || 'es';
 
     // Ask confirmation (native dialog)
+    const dialogTexts = getDialogTexts(settings.language || 'es');
+    const yesLabel = dialogTexts.yes || 'Sí, continuar';
+    const noLabel = dialogTexts.no || 'No, cancelar';
     const conf = await dialog.showMessageBox(mainWin || null, {
       type: 'none',
-      buttons: ['Sí', 'No'],
+      buttons: [yesLabel, noLabel],
       defaultId: 1,
       cancelId: 1,
-      message: `¿Restaurar presets por defecto (generales y para el idioma "${lang}") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.`
+      message: (dialogTexts.restore_defaults_message || `¿Restaurar presets por defecto (generales y para el idioma "{lang}") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.`).replace('{lang}', lang)
     });
 
     if (conf.response !== 0) {
@@ -1134,18 +1169,7 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
     }
 
     // Load default presets
-    const presetsDir = path.join(__dirname, 'presets');
-    const generalPath = path.join(presetsDir, 'defaults_presets.js');
-    const enPath = path.join(presetsDir, 'defaults_presets_en.js');
-    const esPath = path.join(presetsDir, 'defaults_presets_es.js');
-
-    const general = fs.existsSync(generalPath) ? require(generalPath) : [];
-    const en = fs.existsSync(enPath) ? require(enPath) : [];
-    const es = fs.existsSync(esPath) ? require(esPath) : [];
-
-    const defaultsCombined = Array.isArray(general) ? general.slice() : [];
-    const langPresets = (lang === 'en') ? (Array.isArray(en) ? en : []) : (lang === 'es' ? (Array.isArray(es) ? es : []) : []);
-    if (Array.isArray(langPresets)) defaultsCombined.push(...langPresets);
+    const defaultsCombined = loadDefaultPresetsCombined(lang);
 
     // Prepare structures to report what we changed
     const removedCustom = [];
@@ -1210,11 +1234,13 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
 // Notify for edit-no-selection (simple info dialog)
 ipcMain.handle('notify-no-selection-edit', async () => {
   try {
+    const settings = normalizeSettings(loadJson(SETTINGS_FILE, { language: "es", presets: [] }));
+    const dialogTexts = getDialogTexts(settings.language || 'es');
     await dialog.showMessageBox(mainWin || null, {
       type: 'none',
-      buttons: ['Aceptar'],
+      buttons: [(dialogTexts && dialogTexts.ok) || 'Aceptar'],
       defaultId: 0,
-      message: 'No hay ningún preset seleccionado para editar'
+      message: (dialogTexts && dialogTexts.edit_preset_none) || 'No hay ningún preset seleccionado para editar'
     });
     return { ok: true };
   } catch (e) {
@@ -1230,13 +1256,20 @@ ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
       return { ok: false, code: 'NO_ORIGINAL_NAME' };
     }
 
+    // Cargar settings y textos de diálogo antes de la confirmación
+    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+    settings = normalizeSettings(settings);
+    const dialogTexts = getDialogTexts(settings.language || 'es');
+
     // Ask confirmation (native dialog)
+    const yesLabel = dialogTexts.yes || 'Sí, continuar';
+    const noLabel = dialogTexts.no || 'No, cancelar';
     const conf = await dialog.showMessageBox(mainWin || null, {
       type: 'none',
-      buttons: ['Sí', 'No'],
+      buttons: [yesLabel, noLabel],
       defaultId: 1,
       cancelId: 1,
-      message: `¿Está seguro de editar "${originalName}" por el actual?`
+      message: (dialogTexts.edit_preset_confirm || `¿Está seguro de editar "{name}" por el actual?`).replace('{name}', originalName)
     });
 
     if (conf.response !== 0) {
@@ -1245,24 +1278,11 @@ ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
     }
 
     // Proceed: perform silent deletion of originalName (same semantics as request-delete-preset but WITHOUT dialogs)
-    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
-    settings = normalizeSettings(settings);
     settings.presets = settings.presets || [];
     const lang = settings.language || 'es';
 
-    // Load default presets (same sources as get-default-presets)
-    const presetsDir = path.join(__dirname, 'presets');
-    const generalPath = path.join(presetsDir, 'defaults_presets.js');
-    const enPath = path.join(presetsDir, 'defaults_presets_en.js');
-    const esPath = path.join(presetsDir, 'defaults_presets_es.js');
-
-    const general = fs.existsSync(generalPath) ? require(generalPath) : [];
-    const en = fs.existsSync(enPath) ? require(enPath) : [];
-    const es = fs.existsSync(esPath) ? require(esPath) : [];
-
-    const defaultsCombined = Array.isArray(general) ? general.slice() : [];
-    const langPresets = (lang === 'en') ? (Array.isArray(en) ? en : []) : (lang === 'es' ? (Array.isArray(es) ? es : []) : []);
-    if (Array.isArray(langPresets)) defaultsCombined.push(...langPresets);
+    // Load default presets (general + idioma si existe)
+    const defaultsCombined = loadDefaultPresetsCombined(lang);
 
     const idxUser = settings.presets.findIndex(p => p.name === originalName);
     const isDefault = defaultsCombined.find(p => p.name === originalName);
