@@ -84,7 +84,7 @@ function fetchRemoteVersion(url) {
   });
 }
 
-async function checkForUpdates(lang) {
+async function checkForUpdates(lang, { manual = false } = {}) {
   try {
     const dlg = getDialogTexts(lang || currentLanguage || 'es') || {};
     let localVer = null;
@@ -95,8 +95,35 @@ async function checkForUpdates(lang) {
       return;
     }
     const remoteVer = await fetchRemoteVersion(VERSION_REMOTE_URL);
-    if (!remoteVer) return;
-    if (compareVersions(remoteVer, localVer) <= 0) return; // nada nuevo
+    if (!remoteVer) {
+      if (manual) {
+        const title = dlg.update_failed_title || 'Update check failed';
+        const message = dlg.update_failed_message || 'Could not check for updates. Please check your connection and try again.';
+        await dialog.showMessageBox(mainWin, {
+          type: 'info',
+          buttons: [dlg.ok || 'OK'],
+          defaultId: 0,
+          title,
+          message
+        });
+      }
+      return;
+    }
+    if (compareVersions(remoteVer, localVer) <= 0) {
+      if (manual) {
+        const title = dlg.update_up_to_date_title || 'You are up to date';
+        const message = (dlg.update_up_to_date_message || 'You already have the latest version ({local}).')
+          .replace('{local}', localVer);
+        await dialog.showMessageBox(mainWin, {
+          type: 'info',
+          buttons: [dlg.ok || 'OK'],
+          defaultId: 0,
+          title,
+          message
+        });
+      }
+      return; // nada nuevo
+    }
 
     const title = dlg.update_title || 'Actualización disponible';
     const message = (dlg.update_message || 'Hay una versión nueva {remote}. Actual: {local}. ¿Descargar ahora?')
@@ -1634,6 +1661,16 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
+});
+
+// IPC: manual check for updates from renderer/menu
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    await checkForUpdates(currentLanguage, { manual: true });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
 });
 
 app.on('before-quit', () => {

@@ -46,7 +46,11 @@
       "update_title": "Actualización disponible",
       "update_message": "Hay una versión nueva {remote}. Actual: {local}. ¿Descargar ahora?",
       "update_download": "Descargar",
-      "update_later": "Más tarde"
+      "update_later": "Más tarde",
+      "update_up_to_date_title": "Ya estás al día",
+      "update_up_to_date_message": "Ya tienes la última versión ({local}).",
+      "update_failed_title": "No se pudo comprobar",
+      "update_failed_message": "No se pudo comprobar si hay actualizaciones. Revisa tu conexión y vuelve a intentar."
     }
   }
 }

@@ -5,6 +5,7 @@ const api = {
     // Clipboard / editor / presets / settings (preservamos todo lo existente)
     readClipboard: () => clipboard.readText(),
     openEditor: () => ipcRenderer.invoke('open-editor'),
+    checkForUpdates: (manual = false) => ipcRenderer.invoke('check-for-updates', { manual }),
     // openPresetModal acepta un argumento opcional: número (wpm) o un objeto { wpm, mode, preset }
     openPresetModal: (payload) => ipcRenderer.invoke('open-preset-modal', payload),
     openDefaultPresetsFolder: () => ipcRenderer.invoke('open-default-presets-folder'),
