@@ -7,7 +7,7 @@
         "overwrite_clipboard": "Overwrite clipboard",
         "append_clipboard_newline": "Paste clipboard new line",
         "edit": "Manual editor",
-        "clear": "Clear current text"
+        "clear": "🗑"
       },
       "tooltips": {
         "overwrite_clipboard": "Replace current text with clipboard",
@@ -27,8 +27,8 @@
         "presets_placeholder": "Presets",
         "new": "New",
         "edit": "Edit",
-        "delete": "Delete selected preset",
-        "reset_defaults": "Restore default presets"
+        "delete": "🗑",
+        "reset_defaults": "R"
       },
       "results": {
         "title": "COUNT RESULTS",
@@ -38,7 +38,9 @@
         "chars": "Characters: {n}",
         "precise_mode": "Precise mode"
       },
-      "help": { "title": "Information (pending)" },
+      "help": {
+        "title": "Information (pending)"
+      },
       "timer": {
         "title": "STOPWATCH",
         "speed": "Speed:",
@@ -46,8 +48,14 @@
         "floating": "Floating window",
         "floating_short": "FW"
       },
-      "spare": { "title": "Available section" },
-      "info_modal": { "title": "Info", "close": "Close", "loading": "Loading..." }
+      "spare": {
+        "title": "Available section"
+      },
+      "info_modal": {
+        "title": "Info",
+        "close": "Close",
+        "loading": "Loading..."
+      }
     },
     "modal_language": {
       "title": "Select language",
@@ -71,19 +79,21 @@
       "save": "Save"
     },
     "modal_editor": {
-      "title": "Editor - Full text",
+      "title": "Editor — Full text",
       "placeholder": "Type or paste here...",
       "calc_button": "CALCULATE",
       "calc_while_typing": "Calculate while typing",
-      "clear": "Clear",
+      "clear": "🗑",
       "clear_title": "Clear"
     },
-    "modal_floating": { "title": "toT - Stopwatch (floating)" },
+    "modal_floating": {
+      "title": "toT —  Stopwatch (floating)"
+    },
     "alerts": {
       "wip": "WIP: This feature will open in a future version: {feature}.",
       "no_presets_folder": "Cannot open presets folder in this environment.",
       "open_presets_failed": "Could not open default presets folder. Check console for details.",
-      "open_presets_error": "An error occurred while opening the presets folder. Check console.",
+      "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
       "clipboard_too_big": "Clipboard text exceeds maximum size and will be truncated.",
       "text_truncated": "Text was truncated to fit the application limit.",
       "text_limit_reached": "Cannot add text: maximum size reached.",
@@ -97,8 +107,7 @@
       "delete_error": "An error occurred while deleting the preset. Check console.",
       "restore_error": "An error occurred while restoring presets. Check console.",
       "open_presets_unsupported": "Cannot open presets folder in this environment.",
-      "open_presets_fail": "Could not open the default presets folder. Check console for details.",
-      "open_presets_error": "An error occurred while trying to open the presets folder. Check console."
+      "open_presets_fail": "Could not open the default presets folder. Check console for details."
     },
     "editor_alerts": {
       "too_big": "Cannot add text: maximum size reached.",
@@ -119,6 +128,33 @@
       "edit_error": "An error occurred while editing the preset. Check console.",
       "create_error": "An error occurred while creating the preset. Check console.",
       "process_error": "An error occurred while processing the preset. Check console."
+    },
+    "info": {
+      "acerca_de": {
+        "app_name": "toT — Reading Meter",
+        "title": "About",
+        "subtitle": "Subtitle",
+        "body": "Work in progress."
+      },
+      "readme": {
+        "app_name": "toT — Reading Meter",
+        "title": "Readme",
+        "subtitle": "Subtitle",
+        "body": "Work in progress."
+      },
+      "instrucciones": {
+        "app_name": "toT — Reading Meter",
+        "title": "User manual",
+        "nav_basic": "Basic guide",
+        "nav_full": "Full instructions",
+        "nav_faq": "Frequently asked questions (FAQ)",
+        "section_basic_title": "Basic guide",
+        "section_basic_body": "Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. ",
+        "section_full_title": "Full instructions",
+        "section_full_body": "Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. ",
+        "section_faq_title": "Frequently asked questions (FAQ)",
+        "section_faq_body": "Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. "
+      }
     }
   }
 }

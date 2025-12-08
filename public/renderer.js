@@ -742,6 +742,26 @@ const loadPresets = async () => {
     }
   }
 
+  // Traduce el HTML cargado en el modal de info usando data-i18n y renderer.info.<key>.*
+  function translateInfoHtml(htmlString, key) {
+    if (!rendererTranslations) return htmlString;
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlString, "text/html");
+      doc.querySelectorAll("[data-i18n]").forEach((el) => {
+        const dataKey = el.getAttribute("data-i18n");
+        if (!dataKey) return;
+        const tKey = `renderer.info.${key}.${dataKey}`;
+        const translated = tRenderer(tKey, el.textContent || "");
+        if (translated) el.textContent = translated;
+      });
+      return doc.body.innerHTML;
+    } catch (e) {
+      console.warn("translateInfoHtml failed:", e);
+      return htmlString;
+    }
+  }
+
   async function showInfoModal(key, opts = {}) {
     // key: 'readme' | 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
     const sectionTitles = {
@@ -773,8 +793,10 @@ const loadPresets = async () => {
       fileToLoad = `./info/${key}.html`;
     }
 
+    const translationKey = (key === "guia_basica" || key === "faq") ? "instrucciones" : key;
     // Título del modal: mostrar el título de la sección (no "Info" genérico)
-    infoModalTitle.textContent = sectionTitles[key] || (opts.title || "Información");
+    const defaultTitle = sectionTitles[key] || (opts.title || "InformaciA3n");
+    infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
 
     // Abrir modal
     infoModal.setAttribute("aria-hidden", "false");
@@ -789,8 +811,9 @@ const loadPresets = async () => {
       return;
     }
 
-    // Poner contenido (documento completo)
-    infoModalContent.innerHTML = tryHtml;
+    // Traducir si hay i18n cargado y luego poner contenido
+    const translatedHtml = translateInfoHtml(tryHtml, translationKey);
+    infoModalContent.innerHTML = translatedHtml;
 
     // Asegurar que el panel empieza en top antes de hacer scroll
     const panel = document.querySelector('.info-modal-panel');
