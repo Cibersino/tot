@@ -42,7 +42,11 @@
       "restore_defaults_title": "Restaurar presets",
       "restore_defaults_message": "¿Restaurar presets por defecto (generales y para el idioma \"{lang}\") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.",
       "edit_preset_none": "No hay ningún preset seleccionado para editar",
-      "edit_preset_confirm": "¿Está seguro de editar \"{name}\" por el actual?"
+      "edit_preset_confirm": "¿Está seguro de editar \"{name}\" por el actual?",
+      "update_title": "Actualización disponible",
+      "update_message": "Hay una versión nueva {remote}. Actual: {local}. ¿Descargar ahora?",
+      "update_download": "Descargar",
+      "update_later": "Más tarde"
     }
   }
 }

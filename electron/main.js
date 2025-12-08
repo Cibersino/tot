@@ -1,5 +1,6 @@
 // electron/main.js
 const { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen, globalShortcut } = require('electron');
+const https = require('https');
 const path = require('path');
 const fs = require('fs');
 
@@ -7,6 +8,10 @@ const CONFIG_DIR = path.join(__dirname, '..', 'config');
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
 const MODAL_STATE_FILE = path.join(CONFIG_DIR, 'modal_state.json');
+const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
+const VERSION_REMOTE_URL = "https://raw.githubusercontent.com/Cibersino/tot-readingmeter/main/VERSION";
+const DOWNLOAD_URL = "https://github.com/Cibersino/tot-readingmeter/releases/latest";
+const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
 
 // Language modal assets
 const LANGUAGE_MODAL_HTML = path.join(__dirname, '../public/language_modal.html');
@@ -50,6 +55,71 @@ function getDialogTexts(lang) {
   const tr = loadMainTranslations(langCode);
   const tMain = (tr && tr.main) ? tr.main : {};
   return tMain.dialog || {};
+}
+
+function compareVersions(a, b) {
+  const pa = String(a || '').trim().split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b || '').trim().split('.').map(n => parseInt(n, 10) || 0);
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++) {
+    const va = pa[i] || 0;
+    const vb = pb[i] || 0;
+    if (va > vb) return 1;
+    if (va < vb) return -1;
+  }
+  return 0;
+}
+
+function fetchRemoteVersion(url) {
+  return new Promise((resolve) => {
+    try {
+      https.get(url, (res) => {
+        if (res.statusCode !== 200) return resolve(null);
+        let data = '';
+        res.on('data', chunk => { data += chunk; });
+        res.on('end', () => resolve(String(data || '').trim()));
+      }).on('error', () => resolve(null));
+    } catch (e) {
+      resolve(null);
+    }
+  });
+}
+
+async function checkForUpdates(lang) {
+  try {
+    const dlg = getDialogTexts(lang || currentLanguage || 'es') || {};
+    let localVer = null;
+    try {
+      localVer = fs.readFileSync(VERSION_FILE, 'utf8').trim();
+    } catch (e) {
+      // sin VERSION local, continuar sin avisar
+      return;
+    }
+    const remoteVer = await fetchRemoteVersion(VERSION_REMOTE_URL);
+    if (!remoteVer) return;
+    if (compareVersions(remoteVer, localVer) <= 0) return; // nada nuevo
+
+    const title = dlg.update_title || 'Actualización disponible';
+    const message = (dlg.update_message || 'Hay una versión nueva {remote}. Actual: {local}. ¿Descargar ahora?')
+      .replace('{remote}', remoteVer)
+      .replace('{local}', localVer);
+    const btnDownload = dlg.update_download || 'Descargar';
+    const btnLater = dlg.update_later || 'Más tarde';
+
+    const res = await dialog.showMessageBox(mainWin, {
+      type: 'info',
+      buttons: [btnDownload, btnLater],
+      defaultId: 0,
+      cancelId: 1,
+      title,
+      message
+    });
+    if (res.response === 0) {
+      shell.openExternal(DOWNLOAD_URL);
+    }
+  } catch (err) {
+    console.warn('checkForUpdates failed:', err);
+  }
 }
 
 // Helpers: presets defaults (general + por idioma si existe)
@@ -140,6 +210,8 @@ ensureConfigDir();
 
 // --- Maximum current text size (10 MB ~ 10,000,000 chars)
 const MAX_TEXT_CHARS = 10000000;
+const VERSION_REMOTE_URL = "https://raw.githubusercontent.com/Cibersino/tot-readingmeter/main/VERSION";
+const DOWNLOAD_URL = "https://github.com/Cibersino/tot-readingmeter/releases/latest";
 
 // --- Presets defaults: copia inicial (JS -> JSON) en config/presets_defaults ---
 const PRESETS_SOURCE_DIR = path.join(__dirname, "presets"); // carpeta original: electron/presets
@@ -194,6 +266,7 @@ let mainWin = null, // main window
   langWin = null, // language selection modal (first launch)
   floatingWin = null; // floating stopwatch window
 let currentLanguage = 'es';
+let updateCheckDone = false;
 
 // Build menu with i18n translations (main.json)
 function buildAppMenu(lang) {
@@ -1548,9 +1621,17 @@ app.whenReady().then(() => {
       } finally {
         try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { }
       }
+      if (!updateCheckDone) {
+        updateCheckDone = true;
+        checkForUpdates(currentLanguage);
+      }
     });
   } else {
     createMainWindow();
+    if (!updateCheckDone) {
+      updateCheckDone = true;
+      checkForUpdates(currentLanguage);
+    }
   }
 
   app.on('activate', () => {
