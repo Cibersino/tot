@@ -95,16 +95,23 @@
       "edit_unavailable": "Edit functionality not available.",
       "edit_error": "An error occurred while editing the preset. Check console.",
       "delete_error": "An error occurred while deleting the preset. Check console.",
-      "restore_error": "An error occurred while restoring presets. Check console."
+      "restore_error": "An error occurred while restoring presets. Check console.",
+      "open_presets_unsupported": "Cannot open presets folder in this environment.",
+      "open_presets_fail": "Could not open the default presets folder. Check console for details.",
+      "open_presets_error": "An error occurred while trying to open the presets folder. Check console."
     },
     "editor_alerts": {
       "too_big": "Cannot add text: maximum size reached.",
       "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
       "too_big_clipboard": "Text too large to paste directly. Use 'Overwrite clipboard' or 'Paste clipboard new line' from the main window.",
       "drop_no_text": "Drop: no plain text detected.",
+      "clipboard_no_text": "Clipboard does not contain plain text.",
+      "drop_too_big": "Dropped text is too large. Use the main window buttons to add large text.",
       "truncated_limit": "Text was truncated to the application limit.",
       "calc_error": "An error occurred while calculating. Check console.",
-      "text_truncated": "Text was truncated to fit the application limit."
+      "text_truncated": "Text was truncated to fit the application limit.",
+      "clipboard_overflow": "Clipboard text exceeds the maximum allowed and will be truncated.",
+      "paste_error": "An error occurred while pasting from clipboard. Check console."
     },
     "preset_alerts": {
       "name_empty": "Name cannot be empty.",

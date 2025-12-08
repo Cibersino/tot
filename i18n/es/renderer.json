@@ -95,16 +95,23 @@
       "edit_unavailable": "Funcionalidad de edición no disponible.",
       "edit_error": "Ocurrió un error al intentar editar el preset. Revisa la consola.",
       "delete_error": "Ocurrió un error al borrar el preset. Revisa la consola.",
-      "restore_error": "Ocurrió un error al restaurar presets. Revisa la consola."
+      "restore_error": "Ocurrió un error al restaurar presets. Revisa la consola.",
+      "open_presets_unsupported": "No es posible abrir la carpeta de presets en este entorno.",
+      "open_presets_fail": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.",
+      "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola."
     },
     "editor_alerts": {
       "too_big": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",
       "paste_truncated": "El texto pegado se ha truncado para no exceder el máximo permitido.",
       "too_big_clipboard": "Texto demasiado grande para pegar directamente. Usa 'Sobrescribir portapapeles' o 'Pegar portapapeles nueva línea' desde la ventana principal.",
       "drop_no_text": "Arrastrado: no se detectó texto plano.",
+      "clipboard_no_text": "El portapapeles no contiene texto plano.",
+      "drop_too_big": "Arrastrado: texto demasiado grande. Usa los botones de la ventana principal para agregar texto grande.",
       "truncated_limit": "El texto ha sido truncado al límite máximo permitido por la aplicación.",
       "calc_error": "Ocurrió un error al calcular. Revisa la consola.",
-      "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación."
+      "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",
+      "clipboard_overflow": "El texto del portapapeles supera el tamaño máximo permitido y será truncado.",
+      "paste_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola."
     },
     "preset_alerts": {
       "name_empty": "El nombre no puede estar vacío.",

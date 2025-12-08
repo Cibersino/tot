@@ -228,7 +228,7 @@ function insertTextAtCursor(rawText) {
   try {
     const available = MAX_TEXT_CHARS - editor.value.length;
     if (available <= 0) {
-      showNotice("No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.", { type: "warn" });
+      showNotice(tEditor("renderer.editor_alerts.too_big", "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido."), { type: "warn" });
       restoreFocusToEditor();
       return { inserted: 0, truncated: false };
     }
@@ -247,7 +247,7 @@ function insertTextAtCursor(rawText) {
     sendCurrentTextToMainWithMeta("paste");
 
     if (truncated) {
-      showNotice("El texto pegado se ha truncado para no exceder el máximo permitido.", { type: "warn", duration: 6000 });
+      showNotice(tEditor("renderer.editor_alerts.paste_truncated", "El texto pegado se ha truncado para no exceder el máximo permitido."), { type: "warn", duration: 6000 });
     }
     restoreFocusToEditor();
     return { inserted: toInsert.length, truncated };
@@ -292,7 +292,7 @@ async function applyExternalUpdate(payload) {
     }
 
     if (editor.value === newText) {
-      if (truncated) showNotice("El texto fue truncado para ajustarse al límite máximo de la aplicación.", { type: "warn", duration: 5000 });
+      if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn", duration: 5000 });
       return;
     }
 
@@ -338,7 +338,7 @@ async function applyExternalUpdate(payload) {
             editor.style.visibility = "";
             try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
           }
-          if (truncated) showNotice("El texto fue truncado para ajustarse al límite máximo de la aplicación.", { type: "warn" });
+          if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
           return;
         }
       }
@@ -367,7 +367,7 @@ async function applyExternalUpdate(payload) {
         } finally {
           try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
         }
-        if (truncated) showNotice("El texto fue truncado para ajustarse al límite máximo de la aplicación.", { type: "warn" });
+        if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
         return;
       } else {
         try {
@@ -381,7 +381,7 @@ async function applyExternalUpdate(payload) {
           editor.style.visibility = "";
           try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
         }
-        if (truncated) showNotice("El texto fue truncado para ajustarse al límite máximo de la aplicación.", { type: "warn" });
+        if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
         return;
       }
     }
@@ -397,7 +397,7 @@ async function applyExternalUpdate(payload) {
     } finally {
       editor.style.visibility = "";
     }
-    if (truncated) showNotice("El texto fue truncado para ajustarse al límite máximo de la aplicación.", { type: "warn" });
+    if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
   } catch (e) {
     console.error("applyExternalUpdate error:", e);
   }
@@ -441,7 +441,7 @@ if (editor) {
       ev.stopPropagation();
       const text = (ev.clipboardData && ev.clipboardData.getData("text/plain")) || "";
       if (!text) {
-        showNotice("El portapapeles no contiene texto plano.", { type: "warn" });
+        showNotice(tEditor("renderer.editor_alerts.clipboard_no_text", "El portapapeles no contiene texto plano."), { type: "warn" });
         restoreFocusToEditor();
         return;
       }
@@ -449,7 +449,7 @@ if (editor) {
         insertTextAtCursor(text);
         return;
       }
-      showNotice('Texto demasiado grande para pegar directamente. Usa "Sobrescribir portapapeles" o "Pegar portapapeles nueva línea" desde la ventana principal.', { type: "warn", duration: 7000 });
+      showNotice(tEditor("renderer.editor_alerts.too_big_clipboard", 'Texto demasiado grande para pegar directamente. Usa "Sobrescribir portapapeles" o "Pegar portapapeles nueva línea" desde la ventana principal.'), { type: "warn", duration: 7000 });
       restoreFocusToEditor();
     } catch (e) {
       console.error("paste handler error:", e);
@@ -466,7 +466,7 @@ if (editor) {
         // bloquear y avisar
         ev.preventDefault();
         ev.stopPropagation();
-        showNotice("Arrastrado: no se detectó texto plano.", { type: "warn" });
+        showNotice(tEditor("renderer.editor_alerts.drop_no_text", "Arrastrado: no se detectó texto plano."), { type: "warn" });
         restoreFocusToEditor();
         return;
       }
@@ -475,7 +475,7 @@ if (editor) {
         // bloquear grandes como antes
         ev.preventDefault();
         ev.stopPropagation();
-        showNotice("Arrastrado: texto demasiado grande. Usa los botones de la ventana principal para agregar texto grande.", { type: "warn", duration: 7000 });
+        showNotice(tEditor("renderer.editor_alerts.drop_too_big", "Arrastrado: texto demasiado grande. Usa los botones de la ventana principal para agregar texto grande."), { type: "warn", duration: 7000 });
         restoreFocusToEditor();
         return;
       }
@@ -488,7 +488,7 @@ if (editor) {
           if (editor.value.length > MAX_TEXT_CHARS) {
             editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
             dispatchNativeInputEvent();
-            showNotice("El texto fue truncado para ajustarse al límite máximo de la aplicación.", { type: "warn", duration: 5000 });
+            showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn", duration: 5000 });
           }
           // Notificar al main — marca que viene del editor para evitar eco-back.
           try { window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "drop" } }); } catch (e) { window.manualAPI.setCurrentText(editor.value); }
@@ -511,7 +511,7 @@ editor.addEventListener("input", () => {
 
   if (editor.value && editor.value.length > MAX_TEXT_CHARS) {
     editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
-    showNotice("El texto ha sido truncado al límite máximo permitido por la aplicación.", { type: "warn", duration: 6000 });
+    showNotice(tEditor("renderer.editor_alerts.truncated_limit", "El texto ha sido truncado al límite máximo permitido por la aplicación."), { type: "warn", duration: 6000 });
     try {
       window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "truncated" } });
     } catch (e) {
@@ -551,7 +551,7 @@ if (btnCalc) btnCalc.addEventListener("click", () => {
     // Do not close the modal or ask anything — per spec
   } catch (e) {
     console.error("Error ejecutando CALCULAR:", e);
-    showNotice("Ocurrió un error al calcular. Revisa la consola.", { type: "error", duration: 5000 });
+    showNotice(tEditor("renderer.editor_alerts.calc_error", "Ocurrió un error al calcular. Revisa la consola."), { type: "error", duration: 5000 });
     restoreFocusToEditor();
   }
 });
