@@ -11,7 +11,6 @@ const MODAL_STATE_FILE = path.join(CONFIG_DIR, 'modal_state.json');
 const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
 const VERSION_REMOTE_URL = "https://raw.githubusercontent.com/Cibersino/tot-readingmeter/main/VERSION";
 const DOWNLOAD_URL = "https://github.com/Cibersino/tot-readingmeter/releases/latest";
-const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
 
 // Language modal assets
 const LANGUAGE_MODAL_HTML = path.join(__dirname, '../public/language_modal.html');
@@ -210,8 +209,6 @@ ensureConfigDir();
 
 // --- Maximum current text size (10 MB ~ 10,000,000 chars)
 const MAX_TEXT_CHARS = 10000000;
-const VERSION_REMOTE_URL = "https://raw.githubusercontent.com/Cibersino/tot-readingmeter/main/VERSION";
-const DOWNLOAD_URL = "https://github.com/Cibersino/tot-readingmeter/releases/latest";
 
 // --- Presets defaults: copia inicial (JS -> JSON) en config/presets_defaults ---
 const PRESETS_SOURCE_DIR = path.join(__dirname, "presets"); // carpeta original: electron/presets
