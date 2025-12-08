@@ -142,8 +142,8 @@ function showNotice(msg, { duration = 4500, type = "info" } = {}) {
     if (type === "error") base.background = "#ffe6e6";
     Object.assign(n.style, base);
     container.appendChild(n);
-    n.addEventListener("click", () => { try { n.remove(); } catch (e) { } });
-    setTimeout(() => { try { n.remove(); } catch (e) { } }, duration);
+    n.addEventListener("click", () => { try { n.remove(); } catch (e) { /* noop */ } });
+    setTimeout(() => { try { n.remove(); } catch (e) { /* noop */ } }, duration);
   } catch (e) {
     console.debug("showNotice error:", e);
   }
@@ -323,7 +323,7 @@ async function applyExternalUpdate(payload) {
             editor.value = editor.value + toInsert;
             dispatchNativeInputEvent();
           } finally {
-            try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
+            try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
           }
           return;
         } else {
@@ -336,7 +336,7 @@ async function applyExternalUpdate(payload) {
             dispatchNativeInputEvent();
           } finally {
             editor.style.visibility = "";
-            try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
+            try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
           }
           if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
           return;
@@ -348,7 +348,7 @@ async function applyExternalUpdate(payload) {
       if (useNative) {
         try {
           editor.focus();
-          if (typeof editor.select === "function") { try { editor.select(); } catch (e) {} }
+          if (typeof editor.select === "function") { try { editor.select(); } catch (e) { /* noop */ } }
           else if (typeof editor.setSelectionRange === "function") editor.setSelectionRange(0, editor.value.length);
           let execOK = false;
           try { execOK = document.execCommand && document.execCommand("insertText", false, newText); } catch (t) { execOK = false; }
@@ -365,7 +365,7 @@ async function applyExternalUpdate(payload) {
           editor.value = newText;
           dispatchNativeInputEvent();
         } finally {
-          try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
+          try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
         }
         if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
         return;
@@ -379,7 +379,7 @@ async function applyExternalUpdate(payload) {
           dispatchNativeInputEvent();
         } finally {
           editor.style.visibility = "";
-          try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
+          try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
         }
         if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
         return;
@@ -516,7 +516,7 @@ editor.addEventListener("input", () => {
       window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "truncated" } });
     } catch (e) {
       console.error("manual: error enviando set-current-text tras truncado:", e);
-      try { window.manualAPI.setCurrentText(editor.value); } catch (e2) { }
+      try { window.manualAPI.setCurrentText(editor.value); } catch (e2) { /* noop */ }
     }
     restoreFocusToEditor();
     return;
