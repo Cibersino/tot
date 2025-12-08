@@ -1434,27 +1434,29 @@ function applyManualTime() {
   const ms = parseTimerInput(timerDisplay.value);
 
   if (ms !== null) {
+    // Truncar a segundos enteros cuando se edita manualmente
+    const msRounded = Math.floor(ms / 1000) * 1000;
     // Si tenemos API, pedir a main que aplique el elapsed (autoridad)...
     if (window.electronAPI && typeof window.electronAPI.setCronoElapsed === 'function') {
       try {
         // Marcar que ya no estamos editando (blur ya lo hace, pero aseguramos)
         timerEditing = false;
-        window.electronAPI.setCronoElapsed(ms);
+        window.electronAPI.setCronoElapsed(msRounded);
         // Mostrar inmediatamente el valor aplicado y recalcular WPM localmente (comportamiento antiguo)
-        if (timerDisplay) timerDisplay.value = formatTimer(ms);
-        actualizarVelocidadRealFromElapsed(ms);
-        lastComputedElapsedForWpm = ms;
+        if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
+        actualizarVelocidadRealFromElapsed(msRounded);
+        lastComputedElapsedForWpm = msRounded;
       } catch (e) {
         console.error("Error enviando setCronoElapsed:", e);
         // Fallback local
-        elapsed = ms;
+        elapsed = msRounded;
         if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
         actualizarVelocidadRealFromElapsed(elapsed);
         lastComputedElapsedForWpm = elapsed;
       }
     } else {
       // Fallback local (no main available)
-      elapsed = ms;
+      elapsed = msRounded;
       if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
       actualizarVelocidadRealFromElapsed(elapsed);
       lastComputedElapsedForWpm = elapsed;
