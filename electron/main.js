@@ -443,6 +443,14 @@ function createEditorWindow() {
     } catch (err) {
       console.error("Error enviando manual-init-text:", err);
     }
+    // Notificar a la ventana principal que el editor ya se mostró (para ocultar loader)
+    try {
+      if (mainWin && !mainWin.isDestroyed()) {
+        mainWin.webContents.send('manual-editor-ready');
+      }
+    } catch (notifyErr) {
+      console.warn("No se pudo notificar manual-editor-ready:", notifyErr);
+    }
   });
 
   editorWin.on('close', () => {
@@ -935,6 +943,11 @@ ipcMain.handle("open-editor", () => {
       editorWin.webContents.send("manual-init-text", { text: currentText || "", meta: { source: "main", action: "init" } });
     } catch (err) {
       console.error("Error enviando manual-init-text desde open-editor:", err);
+    }
+    try {
+      if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('manual-editor-ready');
+    } catch (e) {
+      console.warn("No se pudo notificar manual-editor-ready (editor ya abierto):", e);
     }
   }
 });

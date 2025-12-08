@@ -24,6 +24,7 @@ const resultsTitle = document.getElementById('results-title');
 const cronTitle = document.getElementById('cron-title');
 
 const toggleVF = document.getElementById('toggleVF');
+const manualLoader = document.getElementById('manualLoader');
 
 // Referencias a elementos para presets
 const presetsSelect = document.getElementById('presets');
@@ -634,6 +635,12 @@ const loadPresets = async () => {
       } else if (typeof window.electronAPI.onSettingsUpdated === 'function') {
         window.electronAPI.onSettingsUpdated(settingsChangeHandler);
       } // si no existe, no hay listener disponible y no pasa nada
+
+      if (typeof window.electronAPI.onManualEditorReady === 'function') {
+        window.electronAPI.onManualEditorReady(() => {
+          hideManualLoader();
+        });
+      }
     }
 
     // ------------------------------
@@ -1088,8 +1095,14 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
   }
 });
 
-btnEdit.addEventListener('click', () => {
-  window.electronAPI.openEditor();
+btnEdit.addEventListener('click', async () => {
+  showManualLoader();
+  try {
+    await window.electronAPI.openEditor();
+  } catch (err) {
+    console.error("Error abriendo editor manual:", err);
+    hideManualLoader();
+  }
 });
 
 // ======================= Botón Vaciar (pantalla principal) =======================
@@ -1260,6 +1273,16 @@ let prevRunning = false;
 let timerEditing = false;
 // Último elapsed para el que calculamos WPM (evitar recálculos repetidos)
 let lastComputedElapsedForWpm = null;
+
+function showManualLoader() {
+  if (manualLoader) manualLoader.classList.add('visible');
+  if (btnEdit) btnEdit.disabled = true;
+}
+
+function hideManualLoader() {
+  if (manualLoader) manualLoader.classList.remove('visible');
+  if (btnEdit) btnEdit.disabled = false;
+}
 
 function formatTimer(ms) {
   const totalSeconds = Math.floor(ms / 1000);
