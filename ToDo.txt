@@ -9,7 +9,7 @@
 * Implementar semiauto-update *
 
 * Revisión y depuración del código *
-- Ordenar códigos
+- Ordenar arbol de carpetas, archivos y códigos
 - EsLint
 - Modular
 
