@@ -951,49 +951,61 @@ ipcMain.handle("get-default-presets", () => {
     // Preferir JSON en config/presets_defaults, si existen.
     ensureConfigPresetsDir();
 
-    const generalJson = path.join(CONFIG_PRESETS_DIR, "defaults_presets.json");
-    const enJson = path.join(CONFIG_PRESETS_DIR, "defaults_presets_en.json");
-    const esJson = path.join(CONFIG_PRESETS_DIR, "defaults_presets_es.json");
+    const entries = fs.readdirSync(CONFIG_PRESETS_DIR).filter(name => /^defaults_presets.*\.json$/i.test(name));
 
     let general = [];
-    let en = [];
-    let es = [];
+    const languagePresets = {};
 
-    if (fs.existsSync(generalJson)) {
-      try { general = JSON.parse(fs.readFileSync(generalJson, "utf8")); }
+    // Cargar defaults generales
+    const generalJson = entries.find(n => n.toLowerCase() === "defaults_presets.json");
+    if (generalJson) {
+      try { general = JSON.parse(fs.readFileSync(path.join(CONFIG_PRESETS_DIR, generalJson), "utf8")); }
       catch (err) { console.error("Error parseando", generalJson, err); general = []; }
     } else {
-      // Fallback: leer original JS (como antes)
       const n = path.join(PRESETS_SOURCE_DIR, "defaults_presets.js");
       general = fs.existsSync(n) ? require(n) : [];
     }
 
-    if (fs.existsSync(enJson)) {
-      try { en = JSON.parse(fs.readFileSync(enJson, "utf8")); }
-      catch (err) { console.error("Error parseando", enJson, err); en = []; }
-    } else {
-      const n = path.join(PRESETS_SOURCE_DIR, "defaults_presets_en.js");
-      en = fs.existsSync(n) ? require(n) : [];
-    }
+    // Cargar defaults por idioma desde JSON: defaults_presets_<lang>.json
+    entries
+      .filter(n => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(n))
+      .forEach(n => {
+        const match = /^defaults_presets_([a-z0-9-]+)\.json$/i.exec(n);
+        if (!match || !match[1]) return;
+        const lang = match[1].toLowerCase();
+        try {
+          const arr = JSON.parse(fs.readFileSync(path.join(CONFIG_PRESETS_DIR, n), "utf8"));
+          if (Array.isArray(arr)) languagePresets[lang] = arr;
+        } catch (err) {
+          console.error("Error parseando", n, err);
+        }
+      });
 
-    if (fs.existsSync(esJson)) {
-      try { es = JSON.parse(fs.readFileSync(esJson, "utf8")); }
-      catch (err) { console.error("Error parseando", esJson, err); es = []; }
-    } else {
-      const n = path.join(PRESETS_SOURCE_DIR, "defaults_presets_es.js");
-      es = fs.existsSync(n) ? require(n) : [];
-    }
+    // Si falta algún idioma en JSON, intentar cargar desde los JS fuente
+    const srcEntries = fs.existsSync(PRESETS_SOURCE_DIR) ? fs.readdirSync(PRESETS_SOURCE_DIR) : [];
+    srcEntries
+      .filter(n => /^defaults_presets_([a-z0-9-]+)\.js$/i.test(n))
+      .forEach(n => {
+        const match = /^defaults_presets_([a-z0-9-]+)\.js$/i.exec(n);
+        if (!match || !match[1]) return;
+        const lang = match[1].toLowerCase();
+        if (languagePresets[lang]) return; // ya cargado desde JSON
+        try {
+          let arr = require(path.join(PRESETS_SOURCE_DIR, n));
+          if (!Array.isArray(arr) && arr && Array.isArray(arr.default)) arr = arr.default;
+          if (Array.isArray(arr)) languagePresets[lang] = arr;
+        } catch (err) {
+          console.error("Error cargando", n, err);
+        }
+      });
 
     return {
       general: Array.isArray(general) ? general : [],
-      languagePresets: {
-        en: Array.isArray(en) ? en : [],
-        es: Array.isArray(es) ? es : []
-      }
+      languagePresets
     };
   } catch (e) {
     console.error("Error proporcionando default presets (get-default-presets):", e);
-    return { general: [], languagePresets: { en: [], es: [] } };
+    return { general: [], languagePresets: {} };
   }
 });
 // --- Abrir carpeta editable de presets por defecto en el explorador ---
@@ -1042,7 +1054,6 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
     }
 
     // Ask confirmation
-    console.log('[i18n debug delete] buttons:', yesLabel, noLabel);
     const conf = await dialog.showMessageBox(mainWin || null, {
       type: 'none',
       buttons: [yesLabel, noLabel],
