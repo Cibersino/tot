@@ -34,14 +34,15 @@
     },
     "dialog": {
       "ok": "OK",
-      "yes": "Yes",
-      "no": "No",
+      "yes": "Yes, continue",
+      "no": "No, cancel",
       "delete_preset_title": "Delete preset",
       "delete_preset_message": "Delete preset \"{name}\"?",
       "delete_preset_none": "No preset selected to delete",
       "restore_defaults_title": "Restore presets",
       "restore_defaults_message": "Restore default presets (general and language \"{lang}\") to original? This will revert removals and changes to default presets for the active language.",
-      "edit_preset_none": "No preset selected to edit"
+      "edit_preset_none": "No preset selected to edit",
+      "edit_preset_confirm": "Are you sure you want to replace \"{name}\" with the current preset?"
     }
   }
 }
