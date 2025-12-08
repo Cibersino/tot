@@ -365,8 +365,8 @@ async function updatePreviewAndResults(text) {
   } else if (n <= 200) {
     textPreview.textContent = displayText;
   } else {
-    const start = displayText.slice(0, 320); // PREVIEW TEXTO VIGENTE VENTANA PRINCIPAL
-    const end = displayText.slice(-320);
+    const start = displayText.slice(0, 350); // PREVIEW TEXTO VIGENTE VENTANA PRINCIPAL
+    const end = displayText.slice(-230);
     textPreview.textContent = `${start}... | ...${end}`;
   }
 

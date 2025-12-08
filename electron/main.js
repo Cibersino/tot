@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -254,7 +254,9 @@ function buildAppMenu(lang) {
     }
   ];
 
-  if (!app.isPackaged) {
+  // Dev menu (solo si se habilita por variable de entorno)
+  const showDevMenu = process.env.SHOW_DEV_MENU === '1';
+  if (!app.isPackaged && showDevMenu) {
     menuTemplate.push({
       label: m.desarrollo || 'Development',
       submenu: [
@@ -273,6 +275,38 @@ function buildAppMenu(lang) {
 
   const appMenu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(appMenu);
+}
+
+// Registrar atajos globales en desarrollo (sin mostrar menú)
+function registerDevShortcuts(mainWin) {
+  if (app.isPackaged) return;
+  try {
+    globalShortcut.register('CommandOrControl+Shift+I', () => {
+      if (mainWin && !mainWin.isDestroyed()) {
+        mainWin.webContents.toggleDevTools();
+      }
+    });
+    globalShortcut.register('CommandOrControl+R', () => {
+      if (mainWin && !mainWin.isDestroyed()) {
+        mainWin.webContents.reload();
+      }
+    });
+    globalShortcut.register('CommandOrControl+Shift+R', () => {
+      if (mainWin && !mainWin.isDestroyed()) {
+        mainWin.webContents.reloadIgnoringCache();
+      }
+    });
+  } catch (err) {
+    console.warn('No se pudieron registrar los atajos de desarrollo:', err);
+  }
+}
+
+function unregisterShortcuts() {
+  try {
+    globalShortcut.unregisterAll();
+  } catch (err) {
+    console.warn('Error al desregistrar atajos globales:', err);
+  }
 }
 
 // Load current text from file at startup (if exists)
@@ -313,6 +347,7 @@ function createMainWindow() {
   // --- BARRA SUPERIOR PERSONALIZADA (traducciones i18n) ---
   buildAppMenu(currentLanguage);
   // --- FIN BARRA SUPERIOR ---
+  registerDevShortcuts(mainWin);
 
   // Al iniciarse el cierre de la ventana principal, cerrar ordenadamente ventanas dependientes.
   // No prevenimos el cierre; solo solicitamos el cierre de editor/preset si existen.
@@ -1498,4 +1533,8 @@ app.on('before-quit', () => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('will-quit', () => {
+  unregisterShortcuts();
 });
