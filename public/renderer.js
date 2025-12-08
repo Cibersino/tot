@@ -896,7 +896,7 @@ const loadPresets = async () => {
       try {
         if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== "function") {
           console.warn("openDefaultPresetsFolder no disponible en electronAPI");
-          alert("No es posible abrir la carpeta de presets en este entorno.");
+          alert(tRenderer("renderer.alerts.open_presets_unsupported", "No es posible abrir la carpeta de presets en este entorno."));
           return;
         }
 
@@ -910,10 +910,10 @@ const loadPresets = async () => {
         // en caso de fallo, informar al usuario
         const errMsg = res && res.error ? String(res.error) : "Desconocido";
         console.error("No se pudo abrir carpeta presets por defecto:", errMsg);
-        alert("No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.");
+        alert(tRenderer("renderer.alerts.open_presets_fail", "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles."));
       } catch (err) {
         console.error("Error abriendo carpeta presets por defecto:", err);
-        alert("Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.");
+        alert(tRenderer("renderer.alerts.open_presets_error", "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola."));
       }
     });
 
@@ -1020,7 +1020,7 @@ btnCountClipboard.addEventListener("click", async () => {
     if (clip.length > MAX_TEXT_CHARS) {
       console.warn("Contenido del portapapeles supera 10000000 chars — será truncado.");
       clip = clip.slice(0, MAX_TEXT_CHARS);
-      alert("El texto del portapapeles supera el tamaño máximo permitido y será truncado.");
+      alert(tRenderer("renderer.editor_alerts.clipboard_overflow", "El texto del portapapeles supera el tamaño máximo permitido y será truncado."));
     }
 
     // enviar objeto con meta (overwrite)
@@ -1030,7 +1030,7 @@ btnCountClipboard.addEventListener("click", async () => {
     });
 
     updatePreviewAndResults(resp && resp.text ? resp.text : clip);
-    resp && resp.truncated && alert("El texto fue truncado para ajustarse al límite máximo de la aplicación.");
+    resp && resp.truncated && alert(tRenderer("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."));
   } catch (err) {
     console.error("clipboard error:", err);
   }
@@ -1047,7 +1047,7 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     const available = MAX_TEXT_CHARS - current.length;
     if (available <= 0) {
-      alert("No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.");
+      alert(tRenderer("renderer.editor_alerts.too_big", "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido."));
       return;
     }
 
@@ -1064,11 +1064,11 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     // notificar truncado solo si main lo confirma
     if (resp && resp.truncated) {
-      alert("El texto fue truncado para ajustarse al límite máximo de la aplicación.");
+      alert(tRenderer("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."));
     }
   } catch (err) {
     console.error("Error pegando portapapeles en nueva línea:", err);
-    alert("Ocurrió un error al pegar el portapapeles. Revisa la consola.");
+    alert(tRenderer("renderer.editor_alerts.paste_error", "Ocurrió un error al pegar el portapapeles. Revisa la consola."));
   }
 });
 
@@ -1090,7 +1090,7 @@ btnEmptyMain.addEventListener("click", async () => {
     }
   } catch (err) {
     console.error("Error vaciando texto desde pantalla principal:", err);
-    alert("Ocurrió un error al vaciar el texto. Revisa la consola.");
+    alert(tRenderer("renderer.alerts.clear_error", "Ocurrió un error al vaciar el texto. Revisa la consola."));
   }
 });
 
@@ -1111,7 +1111,7 @@ btnNewPreset.addEventListener('click', () => {
     } else {
       // Fallback: intentar usar prompt (rare platforms — but preload intentionally disabled prompt earlier)
       console.warn("openPresetModal no disponible en electronAPI");
-      alert("Funcionalidad de modal no disponible.");
+      alert(tRenderer("renderer.alerts.modal_unavailable", "Funcionalidad de modal no disponible."));
     }
   } catch (e) {
     console.error("Error abriendo modal de nuevo preset:", e);
@@ -1128,7 +1128,7 @@ btnEditPreset.addEventListener('click', async () => {
         await window.electronAPI.notifyNoSelectionEdit();
         return;
       } else {
-        alert("No hay ningún preset seleccionado para editar");
+        alert(tRenderer("renderer.alerts.edit_none", "No hay ningún preset seleccionado para editar"));
         return;
       }
     }
@@ -1136,7 +1136,7 @@ btnEditPreset.addEventListener('click', async () => {
     // Find preset data from cache
     const preset = allPresetsCache.find(p => p.name === selectedName);
     if (!preset) {
-      alert("Preset seleccionado no encontrado en caché.");
+      alert(tRenderer("renderer.alerts.preset_not_found", "Preset seleccionado no encontrado en caché."));
       return;
     }
 
@@ -1145,11 +1145,11 @@ btnEditPreset.addEventListener('click', async () => {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
     } else {
-      alert("Funcionalidad de edición no disponible.");
+      alert(tRenderer("renderer.alerts.edit_unavailable", "Funcionalidad de edición no disponible."));
     }
   } catch (e) {
     console.error("Error abriendo modal de editar preset:", e);
-    alert("Ocurrió un error al intentar editar el preset. Revisa la consola.");
+    alert(tRenderer("renderer.alerts.edit_error", "Ocurrió un error al intentar editar el preset. Revisa la consola."));
   }
 });
 
@@ -1180,11 +1180,11 @@ btnDeletePreset.addEventListener('click', async () => {
       }
       // Unexpected error: log and show a simple alert
       console.error("Error deleting preset:", res && res.error ? res.error : res);
-      alert("Ocurrió un error al borrar el preset. Revisa la consola.");
+      alert(tRenderer("renderer.alerts.delete_error", "Ocurrió un error al borrar el preset. Revisa la consola."));
     }
   } catch (e) {
     console.error("Error en petición de borrado:", e);
-    alert("Ocurrió un error al borrar el preset. Revisa la consola.");
+    alert(tRenderer("renderer.alerts.delete_error", "Ocurrió un error al borrar el preset. Revisa la consola."));
   }
 });
 
@@ -1210,11 +1210,11 @@ btnResetDefaultPresets.addEventListener('click', async () => {
         return;
       }
       console.error("Error restaurando presets:", res && res.error ? res.error : res);
-      alert("Ocurrió un error al restaurar presets. Revisa la consola.");
+      alert(tRenderer("renderer.alerts.restore_error", "Ocurrió un error al restaurar presets. Revisa la consola."));
     }
   } catch (e) {
     console.error("Error en petición de restaurar presets:", e);
-    alert("Ocurrió un error al restaurar presets. Revisa la consola.");
+    alert(tRenderer("renderer.alerts.restore_error", "Ocurrió un error al restaurar presets. Revisa la consola."));
   }
 });
 
