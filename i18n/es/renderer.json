@@ -36,7 +36,8 @@
         "words": "Palabras: {n}",
         "chars_no_space": "Chars w/o space: {n}",
         "chars": "Caracteres: {n}",
-        "precise_mode": "Modo preciso"
+        "precise_mode": "Modo preciso",
+        "precise_tooltip": "Basado en Intl.Segmenter"
       },
       "help": {
         "title": "Información (pendiente)"

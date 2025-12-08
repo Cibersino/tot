@@ -134,6 +134,11 @@ function applyTranslations() {
   const togglePrecisoLabel = document.querySelector(".toggle-wrapper .toggle-label");
   if (togglePrecisoLabel) {
     togglePrecisoLabel.textContent = tRenderer("renderer.main.results.precise_mode", togglePrecisoLabel.textContent || "");
+    togglePrecisoLabel.title = tRenderer("renderer.main.results.precise_tooltip", togglePrecisoLabel.title || "");
+    const toggleWrapper = togglePrecisoLabel.closest(".toggle-wrapper");
+    if (toggleWrapper) {
+      toggleWrapper.title = tRenderer("renderer.main.results.precise_tooltip", toggleWrapper.title || togglePrecisoLabel.title || "");
+    }
   }
 
   // Cronómetro: label velocidad y aria-label controles
