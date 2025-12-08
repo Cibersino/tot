@@ -592,26 +592,44 @@ const loadPresets = async () => {
 
     // --- Listener para cambios de settings desde main/preload (opcional) ---
     // Si el main/preload expone un evento, lo usamos para mantener settingsCache e idiomaActual actualizados.
-    const settingsChangeHandler = (newSettings) => {
+    const settingsChangeHandler = async (newSettings) => {
       try {
         settingsCache = newSettings || {};
         const nuevoIdioma = settingsCache.language || 'es';
-        if (nuevoIdioma !== idiomaActual) {
+        const idiomaCambio = (nuevoIdioma !== idiomaActual);
+        if (idiomaCambio) {
           idiomaActual = nuevoIdioma;
-          // recargar traducciones, aplicarlas y luego refrescar vista
-          loadRendererTranslations(idiomaActual)
-            .then(() => {
-              applyTranslations();
-              updatePreviewAndResults(currentText);
-            })
-            .catch(() => {
-              updatePreviewAndResults(currentText);
-            });
+          try {
+            await loadRendererTranslations(idiomaActual);
+          } catch (_) {
+            /* noop */
+          }
+          applyTranslations();
+          // recargar presets para el nuevo idioma y sincronizar selección
+          try {
+            const updated = await loadPresets();
+            let selected = updated.find(p => p.name === currentPresetName);
+            if (!selected) {
+              selected = updated.find(p => p.name === 'default') || updated[0];
+            }
+            if (selected) {
+              currentPresetName = selected.name;
+              presetsSelect.value = selected.name;
+              wpm = selected.wpm;
+              wpmInput.value = wpm;
+              wpmSlider.value = wpm;
+              presetDescription.textContent = selected.description || "";
+            }
+          } catch (err) {
+            console.error("Error recargando presets tras cambio de idioma:", err);
+          }
+          updatePreviewAndResults(currentText);
         }
         if (settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo) {
           modoConteo = settingsCache.modeConteo;
           if (toggleModoPreciso) toggleModoPreciso.checked = (modoConteo === 'preciso');
         }
+        updatePreviewAndResults(currentText);
       } catch (err) {
         console.error("Error manejando settings change:", err);
       }
