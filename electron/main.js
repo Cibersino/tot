@@ -414,6 +414,7 @@ function createEditorWindow() {
 
   // Remove the menu bar on the modal/editor window
   editorWin.setMenu(null);
+  editorWin.setMenuBarVisibility(false);
 
   editorWin.loadFile(path.join(__dirname, '../public/manual.html'));
 
@@ -553,6 +554,23 @@ ipcMain.handle('set-language', async (_event, lang) => {
 
     // Rebuild menu with the new language
     buildAppMenu(currentLanguage);
+    // Ocultar la barra en ventanas secundarias (editor, preset, etc.) tras reconstruir menú
+    try {
+      if (editorWin && !editorWin.isDestroyed()) {
+        editorWin.setMenu(null);
+        editorWin.setMenuBarVisibility(false);
+      }
+      if (presetWin && !presetWin.isDestroyed()) {
+        presetWin.setMenu(null);
+        presetWin.setMenuBarVisibility(false);
+      }
+      if (langWin && !langWin.isDestroyed()) {
+        langWin.setMenu(null);
+        langWin.setMenuBarVisibility(false);
+      }
+    } catch (menuErr) {
+      console.warn("No se pudo ocultar menú en ventanas secundarias:", menuErr);
+    }
 
     // Notificar renderers con el objeto settings correcto
     try {
