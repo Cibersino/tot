@@ -108,7 +108,20 @@
       "delete_error": "An error occurred while deleting the preset. Check console.",
       "restore_error": "An error occurred while restoring presets. Check console.",
       "open_presets_unsupported": "Cannot open presets folder in this environment.",
-      "open_presets_fail": "Could not open the default presets folder. Check console for details."
+      "open_presets_fail": "Could not open the default presets folder. Check console for details.",
+      "wip_cargador_texto": "WIP: The text file loader will open here in a future version.",
+      "wip_cargador_imagen": "WIP: The image text loader will open here in a future version.",
+      "wip_test_velocidad": "WIP: The reading speed test will open here in a future version.",
+      "wip_idioma": "WIP: The language selector will open here in a future version.",
+      "wip_diseno_skins": "WIP: The skins selector will open here in a future version.",
+      "wip_diseno_crono": "WIP: Floating timer settings will open here in a future version.",
+      "wip_diseno_fuentes": "WIP: The fonts selector will open here in a future version.",
+      "wip_diseno_colores": "WIP: The colors selector will open here in a future version.",
+      "wip_avisos": "WIP: News and updates will appear here in a future version.",
+      "wip_discord": "WIP: The Discord link will open here in a future version.",
+      "wip_links_interes": "WIP: Links of interest will appear here in a future version.",
+      "wip_colabora": "WIP: Collaboration info will appear here in a future version.",
+      "wip_contador_imagen": "WIP: The image word counter will open here in a future version."
     },
     "editor_alerts": {
       "too_big": "Cannot add text: maximum size reached.",
