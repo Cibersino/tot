@@ -46,7 +46,11 @@
       "update_title": "Update available",
       "update_message": "A new version {remote} is available. Current: {local}. Download now?",
       "update_download": "Download",
-      "update_later": "Later"
+      "update_later": "Later",
+      "update_up_to_date_title": "You are up to date",
+      "update_up_to_date_message": "You already have the latest version ({local}).",
+      "update_failed_title": "Update check failed",
+      "update_failed_message": "Could not check for updates. Please check your connection and try again."
     }
   }
 }

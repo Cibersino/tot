@@ -965,9 +965,12 @@ const loadPresets = async () => {
       alert("WIP: Aquí se mostrará la información para colaborar en una futura versión.");
     });
 
-    window.menuActions.registerMenuAction('actualizar_version', () => {
-      console.log("Actualizar a última versión pulsado - acción temporal (registrada vía menuActions)");
-      alert("WIP: Aquí se iniciará el proceso de actualización en una futura versión.");
+    window.menuActions.registerMenuAction('actualizar_version', async () => {
+      try {
+        await window.electronAPI.checkForUpdates();
+      } catch (e) {
+        console.error("Error al solicitar checkForUpdates:", e);
+      }
     });
     // Registrar acción para "readme"
     window.menuActions.registerMenuAction("readme", () => { showInfoModal("readme") });
