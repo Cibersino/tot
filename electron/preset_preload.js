@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('presetAPI', {
     ipcRenderer.on('preset-init', (_e, data) => cb(data));
   },
   // NEW: edit preset (main will handle confirmation + silent delete + creation)
-  editPreset: (originalName, newPreset) => ipcRenderer.invoke('edit-preset', { originalName, newPreset })
+  editPreset: (originalName, newPreset) => ipcRenderer.invoke('edit-preset', { originalName, newPreset }),
+  getSettings: () => ipcRenderer.invoke('get-settings')
 });

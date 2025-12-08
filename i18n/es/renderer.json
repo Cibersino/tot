@@ -1,0 +1,160 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Primera y última parte del texto analizado:",
+      "selector_empty": "(vacío)",
+      "buttons": {
+        "overwrite_clipboard": "Sobrescribir portapapeles",
+        "append_clipboard_newline": "Pegar portapapeles nueva línea",
+        "edit": "Editor manual",
+        "clear": "🗑"
+      },
+      "tooltips": {
+        "overwrite_clipboard": "Reemplazar texto con el portapapeles",
+        "append_clipboard_newline": "Pegar portapapeles al final en nueva línea",
+        "edit": "Abrir ventana del texto completo",
+        "clear": "Vaciar texto vigente",
+        "new_preset": "Crear un nuevo preset",
+        "edit_preset": "Editar preset seleccionado",
+        "delete_preset": "Eliminar preset seleccionado",
+        "reset_presets": "Restaurar presets por defecto",
+        "help_button": "Información (pendiente)",
+        "floating_window": "Ventana flotante"
+      },
+      "speed": {
+        "title": "VELOCIDAD DE LECTURA",
+        "wpm_label": "palabras por minuto (WPM)",
+        "presets_placeholder": "Presets",
+        "new": "Nuevo",
+        "edit": "Editar",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "RESULTADOS DEL CONTEO",
+        "time": "Tiempo estimado de lectura: {h}h {m}m {s}s",
+        "words": "Palabras: {n}",
+        "chars_no_space": "Chars w/o space: {n}",
+        "chars": "Caracteres: {n}",
+        "precise_mode": "Modo preciso"
+      },
+      "help": {
+        "title": "Información (pendiente)"
+      },
+      "timer": {
+        "title": "CRONÓMETRO",
+        "speed": "Velocidad:",
+        "controls_label": "Controles del cronómetro",
+        "floating": "Ventana flotante",
+        "floating_short": "VF"
+      },
+      "spare": {
+        "title": "Sección disponible"
+      },
+      "info_modal": {
+        "title": "Info",
+        "close": "Cerrar",
+        "loading": "Cargando..."
+      }
+    },
+    "modal_language": {
+      "title": "Seleccionar idioma",
+      "heading": "Seleccione idioma / Select language",
+      "es": "Español",
+      "en": "English",
+      "note": "La selección se guardará y se usará en próximos inicios de la aplicación."
+    },
+    "modal_preset": {
+      "title_new": "Nuevo preset",
+      "title_edit": "Editar preset",
+      "heading_new": "Crear nuevo preset",
+      "heading_edit": "Editar preset seleccionado",
+      "name": "Nombre:",
+      "wpm": "WPM:",
+      "description": "Descripción:",
+      "placeholder": "Descripción breve...",
+      "char_count": "{remaining} caracteres restantes",
+      "hint": "Los presets personalizados se guardan en la configuración del usuario.",
+      "cancel": "Cancelar",
+      "save": "Guardar"
+    },
+    "modal_editor": {
+      "title": "Editor — Texto completo",
+      "placeholder": "Escribe o pega aquí...",
+      "calc_button": "CALCULAR",
+      "calc_while_typing": "Calcular mientras escribe",
+      "clear": "🗑",
+      "clear_title": "Vaciar"
+    },
+    "modal_floating": {
+      "title": "toT —  Cronómetro (flotante)"
+    },
+    "alerts": {
+      "wip": "WIP: Aquí se abrirá {feature} en una futura versión.",
+      "no_presets_folder": "No es posible abrir la carpeta de presets en este entorno.",
+      "open_presets_failed": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.",
+      "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.",
+      "clipboard_too_big": "El texto del portapapeles supera el tamaño máximo permitido y será truncado.",
+      "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",
+      "text_limit_reached": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",
+      "clipboard_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola.",
+      "clear_error": "Ocurrió un error al vaciar el texto. Revisa la consola.",
+      "modal_unavailable": "Funcionalidad de modal no disponible.",
+      "edit_none": "No hay ningún preset seleccionado para editar",
+      "preset_not_found": "Preset seleccionado no encontrado en caché.",
+      "edit_unavailable": "Funcionalidad de edición no disponible.",
+      "edit_error": "Ocurrió un error al intentar editar el preset. Revisa la consola.",
+      "delete_error": "Ocurrió un error al borrar el preset. Revisa la consola.",
+      "restore_error": "Ocurrió un error al restaurar presets. Revisa la consola.",
+      "open_presets_unsupported": "No es posible abrir la carpeta de presets en este entorno.",
+      "open_presets_fail": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles."
+    },
+    "editor_alerts": {
+      "too_big": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",
+      "paste_truncated": "El texto pegado se ha truncado para no exceder el máximo permitido.",
+      "too_big_clipboard": "Texto demasiado grande para pegar directamente. Usa 'Sobrescribir portapapeles' o 'Pegar portapapeles nueva línea' desde la ventana principal.",
+      "drop_no_text": "Arrastrado: no se detectó texto plano.",
+      "clipboard_no_text": "El portapapeles no contiene texto plano.",
+      "drop_too_big": "Arrastrado: texto demasiado grande. Usa los botones de la ventana principal para agregar texto grande.",
+      "truncated_limit": "El texto ha sido truncado al límite máximo permitido por la aplicación.",
+      "calc_error": "Ocurrió un error al calcular. Revisa la consola.",
+      "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",
+      "clipboard_overflow": "El texto del portapapeles supera el tamaño máximo permitido y será truncado.",
+      "paste_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola."
+    },
+    "preset_alerts": {
+      "name_empty": "El nombre no puede estar vacío.",
+      "wpm_invalid": "WPM debe ser un número entre 50 y 500.",
+      "edit_error": "Ocurrió un error al editar el preset. Revisa la consola.",
+      "create_error": "Ocurrió un error al crear el preset. Revisa la consola.",
+      "process_error": "Ocurrió un error al procesar el preset. Revisa la consola."
+    },
+    "info": {
+      "acerca_de": {
+        "app_name": "toT — Reading Meter",
+        "title": "Acerca de",
+        "subtitle": "Subtitulo",
+        "body": "Estamos trabajando para usted."
+      },
+      "readme": {
+        "app_name": "toT — Reading Meter",
+        "title": "Readme",
+        "subtitle": "Subtitulo",
+        "body": "Estamos trabajando para usted."
+      },
+      "instrucciones": {
+        "app_name": "toT — Reading Meter",
+        "title": "Manual de uso",
+        "nav_basic": "Guia basica",
+        "nav_full": "Instrucciones completas",
+        "nav_faq": "Preguntas frecuentes (FAQ)",
+        "section_basic_title": "Guia basica",
+        "section_basic_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. ",
+        "section_full_title": "Instrucciones completas",
+        "section_full_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. ",
+        "section_faq_title": "Preguntas frecuentes (FAQ)",
+        "section_faq_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. "
+      }
+    }
+  }
+}

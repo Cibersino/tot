@@ -18,8 +18,13 @@ const wpmSlider = document.getElementById('wpmSlider');
 const wpmInput = document.getElementById('wpmInput');
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
+const selectorTitle = document.getElementById('selector-title');
+const velTitle = document.getElementById('vel-title');
+const resultsTitle = document.getElementById('results-title');
+const cronTitle = document.getElementById('cron-title');
 
 const toggleVF = document.getElementById('toggleVF');
+const manualLoader = document.getElementById('manualLoader');
 
 // Referencias a elementos para presets
 const presetsSelect = document.getElementById('presets');
@@ -39,6 +44,122 @@ let modoConteo = "preciso";   // preciso por defecto; puede ser "simple"
 let idiomaActual = "es";      // se inicializa al arrancar
 let settingsCache = {};       // caché de settings (numberFormatting, language, etc.)
 
+// --- i18n renderer translations cache ---
+let rendererTranslations = null;
+let rendererTranslationsLang = null;
+
+async function loadRendererTranslations(lang) {
+  const target = (lang || "").toLowerCase() || "es";
+  if (rendererTranslations && rendererTranslationsLang === target) return rendererTranslations;
+  try {
+    const resp = await fetch(`../i18n/${target}/renderer.json`);
+    if (resp && resp.ok) {
+      const raw = await resp.text();
+      const cleaned = raw.replace(/^\uFEFF/, ""); // strip BOM if present
+      const data = JSON.parse(cleaned || "{}");
+      rendererTranslations = data;
+      rendererTranslationsLang = target;
+      return data;
+    }
+  } catch (e) {
+    console.warn("No se pudieron cargar traducciones de renderer:", e);
+  }
+  rendererTranslations = null;
+  rendererTranslationsLang = null;
+  return null;
+}
+
+function tRenderer(path, fallback) {
+  if (!rendererTranslations) return fallback;
+  const parts = path.split(".");
+  let cur = rendererTranslations;
+  for (const p of parts) {
+    if (cur && Object.prototype.hasOwnProperty.call(cur, p)) {
+      cur = cur[p];
+    } else {
+      return fallback;
+    }
+  }
+  return (typeof cur === "string") ? cur : fallback;
+}
+
+function msgRenderer(path, params = {}, fallback = "") {
+  let str = tRenderer(path, fallback);
+  if (!str) return fallback;
+  Object.keys(params || {}).forEach(k => {
+    const val = params[k];
+    str = str.replace(new RegExp(`\\{${k}\\}`, "g"), String(val));
+  });
+  return str;
+}
+
+function applyTranslations() {
+  if (!rendererTranslations) return;
+  // Botones principales
+  if (btnCountClipboard) btnCountClipboard.textContent = tRenderer("renderer.main.buttons.overwrite_clipboard", btnCountClipboard.textContent || "");
+  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.textContent = tRenderer("renderer.main.buttons.append_clipboard_newline", btnAppendClipboardNewLine.textContent || "");
+  if (btnEdit) btnEdit.textContent = tRenderer("renderer.main.buttons.edit", btnEdit.textContent || "");
+  if (btnEmptyMain) btnEmptyMain.textContent = tRenderer("renderer.main.buttons.clear", btnEmptyMain.textContent || "");
+  // Tooltips de botones principales
+  if (btnCountClipboard) btnCountClipboard.title = tRenderer("renderer.main.tooltips.overwrite_clipboard", btnCountClipboard.title || "");
+  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.title = tRenderer("renderer.main.tooltips.append_clipboard_newline", btnAppendClipboardNewLine.title || "");
+  if (btnEdit) btnEdit.title = tRenderer("renderer.main.tooltips.edit", btnEdit.title || "");
+  if (btnEmptyMain) btnEmptyMain.title = tRenderer("renderer.main.tooltips.clear", btnEmptyMain.title || "");
+
+  // Presets
+  if (btnNewPreset) btnNewPreset.textContent = tRenderer("renderer.main.speed.new", btnNewPreset.textContent || "");
+  if (btnEditPreset) btnEditPreset.textContent = tRenderer("renderer.main.speed.edit", btnEditPreset.textContent || "");
+  if (btnDeletePreset) btnDeletePreset.textContent = tRenderer("renderer.main.speed.delete", btnDeletePreset.textContent || "");
+  if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer("renderer.main.speed.reset_defaults", btnResetDefaultPresets.textContent || "");
+  if (btnNewPreset) btnNewPreset.title = tRenderer("renderer.main.tooltips.new_preset", btnNewPreset.title || "");
+  if (btnEditPreset) btnEditPreset.title = tRenderer("renderer.main.tooltips.edit_preset", btnEditPreset.title || "");
+  if (btnDeletePreset) btnDeletePreset.title = tRenderer("renderer.main.tooltips.delete_preset", btnDeletePreset.title || "");
+  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer("renderer.main.tooltips.reset_presets", btnResetDefaultPresets.title || "");
+
+  // Toggle flotante
+  if (toggleVF) toggleVF.textContent = tRenderer("renderer.main.timer.floating", toggleVF.textContent || "");
+  const vfSwitchLabel = document.querySelector(".vf-switch-wrapper label.switch");
+  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer("renderer.main.tooltips.floating_window", vfSwitchLabel.title || "");
+
+  // Títulos de secciones
+  if (selectorTitle) selectorTitle.textContent = tRenderer("renderer.main.selector_title", selectorTitle.textContent || "");
+  if (velTitle) velTitle.textContent = tRenderer("renderer.main.speed.title", velTitle.textContent || "");
+  if (resultsTitle) resultsTitle.textContent = tRenderer("renderer.main.results.title", resultsTitle.textContent || "");
+  if (cronTitle) cronTitle.textContent = tRenderer("renderer.main.timer.title", cronTitle.textContent || "");
+
+  // Labels dentro de velocidad
+  const wpmLabel = document.querySelector(".wpm-row span");
+  if (wpmLabel) wpmLabel.textContent = tRenderer("renderer.main.speed.wpm_label", wpmLabel.textContent || "");
+  // Resultados: label modo preciso
+  const togglePrecisoLabel = document.querySelector(".toggle-wrapper .toggle-label");
+  if (togglePrecisoLabel) {
+    togglePrecisoLabel.textContent = tRenderer("renderer.main.results.precise_mode", togglePrecisoLabel.textContent || "");
+  }
+
+  // Cronómetro: label velocidad y aria-label controles
+  const realWpmLabel = document.querySelector(".realwpm");
+  if (realWpmLabel && realWpmLabel.firstChild) {
+    realWpmLabel.firstChild.textContent = tRenderer("renderer.main.timer.speed", realWpmLabel.firstChild.textContent || "");
+  }
+  const timerControls = document.querySelector(".timer-controls");
+  if (timerControls) {
+    const ariaLabel = tRenderer("renderer.main.timer.controls_label", timerControls.getAttribute("aria-label") || "");
+    if (ariaLabel) timerControls.setAttribute("aria-label", ariaLabel);
+  }
+
+  // Etiqueta abreviada de la ventana flotante
+  const vfLabel = document.querySelector(".vf-label");
+  if (vfLabel) {
+    vfLabel.textContent = tRenderer("renderer.main.timer.floating_short", vfLabel.textContent || vfLabel.textContent);
+  }
+
+  // Botón de ayuda (titulo)
+  if (btnHelp) {
+    const helpTitle = tRenderer("renderer.main.tooltips.help_button", btnHelp.getAttribute("title") || "");
+    if (helpTitle) btnHelp.setAttribute("title", helpTitle);
+  }
+}
+
 (async () => {
   try {
     const cfg = await window.electronAPI.getAppConfig();
@@ -53,6 +174,16 @@ let settingsCache = {};       // caché de settings (numberFormatting, language,
     settingsCache = settings || {};
     idiomaActual = settingsCache.language || "es";
     if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
+
+    // Cargar traducciones del renderer y aplicarlas
+    try {
+      await loadRendererTranslations(idiomaActual);
+      applyTranslations();
+      // Refrescar la vista inicial con las traducciones cargadas
+      updatePreviewAndResults(currentText);
+    } catch (e) {
+      console.warn("No se pudieron aplicar traducciones iniciales en renderer:", e);
+    }
   } catch (e) {
     console.error("No se pudo obtener user settings al inicio:", e);
     // idiomaActual queda en "es" por defecto
@@ -149,35 +280,63 @@ function setIdiomaActual(nuevoIdioma) {
 }
 
 // ======================= Formato HHh MMm SSs =======================
-function formatTimeFromWords(words, wpm) {
-  if (!wpm || wpm <= 0) return "0h 0m 0s";
-
+function getTimeParts(words, wpm) {
+  if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };
   const totalSeconds = Math.round((words / wpm) * 60);
+  return {
+    hours: Math.floor(totalSeconds / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60
+  };
+}
 
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
+function formatTimeFromWords(words, wpm) {
+  const { hours, minutes, seconds } = getTimeParts(words, wpm);
   return `${hours}h ${minutes}m ${seconds}s`;
 }
 
+// ======================= Number format defaults (i18n fallback) =======================
+const numberFormatDefaults = {};
+const loadNumberFormatDefaults = async (idioma) => {
+  const lang = (idioma || "").toLowerCase() || "es";
+  if (numberFormatDefaults[lang]) return numberFormatDefaults[lang];
+  try {
+    const resp = await fetch(`../i18n/${lang}/numberFormat.json`);
+    if (resp && resp.ok) {
+      const data = await resp.json();
+      if (data && data.numberFormat) {
+        numberFormatDefaults[lang] = data.numberFormat;
+        return data.numberFormat;
+      }
+    }
+  } catch (e) {
+    // noop
+  }
+  if (lang.startsWith("en")) return { thousands: ",", decimal: "." };
+  return { thousands: ".", decimal: "," };
+};
+
 // ======================= Obtener separadores de números según el idioma (usa cache) =======================
 const obtenerSeparadoresDeNumeros = async (idioma) => {
-  // Usa settingsCache cargado al inicio (si no está, aplicamos defaults por idioma)
+  // 1) User preference from settings
   const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
+  if (nf && nf[idioma]) return nf[idioma];
 
-  if (!nf) {
-    // Defaults sencillos: español vs english
-    if (idioma && idioma.toLowerCase().startsWith('en')) {
-      return { separadorMiles: ',', separadorDecimal: '.' };
-    } else {
-      return { separadorMiles: '.', separadorDecimal: ',' };
+  // 2) Default from i18n numberFormat
+  try {
+    const def = await loadNumberFormatDefaults(idioma || "es");
+    if (def && def.thousands && def.decimal) {
+      return { separadorMiles: def.thousands, separadorDecimal: def.decimal };
     }
+  } catch (e) {
+    // noop
   }
 
-  return nf[idioma] || nf['es'] || (idioma && idioma.toLowerCase().startsWith('en')
-    ? { separadorMiles: ',', separadorDecimal: '.' }
-    : { separadorMiles: '.', separadorDecimal: ',' });
+  // 3) Fallback simple
+  if (idioma && idioma.toLowerCase().startsWith('en')) {
+    return { separadorMiles: ',', separadorDecimal: '.' };
+  }
+  return { separadorMiles: '.', separadorDecimal: ',' };
 };
 
 // ======================= Formatear número con separadores de miles y decimales =======================
@@ -202,12 +361,13 @@ async function updatePreviewAndResults(text) {
   const n = displayText.length;
 
   if (n === 0) {
-    textPreview.textContent = "(Pegue texto con “Pegar portapapeles” o pulse “Editar” para ingresarlo manualmente)";
+    const emptyMsg = tRenderer("renderer.main.selector_empty", "(empty)");
+    textPreview.textContent = emptyMsg;
   } else if (n <= 200) {
     textPreview.textContent = displayText;
   } else {
-    const start = displayText.slice(0, 320); // PREVIEW TEXTO VIGENTE VENTANA PRINCIPAL
-    const end = displayText.slice(-320);
+    const start = displayText.slice(0, 350); // PREVIEW TEXTO VIGENTE VENTANA PRINCIPAL
+    const end = displayText.slice(-230);
     textPreview.textContent = `${start}... | ...${end}`;
   }
 
@@ -219,10 +379,14 @@ async function updatePreviewAndResults(text) {
   const caracteresFormateado = formatearNumero(stats.conEspacios, separadorMiles, separadorDecimal);
   const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
-  resChars.textContent = `Caracteres: ${caracteresFormateado}`;
-  resCharsNoSpace.textContent = `Chars s/space: ${caracteresSinEspaciosFormateado}`;
-  resWords.textContent = `Palabras: ${palabrasFormateado}`;
-  resTime.textContent = `⏱ Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
+
+  resChars.textContent = msgRenderer("renderer.main.results.chars", { n: caracteresFormateado }, `Caracteres: ${caracteresFormateado}`);
+  resCharsNoSpace.textContent = msgRenderer("renderer.main.results.chars_no_space", { n: caracteresSinEspaciosFormateado }, `Chars s/space: ${caracteresSinEspaciosFormateado}`);
+  resWords.textContent = msgRenderer("renderer.main.results.words", { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
+
+  const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
+  const timeFallback = `⏱ Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
+  resTime.textContent = msgRenderer("renderer.main.results.time", { h: hours, m: minutes, s: seconds }, timeFallback);
 
   // Si detectamos que el texto cambió respecto al estado anterior -> resetear cronómetro en main
   if (textChanged) {
@@ -422,19 +586,44 @@ const loadPresets = async () => {
 
     // --- Listener para cambios de settings desde main/preload (opcional) ---
     // Si el main/preload expone un evento, lo usamos para mantener settingsCache e idiomaActual actualizados.
-    const settingsChangeHandler = (newSettings) => {
+    const settingsChangeHandler = async (newSettings) => {
       try {
         settingsCache = newSettings || {};
         const nuevoIdioma = settingsCache.language || 'es';
-        if (nuevoIdioma !== idiomaActual) {
+        const idiomaCambio = (nuevoIdioma !== idiomaActual);
+        if (idiomaCambio) {
           idiomaActual = nuevoIdioma;
-          // refrescar la vista con posible nuevo formato/segmentación
+          try {
+            await loadRendererTranslations(idiomaActual);
+          } catch (_) {
+            /* noop */
+          }
+          applyTranslations();
+          // recargar presets para el nuevo idioma y sincronizar selección
+          try {
+            const updated = await loadPresets();
+            let selected = updated.find(p => p.name === currentPresetName);
+            if (!selected) {
+              selected = updated.find(p => p.name === 'default') || updated[0];
+            }
+            if (selected) {
+              currentPresetName = selected.name;
+              presetsSelect.value = selected.name;
+              wpm = selected.wpm;
+              wpmInput.value = wpm;
+              wpmSlider.value = wpm;
+              presetDescription.textContent = selected.description || "";
+            }
+          } catch (err) {
+            console.error("Error recargando presets tras cambio de idioma:", err);
+          }
           updatePreviewAndResults(currentText);
         }
         if (settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo) {
           modoConteo = settingsCache.modeConteo;
           if (toggleModoPreciso) toggleModoPreciso.checked = (modoConteo === 'preciso');
         }
+        updatePreviewAndResults(currentText);
       } catch (err) {
         console.error("Error manejando settings change:", err);
       }
@@ -446,6 +635,12 @@ const loadPresets = async () => {
       } else if (typeof window.electronAPI.onSettingsUpdated === 'function') {
         window.electronAPI.onSettingsUpdated(settingsChangeHandler);
       } // si no existe, no hay listener disponible y no pasa nada
+
+      if (typeof window.electronAPI.onManualEditorReady === 'function') {
+        window.electronAPI.onManualEditorReady(() => {
+          hideManualLoader();
+        });
+      }
     }
 
     // ------------------------------
@@ -554,6 +749,26 @@ const loadPresets = async () => {
     }
   }
 
+  // Traduce el HTML cargado en el modal de info usando data-i18n y renderer.info.<key>.*
+  function translateInfoHtml(htmlString, key) {
+    if (!rendererTranslations) return htmlString;
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlString, "text/html");
+      doc.querySelectorAll("[data-i18n]").forEach((el) => {
+        const dataKey = el.getAttribute("data-i18n");
+        if (!dataKey) return;
+        const tKey = `renderer.info.${key}.${dataKey}`;
+        const translated = tRenderer(tKey, el.textContent || "");
+        if (translated) el.textContent = translated;
+      });
+      return doc.body.innerHTML;
+    } catch (e) {
+      console.warn("translateInfoHtml failed:", e);
+      return htmlString;
+    }
+  }
+
   async function showInfoModal(key, opts = {}) {
     // key: 'readme' | 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
     const sectionTitles = {
@@ -585,8 +800,10 @@ const loadPresets = async () => {
       fileToLoad = `./info/${key}.html`;
     }
 
+    const translationKey = (key === "guia_basica" || key === "faq") ? "instrucciones" : key;
     // Título del modal: mostrar el título de la sección (no "Info" genérico)
-    infoModalTitle.textContent = sectionTitles[key] || (opts.title || "Información");
+    const defaultTitle = sectionTitles[key] || (opts.title || "InformaciA3n");
+    infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
 
     // Abrir modal
     infoModal.setAttribute("aria-hidden", "false");
@@ -601,8 +818,9 @@ const loadPresets = async () => {
       return;
     }
 
-    // Poner contenido (documento completo)
-    infoModalContent.innerHTML = tryHtml;
+    // Traducir si hay i18n cargado y luego poner contenido
+    const translatedHtml = translateInfoHtml(tryHtml, translationKey);
+    infoModalContent.innerHTML = translatedHtml;
 
     // Asegurar que el panel empieza en top antes de hacer scroll
     const panel = document.querySelector('.info-modal-panel');
@@ -701,7 +919,7 @@ const loadPresets = async () => {
       try {
         if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== "function") {
           console.warn("openDefaultPresetsFolder no disponible en electronAPI");
-          alert("No es posible abrir la carpeta de presets en este entorno.");
+          alert(tRenderer("renderer.alerts.open_presets_unsupported", "No es posible abrir la carpeta de presets en este entorno."));
           return;
         }
 
@@ -715,10 +933,10 @@ const loadPresets = async () => {
         // en caso de fallo, informar al usuario
         const errMsg = res && res.error ? String(res.error) : "Desconocido";
         console.error("No se pudo abrir carpeta presets por defecto:", errMsg);
-        alert("No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.");
+        alert(tRenderer("renderer.alerts.open_presets_fail", "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles."));
       } catch (err) {
         console.error("Error abriendo carpeta presets por defecto:", err);
-        alert("Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.");
+        alert(tRenderer("renderer.alerts.open_presets_error", "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola."));
       }
     });
 
@@ -825,7 +1043,7 @@ btnCountClipboard.addEventListener("click", async () => {
     if (clip.length > MAX_TEXT_CHARS) {
       console.warn("Contenido del portapapeles supera 10000000 chars — será truncado.");
       clip = clip.slice(0, MAX_TEXT_CHARS);
-      alert("El texto del portapapeles supera el tamaño máximo permitido y será truncado.");
+      alert(tRenderer("renderer.editor_alerts.clipboard_overflow", "El texto del portapapeles supera el tamaño máximo permitido y será truncado."));
     }
 
     // enviar objeto con meta (overwrite)
@@ -835,7 +1053,7 @@ btnCountClipboard.addEventListener("click", async () => {
     });
 
     updatePreviewAndResults(resp && resp.text ? resp.text : clip);
-    resp && resp.truncated && alert("El texto fue truncado para ajustarse al límite máximo de la aplicación.");
+    resp && resp.truncated && alert(tRenderer("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."));
   } catch (err) {
     console.error("clipboard error:", err);
   }
@@ -852,7 +1070,7 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     const available = MAX_TEXT_CHARS - current.length;
     if (available <= 0) {
-      alert("No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.");
+      alert(tRenderer("renderer.editor_alerts.too_big", "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido."));
       return;
     }
 
@@ -869,16 +1087,22 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     // notificar truncado solo si main lo confirma
     if (resp && resp.truncated) {
-      alert("El texto fue truncado para ajustarse al límite máximo de la aplicación.");
+      alert(tRenderer("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."));
     }
   } catch (err) {
     console.error("Error pegando portapapeles en nueva línea:", err);
-    alert("Ocurrió un error al pegar el portapapeles. Revisa la consola.");
+    alert(tRenderer("renderer.editor_alerts.paste_error", "Ocurrió un error al pegar el portapapeles. Revisa la consola."));
   }
 });
 
-btnEdit.addEventListener('click', () => {
-  window.electronAPI.openEditor();
+btnEdit.addEventListener('click', async () => {
+  showManualLoader();
+  try {
+    await window.electronAPI.openEditor();
+  } catch (err) {
+    console.error("Error abriendo editor manual:", err);
+    hideManualLoader();
+  }
 });
 
 // ======================= Botón Vaciar (pantalla principal) =======================
@@ -895,7 +1119,7 @@ btnEmptyMain.addEventListener("click", async () => {
     }
   } catch (err) {
     console.error("Error vaciando texto desde pantalla principal:", err);
-    alert("Ocurrió un error al vaciar el texto. Revisa la consola.");
+    alert(tRenderer("renderer.alerts.clear_error", "Ocurrió un error al vaciar el texto. Revisa la consola."));
   }
 });
 
@@ -916,7 +1140,7 @@ btnNewPreset.addEventListener('click', () => {
     } else {
       // Fallback: intentar usar prompt (rare platforms — but preload intentionally disabled prompt earlier)
       console.warn("openPresetModal no disponible en electronAPI");
-      alert("Funcionalidad de modal no disponible.");
+      alert(tRenderer("renderer.alerts.modal_unavailable", "Funcionalidad de modal no disponible."));
     }
   } catch (e) {
     console.error("Error abriendo modal de nuevo preset:", e);
@@ -933,7 +1157,7 @@ btnEditPreset.addEventListener('click', async () => {
         await window.electronAPI.notifyNoSelectionEdit();
         return;
       } else {
-        alert("No hay ningún preset seleccionado para editar");
+        alert(tRenderer("renderer.alerts.edit_none", "No hay ningún preset seleccionado para editar"));
         return;
       }
     }
@@ -941,7 +1165,7 @@ btnEditPreset.addEventListener('click', async () => {
     // Find preset data from cache
     const preset = allPresetsCache.find(p => p.name === selectedName);
     if (!preset) {
-      alert("Preset seleccionado no encontrado en caché.");
+      alert(tRenderer("renderer.alerts.preset_not_found", "Preset seleccionado no encontrado en caché."));
       return;
     }
 
@@ -950,11 +1174,11 @@ btnEditPreset.addEventListener('click', async () => {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
     } else {
-      alert("Funcionalidad de edición no disponible.");
+      alert(tRenderer("renderer.alerts.edit_unavailable", "Funcionalidad de edición no disponible."));
     }
   } catch (e) {
     console.error("Error abriendo modal de editar preset:", e);
-    alert("Ocurrió un error al intentar editar el preset. Revisa la consola.");
+    alert(tRenderer("renderer.alerts.edit_error", "Ocurrió un error al intentar editar el preset. Revisa la consola."));
   }
 });
 
@@ -985,11 +1209,11 @@ btnDeletePreset.addEventListener('click', async () => {
       }
       // Unexpected error: log and show a simple alert
       console.error("Error deleting preset:", res && res.error ? res.error : res);
-      alert("Ocurrió un error al borrar el preset. Revisa la consola.");
+      alert(tRenderer("renderer.alerts.delete_error", "Ocurrió un error al borrar el preset. Revisa la consola."));
     }
   } catch (e) {
     console.error("Error en petición de borrado:", e);
-    alert("Ocurrió un error al borrar el preset. Revisa la consola.");
+    alert(tRenderer("renderer.alerts.delete_error", "Ocurrió un error al borrar el preset. Revisa la consola."));
   }
 });
 
@@ -1015,11 +1239,11 @@ btnResetDefaultPresets.addEventListener('click', async () => {
         return;
       }
       console.error("Error restaurando presets:", res && res.error ? res.error : res);
-      alert("Ocurrió un error al restaurar presets. Revisa la consola.");
+      alert(tRenderer("renderer.alerts.restore_error", "Ocurrió un error al restaurar presets. Revisa la consola."));
     }
   } catch (e) {
     console.error("Error en petición de restaurar presets:", e);
-    alert("Ocurrió un error al restaurar presets. Revisa la consola.");
+    alert(tRenderer("renderer.alerts.restore_error", "Ocurrió un error al restaurar presets. Revisa la consola."));
   }
 });
 
@@ -1049,6 +1273,16 @@ let prevRunning = false;
 let timerEditing = false;
 // Último elapsed para el que calculamos WPM (evitar recálculos repetidos)
 let lastComputedElapsedForWpm = null;
+
+function showManualLoader() {
+  if (manualLoader) manualLoader.classList.add('visible');
+  if (btnEdit) btnEdit.disabled = true;
+}
+
+function hideManualLoader() {
+  if (manualLoader) manualLoader.classList.remove('visible');
+  if (btnEdit) btnEdit.disabled = false;
+}
 
 function formatTimer(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -1223,27 +1457,29 @@ function applyManualTime() {
   const ms = parseTimerInput(timerDisplay.value);
 
   if (ms !== null) {
+    // Truncar a segundos enteros cuando se edita manualmente
+    const msRounded = Math.floor(ms / 1000) * 1000;
     // Si tenemos API, pedir a main que aplique el elapsed (autoridad)...
     if (window.electronAPI && typeof window.electronAPI.setCronoElapsed === 'function') {
       try {
         // Marcar que ya no estamos editando (blur ya lo hace, pero aseguramos)
         timerEditing = false;
-        window.electronAPI.setCronoElapsed(ms);
+        window.electronAPI.setCronoElapsed(msRounded);
         // Mostrar inmediatamente el valor aplicado y recalcular WPM localmente (comportamiento antiguo)
-        if (timerDisplay) timerDisplay.value = formatTimer(ms);
-        actualizarVelocidadRealFromElapsed(ms);
-        lastComputedElapsedForWpm = ms;
+        if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
+        actualizarVelocidadRealFromElapsed(msRounded);
+        lastComputedElapsedForWpm = msRounded;
       } catch (e) {
         console.error("Error enviando setCronoElapsed:", e);
         // Fallback local
-        elapsed = ms;
+        elapsed = msRounded;
         if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
         actualizarVelocidadRealFromElapsed(elapsed);
         lastComputedElapsedForWpm = elapsed;
       }
     } else {
       // Fallback local (no main available)
-      elapsed = ms;
+      elapsed = msRounded;
       if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
       actualizarVelocidadRealFromElapsed(elapsed);
       lastComputedElapsedForWpm = elapsed;
