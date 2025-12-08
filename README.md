@@ -1,5 +1,5 @@
 ### toT — Reading Meter ###
-**Versión:** 0.0.901 (2025/12/06)  
+**Versión:** 0.0.910 (2025/12/07)  
 
 Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar tiempos de lectura, cronometrar lecturas y gestionar presets de velocidad (WPM).
 
@@ -311,6 +311,20 @@ Se implementó una ventana flotante (VF) funcional y controlable que requirió m
 - Mejoramiento en el diseño del infomodal (compartido también con readme y acerca de).
 - Cambio de fuente de letra (Bakersvville) en preview y ventana de texto vigente.
 - Ajustes de diseño ventana principal para nueva fuente.
+
+**0.0.910** (2025/12/07)
+
+* Internacionalización
+
+- Implementación de arquitectura multi-lenguaje.
+
+- UI principal y modales traducidos (renderer/main), incluyendo tooltips y alertas persistentes.
+
+- Páginas de info (acerca_de, readme, instrucciones) ahora cargan textos vía i18n con data-i18n; JSON específicos por idioma.
+
+- Defaults numberFormat por idioma cargados desde i18n; respeta overrides de usuario.
+
+- Fixes y detalles menores.
 
 ## Autor y Créditos ##
 

@@ -1,0 +1,48 @@
+﻿{
+  "main": {
+    "menu": {
+      "como_usar": "¿Cómo usar la app?",
+      "guia_basica": "Guía básica",
+      "instrucciones_completas": "Instrucciones completas",
+      "faq": "Preguntas frecuentes (FAQ)",
+      "herramientas": "Herramientas",
+      "cargador_texto": "Cargador de archivo de texto",
+      "cargador_imagen": "Cargador de imágenes con texto",
+      "test_velocidad": "Test de velocidad de lectura",
+      "preferencias": "Preferencias",
+      "idioma": "Idioma",
+      "diseno": "Diseño",
+      "skins": "Skins",
+      "crono_flotante": "Cronómetro flotante",
+      "fuentes": "Fuentes",
+      "colores": "Colores",
+      "shortcuts": "Shortcuts",
+      "presets_por_defecto": "Presets por defecto",
+      "comunidad": "Comunidad",
+      "discord": "Discord",
+      "avisos": "Avisos y novedades",
+      "links_interes": "Links de interés",
+      "colabora": "COLABORA ($)",
+      "ayuda": "?",
+      "actualizar_version": "Actualizar a última versión",
+      "readme": "Readme",
+      "acerca_de": "Acerca de",
+      "desarrollo": "Desarrollo",
+      "recargar": "Recargar",
+      "forcereload": "Forzar recarga",
+      "toggle_devtools": "Toggle DevTools"
+    },
+    "dialog": {
+      "ok": "Aceptar",
+      "yes": "Sí, continuar",
+      "no": "No, cancelar",
+      "delete_preset_title": "Eliminar preset",
+      "delete_preset_message": "¿Eliminar el preset \"{name}\"?",
+      "delete_preset_none": "No hay ningún preset seleccionado para borrar",
+      "restore_defaults_title": "Restaurar presets",
+      "restore_defaults_message": "¿Restaurar presets por defecto (generales y para el idioma \"{lang}\") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.",
+      "edit_preset_none": "No hay ningún preset seleccionado para editar",
+      "edit_preset_confirm": "¿Está seguro de editar \"{name}\" por el actual?"
+    }
+  }
+}

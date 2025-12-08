@@ -1,0 +1,160 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "First and last part of the analyzed text:",
+      "selector_empty": "(empty)",
+      "buttons": {
+        "overwrite_clipboard": "Overwrite clipboard",
+        "append_clipboard_newline": "Paste clipboard new line",
+        "edit": "Manual editor",
+        "clear": "🗑"
+      },
+      "tooltips": {
+        "overwrite_clipboard": "Replace current text with clipboard",
+        "append_clipboard_newline": "Append clipboard at the end (new line)",
+        "edit": "Open full text window",
+        "clear": "Clear current text",
+        "new_preset": "Create a new preset",
+        "edit_preset": "Edit selected preset",
+        "delete_preset": "Delete selected preset",
+        "reset_presets": "Restore default presets",
+        "help_button": "Information (pending)",
+        "floating_window": "Floating window"
+      },
+      "speed": {
+        "title": "READING SPEED",
+        "wpm_label": "words per minute (WPM)",
+        "presets_placeholder": "Presets",
+        "new": "New",
+        "edit": "Edit",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "COUNT RESULTS",
+        "time": "Estimated reading time: {h}h {m}m {s}s",
+        "words": "Words: {n}",
+        "chars_no_space": "Chars w/o space: {n}",
+        "chars": "Characters: {n}",
+        "precise_mode": "Precise mode"
+      },
+      "help": {
+        "title": "Information (pending)"
+      },
+      "timer": {
+        "title": "STOPWATCH",
+        "speed": "Speed:",
+        "controls_label": "Stopwatch controls",
+        "floating": "Floating window",
+        "floating_short": "FW"
+      },
+      "spare": {
+        "title": "Available section"
+      },
+      "info_modal": {
+        "title": "Info",
+        "close": "Close",
+        "loading": "Loading..."
+      }
+    },
+    "modal_language": {
+      "title": "Select language",
+      "heading": "Select language / Seleccione idioma",
+      "es": "Spanish",
+      "en": "English",
+      "note": "The selection will be saved and used next time the app starts."
+    },
+    "modal_preset": {
+      "title_new": "New preset",
+      "title_edit": "Edit preset",
+      "heading_new": "Create new preset",
+      "heading_edit": "Edit selected preset",
+      "name": "Name:",
+      "wpm": "WPM:",
+      "description": "Description:",
+      "placeholder": "Short description...",
+      "char_count": "{remaining} characters left",
+      "hint": "Custom presets are stored in user settings.",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "modal_editor": {
+      "title": "Editor — Full text",
+      "placeholder": "Type or paste here...",
+      "calc_button": "CALCULATE",
+      "calc_while_typing": "Calculate while typing",
+      "clear": "🗑",
+      "clear_title": "Clear"
+    },
+    "modal_floating": {
+      "title": "toT —  Stopwatch (floating)"
+    },
+    "alerts": {
+      "wip": "WIP: This feature will open in a future version: {feature}.",
+      "no_presets_folder": "Cannot open presets folder in this environment.",
+      "open_presets_failed": "Could not open default presets folder. Check console for details.",
+      "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
+      "clipboard_too_big": "Clipboard text exceeds maximum size and will be truncated.",
+      "text_truncated": "Text was truncated to fit the application limit.",
+      "text_limit_reached": "Cannot add text: maximum size reached.",
+      "clipboard_error": "An error occurred while pasting from clipboard. Check console.",
+      "clear_error": "An error occurred while clearing text. Check console.",
+      "modal_unavailable": "Modal functionality not available.",
+      "edit_none": "No preset selected to edit",
+      "preset_not_found": "Selected preset not found in cache.",
+      "edit_unavailable": "Edit functionality not available.",
+      "edit_error": "An error occurred while editing the preset. Check console.",
+      "delete_error": "An error occurred while deleting the preset. Check console.",
+      "restore_error": "An error occurred while restoring presets. Check console.",
+      "open_presets_unsupported": "Cannot open presets folder in this environment.",
+      "open_presets_fail": "Could not open the default presets folder. Check console for details."
+    },
+    "editor_alerts": {
+      "too_big": "Cannot add text: maximum size reached.",
+      "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
+      "too_big_clipboard": "Text too large to paste directly. Use 'Overwrite clipboard' or 'Paste clipboard new line' from the main window.",
+      "drop_no_text": "Drop: no plain text detected.",
+      "clipboard_no_text": "Clipboard does not contain plain text.",
+      "drop_too_big": "Dropped text is too large. Use the main window buttons to add large text.",
+      "truncated_limit": "Text was truncated to the application limit.",
+      "calc_error": "An error occurred while calculating. Check console.",
+      "text_truncated": "Text was truncated to fit the application limit.",
+      "clipboard_overflow": "Clipboard text exceeds the maximum allowed and will be truncated.",
+      "paste_error": "An error occurred while pasting from clipboard. Check console."
+    },
+    "preset_alerts": {
+      "name_empty": "Name cannot be empty.",
+      "wpm_invalid": "WPM must be a number between 50 and 500.",
+      "edit_error": "An error occurred while editing the preset. Check console.",
+      "create_error": "An error occurred while creating the preset. Check console.",
+      "process_error": "An error occurred while processing the preset. Check console."
+    },
+    "info": {
+      "acerca_de": {
+        "app_name": "toT — Reading Meter",
+        "title": "About",
+        "subtitle": "Subtitle",
+        "body": "Work in progress."
+      },
+      "readme": {
+        "app_name": "toT — Reading Meter",
+        "title": "Readme",
+        "subtitle": "Subtitle",
+        "body": "Work in progress."
+      },
+      "instrucciones": {
+        "app_name": "toT — Reading Meter",
+        "title": "User manual",
+        "nav_basic": "Basic guide",
+        "nav_full": "Full instructions",
+        "nav_faq": "Frequently asked questions (FAQ)",
+        "section_basic_title": "Basic guide",
+        "section_basic_body": "Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. ",
+        "section_full_title": "Full instructions",
+        "section_full_body": "Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. ",
+        "section_faq_title": "Frequently asked questions (FAQ)",
+        "section_faq_body": "Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. "
+      }
+    }
+  }
+}

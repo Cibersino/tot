@@ -90,6 +90,13 @@ const api = {
         const listener = () => { try { cb(); } catch (e) { console.error('floating closed callback error:', e); } };
         ipcRenderer.on('flotante-closed', listener);
         return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (e) { console.error('removeListener error:', e); } };
+    },
+
+    // Editor manual listo (para ocultar loader en ventana principal)
+    onManualEditorReady: (cb) => {
+        const listener = () => { try { cb(); } catch (err) { console.error("manual-ready callback error:", err); } };
+        ipcRenderer.on('manual-editor-ready', listener);
+        return () => { try { ipcRenderer.removeListener('manual-editor-ready', listener); } catch (e) { console.error("removeListener error (manual-editor-ready):", e); } };
     }
 };
 

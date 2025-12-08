@@ -2,24 +2,16 @@
 
 # ÍTEM ACTUAL #
 
-* Internacionalización *
-- Agregar soporte multilenguaje
-- Selector de idioma en el menú
-En renderer.js tenemos este helper:
 
-function setIdiomaActual(nuevoIdioma) {
-  if (typeof nuevoIdioma === "string" && nuevoIdioma.length > 0) {
-    idiomaActual = nuevoIdioma;
-  }
-}
-- Archivos de 18i.
 
 # Más adelante #
 
 * Implementar semiauto-update *
 
 * Revisión y depuración del código *
+- Ordenar arbol de carpetas, archivos y códigos
 - EsLint
+- Modular
 
 * Nuevas funciones *
 
