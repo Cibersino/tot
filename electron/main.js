@@ -721,7 +721,7 @@ ipcMain.handle('set-mode-conteo', async (_event, mode) => {
 // Create language selection window (small, light)
 function createLanguageWindow() {
   if (langWin && !langWin.isDestroyed()) {
-    try { langWin.focus(); } catch (e) { }
+    try { langWin.focus(); } catch (e) { /* noop */ }
     return;
   }
 
@@ -1351,19 +1351,13 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
 
     // 1) Remove personalized presets that shadow defaults (i.e., same name)
     const defaultNames = new Set(defaultsCombined.map(p => p.name));
-    settings.presets = (settings.presets || []).filter(p => {
-      if (defaultNames.has(p.name)) {
-        removedCustom.push(p.name);
-        return false; // remove
-      }
-      return true; // keep others
-    });
+    settings.presets = (settings.presets || []).filter(p => !defaultNames.has(p.name));
+    removedCustom.push(...defaultNames);
 
     // 2) For the active language, remove names from disabled_default_presets[lang] if present
     settings.disabled_default_presets = settings.disabled_default_presets || {};
     if (!Array.isArray(settings.disabled_default_presets[lang])) settings.disabled_default_presets[lang] = [];
 
-    const beforeDisabled = settings.disabled_default_presets[lang].slice();
     settings.disabled_default_presets[lang] = settings.disabled_default_presets[lang].filter(n => {
       // keep those that are NOT in defaultNames
       const keep = !defaultNames.has(n);
@@ -1643,7 +1637,7 @@ app.whenReady().then(() => {
       } catch (e) {
         console.error("Error creando mainWin tras seleccionar idioma:", e);
       } finally {
-        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { }
+        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { /* noop */ }
       }
       if (!updateCheckDone) {
         updateCheckDone = true;
