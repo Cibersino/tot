@@ -370,7 +370,7 @@ async function updatePreviewAndResults(text) {
   resWords.textContent = msgRenderer("renderer.main.results.words", { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
 
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
-  const timeFallback = `⏱ Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
+  const timeFallback = `O Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
   resTime.textContent = msgRenderer("renderer.main.results.time", { h: hours, m: minutes, s: seconds }, timeFallback);
 
   // Si detectamos que el texto cambio respecto al estado anterior -> resetear cronometro en main
@@ -412,7 +412,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       }
 
       // Actualizar boton toggle
-      if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
+      if (tToggle) tToggle.textContent = running ? '||' : '>';
 
       // WPM: recalcular en los casos relevantes:
       //  - transicion running:true -> false (pausa): recalcular siempre
@@ -665,7 +665,7 @@ const loadPresets = async () => {
                   copy.modeConteo = nuevoModo;
                   await window.electronAPI.updateSettings(copy);
                 } catch (updateErr) {
-                  console.warn("updateSettings no disponible o falló:", updateErr);
+                  console.warn("updateSettings no disponible o fallo:", updateErr);
                 }
               }
             }
@@ -759,7 +759,7 @@ const loadPresets = async () => {
     const sectionTitles = {
       readme: "Readme",
       instrucciones: "Instrucciones completas",
-      guia_basica: "Guía básica",
+      guia_basica: "Guia basica",
       faq: "Preguntas frecuentes (FAQ)",
       acerca_de: "Acerca de"
     };
@@ -811,7 +811,7 @@ const loadPresets = async () => {
     const panel = document.querySelector('.info-modal-panel');
     if (panel) panel.scrollTop = 0;
 
-    // Si se pidio│ una seccion concreta, scrollear para que aparezca *arriba* del panel
+    // Si se pidio una seccion concreta, scrollear para que aparezca *arriba* del panel
     if (sectionId) {
       // Esperar al siguiente frame para que el DOM parseado este layoutado
       requestAnimationFrame(() => {
@@ -837,7 +837,7 @@ const loadPresets = async () => {
           // finalmente, dar foco al contenido para que el lector pueda usar teclado
           if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
         } catch (e) {
-          console.error("Error desplazando modal a sección:", e);
+          console.error("Error desplazando modal a seccion:", e);
           if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
         }
       });
@@ -910,10 +910,10 @@ const loadPresets = async () => {
         // en caso de fallo, informar al usuario
         const errMsg = res && res.error ? String(res.error) : "Desconocido";
         console.error("No se pudo abrir carpeta presets por defecto:", errMsg);
-        alert(tRenderer("renderer.alerts.open_presets_fail", "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles."));
+        alert(tRenderer("renderer.alerts.open_presets_fail", "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para mas detalles."));
       } catch (err) {
         console.error("Error abriendo carpeta presets por defecto:", err);
-        alert(tRenderer("renderer.alerts.open_presets_error", "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola."));
+        alert(tRenderer("renderer.alerts.open_presets_error", "Ocurrio un error al intentar abrir la carpeta de presets. Revisa la consola."));
       }
     });
 
@@ -1018,7 +1018,7 @@ btnCountClipboard.addEventListener("click", async () => {
     if (clip.length > MAX_TEXT_CHARS) {
       console.warn("Contenido del portapapeles supera 10000000 chars - sera truncado.");
       clip = clip.slice(0, MAX_TEXT_CHARS);
-      alert(tRenderer("renderer.editor_alerts.clipboard_overflow", "El texto del portapapeles supera el tamaño maximo permitido y sera truncado."));
+      alert(tRenderer("renderer.editor_alerts.clipboard_overflow", "El texto del portapapeles supera el tamano maximo permitido y sera truncado."));
     }
 
     // enviar objeto con meta (overwrite)
@@ -1045,7 +1045,7 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     const available = MAX_TEXT_CHARS - current.length;
     if (available <= 0) {
-      alert(tRenderer("renderer.editor_alerts.too_big", "No es posible agregar texto: ya se alcanzo el tamaño maximo permitido."));
+      alert(tRenderer("renderer.editor_alerts.too_big", "No es posible agregar texto: ya se alcanzo el tamano maximo permitido."));
       return;
     }
 
@@ -1106,7 +1106,7 @@ if (btnHelp) {
 }
 
 // Abrir modal para crear preset (main crea la ventana modal)
-// Envía el WPM actual al main para que lo propague al modal
+// Envia el WPM actual al main para que lo propague al modal
 btnNewPreset.addEventListener('click', () => {
   try {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
@@ -1156,7 +1156,7 @@ btnEditPreset.addEventListener('click', async () => {
   }
 });
 
-// ======================= Boton BORRAR (≡ƒùæ∩╕Å) =======================
+// ======================= Boton BORRAR (icono papelera) =======================
 btnDeletePreset.addEventListener('click', async () => {
   try {
     const name = presetsSelect.value || null;
@@ -1238,7 +1238,7 @@ if (timerDisplay) {
 const tToggle = document.getElementById('timerToggle');
 const tReset = document.getElementById('timerReset');
 
-// Mirror local del estado del crono (se sincroniza desde main vía onCronoState)
+// Mirror local del estado del crono (se sincroniza desde main via onCronoState)
 let elapsed = 0;
 let running = false;
 // Flag para detectar transicion y evitar recalculos continuos
@@ -1289,7 +1289,7 @@ function uiResetTimer() {
 
   if (timerDisplay) timerDisplay.value = "00:00:00";
   if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
-  if (tToggle) tToggle.textContent = '▶';
+  if (tToggle) tToggle.textContent = '>';
 }
 
 tToggle.addEventListener('click', () => {
@@ -1298,7 +1298,7 @@ tToggle.addEventListener('click', () => {
   } else {
     // Fallback local: invertir estado visual (no authoritative)
     running = !running;
-    tToggle.textContent = running ? '⏸' : '▶';
+    tToggle.textContent = running ? '||' : '>';
   }
 });
 
@@ -1326,7 +1326,7 @@ async function openFloating() {
       toggleVF.setAttribute('aria-checked', 'true');
     }
 
-    // pedir estado inicial vía invoke (main devuelve getCronoState)
+    // pedir estado inicial via invoke (main devuelve getCronoState)
     if (typeof window.electronAPI.getCronoState === 'function') {
       try {
         const state = await window.electronAPI.getCronoState();
@@ -1338,7 +1338,7 @@ async function openFloating() {
           if (timerDisplay && !timerEditing) {
             timerDisplay.value = state.display || formatTimer(elapsed);
           }
-          if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
+          if (tToggle) tToggle.textContent = running ? '||' : '>';
 
           lastComputedElapsedForWpm = elapsed;
           prevRunning = running;
