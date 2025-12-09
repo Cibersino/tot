@@ -450,18 +450,6 @@ const loadPresets = async () => {
               } catch (ipcErr) {
                 console.error("Error persistiendo modeConteo mediante setModeConteo:", ipcErr);
               }
-            } else {
-              // Fallback: si no existe setModeConteo, intentar escribir settings completo (si expuesto)
-              if (window.electronAPI && typeof window.electronAPI.updateSettings === 'function') {
-                try {
-                  // leer settingsCache, actualizar y enviar
-                  const copy = Object.assign({}, settingsCache || {});
-                  copy.modeConteo = nuevoModo;
-                  await window.electronAPI.updateSettings(copy);
-                } catch (updateErr) {
-                  console.warn("updateSettings no disponible o fallo:", updateErr);
-                }
-              }
             }
           } catch (err) {
             console.error("Error manejando cambio del toggleModoPreciso:", err);
