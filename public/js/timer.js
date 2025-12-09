@@ -230,7 +230,7 @@
     }
 
     if (!newRunning && newElapsed === 0 && !timerEditing) {
-      uiResetTimer({ timerDisplay, realWpmDisplay, tToggle });
+      uiResetTimer({ timerDisplay, realWpmDisplay, tToggle, playLabel });
       updatedLast = 0;
     }
 
