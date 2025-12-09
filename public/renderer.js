@@ -255,42 +255,26 @@ async function updatePreviewAndResults(text) {
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
     try {
-      if (timerModule && typeof timerModule.handleCronoState === 'function') {
-        const res = timerModule.handleCronoState({
-          state,
-          timerDisplay,
-          timerEditing,
-          tToggle,
-          realWpmDisplay,
-          currentText,
-          contarTexto,
-          obtenerSeparadoresDeNumeros,
-          formatearNumero,
-          idiomaActual,
-          prevRunning,
-          lastComputedElapsedForWpm
-        });
-        if (res) {
-          elapsed = res.elapsed;
-          running = res.running;
-          prevRunning = res.prevRunning;
-          lastComputedElapsedForWpm = res.lastComputedElapsedForWpm;
-        }
-        return;
+      const res = timerModule.handleCronoState({
+        state,
+        timerDisplay,
+        timerEditing,
+        tToggle,
+        realWpmDisplay,
+        currentText,
+        contarTexto,
+        obtenerSeparadoresDeNumeros,
+        formatearNumero,
+        idiomaActual,
+        prevRunning,
+        lastComputedElapsedForWpm
+      });
+      if (res) {
+        elapsed = res.elapsed;
+        running = res.running;
+        prevRunning = res.prevRunning;
+        lastComputedElapsedForWpm = res.lastComputedElapsedForWpm;
       }
-
-      // Fallback minimal si el modulo no esta disponible
-      elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
-      running = !!state.running;
-      if (timerDisplay && !timerEditing) {
-        timerDisplay.value = (state && state.display) ? state.display : formatTimer(elapsed);
-      }
-      if (tToggle) tToggle.textContent = running ? '||' : '>';
-      if (!running && elapsed === 0 && !timerEditing) {
-        uiResetTimer();
-        lastComputedElapsedForWpm = 0;
-      }
-      prevRunning = running;
     } catch (e) {
       console.error("Error manejando crono-state en renderer:", e);
     }
@@ -1073,53 +1057,23 @@ function hideManualLoader() {
 
 const timerModule = (typeof window !== "undefined") ? window.RendererTimer : null;
 
-const formatTimer = (ms) => {
-  if (timerModule && typeof timerModule.formatTimer === "function") {
-    return timerModule.formatTimer(ms);
-  }
-  const totalSeconds = Math.floor((ms || 0) / 1000);
-  const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-  const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
-};
+const formatTimer = (ms) => timerModule.formatTimer(ms);
 
-const actualizarVelocidadRealFromElapsed = (ms) => {
-  if (timerModule && typeof timerModule.actualizarVelocidadRealFromElapsed === "function") {
-    return timerModule.actualizarVelocidadRealFromElapsed({
-      ms,
-      currentText,
-      contarTexto,
-      obtenerSeparadoresDeNumeros,
-      formatearNumero,
-      idiomaActual,
-      realWpmDisplay
-    });
-  }
-  const secondsTotal = (ms || 0) / 1000;
-  const stats = contarTexto(currentText);
-  const words = stats?.palabras || 0;
-  if (words > 0 && secondsTotal > 0) {
-    const realWpm = (words / secondsTotal) * 60;
-    mostrarVelocidadReal(realWpm);
-    return realWpm;
-  }
-  if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
-  return 0;
-};
+const actualizarVelocidadRealFromElapsed = (ms) => timerModule.actualizarVelocidadRealFromElapsed({
+  ms,
+  currentText,
+  contarTexto,
+  obtenerSeparadoresDeNumeros,
+  formatearNumero,
+  idiomaActual,
+  realWpmDisplay
+});
 
 const uiResetTimer = () => {
   elapsed = 0;
   running = false;
   prevRunning = false;
-
-  if (timerModule && typeof timerModule.uiResetTimer === "function") {
-    timerModule.uiResetTimer({ timerDisplay, realWpmDisplay, tToggle });
-    return;
-  }
-  if (timerDisplay) timerDisplay.value = "00:00:00";
-  if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
-  if (tToggle) tToggle.textContent = '>';
+  timerModule.uiResetTimer({ timerDisplay, realWpmDisplay, tToggle });
 };
 
 tToggle.addEventListener('click', () => {
@@ -1143,7 +1097,6 @@ tReset.addEventListener('click', () => {
 // --- Floating window control (VF) ---
 // abrir flotante
 const openFloating = async () => {
-  if (!timerModule || typeof timerModule.openFloating !== "function") return;
   const res = await timerModule.openFloating({
     electronAPI: window.electronAPI,
     toggleVF,
@@ -1162,7 +1115,6 @@ const openFloating = async () => {
 };
 
 const closeFloating = async () => {
-  if (!timerModule || typeof timerModule.closeFloating !== "function") return;
   await timerModule.closeFloating({ electronAPI: window.electronAPI, toggleVF });
 };
 
@@ -1190,46 +1142,22 @@ if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'functi
 }
 
 // ======================= Edicion manual del cronometro =======================
-const parseTimerInput = (input) => {
-  if (timerModule && typeof timerModule.parseTimerInput === "function") {
-    return timerModule.parseTimerInput(input);
-  }
-  const match = String(input || "").match(/^(\d+):([0-5]\d):([0-5]\d)$/);
-  if (!match) return null;
-  const hours = parseInt(match[1], 10);
-  const minutes = parseInt(match[2], 10);
-  const seconds = parseInt(match[3], 10);
-  return (hours * 3600 + minutes * 60 + seconds) * 1000;
-};
+const parseTimerInput = (input) => timerModule.parseTimerInput(input);
 
 const applyManualTime = () => {
-  if (timerModule && typeof timerModule.applyManualTime === "function") {
-    timerModule.applyManualTime({
-      value: timerDisplay.value,
-      timerDisplay,
-      electronAPI: window.electronAPI,
-      currentText,
-      contarTexto,
-      obtenerSeparadoresDeNumeros,
-      formatearNumero,
-      idiomaActual,
-      realWpmDisplay,
-      setElapsed: (msVal) => { elapsed = msVal; return elapsed; },
-      setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; }
-    });
-    return;
-  }
-
-  const ms = parseTimerInput(timerDisplay.value);
-  if (ms !== null) {
-    const msRounded = Math.floor(ms / 1000) * 1000;
-    elapsed = msRounded;
-    if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
-    actualizarVelocidadRealFromElapsed(elapsed);
-    lastComputedElapsedForWpm = elapsed;
-  } else if (timerDisplay) {
-    timerDisplay.value = formatTimer(elapsed);
-  }
+  timerModule.applyManualTime({
+    value: timerDisplay.value,
+    timerDisplay,
+    electronAPI: window.electronAPI,
+    currentText,
+    contarTexto,
+    obtenerSeparadoresDeNumeros,
+    formatearNumero,
+    idiomaActual,
+    realWpmDisplay,
+    setElapsed: (msVal) => { elapsed = msVal; return elapsed; },
+    setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; }
+  });
 };
 
 timerDisplay.addEventListener('blur', applyManualTime);
