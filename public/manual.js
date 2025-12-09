@@ -1,15 +1,15 @@
 // public/manual.js
 console.log("Manual editor starting...");
 
-let MAX_TEXT_CHARS = 1e7; // Límite absoluto del tamaño del texto en el editor. Si el contenido total supera este valor, se trunca. Previene cuelgues, lags extremos y OOM.
-const PASTE_ALLOW_LIMIT = 1e4; // Umbral que determina si se permite que el editor de texto haga la inserción nativa en paste/drop.
-const SMALL_UPDATE_THRESHOLD = 2e5; // Define cuándo una actualización externa (desde main) debe aplicarse con mecanismo nativo (rápido, conserva undo/redo) o mediante reemplazo completo del value (más seguro pero incompatible con undo/redo).
+let MAX_TEXT_CHARS = 1e7; // Limite absoluto del tamano del texto en el editor. Si el contenido total supera este valor, se trunca. Previene cuelgues, lags extremos y OOM.
+const PASTE_ALLOW_LIMIT = 1e4; // Umbral que determina si se permite que el editor de texto haga la insercion nativa en paste/drop.
+const SMALL_UPDATE_THRESHOLD = 2e5; // Define cuando una actualizacion externa (desde main) debe aplicarse con mecanismo nativo (rapido, conserva undo/redo) o mediante reemplazo completo del value (mas seguro pero incompatible con undo/redo).
 
 (async () => {
   try {
     const cfg = await window.manualAPI.getAppConfig();
     if (cfg && cfg.maxTextChars) MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
-    // si quieres exponer otros umbrales desde main más adelante, puedes agregarlos al cfg
+    // si quieres exponer otros umbrales desde main mas adelante, puedes agregarlos al cfg
   } catch (e) {
     console.error("manual: no se pudo obtener getAppConfig, usando defaults:", e);
   }
@@ -24,7 +24,7 @@ const SMALL_UPDATE_THRESHOLD = 2e5; // Define cuándo una actualización externa
   } catch (e) {
     console.warn("manual: no se pudieron aplicar traducciones iniciales:", e);
   }
-  // rest of init (getCurrentText etc.) — ya tienes un init existente, integra con el tuyo
+  // rest of init (getCurrentText etc.) -ya tienes un init existente, integra con el tuyo
 })();
 
 const editor = document.getElementById("editorArea");
@@ -157,7 +157,7 @@ try {
   }
 } catch (e) { console.debug("manual: no se pudo aplicar estilos de wrap:", e); }
 
-/* ---------- Inserción local (mejor preservando undo) ---------- */
+/* ---------- Insercion local (mejor preservando undo) ---------- */
 function tryNativeInsertAtSelection(text) {
   try {
     const start = typeof editor.selectionStart === "number" ? editor.selectionStart : editor.value.length;
@@ -179,7 +179,7 @@ function tryNativeInsertAtSelection(text) {
       return true;
     }
 
-    // última opción: asignación directa
+    // ultima opcion: asignacion directa
     const before = editor.value.slice(0, start);
     const after = editor.value.slice(end);
     editor.value = before + text + after;
@@ -205,7 +205,7 @@ function insertTextAtCursor(rawText) {
   try {
     const available = MAX_TEXT_CHARS - editor.value.length;
     if (available <= 0) {
-      showNotice(tr("renderer.editor_alerts.too_big", "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido."), { type: "warn" });
+      showNotice(tr("renderer.editor_alerts.too_big", "No es posible agregar texto: ya se alcanzo el tamano maximo permitido."), { type: "warn" });
       restoreFocusToEditor();
       return { inserted: 0, truncated: false };
     }
@@ -217,14 +217,14 @@ function insertTextAtCursor(rawText) {
       truncated = true;
     }
 
-    // Inserción nativa preferida
+    // Insercion nativa preferida
     tryNativeInsertAtSelection(toInsert);
 
     // Notificar main
     sendCurrentTextToMainWithMeta("paste");
 
     if (truncated) {
-      showNotice(tr("renderer.editor_alerts.paste_truncated", "El texto pegado se ha truncado para no exceder el máximo permitido."), { type: "warn", duration: 6000 });
+      showNotice(tr("renderer.editor_alerts.paste_truncated", "El texto pegado se ha truncado para no exceder el maximo permitido."), { type: "warn", duration: 6000 });
     }
     restoreFocusToEditor();
     return { inserted: toInsert.length, truncated };
@@ -380,7 +380,7 @@ async function applyExternalUpdate(payload) {
   }
 }
 
-/* ---------- inicialización ---------- */
+/* ---------- inicializacion ---------- */
 (async () => {
   try {
     const t = await window.manualAPI.getCurrentText();
@@ -426,7 +426,7 @@ if (editor) {
         insertTextAtCursor(text);
         return;
       }
-      showNotice(tr("renderer.editor_alerts.too_big_clipboard", 'Texto demasiado grande para pegar directamente. Usa "Sobrescribir portapapeles" o "Pegar portapapeles nueva línea" desde la ventana principal.'), { type: "warn", duration: 7000 });
+      showNotice(tr("renderer.editor_alerts.too_big_clipboard", 'Texto demasiado grande para pegar directamente. Usa "Sobrescribir portapapeles" o "Pegar portapapeles nueva linea" desde la ventana principal.'), { type: "warn", duration: 7000 });
       restoreFocusToEditor();
     } catch (e) {
       console.error("paste handler error:", e);
@@ -434,7 +434,7 @@ if (editor) {
     }
   });
 
-  // DROP: si es pequeño, permitir la inserción nativa del navegador y luego notificar al main.
+  // DROP: si es pequeno, permitir la insercion nativa del navegador y luego notificar al main.
   editor.addEventListener("drop", (ev) => {
     try {
       const dt = ev.dataTransfer;
@@ -443,7 +443,7 @@ if (editor) {
         // bloquear y avisar
         ev.preventDefault();
         ev.stopPropagation();
-        showNotice(tr("renderer.editor_alerts.drop_no_text", "Arrastrado: no se detectó texto plano."), { type: "warn" });
+        showNotice(tr("renderer.editor_alerts.drop_no_text", "Arrastrado: no se detecto texto plano."), { type: "warn" });
         restoreFocusToEditor();
         return;
       }
@@ -457,24 +457,24 @@ if (editor) {
         return;
       }
 
-      // Para tamaños pequeños dejamos que el navegador haga la inserción nativa (no prevenir default).
-      // Posteriormente, en la siguiente tick, notificamos al main que el editor cambió.
+      // Para tamanos pequenos dejamos que el navegador haga la insercion nativa (no prevenir default).
+      // Posteriormente, en la siguiente tick, notificamos al main que el editor cambio.
       setTimeout(() => {
         try {
-          // Asegurar truncado máximo
+          // Asegurar truncado maximo
           if (editor.value.length > MAX_TEXT_CHARS) {
             editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
             dispatchNativeInputEvent();
             showNotice(tr("renderer.editor_alerts.text_truncated", "Error."), { type: "warn", duration: 5000 });
           }
-          // Notificar al main — marca que viene del editor para evitar eco-back.
+          // Notificar al main -marca que viene del editor para evitar eco-back.
           try { window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "drop" } }); } catch (e) { window.manualAPI.setCurrentText(editor.value); }
         } catch (e) {
           console.error("drop postprocess error:", e);
         }
       }, 0);
 
-      // NO preventDefault: permitimos inserción nativa
+      // NO preventDefault: permitimos insercion nativa
     } catch (e) {
       console.error("drop handler error:", e);
       restoreFocusToEditor();
@@ -488,7 +488,7 @@ editor.addEventListener("input", () => {
 
   if (editor.value && editor.value.length > MAX_TEXT_CHARS) {
     editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
-    showNotice(tr("renderer.editor_alerts.truncated_limit", "El texto ha sido truncado al límite máximo permitido por la aplicación."), { type: "warn", duration: 6000 });
+    showNotice(tr("renderer.editor_alerts.truncated_limit", "El texto ha sido truncado al limite maximo permitido por la aplicacion."), { type: "warn", duration: 6000 });
     try {
       window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "truncated" } });
     } catch (e) {
@@ -525,10 +525,10 @@ btnTrash.addEventListener("click", () => {
 if (btnCalc) btnCalc.addEventListener("click", () => {
   try {
     window.manualAPI.setCurrentText({ text: editor.value || "", meta: { source: "editor", action: "overwrite" } });
-    // Do not close the modal or ask anything — per spec
+    // Do not close the modal or ask anything -per spec
   } catch (e) {
     console.error("Error ejecutando CALCULAR:", e);
-    showNotice(tr("renderer.editor_alerts.calc_error", "Ocurrió un error al calcular. Revisa la consola."), { type: "error", duration: 5000 });
+    showNotice(tr("renderer.editor_alerts.calc_error", "Ocurrio un error al calcular. Revisa la consola."), { type: "error", duration: 5000 });
     restoreFocusToEditor();
   }
 });

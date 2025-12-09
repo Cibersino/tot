@@ -125,12 +125,12 @@ async function checkForUpdates(lang, { manual = false } = {}) {
       return; // nada nuevo
     }
 
-    const title = dlg.update_title || 'Actualización disponible';
-    const message = (dlg.update_message || 'Hay una versión nueva {remote}. Actual: {local}. ¿Descargar ahora?')
+    const title = dlg.update_title || 'Actualizacion disponible';
+    const message = (dlg.update_message || 'Hay una version nueva {remote}. Actual: {local}. Descargar ahora?')
       .replace('{remote}', remoteVer)
       .replace('{local}', localVer);
     const btnDownload = dlg.update_download || 'Descargar';
-    const btnLater = dlg.update_later || 'Más tarde';
+    const btnLater = dlg.update_later || 'Mas tarde';
 
     const res = await dialog.showMessageBox(mainWin, {
       type: 'info',
@@ -374,7 +374,7 @@ function buildAppMenu(lang) {
   Menu.setApplicationMenu(appMenu);
 }
 
-// Registrar atajos globales en desarrollo (sin mostrar menú)
+// Registrar atajos globales en desarrollo (sin mostrar menu)
 function registerDevShortcuts(mainWin) {
   if (app.isPackaged) return;
   try {
@@ -540,7 +540,7 @@ function createEditorWindow() {
     } catch (err) {
       console.error("Error enviando manual-init-text:", err);
     }
-    // Notificar a la ventana principal que el editor ya se mostró (para ocultar loader)
+    // Notificar a la ventana principal que el editor ya se mostro (para ocultar loader)
     try {
       if (mainWin && !mainWin.isDestroyed()) {
         mainWin.webContents.send('manual-editor-ready');
@@ -659,7 +659,7 @@ ipcMain.handle('set-language', async (_event, lang) => {
 
     // Rebuild menu with the new language
     buildAppMenu(currentLanguage);
-    // Ocultar la barra en ventanas secundarias (editor, preset, etc.) tras reconstruir menú
+    // Ocultar la barra en ventanas secundarias (editor, preset, etc.) tras reconstruir menu
     try {
       if (editorWin && !editorWin.isDestroyed()) {
         editorWin.setMenu(null);
@@ -674,7 +674,7 @@ ipcMain.handle('set-language', async (_event, lang) => {
         langWin.setMenuBarVisibility(false);
       }
     } catch (menuErr) {
-      console.warn("No se pudo ocultar menú en ventanas secundarias:", menuErr);
+      console.warn("No se pudo ocultar menu en ventanas secundarias:", menuErr);
     }
 
     // Notificar renderers con el objeto settings correcto
@@ -1144,7 +1144,7 @@ ipcMain.handle("get-default-presets", () => {
         }
       });
 
-    // Si falta algún idioma en JSON, intentar cargar desde los JS fuente
+    // Si falta algun idioma en JSON, intentar cargar desde los JS fuente
     const srcEntries = fs.existsSync(PRESETS_SOURCE_DIR) ? fs.readdirSync(PRESETS_SOURCE_DIR) : [];
     srcEntries
       .filter(n => /^defaults_presets_([a-z0-9-]+)\.js$/i.test(n))
@@ -1194,11 +1194,11 @@ ipcMain.handle("open-default-presets-folder", async () => {
 // Request to delete a preset (handles native dialogs + persistence)
 ipcMain.handle('request-delete-preset', async (_event, name) => {
   try {
-    // Cargar settings y textos de diálogo antes de cualquier mensaje
+    // Cargar settings y textos de dialogo antes de cualquier mensaje
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
     settings = normalizeSettings(settings);
     const dialogTexts = getDialogTexts(settings.language || 'es');
-    const yesLabel = dialogTexts.yes || 'Sí, continuar';
+    const yesLabel = dialogTexts.yes || 'Si, continuar';
     const noLabel = dialogTexts.no || 'No, cancelar';
 
     // If no name provided, show information dialog and exit
@@ -1208,7 +1208,7 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
           type: 'none',
           buttons: [dialogTexts.ok || 'Aceptar'],
           defaultId: 0,
-          message: dialogTexts.delete_preset_none || 'No hay ningún preset seleccionado para borrar'
+          message: dialogTexts.delete_preset_none || 'No hay ningun preset seleccionado para borrar'
         });
       } catch (e) {
         console.error("Error mostrando dialog no-selection:", e);
@@ -1222,7 +1222,7 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
       buttons: [yesLabel, noLabel],
       defaultId: 1,
       cancelId: 1,
-      message: (dialogTexts.delete_preset_message || `¿Eliminar el preset "{name}"?`).replace('{name}', name)
+      message: (dialogTexts.delete_preset_message || `Eliminar el preset "{name}"?`).replace('{name}', name)
     });
 
     if (conf.response !== 0) {
@@ -1327,14 +1327,14 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
 
     // Ask confirmation (native dialog)
     const dialogTexts = getDialogTexts(settings.language || 'es');
-    const yesLabel = dialogTexts.yes || 'Sí, continuar';
+    const yesLabel = dialogTexts.yes || 'Si, continuar';
     const noLabel = dialogTexts.no || 'No, cancelar';
     const conf = await dialog.showMessageBox(mainWin || null, {
       type: 'none',
       buttons: [yesLabel, noLabel],
       defaultId: 1,
       cancelId: 1,
-      message: (dialogTexts.restore_defaults_message || `¿Restaurar presets por defecto (generales y para el idioma "{lang}") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.`).replace('{lang}', lang)
+      message: (dialogTexts.restore_defaults_message || `Restaurar presets por defecto (generales y para el idioma "{lang}") a su version original? Esto revertira las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.`).replace('{lang}', lang)
     });
 
     if (conf.response !== 0) {
@@ -1408,7 +1408,7 @@ ipcMain.handle('notify-no-selection-edit', async () => {
       type: 'none',
       buttons: [(dialogTexts && dialogTexts.ok) || 'Aceptar'],
       defaultId: 0,
-      message: (dialogTexts && dialogTexts.edit_preset_none) || 'No hay ningún preset seleccionado para editar'
+      message: (dialogTexts && dialogTexts.edit_preset_none) || 'No hay ningun preset seleccionado para editar'
     });
     return { ok: true };
   } catch (e) {
@@ -1424,20 +1424,20 @@ ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
       return { ok: false, code: 'NO_ORIGINAL_NAME' };
     }
 
-    // Cargar settings y textos de diálogo antes de la confirmación
+    // Cargar settings y textos de dialogo antes de la confirmacion
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
     settings = normalizeSettings(settings);
     const dialogTexts = getDialogTexts(settings.language || 'es');
 
     // Ask confirmation (native dialog)
-    const yesLabel = dialogTexts.yes || 'Sí, continuar';
+    const yesLabel = dialogTexts.yes || 'Si, continuar';
     const noLabel = dialogTexts.no || 'No, cancelar';
     const conf = await dialog.showMessageBox(mainWin || null, {
       type: 'none',
       buttons: [yesLabel, noLabel],
       defaultId: 1,
       cancelId: 1,
-      message: (dialogTexts.edit_preset_confirm || `¿Está seguro de editar "{name}" por el actual?`).replace('{name}', originalName)
+      message: (dialogTexts.edit_preset_confirm || `Esta seguro de editar "{name}" por el actual?`).replace('{name}', originalName)
     });
 
     if (conf.response !== 0) {
