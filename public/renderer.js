@@ -45,56 +45,35 @@ let idiomaActual = "es";      // se inicializa al arrancar
 let settingsCache = {};       // cache de settings (numberFormatting, language, etc.)
 
 // --- i18n renderer translations cache ---
-let rendererTranslations = null;
-let rendererTranslationsLang = null;
+const i18nModule = (typeof window !== "undefined") ? window.RendererI18n : null;
+console.debug(i18nModule ? "[renderer] RendererI18n detectado (modulo)" : "[renderer] RendererI18n NO disponible");
 
-async function loadRendererTranslations(lang) {
-  const target = (lang || "").toLowerCase() || "es";
-  if (rendererTranslations && rendererTranslationsLang === target) return rendererTranslations;
-  try {
-    const resp = await fetch(`../i18n/${target}/renderer.json`);
-    if (resp && resp.ok) {
-      const raw = await resp.text();
-      const cleaned = raw.replace(/^\uFEFF/, ""); // strip BOM if present
-      const data = JSON.parse(cleaned || "{}");
-      rendererTranslations = data;
-      rendererTranslationsLang = target;
-      return data;
-    }
-  } catch (e) {
-    console.warn("No se pudieron cargar traducciones de renderer:", e);
+const loadRendererTranslations = async (lang) => {
+  if (i18nModule && typeof i18nModule.loadRendererTranslations === "function") {
+    return await i18nModule.loadRendererTranslations(lang);
   }
-  rendererTranslations = null;
-  rendererTranslationsLang = null;
+  console.error("[renderer] loadRendererTranslations no disponible");
   return null;
-}
+};
 
-function tRenderer(path, fallback) {
-  if (!rendererTranslations) return fallback;
-  const parts = path.split(".");
-  let cur = rendererTranslations;
-  for (const p of parts) {
-    if (cur && Object.prototype.hasOwnProperty.call(cur, p)) {
-      cur = cur[p];
-    } else {
-      return fallback;
-    }
+const tRenderer = (path, fallback) => {
+  if (i18nModule && typeof i18nModule.tRenderer === "function") {
+    return i18nModule.tRenderer(path, fallback);
   }
-  return (typeof cur === "string") ? cur : fallback;
-}
+  console.error("[renderer] tRenderer no disponible");
+  return fallback;
+};
 
-function msgRenderer(path, params = {}, fallback = "") {
-  let str = tRenderer(path, fallback);
-  if (!str) return fallback;
-  Object.keys(params || {}).forEach(k => {
-    const val = params[k];
-    str = str.replace(new RegExp(`\\{${k}\\}`, "g"), String(val));
-  });
-  return str;
-}
+const msgRenderer = (path, params = {}, fallback = "") => {
+  if (i18nModule && typeof i18nModule.msgRenderer === "function") {
+    return i18nModule.msgRenderer(path, params, fallback);
+  }
+  console.error("[renderer] msgRenderer no disponible");
+  return fallback;
+};
 
 function applyTranslations() {
-  if (!rendererTranslations) return;
+  if (!i18nModule) return;
   // Botones principales
   if (btnCountClipboard) btnCountClipboard.textContent = tRenderer("renderer.main.buttons.overwrite_clipboard", btnCountClipboard.textContent || "");
   if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.textContent = tRenderer("renderer.main.buttons.append_clipboard_newline", btnAppendClipboardNewLine.textContent || "");
