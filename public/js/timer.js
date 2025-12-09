@@ -41,13 +41,22 @@
     return 0;
   }
 
-  function uiResetTimer({ timerDisplay, realWpmDisplay, tToggle }) {
+  function uiResetTimer({ timerDisplay, realWpmDisplay, tToggle, playLabel = '>' }) {
     if (timerDisplay) timerDisplay.value = "00:00:00";
     if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
-    if (tToggle) tToggle.textContent = '>';
+    if (tToggle) tToggle.textContent = playLabel;
   }
 
-  async function openFloating({ electronAPI, toggleVF, timerDisplay, timerEditing, tToggle, setElapsedRunning }) {
+  async function openFloating({
+    electronAPI,
+    toggleVF,
+    timerDisplay,
+    timerEditing,
+    tToggle,
+    setElapsedRunning,
+    playLabel = '>',
+    pauseLabel = '||'
+  }) {
     if (!electronAPI || typeof electronAPI.openFloatingWindow !== 'function') {
       console.warn("openFloatingWindow no disponible en electronAPI");
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
@@ -70,7 +79,7 @@
             if (timerDisplay && !timerEditing) {
               timerDisplay.value = state.display || formatTimer(elapsed);
             }
-            if (tToggle) tToggle.textContent = running ? '||' : '>';
+            if (tToggle) tToggle.textContent = running ? pauseLabel : playLabel;
             return { elapsed, running, display: timerDisplay ? timerDisplay.value : state.display };
           }
         } catch (e) {
@@ -179,7 +188,9 @@
     formatearNumero,
     idiomaActual,
     prevRunning = false,
-    lastComputedElapsedForWpm = null
+    lastComputedElapsedForWpm = null,
+    playLabel = '>',
+    pauseLabel = '||'
   }) {
     const newElapsed = typeof state?.elapsed === 'number' ? state.elapsed : 0;
     const newRunning = !!state?.running;
@@ -188,7 +199,7 @@
       timerDisplay.value = state?.display || formatTimer(newElapsed);
     }
 
-    if (tToggle) tToggle.textContent = newRunning ? '||' : '>';
+    if (tToggle) tToggle.textContent = newRunning ? pauseLabel : playLabel;
 
     let updatedLast = lastComputedElapsedForWpm;
     const becamePaused = prevRunning === true && newRunning === false;

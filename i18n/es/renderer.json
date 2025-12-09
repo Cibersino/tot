@@ -47,7 +47,9 @@
         "speed": "Velocidad:",
         "controls_label": "Controles del cronómetro",
         "floating": "Ventana flotante",
-        "floating_short": "VF"
+        "floating_short": "VF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
       },
       "spare": {
         "title": "Sección disponible"

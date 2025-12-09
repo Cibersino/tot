@@ -47,7 +47,9 @@
         "speed": "Speed:",
         "controls_label": "Stopwatch controls",
         "floating": "Floating window",
-        "floating_short": "FW"
+        "floating_short": "FW",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
       },
       "spare": {
         "title": "Available section"

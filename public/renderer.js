@@ -108,6 +108,8 @@ function applyTranslations() {
     const ariaLabel = tRenderer("renderer.main.timer.controls_label", timerControls.getAttribute("aria-label") || "");
     if (ariaLabel) timerControls.setAttribute("aria-label", ariaLabel);
   }
+  const labelsCrono = getTimerLabels();
+  if (tToggle) tToggle.textContent = running ? labelsCrono.pauseLabel : labelsCrono.playLabel;
 
   // Etiqueta abreviada de la ventana flotante
   const vfLabel = document.querySelector(".vf-label");
@@ -267,7 +269,8 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
         formatearNumero,
         idiomaActual,
         prevRunning,
-        lastComputedElapsedForWpm
+        lastComputedElapsedForWpm,
+        ...getTimerLabels()
       });
       if (res) {
         elapsed = res.elapsed;
@@ -1057,6 +1060,11 @@ function hideManualLoader() {
 
 const timerModule = (typeof window !== "undefined") ? window.RendererTimer : null;
 
+const getTimerLabels = () => ({
+  playLabel: tRenderer ? tRenderer("renderer.main.timer.play_symbol", ">") : ">",
+  pauseLabel: tRenderer ? tRenderer("renderer.main.timer.pause_symbol", "||") : "||"
+});
+
 const formatTimer = (ms) => timerModule.formatTimer(ms);
 
 const actualizarVelocidadRealFromElapsed = (ms) => timerModule.actualizarVelocidadRealFromElapsed({
@@ -1073,7 +1081,8 @@ const uiResetTimer = () => {
   elapsed = 0;
   running = false;
   prevRunning = false;
-  timerModule.uiResetTimer({ timerDisplay, realWpmDisplay, tToggle });
+  const { playLabel } = getTimerLabels();
+  timerModule.uiResetTimer({ timerDisplay, realWpmDisplay, tToggle, playLabel });
 };
 
 tToggle.addEventListener('click', () => {
@@ -1097,6 +1106,7 @@ const openFloating = async () => {
     timerDisplay,
     timerEditing,
     tToggle,
+    ...getTimerLabels(),
     setElapsedRunning: (elapsedVal, runningVal) => {
       elapsed = elapsedVal;
       running = runningVal;
@@ -1149,6 +1159,7 @@ const applyManualTime = () => {
     formatearNumero,
     idiomaActual,
     realWpmDisplay,
+    ...getTimerLabels(),
     setElapsed: (msVal) => { elapsed = msVal; return elapsed; },
     setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; }
   });
