@@ -26,8 +26,10 @@ function renderState(state) {
   if (timerEl) {
     if (state.display) {
       timerEl.textContent = state.display;
+    } else if (typeof state.elapsed === 'number' && window.RendererTimer && typeof window.RendererTimer.formatTimer === 'function') {
+      timerEl.textContent = window.RendererTimer.formatTimer(state.elapsed);
     } else if (typeof state.elapsed === 'number') {
-    // fallback: formateo simple de segundos
+      // fallback simple
       const totalSeconds = Math.floor(state.elapsed / 1000);
       const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
       const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
