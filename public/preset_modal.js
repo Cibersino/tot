@@ -19,9 +19,21 @@
       return;
     }
 
+    const { AppConstants } = window;
+    if (!AppConstants) {
+      throw new Error("[preset_modal] AppConstants no disponible; verifica la carga de constants.js");
+    }
+    const { PRESET_DESC_MAX, PRESET_NAME_MAX, WPM_MIN, WPM_MAX } = AppConstants;
+
     // Configuracion inicial
-    const descMaxLength = 120;
-    const nameMaxLength = 13;
+    const descMaxLength = PRESET_DESC_MAX;
+    const nameMaxLength = PRESET_NAME_MAX;
+    if (wpmEl) {
+      wpmEl.min = String(WPM_MIN);
+      wpmEl.max = String(WPM_MAX);
+    }
+    if (nameEl) nameEl.maxLength = nameMaxLength;
+    if (descEl) descEl.maxLength = descMaxLength;
 
     let mode = 'new';
     let originalName = null;
@@ -116,7 +128,7 @@
         alert(tr("renderer.preset_alerts.name_empty", "Error."));
         return null;
       }
-      if (!Number.isFinite(wpm) || wpm < 50 || wpm > 500) {
+      if (!Number.isFinite(wpm) || wpm < WPM_MIN || wpm > WPM_MAX) {
         alert(tr("renderer.preset_alerts.wpm_invalid", "Error."));
         return null;
       }
