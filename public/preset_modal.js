@@ -125,13 +125,23 @@
       const desc = (descEl.value || '').trim();
 
       if (!name) {
-        alert(tr("renderer.preset_alerts.name_empty", "Error."));
+        if (window.Notify && typeof window.Notify.notifyMain === "function") {
+          window.Notify.notifyMain("renderer.preset_alerts.name_empty", "Error.");
+        } else {
+          alert(tr("renderer.preset_alerts.name_empty", "Error."));
+        }
         return null;
       }
+
       if (!Number.isFinite(wpm) || wpm < WPM_MIN || wpm > WPM_MAX) {
-        alert(tr("renderer.preset_alerts.wpm_invalid", "Error."));
+        if (window.Notify && typeof window.Notify.notifyMain === "function") {
+          window.Notify.notifyMain("renderer.preset_alerts.wpm_invalid", "Error.");
+        } else {
+          alert(tr("renderer.preset_alerts.wpm_invalid", "Error."));
+        }
         return null;
       }
+
       return { name, wpm: Math.round(wpm), description: desc };
     }
 
@@ -163,7 +173,11 @@
               window.close();
             } else {
               if (res && res.code === 'CANCELLED') return;
-              alert(tr("renderer.preset_alerts.edit_error", "Error."));
+              if (window.Notify && typeof window.Notify.notifyMain === "function") {
+                window.Notify.notifyMain("renderer.preset_alerts.edit_error", "Error.");
+              } else {
+                alert(tr("renderer.preset_alerts.edit_error", "Error."));
+              }
               console.error('Error editando preset (respuesta):', res);
             }
           }
@@ -173,13 +187,21 @@
             if (res && res.ok) {
               window.close();
             } else {
-              alert(tr("renderer.preset_alerts.create_error", "Error."));
+              if (window.Notify && typeof window.Notify.notifyMain === "function") {
+                window.Notify.notifyMain("renderer.preset_alerts.create_error", "Error.");
+              } else {
+                alert(tr("renderer.preset_alerts.create_error", "Error."));
+              }
               console.error('Error creando preset (respuesta):', res);
             }
           }
         }
       } catch (err) {
-        alert(tr("renderer.preset_alerts.process_error", "Error."));
+        if (window.Notify && typeof window.Notify.notifyMain === "function") {
+          window.Notify.notifyMain("renderer.preset_alerts.process_error", "Error.");
+        } else {
+          alert(tr("renderer.preset_alerts.process_error", "Error."));
+        }
         console.error('Error en save preset:', err);
       }
     });
