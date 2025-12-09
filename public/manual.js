@@ -1,15 +1,22 @@
 // public/manual.js
 console.log("Manual editor starting...");
 
-let MAX_TEXT_CHARS = 1e7; // Limite absoluto del tamano del texto en el editor. Si el contenido total supera este valor, se trunca. Previene cuelgues, lags extremos y OOM.
-const PASTE_ALLOW_LIMIT = 1e4; // Umbral que determina si se permite que el editor de texto haga la insercion nativa en paste/drop.
-const SMALL_UPDATE_THRESHOLD = 2e5; // Define cuando una actualizacion externa (desde main) debe aplicarse con mecanismo nativo (rapido, conserva undo/redo) o mediante reemplazo completo del value (mas seguro pero incompatible con undo/redo).
+const { AppConstants } = window;
+if (!AppConstants) {
+  throw new Error("[manual] AppConstants no disponible; verifica la carga de constants.js");
+}
+let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Limite absoluto del tamano del texto en el editor. Si el contenido total supera este valor, se trunca. Previene cuelgues, lags extremos y OOM.
+const PASTE_ALLOW_LIMIT = AppConstants.PASTE_ALLOW_LIMIT; // Umbral que determina si se permite que el editor de texto haga la insercion nativa en paste/drop.
+const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Define cuando una actualizacion externa (desde main) debe aplicarse con mecanismo nativo (rapido, conserva undo/redo) o mediante reemplazo completo del value (mas seguro pero incompatible con undo/redo).
 
 (async () => {
   try {
     const cfg = await window.manualAPI.getAppConfig();
-    if (cfg && cfg.maxTextChars) MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
-    // si quieres exponer otros umbrales desde main mas adelante, puedes agregarlos al cfg
+    if (AppConstants && typeof AppConstants.applyConfig === "function") {
+      MAX_TEXT_CHARS = AppConstants.applyConfig(cfg);
+    } else if (cfg && cfg.maxTextChars) {
+      MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
+    }
   } catch (e) {
     console.error("manual: no se pudo obtener getAppConfig, usando defaults:", e);
   }

@@ -1,5 +1,20 @@
 console.log("Renderer main starting...");
 
+const { AppConstants } = window;
+if (!AppConstants) {
+  throw new Error("[renderer] AppConstants no disponible; verifica la carga de constants.js");
+}
+
+const {
+  WPM_MIN,
+  WPM_MAX,
+  PREVIEW_INLINE_THRESHOLD,
+  PREVIEW_START_CHARS,
+  PREVIEW_END_CHARS,
+  TIMER_PLAY_SYMBOL,
+  TIMER_PAUSE_SYMBOL
+} = AppConstants;
+
 const textPreview = document.getElementById('textPreview');
 const btnCountClipboard = document.getElementById('btnCountClipboard');
 const btnAppendClipboardNewLine = document.getElementById('btnAppendClipboardNewLine');
@@ -16,6 +31,14 @@ const toggleModoPreciso = document.getElementById('toggleModoPreciso');
 
 const wpmSlider = document.getElementById('wpmSlider');
 const wpmInput = document.getElementById('wpmInput');
+if (wpmSlider) {
+  wpmSlider.min = String(WPM_MIN);
+  wpmSlider.max = String(WPM_MAX);
+}
+if (wpmInput) {
+  wpmInput.min = String(WPM_MIN);
+  wpmInput.max = String(WPM_MAX);
+}
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
 const selectorTitle = document.getElementById('selector-title');
@@ -37,7 +60,7 @@ const presetDescription = document.getElementById('presetDescription');
 let currentText = "";
 
 // Limite local en renderer para evitar concatenaciones que creen strings demasiado grandes
-let MAX_TEXT_CHARS = 1e7; // valor por defecto hasta que main responda
+let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // valor por defecto hasta que main responda
 
 // --- Cache y estado global para conteo / idioma ---
 let modoConteo = "preciso";   // preciso por defecto; puede ser "simple"
@@ -127,7 +150,11 @@ function applyTranslations() {
 (async () => {
   try {
     const cfg = await window.electronAPI.getAppConfig();
-    if (cfg && cfg.maxTextChars) MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
+    if (AppConstants && typeof AppConstants.applyConfig === "function") {
+      MAX_TEXT_CHARS = AppConstants.applyConfig(cfg);
+    } else if (cfg && cfg.maxTextChars) {
+      MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
+    }
   } catch (e) {
     console.error("No se pudo obtener getAppConfig, usando defaults:", e);
   }
@@ -201,11 +228,11 @@ async function updatePreviewAndResults(text) {
   if (n === 0) {
     const emptyMsg = tRenderer("renderer.main.selector_empty", "(empty)");
     textPreview.textContent = emptyMsg;
-  } else if (n <= 200) {
+  } else if (n <= PREVIEW_INLINE_THRESHOLD) {
     textPreview.textContent = displayText;
   } else {
-    const start = displayText.slice(0, 350); // PREVIEW TEXTO VIGENTE VENTANA PRINCIPAL
-    const end = displayText.slice(-230);
+    const start = displayText.slice(0, PREVIEW_START_CHARS); // PREVIEW TEXTO VIGENTE VENTANA PRINCIPAL
+    const end = displayText.slice(-PREVIEW_END_CHARS);
     textPreview.textContent = `${start}... | ...${end}`;
   }
 
@@ -778,8 +805,8 @@ wpmSlider.addEventListener('input', () => {
 
 wpmInput.addEventListener('blur', () => {
   let val = Number(wpmInput.value);
-  if (isNaN(val)) val = 200;
-  val = Math.min(Math.max(val, 50), 500);
+  if (isNaN(val)) val = Number(wpmSlider.value) || WPM_MIN;
+  val = Math.min(Math.max(val, WPM_MIN), WPM_MAX);
   wpm = val;
   wpmInput.value = wpm;
   wpmSlider.value = wpm;
@@ -1047,8 +1074,8 @@ function hideManualLoader() {
 const timerModule = (typeof window !== "undefined") ? window.RendererTimer : null;
 
 const getTimerLabels = () => ({
-  playLabel: tRenderer ? tRenderer("renderer.main.timer.play_symbol", ">") : ">",
-  pauseLabel: tRenderer ? tRenderer("renderer.main.timer.pause_symbol", "||") : "||"
+  playLabel: tRenderer ? tRenderer("renderer.main.timer.play_symbol", TIMER_PLAY_SYMBOL) : TIMER_PLAY_SYMBOL,
+  pauseLabel: tRenderer ? tRenderer("renderer.main.timer.pause_symbol", TIMER_PAUSE_SYMBOL) : TIMER_PAUSE_SYMBOL
 });
 
 const formatTimer = (ms) => timerModule.formatTimer(ms);
