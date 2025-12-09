@@ -167,6 +167,70 @@
     return msRounded;
   }
 
+  function handleCronoState({
+    state,
+    timerDisplay,
+    timerEditing,
+    tToggle,
+    realWpmDisplay,
+    currentText,
+    contarTexto,
+    obtenerSeparadoresDeNumeros,
+    formatearNumero,
+    idiomaActual,
+    prevRunning = false,
+    lastComputedElapsedForWpm = null
+  }) {
+    const newElapsed = typeof state?.elapsed === 'number' ? state.elapsed : 0;
+    const newRunning = !!state?.running;
+
+    if (timerDisplay && !timerEditing) {
+      timerDisplay.value = state?.display || formatTimer(newElapsed);
+    }
+
+    if (tToggle) tToggle.textContent = newRunning ? '||' : '>';
+
+    let updatedLast = lastComputedElapsedForWpm;
+    const becamePaused = prevRunning === true && newRunning === false;
+    if (becamePaused) {
+      actualizarVelocidadRealFromElapsed({
+        ms: newElapsed,
+        currentText,
+        contarTexto,
+        obtenerSeparadoresDeNumeros,
+        formatearNumero,
+        idiomaActual,
+        realWpmDisplay
+      });
+      updatedLast = newElapsed;
+    } else if (!newRunning) {
+      if (updatedLast === null || updatedLast !== newElapsed) {
+        actualizarVelocidadRealFromElapsed({
+          ms: newElapsed,
+          currentText,
+          contarTexto,
+          obtenerSeparadoresDeNumeros,
+          formatearNumero,
+          idiomaActual,
+          realWpmDisplay
+        });
+        updatedLast = newElapsed;
+      }
+    }
+
+    if (!newRunning && newElapsed === 0 && !timerEditing) {
+      uiResetTimer({ timerDisplay, realWpmDisplay, tToggle });
+      updatedLast = 0;
+    }
+
+    return {
+      elapsed: newElapsed,
+      running: newRunning,
+      prevRunning: newRunning,
+      lastComputedElapsedForWpm: updatedLast
+    };
+  }
+
   window.RendererTimer = {
     formatTimer,
     parseTimerInput,
@@ -174,6 +238,7 @@
     uiResetTimer,
     openFloating,
     closeFloating,
-    applyManualTime
+    applyManualTime,
+    handleCronoState
   };
 })();
