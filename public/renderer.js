@@ -47,7 +47,7 @@ let settingsCache = {};       // cache de settings (numberFormatting, language, 
 // --- i18n renderer translations cache ---
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
-  console.error("[renderer] RendererI18n no disponible");
+  throw new Error("[renderer] RendererI18n no disponible; no se puede continuar");
 }
 
 function applyTranslations() {
@@ -167,19 +167,13 @@ if (!combinePresets || !fillPresetsSelect || !applyPresetSelection || !loadPrese
 }
 
 // ======================= Conteo de texto =======================
-const { contarTextoSimple, hasIntlSegmenter, contarTextoPrecisoFallback, contarTextoPreciso, contarTexto: contarTextoModulo } = window.CountUtils || {};
-if (!contarTextoModulo) {
-  console.error("[renderer] CountUtils no disponible");
+const { contarTexto: contarTextoModulo } = window.CountUtils || {};
+if (typeof contarTextoModulo !== "function") {
+  throw new Error("[renderer] CountUtils no disponible; no se puede continuar");
 }
 
 function contarTexto(texto) {
-  if (contarTextoModulo) {
-    return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
-  }
-  // fallback mínimo en caso extremo
-  return (modoConteo === "simple")
-    ? { conEspacios: texto.length, sinEspacios: texto.replace(/\s+/g, '').length, palabras: texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length }
-    : { conEspacios: texto.length, sinEspacios: texto.replace(/\s+/g, '').length, palabras: texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length };
+  return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
 }
 
 // Helpers para actualizar modo / idioma desde otras partes (p. ej. menu)
@@ -937,19 +931,22 @@ btnEditPreset.addEventListener('click', async () => {
     }
 
     // Find preset data from cache
-    const preset = allPresetsCache.find(p => p.name === selectedName);
-    if (!preset) {
-      alert(tRenderer("renderer.alerts.preset_not_found", "Error."));
-      return;
-    }
+  const preset = allPresetsCache.find(p => p.name === selectedName);
+  if (!preset) {
+    alert(tRenderer("renderer.alerts.preset_not_found", "Error."));
+    return;
+  }
 
-    // Open modal in edit mode. We pass an object with mode and the preset data.
-    const payload = { wpm: wpm, mode: 'edit', preset: preset };
-    if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
-      window.electronAPI.openPresetModal(payload);
-    } else {
-      alert(tRenderer("renderer.alerts.edit_unavailable", "Error."));
-    }
+  // Open modal in edit mode. We pass an object with mode and the preset data.
+  const payload = { wpm: wpm, mode: 'edit', preset: preset };
+  try {
+    console.debug("[renderer] openPresetModal payload:", payload);
+  } catch (e) { /* noop */ }
+  if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
+    window.electronAPI.openPresetModal(payload);
+  } else {
+    alert(tRenderer("renderer.alerts.edit_unavailable", "Error."));
+  }
   } catch (e) {
     console.error("Error abriendo modal de editar preset:", e);
     alert(tRenderer("renderer.alerts.edit_error", "Error."));
