@@ -3,7 +3,7 @@ const timerEl = document.getElementById('timer');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
 
-// defensivo: si algún elemento no existe, salimos silenciosamente (evita crashes)
+// defensivo: si algun elemento no existe, salimos silenciosamente (evita crashes)
 if (!timerEl) {
   console.error("flotante: element #timer no encontrado");
 }
@@ -20,7 +20,7 @@ let lastState = { elapsed: 0, running: false, display: "00:00:00" };
 function renderState(state) {
   if (!state) return;
   lastState = Object.assign({}, lastState, state || {});
-  // Preferimos display si lo envían
+  // Preferimos display si lo envian
   if (timerEl) {
     if (state.display) {
       timerEl.textContent = state.display;
@@ -33,8 +33,8 @@ function renderState(state) {
       timerEl.textContent = `${h}:${m}:${s}`;
     }
   }
-  // Estado del botón
-  if (btnToggle) btnToggle.textContent = state.running ? '⏸' : '▶';
+  // Estado del boton
+  if (btnToggle) btnToggle.textContent = state.running ? '||' : '>';
 }
 
 if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
@@ -44,7 +44,7 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
   });
 }
 
-// Botones: envían comandos al main
+// Botones: envian comandos al main
 btnToggle.addEventListener('click', () => {
   if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'toggle' });
 });

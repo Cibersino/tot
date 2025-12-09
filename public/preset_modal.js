@@ -3,7 +3,7 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', function () {
-    // Selección de elementos del DOM
+    // Seleccion de elementos del DOM
     const h3El = document.querySelector('h3');
     const nameEl = document.getElementById('presetName');
     const wpmEl = document.getElementById('presetWpm');
@@ -15,11 +15,11 @@
 
     // Si faltan elementos, abortamos y dejamos un aviso en consola.
     if (!nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
-      console.warn('preset_modal: elementos del DOM faltantes. El script del modal no se inicializó.');
+      console.warn('preset_modal: elementos del DOM faltantes. El script del modal no se inicializo.');
       return;
     }
 
-    // Configuración inicial
+    // Configuracion inicial
     const descMaxLength = 120;
     const nameMaxLength = 13;
 
@@ -54,7 +54,7 @@
         const text = (lbl.textContent || "").trim();
         if (text.startsWith("Nombre") || text.startsWith("Name")) lbl.childNodes[0].textContent = tr("renderer.modal_preset.name", text);
         if (text.startsWith("WPM")) lbl.childNodes[0].textContent = tr("renderer.modal_preset.wpm", text);
-        if (text.startsWith("Descripción") || text.startsWith("Descripci") || text.startsWith("Description")) lbl.childNodes[0].textContent = tr("renderer.modal_preset.description", text);
+        if (text.startsWith("Descripcion") || text.startsWith("Descripci") || text.startsWith("Description")) lbl.childNodes[0].textContent = tr("renderer.modal_preset.description", text);
       });
       if (nameEl && nameEl.placeholder) nameEl.placeholder = tr("renderer.modal_preset.placeholder", nameEl.placeholder);
       if (descEl && descEl.placeholder) descEl.placeholder = tr("renderer.modal_preset.placeholder", descEl.placeholder);
@@ -106,7 +106,7 @@
       }
     }
 
-    // Función helper para construir preset desde inputs (validaciones mínimas)
+    // Funcion helper para construir preset desde inputs (validaciones minimas)
     function buildPresetFromInputs() {
       const name = (nameEl.value || '').trim();
       const wpm = Number(wpmEl.value);
@@ -185,7 +185,7 @@
       }
     });
 
-    // Inicial: actualizar contador de caracteres si ya había texto
+    // Inicial: actualizar contador de caracteres si ya habia texto
     (async function initCharCount() {
       const currLen = descEl.value ? descEl.value.length : 0;
       charCountEl.textContent = mr("renderer.modal_preset.char_count", { remaining: Math.max(0, descMaxLength - currLen) }, `${Math.max(0, descMaxLength - currLen)} caracteres restantes`);
