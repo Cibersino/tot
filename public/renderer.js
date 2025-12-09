@@ -180,6 +180,41 @@ let currentPresetName = null;
 // Cache local de presets (lista completa cargada una vez)
 let allPresetsCache = [];
 
+// ======================= Presets module =======================
+const presetsModule = (typeof window !== "undefined") ? window.RendererPresets : null;
+console.debug(presetsModule ? "[renderer] RendererPresets detectado (modulo)" : "[renderer] RendererPresets NO disponible");
+
+function combinePresetsLocal(settings = {}, defaults = {}) {
+  const lang = settings.language || "es";
+  const userPresets = Array.isArray(settings.presets) ? settings.presets.slice() : [];
+  const generalDefaults = Array.isArray(defaults.general) ? defaults.general.slice() : [];
+  const langPresets = (defaults.languagePresets && defaults.languagePresets[lang] && Array.isArray(defaults.languagePresets[lang]))
+    ? defaults.languagePresets[lang]
+    : [];
+
+  let combined = generalDefaults.concat(langPresets);
+  const disabledByUser = (settings.disabled_default_presets && Array.isArray(settings.disabled_default_presets[lang]))
+    ? settings.disabled_default_presets[lang]
+    : [];
+  if (disabledByUser.length > 0) {
+    combined = combined.filter(p => !disabledByUser.includes(p.name));
+  }
+
+  const map = new Map();
+  combined.forEach(p => map.set(p.name, Object.assign({}, p)));
+  userPresets.forEach(up => map.set(up.name, Object.assign({}, up)));
+
+  return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+const combinePresets = (settings, defaults) => {
+  if (presetsModule && typeof presetsModule.combinePresets === "function") {
+    return presetsModule.combinePresets({ settings, defaults });
+  }
+  console.error("[renderer] RendererPresets.combinePresets no disponible, usando logica local");
+  return combinePresetsLocal(settings, defaults);
+};
+
 // ======================= Conteo de texto =======================
 // Preferir modulo CountUtils; si falta, registrar error (sin duplicar logica)
 const countModule = (typeof window !== "undefined") ? window.CountUtils : null;
@@ -421,27 +456,7 @@ const loadPresets = async () => {
     defaults = { general: [], languagePresets: {} };
   }
 
-  // 1) Combinar defaults general + defaults idioma
-  let combined = Array.isArray(defaults.general) ? defaults.general.slice() : [];
-  const langPresets = (defaults.languagePresets && defaults.languagePresets[lang]) ? defaults.languagePresets[lang] : [];
-  if (Array.isArray(langPresets)) combined.push(...langPresets);
-
-  // 1.b) Aplicar lista de defaults ignorados desde settings (si existe)
-  const disabledByUser = (settings.disabled_default_presets && Array.isArray(settings.disabled_default_presets[lang])) ? settings.disabled_default_presets[lang] : [];
-  if (Array.isArray(disabledByUser) && disabledByUser.length > 0) {
-    combined = combined.filter(p => !disabledByUser.includes(p.name));
-  }
-
-  // 2) Aplicar "shadowing": los presets de usuario reemplazan por nombre, sin borrar los defaults
-  const map = new Map();
-  combined.forEach(p => map.set(p.name, Object.assign({}, p))); // defaults
-  userPresets.forEach(up => {
-    // Si usuario introdujo un preset con mismo nombre, lo sustituye (shadow) en el map
-    map.set(up.name, Object.assign({}, up));
-  });
-
-  // 3) Convertir a array y ordenar
-  const finalList = Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  const finalList = combinePresets(settings, defaults);
 
   // Guardar cache y poblar DOM del select
   allPresetsCache = finalList.slice();
