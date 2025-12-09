@@ -202,56 +202,48 @@ let currentPresetName = null;
 let allPresetsCache = [];
 
 // ======================= Conteo de texto =======================
-// Version simple
+// Preferir modulo CountUtils; si falta, registrar error (sin duplicar logica)
+const countModule = (typeof window !== "undefined") ? window.CountUtils : null;
+console.debug(countModule ? "[renderer] CountUtils detectado (modulo)" : "[renderer] CountUtils NO disponible");
+
 function contarTextoSimple(texto, language) {
-  const conEspacios = texto.length;
-  const sinEspacios = texto.replace(/\s+/g, '').length;
-  const palabras = texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length;
-  return { conEspacios, sinEspacios, palabras };
+  if (countModule && typeof countModule.contarTextoSimple === "function") {
+    return countModule.contarTextoSimple(texto, language);
+  }
+  console.error("[renderer] CountUtils.contarTextoSimple no disponible");
+  return { conEspacios: 0, sinEspacios: 0, palabras: 0 };
 }
 
 function hasIntlSegmenter() {
-  return typeof Intl !== "undefined" && typeof Intl.Segmenter === "function";
+  if (countModule && typeof countModule.hasIntlSegmenter === "function") {
+    return countModule.hasIntlSegmenter();
+  }
+  console.error("[renderer] CountUtils.hasIntlSegmenter no disponible");
+  return false;
 }
 
 function contarTextoPrecisoFallback(texto, language) {
-  // Fallback razonable: graphemes mediante spread (mejor que length) y palabras por regex simple
-  const graphemes = [...texto]; // no perfecto para todos los combining clusters pero superior a length
-  const conEspacios = graphemes.length;
-  const sinEspacios = graphemes.filter(c => !/\s/.test(c)).length;
-
-  // simple word extraction: sequences separated by whitespace (degradado al antiguo)
-  const palabras = texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length;
-
-  return { conEspacios, sinEspacios, palabras };
-}
-
-// Version precisa usando Intl.Segmenter
-// Fallback y comprobacion de soporte
-function contarTextoPreciso(texto, language) {
-  if (!hasIntlSegmenter()) {
-    // motor antiguo: usar fallback seguro
-    return contarTextoPrecisoFallback(texto, language);
+  if (countModule && typeof countModule.contarTextoPrecisoFallback === "function") {
+    return countModule.contarTextoPrecisoFallback(texto, language);
   }
-
-  // Si Intl.Segmenter existe, usar la implementacion precisa
-  const segGraf = new Intl.Segmenter(language, { granularity: "grapheme" });
-  const grafemas = [...segGraf.segment(texto)];
-
-  const conEspacios = grafemas.length;
-  const sinEspacios = grafemas.filter(g => !/\s/.test(g.segment)).length;
-
-  const segPal = new Intl.Segmenter(language, { granularity: "word" });
-  const palabras = [...segPal.segment(texto)]
-    .filter(seg => seg.isWordLike)
-    .length;
-
-  return { conEspacios, sinEspacios, palabras };
+  console.error("[renderer] CountUtils.precisoFallback no disponible");
+  return { conEspacios: 0, sinEspacios: 0, palabras: 0 };
 }
 
-// Dispatcher que selecciona el modo (simple/preciso). Preciso por defecto.
+function contarTextoPreciso(texto, language) {
+  if (countModule && typeof countModule.contarTextoPreciso === "function") {
+    return countModule.contarTextoPreciso(texto, language);
+  }
+  console.error("[renderer] CountUtils.preciso no disponible");
+  return { conEspacios: 0, sinEspacios: 0, palabras: 0 };
+}
+
+// Dispatcher que selecciona el modo (simple/preciso). Preciso por defecto. Sin fallback duplicado.
 function contarTexto(texto) {
-  // usar idiomaActual cargado al inicio
+  if (countModule && typeof countModule.contarTexto === "function") {
+    return countModule.contarTexto(texto, { modoConteo, idioma: idiomaActual });
+  }
+  // Degradar usando las funciones basicas del modulo si estan, si no, todo a cero
   return (modoConteo === "simple")
     ? contarTextoSimple(texto, idiomaActual)
     : contarTextoPreciso(texto, idiomaActual);
@@ -265,74 +257,52 @@ function setModoConteo(nuevoModo) {
 }
 
 // ======================= Formato HHh MMm SSs =======================
+const formatModule = (typeof window !== "undefined") ? window.FormatUtils : null;
+console.debug(formatModule ? "[renderer] FormatUtils detectado (modulo)" : "[renderer] FormatUtils NO disponible");
+
 function getTimeParts(words, wpm) {
-  if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };
-  const totalSeconds = Math.round((words / wpm) * 60);
-  return {
-    hours: Math.floor(totalSeconds / 3600),
-    minutes: Math.floor((totalSeconds % 3600) / 60),
-    seconds: totalSeconds % 60
-  };
+  if (formatModule && typeof formatModule.getTimeParts === "function") {
+    return formatModule.getTimeParts(words, wpm);
+  }
+  console.error("[renderer] FormatUtils.getTimeParts no disponible");
+  return { hours: 0, minutes: 0, seconds: 0 };
 }
 
 function formatTimeFromWords(words, wpm) {
-  const { hours, minutes, seconds } = getTimeParts(words, wpm);
-  return `${hours}h ${minutes}m ${seconds}s`;
+  if (formatModule && typeof formatModule.formatTimeFromWords === "function") {
+    return formatModule.formatTimeFromWords(words, wpm);
+  }
+  console.error("[renderer] FormatUtils.formatTimeFromWords no disponible");
+  return "0h 0m 0s";
 }
 
-// ======================= Number format defaults (i18n fallback) =======================
-const numberFormatDefaults = {};
 const loadNumberFormatDefaults = async (idioma) => {
-  const lang = (idioma || "").toLowerCase() || "es";
-  if (numberFormatDefaults[lang]) return numberFormatDefaults[lang];
-  try {
-    const resp = await fetch(`../i18n/${lang}/numberFormat.json`);
-    if (resp && resp.ok) {
-      const data = await resp.json();
-      if (data && data.numberFormat) {
-        numberFormatDefaults[lang] = data.numberFormat;
-        return data.numberFormat;
-      }
-    }
-  } catch (e) {
-    // noop
+  if (formatModule && typeof formatModule.loadNumberFormatDefaults === "function") {
+    return await formatModule.loadNumberFormatDefaults(idioma);
   }
-  if (lang.startsWith("en")) return { thousands: ",", decimal: "." };
+  console.error("[renderer] FormatUtils.loadNumberFormatDefaults no disponible");
+  if (idioma && (idioma.toLowerCase() || "").startsWith("en")) return { thousands: ",", decimal: "." };
   return { thousands: ".", decimal: "," };
 };
 
-// ======================= Obtener separadores de numeros segun el idioma (usa cache) =======================
 const obtenerSeparadoresDeNumeros = async (idioma) => {
-  // 1) User preference from settings
-  const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
-  if (nf && nf[idioma]) return nf[idioma];
-
-  // 2) Default from i18n numberFormat
-  try {
-    const def = await loadNumberFormatDefaults(idioma || "es");
-    if (def && def.thousands && def.decimal) {
-      return { separadorMiles: def.thousands, separadorDecimal: def.decimal };
-    }
-  } catch (e) {
-    // noop
+  if (formatModule && typeof formatModule.obtenerSeparadoresDeNumeros === "function") {
+    return await formatModule.obtenerSeparadoresDeNumeros(idioma, settingsCache);
   }
-
-  // 3) Fallback simple
+  console.error("[renderer] FormatUtils.obtenerSeparadoresDeNumeros no disponible");
   if (idioma && idioma.toLowerCase().startsWith('en')) {
     return { separadorMiles: ',', separadorDecimal: '.' };
   }
   return { separadorMiles: '.', separadorDecimal: ',' };
 };
 
-// ======================= Formatear numero con separadores de miles y decimales =======================
 const formatearNumero = (numero, separadorMiles, separadorDecimal) => {
-  // Convertir el numero a string con decimales si es necesario
+  if (formatModule && typeof formatModule.formatearNumero === "function") {
+    return formatModule.formatearNumero(numero, separadorMiles, separadorDecimal);
+  }
+  console.error("[renderer] FormatUtils.formatearNumero no disponible");
   let [entero, decimal] = numero.toFixed(0).split('.');
-
-  // Agregar separador de miles
   entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, separadorMiles);
-
-  // Si hay parte decimal, usar el separador adecuado
   return decimal ? `${entero}${separadorDecimal}${decimal}` : entero;
 };
 
