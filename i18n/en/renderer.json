@@ -92,7 +92,6 @@
     },
     "alerts": {
       "wip": "WIP: This feature will open in a future version: {feature}.",
-      "no_presets_folder": "Cannot open presets folder in this environment.",
       "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
       "clipboard_error": "An error occurred while pasting from clipboard. Check console.",
       "clear_error": "An error occurred while clearing text. Check console.",

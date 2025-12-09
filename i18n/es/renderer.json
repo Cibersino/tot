@@ -92,7 +92,6 @@
     },
     "alerts": {
       "wip": "WIP: Aquí se abrirá {feature} en una futura versión.",
-      "no_presets_folder": "No es posible abrir la carpeta de presets en este entorno.",
       "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.",
       "clipboard_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola.",
       "clear_error": "Ocurrió un error al vaciar el texto. Revisa la consola.",
