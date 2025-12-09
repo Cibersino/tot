@@ -679,7 +679,7 @@ const loadPresets = async () => {
 
   // Traduce el HTML cargado en el modal de info usando data-i18n y renderer.info.<key>.*
   function translateInfoHtml(htmlString, key) {
-    if (!rendererTranslations) return htmlString;
+    if (!i18nModule) return htmlString;
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(htmlString, "text/html");
