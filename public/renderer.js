@@ -1079,18 +1079,12 @@ const uiResetTimer = () => {
 tToggle.addEventListener('click', () => {
   if (window.electronAPI && typeof window.electronAPI.sendCronoToggle === 'function') {
     window.electronAPI.sendCronoToggle();
-  } else {
-    // Fallback local: invertir estado visual (no authoritative)
-    running = !running;
-    tToggle.textContent = running ? '||' : '>';
   }
 });
 
 tReset.addEventListener('click', () => {
   if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
     window.electronAPI.sendCronoReset();
-  } else {
-    uiResetTimer(); // fallback local (temporal)
   }
 });
 
