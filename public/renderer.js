@@ -184,35 +184,33 @@ let allPresetsCache = [];
 const presetsModule = (typeof window !== "undefined") ? window.RendererPresets : null;
 console.debug(presetsModule ? "[renderer] RendererPresets detectado (modulo)" : "[renderer] RendererPresets NO disponible");
 
-function combinePresetsLocal(settings = {}, defaults = {}) {
-  const lang = settings.language || "es";
-  const userPresets = Array.isArray(settings.presets) ? settings.presets.slice() : [];
-  const generalDefaults = Array.isArray(defaults.general) ? defaults.general.slice() : [];
-  const langPresets = (defaults.languagePresets && defaults.languagePresets[lang] && Array.isArray(defaults.languagePresets[lang]))
-    ? defaults.languagePresets[lang]
-    : [];
-
-  let combined = generalDefaults.concat(langPresets);
-  const disabledByUser = (settings.disabled_default_presets && Array.isArray(settings.disabled_default_presets[lang]))
-    ? settings.disabled_default_presets[lang]
-    : [];
-  if (disabledByUser.length > 0) {
-    combined = combined.filter(p => !disabledByUser.includes(p.name));
-  }
-
-  const map = new Map();
-  combined.forEach(p => map.set(p.name, Object.assign({}, p)));
-  userPresets.forEach(up => map.set(up.name, Object.assign({}, up)));
-
-  return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-}
-
 const combinePresets = (settings, defaults) => {
   if (presetsModule && typeof presetsModule.combinePresets === "function") {
     return presetsModule.combinePresets({ settings, defaults });
   }
-  console.error("[renderer] RendererPresets.combinePresets no disponible, usando logica local");
-  return combinePresetsLocal(settings, defaults);
+  console.error("[renderer] RendererPresets.combinePresets no disponible");
+  return [];
+};
+
+const fillPresetsSelect = (list, selectEl) => {
+  if (presetsModule && typeof presetsModule.fillPresetsSelect === "function") {
+    return presetsModule.fillPresetsSelect(list, selectEl);
+  }
+  console.error("[renderer] RendererPresets.fillPresetsSelect no disponible");
+};
+
+const applyPresetSelection = (preset, domRefs) => {
+  if (presetsModule && typeof presetsModule.applyPresetSelection === "function") {
+    return presetsModule.applyPresetSelection(preset, domRefs);
+  }
+  console.error("[renderer] RendererPresets.applyPresetSelection no disponible");
+};
+
+const loadPresetsIntoDom = async (opts) => {
+  if (presetsModule && typeof presetsModule.loadPresetsIntoDom === "function") {
+    return await presetsModule.loadPresetsIntoDom(opts);
+  }
+  throw new Error("RendererPresets.loadPresetsIntoDom no disponible");
 };
 
 // ======================= Conteo de texto =======================
@@ -440,41 +438,32 @@ async function mostrarVelocidadReal(realWpm) {
 
 // ======================= Cargar presets (fusionar + shadowing) =======================
 const loadPresets = async () => {
-  presetsSelect.innerHTML = "";
-
-  // Cargar settings de usuario (incluye presets personalizados)
-  const settings = (await window.electronAPI.getSettings()) || { language: "es", presets: [] };
-  const lang = settings.language || "es";
-  const userPresets = Array.isArray(settings.presets) ? settings.presets.slice() : [];
-
-  // Obtener presets por defecto desde el main process (electron/presets/*.js)
-  let defaults = { general: [], languagePresets: {} };
   try {
-    defaults = await window.electronAPI.getDefaultPresets();
-  } catch (e) {
-    console.error("Error obteniendo default presets desde main:", e);
-    defaults = { general: [], languagePresets: {} };
+    const res = await loadPresetsIntoDom({
+      electronAPI: window.electronAPI,
+      language: idiomaActual,
+      currentPresetName,
+      selectEl: presetsSelect,
+      wpmInput,
+      wpmSlider,
+      presetDescription
+    });
+    allPresetsCache = res && res.list ? res.list.slice() : [];
+    if (res && res.selected) {
+      currentPresetName = res.selected.name;
+      wpm = res.selected.wpm;
+    } else {
+      currentPresetName = null;
+    }
+    return allPresetsCache;
+  } catch (err) {
+    console.error("Error cargando presets:", err);
+    if (presetsSelect) presetsSelect.innerHTML = "";
+    if (presetDescription) presetDescription.textContent = "";
+    allPresetsCache = [];
+    currentPresetName = null;
+    return allPresetsCache;
   }
-
-  const finalList = combinePresets(settings, defaults);
-
-  // Guardar cache y poblar DOM del select
-  allPresetsCache = finalList.slice();
-  allPresetsCache.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.name;
-    opt.textContent = p.name;
-    presetsSelect.appendChild(opt);
-  });
-
-  // Si hay un preset actualmente seleccionado (por ejemplo re-inicializacion), reflejarlo
-  if (currentPresetName) {
-    presetsSelect.value = currentPresetName;
-  } else {
-    presetsSelect.selectedIndex = -1;
-  }
-
-  return allPresetsCache;
 };
 
 // ======================= Inicializacion =======================
@@ -501,12 +490,8 @@ const loadPresets = async () => {
             const found = updated.find(p => p.name === preset.name);
             if (found) {
               currentPresetName = found.name;
-              // fijar seleccion visual
-              presetsSelect.value = found.name;
+              applyPresetSelection(found, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
               wpm = found.wpm;
-              wpmInput.value = wpm;
-              wpmSlider.value = wpm;
-              presetDescription.textContent = found.description || "";
               updatePreviewAndResults(currentText);
             }
           }
@@ -523,11 +508,8 @@ const loadPresets = async () => {
     const initialPreset = allPresets.find(p => p.name === "default");
     if (initialPreset) {
       currentPresetName = initialPreset.name;
-      presetsSelect.value = currentPresetName; // fija la seleccion visualmente
+      applyPresetSelection(initialPreset, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
       wpm = initialPreset.wpm;
-      wpmInput.value = wpm;
-      wpmSlider.value = wpm;
-      presetDescription.textContent = initialPreset.description;
     }
 
     // Actualizar vista final con el posible WPM inicial
@@ -557,11 +539,8 @@ const loadPresets = async () => {
             }
             if (selected) {
               currentPresetName = selected.name;
-              presetsSelect.value = selected.name;
+              applyPresetSelection(selected, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
               wpm = selected.wpm;
-              wpmInput.value = wpm;
-              wpmSlider.value = wpm;
-              presetDescription.textContent = selected.description || "";
             }
           } catch (err) {
             console.error("Error recargando presets tras cambio de idioma:", err);
