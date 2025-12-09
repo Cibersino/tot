@@ -382,7 +382,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       }
 
       // Actualizar boton toggle
-      if (tToggle) tToggle.textContent = running ? '||' : '>';
+      if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
 
       // WPM: recalcular en los casos relevantes:
       //  - transicion running:true -> false (pausa): recalcular siempre
@@ -835,7 +835,7 @@ const loadPresets = async () => {
     });
 
     window.menuActions.registerMenuAction('contador_imagen', () => {
-      alert(tRenderer("renderer.alerts.wip_contador_imagen", "WIP"));
+      alert(tRenderer("renderer.alerts.wip_cargador_imagen", "WIP"));
     });
 
     window.menuActions.registerMenuAction('test_velocidad', () => {
@@ -866,7 +866,7 @@ const loadPresets = async () => {
       try {
         if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== "function") {
           console.warn("openDefaultPresetsFolder no disponible en electronAPI");
-          alert(tRenderer("renderer.alerts.open_presets_unsupported", "No es posible abrir la carpeta de presets en este entorno."));
+          alert(tRenderer("renderer.alerts.open_presets_unsupported", "Error."));
           return;
         }
 
@@ -880,10 +880,10 @@ const loadPresets = async () => {
         // en caso de fallo, informar al usuario
         const errMsg = res && res.error ? String(res.error) : "Desconocido";
         console.error("No se pudo abrir carpeta presets por defecto:", errMsg);
-        alert(tRenderer("renderer.alerts.open_presets_fail", "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para mas detalles."));
+        alert(tRenderer("renderer.alerts.open_presets_fail", "Error."));
       } catch (err) {
         console.error("Error abriendo carpeta presets por defecto:", err);
-        alert(tRenderer("renderer.alerts.open_presets_error", "Ocurrio un error al intentar abrir la carpeta de presets. Revisa la consola."));
+        alert(tRenderer("renderer.alerts.open_presets_error", "Error."));
       }
     });
 
@@ -988,7 +988,7 @@ btnCountClipboard.addEventListener("click", async () => {
     if (clip.length > MAX_TEXT_CHARS) {
       console.warn("Contenido del portapapeles supera 10000000 chars - sera truncado.");
       clip = clip.slice(0, MAX_TEXT_CHARS);
-      alert(tRenderer("renderer.editor_alerts.clipboard_overflow", "El texto del portapapeles supera el tamano maximo permitido y sera truncado."));
+      alert(tRenderer("renderer.editor_alerts.clipboard_overflow", "Error."));
     }
 
     // enviar objeto con meta (overwrite)
@@ -998,7 +998,7 @@ btnCountClipboard.addEventListener("click", async () => {
     });
 
     updatePreviewAndResults(resp && resp.text ? resp.text : clip);
-    resp && resp.truncated && alert(tRenderer("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al limite maximo de la aplicacion."));
+    resp && resp.truncated && alert(tRenderer("renderer.editor_alerts.text_truncated", "Error."));
   } catch (err) {
     console.error("clipboard error:", err);
   }
@@ -1015,7 +1015,7 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     const available = MAX_TEXT_CHARS - current.length;
     if (available <= 0) {
-      alert(tRenderer("renderer.editor_alerts.too_big", "No es posible agregar texto: ya se alcanzo el tamano maximo permitido."));
+      alert(tRenderer("renderer.editor_alerts.too_big", "Error."));
       return;
     }
 
@@ -1032,11 +1032,11 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     // notificar truncado solo si main lo confirma
     if (resp && resp.truncated) {
-      alert(tRenderer("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al limite maximo de la aplicacion."));
+      alert(tRenderer("renderer.editor_alerts.text_truncated", "Error."));
     }
   } catch (err) {
     console.error("Error pegando portapapeles en nueva linea:", err);
-    alert(tRenderer("renderer.editor_alerts.paste_error", "Ocurrio un error al pegar el portapapeles. Revisa la consola."));
+    alert(tRenderer("renderer.editor_alerts.paste_error", "Error."));
   }
 });
 
@@ -1064,7 +1064,7 @@ btnEmptyMain.addEventListener("click", async () => {
     }
   } catch (err) {
     console.error("Error vaciando texto desde pantalla principal:", err);
-    alert(tRenderer("renderer.alerts.clear_error", "Ocurrio un error al vaciar el texto. Revisa la consola."));
+    alert(tRenderer("renderer.alerts.clear_error", "Error."));
   }
 });
 
@@ -1084,7 +1084,7 @@ btnNewPreset.addEventListener('click', () => {
     } else {
       // Fallback: intentar usar prompt (rare platforms - but preload intentionally disabled prompt earlier)
       console.warn("openPresetModal no disponible en electronAPI");
-      alert(tRenderer("renderer.alerts.modal_unavailable", "Funcionalidad de modal no disponible."));
+      alert(tRenderer("renderer.alerts.modal_unavailable", "Error."));
     }
   } catch (e) {
     console.error("Error abriendo modal de nuevo preset:", e);
@@ -1101,7 +1101,7 @@ btnEditPreset.addEventListener('click', async () => {
         await window.electronAPI.notifyNoSelectionEdit();
         return;
       } else {
-        alert(tRenderer("renderer.alerts.edit_none", "No hay ningun preset seleccionado para editar"));
+        alert(tRenderer("renderer.alerts.edit_none", "Error."));
         return;
       }
     }
@@ -1109,7 +1109,7 @@ btnEditPreset.addEventListener('click', async () => {
     // Find preset data from cache
     const preset = allPresetsCache.find(p => p.name === selectedName);
     if (!preset) {
-      alert(tRenderer("renderer.alerts.preset_not_found", "Preset seleccionado no encontrado en cache."));
+      alert(tRenderer("renderer.alerts.preset_not_found", "Error."));
       return;
     }
 
@@ -1118,11 +1118,11 @@ btnEditPreset.addEventListener('click', async () => {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
     } else {
-      alert(tRenderer("renderer.alerts.edit_unavailable", "Funcionalidad de edicion no disponible."));
+      alert(tRenderer("renderer.alerts.edit_unavailable", "Error."));
     }
   } catch (e) {
     console.error("Error abriendo modal de editar preset:", e);
-    alert(tRenderer("renderer.alerts.edit_error", "Ocurrio un error al intentar editar el preset. Revisa la consola."));
+    alert(tRenderer("renderer.alerts.edit_error", "Error."));
   }
 });
 
@@ -1153,11 +1153,11 @@ btnDeletePreset.addEventListener('click', async () => {
       }
       // Unexpected error: log and show a simple alert
       console.error("Error deleting preset:", res && res.error ? res.error : res);
-      alert(tRenderer("renderer.alerts.delete_error", "Ocurrio un error al borrar el preset. Revisa la consola."));
+      alert(tRenderer("renderer.alerts.delete_error", "Error."));
     }
   } catch (e) {
     console.error("Error en peticion de borrado:", e);
-    alert(tRenderer("renderer.alerts.delete_error", "Ocurrio un error al borrar el preset. Revisa la consola."));
+    alert(tRenderer("renderer.alerts.delete_error", "Error."));
   }
 });
 
@@ -1183,11 +1183,11 @@ btnResetDefaultPresets.addEventListener('click', async () => {
         return;
       }
       console.error("Error restaurando presets:", res && res.error ? res.error : res);
-      alert(tRenderer("renderer.alerts.restore_error", "Ocurrio un error al restaurar presets. Revisa la consola."));
+      alert(tRenderer("renderer.alerts.restore_error", "Error."));
     }
   } catch (e) {
     console.error("Error en peticion de restaurar presets:", e);
-    alert(tRenderer("renderer.alerts.restore_error", "Ocurrio un error al restaurar presets. Revisa la consola."));
+    alert(tRenderer("renderer.alerts.restore_error", "Error."));
   }
 });
 
@@ -1259,7 +1259,7 @@ function uiResetTimer() {
 
   if (timerDisplay) timerDisplay.value = "00:00:00";
   if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
-  if (tToggle) tToggle.textContent = '>';
+  if (tToggle) tToggle.textContent = '▶';
 }
 
 tToggle.addEventListener('click', () => {
@@ -1268,7 +1268,7 @@ tToggle.addEventListener('click', () => {
   } else {
     // Fallback local: invertir estado visual (no authoritative)
     running = !running;
-    tToggle.textContent = running ? '||' : '>';
+    tToggle.textContent = running ? '⏸' : '▶';
   }
 });
 
@@ -1308,7 +1308,7 @@ async function openFloating() {
           if (timerDisplay && !timerEditing) {
             timerDisplay.value = state.display || formatTimer(elapsed);
           }
-          if (tToggle) tToggle.textContent = running ? '||' : '>';
+          if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
 
           lastComputedElapsedForWpm = elapsed;
           prevRunning = running;

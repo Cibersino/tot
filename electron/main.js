@@ -751,7 +751,7 @@ function createLanguageWindow() {
     langWin.show();
   });
 
-  // If user closes modal without choosing, apply fallback 'es' (tu requerimiento)
+  // If user closes modal without choosing, apply fallback 'es'
   langWin.on('closed', () => {
     try {
       const settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });

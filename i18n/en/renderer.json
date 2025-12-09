@@ -32,7 +32,7 @@
       },
       "results": {
         "title": "COUNT RESULTS",
-        "time": "Estimated reading time: {h}h {m}m {s}s",
+        "time": "⏱ Estimated reading time: {h}h {m}m {s}s",
         "words": "Words: {n}",
         "chars_no_space": "Chars w/o space: {n}",
         "chars": "Characters: {n}",
@@ -93,11 +93,7 @@
     "alerts": {
       "wip": "WIP: This feature will open in a future version: {feature}.",
       "no_presets_folder": "Cannot open presets folder in this environment.",
-      "open_presets_failed": "Could not open default presets folder. Check console for details.",
       "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
-      "clipboard_too_big": "Clipboard text exceeds maximum size and will be truncated.",
-      "text_truncated": "Text was truncated to fit the application limit.",
-      "text_limit_reached": "Cannot add text: maximum size reached.",
       "clipboard_error": "An error occurred while pasting from clipboard. Check console.",
       "clear_error": "An error occurred while clearing text. Check console.",
       "modal_unavailable": "Modal functionality not available.",
@@ -120,8 +116,7 @@
       "wip_avisos": "WIP: News and updates will appear here in a future version.",
       "wip_discord": "WIP: The Discord link will open here in a future version.",
       "wip_links_interes": "WIP: Links of interest will appear here in a future version.",
-      "wip_colabora": "WIP: Collaboration info will appear here in a future version.",
-      "wip_contador_imagen": "WIP: The image word counter will open here in a future version."
+      "wip_colabora": "WIP: Collaboration info will appear here in a future version."
     },
     "editor_alerts": {
       "too_big": "Cannot add text: maximum size reached.",

@@ -151,11 +151,11 @@
       const desc = (descEl.value || '').trim();
 
       if (!name) {
-        alert(tPreset("renderer.preset_alerts.name_empty", "El nombre no puede estar vacío."));
+        alert(tPreset("renderer.preset_alerts.name_empty", "Error."));
         return null;
       }
       if (!Number.isFinite(wpm) || wpm < 50 || wpm > 500) {
-        alert(tPreset("renderer.preset_alerts.wpm_invalid", "WPM debe ser un número entre 50 y 500."));
+        alert(tPreset("renderer.preset_alerts.wpm_invalid", "Error."));
         return null;
       }
       return { name, wpm: Math.round(wpm), description: desc };
@@ -189,7 +189,7 @@
               window.close();
             } else {
               if (res && res.code === 'CANCELLED') return;
-              alert(tPreset("renderer.preset_alerts.edit_error", "Ocurrió un error al editar el preset. Revisa la consola."));
+              alert(tPreset("renderer.preset_alerts.edit_error", "Error."));
               console.error('Error editando preset (respuesta):', res);
             }
           }
@@ -199,13 +199,13 @@
             if (res && res.ok) {
               window.close();
             } else {
-              alert(tPreset("renderer.preset_alerts.create_error", "Ocurrió un error al crear el preset. Revisa la consola."));
+              alert(tPreset("renderer.preset_alerts.create_error", "Error."));
               console.error('Error creando preset (respuesta):', res);
             }
           }
         }
       } catch (err) {
-        alert(tPreset("renderer.preset_alerts.process_error", "Ocurrió un error al procesar el preset. Revisa la consola."));
+        alert(tPreset("renderer.preset_alerts.process_error", "Error."));
         console.error('Error en save preset:', err);
       }
     });

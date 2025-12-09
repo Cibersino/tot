@@ -32,7 +32,7 @@
       },
       "results": {
         "title": "RESULTADOS DEL CONTEO",
-        "time": "Tiempo estimado de lectura: {h}h {m}m {s}s",
+        "time": "⏱ Tiempo estimado de lectura: {h}h {m}m {s}s",
         "words": "Palabras: {n}",
         "chars_no_space": "Chars w/o space: {n}",
         "chars": "Caracteres: {n}",
@@ -93,11 +93,7 @@
     "alerts": {
       "wip": "WIP: Aquí se abrirá {feature} en una futura versión.",
       "no_presets_folder": "No es posible abrir la carpeta de presets en este entorno.",
-      "open_presets_failed": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.",
       "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.",
-      "clipboard_too_big": "El texto del portapapeles supera el tamaño máximo permitido y será truncado.",
-      "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",
-      "text_limit_reached": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",
       "clipboard_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola.",
       "clear_error": "Ocurrió un error al vaciar el texto. Revisa la consola.",
       "modal_unavailable": "Funcionalidad de modal no disponible.",
@@ -120,8 +116,7 @@
       "wip_avisos": "WIP: Aquí se mostrarán los avisos y novedades en una futura versión.",
       "wip_discord": "WIP: Aquí se abrirá el enlace a Discord en una futura versión.",
       "wip_links_interes": "WIP: Aquí se mostrarán los links de inter?s en una futura versión.",
-      "wip_colabora": "WIP: Aquí se mostrará la información para colaborar en una futura versión.",
-      "wip_contador_imagen": "WIP: Aquí se abrirá el contador de palabras en imágenes en una futura versión."
+      "wip_colabora": "WIP: Aquí se mostrará la información para colaborar en una futura versión."
     },
     "editor_alerts": {
       "too_big": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",
@@ -147,22 +142,22 @@
       "acerca_de": {
         "app_name": "toT — Reading Meter",
         "title": "Acerca de",
-        "subtitle": "Subtitulo",
+        "subtitle": "Subtítulo",
         "body": "Estamos trabajando para usted."
       },
       "readme": {
         "app_name": "toT — Reading Meter",
         "title": "Readme",
-        "subtitle": "Subtitulo",
+        "subtitle": "Subtítulo",
         "body": "Estamos trabajando para usted."
       },
       "instrucciones": {
         "app_name": "toT — Reading Meter",
         "title": "Manual de uso",
-        "nav_basic": "Guia basica",
+        "nav_basic": "Guía básica",
         "nav_full": "Instrucciones completas",
         "nav_faq": "Preguntas frecuentes (FAQ)",
-        "section_basic_title": "Guia basica",
+        "section_basic_title": "Guía básica",
         "section_basic_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. ",
         "section_full_title": "Instrucciones completas",
         "section_full_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. ",

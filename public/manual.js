@@ -292,7 +292,7 @@ async function applyExternalUpdate(payload) {
     }
 
     if (editor.value === newText) {
-      if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn", duration: 5000 });
+      if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "Error."), { type: "warn", duration: 5000 });
       return;
     }
 
@@ -338,7 +338,7 @@ async function applyExternalUpdate(payload) {
             editor.style.visibility = "";
             try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
           }
-          if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
+          if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "Error."), { type: "warn" });
           return;
         }
       }
@@ -367,7 +367,7 @@ async function applyExternalUpdate(payload) {
         } finally {
           try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
         }
-        if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
+        if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "Error."), { type: "warn" });
         return;
       } else {
         try {
@@ -381,7 +381,7 @@ async function applyExternalUpdate(payload) {
           editor.style.visibility = "";
           try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
         }
-        if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
+        if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "Error."), { type: "warn" });
         return;
       }
     }
@@ -397,7 +397,7 @@ async function applyExternalUpdate(payload) {
     } finally {
       editor.style.visibility = "";
     }
-    if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
+    if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "Error."), { type: "warn" });
   } catch (e) {
     console.error("applyExternalUpdate error:", e);
   }
@@ -488,7 +488,7 @@ if (editor) {
           if (editor.value.length > MAX_TEXT_CHARS) {
             editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
             dispatchNativeInputEvent();
-            showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn", duration: 5000 });
+            showNotice(tEditor("renderer.editor_alerts.text_truncated", "Error."), { type: "warn", duration: 5000 });
           }
           // Notificar al main — marca que viene del editor para evitar eco-back.
           try { window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "drop" } }); } catch (e) { window.manualAPI.setCurrentText(editor.value); }
