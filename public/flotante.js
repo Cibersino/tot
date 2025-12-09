@@ -15,6 +15,8 @@ if (!btnReset) {
 }
 
 let lastState = { elapsed: 0, running: false, display: "00:00:00" };
+let playLabel = ">";
+let pauseLabel = "||";
 
 // Actualizar vista (se espera recibir { elapsed, running, display })
 function renderState(state) {
@@ -34,7 +36,7 @@ function renderState(state) {
     }
   }
   // Estado del boton
-  if (btnToggle) btnToggle.textContent = state.running ? '||' : '>';
+  if (btnToggle) btnToggle.textContent = state.running ? pauseLabel : playLabel;
 }
 
 if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
@@ -43,6 +45,30 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
     try { renderState(state); } catch (e) { console.error(e); }
   });
 }
+
+// Intentar cargar traducciones para los simbolos play/pause (usa renderer.i18n)
+(async () => {
+  try {
+    const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
+    if (!loadRendererTranslations || !tRenderer) return;
+
+    let lang = 'es';
+    if (window.flotanteAPI && typeof window.flotanteAPI.getSettings === 'function') {
+      try {
+        const settings = await window.flotanteAPI.getSettings();
+        if (settings && settings.language) lang = settings.language;
+      } catch (e) { /* noop */ }
+    }
+
+    try { await loadRendererTranslations(lang); } catch (_) { /* noop */ }
+    playLabel = tRenderer("renderer.main.timer.play_symbol", playLabel);
+    pauseLabel = tRenderer("renderer.main.timer.pause_symbol", pauseLabel);
+    // Refrescar boton con la etiqueta traducida actual
+    if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
+  } catch (e) {
+    console.error("Error cargando traducciones en flotante:", e);
+  }
+})();
 
 // Botones: envian comandos al main
 btnToggle.addEventListener('click', () => {

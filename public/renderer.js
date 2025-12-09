@@ -10,9 +10,7 @@ const {
   WPM_MAX,
   PREVIEW_INLINE_THRESHOLD,
   PREVIEW_START_CHARS,
-  PREVIEW_END_CHARS,
-  TIMER_PLAY_SYMBOL,
-  TIMER_PAUSE_SYMBOL
+  PREVIEW_END_CHARS
 } = AppConstants;
 
 const textPreview = document.getElementById('textPreview');
@@ -1074,8 +1072,8 @@ function hideManualLoader() {
 const timerModule = (typeof window !== "undefined") ? window.RendererTimer : null;
 
 const getTimerLabels = () => ({
-  playLabel: tRenderer ? tRenderer("renderer.main.timer.play_symbol", TIMER_PLAY_SYMBOL) : TIMER_PLAY_SYMBOL,
-  pauseLabel: tRenderer ? tRenderer("renderer.main.timer.pause_symbol", TIMER_PAUSE_SYMBOL) : TIMER_PAUSE_SYMBOL
+  playLabel: tRenderer ? tRenderer("renderer.main.timer.play_symbol", ">") : ">",
+  pauseLabel: tRenderer ? tRenderer("renderer.main.timer.pause_symbol", "||") : "||"
 });
 
 const formatTimer = (ms) => timerModule.formatTimer(ms);

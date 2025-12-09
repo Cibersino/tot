@@ -21,5 +21,8 @@ contextBridge.exposeInMainWorld('flotanteAPI', {
     const wrapper = () => { try { cb && cb(); } catch (e) { console.error(e); } };
     ipcRenderer.on('flotante-closed', wrapper);
     return () => { try { ipcRenderer.removeListener('flotante-closed', wrapper); } catch (e) { console.error('removeListener error (flotante-closed):', e); } };
-  }
+  },
+
+  // Obtener settings para conocer el idioma (reusa handler de main)
+  getSettings: () => ipcRenderer.invoke('get-settings')
 });
