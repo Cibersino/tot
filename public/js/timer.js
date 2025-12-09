@@ -47,10 +47,133 @@
     if (tToggle) tToggle.textContent = '>';
   }
 
+  async function openFloating({ electronAPI, toggleVF, timerDisplay, timerEditing, tToggle, setElapsedRunning }) {
+    if (!electronAPI || typeof electronAPI.openFloatingWindow !== 'function') {
+      console.warn("openFloatingWindow no disponible en electronAPI");
+      if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+      return null;
+    }
+    try {
+      await electronAPI.openFloatingWindow();
+      if (toggleVF) {
+        toggleVF.checked = true;
+        toggleVF.setAttribute('aria-checked', 'true');
+      }
+
+      if (typeof electronAPI.getCronoState === 'function') {
+        try {
+          const state = await electronAPI.getCronoState();
+          if (state) {
+            const elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
+            const running = !!state.running;
+            if (setElapsedRunning) setElapsedRunning(elapsed, running);
+            if (timerDisplay && !timerEditing) {
+              timerDisplay.value = state.display || formatTimer(elapsed);
+            }
+            if (tToggle) tToggle.textContent = running ? '||' : '>';
+            return { elapsed, running, display: timerDisplay ? timerDisplay.value : state.display };
+          }
+        } catch (e) {
+          /* noop */
+        }
+      }
+      return null;
+    } catch (e) {
+      console.error("Error abriendo flotante:", e);
+      if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+      return null;
+    }
+  }
+
+  async function closeFloating({ electronAPI, toggleVF }) {
+    if (!electronAPI || typeof electronAPI.closeFloatingWindow !== 'function') {
+      console.warn("closeFloatingWindow no disponible en electronAPI");
+      if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+      return;
+    }
+    try {
+      await electronAPI.closeFloatingWindow();
+    } catch (e) {
+      console.error("Error cerrando flotante:", e);
+    } finally {
+      if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+    }
+  }
+
+  async function applyManualTime({
+    value,
+    timerDisplay,
+    timerModule = null,
+    electronAPI = null,
+    currentText,
+    contarTexto,
+    obtenerSeparadoresDeNumeros,
+    formatearNumero,
+    idiomaActual,
+    realWpmDisplay,
+    setElapsed,
+    setLastComputedElapsed
+  }) {
+    const parsed = (timerModule && timerModule.parseTimerInput)
+      ? timerModule.parseTimerInput(value)
+      : parseTimerInput(value);
+
+    if (parsed === null) {
+      if (timerDisplay && typeof setElapsed === "function") {
+        timerDisplay.value = formatTimer(setElapsed());
+      }
+      return null;
+    }
+
+    const msRounded = Math.floor(parsed / 1000) * 1000;
+    const fallbackLocal = async () => {
+      if (typeof setElapsed === "function") setElapsed(msRounded);
+      if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
+      await actualizarVelocidadRealFromElapsed({
+        ms: msRounded,
+        currentText,
+        contarTexto,
+        obtenerSeparadoresDeNumeros,
+        formatearNumero,
+        idiomaActual,
+        realWpmDisplay
+      });
+      if (typeof setLastComputedElapsed === "function") setLastComputedElapsed(msRounded);
+    };
+
+    if (electronAPI && typeof electronAPI.setCronoElapsed === 'function') {
+      try {
+        await electronAPI.setCronoElapsed(msRounded);
+        if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
+        await actualizarVelocidadRealFromElapsed({
+          ms: msRounded,
+          currentText,
+          contarTexto,
+          obtenerSeparadoresDeNumeros,
+          formatearNumero,
+          idiomaActual,
+          realWpmDisplay
+        });
+        if (typeof setLastComputedElapsed === "function") setLastComputedElapsed(msRounded);
+        return msRounded;
+      } catch (e) {
+        console.error("Error enviando setCronoElapsed:", e);
+        await fallbackLocal();
+        return msRounded;
+      }
+    }
+
+    await fallbackLocal();
+    return msRounded;
+  }
+
   window.RendererTimer = {
     formatTimer,
     parseTimerInput,
     actualizarVelocidadRealFromElapsed,
-    uiResetTimer
+    uiResetTimer,
+    openFloating,
+    closeFloating,
+    applyManualTime
   };
 })();
