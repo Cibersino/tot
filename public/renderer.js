@@ -1152,61 +1152,28 @@ tReset.addEventListener('click', () => {
 // --- Floating window control (VF) ---
 // abrir flotante
 async function openFloating() {
-  if (!window.electronAPI || typeof window.electronAPI.openFloatingWindow !== 'function') {
-    console.warn("openFloatingWindow no disponible en electronAPI");
-    // asegurar coherencia visual
-    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
-    return;
-  }
-  try {
-    await window.electronAPI.openFloatingWindow();
-    if (toggleVF) {
-      toggleVF.checked = true;
-      toggleVF.setAttribute('aria-checked', 'true');
+  if (!timerModule || typeof timerModule.openFloating !== "function") return;
+  const res = await timerModule.openFloating({
+    electronAPI: window.electronAPI,
+    toggleVF,
+    timerDisplay,
+    timerEditing,
+    tToggle,
+    setElapsedRunning: (elapsedVal, runningVal) => {
+      elapsed = elapsedVal;
+      running = runningVal;
     }
-
-    // pedir estado inicial via invoke (main devuelve getCronoState)
-    if (typeof window.electronAPI.getCronoState === 'function') {
-      try {
-        const state = await window.electronAPI.getCronoState();
-        if (state) {
-          // sincronizar UI inmediatamente, pero NO forzar recalculo de WPM
-          elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
-          running = !!state.running;
-
-          if (timerDisplay && !timerEditing) {
-            timerDisplay.value = state.display || formatTimer(elapsed);
-          }
-          if (tToggle) tToggle.textContent = running ? '||' : '>';
-
-          lastComputedElapsedForWpm = elapsed;
-          prevRunning = running;
-        }
-      } catch (e) {
-        /* noop */
-      }
-    }
-  } catch (e) {
-    console.error("Error abriendo flotante:", e);
-    // revertir switch si hay error
-    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
+  });
+  if (res && typeof res.elapsed === "number") {
+    lastComputedElapsedForWpm = res.elapsed;
+    prevRunning = running;
   }
 }
 
 // cerrar flotante
 async function closeFloating() {
-  if (!window.electronAPI || typeof window.electronAPI.closeFloatingWindow !== 'function') {
-    console.warn("closeFloatingWindow no disponible en electronAPI");
-    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
-    return;
-  }
-  try {
-    await window.electronAPI.closeFloatingWindow();
-  } catch (e) {
-    console.error("Error cerrando flotante:", e);
-  } finally {
-    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
-  }
+  if (!timerModule || typeof timerModule.closeFloating !== "function") return;
+  await timerModule.closeFloating({ electronAPI: window.electronAPI, toggleVF });
 }
 
 // toggle VF desde la UI (switch)
@@ -1248,40 +1215,33 @@ function parseTimerInput(input) {
 }
 
 function applyManualTime() {
-  const ms = parseTimerInput(timerDisplay.value);
-
-  if (ms !== null) {
-    // Truncar a segundos enteros cuando se edita manualmente
-    const msRounded = Math.floor(ms / 1000) * 1000;
-    // Si tenemos API, pedir a main que aplique el elapsed (autoridad)...
-    if (window.electronAPI && typeof window.electronAPI.setCronoElapsed === 'function') {
-      try {
-        // Marcar que ya no estamos editando (blur ya lo hace, pero aseguramos)
-        timerEditing = false;
-        window.electronAPI.setCronoElapsed(msRounded);
-        // Mostrar inmediatamente el valor aplicado y recalcular WPM localmente (comportamiento antiguo)
-        if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
-        actualizarVelocidadRealFromElapsed(msRounded);
-        lastComputedElapsedForWpm = msRounded;
-      } catch (e) {
-        console.error("Error enviando setCronoElapsed:", e);
-        // Fallback local
-        elapsed = msRounded;
-        if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
-        actualizarVelocidadRealFromElapsed(elapsed);
-        lastComputedElapsedForWpm = elapsed;
-      }
-    } else {
-      // Fallback local (no main available)
+  if (!timerModule || typeof timerModule.applyManualTime !== "function") {
+    const ms = parseTimerInput(timerDisplay.value);
+    if (ms !== null) {
+      const msRounded = Math.floor(ms / 1000) * 1000;
       elapsed = msRounded;
       if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
       actualizarVelocidadRealFromElapsed(elapsed);
       lastComputedElapsedForWpm = elapsed;
+    } else {
+      if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
     }
-  } else {
-    // entrada invalida -> restaurar valor visible al ultimo estado
-    if (timerDisplay) timerDisplay.value = formatTimer(elapsed);
+    return;
   }
+
+  timerModule.applyManualTime({
+    value: timerDisplay.value,
+    timerDisplay,
+    electronAPI: window.electronAPI,
+    currentText,
+    contarTexto,
+    obtenerSeparadoresDeNumeros,
+    formatearNumero,
+    idiomaActual,
+    realWpmDisplay,
+    setElapsed: (msVal) => { elapsed = msVal; return elapsed; },
+    setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; }
+  });
 }
 
 timerDisplay.addEventListener('blur', applyManualTime);
