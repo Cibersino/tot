@@ -16,40 +16,12 @@
     return `${hours}h ${minutes}m ${seconds}s`;
   }
 
-  const numberFormatDefaults = {};
-  const loadNumberFormatDefaults = async (idioma) => {
-    const lang = (idioma || "").toLowerCase() || "es";
-    if (numberFormatDefaults[lang]) return numberFormatDefaults[lang];
-    try {
-      const resp = await fetch(`../i18n/${lang}/numberFormat.json`);
-      if (resp && resp.ok) {
-        const data = await resp.json();
-        if (data && data.numberFormat) {
-          numberFormatDefaults[lang] = data.numberFormat;
-          return data.numberFormat;
-        }
-      }
-    } catch (e) {
-      // noop
-    }
-    if (lang.startsWith("en")) return { thousands: ",", decimal: "." };
-    return { thousands: ".", decimal: "," };
-  };
-
   const obtenerSeparadoresDeNumeros = async (idioma, settingsCache) => {
+    const lang = (idioma || "").toLowerCase() || "es";
     const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
-    if (nf && nf[idioma]) return nf[idioma];
+    if (nf && nf[lang]) return nf[lang];
 
-    try {
-      const def = await loadNumberFormatDefaults(idioma || "es");
-      if (def && def.thousands && def.decimal) {
-        return { separadorMiles: def.thousands, separadorDecimal: def.decimal };
-      }
-    } catch (e) {
-      // noop
-    }
-
-    if (idioma && idioma.toLowerCase().startsWith('en')) {
+    if (lang.startsWith('en')) {
       return { separadorMiles: ',', separadorDecimal: '.' };
     }
     return { separadorMiles: '.', separadorDecimal: ',' };
@@ -64,7 +36,6 @@
   window.FormatUtils = {
     getTimeParts,
     formatTimeFromWords,
-    loadNumberFormatDefaults,
     obtenerSeparadoresDeNumeros,
     formatearNumero
   };

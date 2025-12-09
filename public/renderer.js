@@ -184,7 +184,7 @@ function setModoConteo(nuevoModo) {
 }
 
 // ======================= Formato HHh MMm SSs =======================
-const { getTimeParts, formatTimeFromWords, loadNumberFormatDefaults, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
+const { getTimeParts, formatTimeFromWords, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
 if (!getTimeParts || !formatTimeFromWords || !obtenerSeparadoresDeNumeros || !formatearNumero) {
   console.error("[renderer] FormatUtils no disponible");
 }
@@ -211,7 +211,7 @@ async function updatePreviewAndResults(text) {
 
   const stats = contarTexto(currentText);
   const idioma = idiomaActual; // cacheado al iniciar y actualizado por listener si aplica
-  const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma);
+  const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
 
   // Formatear las cifras segun el idioma
   const caracteresFormateado = formatearNumero(stats.conEspacios, separadorMiles, separadorDecimal);
@@ -281,7 +281,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
 // ======================= Mostrar velocidad real (WPM) =======================
 async function mostrarVelocidadReal(realWpm) {
   const idioma = idiomaActual;
-  const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma);
+  const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
   // Aplicar el mismo formato a la velocidad real
   const velocidadFormateada = formatearNumero(realWpm, separadorMiles, separadorDecimal);
   realWpmDisplay.textContent = `${velocidadFormateada} WPM`;
