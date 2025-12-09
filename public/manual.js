@@ -202,9 +202,31 @@ function tryNativeInsertAtSelection(text) {
 function sendCurrentTextToMainWithMeta(action = "insert") {
   try {
     const payload = { text: editor.value, meta: { source: "editor", action } };
-    window.manualAPI.setCurrentText(payload);
+    const res = window.manualAPI.setCurrentText(payload);
+    handleTruncationResponse(res);
   } catch (e) {
-    try { window.manualAPI.setCurrentText(editor.value); } catch (e2) { console.error("Error enviando set-current-text (fallback):", e2); }
+    try {
+      const resFallback = window.manualAPI.setCurrentText(editor.value);
+      handleTruncationResponse(resFallback);
+    } catch (e2) {
+      console.error("Error enviando set-current-text (fallback):", e2);
+    }
+  }
+}
+
+function handleTruncationResponse(resPromise) {
+  try {
+    if (resPromise && typeof resPromise.then === "function") {
+      resPromise.then((r) => {
+        if (r && r.truncated) {
+          showNotice(tr("renderer.editor_alerts.text_truncated", "El texto fue truncado al limite maximo permitido."), { type: "warn", duration: 5000 });
+        }
+      }).catch((err) => {
+        console.error("Error manejando respuesta de truncado:", err);
+      });
+    }
+  } catch (e) {
+    console.error("handleTruncationResponse error:", e);
   }
 }
 
@@ -475,7 +497,12 @@ if (editor) {
             showNotice(tr("renderer.editor_alerts.text_truncated", "Error."), { type: "warn", duration: 5000 });
           }
           // Notificar al main -marca que viene del editor para evitar eco-back.
-          try { window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "drop" } }); } catch (e) { window.manualAPI.setCurrentText(editor.value); }
+          try {
+            const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "drop" } });
+            handleTruncationResponse(res);
+          } catch (e) {
+            try { const resFallback = window.manualAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ }
+          }
         } catch (e) {
           console.error("drop postprocess error:", e);
         }
@@ -497,10 +524,11 @@ editor.addEventListener("input", () => {
     editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
     showNotice(tr("renderer.editor_alerts.truncated_limit", "El texto ha sido truncado al limite maximo permitido por la aplicacion."), { type: "warn", duration: 6000 });
     try {
-      window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "truncated" } });
+      const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "truncated" } });
+      handleTruncationResponse(res);
     } catch (e) {
       console.error("manual: error enviando set-current-text tras truncado:", e);
-      try { window.manualAPI.setCurrentText(editor.value); } catch (e2) { /* noop */ }
+      try { const resFallback = window.manualAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ }
     }
     restoreFocusToEditor();
     return;
@@ -511,9 +539,10 @@ editor.addEventListener("input", () => {
     if (calcWhileTyping && calcWhileTyping.checked) {
       debounceTimer = setTimeout(() => {
         try {
-          window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "typing" } });
+          const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "typing" } });
+          handleTruncationResponse(res);
         } catch (e) {
-          try { window.manualAPI.setCurrentText(editor.value); } catch (e2) { console.error("Error enviando set-current-text typing:", e2); }
+          try { const resFallback = window.manualAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { console.error("Error enviando set-current-text typing:", e2); }
         }
       }, DEBOUNCE_MS);
     }
@@ -524,14 +553,15 @@ editor.addEventListener("input", () => {
 btnTrash.addEventListener("click", () => {
   editor.value = "";
   // immediately update main
-  try { window.manualAPI.setCurrentText({ text: "", meta: { source: "editor", action: "clear" } }); } catch (e) { window.manualAPI.setCurrentText(""); }
+  try { const res = window.manualAPI.setCurrentText({ text: "", meta: { source: "editor", action: "clear" } }); handleTruncationResponse(res); } catch (e) { try { const resFallback = window.manualAPI.setCurrentText(""); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ } }
   restoreFocusToEditor();
 });
 
 // CALCULAR button behavior: only active when automatic calculation is disabled
 if (btnCalc) btnCalc.addEventListener("click", () => {
   try {
-    window.manualAPI.setCurrentText({ text: editor.value || "", meta: { source: "editor", action: "overwrite" } });
+    const res = window.manualAPI.setCurrentText({ text: editor.value || "", meta: { source: "editor", action: "overwrite" } });
+    handleTruncationResponse(res);
     // Do not close the modal or ask anything -per spec
   } catch (e) {
     console.error("Error ejecutando CALCULAR:", e);
@@ -546,7 +576,12 @@ if (calcWhileTyping) calcWhileTyping.addEventListener("change", () => {
     // enable automatic sending; disable CALCULAR
     btnCalc.disabled = true;
     // Also send current content once to keep sync
-    try { window.manualAPI.setCurrentText({ text: editor.value || "", meta: { source: "editor", action: "typing_toggle_on" } }); } catch (e) { window.manualAPI.setCurrentText(editor.value || ""); }
+    try {
+      const res = window.manualAPI.setCurrentText({ text: editor.value || "", meta: { source: "editor", action: "typing_toggle_on" } });
+      handleTruncationResponse(res);
+    } catch (e) {
+      try { const resFallback = window.manualAPI.setCurrentText(editor.value || ""); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ }
+    }
     // disable automatic sending; enable CALCULAR
   } else btnCalc.disabled = false;
 });
