@@ -45,35 +45,13 @@ let idiomaActual = "es";      // se inicializa al arrancar
 let settingsCache = {};       // cache de settings (numberFormatting, language, etc.)
 
 // --- i18n renderer translations cache ---
-const i18nModule = (typeof window !== "undefined") ? window.RendererI18n : null;
-console.debug(i18nModule ? "[renderer] RendererI18n detectado (modulo)" : "[renderer] RendererI18n NO disponible");
-
-const loadRendererTranslations = async (lang) => {
-  if (i18nModule && typeof i18nModule.loadRendererTranslations === "function") {
-    return await i18nModule.loadRendererTranslations(lang);
-  }
-  console.error("[renderer] loadRendererTranslations no disponible");
-  return null;
-};
-
-const tRenderer = (path, fallback) => {
-  if (i18nModule && typeof i18nModule.tRenderer === "function") {
-    return i18nModule.tRenderer(path, fallback);
-  }
-  console.error("[renderer] tRenderer no disponible");
-  return fallback;
-};
-
-const msgRenderer = (path, params = {}, fallback = "") => {
-  if (i18nModule && typeof i18nModule.msgRenderer === "function") {
-    return i18nModule.msgRenderer(path, params, fallback);
-  }
-  console.error("[renderer] msgRenderer no disponible");
-  return fallback;
-};
+const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
+if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
+  console.error("[renderer] RendererI18n no disponible");
+}
 
 function applyTranslations() {
-  if (!i18nModule) return;
+  if (!tRenderer) return;
   // Botones principales
   if (btnCountClipboard) btnCountClipboard.textContent = tRenderer("renderer.main.buttons.overwrite_clipboard", btnCountClipboard.textContent || "");
   if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.textContent = tRenderer("renderer.main.buttons.append_clipboard_newline", btnAppendClipboardNewLine.textContent || "");
@@ -181,84 +159,25 @@ let currentPresetName = null;
 let allPresetsCache = [];
 
 // ======================= Presets module =======================
-const presetsModule = (typeof window !== "undefined") ? window.RendererPresets : null;
-console.debug(presetsModule ? "[renderer] RendererPresets detectado (modulo)" : "[renderer] RendererPresets NO disponible");
-
-const combinePresets = (settings, defaults) => {
-  if (presetsModule && typeof presetsModule.combinePresets === "function") {
-    return presetsModule.combinePresets({ settings, defaults });
-  }
-  console.error("[renderer] RendererPresets.combinePresets no disponible");
-  return [];
-};
-
-const fillPresetsSelect = (list, selectEl) => {
-  if (presetsModule && typeof presetsModule.fillPresetsSelect === "function") {
-    return presetsModule.fillPresetsSelect(list, selectEl);
-  }
-  console.error("[renderer] RendererPresets.fillPresetsSelect no disponible");
-};
-
-const applyPresetSelection = (preset, domRefs) => {
-  if (presetsModule && typeof presetsModule.applyPresetSelection === "function") {
-    return presetsModule.applyPresetSelection(preset, domRefs);
-  }
-  console.error("[renderer] RendererPresets.applyPresetSelection no disponible");
-};
-
-const loadPresetsIntoDom = async (opts) => {
-  if (presetsModule && typeof presetsModule.loadPresetsIntoDom === "function") {
-    return await presetsModule.loadPresetsIntoDom(opts);
-  }
-  throw new Error("RendererPresets.loadPresetsIntoDom no disponible");
-};
+const { combinePresets, fillPresetsSelect, applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};
+if (!combinePresets || !fillPresetsSelect || !applyPresetSelection || !loadPresetsIntoDom) {
+  console.error("[renderer] RendererPresets no disponible");
+}
 
 // ======================= Conteo de texto =======================
-// Preferir modulo CountUtils; si falta, registrar error (sin duplicar logica)
-const countModule = (typeof window !== "undefined") ? window.CountUtils : null;
-console.debug(countModule ? "[renderer] CountUtils detectado (modulo)" : "[renderer] CountUtils NO disponible");
-
-function contarTextoSimple(texto, language) {
-  if (countModule && typeof countModule.contarTextoSimple === "function") {
-    return countModule.contarTextoSimple(texto, language);
-  }
-  console.error("[renderer] CountUtils.contarTextoSimple no disponible");
-  return { conEspacios: 0, sinEspacios: 0, palabras: 0 };
+const { contarTextoSimple, hasIntlSegmenter, contarTextoPrecisoFallback, contarTextoPreciso, contarTexto: contarTextoModulo } = window.CountUtils || {};
+if (!contarTextoModulo) {
+  console.error("[renderer] CountUtils no disponible");
 }
 
-function hasIntlSegmenter() {
-  if (countModule && typeof countModule.hasIntlSegmenter === "function") {
-    return countModule.hasIntlSegmenter();
-  }
-  console.error("[renderer] CountUtils.hasIntlSegmenter no disponible");
-  return false;
-}
-
-function contarTextoPrecisoFallback(texto, language) {
-  if (countModule && typeof countModule.contarTextoPrecisoFallback === "function") {
-    return countModule.contarTextoPrecisoFallback(texto, language);
-  }
-  console.error("[renderer] CountUtils.precisoFallback no disponible");
-  return { conEspacios: 0, sinEspacios: 0, palabras: 0 };
-}
-
-function contarTextoPreciso(texto, language) {
-  if (countModule && typeof countModule.contarTextoPreciso === "function") {
-    return countModule.contarTextoPreciso(texto, language);
-  }
-  console.error("[renderer] CountUtils.preciso no disponible");
-  return { conEspacios: 0, sinEspacios: 0, palabras: 0 };
-}
-
-// Dispatcher que selecciona el modo (simple/preciso). Preciso por defecto. Sin fallback duplicado.
 function contarTexto(texto) {
-  if (countModule && typeof countModule.contarTexto === "function") {
-    return countModule.contarTexto(texto, { modoConteo, idioma: idiomaActual });
+  if (contarTextoModulo) {
+    return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
   }
-  // Degradar usando las funciones basicas del modulo si estan, si no, todo a cero
+  // fallback mínimo en caso extremo
   return (modoConteo === "simple")
-    ? contarTextoSimple(texto, idiomaActual)
-    : contarTextoPreciso(texto, idiomaActual);
+    ? { conEspacios: texto.length, sinEspacios: texto.replace(/\s+/g, '').length, palabras: texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length }
+    : { conEspacios: texto.length, sinEspacios: texto.replace(/\s+/g, '').length, palabras: texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length };
 }
 
 // Helpers para actualizar modo / idioma desde otras partes (p. ej. menu)
@@ -269,54 +188,10 @@ function setModoConteo(nuevoModo) {
 }
 
 // ======================= Formato HHh MMm SSs =======================
-const formatModule = (typeof window !== "undefined") ? window.FormatUtils : null;
-console.debug(formatModule ? "[renderer] FormatUtils detectado (modulo)" : "[renderer] FormatUtils NO disponible");
-
-function getTimeParts(words, wpm) {
-  if (formatModule && typeof formatModule.getTimeParts === "function") {
-    return formatModule.getTimeParts(words, wpm);
-  }
-  console.error("[renderer] FormatUtils.getTimeParts no disponible");
-  return { hours: 0, minutes: 0, seconds: 0 };
+const { getTimeParts, formatTimeFromWords, loadNumberFormatDefaults, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
+if (!getTimeParts || !formatTimeFromWords || !obtenerSeparadoresDeNumeros || !formatearNumero) {
+  console.error("[renderer] FormatUtils no disponible");
 }
-
-function formatTimeFromWords(words, wpm) {
-  if (formatModule && typeof formatModule.formatTimeFromWords === "function") {
-    return formatModule.formatTimeFromWords(words, wpm);
-  }
-  console.error("[renderer] FormatUtils.formatTimeFromWords no disponible");
-  return "0h 0m 0s";
-}
-
-const loadNumberFormatDefaults = async (idioma) => {
-  if (formatModule && typeof formatModule.loadNumberFormatDefaults === "function") {
-    return await formatModule.loadNumberFormatDefaults(idioma);
-  }
-  console.error("[renderer] FormatUtils.loadNumberFormatDefaults no disponible");
-  if (idioma && (idioma.toLowerCase() || "").startsWith("en")) return { thousands: ",", decimal: "." };
-  return { thousands: ".", decimal: "," };
-};
-
-const obtenerSeparadoresDeNumeros = async (idioma) => {
-  if (formatModule && typeof formatModule.obtenerSeparadoresDeNumeros === "function") {
-    return await formatModule.obtenerSeparadoresDeNumeros(idioma, settingsCache);
-  }
-  console.error("[renderer] FormatUtils.obtenerSeparadoresDeNumeros no disponible");
-  if (idioma && idioma.toLowerCase().startsWith('en')) {
-    return { separadorMiles: ',', separadorDecimal: '.' };
-  }
-  return { separadorMiles: '.', separadorDecimal: ',' };
-};
-
-const formatearNumero = (numero, separadorMiles, separadorDecimal) => {
-  if (formatModule && typeof formatModule.formatearNumero === "function") {
-    return formatModule.formatearNumero(numero, separadorMiles, separadorDecimal);
-  }
-  console.error("[renderer] FormatUtils.formatearNumero no disponible");
-  let [entero, decimal] = numero.toFixed(0).split('.');
-  entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, separadorMiles);
-  return decimal ? `${entero}${separadorDecimal}${decimal}` : entero;
-};
 
 // ======================= Actualizar vista y resultados =======================
 async function updatePreviewAndResults(text) {
@@ -394,7 +269,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       }
 
       // Actualizar boton toggle
-      if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
+      if (tToggle) tToggle.textContent = running ? '||' : '>';
 
       // WPM: recalcular en los casos relevantes:
       //  - transicion running:true -> false (pausa): recalcular siempre
@@ -1201,8 +1076,13 @@ function hideManualLoader() {
   if (btnEdit) btnEdit.disabled = false;
 }
 
+const timerModule = (typeof window !== "undefined") ? window.RendererTimer : null;
+
 function formatTimer(ms) {
-  const totalSeconds = Math.floor(ms / 1000);
+  if (timerModule && typeof timerModule.formatTimer === "function") {
+    return timerModule.formatTimer(ms);
+  }
+  const totalSeconds = Math.floor((ms || 0) / 1000);
   const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
   const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
   const seconds = (totalSeconds % 60).toString().padStart(2, '0');
@@ -1210,16 +1090,28 @@ function formatTimer(ms) {
 }
 
 // Reusable: calcula y muestra la velocidad real usando `elapsed` y el texto actual
-function actualizarVelocidadRealFromElapsed(ms) {
+async function actualizarVelocidadRealFromElapsed(ms) {
+  if (timerModule && typeof timerModule.actualizarVelocidadRealFromElapsed === "function") {
+    return timerModule.actualizarVelocidadRealFromElapsed({
+      ms,
+      currentText,
+      contarTexto,
+      obtenerSeparadoresDeNumeros,
+      formatearNumero,
+      idiomaActual,
+      realWpmDisplay
+    });
+  }
   const secondsTotal = (ms || 0) / 1000;
   const stats = contarTexto(currentText);
   const words = stats?.palabras || 0;
   if (words > 0 && secondsTotal > 0) {
     const realWpm = (words / secondsTotal) * 60;
     mostrarVelocidadReal(realWpm);
-  } else {
-    realWpmDisplay.innerHTML = "&nbsp;";
+    return realWpm;
   }
+  realWpmDisplay.innerHTML = "&nbsp;";
+  return 0;
 }
 
 // --------- Reset del cronometro (misma accion que el boton) ----------
@@ -1230,9 +1122,13 @@ function uiResetTimer() {
   running = false;
   prevRunning = false;
 
+  if (timerModule && typeof timerModule.uiResetTimer === "function") {
+    timerModule.uiResetTimer({ timerDisplay, realWpmDisplay, tToggle });
+    return;
+  }
   if (timerDisplay) timerDisplay.value = "00:00:00";
   if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
-  if (tToggle) tToggle.textContent = '▶';
+  if (tToggle) tToggle.textContent = '>';
 }
 
 tToggle.addEventListener('click', () => {
@@ -1241,7 +1137,7 @@ tToggle.addEventListener('click', () => {
   } else {
     // Fallback local: invertir estado visual (no authoritative)
     running = !running;
-    tToggle.textContent = running ? '⏸' : '▶';
+    tToggle.textContent = running ? '||' : '>';
   }
 });
 
@@ -1281,7 +1177,7 @@ async function openFloating() {
           if (timerDisplay && !timerEditing) {
             timerDisplay.value = state.display || formatTimer(elapsed);
           }
-          if (tToggle) tToggle.textContent = running ? '⏸' : '▶';
+          if (tToggle) tToggle.textContent = running ? '||' : '>';
 
           lastComputedElapsedForWpm = elapsed;
           prevRunning = running;
@@ -1338,7 +1234,10 @@ if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'functi
 
 // ======================= Edicion manual del cronometro =======================
 function parseTimerInput(input) {
-  const match = input.match(/^(\d+):([0-5]\d):([0-5]\d)$/);
+  if (timerModule && typeof timerModule.parseTimerInput === "function") {
+    return timerModule.parseTimerInput(input);
+  }
+  const match = String(input || "").match(/^(\d+):([0-5]\d):([0-5]\d)$/);
   if (!match) return null;
 
   const hours = parseInt(match[1], 10);
