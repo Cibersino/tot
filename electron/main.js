@@ -13,9 +13,10 @@ const {
   saveJson
 } = require('./fs_storage');
 
+const modalState = require('./modal_state');
+
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
-const MODAL_STATE_FILE = path.join(CONFIG_DIR, 'modal_state.json');
 const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
 const VERSION_REMOTE_URL = "https://raw.githubusercontent.com/Cibersino/tot-readingmeter/main/VERSION";
 const DOWNLOAD_URL = "https://github.com/Cibersino/tot-readingmeter/releases/latest";
@@ -456,14 +457,13 @@ function createMainWindow() {
 }
 
 function createEditorWindow() {
-  // Cargamos estado previo (nuevo formato)
-  const state = loadJson(MODAL_STATE_FILE, {
-    maximized: true,       // primera vez → abrir maximizado
-    reduced: null          // aquí guardaremos dimensiones reducidas persistentes
-  });
+  // Cargar estado inicial desde modal_state.js
+  const state = modalState.loadInitialState(loadJson);
 
-  // Si hay estado reducido guardado
-  const hasReduced = state.reduced &&
+  // ¿Hay estado reducido guardado y válido?
+  const hasReduced =
+    state &&
+    state.reduced &&
     typeof state.reduced.width === "number" &&
     typeof state.reduced.height === "number" &&
     typeof state.reduced.x === "number" &&
@@ -492,89 +492,42 @@ function createEditorWindow() {
   editorWin.loadFile(path.join(__dirname, "../public/manual.html"));
 
   editorWin.once("ready-to-show", () => {
-    // REGLA A + C: abrir maximizada si corresponde
-    if (state.maximized === true) {
-      editorWin.maximize();
-    }
-
-    editorWin.show();
-
-    // Enviar current text
     try {
-      editorWin.webContents.send("manual-init-text", {
-        text: currentText || "",
-        meta: { source: "main", action: "init" }
-      });
-    } catch (_) {}
-
-    // Notificar a la ventana principal
-    try {
-      if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send("manual-editor-ready");
+      // REGLA A + C: abrir maximizada si corresponde
+      if (state && state.maximized === true) {
+        editorWin.maximize();
       }
-    } catch (_) {}
-  });
 
-  // REGLA B — Cuando el usuario mueve o redimensiona la ventana NO maximizada, guardamos reducedState
-  const saveReducedState = () => {
-    if (!editorWin || editorWin.isDestroyed()) return;
-    if (editorWin.isMaximized()) return;
+      editorWin.show();
 
-    const b = editorWin.getBounds();
-    const newState = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
+      // Enviar currentText inicial al editor (cuando ya está listo)
+      try {
+        editorWin.webContents.send("manual-init-text", {
+          text: currentText || "",
+          meta: { source: "main", action: "init" }
+        });
+      } catch (err) {
+        console.error("Error enviando manual-init-text al editor:", err);
+      }
 
-    newState.reduced = {
-      width: b.width,
-      height: b.height,
-      x: b.x,
-      y: b.y
-    };
-
-    saveJson(MODAL_STATE_FILE, newState);
-  };
-
-  editorWin.on("resize", saveReducedState);
-  editorWin.on("move", saveReducedState);
-
-  // REGLA C — Al maximizar: marcar maximized = true pero NO tocar reducedState
-  editorWin.on("maximize", () => {
-    const st = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
-    st.maximized = true;
-    saveJson(MODAL_STATE_FILE, st);
-  });
-
-  // REGLA B — Al desmaximizar: restaurar reducedState guardado, si existe
-  editorWin.on("unmaximize", () => {
-    const st = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
-    st.maximized = false;
-    saveJson(MODAL_STATE_FILE, st);
-
-    if (st.reduced) {
-      editorWin.setBounds(st.reduced);
-    } else {
-      // REGLA D fallback: mitad del monitor actual + esquina sup. derecha
-      const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
-      const wa = display.workArea;
-
-      const w = Math.round(wa.width / 2);
-      const h = Math.round(wa.height / 2);
-      const x = wa.x + wa.width - w - 20;
-      const y = wa.y + 20;
-
-      const reduced = { width: w, height: h, x, y };
-      editorWin.setBounds(reduced);
-
-      st.reduced = reduced;
-      saveJson(MODAL_STATE_FILE, st);
+      // Notificar a la ventana principal que el editor está listo
+      try {
+        if (mainWin && !mainWin.isDestroyed()) {
+          mainWin.webContents.send("manual-editor-ready");
+        }
+      } catch (err) {
+        console.error("Error notificando manual-editor-ready a la ventana principal:", err);
+      }
+    } catch (e) {
+      console.error("Error mostrando editor manual:", e);
     }
   });
 
-  // REGLA C — Al cerrar: guardar maximized, pero NO destruir reducedState existente
-  editorWin.on("close", () => {
-    const st = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
-    st.maximized = editorWin.isMaximized();
-    // reduced ya fue mantenido vivo por los listeners
-    saveJson(MODAL_STATE_FILE, st);
+  // Delegar gestión de estado (maximizado/reducido, fallback, persistencia) al módulo modal_state
+  modalState.attachTo(editorWin, loadJson, saveJson);
+
+  // Limpiar referencia cuando la ventana se cierre completamente
+  editorWin.on("closed", () => {
     editorWin = null;
   });
 }
@@ -1588,11 +1541,6 @@ ipcMain.handle('force-clear-editor', async () => {
     console.error("Error en force-clear-editor:", e);
     return { ok: false, error: String(e) };
   }
-});
-
-// Provide modal state if renderer wants it (not strictly necessary but available)
-ipcMain.handle('get-modal-state', () => {
-  return loadJson(MODAL_STATE_FILE, {});
 });
 
 // Expose configuration (MAX_TEXT_CHARS) via IPC
