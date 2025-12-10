@@ -3,9 +3,8 @@
 # ÍTEM ACTUAL #
 
 * Revisión y depuración del código *
-- Ordenar, limpiar y comentar codigos.
-- EsLint
-- Distribuir bien el código (modular entre archivos, etc).
+
+- Modularización.
 
 # Más adelante #
 

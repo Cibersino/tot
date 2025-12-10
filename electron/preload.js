@@ -6,7 +6,7 @@ const api = {
     readClipboard: () => clipboard.readText(),
     openEditor: () => ipcRenderer.invoke('open-editor'),
     checkForUpdates: (manual = false) => ipcRenderer.invoke('check-for-updates', { manual }),
-    // openPresetModal acepta un argumento opcional: número (wpm) o un objeto { wpm, mode, preset }
+    // openPresetModal acepta un argumento opcional: numero (wpm) o un objeto { wpm, mode, preset }
     openPresetModal: (payload) => ipcRenderer.invoke('open-preset-modal', payload),
     openDefaultPresetsFolder: () => ipcRenderer.invoke('open-default-presets-folder'),
     getCurrentText: () => ipcRenderer.invoke('get-current-text'),
@@ -19,7 +19,7 @@ const api = {
     // Centralizado: solicitar settings al main process (lee desde disco en el main)
     getSettings: () => ipcRenderer.invoke('get-settings'),
 
-    // Escucha de presets creados (notificación desde main)
+    // Escucha de presets creados (notificacion desde main)
     onPresetCreated: (cb) => {
         ipcRenderer.on('preset-created', (_e, preset) => cb(preset));
     },
@@ -27,10 +27,10 @@ const api = {
     // Obtener presets por defecto desde el main (electron/presets/*.js)
     getDefaultPresets: () => ipcRenderer.invoke('get-default-presets'),
 
-    // Solicitar borrado de preset (main mostrará diálogos nativos y realizará persistencia)
+    // Solicitar borrado de preset (main mostrara dialogos nativos y realizara persistencia)
     requestDeletePreset: (name) => ipcRenderer.invoke('request-delete-preset', name),
 
-    // Solicitar restauración de presets por defecto (main mostrará diálogo nativo y realizará persistencia)
+    // Solicitar restauracion de presets por defecto (main mostrara dialogo nativo y realizara persistencia)
     requestRestoreDefaults: () => ipcRenderer.invoke('request-restore-defaults'),
 
     // Notify renderer -> main para mostrar 'no selection to edit' dialog
@@ -46,7 +46,7 @@ const api = {
         };
         ipcRenderer.on('menu-click', wrapper);
 
-        // devolver una función para desuscribirse
+        // devolver una funcion para desuscribirse
         return () => {
             try {
                 ipcRenderer.removeListener('menu-click', wrapper);
@@ -63,11 +63,11 @@ const api = {
             try { cb(newSettings); } catch (err) { console.error('settings callback error:', err); }
         };
         ipcRenderer.on('settings-updated', listener);
-        // devolver función para remover listener si el caller la usa
+        // devolver funcion para remover listener si el caller la usa
         return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (e) { console.error('removeListener error:', e); } };
     },
 
-    // Cronómetro central API (renderer <-> main)
+    // Cronometro central API (renderer <-> main)
     sendCronoToggle: () => ipcRenderer.send('crono-toggle'),
     sendCronoReset: () => ipcRenderer.send('crono-reset'),
     setCronoElapsed: (ms) => ipcRenderer.send('crono-set-elapsed', ms),

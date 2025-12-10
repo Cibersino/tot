@@ -125,12 +125,12 @@ async function checkForUpdates(lang, { manual = false } = {}) {
       return; // nada nuevo
     }
 
-    const title = dlg.update_title || 'Actualización disponible';
-    const message = (dlg.update_message || 'Hay una versión nueva {remote}. Actual: {local}. ¿Descargar ahora?')
+    const title = dlg.update_title || 'Actualizacion disponible';
+    const message = (dlg.update_message || 'Hay una version nueva {remote}. Actual: {local}. Descargar ahora?')
       .replace('{remote}', remoteVer)
       .replace('{local}', localVer);
     const btnDownload = dlg.update_download || 'Descargar';
-    const btnLater = dlg.update_later || 'Más tarde';
+    const btnLater = dlg.update_later || 'Mas tarde';
 
     const res = await dialog.showMessageBox(mainWin, {
       type: 'info',
@@ -374,7 +374,7 @@ function buildAppMenu(lang) {
   Menu.setApplicationMenu(appMenu);
 }
 
-// Registrar atajos globales en desarrollo (sin mostrar menú)
+// Registrar atajos globales en desarrollo (sin mostrar menu)
 function registerDevShortcuts(mainWin) {
   if (app.isPackaged) return;
   try {
@@ -484,99 +484,126 @@ function createMainWindow() {
 }
 
 function createEditorWindow() {
-  const modalState = loadJson(MODAL_STATE_FILE, {});
-  // Default size if not present
-  const defaults = { width: 1200, height: 800, x: undefined, y: undefined, maximized: false };
-  const w = modalState.width || defaults.width;
-  const h = modalState.height || defaults.height;
-  const x = typeof modalState.x === 'number' ? modalState.x : undefined;
-  const y = typeof modalState.y === 'number' ? modalState.y : undefined;
+  // Cargamos estado previo (nuevo formato)
+  const state = loadJson(MODAL_STATE_FILE, {
+    maximized: true,       // primera vez → abrir maximizado
+    reduced: null          // aquí guardaremos dimensiones reducidas persistentes
+  });
 
+  // Si hay estado reducido guardado
+  const hasReduced = state.reduced &&
+    typeof state.reduced.width === "number" &&
+    typeof state.reduced.height === "number" &&
+    typeof state.reduced.x === "number" &&
+    typeof state.reduced.y === "number";
+
+  // Construir ventana usando estado reducido si existe
   editorWin = new BrowserWindow({
-    width: w,
-    height: h,
-    x: x,
-    y: y,
+    width: hasReduced ? state.reduced.width : 1200,
+    height: hasReduced ? state.reduced.height : 800,
+    x: hasReduced ? state.reduced.x : undefined,
+    y: hasReduced ? state.reduced.y : undefined,
     resizable: true,
     minimizable: true,
     maximizable: true,
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, 'manual_preload.js'),
+      preload: path.join(__dirname, "manual_preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false
     }
   });
 
-  // Remove the menu bar on the modal/editor window
   editorWin.setMenu(null);
   editorWin.setMenuBarVisibility(false);
+  editorWin.loadFile(path.join(__dirname, "../public/manual.html"));
 
-  editorWin.loadFile(path.join(__dirname, '../public/manual.html'));
-
-  // Show: if no modal_state exists, open maximized the first time
-  const stateExists = fs.existsSync(MODAL_STATE_FILE);
   editorWin.once("ready-to-show", () => {
-    if (!stateExists) {
+    // REGLA A + C: abrir maximizada si corresponde
+    if (state.maximized === true) {
       editorWin.maximize();
-    } else {
-      if (modalState.maximized) {
-        editorWin.maximize();
-      }
     }
 
     editorWin.show();
 
-    // Enviar objeto estructurado al preload
+    // Enviar current text
     try {
       editorWin.webContents.send("manual-init-text", {
         text: currentText || "",
-        meta: {
-          source: "main",
-          action: "init"
-        }
+        meta: { source: "main", action: "init" }
       });
-    } catch (err) {
-      console.error("Error enviando manual-init-text:", err);
-    }
-    // Notificar a la ventana principal que el editor ya se mostró (para ocultar loader)
+    } catch (_) {}
+
+    // Notificar a la ventana principal
     try {
       if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send('manual-editor-ready');
+        mainWin.webContents.send("manual-editor-ready");
       }
-    } catch (notifyErr) {
-      console.warn("No se pudo notificar manual-editor-ready:", notifyErr);
+    } catch (_) {}
+  });
+
+  // REGLA B — Cuando el usuario mueve o redimensiona la ventana NO maximizada, guardamos reducedState
+  const saveReducedState = () => {
+    if (!editorWin || editorWin.isDestroyed()) return;
+    if (editorWin.isMaximized()) return;
+
+    const b = editorWin.getBounds();
+    const newState = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
+
+    newState.reduced = {
+      width: b.width,
+      height: b.height,
+      x: b.x,
+      y: b.y
+    };
+
+    saveJson(MODAL_STATE_FILE, newState);
+  };
+
+  editorWin.on("resize", saveReducedState);
+  editorWin.on("move", saveReducedState);
+
+  // REGLA C — Al maximizar: marcar maximized = true pero NO tocar reducedState
+  editorWin.on("maximize", () => {
+    const st = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
+    st.maximized = true;
+    saveJson(MODAL_STATE_FILE, st);
+  });
+
+  // REGLA B — Al desmaximizar: restaurar reducedState guardado, si existe
+  editorWin.on("unmaximize", () => {
+    const st = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
+    st.maximized = false;
+    saveJson(MODAL_STATE_FILE, st);
+
+    if (st.reduced) {
+      editorWin.setBounds(st.reduced);
+    } else {
+      // REGLA D fallback: mitad del monitor actual + esquina sup. derecha
+      const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+      const wa = display.workArea;
+
+      const w = Math.round(wa.width / 2);
+      const h = Math.round(wa.height / 2);
+      const x = wa.x + wa.width - w - 20;
+      const y = wa.y + 20;
+
+      const reduced = { width: w, height: h, x, y };
+      editorWin.setBounds(reduced);
+
+      st.reduced = reduced;
+      saveJson(MODAL_STATE_FILE, st);
     }
   });
 
-  editorWin.on('close', () => {
-    try {
-      const bounds = editorWin.getBounds();
-      const modalStateToSave = Object.assign({}, loadJson(MODAL_STATE_FILE, {}), {
-        width: bounds.width,
-        height: bounds.height,
-        x: bounds.x,
-        y: bounds.y,
-        maximized: editorWin.isMaximized()
-      });
-      saveJson(MODAL_STATE_FILE, modalStateToSave);
-    } catch (e) {
-      console.error("Error guardando estado modal:", e);
-    }
+  // REGLA C — Al cerrar: guardar maximized, pero NO destruir reducedState existente
+  editorWin.on("close", () => {
+    const st = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
+    st.maximized = editorWin.isMaximized();
+    // reduced ya fue mantenido vivo por los listeners
+    saveJson(MODAL_STATE_FILE, st);
     editorWin = null;
-  });
-
-  editorWin.on('maximize', () => {
-    const state = loadJson(MODAL_STATE_FILE, {});
-    state.maximized = true;
-    saveJson(MODAL_STATE_FILE, state);
-  });
-
-  editorWin.on('unmaximize', () => {
-    const state = loadJson(MODAL_STATE_FILE, {});
-    state.maximized = false;
-    saveJson(MODAL_STATE_FILE, state);
   });
 }
 
@@ -659,7 +686,7 @@ ipcMain.handle('set-language', async (_event, lang) => {
 
     // Rebuild menu with the new language
     buildAppMenu(currentLanguage);
-    // Ocultar la barra en ventanas secundarias (editor, preset, etc.) tras reconstruir menú
+    // Ocultar la barra en ventanas secundarias (editor, preset, etc.) tras reconstruir menu
     try {
       if (editorWin && !editorWin.isDestroyed()) {
         editorWin.setMenu(null);
@@ -674,7 +701,7 @@ ipcMain.handle('set-language', async (_event, lang) => {
         langWin.setMenuBarVisibility(false);
       }
     } catch (menuErr) {
-      console.warn("No se pudo ocultar menú en ventanas secundarias:", menuErr);
+      console.warn("No se pudo ocultar menu en ventanas secundarias:", menuErr);
     }
 
     // Notificar renderers con el objeto settings correcto
@@ -721,7 +748,7 @@ ipcMain.handle('set-mode-conteo', async (_event, mode) => {
 // Create language selection window (small, light)
 function createLanguageWindow() {
   if (langWin && !langWin.isDestroyed()) {
-    try { langWin.focus(); } catch (e) { }
+    try { langWin.focus(); } catch (e) { /* noop */ }
     return;
   }
 
@@ -751,7 +778,7 @@ function createLanguageWindow() {
     langWin.show();
   });
 
-  // If user closes modal without choosing, apply fallback 'es' (tu requerimiento)
+  // If user closes modal without choosing, apply fallback 'es'
   langWin.on('closed', () => {
     try {
       const settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
@@ -1144,7 +1171,7 @@ ipcMain.handle("get-default-presets", () => {
         }
       });
 
-    // Si falta algún idioma en JSON, intentar cargar desde los JS fuente
+    // Si falta algun idioma en JSON, intentar cargar desde los JS fuente
     const srcEntries = fs.existsSync(PRESETS_SOURCE_DIR) ? fs.readdirSync(PRESETS_SOURCE_DIR) : [];
     srcEntries
       .filter(n => /^defaults_presets_([a-z0-9-]+)\.js$/i.test(n))
@@ -1194,11 +1221,11 @@ ipcMain.handle("open-default-presets-folder", async () => {
 // Request to delete a preset (handles native dialogs + persistence)
 ipcMain.handle('request-delete-preset', async (_event, name) => {
   try {
-    // Cargar settings y textos de diálogo antes de cualquier mensaje
+    // Cargar settings y textos de dialogo antes de cualquier mensaje
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
     settings = normalizeSettings(settings);
     const dialogTexts = getDialogTexts(settings.language || 'es');
-    const yesLabel = dialogTexts.yes || 'Sí, continuar';
+    const yesLabel = dialogTexts.yes || 'Si, continuar';
     const noLabel = dialogTexts.no || 'No, cancelar';
 
     // If no name provided, show information dialog and exit
@@ -1208,7 +1235,7 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
           type: 'none',
           buttons: [dialogTexts.ok || 'Aceptar'],
           defaultId: 0,
-          message: dialogTexts.delete_preset_none || 'No hay ningún preset seleccionado para borrar'
+          message: dialogTexts.delete_preset_none || 'No hay ningun preset seleccionado para borrar'
         });
       } catch (e) {
         console.error("Error mostrando dialog no-selection:", e);
@@ -1222,7 +1249,7 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
       buttons: [yesLabel, noLabel],
       defaultId: 1,
       cancelId: 1,
-      message: (dialogTexts.delete_preset_message || `¿Eliminar el preset "{name}"?`).replace('{name}', name)
+      message: (dialogTexts.delete_preset_message || `Eliminar el preset "{name}"?`).replace('{name}', name)
     });
 
     if (conf.response !== 0) {
@@ -1327,14 +1354,14 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
 
     // Ask confirmation (native dialog)
     const dialogTexts = getDialogTexts(settings.language || 'es');
-    const yesLabel = dialogTexts.yes || 'Sí, continuar';
+    const yesLabel = dialogTexts.yes || 'Si, continuar';
     const noLabel = dialogTexts.no || 'No, cancelar';
     const conf = await dialog.showMessageBox(mainWin || null, {
       type: 'none',
       buttons: [yesLabel, noLabel],
       defaultId: 1,
       cancelId: 1,
-      message: (dialogTexts.restore_defaults_message || `¿Restaurar presets por defecto (generales y para el idioma "{lang}") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.`).replace('{lang}', lang)
+      message: (dialogTexts.restore_defaults_message || `Restaurar presets por defecto (generales y para el idioma "{lang}") a su version original? Esto revertira las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.`).replace('{lang}', lang)
     });
 
     if (conf.response !== 0) {
@@ -1351,19 +1378,13 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
 
     // 1) Remove personalized presets that shadow defaults (i.e., same name)
     const defaultNames = new Set(defaultsCombined.map(p => p.name));
-    settings.presets = (settings.presets || []).filter(p => {
-      if (defaultNames.has(p.name)) {
-        removedCustom.push(p.name);
-        return false; // remove
-      }
-      return true; // keep others
-    });
+    settings.presets = (settings.presets || []).filter(p => !defaultNames.has(p.name));
+    removedCustom.push(...defaultNames);
 
     // 2) For the active language, remove names from disabled_default_presets[lang] if present
     settings.disabled_default_presets = settings.disabled_default_presets || {};
     if (!Array.isArray(settings.disabled_default_presets[lang])) settings.disabled_default_presets[lang] = [];
 
-    const beforeDisabled = settings.disabled_default_presets[lang].slice();
     settings.disabled_default_presets[lang] = settings.disabled_default_presets[lang].filter(n => {
       // keep those that are NOT in defaultNames
       const keep = !defaultNames.has(n);
@@ -1414,7 +1435,7 @@ ipcMain.handle('notify-no-selection-edit', async () => {
       type: 'none',
       buttons: [(dialogTexts && dialogTexts.ok) || 'Aceptar'],
       defaultId: 0,
-      message: (dialogTexts && dialogTexts.edit_preset_none) || 'No hay ningún preset seleccionado para editar'
+      message: (dialogTexts && dialogTexts.edit_preset_none) || 'No hay ningun preset seleccionado para editar'
     });
     return { ok: true };
   } catch (e) {
@@ -1430,20 +1451,20 @@ ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
       return { ok: false, code: 'NO_ORIGINAL_NAME' };
     }
 
-    // Cargar settings y textos de diálogo antes de la confirmación
+    // Cargar settings y textos de dialogo antes de la confirmacion
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
     settings = normalizeSettings(settings);
     const dialogTexts = getDialogTexts(settings.language || 'es');
 
     // Ask confirmation (native dialog)
-    const yesLabel = dialogTexts.yes || 'Sí, continuar';
+    const yesLabel = dialogTexts.yes || 'Si, continuar';
     const noLabel = dialogTexts.no || 'No, cancelar';
     const conf = await dialog.showMessageBox(mainWin || null, {
       type: 'none',
       buttons: [yesLabel, noLabel],
       defaultId: 1,
       cancelId: 1,
-      message: (dialogTexts.edit_preset_confirm || `¿Está seguro de editar "{name}" por el actual?`).replace('{name}', originalName)
+      message: (dialogTexts.edit_preset_confirm || `Esta seguro de editar "{name}" por el actual?`).replace('{name}', originalName)
     });
 
     if (conf.response !== 0) {
@@ -1643,7 +1664,7 @@ app.whenReady().then(() => {
       } catch (e) {
         console.error("Error creando mainWin tras seleccionar idioma:", e);
       } finally {
-        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { }
+        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { /* noop */ }
       }
       if (!updateCheckDone) {
         updateCheckDone = true;

@@ -11,15 +11,18 @@ contextBridge.exposeInMainWorld('flotanteAPI', {
     return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (e) { console.error('removeListener error (crono-state):', e); } };
   },
 
-  // Enviar comando al main (main procesará el comando: toggle/reset/set)
+  // Enviar comando al main (main procesara el comando: toggle/reset/set)
   sendCommand: (cmd) => {
     ipcRenderer.send('flotante-command', cmd);
   },
 
-  // Notificación de cierre del flotante (main emite 'flotante-closed' cuando cierra)
+  // Notificacion de cierre del flotante (main emite 'flotante-closed' cuando cierra)
   onClose: (cb) => {
     const wrapper = () => { try { cb && cb(); } catch (e) { console.error(e); } };
     ipcRenderer.on('flotante-closed', wrapper);
     return () => { try { ipcRenderer.removeListener('flotante-closed', wrapper); } catch (e) { console.error('removeListener error (flotante-closed):', e); } };
-  }
+  },
+
+  // Obtener settings para conocer el idioma (reusa handler de main)
+  getSettings: () => ipcRenderer.invoke('get-settings')
 });
