@@ -247,7 +247,7 @@ async function updatePreviewAndResults(text) {
   resWords.textContent = msgRenderer("renderer.main.results.words", { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
 
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
-  resTime.textContent = msgRenderer("renderer.main.results.time", { h: hours, m: minutes, s: seconds }, timeFallback);
+  resTime.textContent = msgRenderer("renderer.main.results.time", { h: hours, m: minutes, s: seconds });
 
   // Si detectamos que el texto cambio respecto al estado anterior -> resetear cronometro en main
   if (textChanged) {
