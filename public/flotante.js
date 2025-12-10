@@ -3,7 +3,7 @@ const timerEl = document.getElementById('timer');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
 
-// defensivo: si algún elemento no existe, salimos silenciosamente (evita crashes)
+// defensivo: si algun elemento no existe, salimos silenciosamente (evita crashes)
 if (!timerEl) {
   console.error("flotante: element #timer no encontrado");
 }
@@ -15,17 +15,21 @@ if (!btnReset) {
 }
 
 let lastState = { elapsed: 0, running: false, display: "00:00:00" };
+let playLabel = ">";
+let pauseLabel = "||";
 
 // Actualizar vista (se espera recibir { elapsed, running, display })
 function renderState(state) {
   if (!state) return;
   lastState = Object.assign({}, lastState, state || {});
-  // Preferimos display si lo envían
+  // Preferimos display si lo envian
   if (timerEl) {
     if (state.display) {
       timerEl.textContent = state.display;
+    } else if (typeof state.elapsed === 'number' && window.RendererTimer && typeof window.RendererTimer.formatTimer === 'function') {
+      timerEl.textContent = window.RendererTimer.formatTimer(state.elapsed);
     } else if (typeof state.elapsed === 'number') {
-    // fallback: formateo simple de segundos
+      // fallback simple
       const totalSeconds = Math.floor(state.elapsed / 1000);
       const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
       const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
@@ -33,8 +37,8 @@ function renderState(state) {
       timerEl.textContent = `${h}:${m}:${s}`;
     }
   }
-  // Estado del botón
-  if (btnToggle) btnToggle.textContent = state.running ? '⏸' : '▶';
+  // Estado del boton
+  if (btnToggle) btnToggle.textContent = state.running ? pauseLabel : playLabel;
 }
 
 if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
@@ -44,7 +48,31 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
   });
 }
 
-// Botones: envían comandos al main
+// Intentar cargar traducciones para los simbolos play/pause (usa renderer.i18n)
+(async () => {
+  try {
+    const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
+    if (!loadRendererTranslations || !tRenderer) return;
+
+    let lang = 'es';
+    if (window.flotanteAPI && typeof window.flotanteAPI.getSettings === 'function') {
+      try {
+        const settings = await window.flotanteAPI.getSettings();
+        if (settings && settings.language) lang = settings.language;
+      } catch (e) { /* noop */ }
+    }
+
+    try { await loadRendererTranslations(lang); } catch (_) { /* noop */ }
+    playLabel = tRenderer("renderer.main.timer.play_symbol", playLabel);
+    pauseLabel = tRenderer("renderer.main.timer.pause_symbol", pauseLabel);
+    // Refrescar boton con la etiqueta traducida actual
+    if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
+  } catch (e) {
+    console.error("Error cargando traducciones en flotante:", e);
+  }
+})();
+
+// Botones: envian comandos al main
 btnToggle.addEventListener('click', () => {
   if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'toggle' });
 });

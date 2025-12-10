@@ -1,15 +1,22 @@
 // public/manual.js
 console.log("Manual editor starting...");
 
-let MAX_TEXT_CHARS = 1e7; // Límite absoluto del tamaño del texto en el editor. Si el contenido total supera este valor, se trunca. Previene cuelgues, lags extremos y OOM.
-const PASTE_ALLOW_LIMIT = 1e4; // Umbral que determina si se permite que el editor de texto haga la inserción nativa en paste/drop.
-const SMALL_UPDATE_THRESHOLD = 2e5; // Define cuándo una actualización externa (desde main) debe aplicarse con mecanismo nativo (rápido, conserva undo/redo) o mediante reemplazo completo del value (más seguro pero incompatible con undo/redo).
+const { AppConstants } = window;
+if (!AppConstants) {
+  throw new Error("[manual] AppConstants no disponible; verifica la carga de constants.js");
+}
+let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Limite absoluto del tamano del texto en el editor. Si el contenido total supera este valor, se trunca. Previene cuelgues, lags extremos y OOM.
+const PASTE_ALLOW_LIMIT = AppConstants.PASTE_ALLOW_LIMIT; // Umbral que determina si se permite que el editor de texto haga la insercion nativa en paste/drop.
+const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Define cuando una actualizacion externa (desde main) debe aplicarse con mecanismo nativo (rapido, conserva undo/redo) o mediante reemplazo completo del value (mas seguro pero incompatible con undo/redo).
 
 (async () => {
   try {
     const cfg = await window.manualAPI.getAppConfig();
-    if (cfg && cfg.maxTextChars) MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
-    // si quieres exponer otros umbrales desde main más adelante, puedes agregarlos al cfg
+    if (AppConstants && typeof AppConstants.applyConfig === "function") {
+      MAX_TEXT_CHARS = AppConstants.applyConfig(cfg);
+    } else if (cfg && cfg.maxTextChars) {
+      MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
+    }
   } catch (e) {
     console.error("manual: no se pudo obtener getAppConfig, usando defaults:", e);
   }
@@ -20,12 +27,11 @@ const SMALL_UPDATE_THRESHOLD = 2e5; // Define cuándo una actualización externa
         idiomaActual = settings.language || "es";
       }
     }
-    await loadEditorTranslations(idiomaActual);
     await applyEditorTranslations();
   } catch (e) {
     console.warn("manual: no se pudieron aplicar traducciones iniciales:", e);
   }
-  // rest of init (getCurrentText etc.) — ya tienes un init existente, integra con el tuyo
+  // rest of init (getCurrentText etc.) -ya tienes un init existente, integra con el tuyo
 })();
 
 const editor = document.getElementById("editorArea");
@@ -39,62 +45,40 @@ let debounceTimer = null;
 const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
 
-// --- i18n loader for modal editor ---
+// --- i18n loader for modal editor (usa RendererI18n global) ---
 let idiomaActual = "es";
-let editorTranslations = null;
-let editorTranslationsLang = null;
+let translationsLoadedFor = null;
 
-async function loadEditorTranslations(lang) {
-  const target = (lang || "").toLowerCase() || "es";
-  if (editorTranslations && editorTranslationsLang === target) return editorTranslations;
-  try {
-    const resp = await fetch(`../i18n/${target}/renderer.json`);
-    if (resp && resp.ok) {
-      const raw = await resp.text();
-      const cleaned = raw.replace(/^\uFEFF/, "");
-      const data = JSON.parse(cleaned || "{}");
-      editorTranslations = data;
-      editorTranslationsLang = target;
-      return data;
-    }
-  } catch (e) {
-    console.warn("No se pudieron cargar traducciones para manual:", e);
-  }
-  editorTranslations = null;
-  editorTranslationsLang = null;
-  return null;
+const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
+if (!loadRendererTranslations || !tRenderer) {
+  throw new Error("[manual] RendererI18n no disponible; no se puede continuar");
 }
 
-function tEditor(path, fallback) {
-  if (!editorTranslations) return fallback;
-  const parts = path.split(".");
-  let cur = editorTranslations;
-  for (const p of parts) {
-    if (cur && Object.prototype.hasOwnProperty.call(cur, p)) {
-      cur = cur[p];
-    } else {
-      return fallback;
-    }
-  }
-  return (typeof cur === "string") ? cur : fallback;
+const tr = (path, fallback) => tRenderer(path, fallback);
+
+async function ensureManualTranslations(lang) {
+  const target = (lang || "").toLowerCase() || "es";
+  if (translationsLoadedFor === target) return;
+  await loadRendererTranslations(target);
+  translationsLoadedFor = target;
 }
 
 async function applyEditorTranslations() {
-  if (!editorTranslations) return;
-  document.title = tEditor("renderer.modal_editor.title", document.title);
-  if (editor) editor.setAttribute("placeholder", tEditor("renderer.modal_editor.placeholder", editor.getAttribute("placeholder") || ""));
-  if (btnCalc) btnCalc.textContent = tEditor("renderer.modal_editor.calc_button", btnCalc.textContent || "");
+  await ensureManualTranslations(idiomaActual);
+  document.title = tr("renderer.modal_editor.title", document.title);
+  if (editor) editor.setAttribute("placeholder", tr("renderer.modal_editor.placeholder", editor.getAttribute("placeholder") || ""));
+  if (btnCalc) btnCalc.textContent = tr("renderer.modal_editor.calc_button", btnCalc.textContent || "");
   if (calcLabel) {
     const chk = calcLabel.querySelector("input");
-    calcLabel.textContent = tEditor("renderer.modal_editor.calc_while_typing", calcLabel.textContent || "");
+    calcLabel.textContent = tr("renderer.modal_editor.calc_while_typing", calcLabel.textContent || "");
     if (chk) calcLabel.prepend(chk);
   }
   if (btnTrash) {
-    btnTrash.textContent = tEditor("renderer.modal_editor.clear", btnTrash.textContent || "");
-    btnTrash.title = tEditor("renderer.modal_editor.clear_title", btnTrash.title || btnTrash.textContent || "");
+    btnTrash.textContent = tr("renderer.modal_editor.clear", btnTrash.textContent || "");
+    btnTrash.title = tr("renderer.modal_editor.clear_title", btnTrash.title || btnTrash.textContent || "");
   }
   if (bottomBar) {
-    bottomBar.setAttribute("aria-label", tEditor("renderer.modal_editor.title", bottomBar.getAttribute("aria-label") || ""));
+    bottomBar.setAttribute("aria-label", tr("renderer.modal_editor.title", bottomBar.getAttribute("aria-label") || ""));
   }
 }
 
@@ -142,8 +126,8 @@ function showNotice(msg, { duration = 4500, type = "info" } = {}) {
     if (type === "error") base.background = "#ffe6e6";
     Object.assign(n.style, base);
     container.appendChild(n);
-    n.addEventListener("click", () => { try { n.remove(); } catch (e) { } });
-    setTimeout(() => { try { n.remove(); } catch (e) { } }, duration);
+    n.addEventListener("click", () => { try { n.remove(); } catch (e) { /* noop */ } });
+    setTimeout(() => { try { n.remove(); } catch (e) { /* noop */ } }, duration);
   } catch (e) {
     console.debug("showNotice error:", e);
   }
@@ -180,7 +164,7 @@ try {
   }
 } catch (e) { console.debug("manual: no se pudo aplicar estilos de wrap:", e); }
 
-/* ---------- Inserción local (mejor preservando undo) ---------- */
+/* ---------- Insercion local (mejor preservando undo) ---------- */
 function tryNativeInsertAtSelection(text) {
   try {
     const start = typeof editor.selectionStart === "number" ? editor.selectionStart : editor.value.length;
@@ -202,7 +186,7 @@ function tryNativeInsertAtSelection(text) {
       return true;
     }
 
-    // última opción: asignación directa
+    // ultima opcion: asignacion directa
     const before = editor.value.slice(0, start);
     const after = editor.value.slice(end);
     editor.value = before + text + after;
@@ -218,9 +202,31 @@ function tryNativeInsertAtSelection(text) {
 function sendCurrentTextToMainWithMeta(action = "insert") {
   try {
     const payload = { text: editor.value, meta: { source: "editor", action } };
-    window.manualAPI.setCurrentText(payload);
+    const res = window.manualAPI.setCurrentText(payload);
+    handleTruncationResponse(res);
   } catch (e) {
-    try { window.manualAPI.setCurrentText(editor.value); } catch (e2) { console.error("Error enviando set-current-text (fallback):", e2); }
+    try {
+      const resFallback = window.manualAPI.setCurrentText(editor.value);
+      handleTruncationResponse(resFallback);
+    } catch (e2) {
+      console.error("Error enviando set-current-text (fallback):", e2);
+    }
+  }
+}
+
+function handleTruncationResponse(resPromise) {
+  try {
+    if (resPromise && typeof resPromise.then === "function") {
+      resPromise.then((r) => {
+        if (r && r.truncated) {
+          Notify.notifyManual("renderer.editor_alerts.text_truncated", { type: "warn", duration: 5000 });
+        }
+      }).catch((err) => {
+        console.error("Error manejando respuesta de truncado:", err);
+      });
+    }
+  } catch (e) {
+    console.error("handleTruncationResponse error:", e);
   }
 }
 
@@ -228,7 +234,7 @@ function insertTextAtCursor(rawText) {
   try {
     const available = MAX_TEXT_CHARS - editor.value.length;
     if (available <= 0) {
-      showNotice(tEditor("renderer.editor_alerts.too_big", "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido."), { type: "warn" });
+      Notify.notifyManual("renderer.editor_alerts.too_big", { type: "warn" });
       restoreFocusToEditor();
       return { inserted: 0, truncated: false };
     }
@@ -240,15 +246,16 @@ function insertTextAtCursor(rawText) {
       truncated = true;
     }
 
-    // Inserción nativa preferida
+    // Insercion nativa preferida
     tryNativeInsertAtSelection(toInsert);
 
     // Notificar main
     sendCurrentTextToMainWithMeta("paste");
 
     if (truncated) {
-      showNotice(tEditor("renderer.editor_alerts.paste_truncated", "El texto pegado se ha truncado para no exceder el máximo permitido."), { type: "warn", duration: 6000 });
+      Notify.notifyManual("renderer.editor_alerts.paste_truncated", { type: "warn", duration: 5000 });
     }
+
     restoreFocusToEditor();
     return { inserted: toInsert.length, truncated };
   } catch (e) {
@@ -292,7 +299,9 @@ async function applyExternalUpdate(payload) {
     }
 
     if (editor.value === newText) {
-      if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn", duration: 5000 });
+      if (truncated) {
+        Notify.notifyManual("renderer.editor_alerts.text_truncated", { type: "warn", duration: 5000 })
+      }
       return;
     }
 
@@ -323,7 +332,7 @@ async function applyExternalUpdate(payload) {
             editor.value = editor.value + toInsert;
             dispatchNativeInputEvent();
           } finally {
-            try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
+            try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
           }
           return;
         } else {
@@ -336,9 +345,11 @@ async function applyExternalUpdate(payload) {
             dispatchNativeInputEvent();
           } finally {
             editor.style.visibility = "";
-            try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
+            try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
           }
-          if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
+          if (truncated) {
+            Notify.notifyManual("renderer.editor_alerts.text_truncated", { type: "warn", duration: 5000 })
+          }
           return;
         }
       }
@@ -348,7 +359,7 @@ async function applyExternalUpdate(payload) {
       if (useNative) {
         try {
           editor.focus();
-          if (typeof editor.select === "function") { try { editor.select(); } catch (e) {} }
+          if (typeof editor.select === "function") { try { editor.select(); } catch (e) { /* noop */ } }
           else if (typeof editor.setSelectionRange === "function") editor.setSelectionRange(0, editor.value.length);
           let execOK = false;
           try { execOK = document.execCommand && document.execCommand("insertText", false, newText); } catch (t) { execOK = false; }
@@ -365,9 +376,11 @@ async function applyExternalUpdate(payload) {
           editor.value = newText;
           dispatchNativeInputEvent();
         } finally {
-          try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
+          try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
         }
-        if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
+        if (truncated) {
+          Notify.notifyManual("renderer.editor_alerts.text_truncated", { type: "warn", duration: 5000 })
+        }
         return;
       } else {
         try {
@@ -379,9 +392,12 @@ async function applyExternalUpdate(payload) {
           dispatchNativeInputEvent();
         } finally {
           editor.style.visibility = "";
-          try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { }
+          try { if (prevActive && prevActive !== editor) prevActive.focus(); } catch (e) { /* noop */ }
         }
-        if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
+        if (truncated)
+          if (truncated) {
+            Notify.notifyManual("renderer.editor_alerts.text_truncated", { type: "warn", duration: 5000 })
+          }
         return;
       }
     }
@@ -397,13 +413,15 @@ async function applyExternalUpdate(payload) {
     } finally {
       editor.style.visibility = "";
     }
-    if (truncated) showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn" });
+    if (truncated) {
+      Notify.notifyManual("renderer.editor_alerts.text_truncated", { type: "warn", duration: 5000 })
+    }
   } catch (e) {
     console.error("applyExternalUpdate error:", e);
   }
 }
 
-/* ---------- inicialización ---------- */
+/* ---------- inicializacion ---------- */
 (async () => {
   try {
     const t = await window.manualAPI.getCurrentText();
@@ -441,15 +459,17 @@ if (editor) {
       ev.stopPropagation();
       const text = (ev.clipboardData && ev.clipboardData.getData("text/plain")) || "";
       if (!text) {
-        showNotice(tEditor("renderer.editor_alerts.clipboard_no_text", "El portapapeles no contiene texto plano."), { type: "warn" });
+        Notify.notifyManual("renderer.editor_alerts.clipboard_no_text", { type: "warn" });
         restoreFocusToEditor();
         return;
       }
+
       if (text.length <= PASTE_ALLOW_LIMIT) {
         insertTextAtCursor(text);
         return;
       }
-      showNotice(tEditor("renderer.editor_alerts.too_big_clipboard", 'Texto demasiado grande para pegar directamente. Usa "Sobrescribir portapapeles" o "Pegar portapapeles nueva línea" desde la ventana principal.'), { type: "warn", duration: 7000 });
+
+      Notify.notifyManual("renderer.editor_alerts.too_big_clipboard", { type: "warn", duration: 5000 });
       restoreFocusToEditor();
     } catch (e) {
       console.error("paste handler error:", e);
@@ -457,47 +477,50 @@ if (editor) {
     }
   });
 
-  // DROP: si es pequeño, permitir la inserción nativa del navegador y luego notificar al main.
+  // DROP: si es pequeno, permitir la insercion nativa del navegador y luego notificar al main.
   editor.addEventListener("drop", (ev) => {
     try {
       const dt = ev.dataTransfer;
       const text = (dt && dt.getData && dt.getData("text/plain")) || "";
       if (!text) {
-        // bloquear y avisar
         ev.preventDefault();
         ev.stopPropagation();
-        showNotice(tEditor("renderer.editor_alerts.drop_no_text", "Arrastrado: no se detectó texto plano."), { type: "warn" });
+        Notify.notifyManual("renderer.editor_alerts.drop_no_text", { type: "warn" });
         restoreFocusToEditor();
         return;
       }
 
       if (text.length > PASTE_ALLOW_LIMIT) {
-        // bloquear grandes como antes
         ev.preventDefault();
         ev.stopPropagation();
-        showNotice(tEditor("renderer.editor_alerts.drop_too_big", "Arrastrado: texto demasiado grande. Usa los botones de la ventana principal para agregar texto grande."), { type: "warn", duration: 7000 });
+        Notify.notifyManual("renderer.editor_alerts.drop_too_big", { type: "warn", duration: 5000 });
         restoreFocusToEditor();
         return;
       }
 
-      // Para tamaños pequeños dejamos que el navegador haga la inserción nativa (no prevenir default).
-      // Posteriormente, en la siguiente tick, notificamos al main que el editor cambió.
+      // Para tamanos pequenos dejamos que el navegador haga la insercion nativa (no prevenir default).
+      // Posteriormente, en la siguiente tick, notificamos al main que el editor cambio.
       setTimeout(() => {
         try {
-          // Asegurar truncado máximo
+          // Asegurar truncado maximo
           if (editor.value.length > MAX_TEXT_CHARS) {
             editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
             dispatchNativeInputEvent();
-            showNotice(tEditor("renderer.editor_alerts.text_truncated", "El texto fue truncado para ajustarse al límite máximo de la aplicación."), { type: "warn", duration: 5000 });
+            Notify.notifyManual("renderer.editor_alerts.drop_truncated", { type: "warn", duration: 5000 });
           }
-          // Notificar al main — marca que viene del editor para evitar eco-back.
-          try { window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "drop" } }); } catch (e) { window.manualAPI.setCurrentText(editor.value); }
+          // Notificar al main -marca que viene del editor para evitar eco-back.
+          try {
+            const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "drop" } });
+            handleTruncationResponse(res);
+          } catch (e) {
+            try { const resFallback = window.manualAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ }
+          }
         } catch (e) {
           console.error("drop postprocess error:", e);
         }
       }, 0);
 
-      // NO preventDefault: permitimos inserción nativa
+      // NO preventDefault: permitimos insercion nativa
     } catch (e) {
       console.error("drop handler error:", e);
       restoreFocusToEditor();
@@ -511,12 +534,13 @@ editor.addEventListener("input", () => {
 
   if (editor.value && editor.value.length > MAX_TEXT_CHARS) {
     editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
-    showNotice(tEditor("renderer.editor_alerts.truncated_limit", "El texto ha sido truncado al límite máximo permitido por la aplicación."), { type: "warn", duration: 6000 });
+    Notify.notifyManual("renderer.editor_alerts.truncated_limit", { type: "warn", duration: 5000 });
     try {
-      window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "truncated" } });
+      const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "truncated" } });
+      handleTruncationResponse(res);
     } catch (e) {
       console.error("manual: error enviando set-current-text tras truncado:", e);
-      try { window.manualAPI.setCurrentText(editor.value); } catch (e2) { }
+      try { const resFallback = window.manualAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ }
     }
     restoreFocusToEditor();
     return;
@@ -527,9 +551,10 @@ editor.addEventListener("input", () => {
     if (calcWhileTyping && calcWhileTyping.checked) {
       debounceTimer = setTimeout(() => {
         try {
-          window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "typing" } });
+          const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: "editor", action: "typing" } });
+          handleTruncationResponse(res);
         } catch (e) {
-          try { window.manualAPI.setCurrentText(editor.value); } catch (e2) { console.error("Error enviando set-current-text typing:", e2); }
+          try { const resFallback = window.manualAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { console.error("Error enviando set-current-text typing:", e2); }
         }
       }, DEBOUNCE_MS);
     }
@@ -540,18 +565,19 @@ editor.addEventListener("input", () => {
 btnTrash.addEventListener("click", () => {
   editor.value = "";
   // immediately update main
-  try { window.manualAPI.setCurrentText({ text: "", meta: { source: "editor", action: "clear" } }); } catch (e) { window.manualAPI.setCurrentText(""); }
+  try { const res = window.manualAPI.setCurrentText({ text: "", meta: { source: "editor", action: "clear" } }); handleTruncationResponse(res); } catch (e) { try { const resFallback = window.manualAPI.setCurrentText(""); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ } }
   restoreFocusToEditor();
 });
 
 // CALCULAR button behavior: only active when automatic calculation is disabled
 if (btnCalc) btnCalc.addEventListener("click", () => {
   try {
-    window.manualAPI.setCurrentText({ text: editor.value || "", meta: { source: "editor", action: "overwrite" } });
-    // Do not close the modal or ask anything — per spec
+    const res = window.manualAPI.setCurrentText({ text: editor.value || "", meta: { source: "editor", action: "overwrite" } });
+    handleTruncationResponse(res);
+    // Do not close the modal or ask anything -per spec
   } catch (e) {
     console.error("Error ejecutando CALCULAR:", e);
-    showNotice(tEditor("renderer.editor_alerts.calc_error", "Ocurrió un error al calcular. Revisa la consola."), { type: "error", duration: 5000 });
+    Notify.notifyManual("renderer.editor_alerts.calc_error", { type: "error", duration: 5000 });
     restoreFocusToEditor();
   }
 });
@@ -562,7 +588,12 @@ if (calcWhileTyping) calcWhileTyping.addEventListener("change", () => {
     // enable automatic sending; disable CALCULAR
     btnCalc.disabled = true;
     // Also send current content once to keep sync
-    try { window.manualAPI.setCurrentText({ text: editor.value || "", meta: { source: "editor", action: "typing_toggle_on" } }); } catch (e) { window.manualAPI.setCurrentText(editor.value || ""); }
+    try {
+      const res = window.manualAPI.setCurrentText({ text: editor.value || "", meta: { source: "editor", action: "typing_toggle_on" } });
+      handleTruncationResponse(res);
+    } catch (e) {
+      try { const resFallback = window.manualAPI.setCurrentText(editor.value || ""); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ }
+    }
     // disable automatic sending; enable CALCULAR
   } else btnCalc.disabled = false;
 });
