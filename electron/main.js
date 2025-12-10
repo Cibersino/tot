@@ -484,99 +484,126 @@ function createMainWindow() {
 }
 
 function createEditorWindow() {
-  const modalState = loadJson(MODAL_STATE_FILE, {});
-  // Default size if not present
-  const defaults = { width: 1200, height: 800, x: undefined, y: undefined, maximized: false };
-  const w = modalState.width || defaults.width;
-  const h = modalState.height || defaults.height;
-  const x = typeof modalState.x === 'number' ? modalState.x : undefined;
-  const y = typeof modalState.y === 'number' ? modalState.y : undefined;
+  // Cargamos estado previo (nuevo formato)
+  const state = loadJson(MODAL_STATE_FILE, {
+    maximized: true,       // primera vez → abrir maximizado
+    reduced: null          // aquí guardaremos dimensiones reducidas persistentes
+  });
 
+  // Si hay estado reducido guardado
+  const hasReduced = state.reduced &&
+    typeof state.reduced.width === "number" &&
+    typeof state.reduced.height === "number" &&
+    typeof state.reduced.x === "number" &&
+    typeof state.reduced.y === "number";
+
+  // Construir ventana usando estado reducido si existe
   editorWin = new BrowserWindow({
-    width: w,
-    height: h,
-    x: x,
-    y: y,
+    width: hasReduced ? state.reduced.width : 1200,
+    height: hasReduced ? state.reduced.height : 800,
+    x: hasReduced ? state.reduced.x : undefined,
+    y: hasReduced ? state.reduced.y : undefined,
     resizable: true,
     minimizable: true,
     maximizable: true,
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, 'manual_preload.js'),
+      preload: path.join(__dirname, "manual_preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false
     }
   });
 
-  // Remove the menu bar on the modal/editor window
   editorWin.setMenu(null);
   editorWin.setMenuBarVisibility(false);
+  editorWin.loadFile(path.join(__dirname, "../public/manual.html"));
 
-  editorWin.loadFile(path.join(__dirname, '../public/manual.html'));
-
-  // Show: if no modal_state exists, open maximized the first time
-  const stateExists = fs.existsSync(MODAL_STATE_FILE);
   editorWin.once("ready-to-show", () => {
-    if (!stateExists) {
+    // REGLA A + C: abrir maximizada si corresponde
+    if (state.maximized === true) {
       editorWin.maximize();
-    } else {
-      if (modalState.maximized) {
-        editorWin.maximize();
-      }
     }
 
     editorWin.show();
 
-    // Enviar objeto estructurado al preload
+    // Enviar current text
     try {
       editorWin.webContents.send("manual-init-text", {
         text: currentText || "",
-        meta: {
-          source: "main",
-          action: "init"
-        }
+        meta: { source: "main", action: "init" }
       });
-    } catch (err) {
-      console.error("Error enviando manual-init-text:", err);
-    }
-    // Notificar a la ventana principal que el editor ya se mostro (para ocultar loader)
+    } catch (_) {}
+
+    // Notificar a la ventana principal
     try {
       if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send('manual-editor-ready');
+        mainWin.webContents.send("manual-editor-ready");
       }
-    } catch (notifyErr) {
-      console.warn("No se pudo notificar manual-editor-ready:", notifyErr);
+    } catch (_) {}
+  });
+
+  // REGLA B — Cuando el usuario mueve o redimensiona la ventana NO maximizada, guardamos reducedState
+  const saveReducedState = () => {
+    if (!editorWin || editorWin.isDestroyed()) return;
+    if (editorWin.isMaximized()) return;
+
+    const b = editorWin.getBounds();
+    const newState = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
+
+    newState.reduced = {
+      width: b.width,
+      height: b.height,
+      x: b.x,
+      y: b.y
+    };
+
+    saveJson(MODAL_STATE_FILE, newState);
+  };
+
+  editorWin.on("resize", saveReducedState);
+  editorWin.on("move", saveReducedState);
+
+  // REGLA C — Al maximizar: marcar maximized = true pero NO tocar reducedState
+  editorWin.on("maximize", () => {
+    const st = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
+    st.maximized = true;
+    saveJson(MODAL_STATE_FILE, st);
+  });
+
+  // REGLA B — Al desmaximizar: restaurar reducedState guardado, si existe
+  editorWin.on("unmaximize", () => {
+    const st = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
+    st.maximized = false;
+    saveJson(MODAL_STATE_FILE, st);
+
+    if (st.reduced) {
+      editorWin.setBounds(st.reduced);
+    } else {
+      // REGLA D fallback: mitad del monitor actual + esquina sup. derecha
+      const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+      const wa = display.workArea;
+
+      const w = Math.round(wa.width / 2);
+      const h = Math.round(wa.height / 2);
+      const x = wa.x + wa.width - w - 20;
+      const y = wa.y + 20;
+
+      const reduced = { width: w, height: h, x, y };
+      editorWin.setBounds(reduced);
+
+      st.reduced = reduced;
+      saveJson(MODAL_STATE_FILE, st);
     }
   });
 
-  editorWin.on('close', () => {
-    try {
-      const bounds = editorWin.getBounds();
-      const modalStateToSave = Object.assign({}, loadJson(MODAL_STATE_FILE, {}), {
-        width: bounds.width,
-        height: bounds.height,
-        x: bounds.x,
-        y: bounds.y,
-        maximized: editorWin.isMaximized()
-      });
-      saveJson(MODAL_STATE_FILE, modalStateToSave);
-    } catch (e) {
-      console.error("Error guardando estado modal:", e);
-    }
+  // REGLA C — Al cerrar: guardar maximized, pero NO destruir reducedState existente
+  editorWin.on("close", () => {
+    const st = loadJson(MODAL_STATE_FILE, { maximized: false, reduced: null });
+    st.maximized = editorWin.isMaximized();
+    // reduced ya fue mantenido vivo por los listeners
+    saveJson(MODAL_STATE_FILE, st);
     editorWin = null;
-  });
-
-  editorWin.on('maximize', () => {
-    const state = loadJson(MODAL_STATE_FILE, {});
-    state.maximized = true;
-    saveJson(MODAL_STATE_FILE, state);
-  });
-
-  editorWin.on('unmaximize', () => {
-    const state = loadJson(MODAL_STATE_FILE, {});
-    state.maximized = false;
-    saveJson(MODAL_STATE_FILE, state);
   });
 }
 
