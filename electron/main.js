@@ -4,7 +4,15 @@ const https = require('https');
 const path = require('path');
 const fs = require('fs');
 
-const CONFIG_DIR = path.join(__dirname, '..', 'config');
+const {
+  CONFIG_DIR,
+  CONFIG_PRESETS_DIR,
+  ensureConfigDir,
+  ensureConfigPresetsDir,
+  loadJson,
+  saveJson
+} = require('./fs_storage');
+
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
 const MODAL_STATE_FILE = path.join(CONFIG_DIR, 'modal_state.json');
@@ -179,33 +187,6 @@ function loadDefaultPresetsCombined(lang) {
   return combined;
 }
 
-function ensureConfigDir() {
-  try {
-    if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  } catch (e) {
-    console.error("No se pudo crear config dir:", e);
-  }
-}
-
-function loadJson(filePath, fallback = {}) {
-  try {
-    if (!fs.existsSync(filePath)) return fallback;
-    const raw = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(raw || '{}');
-  } catch (e) {
-    console.error(`Error leyendo JSON ${filePath}:`, e);
-    return fallback;
-  }
-}
-
-function saveJson(filePath, obj) {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
-  } catch (e) {
-    console.error(`Error escribiendo JSON ${filePath}:`, e);
-  }
-}
-
 // Normalizar settings: asegurar campos por defecto sin sobrescribir los existentes
 function normalizeSettings(s) {
   s = s || {};
@@ -239,15 +220,6 @@ const MAX_TEXT_CHARS = 10000000;
 
 // --- Presets defaults: copia inicial (JS -> JSON) en config/presets_defaults ---
 const PRESETS_SOURCE_DIR = path.join(__dirname, "presets"); // carpeta original: electron/presets
-const CONFIG_PRESETS_DIR = path.join(CONFIG_DIR, "presets_defaults");
-
-function ensureConfigPresetsDir() {
-  try {
-    fs.existsSync(CONFIG_PRESETS_DIR) || fs.mkdirSync(CONFIG_PRESETS_DIR, { recursive: true });
-  } catch (err) {
-    console.error("No se pudo crear config/presets_defaults:", err);
-  }
-}
 
 function copyDefaultPresetsIfMissing() {
   try {

@@ -1,368 +1,529 @@
-# LISTA EXACTA DE BLOQUES A MODULARIZAR DESDE `electron/main.js`
+# MODULARIZACIÓN DE `main.js`  
+**Proyecto:** toT — Reading Meter  
+**Documento maestro — versión corregida**  
+**Este documento se actualiza paso por paso.**
 
 ---
 
-# MÓDULO 1 — **modal_state.js**
+# 1. Objetivo del proceso
 
-### Estado persistente del editor manual
+Transformar `electron/main.js` desde un archivo monolítico grande a un **archivo coordinador** claro y mantenible, delegando responsabilidades en módulos internos bien definidos, **sin alterar ninguna funcionalidad de la app**.
 
-**RIESGO: muy bajo**
+Esto incluye:
 
-Este módulo se encargará de:
+- Mantener intacto el cronómetro global.
+- Mantener intacta la ventana flotante.
+- Conservar toda la comunicación IPC actual (nombres de canales y shape de payloads).
+- Mantener los módulos ya existentes del renderer (`public/js/*.js`) sin duplicar responsabilidades.
+- Dividir el código en módulos naturales sin romper la arquitectura Electron.
 
-### BLOQUES A EXTRAER:
-
-#### 1. Lectura del archivo `modal_state.json`
-
-En main.js, aparece en la creación de la ventana del editor:
-
-```js
-const state = loadJson(MODAL_STATE_FILE, { maximized: true, reduced: null });
-```
-
-Debe moverse toda la lógica de lectura y escritura para que main.js solo use:
-
-```js
-const editorState = modalState.load();
-```
-
-#### 2. Función `saveReducedState`
-
-Código típico:
-
-```js
-const saveReducedState = () => {
-   if (!editorWin || editorWin.isDestroyed()) return;
-   if (editorWin.isMaximized()) return;
-   const b = editorWin.getBounds();
-   const st = loadJson(MODAL_STATE_FILE, ...);
-   st.reduced = { width: b.width, height: b.height, x: b.x, y: b.y };
-   saveJson(...);
-};
-```
-
-Debe moverse COMPLETA.
-
-#### 3. Listeners del editor relacionados con modal_state:
-
-* `"resize"` → invoca saveReducedState
-* `"move"` → invoca saveReducedState
-* `"maximize"` → guardar `{ maximized: true }`
-* `"unmaximize"` → restaurar `state.reduced` o fallback
-* `"close"` → persistir `maximized`
-
-### LO QUE DEBE QUEDARSE EN main.js:
-
-* La creación de la ventana (`new BrowserWindow({ ... })`).
-* El wiring de listeners:
-
-```js
-modalState.attachTo(editorWin);
-```
+Cada paso debe ser probado antes de continuar.
 
 ---
 
-# MÓDULO 2 — **text_state.js**
+# 2. Arquitectura actual del proyecto (resumen)
 
-### Manejo de `current_text.json` y sincronización principal
+## 2.1 Capas de la aplicación
 
-**RIESGO: bajo**
+- **Proceso Principal (Main Process)**
+  - `electron/main.js`
+  - `electron/presets/*.js`
+  - `electron/preload.js`, `manual_preload.js`, `preset_preload.js`, `flotante_preload.js`, `language_preload.js`
+  - (futuro) `electron/settings.js`, `electron/text_state.js`, `electron/modal_state.js`, `electron/presets_main.js`, `electron/menu_builder.js`, `electron/fs_storage.js`, `electron/updater.js`
 
-### BLOQUES A EXTRAER:
+- **Renderers**
+  - Ventana principal: `public/index.html` + `public/renderer.js`
+  - Editor manual: `public/manual.html` + `public/manual.js`
+  - Ventana flotante: `public/flotante.html` + `public/flotante.js`
+  - Modal de presets: `public/preset_modal.html` + `public/preset_modal.js`
+  - Modal de idioma: `public/language_modal.html` + `public/language_modal.js`
 
-#### 1. Lectura inicial del texto:
+- **Utilidades renderer (`public/js`)**
+  - `constants.js`, `count.js`, `format.js`, `i18n.js`, `menu.js`, `notify.js`, `presets.js`, `timer.js`
 
-```js
-currentText = loadJson(CURRENT_TEXT_FILE, "");
-```
+- **i18n**
+  - `i18n/<lang>/main.json` (proceso principal: menús y diálogos)
+  - `i18n/<lang>/renderer.json` (renderers)
+  - `i18n/<lang>/numberFormat.json` (formato numérico)
 
-#### 2. Lógica de truncado:
-
-* Por `MAX_TEXT_CHARS`
-* Truncado silencioso o notificado
-* Guardado inmediato
-
-#### 3. Handlers IPC:
-
-```js
-ipcMain.handle("get-current-text", ...)
-ipcMain.handle("set-current-text", ...)
-ipcMain.on("force-clear-editor", ...)
-```
-
-#### 4. Persistencia al cerrar:
-
-```js
-app.on("before-quit", () => { ... persist text ... });
-```
-
-#### 5. Eventos a otras ventanas:
-
-* Envío al editor: `"manual-init-text"`
-* Broadcast a renderer: `"manual-text-updated"`
-
-### LO QUE DEBE QUEDARSE EN main.js:
-
-* Nada de la lógica: main no debe gestionar texto directamente.
-* Solo las llamadas:
-
-```js
-const textState = require("./text_state");
-```
+- **Datos persistentes (`config/`)**
+  - `user_settings.json`
+  - `current_text.json`
+  - `modal_state.json`
+  - `presets_defaults/*.json` (copiados desde `electron/presets/*.js`)
 
 ---
 
-# MÓDULO 3 — **settings.js**
+# 3. Qué YA existe y no se debe duplicar
 
-### Manejo de configuración del usuario
+## 3.1 Renderer (`public/js/*.js`)
 
-**RIESGO: bajo**
+- `constants.js` → `window.AppConstants`
+- `count.js` → conteo de texto (`CountUtils`)
+- `format.js` → formato numérico (`FormatUtils`)
+- `i18n.js` → traducciones renderer (`RendererI18n`)
+- `menu.js` → router de menú (`window.menuActions`)
+- `notify.js` → sistema de notificaciones (`window.Notify`)
+- `presets.js` → gestión de presets en el renderer (`RendererPresets`)
+- `timer.js` → lógica del cronómetro en renderer (`RendererTimer`)
 
-### BLOQUES A EXTRAER:
+No se crea ningún módulo nuevo que repita lógica ya implementada aquí.
 
-#### 1. Normalización de settings:
+## 3.2 Preloads
 
-El bloque:
+- `electron/preload.js` → `window.electronAPI` (ventana principal)
+- `electron/manual_preload.js` → `window.manualAPI`
+- `electron/flotante_preload.js` → `window.flotanteAPI`
+- `electron/preset_preload.js` → `window.presetAPI`
+- `electron/language_preload.js` → `window.languageAPI`
 
-```js
-function normalizeSettings(s) {
-  ...
-}
-```
+Su API pública no se modifica (nombres de métodos y canales IPC se conservan).
 
-#### 2. Carga y guardado inicial de `user_settings.json`:
+## 3.3 Presets por defecto
 
-```js
-let settings = loadJson(SETTINGS_FILE, { ... });
-settings = normalizeSettings(settings);
-```
-
-#### 3. Handlers IPC:
-
-```js
-ipcMain.handle("get-settings", ...)
-ipcMain.handle("set-language", ...)
-ipcMain.handle("set-mode-conteo", ...)
-```
-
-#### 4. Broadcast correspondiente a:
-
-```js
-mainWin.webContents.send("settings-updated", settings);
-editorWin?.webContents.send("settings-updated", settings);
-presetWin?.webContents.send("settings-updated", settings);
-```
-
-#### 5. Number formatting defaults:
-
-Carga de:
-
-```
-i18n/<lang>/numberFormat.json
-```
-
-### LO QUE DEBE QUEDARSE EN main.js:
-
-* El valor actual de `currentLanguage` (pero puede moverse también si lo deseas).
+- `electron/presets/defaults_presets*.js`  
+  Son la fuente de verdad de los presets por defecto.  
+  No se mueven ni se duplican.
 
 ---
 
-# MÓDULO 4 — **menu_builder.js**
+# 4. Responsabilidades actuales de `main.js` a modularizar
 
-### Construcción del menú nativo
+`main.js` mezcla actualmente las siguientes responsabilidades:
 
-**RIESGO: muy bajo**
+1. Gestión de estado del editor manual (`modal_state.json`).
+2. Gestión del texto actual (`current_text.json` + broadcasts a renderer y editor).
+3. Gestión de settings del usuario (`user_settings.json`, idioma, modo conteo, formato numérico).
+4. Construcción del menú nativo (i18n main).
+5. Sistema de presets (defaults + usuario, confirmaciones, diálogos nativos).
+6. Sistema de actualizaciones remotas (versiones, diálogos, fetch).
+7. Acceso genérico a FS: `loadJson`, `saveJson`, `ensureConfigDir`, etc.
+8. Creación de ventanas y ciclo de vida de la app.
+9. Cronómetro global y coordinación con ventana flotante.
 
-### BLOQUES A EXTRAER:
-
-#### 1. Lógica de carga de traducciones para main:
-
-```js
-loadMainTranslations(lang)
-getDialogTexts(id)
-```
-
-#### 2. Menú propiamente tal:
-
-```js
-function buildAppMenu(lang) {
-  const template = [ ... ];
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
-}
-```
-
-#### 3. Emisión de `menu-click`:
-
-Cada item:
-
-```js
-click(_, browserWindow) {
-   browserWindow.webContents.send("menu-click", "action-id");
-}
-```
-
-### LO QUE DEBE QUEDARSE EN main.js:
-
-* Solo una llamada:
-
-```js
-menuBuilder.build(lang);
-```
+Los puntos 8 y 9 **NO** se moverán de `main.js`.  
+Los demás se modularizan.
 
 ---
 
-# MÓDULO 5 — **presets_main.js**
+# 5. Módulos destino y responsabilidades (versión corregida)
 
-### Manejo completo de presets en el proceso principal
+## MÓDULO 1 — `fs_storage.js`
 
-**RIESGO: medio**
+### Rol
 
-### BLOQUES A EXTRAER:
+Centralizar utilidades de acceso a disco usadas por `main.js` y otros módulos internos del proceso principal.
 
-#### 1. Carga combinada de presets por defecto:
+### Bloques a extraer de `main.js`
 
-```js
-function loadDefaultPresetsCombined(lang) { ... }
-```
+1. `loadJson(filePath, defaultValue)`
+2. `saveJson(filePath, data)`
+3. `ensureConfigDir()` (crear `config/` si no existe)
+4. `ensureConfigPresetsDir()` (crear `config/presets_defaults/` si no existe)
 
-#### 2. Copia inicial de presets desde `/electron/presets/*.js` hacia `/config/presets_defaults/*.json`.
+> Nota: la lógica de copiar presets por defecto desde `electron/presets/*.js` hacia `config/presets_defaults/*.json` se mantiene en `presets_main.js`, pero usando estos helpers de FS.
 
-#### 3. Handlers IPC:
-
-* `"create-preset"`
-* `"edit-preset"`
-* `"request-delete-preset"`
-* `"request-restore-defaults"`
-* `"get-default-presets"`
-* `"notify-no-selection-edit"`
-
-Cada uno de estos hace:
-
-* Validación
-* Edición de archivos
-* Emisión de eventos hacia ventanas:
+### En `main.js` quedará solo:
 
 ```js
-mainWin.webContents.send("preset-created", { name });
-editorWin?.webContents.send("preset-updated", { ... });
-presetWin?.webContents.send("preset-updated", { ... });
-```
-
-### LO QUE DEBE QUEDARSE EN main.js:
-
-* Llamada a:
-
-```js
-presetsMain.register(ipcMain, {...});
-```
-
-* Creación de presetWin.
+const { loadJson, saveJson, ensureConfigDir, ensureConfigPresetsDir } = require("./fs_storage");
+````
 
 ---
 
-# MÓDULO 6 — **updater.js** (ya existe pero vacío)
+## MÓDULO 2 — `modal_state.js`
 
-### Manejo de actualización remota
+### Rol
 
-**RIESGO: muy bajo**
+Gestionar el estado persistente del editor manual (`modal_state.json`) y encapsular la lógica de:
 
-### BLOQUES A EXTRAER:
+* Maximizado / reducido.
+* Recuerdo de posición y tamaño en modo reducido.
+* Fallback en caso de no existir estado previo.
 
-#### 1. compareVersions
+### Bloques a extraer de `main.js`
 
-#### 2. fetchRemoteVersion
+1. Lectura inicial del archivo `modal_state.json`:
 
-#### 3. checkForUpdates
+   ```js
+   const state = loadJson(MODAL_STATE_FILE, { maximized: true, reduced: null });
+   ```
 
-#### 4. Handler IPC:
+2. Función `saveReducedState` y funciones auxiliares asociadas.
+
+3. Lógica de actualización de `maximized`/`reduced`:
+
+   * En los listeners de la ventana del editor:
+
+     * `"resize"` → guarda estado reducido si no está maximizada.
+     * `"move"` → idem.
+     * `"maximize"` → marca `maximized: true`.
+     * `"unmaximize"` → restaura `reduced` o aplica fallback (mitad de pantalla pegada arriba a la derecha).
+     * `"close"` → persiste `maximized`.
+
+### API interna sugerida
 
 ```js
-ipcMain.handle("check-for-updates", ...)
+// modal_state.js
+function loadInitialState(loadJson) { ... }   // devuelve { maximized, reduced }
+function attachTo(editorWin, loadJson, saveJson) { ... }
+
+module.exports = { loadInitialState, attachTo };
 ```
 
-### LO QUE DEBE QUEDARSE EN main.js:
+### Lo que queda en `main.js`
 
-* Nada.
-* Solo:
+* Creación de la ventana editor (`new BrowserWindow(...)`).
+* Uso de:
+
+  ```js
+  const editorState = modalState.loadInitialState(loadJson);
+
+  // aplicar editorState al crear la ventana
+
+  modalState.attachTo(editorWin, loadJson, saveJson);
+  ```
+
+---
+
+## MÓDULO 3 — `text_state.js`
+
+### Rol
+
+Centralizar el estado del texto compartido (`current_text`) en el proceso principal:
+
+* Carga inicial desde `current_text.json`.
+* Truncado inicial a `MAX_TEXT_CHARS`.
+* Persistencia en disco.
+* IPC `get-current-text` / `set-current-text`.
+* `force-clear-editor`.
+* Broadcast de cambios a renderer (`manual-text-updated`).
+
+### Bloques a extraer de `main.js`
+
+1. Lectura inicial:
+
+   ```js
+   currentText = loadJson(CURRENT_TEXT_FILE, "");
+   // + truncado inicial + guardado si hubo cambios
+   ```
+
+2. Lógica de truncado (por `MAX_TEXT_CHARS`), incluyendo guardado inmediato si se modifica.
+
+3. Handlers IPC:
+
+   ```js
+   ipcMain.handle("get-current-text", ...)
+   ipcMain.handle("set-current-text", ...)
+   ipcMain.on("force-clear-editor", ...)
+   ```
+
+4. Persistencia al cerrar:
+
+   ```js
+   app.on("before-quit", () => { ... persist text ... });
+   ```
+
+5. Broadcast de cambios al renderer:
+
+   * Envío de `"manual-text-updated"` cuando el texto cambia desde editor/manual o renderer.
+
+### Punto importante corregido
+
+El envío de `"manual-init-text"` al editor manual **NO** se mueve a `text_state.js`, porque:
+
+* Está acoplado a la secuencia de creación y `ready-to-show` de `editorWin`.
+* Depende de la existencia de la ventana y del canal IPC correspondiente.
+
+Por lo tanto:
+
+* `text_state.js` expone una función para leer el texto actual (`getCurrentText()`).
+* `main.js` usa esa función dentro de `createEditorWindow()` para enviar:
+
+  ```js
+  editorWin.webContents.send("manual-init-text", { text, meta });
+  ```
+
+### API interna sugerida
 
 ```js
-updater.register(ipcMain);
+// text_state.js
+function init(loadJson, saveJson, app /* u objeto para subscribir before-quit */) { ... }
+function registerIpc(ipcMain, windowsRef) { ... } // para manual-text-updated, force-clear, etc.
+function getCurrentText() { ... }
+
+module.exports = { init, registerIpc, getCurrentText };
 ```
 
 ---
 
-# MÓDULO 7 — fs_storage.js**
+## MÓDULO 4 — `settings.js`
 
-### Manejo estandarizado de `loadJson` / `saveJson` / ensureDir
+### Rol
 
-**RIESGO: cero**
+Gestionar la configuración del usuario (`user_settings.json`), incluyendo:
 
-### BLOQUES A EXTRAER:
+* `language` (idioma actual).
+* `modeConteo` (modo de conteo).
+* Otros campos de configuración general (incluidos `presets`, pero **sin** implementar la lógica de manipulación de estos; la lógica de presets va en `presets_main.js`).
 
-#### 1. loadJson
+### Bloques a extraer de `main.js`
 
-#### 2. saveJson
+1. Normalización de settings:
 
-#### 3. ensureConfigDir
+   ```js
+   function normalizeSettings(s) { ... }
+   ```
 
-#### 4. ensureConfigPresetsDir
+2. Carga inicial de `user_settings.json`:
 
-### LO QUE DEBE QUEDARSE EN main.js:
+   ```js
+   let settings = loadJson(SETTINGS_FILE, { ... });
+   settings = normalizeSettings(settings);
+   ```
 
-* Solo llamar:
+3. Handlers IPC relacionados con configuración general:
+
+   ```js
+   ipcMain.handle("get-settings", ...)
+   ipcMain.handle("set-language", ...)
+   ipcMain.handle("set-mode-conteo", ...)
+   ```
+
+4. Broadcast de cambios de settings a las ventanas:
+
+   ```js
+   mainWin.webContents.send("settings-updated", settings);
+   editorWin?.webContents.send("settings-updated", settings);
+   presetWin?.webContents.send("settings-updated", settings);
+   floatingWin?.webContents.send("settings-updated", settings);
+   ```
+
+5. Carga de `i18n/<lang>/numberFormat.json` y cualquier cacheo asociado (para formato numérico en renderer).
+
+### Matiz importante
+
+* `settings.js` sigue cargando y guardando el objeto completo de settings (incluyendo el arreglo `presets`).
+* **Pero** no modifica ni decide la lógica de creación/edición/borrado de presets; eso lo hace `presets_main.js`, que utiliza `settings.js` como fuente de settings.
+
+---
+
+## MÓDULO 5 — `menu_builder.js`
+
+### Rol
+
+Construir el menú nativo de la aplicación, localizado según `i18n/<lang>/main.json`, y enviar `menu-click` al renderer.
+
+### Bloques a extraer de `main.js`
+
+1. Carga de traducciones de main:
+
+   ```js
+   function loadMainTranslations(lang) { ... }
+   function getDialogTexts(lang) { ... }
+   ```
+
+2. Construcción del menú:
+
+   ```js
+   function buildAppMenu(lang) {
+     const template = [ ... ];
+     const menu = Menu.buildFromTemplate(template);
+     Menu.setApplicationMenu(menu);
+   }
+   ```
+
+3. Envío de `menu-click` desde los items del menú:
+
+   ```js
+   click(_, browserWindow) {
+     browserWindow.webContents.send("menu-click", "action-id");
+   }
+   ```
+
+### En `main.js` quedará:
 
 ```js
-const { loadJson, saveJson, ensureConfigDir } = require("./fs_storage");
+const menuBuilder = require("./menu_builder");
+// ...
+menuBuilder.buildAppMenu(currentLanguage, mainWin /* si lo necesita */);
 ```
 
 ---
 
-# MÓDULO 8 — **window_manager.js**
+## MÓDULO 6 — `presets_main.js`
 
-### Complemento de creación de ventanas
+### Rol
 
-**RIESGO: depende**
+Gestionar toda la lógica de presets en el proceso principal:
 
-Se puede extraer:
+* Carga combinada de presets por defecto (general + por idioma).
+* Integración con `electron/presets/*.js` y `config/presets_defaults/*.json`.
+* Manipulación de `settings.presets` (crear, editar, borrar).
+* Diálogos nativos (`dialog.showMessageBox`) para confirmaciones.
+* Restauración de presets por defecto.
+* IPC relacionados con presets.
 
-* createPresetWindow
-* createLanguageWindow
+### Bloques a extraer de `main.js`
 
-**PERO NO:**
+1. Función para cargar presets por defecto combinados:
 
-* createMainWindow
-* createFloatingWindow
-* createEditorWindow
+   ```js
+   function loadDefaultPresetsCombined(lang) { ... }
+   ```
 
-Porque estos están demasiado acoplados al ciclo de vida de la app.
+2. Lógica de copia inicial de presets desde `/electron/presets/*.js` hacia `/config/presets_defaults/*.json` (usando helpers de `fs_storage.js`).
+
+3. Handlers IPC:
+
+   ```js
+   ipcMain.handle("create-preset", ...)
+   ipcMain.handle("edit-preset", ...)
+   ipcMain.handle("request-delete-preset", ...)
+   ipcMain.handle("request-restore-defaults", ...)
+   ipcMain.handle("get-default-presets", ...)
+   ipcMain.handle("open-default-presets-folder", ...)
+   ```
+
+4. Emisión de eventos hacia ventanas:
+
+   ```js
+   mainWin.webContents.send("preset-created", { name });
+   editorWin?.webContents.send("preset-updated", { ... });
+   presetWin?.webContents.send("preset-updated", { ... });
+   ```
+
+### En `main.js` quedará:
+
+* Creación de la ventana de presets (`presetWin`).
+* Registro global:
+
+  ```js
+  const presetsMain = require("./presets_main");
+  presetsMain.register(ipcMain, {
+    mainWinRef: () => mainWin,
+    editorWinRef: () => editorWin,
+    presetWinRef: () => presetWin,
+    loadJson,
+    saveJson,
+    ensureConfigPresetsDir,
+    SETTINGS_FILE,
+    CONFIG_PRESETS_DIR
+  });
+  ```
 
 ---
 
-# RESUMEN FINAL DE EXTRACCIÓN
+## MÓDULO 7 — `updater.js` (ya existe, ahora con lógica real)
 
-| Módulo                       | Bloques que se mueven             | Riesgo     |
-| ---------------------------- | --------------------------------- | ---------- |
-| modal_state.js               | Estado del editor manual          | Muy bajo   |
-| text_state.js                | current_text + IPC + broadcast    | Bajo       |
-| settings.js                  | user_settings + IPC + language    | Bajo       |
-| menu_builder.js              | Menú + i18n main                  | Muy bajo   |
-| presets_main.js              | TODA la lógica de presets en main | Medio      |
-| updater.js                   | Actualizaciones                   | Muy bajo   |
-| fs_storage.js                | loadJson/saveJson/etc             | Cero       |
-| window_manager.js            | ventanas secundarias              | Bajo–medio |
+### Rol
+
+Gestionar el sistema de actualizaciones:
+
+* Comparar versiones.
+* Consultar versión remota.
+* Mostrar diálogos de actualización.
+
+### Bloques a extraer de `main.js`
+
+1. `compareVersions(local, remote)`
+2. `fetchRemoteVersion()` (y cualquier lógica HTTP asociada).
+3. `checkForUpdates()` y variantes.
+4. Handler IPC opcional:
+
+   ```js
+   ipcMain.handle("check-for-updates", ...)
+   ```
+
+### En `main.js` quedará solo:
+
+```js
+const updater = require("./updater");
+updater.register(ipcMain, { mainWinRef: () => mainWin });
+```
 
 ---
 
-# BLOQUES QUE DEBEN MANTENERSE EN `main.js` (NO SE MUEVEN)
+# 6. Resumen final de extracción (versión corregida)
 
-1. **Cronómetro completo**
-2. **Ventana flotante**
-3. **Ventana principal**
-4. **IPC de cronómetro**
-5. **Apertura/cierre de ventanas**
-6. **app.whenReady / ciclo de vida**
+| Módulo            | Bloques que se mueven                                               | Riesgo   |
+| ----------------- | ------------------------------------------------------------------- | -------- |
+| `fs_storage.js`   | `loadJson`, `saveJson`, `ensureConfigDir`, `ensureConfigPresetsDir` | Cero     |
+| `modal_state.js`  | Estado persistente del editor manual                                | Muy bajo |
+| `text_state.js`   | `current_text` + IPC + truncado + persistencia + broadcast          | Bajo     |
+| `settings.js`     | `user_settings` (sin lógica de presets) + IPC + idioma/modo/format  | Bajo     |
+| `menu_builder.js` | Menú nativo + i18n main + emisión de `menu-click`                   | Muy bajo |
+| `presets_main.js` | TODA la lógica de presets en main (defaults + usuario + diálogos)   | Medio    |
+| `updater.js`      | Lógica de actualización remota                                      | Muy bajo |
 
-Estos forman la base esencial.
+---
+
+# 7. Bloques que deben mantenerse en `main.js` (no se mueven)
+
+1. **Cronómetro completo** (estado maestro, IPC de cronómetro).
+2. **Ventana flotante** (creación, vida, coordinación con cronómetro).
+3. **Ventana principal** (creación y ciclo de vida).
+4. **Apertura/cierre de ventanas** (editor, presets, idioma, flotante).
+5. **`app.whenReady` y ciclo de vida global de la app.**
+6. Envío de `"manual-init-text"` al editor manual en `createEditorWindow()` (porque depende del `ready-to-show` del `BrowserWindow`).
+
+Estos forman la base esencial que no se traslada fuera de `main.js`.
+
+---
+
+# 8. Registro de pruebas por paso
+
+Formato a usar en este documento después de cada paso de refactor:
+
+```markdown
+
+## Paso 1 — fs_storage.js
+
+### Resultado esperado
+Extraer utilidades de FS (loadJson, saveJson, ensureConfigDir, ensureConfigPresetsDir) a un módulo dedicado, sin cambiar el comportamiento observable de la app.
+
+### Resultado obtenido
+- fs_storage.js creado en electron/.
+- main.js ahora importa CONFIG_DIR, CONFIG_PRESETS_DIR y las funciones desde fs_storage.
+- Las funciones duplicadas fueron eliminadas de main.js.
+- La app arranca correctamente y persiste/lee config como antes.
+
+### Errores detectados
+Ninguno.
+
+### Estado
+☑ Completado
+
+## Paso X — [Nombre del paso]
+
+### Resultado esperado
+...
+
+### Resultado obtenido
+...
+
+### Errores detectados
+...
+
+### Estado
+☐ Pendiente
+☑ Completado
+```
+
+---
+
+# 9. Próximos pasos
+
+1. Implementar `fs_storage.js`, `modal_state.js`, `text_state.js`, `settings.js`, `presets_main.js`, `menu_builder.js`, `updater.js` como módulos **internos del proceso principal**, sin cambiar la API pública de los preloads.
+2. Ir migrando los bloques desde `main.js` hacia estos módulos **de a uno por vez**, siguiendo este orden recomendado:
+
+   1. `fs_storage.js`
+   2. `modal_state.js`
+   3. `text_state.js`
+   4. `settings.js`
+   5. `menu_builder.js`
+   6. `presets_main.js`
+   7. `updater.js`
+3. Después de cada extracción, actualizar la sección de pruebas y marcar el paso como completado.
 
 ---
