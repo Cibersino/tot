@@ -1,5 +1,5 @@
 ### toT — Reading Meter ###
-**Versión:** 0.0.910 (2025/12/07)  
+**Versión:** 0.0.920 (2025/12/09)
 
 Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar tiempos de lectura, cronometrar lecturas y gestionar presets de velocidad (WPM).
 
@@ -325,6 +325,32 @@ Se implementó una ventana flotante (VF) funcional y controlable que requirió m
 - Defaults numberFormat por idioma cargados desde i18n; respeta overrides de usuario.
 
 - Fixes y detalles menores.
+
+**0.0.920** (2025/12/09)
+
+Depuración y orden del código
+
+* Modularización de renderer.
+
+- Nuevo constants.js, centraliza las constantes
+- Nuevo count.js, centraliza calculos de conteo
+- Nuevo format.js, centraliza formato numérico
+- Nuevo timer.js, centraliza cronómetro (con process en main, necesario para funcionamiento de VF)
+- Nuevo presets.js, centraliza el selector de presets y sus botones
+- Nuevo notify.js, centraliza avisos y alertas
+- Nuevo i18n.js
+- Nuevo CONTRACTS.md
+- Limpieza de duplicados, vestigios y fallbacks innecesarios
+- Solución de bugs.
+- Fixes menores.
+
+* i18n unificado
+
+- i18n unificado en modales: preset_modal.js y manual.js ahora dependen de RendererI18n (via js/i18n.js en los HTML), eliminando cargadores y cachés propios.
+- Modal de presets: una sola aplicación de traducciones al recibir preset-init, respetando el modo (new/edit) y el idioma del usuario obtenido en ese momento; removida la doble llamada que pisaba títulos.
+- Dependencias explícitas en renderer: renderer.js exige RendererI18n y CountUtils sin fallback, evitando duplicación de conteo.
+- Limpieza de diagnóstico: eliminados logs temporales y la apertura automática de DevTools; fuera el console.debug de open-preset-modal en electron/main.js.
+- Corrección de idioma en presets: el modal lee language de settings al abrir, por lo que ya muestra inglés/español según la preferencia actual.
 
 ## Autor y Créditos ##
 
