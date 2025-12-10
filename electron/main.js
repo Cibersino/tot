@@ -15,6 +15,7 @@ const {
 
 const modalState = require('./modal_state');
 const textState = require("./text_state");
+const settingsState = require("./settings");
 
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
@@ -187,32 +188,6 @@ function loadDefaultPresetsCombined(lang) {
     if (langPresets.length) combined.push(...langPresets);
   }
   return combined;
-}
-
-// Normalizar settings: asegurar campos por defecto sin sobrescribir los existentes
-function normalizeSettings(s) {
-  s = s || {};
-  if (typeof s.language !== 'string') s.language = "";
-  if (!Array.isArray(s.presets)) s.presets = [];
-  if (typeof s.numberFormatting !== 'object') s.numberFormatting = (s.numberFormatting || {});
-  // persistir modo de conteo por defecto: "preciso"
-  if (!s.modeConteo || (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple')) {
-    s.modeConteo = 'preciso';
-  }
-  // Ensure numberFormatting has defaults for current language (from i18n if available)
-  const lang = (s.language && typeof s.language === 'string' && s.language.trim()) ? s.language.trim() : 'es';
-  if (!s.numberFormatting[lang]) {
-    const nf = loadNumberFormatDefaults(lang);
-    if (nf && nf.thousands && nf.decimal) {
-      s.numberFormatting[lang] = { separadorMiles: nf.thousands, separadorDecimal: nf.decimal };
-    } else {
-      // fallback simple
-      s.numberFormatting[lang] = lang === 'en'
-        ? { separadorMiles: ",", separadorDecimal: "." }
-        : { separadorMiles: ".", separadorDecimal: "," };
-    }
-  }
-  return s;
 }
 
 ensureConfigDir();
@@ -486,38 +461,38 @@ function createEditorWindow() {
   editorWin.setMenuBarVisibility(false);
   editorWin.loadFile(path.join(__dirname, "../public/manual.html"));
 
-editorWin.once("ready-to-show", () => {
-  try {
-    // REGLA A + C: abrir maximizada si corresponde
-    if (state && state.maximized === true) {
-      editorWin.maximize();
-    }
-
-    editorWin.show();
-
-    // Enviar currentText inicial al editor (cuando ya está listo)
+  editorWin.once("ready-to-show", () => {
     try {
-      const initialText = textState.getCurrentText();
-      editorWin.webContents.send("manual-init-text", {
-        text: initialText || "",
-        meta: { source: "main", action: "init" }
-      });
-    } catch (err) {
-      console.error("Error enviando manual-init-text al editor:", err);
-    }
-
-    // Notificar a la ventana principal que el editor está listo
-    try {
-      if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send("manual-editor-ready");
+      // REGLA A + C: abrir maximizada si corresponde
+      if (state && state.maximized === true) {
+        editorWin.maximize();
       }
-    } catch (err) {
-      console.error("Error notificando manual-editor-ready a la ventana principal:", err);
+
+      editorWin.show();
+
+      // Enviar currentText inicial al editor (cuando ya está listo)
+      try {
+        const initialText = textState.getCurrentText();
+        editorWin.webContents.send("manual-init-text", {
+          text: initialText || "",
+          meta: { source: "main", action: "init" }
+        });
+      } catch (err) {
+        console.error("Error enviando manual-init-text al editor:", err);
+      }
+
+      // Notificar a la ventana principal que el editor está listo
+      try {
+        if (mainWin && !mainWin.isDestroyed()) {
+          mainWin.webContents.send("manual-editor-ready");
+        }
+      } catch (err) {
+        console.error("Error notificando manual-editor-ready a la ventana principal:", err);
+      }
+    } catch (e) {
+      console.error("Error mostrando editor manual:", e);
     }
-  } catch (e) {
-    console.error("Error mostrando editor manual:", e);
-  }
-});
+  });
 
   // Delegar gestión de estado (maximizado/reducido, fallback, persistencia) al módulo modal_state
   modalState.attachTo(editorWin, loadJson, saveJson);
@@ -577,99 +552,30 @@ function createPresetWindow(initialData) {
   });
 }
 
-/* --- Language modal handling --- */
-
-// Save language selection into settings file (and ensure numberFormatting defaults)
-ipcMain.handle('set-language', async (_event, lang) => {
-  try {
-    let settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
-    settings = normalizeSettings(settings);
-
-    const chosen = String(lang || '').trim();
-    settings.language = chosen;
-    currentLanguage = chosen || 'es';
-
-    // Ensure numberFormatting has sensible defaults for es/en if missing
-    settings.numberFormatting = settings.numberFormatting || {};
-    if (!settings.numberFormatting[chosen]) {
-      const nf = loadNumberFormatDefaults(chosen);
-      if (nf && nf.thousands && nf.decimal) {
-        settings.numberFormatting[chosen] = { separadorMiles: nf.thousands, separadorDecimal: nf.decimal };
-      } else if (chosen === 'en') {
-        settings.numberFormatting[chosen] = { separadorMiles: ",", separadorDecimal: "." };
-      } else {
-        settings.numberFormatting[chosen] = { separadorMiles: ".", separadorDecimal: "," };
-      }
-    }
-
-    // Save normalized settings (includes modeConteo if no estaba)
-    saveJson(SETTINGS_FILE, settings);
-
-    // Rebuild menu with the new language
-    buildAppMenu(currentLanguage);
-    // Ocultar la barra en ventanas secundarias (editor, preset, etc.) tras reconstruir menu
-    try {
-      if (editorWin && !editorWin.isDestroyed()) {
-        editorWin.setMenu(null);
-        editorWin.setMenuBarVisibility(false);
-      }
-      if (presetWin && !presetWin.isDestroyed()) {
-        presetWin.setMenu(null);
-        presetWin.setMenuBarVisibility(false);
-      }
-      if (langWin && !langWin.isDestroyed()) {
-        langWin.setMenu(null);
-        langWin.setMenuBarVisibility(false);
-      }
-    } catch (menuErr) {
-      console.warn("No se pudo ocultar menu en ventanas secundarias:", menuErr);
-    }
-
-    // Notificar renderers con el objeto settings correcto
-    try {
-      if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
-      if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
-      if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
-    } catch (notifyErr) {
-      console.error("Error notificando settings-updated:", notifyErr);
-    }
-
-    return { ok: true, language: chosen };
-  } catch (err) {
-    console.error("Error guardando language:", err);
-    return { ok: false, error: String(err) };
-  }
-});
-
 // IPC relacionado con el estado de texto (delegado a text_state)
 textState.registerIpc(ipcMain, () => ({
   mainWin,
   editorWin,
 }));
 
-ipcMain.handle('set-mode-conteo', async (_event, mode) => {
-  try {
-    let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
-    settings = normalizeSettings(settings);
-
-    settings.modeConteo = (mode === 'simple') ? 'simple' : 'preciso';
-
-    saveJson(SETTINGS_FILE, settings);
-
-    // Notificar renderers del cambio
-    try {
-      if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('settings-updated', settings);
-      if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('settings-updated', settings);
-      if (presetWin && !presetWin.isDestroyed()) presetWin.webContents.send('settings-updated', settings);
-    } catch (notifyErr) {
-      console.error("Error notificando settings-updated (set-mode-conteo):", notifyErr);
-    }
-
-    return { ok: true, mode: settings.modeConteo };
-  } catch (err) {
-    console.error("Error en set-mode-conteo:", err);
-    return { ok: false, error: String(err) };
-  }
+// IPC relacionado con configuración / settings (delegado a settingsState)
+settingsState.registerIpc(ipcMain, {
+  getWindows: () => ({
+    mainWin,
+    editorWin,
+    presetWin,
+    langWin,
+    floatingWin,
+  }),
+  buildAppMenu,
+  getCurrentLanguage: () => currentLanguage,
+  setCurrentLanguage: (lang) => {
+    const trimmed =
+      lang && typeof lang === "string" && lang.trim()
+        ? lang.trim()
+        : "es";
+    currentLanguage = trimmed;
+  },
 });
 
 // Create language selection window (small, light)
@@ -706,29 +612,20 @@ function createLanguageWindow() {
   });
 
   // If user closes modal without choosing, apply fallback 'es'
-  langWin.on('closed', () => {
+  langWin.on("closed", () => {
     try {
-      const settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
-      if (!settings.language || settings.language === "") {
-        // fallback to Spanish
-        settings.language = 'es';
-        settings.numberFormatting = settings.numberFormatting || {};
-        if (!settings.numberFormatting['es']) {
-          const nf = loadNumberFormatDefaults('es');
-          if (nf && nf.thousands && nf.decimal) {
-            settings.numberFormatting['es'] = { separadorMiles: nf.thousands, separadorDecimal: nf.decimal };
-          } else {
-            settings.numberFormatting['es'] = { separadorMiles: ".", separadorDecimal: "," };
-          }
-        }
-        saveJson(SETTINGS_FILE, settings);
-      }
+      // Si el usuario cierra sin elegir, forzamos fallback 'es' si no hay language definido
+      settingsState.applyFallbackLanguageIfUnset("es");
     } catch (e) {
       console.error("Error aplicando fallback language:", e);
     } finally {
       langWin = null;
-      // Ensure main window is created after modal closure
-      try { if (!mainWin) createMainWindow(); } catch (e) { console.error("Error creating mainWin after the modal:", e); }
+      // Asegurar creación de mainWin tras cerrar el modal
+      try {
+        if (!mainWin) createMainWindow();
+      } catch (e) {
+        console.error("Error creando mainWin tras el modal de idioma:", e);
+      }
     }
   });
 }
@@ -1028,7 +925,7 @@ ipcMain.handle('open-preset-modal', (_event, payload) => {
 ipcMain.handle('create-preset', (_event, preset) => {
   try {
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
-    settings = normalizeSettings(settings);
+    settings = settingsState.normalizeSettings(settings);
     settings.presets = settings.presets || [];
 
     // If preset name already exists in user's presets, overwrite that one
@@ -1057,17 +954,6 @@ ipcMain.handle('create-preset', (_event, preset) => {
   } catch (e) {
     console.error("Error creando preset:", e);
     return { ok: false, error: String(e) };
-  }
-});
-
-// Provide settings via IPC (centralized)
-ipcMain.handle('get-settings', () => {
-  try {
-    const settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
-    return settings;
-  } catch (e) {
-    console.error("Error en get-settings:", e);
-    return { language: "es", presets: [] };
   }
 });
 
@@ -1159,7 +1045,7 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
   try {
     // Cargar settings y textos de dialogo antes de cualquier mensaje
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
-    settings = normalizeSettings(settings);
+    settings = settingsState.normalizeSettings(settings);
     const dialogTexts = getDialogTexts(settings.language || 'es');
     const yesLabel = dialogTexts.yes || 'Si, continuar';
     const noLabel = dialogTexts.no || 'No, cancelar';
@@ -1284,7 +1170,7 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
 ipcMain.handle('request-restore-defaults', async (_event) => {
   try {
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
-    settings = normalizeSettings(settings);
+    settings = settingsState.normalizeSettings(settings);
     settings.presets = settings.presets || [];
     const lang = settings.language || 'es';
 
@@ -1365,7 +1251,7 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
 // Notify for edit-no-selection (simple info dialog)
 ipcMain.handle('notify-no-selection-edit', async () => {
   try {
-    const settings = normalizeSettings(loadJson(SETTINGS_FILE, { language: "es", presets: [] }));
+    const settings = settingsState.normalizeSettings(loadJson(SETTINGS_FILE, { language: "es", presets: [] }));
     const dialogTexts = getDialogTexts(settings.language || 'es');
     await dialog.showMessageBox(mainWin || null, {
       type: 'none',
@@ -1389,7 +1275,7 @@ ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
 
     // Cargar settings y textos de dialogo antes de la confirmacion
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
-    settings = normalizeSettings(settings);
+    settings = settingsState.normalizeSettings(settings);
     const dialogTexts = getDialogTexts(settings.language || 'es');
 
     // Ask confirmation (native dialog)
@@ -1494,27 +1380,31 @@ ipcMain.handle("get-app-config", async () => {
   }
 });
 
-/* --- App start logic (modified to show language modal when needed) --- */
+/* --- App start logic --- */
 
 app.whenReady().then(() => {
-  // On startup, check settings.language and possibly prompt
-  let settings = loadJson(SETTINGS_FILE, { language: "", presets: [] });
-  settings = normalizeSettings(settings);
-  currentLanguage = settings.language || 'es';
-
-  // If normalize added defaults (e.g., modeConteo), save back to persist them
-  // (esto garantiza que user_settings.json contenga modeConteo desde el primer arranque).
-  saveJson(SETTINGS_FILE, settings);
+  // Carga inicial de settings (normalizado y persistido) vía settingsState
+  const settings = settingsState.init({
+    loadJson,
+    saveJson,
+    settingsFile: SETTINGS_FILE,
+  });
+  currentLanguage = settings.language || "es";
 
   if (!settings.language || settings.language === "") {
+    // Primera vez: mostrar modal de idioma
     createLanguageWindow();
-    ipcMain.once('language-selected', (_evt, lang) => {
+    ipcMain.once("language-selected", (_evt, lang) => {
       try {
         if (!mainWin) createMainWindow();
       } catch (e) {
         console.error("Error creando mainWin tras seleccionar idioma:", e);
       } finally {
-        try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { /* noop */ }
+        try {
+          if (langWin && !langWin.isDestroyed()) langWin.close();
+        } catch (e) {
+          /* noop */
+        }
       }
       if (!updateCheckDone) {
         updateCheckDone = true;
@@ -1522,6 +1412,7 @@ app.whenReady().then(() => {
       }
     });
   } else {
+    // Ya hay idioma definido: ir directo a la ventana principal
     createMainWindow();
     if (!updateCheckDone) {
       updateCheckDone = true;
@@ -1529,7 +1420,7 @@ app.whenReady().then(() => {
     }
   }
 
-  app.on('activate', () => {
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
 });

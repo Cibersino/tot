@@ -633,6 +633,116 @@ Todos estos errores fueron corregidos y las pruebas posteriores confirman que el
 ### Estado
 ☑ Completado
 
+## Paso 4 — settings.js
+
+### Resultado esperado
+Centralizar la gestión de la configuración de usuario (`user_settings.json`) en un módulo dedicado (`settings.js`), incluyendo:
+
+- Carga inicial y normalización de settings (idioma, presets, modeConteo, numberFormatting).
+- Persistencia de settings normalizados en disco.
+- Exposición de un API interno para obtener y guardar settings.
+- Registro y manejo de los IPC generales de configuración:
+  - `"get-settings"`
+  - `"set-language"`
+  - `"set-mode-conteo"`
+- Broadcast coherente de cambios de settings a todas las ventanas (`settings-updated`).
+- Carga de `i18n/<lang>/numberFormat.json` y manejo de sus defaults (formato numérico).
+
+### Resultado obtenido
+- Nuevo archivo `electron/settings.js` creado, con:
+  - `init({ loadJson, saveJson, settingsFile })`:
+    - Carga `user_settings.json` con defaults mínimos.
+    - Normaliza el objeto settings (language, presets, modeConteo, numberFormatting).
+    - Persiste inmediatamente el settings normalizado.
+    - Cachea el último settings normalizado.
+  - `getSettings()`:
+    - Devuelve siempre la versión actual de settings leyendo desde disco y normalizando, para reflejar cambios realizados fuera del propio módulo.
+  - `saveSettings(nextSettings)`:
+    - Normaliza y persiste settings.
+    - Actualiza el cache interno.
+  - `normalizeSettings(settings)`:
+    - Asegura:
+      - `language` string.
+      - `presets` como arreglo.
+      - `modeConteo` en `{ "preciso", "simple" }` (fallback `"preciso"`).
+      - `numberFormatting[lang]` con valores por defecto extraídos de `i18n/<lang>/numberFormat.json` o, en su defecto, con fallback estándar por idioma.
+  - `loadNumberFormatDefaults(lang)`:
+    - Lee `i18n/<lang>/numberFormat.json` (con limpieza explícita de BOM UTF-8) y extrae separadores de miles y decimal.
+  - `broadcastSettingsUpdated(settings, windows)`:
+    - Envía `"settings-updated"` a `mainWin`, `editorWin`, `presetWin` y `floatingWin` cuando están presentes.
+  - `registerIpc(ipcMain, { getWindows, buildAppMenu, getCurrentLanguage, setCurrentLanguage })`:
+    - Registra:
+      - `"get-settings"` → retorna settings normalizado.
+      - `"set-language"` → actualiza `language`, asegura `numberFormatting[lang]`, guarda settings, actualiza `currentLanguage`, reconstruye menús (`buildAppMenu(lang)`) y envía `"settings-updated"` a todas las ventanas.
+      - `"set-mode-conteo"` → actualiza `modeConteo` (`simple`/`preciso`), guarda settings y envía `"settings-updated"`.
+  - `applyFallbackLanguageIfUnset(fallbackLang = "es")`:
+    - Si `settings.language` está vacío, fuerza el idioma de fallback (`"es"`), asegurando `numberFormatting["es"]` y persistiendo el resultado.
+
+- `electron/main.js`:
+  - Importa `settingsState` desde `./settings`.
+  - En `app.whenReady().then(...)`:
+    - Reemplaza la carga manual de `user_settings.json` por `settingsState.init(...)`.
+    - Utiliza el `language` normalizado para inicializar `currentLanguage`.
+    - Mantiene la misma lógica de flujo:
+      - Si `settings.language` está vacío → abre modal de idioma.
+      - Si está definido → crea directamente la ventana principal.
+  - En `createLanguageWindow()`:
+    - Reemplaza la lógica in situ de fallback de idioma por `settingsState.applyFallbackLanguageIfUnset("es")` en el evento `langWin.on("closed", ...)`.
+  - Registra los IPC de settings mediante:
+    - `settingsState.registerIpc(ipcMain, { getWindows: () => ({ mainWin, editorWin, presetWin, langWin, floatingWin }), buildAppMenu, getCurrentLanguage: () => currentLanguage, setCurrentLanguage: (lang) => { currentLanguage = trimmed; } })`.
+  - Elimina de `main.js`:
+    - La antigua función `normalizeSettings`.
+    - Los handlers IPC:
+      - `"get-settings"`
+      - `"set-language"`
+      - `"set-mode-conteo"`
+  - Ajusta todos los usos restantes de `normalizeSettings` (principalmente en la lógica de presets) para que utilicen `settingsState.normalizeSettings(...)` sin duplicación de código.
+
+- Comportamiento verificado:
+  - Arranque limpio sin carpeta `config/`:
+    - Se crean correctamente los archivos en `config/` (incluidos presets por defecto).
+    - Aparece el modal de selección de idioma.
+    - Al elegir idioma, se crea la ventana principal con ajustes coherentes.
+  - Carga de `numberFormat.json`:
+    - El BOM UTF-8 ya no provoca `SyntaxError`; `loadNumberFormatDefaults` limpia el BOM antes de `JSON.parse`.
+    - El formato numérico se ajusta correctamente por idioma.
+  - `get-settings`:
+    - Refleja siempre el contenido actual de `user_settings.json` (incluyendo cambios realizados por la lógica de presets).
+  - Cambios de idioma (`set-language`):
+    - Actualizan `user_settings.json`.
+    - Reconstruyen el menú de la app.
+    - Actualizan la visibilidad/menú de las ventanas secundarias (editor, presets, language modal).
+    - Envían `"settings-updated"` a todas las ventanas relevantes.
+  - Cambios de `modeConteo` (`set-mode-conteo`):
+    - Persisten en settings y se propagan correctamente a las ventanas.
+
+### Errores detectados
+- `numberFormat.json` con BOM UTF-8:
+  - Problema: `JSON.parse` fallaba con `SyntaxError: Unexpected token '∩╗┐'` al parsear `i18n/es/numberFormat.json`.
+  - Causa: presencia de BOM (`\uFEFF`) al inicio del archivo, no manejada.
+  - Solución: en `loadNumberFormatDefaults`, se elimina explícitamente el BOM de la cadena leída antes de llamar a `JSON.parse`.
+- Caché interno de settings desincronizado con cambios de presets:
+  - Problema: tras modularizar, `getSettings()` devolvía `_currentSettings` cacheado en memoria, mientras los handlers de presets seguían usando `loadJson`/`saveJson` directos sobre `user_settings.json`. Al crear/editar presets, el archivo se actualizaba, pero `get-settings` (vía IPC) seguía entregando la versión antigua, por lo que el selector no reflejaba los cambios.
+  - Solución: `getSettings()` fue ajustado para recargar siempre desde disco (`_loadJson`) y normalizar en cada llamada, actualizando el cache interno. De este modo, cualquier cambio efectuado por la lógica de presets queda inmediatamente visible al llamar `get-settings`.
+
+### Notas para pasos siguientes
+- La lógica de presets sigue residiendo mayoritariamente en `main.js` y utiliza:
+  - `loadJson` / `saveJson` directos sobre `SETTINGS_FILE`, combinados con `settingsState.normalizeSettings(...)`.
+- En el futuro **Paso 5 — presets_main.js** se recomienda:
+  - Centralizar toda la manipulación de `presets` en un módulo específico.
+  - Unificar el flujo de:
+    - `create-preset`
+    - `edit-preset`
+    - `delete-preset`
+    - `restore-defaults`
+  - Para que:
+    - Usen consistentemente `settingsState.getSettings()` / `settingsState.saveSettings()`.
+    - Reutilicen `broadcastSettingsUpdated(...)` o un broadcast específico para presets, evitando divergencias entre “broadcast directo” y “refresco vía get-settings”.
+- El diseño actual es estable y funcional, pero estructuralmente heterogéneo: los presets funcionan bien, aunque no todos los caminos pasan aún por `settings.js`. Esto se deja explícito para ser abordado en el módulo de presets.
+
+### Estado
+☑ Completado
+
 ## Paso X — [Nombre del paso]
 
 ### Resultado esperado
@@ -647,6 +757,10 @@ Todos estos errores fueron corregidos y las pruebas posteriores confirman que el
 ### Estado
 ☐ Pendiente
 ☑ Completado
+
+### Notas para pasos siguientes
+...
+
 ```
 
 ---
