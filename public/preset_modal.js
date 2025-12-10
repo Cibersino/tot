@@ -126,19 +126,15 @@
 
       if (!name) {
         if (window.Notify && typeof window.Notify.notifyMain === "function") {
-          window.Notify.notifyMain("renderer.preset_alerts.name_empty", "Error.");
+          window.Notify.notifyMain("renderer.preset_alerts.name_empty");
         } else {
-          alert(tr("renderer.preset_alerts.name_empty", "Error."));
+          alert(tr("renderer.preset_alerts.name_empty"));
         }
         return null;
       }
 
       if (!Number.isFinite(wpm) || wpm < WPM_MIN || wpm > WPM_MAX) {
-        if (window.Notify && typeof window.Notify.notifyMain === "function") {
-          window.Notify.notifyMain("renderer.preset_alerts.wpm_invalid", "Error.");
-        } else {
-          alert(tr("renderer.preset_alerts.wpm_invalid", "Error."));
-        }
+        Notify.notifyMain("renderer.preset_alerts.wpm_invalid");
         return null;
       }
 
@@ -173,11 +169,7 @@
               window.close();
             } else {
               if (res && res.code === 'CANCELLED') return;
-              if (window.Notify && typeof window.Notify.notifyMain === "function") {
-                window.Notify.notifyMain("renderer.preset_alerts.edit_error", "Error.");
-              } else {
-                alert(tr("renderer.preset_alerts.edit_error", "Error."));
-              }
+              Notify.notifyMain("renderer.preset_alerts.edit_error");
               console.error('Error editando preset (respuesta):', res);
             }
           }
@@ -187,21 +179,13 @@
             if (res && res.ok) {
               window.close();
             } else {
-              if (window.Notify && typeof window.Notify.notifyMain === "function") {
-                window.Notify.notifyMain("renderer.preset_alerts.create_error", "Error.");
-              } else {
-                alert(tr("renderer.preset_alerts.create_error", "Error."));
-              }
+              Notify.notifyMain("renderer.preset_alerts.create_error");
               console.error('Error creando preset (respuesta):', res);
             }
           }
         }
       } catch (err) {
-        if (window.Notify && typeof window.Notify.notifyMain === "function") {
-          window.Notify.notifyMain("renderer.preset_alerts.process_error", "Error.");
-        } else {
-          alert(tr("renderer.preset_alerts.process_error", "Error."));
-        }
+        Notify.notifyMain("renderer.preset_alerts.process_error");
         console.error('Error en save preset:', err);
       }
     });

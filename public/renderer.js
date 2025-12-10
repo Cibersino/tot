@@ -95,7 +95,6 @@ function applyTranslations() {
   if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer("renderer.main.tooltips.reset_presets", btnResetDefaultPresets.title || "");
 
   // Toggle flotante
-  if (toggleVF) toggleVF.textContent = tRenderer("renderer.main.timer.floating", toggleVF.textContent || "");
   const vfSwitchLabel = document.querySelector(".vf-switch-wrapper label.switch");
   if (vfSwitchLabel) vfSwitchLabel.title = tRenderer("renderer.main.tooltips.floating_window", vfSwitchLabel.title || "");
 
@@ -244,11 +243,10 @@ async function updatePreviewAndResults(text) {
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
 
   resChars.textContent = msgRenderer("renderer.main.results.chars", { n: caracteresFormateado }, `Caracteres: ${caracteresFormateado}`);
-  resCharsNoSpace.textContent = msgRenderer("renderer.main.results.chars_no_space", { n: caracteresSinEspaciosFormateado }, `Chars s/space: ${caracteresSinEspaciosFormateado}`);
+  resCharsNoSpace.textContent = msgRenderer("renderer.main.results.chars_no_space", { n: caracteresSinEspaciosFormateado }, `Chars w/o space: ${caracteresSinEspaciosFormateado}`);
   resWords.textContent = msgRenderer("renderer.main.results.words", { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
 
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
-  const timeFallback = `O Tiempo estimado de lectura: ${formatTimeFromWords(stats.palabras, wpm)}`;
   resTime.textContent = msgRenderer("renderer.main.results.time", { h: hours, m: minutes, s: seconds }, timeFallback);
 
   // Si detectamos que el texto cambio respecto al estado anterior -> resetear cronometro en main
@@ -581,7 +579,7 @@ const loadPresets = async () => {
 
     if (key === 'readme') {
       fileToLoad = './info/readme.html';
-    } else if (key === 'acerca_de' || key === 'acerca_de') {
+    } else if (key === 'acerca_de') {
       fileToLoad = './info/acerca_de.html';
     } else if (key === 'guia_basica' || key === 'instrucciones' || key === 'faq') {
       fileToLoad = './info/instrucciones.html';
@@ -669,42 +667,42 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction("faq", () => { showInfoModal("faq") });
 
     window.menuActions.registerMenuAction('cargador_texto', () => {
-      Notify.notifyMain("renderer.alerts.wip_cargador_texto", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_cargador_texto");
     });
 
     window.menuActions.registerMenuAction('contador_imagen', () => {
-      Notify.notifyMain("renderer.alerts.wip_cargador_imagen", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_contador_imagen");
     });
 
     window.menuActions.registerMenuAction('test_velocidad', () => {
-      Notify.notifyMain("renderer.alerts.wip_test_velocidad", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_test_velocidad");
     });
 
     window.menuActions.registerMenuAction('preferencias_idioma', () => {
-      Notify.notifyMain("renderer.alerts.wip_idioma", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_idioma");
     });
 
     window.menuActions.registerMenuAction('diseno_skins', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_skins", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_diseno_skins");
     });
 
     window.menuActions.registerMenuAction('diseno_crono_flotante', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_crono", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_diseno_crono");
     });
 
     window.menuActions.registerMenuAction('diseno_fuentes', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_fuentes", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_diseno_fuentes");
     });
 
     window.menuActions.registerMenuAction('diseno_colores', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_colores", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_diseno_colores");
     });
 
     window.menuActions.registerMenuAction("presets_por_defecto", async () => {
       try {
         if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== "function") {
           console.warn("openDefaultPresetsFolder no disponible en electronAPI");
-          Notify.notifyMain("renderer.alerts.open_presets_unsupported", "Error.");
+          Notify.notifyMain("renderer.alerts.open_presets_unsupported");
           return;
         }
 
@@ -718,27 +716,27 @@ const loadPresets = async () => {
         // en caso de fallo, informar al usuario
         const errMsg = res && res.error ? String(res.error) : "Desconocido";
         console.error("No se pudo abrir carpeta presets por defecto:", errMsg);
-        Notify.notifyMain("renderer.alerts.open_presets_fail", "Error.");
+        Notify.notifyMain("renderer.alerts.open_presets_fail");
       } catch (err) {
         console.error("Error abriendo carpeta presets por defecto:", err);
-        Notify.notifyMain("renderer.alerts.open_presets_error", "Error.");
+        Notify.notifyMain("renderer.alerts.open_presets_error");
       }
     });
 
     window.menuActions.registerMenuAction('avisos', () => {
-      Notify.notifyMain("renderer.alerts.wip_avisos", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_avisos");
     });
 
     window.menuActions.registerMenuAction('discord', () => {
-      Notify.notifyMain("renderer.alerts.wip_discord", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_discord");
     });
 
     window.menuActions.registerMenuAction('links_interes', () => {
-      Notify.notifyMain("renderer.alerts.wip_links_interes", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_links_interes");
     });
 
     window.menuActions.registerMenuAction('colabora', () => {
-      Notify.notifyMain("renderer.alerts.wip_colabora", "WIP");
+      Notify.notifyMain("renderer.alerts.wip_colabora");
     });
 
     window.menuActions.registerMenuAction('actualizar_version', async () => {
@@ -824,9 +822,9 @@ btnCountClipboard.addEventListener("click", async () => {
   try {
     let clip = await window.electronAPI.readClipboard() || "";
     if (clip.length > MAX_TEXT_CHARS) {
-      console.warn("Contenido del portapapeles supera 10000000 chars - sera truncado.");
+      console.warn("Contenido del portapapeles supera el tamaño permitido - sera truncado.");
       clip = clip.slice(0, MAX_TEXT_CHARS);
-      Notify.notifyMain("renderer.editor_alerts.clipboard_overflow", "Error.");
+      Notify.notifyMain("renderer.alerts.clipboard_overflow");
     }
 
     // enviar objeto con meta (overwrite)
@@ -836,9 +834,10 @@ btnCountClipboard.addEventListener("click", async () => {
     });
 
     updatePreviewAndResults(resp && resp.text ? resp.text : clip);
-    resp && resp.truncated && Notify.notifyMain("renderer.editor_alerts.text_truncated", "Error.");
+    resp && resp.truncated && Notify.notifyMain("renderer.editor_alerts.text_truncated");
   } catch (err) {
     console.error("clipboard error:", err);
+    Notify.notifyMain("renderer.alerts.clipboard_error");
   }
 });
 
@@ -853,11 +852,7 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     const available = MAX_TEXT_CHARS - current.length;
     if (available <= 0) {
-      if (window.Notify && typeof window.Notify.notifyMain === "function") {
-        window.Notify.notifyMain("renderer.editor_alerts.too_big", "Error.");
-      } else {
-        alert(tRenderer("renderer.editor_alerts.too_big", "Error."));
-      }
+      Notify.notifyMain("renderer.alerts.too_big");
       return;
     }
 
@@ -874,15 +869,11 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     // notificar truncado solo si main lo confirma
     if (resp && resp.truncated) {
-      Notify.notifyMain("renderer.editor_alerts.text_truncated", "Error.");
+      Notify.notifyMain("renderer.editor_alerts.text_truncated");
     }
   } catch (err) {
-    console.error("Error pegando portapapeles en nueva linea:", err);
-    if (window.Notify && typeof window.Notify.notifyMain === "function") {
-      window.Notify.notifyMain("renderer.editor_alerts.paste_error", "Error.");
-    } else {
-      alert(tRenderer("renderer.editor_alerts.paste_error", "Error."));
-    }
+    console.error("Ocurrió un error al pegar el portapapeles:", err);
+    Notify.notifyMain("renderer.alerts.paste_error");
   }
 });
 
@@ -910,11 +901,7 @@ btnEmptyMain.addEventListener("click", async () => {
     }
   } catch (err) {
     console.error("Error vaciando texto desde pantalla principal:", err);
-    if (window.Notify && typeof window.Notify.notifyMain === "function") {
-      window.Notify.notifyMain("renderer.alerts.clear_error", "Error.");
-    } else {
-      alert(tRenderer("renderer.alerts.clear_error", "Error."));
-    }
+    Notify.notifyMain("renderer.alerts.clear_error");
   }
 });
 
@@ -933,11 +920,7 @@ btnNewPreset.addEventListener('click', () => {
       window.electronAPI.openPresetModal(wpm);
     } else {
       console.warn("openPresetModal no disponible en electronAPI");
-      if (window.Notify && typeof window.Notify.notifyMain === "function") {
-        window.Notify.notifyMain("renderer.alerts.modal_unavailable", "Error.");
-      } else {
-        alert(tRenderer("renderer.alerts.modal_unavailable", "Error."));
-      }
+      Notify.notifyMain("renderer.alerts.modal_unavailable");
     }
   } catch (e) {
     console.error("Error abriendo modal de nuevo preset:", e);
@@ -954,11 +937,7 @@ btnEditPreset.addEventListener('click', async () => {
         await window.electronAPI.notifyNoSelectionEdit();
         return;
       } else {
-        if (window.Notify && typeof window.Notify.notifyMain === "function") {
-          window.Notify.notifyMain("renderer.alerts.edit_none", "Error.");
-        } else {
-          alert(tRenderer("renderer.alerts.edit_none", "Error."));
-        }
+        Notify.notifyMain("renderer.alerts.edit_none");
         return;
       }
     }
@@ -966,11 +945,7 @@ btnEditPreset.addEventListener('click', async () => {
     // Find preset data from cache
     const preset = allPresetsCache.find(p => p.name === selectedName);
     if (!preset) {
-      if (window.Notify && typeof window.Notify.notifyMain === "function") {
-        window.Notify.notifyMain("renderer.alerts.preset_not_found", "Error.");
-      } else {
-        alert(tRenderer("renderer.alerts.preset_not_found", "Error."));
-      }
+      Notify.notifyMain("renderer.alerts.preset_not_found");
       return;
     }
 
@@ -982,19 +957,11 @@ btnEditPreset.addEventListener('click', async () => {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
     } else {
-      if (window.Notify && typeof window.Notify.notifyMain === "function") {
-        window.Notify.notifyMain("renderer.alerts.edit_unavailable", "Error.");
-      } else {
-        alert(tRenderer("renderer.alerts.edit_unavailable", "Error."));
-      }
+      Notify.notifyMain("renderer.alerts.edit_unavailable");
     }
   } catch (e) {
     console.error("Error abriendo modal de editar preset:", e);
-    if (window.Notify && typeof window.Notify.notifyMain === "function") {
-      window.Notify.notifyMain("renderer.alerts.edit_error", "Error.");
-    } else {
-      alert(tRenderer("renderer.alerts.edit_error", "Error."));
-    }
+    Notify.notifyMain("renderer.alerts.edit_error");
   }
 });
 
@@ -1025,15 +992,11 @@ btnDeletePreset.addEventListener('click', async () => {
       }
       // Unexpected error: log and show a simple alert
       console.error("Error deleting preset:", res && res.error ? res.error : res);
-      Notify.notifyMain("renderer.alerts.delete_error", "Error.");
+      Notify.notifyMain("renderer.alerts.delete_error");
     }
   } catch (e) {
     console.error("Error en peticion de borrado:", e);
-    if (window.Notify && typeof window.Notify.notifyMain === "function") {
-      window.Notify.notifyMain("renderer.alerts.delete_error", "Error.");
-    } else {
-      alert(tRenderer("renderer.alerts.delete_error", "Error."));
-    }
+    Notify.notifyMain("renderer.alerts.delete_error");
   }
 });
 
@@ -1059,15 +1022,11 @@ btnResetDefaultPresets.addEventListener('click', async () => {
         return;
       }
       console.error("Error restaurando presets:", res && res.error ? res.error : res);
-      Notify.notifyMain("renderer.alerts.restore_error", "Error.");
+      Notify.notifyMain("renderer.alerts.restore_error");
     }
   } catch (e) {
     console.error("Error en peticion de restaurar presets:", e);
-    if (window.Notify && typeof window.Notify.notifyMain === "function") {
-      window.Notify.notifyMain("renderer.alerts.restore_error", "Error.");
-    } else {
-      alert(tRenderer("renderer.alerts.restore_error", "Error."));
-    }
+    Notify.notifyMain("renderer.alerts.restore_error");
   }
 });
 

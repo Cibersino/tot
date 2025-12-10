@@ -1,23 +1,24 @@
-// public/js/notify.js
 (() => {
-  function resolveText(key, fallback) {
+  function resolveText(key) {
     const { RendererI18n } = window || {};
+    // Si falla, devolvemos la clave misma. Sin fallback.
     if (!RendererI18n || typeof RendererI18n.msgRenderer !== "function") {
-      return fallback || key;
+      return key;
     }
-    return RendererI18n.msgRenderer(key, {}, fallback || key);
+    const txt = RendererI18n.msgRenderer(key, {}, key);
+    return txt || key;
   }
 
-  function notifyMain(key, fallback) {
-    const msg = resolveText(key, fallback);
-    if (typeof alert === "function") alert(msg);
+  function notifyMain(key) {
+    const msg = resolveText(key);
+    alert(msg);
   }
 
-  function notifyManual(key, { type = "info", duration = 4500 } = {}, showNoticeFn) {
-    const msg = resolveText(key, key);
-    const fn = showNoticeFn || (window && window.showNotice);
-    if (typeof fn === "function") {
-      fn(msg, { type, duration });
+  function notifyManual(key, { type = "info", duration = 4500 } = {}) {
+    const msg = resolveText(key);
+    // showNotice ya existe en manual.js
+    if (typeof window.showNotice === "function") {
+      window.showNotice(msg, { type, duration });
     }
   }
 
