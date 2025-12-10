@@ -494,6 +494,53 @@ Ninguno.
 ### Estado
 ☑ Completado
 
+## Paso 2 — modal_state.js
+
+### Resultado esperado
+Extraer toda la lógica relacionada con el estado persistente del editor manual (`modal_state.json`) desde `main.js` hacia un módulo dedicado (`modal_state.js`), incluyendo:
+- Lectura inicial del estado (`maximized` y `reduced`).
+- Normalización defensiva de dicho estado.
+- Persistencia automática de tamaño/posición cuando la ventana está reducida.
+- Registro de cambios de maximización y restauración de modo reducido.
+- Aplicación de un fallback coherente cuando no existe estado previo o es inválido.
+- Mantener *idéntico* el comportamiento observable de la ventana del editor en todas las situaciones: primera apertura, maximizar, reducir, cerrar maximizado, cerrar reducido, cerrar app.
+
+El comportamiento no debe alterarse respecto al `main.backup.js` excepto para corregir el antiguo bug de “abrir reducido con tamaño gigante si se cerró maximizado sin estado previo”.
+
+### Resultado obtenido
+- Nuevo archivo `electron/modal_state.js` creado, con:
+  - `loadInitialState(loadJson)` para obtener y normalizar el estado persistido.
+  - `attachTo(editorWin, loadJson, saveJson)` para manejar todos los eventos relevantes:
+    - `resize` / `move` → guarda `reduced`.
+    - `maximize` → marca `maximized: true`.
+    - `unmaximize` → restaura `reduced` si existe, o aplica fallback (mitad de la pantalla, esquina superior derecha).
+    - `close` → persiste `maximized`.
+  - Función defensiva `normalizeState` y validación robusta de `reduced`.
+
+- `main.js`:
+  - Ahora importa `modalState` desde `./modal_state`.
+  - Lectura inicial del estado mediante `modalState.loadInitialState(loadJson)`.
+  - Toda la lógica previa de maximizado/reducido fue eliminada sin dejar vestigios.
+  - Se integró `modalState.attachTo(editorWin, loadJson, saveJson)` en la nueva `createEditorWindow`.
+  - Se restauró correctamente el evento `manual-editor-ready` hacia `mainWin`, corrigiendo el bug del spinner de carga.
+  - Se restauró el payload previo de `manual-init-text` con `{ text, meta: { source: "main", action: "init" } }`.
+
+### Pruebas realizadas
+- Primera apertura sin `modal_state.json`: editor abre maximizado; al reducir aplica fallback correcto.
+- Mover y redimensionar el editor en modo reducido y luego maximizar → al volver a reducir recupera exactamente tamaño y posición.
+- Cerrar el editor en modo reducido → reabrir mantiene dimensiones y ubicación.
+- Cerrar el editor maximizado → reabrir maximizado; al reducir recupera última posición/tamaño reducidos.
+- Cerrar la app completa con editor maximizado → reabrir conserva maximizado; al reducir recupera reducido previo.
+- Archivo `modal_state.json` corrupto → no rompe la app; fallback siempre operativo.
+- Spinner del botón “Editor manual” vuelve a desactivarse correctamente al recibir `manual-editor-ready`.
+
+### Errores detectados
+Ninguno.  
+(Se detectó un bug previo no relacionado con la modularización —el spinner— y fue corregido restaurando el contrato IPC original.)
+
+### Estado
+☑ Completado
+
 ## Paso X — [Nombre del paso]
 
 ### Resultado esperado
