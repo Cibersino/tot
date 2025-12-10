@@ -93,9 +93,10 @@
       "title": "toT —  Stopwatch (floating)"
     },
     "alerts": {
-      "wip": "WIP: This feature will open in a future version: {feature}.",
-      "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
+      "clipboard_overflow": "Clipboard text exceeds the maximum allowed and will be truncated.",
+      "too_big": "Cannot add text: maximum size reached.",
       "clipboard_error": "An error occurred while pasting from clipboard. Check console.",
+      "paste_error": "An error occurred while pasting from clipboard. Check console.",
       "clear_error": "An error occurred while clearing text. Check console.",
       "modal_unavailable": "Modal functionality not available.",
       "edit_none": "No preset selected to edit",
@@ -105,9 +106,11 @@
       "delete_error": "An error occurred while deleting the preset. Check console.",
       "restore_error": "An error occurred while restoring presets. Check console.",
       "open_presets_unsupported": "Cannot open presets folder in this environment.",
+      "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
       "open_presets_fail": "Could not open the default presets folder. Check console for details.",
+      "wip": "WIP: This feature will open in a future version: {feature}.",
       "wip_cargador_texto": "WIP: The text file loader will open here in a future version.",
-      "wip_cargador_imagen": "WIP: The image text loader will open here in a future version.",
+      "wip_contador_imagen": "WIP: The image text loader will open here in a future version.",
       "wip_test_velocidad": "WIP: The reading speed test will open here in a future version.",
       "wip_idioma": "WIP: The language selector will open here in a future version.",
       "wip_diseno_skins": "WIP: The skins selector will open here in a future version.",
@@ -120,23 +123,23 @@
       "wip_colabora": "WIP: Collaboration info will appear here in a future version."
     },
     "editor_alerts": {
-      "too_big": "Cannot add text: maximum size reached.",
-      "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
-      "too_big_clipboard": "Text too large to paste directly. Use 'Overwrite clipboard' or 'Paste clipboard new line' from the main window.",
-      "drop_no_text": "Drop: no plain text detected.",
-      "clipboard_no_text": "Clipboard does not contain plain text.",
+      "too_big_clipboard": "Text too large to paste directly. Use the main window buttons.",
       "drop_too_big": "Dropped text is too large. Use the main window buttons to add large text.",
-      "truncated_limit": "Text was truncated to the application limit.",
-      "calc_error": "An error occurred while calculating. Check console.",
+      "clipboard_no_text": "Clipboard does not contain plain text.",
+      "drop_no_text": "Drop: no plain text detected.",
+      "truncated_limit": "Cannot write more text: maximum size reached.",
+      "too_big": "Cannot paste more text: maximum size reached.",
+      "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
+      "drop_truncated": "Dragged text exceeded the available space and was truncated.",
       "text_truncated": "Text was truncated to fit the application limit.",
-      "clipboard_overflow": "Clipboard text exceeds the maximum allowed and will be truncated.",
-      "paste_error": "An error occurred while pasting from clipboard. Check console."
+      "paste_error": "An error occurred while pasting from clipboard. Check console.",
+      "calc_error": "An error occurred while calculating. Check console."
     },
     "preset_alerts": {
       "name_empty": "Name cannot be empty.",
       "wpm_invalid": "WPM must be a number between 50 and 500.",
+      "create_error": "An error occurred while creating the preset. Check console.",      
       "edit_error": "An error occurred while editing the preset. Check console.",
-      "create_error": "An error occurred while creating the preset. Check console.",
       "process_error": "An error occurred while processing the preset. Check console."
     },
     "info": {
