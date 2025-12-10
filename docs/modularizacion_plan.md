@@ -541,6 +541,98 @@ Ninguno.
 ### Estado
 ☑ Completado
 
+## Paso 3 — text_state.js
+
+### Resultado esperado
+Centralizar en un módulo dedicado (`text_state.js`) toda la gestión del texto compartido (`current_text`) en el proceso principal, incluyendo:
+
+- Carga inicial desde `current_text.json` y normalización del formato.
+- Truncado inicial por `MAX_TEXT_CHARS` y persistencia del texto truncado.
+- Persistencia del texto en disco al cerrar la aplicación (`before-quit`), asegurando también la existencia mínima de `user_settings.json`.
+- Exposición de un API interno `getCurrentText()` para ser usado por `main.js` (por ejemplo, al inicializar el editor manual).
+- Registro y manejo de los IPC:
+  - `"get-current-text"`
+  - `"set-current-text"`
+  - `"force-clear-editor"`
+- Broadcast de los cambios de texto hacia:
+  - la ventana principal (`current-text-updated`) y
+  - el editor manual (`manual-text-updated`, `manual-force-clear`),
+manteniendo el comportamiento observable previo.
+
+### Resultado obtenido
+- Nuevo archivo `electron/text_state.js` creado, con:
+  - `init({ loadJson, saveJson, currentTextFile, settingsFile, app, maxTextChars })`:
+    - Carga y normaliza `current_text.json`.
+    - Aplica truncado inicial por `MAX_TEXT_CHARS` cuando corresponde, persistiendo el resultado.
+    - Registra un listener `before-quit` para persistir el texto y asegurar la existencia de `user_settings.json`.
+  - `registerIpc(ipcMain, () => ({ mainWin, editorWin }))`:
+    - Registra `get-current-text`, devolviendo siempre `currentText` como string.
+    - Registra `set-current-text`, aceptando tanto payloads `{ text, meta }` como strings simples:
+      - Aplica truncado por `MAX_TEXT_CHARS` con aviso en consola.
+      - Actualiza el estado interno `currentText`.
+      - Emite `current-text-updated` hacia la ventana principal.
+      - Emite `manual-text-updated` hacia el editor manual con `{ text, meta }`, respetando el contrato de `meta` (`source`, `action`).
+      - Devuelve `{ ok, truncated, length, text }` al invocador.
+    - Registra `force-clear-editor`, que:
+      - Vacía el estado interno `currentText`.
+      - Emite `current-text-updated` a la ventana principal.
+      - Emite `manual-force-clear` al editor manual para que ejecute su lógica local de limpieza.
+  - `getCurrentText()`, que devuelve el texto actual (`currentText`) para ser usado por `main.js` al inicializar el editor manual.
+
+- `electron/main.js`:
+  - Importa y utiliza `text_state.js`:
+    - Llama a `textState.init(...)` después de definir `MAX_TEXT_CHARS` y tras asegurar `CONFIG_DIR`.
+    - Llama a `textState.registerIpc(ipcMain, () => ({ mainWin, editorWin }))` para registrar los IPC de texto.
+  - Elimina por completo:
+    - La variable global `currentText`.
+    - La carga manual de `current_text.json` y su truncado inicial.
+    - La función `persistCurrentTextOnQuit` y su registro en `app.on("before-quit", ...)`.
+    - Los handlers IPC locales:
+      - `"get-current-text"`
+      - `"set-current-text"`
+      - `"force-clear-editor"`
+  - Sustituye el uso de `currentText` por `textState.getCurrentText()` en:
+    - `createEditorWindow()` → envío de `manual-init-text` al editor manual con `{ text, meta }`.
+    - El handler de `open-editor` cuando la ventana del editor ya existe.
+  - Mantiene intacta la lógica de:
+    - `manual-init-text` (forma del payload, secuencia de envío).
+    - `manual-editor-ready` a la ventana principal.
+    - Integración con `modal_state.js` para maximizado/reducido del editor.
+
+- Pruebas funcionales:
+  - La app inicia sin errores en consola (main ni renderer).
+  - La carga inicial de `current_text.json` funciona:
+    - Con texto corto, la ventana principal y el editor manual muestran el mismo contenido.
+    - Con texto mayor a `MAX_TEXT_CHARS`, se trunca, se persiste y no se producen fallos.
+  - `set-current-text`:
+    - Desde la ventana principal:
+      - Actualiza correctamente preview y resultados.
+      - Actualiza el editor manual.
+      - Muestra advertencias de truncado cuando corresponde.
+    - Desde el editor manual:
+      - Actualiza correctamente el preview y los resultados en la ventana principal.
+      - Mantiene el comportamiento esperado en el propio editor (sin bucles de eco gracias a `meta`).
+  - `force-clear-editor`:
+    - Al vaciar desde la ventana principal:
+      - Se limpia el texto en la ventana principal (preview/resultados).
+      - Se limpia el editor manual.
+      - El estado persiste vacío al reiniciar la app solo cuando se cierra la aplicación (persistencia en `before-quit`).
+  - Persistencia:
+    - Cambios de texto (origen ventana principal o editor) se mantienen al cerrar y reabrir la app.
+
+### Errores detectados
+- Error de orden de inicialización: se intentó pasar `MAX_TEXT_CHARS` a `textState.init` antes de declarar la constante, provocando `ReferenceError: Cannot access 'MAX_TEXT_CHARS' before initialization`.  
+  - Solución: mover la declaración de `MAX_TEXT_CHARS` antes de la llamada a `textState.init(...)`.
+- Omisión inicial del broadcast `current-text-updated` hacia la ventana principal en el handler `set-current-text`, lo que impedía que los cambios iniciados desde el editor manual se reflejaran en el preview y resultados de la ventana principal.  
+  - Solución: restaurar el envío de `current-text-updated` a `mainWin` dentro de `text_state.js`.
+- Diferencia respecto al comportamiento original en `force-clear-editor`, donde inicialmente solo se notificaba al editor manual.  
+  - Solución: reintroducir también el envío de `current-text-updated` a `mainWin` en `force-clear-editor`, alineando el comportamiento con el `main.js` estable previo.
+
+Todos estos errores fueron corregidos y las pruebas posteriores confirman que el comportamiento actual es consistente con la versión estable previa, con la lógica de estado de texto centralizada en `text_state.js`.
+
+### Estado
+☑ Completado
+
 ## Paso X — [Nombre del paso]
 
 ### Resultado esperado
