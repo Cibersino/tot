@@ -427,7 +427,7 @@ async function applyExternalUpdate(payload) {
     const t = await window.manualAPI.getCurrentText();
     await applyExternalUpdate({ text: t || "", meta: { source: "main", action: "init" } });
     // initial state of CALCULAR button
-    btnCalc.disabled = !(calcWhileTyping && calcWhileTyping.checked);
+    btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
   } catch (e) {
     console.error("Error inicializando editor:", e);
   }
