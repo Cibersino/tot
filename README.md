@@ -1,5 +1,5 @@
 ### toT — Reading Meter ###
-**Versión:** 0.0.920 (2025/12/09)
+**Versión:** 0.0.930 (2025/12/11)
 
 Aplicación de escritorio (Electron) para contar palabras y caracteres, estimar tiempos de lectura, cronometrar lecturas y gestionar presets de velocidad (WPM).
 
@@ -351,6 +351,54 @@ Depuración y orden del código
 - Dependencias explícitas en renderer: renderer.js exige RendererI18n y CountUtils sin fallback, evitando duplicación de conteo.
 - Limpieza de diagnóstico: eliminados logs temporales y la apertura automática de DevTools; fuera el console.debug de open-preset-modal en electron/main.js.
 - Corrección de idioma en presets: el modal lee language de settings al abrir, por lo que ya muestra inglés/español según la preferencia actual.
+
+**0.0.930** (2025/12/11)
+Modularización del proceso principal (Electron)
+
+- `electron/main.js`
+  - Reduce su rol a orquestar la app: creación de ventanas, wiring de IPC y construcción del menú.
+  - Pasa a delegar lógica a módulos dedicados: `fs_storage`, `settings`, `text_state`, `modal_state`,
+    `presets_main`, `menu_builder` y `updater`.
+
+- `electron/fs_storage.js`
+  - Extrae desde `main.js` las rutas `CONFIG_DIR` / `CONFIG_PRESETS_DIR` y las utilidades
+    `ensureConfigDir`, `ensureConfigPresetsDir`, `loadJson` y `saveJson`.
+
+- `electron/settings.js`
+  - Centraliza el manejo de `user_settings.json`: lectura inicial (`init`), normalización (`normalizeSettings`)
+    y persistencia.
+  - Registra los IPC de configuración general: `"get-settings"`, `"set-language"` y `"set-mode-conteo"`,
+    además de emitir `settings-updated` a las ventanas cuando cambian los ajustes.
+
+- `electron/text_state.js`
+  - Aísla el estado compartido del texto (`currentText`) y el límite `MAX_TEXT_CHARS`, incluida la carga
+    desde `config/current_text.json` y la escritura al salir.
+  - Registra los IPC `"get-current-text"`, `"set-current-text"` y `"force-clear-editor"`, notificando
+    a la ventana principal y al editor manual.
+
+- `electron/modal_state.js`
+  - Separa en un módulo la lectura/escritura de `config/modal_state.json` y la lógica para restaurar tamaño,
+    posición y estado maximizado de la ventana de editor.
+  - Expone `loadInitialState` y `attachTo` para enganchar los eventos de `BrowserWindow` del editor
+    (maximize/unmaximize/move/resize/close) con la persistencia del estado.
+
+- `electron/presets_main.js`
+  - Agrupa la lógica de presets que antes estaba en `main.js`: carga de presets por defecto (incluyendo
+    variantes por idioma), actualización de `settings.presets` y uso de `settings.disabled_default_presets`.
+  - Implementa los handlers IPC de presets (por ejemplo `"get-default-presets"`, `"edit-preset"`,
+    `"request-delete-preset"`, `"request-restore-defaults"`) y los diálogos nativos asociados.
+
+- `electron/menu_builder.js`
+  - Extrae de `main.js` la carga de traducciones desde `i18n/<lang>/main.json` y la construcción del menú
+    nativo (`Menu.buildFromTemplate`).
+  - Encapsula el envío de `"menu-click"` a la ventana principal y la obtención de textos de diálogo
+    (`getDialogTexts`) a partir de esas traducciones.
+
+- `electron/updater.js`
+  - Extrae el sistema de actualización: lectura de `VERSION`, comparación con la versión remota
+    y apertura de la URL de descarga.
+  - Registra el IPC `"check-for-updates"` y gestiona los diálogos nativos de actualización; `main.js`
+    solo delega a `updater.register(...)`.
 
 ## Autor y Créditos ##
 
