@@ -6,3 +6,5 @@ Ventana editor manual:
 ¿Duplicaciones de la constante MAX_TEXT_CHARS (dependiente de constants.js) en distintos archivos?
 
 Quitar sonido a todos los avisos
+
+Pestañeos

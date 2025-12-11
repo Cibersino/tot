@@ -19,6 +19,67 @@ Esto incluye:
 
 Cada paso debe ser probado antes de continuar.
 
+## Criterios generales de trabajo para la modularización
+
+Estos criterios aplican a todos los pasos del plan de modularización, y en particular a la auditoría final de `main.js` y de los módulos del proceso principal.
+
+1. **Adherencia al plan documentado**
+
+   - Se deben seguir los pasos definidos en `modularizacion_plan.md`.
+   - Si durante la revisión se detecta que alguna parte del plan es inconsistente, quedó desactualizada respecto de la ruta real del proyecto, o existe un motivo razonable para desviarse, la desviación debe:
+     - Ser explicitada en este documento.
+     - Estar justificada de forma breve y concreta.
+
+2. **Registro de dificultades y errores**
+
+   - Toda dificultad relevante encontrada durante la revisión debe registrarse:
+     - Errores detectados en código.
+     - Problemas de carga/visualización de archivos.
+     - Inconsistencias entre módulos, preloads y renderers.
+   - Debe indicarse si la dificultad:
+     - Fue resuelta en el acto.
+     - Quedó pendiente, con nota de seguimiento.
+
+3. **Confianza absoluta en los módulos**
+
+   - Los módulos creados (`fs_storage`, `modal_state`, `text_state`, `settings`, `menu_builder`, `presets_main`, `updater`, etc.) deben considerarse la fuente de verdad de su dominio.
+   - Si se encuentran duplicados de lógica en otras partes de la app (incluyendo fallbacks innecesarios fuera del módulo propietario), esos duplicados se consideran vestigios y deben eliminarse, siempre verificando que:
+     - La app permanece estable.
+     - La funcionalidad observable no se degrade.
+
+4. **Eliminación de vestigios del código anterior**
+
+   - No se deben conservar restos de código antiguo como “legacy” dentro de la base actual.
+   - Todo código que haya sido reemplazado por la modularización debe ser eliminado:
+     - Sin dejar funciones muertas.
+     - Sin mantener bloques comentados como “versión anterior”.
+   - La única “memoria” de los cambios debe quedar en:
+     - Este documento (`modularizacion_plan.md`).
+     - El historial de Git.
+
+5. **Fuente de verdad: carpeta local del proyecto**
+
+   - La revisión debe basarse exclusivamente en los archivos de la carpeta local actual del proyecto, que contienen el estado más reciente de la app.
+   - Si hay problemas para abrir o visualizar un archivo (por tamaño, codificación u otra causa), esto debe:
+     - Ser explicitado en el registro de avances.
+     - Detallar qué archivo está afectado y qué parte no pudo revisarse.
+
+6. **Ritmo de trabajo y revisión exhaustiva**
+
+   - No se deben apresurar las respuestas ni las modificaciones.
+   - Cada cambio debe realizarse solo después de revisar cuidadosamente:
+     - El archivo afectado.
+     - Sus dependencias directas (imports/require, IPC asociados, etc.).
+   - Si una revisión requiere más tiempo o pasos intermedios, debe indicarse explícitamente.
+
+7. **Criterio específico para el cronómetro y la ventana flotante**
+
+   - La lógica del cronómetro y la coordinación con la ventana flotante forman parte explícita de las responsabilidades de `main.js`.
+   - Por criterio de estabilidad:
+     - El proceso del cronómetro debe permanecer en `main.js`.
+     - La lógica que asegura el funcionamiento correcto de la ventana flotante **no debe** ser movida fuera de `main.js`.
+   - Cualquier mejora en esta área debe respetar esta restricción y, si se toca código relacionado, se debe registrar de forma explícita en este documento.
+
 ---
 
 # 2. Arquitectura actual del proyecto (resumen)
@@ -930,18 +991,203 @@ El refactor no introdujo regresiones y el comportamiento final coincide exactame
 
 ---
 
-# 9. Próximos pasos
+## Paso 8 — Auditoría final de `main.js` y módulos del proceso principal
 
-1. Implementar `fs_storage.js`, `modal_state.js`, `text_state.js`, `settings.js`, `presets_main.js`, `menu_builder.js`, `updater.js` como módulos **internos del proceso principal**, sin cambiar la API pública de los preloads.
-2. Ir migrando los bloques desde `main.js` hacia estos módulos **de a uno por vez**, siguiendo este orden recomendado:
+### Resultado esperado
 
-   1. `fs_storage.js`
-   2. `modal_state.js`
-   3. `text_state.js`
-   4. `settings.js`
-   5. `menu_builder.js`
-   6. `presets_main.js`
-   7. `updater.js`
-3. Después de cada extracción, actualizar la sección de pruebas y marcar el paso como completado.
+Realizar una auditoría integral de la modularización de `electron/main.js` y de todos los módulos internos del proceso principal, con los siguientes objetivos:
+
+1. Auditoría de `electron/main.js` post-modularización:
+   - Verificar que su rol se limite a: ciclo de vida de ventanas, routing IPC de alto nivel e integración de módulos (fs_storage, modal_state, text_state, settings, presets_main, menu_builder, updater).
+   - Detectar y marcar cualquier lógica que debería estar en un módulo (reglas de negocio, acceso a disco, manipulación de settings/presets, etc.).
+
+2. Auditoría de todos los módulos creados:
+   - `fs_storage.js`, `modal_state.js`, `text_state.js`, `settings.js`, `menu_builder.js`, `presets_main.js`, `updater.js`.
+   - Confirmar que cada módulo tenga una responsabilidad clara y una API pública coherente, sin solapamientos innecesarios.
+
+3. Revisión de preloads y APIs expuestas:
+   - Revisar `preload.js`, `manual_preload.js`, `preset_preload.js`, `flotante_preload.js`, `language_preload.js`.
+   - Asegurar que:
+     - Solo expongan métodos realmente registrados en `main.js`/módulos.
+     - Sus nombres y payloads coincidan con lo que consumen los renderers (`renderer.js`, `manual.js`, `flotante.js`, etc.).
+
+4. Verificación de funciones duplicadas y rutas muertas:
+   - Eliminar duplicados de lógica que ya fue extraída a módulos.
+   - Eliminar handlers IPC y funciones no referenciadas (legacy) o documentarlos explícitamente si se reservan para futuras features.
+
+5. Detección de lógica mal ubicada o fusionable:
+   - Identificar código que debería moverse entre módulos (por ejemplo, lógica de presets que aún dependa directamente de FS, o lógica de settings repartida).
+   - Proponer movimientos mínimos que mejoren la coherencia sin cambiar el comportamiento observable.
+
+6. Revisión de naming, estructura, consistencia y responsabilidades:
+   - Alinear nombres de módulos y funciones con su rol real.
+   - Homogeneizar la estructura interna de los módulos (orden de imports, constantes, helpers privados, API pública, `module.exports`).
+   - Añadir comentarios breves donde sea necesario para clarificar responsabilidades.
+
+El comportamiento observable de la aplicación no debe cambiar respecto a la versión estable posterior a los Pasos 1–7; solo se permiten correcciones de bugs reales detectados durante la auditoría.
 
 ---
+
+### Checklist de trabajo
+
+#### 0. Preparación
+
+- [x] 0.1 Congelar referencia actual:
+  - [x] Verificar que la app arranque sin errores de consola (main y renderer).
+  - [x] Confirmar que las funcionalidades principales (ventana principal, editor manual, presets, idioma, cronómetro, ventana flotante, updater) están operativas.
+- [x] 0.2 Definir criterio: no introducir cambios funcionales salvo correcciones de bugs claramente identificados.
+
+#### 1. Auditoría de `electron/main.js`
+
+- [x] 1.1 Inventario de responsabilidades actuales de `main.js` (ventanas, IPC, cronómetro, integración de módulos).
+- [x] 1.2 Marcar bloques:
+  - [x] Core legítimo de main (ventanas, wiring, cronómetro).
+  - [x] Delegable a módulo existente.
+  - [x] Duplicado de lógica que ya está en un módulo.
+  - [x] Ruta muerta (nunca invocada).
+- [x] 1.3 Anotar para cada bloque si se mantiene, se mueve o se elimina.
+
+#### 2. Auditoría de módulos del proceso principal
+
+Para cada módulo (`fs_storage`, `modal_state`, `text_state`, `settings`, `menu_builder`, `presets_main`, `updater`):
+
+- [ ] 2.1 Listar API pública (`module.exports`) y describir brevemente la responsabilidad.
+- [ ] 2.2 Mapear quién lo usa (buscar `require("./nombre_modulo")`).
+- [ ] 2.3 Comprobar que no duplique lógica ya existente en otro módulo.
+- [ ] 2.4 Verificar ausencia de dependencias cíclicas innecesarias.
+- [ ] 2.5 Revisar que solo exporte lo que realmente se usa.
+
+#### 3. Preloads y correspondencia con IPC
+
+- [ ] 3.1 Construir tabla de canales IPC:
+  - Canal, módulo que lo registra, preload que lo expone, renderer que lo consume, shape del payload.
+- [ ] 3.2 Revisar cada preload:
+  - [ ] Verificar que no exponga métodos huérfanos (sin handler en main/módulos).
+  - [ ] Verificar que no falten métodos usados en renderer.
+- [ ] 3.3 Ajustar, si corresponde, nombres y payloads para que preload ↔ main/módulos ↔ renderer estén perfectamente alineados.
+
+#### 4. Duplicados y rutas muertas
+
+- [ ] 4.1 Búsqueda global de funciones clave (FS, presets, settings, updater, traducciones).
+- [ ] 4.2 Eliminar versiones antiguas que quedaron en `main.js` u otros archivos.
+- [ ] 4.3 Identificar handlers IPC nunca usados y decidir:
+  - [ ] Borrado directo.
+  - [ ] O marcarlos explícitamente como “reservados para futura feature” (documentado).
+
+#### 5. Lógica a mover o fusionar
+
+- [ ] 5.1 Detectar lógica de negocio fuera de su módulo natural (por ejemplo, presets manipulando settings sin pasar por `settings.js`).
+- [ ] 5.2 Proponer y aplicar movimientos mínimos de funciones a módulos existentes, sin rediseñar la arquitectura.
+- [ ] 5.3 Documentar en este plan cualquier decisión de “no mover” (con breve justificación).
+
+#### 6. Naming, estructura y responsabilidades
+
+- [ ] 6.1 Revisar naming de módulos y funciones exportadas:
+  - [ ] Que describan claramente su rol (`init`, `registerIpc`, `getX`, `setX`, `createXWindow`, etc.).
+- [ ] 6.2 Homogeneizar estructura interna de módulos:
+  - [ ] Imports → constantes → helpers privados → API pública → `module.exports`.
+- [ ] 6.3 Añadir, donde aporte claridad, un comentario inicial de 1–2 líneas por módulo indicando:
+  - [ ] Qué hace.
+  - [ ] Qué explícitamente NO hace (para evitar que crezca de forma desordenada).
+
+---
+
+### Plan de ejecución resumido
+
+1. **Fase 0 — Preparación:** congelar el estado actual y validar que la app está estable antes de tocar nada.
+2. **Fase 1 — `main.js`:** inventario de responsabilidades y marcado de bloques (core, delegable, duplicado, muerto).
+3. **Fase 2 — Módulos:** revisar API, usos y solapamientos de `fs_storage`, `modal_state`, `text_state`, `settings`, `menu_builder`, `presets_main`, `updater`.
+4. **Fase 3 — Preloads/IPCs:** construir tabla de canales y revisar preload ↔ main ↔ renderer.
+5. **Fase 4 — Limpieza:** eliminar duplicados y rutas muertas, moviendo pequeñas piezas a su módulo correcto.
+6. **Fase 5 — Consistencia:** ajustar naming, estructura y comentarios para dejar la arquitectura legible.
+7. **Fase 6 — Pruebas:** ejecutar la batería de pruebas manuales ya utilizada en pasos anteriores para confirmar que no se alteró el comportamiento observable.
+
+---
+
+### Registro de avances
+
+#### **Fase 0** 
+
+- `2025-12-11` — Fase 0.1 completada:
+  - App levanta correctamente desde la carpeta local actual (versión post Pasos 1–7).
+  - Sin errores críticos en consola de main ni renderer durante el arranque.
+  - Funcionalidades básicas verificadas:
+    - Ventana principal operativa.
+    - Editor manual abre y cierra correctamente y recibe `manual-init-text`.
+    - Gestión de presets funcional (crear/editar/eliminar, envío de `preset-init`).
+    - Cambio de idioma operativo mediante ventana modal.
+    - Cronómetro en ventana principal y ventana flotante sincronizados.
+    - Check de actualizaciones ejecuta sin errores visibles.
+
+- `2025-12-11` — Fase 0.2 completada:
+  - Confirmado el criterio para la auditoría:
+    - No introducir cambios funcionales deliberados.
+    - Solo se permiten correcciones de bugs claramente identificados durante la revisión.
+    - Cualquier desviación a este criterio debe documentarse en este mismo archivo.
+
+##### Observaciones detectadas
+
+- DevTools solo se puede abrir en la ventana principal:
+  - Los atajos de desarrollo (`Cmd/Ctrl+Shift+I`, `Cmd/Ctrl+R`, etc.) están registrados únicamente contra `mainWin`.
+  - Las ventanas de editor, presets, idioma e info/flotante no tienen actualmente atajos ni menú para abrir DevTools.
+  - Se mantiene como limitación de diagnóstico mientras dure la auditoría para no mezclar refactorización con cambios de tooling.
+
+##### Estado
+
+☑ Completado
+
+#### **Fase 1** 
+
+- `2025-12-11` — Fase 1 completada (Auditoría de `electron/main.js`)
+
+  - **1.1 Inventario de responsabilidades de `main.js`**
+    - Se revisó el archivo `electron/main.js` completo y se clasificaron sus responsabilidades en:
+      - Bootstrap y wiring base (imports, rutas de config, inicialización de `textState`).
+      - Gestión de ventanas (principal, editor manual, presets, idioma, ventana flotante).
+      - Cronómetro central (estado único en proceso principal y broadcast a ventanas).
+      - IPC de cronómetro y ventana flotante.
+      - IPC de apertura de ventanas (`open-editor`, `open-preset-modal`) y configuración general (`get-app-config`).
+      - Integración con módulos internos (`text_state`, `settings`, `presets_main`, `menu_builder`, `updater`).
+      - Ciclo de vida global de la app (`whenReady`, `window-all-closed`, `activate`).
+
+  - **1.2 / 1.3 Clasificación de bloques y decisiones**
+    - Se marcaron explícitamente los bloques de `main.js` como:
+      - **Core legítimo de main**:
+        - Creación y ciclo de vida de ventanas (principal, editor, presets, idioma, flotante).
+        - Cronómetro maestro y coordinación con ventana flotante.
+        - Wiring de IPC de alto nivel (cronómetro, flotante, apertura de ventanas, `get-app-config`).
+        - Integración con módulos (`text_state.registerIpc`, `settingsState.registerIpc`, `presetsMain.registerIpc`, `updater.register`).
+        - Ciclo de vida de la app (`app.whenReady`, `window-all-closed`, `activate`).
+      - **Delegable a módulos existentes**:
+        - No se detectaron bloques en `main.js` que contuvieran lógica de negocio que debiera moverse a un módulo ya creado sin romper los contratos actuales. `main.js` se limita a orquestar.
+      - **Duplicado de lógica ya modularizada**:
+        - No hay duplicación de lógica de texto, settings, presets o updater en `main.js`. Esos IPC están totalmente delegados a sus módulos respectivos.
+      - **Rutas muertas / vestigios en `main.js`**:
+        - Imports de `dialog`, `Menu`, `shell` desde `electron` que ya no se utilizaban en `main.js`.
+        - Doble registro de `app.on('will-quit')` (uno para atajos de desarrollo y otro para limpiar el cronómetro).
+        - Desalineación documental respecto de `ensureConfigPresetsDir` (CONTRACTS decía que se llamaba desde `main.js`, pero en la implementación real la llamada la realiza `presets_main`).
+
+    - **Acciones aplicadas como parte de la Fase 1**:
+      - Se eliminaron los imports no utilizados en `electron/main.js`:
+        - `dialog`, `Menu`, `shell` fueron removidos de la lista destructurada de `require('electron')`.
+      - Se fusionaron los dos handlers `app.on('will-quit')` en un único listener que:
+        - Llama a `unregisterShortcuts()` para limpiar atajos de desarrollo.
+        - Limpia de forma segura el `cronoInterval` del cronómetro.
+      - Se actualizó `CONTRACTS.md` para alinear el contrato con la implementación real:
+        - `main.js` se documenta ahora como responsable de llamar solo a `ensureConfigDir()` al arranque.
+        - `presets_main.js` se documenta como responsable de llamar a `ensureConfigPresetsDir()` cuando necesite leer/escribir presets por defecto o de usuario.
+
+    - **Resultado de la Fase 1 sobre `main.js`**:
+      - `main.js` queda claramente limitado a:
+        - Gestión de ventanas.
+        - Cronómetro central y ventana flotante.
+        - Routing IPC de alto nivel.
+        - Integración de módulos del proceso principal.
+      - No quedan funciones duplicadas de texto, settings, presets o updater en `main.js`.
+      - Los únicos cambios realizados fueron de limpieza estructural y documental, sin alterar el comportamiento observable:
+        - La aplicación sigue arrancando sin errores.
+        - Todas las funcionalidades principales verificadas en la Fase 0 siguen operativas.
+
+##### Estado
+
+☑ Completado
