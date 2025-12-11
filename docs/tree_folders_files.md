@@ -29,12 +29,12 @@ tot-readingmeter/
 │ ├── manual_preload.js
 │ ├── preset_preload.js
 │ ├── flotante_preload.js
-│ ├── menu_builder.js
 │ ├── fs_storage.js
 │ ├── settings.js
 │ ├── text_state.js
 │ ├── modal_state.js
 │ ├── presets_main.js
+│ ├── menu_builder.js
 │ └── updater.js
 ├── i18n/
 │ ├── es/

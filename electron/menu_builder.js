@@ -1,6 +1,6 @@
 // electron/menu_builder.js
 //
-// Construcción del menú nativo y textos de diálogos de main,
+// Construccion del meno nativo y textos de dialogos de main,
 // a partir de i18n/<lang>/main.json.
 
 const { app, Menu } = require("electron");
@@ -34,12 +34,12 @@ function getDialogTexts(lang) {
 }
 
 /**
- * Construye el menú nativo de la app.
+ * Construye el meno nativo de la app.
  *
- * @param {string} lang - Código de idioma (ej: 'es', 'en').
+ * @param {string} lang - Codigo de idioma (ej: 'es', 'en').
  * @param {object} [opts]
  * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Ventana principal para enviar 'menu-click'.
- * @param {Function} [opts.onOpenLanguage] - Callback para abrir la ventana de selección de idioma.
+ * @param {Function} [opts.onOpenLanguage] - Callback para abrir la ventana de seleccion de idioma.
  */
 function buildAppMenu(lang, opts = {}) {
     const effectiveLang = (lang || "es").toLowerCase();
@@ -100,7 +100,7 @@ function buildAppMenu(lang, opts = {}) {
             submenu: [
                 {
                     label: m.idioma || "Language",
-                    // Aquí antes se llamaba directamente a createLanguageWindow() en main.js.
+                    // Aqui antes se llamaba directamente a createLanguageWindow() en main.js.
                     click: () => {
                         if (onOpenLanguage) {
                             try {
@@ -202,7 +202,7 @@ function buildAppMenu(lang, opts = {}) {
                             mainWindow.webContents.toggleDevTools();
                         } catch (err) {
                             console.error(
-                                "[menu_builder] Error toggling DevTools desde menú:",
+                                "[menu_builder] Error toggling DevTools desde meno:",
                                 err
                             );
                         }

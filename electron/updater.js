@@ -1,6 +1,6 @@
 // electron/updater.js
-// Sistema de actualizaciones: comparación de versiones, consulta remota
-// y diálogos nativos de actualización.
+// Sistema de actualizaciones: comparacion de versiones, consulta remota
+// y dialogos nativos de actualizacion.
 
 const { dialog, shell } = require('electron');
 const https = require('https');
@@ -9,7 +9,7 @@ const fs = require('fs');
 
 const menuBuilder = require('./menu_builder');
 
-// Rutas y URLs de versión / descarga
+// Rutas y URLs de version / descarga
 const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
 const VERSION_REMOTE_URL = 'https://raw.githubusercontent.com/Cibersino/tot-readingmeter/main/VERSION';
 const DOWNLOAD_URL = 'https://github.com/Cibersino/tot-readingmeter/releases/latest';
@@ -18,7 +18,7 @@ const DOWNLOAD_URL = 'https://github.com/Cibersino/tot-readingmeter/releases/lat
 let mainWinRef = () => null;
 let currentLanguageRef = () => 'es';
 
-// Evitar checks múltiples en el mismo ciclo de vida
+// Evitar checks multiples en el mismo ciclo de vida
 let updateCheckDone = false;
 
 function compareVersions(a, b) {
@@ -100,7 +100,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     }
 
     if (!mainWin || mainWin.isDestroyed()) {
-      // No hay ventana principal visible: no tiene sentido mostrar diálogos
+      // No hay ventana principal visible: no tiene sentido mostrar dialogos
       return;
     }
 
@@ -127,7 +127,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
   }
 }
 
-// Check automático, una sola vez
+// Check automatico, una sola vez
 function scheduleInitialCheck() {
   if (updateCheckDone) return;
   updateCheckDone = true;

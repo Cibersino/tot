@@ -1,5 +1,5 @@
 // electron/settings.js
-// Gestión centralizada de user_settings.json: language, modeConteo, numberFormatting, etc.
+// Gestion centralizada de user_settings.json: language, modeConteo, numberFormatting, etc.
 
 const fs = require("fs");
 const path = require("path");
@@ -13,7 +13,7 @@ let _settingsFile = null;
 let _currentSettings = null;
 
 /**
- * Carga los defaults de formato numérico desde i18n/<lang>/numberFormat.json
+ * Carga los defaults de formato numerico desde i18n/<lang>/numberFormat.json
  * Retorna { thousands, decimal } o null si no se pudo cargar.
  */
 function loadNumberFormatDefaults(lang) {
@@ -62,7 +62,7 @@ function loadNumberFormatDefaults(lang) {
 
 /**
  * Normalizar settings: asegurar campos por defecto sin sobrescribir los existentes.
- * Mantiene la lógica anterior de main.js.
+ * Mantiene la logica anterior de main.js.
  */
 function normalizeSettings(s) {
     s = s || {};
@@ -103,7 +103,7 @@ function normalizeSettings(s) {
 }
 
 /**
- * Inicialización desde main.js
+ * Inicializacion desde main.js
  * - Inyecta loadJson/saveJson y ruta de SETTINGS_FILE.
  * - Lee, normaliza y persiste user_settings.json.
  * - Deja _currentSettings cacheado.
@@ -189,7 +189,7 @@ function broadcastSettingsUpdated(settings, windows) {
 }
 
 /**
- * Registra IPC relacionados con configuración general:
+ * Registra IPC relacionados con configuracion general:
  * - get-settings
  * - set-language
  * - set-mode-conteo
@@ -315,7 +315,7 @@ function registerIpc(
 
 /**
  * Fallback para el caso en que el modal de idioma se cierra sin seleccionar nada.
- * Si settings.language está vacío, fuerza fallbackLang (por defecto 'es')
+ * Si settings.language esta vacio, fuerza fallbackLang (por defecto 'es')
  * y asegura numberFormatting[fallbackLang].
  */
 function applyFallbackLanguageIfUnset(fallbackLang = "es") {

@@ -70,7 +70,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
   const saver = typeof customSaveJson === 'function' ? customSaveJson : saveJson;
 
-  // REGLA B — guardar estado reducido cuando la ventana NO está maximizada
+  // REGLA B — guardar estado reducido cuando la ventana NO esta maximizada
   const saveReducedState = () => {
     try {
       if (!editorWin || editorWin.isDestroyed()) return;
