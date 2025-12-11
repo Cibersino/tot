@@ -191,7 +191,7 @@ function registerIpc(ipcMain, windowsResolver) {
         }
       }
 
-      // Notificar al editor para que ejecute su lógica de limpieza local
+      // Notificar al editor para que ejecute su logica de limpieza local
       if (editorWin && !editorWin.isDestroyed()) {
         try {
           editorWin.webContents.send("manual-force-clear", "");

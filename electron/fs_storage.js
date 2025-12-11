@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// Carpeta de configuración base (mismo cálculo que en main.js)
+// Carpeta de configuracion base (mismo calculo que en main.js)
 const CONFIG_DIR = path.join(__dirname, '..', 'config');
 
 // Carpeta de presets por defecto en config
