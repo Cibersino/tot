@@ -28,24 +28,6 @@ const DOWNLOAD_URL = "https://github.com/Cibersino/tot-readingmeter/releases/lat
 const LANGUAGE_MODAL_HTML = path.join(__dirname, '../public/language_modal.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 
-// Helpers: load numberFormat defaults from i18n (per language)
-function loadNumberFormatDefaults(lang) {
-  const baseDir = path.join(__dirname, '..', 'i18n');
-  const file = path.join(baseDir, lang || 'es', 'numberFormat.json');
-  try {
-    if (fs.existsSync(file)) {
-      const raw = fs.readFileSync(file, 'utf8');
-      const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
-      const data = JSON.parse(cleaned || '{}');
-      return (data && data.numberFormat) ? data.numberFormat : null;
-    }
-  } catch (err) {
-    // noop: fall back handled by callers
-    return null;
-  }
-  return null;
-}
-
 function compareVersions(a, b) {
   const pa = String(a || '').trim().split('.').map(n => parseInt(n, 10) || 0);
   const pb = String(b || '').trim().split('.').map(n => parseInt(n, 10) || 0);
