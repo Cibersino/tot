@@ -1,5 +1,5 @@
 ## ÁRBOL DE CARPETAS Y ARCHIVOS PRINCIPALES ##
-version 0.0.920
+version 0.0.930
 
 ```
 tot-readingmeter/
