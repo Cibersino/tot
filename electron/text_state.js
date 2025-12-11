@@ -3,7 +3,9 @@ const fs = require("fs");
 
 // Estado interno compartido
 let currentText = "";
-let MAX_TEXT_CHARS = 10_000_000;
+
+// Limite por defecto. El limite efectivo se inyecta desde main.js via init({ maxTextChars }).
+let MAX_TEXT_CHARS = 10_000_000; 
 
 // Dependencias inyectadas
 let loadJson = null;
