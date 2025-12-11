@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 const path = require('path');
 
 const {
@@ -572,10 +572,6 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
   try { setCronoElapsed(ms); } catch (e) { console.error("Error en crono-set-elapsed:", e); }
 });
 
-app.on('will-quit', () => {
-  try { if (cronoInterval) { clearInterval(cronoInterval); cronoInterval = null; } } catch (e) { /* noop */ }
-});
-
 // IPC: abrir flotante
 ipcMain.handle('floating-open', async () => {
   try {
@@ -713,6 +709,17 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-app.on('will-quit', () => {
+app.on("will-quit", () => {
+  // Atajos de desarrollo
   unregisterShortcuts();
+
+  // Limpieza del cronometro
+  try {
+    if (cronoInterval) {
+      clearInterval(cronoInterval);
+      cronoInterval = null;
+    }
+  } catch (e) {
+    console.error("Error limpiando cronometro en will-quit:", e);
+  }
 });

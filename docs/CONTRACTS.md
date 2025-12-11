@@ -334,3 +334,305 @@ Puente desde renderer a procesos de Electron/main.
    Siempre claves i18n vía `RendererI18n`.
 
 ---
+
+## 11. Proceso principal (`electron/main.js`) y módulos del proceso principal
+
+### 11.1 `electron/main.js` — Proceso principal
+
+**Responsabilidad:**
+
+- Punto de entrada de la app y ciclo de vida de Electron:
+  - `app.whenReady`, `app.on('window-all-closed')`, `app.on('activate')`, etc.
+- Creación y gestión de ventanas:
+  - Ventana principal.
+  - Editor manual.
+  - Ventana de presets.
+  - Ventana de idioma.
+  - Ventana flotante del cronómetro.
+- Autoridad central del cronómetro y coordinación con la ventana flotante:
+  - Estado único del cronómetro en el proceso principal.
+  - Emisión de estados hacia renderer y flotante.
+- Integración y orquestación de los módulos internos del proceso principal:
+  - `fs_storage.js`
+  - `modal_state.js`
+  - `text_state.js`
+  - `settings.js`
+  - `presets_main.js`
+  - `menu_builder.js`
+  - `updater.js`
+- Wiring de IPC de alto nivel entre:
+  - `preload.js` / `manual_preload.js` / `preset_preload.js` / `flotante_preload.js` / `language_preload.js`.
+  - Los módulos internos listados arriba.
+
+**No debe hacer:**
+
+- Lógica de negocio de:
+  - Acceso a disco (más allá de lo estrictamente necesario para arrancar) → delegar en `fs_storage`.
+  - Gestión de texto → `text_state`.
+  - Gestión de settings/idioma → `settings`.
+  - Gestión de presets → `presets_main`.
+  - Lógica de actualizaciones → `updater`.
+- Cálculos de conteo, tiempos de lectura o formateo numérico → ya existen `CountUtils`, `FormatUtils`, `RendererTimer`, etc.
+
+**Contrato interno (respecto a módulos):**
+
+- Inicialización de FS:
+  - Llama a `fsStorage.ensureConfigDir()` y `fsStorage.ensureConfigPresetsDir()` al arranque.
+- Texto compartido:
+  - Llama una sola vez a `textState.init({ loadJson, saveJson, currentTextFile, settingsFile, app, maxTextChars })`.
+  - Llama a `textState.registerIpc(ipcMain, () => ({ mainWin, editorWin }))`.
+- Settings / idioma:
+  - Inicializa `settingsState.init(...)` con los helpers de FS.
+  - Registra `settingsState.registerIpc(ipcMain, { getWindows, buildAppMenu, getCurrentLanguage, setCurrentLanguage })`.
+  - No implementa por sí mismo `get-settings`, `set-language`, `set-mode-conteo`: solo delega.
+- Presets:
+  - Llama a `presetsMain.registerIpc(ipcMain, helpers)` para todos los IPC de presets.
+  - No accede directamente a presets por defecto ni a presets de usuario (salvo a través de `presets_main`).
+- Menú nativo:
+  - Construye el menú exclusivamente vía `menuBuilder.buildAppMenu(lang, { mainWin, onOpenLanguage })`.
+- Updater:
+  - Registra el IPC de actualización vía:
+    - `updater.register(ipcMain, { mainWinRef: () => mainWin, currentLanguageRef: () => currentLanguage })`.
+  - Programa el chequeo inicial con `updater.scheduleInitialCheck()`.
+- Cronómetro y flotante:
+  - Es el único responsable de:
+    - Registrar los IPC `crono-*` (`crono-toggle`, `crono-reset`, `crono-get-state`, etc.).
+    - Mantener el estado del cronómetro y notificarlo a través de `crono-state`.
+    - Gestionar apertura y cierre de la ventana flotante (`floating-open`, `floating-close`) y el evento `flotante-closed`.
+
+**Notas:**
+
+- El cronómetro global y la coordinación con la ventana flotante permanecen en `main.js`. `RendererTimer` solo maneja la lógica de UI y derivados en renderer/flotante.
+- Cualquier nueva ventana o nuevo IPC de alto nivel debe:
+  - Definirse y registrarse en `main.js`.
+  - Delegar su lógica en un módulo dedicado del proceso principal cuando sea más que wiring trivial.
+
+### 11.2 `electron/fs_storage.js` — utilidades de FS del proceso principal
+
+**Responsabilidad:**
+
+Centralizar las operaciones de lectura/escritura de JSON y creación de carpetas de configuración usadas por `main.js` y los demás módulos internos del proceso principal.
+
+**Exporta (API pública):**
+
+- Constantes de rutas:
+  - `CONFIG_DIR: string`
+  - `CONFIG_PRESETS_DIR: string`
+- Helpers de inicialización:
+  - `ensureConfigDir(): void`
+  - `ensureConfigPresetsDir(): void`
+- Helpers de JSON:
+  - `loadJson(filePath: string, defaultValue: any): any`
+  - `saveJson(filePath: string, data: any): void`
+
+**Uso esperado:**
+
+- `main.js`:
+  - Llama a `ensureConfigDir()` al arranque para garantizar la carpeta base de configuración.
+  - No llama directamente a `ensureConfigPresetsDir()`; no necesita conocer la estructura interna de presets.
+- `presets_main.js`:
+  - Es el responsable de llamar a `ensureConfigPresetsDir()` cuando necesite leer/escribir presets por defecto o de usuario.
+- Otros módulos (`text_state`, `settings`, etc.):
+  - Deben usar `loadJson`/`saveJson` con las rutas que les correspondan (`current_text.json`, `user_settings.json`, etc.) en lugar de acceder manualmente a `fs`.
+- No se deben duplicar `loadJson`/`saveJson`/`ensureConfigDir`/`ensureConfigPresetsDir` dentro de otros módulos.
+
+### 11.3 `electron/modal_state.js` — estado del editor manual
+
+**Responsabilidad:**
+
+Persistir y restaurar el estado de la ventana del editor manual (posición, tamaño, maximizado, etc.) entre sesiones, sin que `main.js` tenga que lidiar con detalles de `modal_state.json`.
+
+**Exporta (API pública):**
+
+- `loadInitialState(loadJsonOverride?): { x?, y?, width?, height?, isMaximized?: boolean }`
+- `attachTo(editorWin, { saveJsonOverride?, debounceMs? } = {}): void`
+
+*(Los nombres exactos pueden variar; el contrato conceptual es que `main.js` no conozca el formato interno del archivo ni la estrategia de persistencia.)*
+
+**Uso esperado:**
+
+- `main.js`:
+  - Lee el estado inicial llamando a `loadInitialState(...)`.
+  - Crea la `BrowserWindow` del editor manual con ese estado inicial.
+  - Llama a `attachTo(editorWin, ...)` para que el módulo escuche `resize/move/close` y persista.
+- Ningún otro módulo debe leer o escribir `modal_state.json` directamente.
+
+
+### 11.4 `electron/text_state.js` — estado de texto compartido
+
+**Responsabilidad:**
+
+Gestionar todo el ciclo de vida del texto compartido (`current_text`) en el proceso principal:
+
+- Carga inicial desde `current_text.json`, incluyendo truncado por `MAX_TEXT_CHARS`.
+- Normalización de formato (aceptar/emitir `{ text, meta }` pero guardar un string coherente).
+- Persistencia al cerrar la app.
+- Broadcast de cambios hacia:
+  - Ventana principal.
+  - Editor manual.
+
+**Exporta (API pública):**
+
+- `init({ loadJson, saveJson, currentTextFile, settingsFile, app, maxTextChars }): void`
+- `registerIpc(ipcMain, getWindows: () => ({ mainWin, editorWin })): void`
+  - Registra:
+    - `"get-current-text"`
+    - `"set-current-text"`
+    - `"force-clear-editor"`
+- `getCurrentText(): string`
+
+**Uso esperado:**
+
+- `main.js`:
+  - Llama a `init()` una sola vez, tras conocer `CONFIG_DIR` y `MAX_TEXT_CHARS`.
+  - Llama a `registerIpc(...)` una sola vez, pasando una función que devuelve referencias a ventanas (`mainWin`, `editorWin`).
+  - Usa `getCurrentText()` solo para inicializar el editor manual cuando se abre.
+- Ningún otro módulo debe mantener su propia copia de `currentText`:
+  - `text_state` es la única fuente de verdad.
+- Ningún otro módulo debe registrar los IPC `"get-current-text"`, `"set-current-text"`, `"force-clear-editor"`.
+
+
+### 11.5 `electron/settings.js` — gestión de settings e idioma
+
+**Responsabilidad:**
+
+Centralizar la gestión de `user_settings.json` y el idioma actual de la aplicación:
+
+- Normalización de settings.
+- Carga y escritura en disco.
+- Propagación de cambios de idioma (incluyendo reconstrucción del menú y notificación a ventanas).
+- Propagación de cambios de modo de conteo u otras preferencias.
+
+**Exporta (API pública):**
+
+- `init({ loadJson, saveJson, configDir, app, buildAppMenu }): void`
+- `getSettings(): object`
+  - Carga siempre desde disco y normaliza antes de devolver.
+- `saveSettings(next: object): void`
+- `broadcastSettingsUpdated(getWindows: () => ({ mainWin, editorWin, presetWin, langWin, floatingWin })): void`
+- `registerIpc(ipcMain, { getWindows, buildAppMenu, getCurrentLanguage, setCurrentLanguage }): void`
+  - Registra al menos:
+    - `"get-settings"`
+    - `"set-language"`
+    - `"set-mode-conteo"`
+
+**Uso esperado:**
+
+- `main.js`:
+  - Llama a `init()` al arrancar, después de preparar `fs_storage`.
+  - Llama a `registerIpc(...)` una sola vez, pasando:
+    - `getWindows` → para obtener referencias a todas las ventanas.
+    - `buildAppMenu` → para reconstruir menú al cambiar idioma.
+    - `getCurrentLanguage` / `setCurrentLanguage` → para coordinar el idioma global.
+- Cualquier código que necesite settings:
+  - Debe utilizar `get-settings` vía IPC (desde renderer) o `getSettings()` (desde main/módulos), no leer `user_settings.json` directamente.
+- La normalización de settings no debe reimplementarse fuera de este módulo.
+
+
+### 11.6 `electron/menu_builder.js` — menú nativo de la aplicación
+
+**Responsabilidad:**
+
+- Cargar traducciones específicas de “main” (archivos `i18n/<lang>/main.json`).
+- Construir el menú nativo (`Menu.setApplicationMenu`) según el idioma.
+- Encapsular todos los `MenuItem` que emiten `menu-click` hacia renderer y otros comandos nativos (p.ej. abrir URL, DevTools).
+
+**Exporta (API pública):**
+
+- `loadMainTranslations(lang: string): object|null`
+- `getDialogTexts(lang: string): object`
+  - Textos comunes para diálogos nativos (`update_*`, etc.).
+- `buildAppMenu(lang: string, { mainWin, onOpenLanguage, sendMenuClick? }): void`
+  - Construye el menú y llama internamente a `Menu.setApplicationMenu(...)`.
+
+**Uso esperado:**
+
+- `main.js`:
+  - Llama a `buildAppMenu(currentLanguage, { mainWin, onOpenLanguage })` cuando:
+    - Se crea la ventana principal.
+    - Cambia el idioma.
+  - Nunca construye el menú a mano.
+- Renderer:
+  - No accede al menú nativo; solo recibe `menu-click` desde `menu.js` (router en renderer) a través de `preload`.
+
+
+### 11.7 `electron/presets_main.js` — presets en proceso principal
+
+**Responsabilidad:**
+
+- Gestionar la combinación de presets por defecto (`electron/presets/defaults_*.js`) con los presets de usuario en `config/`.
+- Exponer operaciones de CRUD de presets vía IPC:
+  - Crear, editar, borrar.
+  - Restaurar presets por defecto.
+- Mantener sincronizados `user_settings.json` y los archivos de presets cuando hay cambios.
+
+**Exporta (API pública):**
+
+- `registerIpc(ipcMain, helpers): void`
+  - Registra los IPC de presets (nombres concretos según implementación actual).
+  - Utiliza:
+    - `helpers.loadJson` / `helpers.saveJson` (normalmente desde `fs_storage`).
+    - `helpers.getSettings` / `helpers.saveSettings` (desde `settings`).
+- `loadDefaultPresetsCombined(opts?): Preset[]`
+  - Punto único para obtener la lista combinada de presets por defecto (para inicialización).
+
+**Uso esperado:**
+
+- `main.js`:
+  - Llama a `registerIpc(ipcMain, ...)` una sola vez.
+  - No implementa lógica de presets fuera de este módulo.
+- Ningún otro módulo debe leer directamente los archivos de presets por defecto ni los JSON de presets de usuario:
+  - Todos deben pasar por `presets_main` (directamente o vía IPC).
+
+
+### 11.8 `electron/updater.js` — sistema de actualizaciones
+
+**Responsabilidad:**
+
+- Encapsular por completo la lógica de actualización:
+  - Comparación de versiones.
+  - Consulta remota a `VERSION` en el repositorio.
+  - Decisión de si hay actualización disponible.
+  - Diálogos nativos de “actualizado / hay nueva versión / fallo de conexión”.
+- Mantener el comportamiento:
+  - Chequeo automático al inicio, una sola vez por ciclo de vida.
+  - Chequeo manual desde menú.
+
+**Exporta (API pública):**
+
+- `compareVersions(local: string, remote: string): number` (interno, pero estable).
+- `fetchRemoteVersion(url: string): Promise<string|null>` (interno).
+- `checkForUpdates({ lang, manual }: { lang?: string; manual?: boolean }): Promise<void>`
+- `register(ipcMain, { mainWinRef, currentLanguageRef }): void`
+  - Registra el handler IPC `check-for-updates`.
+- `scheduleInitialCheck(): void`
+  - Programa el chequeo automático de actualización (idempotente).
+
+**Uso esperado:**
+
+- `main.js`:
+  - No implementa lógica de HTTP, comparación de versiones ni diálogos de actualización.
+  - Solo:
+    - Llama a `updater.register(ipcMain, { mainWinRef, currentLanguageRef })`.
+    - Llama a `updater.scheduleInitialCheck()` tras crear la ventana principal.
+- Renderer:
+  - Llama a `window.electronAPI.checkForUpdates()` (vía preload) sin conocer detalles de `updater.js`.
+
+
+### 11.9 Notas globales sobre el proceso principal
+
+1. `electron/main.js` debe mantener un rol de:
+   - Gestión de ventanas.
+   - Wiring de IPC de alto nivel.
+   - Integración de módulos.
+   - Autoridad del cronómetro y ventana flotante.
+
+2. Cualquier nueva funcionalidad del proceso principal que implique:
+   - Acceso a disco,
+   - Reglas de negocio,
+   - Gestión de estado compartido,
+   debe implementarse en un módulo dedicado de `electron/` y exponerse a través de:
+   - Una API interna bien definida, y/o
+   - IPC documentado en este archivo y en los preloads.
+
+3. No se deben introducir nuevos “atajos” que dupliquen lógica ya cubierta por estos módulos (`fs_storage`, `text_state`, `settings`, `presets_main`, `updater`).
