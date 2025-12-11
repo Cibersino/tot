@@ -728,7 +728,7 @@ Centralizar la gestión de la configuración de usuario (`user_settings.json`) e
 ### Notas para pasos siguientes
 - La lógica de presets sigue residiendo mayoritariamente en `main.js` y utiliza:
   - `loadJson` / `saveJson` directos sobre `SETTINGS_FILE`, combinados con `settingsState.normalizeSettings(...)`.
-- En el futuro **Paso 5 — presets_main.js** se recomienda:
+- En el futuro **Paso 6 — presets_main.js** se recomienda:
   - Centralizar toda la manipulación de `presets` en un módulo específico.
   - Unificar el flujo de:
     - `create-preset`
@@ -797,6 +797,67 @@ El comportamiento observable debía mantenerse idéntico:
 - Se detectó mezcla de idiomas en el menú inicial:
   - Causa: lectura parcial del `main.json` o fallback a strings en inglés no deseadas.
   - Solución: sanitización y fallback explícito corregidos en `menu_builder.js`.
+
+### Estado
+☑ Completado
+
+## Paso 6 — presets_main.js
+
+### Resultado esperado
+Extraer completamente desde `electron/main.js` toda la lógica de presets, centralizándola en un módulo dedicado encargado de:
+
+- Cargar presets por defecto (generales + por idioma).
+- Copiar presets por defecto desde `/electron/presets/*.js` hacia `/config/presets_defaults/*.json`.
+- Gestionar `settings.presets` y `settings.disabled_default_presets`.
+- Implementar y unificar los IPC de presets:
+  - `create-preset`
+  - `edit-preset`
+  - `request-delete-preset`
+  - `request-restore-defaults`
+  - `get-default-presets`
+  - `open-default-presets-folder`
+  - `notify-no-selection-edit`
+- Emitir eventos coherentes hacia las ventanas renderer (`preset-created`, `preset-deleted`, `preset-restored`).
+- Reutilizar `settingsState.getSettings()`, `settingsState.saveSettings()` y `broadcastSettingsUpdated()` en vez de accesos directos a archivos JSON.
+- Mantener el comportamiento observable idéntico al de la app estable previa.
+
+### Resultado obtenido
+- Se creó el módulo **`electron/presets_main.js`**, que ahora contiene:
+  - `loadDefaultPresetsCombined(lang)` con sanitización robusta del código de idioma.
+  - Copia inicial JS → JSON automática de presets (`copyDefaultPresetsIfMissing()`).
+  - Implementación completa de todos los IPC de presets.
+  - Integración directa con `settingsState` para lectura/escritura y normalización.
+  - Broadcast centralizado de settings luego de cada modificación.
+  - Uso de `menuBuilder.getDialogTexts()` para todos los diálogos nativos de presets.
+
+- `electron/main.js` fue limpiado de:
+  - `sanitizeLangCode`, `loadPresetArray`, `loadDefaultPresetsCombined`.
+  - Bloque completo de copia JS → JSON de presets.
+  - Todos los handlers IPC relacionados con presets.
+  - Cualquier manipulación directa de `settings.presets`.
+
+- `electron/main.js` conserva únicamente:
+  - Creación de la ventana de presets (`createPresetWindow`).
+  - El IPC `open-preset-modal`, coherente con la responsabilidad de manejar ventanas.
+
+- El módulo `settings.js` fue actualizado para exportar `broadcastSettingsUpdated`, permitiendo que presets y otros módulos envíen actualizaciones coherentes a todos los renderer sin duplicación de código.
+
+- **La app funciona exactamente igual que antes**, incluyendo:
+  - Carga de presets por defecto según idioma.
+  - Creación, edición, borrado e ignorado de presets.
+  - Restauración de presets por defecto.
+  - Persistencia correcta entre ejecuciones.
+  - Sincronización inmediata del renderer tras cualquier operación.
+
+### Errores detectados
+Ninguno.  
+La extracción fue completada sin inconsistencias y el comportamiento final coincide con la versión estable previa del sistema.
+
+### Notas para pasos siguientes
+- La modularización de presets permite ahora implementar funcionalidades avanzadas sin tocar `main.js` (por ejemplo: presets por usuario, presets remotos, perfiles, etc.).
+- `settings.js` y `presets_main.js` establecen una ruta clara para futuros módulos que necesiten manipular estructuras complejas dentro de `settings`.
+- El renderer (`public/js/presets.js`) quedó completamente desacoplado de `main.js`; su contrato IPC es ahora mucho más estable.
+- La modularización alcanzó un nivel en el cual agregar nuevos presets por defecto o cambiar su estructura es trivial y sin riesgo para el resto de la app.
 
 ### Estado
 ☑ Completado
