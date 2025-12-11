@@ -1,8 +1,6 @@
 // electron/main.js
 const { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen, globalShortcut } = require('electron');
-const https = require('https');
 const path = require('path');
-const fs = require('fs');
 
 const {
   CONFIG_DIR,
@@ -16,108 +14,14 @@ const textState = require("./text_state");
 const modalState = require('./modal_state');
 const menuBuilder = require("./menu_builder");
 const presetsMain = require("./presets_main");
+const updater = require("./updater");
 
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
-const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
-const VERSION_REMOTE_URL = "https://raw.githubusercontent.com/Cibersino/tot-readingmeter/main/VERSION";
-const DOWNLOAD_URL = "https://github.com/Cibersino/tot-readingmeter/releases/latest";
 
 // Language modal assets
 const LANGUAGE_MODAL_HTML = path.join(__dirname, '../public/language_modal.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
-
-function compareVersions(a, b) {
-  const pa = String(a || '').trim().split('.').map(n => parseInt(n, 10) || 0);
-  const pb = String(b || '').trim().split('.').map(n => parseInt(n, 10) || 0);
-  const len = Math.max(pa.length, pb.length);
-  for (let i = 0; i < len; i++) {
-    const va = pa[i] || 0;
-    const vb = pb[i] || 0;
-    if (va > vb) return 1;
-    if (va < vb) return -1;
-  }
-  return 0;
-}
-
-function fetchRemoteVersion(url) {
-  return new Promise((resolve) => {
-    try {
-      https.get(url, (res) => {
-        if (res.statusCode !== 200) return resolve(null);
-        let data = '';
-        res.on('data', chunk => { data += chunk; });
-        res.on('end', () => resolve(String(data || '').trim()));
-      }).on('error', () => resolve(null));
-    } catch (e) {
-      resolve(null);
-    }
-  });
-}
-
-async function checkForUpdates(lang, { manual = false } = {}) {
-  try {
-    const dlg = menuBuilder.getDialogTexts(lang || currentLanguage || 'es') || {};
-    let localVer = null;
-    try {
-      localVer = fs.readFileSync(VERSION_FILE, 'utf8').trim();
-    } catch (e) {
-      // sin VERSION local, continuar sin avisar
-      return;
-    }
-    const remoteVer = await fetchRemoteVersion(VERSION_REMOTE_URL);
-    if (!remoteVer) {
-      if (manual) {
-        const title = dlg.update_failed_title || 'Update check failed';
-        const message = dlg.update_failed_message || 'Could not check for updates. Please check your connection and try again.';
-        await dialog.showMessageBox(mainWin, {
-          type: 'info',
-          buttons: [dlg.ok || 'OK'],
-          defaultId: 0,
-          title,
-          message
-        });
-      }
-      return;
-    }
-    if (compareVersions(remoteVer, localVer) <= 0) {
-      if (manual) {
-        const title = dlg.update_up_to_date_title || 'You are up to date';
-        const message = (dlg.update_up_to_date_message || 'You already have the latest version ({local}).')
-          .replace('{local}', localVer);
-        await dialog.showMessageBox(mainWin, {
-          type: 'info',
-          buttons: [dlg.ok || 'OK'],
-          defaultId: 0,
-          title,
-          message
-        });
-      }
-      return; // nada nuevo
-    }
-
-    const title = dlg.update_title || 'Actualizacion disponible';
-    const message = (dlg.update_message || 'Hay una version nueva {remote}. Actual: {local}. Descargar ahora?')
-      .replace('{remote}', remoteVer)
-      .replace('{local}', localVer);
-    const btnDownload = dlg.update_download || 'Descargar';
-    const btnLater = dlg.update_later || 'Mas tarde';
-
-    const res = await dialog.showMessageBox(mainWin, {
-      type: 'info',
-      buttons: [btnDownload, btnLater],
-      defaultId: 0,
-      cancelId: 1,
-      title,
-      message
-    });
-    if (res.response === 0) {
-      shell.openExternal(DOWNLOAD_URL);
-    }
-  } catch (err) {
-    console.warn('checkForUpdates failed:', err);
-  }
-}
 
 ensureConfigDir();
 
@@ -140,7 +44,6 @@ let mainWin = null, // main window
   langWin = null, // language selection modal (first launch)
   floatingWin = null; // floating stopwatch window
 let currentLanguage = 'es';
-let updateCheckDone = false;
 
 // Build menu with i18n translations (delegado a menu_builder.js)
 function buildAppMenu(lang) {
@@ -406,6 +309,12 @@ presetsMain.registerIpc(ipcMain, {
     langWin,
     floatingWin,
   }),
+});
+
+// IPC relacionado con actualizaciones (delegado a updater)
+updater.register(ipcMain, {
+  mainWinRef: () => mainWin,
+  currentLanguageRef: () => currentLanguage,
 });
 
 // Create language selection window (small, light)
@@ -787,33 +696,17 @@ app.whenReady().then(() => {
           /* noop */
         }
       }
-      if (!updateCheckDone) {
-        updateCheckDone = true;
-        checkForUpdates(currentLanguage);
-      }
+      updater.scheduleInitialCheck();
     });
   } else {
     // Ya hay idioma definido: ir directo a la ventana principal
     createMainWindow();
-    if (!updateCheckDone) {
-      updateCheckDone = true;
-      checkForUpdates(currentLanguage);
-    }
+    updater.scheduleInitialCheck();
   }
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
-});
-
-// IPC: manual check for updates from renderer/menu
-ipcMain.handle('check-for-updates', async () => {
-  try {
-    await checkForUpdates(currentLanguage, { manual: true });
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: String(e) };
-  }
 });
 
 app.on('window-all-closed', () => {

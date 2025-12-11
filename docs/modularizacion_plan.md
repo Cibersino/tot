@@ -859,28 +859,74 @@ La extracción fue completada sin inconsistencias y el comportamiento final coin
 - El renderer (`public/js/presets.js`) quedó completamente desacoplado de `main.js`; su contrato IPC es ahora mucho más estable.
 - La modularización alcanzó un nivel en el cual agregar nuevos presets por defecto o cambiar su estructura es trivial y sin riesgo para el resto de la app.
 
-### Estado
-☑ Completado
-
-## Paso X — [Nombre del paso]
+## Paso 7 — updater.js
 
 ### Resultado esperado
-...
+Extraer toda la lógica de actualización desde `electron/main.js` hacia un módulo dedicado que gestione:
+
+- Comparación de versiones (`compareVersions`).
+- Obtención de la versión remota (`fetchRemoteVersion`).
+- Lectura de la versión local.
+- Diálogos nativos de actualización.
+- Apertura del enlace de descarga.
+- Check automático al iniciar la aplicación.
+- Check manual vía IPC (`check-for-updates`).
+
+El objetivo es que en `main.js` quede únicamente:
+
+- El registro del módulo mediante `updater.register(...)`.
+- La llamada a `updater.scheduleInitialCheck()`.
+
+Sin dejar lógica de versiones o HTTP dentro de `main.js`.
 
 ### Resultado obtenido
-...
+- Se creó el módulo **`electron/updater.js`**, el cual ahora contiene:
+  - `compareVersions(local, remote)`.
+  - `fetchRemoteVersion(url)` con manejo defensivo de errores y HTTPS.
+  - `checkForUpdates({ lang, manual })`, idéntico en comportamiento al original.
+  - `scheduleInitialCheck()`, que realiza la verificación automática solo una vez, preservando el comportamiento previo.
+  - `register(ipcMain, { mainWinRef, currentLanguageRef })` para exponer el IPC `check-for-updates` y recibir referencias de ventana/idioma de forma desacoplada.
+  - Constantes internas (`VERSION_FILE`, `VERSION_REMOTE_URL`, `DOWNLOAD_URL`) reubicadas fuera de `main.js`.
+
+- En `electron/main.js`:
+  - Se eliminaron por completo:
+    - `compareVersions`.
+    - `fetchRemoteVersion`.
+    - `checkForUpdates`.
+    - `updateCheckDone`.
+    - Constantes `VERSION_FILE`, `VERSION_REMOTE_URL`, `DOWNLOAD_URL`.
+    - El handler `ipcMain.handle('check-for-updates', ...)`.
+  - Se agregaron las llamadas limpias:
+    ```js
+    updater.register(ipcMain, {
+      mainWinRef: () => mainWin,
+      currentLanguageRef: () => currentLanguage,
+    });
+    updater.scheduleInitialCheck();
+    ```
+  - El main quedó sin lógica de actualización, cumpliendo la modularización completa del subsistema.
+
+- Comportamiento observable verificado:
+  - La app realiza un chequeo automático de actualización al inicio, solo una vez.
+  - El chequeo manual desde el menú funciona igual que antes.
+  - Los diálogos nativos muestran los mismos textos localizados mediante `menuBuilder.getDialogTexts()`.
+  - En caso de actualización disponible, se abre el enlace correspondiente.
+  - En caso de falla de red, el comportamiento manual sigue informando y el automático permanece silencioso, igual que la versión previa.
 
 ### Errores detectados
-...
-
-### Estado
-☐ Pendiente
-☑ Completado
+Ninguno.  
+El refactor no introdujo regresiones y el comportamiento final coincide exactamente con el sistema previo.
 
 ### Notas para pasos siguientes
-...
+- Con `updater.js` ya modularizado, `main.js` quedó en un estado donde prácticamente maneja solo:
+  - Ciclo de vida de ventanas.
+  - Routing IPC de alto nivel.
+  - Integración de módulos.
+- Este orden hace posible un **Paso 8** centrado en unificar o aislar la creación de ventanas (`window_manager.js`) si así lo define el plan.
+- La modularización actual permite implementar futuros métodos de actualización (por ejemplo, auto-descarga o feeds alternativos) sin tocar `main.js`.
 
-```
+### Estado
+☑ Completado
 
 ---
 
