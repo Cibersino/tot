@@ -16,6 +16,7 @@ const {
 const modalState = require('./modal_state');
 const textState = require("./text_state");
 const settingsState = require("./settings");
+const menuBuilder = require("./menu_builder");
 
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
@@ -43,28 +44,6 @@ function loadNumberFormatDefaults(lang) {
     return null;
   }
   return null;
-}
-
-// Helpers: load main (menu/dialog) translations from i18n
-function loadMainTranslations(lang) {
-  const baseDir = path.join(__dirname, '..', 'i18n');
-  const file = path.join(baseDir, lang || 'es', 'main.json');
-  try {
-    if (!fs.existsSync(file)) return null;
-    const raw = fs.readFileSync(file, 'utf8');
-    const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
-    return JSON.parse(cleaned || '{}');
-  } catch (err) {
-    console.error('Error cargando traducciones de main.json:', err);
-    return null;
-  }
-}
-
-function getDialogTexts(lang) {
-  const langCode = (lang || 'es').toLowerCase() || 'es';
-  const tr = loadMainTranslations(langCode);
-  const tMain = (tr && tr.main) ? tr.main : {};
-  return tMain.dialog || {};
 }
 
 function compareVersions(a, b) {
@@ -97,7 +76,7 @@ function fetchRemoteVersion(url) {
 
 async function checkForUpdates(lang, { manual = false } = {}) {
   try {
-    const dlg = getDialogTexts(lang || currentLanguage || 'es') || {};
+    const dlg = menuBuilder.getDialogTexts(lang || currentLanguage || 'es') || {};
     let localVer = null;
     try {
       localVer = fs.readFileSync(VERSION_FILE, 'utf8').trim();
@@ -250,86 +229,13 @@ let mainWin = null, // main window
 let currentLanguage = 'es';
 let updateCheckDone = false;
 
-// Build menu with i18n translations (main.json)
+// Build menu with i18n translations (delegado a menu_builder.js)
 function buildAppMenu(lang) {
-  const tr = loadMainTranslations(lang || 'es');
-  const tMain = (tr && tr.main) ? tr.main : {};
-  const m = tMain.menu || {};
-
-  const menuTemplate = [
-    {
-      label: m.como_usar || 'Como usar la app?',
-      submenu: [
-        { label: m.guia_basica || 'Guia basica', click: () => mainWin && mainWin.webContents.send('menu-click', 'guia_basica') },
-        { label: m.instrucciones_completas || 'Instrucciones completas', click: () => mainWin && mainWin.webContents.send('menu-click', 'instrucciones_completas') },
-        { label: m.faq || 'FAQ', click: () => mainWin && mainWin.webContents.send('menu-click', 'faq') }
-      ]
-    },
-    {
-      label: m.herramientas || 'Tools',
-      submenu: [
-        { label: m.cargador_texto || 'Cargador de archivo de texto', click: () => mainWin && mainWin.webContents.send('menu-click', 'cargador_texto') },
-        { label: m.cargador_imagen || 'Cargador de imagenes con texto', click: () => mainWin && mainWin.webContents.send('menu-click', 'contador_imagen') },
-        { label: m.test_velocidad || 'Reading speed test', click: () => mainWin && mainWin.webContents.send('menu-click', 'test_velocidad') }
-      ]
-    },
-    {
-      label: m.preferencias || 'Preferences',
-      submenu: [
-        { label: m.idioma || 'Language', click: () => createLanguageWindow() },
-        {
-          label: m.diseno || 'Diseno',
-          submenu: [
-            { label: m.skins || 'Skins', click: () => mainWin && mainWin.webContents.send('menu-click', 'diseno_skins') },
-            { label: m.crono_flotante || 'Cronometro flotante', click: () => mainWin && mainWin.webContents.send('menu-click', 'diseno_crono_flotante') },
-            { label: m.fuentes || 'Fonts', click: () => mainWin && mainWin.webContents.send('menu-click', 'diseno_fuentes') },
-            { label: m.colores || 'Colors', click: () => mainWin && mainWin.webContents.send('menu-click', 'diseno_colores') }
-          ]
-        },
-        { label: m.shortcuts || 'Shortcuts', click: () => mainWin && mainWin.webContents.send('menu-click', 'shortcuts') },
-        { label: m.presets_por_defecto || 'Default presets', click: () => mainWin && mainWin.webContents.send('menu-click', 'presets_por_defecto') }
-      ]
-    },
-    {
-      label: m.comunidad || 'Community',
-      submenu: [
-        { label: m.discord || 'Discord', click: () => mainWin && mainWin.webContents.send('menu-click', 'discord') },
-        { label: m.avisos || 'News & updates', click: () => mainWin && mainWin.webContents.send('menu-click', 'avisos') }
-      ]
-    },
-    { label: m.links_interes || 'Links de interes', click: () => mainWin && mainWin.webContents.send('menu-click', 'links_interes') },
-    { label: m.colabora || 'CONTRIBUTE ($)', click: () => mainWin && mainWin.webContents.send('menu-click', 'colabora') },
-    {
-      label: m.ayuda || '?',
-      submenu: [
-        { label: m.actualizar_version || 'Actualizar a ultima version', click: () => mainWin && mainWin.webContents.send('menu-click', 'actualizar_version') },
-        { label: m.readme || 'Readme', click: () => mainWin && mainWin.webContents.send('menu-click', 'readme') },
-        { label: m.acerca_de || 'About', click: () => mainWin && mainWin.webContents.send('menu-click', 'acerca_de') }
-      ]
-    }
-  ];
-
-  // Dev menu (solo si se habilita por variable de entorno)
-  const showDevMenu = process.env.SHOW_DEV_MENU === '1';
-  if (!app.isPackaged && showDevMenu) {
-    menuTemplate.push({
-      label: m.desarrollo || 'Development',
-      submenu: [
-        { role: 'reload', label: m.recargar || 'Reload' },
-        { role: 'forcereload', label: m.forcereload || 'Force reload' },
-        {
-          label: m.toggle_devtools || 'Toggle DevTools',
-          accelerator: 'Ctrl+Shift+I',
-          click: () => {
-            if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.toggleDevTools();
-          }
-        }
-      ]
-    });
-  }
-
-  const appMenu = Menu.buildFromTemplate(menuTemplate);
-  Menu.setApplicationMenu(appMenu);
+  const effectiveLang = lang || currentLanguage || "es";
+  menuBuilder.buildAppMenu(effectiveLang, {
+    mainWindow: mainWin,
+    onOpenLanguage: () => createLanguageWindow(),
+  });
 }
 
 // Registrar atajos globales en desarrollo (sin mostrar menu)
@@ -430,7 +336,7 @@ function createEditorWindow() {
   // Cargar estado inicial desde modal_state.js
   const state = modalState.loadInitialState(loadJson);
 
-  // ¿Hay estado reducido guardado y válido?
+  // ¿Hay estado reducido guardado y valido?
   const hasReduced =
     state &&
     state.reduced &&
@@ -470,7 +376,7 @@ function createEditorWindow() {
 
       editorWin.show();
 
-      // Enviar currentText inicial al editor (cuando ya está listo)
+      // Enviar currentText inicial al editor (cuando ya esta listo)
       try {
         const initialText = textState.getCurrentText();
         editorWin.webContents.send("manual-init-text", {
@@ -481,7 +387,7 @@ function createEditorWindow() {
         console.error("Error enviando manual-init-text al editor:", err);
       }
 
-      // Notificar a la ventana principal que el editor está listo
+      // Notificar a la ventana principal que el editor esta listo
       try {
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send("manual-editor-ready");
@@ -494,7 +400,7 @@ function createEditorWindow() {
     }
   });
 
-  // Delegar gestión de estado (maximizado/reducido, fallback, persistencia) al módulo modal_state
+  // Delegar gestion de estado (maximizado/reducido, fallback, persistencia) al modulo modal_state
   modalState.attachTo(editorWin, loadJson, saveJson);
 
   // Limpiar referencia cuando la ventana se cierre completamente
@@ -558,7 +464,7 @@ textState.registerIpc(ipcMain, () => ({
   editorWin,
 }));
 
-// IPC relacionado con configuración / settings (delegado a settingsState)
+// IPC relacionado con configuracion / settings (delegado a settingsState)
 settingsState.registerIpc(ipcMain, {
   getWindows: () => ({
     mainWin,
@@ -620,7 +526,7 @@ function createLanguageWindow() {
       console.error("Error aplicando fallback language:", e);
     } finally {
       langWin = null;
-      // Asegurar creación de mainWin tras cerrar el modal
+      // Asegurar creacion de mainWin tras cerrar el modal
       try {
         if (!mainWin) createMainWindow();
       } catch (e) {
@@ -1046,7 +952,7 @@ ipcMain.handle('request-delete-preset', async (_event, name) => {
     // Cargar settings y textos de dialogo antes de cualquier mensaje
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
     settings = settingsState.normalizeSettings(settings);
-    const dialogTexts = getDialogTexts(settings.language || 'es');
+    const dialogTexts = menuBuilder.getDialogTexts(settings.language || 'es');
     const yesLabel = dialogTexts.yes || 'Si, continuar';
     const noLabel = dialogTexts.no || 'No, cancelar';
 
@@ -1175,7 +1081,7 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
     const lang = settings.language || 'es';
 
     // Ask confirmation (native dialog)
-    const dialogTexts = getDialogTexts(settings.language || 'es');
+    const dialogTexts = menuBuilder.getDialogTexts(settings.language || 'es');
     const yesLabel = dialogTexts.yes || 'Si, continuar';
     const noLabel = dialogTexts.no || 'No, cancelar';
     const conf = await dialog.showMessageBox(mainWin || null, {
@@ -1252,7 +1158,7 @@ ipcMain.handle('request-restore-defaults', async (_event) => {
 ipcMain.handle('notify-no-selection-edit', async () => {
   try {
     const settings = settingsState.normalizeSettings(loadJson(SETTINGS_FILE, { language: "es", presets: [] }));
-    const dialogTexts = getDialogTexts(settings.language || 'es');
+    const dialogTexts = menuBuilder.getDialogTexts(settings.language || 'es');
     await dialog.showMessageBox(mainWin || null, {
       type: 'none',
       buttons: [(dialogTexts && dialogTexts.ok) || 'Aceptar'],
@@ -1276,7 +1182,7 @@ ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
     // Cargar settings y textos de dialogo antes de la confirmacion
     let settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
     settings = settingsState.normalizeSettings(settings);
-    const dialogTexts = getDialogTexts(settings.language || 'es');
+    const dialogTexts = menuBuilder.getDialogTexts(settings.language || 'es');
 
     // Ask confirmation (native dialog)
     const yesLabel = dialogTexts.yes || 'Si, continuar';
@@ -1383,7 +1289,7 @@ ipcMain.handle("get-app-config", async () => {
 /* --- App start logic --- */
 
 app.whenReady().then(() => {
-  // Carga inicial de settings (normalizado y persistido) vía settingsState
+  // Carga inicial de settings (normalizado y persistido) via settingsState
   const settings = settingsState.init({
     loadJson,
     saveJson,
