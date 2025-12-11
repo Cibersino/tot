@@ -361,4 +361,5 @@ module.exports = {
     normalizeSettings,
     loadNumberFormatDefaults,
     applyFallbackLanguageIfUnset,
+    broadcastSettingsUpdated,
 };
