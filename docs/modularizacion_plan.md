@@ -743,6 +743,64 @@ Centralizar la gestión de la configuración de usuario (`user_settings.json`) e
 ### Estado
 ☑ Completado
 
+## Paso 5 — menu_builder.js
+
+### Resultado esperado
+Extraer desde `electron/main.js` toda la lógica de:
+- Carga de traducciones del menú desde `i18n/<lang>/main.json`.
+- Construcción del menú nativo (`Menu.buildFromTemplate`).
+- Emisión del evento `menu-click` hacia el renderer.
+- Centralizar en un módulo independiente la regeneración del menú cuando cambia el idioma.
+
+El comportamiento observable debía mantenerse idéntico:
+- Menú superior completamente localizado.
+- Envío correcto de `menu-click` a `public/js/menu.js`.
+- Rebuild del menú al cambiar de idioma mediante `set-language`.
+
+### Resultado obtenido
+- Nuevo archivo **`electron/menu_builder.js`** creado, con:
+  - `loadMainTranslations(lang)` — carga robusta con eliminación de BOM y manejo defensivo de JSON.
+  - `getDialogTexts(lang)` — exposición para diálogos de actualización usados en `main.js`.
+  - `buildAppMenu(lang, opts)` — función principal que construye el menú completo y emite `menu-click`.
+    - `opts.mainWindow` → destino de los eventos.
+    - `opts.onOpenLanguage` → callback limpio para abrir la ventana de idioma (remueve el acoplamiento previo).
+
+- `electron/main.js`:
+  - Eliminados todos los bloques de construcción manual del menú.
+  - Reemplazado por:
+
+    ```js
+    const menuBuilder = require("./menu_builder");
+    buildAppMenu(currentLanguage);
+    ```
+
+  - Llamada automática a `buildAppMenu()` desde:
+    - `createMainWindow()`
+    - `settingsState.registerIpc()` cuando se ejecuta `set-language`.
+
+- Corrección aplicada posteriormente:
+  - El menú **sí se reconstruía**, pero las cadenas estaban mezcladas porque `main.js` tenía un *fallback incorrecto* al usar claves vacías de `main.json`.
+  - Se aplicó un parche directo en `menu_builder.js`, colocando **fallbacks explícitos solo cuando corresponde** y eliminando la mezcla ES/EN.
+  - Tras el parche, el menú:
+    - Se muestra 100% localizado.
+    - Se actualiza inmediatamente al cambiar idioma.
+    - Mantiene intactos todos los payloads enviados al router `menu.js` del renderer.
+
+### Pruebas realizadas
+- Cambio dinámico de idioma desde el menú → el menú se reconstruye correctamente.
+- Creación de la ventana principal → se carga el menú en el idioma persistido.
+- Verificación de todos los ítems, submenús y payloads enviados a `menuActions`.
+- Verificado que el menú no aparece en ventanas secundarias (editor / preset / idioma).
+- Verificado que la modularización **no afecta los atajos de desarrollo** ni las rutas a preload.
+
+### Errores detectados
+- Se detectó mezcla de idiomas en el menú inicial:
+  - Causa: lectura parcial del `main.json` o fallback a strings en inglés no deseadas.
+  - Solución: sanitización y fallback explícito corregidos en `menu_builder.js`.
+
+### Estado
+☑ Completado
+
 ## Paso X — [Nombre del paso]
 
 ### Resultado esperado
