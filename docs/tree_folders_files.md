@@ -1,4 +1,5 @@
 ## ÁRBOL DE CARPETAS Y ARCHIVOS PRINCIPALES ##
+version 0.0.930
 
 ```
 tot-readingmeter/
@@ -12,21 +13,29 @@ tot-readingmeter/
 │ ├── modal_state.json             # {current_text.json.default en git}
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
+│ ├── bugs.md
 │ ├── CONTRACTS.md
 │ ├── modularizacion_plan.md
-│ └── ToDo.txt
+│ ├── ToDo.txt
+│ └── tree_folders_files.md
 ├── electron/
 │ ├── presets/
 │ │ ├── defaults_presets.js
 │ │ ├── defaults_presets_en.js
 │ │ └── defaults_presets_es.js
-│ ├── flotante_preload.js
-│ ├── language_preload.js
 │ ├── main.js
-│ ├── manual_preload.js
 │ ├── preload.js
+│ ├── language_preload.js
+│ ├── manual_preload.js
 │ ├── preset_preload.js
-│ └── updater.js                   # {vacío}
+│ ├── flotante_preload.js
+│ ├── fs_storage.js
+│ ├── settings.js
+│ ├── text_state.js
+│ ├── modal_state.js
+│ ├── presets_main.js
+│ ├── menu_builder.js
+│ └── updater.js
 ├── i18n/
 │ ├── es/
 │ │ ├── main.json
@@ -63,22 +72,22 @@ tot-readingmeter/
 │ │ ├── notify.js
 │ │ ├── presets.js
 │ │ └── timer.js
-│ ├── flotante.css
-│ ├── manual.css
-│ ├── style.css
-│ ├── flotante.js
+│ ├── renderer.js
 │ ├── manual.js
 │ ├── preset_modal.js
-│ ├── renderer.js
-│ ├── flotante.html
+│ ├── flotante.js
 │ ├── index.html
 │ ├── language_modal.html
 │ ├── manual.html
-│ └── preset_modal.html
+│ ├── preset_modal.html
+│ ├── flotante.html
+│ ├── manual.css
+│ ├── flotante.css
+│ └── style.css
 ├── eslintrc.js
-├── LICENSE
 ├── package.json
 ├── package-lock.json
 ├── README.md
+├── LICENSE
 └── VERSION
 ```

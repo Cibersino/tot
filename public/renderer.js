@@ -822,7 +822,7 @@ btnCountClipboard.addEventListener("click", async () => {
   try {
     let clip = await window.electronAPI.readClipboard() || "";
     if (clip.length > MAX_TEXT_CHARS) {
-      console.warn("Contenido del portapapeles supera el tamaño permitido - sera truncado.");
+      console.warn("Contenido del portapapeles supera el tamano permitido - sera truncado.");
       clip = clip.slice(0, MAX_TEXT_CHARS);
       Notify.notifyMain("renderer.alerts.clipboard_overflow");
     }
@@ -872,7 +872,7 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
       Notify.notifyMain("renderer.editor_alerts.text_truncated");
     }
   } catch (err) {
-    console.error("Ocurrió un error al pegar el portapapeles:", err);
+    console.error("Ocurrio un error al pegar el portapapeles:", err);
     Notify.notifyMain("renderer.alerts.paste_error");
   }
 });

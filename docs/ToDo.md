@@ -4,8 +4,6 @@
 
 * Revisión y depuración del código *
 
-- Modularización.
-
 # Más adelante #
 
 * Nuevas funciones *
