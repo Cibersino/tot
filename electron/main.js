@@ -25,7 +25,8 @@ const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 
 ensureConfigDir();
 
-// --- Maximum current text size (10 MB ~ 10,000,000 chars)
+// Fuente canonica del limite de texto.
+// Mantener sincronizados los fallbacks en text_state.js y constants.js.
 const MAX_TEXT_CHARS = 10000000;
 
 // Inicializar el estado de texto compartido (current_text)

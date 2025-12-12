@@ -1,5 +1,5 @@
 # Ignorar carpetas de desarrollo y temporales
-/(temp) docs desarrollo app/
+/tools_local/
 
 # Node / npm
 node_modules/

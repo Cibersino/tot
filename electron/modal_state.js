@@ -80,6 +80,10 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       const current = loader(MODAL_STATE_FILE, { maximized: false, reduced: null });
       const state = normalizeState(current);
 
+      if (!state.reduced && state.maximized === true) {
+        return;
+      }
+
       state.reduced = {
         width: bounds.width,
         height: bounds.height,

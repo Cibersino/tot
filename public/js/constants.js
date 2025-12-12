@@ -1,7 +1,7 @@
 // public/js/constants.js
 (() => {
   const DEFAULTS = {
-    MAX_TEXT_CHARS: 10_000_000,
+    MAX_TEXT_CHARS: 10_000_000, // Fallback para renderer. Limite real desde main.js
     PASTE_ALLOW_LIMIT: 10_000,
     SMALL_UPDATE_THRESHOLD: 200_000,
     WPM_MIN: 50,
