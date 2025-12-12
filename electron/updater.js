@@ -73,7 +73,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
         const title = dlg.update_failed_title || 'Update check failed';
         const message = dlg.update_failed_message || 'Could n...check for updates. Please check your connection and try again.';
         await dialog.showMessageBox(mainWin, {
-          type: 'info',
+          type: 'none',
           buttons: [dlg.ok || 'OK'],
           defaultId: 0,
           title,
@@ -89,7 +89,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
         const message = (dlg.update_up_to_date_message || 'You already have the latest version ({local}).')
           .replace('{local}', localVer);
         await dialog.showMessageBox(mainWin, {
-          type: 'info',
+          type: 'none',
           buttons: [dlg.ok || 'OK'],
           defaultId: 0,
           title,
@@ -112,7 +112,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     const btnLater = dlg.update_later || 'Mas tarde';
 
     const res = await dialog.showMessageBox(mainWin, {
-      type: 'info',
+      type: 'none',
       buttons: [btnDownload, btnLater],
       defaultId: 0,
       cancelId: 1,
