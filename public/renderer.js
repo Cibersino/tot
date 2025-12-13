@@ -1,3 +1,4 @@
+// public/renderer.js
 console.log("Renderer main starting...");
 
 const { AppConstants } = window;
@@ -47,7 +48,7 @@ const cronTitle = document.getElementById('cron-title');
 const toggleVF = document.getElementById('toggleVF');
 const manualLoader = document.getElementById('manualLoader');
 
-// Referencias a elementos para presets
+// References to presets elements
 const presetsSelect = document.getElementById('presets');
 const btnNewPreset = document.getElementById('btnNewPreset');
 const btnEditPreset = document.getElementById('btnEditPreset');
@@ -56,15 +57,12 @@ const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets')
 const presetDescription = document.getElementById('presetDescription');
 
 let currentText = "";
-
-// Limite local en renderer para evitar concatenaciones que creen strings demasiado grandes
-let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // valor por defecto hasta que main responda
-
-// --- Cache y estado global para conteo / idioma ---
-let modoConteo = "preciso";   // preciso por defecto; puede ser "simple"
-let idiomaActual = "es";      // se inicializa al arrancar
-let settingsCache = {};       // cache de settings (numberFormatting, language, etc.)
-
+// Local limit in renderer to prevent concatenations that create excessively large strings
+let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
+// --- Global cache and state for count/language ---
+let modoConteo = "preciso";   // Precise by default; can be "simple"
+let idiomaActual = "es";      // Initializes on startup
+let settingsCache = {};       // Settings cache (number formatting, language, etc.)
 // --- i18n renderer translations cache ---
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
@@ -73,17 +71,16 @@ if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
 
 function applyTranslations() {
   if (!tRenderer) return;
-  // Botones principales
+  // Text Selector buttons
   if (btnCountClipboard) btnCountClipboard.textContent = tRenderer("renderer.main.buttons.overwrite_clipboard", btnCountClipboard.textContent || "");
   if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.textContent = tRenderer("renderer.main.buttons.append_clipboard_newline", btnAppendClipboardNewLine.textContent || "");
   if (btnEdit) btnEdit.textContent = tRenderer("renderer.main.buttons.edit", btnEdit.textContent || "");
   if (btnEmptyMain) btnEmptyMain.textContent = tRenderer("renderer.main.buttons.clear", btnEmptyMain.textContent || "");
-  // Tooltips de botones principales
+  // Text Selector tooltips
   if (btnCountClipboard) btnCountClipboard.title = tRenderer("renderer.main.tooltips.overwrite_clipboard", btnCountClipboard.title || "");
   if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.title = tRenderer("renderer.main.tooltips.append_clipboard_newline", btnAppendClipboardNewLine.title || "");
   if (btnEdit) btnEdit.title = tRenderer("renderer.main.tooltips.edit", btnEdit.title || "");
   if (btnEmptyMain) btnEmptyMain.title = tRenderer("renderer.main.tooltips.clear", btnEmptyMain.title || "");
-
   // Presets
   if (btnNewPreset) btnNewPreset.textContent = tRenderer("renderer.main.speed.new", btnNewPreset.textContent || "");
   if (btnEditPreset) btnEditPreset.textContent = tRenderer("renderer.main.speed.edit", btnEditPreset.textContent || "");
@@ -93,21 +90,18 @@ function applyTranslations() {
   if (btnEditPreset) btnEditPreset.title = tRenderer("renderer.main.tooltips.edit_preset", btnEditPreset.title || "");
   if (btnDeletePreset) btnDeletePreset.title = tRenderer("renderer.main.tooltips.delete_preset", btnDeletePreset.title || "");
   if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer("renderer.main.tooltips.reset_presets", btnResetDefaultPresets.title || "");
-
-  // Toggle flotante
+  // Floating Window toggle
   const vfSwitchLabel = document.querySelector(".vf-switch-wrapper label.switch");
   if (vfSwitchLabel) vfSwitchLabel.title = tRenderer("renderer.main.tooltips.floating_window", vfSwitchLabel.title || "");
-
-  // Titulos de secciones
+  // Section Titles
   if (selectorTitle) selectorTitle.textContent = tRenderer("renderer.main.selector_title", selectorTitle.textContent || "");
   if (velTitle) velTitle.textContent = tRenderer("renderer.main.speed.title", velTitle.textContent || "");
   if (resultsTitle) resultsTitle.textContent = tRenderer("renderer.main.results.title", resultsTitle.textContent || "");
   if (cronTitle) cronTitle.textContent = tRenderer("renderer.main.timer.title", cronTitle.textContent || "");
-
-  // Labels dentro de velocidad
+  // Speed Selector labels
   const wpmLabel = document.querySelector(".wpm-row span");
   if (wpmLabel) wpmLabel.textContent = tRenderer("renderer.main.speed.wpm_label", wpmLabel.textContent || "");
-  // Resultados: label modo preciso
+  // Results: precise mode label
   const togglePrecisoLabel = document.querySelector(".toggle-wrapper .toggle-label");
   if (togglePrecisoLabel) {
     togglePrecisoLabel.textContent = tRenderer("renderer.main.results.precise_mode", togglePrecisoLabel.textContent || "");
@@ -117,8 +111,7 @@ function applyTranslations() {
       toggleWrapper.title = tRenderer("renderer.main.results.precise_tooltip", toggleWrapper.title || togglePrecisoLabel.title || "");
     }
   }
-
-  // Cronometro: label velocidad y aria-label controles
+  // Stopwatch: Speed label and controls aria-label
   const realWpmLabel = document.querySelector(".realwpm");
   if (realWpmLabel && realWpmLabel.firstChild) {
     realWpmLabel.firstChild.textContent = tRenderer("renderer.main.timer.speed", realWpmLabel.firstChild.textContent || "");
@@ -130,14 +123,13 @@ function applyTranslations() {
   }
   const labelsCrono = getTimerLabels();
   if (tToggle) tToggle.textContent = running ? labelsCrono.pauseLabel : labelsCrono.playLabel;
-
-  // Etiqueta abreviada de la ventana flotante
+  // Abbreviated label for the floating window
   const vfLabel = document.querySelector(".vf-label");
   if (vfLabel) {
     vfLabel.textContent = tRenderer("renderer.main.timer.floating_short", vfLabel.textContent || vfLabel.textContent);
   }
-
-  // Boton de ayuda (titulo)
+  
+  // Help button (title)
   if (btnHelp) {
     const helpTitle = tRenderer("renderer.main.tooltips.help_button", btnHelp.getAttribute("title") || "");
     if (helpTitle) btnHelp.setAttribute("title", helpTitle);
@@ -156,32 +148,32 @@ function applyTranslations() {
     console.error("No se pudo obtener getAppConfig, usando defaults:", e);
   }
 
-  // Cargar settings del usuario UNA VEZ al iniciar renderer
+  // Load user settings ONCE when the renderer starts
   try {
     const settings = await window.electronAPI.getSettings();
     settingsCache = settings || {};
     idiomaActual = settingsCache.language || "es";
     if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
 
-    // Cargar traducciones del renderer y aplicarlas
+    // Load and apply renderer translations
     try {
       await loadRendererTranslations(idiomaActual);
       applyTranslations();
-      // Refrescar la vista inicial con las traducciones cargadas
+      // Refresh the initial view with the loaded translations
       updatePreviewAndResults(currentText);
     } catch (e) {
       console.warn("No se pudieron aplicar traducciones iniciales en renderer:", e);
     }
   } catch (e) {
     console.error("No se pudo obtener user settings al inicio:", e);
-    // idiomaActual queda en "es" por defecto
+    // Current language is set to "es" by default
   }
 })();
 
 let wpm = Number(wpmSlider.value);
 let currentPresetName = null;
 
-// Cache local de presets (lista completa cargada una vez)
+// Local preset cache (full list loaded once)
 let allPresetsCache = [];
 
 // ======================= Presets module =======================
@@ -190,7 +182,7 @@ if (!combinePresets || !fillPresetsSelect || !applyPresetSelection || !loadPrese
   console.error("[renderer] RendererPresets no disponible");
 }
 
-// ======================= Conteo de texto =======================
+// ======================= Text Count =======================
 const { contarTexto: contarTextoModulo } = window.CountUtils || {};
 if (typeof contarTextoModulo !== "function") {
   throw new Error("[renderer] CountUtils no disponible; no se puede continuar");
@@ -200,23 +192,23 @@ function contarTexto(texto) {
   return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
 }
 
-// Helpers para actualizar modo / idioma desde otras partes (p. ej. menu)
+// Helpers to update mode/language from other parts (e.g., menu)
 function setModoConteo(nuevoModo) {
   if (nuevoModo === "simple" || nuevoModo === "preciso") {
     modoConteo = nuevoModo;
   }
 }
 
-// ======================= Formato HHh MMm SSs =======================
+// ======================= HHh MMm SSs format =======================
 const { getTimeParts, formatTimeFromWords, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
 if (!getTimeParts || !formatTimeFromWords || !obtenerSeparadoresDeNumeros || !formatearNumero) {
   console.error("[renderer] FormatUtils no disponible");
 }
 
-// ======================= Actualizar vista y resultados =======================
+// ======================= Update view and results =======================
 async function updatePreviewAndResults(text) {
-  const previousText = currentText;      // texto antes del cambio
-  currentText = text || "";              // nuevo texto (normalizado)
+  const previousText = currentText;      // Text before change
+  currentText = text || "";              // New text (normalized)
   const textChanged = previousText !== currentText;
 
   const displayText = currentText.replace(/\r?\n/g, '   ');
@@ -228,16 +220,16 @@ async function updatePreviewAndResults(text) {
   } else if (n <= PREVIEW_INLINE_THRESHOLD) {
     textPreview.textContent = displayText;
   } else {
-    const start = displayText.slice(0, PREVIEW_START_CHARS); // PREVIEW TEXTO VIGENTE VENTANA PRINCIPAL
+    const start = displayText.slice(0, PREVIEW_START_CHARS);
     const end = displayText.slice(-PREVIEW_END_CHARS);
     textPreview.textContent = `${start}... | ...${end}`;
   }
 
   const stats = contarTexto(currentText);
-  const idioma = idiomaActual; // cacheado al iniciar y actualizado por listener si aplica
+  const idioma = idiomaActual; // Cached on startup and updated by listener if applicable
   const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
 
-  // Formatear las cifras segun el idioma
+  // Format numbers according to language
   const caracteresFormateado = formatearNumero(stats.conEspacios, separadorMiles, separadorDecimal);
   const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
@@ -249,16 +241,16 @@ async function updatePreviewAndResults(text) {
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
   resTime.textContent = msgRenderer("renderer.main.results.time", { h: hours, m: minutes, s: seconds });
 
-  // Si detectamos que el texto cambio respecto al estado anterior -> resetear cronometro en main
+  // If detect that the text has changed from the previous state -> reset the timer in main
   if (textChanged) {
     try {
       if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
-        // Pedimos a main que resetee el crono (autoridad). Tambien hacemos UI reset inmediato.
+        // We ask main to reset the timer (authority). We also perform an immediate UI reset.
         window.electronAPI.sendCronoReset();
         uiResetTimer();
         lastComputedElapsedForWpm = 0;
       } else {
-        // Fallback local si no hay IPC (rare)
+        // Local fallback if no IPC (rare)
         uiResetTimer();
         lastComputedElapsedForWpm = 0;
       }
@@ -270,7 +262,7 @@ async function updatePreviewAndResults(text) {
   }
 }
 
-// Escuchar estado del crono desde main (autoridad)
+// Listen for stopwatch status from main (authority)
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
     try {
@@ -301,16 +293,16 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
   });
 }
 
-// ======================= Mostrar velocidad real (WPM) =======================
+// ======================= Show real speed (WPM) =======================
 async function mostrarVelocidadReal(realWpm) {
   const idioma = idiomaActual;
   const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
-  // Aplicar el mismo formato a la velocidad real
+  // Apply the same formatting to the real speed
   const velocidadFormateada = formatearNumero(realWpm, separadorMiles, separadorDecimal);
   realWpmDisplay.textContent = `${velocidadFormateada} WPM`;
 }
 
-// ======================= Cargar presets (fusionar + shadowing) =======================
+// ======================= Load presets (merge + shadowing) =======================
 const loadPresets = async () => {
   try {
     const res = await loadPresetsIntoDom({
@@ -340,25 +332,25 @@ const loadPresets = async () => {
   }
 };
 
-// ======================= Inicializacion =======================
+// ======================= Initialization =======================
 (async () => {
   try {
-    // Obtener texto inicial actual (si hay)
+    // Get current initial text (if any)
     const t = await window.electronAPI.getCurrentText();
     updatePreviewAndResults(t || "");
 
-    // Suscripcion a actualizaciones desde main (modal)
+    // Subscription to updates from main (modal)
     if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
       window.electronAPI.onCurrentTextUpdated((text) => {
         updatePreviewAndResults(text || "");
       });
     }
 
-    // Suscripcion: escuchar cuando main notifica que se creo/actualizo un preset
+    // Subscription: listen when main notifies that a preset has been created/updated
     if (window.electronAPI && typeof window.electronAPI.onPresetCreated === 'function') {
       window.electronAPI.onPresetCreated(async (preset) => {
         try {
-          // Recargar presets desde settings (aplica shadowing) y seleccionar el creado
+          // Reload presets from settings (applies shadowing) and select the created one
           const updated = await loadPresets();
           if (preset && preset.name) {
             const found = updated.find(p => p.name === preset.name);
@@ -375,10 +367,10 @@ const loadPresets = async () => {
       });
     }
 
-    // Cargar presets y guardarlos en cache
+    // Load presets and save them to the cache
     const allPresets = await loadPresets();
 
-    // Seleccionar preset inicial "default" del general y fijarlo visualmente
+    // Select the initial "default" preset from the general settings and set it visually
     const initialPreset = allPresets.find(p => p.name === "default");
     if (initialPreset) {
       currentPresetName = initialPreset.name;
@@ -386,11 +378,11 @@ const loadPresets = async () => {
       wpm = initialPreset.wpm;
     }
 
-    // Actualizar vista final con el posible WPM inicial
+    // Update the final view with the possible initial WPM
     updatePreviewAndResults(t || "");
 
-    // --- Listener para cambios de settings desde main/preload (opcional) ---
-    // Si el main/preload expone un evento, lo usamos para mantener settingsCache e idiomaActual actualizados.
+    // --- Listener for settings changes from main/preload (optional) ---
+    // If main/preload exposes an event, we use it to keep settingsCache and currentLanguage updated.
     const settingsChangeHandler = async (newSettings) => {
       try {
         settingsCache = newSettings || {};
@@ -404,7 +396,7 @@ const loadPresets = async () => {
             /* noop */
           }
           applyTranslations();
-          // recargar presets para el nuevo idioma y sincronizar seleccion
+          // Reload presets for the new language and synchronize selection
           try {
             const updated = await loadPresets();
             let selected = updated.find(p => p.name === currentPresetName);
@@ -436,7 +428,7 @@ const loadPresets = async () => {
         window.electronAPI.onSettingsChanged(settingsChangeHandler);
       } else if (typeof window.electronAPI.onSettingsUpdated === 'function') {
         window.electronAPI.onSettingsUpdated(settingsChangeHandler);
-      } // si no existe, no hay listener disponible y no pasa nada
+      } // If it doesn't exist, there's no listener available and nothing happens
 
       if (typeof window.electronAPI.onManualEditorReady === 'function') {
         window.electronAPI.onManualEditorReady(() => {
@@ -446,27 +438,27 @@ const loadPresets = async () => {
     }
 
     // ------------------------------
-    // Inicializar y vincular toggle "Modo preciso"
+    // Initialize and bind the "Precise Mode" toggle
     // ------------------------------
     try {
       if (toggleModoPreciso) {
-        // Asegurar estado inicial del switch segun el modo en memoria (cargado al inicio)
+        // Ensure initial switch state according to the memory mode (loaded at startup)
         toggleModoPreciso.checked = (modoConteo === 'preciso');
 
-        // Cuando el usuario cambie el switch:
+        // When the user changes the switch:
         toggleModoPreciso.addEventListener('change', async () => {
           try {
             const nuevoModo = toggleModoPreciso.checked ? 'preciso' : 'simple';
 
-            // Actualizar estado en memoria (inmediato)
+            // Update state in memory (immediately)
             setModoConteo(nuevoModo);
 
             toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
 
-            // Reconteo inmediato del texto actual
+            // Immediate recount of the current text
             updatePreviewAndResults(currentText);
 
-            // Intentar persistir en settings via IPC (si preload/main implementaron setModeConteo)
+            // Attempt to persist settings via IPC (if preload/main implemented setModeCount)
             if (window.electronAPI && typeof window.electronAPI.setModeConteo === 'function') {
               try {
                 await window.electronAPI.setModeConteo(nuevoModo);
@@ -479,8 +471,8 @@ const loadPresets = async () => {
           }
         });
 
-        // Si el settings cambia desde main, sincronizamos el switch al nuevo valor
-        // (esto complementa settingsChangeHandler; repetimos por seguridad local)
+        // If the settings changes from main, synchronize the switch to the new value
+        // (This complements settingsChangeHandler; repeated for local security)
         const syncToggleFromSettings = (s) => {
           try {
             if (!toggleModoPreciso) return;
@@ -491,7 +483,7 @@ const loadPresets = async () => {
           }
         };
 
-        // Ejecutar sincronizacion inmediata con settingsCache (ya cargado)
+        // Perform immediate synchronization with settingsCache (already loaded)
         try { syncToggleFromSettings(settingsCache || {}); } catch (e) { /* noop */ }
       }
     } catch (ex) {
@@ -539,9 +531,9 @@ const loadPresets = async () => {
     }
   }
 
-  // Traduce el HTML cargado en el modal de info usando data-i18n y renderer.info.<key>.*
+  // Translate the HTML loaded in the info modal using data-i18n and renderer.info.<key>.*
   function translateInfoHtml(htmlString, key) {
-    // Si no hay funcion de traduccion disponible, devolvemos el HTML sin modificar
+    // If no translation function is available, return the unmodified HTML
     if (!tRenderer) return htmlString;
     try {
       const parser = new DOMParser();
@@ -572,8 +564,8 @@ const loadPresets = async () => {
 
     if (!infoModal || !infoModalTitle || !infoModalContent) return;
 
-    // Decide que archivo cargar segun la key.
-    // Unificamos guia_basica, instrucciones y faq en ./info/instrucciones.html
+    // Decide which file to load based on the key.
+    // Unify basic_guide, instructions, and FAQ in ./info/instructions.html
     let fileToLoad = null;
     let sectionId = null;
 
@@ -583,48 +575,48 @@ const loadPresets = async () => {
       fileToLoad = './info/acerca_de.html';
     } else if (key === 'guia_basica' || key === 'instrucciones' || key === 'faq') {
       fileToLoad = './info/instrucciones.html';
-      // mapear key a id del bloque dentro de instrucciones.html
+      // Map key to block ID within instructions.html
       const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
       sectionId = mapping[key] || 'instrucciones';
     } else {
-      // fallback: intentar cargar ./info/<key>.html (compatibilidad)
+      // Fallback: Attempt to load ./info/<key>.html (compatibility)
       fileToLoad = `./info/${key}.html`;
     }
 
     const translationKey = (key === "guia_basica" || key === "faq") ? "instrucciones" : key;
-    // Titulo del modal: mostrar el titulo de la seccion (no "Info" generico)
+    // Modal title: Display the section title (not generic "Info")
     const defaultTitle = sectionTitles[key] || (opts.title || "InformaciA3n");
     infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
 
-    // Abrir modal
+    // Open modal
     infoModal.setAttribute("aria-hidden", "false");
 
-    // Cargar HTML
+    // Load HTML
     const tryHtml = await fetchText(fileToLoad);
     if (tryHtml === null) {
-      // fallback: indicar falta de contenido
+      // Fallback: Indicate missing content
       infoModalContent.innerHTML =
         `<p>No hay contenido disponible para "${infoModalTitle.textContent}".</p>`;
       if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
       return;
     }
 
-    // Traducir si hay i18n cargado y luego poner contenido
+    // Translate if i18n is loaded and then add content
     const translatedHtml = translateInfoHtml(tryHtml, translationKey);
     infoModalContent.innerHTML = translatedHtml;
 
-    // Asegurar que el panel empieza en top antes de hacer scroll
+    // Ensure the panel starts at the top before scrolling
     const panel = document.querySelector('.info-modal-panel');
     if (panel) panel.scrollTop = 0;
 
-    // Si se pidio una seccion concreta, scrollear para que aparezca *arriba* del panel
+    // If a specific section was requested, scroll so it appears *above* the panel
     if (sectionId) {
-      // Esperar al siguiente frame para que el DOM parseado este layoutado
+      // Wait for the next frame for the parsed DOM to be laid out
       requestAnimationFrame(() => {
         try {
           const target = infoModalContent.querySelector(`#${sectionId}`);
           if (!target) {
-            // si no existe el id, no hacemos nada mas
+            // If the ID doesn't exist, do nothing else
             if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
             return;
           }
@@ -632,7 +624,7 @@ const loadPresets = async () => {
           try {
             target.scrollIntoView({ behavior: 'auto', block: 'start' });
           } catch (err) {
-            // Fallback defensivo: calcular top relativo sin compensar por header
+            // Defensive fallback: Calculate relative top without compensating for header
             const panelRect = panel.getBoundingClientRect();
             const targetRect = target.getBoundingClientRect();
             const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
@@ -640,7 +632,7 @@ const loadPresets = async () => {
             panel.scrollTo({ top: finalTop, behavior: 'auto' });
           }
 
-          // finalmente, dar foco al contenido para que el lector pueda usar teclado
+          // Finally, focus on the content so the reader can use the keyboard
           if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
         } catch (e) {
           console.error("Error desplazando modal a seccion:", e);
@@ -648,54 +640,40 @@ const loadPresets = async () => {
         }
       });
     } else {
-      // No hay seccion: solo enfocar el contenido (documento entero)
+      // No section: only focus on the content (entire document)
       if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
     }
   }
 
-  // ======================= BARRA SUPERIOR: registrar acciones con menuActions =======================
-  // Asegurate de que menu.js fue cargado (script incluido antes de renderer.js)
-  if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
-
-    // Registrar accion para "guia_basica"
+  // ======================= TOP BAR: Register actions with menuActions =======================
+  // Ensure menu.js is loaded (script included before renderer.js)
+  if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {  
     window.menuActions.registerMenuAction("guia_basica", () => { showInfoModal("guia_basica") });
-
-    // Registrar accion para "instrucciones_completas"
     window.menuActions.registerMenuAction("instrucciones_completas", () => { showInfoModal("instrucciones") });
-
-    // Registrar accion para "faq"
     window.menuActions.registerMenuAction("faq", () => { showInfoModal("faq") });
-
     window.menuActions.registerMenuAction('cargador_texto', () => {
-      Notify.notifyMain("renderer.alerts.wip_cargador_texto");
+      Notify.notifyMain("renderer.alerts.wip_cargador_texto"); // TEMP
     });
-
     window.menuActions.registerMenuAction('contador_imagen', () => {
-      Notify.notifyMain("renderer.alerts.wip_contador_imagen");
+      Notify.notifyMain("renderer.alerts.wip_contador_imagen"); // TEMP
     });
-
     window.menuActions.registerMenuAction('test_velocidad', () => {
-      Notify.notifyMain("renderer.alerts.wip_test_velocidad");
+      Notify.notifyMain("renderer.alerts.wip_test_velocidad"); // TEMP
     });
-
     window.menuActions.registerMenuAction('preferencias_idioma', () => {
-      Notify.notifyMain("renderer.alerts.wip_idioma");
+      Notify.notifyMain("renderer.alerts.wip_idioma"); // TEMP
     });
-
     window.menuActions.registerMenuAction('diseno_skins', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_skins");
+      Notify.notifyMain("renderer.alerts.wip_diseno_skins"); // TEMP
     });
-
     window.menuActions.registerMenuAction('diseno_crono_flotante', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_crono");
+      Notify.notifyMain("renderer.alerts.wip_diseno_crono"); // TEMP
     });
-
     window.menuActions.registerMenuAction('diseno_fuentes', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_fuentes");
+      Notify.notifyMain("renderer.alerts.wip_diseno_fuentes"); // TEMP
     });
-
     window.menuActions.registerMenuAction('diseno_colores', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_colores");
+      Notify.notifyMain("renderer.alerts.wip_diseno_colores"); // TEMP
     });
 
     window.menuActions.registerMenuAction("presets_por_defecto", async () => {
@@ -708,12 +686,12 @@ const loadPresets = async () => {
 
         const res = await window.electronAPI.openDefaultPresetsFolder();
         if (res && res.ok) {
-          // carpeta abierta correctamente; no mostrar notificacion intrusiva
+          // Folder opened successfully; do not show intrusive notifications
           console.debug("Carpeta config/presets_defaults abierta en el explorador.");
           return;
         }
 
-        // en caso de fallo, informar al usuario
+        // In case of failure, inform the user
         const errMsg = res && res.error ? String(res.error) : "Desconocido";
         console.error("No se pudo abrir carpeta presets por defecto:", errMsg);
         Notify.notifyMain("renderer.alerts.open_presets_fail");
@@ -724,19 +702,16 @@ const loadPresets = async () => {
     });
 
     window.menuActions.registerMenuAction('avisos', () => {
-      Notify.notifyMain("renderer.alerts.wip_avisos");
+      Notify.notifyMain("renderer.alerts.wip_avisos"); // TEMP
     });
-
     window.menuActions.registerMenuAction('discord', () => {
-      Notify.notifyMain("renderer.alerts.wip_discord");
+      Notify.notifyMain("renderer.alerts.wip_discord"); // TEMP
     });
-
     window.menuActions.registerMenuAction('links_interes', () => {
-      Notify.notifyMain("renderer.alerts.wip_links_interes");
+      Notify.notifyMain("renderer.alerts.wip_links_interes"); // TEMP
     });
-
     window.menuActions.registerMenuAction('colabora', () => {
-      Notify.notifyMain("renderer.alerts.wip_colabora");
+      Notify.notifyMain("renderer.alerts.wip_colabora"); // TEMP
     });
 
     window.menuActions.registerMenuAction('actualizar_version', async () => {
@@ -746,16 +721,14 @@ const loadPresets = async () => {
         console.error("Error al solicitar checkForUpdates:", e);
       }
     });
-    // Registrar accion para "readme"
-    window.menuActions.registerMenuAction("readme", () => { showInfoModal("readme") });
 
-    // Registrar accion para "acerca_de"
+    window.menuActions.registerMenuAction("readme", () => { showInfoModal("readme") });
     window.menuActions.registerMenuAction("acerca_de", () => { showInfoModal("acerca_de") });
 
-    // Ejemplo generico para ver payloads no registrados explicitamente:
-    // (opcional) registrar un "catch-all" no es necesario; menu.js ya loguea payloads sin handler.
+    // Generic example for viewing payloads not explicitly registered:
+    // (optional) Registering a "catch-all" is not necessary; menu.js already logs payloads without a handler.
   } else {
-    // Si menuActions no esta disponible, registra un receptor directo (fallback)
+    // If menuActions is unavailable, register a direct receiver (fallback)
     if (window.electronAPI && typeof window.electronAPI.onMenuClick === 'function') {
       window.electronAPI.onMenuClick((payload) => {
       });
@@ -765,7 +738,7 @@ const loadPresets = async () => {
   }
 })();
 
-// ======================= Seleccion de preset (usa cache, no recarga DOM) =======================
+// ======================= Preset selection (uses cache, doesn't reload DOM) =======================
 presetsSelect.addEventListener('change', () => {
   const name = presetsSelect.value;
   if (!name) return;
@@ -773,7 +746,7 @@ presetsSelect.addEventListener('change', () => {
   const preset = allPresetsCache.find(p => p.name === name);
   if (preset) {
     currentPresetName = preset.name;
-    // Fijar visualmente (por si el select no lo marca en alguna plataforma)
+    // Visually pin (in case the select doesn't mark it on some platforms)
     presetsSelect.value = preset.name;
     wpm = preset.wpm;
     wpmInput.value = wpm;
@@ -783,10 +756,10 @@ presetsSelect.addEventListener('change', () => {
   }
 });
 
-// ======================= Detectar cambio manual en WPM =======================
+// ======================= Detect manual change in WPM speed selector =======================
 function resetPresetSelection() {
   currentPresetName = null;
-  // dejar el select sin seleccion visual
+  // Leave the select without visual selection
   presetsSelect.selectedIndex = -1;
   presetDescription.textContent = "";
 }
@@ -817,7 +790,7 @@ wpmInput.addEventListener('keydown', (e) => {
   }
 });
 
-// ======================= Boton "Sobreescribir con portapapeles" =======================
+// ======================= Overwrite with clipboard button =======================
 btnCountClipboard.addEventListener("click", async () => {
   try {
     let clip = await window.electronAPI.readClipboard() || "";
@@ -827,7 +800,7 @@ btnCountClipboard.addEventListener("click", async () => {
       Notify.notifyMain("renderer.alerts.clipboard_overflow");
     }
 
-    // enviar objeto con meta (overwrite)
+    // Send object with meta (overwrite)
     const resp = await window.electronAPI.setCurrentText({
       text: clip,
       meta: { source: "main-window", action: "overwrite", clipboardText: clip }
@@ -841,7 +814,7 @@ btnCountClipboard.addEventListener("click", async () => {
   }
 });
 
-// ======================= Boton "Pegar portapapeles nueva linea" =======================
+// ======================= "Paste clipboard in new line" button =======================
 btnAppendClipboardNewLine.addEventListener("click", async () => {
   try {
     const clip = await window.electronAPI.readClipboard() || "";
@@ -859,7 +832,7 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
     const toAdd = clip.slice(0, available);
     const newFull = current + (current ? joiner : "") + toAdd;
 
-    // enviar objeto con meta (append_newline)
+    // Send object with meta (append_newline)
     const resp = await window.electronAPI.setCurrentText({
       text: newFull,
       meta: { source: "main-window", action: "append_newline", clipboardText: clip }
@@ -867,7 +840,7 @@ btnAppendClipboardNewLine.addEventListener("click", async () => {
 
     updatePreviewAndResults(resp && resp.text ? resp.text : newFull);
 
-    // notificar truncado solo si main lo confirma
+    // Notify truncation only if main confirms it
     if (resp && resp.truncated) {
       Notify.notifyMain("renderer.editor_alerts.text_truncated");
     }
@@ -887,7 +860,7 @@ btnEdit.addEventListener('click', async () => {
   }
 });
 
-// ======================= Boton Vaciar (pantalla principal) =======================
+// ======================= Clear Button (Main Screen) =======================
 btnEmptyMain.addEventListener("click", async () => {
   try {
     const resp = await window.electronAPI.setCurrentText({
@@ -905,15 +878,14 @@ btnEmptyMain.addEventListener("click", async () => {
   }
 });
 
-// Boton ? (por ahora solo esta ubicado; sin funcionalidad)
+// '?' Button (for now, it's just there; no functionality)
 if (btnHelp) {
   btnHelp.addEventListener('click', () => {
-    // Por ahora no abrimos modal ni hacemos nada; quedara implementado mas adelante.
   });
 }
 
-// Abrir modal para crear preset (main crea la ventana modal)
-// Envia el WPM actual al main para que lo propague al modal
+// Open modal to create preset (main creates the modal window)
+// Sends the current WPM to main so it can propagate it to the modal
 btnNewPreset.addEventListener('click', () => {
   try {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
@@ -927,12 +899,12 @@ btnNewPreset.addEventListener('click', () => {
   }
 });
 
-// ======================= Boton EDIT (Editar preset seleccionado) =======================
+// ======================= EDIT Button (Edit selected preset) =======================
 btnEditPreset.addEventListener('click', async () => {
   try {
     const selectedName = presetsSelect.value;
     if (!selectedName) {
-      // Ask main to show native info dialog "No hay ningun preset seleccionado para editar"
+      // Ask main to show native info dialog 'No hay ningun preset seleccionado para editar'
       if (window.electronAPI && typeof window.electronAPI.notifyNoSelectionEdit === 'function') {
         await window.electronAPI.notifyNoSelectionEdit();
         return;
@@ -965,7 +937,7 @@ btnEditPreset.addEventListener('click', async () => {
   }
 });
 
-// ======================= Boton BORRAR (icono papelera) =======================
+// ======================= DELETE Button (trash can icon) =======================
 btnDeletePreset.addEventListener('click', async () => {
   try {
     const name = presetsSelect.value || null;
@@ -1000,7 +972,7 @@ btnDeletePreset.addEventListener('click', async () => {
   }
 });
 
-// ======================= Boton RESTAURAR (R) =======================
+// ======================= RESTORE Button (R) =======================
 btnResetDefaultPresets.addEventListener('click', async () => {
   try {
     // Call main to request restore. main will show native confirmation dialog.
@@ -1030,16 +1002,16 @@ btnResetDefaultPresets.addEventListener('click', async () => {
   }
 });
 
-// ======================= Cronometro =======================
+// ======================= STOPWATCH =======================
 const timerDisplay = document.getElementById('timerDisplay');
 
-// Evitar que los broadcasts de main sobrescriban la edicion en curso
+// Prevent main broadcasts from overwriting the current edit
 if (timerDisplay) {
   timerDisplay.addEventListener('focus', () => {
     timerEditing = true;
   });
   timerDisplay.addEventListener('blur', () => {
-    // el blur ejecutara applyManualTime (ya registrado) que actualizara el crono en main
+    // The blur event will execute applyManualTime (already registered) which will update the stopwatch in main
     timerEditing = false;
   });
 }
@@ -1047,14 +1019,14 @@ if (timerDisplay) {
 const tToggle = document.getElementById('timerToggle');
 const tReset = document.getElementById('timerReset');
 
-// Mirror local del estado del crono (se sincroniza desde main via onCronoState)
+// Local mirror of the stopwatch state (synchronized from main via onCronoState)
 let elapsed = 0;
 let running = false;
-// Flag para detectar transicion y evitar recalculos continuos
+// Flag to detect transitions and prevent continuous recalculations
 let prevRunning = false;
-// Indica si el usuario esta editando manualmente el campo del timer (para evitar sobrescrituras)
+// Indicates if the user is manually editing the timer field (to prevent overwriting)
 let timerEditing = false;
-// Ultimo elapsed para el que calculamos WPM (evitar recalculos repetidos)
+// Last elapsed for which we calculate WPM (avoid repeated recalculations)
 let lastComputedElapsedForWpm = null;
 
 function showManualLoader() {
@@ -1106,8 +1078,8 @@ tReset.addEventListener('click', () => {
   }
 });
 
-// --- Floating window control (VF) ---
-// abrir flotante
+// --- Floating window control (FW) ---
+// Open FW
 const openFloating = async () => {
   const res = await timerModule.openFloating({
     electronAPI: window.electronAPI,
@@ -1131,30 +1103,30 @@ const closeFloating = async () => {
   await timerModule.closeFloating({ electronAPI: window.electronAPI, toggleVF });
 };
 
-// toggle VF desde la UI (switch)
+// toggle WF from the UI (switch)
 if (toggleVF) {
   toggleVF.addEventListener('change', async (ev) => {
     const wantOpen = !!toggleVF.checked;
-    // optimista: reflejar aria-checked inmediatamente
+    // Optimistic: reflect aria-checked immediately
     toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
 
     if (wantOpen) {
       await openFloating();
-      // openFloating maneja revert en caso de error
+      // openFloating handles revert in case of error
     } else {
       await closeFloating();
     }
   });
 }
 
-// Si el flotante se cierra desde main (o se destruye), limpiamos timers locales
+// If the float is closed from main (or destroyed), we clean it up Local timers
 if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'function') {
   window.electronAPI.onFloatingClosed(() => {
     if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
   });
 }
 
-// ======================= Edicion manual del cronometro =======================
+// ======================= Manual stopwatch editing =======================
 const parseTimerInput = (input) => timerModule.parseTimerInput(input);
 
 const applyManualTime = () => {
