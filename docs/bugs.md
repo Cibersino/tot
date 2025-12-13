@@ -1,1 +1,2 @@
-Pestañeos
+- Input del cronómetro está habilitado mientras esta corriendo. Debe inhabilitarse. Solo puede modificarse cuando está pausado o en stop (y si, estando previamente en stop, el input es mayor que 0, lo convierte en una pausa).
+- Pestañeos (estar atentos a cuando ocurren y registrar)
