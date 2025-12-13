@@ -1,6 +1,6 @@
 # Code Cleanup Protocol (toT – Reading Meter)
 
-Version: 1.8  
+Version: 1.9  
 Status: Draft (operational)  
 Applies to: JavaScript/Electron codebase (`electron/`, `public/`, `public/js/`)  
 
@@ -58,9 +58,9 @@ A reordering operation that does not change semantics, under verified conditions
 ## 4) Pre-flight (once per cleanup series)
 
 - Ensure `docs/cleanup/` exists (canonical location for per-file cleanup notes).
+- Ensure `docs/cleanup/_repo_contract_usage.md` exists and is tracked. This is the series-wide cache of repo-wide Ctrl+Shift+F evidence for **B2 Contract Lock keys** and must be kept up to date as files are audited.
 - Ensure you have access to the standard cleanup note template (see `cleanup_template.md`).
 - Agree on the slug rule for filenames: replace `/` and `.` with `_` (example: `electron/main.js` → `electron_main_js`).
-
 
 1. Ensure working tree is clean:
    - `git status` must show no pending changes.
@@ -97,6 +97,21 @@ In VS Code, populate Section **1) Step B — Evidence Pack** inside `docs/cleanu
   - `module.exports` / `exports.` (if applicable)
 - Preferred (if available): generate B2 via a local AST extractor script (e.g., `b2_contract_lock.cjs`) run from VS Code/terminal, then paste the generated block into the per-file note.
 - Fallback: use VS Code **PowerShell Terminal** and targeted searches to build the list manually.
+
+2a) **B2.1 — Raw match map (optional but useful)**
+- Purpose: navigation-only map to quickly jump to contract surfaces and key blocks in the target file.
+- Keep it compact: include only patterns/snippets you actually use for navigation.
+- Typical patterns: `ipcMain.handle(`, `ipcMain.on(`, `ipcMain.once(`, `webContents.send(`, `module.exports`, `path.join(CONFIG_DIR,`.
+- Do not include repo-wide counts here (those belong in `_repo_contract_usage.md`).
+
+2b) **B2.2 — Repo contract cache sync (mandatory)**
+- For every contract key listed in B2:
+  - Ensure an entry exists in `docs/cleanup/_repo_contract_usage.md`.
+  - Run VS Code repo search (Ctrl+Shift+F) for the key (include quoting variants if needed).
+  - Record: `<N> matches in <M> files` + top files, and set `Verified at commit` to current HEAD.
+- If the key already exists but `Verified at commit` is older than current HEAD, refresh it.
+- Pass condition (per-file note): all B2 keys are present in the repo cache and verified at current HEAD.
+- B3 may cite the repo cache for the string-based evidence, but each B3 occurrence must still explicitly include repo evidence (inline or by reference).
 
 3) **B3 — Candidate Ledger (single section; label-sorted; evidence-gated)**
 

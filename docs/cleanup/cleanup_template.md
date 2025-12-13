@@ -93,10 +93,23 @@
   - Key matches:
     - `L<line>`: `<snippet>`
 
+### B2.2) Repo contract cache sync (mandatory)
+> Update the series-level cache `docs/cleanup/_repo_contract_usage.md` using the keys captured in B2.
+
+- For every B2 key:
+  - Ensure it exists in `_repo_contract_usage.md`.
+  - Run repo-wide Ctrl+Shift+F for that key and record counts + top files.
+  - Set `Verified at commit` to current HEAD.
+- Pass condition: all B2 keys are present and verified at current HEAD.
+
+Note:
+- In B3 entries, the string-based repo evidence may reference `_repo_contract_usage.md` (key + verified-at commit),
+  but each occurrence must still include repo evidence (inline or by reference).
+
 ---
 
 ### B3) Candidate Ledger (triaged; label-sorted; theme-grouped; evidence-gated)
-> Triaged from auto-scan of `electron/main.js`. No edits allowed until repo evidence is filled (VS Code gating).
+> Triaged from auto-scan of `<RELATIVE_PATH>`. No edits allowed until repo evidence is filled (VS Code gating).
 > Note: any contract-level behavioral decisions are recorded in `## 4) Open Questions / Decisions` (not in B3), to keep the ledger occurrence-first.
 
 #### P2-CONTRACT (13)
