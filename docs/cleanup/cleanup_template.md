@@ -3,19 +3,20 @@
 > Location: `docs/cleanup/<SLUG>.md`  
 > Scope: This document records all evidence and decisions needed to clean, reorder, and de-legacy a single file, in two phases:
 > - **Phase 1 (Safe):** no functional changes; must preserve observable behavior.
-> - **Phase 2 (Risk):** may change behavior; requires targeted tests.
+> - **Phase 2 (Risk):** may change behavior; requires explicit tests.
 
 ---
 
 ## 0) Metadata
 
-- Target file: `<RELATIVE_PATH>`  
-- Date started: `<YYYY-MM-DD>`  
-- Branch: `<BRANCH>`  
-- Baseline commit (short SHA): `<SHA>`  
-- Latest commit touching this cleanup: `<SHA>`  
-- Phase 1 status: `<pending/done + commit)>`
-- Phase 2 status: `<pending/done + commit)>`
+- Target file: `<RELATIVE_PATH>`
+- Slug: `<SLUG>` (rule: replace `/` and `.` with `_`)
+- Date started: `<YYYY-MM-DD>`
+- Branch: `<BRANCH>`
+- Baseline commit (short SHA): `<SHA>`
+- Latest commit touching this cleanup: `<SHA>`
+- Phase 1 status: `<pending/done + commit SHA>`
+- Phase 2 status: `<pending/done + commit SHA>`
 
 ---
 
@@ -25,8 +26,7 @@
 > Goal: prevent losing/misplacing top-level units during reordering.
 
 #### Top-level state (global variables)
-- `<name>` — <role>
-- `<name>` — <role>
+- `L<line>`: `<name>` — <role>
 
 #### Top-level declarations
 **Functions**
@@ -45,360 +45,242 @@
 
 ### B2) Contract Lock (must remain stable in Phase 1)
 > Contract lock = externally observable “interfaces” that must not change in Phase 1:
-> IPC channels, event names, storage keys, file paths, menu action IDs, etc.
+> IPC channels, event names, storage filenames, menu action IDs, etc.
 
 #### IPC — ipcMain.handle
-- `<channel>`
 - `<channel>`
 
 #### IPC — ipcMain.on
 - `<channel>`
-- `<channel>`
 
 #### IPC — ipcMain.once
 - `<channel>`
-- `<channel>`
 
-#### Renderer events — webContents.send / ipcRenderer.emit equivalents
-- `<event>`
+#### IPC (renderer-side, if this file defines it)
+- `ipcRenderer.invoke`: `<channel>`
+- `ipcRenderer.send/on`: `<channel>`
+
+#### Renderer events — webContents.send
 - `<event>`
 
 #### Menu action IDs / routing keys (if any)
 - `<id>`
-- `<id>`
 
-#### Persistent storage keys / filenames (if any)
-- `<key or filename>`
-- `<key or filename>`
+#### Persistent storage filenames / keys (if any)
+- `<filename or key>`
 
 #### Other contracts (URLs, command names, env vars, analytics tags, etc.)
-- `<contract>`
 - `<contract>`
 
 ---
 
-### B2.1) Raw match map (optional but useful)
+### B2.1) Raw match map (optional, navigation-only)
 > Paste only what you actually use for navigation. Avoid dumping hundreds of lines unless needed.
 
 - Pattern: `ipcMain.handle(`  
-  - Count: `<N>`  
+  - Count (local file): `<N>`  
   - Key matches:
     - `L<line>`: `<snippet>`
+
 - Pattern: `ipcMain.on(`  
-  - Count: `<N>`  
+  - Count (local file): `<N>`  
   - Key matches:
     - `L<line>`: `<snippet>`
+
+- Pattern: `ipcMain.once(`  
+  - Count (local file): `<N>`  
+  - Key matches:
+    - `L<line>`: `<snippet>`
+
 - Pattern: `webContents.send(`  
-  - Count: `<N>`  
+  - Count (local file): `<N>`  
   - Key matches:
     - `L<line>`: `<snippet>`
 
-### B2.2) Repo contract cache sync (mandatory)
-> Update the series-level cache `docs/cleanup/_repo_contract_usage.md` using the keys captured in B2.
+---
 
-- For every B2 key:
-  - Ensure it exists in `_repo_contract_usage.md`.
-  - Run repo-wide Ctrl+Shift+F for that key and record counts + top files.
-  - Set `Verified at commit` to current HEAD.
-- Pass condition: all B2 keys are present and verified at current HEAD.
+### B2.2) Repo contract cache sync (mandatory; surface-only)
+> This section syncs Contract Lock keys with `docs/cleanup/_repo_contract_usage.md`.
+> **Official counts are surface-only**: contract surface statements only (exclude mentions in logs/comments/user-facing messages/docs).
 
-Note:
-- In B3 entries, the string-based repo evidence may reference `_repo_contract_usage.md` (key + verified-at commit),
-  but each occurrence must still include repo evidence (inline or by reference).
+**VS Code (Ctrl+Shift+F) settings**
+- Regex: ON
+- Include: `electron/**`, `public/**`
+- Exclude: `docs/cleanup/**`
+
+**Surface-only regex (replace `<KEY>` with the literal key)**
+- `(ipcMain\\.(handle|on|once)|ipcRenderer\\.(invoke|send|on)|webContents\\.send)\\(\\s*['"]<KEY>['"]`
+
+**Per-key record (copy from `_repo_contract_usage.md`; keep per-key, no global notes)**
+
+| Key | Kind (IPC_HANDLE/IPC_ON/IPC_ONCE/SEND/STORAGE/OTHER) | Official (surface-only) | Files (top) | Verified-at (SHA) | Notes (optional, per-key only) |
+|---|---|---:|---|---|---|
+| `<key>` | `<kind>` | `<N> matches` | `<file1>, <file2>...` | `<SHA>` | `<only if needed>` |
+
+**Pass condition**
+- Every B2 key appears in `_repo_contract_usage.md` with a surface-only count and Verified-at = current HEAD (or explicit per-key invariance note recorded in the cache).
+
+---
+
+### B2.3) Observability / UX Mentions (local; mandatory)
+> Track cleanup-relevant **non-contract** occurrences:
+> - logs (`console.*`)
+> - maintenance comments (`TODO/FIXME/HACK/WIP/LEGACY/DEPRECATED`)
+> - user-facing hardcoded messages (dialogs/notifications/UI hardcodes not coming from i18n)
+>
+> Rules:
+> - **No repo-wide counts here.**
+> - Keep it local to this file.
+> - Format is occurrence-first: `L<line>: <snippet>`.
+> - Translate ES→EN during normalization work.
+> - If a user-facing hardcoded message is a fallback, prefix with `FALLBACK:` (and keep i18n strings unprefixed).
+
+#### Logs (console.*)
+- `L<line>`: `<snippet>`
+- `L<line>`: `<snippet>`
+
+#### Maintenance comments (TODO/FIXME/HACK/WIP/LEGACY/DEPRECATED)
+- `L<line>`: `<snippet>`
+- `L<line>`: `<snippet>`
+
+#### User-facing hardcoded messages (dialogs/notifications/UI hardcodes)
+- `L<line>`: `<snippet>`
+- `L<line>`: `<snippet>`
+
+#### Fallback hardcoded marker audit (optional but useful)
+- Pivot search: `FALLBACK:`
+  - `L<line>`: `<snippet>`
 
 ---
 
 ### B3) Candidate Ledger (triaged; label-sorted; theme-grouped; evidence-gated)
-> Triaged from auto-scan of `<RELATIVE_PATH>`. No edits allowed until repo evidence is filled (VS Code gating).
-> Note: any contract-level behavioral decisions are recorded in `## 4) Open Questions / Decisions` (not in B3), to keep the ledger occurrence-first.
+> Triaged from auto-scan of `<RELATIVE_PATH>`.
+> **No edits allowed until repo evidence is filled (VS Code gating).**
+>
 > Anchor semantics (mandatory):
-> - `CONTRACT:*` entries: the `L<line>` anchor points to the contract surface statement (`ipcMain.*('key'...)`, `webContents.send('key'...)`).
-> - If the flagged pattern is on a different inner line (e.g. inside a payload object), record it as `Local evidence (inner): L<line>: <snippet>`.
-> - `PATTERN:*` entries: the `L<line>` anchor remains the pattern line.
+> - `CONTRACT:*` entries: the `L<line>` anchor points to the **contract surface statement**
+>   (`ipcMain.*('key'...)`, `ipcRenderer.*('key'...)`, `webContents.send('key'...)`).
+> - If the flagged pattern is on a different inner line (e.g. inside a payload object), record it as:
+>   `Local evidence (inner): L<line>: <snippet>`.
+> - `PATTERN:*` entries: anchor = the pattern line.
+>
+> Decision hygiene:
+> - Behavioral decisions belong in **## 4) Open Questions / Decisions**, not inside the ledger entries.
 
-#### P2-CONTRACT (13)
+#### Scanner fidelity decision (must be settled BEFORE running triage/gating)
+- Scanner output truncation acceptable? `<yes/no>`
+- If **no**: required script fixes (before B3): `<list>`
+- Evidence of compliance (example): `no "..." in snippets`, `no truncated filenames`, etc.
 
-##### PATTERN:NUM_COERCE (2)
-- **L549**
-  - Primary Theme: `PATTERN:NUM_COERCE`
-  - Type: `fallback (defaulting)`
-  - Tags: `near_contract`
-  - Local evidence: `L549`: `const n = Number(ms) || 0;`
-  - Why: Invalid/NaN ms collapses to 0 → can silently reset elapsed if caller sends bad payload.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (function `setCronoElapsed`)
-    - Repo search (Ctrl+Shift+F): TODO (strings: `crono-set-elapsed`, `flotante-command`)
-    - Suggested queries: `setCronoElapsed`, `'crono-set-elapsed'`, `'flotante-command'`
+---
+
+#### P1-DOC (<N>)
+> Doc-only candidates: comments, naming, section headers, clarifying notes (no behavior change).
+
+##### <THEME> (<count>)
+- **L<line>#<id>**
+  - Primary Theme: `<THEME>`
+  - Type: `<doc-only>`
+  - Tags: `<...>`
+  - Local evidence: `L<line>`: `<snippet>`
+  - Why: <...>
+  - Repo evidence: <fill as needed>
   - Proposed action:
-    - Phase 1: none
-    - Phase 2: change fallback semantics per `## 4 / Q1` (fail-safe: ignore invalid / negative; keep previous elapsed)
-  - Risk notes / dependencies: Any change affects timer state when payload is invalid.
+    - Phase 1: `doc only`
+    - Phase 2: `none`
+  - Risk notes / dependencies: <fill>
 
-- **L611**
-  - Primary Theme: `PATTERN:NUM_COERCE`
-  - Type: `fallback (defaulting) + duplication (double coercion)`
-  - Tags: `near_contract`
-  - Local evidence: `L611`: `setCronoElapsed(Number(cmd.value) || 0);`
-  - Why: Coercion/defaulting is duplicated (also done inside `setCronoElapsed`). May hide invalid payload origin.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`setCronoElapsed`)
-    - Repo search (Ctrl+Shift+F): TODO (`'flotante-command'`)
-    - Suggested queries: `'flotante-command'`, `Number(cmd.value)`
+---
+
+#### P1-STRUCT (<N>)
+> Structure-only candidates: reordering, grouping, dedupe with no behavior change.
+
+---
+
+#### P2-CONTRACT (<N>)
+> Contract-adjacent candidates: must be evidence-gated and carefully staged.
+
+##### CONTRACT:<...> (<count>)
+- **L<contractLine>#<id>**
+  - Primary Theme: `CONTRACT:<...>`
+  - Type: `<fallback / duplication / error swallow / ...>`
+  - Tags: `<near_contract / touches_contract / ...>`
+  - Anchor evidence: `L<contractLine>`: `<contract surface snippet>`
+  - Local evidence (inner): `L<patternLine>`: `<inner snippet>` (only if different)
+  - Why: <...>
+  - Repo evidence: <fill>
+    - References (Shift+F12): `<N> hits in <files>` (only for symbols: functions/vars)
+    - Repo search (Ctrl+Shift+F) — contractual (surface-only):
+      - From B2.2: `<N> matches`, `<top files>`, `Verified-at <SHA>`
+    - Repo search (Ctrl+Shift+F) — non-contractual (patterns/snippets):
+      - `<pattern>`: `<N> matches in <files>`
+    - Suggested queries (optional): `<q1>`, `<q2>`, `<q3>`
   - Proposed action:
-    - Phase 1: none
-    - Phase 2: remove double coercion and validate payload explicitly per `## 4 / Q1`
-  - Risk notes / dependencies: Tightening validation changes behavior for malformed `cmd.value`.
+    - Phase 1: `<doc only / comment-only / reorder-only / none>`
+    - Phase 2: `<remove / consolidate / refactor / change fallback>`
+  - Risk notes / dependencies: <fill>
 
-##### CONTRACT:IPC_HANDLE:floating-open (1)
-- **L579**
-  - Primary Theme: `CONTRACT:IPC_HANDLE:floating-open`
-  - Type: `fallback (error swallow)`
-  - Tags: `near_contract`
-  - Local evidence: `L579`: `try { broadcastCronoState(); } catch (e) {/*noop*/ }`
-  - Why: Swallows errors and forces `{ ok: true }` path even if broadcast fails; also redundant because `broadcastCronoState()` already swallows per-window send.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`broadcastCronoState`)
-    - Repo search (Ctrl+Shift+F): TODO (`'floating-open'`)
-    - Suggested queries: `'floating-open'`, `broadcastCronoState`
+---
+
+#### P2-SIDEFX (<N>)
+> Timing/initialization/order side effects: often risky even if “small”.
+
+---
+
+#### P2-FALLBACK (<N>)
+> Non-contract patterns (defaulting, noop catches, coercion) that may still affect behavior.
+
+##### PATTERN:<...> (<count>)
+- **L<line>#<id>**
+  - Primary Theme: `PATTERN:<...>`
+  - Type: `<fallback (defaulting) / fallback (error swallow) / ...>`
+  - Tags: `<...>`
+  - Local evidence: `L<line>`: `<snippet>`
+  - Why: <...>
+  - Repo evidence: <fill>
+    - References (Shift+F12): `<N> hits in <files>` (symbols only)
+    - Repo search (Ctrl+Shift+F): `<N> matches in <files>`
+    - Suggested queries (optional): `<q1>`, `<q2>`
   - Proposed action:
-    - Phase 1: none
-    - Phase 2: remove nested noop catch OR replace with controlled debug logging
-  - Risk notes / dependencies: Removing swallow may cause `floating-open` to return `{ ok:false }` in edge failures.
+    - Phase 1: `<doc only / comment-only / reorder-only / none>`
+    - Phase 2: `<remove / consolidate / refactor / change fallback>`
+  - Risk notes / dependencies: <fill>
 
-##### CONTRACT:IPC_ONCE:language-selected (2)
-- **L678**
-  - Primary Theme: `CONTRACT:IPC_ONCE:language-selected`
-  - Type: `fallback (defaulting)`
-  - Tags: `near_contract`
-  - Local evidence: `L678`: `currentLanguage = settings.language || "es";`
-  - Why: Defaults language; treats empty string as unset. Likely intended.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`currentLanguage` usage)
-    - Repo search (Ctrl+Shift+F): TODO (`'language-selected'`, `currentLanguage =`)
-    - Suggested queries: `'language-selected'`, `currentLanguage`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: none (unless you want stricter normalization/trim guarantees here)
-  - Risk notes / dependencies: Changing fallback can alter first-run UX and persisted language.
+---
 
-- **L691-693**
-  - Primary Theme: `CONTRACT:IPC_ONCE:language-selected`
-  - Type: `fallback (error swallow)`
-  - Tags: `near_contract`
-  - Local evidence: `L691-693`: `} catch (e) { /* noop */ }`
-  - Why: Silent failure closing `langWin` could hide lifecycle bugs.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`createLanguageWindow`, `langWin`)
-    - Repo search (Ctrl+Shift+F): TODO (`langWin.close`, `'language-selected'`)
-    - Suggested queries: `langWin.close`, `'language-selected'`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: replace noop with debug-level log (guarded) or remove if provably safe
-  - Risk notes / dependencies: Logging policy; do not introduce noisy logs in Phase 1.
+#### DEFER (<N>)
+> Real issues, but explicitly postponed.
 
-##### CONTRACT:SEND:crono-state (3)
-- **L506**
-  - Primary Theme: `CONTRACT:SEND:crono-state`
-  - Type: `fallback (error swallow)`
-  - Tags: `touches_contract`
-  - Local evidence: `L506`: `try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
-  - Why: Silences send failures; might hide renderer lifecycle mismatch.
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'crono-state'`)
-    - Suggested queries: `'crono-state'`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: consolidate into `safeSend(win, channel, payload)` (keeping swallow or adding guarded debug)
-  - Risk notes / dependencies: Any change must preserve event name + payload shape.
-
-- **L507**
-  - Primary Theme: `CONTRACT:SEND:crono-state`
-  - Type: `fallback (error swallow)`
-  - Tags: `touches_contract`
-  - Local evidence: `L507`: `try { if (floatingWin && !floatingWin.isDestroyed()) floatingWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
-  - Why: same as above (floating window).
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'crono-state'`)
-    - Suggested queries: `'crono-state'`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: same as above
-  - Risk notes / dependencies: same as above.
-
-- **L508**
-  - Primary Theme: `CONTRACT:SEND:crono-state`
-  - Type: `fallback (error swallow)`
-  - Tags: `touches_contract`
-  - Local evidence: `L508`: `try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
-  - Why: same as above (editor window).
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'crono-state'`)
-    - Suggested queries: `'crono-state'`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: same as above
-  - Risk notes / dependencies: same as above.
-
-##### CONTRACT:SEND:flotante-closed (1)
-- **L472**
-  - Primary Theme: `CONTRACT:SEND:flotante-closed`
-  - Type: `fallback (error swallow)`
-  - Tags: `touches_contract`
-  - Local evidence: `L472`: `try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }`
-  - Why: Silences failures during close-notify; may mask renderer lifecycle issues.
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'flotante-closed'`)
-    - Suggested queries: `'flotante-closed'`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: consolidate under `safeSend` policy (if created)
-  - Risk notes / dependencies: Preserve event name + no new noisy logs.
-
-##### CONTRACT:SEND:manual-init-text (2)
-- **L198**
-  - Primary Theme: `CONTRACT:SEND:manual-init-text`
-  - Type: `fallback (defaulting)`
-  - Tags: `near_contract`
-  - Anchor evidence: `L198`: `editorWin.webContents.send('manual-init-text', { ... })`
-  - Local evidence (inner): `L199`: `text: initialText || "",`
-  - Why: Defaults to empty string if initialText falsy (includes empty string).
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'manual-init-text'`)
-    - Suggested queries: `'manual-init-text'`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: decide if `""` should be preserved distinctly vs “unset”
-  - Risk notes / dependencies: Editor expects stable payload shape.
-
-- **L627**
-  - Primary Theme: `CONTRACT:SEND:manual-init-text`
-  - Type: `fallback (defaulting)`
-  - Tags: `near_contract`
-  - Anchor evidence: `L627`: `editorWin.webContents.send('manual-init-text', { ... })`
-  - Local evidence (inner): `L628`: `text: initialText || "",`
-  - Why: same as above (second send site).
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'manual-init-text'`)
-    - Suggested queries: `'manual-init-text'`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: same as above
-  - Risk notes / dependencies: same as above.
-
-##### CONTRACT:SEND:preset-init (2)
-- **L235**
-  - Primary Theme: `CONTRACT:SEND:preset-init`
-  - Type: `fallback (defaulting)`
-  - Tags: `touches_contract`
-  - Local evidence: `L235`: `presetWin.webContents.send('preset-init', initialData || {});`
-  - Why: Defaults to `{}` if payload missing/falsy.
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'preset-init'`)
-    - Suggested queries: `'preset-init'`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: decide whether `{}` is acceptable default or should reject invalid payload
-  - Risk notes / dependencies: Renderer modal expects a stable payload shape.
-
-- **L266**
-  - Primary Theme: `CONTRACT:SEND:preset-init`
-  - Type: `fallback (defaulting)`
-  - Tags: `touches_contract`
-  - Local evidence: `L266`: `presetWin.webContents.send('preset-init', initialData || {});`
-  - Why: same as above (second send site).
-  - Repo evidence: TODO (VS Code) — same as above
-  - Proposed action: Phase 1 none; Phase 2 as above
-  - Risk notes / dependencies: same as above
-
-
-#### P2-SIDEFX (2)
-
-##### MISC:FLOATING_WINDOW_BOUNDS (2)
-- **L382**
-  - Primary Theme: `MISC:FLOATING_WINDOW_BOUNDS`
-  - Type: `fallback (error swallow) + fallback (defaulting)`
-  - Tags: `near_contract`
-  - Local evidence: `L382`: `try { floatingWin.setBounds({ x: options.x || floatingWin.getBounds().x, y: options.y || floatingWin.getBounds().y }); } catch (e) { /* noop */ }`
-  - Why: `||` drops valid `0` coordinates; noop catch hides geometry failures; affects user-visible placement.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`createFloatingWindow`)
-    - Repo search (Ctrl+Shift+F): TODO (`setBounds`, `createFloatingWindow(`)
-    - Suggested queries: `createFloatingWindow`, `setBounds({ x: options.x`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: implement workArea-safe placement policy per `## 4 / Q2` + replace `||` with explicit numeric check (preserve 0)
-  - Risk notes / dependencies: Placement logic must be tested under DPI/scaling and multi-monitor.
-
-- **L463-465**
-  - Primary Theme: `MISC:FLOATING_WINDOW_BOUNDS`
-  - Type: `fallback (error swallow)`
-  - Tags: `near_contract`
-  - Local evidence: `L463-465`: `} catch (e) { // noop }`
-  - Why: Swallows exceptions in “keep inside screen” clamp; failures become silent offscreen windows.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`createFloatingWindow`)
-    - Repo search (Ctrl+Shift+F): TODO (`getDisplayMatching`, `workArea`)
-    - Suggested queries: `getDisplayMatching`, `workArea`, `offscreen`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: align with `## 4 / Q2` and replace noop with guarded debug log OR narrow the try scope
-  - Risk notes / dependencies: Geometry code is timing-sensitive (display metrics, bounds after load).
-
-
-#### P2-FALLBACK (2)
-
-##### PATTERN:DEFAULT_OR (1)
-- **L51**
-  - Primary Theme: `PATTERN:DEFAULT_OR`
-  - Type: `fallback (defaulting)`
-  - Local evidence: `L51`: `const effectiveLang = lang || currentLanguage || "es";`
-  - Why: Ensures a usable language code for menu building.
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`buildAppMenu(`)
-    - Suggested queries: `buildAppMenu`, `effectiveLang`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: optional: prefer nullish coalescing if empty-string should remain meaningful
-  - Risk notes / dependencies: Affects language selection only.
-
-##### PATTERN:TRY_NOOP (1)
-- **L323**
-  - Primary Theme: `PATTERN:TRY_NOOP`
-  - Type: `fallback (error swallow)`
-  - Local evidence: `L323`: `try { langWin.focus(); } catch (e) { /* noop */ }`
-  - Why: Silent failure can hide unexpected destroyed/invalid window state.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`createLanguageWindow`)
-    - Repo search (Ctrl+Shift+F): TODO (`langWin.focus`)
-    - Suggested queries: `langWin.focus`, `createLanguageWindow`
-  - Proposed action:
-    - Phase 1: none
-    - Phase 2: optional guarded debug log (avoid noise)
-  - Risk notes / dependencies: Logging policy only; functional impact minimal.
+#### DROP (<N>)
+> False positives or out-of-scope items (keep record of why dropped).
 
 ---
 
 ## 2) Phase 1 (Safe) — Plan and Patch Notes
 
 ### Phase 1 definition
-- Allowed:
-  - Reorder into sections (without changing execution order of side effects).
-  - Deduplicate comments; translate comments to English.
-  - Rename local variables ONLY if provably internal and no reflection/dynamic access.
-  - Extract purely mechanical helpers ONLY if no side effects and no API changes.
-- Not allowed:
-  - Removing any handler, listener, or contract.
-  - Changing defaults/fallback behavior.
-  - Changing timing/ordering of initialization that can affect runtime.
+Allowed:
+- Reorder into sections (without changing execution order of side effects).
+- Translate/refresh comments (ES→EN).
+- Normalize quotes (where semantically equivalent).
+- Extract purely mechanical helpers only if behavior is unchanged and evidence supports equivalence.
+
+Not allowed:
+- Changing any contract string/key/payload shape.
+- Changing fallback semantics.
+- Changing ordering/timing of top-level side effects.
 
 ### Phase 1 checklist (pre)
-- [ ] Contract Lock reviewed and captured (B2).
-- [ ] File runs / app starts from baseline commit.
-- [ ] “Smoke test” defined (see below).
+- [ ] B1 complete (inventory gating).
+- [ ] B2 complete (contract lock).
+- [ ] B2.2 synced to `_repo_contract_usage.md` (surface-only counts).
+- [ ] B2.3 captured (logs/comments/user-facing hardcodes).
+- [ ] B3 triaged + evidence-gated (no `<fill>`).
+- [ ] Baseline smoke test defined.
 
 ### Phase 1 patch log
 - Commit: `<SHA>`
-- Summary (bullet list):
+- Summary:
   - `<change>`
   - `<change>`
 
@@ -407,24 +289,22 @@ Note:
 - Test 2: `<action>` → expected `<result>`
 
 ### Phase 1 checklist (post)
-- [ ] Contract Lock unchanged (diff B2 / lock snapshot).
+- [ ] Contract Lock unchanged (B2 strings and surfaces).
 - [ ] Smoke tests pass.
-- [ ] No new warnings/errors in console relevant to this file.
+- [ ] No new warnings/errors attributable to this file.
 
 ---
 
 ## 3) Phase 2 (Risk) — Plan and Patch Notes
 
 ### Phase 2 definition
-- Allowed:
-  - Remove legacy blocks (with evidence).
-  - Consolidate duplicates that change structure.
-  - Change fallbacks (only with explicit tests).
-  - Refactor IPC handlers (only with explicit tests).
+Allowed:
+- Remove/tighten fallbacks.
+- Consolidate duplicates.
+- Refactor IPC handlers (without breaking contracts unless explicitly coordinated).
+- Change payload validation policy (only with tests).
 
 ### Phase 2 test plan (targeted)
-> Each Phase 2 change must have a test that would fail if the change were incorrect.
-
 - Change A: `<candidate>`  
   - Test: `<action>` → expected `<result>`
 - Change B: `<candidate>`  
@@ -437,27 +317,27 @@ Note:
   - `<change>`
 
 ### Phase 2 checklist (post)
-- [ ] All targeted tests pass.
-- [ ] App behavior matches intended new behavior.
-- [ ] Any removed contracts are documented (and removed everywhere).
+- [ ] Targeted tests pass.
+- [ ] Any behavior changes documented in Open Questions decisions.
+- [ ] Contracts preserved or explicitly migrated.
 
 ---
 
 ## 4) Open Questions / Decisions
+> Decisions live here (not in B3). Keep them referenced to occurrences.
 
-- Q1 (L549, L611): Crono elapsed input validation (fail-safe vs reset-on-invalid)
-  - Decision (decided): Policy B (fail-safe). If `ms` is invalid (NaN / non-numeric / undefined) OR `ms < 0`, IGNORE the update and keep previous `crono.elapsed` (no reset-to-0).
-  - Rationale: Avoid silent state destruction from malformed IPC payloads; aligns with “ignore and keep prior value” preference.
+- Q1 (links: `B3 L<line>#<id>` ...): `<question>`
+  - Options: `<A/B/C>`
+  - Decision: `<pending/decided>`
+  - Evidence: `<what repo evidence supports this>`
+  - Tests required (if decided): `<tests>`
 
-- Q2 (L382, L463-465): Floating window placement policy (workArea safety + multi-monitor border rule)
-  - Decision (decided): Floating window must remain 100% inside the target display `workArea` (never partially offscreen). Reposition/clamp if it would exceed margins.
-  - Border criterion (decided): choose simplest to implement; if tie, select display by window center point.
-  - Rationale: Preserve user freedom of placement while preventing “lost window” scenarios; keep implementation tractable.
+- Q2: ...
 
 ---
 
-## 5) Appendix — Repro commands / tooling notes (optional)
+## 5) Appendix — Commands / Tooling Notes (optional)
 
-- Task(s) used: `<VS Code task label(s)>`
-- Local tooling used (must stay in /tools_local): `<tooling>`
-- Notes about limitations or false positives: `<...>`
+- Local tooling used (must remain in `/tools_local`, never pushed): `<tooling>`
+- VS Code searches used (saved queries): `<...>`
+- Known false positives / scanner limitations: `<...>`
