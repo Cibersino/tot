@@ -1,6 +1,6 @@
 # Code Cleanup Protocol (toT – Reading Meter)
 
-Version: 1.10
+Version: 1.11
 Status: Draft (operational)  
 Applies to: JavaScript/Electron codebase (`electron/`, `public/`, `public/js/`)  
 
@@ -52,6 +52,27 @@ A VS Code–generated fact that supports a change. Accepted evidence:
 - call hierarchy / definition tracing,
 - (optional) runtime logs confirming reachability/usage.
 
+### Contract surface (surface statement)
+A “contract surface statement” is the concrete statement that binds a key across modules, e.g.:
+- `ipcMain.handle/on/once('<key>', ...)`
+- `ipcRenderer.invoke/send/on('<key>', ...)`
+- `webContents.send('<key>', ...)`
+Storage: a literal filename/path used as a stable persistence interface (e.g. `'user_settings.json'`).
+
+### Official repo count (surface-only)
+The official repo-wide count recorded in `_repo_contract_usage.md` and replicated into B2.2 is a **surface-only** count.
+It excludes mentions in:
+- comments,
+- logs (`console.*`),
+- user-facing messages (dialogs/notifications/toasts),
+- documentation strings.
+
+Operationally, the official count is obtained via VS Code search restricted to contract surfaces (see B2.2).
+
+### Mentions (observability/UX)
+“Mentions” are any occurrences of keys or user-visible strings that are not contract surfaces
+(comments/logs/messages). Mentions are tracked in B2.3 (local file), not in B2.2.
+
 ### Safe move
 A reordering operation that does not change semantics, under verified conditions (see §7).
 
@@ -75,7 +96,6 @@ A reordering operation that does not change semantics, under verified conditions
 1. Pick exactly one file (example: `electron/main.js`).
 2. Create its cleanup note at `docs/cleanup/<slug>.md` using the standard template.
 3. Fill the Metadata block (file path, branch, baseline short SHA, purpose).
-
 
 ### Step B — Create the Evidence Pack (in the per-file note)
 In VS Code, populate Section **1) Step B — Evidence Pack** inside `docs/cleanup/<slug>.md`.
@@ -104,14 +124,36 @@ In VS Code, populate Section **1) Step B — Evidence Pack** inside `docs/cleanu
 - Typical patterns: `ipcMain.handle(`, `ipcMain.on(`, `ipcMain.once(`, `webContents.send(`, `module.exports`, `path.join(CONFIG_DIR,`.
 - Do not include repo-wide counts here (those belong in `_repo_contract_usage.md`).
 
-2b) **B2.2 — Repo contract cache sync (mandatory)**
-- For every contract key listed in B2:
-  - Ensure an entry exists in `docs/cleanup/_repo_contract_usage.md`.
-  - Run VS Code repo search (Ctrl+Shift+F) for the key (include quoting variants if needed).
-  - Record: `<N> matches in <M> files` + top files, and set `Verified at commit` to current HEAD.
-- If the key already exists but `Verified at commit` is older than current HEAD, refresh it.
-- Pass condition (per-file note): all B2 keys are present in the repo cache and verified at current HEAD.
-- B3 may cite the repo cache for the string-based evidence, but each B3 occurrence must still explicitly include repo evidence (inline or by reference).
+2b) **B2.2 — Repo contract cache sync (mandatory; surface-only)**
+
+For every B2 key, `_repo_contract_usage.md` MUST record an **official surface-only** repo count.
+
+Method (VS Code Ctrl+Shift+F):
+- Enable Regex search.
+- Scope include: `electron/**`, `public/**`
+- Scope exclude: `docs/cleanup/**`
+
+Use the surface-only regex (replace `<KEY>` with the literal key):
+
+`(ipcMain\\.(handle|on|once)|ipcRenderer\\.(invoke|send|on)|webContents\\.send)\\(\\s*['"]<KEY>['"]`
+
+Record:
+- `Official (surface-only): <N> matches in <M> files (top: ...)`
+- `Verified at commit: <HEAD>`
+
+If the search results include comment-only matches, they MUST be excluded from the official count and recorded as Mentions in B2.3 (not in B2.2).
+
+2c) **B2.3 — Observability / UX Mentions (local; mandatory)**
+
+Track non-contractual mentions that are still cleanup-relevant:
+- logs (`console.*`)
+- maintenance comments (`TODO/FIXME/HACK/WIP/LEGACY/DEPRECATED`)
+- user-facing hardcoded messages (dialogs, notifications, UI strings not coming from i18n)
+
+Rules:
+- No repo-wide counts here.
+- Format: `L<line>: <snippet>`
+- If a hardcoded user-facing message is a fallback, it MUST be distinguishable (see “Hardcoded fallback marker”).
 
 3) **B3 — Candidate Ledger (single section; label-sorted; evidence-gated)**
 
@@ -159,7 +201,6 @@ In VS Code, populate Section **1) Step B — Evidence Pack** inside `docs/cleanu
 - Preferred: bootstrap from the scanner; then verify, use evidence-gate, and adjust labels/themes.
 
 Rule: Pruning is done by assigning `DEFER`/`DROP`, not by deleting occurrences from the ledger.
-
 
 ### Step C — Phase 1 (Safe)
 Goal: structure and clarity improvements while preserving behavior.
@@ -249,6 +290,18 @@ Phase 1 pass condition: extracted lists remain identical (ignoring whitespace ch
   - security constraints (preload boundary),
   - fallbacks and why they exist.
 - Prefer short “why” comments over “what” comments.
+
+### Hardcoded messages policy (mandatory when performing normalization)
+
+- Translate Spanish → English for:
+  - comments,
+  - logs (`console.*`),
+  - hardcoded user-facing messages (dialogs/notifications/toasts).
+
+- Hardcoded user-facing messages that act as fallbacks MUST be prefixed with:
+  `FALLBACK:`
+
+- i18n-driven strings MUST NOT use the fallback prefix.
 
 ## 10) Commit protocol
 
