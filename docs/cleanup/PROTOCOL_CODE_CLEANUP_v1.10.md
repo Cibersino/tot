@@ -1,6 +1,6 @@
 # Code Cleanup Protocol (toT – Reading Meter)
 
-Version: 1.9  
+Version: 1.10
 Status: Draft (operational)  
 Applies to: JavaScript/Electron codebase (`electron/`, `public/`, `public/js/`)  
 
@@ -121,6 +121,17 @@ In VS Code, populate Section **1) Step B — Evidence Pack** inside `docs/cleanu
 - Atomic unit: **occurrence** (a line or bounded block) with `L<line>` + snippet.
   Each occurrence appears **exactly once** in B3.
 
+- Anchor semantics (mandatory):
+  - For `CONTRACT:*` entries, the occurrence `L<line>` MUST anchor the **contract surface statement**
+    (e.g., `ipcMain.handle/on/once('key', ...)`, `webContents.send('key', ...)`) for the relevant key.
+  - For `PATTERN:*` entries, the occurrence `L<line>` anchors the **pattern line**.
+  - If the flagged pattern lives on a different inner line (common inside payload objects), include:
+    - `Local evidence (inner): L<line>: <snippet>`
+      This inner evidence is additional; it does not replace the occurrence anchor.
+  - Documentation convention (recommended):
+    - Record the contract-surface snippet as `Anchor evidence: L<line>: <snippet>` (this must match the occurrence anchor).
+    - Record the inner flagged pattern as `Local evidence (inner): L<line>: <snippet>` when it differs from the anchor line.
+
 - Optional navigation (within each label): you can group by **Primary Theme** using headers.
   If used:
   - a single level (no subtrees/subheaders);
@@ -133,7 +144,9 @@ In VS Code, populate Section **1) Step B — Evidence Pack** inside `docs/cleanu
   - `MISC:<...>`
 
 - Each occurrence must include, at a minimum:
-  - Label, Type, `L<line>` + snippet, and `Primary Theme` (if grouping is used).
+  - Label, Type, `L<line>` + snippet (anchored per “Anchor semantics”), and `Primary Theme` (if grouping is used).
+  - If `CONTRACT:*` and the flagged pattern is not on the anchor line, add:
+    - `Local evidence (inner): L<line>: <snippet>`
   - Repo evidence (mandatory for KEEP items except comment-only):
     - References (Shift+F12): `<N>` hits in `<files>`
     - Repo search (Ctrl+Shift+F): `<N>` matches in `<files>`

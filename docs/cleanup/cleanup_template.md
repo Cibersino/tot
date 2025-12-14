@@ -111,6 +111,10 @@ Note:
 ### B3) Candidate Ledger (triaged; label-sorted; theme-grouped; evidence-gated)
 > Triaged from auto-scan of `<RELATIVE_PATH>`. No edits allowed until repo evidence is filled (VS Code gating).
 > Note: any contract-level behavioral decisions are recorded in `## 4) Open Questions / Decisions` (not in B3), to keep the ledger occurrence-first.
+> Anchor semantics (mandatory):
+> - `CONTRACT:*` entries: the `L<line>` anchor points to the contract surface statement (`ipcMain.*('key'...)`, `webContents.send('key'...)`).
+> - If the flagged pattern is on a different inner line (e.g. inside a payload object), record it as `Local evidence (inner): L<line>: <snippet>`.
+> - `PATTERN:*` entries: the `L<line>` anchor remains the pattern line.
 
 #### P2-CONTRACT (13)
 
@@ -255,7 +259,8 @@ Note:
   - Primary Theme: `CONTRACT:SEND:manual-init-text`
   - Type: `fallback (defaulting)`
   - Tags: `near_contract`
-  - Local evidence: `L198`: `text: initialText || "",`
+  - Anchor evidence: `L198`: `editorWin.webContents.send('manual-init-text', { ... })`
+  - Local evidence (inner): `L199`: `text: initialText || "",`
   - Why: Defaults to empty string if initialText falsy (includes empty string).
   - Repo evidence: TODO (VS Code)
     - Repo search (Ctrl+Shift+F): TODO (`'manual-init-text'`)
@@ -269,7 +274,8 @@ Note:
   - Primary Theme: `CONTRACT:SEND:manual-init-text`
   - Type: `fallback (defaulting)`
   - Tags: `near_contract`
-  - Local evidence: `L627`: `text: initialText || "",`
+  - Anchor evidence: `L627`: `editorWin.webContents.send('manual-init-text', { ... })`
+  - Local evidence (inner): `L628`: `text: initialText || "",`
   - Why: same as above (second send site).
   - Repo evidence: TODO (VS Code)
     - Repo search (Ctrl+Shift+F): TODO (`'manual-init-text'`)
