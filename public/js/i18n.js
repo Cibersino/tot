@@ -1,3 +1,4 @@
+// public/js/i18n.js
 (() => {
   console.debug('[i18n.js] module loaded');
 

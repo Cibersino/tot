@@ -1,6 +1,6 @@
 // electron/updater.js
-// Sistema de actualizaciones: comparacion de versiones, consulta remota
-// y dialogos nativos de actualizacion.
+// update system: version comparison, remote query, and native update dialogs
+// and native update dialogs.
 
 const { dialog, shell } = require('electron');
 const https = require('https');
@@ -9,16 +9,16 @@ const fs = require('fs');
 
 const menuBuilder = require('./menu_builder');
 
-// Rutas y URLs de version / descarga
+// Version/download paths and URLs
 const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
 const VERSION_REMOTE_URL = 'https://raw.githubusercontent.com/Cibersino/tot-readingmeter/main/VERSION';
 const DOWNLOAD_URL = 'https://github.com/Cibersino/tot-readingmeter/releases/latest';
 
-// Referencias perezosas a estado externo
+// Lazy references to external state
 let mainWinRef = () => null;
 let currentLanguageRef = () => 'es';
 
-// Evitar checks multiples en el mismo ciclo de vida
+// Avoid multiple checks in the same life cycle
 let updateCheckDone = false;
 
 function compareVersions(a, b) {
@@ -63,15 +63,15 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     try {
       localVer = fs.readFileSync(VERSION_FILE, 'utf8').trim();
     } catch (e) {
-      // sin VERSION local, continuar sin avisar
+      // no local VERSION, continue without warning
       return;
     }
 
     const remoteVer = await fetchRemoteVersion(VERSION_REMOTE_URL);
     if (!remoteVer) {
       if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = dlg.update_failed_title || 'Update check failed';
-        const message = dlg.update_failed_message || 'Could n...check for updates. Please check your connection and try again.';
+        const title = dlg.update_failed_title || 'FALLBACK: Update check failed';
+        const message = dlg.update_failed_message || 'FALLBACK: Could not check for updates. Please check your connection and try again.';
         await dialog.showMessageBox(mainWin, {
           type: 'none',
           buttons: [dlg.ok || 'OK'],
@@ -85,8 +85,8 @@ async function checkForUpdates({ lang, manual = false } = {}) {
 
     if (compareVersions(remoteVer, localVer) <= 0) {
       if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = dlg.update_up_to_date_title || 'You are up to date';
-        const message = (dlg.update_up_to_date_message || 'You already have the latest version ({local}).')
+        const title = dlg.update_up_to_date_title || 'FALLBACK: You are up to date';
+        const message = (dlg.update_up_to_date_message || 'FALLBACK: You already have the latest version.')
           .replace('{local}', localVer);
         await dialog.showMessageBox(mainWin, {
           type: 'none',
@@ -96,20 +96,20 @@ async function checkForUpdates({ lang, manual = false } = {}) {
           message,
         });
       }
-      return; // nada nuevo
-    }
-
-    if (!mainWin || mainWin.isDestroyed()) {
-      // No hay ventana principal visible: no tiene sentido mostrar dialogos
       return;
     }
 
-    const title = dlg.update_title || 'Actualizacion disponible';
-    const message = (dlg.update_message || 'Hay una version nueva {remote}. Actual: {local}. Descargar ahora?')
+    if (!mainWin || mainWin.isDestroyed()) {
+      // No main window visible: no sense in showing dialogs
+      return;
+    }
+
+    const title = dlg.update_title || 'FALLBACK: Update available';
+    const message = (dlg.update_message || 'FALLBACK: A new version is available. Download now?')
       .replace('{remote}', remoteVer)
       .replace('{local}', localVer);
-    const btnDownload = dlg.update_download || 'Descargar';
-    const btnLater = dlg.update_later || 'Mas tarde';
+    const btnDownload = dlg.update_download || 'FALLBACK: Download';
+    const btnLater = dlg.update_later || 'FALLBACK: Later';
 
     const res = await dialog.showMessageBox(mainWin, {
       type: 'none',
@@ -127,17 +127,17 @@ async function checkForUpdates({ lang, manual = false } = {}) {
   }
 }
 
-// Check automatico, una sola vez
+// Automatic, one-time check
 function scheduleInitialCheck() {
   if (updateCheckDone) return;
   updateCheckDone = true;
-  // no marcamos manual: si falla, no se informa al usuario
+  // we do not check manual: if it fails, the user is not informed
   checkForUpdates({ manual: false }).catch((err) => {
     console.warn('initial checkForUpdates failed:', err);
   });
 }
 
-// Registro de IPC y referencias de ventanas/idioma
+// IPC register and window/language references
 function register(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef } = {}) {
   if (typeof mainRef === 'function') {
     mainWinRef = mainRef;

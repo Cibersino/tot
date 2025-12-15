@@ -3,7 +3,7 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', function () {
-    // Seleccion de elementos del DOM
+    // Selecting DOM elements
     const h3El = document.querySelector('h3');
     const nameEl = document.getElementById('presetName');
     const wpmEl = document.getElementById('presetWpm');
@@ -13,7 +13,7 @@
     const charCountEl = document.getElementById('charCount');
     const hintEl = document.querySelector('.hint');
 
-    // Si faltan elementos, abortamos y dejamos un aviso en consola.
+    // If elements are missing, we abort and leave a warning in the console.
     if (!nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
       console.warn('preset_modal: missing DOM elements, modal script was not initialized.');
       return;
@@ -25,7 +25,7 @@
     }
     const { PRESET_DESC_MAX, PRESET_NAME_MAX, WPM_MIN, WPM_MAX } = AppConstants;
 
-    // Configuracion inicial
+    // Initial configuration
     const descMaxLength = PRESET_DESC_MAX;
     const nameMaxLength = PRESET_NAME_MAX;
     if (wpmEl) {
@@ -76,7 +76,7 @@
       if (btnCancel) btnCancel.textContent = tr('renderer.modal_preset.cancel', btnCancel.textContent || '');
     }
 
-    // Escucha init enviada desde main (preset-init)
+    // Listens to init sent from main (preset-init)
     if (window.presetAPI && typeof window.presetAPI.onInit === 'function') {
       try {
         window.presetAPI.onInit(async (payload) => {
@@ -118,7 +118,7 @@
       }
     }
 
-    // Funcion helper para construir preset desde inputs (validaciones minimas)
+    // helper function to build preset from inputs (minimum validations)
     function buildPresetFromInputs() {
       const name = (nameEl.value || '').trim();
       const wpm = Number(wpmEl.value);
@@ -203,7 +203,7 @@
       }
     });
 
-    // Inicial: actualizar contador de caracteres si ya habia texto
+    // Initial: update character counter if text was already present
     (async function initCharCount() {
       const currLen = descEl.value ? descEl.value.length : 0;
       charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) }, `${Math.max(0, descMaxLength - currLen)} caracteres restantes`);

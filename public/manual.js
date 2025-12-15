@@ -5,9 +5,9 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[manual] AppConstants no disponible; verifica la carga de constants.js');
 }
-let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Limite absoluto del tamano del texto en el editor. Si el contenido total supera este valor, se trunca. Previene cuelgues, lags extremos y OOM.
-const PASTE_ALLOW_LIMIT = AppConstants.PASTE_ALLOW_LIMIT; // Umbral que determina si se permite que el editor de texto haga la insercion nativa en paste/drop.
-const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Define cuando una actualizacion externa (desde main) debe aplicarse con mecanismo nativo (rapido, conserva undo/redo) o mediante reemplazo completo del value (mas seguro pero incompatible con undo/redo).
+let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
+const PASTE_ALLOW_LIMIT = AppConstants.PASTE_ALLOW_LIMIT; // Threshold that determines whether the text editor is allowed to do native paste/drop insertion.
+const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines when an external update (from main) should be applied with native mechanism (fast, preserves undo/redo) or by full value replacement (safer but incompatible with undo/redo).
 
 (async () => {
   try {
@@ -31,7 +31,7 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Define cu
   } catch (e) {
     console.warn('manual: failed to apply initial translations:', e);
   }
-  // rest of init (getCurrentText etc.) -ya tienes un init existente, integra con el tuyo
+  // rest of init (getCurrentText etc.) -you already have an existing init, integrate with yours
 })();
 
 const editor = document.getElementById('editorArea');
@@ -45,7 +45,7 @@ let debounceTimer = null;
 const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
 
-// --- i18n loader for modal editor (usa RendererI18n global) ---
+// --- i18n loader for modal editor (uses RendererI18n global) ---
 let idiomaActual = 'es';
 let translationsLoadedFor = null;
 
@@ -82,7 +82,7 @@ async function applyEditorTranslations() {
   }
 }
 
-/* ---------- Notices ---------- */
+// ---------- Notices ---------- //
 function ensureNoticeContainer() {
   let c = document.getElementById('__manual_notice_container');
   if (!c) {
@@ -133,7 +133,7 @@ function showNotice(msg, { duration = 4500, type = 'info' } = {}) {
   }
 }
 
-/* ---------- focus helpers ---------- */
+// ---------- focus helpers ---------- //
 function restoreFocusToEditor(pos = null) {
   try {
     setTimeout(() => {
@@ -155,7 +155,7 @@ function restoreFocusToEditor(pos = null) {
   }
 }
 
-/* estilos */
+// styles //
 try {
   if (editor) {
     editor.wrap = 'soft';
@@ -164,18 +164,18 @@ try {
   }
 } catch (e) { console.debug('manual: failed to apply wrap styles:', e); }
 
-/* ---------- Insercion local (mejor preservando undo) ---------- */
+// ---------- Local insertion (best preserving undo) ---------- //
 function tryNativeInsertAtSelection(text) {
   try {
     const start = typeof editor.selectionStart === 'number' ? editor.selectionStart : editor.value.length;
     const end = typeof editor.selectionEnd === 'number' ? editor.selectionEnd : start;
 
-    // intentar execCommand
+    // try execCommand
     try {
       const ok = document.execCommand && document.execCommand('insertText', false, text);
       if (ok) return true;
     } catch (e) {
-      // sigue a fallback
+      // follow fallback
     }
 
     // fallback: setRangeText
@@ -186,7 +186,7 @@ function tryNativeInsertAtSelection(text) {
       return true;
     }
 
-    // ultima opcion: asignacion directa
+    // last option: direct assignment
     const before = editor.value.slice(0, start);
     const after = editor.value.slice(end);
     editor.value = before + text + after;
@@ -246,10 +246,10 @@ function insertTextAtCursor(rawText) {
       truncated = true;
     }
 
-    // Insercion nativa preferida
+    // Preferred native insert
     tryNativeInsertAtSelection(toInsert);
 
-    // Notificar main
+    // Notify main
     sendCurrentTextToMainWithMeta('paste');
 
     if (truncated) {
@@ -264,7 +264,7 @@ function insertTextAtCursor(rawText) {
   }
 }
 
-/* ---------- dispatch input nativo cuando hacemos assignment directo ---------- */
+// ---------- dispatch native input when doing direct assignment ---------- //
 function dispatchNativeInputEvent() {
   try {
     const ev = new Event('input', { bubbles: true });
@@ -274,7 +274,7 @@ function dispatchNativeInputEvent() {
   }
 }
 
-/* ---------- recibir actualizaciones externas (main -> editor) ---------- */
+// ---------- receive external updates (main -> editor) ---------- //
 async function applyExternalUpdate(payload) {
   try {
     let incomingMeta = null;
@@ -293,7 +293,7 @@ async function applyExternalUpdate(payload) {
       truncated = true;
     }
 
-    // IGNORAR eco cuando vino del editor local
+    // IGNORE echo when it came from local publisher
     if (incomingMeta && incomingMeta.source === 'editor') {
       return;
     }
@@ -421,19 +421,19 @@ async function applyExternalUpdate(payload) {
   }
 }
 
-/* ---------- inicializacion ---------- */
+// ---------- initialization ---------- //
 (async () => {
   try {
     const t = await window.manualAPI.getCurrentText();
     await applyExternalUpdate({ text: t || '', meta: { source: 'main', action: 'init' } });
-    // initial state of CALCULAR button
+    // initial state of CALCULATE button
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
   } catch (e) {
     console.error('Error initializing editor:', e);
   }
 })();
 
-/* ---------- IPC listeners ---------- */
+// ---------- IPC listeners ---------- //
 window.manualAPI.onInitText((p) => { applyExternalUpdate(p); });
 window.manualAPI.onExternalUpdate((p) => { applyExternalUpdate(p); });
 // If main forces clear editor (explicit), always clear regardless of focus
@@ -451,7 +451,7 @@ window.manualAPI.onForceClear(() => {
   }
 });
 
-/* ---------- paste / drop handlers ---------- */
+// ---------- paste / drop handlers ---------- //
 if (editor) {
   editor.addEventListener('paste', (ev) => {
     try {
@@ -477,7 +477,7 @@ if (editor) {
     }
   });
 
-  // DROP: si es pequeno, permitir la insercion nativa del navegador y luego notificar al main.
+  // DROP: if small, allow native browser insertion and then notify main.
   editor.addEventListener('drop', (ev) => {
     try {
       const dt = ev.dataTransfer;
@@ -498,17 +498,17 @@ if (editor) {
         return;
       }
 
-      // Para tamanos pequenos dejamos que el navegador haga la insercion nativa (no prevenir default).
-      // Posteriormente, en la siguiente tick, notificamos al main que el editor cambio.
+      // For small sizes we let the browser do the native insertion (not prevent default).
+      // Subsequently, on the next tick, we notify the main that the editor has changed.
       setTimeout(() => {
         try {
-          // Asegurar truncado maximo
+          // Ensure maximum truncation
           if (editor.value.length > MAX_TEXT_CHARS) {
             editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
             dispatchNativeInputEvent();
             Notify.notifyManual('renderer.editor_alerts.drop_truncated', { type: 'warn', duration: 5000 });
           }
-          // Notificar al main -marca que viene del editor para evitar eco-back.
+          // Notifying the main-mark coming from the editor to avoid eco-back.
           try {
             const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'drop' } });
             handleTruncationResponse(res);
@@ -520,7 +520,7 @@ if (editor) {
         }
       }, 0);
 
-      // NO preventDefault: permitimos insercion nativa
+      // NO preventDefault: allow native insertion
     } catch (e) {
       console.error('drop handler error:', e);
       restoreFocusToEditor();
@@ -528,7 +528,7 @@ if (editor) {
   });
 }
 
-/* ---------- input local (typing) ---------- */
+// ---------- local input (typing) ---------- //
 editor.addEventListener('input', () => {
   if (suppressLocalUpdate) return;
 
@@ -569,7 +569,7 @@ btnTrash.addEventListener('click', () => {
   restoreFocusToEditor();
 });
 
-// CALCULAR button behavior: only active when automatic calculation is disabled
+// CALCULATE button behavior: only active when automatic calculation is disabled
 if (btnCalc) btnCalc.addEventListener('click', () => {
   try {
     const res = window.manualAPI.setCurrentText({ text: editor.value || '', meta: { source: 'editor', action: 'overwrite' } });
@@ -585,7 +585,7 @@ if (btnCalc) btnCalc.addEventListener('click', () => {
 // Checkbox toggles whether CALCULAR is enabled (when unchecked) or disabled (when checked)
 if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
   if (calcWhileTyping.checked) {
-    // enable automatic sending; disable CALCULAR
+    // enable automatic sending; disable CALCULATE
     btnCalc.disabled = true;
     // Also send current content once to keep sync
     try {
@@ -594,6 +594,6 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     } catch (e) {
       try { const resFallback = window.manualAPI.setCurrentText(editor.value || ''); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ }
     }
-    // disable automatic sending; enable CALCULAR
+    // disable automatic sending; enable CALCULATE
   } else btnCalc.disabled = false;
 });

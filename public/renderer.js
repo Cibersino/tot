@@ -60,7 +60,7 @@ let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
 // --- Global cache and state for count/language ---
-let modoConteo = 'preciso';   // Precise by default; can be 'simple'
+let modoConteo = 'preciso';   // Precise by default; can be `simple`
 let idiomaActual = 'es';      // Initializes on startup
 let settingsCache = {};       // Settings cache (number formatting, language, etc.)
 // --- i18n renderer translations cache ---

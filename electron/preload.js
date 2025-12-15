@@ -2,11 +2,11 @@
 const { contextBridge, clipboard, ipcRenderer } = require('electron');
 
 const api = {
-    // Clipboard / editor / presets / settings (preservamos todo lo existente)
+    // Clipboard / editor / presets / settings (we preserve all existing settings)
     readClipboard: () => clipboard.readText(),
     openEditor: () => ipcRenderer.invoke('open-editor'),
     checkForUpdates: (manual = false) => ipcRenderer.invoke('check-for-updates', { manual }),
-    // openPresetModal acepta un argumento opcional: numero (wpm) o un objeto { wpm, mode, preset }
+    // openPresetModal accepts an optional argument: number (wpm) or object { wpm, mode, preset }
     openPresetModal: (payload) => ipcRenderer.invoke('open-preset-modal', payload),
     openDefaultPresetsFolder: () => ipcRenderer.invoke('open-default-presets-folder'),
     getCurrentText: () => ipcRenderer.invoke('get-current-text'),
@@ -16,37 +16,37 @@ const api = {
         ipcRenderer.on('current-text-updated', (_e, text) => cb(text));
     },
 
-    // Centralizado: solicitar settings al main process (lee desde disco en el main)
+    // Centralized: request settings to the main process (reads from disk in the main)
     getSettings: () => ipcRenderer.invoke('get-settings'),
 
-    // Escucha de presets creados (notificacion desde main)
+    // Listening to created presets (notification from main)
     onPresetCreated: (cb) => {
         ipcRenderer.on('preset-created', (_e, preset) => cb(preset));
     },
 
-    // Obtener presets por defecto desde el main (electron/presets/*.js)
+    // Get default presets from main (electron/presets/*.js)
     getDefaultPresets: () => ipcRenderer.invoke('get-default-presets'),
 
-    // Solicitar borrado de preset (main mostrara dialogos nativos y realizara persistencia)
+    // Request preset deletion (main will show native dialogs and perform persistence)
     requestDeletePreset: (name) => ipcRenderer.invoke('request-delete-preset', name),
 
-    // Solicitar restauracion de presets por defecto (main mostrara dialogo nativo y realizara persistencia)
+    // Request restoration of default presets (main will show native dialog and perform persistence)
     requestRestoreDefaults: () => ipcRenderer.invoke('request-restore-defaults'),
 
-    // Notify renderer -> main para mostrar 'no selection to edit' dialog
+    // Notify renderer -> main to show 'no selection to edit' dialog
     notifyNoSelectionEdit: () => ipcRenderer.invoke('notify-no-selection-edit'),
 
-    // Force clear editor (invocado por renderer cuando el usuario presiona 'Vaciar' en la pantalla principal)
+    // Force clear editor (invoked by renderer when user presses 'Empty' in the main screen)
     forceClearEditor: () => ipcRenderer.invoke('force-clear-editor'),
 
-    // ======================= Listener estable para barra superior =======================
+    // ======================= Stable listener for top bar =======================
     onMenuClick: (cb) => {
         const wrapper = (_e, payload) => {
             try { cb(payload); } catch (err) { console.error('menuAPI callback error:', err); }
         };
         ipcRenderer.on('menu-click', wrapper);
 
-        // devolver una funcion para desuscribirse
+        // return an unsubscribe function
         return () => {
             try {
                 ipcRenderer.removeListener('menu-click', wrapper);
@@ -63,11 +63,11 @@ const api = {
             try { cb(newSettings); } catch (err) { console.error('settings callback error:', err); }
         };
         ipcRenderer.on('settings-updated', listener);
-        // devolver funcion para remover listener si el caller la usa
+        // return function to remove listener if used by caller
         return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (e) { console.error('removeListener error:', e); } };
     },
 
-    // Cronometro central API (renderer <-> main)
+    // Central Timer API (renderer <-> main)
     sendCronoToggle: () => ipcRenderer.send('crono-toggle'),
     sendCronoReset: () => ipcRenderer.send('crono-reset'),
     setCronoElapsed: (ms) => ipcRenderer.send('crono-set-elapsed', ms),
@@ -78,7 +78,7 @@ const api = {
         return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (e) { console.error('removeListener error (crono-state):', e); } };
     },
 
-    // ------------------ NUEVAS APIs para la ventana flotante (actualizado) ------------------
+    // ------------------ NEW APIs for the floating window (updated) ------------------
     openFloatingWindow: async () => {
         return ipcRenderer.invoke('floating-open');
     },
@@ -86,14 +86,14 @@ const api = {
         return ipcRenderer.invoke('floating-close');
     },
 
-    // Mantener listener para notificar que el flotante fue cerrado (main emite 'flotante-closed')
+    // Hold listener to notify that the float was closed (main emits 'float-closed')
     onFloatingClosed: (cb) => {
         const listener = () => { try { cb(); } catch (e) { console.error('floating closed callback error:', e); } };
         ipcRenderer.on('flotante-closed', listener);
         return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (e) { console.error('removeListener error:', e); } };
     },
 
-    // Editor manual listo (para ocultar loader en ventana principal)
+    // Manual editor ready (to hide loader in main window)
     onManualEditorReady: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('manual-ready callback error:', err); } };
         ipcRenderer.on('manual-editor-ready', listener);
