@@ -1,15 +1,15 @@
 // electron/settings.js
-// Gestion centralizada de user_settings.json: language, modeConteo, numberFormatting, etc.
+// Centralized management of user_settings.json: language, modeCount, numberFormatting, etc.
 
 const fs = require('fs');
 const path = require('path');
 
-// Dependencias inyectadas desde main.js
+// Dependencies injected from main.js
 let _loadJson = null;
 let _saveJson = null;
 let _settingsFile = null;
 
-// Cache en memoria del último settings normalizado
+// Cache in memory of the last normalized settings
 let _currentSettings = null;
 
 /**
@@ -31,7 +31,7 @@ function loadNumberFormatDefaults(lang) {
         let raw = fs.readFileSync(filePath, 'utf8');
         if (!raw) return null;
 
-        // Eliminar BOM UTF-8 si existe (evita SyntaxError: Unexpected token '∩╗┐')
+        // Remove UTF-8 BOM if exists (avoids SyntaxError: Unexpected token '∩╗┐')
         raw = raw.replace(/^\uFEFF/, '');
 
         const json = JSON.parse(raw);
@@ -72,7 +72,7 @@ function normalizeSettings(s) {
         s.numberFormatting = s.numberFormatting || {};
     }
 
-    // Persistir modo de conteo por defecto: 'preciso'
+    // Persist default count mode: 'precise'
     if (!s.modeConteo || (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple')) {
         s.modeConteo = 'preciso';
     }
@@ -91,7 +91,7 @@ function normalizeSettings(s) {
                 separadorDecimal: nf.decimal,
             };
         } else {
-            // fallback simple
+            // simple fallback
             s.numberFormatting[lang] =
                 lang === 'en'
                     ? { separadorMiles: ',', separadorDecimal: '.' }
@@ -140,7 +140,7 @@ function getSettings() {
     if (!_loadJson || !_settingsFile) {
         throw new Error('[settings] getSettings llamado antes de init');
     }
-    // Siempre recargar desde disco para reflejar cambios hechos fuera de settingsState
+    // Always reload from disk to reflect changes made outside settingsState
     const raw = _loadJson(_settingsFile, { language: '', presets: [] });
     _currentSettings = normalizeSettings(raw);
     return _currentSettings;
@@ -207,7 +207,7 @@ function registerIpc(
         throw new Error('[settings] registerIpc requiere ipcMain');
     }
 
-    // get-settings: retorna el objeto settings actual (normalizado)
+    // get-settings: returns the current settings object (normalized)
     ipcMain.handle('get-settings', async () => {
         try {
             return getSettings();
@@ -217,7 +217,7 @@ function registerIpc(
         }
     });
 
-    // set-language: guarda idioma, asegura numberFormatting y rebuildea menú
+    // set-language: saves language, ensures numberFormatting and rebuilds menu
     ipcMain.handle('set-language', async (_event, lang) => {
         try {
             const chosen = String(lang || '').trim();
@@ -255,7 +255,7 @@ function registerIpc(
 
             const windows = typeof getWindows === 'function' ? getWindows() : {};
 
-            // Rebuild menu con el nuevo idioma
+            // Rebuild menu with the new language
             if (typeof buildAppMenu === 'function') {
                 try {
                     buildAppMenu(effectiveLang);
@@ -264,7 +264,7 @@ function registerIpc(
                 }
             }
 
-            // Ocultar la barra en ventanas secundarias (editor, preset, language)
+            // Hide the toolbar in secondary windows (editor, preset, language)
             try {
                 const { editorWin, presetWin, langWin } = windows;
                 if (editorWin && !editorWin.isDestroyed()) {
@@ -295,7 +295,7 @@ function registerIpc(
         }
     });
 
-    // set-mode-conteo: simple/preciso + broadcast
+    // set-mode-count: simple/precise + broadcast
     ipcMain.handle('set-mode-conteo', async (_event, mode) => {
         try {
             let settings = getSettings();

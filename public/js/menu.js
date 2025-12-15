@@ -2,7 +2,7 @@
 (function () {
     const registry = new Map();
 
-    // referencia privada para la funcion de desuscripcion retornada por preload
+    // private reference for the unsubscribe function returned by preload
     let _unsubscribeMenuClick = null;
 
     function registerMenuAction(payload, callback) {
@@ -38,9 +38,9 @@
         }
     }
 
-    // Intenta registrar listener hacia preload -> ipcRenderer
+    // Try to register listener to preload -> ipcRenderer
     function setupListener() {
-        // si ya esta registrado, no volver a registrar
+        // if you are already registered, do not re-register
         if (_unsubscribeMenuClick) {
             console.debug('menuActions: listener already registered (skip)');
             return true;
@@ -50,12 +50,12 @@
             try {
                 const maybeUnsubscribe = window.electronAPI.onMenuClick(handleMenuClick);
 
-                // Guardar la funcion de desuscripcion si la devolvieron
+                // Save the unsubscribe function if it was returned
                 if (typeof maybeUnsubscribe === 'function') {
                     _unsubscribeMenuClick = maybeUnsubscribe;
                     console.debug('menuActions: listener registered in electronAPI.onMenuClick (with unsubscribe)');
                 } else {
-                    // No todas las implementaciones de preload devuelven unsubscribe. Aceptamos eso.
+                    // Not all preload implementations return unsubscribe. We accept that.
                     _unsubscribeMenuClick = null;
                     console.debug('menuActions: listener registered in electronAPI.onMenuClick (without unsubscribe)');
                 }
@@ -69,17 +69,17 @@
     }
 
     if (!setupListener()) {
-        // Intentar nuevamente cuando el DOM este listo (y otras APIs hayan sido inyectadas)
+        // Try again when the DOM is ready (and other APIs have been injected)
         document.addEventListener('DOMContentLoaded', () => { setupListener(); });
     }
 
-    // API publica minima disponible globalmente
+    // Minimum globally available public API
     window.menuActions = {
         registerMenuAction,
         unregisterMenuAction,
         listMenuActions,
 
-        // util para depuracion o futuros reloads
+        // useful for debugging or future reloads
         stopListening() {
             if (typeof _unsubscribeMenuClick === 'function') {
                 try {
@@ -94,7 +94,7 @@
             }
         },
 
-        // expuesto solo para depuracion avanzada; no recomendado para uso normal
+        // exposed only for advanced debugging; not recommended for normal use
         _internal: {
             _getUnsubscribeRef: () => _unsubscribeMenuClick
         }

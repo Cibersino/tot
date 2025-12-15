@@ -1,7 +1,7 @@
 // electron/menu_builder.js
 //
-// Construccion del meno nativo y textos de dialogos de main,
-// a partir de i18n/<lang>/main.json.
+// Construction of the native menu and dialog texts of main,
+// from i18n/<lang>/main.json.
 
 const { app, Menu } = require('electron');
 const fs = require('fs');
@@ -17,7 +17,7 @@ function loadMainTranslations(lang) {
             return null;
         }
         let raw = fs.readFileSync(file, 'utf8');
-        // Eliminar BOM UTF-8 si existe
+        // Remove BOM UTF-8 if it exists
         raw = raw.replace(/^\uFEFF/, '');
         return JSON.parse(raw || '{}');
     } catch (err) {
@@ -65,11 +65,11 @@ function buildAppMenu(lang, opts = {}) {
             label: m.como_usar || 'Como usar la app?',
             submenu: [
                 {
-                    label: m.guia_basica || 'Guia basica',
+                    label: m.guia_basica || 'Guide',
                     click: () => sendMenuClick('guia_basica'),
                 },
                 {
-                    label: m.instrucciones_completas || 'Instrucciones completas',
+                    label: m.instrucciones_completas || 'Instructions',
                     click: () => sendMenuClick('instrucciones_completas'),
                 },
                 {
@@ -82,15 +82,15 @@ function buildAppMenu(lang, opts = {}) {
             label: m.herramientas || 'Tools',
             submenu: [
                 {
-                    label: m.cargador_texto || 'Cargador de archivo de texto',
+                    label: m.cargador_texto || 'Text loader',
                     click: () => sendMenuClick('cargador_texto'),
                 },
                 {
-                    label: m.cargador_imagen || 'Cargador de imagenes con texto',
+                    label: m.cargador_imagen || 'Image loader',
                     click: () => sendMenuClick('contador_imagen'),
                 },
                 {
-                    label: m.test_velocidad || 'Reading speed test',
+                    label: m.test_velocidad || 'Speed test',
                     click: () => sendMenuClick('test_velocidad'),
                 },
             ],
@@ -100,7 +100,7 @@ function buildAppMenu(lang, opts = {}) {
             submenu: [
                 {
                     label: m.idioma || 'Language',
-                    // Aqui antes se llamaba directamente a createLanguageWindow() en main.js.
+                    // Here we used to call createLanguageWindow() directly in main.js.
                     click: () => {
                         if (onOpenLanguage) {
                             try {
@@ -115,14 +115,14 @@ function buildAppMenu(lang, opts = {}) {
                     },
                 },
                 {
-                    label: m.diseno || 'Diseno',
+                    label: m.diseno || 'Design',
                     submenu: [
                         {
                             label: m.skins || 'Skins',
                             click: () => sendMenuClick('diseno_skins'),
                         },
                         {
-                            label: m.crono_flotante || 'Cronometro flotante',
+                            label: m.crono_flotante || 'FW',
                             click: () => sendMenuClick('diseno_crono_flotante'),
                         },
                         {
@@ -159,18 +159,18 @@ function buildAppMenu(lang, opts = {}) {
             ],
         },
         {
-            label: m.links_interes || 'Links de interes',
+            label: m.links_interes || 'Links',
             click: () => sendMenuClick('links_interes'),
         },
         {
-            label: m.colabora || 'CONTRIBUTE ($)',
+            label: m.colabora || '($)',
             click: () => sendMenuClick('colabora'),
         },
         {
             label: m.ayuda || '?',
             submenu: [
                 {
-                    label: m.actualizar_version || 'Actualizar a ultima version',
+                    label: m.actualizar_version || 'Update',
                     click: () => sendMenuClick('actualizar_version'),
                 },
                 {
@@ -185,7 +185,7 @@ function buildAppMenu(lang, opts = {}) {
         },
     ];
 
-    // Dev menu (solo si se habilita por variable de entorno)
+    // Dev menu (only if enabled by environment variable)
     const showDevMenu = process.env.SHOW_DEV_MENU === '1';
     if (!app.isPackaged && showDevMenu) {
         menuTemplate.push({

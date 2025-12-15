@@ -1,3 +1,4 @@
+// public/js/timer.js
 (() => {
   console.debug('[timer.js] module loaded');
 

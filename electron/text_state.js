@@ -1,20 +1,20 @@
 // electron/text_state.js
 const fs = require('fs');
 
-// Estado interno compartido
+// Shared internal status
 let currentText = '';
 
-// Limite por defecto. El limite efectivo se inyecta desde main.js via init({ maxTextChars }).
+// Default limit. The effective limit is injected from main.js via init({ maxTextChars }).
 let MAX_TEXT_CHARS = 10_000_000; 
 
-// Dependencias inyectadas
+// Injected dependencies
 let loadJson = null;
 let saveJson = null;
 let CURRENT_TEXT_FILE = null;
 let SETTINGS_FILE = null;
 let appRef = null;
 
-// Resolver de ventanas (main/editor)
+// Window resolver (main/editor)
 let getWindows = () => ({ mainWin: null, editorWin: null });
 
 function persistCurrentTextOnQuit() {
@@ -23,7 +23,7 @@ function persistCurrentTextOnQuit() {
       saveJson(CURRENT_TEXT_FILE, { text: currentText || '' });
     }
 
-    // Mantener comportamiento previo: asegurar que SETTINGS_FILE exista
+    // Maintain previous behavior: ensure SETTINGS_FILE exists
     if (loadJson && saveJson && SETTINGS_FILE) {
       const settings = loadJson(SETTINGS_FILE, { language: 'es', presets: [] });
       if (!fs.existsSync(SETTINGS_FILE)) {
@@ -54,7 +54,7 @@ function init(options) {
     MAX_TEXT_CHARS = opts.maxTextChars;
   }
 
-  // Carga inicial desde disco + truncado si excede MAX_TEXT_CHARS
+  // Initial load from disk + truncated if MAX_TEXT_CHARS is exceeded
   try {
     let raw = loadJson
       ? loadJson(CURRENT_TEXT_FILE, { text: '' })
@@ -85,7 +85,7 @@ function init(options) {
     currentText = '';
   }
 
-  // Persistencia en before-quit
+  // Persistence in before-quit
   if (appRef && typeof appRef.on === 'function') {
     appRef.on('before-quit', persistCurrentTextOnQuit);
   }
@@ -105,12 +105,12 @@ function registerIpc(ipcMain, windowsResolver) {
     getWindows = () => windowsResolver;
   }
 
-  // Devuelve el texto actual como string simple (compatibilidad)
+  // Returns the current text as a simple string (compatibility)
   ipcMain.handle('get-current-text', async () => {
     return currentText || '';
   });
 
-  // set-current-text: acepta { text, meta } o string simple
+  // set-current-text: accept { text, meta } or simple string
   ipcMain.handle('set-current-text', (_event, payload) => {
     try {
       let incomingMeta = null;
@@ -140,7 +140,7 @@ function registerIpc(ipcMain, windowsResolver) {
 
       const { mainWin, editorWin } = getWindows() || {};
 
-      // Notificar main window (para que renderer actualice preview/resultados)
+      // Notify main window (for renderer to update preview/results)
       if (mainWin && !mainWin.isDestroyed()) {
         try {
           mainWin.webContents.send('current-text-updated', currentText);
@@ -149,7 +149,7 @@ function registerIpc(ipcMain, windowsResolver) {
         }
       }
 
-      // Notificar editor manual con objeto { text, meta }
+      // Notify manual editor with object { text, meta }
       if (editorWin && !editorWin.isDestroyed()) {
         try {
           editorWin.webContents.send('manual-text-updated', {
@@ -176,15 +176,15 @@ function registerIpc(ipcMain, windowsResolver) {
     }
   });
 
-  // Limpieza forzada del editor (invocada desde la pantalla principal)
+  // Forced cleaning of the editor (invoked from the main screen)
   ipcMain.handle('force-clear-editor', async () => {
     try {
       const { mainWin, editorWin } = getWindows() || {};
 
-      // Mantener estado interno
+      // Maintain internal status
       currentText = '';
 
-      // Notificar a la ventana principal (como en main.js estable)
+      // Notify main window (as in main.js stable)
       if (mainWin && !mainWin.isDestroyed()) {
         try {
           mainWin.webContents.send('current-text-updated', currentText);
@@ -193,7 +193,7 @@ function registerIpc(ipcMain, windowsResolver) {
         }
       }
 
-      // Notificar al editor para que ejecute su logica de limpieza local
+      // Notify the editor to run its local cleaning logic
       if (editorWin && !editorWin.isDestroyed()) {
         try {
           editorWin.webContents.send('manual-force-clear', '');

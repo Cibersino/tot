@@ -1,3 +1,4 @@
+// public/js/count.js
 (() => {
   console.debug('[count.js] module loaded');
 

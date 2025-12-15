@@ -1,13 +1,13 @@
 // electron/fs_storage.js
-// Utilidades de acceso a disco compartidas por el proceso principal
+// Disk access utilities shared by the main process
 
 const fs = require('fs');
 const path = require('path');
 
-// Carpeta de configuracion base
+// Base configuration folder
 const CONFIG_DIR = path.join(__dirname, '..', 'config');
 
-// Carpeta de presets por defecto en config
+// Default presets folder in config
 const CONFIG_PRESETS_DIR = path.join(CONFIG_DIR, 'presets_defaults');
 
 function ensureConfigDir() {

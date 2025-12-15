@@ -12,7 +12,7 @@ contextBridge.exposeInMainWorld('manualAPI', {
   onExternalUpdate: (cb) => {
     ipcRenderer.on('manual-text-updated', (_e, text) => cb(text));
   },
-  // NEW: listener to force clear content (main will send 'manual-force-clear')
+  // Listener to force clear content (main will send 'manual-force-clear')
   onForceClear: (cb) => {
     ipcRenderer.on('manual-force-clear', (_e, _payload) => cb(_payload));
   }

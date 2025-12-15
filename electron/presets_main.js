@@ -1,6 +1,6 @@
 // electron/presets_main.js
-// Logica de presets en el proceso principal: defaults, settings.presets,
-// dialogos nativos y handlers IPC asociados.
+// Presets logic in the main process: defaults, settings.presets,
+// native dialogs and associated IPC handlers.
 
 const fs = require('fs');
 const path = require('path');
@@ -10,10 +10,10 @@ const { CONFIG_PRESETS_DIR, ensureConfigPresetsDir } = require('./fs_storage');
 const settingsState = require('./settings');
 const menuBuilder = require('./menu_builder');
 
-// Carpeta fuente de presets por defecto (.js)
-const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // carpeta original: electron/presets
+// Default presets source folder (.js)
+const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
 
-// Helpers: presets defaults (general + por idioma si existe)
+// Helpers: presets defaults (general + per language if exists)
 function sanitizeLangCode(lang) {
   if (typeof lang !== 'string') return '';
   const base = lang.trim().toLowerCase().split(/[-_]/)[0];
@@ -70,7 +70,7 @@ function copyDefaultPresetsIfMissing() {
           fname.replace(/\.js$/i, '.json')
         );
 
-        // Solo copiar si existe el JS fuente y no existe todavia el JSON
+        // Only copy if the source JS exists and the JSON does not yet exist
         if (fs.existsSync(src) && !fs.existsSync(dest)) {
           try {
             let arr = require(src);
@@ -116,7 +116,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       ? () => getWindows() || {}
       : () => getWindows || {};
 
-  // Copia inicial JS -> JSON (no sobreescribe archivos existentes)
+  // Initial copy JS -> JSON (does not overwrite existing files)
   copyDefaultPresetsIfMissing();
 
   function broadcast(settings) {
@@ -125,7 +125,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       if (typeof settingsState.broadcastSettingsUpdated === 'function') {
         settingsState.broadcastSettingsUpdated(settings, windows);
       } else {
-        // Fallback defensivo si por alguna razon no esta exportado
+        // Defensive fallback if for some reason it is not exported
         const { mainWin, editorWin, presetWin, floatingWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('settings-updated', settings);
@@ -145,7 +145,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   }
 
-  // Helper local para obtener idioma efectivo
+  // Local helper to obtain effective language
   function getEffectiveLang(settings) {
     const s = settings || settingsState.getSettings();
     const lang =
@@ -167,7 +167,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         ? fs.readdirSync(CONFIG_PRESETS_DIR)
         : [];
 
-      // Cargar defaults generales
+      // Load general defaults
       const generalJson = entries.find(
         (n) => n.toLowerCase() === 'defaults_presets.json'
       );
@@ -185,7 +185,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         general = fs.existsSync(n) ? require(n) : [];
       }
 
-      // Cargar defaults por idioma desde JSON: defaults_presets_<lang>.json
+      // Load defaults by language from JSON: defaults_presets_<lang>.json
       entries
         .filter((n) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(n))
         .forEach((n) => {
@@ -202,7 +202,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           }
         });
 
-      // Si falta algun idioma en JSON, intentar cargar desde los JS fuente
+      // If any language is missing in JSON, try to load from the source JS
       const srcEntries = fs.existsSync(PRESETS_SOURCE_DIR)
         ? fs.readdirSync(PRESETS_SOURCE_DIR)
         : [];
@@ -212,7 +212,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           const match = /^defaults_presets_([a-z0-9-]+)\.js$/i.exec(n);
           if (!match || !match[1]) return;
           const lang = match[1].toLowerCase();
-          if (languagePresets[lang]) return; // ya cargado desde JSON
+          if (languagePresets[lang]) return; // already loaded from JSON
           try {
             let arr = require(path.join(PRESETS_SOURCE_DIR, n));
             if (
@@ -241,7 +241,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   });
 
-  // Abrir carpeta presets_defaults editable
+  // Open editable presets_defaults folder
   ipcMain.handle('open-default-presets-folder', async () => {
     try {
       ensureConfigPresetsDir();
@@ -301,12 +301,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   // Request to delete a preset (handles native dialogs + persistence)
   ipcMain.handle('request-delete-preset', async (_event, name) => {
     try {
-      // Cargar settings y textos de dialogo antes de cualquier mensaje
+      // Load settings and dialog texts before any message
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
       const dialogTexts = menuBuilder.getDialogTexts(lang);
-      const yesLabel = dialogTexts.yes || 'Si, continuar';
-      const noLabel = dialogTexts.no || 'No, cancelar';
+      const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
+      const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
 
       // If no name provided, show information dialog and exit
       if (!name) {
@@ -314,11 +314,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           const { mainWin } = resolveWindows();
           await dialog.showMessageBox(mainWin || null, {
             type: 'none',
-            buttons: [dialogTexts.ok || 'Aceptar'],
+            buttons: [dialogTexts.ok || 'FALLBACK: OK'],
             defaultId: 0,
             message:
               dialogTexts.delete_preset_none ||
-              'No hay ningun preset seleccionado para borrar',
+              'FALLBACK: No preset selected to delete',
           });
         } catch (e) {
           console.error(
@@ -338,7 +338,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         cancelId: 1,
         message:
           dialogTexts.delete_preset_confirm ||
-          '¿Seguro que quieres borrar este preset?',
+          'FALLBACK: Are you sure you want to delete this preset?',
       });
       if (conf.response === 1) {
         return { ok: false, code: 'CANCELLED' };
@@ -446,8 +446,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
       const dialogTexts = menuBuilder.getDialogTexts(lang);
-      const yesLabel = dialogTexts.yes || 'Si, continuar';
-      const noLabel = dialogTexts.no || 'No, cancelar';
+      const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
+      const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
 
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
@@ -457,7 +457,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         cancelId: 1,
         message:
           dialogTexts.restore_defaults_confirm ||
-          '¿Seguro que quieres restaurar los presets por defecto?',
+          'FALLBACK: Restore default presets to original?',
       });
       if (conf.response === 1) {
         return { ok: false, code: 'CANCELLED' };
@@ -553,7 +553,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         defaultId: 0,
         message:
           (dialogTexts && dialogTexts.edit_preset_none) ||
-          'No hay ningun preset seleccionado para editar',
+          'FALLBACK: No preset selected to edit',
       });
       return { ok: true };
     } catch (e) {
@@ -576,8 +576,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const lang = getEffectiveLang(settings);
       const dialogTexts = menuBuilder.getDialogTexts(lang);
 
-      const yesLabel = dialogTexts.yes || 'Si, continuar';
-      const noLabel = dialogTexts.no || 'No, cancelar';
+      const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
+      const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
@@ -586,7 +586,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         cancelId: 1,
         message:
           dialogTexts.edit_preset_confirm ||
-          '¿Seguro que quieres editar este preset?',
+          'FALLBACK: Are you sure you want to edit the preset?',
       });
       if (conf.response === 1) {
         return { ok: false, code: 'CANCELLED' };

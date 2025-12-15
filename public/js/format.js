@@ -1,3 +1,4 @@
+// public/js/fomat.js
 (() => {
   console.debug('[format.js] module loaded');
 

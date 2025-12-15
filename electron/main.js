@@ -88,7 +88,7 @@ function unregisterShortcuts() {
 }
 
 function createMainWindow() {
-  // Note: 'useContentSize:true' makes 'width/height' apply to the content (excluding borders)
+  // Note: `useContentSize:true` makes `width/height` apply to the content (excluding borders)
   mainWin = new BrowserWindow({
     width: 828,
     height: 490,
@@ -461,7 +461,7 @@ async function createFloatingWindow(options = {}) {
       }
     }
   } catch (e) {
-    // noop
+    /* noop */
   }
 
   // Notify closure so the main renderer can clean up state
@@ -477,7 +477,7 @@ async function createFloatingWindow(options = {}) {
   return floatingWin;
 }
 
-/* ---------------- Main stopwatch (timekeeping + broadcast) ----------------*/
+// ---------------- Main stopwatch (timekeeping + broadcast) ---------------- //
 
 let crono = {
   running: false,
@@ -666,7 +666,7 @@ ipcMain.handle('get-app-config', async () => {
   }
 });
 
-/* --- App start logic --- */
+// --- App start logic --- //
 
 app.whenReady().then(() => {
   // Initial load of settings (normalized and persisted) via settingsState
