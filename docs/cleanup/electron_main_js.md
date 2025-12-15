@@ -261,253 +261,350 @@
   - Key matches:
     - `L315`: `updater.register(ipcMain, { mainWinRef: () => mainWin, currentLanguageRef: () => currentLanguage, })`      
 
+
+---
+
+### B2.2) Repo contract cache sync (mandatory)
+
+- Repo cache file: `docs/cleanup/_repo_contract_usage.md`
+- Repo search method: VS Code Ctrl+Shift+F
+  - Scope rule: restrict search to code folders (e.g. `electron/**,public/**`) and exclude `docs/cleanup/**` to avoid cache self-matches.
+
+Per-key verification (B2 Contract Lock → repo cache):
+
+#### IPC — ipcMain.handle
+- `crono-get-state`
+  - Cache: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified-at: `1d06c2a`
+- `floating-open`
+  - Cache: `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes one non-contract match in error log string (main.js)
+- `floating-close`
+  - Cache: `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes one non-contract match in error log string (main.js)
+- `open-editor`
+  - Cache: `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes one non-contract match in error log string (main.js)
+- `open-preset-modal`
+  - Cache: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified-at: `1d06c2a`
+- `get-app-config`
+  - Cache: `4` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/manual_preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes one non-contract match in error log string (main.js)
+
+#### IPC — ipcMain.on
+- `crono-toggle`
+  - Cache: `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes one non-contract match in error log string (main.js)
+- `crono-reset`
+  - Cache: `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes one non-contract match in error log string (main.js)
+- `crono-set-elapsed`
+  - Cache: `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes one non-contract match in error log string (main.js)
+- `flotante-command`
+  - Cache: `3` matches in `2` files (top: `electron/main.js`, `electron/flotante_preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes one non-contract match in error log string (main.js)
+
+#### IPC — ipcMain.once
+- `language-selected`
+  - Cache: `2` matches in `2` files (top: `electron/main.js`, `electron/language_preload.js`)
+  - Verified-at: `1d06c2a`
+
+#### Renderer events — webContents.send / equivalents
+- `crono-state`
+  - Cache: `12` matches in `5` files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`, `public/renderer.js`, `public/flotante.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes non-contract matches in logs/comments (preloads/renderer/flotante)
+- `flotante-closed`
+  - Cache: `8` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes non-contract matches in comments/logs (preloads)
+- `manual-editor-ready`
+  - Cache: `7` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes non-contract matches in warn/error logs (main/preload)
+- `manual-init-text`
+  - Cache: `5` matches in `2` files (top: `electron/main.js`, `electron/manual_preload.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes non-contract matches in error logs (main)
+- `preset-init`
+  - Cache: `7` matches in `3` files (top: `electron/main.js`, `electron/preset_preload.js`, `public/preset_modal.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes non-contract matches in logs/comments (preset preload/preset modal)
+
+#### Persistent storage filenames
+- `current_text.json`
+  - Cache: `2` matches in `2` files (top: `electron/main.js`, `electron/text_state.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes non-contract match in error log (text_state)
+- `user_settings.json`
+  - Cache: `3` matches in `2` files (top: `electron/main.js`, `electron/settings.js`)
+  - Verified-at: `1d06c2a`
+  - Notes: includes non-contract matches in comments (settings.js)
+
+Pass condition: satisfied (all B2 keys present in repo cache and verified-at = `1d06c2a`).
+
 ---
 
 ### B3) Candidate Ledger (triaged; label-sorted; theme-grouped; evidence-gated)
-> Triaged from auto-scan of `electron/main.js`. No edits allowed until repo evidence is filled (VS Code gating).
+> Triaged from auto-scan of `electron/main.js` (anchors v1.10). No edits allowed until repo evidence is filled (VS Code gating).
 
 #### P2-CONTRACT (13)
 
-##### CONTRACT:CRONO:set-elapsed (2)
-- **L549**
-  - Primary Theme: `CONTRACT:CRONO:set-elapsed`
-  - Type: `fallback (defaulting)`
-  - Tags: `near_contract`
-  - Local evidence: `L549`: `const n = Number(ms) || 0;`
-  - Why: Current fallback collapses invalid/NaN to `0`, which silently resets elapsed. Contract decision requires fail-safe ignore on invalid/negative.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (function `setCronoElapsed`)
-    - Repo search (Ctrl+Shift+F): TODO (strings: `crono-set-elapsed`, `flotante-command`)
-    - Suggested queries: `setCronoElapsed`, `'crono-set-elapsed'`, `'flotante-command'`
-  - Proposed action:
-    - Phase 1: doc only
-    - Phase 2: change fallback (validate numeric + `>= 0`; on invalid/negative => early-return without mutating `crono.elapsed`)
-  - Risk notes / dependencies: Affects all callers (`crono-set-elapsed`, `flotante-command` set, any internal calls). Must preserve payload/event names.
-
-- **L611**
-  - Primary Theme: `CONTRACT:CRONO:set-elapsed`
-  - Type: `fallback (defaulting) + duplication (double coercion)`
-  - Tags: `near_contract`
-  - Local evidence: `L611`: `setCronoElapsed(Number(cmd.value) || 0);`
-  - Why: Duplicates coercion/defaulting and can mask invalid payload origin; also violates fail-safe ignore by forcing 0.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`setCronoElapsed`)
-    - Repo search (Ctrl+Shift+F): TODO (`'flotante-command'`)
-    - Suggested queries: `'flotante-command'`, `Number(cmd.value)`
-  - Proposed action:
-    - Phase 1: doc only
-    - Phase 2: remove double coercion and align with fail-safe rule (either pass through raw `cmd.value` to a single validator or validate here; invalid/negative => ignore)
-  - Risk notes / dependencies: Tightening validation changes behavior for malformed `cmd.value` (intended).
-
 ##### CONTRACT:IPC_HANDLE:floating-open (1)
-- **L579**
+- **L576#1hed**
   - Primary Theme: `CONTRACT:IPC_HANDLE:floating-open`
   - Type: `fallback (error swallow)`
   - Tags: `near_contract`
-  - Local evidence: `L579`: `try { broadcastCronoState(); } catch (e) {/*noop*/ }`
-  - Why: Swallows errors and forces `{ ok: true }` path even if broadcast fails; also redundant because `broadcastCronoState()` already swallows per-window send.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`broadcastCronoState`)
-    - Repo search (Ctrl+Shift+F): TODO (`'floating-open'`)
-    - Suggested queries: `'floating-open'`, `broadcastCronoState`
+  - Anchor evidence: `L576`: `ipcMain.handle('floating-open', async () => {`
+  - Local evidence (inner): `L579`: `try { broadcastCronoState(); } catch (e) {/*noop*/ }`
+  - Why: Noop catch can hide failures on a contract path; also likely redundant if downstream sends already swallow. If intentional, document why.
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: `broadcastCronoState`)
+    - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`) (from B2.2)
+    - Suggested queries (optional): `'floating-open'`, `ipcMain.handle(`
   - Proposed action:
     - Phase 1: none
-    - Phase 2: remove nested noop catch OR replace with controlled debug logging
-  - Risk notes / dependencies: Removing swallow may cause `floating-open` to return `{ ok:false }` in edge failures.
+    - Phase 2: remove nested noop catch OR replace with guarded debug logging (policy-driven)
+  - Risk notes / dependencies: Any change must preserve IPC key and return shape.
 
-##### CONTRACT:IPC_ONCE:language-selected (2)
-- **L678**
-  - Primary Theme: `CONTRACT:IPC_ONCE:language-selected`
-  - Type: `fallback (defaulting)`
+##### CONTRACT:IPC_ON:flotante-command (1)
+- **L603#5oho**
+  - Primary Theme: `CONTRACT:IPC_ON:flotante-command`
+  - Type: `fallback (defaulting) + duplication (double coercion)`
   - Tags: `near_contract`
-  - Local evidence: `L678`: `currentLanguage = settings.language || "es";`
-  - Why: Defaults language; treats empty string as unset. Likely intended.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`currentLanguage` usage)
-    - Repo search (Ctrl+Shift+F): TODO (`'language-selected'`, `currentLanguage =`)
-    - Suggested queries: `'language-selected'`, `currentLanguage`
+  - Anchor evidence: `L603`: `ipcMain.on('flotante-command', (_ev, cmd) => {`
+  - Local evidence (inner): `L611`: `setCronoElapsed(Number(cmd.value) || 0);`
+  - Why: Defaulting to `0` at the contract boundary can turn invalid payloads into a silent reset; also duplicates coercion/defaulting already present in `setCronoElapsed`.
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: `setCronoElapsed`)
+    - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/flotante_preload.js`) (from B2.2)
+    - Suggested queries (optional): `'flotante-command'`, `ipcMain.on(`
   - Proposed action:
     - Phase 1: none
-    - Phase 2: none (unless you want stricter normalization/trim guarantees here)
-  - Risk notes / dependencies: Changing fallback can alter first-run UX and persisted language.
+    - Phase 2: remove double coercion; align with Q1 decision (invalid/negative handling)
+  - Risk notes / dependencies: Must preserve channel name and payload schema.
 
-- **L691-693**
+##### CONTRACT:IPC_ONCE:language-selected (1)
+- **L683#16ut**
   - Primary Theme: `CONTRACT:IPC_ONCE:language-selected`
   - Type: `fallback (error swallow)`
   - Tags: `near_contract`
-  - Local evidence: `L691-693`: `} catch (e) { /* noop */ }`
-  - Why: Silent failure closing `langWin` could hide lifecycle bugs.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`createLanguageWindow`, `langWin`)
-    - Repo search (Ctrl+Shift+F): TODO (`langWin.close`, `'language-selected'`)
-    - Suggested queries: `langWin.close`, `'language-selected'`
+  - Anchor evidence: `L683`: `ipcMain.once("language-selected", (_evt, lang) => {`
+  - Local evidence (inner): `L691-693`: `} catch (e) { /* noop */ }`
+  - Why: Noop catch can hide lifecycle failures (e.g., invalid/destroyed window) on a contract path.
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: `createLanguageWindow`)
+    - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/language_preload.js`) (from B2.2)
+    - Suggested queries (optional): `'language-selected'`, `ipcMain.once(`
   - Proposed action:
     - Phase 1: none
-    - Phase 2: replace noop with debug-level log (guarded) or remove if provably safe
-  - Risk notes / dependencies: Logging policy; do not introduce noisy logs in Phase 1.
+    - Phase 2: replace noop with guarded debug OR remove swallow if proven safe
+  - Risk notes / dependencies: Logging policy; avoid noisy logs.
 
 ##### CONTRACT:SEND:crono-state (3)
-- **L506**
+- **L506#1nhq**
   - Primary Theme: `CONTRACT:SEND:crono-state`
   - Type: `fallback (error swallow)`
   - Tags: `touches_contract`
-  - Local evidence: `L506`: `try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
-  - Why: Silences send failures; might hide renderer lifecycle mismatch.
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'crono-state'`)
-    - Suggested queries: `'crono-state'`
+  - Anchor evidence: `L506`: `try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
+  - Why: Noop catch can hide failures near contract/lifecycle code. One-line catch form.
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: renderer listeners for `'crono-state'`)
+    - Repo search (Ctrl+Shift+F): `12` matches in `5` files (top: `electron/main.js`, `...lotante_preload.js`, `public/renderer.js`, `public/flotante.js`) (from B2.2)
+    - Suggested queries (optional): `'crono-state'`, `webContents.send(`
   - Proposed action:
     - Phase 1: none
-    - Phase 2: consolidate into `safeSend(win, channel, payload)` (keeping swallow or adding guarded debug)
-  - Risk notes / dependencies: Any change must preserve event name + payload shape.
+    - Phase 2: consolidate into `safeSend(win, channel, payload)` (preserve semantics)
+  - Risk notes / dependencies: Must preserve event name and payload shape.
 
-- **L507**
+- **L507#1oz5**
   - Primary Theme: `CONTRACT:SEND:crono-state`
   - Type: `fallback (error swallow)`
   - Tags: `touches_contract`
-  - Local evidence: `L507`: `try { if (floatingWin && !floatingWin.isDestroyed()) floatingWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
-  - Repo evidence: TODO (VS Code) — same as above
-  - Proposed action: Phase 1 none; Phase 2 consolidate
-  - Risk notes / dependencies: same as above
+  - Anchor evidence: `L507`: `try { if (floatingWin && !floatingWin.isDestroyed()) floatingWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
+  - Why / Repo evidence / Proposed action / Risk notes: same as L506.
 
-- **L508**
+- **L508#1704**
   - Primary Theme: `CONTRACT:SEND:crono-state`
   - Type: `fallback (error swallow)`
   - Tags: `touches_contract`
-  - Local evidence: `L508`: `try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
-  - Repo evidence: TODO (VS Code) — same as above
-  - Proposed action: Phase 1 none; Phase 2 consolidate
-  - Risk notes / dependencies: same as above
+  - Anchor evidence: `L508`: `try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
+  - Why / Repo evidence / Proposed action / Risk notes: same as L506.
 
 ##### CONTRACT:SEND:flotante-closed (1)
-- **L472**
+- **L472#18y8**
   - Primary Theme: `CONTRACT:SEND:flotante-closed`
   - Type: `fallback (error swallow)`
   - Tags: `touches_contract`
-  - Local evidence: `L472`: `try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }`
+  - Anchor evidence: `L472`: `try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }`
   - Why: Silent failure can desync renderer state cleanup after floating window close.
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'flotante-closed'`)
-    - Suggested queries: `'flotante-closed'`
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: listeners for `'flotante-closed'`)
+    - Repo search (Ctrl+Shift+F): `8` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`) (from B2.2)
+    - Suggested queries (optional): `'flotante-closed'`, `webContents.send(`
   - Proposed action:
     - Phase 1: none
-    - Phase 2: consolidate to `safeSend` (optional guarded debug)
+    - Phase 2: consolidate into `safeSend` (policy decision required for logging/swallow changes)
   - Risk notes / dependencies: Must preserve channel string.
 
 ##### CONTRACT:SEND:manual-init-text (2)
-- **L199**
+- **L198#15fw**
   - Primary Theme: `CONTRACT:SEND:manual-init-text`
   - Type: `fallback (defaulting)`
   - Tags: `near_contract`
-  - Local evidence: `L199`: `text: initialText || "",`
-  - Why: Forces string payload; likely correct defensive behavior.
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'manual-init-text'`)
-    - Suggested queries: `'manual-init-text'`
+  - Anchor evidence: `L198`: `editorWin.webContents.send("manual-init-text", {`
+  - Local evidence (inner): `L199`: `text: initialText || "",`
+  - Why: Forces a string payload; likely correct defensive behavior, but it is a contract decision (unset vs empty-string semantics).
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: receiver handling for `"manual-init-text"`)
+    - Repo search (Ctrl+Shift+F): `5` matches in `2` files (top: `electron/main.js`, `electron/manual_preload.js`) (from B2.2)
+    - Suggested queries (optional): `'manual-init-text'`, `webContents.send(`
   - Proposed action:
     - Phase 1: none
-    - Phase 2: none (unless you decide empty string should be distinguishable from “unset”)
-  - Risk notes / dependencies: Payload shape is part of contract.
+    - Phase 2: none (unless decision is made to distinguish unset vs empty)
+  - Risk notes / dependencies: Payload shape is contractual.
 
-- **L628**
+- **L627#15fw**
   - Primary Theme: `CONTRACT:SEND:manual-init-text`
   - Type: `fallback (defaulting)`
   - Tags: `near_contract`
-  - Local evidence: `L628`: `text: initialText || "",`
-  - Repo evidence: TODO (VS Code) — same as above
-  - Proposed action: Phase 1 none; Phase 2 none
-  - Risk notes / dependencies: same as above
+  - Anchor evidence: `L627`: `editorWin.webContents.send("manual-init-text", {`
+  - Local evidence (inner): `L628`: `text: initialText || "",`
+  - Why / Repo evidence / Proposed action / Risk notes: same as L198.
 
 ##### CONTRACT:SEND:preset-init (2)
-- **L235**
+- **L235#1gi8**
   - Primary Theme: `CONTRACT:SEND:preset-init`
   - Type: `fallback (defaulting)`
   - Tags: `touches_contract`
-  - Local evidence: `L235`: `presetWin.webContents.send('preset-init', initialData || {});`
-  - Why: Ensures object payload; may mask invalid/undefined initialData callers.
-  - Repo evidence: TODO (VS Code)
-    - Repo search (Ctrl+Shift+F): TODO (`'preset-init'`)
-    - Suggested queries: `'preset-init'`
+  - Anchor evidence: `L235`: `presetWin.webContents.send('preset-init', initialData || {});`
+  - Why: Ensures object payload; can mask upstream bugs if `initialData` is unexpectedly falsy or wrong type (contract decision per Q2).
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: receiver handling for `'preset-init'`)
+    - Repo search (Ctrl+Shift+F): `7` matches in `3` files (top: `electron/main.js`, `electron/preset_preload.js`, `public/preset_modal.js`) (from B2.2)
+    - Suggested queries (optional): `'preset-init'`, `webContents.send(`
   - Proposed action:
     - Phase 1: none
-    - Phase 2: decide whether `{}` is acceptable default or should reject invalid payload
-  - Risk notes / dependencies: Renderer modal expects a stable payload shape.
+    - Phase 2: decide per Q2 (keep `{}` default vs strict validation/normalization)
+  - Risk notes / dependencies: Must preserve channel name; renderer expects stable shape.
 
-- **L266**
+- **L266#1gi8**
   - Primary Theme: `CONTRACT:SEND:preset-init`
   - Type: `fallback (defaulting)`
   - Tags: `touches_contract`
-  - Local evidence: `L266`: `presetWin.webContents.send('preset-init', initialData || {});`
-  - Repo evidence: TODO (VS Code) — same as above
-  - Proposed action: Phase 1 none; Phase 2 as above
-  - Risk notes / dependencies: same as above
+  - Anchor evidence: `L266`: `presetWin.webContents.send('preset-init', initialData || {});`
+  - Why / Repo evidence / Proposed action / Risk notes: same as L235.
 
+##### PATTERN:DEFAULT_OR (1)
+- **L678#1s0p**
+  - Primary Theme: `PATTERN:DEFAULT_OR`
+  - Type: `fallback (defaulting)`
+  - Tags: `near_contract`
+  - Local evidence: `L678`: `currentLanguage = settings.language || "es";`
+  - Why: Defaulting via `||` treats empty string as unset; likely intended for language selection, but it is a policy choice.
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: `currentLanguage`)
+    - Repo search (Ctrl+Shift+F): <N> matches in <files>
+    - Suggested queries (optional): `||`
+  - Proposed action:
+    - Phase 1: none
+    - Phase 2: none
+  - Risk notes / dependencies: Changing fallback alters first-run UX and persisted language behavior.
+
+##### PATTERN:NUM_COERCE (1)
+- **L549#pd4w**
+  - Primary Theme: `PATTERN:NUM_COERCE`
+  - Type: `fallback (defaulting)`
+  - Tags: `near_contract`
+  - Local evidence: `L549`: `const n = Number(ms) || 0;`
+  - Why: Invalid/NaN collapses to `0`, mutating state; contract-level decision required (Q1).
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: `setCronoElapsed` + callers)
+    - Repo search (Ctrl+Shift+F): <N> matches in <files>
+    - Suggested queries (optional): `Number(`, `|| 0`
+  - Proposed action:
+    - Phase 1: none
+    - Phase 2: align invalid/negative handling per Q1 (single validation point; avoid silent reset if policy is fail-safe)
+  - Risk notes / dependencies: Affects all callers, including IPC origins.
+
+---
 
 #### P2-SIDEFX (2)
 
 ##### MISC:FLOATING_WINDOW_BOUNDS (2)
-- **L382**
+- **L382#sjpk**
   - Primary Theme: `MISC:FLOATING_WINDOW_BOUNDS`
   - Type: `fallback (error swallow) + fallback (defaulting)`
   - Tags: `near_contract`
   - Local evidence: `L382`: `try { floatingWin.setBounds({ x: options.x || floatingWin.getBounds().x, y: options.y || floatingWin.getBounds().y }); } catch (e) { /* noop */ }`
-  - Why: `||` drops valid `0` coordinates; noop catch hides geometry failures; current behavior does not guarantee “always 100% inside workArea”.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`createFloatingWindow`)
-    - Repo search (Ctrl+Shift+F): TODO (`setBounds`, `createFloatingWindow(`)
-    - Suggested queries: `createFloatingWindow`, `setBounds({ x: options.x`
+  - Why: `||` drops valid `0` coordinates; noop catch hides geometry failures; can violate “keep inside workArea” expectations.
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: `createFloatingWindow`)
+    - Repo search (Ctrl+Shift+F): <N> matches in <files>
+    - Suggested queries (optional): `catch (`, `noop`
   - Proposed action:
     - Phase 1: doc only
-    - Phase 2: change fallback (do not use `||` for coords; allow 0) + enforce clamp to workArea after applying bounds.
-  - Risk notes / dependencies: Placement logic must be tested under DPI/scaling and multi-monitor. Display selection: simplest; if tie, use window center.
+    - Phase 2: replace `||` for coords with typed/nullish policy; narrow try/catch; enforce clamp deterministically
+  - Risk notes / dependencies: Requires testing under DPI/scaling and multi-monitor.
 
-- **L463-465**
+- **L463#1hm2**
   - Primary Theme: `MISC:FLOATING_WINDOW_BOUNDS`
   - Type: `fallback (error swallow)`
   - Tags: `near_contract`
   - Local evidence: `L463-465`: `} catch (e) { // noop }`
-  - Why: Swallows exceptions in the “keep inside screen” clamp; failures become silent offscreen/partially offscreen windows, violating the workArea constraint.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`createFloatingWindow`)
-    - Repo search (Ctrl+Shift+F): TODO (`getDisplayMatching`, `workArea`)
-    - Suggested queries: `getDisplayMatching`, `workArea`, `offscreen`
+  - Why: Swallows exceptions in clamp logic; failures can leave window offscreen silently.
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: `createFloatingWindow`)
+    - Repo search (Ctrl+Shift+F): <N> matches in <files>
+    - Suggested queries (optional): `catch (`, `noop`
   - Proposed action:
     - Phase 1: doc only
-    - Phase 2: narrow try scope + enforce clamp deterministically (and optionally guarded debug log; avoid noisy logs)
-  - Risk notes / dependencies: Geometry code is timing-sensitive (display metrics, bounds after load).
+    - Phase 2: narrow try scope + deterministic clamp (optional guarded debug)
+  - Risk notes / dependencies: Geometry timing is fragile; must test with display changes.
 
+---
 
 #### P2-FALLBACK (2)
 
 ##### PATTERN:DEFAULT_OR (1)
-- **L51**
+- **L51#1f80**
   - Primary Theme: `PATTERN:DEFAULT_OR`
   - Type: `fallback (defaulting)`
   - Local evidence: `L51`: `const effectiveLang = lang || currentLanguage || "es";`
   - Why: Ensures a usable language code for menu building.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`buildAppMenu`)
-    - Repo search (Ctrl+Shift+F): TODO (`buildAppMenu(`, `effectiveLang`)
-    - Suggested queries: `buildAppMenu`, `effectiveLang`
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: `buildAppMenu`)
+    - Repo search (Ctrl+Shift+F): <N> matches in <files>
+    - Suggested queries (optional): `||`
   - Proposed action:
     - Phase 1: none
     - Phase 2: none
-  - Risk notes / dependencies: Low; keep as defensive defaulting.
+  - Risk notes / dependencies: Low risk.
 
 ##### PATTERN:TRY_NOOP (1)
-- **L323**
+- **L323#1oxv**
   - Primary Theme: `PATTERN:TRY_NOOP`
   - Type: `fallback (error swallow)`
   - Local evidence: `L323`: `try { langWin.focus(); } catch (e) { /* noop */ }`
-  - Why: Silent failure can hide unexpected destroyed/invalid window state.
-  - Repo evidence: TODO (VS Code)
-    - References (Shift+F12): TODO (`createLanguageWindow`)
-    - Repo search (Ctrl+Shift+F): TODO (`langWin.focus`)
-    - Suggested queries: `langWin.focus`, `createLanguageWindow`
+  - Why: Silent failure can hide unexpected destroyed/invalid window state; impact is usually low (focus-only), but still worth evidencing.
+  - Repo evidence: <fill>
+    - References (Shift+F12): <N> hits in <files> (suggest: `createLanguageWindow`)
+    - Repo search (Ctrl+Shift+F): <N> matches in <files>
+    - Suggested queries (optional): `catch (`, `noop`
   - Proposed action:
     - Phase 1: none
-    - Phase 2: optional guarded debug log (avoid noise)
-  - Risk notes / dependencies: Logging policy only; functional impact minimal.
+    - Phase 2: optional guarded debug log (policy-driven)
+  - Risk notes / dependencies: Logging policy only.
 
 ---
 
@@ -578,12 +675,13 @@
 
 ## 4) Open Questions / Decisions
 
-- Q1: `<question>`  
-  - Decision: `<pending | decided>`  
-  - Rationale: `<short>`
-- Q2: `<question>`  
-  - Decision: `<pending | decided>`  
-  - Rationale: `<short>`
+- Q1: En `setCronoElapsed(ms)` y entradas relacionadas (`crono-set-elapsed`, `flotante-command`), ¿qué semántica debe regir cuando el input es inválido (`NaN`, no-numérico) o negativo?
+  - Decision: `pending`
+  - Rationale: Hoy `Number(x) || 0` convierte inválidos en `0` y muta estado (`crono.elapsed`), lo que puede producir “reset silencioso”. La alternativa fail-safe es **ignorar** (no mutar) ante inválidos/negativos. Esta es una decisión contractual porque afecta IPC/payloads existentes.
+
+- Q2: En `preset-init`, cuando `initialData` es falsy/undefined o no cumple shape esperado, ¿es aceptable el default `{}` o se debe validar/normalizar estrictamente (y eventualmente rechazar/registrar)?
+  - Decision: `pending`
+  - Rationale: `{}` estabiliza el renderer pero puede ocultar bugs de origen. Cambiar la política puede alterar comportamiento observable del modal preset; debe quedar decidido explícitamente antes de Phase 2.
 
 ---
 

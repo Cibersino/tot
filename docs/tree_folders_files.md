@@ -9,13 +9,14 @@ tot-readingmeter/
 │ │ ├── defaults_presets.json      
 │ │ ├── defaults_presets_en.json   
 │ │ └── defaults_presets_es.json
-│ ├── current_text.json            # {current_text.json.default en git}
-│ ├── modal_state.json             # {current_text.json.default en git}
+│ ├── current_text.json            # {ignorado por git}
+│ ├── modal_state.json             # {ignorado por git}
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
+│ ├── cleanup/
+│ │ ├── cleanup_template.md
+│ │ └── PROTOCOL_CODE_CLEANUP_v1.11.md
 │ ├── bugs.md
-│ ├── CONTRACTS.md
-│ ├── modularizacion_plan.md
 │ ├── ToDo.txt
 │ └── tree_folders_files.md
 ├── electron/
@@ -84,7 +85,15 @@ tot-readingmeter/
 │ ├── manual.css
 │ ├── flotante.css
 │ └── style.css
-├── eslintrc.js
+├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
+│ ├── ast_tools/
+│ │ ├── node_modules/              # {acorn}
+│ │ ├── b1_inventory.cjs
+│ │ ├── b2_contract_lock.cjs
+│ │ ├── b3_candidates_scan.cjs
+│ │ ├── package.json
+│ │ └── package-lock.json
+│ └── PLAN_reset_piloto_electron_main_js.md
 ├── package.json
 ├── package-lock.json
 ├── README.md
