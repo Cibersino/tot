@@ -24,8 +24,8 @@
     }
   };
 
-  if (typeof window === "undefined") {
-    throw new Error("AppConstants requiere window; verifica el orden de carga de scripts.");
+  if (typeof window === 'undefined') {
+    throw new Error('AppConstants requiere window; verifica el orden de carga de scripts.');
   }
 
   window.AppConstants = AppConstants;

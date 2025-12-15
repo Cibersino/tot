@@ -1,5 +1,5 @@
 (() => {
-  console.debug("[format.js] modulo cargado");
+  console.debug('[format.js] modulo cargado');
 
   function getTimeParts(words, wpm) {
     if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };
@@ -17,7 +17,7 @@
   }
 
   const obtenerSeparadoresDeNumeros = async (idioma, settingsCache) => {
-    const lang = (idioma || "").toLowerCase() || "es";
+    const lang = (idioma || '').toLowerCase() || 'es';
     const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
     if (nf && nf[lang]) return nf[lang];
 

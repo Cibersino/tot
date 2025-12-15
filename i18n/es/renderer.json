@@ -94,7 +94,7 @@
     },
     "alerts": {   
       "clipboard_overflow": "El texto del portapapeles supera el tamaño máximo permitido y será truncado.",
-      "too_big": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",
+      "text_limit": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",
       "clipboard_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola.",
       "paste_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola.",
       "clear_error": "Ocurrió un error al vaciar el texto. Revisa la consola.",
@@ -123,12 +123,12 @@
       "wip_colabora": "WIP: Aquí se mostrará la información para colaborar en una futura versión."
     },
     "editor_alerts": {
-      "too_big_clipboard": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
+      "clipboard_too_big": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
       "drop_too_big": "Arrastrado: texto demasiado grande. Usa los botones de la ventana principal.",
       "clipboard_no_text": "El portapapeles no contiene texto plano.",
       "drop_no_text": "Arrastrado: no se detectó texto plano.",
-      "truncated_limit": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido.",
-      "too_big": "No es posible pegar más texto: ya se alcanzó el tamaño máximo permitido.",
+      "write_limit": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido.",
+      "paste_limit": "No es posible pegar más texto: ya se alcanzó el tamaño máximo permitido.",
       "paste_truncated": "El texto pegado se ha truncado para no exceder el máximo permitido.",
       "drop_truncated": "El texto arrastrado excedía el espacio disponible y fue truncado.",
       "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",

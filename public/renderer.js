@@ -1,9 +1,9 @@
 // public/renderer.js
-console.log("Renderer main starting...");
+console.log('Renderer main starting...');
 
 const { AppConstants } = window;
 if (!AppConstants) {
-  throw new Error("[renderer] AppConstants no disponible; verifica la carga de constants.js");
+  throw new Error('[renderer] AppConstants no disponible; verifica la carga de constants.js');
 }
 
 const {
@@ -56,103 +56,103 @@ const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
 const presetDescription = document.getElementById('presetDescription');
 
-let currentText = "";
+let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
 // --- Global cache and state for count/language ---
-let modoConteo = "preciso";   // Precise by default; can be "simple"
-let idiomaActual = "es";      // Initializes on startup
+let modoConteo = 'preciso';   // Precise by default; can be 'simple'
+let idiomaActual = 'es';      // Initializes on startup
 let settingsCache = {};       // Settings cache (number formatting, language, etc.)
 // --- i18n renderer translations cache ---
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
-  throw new Error("[renderer] RendererI18n no disponible; no se puede continuar");
+  throw new Error('[renderer] RendererI18n no disponible; no se puede continuar');
 }
 
 function applyTranslations() {
   if (!tRenderer) return;
   // Text Selector buttons
-  if (btnCountClipboard) btnCountClipboard.textContent = tRenderer("renderer.main.buttons.overwrite_clipboard", btnCountClipboard.textContent || "");
-  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.textContent = tRenderer("renderer.main.buttons.append_clipboard_newline", btnAppendClipboardNewLine.textContent || "");
-  if (btnEdit) btnEdit.textContent = tRenderer("renderer.main.buttons.edit", btnEdit.textContent || "");
-  if (btnEmptyMain) btnEmptyMain.textContent = tRenderer("renderer.main.buttons.clear", btnEmptyMain.textContent || "");
+  if (btnCountClipboard) btnCountClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnCountClipboard.textContent || '');
+  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.textContent = tRenderer('renderer.main.buttons.append_clipboard_newline', btnAppendClipboardNewLine.textContent || '');
+  if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
+  if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear', btnEmptyMain.textContent || '');
   // Text Selector tooltips
-  if (btnCountClipboard) btnCountClipboard.title = tRenderer("renderer.main.tooltips.overwrite_clipboard", btnCountClipboard.title || "");
-  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.title = tRenderer("renderer.main.tooltips.append_clipboard_newline", btnAppendClipboardNewLine.title || "");
-  if (btnEdit) btnEdit.title = tRenderer("renderer.main.tooltips.edit", btnEdit.title || "");
-  if (btnEmptyMain) btnEmptyMain.title = tRenderer("renderer.main.tooltips.clear", btnEmptyMain.title || "");
+  if (btnCountClipboard) btnCountClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnCountClipboard.title || '');
+  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.title = tRenderer('renderer.main.tooltips.append_clipboard_newline', btnAppendClipboardNewLine.title || '');
+  if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
+  if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
   // Presets
-  if (btnNewPreset) btnNewPreset.textContent = tRenderer("renderer.main.speed.new", btnNewPreset.textContent || "");
-  if (btnEditPreset) btnEditPreset.textContent = tRenderer("renderer.main.speed.edit", btnEditPreset.textContent || "");
-  if (btnDeletePreset) btnDeletePreset.textContent = tRenderer("renderer.main.speed.delete", btnDeletePreset.textContent || "");
-  if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer("renderer.main.speed.reset_defaults", btnResetDefaultPresets.textContent || "");
-  if (btnNewPreset) btnNewPreset.title = tRenderer("renderer.main.tooltips.new_preset", btnNewPreset.title || "");
-  if (btnEditPreset) btnEditPreset.title = tRenderer("renderer.main.tooltips.edit_preset", btnEditPreset.title || "");
-  if (btnDeletePreset) btnDeletePreset.title = tRenderer("renderer.main.tooltips.delete_preset", btnDeletePreset.title || "");
-  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer("renderer.main.tooltips.reset_presets", btnResetDefaultPresets.title || "");
+  if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new', btnNewPreset.textContent || '');
+  if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit', btnEditPreset.textContent || '');
+  if (btnDeletePreset) btnDeletePreset.textContent = tRenderer('renderer.main.speed.delete', btnDeletePreset.textContent || '');
+  if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer('renderer.main.speed.reset_defaults', btnResetDefaultPresets.textContent || '');
+  if (btnNewPreset) btnNewPreset.title = tRenderer('renderer.main.tooltips.new_preset', btnNewPreset.title || '');
+  if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset', btnEditPreset.title || '');
+  if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset', btnDeletePreset.title || '');
+  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets', btnResetDefaultPresets.title || '');
   // Floating Window toggle
-  const vfSwitchLabel = document.querySelector(".vf-switch-wrapper label.switch");
-  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer("renderer.main.tooltips.floating_window", vfSwitchLabel.title || "");
+  const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
+  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.floating_window', vfSwitchLabel.title || '');
   // Section Titles
-  if (selectorTitle) selectorTitle.textContent = tRenderer("renderer.main.selector_title", selectorTitle.textContent || "");
-  if (velTitle) velTitle.textContent = tRenderer("renderer.main.speed.title", velTitle.textContent || "");
-  if (resultsTitle) resultsTitle.textContent = tRenderer("renderer.main.results.title", resultsTitle.textContent || "");
-  if (cronTitle) cronTitle.textContent = tRenderer("renderer.main.timer.title", cronTitle.textContent || "");
+  if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title', selectorTitle.textContent || '');
+  if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
+  if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title', resultsTitle.textContent || '');
+  if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.timer.title', cronTitle.textContent || '');
   // Speed Selector labels
-  const wpmLabel = document.querySelector(".wpm-row span");
-  if (wpmLabel) wpmLabel.textContent = tRenderer("renderer.main.speed.wpm_label", wpmLabel.textContent || "");
+  const wpmLabel = document.querySelector('.wpm-row span');
+  if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label', wpmLabel.textContent || '');
   // Results: precise mode label
-  const togglePrecisoLabel = document.querySelector(".toggle-wrapper .toggle-label");
+  const togglePrecisoLabel = document.querySelector('.toggle-wrapper .toggle-label');
   if (togglePrecisoLabel) {
-    togglePrecisoLabel.textContent = tRenderer("renderer.main.results.precise_mode", togglePrecisoLabel.textContent || "");
-    togglePrecisoLabel.title = tRenderer("renderer.main.results.precise_tooltip", togglePrecisoLabel.title || "");
-    const toggleWrapper = togglePrecisoLabel.closest(".toggle-wrapper");
+    togglePrecisoLabel.textContent = tRenderer('renderer.main.results.precise_mode', togglePrecisoLabel.textContent || '');
+    togglePrecisoLabel.title = tRenderer('renderer.main.results.precise_tooltip', togglePrecisoLabel.title || '');
+    const toggleWrapper = togglePrecisoLabel.closest('.toggle-wrapper');
     if (toggleWrapper) {
-      toggleWrapper.title = tRenderer("renderer.main.results.precise_tooltip", toggleWrapper.title || togglePrecisoLabel.title || "");
+      toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip', toggleWrapper.title || togglePrecisoLabel.title || '');
     }
   }
   // Stopwatch: Speed label and controls aria-label
-  const realWpmLabel = document.querySelector(".realwpm");
+  const realWpmLabel = document.querySelector('.realwpm');
   if (realWpmLabel && realWpmLabel.firstChild) {
-    realWpmLabel.firstChild.textContent = tRenderer("renderer.main.timer.speed", realWpmLabel.firstChild.textContent || "");
+    realWpmLabel.firstChild.textContent = tRenderer('renderer.main.timer.speed', realWpmLabel.firstChild.textContent || '');
   }
-  const timerControls = document.querySelector(".timer-controls");
+  const timerControls = document.querySelector('.timer-controls');
   if (timerControls) {
-    const ariaLabel = tRenderer("renderer.main.timer.controls_label", timerControls.getAttribute("aria-label") || "");
-    if (ariaLabel) timerControls.setAttribute("aria-label", ariaLabel);
+    const ariaLabel = tRenderer('renderer.main.timer.controls_label', timerControls.getAttribute('aria-label') || '');
+    if (ariaLabel) timerControls.setAttribute('aria-label', ariaLabel);
   }
   const labelsCrono = getTimerLabels();
   if (tToggle) tToggle.textContent = running ? labelsCrono.pauseLabel : labelsCrono.playLabel;
   // Abbreviated label for the floating window
-  const vfLabel = document.querySelector(".vf-label");
+  const vfLabel = document.querySelector('.vf-label');
   if (vfLabel) {
-    vfLabel.textContent = tRenderer("renderer.main.timer.floating_short", vfLabel.textContent || vfLabel.textContent);
+    vfLabel.textContent = tRenderer('renderer.main.timer.floating_short', vfLabel.textContent || vfLabel.textContent);
   }
   
   // Help button (title)
   if (btnHelp) {
-    const helpTitle = tRenderer("renderer.main.tooltips.help_button", btnHelp.getAttribute("title") || "");
-    if (helpTitle) btnHelp.setAttribute("title", helpTitle);
+    const helpTitle = tRenderer('renderer.main.tooltips.help_button', btnHelp.getAttribute('title') || '');
+    if (helpTitle) btnHelp.setAttribute('title', helpTitle);
   }
 }
 
 (async () => {
   try {
     const cfg = await window.electronAPI.getAppConfig();
-    if (AppConstants && typeof AppConstants.applyConfig === "function") {
+    if (AppConstants && typeof AppConstants.applyConfig === 'function') {
       MAX_TEXT_CHARS = AppConstants.applyConfig(cfg);
     } else if (cfg && cfg.maxTextChars) {
       MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
     }
   } catch (e) {
-    console.error("No se pudo obtener getAppConfig, usando defaults:", e);
+    console.error('No se pudo obtener getAppConfig, usando defaults:', e);
   }
 
   // Load user settings ONCE when the renderer starts
   try {
     const settings = await window.electronAPI.getSettings();
     settingsCache = settings || {};
-    idiomaActual = settingsCache.language || "es";
+    idiomaActual = settingsCache.language || 'es';
     if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
 
     // Load and apply renderer translations
@@ -162,11 +162,11 @@ function applyTranslations() {
       // Refresh the initial view with the loaded translations
       updatePreviewAndResults(currentText);
     } catch (e) {
-      console.warn("No se pudieron aplicar traducciones iniciales en renderer:", e);
+      console.warn('No se pudieron aplicar traducciones iniciales en renderer:', e);
     }
   } catch (e) {
-    console.error("No se pudo obtener user settings al inicio:", e);
-    // Current language is set to "es" by default
+    console.error('No se pudo obtener user settings al inicio:', e);
+    // Current language is set to 'es' by default
   }
 })();
 
@@ -179,13 +179,13 @@ let allPresetsCache = [];
 // ======================= Presets module =======================
 const { combinePresets, fillPresetsSelect, applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};
 if (!combinePresets || !fillPresetsSelect || !applyPresetSelection || !loadPresetsIntoDom) {
-  console.error("[renderer] RendererPresets no disponible");
+  console.error('[renderer] RendererPresets no disponible');
 }
 
 // ======================= Text Count =======================
 const { contarTexto: contarTextoModulo } = window.CountUtils || {};
-if (typeof contarTextoModulo !== "function") {
-  throw new Error("[renderer] CountUtils no disponible; no se puede continuar");
+if (typeof contarTextoModulo !== 'function') {
+  throw new Error('[renderer] CountUtils no disponible; no se puede continuar');
 }
 
 function contarTexto(texto) {
@@ -194,7 +194,7 @@ function contarTexto(texto) {
 
 // Helpers to update mode/language from other parts (e.g., menu)
 function setModoConteo(nuevoModo) {
-  if (nuevoModo === "simple" || nuevoModo === "preciso") {
+  if (nuevoModo === 'simple' || nuevoModo === 'preciso') {
     modoConteo = nuevoModo;
   }
 }
@@ -202,20 +202,20 @@ function setModoConteo(nuevoModo) {
 // ======================= HHh MMm SSs format =======================
 const { getTimeParts, formatTimeFromWords, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
 if (!getTimeParts || !formatTimeFromWords || !obtenerSeparadoresDeNumeros || !formatearNumero) {
-  console.error("[renderer] FormatUtils no disponible");
+  console.error('[renderer] FormatUtils no disponible');
 }
 
 // ======================= Update view and results =======================
 async function updatePreviewAndResults(text) {
   const previousText = currentText;      // Text before change
-  currentText = text || "";              // New text (normalized)
+  currentText = text || '';              // New text (normalized)
   const textChanged = previousText !== currentText;
 
   const displayText = currentText.replace(/\r?\n/g, '   ');
   const n = displayText.length;
 
   if (n === 0) {
-    const emptyMsg = tRenderer("renderer.main.selector_empty", "(empty)");
+    const emptyMsg = tRenderer('renderer.main.selector_empty', '(empty)');
     textPreview.textContent = emptyMsg;
   } else if (n <= PREVIEW_INLINE_THRESHOLD) {
     textPreview.textContent = displayText;
@@ -234,12 +234,12 @@ async function updatePreviewAndResults(text) {
   const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
 
-  resChars.textContent = msgRenderer("renderer.main.results.chars", { n: caracteresFormateado }, `Caracteres: ${caracteresFormateado}`);
-  resCharsNoSpace.textContent = msgRenderer("renderer.main.results.chars_no_space", { n: caracteresSinEspaciosFormateado }, `Chars w/o space: ${caracteresSinEspaciosFormateado}`);
-  resWords.textContent = msgRenderer("renderer.main.results.words", { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
+  resChars.textContent = msgRenderer('renderer.main.results.chars', { n: caracteresFormateado }, `Caracteres: ${caracteresFormateado}`);
+  resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado }, `Chars w/o space: ${caracteresSinEspaciosFormateado}`);
+  resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
 
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
-  resTime.textContent = msgRenderer("renderer.main.results.time", { h: hours, m: minutes, s: seconds });
+  resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
 
   // If detect that the text has changed from the previous state -> reset the timer in main
   if (textChanged) {
@@ -255,7 +255,7 @@ async function updatePreviewAndResults(text) {
         lastComputedElapsedForWpm = 0;
       }
     } catch (err) {
-      console.error("Error pidiendo reset del crono tras cambio de texto:", err);
+      console.error('Error pidiendo reset del crono tras cambio de texto:', err);
       uiResetTimer();
       lastComputedElapsedForWpm = 0;
     }
@@ -288,7 +288,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
         lastComputedElapsedForWpm = res.lastComputedElapsedForWpm;
       }
     } catch (e) {
-      console.error("Error manejando crono-state en renderer:", e);
+      console.error('Error manejando crono-state en renderer:', e);
     }
   });
 }
@@ -323,9 +323,9 @@ const loadPresets = async () => {
     }
     return allPresetsCache;
   } catch (err) {
-    console.error("Error cargando presets:", err);
-    if (presetsSelect) presetsSelect.innerHTML = "";
-    if (presetDescription) presetDescription.textContent = "";
+    console.error('Error cargando presets:', err);
+    if (presetsSelect) presetsSelect.innerHTML = '';
+    if (presetDescription) presetDescription.textContent = '';
     allPresetsCache = [];
     currentPresetName = null;
     return allPresetsCache;
@@ -337,12 +337,12 @@ const loadPresets = async () => {
   try {
     // Get current initial text (if any)
     const t = await window.electronAPI.getCurrentText();
-    updatePreviewAndResults(t || "");
+    updatePreviewAndResults(t || '');
 
     // Subscription to updates from main (modal)
     if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
       window.electronAPI.onCurrentTextUpdated((text) => {
-        updatePreviewAndResults(text || "");
+        updatePreviewAndResults(text || '');
       });
     }
 
@@ -362,7 +362,7 @@ const loadPresets = async () => {
             }
           }
         } catch (e) {
-          console.error("Error handling preset-created event:", e);
+          console.error('Error handling preset-created event:', e);
         }
       });
     }
@@ -370,8 +370,8 @@ const loadPresets = async () => {
     // Load presets and save them to the cache
     const allPresets = await loadPresets();
 
-    // Select the initial "default" preset from the general settings and set it visually
-    const initialPreset = allPresets.find(p => p.name === "default");
+    // Select the initial 'default' preset from the general settings and set it visually
+    const initialPreset = allPresets.find(p => p.name === 'default');
     if (initialPreset) {
       currentPresetName = initialPreset.name;
       applyPresetSelection(initialPreset, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
@@ -379,7 +379,7 @@ const loadPresets = async () => {
     }
 
     // Update the final view with the possible initial WPM
-    updatePreviewAndResults(t || "");
+    updatePreviewAndResults(t || '');
 
     // --- Listener for settings changes from main/preload (optional) ---
     // If main/preload exposes an event, we use it to keep settingsCache and currentLanguage updated.
@@ -409,7 +409,7 @@ const loadPresets = async () => {
               wpm = selected.wpm;
             }
           } catch (err) {
-            console.error("Error recargando presets tras cambio de idioma:", err);
+            console.error('Error recargando presets tras cambio de idioma:', err);
           }
           updatePreviewAndResults(currentText);
         }
@@ -419,7 +419,7 @@ const loadPresets = async () => {
         }
         updatePreviewAndResults(currentText);
       } catch (err) {
-        console.error("Error manejando settings change:", err);
+        console.error('Error manejando settings change:', err);
       }
     };
 
@@ -438,7 +438,7 @@ const loadPresets = async () => {
     }
 
     // ------------------------------
-    // Initialize and bind the "Precise Mode" toggle
+    // Initialize and bind the 'Precise Mode' toggle
     // ------------------------------
     try {
       if (toggleModoPreciso) {
@@ -463,11 +463,11 @@ const loadPresets = async () => {
               try {
                 await window.electronAPI.setModeConteo(nuevoModo);
               } catch (ipcErr) {
-                console.error("Error persistiendo modeConteo mediante setModeConteo:", ipcErr);
+                console.error('Error persistiendo modeConteo mediante setModeConteo:', ipcErr);
               }
             }
           } catch (err) {
-            console.error("Error manejando cambio del toggleModoPreciso:", err);
+            console.error('Error manejando cambio del toggleModoPreciso:', err);
           }
         });
 
@@ -479,7 +479,7 @@ const loadPresets = async () => {
             const modo = (s && s.modeConteo) ? s.modeConteo : modoConteo;
             toggleModoPreciso.checked = (modo === 'preciso');
           } catch (err) {
-            console.error("Error sincronizando toggle desde settings:", err);
+            console.error('Error sincronizando toggle desde settings:', err);
           }
         };
 
@@ -487,46 +487,46 @@ const loadPresets = async () => {
         try { syncToggleFromSettings(settingsCache || {}); } catch (e) { /* noop */ }
       }
     } catch (ex) {
-      console.error("Error inicializando toggleModoPreciso:", ex);
+      console.error('Error inicializando toggleModoPreciso:', ex);
     }
 
   } catch (e) {
-    console.error("Error inicializando renderer:", e);
+    console.error('Error inicializando renderer:', e);
   }
   /* --- Info modal utility --- */
-  const infoModal = document.getElementById("infoModal");
-  const infoModalBackdrop = document.getElementById("infoModalBackdrop");
-  const infoModalClose = document.getElementById("infoModalClose");
-  const infoModalTitle = document.getElementById("infoModalTitle");
-  const infoModalContent = document.getElementById("infoModalContent");
+  const infoModal = document.getElementById('infoModal');
+  const infoModalBackdrop = document.getElementById('infoModalBackdrop');
+  const infoModalClose = document.getElementById('infoModalClose');
+  const infoModalTitle = document.getElementById('infoModalTitle');
+  const infoModalContent = document.getElementById('infoModalContent');
 
   function closeInfoModal() {
     try {
       if (!infoModal || !infoModalContent) return;
-      infoModal.setAttribute("aria-hidden", "true");
+      infoModal.setAttribute('aria-hidden', 'true');
       infoModalContent.innerHTML = '<div class="info-loading">Cargando...</div>';
     } catch (e) {
-      console.error("Error cerrando modal info:", e);
+      console.error('Error cerrando modal info:', e);
     }
   }
 
-  if (infoModalClose) infoModalClose.addEventListener("click", closeInfoModal);
-  if (infoModalBackdrop) infoModalBackdrop.addEventListener("click", closeInfoModal);
+  if (infoModalClose) infoModalClose.addEventListener('click', closeInfoModal);
+  if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', closeInfoModal);
 
-  window.addEventListener("keydown", (ev) => {
+  window.addEventListener('keydown', (ev) => {
     if (!infoModal) return;
-    if (ev.key === "Escape" && infoModal.getAttribute("aria-hidden") === "false") {
+    if (ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') {
       closeInfoModal();
     }
   });
 
   async function fetchText(path) {
     try {
-      const res = await fetch(path, { cache: "no-store" });
+      const res = await fetch(path, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.text();
     } catch (e) {
-      console.debug("fetchText error:", path, e);
+      console.debug('fetchText error:', path, e);
       return null;
     }
   }
@@ -537,17 +537,17 @@ const loadPresets = async () => {
     if (!tRenderer) return htmlString;
     try {
       const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlString, "text/html");
-      doc.querySelectorAll("[data-i18n]").forEach((el) => {
-        const dataKey = el.getAttribute("data-i18n");
+      const doc = parser.parseFromString(htmlString, 'text/html');
+      doc.querySelectorAll('[data-i18n]').forEach((el) => {
+        const dataKey = el.getAttribute('data-i18n');
         if (!dataKey) return;
         const tKey = `renderer.info.${key}.${dataKey}`;
-        const translated = tRenderer(tKey, el.textContent || "");
+        const translated = tRenderer(tKey, el.textContent || '');
         if (translated) el.textContent = translated;
       });
       return doc.body.innerHTML;
     } catch (e) {
-      console.warn("translateInfoHtml failed:", e);
+      console.warn('translateInfoHtml failed:', e);
       return htmlString;
     }
   }
@@ -555,11 +555,11 @@ const loadPresets = async () => {
   async function showInfoModal(key, opts = {}) {
     // key: 'readme' | 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
     const sectionTitles = {
-      readme: "Readme",
-      instrucciones: "Instrucciones completas",
-      guia_basica: "Guia basica",
-      faq: "Preguntas frecuentes (FAQ)",
-      acerca_de: "Acerca de"
+      readme: 'Readme',
+      instrucciones: 'Instrucciones completas',
+      guia_basica: 'Guia basica',
+      faq: 'Preguntas frecuentes (FAQ)',
+      acerca_de: 'Acerca de'
     };
 
     if (!infoModal || !infoModalTitle || !infoModalContent) return;
@@ -583,21 +583,21 @@ const loadPresets = async () => {
       fileToLoad = `./info/${key}.html`;
     }
 
-    const translationKey = (key === "guia_basica" || key === "faq") ? "instrucciones" : key;
-    // Modal title: Display the section title (not generic "Info")
-    const defaultTitle = sectionTitles[key] || (opts.title || "InformaciA3n");
+    const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
+    // Modal title: Display the section title (not generic 'Info')
+    const defaultTitle = sectionTitles[key] || (opts.title || 'InformaciA3n');
     infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
 
     // Open modal
-    infoModal.setAttribute("aria-hidden", "false");
+    infoModal.setAttribute('aria-hidden', 'false');
 
     // Load HTML
     const tryHtml = await fetchText(fileToLoad);
     if (tryHtml === null) {
       // Fallback: Indicate missing content
       infoModalContent.innerHTML =
-        `<p>No hay contenido disponible para "${infoModalTitle.textContent}".</p>`;
-      if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
+        `<p>No hay contenido disponible para '${infoModalTitle.textContent}'.</p>`;
+      if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
       return;
     }
 
@@ -617,7 +617,7 @@ const loadPresets = async () => {
           const target = infoModalContent.querySelector(`#${sectionId}`);
           if (!target) {
             // If the ID doesn't exist, do nothing else
-            if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
+            if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
             return;
           }
 
@@ -633,100 +633,100 @@ const loadPresets = async () => {
           }
 
           // Finally, focus on the content so the reader can use the keyboard
-          if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
+          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
         } catch (e) {
-          console.error("Error desplazando modal a seccion:", e);
-          if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
+          console.error('Error desplazando modal a seccion:', e);
+          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
         }
       });
     } else {
       // No section: only focus on the content (entire document)
-      if (infoModalContent && typeof infoModalContent.focus === "function") infoModalContent.focus();
+      if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
     }
   }
 
   // ======================= TOP BAR: Register actions with menuActions =======================
   // Ensure menu.js is loaded (script included before renderer.js)
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {  
-    window.menuActions.registerMenuAction("guia_basica", () => { showInfoModal("guia_basica") });
-    window.menuActions.registerMenuAction("instrucciones_completas", () => { showInfoModal("instrucciones") });
-    window.menuActions.registerMenuAction("faq", () => { showInfoModal("faq") });
+    window.menuActions.registerMenuAction('guia_basica', () => { showInfoModal('guia_basica') });
+    window.menuActions.registerMenuAction('instrucciones_completas', () => { showInfoModal('instrucciones') });
+    window.menuActions.registerMenuAction('faq', () => { showInfoModal('faq') });
     window.menuActions.registerMenuAction('cargador_texto', () => {
-      Notify.notifyMain("renderer.alerts.wip_cargador_texto"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_cargador_texto'); // TEMP
     });
     window.menuActions.registerMenuAction('contador_imagen', () => {
-      Notify.notifyMain("renderer.alerts.wip_contador_imagen"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_contador_imagen'); // TEMP
     });
     window.menuActions.registerMenuAction('test_velocidad', () => {
-      Notify.notifyMain("renderer.alerts.wip_test_velocidad"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // TEMP
     });
     window.menuActions.registerMenuAction('preferencias_idioma', () => {
-      Notify.notifyMain("renderer.alerts.wip_idioma"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_idioma'); // TEMP
     });
     window.menuActions.registerMenuAction('diseno_skins', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_skins"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // TEMP
     });
     window.menuActions.registerMenuAction('diseno_crono_flotante', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_crono"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // TEMP
     });
     window.menuActions.registerMenuAction('diseno_fuentes', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_fuentes"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // TEMP
     });
     window.menuActions.registerMenuAction('diseno_colores', () => {
-      Notify.notifyMain("renderer.alerts.wip_diseno_colores"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // TEMP
     });
 
-    window.menuActions.registerMenuAction("presets_por_defecto", async () => {
+    window.menuActions.registerMenuAction('presets_por_defecto', async () => {
       try {
-        if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== "function") {
-          console.warn("openDefaultPresetsFolder no disponible en electronAPI");
-          Notify.notifyMain("renderer.alerts.open_presets_unsupported");
+        if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== 'function') {
+          console.warn('openDefaultPresetsFolder no disponible en electronAPI');
+          Notify.notifyMain('renderer.alerts.open_presets_unsupported');
           return;
         }
 
         const res = await window.electronAPI.openDefaultPresetsFolder();
         if (res && res.ok) {
           // Folder opened successfully; do not show intrusive notifications
-          console.debug("Carpeta config/presets_defaults abierta en el explorador.");
+          console.debug('Carpeta config/presets_defaults abierta en el explorador.');
           return;
         }
 
         // In case of failure, inform the user
-        const errMsg = res && res.error ? String(res.error) : "Desconocido";
-        console.error("No se pudo abrir carpeta presets por defecto:", errMsg);
-        Notify.notifyMain("renderer.alerts.open_presets_fail");
+        const errMsg = res && res.error ? String(res.error) : 'Desconocido';
+        console.error('No se pudo abrir carpeta presets por defecto:', errMsg);
+        Notify.notifyMain('renderer.alerts.open_presets_fail');
       } catch (err) {
-        console.error("Error abriendo carpeta presets por defecto:", err);
-        Notify.notifyMain("renderer.alerts.open_presets_error");
+        console.error('Error abriendo carpeta presets por defecto:', err);
+        Notify.notifyMain('renderer.alerts.open_presets_error');
       }
     });
 
     window.menuActions.registerMenuAction('avisos', () => {
-      Notify.notifyMain("renderer.alerts.wip_avisos"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_avisos'); // TEMP
     });
     window.menuActions.registerMenuAction('discord', () => {
-      Notify.notifyMain("renderer.alerts.wip_discord"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_discord'); // TEMP
     });
     window.menuActions.registerMenuAction('links_interes', () => {
-      Notify.notifyMain("renderer.alerts.wip_links_interes"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_links_interes'); // TEMP
     });
     window.menuActions.registerMenuAction('colabora', () => {
-      Notify.notifyMain("renderer.alerts.wip_colabora"); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_colabora'); // TEMP
     });
 
     window.menuActions.registerMenuAction('actualizar_version', async () => {
       try {
         await window.electronAPI.checkForUpdates();
       } catch (e) {
-        console.error("Error al solicitar checkForUpdates:", e);
+        console.error('Error al solicitar checkForUpdates:', e);
       }
     });
 
-    window.menuActions.registerMenuAction("readme", () => { showInfoModal("readme") });
-    window.menuActions.registerMenuAction("acerca_de", () => { showInfoModal("acerca_de") });
+    window.menuActions.registerMenuAction('readme', () => { showInfoModal('readme') });
+    window.menuActions.registerMenuAction('acerca_de', () => { showInfoModal('acerca_de') });
 
     // Generic example for viewing payloads not explicitly registered:
-    // (optional) Registering a "catch-all" is not necessary; menu.js already logs payloads without a handler.
+    // (optional) Registering a 'catch-all' is not necessary; menu.js already logs payloads without a handler.
   } else {
     // If menuActions is unavailable, register a direct receiver (fallback)
     if (window.electronAPI && typeof window.electronAPI.onMenuClick === 'function') {
@@ -751,7 +751,7 @@ presetsSelect.addEventListener('change', () => {
     wpm = preset.wpm;
     wpmInput.value = wpm;
     wpmSlider.value = wpm;
-    presetDescription.textContent = preset.description || "";
+    presetDescription.textContent = preset.description || '';
     updatePreviewAndResults(currentText);
   }
 });
@@ -761,7 +761,7 @@ function resetPresetSelection() {
   currentPresetName = null;
   // Leave the select without visual selection
   presetsSelect.selectedIndex = -1;
-  presetDescription.textContent = "";
+  presetDescription.textContent = '';
 }
 
 // Slider/input WPM
@@ -791,62 +791,62 @@ wpmInput.addEventListener('keydown', (e) => {
 });
 
 // ======================= Overwrite with clipboard button =======================
-btnCountClipboard.addEventListener("click", async () => {
+btnCountClipboard.addEventListener('click', async () => {
   try {
-    let clip = await window.electronAPI.readClipboard() || "";
+    let clip = await window.electronAPI.readClipboard() || '';
     if (clip.length > MAX_TEXT_CHARS) {
-      console.warn("Contenido del portapapeles supera el tamano permitido - sera truncado.");
+      console.warn('Contenido del portapapeles supera el tamano permitido - sera truncado.');
       clip = clip.slice(0, MAX_TEXT_CHARS);
-      Notify.notifyMain("renderer.alerts.clipboard_overflow");
+      Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
 
     // Send object with meta (overwrite)
     const resp = await window.electronAPI.setCurrentText({
       text: clip,
-      meta: { source: "main-window", action: "overwrite", clipboardText: clip }
+      meta: { source: 'main-window', action: 'overwrite', clipboardText: clip }
     });
 
     updatePreviewAndResults(resp && resp.text ? resp.text : clip);
-    resp && resp.truncated && Notify.notifyMain("renderer.editor_alerts.text_truncated");
+    resp && resp.truncated && Notify.notifyMain('renderer.editor_alerts.text_truncated');
   } catch (err) {
-    console.error("clipboard error:", err);
-    Notify.notifyMain("renderer.alerts.clipboard_error");
+    console.error('clipboard error:', err);
+    Notify.notifyMain('renderer.alerts.clipboard_error');
   }
 });
 
-// ======================= "Paste clipboard in new line" button =======================
-btnAppendClipboardNewLine.addEventListener("click", async () => {
+// ======================= 'Paste clipboard in new line' button =======================
+btnAppendClipboardNewLine.addEventListener('click', async () => {
   try {
-    const clip = await window.electronAPI.readClipboard() || "";
-    const current = await window.electronAPI.getCurrentText() || "";
+    const clip = await window.electronAPI.readClipboard() || '';
+    const current = await window.electronAPI.getCurrentText() || '';
 
-    let joiner = "";
-    if (current) joiner = current.endsWith("\n") || current.endsWith("\r") ? "\n" : "\n\n";
+    let joiner = '';
+    if (current) joiner = current.endsWith('\n') || current.endsWith('\r') ? '\n' : '\n\n';
 
     const available = MAX_TEXT_CHARS - current.length;
     if (available <= 0) {
-      Notify.notifyMain("renderer.alerts.too_big");
+      Notify.notifyMain('renderer.alerts.text_limit');
       return;
     }
 
     const toAdd = clip.slice(0, available);
-    const newFull = current + (current ? joiner : "") + toAdd;
+    const newFull = current + (current ? joiner : '') + toAdd;
 
     // Send object with meta (append_newline)
     const resp = await window.electronAPI.setCurrentText({
       text: newFull,
-      meta: { source: "main-window", action: "append_newline", clipboardText: clip }
+      meta: { source: 'main-window', action: 'append_newline', clipboardText: clip }
     });
 
     updatePreviewAndResults(resp && resp.text ? resp.text : newFull);
 
     // Notify truncation only if main confirms it
     if (resp && resp.truncated) {
-      Notify.notifyMain("renderer.editor_alerts.text_truncated");
+      Notify.notifyMain('renderer.editor_alerts.text_truncated');
     }
   } catch (err) {
-    console.error("Ocurrio un error al pegar el portapapeles:", err);
-    Notify.notifyMain("renderer.alerts.paste_error");
+    console.error('Ocurrio un error al pegar el portapapeles:', err);
+    Notify.notifyMain('renderer.alerts.paste_error');
   }
 });
 
@@ -855,26 +855,26 @@ btnEdit.addEventListener('click', async () => {
   try {
     await window.electronAPI.openEditor();
   } catch (err) {
-    console.error("Error abriendo editor manual:", err);
+    console.error('Error abriendo editor manual:', err);
     hideManualLoader();
   }
 });
 
 // ======================= Clear Button (Main Screen) =======================
-btnEmptyMain.addEventListener("click", async () => {
+btnEmptyMain.addEventListener('click', async () => {
   try {
     const resp = await window.electronAPI.setCurrentText({
-      text: "",
-      meta: { source: "main-window", action: "overwrite" }
+      text: '',
+      meta: { source: 'main-window', action: 'overwrite' }
     });
 
-    updatePreviewAndResults(resp && resp.text ? resp.text : "");
-    if (window.electronAPI && typeof window.electronAPI.forceClearEditor === "function") {
-      try { await window.electronAPI.forceClearEditor(); } catch (e) { console.error("Error invocando forceClearEditor:", e); }
+    updatePreviewAndResults(resp && resp.text ? resp.text : '');
+    if (window.electronAPI && typeof window.electronAPI.forceClearEditor === 'function') {
+      try { await window.electronAPI.forceClearEditor(); } catch (e) { console.error('Error invocando forceClearEditor:', e); }
     }
   } catch (err) {
-    console.error("Error vaciando texto desde pantalla principal:", err);
-    Notify.notifyMain("renderer.alerts.clear_error");
+    console.error('Error vaciando texto desde pantalla principal:', err);
+    Notify.notifyMain('renderer.alerts.clear_error');
   }
 });
 
@@ -891,11 +891,11 @@ btnNewPreset.addEventListener('click', () => {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(wpm);
     } else {
-      console.warn("openPresetModal no disponible en electronAPI");
-      Notify.notifyMain("renderer.alerts.modal_unavailable");
+      console.warn('openPresetModal no disponible en electronAPI');
+      Notify.notifyMain('renderer.alerts.modal_unavailable');
     }
   } catch (e) {
-    console.error("Error abriendo modal de nuevo preset:", e);
+    console.error('Error abriendo modal de nuevo preset:', e);
   }
 });
 
@@ -909,7 +909,7 @@ btnEditPreset.addEventListener('click', async () => {
         await window.electronAPI.notifyNoSelectionEdit();
         return;
       } else {
-        Notify.notifyMain("renderer.alerts.edit_none");
+        Notify.notifyMain('renderer.alerts.edit_none');
         return;
       }
     }
@@ -917,23 +917,23 @@ btnEditPreset.addEventListener('click', async () => {
     // Find preset data from cache
     const preset = allPresetsCache.find(p => p.name === selectedName);
     if (!preset) {
-      Notify.notifyMain("renderer.alerts.preset_not_found");
+      Notify.notifyMain('renderer.alerts.preset_not_found');
       return;
     }
 
     // Open modal in edit mode. We pass an object with mode and the preset data.
     const payload = { wpm: wpm, mode: 'edit', preset: preset };
     try {
-      console.debug("[renderer] openPresetModal payload:", payload);
+      console.debug('[renderer] openPresetModal payload:', payload);
     } catch (e) { /* noop */ }
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
     } else {
-      Notify.notifyMain("renderer.alerts.edit_unavailable");
+      Notify.notifyMain('renderer.alerts.edit_unavailable');
     }
   } catch (e) {
-    console.error("Error abriendo modal de editar preset:", e);
-    Notify.notifyMain("renderer.alerts.edit_error");
+    console.error('Error abriendo modal de editar preset:', e);
+    Notify.notifyMain('renderer.alerts.edit_error');
   }
 });
 
@@ -949,7 +949,7 @@ btnDeletePreset.addEventListener('click', async () => {
       await loadPresets();
       presetsSelect.selectedIndex = -1;
       currentPresetName = null;
-      presetDescription.textContent = "";
+      presetDescription.textContent = '';
       // No further UI dialog required - main already showed confirmation earlier.
       return;
     } else {
@@ -963,12 +963,12 @@ btnDeletePreset.addEventListener('click', async () => {
         return;
       }
       // Unexpected error: log and show a simple alert
-      console.error("Error deleting preset:", res && res.error ? res.error : res);
-      Notify.notifyMain("renderer.alerts.delete_error");
+      console.error('Error deleting preset:', res && res.error ? res.error : res);
+      Notify.notifyMain('renderer.alerts.delete_error');
     }
   } catch (e) {
-    console.error("Error en peticion de borrado:", e);
-    Notify.notifyMain("renderer.alerts.delete_error");
+    console.error('Error en peticion de borrado:', e);
+    Notify.notifyMain('renderer.alerts.delete_error');
   }
 });
 
@@ -985,7 +985,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
       // After restoration we leave selection cleared (consistently with delete behavior).
       presetsSelect.selectedIndex = -1;
       currentPresetName = null;
-      presetDescription.textContent = "";
+      presetDescription.textContent = '';
 
       return;
     } else {
@@ -993,12 +993,12 @@ btnResetDefaultPresets.addEventListener('click', async () => {
         // User cancelled in native dialog; nothing to do
         return;
       }
-      console.error("Error restaurando presets:", res && res.error ? res.error : res);
-      Notify.notifyMain("renderer.alerts.restore_error");
+      console.error('Error restaurando presets:', res && res.error ? res.error : res);
+      Notify.notifyMain('renderer.alerts.restore_error');
     }
   } catch (e) {
-    console.error("Error en peticion de restaurar presets:", e);
-    Notify.notifyMain("renderer.alerts.restore_error");
+    console.error('Error en peticion de restaurar presets:', e);
+    Notify.notifyMain('renderer.alerts.restore_error');
   }
 });
 
@@ -1039,11 +1039,11 @@ function hideManualLoader() {
   if (btnEdit) btnEdit.disabled = false;
 }
 
-const timerModule = (typeof window !== "undefined") ? window.RendererTimer : null;
+const timerModule = (typeof window !== 'undefined') ? window.RendererTimer : null;
 
 const getTimerLabels = () => ({
-  playLabel: tRenderer ? tRenderer("renderer.main.timer.play_symbol", ">") : ">",
-  pauseLabel: tRenderer ? tRenderer("renderer.main.timer.pause_symbol", "||") : "||"
+  playLabel: tRenderer ? tRenderer('renderer.main.timer.play_symbol', '>') : '>',
+  pauseLabel: tRenderer ? tRenderer('renderer.main.timer.pause_symbol', '||') : '||'
 });
 
 const formatTimer = (ms) => timerModule.formatTimer(ms);
@@ -1093,7 +1093,7 @@ const openFloating = async () => {
       running = runningVal;
     }
   });
-  if (res && typeof res.elapsed === "number") {
+  if (res && typeof res.elapsed === 'number') {
     lastComputedElapsedForWpm = res.elapsed;
     prevRunning = running;
   }

@@ -73,9 +73,9 @@ const api = {
     setCronoElapsed: (ms) => ipcRenderer.send('crono-set-elapsed', ms),
     getCronoState: () => ipcRenderer.invoke('crono-get-state'),
     onCronoState: (cb) => {
-        const wrapper = (_e, state) => { try { cb(state); } catch (err) { console.error("onCronoState callback error:", err); } };
+        const wrapper = (_e, state) => { try { cb(state); } catch (err) { console.error('onCronoState callback error:', err); } };
         ipcRenderer.on('crono-state', wrapper);
-        return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (e) { console.error("removeListener error (crono-state):", e); } };
+        return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (e) { console.error('removeListener error (crono-state):', e); } };
     },
 
     // ------------------ NUEVAS APIs para la ventana flotante (actualizado) ------------------
@@ -95,9 +95,9 @@ const api = {
 
     // Editor manual listo (para ocultar loader en ventana principal)
     onManualEditorReady: (cb) => {
-        const listener = () => { try { cb(); } catch (err) { console.error("manual-ready callback error:", err); } };
+        const listener = () => { try { cb(); } catch (err) { console.error('manual-ready callback error:', err); } };
         ipcRenderer.on('manual-editor-ready', listener);
-        return () => { try { ipcRenderer.removeListener('manual-editor-ready', listener); } catch (e) { console.error("removeListener error (manual-editor-ready):", e); } };
+        return () => { try { ipcRenderer.removeListener('manual-editor-ready', listener); } catch (e) { console.error('removeListener error (manual-editor-ready):', e); } };
     }
 };
 

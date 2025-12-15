@@ -1,8 +1,8 @@
 // electron/text_state.js
-const fs = require("fs");
+const fs = require('fs');
 
 // Estado interno compartido
-let currentText = "";
+let currentText = '';
 
 // Limite por defecto. El limite efectivo se inyecta desde main.js via init({ maxTextChars }).
 let MAX_TEXT_CHARS = 10_000_000; 
@@ -20,18 +20,18 @@ let getWindows = () => ({ mainWin: null, editorWin: null });
 function persistCurrentTextOnQuit() {
   try {
     if (saveJson && CURRENT_TEXT_FILE) {
-      saveJson(CURRENT_TEXT_FILE, { text: currentText || "" });
+      saveJson(CURRENT_TEXT_FILE, { text: currentText || '' });
     }
 
     // Mantener comportamiento previo: asegurar que SETTINGS_FILE exista
     if (loadJson && saveJson && SETTINGS_FILE) {
-      const settings = loadJson(SETTINGS_FILE, { language: "es", presets: [] });
+      const settings = loadJson(SETTINGS_FILE, { language: 'es', presets: [] });
       if (!fs.existsSync(SETTINGS_FILE)) {
         saveJson(SETTINGS_FILE, settings);
       }
     }
   } catch (e) {
-    console.error("Error persistiendo texto en quit:", e);
+    console.error('Error persistiendo texto en quit:', e);
   }
 }
 
@@ -50,23 +50,23 @@ function init(options) {
   SETTINGS_FILE = opts.settingsFile;
   appRef = opts.app || null;
 
-  if (typeof opts.maxTextChars === "number" && opts.maxTextChars > 0) {
+  if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
     MAX_TEXT_CHARS = opts.maxTextChars;
   }
 
   // Carga inicial desde disco + truncado si excede MAX_TEXT_CHARS
   try {
     let raw = loadJson
-      ? loadJson(CURRENT_TEXT_FILE, { text: "" })
-      : { text: "" };
+      ? loadJson(CURRENT_TEXT_FILE, { text: '' })
+      : { text: '' };
 
-    let txt = "";
-    if (raw && typeof raw === "object" && Object.prototype.hasOwnProperty.call(raw, "text")) {
-      txt = String(raw.text || "");
-    } else if (typeof raw === "string") {
+    let txt = '';
+    if (raw && typeof raw === 'object' && Object.prototype.hasOwnProperty.call(raw, 'text')) {
+      txt = String(raw.text || '');
+    } else if (typeof raw === 'string') {
       txt = raw;
     } else {
-      txt = "";
+      txt = '';
     }
 
     if (txt.length > MAX_TEXT_CHARS) {
@@ -81,13 +81,13 @@ function init(options) {
 
     currentText = txt;
   } catch (e) {
-    console.error("Error cargando current_text.json:", e);
-    currentText = "";
+    console.error('Error cargando current_text.json:', e);
+    currentText = '';
   }
 
   // Persistencia en before-quit
-  if (appRef && typeof appRef.on === "function") {
-    appRef.on("before-quit", persistCurrentTextOnQuit);
+  if (appRef && typeof appRef.on === 'function') {
+    appRef.on('before-quit', persistCurrentTextOnQuit);
   }
 }
 
@@ -99,32 +99,32 @@ function init(options) {
  * y maneja el broadcast al editor manual.
  */
 function registerIpc(ipcMain, windowsResolver) {
-  if (typeof windowsResolver === "function") {
+  if (typeof windowsResolver === 'function') {
     getWindows = windowsResolver;
-  } else if (windowsResolver && typeof windowsResolver === "object") {
+  } else if (windowsResolver && typeof windowsResolver === 'object') {
     getWindows = () => windowsResolver;
   }
 
   // Devuelve el texto actual como string simple (compatibilidad)
-  ipcMain.handle("get-current-text", async () => {
-    return currentText || "";
+  ipcMain.handle('get-current-text', async () => {
+    return currentText || '';
   });
 
   // set-current-text: acepta { text, meta } o string simple
-  ipcMain.handle("set-current-text", (_event, payload) => {
+  ipcMain.handle('set-current-text', (_event, payload) => {
     try {
       let incomingMeta = null;
-      let text = "";
+      let text = '';
 
       if (
         payload &&
-        typeof payload === "object" &&
-        Object.prototype.hasOwnProperty.call(payload, "text")
+        typeof payload === 'object' &&
+        Object.prototype.hasOwnProperty.call(payload, 'text')
       ) {
-        text = String(payload.text || "");
+        text = String(payload.text || '');
         incomingMeta = payload.meta || null;
       } else {
-        text = String(payload || "");
+        text = String(payload || '');
       }
 
       let truncated = false;
@@ -132,7 +132,7 @@ function registerIpc(ipcMain, windowsResolver) {
         text = text.slice(0, MAX_TEXT_CHARS);
         truncated = true;
         console.warn(
-          "set-current-text: entrada truncada a " + MAX_TEXT_CHARS + " caracteres."
+          'set-current-text: entrada truncada a ' + MAX_TEXT_CHARS + ' caracteres.'
         );
       }
 
@@ -143,22 +143,22 @@ function registerIpc(ipcMain, windowsResolver) {
       // Notificar main window (para que renderer actualice preview/resultados)
       if (mainWin && !mainWin.isDestroyed()) {
         try {
-          mainWin.webContents.send("current-text-updated", currentText);
+          mainWin.webContents.send('current-text-updated', currentText);
         } catch (err) {
-          console.error("Error enviando current-text-updated a mainWin:", err);
+          console.error('Error enviando current-text-updated a mainWin:', err);
         }
       }
 
       // Notificar editor manual con objeto { text, meta }
       if (editorWin && !editorWin.isDestroyed()) {
         try {
-          editorWin.webContents.send("manual-text-updated", {
+          editorWin.webContents.send('manual-text-updated', {
             text: currentText,
-            meta: incomingMeta || { source: "main", action: "set" },
+            meta: incomingMeta || { source: 'main', action: 'set' },
           });
         } catch (err) {
           console.error(
-            "Error enviando manual-text-updated a editorWin:",
+            'Error enviando manual-text-updated a editorWin:',
             err
           );
         }
@@ -171,47 +171,47 @@ function registerIpc(ipcMain, windowsResolver) {
         text: currentText,
       };
     } catch (err) {
-      console.error("Error en set-current-text:", err);
+      console.error('Error en set-current-text:', err);
       return { ok: false, error: String(err) };
     }
   });
 
   // Limpieza forzada del editor (invocada desde la pantalla principal)
-  ipcMain.handle("force-clear-editor", async () => {
+  ipcMain.handle('force-clear-editor', async () => {
     try {
       const { mainWin, editorWin } = getWindows() || {};
 
       // Mantener estado interno
-      currentText = "";
+      currentText = '';
 
       // Notificar a la ventana principal (como en main.js estable)
       if (mainWin && !mainWin.isDestroyed()) {
         try {
-          mainWin.webContents.send("current-text-updated", currentText);
+          mainWin.webContents.send('current-text-updated', currentText);
         } catch (e) {
-          console.error("Error enviando current-text-updated en force-clear-editor:", e);
+          console.error('Error enviando current-text-updated en force-clear-editor:', e);
         }
       }
 
       // Notificar al editor para que ejecute su logica de limpieza local
       if (editorWin && !editorWin.isDestroyed()) {
         try {
-          editorWin.webContents.send("manual-force-clear", "");
+          editorWin.webContents.send('manual-force-clear', '');
         } catch (e) {
-          console.error("Error enviando manual-force-clear:", e);
+          console.error('Error enviando manual-force-clear:', e);
         }
       }
 
       return { ok: true };
     } catch (e) {
-      console.error("Error en force-clear-editor:", e);
+      console.error('Error en force-clear-editor:', e);
       return { ok: false, error: String(e) };
     }
   });
 }
 
 function getCurrentText() {
-  return currentText || "";
+  return currentText || '';
 }
 
 module.exports = {

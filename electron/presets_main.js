@@ -2,22 +2,22 @@
 // Logica de presets en el proceso principal: defaults, settings.presets,
 // dialogos nativos y handlers IPC asociados.
 
-const fs = require("fs");
-const path = require("path");
-const { dialog, shell } = require("electron");
+const fs = require('fs');
+const path = require('path');
+const { dialog, shell } = require('electron');
 
-const { CONFIG_PRESETS_DIR, ensureConfigPresetsDir } = require("./fs_storage");
-const settingsState = require("./settings");
-const menuBuilder = require("./menu_builder");
+const { CONFIG_PRESETS_DIR, ensureConfigPresetsDir } = require('./fs_storage');
+const settingsState = require('./settings');
+const menuBuilder = require('./menu_builder');
 
 // Carpeta fuente de presets por defecto (.js)
-const PRESETS_SOURCE_DIR = path.join(__dirname, "presets"); // carpeta original: electron/presets
+const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // carpeta original: electron/presets
 
 // Helpers: presets defaults (general + por idioma si existe)
 function sanitizeLangCode(lang) {
-  if (typeof lang !== "string") return "";
+  if (typeof lang !== 'string') return '';
   const base = lang.trim().toLowerCase().split(/[-_]/)[0];
-  return /^[a-z0-9]+$/.test(base) ? base : "";
+  return /^[a-z0-9]+$/.test(base) ? base : '';
 }
 
 function loadPresetArrayFromJs(filePath) {
@@ -40,7 +40,7 @@ function loadPresetArrayFromJs(filePath) {
  */
 function loadDefaultPresetsCombined(lang) {
   const presetsDir = PRESETS_SOURCE_DIR;
-  const combined = loadPresetArrayFromJs(path.join(presetsDir, "defaults_presets.js")).slice();
+  const combined = loadPresetArrayFromJs(path.join(presetsDir, 'defaults_presets.js')).slice();
   const langCode = sanitizeLangCode(lang);
   if (langCode) {
     const langFile = path.join(presetsDir, `defaults_presets_${langCode}.js`);
@@ -67,7 +67,7 @@ function copyDefaultPresetsIfMissing() {
         const src = path.join(PRESETS_SOURCE_DIR, fname);
         const dest = path.join(
           CONFIG_PRESETS_DIR,
-          fname.replace(/\.js$/i, ".json")
+          fname.replace(/\.js$/i, '.json')
         );
 
         // Solo copiar si existe el JS fuente y no existe todavia el JSON
@@ -82,7 +82,7 @@ function copyDefaultPresetsIfMissing() {
               arr = arr.default;
             }
             if (!Array.isArray(arr)) arr = [];
-            fs.writeFileSync(dest, JSON.stringify(arr, null, 2), "utf8");
+            fs.writeFileSync(dest, JSON.stringify(arr, null, 2), 'utf8');
             console.debug(
               `[presets_main] Copied default preset: ${src} -> ${dest}`
             );
@@ -95,7 +95,7 @@ function copyDefaultPresetsIfMissing() {
         }
       });
   } catch (err) {
-    console.error("[presets_main] Error en copyDefaultPresetsIfMissing:", err);
+    console.error('[presets_main] Error en copyDefaultPresetsIfMissing:', err);
   }
 }
 
@@ -108,11 +108,11 @@ function copyDefaultPresetsIfMissing() {
  */
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain) {
-    throw new Error("[presets_main] registerIpc requiere ipcMain");
+    throw new Error('[presets_main] registerIpc requiere ipcMain');
   }
 
   const resolveWindows =
-    typeof getWindows === "function"
+    typeof getWindows === 'function'
       ? () => getWindows() || {}
       : () => getWindows || {};
 
@@ -122,26 +122,26 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   function broadcast(settings) {
     try {
       const windows = resolveWindows();
-      if (typeof settingsState.broadcastSettingsUpdated === "function") {
+      if (typeof settingsState.broadcastSettingsUpdated === 'function') {
         settingsState.broadcastSettingsUpdated(settings, windows);
       } else {
         // Fallback defensivo si por alguna razon no esta exportado
         const { mainWin, editorWin, presetWin, floatingWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send("settings-updated", settings);
+          mainWin.webContents.send('settings-updated', settings);
         }
         if (editorWin && !editorWin.isDestroyed()) {
-          editorWin.webContents.send("settings-updated", settings);
+          editorWin.webContents.send('settings-updated', settings);
         }
         if (presetWin && !presetWin.isDestroyed()) {
-          presetWin.webContents.send("settings-updated", settings);
+          presetWin.webContents.send('settings-updated', settings);
         }
         if (floatingWin && !floatingWin.isDestroyed()) {
-          floatingWin.webContents.send("settings-updated", settings);
+          floatingWin.webContents.send('settings-updated', settings);
         }
       }
     } catch (err) {
-      console.error("[presets_main] Error en broadcast settings-updated:", err);
+      console.error('[presets_main] Error en broadcast settings-updated:', err);
     }
   }
 
@@ -149,14 +149,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   function getEffectiveLang(settings) {
     const s = settings || settingsState.getSettings();
     const lang =
-      s.language && typeof s.language === "string" && s.language.trim()
+      s.language && typeof s.language === 'string' && s.language.trim()
         ? s.language.trim()
-        : "es";
-    return sanitizeLangCode(lang) || "es";
+        : 'es';
+    return sanitizeLangCode(lang) || 'es';
   }
 
   // Provide default presets
-  ipcMain.handle("get-default-presets", () => {
+  ipcMain.handle('get-default-presets', () => {
     try {
       ensureConfigPresetsDir();
 
@@ -169,19 +169,19 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       // Cargar defaults generales
       const generalJson = entries.find(
-        (n) => n.toLowerCase() === "defaults_presets.json"
+        (n) => n.toLowerCase() === 'defaults_presets.json'
       );
       if (generalJson) {
         try {
           general = JSON.parse(
-            fs.readFileSync(path.join(CONFIG_PRESETS_DIR, generalJson), "utf8")
+            fs.readFileSync(path.join(CONFIG_PRESETS_DIR, generalJson), 'utf8')
           );
         } catch (err) {
-          console.error("[presets_main] Error parseando", generalJson, err);
+          console.error('[presets_main] Error parseando', generalJson, err);
           general = [];
         }
       } else {
-        const n = path.join(PRESETS_SOURCE_DIR, "defaults_presets.js");
+        const n = path.join(PRESETS_SOURCE_DIR, 'defaults_presets.js');
         general = fs.existsSync(n) ? require(n) : [];
       }
 
@@ -194,11 +194,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           const lang = match[1].toLowerCase();
           try {
             const arr = JSON.parse(
-              fs.readFileSync(path.join(CONFIG_PRESETS_DIR, n), "utf8")
+              fs.readFileSync(path.join(CONFIG_PRESETS_DIR, n), 'utf8')
             );
             if (Array.isArray(arr)) languagePresets[lang] = arr;
           } catch (err) {
-            console.error("[presets_main] Error parseando", n, err);
+            console.error('[presets_main] Error parseando', n, err);
           }
         });
 
@@ -224,7 +224,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             }
             if (Array.isArray(arr)) languagePresets[lang] = arr;
           } catch (err) {
-            console.error("[presets_main] Error cargando", n, err);
+            console.error('[presets_main] Error cargando', n, err);
           }
         });
 
@@ -234,7 +234,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       };
     } catch (e) {
       console.error(
-        "[presets_main] Error proporcionando default presets (get-default-presets):",
+        '[presets_main] Error proporcionando default presets (get-default-presets):',
         e
       );
       return { general: [], languagePresets: {} };
@@ -242,14 +242,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // Abrir carpeta presets_defaults editable
-  ipcMain.handle("open-default-presets-folder", async () => {
+  ipcMain.handle('open-default-presets-folder', async () => {
     try {
       ensureConfigPresetsDir();
       // shell.openPath returns '' on success, or an error string
       const result = await shell.openPath(CONFIG_PRESETS_DIR);
-      if (typeof result === "string" && result.length > 0) {
+      if (typeof result === 'string' && result.length > 0) {
         console.error(
-          "[presets_main] shell.openPath() returned error:",
+          '[presets_main] shell.openPath() returned error:',
           result
         );
         return { ok: false, error: String(result) };
@@ -257,7 +257,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       return { ok: true };
     } catch (err) {
       console.error(
-        "[presets_main] Error opening presets_defaults folder:",
+        '[presets_main] Error opening presets_defaults folder:',
         err
       );
       return { ok: false, error: String(err) };
@@ -265,7 +265,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // Handle preset creation request from preset modal
-  ipcMain.handle("create-preset", (_event, preset) => {
+  ipcMain.handle('create-preset', (_event, preset) => {
     try {
       let settings = settingsState.getSettings();
       settings.presets = settings.presets || [];
@@ -285,63 +285,63 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { mainWin } = resolveWindows();
       try {
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send("preset-created", preset);
+          mainWin.webContents.send('preset-created', preset);
         }
       } catch (e) {
-        console.error("[presets_main] Error enviando preset-created:", e);
+        console.error('[presets_main] Error enviando preset-created:', e);
       }
 
       return { ok: true };
     } catch (e) {
-      console.error("[presets_main] Error creando preset:", e);
+      console.error('[presets_main] Error creando preset:', e);
       return { ok: false, error: String(e) };
     }
   });
 
   // Request to delete a preset (handles native dialogs + persistence)
-  ipcMain.handle("request-delete-preset", async (_event, name) => {
+  ipcMain.handle('request-delete-preset', async (_event, name) => {
     try {
       // Cargar settings y textos de dialogo antes de cualquier mensaje
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
       const dialogTexts = menuBuilder.getDialogTexts(lang);
-      const yesLabel = dialogTexts.yes || "Si, continuar";
-      const noLabel = dialogTexts.no || "No, cancelar";
+      const yesLabel = dialogTexts.yes || 'Si, continuar';
+      const noLabel = dialogTexts.no || 'No, cancelar';
 
       // If no name provided, show information dialog and exit
       if (!name) {
         try {
           const { mainWin } = resolveWindows();
           await dialog.showMessageBox(mainWin || null, {
-            type: "none",
-            buttons: [dialogTexts.ok || "Aceptar"],
+            type: 'none',
+            buttons: [dialogTexts.ok || 'Aceptar'],
             defaultId: 0,
             message:
               dialogTexts.delete_preset_none ||
-              "No hay ningun preset seleccionado para borrar",
+              'No hay ningun preset seleccionado para borrar',
           });
         } catch (e) {
           console.error(
-            "[presets_main] Error mostrando dialog delete none:",
+            '[presets_main] Error mostrando dialog delete none:',
             e
           );
         }
-        return { ok: false, code: "NO_NAME" };
+        return { ok: false, code: 'NO_NAME' };
       }
 
       // Ask confirmation (native dialog)
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
-        type: "none",
+        type: 'none',
         buttons: [yesLabel, noLabel],
         defaultId: 1,
         cancelId: 1,
         message:
           dialogTexts.delete_preset_confirm ||
-          "¿Seguro que quieres borrar este preset?",
+          '¿Seguro que quieres borrar este preset?',
       });
       if (conf.response === 1) {
-        return { ok: false, code: "CANCELLED" };
+        return { ok: false, code: 'CANCELLED' };
       }
 
       // Load default presets (same sources as get-default-presets)
@@ -372,18 +372,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
           try {
             if (mainWin && !mainWin.isDestroyed()) {
-              mainWin.webContents.send("preset-deleted", {
+              mainWin.webContents.send('preset-deleted', {
                 name,
-                action: "deleted_and_ignored",
+                action: 'deleted_and_ignored',
               });
             }
           } catch (e) {
             console.error(
-              "[presets_main] Error enviando preset-deleted (deleted_and_ignored):",
+              '[presets_main] Error enviando preset-deleted (deleted_and_ignored):',
               e
             );
           }
-          return { ok: true, action: "deleted_and_ignored" };
+          return { ok: true, action: 'deleted_and_ignored' };
         } else {
           // Personalized only: delete it
           settings.presets.splice(idxUser, 1);
@@ -392,18 +392,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
           try {
             if (mainWin && !mainWin.isDestroyed()) {
-              mainWin.webContents.send("preset-deleted", {
+              mainWin.webContents.send('preset-deleted', {
                 name,
-                action: "deleted_custom",
+                action: 'deleted_custom',
               });
             }
           } catch (e) {
             console.error(
-              "[presets_main] Error enviando preset-deleted (deleted_custom):",
+              '[presets_main] Error enviando preset-deleted (deleted_custom):',
               e
             );
           }
-          return { ok: true, action: "deleted_custom" };
+          return { ok: true, action: 'deleted_custom' };
         }
       } else {
         // Not personalized; could be a default preset
@@ -417,50 +417,50 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
           try {
             if (mainWin && !mainWin.isDestroyed()) {
-              mainWin.webContents.send("preset-deleted", {
+              mainWin.webContents.send('preset-deleted', {
                 name,
-                action: "ignored_default",
+                action: 'ignored_default',
               });
             }
           } catch (e) {
             console.error(
-              "[presets_main] Error enviando preset-deleted (ignored_default):",
+              '[presets_main] Error enviando preset-deleted (ignored_default):',
               e
             );
           }
-          return { ok: true, action: "ignored_default" };
+          return { ok: true, action: 'ignored_default' };
         }
       }
 
       // Not found in user presets or default presets
-      return { ok: false, code: "NOT_FOUND" };
+      return { ok: false, code: 'NOT_FOUND' };
     } catch (e) {
-      console.error("[presets_main] Error en request-delete-preset:", e);
+      console.error('[presets_main] Error en request-delete-preset:', e);
       return { ok: false, error: String(e) };
     }
   });
 
   // Request to restore default presets
-  ipcMain.handle("request-restore-defaults", async () => {
+  ipcMain.handle('request-restore-defaults', async () => {
     try {
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
       const dialogTexts = menuBuilder.getDialogTexts(lang);
-      const yesLabel = dialogTexts.yes || "Si, continuar";
-      const noLabel = dialogTexts.no || "No, cancelar";
+      const yesLabel = dialogTexts.yes || 'Si, continuar';
+      const noLabel = dialogTexts.no || 'No, cancelar';
 
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
-        type: "none",
+        type: 'none',
         buttons: [yesLabel, noLabel],
         defaultId: 1,
         cancelId: 1,
         message:
           dialogTexts.restore_defaults_confirm ||
-          "¿Seguro que quieres restaurar los presets por defecto?",
+          '¿Seguro que quieres restaurar los presets por defecto?',
       });
       if (conf.response === 1) {
-        return { ok: false, code: "CANCELLED" };
+        return { ok: false, code: 'CANCELLED' };
       }
 
       const defaultsCombined = loadDefaultPresetsCombined(lang);
@@ -516,7 +516,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       try {
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send("preset-restored", {
+          mainWin.webContents.send('preset-restored', {
             removedCustom,
             unignored,
             language: lang,
@@ -524,15 +524,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         }
       } catch (e) {
         console.error(
-          "[presets_main] Error enviando preset-restored:",
+          '[presets_main] Error enviando preset-restored:',
           e
         );
       }
 
-      return { ok: true, action: "restored", removedCustom, unignored };
+      return { ok: true, action: 'restored', removedCustom, unignored };
     } catch (e) {
       console.error(
-        "[presets_main] Error restaurando presets por defecto:",
+        '[presets_main] Error restaurando presets por defecto:',
         e
       );
       return { ok: false, error: String(e) };
@@ -540,7 +540,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // Notify for edit-no-selection (simple info dialog)
-  ipcMain.handle("notify-no-selection-edit", async () => {
+  ipcMain.handle('notify-no-selection-edit', async () => {
     try {
       const settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
@@ -548,17 +548,17 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       const { mainWin } = resolveWindows();
       await dialog.showMessageBox(mainWin || null, {
-        type: "none",
-        buttons: [(dialogTexts && dialogTexts.ok) || "Aceptar"],
+        type: 'none',
+        buttons: [(dialogTexts && dialogTexts.ok) || 'Aceptar'],
         defaultId: 0,
         message:
           (dialogTexts && dialogTexts.edit_preset_none) ||
-          "No hay ningun preset seleccionado para editar",
+          'No hay ningun preset seleccionado para editar',
       });
       return { ok: true };
     } catch (e) {
       console.error(
-        "[presets_main] Error mostrando dialog no-selection-edit:",
+        '[presets_main] Error mostrando dialog no-selection-edit:',
         e
       );
       return { ok: false, error: String(e) };
@@ -566,30 +566,30 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // Edit-preset handler (confirmation + silent delete + create)
-  ipcMain.handle("edit-preset", async (_event, { originalName, newPreset }) => {
+  ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
     try {
       if (!originalName) {
-        return { ok: false, code: "NO_ORIGINAL_NAME" };
+        return { ok: false, code: 'NO_ORIGINAL_NAME' };
       }
 
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
       const dialogTexts = menuBuilder.getDialogTexts(lang);
 
-      const yesLabel = dialogTexts.yes || "Si, continuar";
-      const noLabel = dialogTexts.no || "No, cancelar";
+      const yesLabel = dialogTexts.yes || 'Si, continuar';
+      const noLabel = dialogTexts.no || 'No, cancelar';
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
-        type: "none",
+        type: 'none',
         buttons: [yesLabel, noLabel],
         defaultId: 1,
         cancelId: 1,
         message:
           dialogTexts.edit_preset_confirm ||
-          "¿Seguro que quieres editar este preset?",
+          '¿Seguro que quieres editar este preset?',
       });
       if (conf.response === 1) {
-        return { ok: false, code: "CANCELLED" };
+        return { ok: false, code: 'CANCELLED' };
       }
 
       const defaultsCombined = loadDefaultPresetsCombined(lang);
@@ -618,10 +618,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           ) {
             settings.disabled_default_presets[lang].push(originalName);
           }
-          deletedAction = "deleted_and_ignored";
+          deletedAction = 'deleted_and_ignored';
         } else {
           settings.presets.splice(idxUser, 1);
-          deletedAction = "deleted_custom";
+          deletedAction = 'deleted_custom';
         }
       } else if (isDefault) {
         if (
@@ -629,7 +629,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         ) {
           settings.disabled_default_presets[lang].push(originalName);
         }
-        deletedAction = "ignored_default";
+        deletedAction = 'ignored_default';
       }
 
       const newList = settings.presets || [];
@@ -649,23 +649,23 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         const { mainWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
           if (deletedAction) {
-            mainWin.webContents.send("preset-deleted", {
+            mainWin.webContents.send('preset-deleted', {
               name: originalName,
               action: deletedAction,
             });
           }
-          mainWin.webContents.send("preset-created", newPreset);
+          mainWin.webContents.send('preset-created', newPreset);
         }
       } catch (e) {
         console.error(
-          "[presets_main] Error enviando eventos tras edit-preset:",
+          '[presets_main] Error enviando eventos tras edit-preset:',
           e
         );
       }
 
-      return { ok: true, action: "edited", deletedAction };
+      return { ok: true, action: 'edited', deletedAction };
     } catch (e) {
-      console.error("[presets_main] Error editando preset:", e);
+      console.error('[presets_main] Error editando preset:', e);
       return { ok: false, error: String(e) };
     }
   });

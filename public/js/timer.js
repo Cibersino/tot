@@ -1,5 +1,5 @@
 (() => {
-  console.debug("[timer.js] modulo cargado");
+  console.debug('[timer.js] modulo cargado');
 
   function formatTimer(ms) {
     const totalSeconds = Math.floor((ms || 0) / 1000);
@@ -10,7 +10,7 @@
   }
 
   function parseTimerInput(input) {
-    const match = String(input || "").match(/^(\d+):([0-5]\d):([0-5]\d)$/);
+    const match = String(input || '').match(/^(\d+):([0-5]\d):([0-5]\d)$/);
     if (!match) return null;
     const hours = parseInt(match[1], 10);
     const minutes = parseInt(match[2], 10);
@@ -37,13 +37,13 @@
       if (realWpmDisplay) realWpmDisplay.textContent = `${velocidadFormateada} WPM`;
       return realWpm;
     }
-    if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
+    if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
     return 0;
   }
 
   function uiResetTimer({ timerDisplay, realWpmDisplay, tToggle, playLabel = '>' }) {
-    if (timerDisplay) timerDisplay.value = "00:00:00";
-    if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
+    if (timerDisplay) timerDisplay.value = '00:00:00';
+    if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
     if (tToggle) tToggle.textContent = playLabel;
   }
 
@@ -58,7 +58,7 @@
     pauseLabel = '||'
   }) {
     if (!electronAPI || typeof electronAPI.openFloatingWindow !== 'function') {
-      console.warn("openFloatingWindow no disponible en electronAPI");
+      console.warn('openFloatingWindow no disponible en electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
@@ -88,7 +88,7 @@
       }
       return null;
     } catch (e) {
-      console.error("Error abriendo flotante:", e);
+      console.error('Error abriendo flotante:', e);
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
@@ -96,14 +96,14 @@
 
   async function closeFloating({ electronAPI, toggleVF }) {
     if (!electronAPI || typeof electronAPI.closeFloatingWindow !== 'function') {
-      console.warn("closeFloatingWindow no disponible en electronAPI");
+      console.warn('closeFloatingWindow no disponible en electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return;
     }
     try {
       await electronAPI.closeFloatingWindow();
     } catch (e) {
-      console.error("Error cerrando flotante:", e);
+      console.error('Error cerrando flotante:', e);
     } finally {
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
     }
@@ -128,7 +128,7 @@
       : parseTimerInput(value);
 
     if (parsed === null) {
-      if (timerDisplay && typeof setElapsed === "function") {
+      if (timerDisplay && typeof setElapsed === 'function') {
         timerDisplay.value = formatTimer(setElapsed());
       }
       return null;
@@ -136,7 +136,7 @@
 
     const msRounded = Math.floor(parsed / 1000) * 1000;
     const fallbackLocal = async () => {
-      if (typeof setElapsed === "function") setElapsed(msRounded);
+      if (typeof setElapsed === 'function') setElapsed(msRounded);
       if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
       await actualizarVelocidadRealFromElapsed({
         ms: msRounded,
@@ -147,7 +147,7 @@
         idiomaActual,
         realWpmDisplay
       });
-      if (typeof setLastComputedElapsed === "function") setLastComputedElapsed(msRounded);
+      if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
     };
 
     if (electronAPI && typeof electronAPI.setCronoElapsed === 'function') {
@@ -163,10 +163,10 @@
           idiomaActual,
           realWpmDisplay
         });
-        if (typeof setLastComputedElapsed === "function") setLastComputedElapsed(msRounded);
+        if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
         return msRounded;
       } catch (e) {
-        console.error("Error enviando setCronoElapsed:", e);
+        console.error('Error enviando setCronoElapsed:', e);
         await fallbackLocal();
         return msRounded;
       }

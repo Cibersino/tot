@@ -5,18 +5,18 @@ const btnReset = document.getElementById('reset');
 
 // defensivo: si algun elemento no existe, salimos silenciosamente (evita crashes)
 if (!timerEl) {
-  console.error("flotante: element #timer no encontrado");
+  console.error('flotante: element #timer no encontrado');
 }
 if (!btnToggle) {
-  console.error("flotante: element #toggle no encontrado");
+  console.error('flotante: element #toggle no encontrado');
 }
 if (!btnReset) {
-  console.error("flotante: element #reset no encontrado");
+  console.error('flotante: element #reset no encontrado');
 }
 
-let lastState = { elapsed: 0, running: false, display: "00:00:00" };
-let playLabel = ">";
-let pauseLabel = "||";
+let lastState = { elapsed: 0, running: false, display: '00:00:00' };
+let playLabel = '>';
+let pauseLabel = '||';
 
 // Actualizar vista (se espera recibir { elapsed, running, display })
 function renderState(state) {
@@ -63,12 +63,12 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
     }
 
     try { await loadRendererTranslations(lang); } catch (_) { /* noop */ }
-    playLabel = tRenderer("renderer.main.timer.play_symbol", playLabel);
-    pauseLabel = tRenderer("renderer.main.timer.pause_symbol", pauseLabel);
+    playLabel = tRenderer('renderer.main.timer.play_symbol', playLabel);
+    pauseLabel = tRenderer('renderer.main.timer.pause_symbol', pauseLabel);
     // Refrescar boton con la etiqueta traducida actual
     if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
   } catch (e) {
-    console.error("Error cargando traducciones en flotante:", e);
+    console.error('Error cargando traducciones en flotante:', e);
   }
 })();
 

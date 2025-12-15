@@ -9,12 +9,12 @@ const {
   saveJson
 } = require('./fs_storage');
 
-const settingsState = require("./settings");
-const textState = require("./text_state");
+const settingsState = require('./settings');
+const textState = require('./text_state');
 const modalState = require('./modal_state');
-const menuBuilder = require("./menu_builder");
-const presetsMain = require("./presets_main");
-const updater = require("./updater");
+const menuBuilder = require('./menu_builder');
+const presetsMain = require('./presets_main');
+const updater = require('./updater');
 
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
@@ -48,7 +48,7 @@ let currentLanguage = 'es';
 
 // Build menu with i18n translations (delegated to menu_builder.js)
 function buildAppMenu(lang) {
-  const effectiveLang = lang || currentLanguage || "es";
+  const effectiveLang = lang || currentLanguage || 'es';
   menuBuilder.buildAppMenu(effectiveLang, {
     mainWindow: mainWin,
     onOpenLanguage: () => createLanguageWindow(),
@@ -88,7 +88,7 @@ function unregisterShortcuts() {
 }
 
 function createMainWindow() {
-  // Note: `useContentSize:true` makes `width/height` apply to the content (excluding borders)
+  // Note: 'useContentSize:true' makes 'width/height' apply to the content (excluding borders)
   mainWin = new BrowserWindow({
     width: 828,
     height: 490,
@@ -119,7 +119,7 @@ function createMainWindow() {
         try {
           editorWin.close();
         } catch (e) {
-          console.error("Error cerrando editorWin desde mainWin.close:", e);
+          console.error('Error cerrando editorWin desde mainWin.close:', e);
         }
       }
 
@@ -127,11 +127,11 @@ function createMainWindow() {
         try {
           presetWin.close();
         } catch (e) {
-          console.error("Error cerrando presetWin desde mainWin.close:", e);
+          console.error('Error cerrando presetWin desde mainWin.close:', e);
         }
       }
     } catch (e) {
-      console.error("Error en mainWin.close handler:", e);
+      console.error('Error en mainWin.close handler:', e);
     }
   });
 
@@ -143,7 +143,7 @@ function createMainWindow() {
     try {
       app.quit();
     } catch (e) {
-      console.error("Error llamando app.quit() en mainWin.closed:", e);
+      console.error('Error llamando app.quit() en mainWin.closed:', e);
     }
   });
 }
@@ -156,10 +156,10 @@ function createEditorWindow() {
   const hasReduced =
     state &&
     state.reduced &&
-    typeof state.reduced.width === "number" &&
-    typeof state.reduced.height === "number" &&
-    typeof state.reduced.x === "number" &&
-    typeof state.reduced.y === "number";
+    typeof state.reduced.width === 'number' &&
+    typeof state.reduced.height === 'number' &&
+    typeof state.reduced.x === 'number' &&
+    typeof state.reduced.y === 'number';
 
   // Build window using reduced state if it exists
   editorWin = new BrowserWindow({
@@ -172,7 +172,7 @@ function createEditorWindow() {
     maximizable: true,
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, "manual_preload.js"),
+      preload: path.join(__dirname, 'manual_preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false
@@ -181,9 +181,9 @@ function createEditorWindow() {
 
   editorWin.setMenu(null);
   editorWin.setMenuBarVisibility(false);
-  editorWin.loadFile(path.join(__dirname, "../public/manual.html"));
+  editorWin.loadFile(path.join(__dirname, '../public/manual.html'));
 
-  editorWin.once("ready-to-show", () => {
+  editorWin.once('ready-to-show', () => {
     try {
       // RULE A + C: open maximized if applicable
       if (state && state.maximized === true) {
@@ -195,24 +195,24 @@ function createEditorWindow() {
       // Send initial currentText to the editor (when it's ready)
       try {
         const initialText = textState.getCurrentText();
-        editorWin.webContents.send("manual-init-text", {
-          text: initialText || "",
-          meta: { source: "main", action: "init" }
+        editorWin.webContents.send('manual-init-text', {
+          text: initialText || '',
+          meta: { source: 'main', action: 'init' }
         });
       } catch (err) {
-        console.error("Error enviando manual-init-text al editor:", err);
+        console.error('Error enviando manual-init-text al editor:', err);
       }
 
       // Notify the main window that the editor is ready
       try {
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send("manual-editor-ready");
+          mainWin.webContents.send('manual-editor-ready');
         }
       } catch (err) {
-        console.error("Error notificando manual-editor-ready a la ventana principal:", err);
+        console.error('Error notificando manual-editor-ready a la ventana principal:', err);
       }
     } catch (e) {
-      console.error("Error mostrando editor manual:", e);
+      console.error('Error mostrando editor manual:', e);
     }
   });
 
@@ -220,7 +220,7 @@ function createEditorWindow() {
   modalState.attachTo(editorWin, loadJson, saveJson);
 
   // Clear reference when the window is completely closed
-  editorWin.on("closed", () => {
+  editorWin.on('closed', () => {
     editorWin = null;
   });
 }
@@ -234,7 +234,7 @@ function createPresetWindow(initialData) {
       // send init with whole payload (may include wpm/mode/preset)
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (e) {
-      console.error("Error enviando init a presetWin ya abierta:", e);
+      console.error('Error enviando init a presetWin ya abierta:', e);
     }
     return;
   }
@@ -265,7 +265,7 @@ function createPresetWindow(initialData) {
     try {
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (e) {
-      console.error("Error enviando preset-init:", e);
+      console.error('Error enviando preset-init:', e);
     }
   });
 
@@ -293,9 +293,9 @@ settingsState.registerIpc(ipcMain, {
   getCurrentLanguage: () => currentLanguage,
   setCurrentLanguage: (lang) => {
     const trimmed =
-      lang && typeof lang === "string" && lang.trim()
+      lang && typeof lang === 'string' && lang.trim()
         ? lang.trim()
-        : "es";
+        : 'es';
     currentLanguage = trimmed;
   },
 });
@@ -351,19 +351,19 @@ function createLanguageWindow() {
   });
 
   // If user closes modal without choosing, apply fallback 'es'
-  langWin.on("closed", () => {
+  langWin.on('closed', () => {
     try {
       // If the user closes without choosing, force a fallback to 'es' if no language is defined
-      settingsState.applyFallbackLanguageIfUnset("es");
+      settingsState.applyFallbackLanguageIfUnset('es');
     } catch (e) {
-      console.error("Error aplicando fallback language:", e);
+      console.error('Error aplicando fallback language:', e);
     } finally {
       langWin = null;
       // Ensure mainWin is created after closing the modal
       try {
         if (!mainWin) createMainWindow();
       } catch (e) {
-        console.error("Error creando mainWin tras el modal de idioma:", e);
+        console.error('Error creando mainWin tras el modal de idioma:', e);
       }
     }
   });
@@ -425,7 +425,7 @@ async function createFloatingWindow(options = {}) {
       pos.y = y;
     }
   } catch (e) {
-    console.warn("No se pudo calcular la posicion desde screen.getPrimaryDisplay(); usando la posicion del flotante predeterminada.", e);
+    console.warn('No se pudo calcular la posicion desde screen.getPrimaryDisplay(); usando la posicion del flotante predeterminada.', e);
   }
 
   // If x/y were provided explicitly in options, respect them (allow override)
@@ -441,7 +441,7 @@ async function createFloatingWindow(options = {}) {
   try {
     await floatingWin.loadFile(FLOATER_HTML);
   } catch (e) {
-    console.error("Error cargando flotante HTML:", e);
+    console.error('Error cargando flotante HTML:', e);
   }
 
   // If the window was created offscreen or out of bounds, ensure it stays inside the screen
@@ -560,16 +560,16 @@ ipcMain.on('crono-toggle', () => {
   try {
     if (crono.running) stopCrono(); else startCrono();
   } catch (e) {
-    console.error("Error en crono-toggle:", e);
+    console.error('Error en crono-toggle:', e);
   }
 });
 
 ipcMain.on('crono-reset', () => {
-  try { resetCrono(); } catch (e) { console.error("Error en crono-reset:", e); }
+  try { resetCrono(); } catch (e) { console.error('Error en crono-reset:', e); }
 });
 
 ipcMain.on('crono-set-elapsed', (_ev, ms) => {
-  try { setCronoElapsed(ms); } catch (e) { console.error("Error en crono-set-elapsed:", e); }
+  try { setCronoElapsed(ms); } catch (e) { console.error('Error en crono-set-elapsed:', e); }
 });
 
 // IPC: open floating window
@@ -580,7 +580,7 @@ ipcMain.handle('floating-open', async () => {
     if (crono.running) ensureCronoInterval();
     return { ok: true };
   } catch (e) {
-    console.error("Error procesando floating-open:", e);
+    console.error('Error procesando floating-open:', e);
     return { ok: false, error: String(e) };
   }
 });
@@ -594,7 +594,7 @@ ipcMain.handle('floating-close', async () => {
     }
     return { ok: true };
   } catch (e) {
-    console.error("Error procesando floating-close:", e);
+    console.error('Error procesando floating-close:', e);
     return { ok: false, error: String(e) };
   }
 });
@@ -612,32 +612,32 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
     }
     // broadcastCronoState() is already called by the previous functions
   } catch (e) {
-    console.error("Error procesando flotante-command en main:", e);
+    console.error('Error procesando flotante-command en main:', e);
   }
 });
 
 // Open editor window (or focus + send current text)
-ipcMain.handle("open-editor", () => {
+ipcMain.handle('open-editor', () => {
   if (!editorWin || editorWin.isDestroyed()) {
     createEditorWindow();
   } else {
     editorWin.show();
     try {
       const initialText = textState.getCurrentText();
-      editorWin.webContents.send("manual-init-text", {
-        text: initialText || "",
-        meta: { source: "main", action: "init" },
+      editorWin.webContents.send('manual-init-text', {
+        text: initialText || '',
+        meta: { source: 'main', action: 'init' },
       });
     } catch (err) {
-      console.error("Error enviando manual-init-text desde open-editor:", err);
+      console.error('Error enviando manual-init-text desde open-editor:', err);
     }
     try {
       if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send("manual-editor-ready");
+        mainWin.webContents.send('manual-editor-ready');
       }
     } catch (e) {
       console.warn(
-        "No se pudo notificar manual-editor-ready (editor ya abierto):",
+        'No se pudo notificar manual-editor-ready (editor ya abierto):',
         e
       );
     }
@@ -657,11 +657,11 @@ ipcMain.handle('open-preset-modal', (_event, payload) => {
 });
 
 // Expose configuration (MAX_TEXT_CHARS) via IPC
-ipcMain.handle("get-app-config", async () => {
+ipcMain.handle('get-app-config', async () => {
   try {
     return { ok: true, maxTextChars: MAX_TEXT_CHARS };
   } catch (e) {
-    console.error("Error procesando get-app-config:", e);
+    console.error('Error procesando get-app-config:', e);
     return { ok: false, error: String(e), maxTextChars: 1e7 };
   }
 });
@@ -675,16 +675,16 @@ app.whenReady().then(() => {
     saveJson,
     settingsFile: SETTINGS_FILE,
   });
-  currentLanguage = settings.language || "es";
+  currentLanguage = settings.language || 'es';
 
-  if (!settings.language || settings.language === "") {
+  if (!settings.language || settings.language === '') {
     // First time: Show language modal
     createLanguageWindow();
-    ipcMain.once("language-selected", (_evt, lang) => {
+    ipcMain.once('language-selected', (_evt, lang) => {
       try {
         if (!mainWin) createMainWindow();
       } catch (e) {
-        console.error("Error creando mainWin tras seleccionar idioma:", e);
+        console.error('Error creando mainWin tras seleccionar idioma:', e);
       } finally {
         try {
           if (langWin && !langWin.isDestroyed()) langWin.close();
@@ -700,7 +700,7 @@ app.whenReady().then(() => {
     updater.scheduleInitialCheck();
   }
 
-  app.on("activate", () => {
+  app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
 });
@@ -709,7 +709,7 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-app.on("will-quit", () => {
+app.on('will-quit', () => {
   // Development shortcuts
   unregisterShortcuts();
 
@@ -720,6 +720,6 @@ app.on("will-quit", () => {
       cronoInterval = null;
     }
   } catch (e) {
-    console.error("Error limpiando cronometro en will-quit:", e);
+    console.error('Error limpiando cronometro en will-quit:', e);
   }
 });
