@@ -396,7 +396,7 @@ function getWindowCenter(bounds) {
   };
 }
 
-// Regla pedida: “pantalla dueña” = donde cae el CENTRO.
+// screen where the center falls
 function getDisplayByWindowCenter(bounds) {
   const center = getWindowCenter(bounds);
   const displays = screen.getAllDisplays();
@@ -404,7 +404,7 @@ function getDisplayByWindowCenter(bounds) {
   return containing || screen.getDisplayNearestPoint(center);
 }
 
-// Encajar 100% dentro del workArea del display elegido.
+// Fit 100% within the workArea of the chosen display.
 function snapWindowFullyIntoWorkArea(win) {
   if (!win || win.isDestroyed()) return;
 
@@ -436,13 +436,13 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
   let snapping = false;
   let manualMoveArmed = false;
 
-  // will-move: solo cuando el usuario arrastra a mano (Windows/macOS). :contentReference[oaicite:1]{index=1}
+  // will-move: only when the user drags by hand (Windows/macOS). :contentReference[oaicite:1]{index=1}
   win.on('will-move', () => {
     if (!snapping) manualMoveArmed = true;
   });
 
   if (process.platform === 'win32') {
-    // moved: se emite una vez al terminar el movimiento en Windows. :contentReference[oaicite:2]{index=2}
+    // moved: emitted once at the end of the movement in Windows. :contentReference[oaicite:2]{index=2}
     win.on('moved', () => {
       if (!manualMoveArmed || snapping || win.isDestroyed()) return;
       manualMoveArmed = false;
@@ -458,7 +458,7 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
     return;
   }
 
-  // --- macOS + Linux: “end-of-move” por estabilidad ---
+  // --- macOS + Linux: "end-of-move" for stability ---
   const endMoveMs = typeof opts.endMoveMs === 'number' ? opts.endMoveMs : 80;
 
   let lastMoveAt = 0;
@@ -472,7 +472,7 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
   win.on('move', () => {
     if (snapping || win.isDestroyed()) return;
 
-    // Linux: no hay will-move en la doc actual; trata cualquier move como manual.
+    // Linux: no will-move in the current doc; treat any move as manual.
     if (process.platform === 'linux') manualMoveArmed = true;
 
     if (!manualMoveArmed) return;
