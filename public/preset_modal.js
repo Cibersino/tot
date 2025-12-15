@@ -15,7 +15,7 @@
 
     // Si faltan elementos, abortamos y dejamos un aviso en consola.
     if (!nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
-      console.warn('preset_modal: elementos del DOM faltantes. El script del modal no se inicializo.');
+      console.warn('preset_modal: missing DOM elements, modal script was not initialized.');
       return;
     }
 
@@ -170,7 +170,7 @@
             } else {
               if (res && res.code === 'CANCELLED') return;
               Notify.notifyMain('renderer.preset_alerts.edit_error');
-              console.error('Error editando preset (respuesta):', res);
+              console.error('Error editing preset (response):', res);
             }
           }
         } else {
@@ -180,13 +180,13 @@
               window.close();
             } else {
               Notify.notifyMain('renderer.preset_alerts.create_error');
-              console.error('Error creando preset (respuesta):', res);
+              console.error('Error creating preset (response):', res);
             }
           }
         }
       } catch (err) {
         Notify.notifyMain('renderer.preset_alerts.process_error');
-        console.error('Error en save preset:', err);
+        console.error('Error in save preset:', err);
       }
     });
 

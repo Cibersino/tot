@@ -58,7 +58,7 @@ function loadInitialState(customLoadJson) {
     const raw = loader(MODAL_STATE_FILE, DEFAULT_STATE);
     return normalizeState(raw);
   } catch (e) {
-    console.error('[modal_state] Error leyendo estado inicial:', e);
+    console.error('[modal_state] Error reading initial state:', e);
     return { ...DEFAULT_STATE };
   }
 }
@@ -93,7 +93,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
       saver(MODAL_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error guardando estado reducido del editor:', e);
+      console.error('[modal_state] Error saving editor reduced state:', e);
     }
   };
 
@@ -108,7 +108,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       state.maximized = true;
       saver(MODAL_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error actualizando estado en maximize:', e);
+      console.error('[modal_state] Error updating state in maximize:', e);
     }
   });
 
@@ -145,7 +145,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
       saver(MODAL_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error manejando unmaximize del editor:', e);
+      console.error('[modal_state] Error handling editor unmaximize:', e);
     }
   });
 
@@ -157,7 +157,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       state.maximized = editorWin.isMaximized();
       saver(MODAL_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error guardando estado de cierre de editor:', e);
+      console.error('[modal_state] Error saving editor closed state:', e);
     }
   });
 }

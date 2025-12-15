@@ -18,7 +18,7 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Define cu
       MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
     }
   } catch (e) {
-    console.error('manual: no se pudo obtener getAppConfig, usando defaults:', e);
+    console.error('manual: failed to get getAppConfig, using defaults:', e);
   }
   try {
     if (window.manualAPI && typeof window.manualAPI.getSettings === 'function') {
@@ -29,7 +29,7 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Define cu
     }
     await applyEditorTranslations();
   } catch (e) {
-    console.warn('manual: no se pudieron aplicar traducciones iniciales:', e);
+    console.warn('manual: failed to apply initial translations:', e);
   }
   // rest of init (getCurrentText etc.) -ya tienes un init existente, integra con el tuyo
 })();
@@ -162,7 +162,7 @@ try {
     editor.style.whiteSpace = 'pre-wrap';
     editor.style.wordBreak = 'break-word';
   }
-} catch (e) { console.debug('manual: no se pudo aplicar estilos de wrap:', e); }
+} catch (e) { console.debug('manual: failed to apply wrap styles:', e); }
 
 /* ---------- Insercion local (mejor preservando undo) ---------- */
 function tryNativeInsertAtSelection(text) {
@@ -209,7 +209,7 @@ function sendCurrentTextToMainWithMeta(action = 'insert') {
       const resFallback = window.manualAPI.setCurrentText(editor.value);
       handleTruncationResponse(resFallback);
     } catch (e2) {
-      console.error('Error enviando set-current-text (fallback):', e2);
+      console.error('Error sending set-current-text (fallback):', e2);
     }
   }
 }
@@ -222,7 +222,7 @@ function handleTruncationResponse(resPromise) {
           Notify.notifyManual('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
         }
       }).catch((err) => {
-        console.error('Error manejando respuesta de truncado:', err);
+        console.error('Error handling truncated response:', err);
       });
     }
   } catch (e) {
@@ -429,7 +429,7 @@ async function applyExternalUpdate(payload) {
     // initial state of CALCULAR button
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
   } catch (e) {
-    console.error('Error inicializando editor:', e);
+    console.error('Error initializing editor:', e);
   }
 })();
 
@@ -444,7 +444,7 @@ window.manualAPI.onForceClear(() => {
     // Update main too (keep state consistent)
     try { window.manualAPI.setCurrentText({ text: '', meta: { source: 'editor', action: 'clear' } }); } catch (e) { window.manualAPI.setCurrentText(''); }
   } catch (e) {
-    console.error('Error en onForceClear:', e);
+    console.error('Error in onForceClear:', e);
   } finally {
     suppressLocalUpdate = false;
     restoreFocusToEditor();
@@ -539,7 +539,7 @@ editor.addEventListener('input', () => {
       const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'truncated' } });
       handleTruncationResponse(res);
     } catch (e) {
-      console.error('manual: error enviando set-current-text tras truncado:', e);
+      console.error('manual: error sending set-current-text after truncate:', e);
       try { const resFallback = window.manualAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { /* noop */ }
     }
     restoreFocusToEditor();
@@ -554,7 +554,7 @@ editor.addEventListener('input', () => {
           const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'typing' } });
           handleTruncationResponse(res);
         } catch (e) {
-          try { const resFallback = window.manualAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { console.error('Error enviando set-current-text typing:', e2); }
+          try { const resFallback = window.manualAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { console.error('Error sending set-current-text typing:', e2); }
         }
       }, DEBOUNCE_MS);
     }
@@ -576,7 +576,7 @@ if (btnCalc) btnCalc.addEventListener('click', () => {
     handleTruncationResponse(res);
     // Do not close the modal or ask anything -per spec
   } catch (e) {
-    console.error('Error ejecutando CALCULAR:', e);
+    console.error('Error executing CALCULAR:', e);
     Notify.notifyManual('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
     restoreFocusToEditor();
   }

@@ -1,5 +1,5 @@
 (() => {
-  console.debug('[count.js] modulo cargado');
+  console.debug('[count.js] module loaded');
 
   function contarTextoSimple(texto, language) {
     const conEspacios = texto.length;

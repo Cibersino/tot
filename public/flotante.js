@@ -5,13 +5,13 @@ const btnReset = document.getElementById('reset');
 
 // defensivo: si algun elemento no existe, salimos silenciosamente (evita crashes)
 if (!timerEl) {
-  console.error('flotante: element #timer no encontrado');
+  console.error('flotante: element #timer not found');
 }
 if (!btnToggle) {
-  console.error('flotante: element #toggle no encontrado');
+  console.error('flotante: element #toggle not found');
 }
 if (!btnReset) {
-  console.error('flotante: element #reset no encontrado');
+  console.error('flotante: element #reset not found');
 }
 
 let lastState = { elapsed: 0, running: false, display: '00:00:00' };
@@ -68,7 +68,7 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
     // Refrescar boton con la etiqueta traducida actual
     if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
   } catch (e) {
-    console.error('Error cargando traducciones en flotante:', e);
+    console.error('Error loading translations in flotante:', e);
   }
 })();
 

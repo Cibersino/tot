@@ -88,14 +88,14 @@ function copyDefaultPresetsIfMissing() {
             );
           } catch (err) {
             console.error(
-              `[presets_main] Error convirtiendo preset ${src} a JSON:`,
+              `[presets_main] Error converting preset ${src} a JSON:`,
               err
             );
           }
         }
       });
   } catch (err) {
-    console.error('[presets_main] Error en copyDefaultPresetsIfMissing:', err);
+    console.error('[presets_main] Error in copyDefaultPresetsIfMissing:', err);
   }
 }
 
@@ -141,7 +141,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         }
       }
     } catch (err) {
-      console.error('[presets_main] Error en broadcast settings-updated:', err);
+      console.error('[presets_main] Error in broadcast settings-updated:', err);
     }
   }
 
@@ -177,7 +177,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             fs.readFileSync(path.join(CONFIG_PRESETS_DIR, generalJson), 'utf8')
           );
         } catch (err) {
-          console.error('[presets_main] Error parseando', generalJson, err);
+          console.error('[presets_main] Error parsing', generalJson, err);
           general = [];
         }
       } else {
@@ -198,7 +198,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             );
             if (Array.isArray(arr)) languagePresets[lang] = arr;
           } catch (err) {
-            console.error('[presets_main] Error parseando', n, err);
+            console.error('[presets_main] Error parsing', n, err);
           }
         });
 
@@ -224,7 +224,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             }
             if (Array.isArray(arr)) languagePresets[lang] = arr;
           } catch (err) {
-            console.error('[presets_main] Error cargando', n, err);
+            console.error('[presets_main] Error loading', n, err);
           }
         });
 
@@ -234,7 +234,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       };
     } catch (e) {
       console.error(
-        '[presets_main] Error proporcionando default presets (get-default-presets):',
+        '[presets_main] Error providing default presets (get-default-presets):',
         e
       );
       return { general: [], languagePresets: {} };
@@ -288,12 +288,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           mainWin.webContents.send('preset-created', preset);
         }
       } catch (e) {
-        console.error('[presets_main] Error enviando preset-created:', e);
+        console.error('[presets_main] Error sending preset-created:', e);
       }
 
       return { ok: true };
     } catch (e) {
-      console.error('[presets_main] Error creando preset:', e);
+      console.error('[presets_main] Error creating preset:', e);
       return { ok: false, error: String(e) };
     }
   });
@@ -322,7 +322,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           });
         } catch (e) {
           console.error(
-            '[presets_main] Error mostrando dialog delete none:',
+            '[presets_main] Error showing dialog delete none:',
             e
           );
         }
@@ -379,7 +379,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             }
           } catch (e) {
             console.error(
-              '[presets_main] Error enviando preset-deleted (deleted_and_ignored):',
+              '[presets_main] Error sending preset-deleted (deleted_and_ignored):',
               e
             );
           }
@@ -399,7 +399,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             }
           } catch (e) {
             console.error(
-              '[presets_main] Error enviando preset-deleted (deleted_custom):',
+              '[presets_main] Error sending preset-deleted (deleted_custom):',
               e
             );
           }
@@ -424,7 +424,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             }
           } catch (e) {
             console.error(
-              '[presets_main] Error enviando preset-deleted (ignored_default):',
+              '[presets_main] Error sending preset-deleted (ignored_default):',
               e
             );
           }
@@ -435,7 +435,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       // Not found in user presets or default presets
       return { ok: false, code: 'NOT_FOUND' };
     } catch (e) {
-      console.error('[presets_main] Error en request-delete-preset:', e);
+      console.error('[presets_main] Error in request-delete-preset:', e);
       return { ok: false, error: String(e) };
     }
   });
@@ -524,7 +524,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         }
       } catch (e) {
         console.error(
-          '[presets_main] Error enviando preset-restored:',
+          '[presets_main] Error sending preset-restored:',
           e
         );
       }
@@ -532,7 +532,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       return { ok: true, action: 'restored', removedCustom, unignored };
     } catch (e) {
       console.error(
-        '[presets_main] Error restaurando presets por defecto:',
+        '[presets_main] Error restoring default presets:',
         e
       );
       return { ok: false, error: String(e) };
@@ -558,7 +558,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       return { ok: true };
     } catch (e) {
       console.error(
-        '[presets_main] Error mostrando dialog no-selection-edit:',
+        '[presets_main] Error showing dialog no-selection-edit:',
         e
       );
       return { ok: false, error: String(e) };
@@ -658,14 +658,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         }
       } catch (e) {
         console.error(
-          '[presets_main] Error enviando eventos tras edit-preset:',
+          '[presets_main] Error sending events after edit-preset:',
           e
         );
       }
 
       return { ok: true, action: 'edited', deletedAction };
     } catch (e) {
-      console.error('[presets_main] Error editando preset:', e);
+      console.error('[presets_main] Error editing preset:', e);
       return { ok: false, error: String(e) };
     }
   });
