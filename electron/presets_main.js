@@ -155,6 +155,17 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return sanitizeLangCode(lang) || 'es';
   }
 
+  // Replace {placeholders} in i18n dialog strings.
+  // If a key is missing, keep the placeholder unchanged (useful for debugging).
+  function interpolateDialogText(template, vars = {}) {
+    if (typeof template !== 'string' || !template) return '';
+    return template.replace(/\{(\w+)\}/g, (m, key) => {
+      if (!Object.prototype.hasOwnProperty.call(vars, key)) return m;
+      const v = vars[key];
+      return v === undefined || v === null ? m : String(v);
+    });
+  }
+
   // Provide default presets
   ipcMain.handle('get-default-presets', () => {
     try {
@@ -337,7 +348,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         defaultId: 1,
         cancelId: 1,
         message:
-          dialogTexts.delete_preset_confirm ||
+          interpolateDialogText(dialogTexts.delete_preset_confirm, { name }) ||
           'FALLBACK: Are you sure you want to delete this preset?',
       });
       if (conf.response === 1) {
@@ -456,7 +467,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         defaultId: 1,
         cancelId: 1,
         message:
-          dialogTexts.restore_defaults_confirm ||
+          interpolateDialogText(dialogTexts.restore_defaults_confirm, { lang }) ||
           'FALLBACK: Restore default presets to original?',
       });
       if (conf.response === 1) {
@@ -549,7 +560,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { mainWin } = resolveWindows();
       await dialog.showMessageBox(mainWin || null, {
         type: 'none',
-        buttons: [(dialogTexts && dialogTexts.ok) || 'Aceptar'],
+        buttons: [(dialogTexts && dialogTexts.ok) || 'FALLBACK: OK'],
         defaultId: 0,
         message:
           (dialogTexts && dialogTexts.edit_preset_none) ||
@@ -585,7 +596,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         defaultId: 1,
         cancelId: 1,
         message:
-          dialogTexts.edit_preset_confirm ||
+          interpolateDialogText(dialogTexts.edit_preset_confirm, { name: originalName }) ||
           'FALLBACK: Are you sure you want to edit the preset?',
       });
       if (conf.response === 1) {
