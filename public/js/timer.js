@@ -122,20 +122,53 @@
     idiomaActual,
     realWpmDisplay,
     setElapsed,
-    setLastComputedElapsed
+    setLastComputedElapsed,
+    running = false,
+    baselineElapsed = null,
+    baselineDisplay = null
   }) {
+    const effectiveBaselineElapsed = (typeof baselineElapsed === 'number')
+      ? baselineElapsed
+      : (typeof setElapsed === 'function' ? setElapsed() : 0);
+    const effectiveBaselineDisplay = baselineDisplay || formatTimer(effectiveBaselineElapsed || 0);
+    const inputValue = String(value || '').trim();
+
+    // If the stopwatch is running, ignore manual edits and restore the current display
+    if (running) {
+      if (timerDisplay) {
+        timerDisplay.value = effectiveBaselineDisplay;
+      }
+      return null;
+    }
+
+    // No change: keep baseline (including fractional ms) untouched
+    if (inputValue === effectiveBaselineDisplay) {
+      if (timerDisplay) timerDisplay.value = effectiveBaselineDisplay;
+      if (typeof setElapsed === 'function' && typeof effectiveBaselineElapsed === 'number') {
+        setElapsed(effectiveBaselineElapsed);
+      }
+      return effectiveBaselineElapsed;
+    }
+
     const parsed = (timerModule && timerModule.parseTimerInput)
       ? timerModule.parseTimerInput(value)
       : parseTimerInput(value);
 
     if (parsed === null) {
-      if (timerDisplay && typeof setElapsed === 'function') {
-        timerDisplay.value = formatTimer(setElapsed());
+      if (timerDisplay) {
+        timerDisplay.value = effectiveBaselineDisplay;
       }
       return null;
     }
 
     const msRounded = Math.floor(parsed / 1000) * 1000;
+    if (msRounded < 0) {
+      if (timerDisplay) {
+        timerDisplay.value = effectiveBaselineDisplay;
+      }
+      return null;
+    }
+
     const fallbackLocal = async () => {
       if (typeof setElapsed === 'function') setElapsed(msRounded);
       if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
@@ -195,6 +228,10 @@
   }) {
     const newElapsed = typeof state?.elapsed === 'number' ? state.elapsed : 0;
     const newRunning = !!state?.running;
+
+    if (timerDisplay) {
+      timerDisplay.disabled = newRunning;
+    }
 
     if (timerDisplay && !timerEditing) {
       timerDisplay.value = state?.display || formatTimer(newElapsed);

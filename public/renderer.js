@@ -1026,6 +1026,9 @@ let running = false;
 let prevRunning = false;
 // Indicates if the user is manually editing the timer field (to prevent overwriting)
 let timerEditing = false;
+// Baseline elapsed/display captured on focus to avoid losing fractional seconds if unchanged
+let timerBaselineElapsed = null;
+let timerBaselineDisplay = null;
 // Last elapsed for which we calculate WPM (avoid repeated recalculations)
 let lastComputedElapsedForWpm = null;
 
@@ -1141,16 +1144,37 @@ const applyManualTime = () => {
     idiomaActual,
     realWpmDisplay,
     ...getTimerLabels(),
-    setElapsed: (msVal) => { elapsed = msVal; return elapsed; },
-    setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; }
+    setElapsed: (msVal) => {
+      if (typeof msVal === 'number') {
+        elapsed = msVal;
+      }
+      return elapsed;
+    },
+    setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; },
+    running,
+    baselineElapsed: timerBaselineElapsed,
+    baselineDisplay: timerBaselineDisplay
   });
+  timerBaselineElapsed = null;
+  timerBaselineDisplay = null;
 };
 
-timerDisplay.addEventListener('blur', applyManualTime);
+if (timerDisplay) {
+  timerDisplay.addEventListener('focus', () => {
+    timerEditing = true;
+    timerBaselineElapsed = elapsed;
+    timerBaselineDisplay = timerDisplay.value;
+  });
 
-timerDisplay.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    timerDisplay.blur();
-  }
-});
+  timerDisplay.addEventListener('blur', () => {
+    timerEditing = false;
+    applyManualTime();
+  });
+
+  timerDisplay.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      timerDisplay.blur();
+    }
+  });
+}
