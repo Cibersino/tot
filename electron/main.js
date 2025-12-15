@@ -546,9 +546,22 @@ function resetCrono() {
 }
 
 function setCronoElapsed(ms) {
-  const n = Number(ms) || 0;
-  crono.elapsed = n;
-  if (crono.running) crono.startTs = Date.now();
+  // Ignore edits while running; allow only paused/stopped updates
+  if (crono.running) return;
+
+  const n = Number(ms);
+  if (!Number.isFinite(n)) return;
+
+  const msRounded = Math.max(0, Math.floor(n / 1000) * 1000);
+
+  if (msRounded === 0) {
+    resetCrono();
+    return;
+  }
+
+  crono.elapsed = msRounded;
+  crono.startTs = null;
+  crono.running = false;
   broadcastCronoState();
 }
 
