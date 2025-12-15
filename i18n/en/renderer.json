@@ -127,7 +127,7 @@
       "drop_too_big": "Dropped text is too large. Use the main window buttons to add large text.",
       "clipboard_no_text": "Clipboard does not contain plain text.",
       "drop_no_text": "Drop: no plain text detected.",
-      "write_limit": "Cannot write more text: maximum size reached.",
+      "type_limit": "Cannot write more text: maximum size reached.",
       "paste_limit": "Cannot paste more text: maximum size reached.",
       "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
       "drop_truncated": "Dragged text exceeded the available space and was truncated.",

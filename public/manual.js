@@ -534,7 +534,7 @@ editor.addEventListener('input', () => {
 
   if (editor.value && editor.value.length > MAX_TEXT_CHARS) {
     editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
-    Notify.notifyManual('renderer.editor_alerts.write_limit', { type: 'warn', duration: 5000 });
+    Notify.notifyManual('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
     try {
       const res = window.manualAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'truncated' } });
       handleTruncationResponse(res);

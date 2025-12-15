@@ -127,7 +127,7 @@
       "drop_too_big": "Arrastrado: texto demasiado grande. Usa los botones de la ventana principal.",
       "clipboard_no_text": "El portapapeles no contiene texto plano.",
       "drop_no_text": "Arrastrado: no se detectó texto plano.",
-      "write_limit": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido.",
+      "type_limit": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido.",
       "paste_limit": "No es posible pegar más texto: ya se alcanzó el tamaño máximo permitido.",
       "paste_truncated": "El texto pegado se ha truncado para no exceder el máximo permitido.",
       "drop_truncated": "El texto arrastrado excedía el espacio disponible y fue truncado.",
