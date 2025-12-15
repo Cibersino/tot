@@ -1,8 +1,8 @@
 // electron/settings.js
 // Gestion centralizada de user_settings.json: language, modeConteo, numberFormatting, etc.
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
 // Dependencias inyectadas desde main.js
 let _loadJson = null;
@@ -18,21 +18,21 @@ let _currentSettings = null;
  */
 function loadNumberFormatDefaults(lang) {
     try {
-        const langCode = (lang || "es").toLowerCase();
+        const langCode = (lang || 'es').toLowerCase();
         const filePath = path.join(
             __dirname,
-            "..",
-            "i18n",
+            '..',
+            'i18n',
             langCode,
-            "numberFormat.json"
+            'numberFormat.json'
         );
         if (!fs.existsSync(filePath)) return null;
 
-        let raw = fs.readFileSync(filePath, "utf8");
+        let raw = fs.readFileSync(filePath, 'utf8');
         if (!raw) return null;
 
         // Eliminar BOM UTF-8 si existe (evita SyntaxError: Unexpected token '∩╗┐')
-        raw = raw.replace(/^\uFEFF/, "");
+        raw = raw.replace(/^\uFEFF/, '');
 
         const json = JSON.parse(raw);
 
@@ -41,18 +41,18 @@ function loadNumberFormatDefaults(lang) {
             json.thousandsSeparator ||
             json.separadorMiles ||
             json.sepMiles ||
-            ".";
+            '.';
         const decimal =
             json.decimal ||
             json.decimalSeparator ||
             json.separadorDecimal ||
             json.sepDecimal ||
-            ",";
+            ',';
 
         return { thousands, decimal };
     } catch (e) {
         console.error(
-            "[settings] Error cargando numberFormat defaults para",
+            '[settings] Error cargando numberFormat defaults para',
             lang,
             e
         );
@@ -66,22 +66,22 @@ function loadNumberFormatDefaults(lang) {
  */
 function normalizeSettings(s) {
     s = s || {};
-    if (typeof s.language !== "string") s.language = "";
+    if (typeof s.language !== 'string') s.language = '';
     if (!Array.isArray(s.presets)) s.presets = [];
-    if (typeof s.numberFormatting !== "object") {
+    if (typeof s.numberFormatting !== 'object') {
         s.numberFormatting = s.numberFormatting || {};
     }
 
-    // Persistir modo de conteo por defecto: "preciso"
-    if (!s.modeConteo || (s.modeConteo !== "preciso" && s.modeConteo !== "simple")) {
-        s.modeConteo = "preciso";
+    // Persistir modo de conteo por defecto: 'preciso'
+    if (!s.modeConteo || (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple')) {
+        s.modeConteo = 'preciso';
     }
 
     // Ensure numberFormatting has defaults for current language (from i18n if available)
     const lang =
-        s.language && typeof s.language === "string" && s.language.trim()
+        s.language && typeof s.language === 'string' && s.language.trim()
             ? s.language.trim()
-            : "es";
+            : 'es';
 
     if (!s.numberFormatting[lang]) {
         const nf = loadNumberFormatDefaults(lang);
@@ -93,9 +93,9 @@ function normalizeSettings(s) {
         } else {
             // fallback simple
             s.numberFormatting[lang] =
-                lang === "en"
-                    ? { separadorMiles: ",", separadorDecimal: "." }
-                    : { separadorMiles: ".", separadorDecimal: "," };
+                lang === 'en'
+                    ? { separadorMiles: ',', separadorDecimal: '.' }
+                    : { separadorMiles: '.', separadorDecimal: ',' };
         }
     }
 
@@ -109,25 +109,25 @@ function normalizeSettings(s) {
  * - Deja _currentSettings cacheado.
  */
 function init({ loadJson, saveJson, settingsFile }) {
-    if (typeof loadJson !== "function" || typeof saveJson !== "function") {
-        throw new Error("[settings] init requiere loadJson y saveJson");
+    if (typeof loadJson !== 'function' || typeof saveJson !== 'function') {
+        throw new Error('[settings] init requiere loadJson y saveJson');
     }
     if (!settingsFile) {
-        throw new Error("[settings] init requiere settingsFile");
+        throw new Error('[settings] init requiere settingsFile');
     }
 
     _loadJson = loadJson;
     _saveJson = saveJson;
     _settingsFile = settingsFile;
 
-    const raw = _loadJson(_settingsFile, { language: "", presets: [] });
+    const raw = _loadJson(_settingsFile, { language: '', presets: [] });
     const normalized = normalizeSettings(raw);
     _currentSettings = normalized;
 
     try {
         _saveJson(_settingsFile, _currentSettings);
     } catch (e) {
-        console.error("[settings] Error persistiendo settings en init:", e);
+        console.error('[settings] Error persistiendo settings en init:', e);
     }
 
     return _currentSettings;
@@ -138,10 +138,10 @@ function init({ loadJson, saveJson, settingsFile }) {
  */
 function getSettings() {
     if (!_loadJson || !_settingsFile) {
-        throw new Error("[settings] getSettings llamado antes de init");
+        throw new Error('[settings] getSettings llamado antes de init');
     }
     // Siempre recargar desde disco para reflejar cambios hechos fuera de settingsState
-    const raw = _loadJson(_settingsFile, { language: "", presets: [] });
+    const raw = _loadJson(_settingsFile, { language: '', presets: [] });
     _currentSettings = normalizeSettings(raw);
     return _currentSettings;
 }
@@ -158,7 +158,7 @@ function saveSettings(nextSettings) {
             _saveJson(_settingsFile, normalized);
         }
     } catch (e) {
-        console.error("[settings] Error guardando settings:", e);
+        console.error('[settings] Error guardando settings:', e);
     }
     return _currentSettings;
 }
@@ -172,19 +172,19 @@ function broadcastSettingsUpdated(settings, windows) {
 
     try {
         if (mainWin && !mainWin.isDestroyed()) {
-            mainWin.webContents.send("settings-updated", settings);
+            mainWin.webContents.send('settings-updated', settings);
         }
         if (editorWin && !editorWin.isDestroyed()) {
-            editorWin.webContents.send("settings-updated", settings);
+            editorWin.webContents.send('settings-updated', settings);
         }
         if (presetWin && !presetWin.isDestroyed()) {
-            presetWin.webContents.send("settings-updated", settings);
+            presetWin.webContents.send('settings-updated', settings);
         }
         if (floatingWin && !floatingWin.isDestroyed()) {
-            floatingWin.webContents.send("settings-updated", settings);
+            floatingWin.webContents.send('settings-updated', settings);
         }
     } catch (err) {
-        console.error("[settings] Error notificando settings-updated:", err);
+        console.error('[settings] Error notificando settings-updated:', err);
     }
 }
 
@@ -204,24 +204,24 @@ function registerIpc(
     }
 ) {
     if (!ipcMain) {
-        throw new Error("[settings] registerIpc requiere ipcMain");
+        throw new Error('[settings] registerIpc requiere ipcMain');
     }
 
     // get-settings: retorna el objeto settings actual (normalizado)
-    ipcMain.handle("get-settings", async () => {
+    ipcMain.handle('get-settings', async () => {
         try {
             return getSettings();
         } catch (e) {
-            console.error("Error en get-settings:", e);
-            return { language: "es", presets: [] };
+            console.error('Error en get-settings:', e);
+            return { language: 'es', presets: [] };
         }
     });
 
     // set-language: guarda idioma, asegura numberFormatting y rebuildea menú
-    ipcMain.handle("set-language", async (_event, lang) => {
+    ipcMain.handle('set-language', async (_event, lang) => {
         try {
-            const chosen = String(lang || "").trim();
-            const effectiveLang = chosen || "es";
+            const chosen = String(lang || '').trim();
+            const effectiveLang = chosen || 'es';
 
             let settings = getSettings();
             settings.language = chosen;
@@ -234,33 +234,33 @@ function registerIpc(
                         separadorMiles: nf.thousands,
                         separadorDecimal: nf.decimal,
                     };
-                } else if (effectiveLang === "en") {
+                } else if (effectiveLang === 'en') {
                     settings.numberFormatting[effectiveLang] = {
-                        separadorMiles: ",",
-                        separadorDecimal: ".",
+                        separadorMiles: ',',
+                        separadorDecimal: '.',
                     };
                 } else {
                     settings.numberFormatting[effectiveLang] = {
-                        separadorMiles: ".",
-                        separadorDecimal: ",",
+                        separadorMiles: '.',
+                        separadorDecimal: ',',
                     };
                 }
             }
 
             settings = saveSettings(settings);
 
-            if (typeof setCurrentLanguage === "function") {
+            if (typeof setCurrentLanguage === 'function') {
                 setCurrentLanguage(effectiveLang);
             }
 
-            const windows = typeof getWindows === "function" ? getWindows() : {};
+            const windows = typeof getWindows === 'function' ? getWindows() : {};
 
             // Rebuild menu con el nuevo idioma
-            if (typeof buildAppMenu === "function") {
+            if (typeof buildAppMenu === 'function') {
                 try {
                     buildAppMenu(effectiveLang);
                 } catch (menuErr) {
-                    console.warn("[settings] No se pudo reconstruir el menu:", menuErr);
+                    console.warn('[settings] No se pudo reconstruir el menu:', menuErr);
                 }
             }
 
@@ -281,7 +281,7 @@ function registerIpc(
                 }
             } catch (menuErr) {
                 console.warn(
-                    "[settings] No se pudo ocultar menu en ventanas secundarias:",
+                    '[settings] No se pudo ocultar menu en ventanas secundarias:',
                     menuErr
                 );
             }
@@ -290,24 +290,24 @@ function registerIpc(
 
             return { ok: true, language: chosen };
         } catch (err) {
-            console.error("Error guardando language:", err);
+            console.error('Error guardando language:', err);
             return { ok: false, error: String(err) };
         }
     });
 
     // set-mode-conteo: simple/preciso + broadcast
-    ipcMain.handle("set-mode-conteo", async (_event, mode) => {
+    ipcMain.handle('set-mode-conteo', async (_event, mode) => {
         try {
             let settings = getSettings();
-            settings.modeConteo = mode === "simple" ? "simple" : "preciso";
+            settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
             settings = saveSettings(settings);
 
-            const windows = typeof getWindows === "function" ? getWindows() : {};
+            const windows = typeof getWindows === 'function' ? getWindows() : {};
             broadcastSettingsUpdated(settings, windows);
 
             return { ok: true, mode: settings.modeConteo };
         } catch (err) {
-            console.error("Error en set-mode-conteo:", err);
+            console.error('Error en set-mode-conteo:', err);
             return { ok: false, error: String(err) };
         }
     });
@@ -318,11 +318,11 @@ function registerIpc(
  * Si settings.language esta vacio, fuerza fallbackLang (por defecto 'es')
  * y asegura numberFormatting[fallbackLang].
  */
-function applyFallbackLanguageIfUnset(fallbackLang = "es") {
+function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
     try {
         let settings = getSettings();
-        if (!settings.language || settings.language === "") {
-            const lang = fallbackLang || "es";
+        if (!settings.language || settings.language === '') {
+            const lang = fallbackLang || 'es';
             settings.language = lang;
             settings.numberFormatting = settings.numberFormatting || {};
 
@@ -333,15 +333,15 @@ function applyFallbackLanguageIfUnset(fallbackLang = "es") {
                         separadorMiles: nf.thousands,
                         separadorDecimal: nf.decimal,
                     };
-                } else if (lang === "en") {
+                } else if (lang === 'en') {
                     settings.numberFormatting[lang] = {
-                        separadorMiles: ",",
-                        separadorDecimal: ".",
+                        separadorMiles: ',',
+                        separadorDecimal: '.',
                     };
                 } else {
                     settings.numberFormatting[lang] = {
-                        separadorMiles: ".",
-                        separadorDecimal: ",",
+                        separadorMiles: '.',
+                        separadorDecimal: ',',
                     };
                 }
             }
@@ -349,7 +349,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = "es") {
             saveSettings(settings);
         }
     } catch (e) {
-        console.error("[settings] Error aplicando fallback language:", e);
+        console.error('[settings] Error aplicando fallback language:', e);
     }
 }
 

@@ -1,8 +1,8 @@
 (() => {
-  console.debug("[presets.js] modulo cargado");
+  console.debug('[presets.js] modulo cargado');
 
   function combinePresets({ settings = {}, defaults = {} }) {
-    const lang = settings.language || "es";
+    const lang = settings.language || 'es';
     const userPresets = Array.isArray(settings.presets) ? settings.presets.slice() : [];
     const generalDefaults = Array.isArray(defaults.general) ? defaults.general.slice() : [];
     const langPresets = (defaults.languagePresets && defaults.languagePresets[lang] && Array.isArray(defaults.languagePresets[lang]))
@@ -27,9 +27,9 @@
 
   function fillPresetsSelect(list = [], selectEl) {
     if (!selectEl) return;
-    selectEl.innerHTML = "";
+    selectEl.innerHTML = '';
     list.forEach(p => {
-      const opt = document.createElement("option");
+      const opt = document.createElement('option');
       opt.value = p.name;
       opt.textContent = p.name;
       selectEl.appendChild(opt);
@@ -42,28 +42,28 @@
     if (selectEl) selectEl.value = preset.name;
     if (wpmInput) wpmInput.value = preset.wpm;
     if (wpmSlider) wpmSlider.value = preset.wpm;
-    if (presetDescription) presetDescription.textContent = preset.description || "";
+    if (presetDescription) presetDescription.textContent = preset.description || '';
   }
 
   async function loadPresetsIntoDom({
     electronAPI,
-    language = "es",
+    language = 'es',
     currentPresetName = null,
     selectEl,
     wpmInput,
     wpmSlider,
     presetDescription
   }) {
-    if (!electronAPI) throw new Error("electronAPI requerido para cargar presets");
+    if (!electronAPI) throw new Error('electronAPI requerido para cargar presets');
 
     const settings = (await electronAPI.getSettings()) || { language, presets: [] };
-    const lang = settings.language || language || "es";
+    const lang = settings.language || language || 'es';
 
     let defaults = { general: [], languagePresets: {} };
     try {
       defaults = await electronAPI.getDefaultPresets();
     } catch (e) {
-      console.error("Error obteniendo default presets desde main:", e);
+      console.error('Error obteniendo default presets desde main:', e);
     }
 
     const finalList = combinePresets({ settings, defaults });
@@ -74,14 +74,14 @@
       selected = finalList.find(p => p.name === currentPresetName) || null;
     }
     if (!selected) {
-      selected = finalList.find(p => p.name === "default") || finalList[0] || null;
+      selected = finalList.find(p => p.name === 'default') || finalList[0] || null;
     }
 
     if (selected) {
       applyPresetSelection(selected, { selectEl, wpmInput, wpmSlider, presetDescription });
     } else {
       if (selectEl) selectEl.selectedIndex = -1;
-      if (presetDescription) presetDescription.textContent = "";
+      if (presetDescription) presetDescription.textContent = '';
     }
 
     return { list: finalList, selected, language: lang };
