@@ -52,7 +52,7 @@ function loadNumberFormatDefaults(lang) {
         return { thousands, decimal };
     } catch (e) {
         console.error(
-            '[settings] Error cargando numberFormat defaults para',
+            '[settings] Error loading numberFormat defaults for',
             lang,
             e
         );
@@ -127,7 +127,7 @@ function init({ loadJson, saveJson, settingsFile }) {
     try {
         _saveJson(_settingsFile, _currentSettings);
     } catch (e) {
-        console.error('[settings] Error persistiendo settings en init:', e);
+        console.error('[settings] Error persisting settings in init:', e);
     }
 
     return _currentSettings;
@@ -158,7 +158,7 @@ function saveSettings(nextSettings) {
             _saveJson(_settingsFile, normalized);
         }
     } catch (e) {
-        console.error('[settings] Error guardando settings:', e);
+        console.error('[settings] Error saving settings:', e);
     }
     return _currentSettings;
 }
@@ -184,7 +184,7 @@ function broadcastSettingsUpdated(settings, windows) {
             floatingWin.webContents.send('settings-updated', settings);
         }
     } catch (err) {
-        console.error('[settings] Error notificando settings-updated:', err);
+        console.error('[settings] Error notifying settings-updated:', err);
     }
 }
 
@@ -212,7 +212,7 @@ function registerIpc(
         try {
             return getSettings();
         } catch (e) {
-            console.error('Error en get-settings:', e);
+            console.error('Error in get-settings:', e);
             return { language: 'es', presets: [] };
         }
     });
@@ -260,7 +260,7 @@ function registerIpc(
                 try {
                     buildAppMenu(effectiveLang);
                 } catch (menuErr) {
-                    console.warn('[settings] No se pudo reconstruir el menu:', menuErr);
+                    console.warn('[settings] Error rebuilding menu:', menuErr);
                 }
             }
 
@@ -281,7 +281,7 @@ function registerIpc(
                 }
             } catch (menuErr) {
                 console.warn(
-                    '[settings] No se pudo ocultar menu en ventanas secundarias:',
+                    '[settings] Error hiding menu in secondary windows:',
                     menuErr
                 );
             }
@@ -290,7 +290,7 @@ function registerIpc(
 
             return { ok: true, language: chosen };
         } catch (err) {
-            console.error('Error guardando language:', err);
+            console.error('Error saving language:', err);
             return { ok: false, error: String(err) };
         }
     });
@@ -307,7 +307,7 @@ function registerIpc(
 
             return { ok: true, mode: settings.modeConteo };
         } catch (err) {
-            console.error('Error en set-mode-conteo:', err);
+            console.error('Error in set-mode-conteo:', err);
             return { ok: false, error: String(err) };
         }
     });
@@ -349,7 +349,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
             saveSettings(settings);
         }
     } catch (e) {
-        console.error('[settings] Error aplicando fallback language:', e);
+        console.error('[settings] Error applying fallback language:', e);
     }
 }
 

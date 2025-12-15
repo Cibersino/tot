@@ -13,7 +13,7 @@
             throw new Error('registerMenuAction: callback debe ser funcion');
         }
         registry.set(payload, callback);
-        console.debug(`menuActions: accion registrada -> ${payload}`);
+        console.debug(`menuActions: registered action -> ${payload}`);
     }
 
     function unregisterMenuAction(payload) {
@@ -25,16 +25,16 @@
     }
 
     function handleMenuClick(payload) {
-        console.log('menu-click recibido (menu.js):', payload);
+        console.log('menu-click received (menu.js):', payload);
         const action = registry.get(payload);
         if (action) {
             try {
                 action(payload);
             } catch (err) {
-                console.error(`Error ejecutando accion de menu '${payload}':`, err);
+                console.error(`Error executing menu action '${payload}':`, err);
             }
         } else {
-            console.warn(`menuActions: payload sin accion registrada -> ${payload}`);
+            console.warn(`menuActions: payload without registered action -> ${payload}`);
         }
     }
 
@@ -42,7 +42,7 @@
     function setupListener() {
         // si ya esta registrado, no volver a registrar
         if (_unsubscribeMenuClick) {
-            console.debug('menuActions: listener ya registrado (skip)');
+            console.debug('menuActions: listener already registered (skip)');
             return true;
         }
 
@@ -53,15 +53,15 @@
                 // Guardar la funcion de desuscripcion si la devolvieron
                 if (typeof maybeUnsubscribe === 'function') {
                     _unsubscribeMenuClick = maybeUnsubscribe;
-                    console.debug('menuActions: listener registrado en electronAPI.onMenuClick (con unsubscribe)');
+                    console.debug('menuActions: listener registered in electronAPI.onMenuClick (with unsubscribe)');
                 } else {
                     // No todas las implementaciones de preload devuelven unsubscribe. Aceptamos eso.
                     _unsubscribeMenuClick = null;
-                    console.debug('menuActions: listener registrado en electronAPI.onMenuClick (sin unsubscribe devuelto)');
+                    console.debug('menuActions: listener registered in electronAPI.onMenuClick (without unsubscribe)');
                 }
                 return true;
             } catch (err) {
-                console.error('menuActions: error registrando listener en electronAPI.onMenuClick:', err);
+                console.error('menuActions: error registering listener in electronAPI.onMenuClick:', err);
                 return false;
             }
         }
@@ -84,13 +84,13 @@
             if (typeof _unsubscribeMenuClick === 'function') {
                 try {
                     _unsubscribeMenuClick();
-                    console.debug('menuActions: listener desuscrito correctamente');
+                    console.debug('menuActions: listener unscribed correctly');
                 } catch (err) {
-                    console.error('menuActions: error al desuscribir listener:', err);
+                    console.error('menuActions: error unsubscribing listener:', err);
                 }
                 _unsubscribeMenuClick = null;
             } else {
-                console.debug('menuActions: no hay unsubscribe disponible (no se puede desuscribir)');
+                console.debug('menuActions: unsubscribe unavailable (cannot unsubscribe)');
             }
         },
 

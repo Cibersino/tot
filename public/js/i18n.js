@@ -1,5 +1,5 @@
 (() => {
-  console.debug('[i18n.js] modulo cargado');
+  console.debug('[i18n.js] module loaded');
 
   let rendererTranslations = null;
   let rendererTranslationsLang = null;
@@ -18,7 +18,7 @@
         return data;
       }
     } catch (e) {
-      console.warn('[i18n] No se pudieron cargar traducciones de renderer:', e);
+      console.warn('[i18n] Unable to load renderer translations:', e);
     }
     rendererTranslations = null;
     rendererTranslationsLang = null;

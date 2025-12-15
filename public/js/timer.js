@@ -1,5 +1,5 @@
 (() => {
-  console.debug('[timer.js] modulo cargado');
+  console.debug('[timer.js] module loaded');
 
   function formatTimer(ms) {
     const totalSeconds = Math.floor((ms || 0) / 1000);
@@ -58,7 +58,7 @@
     pauseLabel = '||'
   }) {
     if (!electronAPI || typeof electronAPI.openFloatingWindow !== 'function') {
-      console.warn('openFloatingWindow no disponible en electronAPI');
+      console.warn('openFloatingWindow unavailable in electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
@@ -88,7 +88,7 @@
       }
       return null;
     } catch (e) {
-      console.error('Error abriendo flotante:', e);
+      console.error('Error loading  flotante:', e);
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
@@ -96,14 +96,14 @@
 
   async function closeFloating({ electronAPI, toggleVF }) {
     if (!electronAPI || typeof electronAPI.closeFloatingWindow !== 'function') {
-      console.warn('closeFloatingWindow no disponible en electronAPI');
+      console.warn('closeFloatingWindow unavailable in electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return;
     }
     try {
       await electronAPI.closeFloatingWindow();
     } catch (e) {
-      console.error('Error cerrando flotante:', e);
+      console.error('Error closing flotante:', e);
     } finally {
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
     }
@@ -166,7 +166,7 @@
         if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
         return msRounded;
       } catch (e) {
-        console.error('Error enviando setCronoElapsed:', e);
+        console.error('Error sending setCronoElapsed:', e);
         await fallbackLocal();
         return msRounded;
       }

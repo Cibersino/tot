@@ -75,7 +75,7 @@ function registerDevShortcuts(mainWin) {
       }
     });
   } catch (err) {
-    console.warn('No se pudieron registrar los atajos de desarrollo:', err);
+    console.warn('Error registering development shortcuts:', err);
   }
 }
 
@@ -83,7 +83,7 @@ function unregisterShortcuts() {
   try {
     globalShortcut.unregisterAll();
   } catch (err) {
-    console.warn('Error al desregistrar atajos globales:', err);
+    console.warn('Error unregistering global shortcuts:', err);
   }
 }
 
@@ -119,7 +119,7 @@ function createMainWindow() {
         try {
           editorWin.close();
         } catch (e) {
-          console.error('Error cerrando editorWin desde mainWin.close:', e);
+          console.error('Error closing editorWin from mainWin.close:', e);
         }
       }
 
@@ -127,11 +127,11 @@ function createMainWindow() {
         try {
           presetWin.close();
         } catch (e) {
-          console.error('Error cerrando presetWin desde mainWin.close:', e);
+          console.error('Error closing presetWin from mainWin.close:', e);
         }
       }
     } catch (e) {
-      console.error('Error en mainWin.close handler:', e);
+      console.error('Error in mainWin.close handler:', e);
     }
   });
 
@@ -143,7 +143,7 @@ function createMainWindow() {
     try {
       app.quit();
     } catch (e) {
-      console.error('Error llamando app.quit() en mainWin.closed:', e);
+      console.error('Error calling app.quit() in mainWin.closed:', e);
     }
   });
 }
@@ -200,7 +200,7 @@ function createEditorWindow() {
           meta: { source: 'main', action: 'init' }
         });
       } catch (err) {
-        console.error('Error enviando manual-init-text al editor:', err);
+        console.error('Error sending manual-init-text to editor:', err);
       }
 
       // Notify the main window that the editor is ready
@@ -209,10 +209,10 @@ function createEditorWindow() {
           mainWin.webContents.send('manual-editor-ready');
         }
       } catch (err) {
-        console.error('Error notificando manual-editor-ready a la ventana principal:', err);
+        console.error('Error notifying manual-editor-ready to main window:', err);
       }
     } catch (e) {
-      console.error('Error mostrando editor manual:', e);
+      console.error('Error showing manual editor:', e);
     }
   });
 
@@ -234,7 +234,7 @@ function createPresetWindow(initialData) {
       // send init with whole payload (may include wpm/mode/preset)
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (e) {
-      console.error('Error enviando init a presetWin ya abierta:', e);
+      console.error('Error sending init to presetWin already open:', e);
     }
     return;
   }
@@ -265,7 +265,7 @@ function createPresetWindow(initialData) {
     try {
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (e) {
-      console.error('Error enviando preset-init:', e);
+      console.error('Error sending preset-init:', e);
     }
   });
 
@@ -356,14 +356,14 @@ function createLanguageWindow() {
       // If the user closes without choosing, force a fallback to 'es' if no language is defined
       settingsState.applyFallbackLanguageIfUnset('es');
     } catch (e) {
-      console.error('Error aplicando fallback language:', e);
+      console.error('Error applying fallback language:', e);
     } finally {
       langWin = null;
       // Ensure mainWin is created after closing the modal
       try {
         if (!mainWin) createMainWindow();
       } catch (e) {
-        console.error('Error creando mainWin tras el modal de idioma:', e);
+        console.error('Error creating mainWin after closing language modal:', e);
       }
     }
   });
@@ -425,7 +425,7 @@ async function createFloatingWindow(options = {}) {
       pos.y = y;
     }
   } catch (e) {
-    console.warn('No se pudo calcular la posicion desde screen.getPrimaryDisplay(); usando la posicion del flotante predeterminada.', e);
+    console.warn('Position could not be calculated from screen.getPrimaryDisplay(); using the default FW position.', e);
   }
 
   // If x/y were provided explicitly in options, respect them (allow override)
@@ -441,7 +441,7 @@ async function createFloatingWindow(options = {}) {
   try {
     await floatingWin.loadFile(FLOATER_HTML);
   } catch (e) {
-    console.error('Error cargando flotante HTML:', e);
+    console.error('Error loading floating HTML:', e);
   }
 
   // If the window was created offscreen or out of bounds, ensure it stays inside the screen
@@ -560,16 +560,16 @@ ipcMain.on('crono-toggle', () => {
   try {
     if (crono.running) stopCrono(); else startCrono();
   } catch (e) {
-    console.error('Error en crono-toggle:', e);
+    console.error('Error in crono-toggle:', e);
   }
 });
 
 ipcMain.on('crono-reset', () => {
-  try { resetCrono(); } catch (e) { console.error('Error en crono-reset:', e); }
+  try { resetCrono(); } catch (e) { console.error('Error in crono-reset:', e); }
 });
 
 ipcMain.on('crono-set-elapsed', (_ev, ms) => {
-  try { setCronoElapsed(ms); } catch (e) { console.error('Error en crono-set-elapsed:', e); }
+  try { setCronoElapsed(ms); } catch (e) { console.error('Error in crono-set-elapsed:', e); }
 });
 
 // IPC: open floating window
@@ -580,7 +580,7 @@ ipcMain.handle('floating-open', async () => {
     if (crono.running) ensureCronoInterval();
     return { ok: true };
   } catch (e) {
-    console.error('Error procesando floating-open:', e);
+    console.error('Error processing floating-open:', e);
     return { ok: false, error: String(e) };
   }
 });
@@ -594,7 +594,7 @@ ipcMain.handle('floating-close', async () => {
     }
     return { ok: true };
   } catch (e) {
-    console.error('Error procesando floating-close:', e);
+    console.error('Error processing floating-close:', e);
     return { ok: false, error: String(e) };
   }
 });
@@ -612,7 +612,7 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
     }
     // broadcastCronoState() is already called by the previous functions
   } catch (e) {
-    console.error('Error procesando flotante-command en main:', e);
+    console.error('Error processing flotante-command in main:', e);
   }
 });
 
@@ -629,7 +629,7 @@ ipcMain.handle('open-editor', () => {
         meta: { source: 'main', action: 'init' },
       });
     } catch (err) {
-      console.error('Error enviando manual-init-text desde open-editor:', err);
+      console.error('Error sending manual-init-text from open-editor:', err);
     }
     try {
       if (mainWin && !mainWin.isDestroyed()) {
@@ -637,7 +637,7 @@ ipcMain.handle('open-editor', () => {
       }
     } catch (e) {
       console.warn(
-        'No se pudo notificar manual-editor-ready (editor ya abierto):',
+        'Unable to notify manual-editor-ready (editor already open):',
         e
       );
     }
@@ -661,7 +661,7 @@ ipcMain.handle('get-app-config', async () => {
   try {
     return { ok: true, maxTextChars: MAX_TEXT_CHARS };
   } catch (e) {
-    console.error('Error procesando get-app-config:', e);
+    console.error('Error processing get-app-config:', e);
     return { ok: false, error: String(e), maxTextChars: 1e7 };
   }
 });
@@ -684,7 +684,7 @@ app.whenReady().then(() => {
       try {
         if (!mainWin) createMainWindow();
       } catch (e) {
-        console.error('Error creando mainWin tras seleccionar idioma:', e);
+        console.error('Error creating mainWin after selecting language:', e);
       } finally {
         try {
           if (langWin && !langWin.isDestroyed()) langWin.close();
@@ -720,6 +720,6 @@ app.on('will-quit', () => {
       cronoInterval = null;
     }
   } catch (e) {
-    console.error('Error limpiando cronometro en will-quit:', e);
+    console.error('Error clearing stopwatch in will-quit:', e);
   }
 });

@@ -1,5 +1,5 @@
 (() => {
-  console.debug('[format.js] modulo cargado');
+  console.debug('[format.js] module loaded');
 
   function getTimeParts(words, wpm) {
     if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };
