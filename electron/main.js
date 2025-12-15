@@ -374,6 +374,128 @@ const FLOATER_PRELOAD = path.join(__dirname, 'flotante_preload.js');
 // Floating window HTML path: place it in ../public to maintain convention
 const FLOATER_HTML = path.join(__dirname, '../public/flotante.html');
 
+function clampInt(n, min, max) {
+  const lo = Math.min(min, max);
+  const hi = Math.max(min, max);
+  return Math.min(Math.max(n, lo), hi);
+}
+
+function pointInRect(pt, rect) {
+  return (
+    pt.x >= rect.x &&
+    pt.x < rect.x + rect.width &&
+    pt.y >= rect.y &&
+    pt.y < rect.y + rect.height
+  );
+}
+
+function getWindowCenter(bounds) {
+  return {
+    x: Math.round(bounds.x + bounds.width / 2),
+    y: Math.round(bounds.y + bounds.height / 2)
+  };
+}
+
+// Regla pedida: “pantalla dueña” = donde cae el CENTRO.
+function getDisplayByWindowCenter(bounds) {
+  const center = getWindowCenter(bounds);
+  const displays = screen.getAllDisplays();
+  const containing = displays.find((d) => d && d.bounds && pointInRect(center, d.bounds));
+  return containing || screen.getDisplayNearestPoint(center);
+}
+
+// Encajar 100% dentro del workArea del display elegido.
+function snapWindowFullyIntoWorkArea(win) {
+  if (!win || win.isDestroyed()) return;
+
+  const b = win.getBounds();
+  const display = getDisplayByWindowCenter(b);
+  const wa = display && display.workArea ? display.workArea : null;
+  if (!wa) return;
+
+  const maxX = wa.x + wa.width - b.width;
+  const maxY = wa.y + wa.height - b.height;
+
+  const nx = clampInt(b.x, wa.x, maxX);
+  const ny = clampInt(b.y, wa.y, maxY);
+
+  if (nx !== b.x || ny !== b.y) {
+    win.setBounds({ x: nx, y: ny, width: b.width, height: b.height }, false);
+  }
+}
+
+/**
+ * Cross-platform guard:
+ * - Windows: will-move (manual gate) + moved (one-shot end-of-move).
+ * - macOS: moved is alias of move; use end-of-move by stability on move.
+ * - Linux: no will-move/moved per docs; use stability on move.
+ */
+function installFloatingWorkAreaGuard(win, opts = {}) {
+  snapWindowFullyIntoWorkArea(win);
+
+  let snapping = false;
+  let manualMoveArmed = false;
+
+  // will-move: solo cuando el usuario arrastra a mano (Windows/macOS). :contentReference[oaicite:1]{index=1}
+  win.on('will-move', () => {
+    if (!snapping) manualMoveArmed = true;
+  });
+
+  if (process.platform === 'win32') {
+    // moved: se emite una vez al terminar el movimiento en Windows. :contentReference[oaicite:2]{index=2}
+    win.on('moved', () => {
+      if (!manualMoveArmed || snapping || win.isDestroyed()) return;
+      manualMoveArmed = false;
+      snapping = true;
+      try {
+        snapWindowFullyIntoWorkArea(win);
+      } finally {
+        setImmediate(() => { snapping = false; });
+      }
+    });
+
+    win.on('closed', () => {});
+    return;
+  }
+
+  // --- macOS + Linux: “end-of-move” por estabilidad ---
+  const endMoveMs = typeof opts.endMoveMs === 'number' ? opts.endMoveMs : 80;
+
+  let lastMoveAt = 0;
+  let timer = null;
+
+  function clearTimer() {
+    if (timer) clearTimeout(timer);
+    timer = null;
+  }
+
+  win.on('move', () => {
+    if (snapping || win.isDestroyed()) return;
+
+    // Linux: no hay will-move en la doc actual; trata cualquier move como manual.
+    if (process.platform === 'linux') manualMoveArmed = true;
+
+    if (!manualMoveArmed) return;
+
+    lastMoveAt = Date.now();
+    clearTimer();
+    timer = setTimeout(() => {
+      if (Date.now() - lastMoveAt < endMoveMs) return;
+      if (!manualMoveArmed || snapping || win.isDestroyed()) return;
+
+      manualMoveArmed = false;
+      snapping = true;
+      try {
+        snapWindowFullyIntoWorkArea(win);
+      } finally {
+        setImmediate(() => { snapping = false; });
+      }
+    }, endMoveMs);
+  });
+
+  win.on('closed', () => clearTimer());
+}
+
 async function createFloatingWindow(options = {}) {
   // If it already exists and wasn't destroyed, restore it (don't recreate it)
   if (floatingWin && !floatingWin.isDestroyed()) {
@@ -436,6 +558,7 @@ async function createFloatingWindow(options = {}) {
   const createOpts = Object.assign({}, bwOpts, pos, options);
 
   floatingWin = new BrowserWindow(createOpts);
+  installFloatingWorkAreaGuard(floatingWin, { endMoveMs: 80 });
 
   // Load the HTML of the floating window
   try {
@@ -444,22 +567,9 @@ async function createFloatingWindow(options = {}) {
     console.error('Error loading floating HTML:', e);
   }
 
-  // If the window was created offscreen or out of bounds, ensure it stays inside the screen
+  // Ensure the window starts fully inside the workArea of the display chosen by its center.
   try {
-    const bounds = floatingWin.getBounds();
-    const display = screen.getDisplayMatching(bounds);
-    if (display && display.workArea) {
-      const wa = display.workArea;
-      // Adjust if it ended up partially offscreen (keep it simple)
-      let nx = bounds.x, ny = bounds.y;
-      if (bounds.x < wa.x) nx = wa.x + DEFAULT_MARGIN_RIGHT;
-      if (bounds.y < wa.y) ny = wa.y + DEFAULT_MARGIN_BOTTOM;
-      if ((bounds.x + bounds.width) > (wa.x + wa.width)) nx = wa.x + wa.width - bounds.width - DEFAULT_MARGIN_RIGHT;
-      if ((bounds.y + bounds.height) > (wa.y + wa.height)) ny = wa.y + wa.height - bounds.height - DEFAULT_MARGIN_BOTTOM;
-      if (nx !== bounds.x || ny !== bounds.y) {
-        floatingWin.setBounds({ x: nx, y: ny });
-      }
-    }
+    snapWindowFullyIntoWorkArea(floatingWin);
   } catch (e) {
     /* noop */
   }
