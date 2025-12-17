@@ -1,5 +1,5 @@
 ## ÁRBOL DE CARPETAS Y ARCHIVOS PRINCIPALES ##
-version 0.0.930
+version 0.0.930dev
 
 ```
 tot-readingmeter/
@@ -14,8 +14,10 @@ tot-readingmeter/
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
 │ ├── cleanup/
+│ │ ├── _repo_contract_usage.md
 │ │ ├── cleanup_template.md
-│ │ └── PROTOCOL_CODE_CLEANUP_v1.11.md
+│ │ ├── electron_main_js.md
+│ │ └── PROTOCOL_CODE_CLEANUP_v1.12.md
 │ ├── bugs.md
 │ ├── ToDo.txt
 │ └── tree_folders_files.md
@@ -86,14 +88,14 @@ tot-readingmeter/
 │ ├── flotante.css
 │ └── style.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
-│ ├── ast_tools/
-│ │ ├── node_modules/              # {acorn}
-│ │ ├── b1_inventory.cjs
-│ │ ├── b2_contract_lock.cjs
-│ │ ├── b3_candidates_scan.cjs
-│ │ ├── package.json
-│ │ └── package-lock.json
-│ └── PLAN_reset_piloto_electron_main_js.md
+│ └── ast_tools/
+│   ├── node_modules/              # {acorn}
+│   ├── b1_inventory.cjs
+│   ├── b2_contract_lock.cjs
+│   ├── b2_3_observability_scan.cjs
+│   ├── b3_candidates_scan.cjs
+│   ├── package.json
+│   └── package-lock.json
 ├── package.json
 ├── package-lock.json
 ├── README.md

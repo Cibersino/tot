@@ -3,7 +3,7 @@
 > Location: `docs/cleanup/<SLUG>.md`  
 > Scope: This document records all evidence and decisions needed to clean, reorder, and de-legacy a single file, in two phases:
 > - **Phase 1 (Safe):** no functional changes; must preserve observable behavior.
-> - **Phase 2 (Risk):** may change behavior; requires explicit tests.
+> - **Phase 2 (Risk):** may change behavior; requires targeted tests.
 
 ---
 
@@ -14,7 +14,7 @@
 - Date started: `<YYYY-MM-DD>`
 - Branch: `<BRANCH>`
 - Baseline commit (short SHA): `<SHA>`
-- Latest commit touching this cleanup: `<SHA>`
+- Latest commit touching this cleanup: `<SHA or TBD>`
 - Phase 1 status: `<pending/done + commit SHA>`
 - Phase 2 status: `<pending/done + commit SHA>`
 
@@ -22,78 +22,150 @@
 
 ## 1) Step B — Evidence Pack
 
-### B1) Top-level inventory (AST / Outline)
-> Goal: prevent losing/misplacing top-level units during reordering.
+### B1) Top-level inventory (AST)
+> Generated from AST. Source: `<RELATIVE_PATH>`
 
 #### Top-level state (global variables)
-- `L<line>`: `<name>` — <role>
+- `L<line>`: let `<name>`
+- `L<line>`: let `<name>`
 
 #### Top-level declarations
 **Functions**
-- `L<line>`: `<name>()` — <role>
+- `L<line>`: `<name>()`
+- `L<line>`: `<name>()`
 
 **Classes**
-- `L<line>`: `<name>` — <role>
+- (none)
+  - or:
+- `L<line>`: `<name>`
 
 **Variables assigned to functions**
-- `L<line>`: `<const/let> <name> = <function>` — <role>
+- (none)
+  - or:
+- `L<line>`: `<const/let> <name> = <function>`
+
+#### Top-level constants (non-function)
+- `L<line>`: const `<name>`
+- `L<line>`: const `<name>`
 
 #### Other top-level statements (units / side effects)
-- `L<line>`: `[<type>] <snippet>` — <why it matters>
+- `L<line>`: `[<NodeType>] <summary>`
+  - raw: `<raw statement (may be truncated)>`
+- `L<line>`: `[<NodeType>] <summary>`
+  - raw: `<raw statement (may be truncated)>`
 
 ---
 
-### B2) Contract Lock (must remain stable in Phase 1)
+### B2) Contract Lock
 > Contract lock = externally observable “interfaces” that must not change in Phase 1:
-> IPC channels, event names, storage filenames, menu action IDs, etc.
+> IPC channels, event names, storage keys, file paths, menu action IDs, etc.
+> Generated from AST. Source: `<RELATIVE_PATH>`
 
 #### IPC — ipcMain.handle
-- `<channel>`
+- Total calls: `<N>`
+- Unique keys: `<N>`
+
+- `<key>` — `<n>` call(s): `L<line>[, L<line>...]`
+- `<key>` — `<n>` call(s): `L<line>[, L<line>...]`
 
 #### IPC — ipcMain.on
-- `<channel>`
+- Total calls: `<N>`
+- Unique keys: `<N>`
+
+- `<key>` — `<n>` call(s): `L<line>[, L<line>...]`
 
 #### IPC — ipcMain.once
-- `<channel>`
+- Total calls: `<N>`
+- Unique keys: `<N>`
 
-#### IPC (renderer-side, if this file defines it)
-- `ipcRenderer.invoke`: `<channel>`
-- `ipcRenderer.send/on`: `<channel>`
+- `<key>` — `<n>` call(s): `L<line>[, L<line>...]`
+
+#### IPC — ipcRenderer.invoke
+- Total calls: `<N>`
+- Unique keys: `<N>`
+
+- (none)
+  - or:
+- `<key>` — `<n>` call(s): `L<line>[, L<line>...]`
+
+#### IPC — ipcRenderer.on
+- Total calls: `<N>`
+- Unique keys: `<N>`
+
+- (none)
+  - or:
+- `<key>` — `<n>` call(s): `L<line>[, L<line>...]`
 
 #### Renderer events — webContents.send
-- `<event>`
+- Total calls: `<N>`
+- Unique keys: `<N>`
 
-#### Menu action IDs / routing keys (if any)
-- `<id>`
+- `<event>` — `<n>` call(s): `L<line>[, L<line>...]`
 
-#### Persistent storage filenames / keys (if any)
-- `<filename or key>`
+#### Menu action IDs / routing keys (via `webContents.send("menu-click", <id>)`)
+- Total calls: `<N>`
+- Unique keys: `<N>`
 
-#### Other contracts (URLs, command names, env vars, analytics tags, etc.)
-- `<contract>`
+- `<id>` — `<n>` call(s): `L<line>[, L<line>...]`
+
+#### Persistent storage filenames (via `path.join(CONFIG_DIR, "*.json")`)
+- Total calls: `<N>`
+- Unique keys: `<N>`
+
+- `<filename>` — `<n>` call(s): `L<line>[, L<line>...]` (bound: `<CONST_OR_VAR>` optional)
+- (none)
+
+#### Delegated IPC registration calls (first arg: ipcMain)
+- Total calls: `<N>`
+- Unique keys: `<N>`
+
+- `<callee>` — `<n>` call(s): `L<line>` (keys: `<k1, k2, ...>`)
+
+#### Exports (module.exports / exports.*)
+- Total calls: `<N>`
+- Unique keys: `<N>`
+
+- `<export key>` — `<n>` call(s): `L<line>[, L<line>...]`
+- (none)
 
 ---
 
-### B2.1) Raw match map (optional, navigation-only)
-> Paste only what you actually use for navigation. Avoid dumping hundreds of lines unless needed.
+### B2.1) Raw match map (auto)
+> Auto-generated navigation map. Paste only what you actually use for navigation.
 
-- Pattern: `ipcMain.handle(`  
-  - Count (local file): `<N>`  
+- Pattern: `ipcMain.handle(`
+  - Count: `<N>`
+  - Key matches:
+    - `L<line>`: `<snippet>`
+    - `L<line>`: `<snippet>`
+
+- Pattern: `ipcMain.on(`
+  - Count: `<N>`
   - Key matches:
     - `L<line>`: `<snippet>`
 
-- Pattern: `ipcMain.on(`  
-  - Count (local file): `<N>`  
+- Pattern: `ipcMain.once(`
+  - Count: `<N>`
   - Key matches:
     - `L<line>`: `<snippet>`
 
-- Pattern: `ipcMain.once(`  
-  - Count (local file): `<N>`  
+- Pattern: `webContents.send(`
+  - Count: `<N>`
   - Key matches:
     - `L<line>`: `<snippet>`
 
-- Pattern: `webContents.send(`  
-  - Count (local file): `<N>`  
+- Pattern: `path.join(CONFIG_DIR,`
+  - Count: `<N>`
+  - Key matches:
+    - `L<line>`: `<snippet>`
+
+- Pattern: `*.registerIpc(ipcMain,`
+  - Count: `<N>`
+  - Key matches:
+    - `L<line>`: `<snippet>`
+
+- Pattern: `*.register(ipcMain,`
+  - Count: `<N>`
   - Key matches:
     - `L<line>`: `<snippet>`
 
@@ -103,79 +175,91 @@
 > This section syncs Contract Lock keys with `docs/cleanup/_repo_contract_usage.md`.
 > **Official counts are surface-only**: contract surface statements only (exclude mentions in logs/comments/user-facing messages/docs).
 
-**VS Code (Ctrl+Shift+F) settings**
-- Regex: ON
-- Include: `electron/**`, `public/**`
-- Exclude: `docs/cleanup/**`
-
-**Surface-only regex (replace `<KEY>` with the literal key)**
-- `(ipcMain\\.(handle|on|once)|ipcRenderer\\.(invoke|send|on)|webContents\\.send)\\(\\s*['"]<KEY>['"]`
-
 **Per-key record (copy from `_repo_contract_usage.md`; keep per-key, no global notes)**
 
-| Key | Kind (IPC_HANDLE/IPC_ON/IPC_ONCE/SEND/STORAGE/OTHER) | Official (surface-only) | Files (top) | Verified-at (SHA) | Notes (optional, per-key only) |
-|---|---|---:|---|---|---|
-| `<key>` | `<kind>` | `<N> matches` | `<file1>, <file2>...` | `<SHA>` | `<only if needed>` |
+#### IPC — ipcMain.handle
+- Key: `<key>`
+  - Cache (official; surface-only): `<N> matches in <M> files (top: <file1>, <file2>...)`
+  - Verified at: `<SHA>`
 
-**Pass condition**
-- Every B2 key appears in `_repo_contract_usage.md` with a surface-only count and Verified-at = current HEAD (or explicit per-key invariance note recorded in the cache).
+#### IPC — ipcMain.on
+- Key: `<key>`
+  - Cache (official; surface-only): `<N> matches in <M> files (top: <file1>, <file2>...)`
+  - Verified at: `<SHA>`
+
+#### IPC — ipcMain.once
+- Key: `<key>`
+  - Cache (official; surface-only): `<N> matches in <M> files (top: <file1>, <file2>...)`
+  - Verified at: `<SHA>`
+
+#### Renderer events — webContents.send / equivalents
+- Key: `<key>`
+  - Cache (official; surface-only): `<N> matches in <M> files (top: <file1>, <file2>...)`
+  - Verified at: `<SHA>`
+
+#### Menu action IDs / routing keys
+- Key: `<id>`
+  - Cache (official; surface-only): `<N> matches in <M> files (top: <file1>, <file2>...)`
+  - Verified at: `<SHA>`
+
+#### Persistent storage filenames / keys
+- Key: `<filename or key>`
+  - Cache (official; surface-only): `<N> matches in <M> files (top: <file1>, <file2>...)`
+  - Verified at: `<SHA>`
 
 ---
 
-### B2.3) Observability / UX Mentions (local; mandatory)
-> Track cleanup-relevant **non-contract** occurrences:
-> - logs (`console.*`)
-> - maintenance comments (`TODO/FIXME/HACK/WIP/LEGACY/DEPRECATED`)
-> - user-facing hardcoded messages (dialogs/notifications/UI hardcodes not coming from i18n)
->
-> Rules:
-> - **No repo-wide counts here.**
-> - Keep it local to this file.
-> - Format is occurrence-first: `L<line>: <snippet>`.
-> - Translate ES→EN during normalization work.
-> - If a user-facing hardcoded message is a fallback, prefix with `FALLBACK:` (and keep i18n strings unprefixed).
+### B2.3) Observability / UX Mentions (local-only)
+> Script: `<name/version>`
+> Target: `<RELATIVE_PATH>`
+> Realpath: `<absolute path (optional)>`
+> Format: `L<line>: <snippet>`
+> Block capture: max `<N>` lines
 
 #### Logs (console.*)
-- `L<line>`: `<snippet>`
-- `L<line>`: `<snippet>`
+- L<line>: <snippet>
+- L<line>: <snippet>
+- (none)
 
 #### Maintenance comments (TODO/FIXME/HACK/WIP/LEGACY/DEPRECATED)
-- `L<line>`: `<snippet>`
-- `L<line>`: `<snippet>`
+- L<line>: <snippet>
+- (none)
 
-#### User-facing hardcoded messages (dialogs/notifications/UI hardcodes)
-- `L<line>`: `<snippet>`
-- `L<line>`: `<snippet>`
+#### User-facing hardcoded (dialog/Notification/etc.)
+- L<line>: <snippet>
+- (none)
 
-#### Fallback hardcoded marker audit (optional but useful)
-- Pivot search: `FALLBACK:`
-  - `L<line>`: `<snippet>`
-
----
-
-### B3) Candidate Ledger (triaged; label-sorted; theme-grouped; evidence-gated)
-> Triaged from auto-scan of `<RELATIVE_PATH>`.
-> **No edits allowed until repo evidence is filled (VS Code gating).**
->
-> Anchor semantics (mandatory):
-> - `CONTRACT:*` entries: the `L<line>` anchor points to the **contract surface statement**
->   (`ipcMain.*('key'...)`, `ipcRenderer.*('key'...)`, `webContents.send('key'...)`).
-> - If the flagged pattern is on a different inner line (e.g. inside a payload object), record it as:
->   `Local evidence (inner): L<line>: <snippet>`.
-> - `PATTERN:*` entries: anchor = the pattern line.
->
-> Decision hygiene:
-> - Behavioral decisions belong in **## 4) Open Questions / Decisions**, not inside the ledger entries.
-
-#### Scanner fidelity decision (must be settled BEFORE running triage/gating)
-- Scanner output truncation acceptable? `<yes/no>`
-- If **no**: required script fixes (before B3): `<list>`
-- Evidence of compliance (example): `no "..." in snippets`, `no truncated filenames`, etc.
+#### Fallback pivot (FALLBACK:)
+- L<line>: <snippet>
+- (none)
 
 ---
+
+### B3) Candidate Ledger (auto-scan; label-sorted; theme-grouped; evidence-gated)
+> Auto-generated bootstrap from `<RELATIVE_PATH>`. Suggested labels are heuristics; you must confirm and fill repo evidence where required.
+> Theme headers are navigation only; occurrences remain the unit of decision.
+> Tooling note (repo-wide): `Shift+F12` is file-local and tooling-derived (JS language service). It may return `0` or non-canonical counts for CommonJS/property access and dynamic JS. Treat `Shift+F12` counts as “semantic-ish signals”, not as proof of absence/presence. Use `Ctrl+Shift+F` for surface/textual counts.
+> Pattern counting convention: “noop catches” counted via regex `\/\*\s*noop\s*\*\/` (covers `/* noop */` and `/*noop*/`; multi-line safe). Assumption: all noop markers occur inside catches.
+> Representation options (per Primary Theme; any label)
+>
+> For a given `Primary Theme` (under any label), you may present its occurrences in ONE of two shapes:
+>
+> **Option A — Individualized (occurrence blocks)**
+> - Use when occurrences differ in any material way (inner evidence, guards, payload shapes, risk profile, proposed action, etc.).
+> - Each occurrence is its own block (repeat the standard per-occurrence fields).
+>
+> **Option B — Clustered (Shared)**
+> - Use only when all occurrences are materially identical (same Label + Primary Theme + Type + proposed actions + risk profile).
+> - Write shared fields once at the cluster level and list occurrences under `Occurrences:`.
+> - Each listed occurrence MUST still include `L<line>#<id>` plus an anchor snippet (and `Local evidence (inner)` / `Delta:` per occurrence if needed).
+>
+> Rules:
+> - You MAY mix Option A and Option B across different themes.
+> - Within the same theme, choose ONE shape (A or B). If needed, split into multiple clusters/themes.
+> - Never cluster different contract keys/events/channels in the same Shared block.
+> - “Shared” never replaces occurrences: it only compresses repetition while preserving per-occurrence anchoring.
 
 #### P1-DOC (<N>)
-> Doc-only candidates: comments, naming, section headers, clarifying notes (no behavior change).
 
 ##### <THEME> (<count>)
 - **L<line>#<id>**
@@ -183,76 +267,149 @@
   - Type: `<doc-only>`
   - Tags: `<...>`
   - Local evidence: `L<line>`: `<snippet>`
-  - Why: <...>
-  - Repo evidence: <fill as needed>
+  - Why: `<...>`
+  - Repo evidence: `<optional>`
   - Proposed action:
-    - Phase 1: `doc only`
-    - Phase 2: `none`
-  - Risk notes / dependencies: <fill>
-
----
+    - Phase 1: `<doc only>`
+    - Phase 2: `<none>`
+  - Risk notes / dependencies: `<...>`
 
 #### P1-STRUCT (<N>)
-> Structure-only candidates: reordering, grouping, dedupe with no behavior change.
 
----
-
-#### P2-CONTRACT (<N>)
-> Contract-adjacent candidates: must be evidence-gated and carefully staged.
-
-##### CONTRACT:<...> (<count>)
-- **L<contractLine>#<id>**
-  - Primary Theme: `CONTRACT:<...>`
-  - Type: `<fallback / duplication / error swallow / ...>`
-  - Tags: `<near_contract / touches_contract / ...>`
-  - Anchor evidence: `L<contractLine>`: `<contract surface snippet>`
-  - Local evidence (inner): `L<patternLine>`: `<inner snippet>` (only if different)
-  - Why: <...>
-  - Repo evidence: <fill>
-    - References (Shift+F12): `<N> hits in <files>` (only for symbols: functions/vars)
-    - Repo search (Ctrl+Shift+F) — contractual (surface-only):
-      - From B2.2: `<N> matches`, `<top files>`, `Verified-at <SHA>`
-    - Repo search (Ctrl+Shift+F) — non-contractual (patterns/snippets):
-      - `<pattern>`: `<N> matches in <files>`
-    - Suggested queries (optional): `<q1>`, `<q2>`, `<q3>`
-  - Proposed action:
-    - Phase 1: `<doc only / comment-only / reorder-only / none>`
-    - Phase 2: `<remove / consolidate / refactor / change fallback>`
-  - Risk notes / dependencies: <fill>
-
----
-
-#### P2-SIDEFX (<N>)
-> Timing/initialization/order side effects: often risky even if “small”.
-
----
-
-#### P2-FALLBACK (<N>)
-> Non-contract patterns (defaulting, noop catches, coercion) that may still affect behavior.
-
-##### PATTERN:<...> (<count>)
+##### <THEME> (<count>)
 - **L<line>#<id>**
-  - Primary Theme: `PATTERN:<...>`
-  - Type: `<fallback (defaulting) / fallback (error swallow) / ...>`
+  - Primary Theme: `<THEME>`
+  - Type: `<struct>`
   - Tags: `<...>`
   - Local evidence: `L<line>`: `<snippet>`
-  - Why: <...>
-  - Repo evidence: <fill>
-    - References (Shift+F12): `<N> hits in <files>` (symbols only)
-    - Repo search (Ctrl+Shift+F): `<N> matches in <files>`
-    - Suggested queries (optional): `<q1>`, `<q2>`
+  - Why: `<...>`
+  - Repo evidence:
+    - Symbol evidence [primary: `<symbol>`]:
+      - Definition trace (F12): defined at `<file>`:L`<line>`; Verified at: `<SHA>`
+      - Repo search (Ctrl+Shift+F): `<N>` matches in `<M>` files (top: `<files>`); Verified at: `<SHA>`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `<N>` hits in `<file>`; Verified at: `<SHA>`
   - Proposed action:
-    - Phase 1: `<doc only / comment-only / reorder-only / none>`
-    - Phase 2: `<remove / consolidate / refactor / change fallback>`
-  - Risk notes / dependencies: <fill>
+    - Phase 1: `<reorder-only>`
+    - Phase 2: `<none>`
+  - Risk notes / dependencies: `<...>`
 
----
+#### P2-CONTRACT (<N>)
+
+##### CONTRACT:<KIND>:<KEY> (<count>)
+- **L<line>#<id>**
+  - Primary Theme: `CONTRACT:<KIND>:<KEY>`
+  - Type: `<fallback/defaulting/error swallow/other>`
+  - Tags: `<touches_contract/near_contract/...>`
+  - Anchor evidence: `L<line>`: `<contract surface snippet>`
+  - Local evidence (inner): `L<line>`: `<snippet>` (optional; only if different from anchor)
+  - Why: `<...>`
+  - Repo evidence:
+    - Symbol evidence [primary: `<symbol>`]:
+      - Definition trace (F12): defined at `<file>`:L`<line>`; Verified at: `<SHA>`
+      - Repo search (Ctrl+Shift+F): `<N>` matches in `<M>` files (top: `<files>`); Verified at: `<SHA>`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `<N>` hits in `<file>`; Verified at: `<SHA>`
+    - Contract [`<KEY>`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `<N>` matches in `<M>` files (top: `<files>`); Verified at: `<SHA>`
+    - Pattern evidence (optional):
+      - Repo matches (Ctrl+Shift+F): `<pattern>` → `<N>` matches in `<M>` files (top: `<files>`); Verified at: `<SHA>`
+  - Suggested queries (optional):
+    - Contract: `'<KEY>'`, `<surface pattern>`
+    - Symbol: `<symbol>`
+    - Pattern: `<pattern>`
+  - Proposed action:
+    - Phase 1: `<doc only>`
+    - Phase 2: `<change fallback / refactor / remove>`
+  - Risk notes / dependencies: `<...>`
+
+##### CONTRACT:<KIND>:<KEY> (<count>)
+- Shared:
+  - Primary Theme: `CONTRACT:<KIND>:<KEY>`
+  - Type: `<...>`
+  - Tags: `<...>`
+  - Occurrences:
+    - **L<line>#<id>**
+      - Anchor evidence: `L<line>`: `<snippet>`
+    - **L<line>#<id>**
+      - Anchor evidence: `L<line>`: `<snippet>`
+  - Why: `<...>`
+  - Repo evidence: `<...>`
+  - Proposed action:
+    - Phase 1: `<doc only>`
+    - Phase 2: `<...>`
+  - Risk notes / dependencies: `<...>`
+
+#### P2-SIDEFX (<N>)
+
+##### SIDEFX:<THEME> (<count>)
+- **L<line>#<id>**
+  - Primary Theme: `SIDEFX:<THEME>`
+  - Type: `<sidefx>`
+  - Tags: `<touches_sidefx/...>`
+  - Local evidence: `L<line>`: `<snippet>`
+  - Why: `<...>`
+  - Repo evidence:
+    - Symbol evidence [primary: `<symbol>`]:
+      - Definition trace (F12): defined at `<file>`:L`<line>`; Verified at: `<SHA>`
+      - Repo search (Ctrl+Shift+F): `<N>` matches in `<M>` files (top: `<files>`); Verified at: `<SHA>`
+  - Proposed action:
+    - Phase 1: `<doc only>`
+    - Phase 2: `<refactor / reorder / change timing>`
+  - Risk notes / dependencies: `<...>`
+
+#### P2-FALLBACK (<N>)
+
+##### PATTERN:<NAME> (<count>)
+- **L<line>#<id>**
+  - Primary Theme: `PATTERN:<NAME>`
+  - Type: `fallback (<defaulting/error swallow/...>)`
+  - Tags: `<near_contract/touches_contract/...>`
+  - Local evidence: `L<line>`: `<snippet>`
+  - Why: `<...>`
+  - Repo evidence:
+    - Pattern evidence:
+      - Pattern: `<pattern>`
+      - Local matches in `<RELATIVE_PATH>`: `<N>`; Verified at: `<SHA>`
+      - Repo matches (Ctrl+Shift+F): `<N>` matches in `<M>` files (top: `<files>`); Verified at: `<SHA>`
+    - Symbol evidence [primary: `<symbol>`] (optional; only if relevant):
+      - Definition trace (F12): defined at `<file>`:L`<line>`; Verified at: `<SHA>`
+      - Repo search (Ctrl+Shift+F): `<N>` matches in `<M>` files (top: `<files>`); Verified at: `<SHA>`
+  - Suggested queries (optional):
+    - Pattern: `<pattern>`
+    - Symbol: `<symbol>`
+  - Proposed action:
+    - Phase 1: `<doc only>`
+    - Phase 2: `<change fallback / refactor / remove>`
+  - Risk notes / dependencies: `<...>`
 
 #### DEFER (<N>)
-> Real issues, but explicitly postponed.
+
+##### <THEME> (<count>)
+- **L<line>#<id>**
+  - Primary Theme: `<THEME>`
+  - Type: `<...>`
+  - Tags: `<...>`
+  - Local evidence: `L<line>`: `<snippet>`
+  - Why: `<...>`
+  - Repo evidence: `<...>`
+  - Proposed action:
+    - Phase 1: `<none>`
+    - Phase 2: `<none>`
+  - Risk notes / dependencies: `<...>`
 
 #### DROP (<N>)
-> False positives or out-of-scope items (keep record of why dropped).
+
+##### <THEME> (<count>)
+- **L<line>#<id>**
+  - Primary Theme: `<THEME>`
+  - Type: `<false positive / out-of-scope>`
+  - Tags: `<...>`
+  - Local evidence: `L<line>`: `<snippet>`
+  - Why: `<...>`
+  - Repo evidence (optional): `<...>`
+  - Proposed action:
+    - Phase 1: `<none>`
+    - Phase 2: `<none>`
+  - Risk notes / dependencies: `<...>`
 
 ---
 

@@ -9,9 +9,9 @@ Scope:
 - Do NOT include generic patterns like `ipcMain.handle(` or `webContents.send(` (those stay local in each per-file B2.1 raw map).
 
 ## Metadata
-- Series baseline commit (short SHA): `54e1147`
-- Last updated at commit (short SHA): `1d06c2a`
-- Date: `2025-12-14`
+- Series baseline commit (short SHA): `bc16c9a`
+- Last updated at commit (short SHA): `TBD`
+- Date: `2025-12-15`
 - Method: VS Code Ctrl+Shift+F (record “N matches in M files” + top files)
 
 ## Update rule (mandatory)
@@ -21,6 +21,15 @@ Whenever you audit a file and produce/refresh its **B2 Contract Lock**:
 3) Update “Last updated at commit”.
 Pass condition for the per-file note: all B2 keys are present here with Verified-at = current HEAD.
 
+## Surface-only rule (mandatory)
+- The “Repo search (Ctrl+Shift+F)” number recorded here is an official surface-only count: only contract surface statements.
+- Exclude any key occurrences found in:
+  - comments (//, /* */),
+  - logs (console.*),
+  - user-facing strings (dialogs/notifications/toasts),
+  - non-binding listener management calls such as removeListener( / off( / removeAllListeners(.
+- Operational method: use the protocol’s surface-only regex search (preferred). If you run a raw '<key>' / "<key>" search as a quick presence check, it is not the official count unless filtered down to surfaces.
+
 ## Entries
 
 ### IPC — ipcMain.handle
@@ -28,120 +37,120 @@ Pass condition for the per-file note: all B2 keys are present here with Verified
 - Key: `crono-get-state`
   - Class: `ipc.handle`
   - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): handler in main; invoke in preload.
-
-- Key: `floating-open`
-  - Class: `ipc.handle`
-  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes one non-contract match in error log string (main.js); preload invokes the same channel.
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): handler in main; preload calls the same channel.
 
 - Key: `floating-close`
   - Class: `ipc.handle`
-  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes one non-contract match in error log string (main.js); preload calls the same channel.
+  - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): handler in main; preload calls the same channel.
 
-- Key: `open-editor`
-  - Class: `ipc.handle`
-  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes one non-contract match in error log string (main.js); preload calls the same channel.
-
-- Key: `open-preset-modal`
+- Key: `floating-open`
   - Class: `ipc.handle`
   - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
   - Notes (optional): handler in main; preload calls the same channel.
 
 - Key: `get-app-config`
   - Class: `ipc.handle`
-  - Repo search (Ctrl+Shift+F): `4` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/manual_preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes one non-contract match in error log string (main.js); called from multiple preloads.
+  - Repo search (Ctrl+Shift+F): `3` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/manual_preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): handler in main; called from multiple preloads.  
+
+- Key: `open-editor`
+  - Class: `ipc.handle`
+  - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): handler in main; preload calls the same channel.
+
+- Key: `open-preset-modal`
+  - Class: `ipc.handle`
+  - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): handler in main; preload calls the same channel.
 
 ### IPC — ipcMain.on
 
-- Key: `crono-toggle`
-  - Class: `ipc.on`
-  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes one non-contract match in error log string (main.js); called from preload.
-
 - Key: `crono-reset`
   - Class: `ipc.on`
-  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes one non-contract match in error log string (main.js); called from preload.
+  - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): listener in main; called from preload.
 
 - Key: `crono-set-elapsed`
   - Class: `ipc.on`
-  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes one non-contract match in error log string (main.js); called from preload.
+  - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): listener in main; called from preload.
+
+- Key: `crono-toggle`
+  - Class: `ipc.on`
+  - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): listener in main; called from preload.
 
 - Key: `flotante-command`
   - Class: `ipc.on`
-  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/flotante_preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes one non-contract match in error log string (main.js); called from flotante preload.
+  - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/flotante_preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): listener in main; called from flotante preload.
 
 ### IPC — ipcMain.once
 
 - Key: `language-selected`
   - Class: `ipc.once`
   - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/language_preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
   - Notes (optional): once-listener in main; called from language preload.
 
 ### Renderer events — webContents.send / equivalents
 
 - Key: `crono-state`
   - Class: `send.event`
-  - Repo search (Ctrl+Shift+F): `12` matches in `5` files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`, `public/renderer.js`, `public/flotante.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes multiple non-contract matches in logs/comments (preload removeListener error logs; renderer error log; flotante comment). Main sends 3x via webContents.send.
+  - Repo search (Ctrl+Shift+F): `5` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): main sends 3x.
 
 - Key: `flotante-closed`
   - Class: `send.event`
-  - Repo search (Ctrl+Shift+F): `8` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes non-contract matches in comments/logs (preloads). Main sends 1x on floatingWin closed.
+  - Repo search (Ctrl+Shift+F): `3` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): main sends 1x.
 
 - Key: `manual-editor-ready`
   - Class: `send.event`
-  - Repo search (Ctrl+Shift+F): `7` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes non-contract matches in error/warn logs (main/preload). Main sends 2x.
+  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): main sends 2x.
 
 - Key: `manual-init-text`
   - Class: `send.event`
-  - Repo search (Ctrl+Shift+F): `5` matches in `2` files (top: `electron/main.js`, `electron/manual_preload.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes non-contract matches in error logs (main). Main sends 2x.
+  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/manual_preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): main sends 2x.
 
 - Key: `preset-init`
   - Class: `send.event`
-  - Repo search (Ctrl+Shift+F): `7` matches in `3` files (top: `electron/main.js`, `electron/preset_preload.js`, `public/preset_modal.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): includes non-contract matches in logs/comments (preset preload + preset modal). Main sends 2x.
+  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/preset_preload.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): main sends 2x.
 
 ### Menu action IDs / routing keys
 - (populate from per-file B2)
@@ -150,17 +159,17 @@ Pass condition for the per-file note: all B2 keys are present here with Verified
 
 - Key: `current_text.json`
   - Class: `storage.filename`
-  - Repo search (Ctrl+Shift+F): `2` matches in `2` files (top: `electron/main.js`, `electron/text_state.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): main binds CURRENT_TEXT_FILE via path.join; text_state contains a non-contract match in an error log.
+  - Repo search (Ctrl+Shift+F): `1` match in `1` file (top: `electron/main.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): main binds CURRENT_TEXT_FILE via path.join.
 
 - Key: `user_settings.json`
   - Class: `storage.filename`
-  - Repo search (Ctrl+Shift+F): `3` matches in `2` files (top: `electron/main.js`, `electron/settings.js`)
-  - Verified at commit: `1d06c2a`
-  - Bump rationale: no code changes in `electron/**,public/**` since `7297035` (git diff empty for those paths); counts unchanged.
-  - Notes (optional): main binds SETTINGS_FILE via path.join; settings.js contains non-contract matches in comments.
+  - Repo search (Ctrl+Shift+F): `1` match in `1` file (top: `electron/main.js`)
+  - Verified at commit: `bc16c9a`
+  - Bump rationale: no code changes in `electron/**,public/**` since `bc16c9a` (git diff empty for those paths); counts unchanged.
+  - Notes (optional): main binds SETTINGS_FILE via path.join.
 
 ### Other contracts
 - (populate from per-file B2)
