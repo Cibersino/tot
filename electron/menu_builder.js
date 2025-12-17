@@ -34,12 +34,12 @@ function getDialogTexts(lang) {
 }
 
 /**
- * Construye el meno nativo de la app.
+ * Build the native menu of the app.
  *
- * @param {string} lang - Codigo de idioma (ej: 'es', 'en').
+ * @param {string} lang - Language code (e.g. 'es', 'en').
  * @param {object} [opts]
- * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Ventana principal para enviar 'menu-click'.
- * @param {Function} [opts.onOpenLanguage] - Callback para abrir la ventana de seleccion de idioma.
+ * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Main window to send 'menu-click'.
+ * @param {Function} [opts.onOpenLanguage] - Callback to open the language selection window.
  */
 function buildAppMenu(lang, opts = {}) {
     const effectiveLang = (lang || 'es').toLowerCase();

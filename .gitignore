@@ -1,5 +1,8 @@
 # Ignorar carpetas de desarrollo y temporales
-/tools_local/
+tools_local/
+
+# Index
+jsconfig.json
 
 # Node / npm
 node_modules/

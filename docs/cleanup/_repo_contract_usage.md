@@ -10,7 +10,7 @@ Scope:
 
 ## Metadata
 - Series baseline commit (short SHA): `bc16c9a`
-- Last updated at commit (short SHA): `TBD`
+- Last updated at commit (short SHA): `36fe2e1`
 - Date: `2025-12-15`
 - Method: VS Code Ctrl+Shift+F (record “N matches in M files” + top files)
 

@@ -14,7 +14,7 @@
 - Date started: `2025-12-15`  
 - Branch: `depuracion2`  
 - Baseline commit (short SHA): `bc16c9a`  
-- Latest commit touching this cleanup: `TBD`  
+- Latest commit touching this cleanup: `36fe2e1`  
 - Phase 1 status: `pending`  
 - Phase 2 status: `pending`
 
@@ -171,7 +171,25 @@
 
 - (none)
 
+#### IPC — ipcRenderer.send
+- Total calls: 0
+- Unique keys: 0
+
+- (none)
+
 #### IPC — ipcRenderer.on
+- Total calls: 0
+- Unique keys: 0
+
+- (none)
+
+#### IPC — ipcRenderer.once
+- Total calls: 0
+- Unique keys: 0
+
+- (none)
+
+#### Preload boundary — contextBridge.exposeInMainWorld
 - Total calls: 0
 - Unique keys: 0
 
