@@ -78,7 +78,7 @@ const api = {
         return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (e) { console.error('removeListener error (crono-state):', e); } };
     },
 
-    // ------------------ NEW APIs for the floating window (updated) ------------------
+    // ------------------ APIs for the floating window (updated) ------------------
     openFloatingWindow: async () => {
         return ipcRenderer.invoke('floating-open');
     },
