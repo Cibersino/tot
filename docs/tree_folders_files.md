@@ -13,13 +13,6 @@ tot-readingmeter/
 │ ├── modal_state.json             # {ignorado por git}
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
-│ ├── cleanup/
-│ │ ├── _repo_contract_usage.md
-│ │ ├── cleanup_template.md
-│ │ ├── electron_main_js.md
-│ │ ├── electron_menu_builder_js.md
-│ │ ├── electron_preload_js.md
-│ │ └── PROTOCOL_CODE_CLEANUP_v1.12.md
 │ ├── bugs.md
 │ ├── ToDo.txt
 │ └── tree_folders_files.md
