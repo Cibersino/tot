@@ -2,7 +2,7 @@
 (function () {
     const registry = new Map();
 
-    // referencia privada para la funcion de desuscripcion retornada por preload
+    // private reference for the unsubscribe function returned by preload
     let _unsubscribeMenuClick = null;
 
     function registerMenuAction(payload, callback) {
@@ -13,7 +13,7 @@
             throw new Error('registerMenuAction: callback debe ser funcion');
         }
         registry.set(payload, callback);
-        console.debug(`menuActions: accion registrada -> ${payload}`);
+        console.debug(`menuActions: registered action -> ${payload}`);
     }
 
     function unregisterMenuAction(payload) {
@@ -25,24 +25,24 @@
     }
 
     function handleMenuClick(payload) {
-        console.log('menu-click recibido (menu.js):', payload);
+        console.log('menu-click received (menu.js):', payload);
         const action = registry.get(payload);
         if (action) {
             try {
                 action(payload);
             } catch (err) {
-                console.error(`Error ejecutando accion de menu '${payload}':`, err);
+                console.error(`Error executing menu action '${payload}':`, err);
             }
         } else {
-            console.warn(`menuActions: payload sin accion registrada -> ${payload}`);
+            console.warn(`menuActions: payload without registered action -> ${payload}`);
         }
     }
 
-    // Intenta registrar listener hacia preload -> ipcRenderer
+    // Try to register listener to preload -> ipcRenderer
     function setupListener() {
-        // si ya esta registrado, no volver a registrar
+        // if you are already registered, do not re-register
         if (_unsubscribeMenuClick) {
-            console.debug('menuActions: listener ya registrado (skip)');
+            console.debug('menuActions: listener already registered (skip)');
             return true;
         }
 
@@ -50,18 +50,18 @@
             try {
                 const maybeUnsubscribe = window.electronAPI.onMenuClick(handleMenuClick);
 
-                // Guardar la funcion de desuscripcion si la devolvieron
+                // Save the unsubscribe function if it was returned
                 if (typeof maybeUnsubscribe === 'function') {
                     _unsubscribeMenuClick = maybeUnsubscribe;
-                    console.debug('menuActions: listener registrado en electronAPI.onMenuClick (con unsubscribe)');
+                    console.debug('menuActions: listener registered in electronAPI.onMenuClick (with unsubscribe)');
                 } else {
-                    // No todas las implementaciones de preload devuelven unsubscribe. Aceptamos eso.
+                    // Not all preload implementations return unsubscribe. We accept that.
                     _unsubscribeMenuClick = null;
-                    console.debug('menuActions: listener registrado en electronAPI.onMenuClick (sin unsubscribe devuelto)');
+                    console.debug('menuActions: listener registered in electronAPI.onMenuClick (without unsubscribe)');
                 }
                 return true;
             } catch (err) {
-                console.error('menuActions: error registrando listener en electronAPI.onMenuClick:', err);
+                console.error('menuActions: error registering listener in electronAPI.onMenuClick:', err);
                 return false;
             }
         }
@@ -69,32 +69,32 @@
     }
 
     if (!setupListener()) {
-        // Intentar nuevamente cuando el DOM este listo (y otras APIs hayan sido inyectadas)
+        // Try again when the DOM is ready (and other APIs have been injected)
         document.addEventListener('DOMContentLoaded', () => { setupListener(); });
     }
 
-    // API publica minima disponible globalmente
+    // Minimum globally available public API
     window.menuActions = {
         registerMenuAction,
         unregisterMenuAction,
         listMenuActions,
 
-        // util para depuracion o futuros reloads
+        // useful for debugging or future reloads
         stopListening() {
             if (typeof _unsubscribeMenuClick === 'function') {
                 try {
                     _unsubscribeMenuClick();
-                    console.debug('menuActions: listener desuscrito correctamente');
+                    console.debug('menuActions: listener unscribed correctly');
                 } catch (err) {
-                    console.error('menuActions: error al desuscribir listener:', err);
+                    console.error('menuActions: error unsubscribing listener:', err);
                 }
                 _unsubscribeMenuClick = null;
             } else {
-                console.debug('menuActions: no hay unsubscribe disponible (no se puede desuscribir)');
+                console.debug('menuActions: unsubscribe unavailable (cannot unsubscribe)');
             }
         },
 
-        // expuesto solo para depuracion avanzada; no recomendado para uso normal
+        // exposed only for advanced debugging; not recommended for normal use
         _internal: {
             _getUnsubscribeRef: () => _unsubscribeMenuClick
         }

@@ -1,1 +1,1 @@
-Pestañeos
+- Pestañeos (estar atentos a cuando ocurren y registrar)

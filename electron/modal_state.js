@@ -51,26 +51,26 @@ function normalizeState(raw) {
   return st;
 }
 
-// API: lectura inicial del estado persistido
+// API: initial reading of the persisted state
 function loadInitialState(customLoadJson) {
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
   try {
     const raw = loader(MODAL_STATE_FILE, DEFAULT_STATE);
     return normalizeState(raw);
   } catch (e) {
-    console.error('[modal_state] Error leyendo estado inicial:', e);
+    console.error('[modal_state] Error reading initial state:', e);
     return { ...DEFAULT_STATE };
   }
 }
 
-// API: adjuntar listeners a la ventana del editor
+// API: attach listeners to the editor window
 function attachTo(editorWin, customLoadJson, customSaveJson) {
   if (!editorWin) return;
 
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
   const saver = typeof customSaveJson === 'function' ? customSaveJson : saveJson;
 
-  // REGLA B — guardar estado reducido cuando la ventana NO esta maximizada
+  // RULE B - save reduced state when the window is NOT maximized
   const saveReducedState = () => {
     try {
       if (!editorWin || editorWin.isDestroyed()) return;
@@ -93,14 +93,14 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
       saver(MODAL_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error guardando estado reducido del editor:', e);
+      console.error('[modal_state] Error saving editor reduced state:', e);
     }
   };
 
   editorWin.on('resize', saveReducedState);
   editorWin.on('move', saveReducedState);
 
-  // REGLA A — al maximizar, solo actualizamos flag maximized
+  // RULE A - when maximizing, we only update flag maximized
   editorWin.on('maximize', () => {
     try {
       const current = loader(MODAL_STATE_FILE, { maximized: true, reduced: null });
@@ -108,11 +108,11 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       state.maximized = true;
       saver(MODAL_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error actualizando estado en maximize:', e);
+      console.error('[modal_state] Error updating state in maximize:', e);
     }
   });
 
-  // REGLA D — al salir de maximizado, restaurar reduced o aplicar fallback
+  // RULE D - when exiting maximized, restore reduced or apply fallback
   editorWin.on('unmaximize', () => {
     try {
       const current = loader(MODAL_STATE_FILE, { maximized: false, reduced: null });
@@ -127,7 +127,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
           y: state.reduced.y
         });
       } else {
-        // Fallback: mitad de pantalla pegada al borde superior derecho del monitor actual
+        // Fallback: half of the screen glued to the upper right edge of the current monitor
         const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
         const workArea = (display && display.workArea)
           ? display.workArea
@@ -145,11 +145,11 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
       saver(MODAL_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error manejando unmaximize del editor:', e);
+      console.error('[modal_state] Error handling editor unmaximize:', e);
     }
   });
 
-  // REGLA C — al cerrar, persistimos flag maximized y conservamos reduced previo
+  // RULE C - when closing, we persist flag maximized and keep previous reduced
   editorWin.on('close', () => {
     try {
       const current = loader(MODAL_STATE_FILE, { maximized: false, reduced: null });
@@ -157,7 +157,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       state.maximized = editorWin.isMaximized();
       saver(MODAL_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error guardando estado de cierre de editor:', e);
+      console.error('[modal_state] Error saving editor closed state:', e);
     }
   });
 }

@@ -1,7 +1,7 @@
 // public/js/constants.js
 (() => {
   const DEFAULTS = {
-    MAX_TEXT_CHARS: 10_000_000, // Fallback para renderer. Limite real desde main.js
+    MAX_TEXT_CHARS: 10_000_000, // Fallback for renderer. Real limit from main.js
     PASTE_ALLOW_LIMIT: 10_000,
     SMALL_UPDATE_THRESHOLD: 200_000,
     WPM_MIN: 50,
@@ -24,8 +24,8 @@
     }
   };
 
-  if (typeof window === "undefined") {
-    throw new Error("AppConstants requiere window; verifica el orden de carga de scripts.");
+  if (typeof window === 'undefined') {
+    throw new Error('AppConstants requiere window; verifica el orden de carga de scripts.');
   }
 
   window.AppConstants = AppConstants;
