@@ -157,6 +157,9 @@ Use the surface-only regex (replace `<KEY>` with the literal key):
 
 `(ipcMain\.(handle|on|once)|ipcRenderer\.(invoke|send|on|once)|webContents\.send)\(\s*['"]<KEY>['"]`
 
+Delegated IPC registration surface (first arg is ipcMain; not a string key):
+`\.registerIpc\s*\(\s*ipcMain\b`
+
 Record (in `_repo_contract_usage.md`):
 - `Repo search (Ctrl+Shift+F): <N> matches in <M> files (top: ...)`
 - `Verified at commit: <HEAD>`
@@ -192,6 +195,7 @@ Rules:
 - Atomic unit: **occurrence** (a line or bounded block) with `L<line>` + snippet.
   Each occurrence appears **exactly once** in B3.
 - Occurrence identifiers are treated as `L<line>#<id>`; the `#<id>` suffix is not assumed unique across the file.
+- Tooling convention (repo-wide symbol token search; Ctrl+Shift+F with Regex; replace `<SYMBOL>`): `(?<![\w$])<SYMBOL>(?![\w$])`
 
 - Anchor semantics (mandatory):
   - For `CONTRACT:*` entries, the occurrence `L<line>` MUST anchor the **contract surface statement**

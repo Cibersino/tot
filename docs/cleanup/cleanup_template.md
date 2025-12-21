@@ -9,14 +9,17 @@
 
 ## 0) Metadata
 
-- Target file: `<RELATIVE_PATH>`
+- Target file: `<RELATIVE_PATH>` (canonical repo path; prefer `/`)
 - Slug: `<SLUG>` (rule: replace `/` and `.` with `_`)
-- Date started: `<YYYY-MM-DD>`
-- Branch: `<BRANCH>`
-- Baseline commit (short SHA): `<SHA>`
-- Latest commit touching this cleanup: `<SHA or TBD>`
-- Phase 1 status: `<pending/done + commit SHA>`
-- Phase 2 status: `<pending/done + commit SHA>`
+
+- Evidence snapshots (short SHAs; append-only):
+  - `<SHA>`: `<YYYY/MM/DD>`. `<note>`
+  - `<SHA>`: `<YYYY/MM/DD>`. `<note>`
+
+- Change log: `<one-line summary of drift/no drift and what changed in the cleanup note itself>`
+
+- Phase 1 status: `<pending|done>`
+- Phase 2 status: `<pending|done>`
 
 ---
 

@@ -11,10 +11,10 @@
 
 - Target file: `electron\main.js` 
 - Slug: `electron_main_js` 
-- Date started: `2025-12-15`  
-- Branch: `depuracion2`  
-- Baseline commit (short SHA): `bc16c9a`  
-- Latest commit touching this cleanup: `36fe2e1`  
+- Evidence snapshots (short SHAs): 
+  - `bc16c9a`: 2025/12/15. Start.
+  - `682c26a`: 2025/12/20. No changes in codes.
+- Change log: No changes in codes between commits (no drift in results).
 - Phase 1 status: `pending`  
 - Phase 2 status: `pending`
 
@@ -103,8 +103,8 @@
   - raw: settingsState.registerIpc(ipcMain, { getWindows: () => ({ mainWin, editorWin, presetWin, langWin, floatingWin, }), buildAppMenu, getCurrentLanguage: () => currentLanguage, setCurrentLanguage: (lang) …
 - `L304`: [ExpressionStatement] presetsMain.registerIpc(ipcMain, <object:{getWindows}>)
   - raw: presetsMain.registerIpc(ipcMain, { getWindows: () => ({ mainWin, editorWin, presetWin, langWin, floatingWin, }), });
-- `L315`: [ExpressionStatement] updater.register(ipcMain, <object:{mainWinRef, currentLanguageRef}>)
-  - raw: updater.register(ipcMain, { mainWinRef: () => mainWin, currentLanguageRef: () => currentLanguage, });     
+- `L315`: [ExpressionStatement] updater.registerIpc(ipcMain, <object:{mainWinRef, currentLanguageRef}>)
+  - raw: updater.registerIpc(ipcMain, { mainWinRef: () => mainWin, currentLanguageRef: () => currentLanguage, });     
 - `L678`: [ExpressionStatement] ipcMain.handle("crono-get-state", <function>)
   - raw: ipcMain.handle('crono-get-state', () => { return getCronoState(); });
 - `L682`: [ExpressionStatement] ipcMain.on("crono-toggle", <function>)
@@ -225,7 +225,7 @@
 - `presetsMain.registerIpc` — 1 call(s): L304 (keys: getWindows)
 - `settingsState.registerIpc` — 1 call(s): L284 (keys: buildAppMenu, getCurrentLanguage, getWindows, setCurrentLanguage)
 - `textState.registerIpc` — 1 call(s): L278 (keys: editorWin, mainWin)
-- `updater.register` — 1 call(s): L315 (keys: currentLanguageRef, mainWinRef)
+- `updater.registerIpc` — 1 call(s): L315 (keys: currentLanguageRef, mainWinRef)
 
 #### Exports (module.exports / exports.*)
 - Total calls: 0
@@ -280,10 +280,10 @@
     - `L278`: `textState.registerIpc(ipcMain, () => ({ mainWin, editorWin, }))`
     - `L284`: `settingsState.registerIpc(ipcMain, { getWindows: () => ({ mainWin, editorWin, presetWin, langWin, floatingWin, }), buildAppMenu, getCurrentLanguage: () => currentLanguage, setCurrentLanguage: (lang) => { const trimmed = lang && typeof lang…`
     - `L304`: `presetsMain.registerIpc(ipcMain, { getWindows: () => ({ mainWin, editorWin, presetWin, langWin, floatingWin, }), })`
-- Pattern: `*.register(ipcMain,`
+- Pattern: `*.registerIpc(ipcMain,`
   - Count: 1
   - Key matches:
-    - `L315`: `updater.register(ipcMain, { mainWinRef: () => mainWin, currentLanguageRef: () => currentLanguage, })`
+    - `L315`: `updater.registerIpc(ipcMain, { mainWinRef: () => mainWin, currentLanguageRef: () => currentLanguage, })`
 
 ---
 
@@ -325,7 +325,7 @@
 
 - Key: `crono-reset`
   - Cache (official; surface-only): 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`)
-  - Verified at: `bc16c9a`
+  - Verified at: `682c26a`
 
 - Key: `crono-set-elapsed`
   - Cache (official; surface-only): 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`)
@@ -421,23 +421,177 @@
 
 ### B3) Candidate Ledger (auto-scan; label-sorted; theme-grouped; evidence-gated)
 > Auto-generated bootstrap from `electron/main.js`. Suggested labels are heuristics; you must confirm and fill repo evidence where required.
-> Theme headers are navigation only; occurrences remain the unit of decision.
-> Tooling note (repo-wide): `Shift+F12` is file-local and tooling-derived (JS language service). It may return `0` or non-canonical counts for CommonJS/property access and dynamic JS. Treat `Shift+F12` counts as “semantic-ish signals”, not as proof of absence/presence. Use `Ctrl+Shift+F` for surface/textual counts.
-> Pattern counting convention: “noop catches” counted via regex `\/\*\s*noop\s*\*\/` (covers `/* noop */` and `/*noop*/`; multi-line safe). Assumption: all noop markers occur inside catches.
 
-#### P2-CONTRACT (11)
+#### P2-CONTRACT (25)
+
+##### CONTRACT:IPC_HANDLE:crono-get-state (1)
+- **L678#1h2j**
+  - Primary Theme: `CONTRACT:IPC_HANDLE:crono-get-state`
+  - Type: `contract surface`
+  - Tags: `touches_contract`
+  - Anchor evidence: `L678`: `ipcMain.handle('crono-get-state', () => {`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present.
+  - Repo evidence:
+    - Symbol evidence [primary: `getCronoState`]:
+      - Definition trace (F12): defined at `electron/main.js`:L609; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F): `6` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
+    - Contract [`crono-get-state`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `crono-get-state`
+    - Symbol: `ipcMain.handle`
+    - Pattern: `ipcMain.handle('crono-get-state'`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Keep state shape stable (incl. pre-init) and define explicit defaults to avoid renderer ambiguity.
+  
+##### CONTRACT:IPC_ON:crono-reset (1)
+- **L690#1mxc**
+  - Primary Theme: `CONTRACT:IPC_ON:crono-reset`
+  - Type: `contract surface + fallback (error swallow; log-only)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L690`: `ipcMain.on('crono-reset', () => {`
+  - Local evidence (inner): `L691`: `try { resetCrono(); } catch (e) { console.error('Error in crono-reset:', e); }`      
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. One-line catch form.
+  - Repo evidence:
+    - Symbol evidence [primary: `resetCrono`]:
+      - Definition trace (F12): defined at `electron/main.js`:L651; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `4` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `4` hits in `1`; Verified at: `682c26a`
+    - Contract [`crono-reset`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Contract: `crono-reset`
+    - Symbol: `ipcMain.on`
+    - Pattern: `try`, `catch`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Event IPC has no response; errors are log-only. If user-visible, consider emitting explicit status.
+
+##### CONTRACT:IPC_ON:crono-set-elapsed (1)
+- **L694#x00w**
+  - Primary Theme: `CONTRACT:IPC_ON:crono-set-elapsed`
+  - Type: `contract surface + fallback (error swallow; log-only)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L694`: `ipcMain.on('crono-set-elapsed', (_ev, ms) => {`
+  - Local evidence (inner): `L695`: `try { setCronoElapsed(ms); } catch (e) { console.error('Error in crono-set-elapsed:', e); }`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. One-line catch form.
+  - Repo evidence:
+    - Symbol evidence [primary: `setCronoElapsed`]:
+      - Definition trace (F12): defined at `electron/main.js`:L658; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F): `7` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
+    - Contract [`crono-set-elapsed`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `crono-set-elapsed`
+    - Symbol: `ipcMain.on`
+    - Pattern: `try`, `catch`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Event IPC has no response; errors are log-only. If user-visible, consider emitting explicit status.
+  
+##### CONTRACT:SEND:crono-state (3)
+- Shared:
+  - Primary Theme: `CONTRACT:SEND:crono-state`
+  - Type: `contract surface + fallback (error swallow; noop)`
+  - Tags: `touches_contract, near_contract`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Noop catch can hide failures; confirm it is intentional and scoped. Near contract/lifecycle surface. One-line catch form.
+  - Repo evidence:
+    - Symbol evidence [primary: `broadcastCronoState`]:
+      - Definition trace (F12): defined at `electron/main.js`:L614; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F): `8` matches in `1` file (incl. 1 comment; top: `electron/main.js`); Verified at: `bc16c9a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `7` hits in `electron/main.js`; Verified at: `bc16c9a`
+    - Symbol evidence [secondary: `getCronoState`]:
+      - Definition trace (F12): defined at `electron/main.js`:L609; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F): `6` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
+    - Contract [`crono-state`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 5 matches in 3 files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `'crono-state'`, `webContents.send(`, `.webContents.send(`
+    - Symbol: `broadcastCronoState`, `getCronoState`
+    - Pattern: `catch (`, `/* noop */`, `webContents.send(`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: refactor
+  - Risk notes / dependencies: Silent swallow can hide renderer/window lifecycle defects; however `send` may throw during teardown. Consider a shared `safeSend(win, event, payload)` helper with controlled (non-spammy) reporting.
+  - Occurrences:
+    - **L616#1nhq**
+      - Anchor evidence: `L616`: `try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
+    - **L617#1oz5**  
+      - Anchor evidence: `L617`: `try { if (floatingWin && !floatingWin.isDestroyed()) floatingWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
+    - **L618#1704**
+      - Anchor evidence: `L618`: `try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`  
+
+##### CONTRACT:IPC_ON:crono-toggle (1)
+- **L682#159r**
+  - Primary Theme: `CONTRACT:IPC_ON:crono-toggle`
+  - Type: `contract surface + fallback (error swallow; log-only)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L682`: `ipcMain.on('crono-toggle', () => {`
+  - Local evidence (inner): `L685-687`: `} catch (e) { console.error('Error in crono-toggle:', e); }`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Symbol evidence [primary: `startCrono`]:
+      - Definition trace (F12): defined at `electron/main.js`:L633; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `3` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `1`; Verified at: `682c26a`
+    - Symbol evidence [secondary: `stopCrono`]:
+      - Definition trace (F12): defined at `electron/main.js`:L642; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `3` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `1`; Verified at: `682c26a`
+    - Contract [`crono-toggle`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `crono-toggle`
+    - Symbol: `ipcMain.on`
+    - Pattern: `try`, `catch`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Event IPC has no response; errors are log-only. If user-visible, consider emitting explicit status.
+
+##### CONTRACT:IPC_HANDLE:floating-close (1)
+- **L712#1w0w**
+  - Primary Theme: `CONTRACT:IPC_HANDLE:floating-close`
+  - Type: `contract surface + fallback (error swallow; default return)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L712`: `ipcMain.handle('floating-close', async () => {`
+  - Local evidence (inner): `L719-722`: `} catch (e) { console.error('Error processing floating-close:', e); return { ok: false, error: String(e) }; }`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (default return); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Symbol evidence [primary: `floatingWin`]:
+      - Definition trace (F12): defined at `electron/main.js`:L46; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `34` matches in `3` files (top: `electron/main.js`, `electron/presets_main.js`, `electron/settings.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `24` hits in `electron/main.js`; Verified at: `682c26a`
+    - Contract [`floating-close`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `floating-close`
+    - Symbol: `ipcMain.handle`
+    - Pattern: `ipcMain.handle('floating-close'`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Lifecycle-sensitive close path; decide if log-only swallow is acceptable when window is already destroyed.
 
 ##### CONTRACT:IPC_HANDLE:floating-open (1)
 - **L699#1hed**
   - Primary Theme: `CONTRACT:IPC_HANDLE:floating-open`
-  - Type: `fallback (error swallow)`
-  - Tags: `near_contract`
+  - Type: `contract surface + fallback (error swallow; noop) + fallback (error swallow; default return)`
+  - Tags: `touches_contract, near_contract`
   - Anchor evidence: `L699`: `ipcMain.handle('floating-open', async () => {`
   - Local evidence (inner): `L702`: `try { broadcastCronoState(); } catch (e) {/*noop*/ }`
-  - Why: Noop catch can hide failures near contract/lifecycle code. One-line catch form.
+  - Local evidence (inner): `L705-708`: `} catch (e) { console.error('Error processing floating-open:', e); return { ok: false, error: String(e) }; }`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Noop catch can hide failures; confirm it is intentional and scoped. Near contract/lifecycle surface. One-line catch form. Catch swallows error (default return); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing).
   - Repo evidence:
     - Symbol evidence [primary: `broadcastCronoState`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`614`; Verified at: `bc16c9a`
+      - Definition trace (F12): defined at `electron/main.js`:L614; Verified at: `bc16c9a`
       - Repo search (Ctrl+Shift+F): `8` matches in `1` file (incl. 1 comment; top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `7` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`floating-open`]:
@@ -445,107 +599,22 @@
   - Suggested queries (optional):
     - Contract: `'floating-open'`, `ipcMain.handle(`
     - Symbol: `broadcastCronoState`
-    - Pattern: `/*noop*/`
+    - Pattern: `catch (`, `return null`, `return;`, `/*noop*/`
   - Proposed action:
     - Phase 1: doc only
     - Phase 2: change fallback
   - Risk notes / dependencies: Decide whether a broadcast failure should fail `floating-open` (propagate to outer catch) vs remain non-fatal. At minimum, avoid silent swallow; validate expected failure modes when windows are closing.
-
-##### CONTRACT:IPC_ON:flotante-command (1)
-- **L726#5oho**
-  - Primary Theme: `CONTRACT:IPC_ON:flotante-command`
-  - Type: `fallback (defaulting)`
-  - Tags: `touches_contract`
-  - Anchor evidence: `L726`: `ipcMain.on('flotante-command', (_ev, cmd) => {`
-  - Local evidence (inner): `L734`: `setCronoElapsed(Number(cmd.value) || 0);`
-  - Why: Defaulting `|| 0` can collapse meaningful falsy or error values (NaN/0/empty string). Must confirm contract for cmd.value.
-  - Repo evidence:
-    - Symbol evidence [primary: `setCronoElapsed`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`658`; Verified at: `bc16c9a`
-      - Repo search (Ctrl+Shift+F): `7` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
-      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
-    - Contract [`flotante-command`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
-  - Suggested queries (optional):
-    - Contract: `'flotante-command'`, `ipcMain.on(`, `ipcRenderer.on(`
-    - Symbol: `setCronoElapsed`
-    - Pattern: `Number(`, `|| 0`
-  - Proposed action:
-    - Phase 1: doc only
-    - Phase 2: change fallback
-  - Risk notes / dependencies:
-    - Symbol `setCronoElapsed` repo search includes 1 error log in `public/js/timer.js`.
-    - Current `Number(cmd.value) || 0` coerces invalid/NaN values to 0 (potentially resetting elapsed unexpectedly). Confirm contract for `cmd.value` from the floating renderer before changing.
-
-##### CONTRACT:IPC_ONCE:language-selected (1)
-- **L806#sl1a**
-  - Primary Theme: `CONTRACT:IPC_ONCE:language-selected`
-  - Type: `fallback (error swallow)`
-  - Tags: `touches_contract`
-  - Anchor evidence: `L806`: `ipcMain.once('language-selected', (_evt, lang) => {`
-  - Local evidence (inner): `L814-816`: `} catch (e) { /* noop */ }`
-  - Why: Silent cleanup failure can hide lifecycle errors, especially near initialization contract boundaries.
-  - Repo evidence:
-    - Symbol evidence [primary: `createLanguageWindow`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`321`; Verified at: `bc16c9a`
-      - Repo search (Ctrl+Shift+F): `4` matches in `2` files (top: `electron/main.js`, `electron/menu_builder.js`); Verified at: `bc16c9a`
-      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
-    - Contract [`language-selected`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/language_preload.js`); Verified at: `bc16c9a`
-  - Suggested queries (optional):
-    - Contract: `'language-selected'`, `ipcMain.once(`, `ipcRenderer.once(`
-    - Symbol: `createLanguageWindow`
-    - Pattern: `langWin.close(`, `/* noop */`
-  - Proposed action:
-    - Phase 1: doc only
-    - Phase 2: change fallback
-  - Risk notes / dependencies:
-    - Symbol `createLanguageWindow` repo search includes 1 comment in `electron/menu_builder.js`.
-    - The silent close failure in `finally` is likely harmless, but it can mask unexpected window lifecycle errors. Prefer a stronger guard (isDestroyed checks already present) and/or non-silent reporting.
-
-##### CONTRACT:SEND:crono-state (3)
-- Shared:
-  - Primary Theme: `CONTRACT:SEND:crono-state`
-  - Type: `fallback (error swallow)`
-  - Tags: `touches_contract`
-  - Occurrences:
-    - **L616#1nhq**
-      - Anchor evidence: `L616`: `try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
-    - **L617#1oz5**  
-      - Anchor evidence: `L617`: `try { if (floatingWin && !floatingWin.isDestroyed()) floatingWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
-    - **L618#1704**
-      - Anchor evidence: `L618`: `try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
-  - Why: Silent send failures can mask contract breakage; but may be intentional during teardown.
-  - Repo evidence:
-    - Symbol evidence [primary: `broadcastCronoState`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`614`; Verified at: `bc16c9a`
-      - Repo search (Ctrl+Shift+F): `8` matches in `1` file (incl. 1 comment; top: `electron/main.js`); Verified at: `bc16c9a`
-      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `7` hits in `electron/main.js`; Verified at: `bc16c9a`
-    - Symbol evidence [secondary: `getCronoState`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`609`; Verified at: `bc16c9a`
-      - Repo search (Ctrl+Shift+F): `6` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
-      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
-    - Contract [`crono-state`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 5 matches in 3 files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
-  - Suggested queries (optional):
-    - Contract: `'crono-state'`, `webContents.send(`, `.webContents.send(`
-    - Symbol: `broadcastCronoState`
-    - Pattern: `webContents.send(`, `/*noop*/`
-  - Proposed action:
-    - Phase 1: doc only
-    - Phase 2: refactor
-  - Risk notes / dependencies: Silent swallow can hide renderer/window lifecycle defects; however `send` may throw during teardown. Consider a shared `safeSend(win, event, payload)` helper with controlled (non-spammy) reporting.
   
 ##### CONTRACT:SEND:flotante-closed (1)
 - **L582#18y8**
   - Primary Theme: `CONTRACT:SEND:flotante-closed`
-  - Type: `fallback (error swallow)`
-  - Tags: `touches_contract`
+  - Type: `contract surface + fallback (error swallow; noop)`
+  - Tags: `touches_contract, near_contract`
   - Anchor evidence: `L582`: `try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }`
-  - Why: Silent send failure can hide renderer state inconsistencies (main may not clear floating state).
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Noop catch can hide failures; confirm it is intentional and scoped. Near contract/lifecycle surface. One-line catch form.
   - Repo evidence:
     - Symbol evidence [primary: `createFloatingWindow`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`499`; Verified at: `bc16c9a`
+      - Definition trace (F12): defined at `electron/main.js`:L499; Verified at: `bc16c9a`
       - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`flotante-closed`]:
@@ -553,59 +622,241 @@
   - Suggested queries (optional):
     - Contract: `'flotante-closed'`, `webContents.send(`, `.webContents.send(`
     - Symbol: `createFloatingWindow`
-    - Pattern: `webContents.send(`, `/* noop */`
+    - Pattern: `catch (`, `/* noop */`, `webContents.send(`,
   - Proposed action:
     - Phase 1: doc only
     - Phase 2: refactor
   - Risk notes / dependencies: If this send fails, the main renderer may not clear floating state; verify renderer-side handling. Prefer `safeSend` or at least `mainWin && !mainWin.isDestroyed()` guard plus non-silent reporting.    
+  
+##### CONTRACT:IPC_ON:flotante-command (1)
+- **L726#5oho**
+  - Primary Theme: `CONTRACT:IPC_ON:flotante-command`
+  - Type: `contract surface + fallback (error swallow; log-only) + fallback (guard return) + fallback (defaulting)`       
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L726`: `ipcMain.on('flotante-command', (_ev, cmd) => {`
+  - Local evidence (inner): `L737-739`: `} catch (e) { console.error('Error processing flotante-command in main:', e); }` 
+  - Local evidence (inner): `L728`: `if (!cmd || !cmd.cmd) return;`
+  - Local evidence (inner): `L734`: `setCronoElapsed(Number(cmd.value) || 0);`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing). Guard return can silently skip behavior; confirm it is intentional and correctly scoped. Defaulting via ||/?? may be intentional, but can be an unwanted fallback depending on input domain.
+  - Repo evidence:
+    - Symbol evidence [primary: `setCronoElapsed`]:
+      - Definition trace (F12): defined at `electron/main.js`:L658; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F): `7` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
+    - Contract [`flotante-command`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `'flotante-command'`, `ipcMain.on(`, `ipcRenderer.on(`
+    - Symbol: `setCronoElapsed`
+    - Pattern: `catch (`, `console.error`, `console.warn`, `Number(`, `|| 0`
+  - Proposed action:    
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies:
+    - Symbol `setCronoElapsed` repo search includes 1 error log in `public/js/timer.js`.
+    - Current `Number(cmd.value) || 0` coerces invalid/NaN values to 0 (potentially resetting elapsed unexpectedly). Confirm contract for `cmd.value` from the floating renderer before changing.  
+
+##### CONTRACT:IPC_HANDLE:get-app-config (1)
+- **L783#17bt**
+  - Primary Theme: `CONTRACT:IPC_HANDLE:get-app-config`
+  - Type: `contract surface + fallback (error swallow; default return)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L783`: `ipcMain.handle('get-app-config', async () => {`
+  - Local evidence (inner): `L786-789`: `} catch (e) { console.error('Error processing get-app-config:', e); return { ok: false, error: String(e), maxTextChars: 1e7 }; }`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (default return); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Symbol evidence [primary: `MAX_TEXT_CHARS`]:
+      - Definition trace (F12): defined at `electron/main.js`:L30; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `40` matches in `5` files (top: `electron/main.js`, `electron/text_state.js`, `public/renderer.js`, `public/manual.js`, `public/js/constants.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `682c26a`
+    - Contract [`get-app-config`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 3 files (top: `electron/main.js`, `electron/preload.js`, `electron/manual_preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `get-app-config`
+    - Symbol: `ipcMain.handle`
+    - Pattern: `catch`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Fallback returns `{ ok: false, error: String(e), maxTextChars: 1e7 }`; keep response shape stable and ensure callers handle error payload.
+  
+##### CONTRACT:IPC_ONCE:language-selected (1)
+- **L806#sl1a**
+  - Primary Theme: `CONTRACT:IPC_ONCE:language-selected`
+  - Type: `contract surface + fallback (error swallow; log-only) + fallback (error swallow; noop)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L806`: `ipcMain.once('language-selected', (_evt, lang) => {`
+  - Local evidence (inner): `L809-811`: `} catch (e) { console.error('Error creating mainWin after selecting language:', e); } finally {`
+  - Local evidence (inner): `L814-816`: `} catch (e) { /* noop */ }`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing). Noop catch can hide failures; confirm it is intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Symbol evidence [primary: `createLanguageWindow`]:
+      - Definition trace (F12): defined at `electron/main.js`:L321; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F): `4` matches in `2` files (top: `electron/main.js`, `electron/menu_builder.js`); Verified at: `bc16c9a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
+    - Contract [`language-selected`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/language_preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `'language-selected'`, `ipcMain.once(`, `ipcRenderer.once(`
+    - Symbol: `createLanguageWindow`
+    - Pattern: `catch (`, `console.error`, `console.warn`, `langWin.close(`, `/* noop */`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies:
+    - Symbol `createLanguageWindow` repo search includes 1 comment in `electron/menu_builder.js`.
+    - The silent close failure in `finally` is likely harmless, but it can mask unexpected window lifecycle errors. Prefer a stronger guard (isDestroyed checks already present) and/or non-silent reporting.
+
+##### CONTRACT:SEND:manual-editor-ready (2)
+- **L209#1jgk**
+  - Primary Theme: `CONTRACT:SEND:manual-editor-ready`
+  - Type: `contract surface + fallback (error swallow; log-only)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L209`: `mainWin.webContents.send('manual-editor-ready');`
+  - Local evidence (inner): `L211-213`: `} catch (err) { console.error('Error notifying manual-editor-ready to main window:', err); }`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Symbol evidence [primary: `mainWin`]:
+      - Definition trace (F12): defined at `electron/main.js`:L42; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `107` matches in `5` files (top: `electron/main.js`, `electron/presets_main.js`, `electron/settings.js`, `electron/text_state.js`, `electron/updater.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `29` hits in `electron/main.js`; Verified at: `682c26a`
+    - Contract [`manual-editor-ready`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `manual-editor-ready`
+    - Symbol: `mainWin.webContents.send`
+    - Pattern: `webContents.send('manual-editor-ready')`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Depends on `mainWin`/`webContents` lifecycle and renderer listener; consider ack/state sync if critical.
+- **L759#1jgk**
+  - Primary Theme: `CONTRACT:SEND:manual-editor-ready`
+  - Type: `contract surface + fallback (error swallow; log-only)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L759`: `mainWin.webContents.send('manual-editor-ready');`
+  - Local evidence (inner): `L761-766`: `} catch (e) { console.warn( 'Unable to notify manual-editor-ready (editor already open):', e ); }`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Symbol evidence [primary: `mainWin`]:
+      - Definition trace (F12): defined at `electron/main.js`:L42; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `107` matches in `5` files (top: `electron/main.js`, `electron/presets_main.js`, `electron/settings.js`, `electron/text_state.js`, `electron/updater.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `29` hits in `electron/main.js`; Verified at: `682c26a`
+    - Contract [`manual-editor-ready`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `'manual-editor-ready'`, `webContents.send(`, `.webContents.send(`
+    - Symbol: `mainWin.webContents.send`
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Send depends on `mainWin`/`webContents` lifecycle and a matching renderer listener; if delivery matters for UX, consider ack/state-flag or ensuring the event is emitted only once the renderer is ready.
 
 ##### CONTRACT:SEND:manual-init-text (2)
-- Shared:
+- **L198#o8dh**
   - Primary Theme: `CONTRACT:SEND:manual-init-text`
-  - Type: `fallback (defaulting)`
-  - Tags: `touches_contract`
-  - Occurrences:
-    - **L198#o8dh**
-      - Anchor evidence: `L198`: `editorWin.webContents.send('manual-init-text', {`
-      - Local evidence (inner): `L199`: `text: initialText || '',`
-    - **L750#o8dh**
-      - Anchor evidence: `L750`: `editorWin.webContents.send('manual-init-text', {`
-      - Local evidence (inner): `L751`: `text: initialText || '',`
-  - Why: Defaulting `|| ''` forces a string payload. Must confirm if empty string is semantically valid vs absence.
+  - Type: `contract surface + fallback (error swallow; log-only) + fallback (defaulting)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L198`: `editorWin.webContents.send('manual-init-text', {`
+  - Local evidence (inner): `L202-204`: `} catch (err) { console.error('Error sending manual-init-text to editor:', err); }`
+  - Local evidence (inner): `L199`: `text: initialText || '',`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing). Defaulting via ||/?? may be intentional, but can be an unwanted fallback depending on input domain.
   - Repo evidence:
-    - Symbol evidence [primary: `getCurrentText`]:
-      - Definition trace (F12): defined at `electron/text_state.js`:L`213`; Verified at: `bc16c9a`
-      - Repo search (Ctrl+Shift+F): `10` matches in `6` files (incl. 1 comment; top: `electron/main.js`, `electron/text_state.js`, `public/renderer.js`); Verified at: `bc16c9a`
-      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `0` hits in `electron/main.js`; Verified at: `bc16c9a`
-    - Symbol evidence [secondary: `createEditorWindow`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`151`; Verified at: `bc16c9a`
-      - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
-      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `bc16c9a`
+    - Symbol evidence [primary: `editorWin`]:
+      - Definition trace (F12): defined at `electron/main.js`:L43; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `66` matches in `5` files (top: `electron/main.js`, `electron/modal_state.js`, `electron/presets_main.js`, `electron/settings.js`, `electron/text_state.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `26` hits in `electron/main.js`; Verified at: `682c26a`
     - Contract [`manual-init-text`]:
       - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 2 files (top: `electron/main.js`, `electron/manual_preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'manual-init-text'`, `webContents.send(`, `.webContents.send(`
-    - Symbol: `getCurrentText`
-    - Pattern: `initialText || ''`
+    - Symbol: `editorWin`, `textState.getCurrentText`
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Send depends on editorWin/webContents lifecycle (ready-to-show timing) and a matching renderer listener. If send fails, editor may open without initial text; current behavior is log-only (no status/ack). Defaulting initialText || '' can mask an unexpected empty/undefined current text; verify that an empty string is an acceptable “no content” state.
+- **L750#o8dh**
+  - Primary Theme: `CONTRACT:SEND:manual-init-text`
+  - Type: `contract surface + fallback (error swallow; log-only) + fallback (defaulting)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L750`: `editorWin.webContents.send('manual-init-text', {`
+  - Local evidence (inner): `L754-756`: `} catch (err) { console.error('Error sending manual-init-text from open-editor:', err); }`
+  - Local evidence (inner): `L751`: `text: initialText || '',`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing). Defaulting via ||/?? may be intentional, but can be an unwanted fallback depending on input domain.
+  - Repo evidence:
+    - Symbol evidence [primary: `editorWin`]:
+      - Definition trace (F12): defined at `electron/main.js`:L43; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `66` matches in `5` files (top: `electron/main.js`, `electron/modal_state.js`, `electron/presets_main.js`, `electron/settings.js`, `electron/text_state.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `26` hits in `electron/main.js`; Verified at: `682c26a`
+    - Contract [`manual-init-text`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 2 files (top: `electron/main.js`, `electron/manual_preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `'manual-init-text'`, `webContents.send(`, `.webContents.send(`
+    - Symbol: `editorWin`, `textState.getCurrentText`
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Same as L198. This path is “editor already open”: send failure is still log-only, so UI may not refresh editor contents. Confirm renderer-side behavior when re-opening (does it request current text if init event is missed?). Defaulting initialText || '' again coerces empty/undefined to empty content.
+
+##### CONTRACT:IPC_HANDLE:open-editor (1)
+- **L743#1gl6**
+  - Primary Theme: `CONTRACT:IPC_HANDLE:open-editor`
+  - Type: `contract surface`
+  - Tags: `touches_contract`
+  - Anchor evidence: `L743`: `ipcMain.handle('open-editor', () => {`
+  - Why: Contract surface detected.
+  - Repo evidence:
+    - Symbol evidence [primary: `createEditorWindow`]:
+      - Definition trace (F12): defined at `electron/main.js`:L151; Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `682c26a`
+    - Contract [`open-editor`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `open-editor`
+    - Symbol: `ipcMain.handle`
+    - Pattern: `ipcMain.handle('open-editor'`
+  - Proposed action:
+    - Phase 1: preserve
+    - Phase 2: none
+  - Risk notes / dependencies: Fallbacks captured in nested SEND contracts.
+
+##### CONTRACT:IPC_HANDLE:open-preset-modal (1)
+- **L771#9b7r**
+  - Primary Theme: `CONTRACT:IPC_HANDLE:open-preset-modal`
+  - Type: `contract surface + fallback (guard return)`
+  - Tags: `touches_contract, near_contract`
+  - Anchor evidence: `L771`: `ipcMain.handle('open-preset-modal', (_event, payload) => {`
+  - Local evidence (inner): `L772`: `if (!mainWin) return;`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Guard return can silently skip behavior; confirm it is intentional and correctly scoped.
+  - Repo evidence:
+    - Symbol evidence [primary: `createPresetWindow`]:
+      - Definition trace (F12): defined at `electron/main.js`:L228; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `bc16c9a`
+    - Contract [`open-preset-modal`]:
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Contract: `open-preset-modal`
+    - Symbol: `ipcMain.handle`
+    - Pattern: `if (!mainWin) return`
   - Proposed action:
     - Phase 1: doc only
     - Phase 2: change fallback
-  - Risk notes / dependencies: `initialText || ''` forces a string payload. Need to verify if `textState.getCurrentText()` return domain and renderer expectations. Any change affects contract payload shape.    
+  - Risk notes / dependencies: Guard-return yields silent no-op when `mainWin` is missing; callers must handle. Consider explicit status.
 
 ##### CONTRACT:SEND:preset-init (2)
 - Shared:
   - Primary Theme: `CONTRACT:SEND:preset-init`
-  - Type: `fallback (defaulting)`
-  - Tags: `touches_contract`
-  - Occurrences:    
-    - **L235#1gi8**
-      - Anchor evidence: `L235`: `presetWin.webContents.send('preset-init', initialData || {});`
-    - **L266#1gi8**
-      - Anchor evidence: `L266`: `presetWin.webContents.send('preset-init', initialData || {});`
-  - Why: Defaulting to `{}` may be redundant or may hide invalid payloads; affects contract payload shape.
+  - Type: `contract surface + fallback (defaulting) + fallback (error swallow; log-only)`
+  - Tags: `touches_contract, near_contract`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present. Defaulting via ||/?? may be intentional, but can be an unwanted fallback depending on input domain. Catch swallows error (log-only); confirm intentional and scoped. Near contract/lifecycle surface. Multi-line catch body (non-throwing).
   - Repo evidence:
     - Symbol evidence [primary: `createPresetWindow`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`228`; Verified at: `bc16c9a`
+      - Definition trace (F12): defined at `electron/main.js`:L228; Verified at: `bc16c9a`
       - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`preset-init`]:
@@ -613,29 +864,324 @@
   - Suggested queries (optional):
     - Contract: `'preset-init'`, `webContents.send(`, `.webContents.send(`
     - Symbol: `createPresetWindow`
-    - Pattern: `initialData || {}`
+    - Pattern: `catch (`, `console.error`, `console.warn`, `initialData || {}`
   - Proposed action:
     - Phase 1: doc only
-    - Phase 2: remove
-  - Risk notes / dependencies: `initialData || {}` is likely redundant given current caller initializes `initialData = {}`. Confirm there are no other call sites (repo evidence required) before removing to avoid contract payload regressions.    
+    - Phase 2: refactor (remove redundant defaulting)
+  - Risk notes / dependencies: `initialData || {}` is likely redundant given current caller initializes `initialData = {}`. Confirm there are no other call sites (repo evidence required) before removing to avoid contract payload regressions.  
+  - Occurrences:    
+    - **L235#1gi8**
+      - Anchor evidence: `L235`: `presetWin.webContents.send('preset-init', initialData || {});`
+    - **L266#1gi8**
+      - Anchor evidence: `L266`: `presetWin.webContents.send('preset-init', initialData || {});` 
 
-#### P2-FALLBACK (4)
+##### CONTRACT:DELEGATED_IPC:presetsMain.registerIpc (1)
+- **L304#1not**
+  - Primary Theme: `CONTRACT:DELEGATED_IPC:presetsMain.registerIpc`
+  - Type: `contract surface`
+  - Tags: `touches_contract`
+  - Anchor evidence: `L304`: `presetsMain.registerIpc(ipcMain, {`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present.
+  - Repo evidence:
+    - Symbol evidence [primary: `presetsMain`]:
+      - Definition trace (F12): defined at `electron/main.js`:L16 (`const presetsMain = require('./presets_main');`); Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `3` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `682c26a`
+    - Symbol evidence [secondary: `settingsState`]:
+      - Definition trace (F12): defined at `electron/main.js`:L12 (`const settingsState = require('./settings');`); Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `22` matches in `3` files (top: `electron/main.js`, `electron/presets_main.js`, `electron/settings.js`); Verified at: `682c26a`    
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `4` hits in `electron/main.js`; Verified at: `682c26a`
+    - Delegated IPC registration surface [ipcMain as first arg]:
+      - Repo search (Ctrl+Shift+F): `registerIpc(ipcMain` → `4` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Contract: `'presetsMain.registerIpc'`, `registerIpc(ipcMain`
+    - Symbol: `registerIpc`
+    - Pattern: `registerIpc(ipcMain`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: 
+    - Symbol `presetsMain` repo search includes 1 comment in `electron/main.js`.
+    - Delegated IPC registration; ensure it is idempotent and runs early enough. Changes affect downstream contracts.
 
-##### PATTERN:DEFAULT_OR (1)
+##### CONTRACT:DELEGATED_IPC:settingsState.registerIpc (1)
+- **L284#126a**
+  - Primary Theme: `CONTRACT:DELEGATED_IPC:settingsState.registerIpc`
+  - Type: `contract surface`
+  - Tags: `touches_contract`
+  - Anchor evidence: `L284`: `settingsState.registerIpc(ipcMain, {`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present.
+  - Repo evidence:
+    - Symbol evidence [primary: `settingsState`]:
+      - Definition trace (F12): defined at `electron/main.js`:L12 (`const settingsState = require('./settings');`); Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `22` matches in `3` files (top: `electron/main.js`, `electron/presets_main.js`, `electron/settings.js`); Verified at: `682c26a`    
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `4` hits in `electron/main.js`; Verified at: `682c26a`
+    - Delegated IPC registration surface [ipcMain as first arg]:
+      - Repo search (Ctrl+Shift+F): `registerIpc(ipcMain` → `4` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Contract: `'settingsState.registerIpc'`, `registerIpc(ipcMain`
+    - Symbol: `registerIpc`
+    - Pattern: `registerIpc(ipcMain`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Delegated IPC registration; ensure it is idempotent and runs early enough. Changes affect downstream contracts.
+
+##### CONTRACT:DELEGATED_IPC:textState.registerIpc (1)
+- **L278#q3if**
+  - Primary Theme: `CONTRACT:DELEGATED_IPC:textState.registerIpc`
+  - Type: `contract surface`
+  - Tags: `touches_contract`
+  - Anchor evidence: `L278`: `textState.registerIpc(ipcMain, () => ({`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present.
+  - Repo evidence:
+    - Symbol evidence [primary: `textState`]:
+      - Definition trace (F12): defined at `electron/main.js`:L13 (`const textState = require('./text_state');`); Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `5` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `5` hits in `1`; Verified at: `682c26a`
+    - Delegated IPC registration surface [ipcMain as first arg]:
+      - Repo search (Ctrl+Shift+F): `registerIpc(ipcMain` → `4` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Contract: `'textState.registerIpc'`, `registerIpc(ipcMain`
+    - Symbol: `registerIpc`
+    - Pattern: `registerIpc(ipcMain`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Delegated IPC registration; ensure it is idempotent and runs early enough. Changes affect downstream contracts.
+
+##### CONTRACT:DELEGATED_IPC:updater.registerIpc (1)
+- **L315#5chc**
+  - Primary Theme: `CONTRACT:DELEGATED_IPC:updater.registerIpc`
+  - Type: `contract surface`
+  - Tags: `touches_contract`
+  - Anchor evidence: `L315`: `updater.registerIpc(ipcMain, {`
+  - Why: Contract surface detected; included to maintain complete contract inventory even if no fallback/guard/comment signals are present.
+  - Repo evidence:
+    - Symbol evidence [primary: `updater`]:
+      - Definition trace (F12): defined at `electron/main.js`:L17 (`const updater = require('./updater');`); Verified at: `682c26a`
+      - Repo search (Ctrl+Shift+F): `7` matches in `2` files (top: `electron/main.js` and 1 comment in `electron/updater.js`); Verified at: `682c26a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `4` hits in `electron/main.js`; Verified at: `682c26a`
+    - Delegated IPC registration surface [ipcMain as first arg]:
+      - Repo search (Ctrl+Shift+F): `registerIpc(ipcMain` → `4` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Contract: `registerIpc(ipcMain`,
+    - Symbol: `registerIpc`
+    - Pattern: `registerIpc(ipcMain`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Delegated IPC registration; ensure it is idempotent and runs early enough. Changes affect downstream contracts.
+
+#### P2-FALLBACK (17)
+
+##### PATTERN:CATCH_LOG_ONLY (12)
+- **L77#1xp5**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L77-79`: `} catch (err) { console.warn('Error registering development shortcuts:', err); }`
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Dev-only shortcuts: log-only failures may silently disable dev accelerators; ensure this path cannot break production behavior and avoid noisy logs during startup/reload.
+- **L85#1xp5**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L85-87`: `} catch (err) { console.warn('Error unregistering global shortcuts:', err); }`
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: If unregister fails, shortcuts may remain registered across lifecycle transitions; potential interference with OS/global bindings. Ensure will-quit/shutdown remains stable even if cleanup fails.
+- **L121#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L121-123`: `} catch (e) { console.error('Error closing editorWin from mainWin.close:', e); }`        
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Close/cleanup path for `editorWin`: log-only failure can leave the window/reference in an inconsistent state (dangling listeners, memory/resource leak). Consider making cleanup idempotent and clearing references even on error.
+- **L129#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L129-131`: `} catch (e) { console.error('Error closing presetWin from mainWin.close:', e); }`        
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Close/cleanup path for `presetWin`: log-only failure can leave the window open or references stale. Consider ensuring reference nulling / defensive checks so subsequent open/close flows do not drift.
+- **L133#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L133-135`: `} catch (e) { console.error('Error in mainWin.close handler:', e); }`
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Catch inside `mainWin.close` handler: swallowing errors can mask shutdown sequencing bugs (windows not closing, state not persisted). If this handler gates teardown, consider surfacing a user-visible failure or forcing a safe minimal shutdown path.
+- **L145#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L145-147`: `} catch (e) { console.error('Error calling app.quit() in mainWin.closed:', e); }`        
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: If `app.quit()` fails and is swallowed, the app may remain running with UI already torn down. Consider a more explicit fallback (e.g., retry once, or ensure the process terminates deterministically if that is required by UX).
+- **L214#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L214-216`: `} catch (e) { console.error('Error showing manual editor:', e); }`
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Manual editor open/show: log-only failure is user-visible (action does nothing). Consider returning/propagating a status to the renderer so UI can report failure instead of silently continuing.
+- **L358#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L358-360`: `} catch (e) { console.error('Error applying fallback language:', e); } finally {`        
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Language fallback path: log-only failure can leave the app without a valid language state. Ensure there is a deterministic fallback language and that the “finally” block cannot hide a partially-initialized state.
+- **L365#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L365-367`: `} catch (e) { console.error('Error creating mainWin after closing language modal:', e); }`
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Failure creating `mainWin` after language modal close is startup-critical. Log-only behavior risks a “dead” app state. Consider surfacing a fatal error path (dialog + exit) or a controlled retry if appropriate.
+- **L549#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L549-551`: `} catch (e) { console.warn('Position could not be calculated from screen.getPrimaryDisplay(); using the default FW position.', e); }`
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Position calculation fallback: errors are swallowed and default FW position is used. Ensure the default position is always within workArea across DPI/multi-display setups and avoid repeated logs if this computation can be hit frequently.
+- **L566#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L566-568`: `} catch (e) { console.error('Error loading floating HTML:', e); }`
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Floating HTML load failure likely breaks the floating window UX. Log-only handling can leave the feature “dead” without feedback. Consider propagating status to the UI and/or disabling the feature until reload to avoid inconsistent state.
+- **L845#1hm2**
+  - Primary Theme: `PATTERN:CATCH_LOG_ONLY`
+  - Type: `fallback (error swallow; log-only)`
+  - Local evidence: `L845-847`: `} catch (e) { console.error('Error clearing stopwatch in will-quit:', e); }`
+  - Why: Catch swallows error (log-only); confirm intentional and scoped. Multi-line catch body (non-throwing).
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bcatch\s*\([^)]*\)\s*\{\s*console\.(warn|error)\b`]: `18` matches in `6` files (top: `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `catch (`, `console.error`, `console.warn`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: will-quit cleanup: swallowing errors is typically acceptable, but ensure repeated failures do not spam logs and that cleanup attempts are idempotent (no secondary exceptions during shutdown).
+
+##### PATTERN:DEFAULT_OR (2)
+- **L51#1fba**
+  - Primary Theme: `PATTERN:DEFAULT_OR`
+  - Type: `fallback (defaulting)`
+  - Tags: `near_contract`
+  - Local evidence: `L51`: `const effectiveLang = lang || currentLanguage || 'es';`
+  - Why: Defaulting via ||/?? may be intentional, but can be an unwanted fallback depending on input domain.
+  - Repo evidence:
+    - Pattern evidence:
+      - Pattern: `||`
+      - Local matches in `electron/main.js`: `22`; Verified at: `bc16c9a`
+      - Repo matches (Ctrl+Shift+F): `325` matches in `20` files (top: `public/renderer.js`, `electron/menu_builder.js`, `electron/presets_main.js`); Verified at: `bc16c9a`
+    - Symbol evidence [primary: `buildAppMenu`]:
+      - Definition trace (F12): defined at `electron/main.js`:L50; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F): `9` matches in `3` files (top: `electron/main.js`, `electron/menu_builder.js`, `electron/settings.js`); Verified at: `bc16c9a`
+      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
+  - Suggested queries (optional):
+    - Pattern: `||`, `lang ||`, `currentLanguage ||`, `'es'`
+    - Symbol: `buildAppMenu`
+  - Proposed action:
+    - Phase 1: none
+    - Phase 2: none
+  - Risk notes / dependencies: Likely intentional language fallback chain. Defer unless evidence shows incorrect `lang` domain (e.g., empty string should be preserved).  
 - **L801#1s82**
   - Primary Theme: `PATTERN:DEFAULT_OR`
   - Type: `fallback (defaulting)`
   - Tags: `near_contract`
   - Local evidence: `L801`: `currentLanguage = settings.language || 'es';`
-  - Why: Defaulting determines baseline app behavior. Must confirm domain and desired policy.
+  - Why: Defaulting via ||/?? may be intentional, but can be an unwanted fallback depending on input domain.
   - Repo evidence:
     - Pattern evidence:
       - Pattern: `||`
       - Local matches in `electron/main.js`: `22`; Verified at: `bc16c9a`
       - Repo matches (Ctrl+Shift+F): `325` matches in `20` files (top: `public/renderer.js`, `electron/menu_builder.js`, `electron/presets_main.js`); Verified at: `bc16c9a`
     - Symbol evidence [primary: `settingsState.init`]:
-      - Definition trace (F12): defined at `electron/settings.js`:L`111`; Verified at: `bc16c9a`
-      - Repo search (Ctrl+Shift+F): `1` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
+      - Definition trace (F12): defined at `electron/settings.js`:L111; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F): `1` match in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `0` hits in `electron/main.js`; Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Pattern: `||`, `settings.language ||`, `'es'`
@@ -643,22 +1189,22 @@
   - Proposed action:
     - Phase 1: doc only
     - Phase 2: change fallback
-  - Risk notes / dependencies: Default language policy (`'es'`) is a product decision. Confirm whether empty string/unknown languages should fall back, and whether default should be `'es'` for all first-run scenarios.    
+  - Risk notes / dependencies: Default language policy (`'es'`) is a product decision. Confirm whether empty string/unknown languages should fall back, and whether default should be `'es'` for all first-run scenarios.  
 
 ##### PATTERN:TRY_NOOP (3)
 - **L323#1oxv**
   - Primary Theme: `PATTERN:TRY_NOOP`
-  - Type: `fallback (error swallow)`
+  - Type: `fallback (error swallow; noop)`
   - Tags: `near_contract`
   - Local evidence: `L323`: `try { langWin.focus(); } catch (e) { /* noop */ }`
-  - Why: Silent focus failure can hide lifecycle issues; near language selection flow.
+  - Why: Noop catch can hide failures; confirm it is intentional and scoped. One-line catch form.
   - Repo evidence:
     - Pattern evidence:
       - Pattern: `catch (`, `/* noop */`
       - Local matches in `electron/main.js`: `9`; Verified at: `bc16c9a`
       - Repo matches (Ctrl+Shift+F): `27` matches in `6` files (top: `public/manual.js`, `electron/main.js`); Verified at: `bc16c9a`
     - Symbol evidence [primary: `createLanguageWindow`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`321`; Verified at: `bc16c9a`
+      - Definition trace (F12): defined at `electron/main.js`:L321; Verified at: `bc16c9a`
       - Repo search (Ctrl+Shift+F): `4` matches in `2` files (top: `electron/main.js`, `electron/menu_builder.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
   - Suggested queries (optional):
@@ -669,21 +1215,20 @@
     - Phase 2: refactor
   - Risk notes / dependencies: 
     - Symbol `createLanguageWindow` repo search includes 1 comment in `electron/menu_builder.js`.
-    - Silent swallow on `langWin.focus()` can hide window lifecycle issues. Prefer guard + non-silent handling once evidence shows this can fail in normal flows.    
-
+    - Silent swallow on `langWin.focus()` can hide window lifecycle issues. Prefer guard + non-silent handling once evidence shows this can fail in normal flows.   
 - **L504#sjpk**
   - Primary Theme: `PATTERN:TRY_NOOP`
-  - Type: `fallback (error swallow)`
-  - Tags: `near_contract`
+  - Type: `fallback (error swallow; noop) + fallback (defaulting)`
+  - Tags: `near_contract`  
   - Local evidence: `L504`: `try { floatingWin.setBounds({ x: options.x || floatingWin.getBounds().x, y: options.y || floatingWin.getBounds().y }); } catch (e) { /* noop */ }`
-  - Why: Silent failure plus `||` coordinate defaulting can hide off-screen/positioning bugs; user-visible.
+  - Why: Noop catch can hide failures; confirm it is intentional and scoped. One-line catch form. Defaulting via || on options.x can discard valid 0 values; prefer typed/nullish fallback if 0 is meaningful.
   - Repo evidence:
     - Pattern evidence:
       - Pattern: `catch (`, `/* noop */`
       - Local matches in `electron/main.js`: `9`; Verified at: `bc16c9a`
       - Repo matches (Ctrl+Shift+F): `27` matches in `6` files (top: `public/manual.js`, `electron/main.js`); Verified at: `bc16c9a`
     - Symbol evidence [primary: `createFloatingWindow`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`499`; Verified at: `bc16c9a`
+      - Definition trace (F12): defined at `electron/main.js`:L499; Verified at: `bc16c9a`
       - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `bc16c9a`
   - Suggested queries (optional):
@@ -692,21 +1237,20 @@
   - Proposed action:
     - Phase 1: doc only
     - Phase 2: change fallback
-  - Risk notes / dependencies: Using `||` for numeric coordinates discards valid `0` values; confirm coordinate domain. Also, the noop catch hides setBounds failures. Prefer `??` + guard or a dedicated safe setter.    
-
+  - Risk notes / dependencies: Using `||` for numeric coordinates discards valid `0` values; confirm coordinate domain. Also, the noop catch hides setBounds failures. Prefer `??` + guard or a dedicated safe setter.  
 - **L573#1hm2**
   - Primary Theme: `PATTERN:TRY_NOOP`
-  - Type: `fallback (error swallow)`
-  - Tags: `near_contract`
+  - Type: `fallback (error swallow; noop)`
+  - Tags: `near_contract`  
   - Local evidence: `L573-575`: `} catch (e) { /* noop */ }`
-  - Why: Swallowing snap failures can allow the floating window to remain off-screen (user-visible).
+  - Why: Noop catch can hide failures; confirm it is intentional and scoped. Multi-line catch body (non-throwing).        
   - Repo evidence:
     - Pattern evidence:
       - Pattern: `catch (`, `/* noop */`
       - Local matches in `electron/main.js`: `9`; Verified at: `bc16c9a`
       - Repo matches (Ctrl+Shift+F): `27` matches in `6` files (top: `public/manual.js`, `electron/main.js`); Verified at: `bc16c9a`
     - Symbol evidence [primary: `snapWindowFullyIntoWorkArea`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`408`; Verified at: `bc16c9a`
+      - Definition trace (F12): defined at `electron/main.js`:L408; Verified at: `bc16c9a`
       - Repo search (Ctrl+Shift+F): `5` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `5` hits in `electron/main.js`; Verified at: `bc16c9a`
   - Suggested queries (optional):
@@ -717,31 +1261,79 @@
     - Phase 2: refactor
   - Risk notes / dependencies: If `snapWindowFullyIntoWorkArea` throws, swallowing may leave the floating window partially off-screen (user-visible). Prefer making the snap function robust or logging/reporting controlled failures.    
 
-#### DEFER (1)
+#### DEFER (5)
 
-##### PATTERN:DEFAULT_OR (1)
-- **L51#1fba**
-  - Primary Theme: `PATTERN:DEFAULT_OR`
-  - Type: `fallback (defaulting)`
-  - Tags: `near_contract`
-  - Local evidence: `L51`: `const effectiveLang = lang || currentLanguage || 'es';`
-  - Why: Likely intentional fallback chain; low risk compared to other candidates; defer unless evidence suggests wrong domain.
+##### PATTERN:GUARD_RETURN (5)
+- **L60#1l4p**
+  - Primary Theme: `PATTERN:GUARD_RETURN`
+  - Type: `fallback (guard return)`
+  - Local evidence: `L60`: `if (app.isPackaged) return;`
+  - Why: Guard return can silently skip behavior; confirm it is intentional and correctly scoped.
   - Repo evidence:
     - Pattern evidence:
-      - Pattern: `||`
-      - Local matches in `electron/main.js`: `22`; Verified at: `bc16c9a`
-      - Repo matches (Ctrl+Shift+F): `325` matches in `20` files (top: `public/renderer.js`, `electron/menu_builder.js`, `electron/presets_main.js`); Verified at: `bc16c9a`
-    - Symbol evidence [primary: `buildAppMenu`]:
-      - Definition trace (F12): defined at `electron/main.js`:L`50`; Verified at: `bc16c9a`
-      - Repo search (Ctrl+Shift+F): `9` matches in `3` files (top: `electron/main.js`, `electron/menu_builder.js`, `electron/settings.js`); Verified at: `bc16c9a`
-      - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [`\bif\s*\([^)]*\)\s*return\b`]: `49` matches in `13` files (top: `public/renderer.js`, `electron/main.js`, `electron/presets_main.js`); Verified at: `682c26a`
   - Suggested queries (optional):
-    - Pattern: `||`, `lang ||`, `currentLanguage ||`, `'es'`
-    - Symbol: `buildAppMenu`
+    - Pattern: `if (app.isPackaged) return;`, `app.isPackaged`, `return;`
   - Proposed action:
-    - Phase 1: none
-    - Phase 2: none
-  - Risk notes / dependencies: Likely intentional language fallback chain. Defer unless evidence shows incorrect `lang` domain (e.g., empty string should be preserved).    
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: This guard disables behavior in packaged builds; ensure any diagnostics/dev-only side effects are not required for production correctness and that the guard cannot accidentally suppress needed runtime behavior.
+- **L414#10re**
+  - Primary Theme: `PATTERN:GUARD_RETURN`
+  - Type: `fallback (guard return)`
+  - Local evidence: `L414`: `if (!wa) return;`
+  - Why: Guard return can silently skip behavior; confirm it is intentional and correctly scoped.
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bif\s*\([^)]*\)\s*return\b`]: `49` matches in `13` files (top: `public/renderer.js`, `electron/main.js`, `electron/presets_main.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `if (!wa) return;`, `workArea`, `return;`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: change fallback
+  - Risk notes / dependencies: Silent return can skip positioning/restore behavior when `workArea` is unavailable; confirm callers tolerate no-op and consider returning an explicit status or logging in non-noisy form if this can affect UX.
+- **L478#m8qu**
+  - Primary Theme: `PATTERN:GUARD_RETURN`
+  - Type: `fallback (guard return)`
+  - Local evidence: `L478`: `if (!manualMoveArmed) return;`
+  - Why: Guard return can silently skip behavior; confirm it is intentional and correctly scoped.
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bif\s*\([^)]*\)\s*return\b`]: `49` matches in `13` files (top: `public/renderer.js`, `electron/main.js`, `electron/presets_main.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `if (!manualMoveArmed) return;`, `manualMoveArmed`, `return;`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Guard enforces a state precondition; if that state can desync (e.g., window recreated / event ordering), the guarded operation becomes a silent no-op. Ensure state is reset/armed deterministically to avoid “nothing happens” UX.
+- **L622#7308**
+  - Primary Theme: `PATTERN:GUARD_RETURN`
+  - Type: `fallback (guard return)`
+  - Local evidence: `L622`: `if (cronoInterval) return;`
+  - Why: Guard return can silently skip behavior; confirm it is intentional and correctly scoped.
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bif\s*\([^)]*\)\s*return\b`]: `49` matches in `13` files (top: `public/renderer.js`, `electron/main.js`, `electron/presets_main.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `if (cronoInterval) return;`, `cronoInterval`, `setInterval(`, `clearInterval(`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Guard prevents double-starting an interval; ensure there is a single authoritative place that clears `cronoInterval` on stop/reset to avoid a stuck “already running” state that blocks restarts.
+- **L660#1yhe**
+  - Primary Theme: `PATTERN:GUARD_RETURN`
+  - Type: `fallback (guard return)`
+  - Local evidence: `L660`: `if (crono.running) return;`
+  - Why: Guard return can silently skip behavior; confirm it is intentional and correctly scoped.
+  - Repo evidence:
+    - Pattern evidence:
+      - Repo search (Ctrl+Shift+F) [`\bif\s*\([^)]*\)\s*return\b`]: `49` matches in `13` files (top: `public/renderer.js`, `electron/main.js`, `electron/presets_main.js`); Verified at: `682c26a`
+  - Suggested queries (optional):
+    - Pattern: `if (crono.running) return;`, `crono.running`, `crono`
+  - Proposed action:
+    - Phase 1: doc only
+    - Phase 2: preserve
+  - Risk notes / dependencies: Guard prevents starting when already running; ensure `crono.running` is updated atomically with interval/state transitions (including error paths) so the flag cannot remain true after a failed start/stop sequence.
 
 ---
 
