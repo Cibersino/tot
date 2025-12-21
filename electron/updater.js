@@ -138,7 +138,7 @@ function scheduleInitialCheck() {
 }
 
 // IPC register and window/language references
-function register(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef } = {}) {
+function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef } = {}) {
   if (typeof mainRef === 'function') {
     mainWinRef = mainRef;
   }
@@ -162,7 +162,7 @@ function register(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef } 
 }
 
 module.exports = {
-  register,
+  registerIpc,
   checkForUpdates,
   scheduleInitialCheck,
 };

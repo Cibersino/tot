@@ -312,7 +312,7 @@ presetsMain.registerIpc(ipcMain, {
 });
 
 // IPC related to updates (delegated to updater)
-updater.register(ipcMain, {
+updater.registerIpc(ipcMain, {
   mainWinRef: () => mainWin,
   currentLanguageRef: () => currentLanguage,
 });
