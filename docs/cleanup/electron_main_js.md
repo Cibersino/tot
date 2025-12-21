@@ -437,7 +437,7 @@
       - Repo search (Ctrl+Shift+F): `6` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`crono-get-state`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `crono-get-state`
     - Symbol: `ipcMain.handle`
@@ -485,7 +485,7 @@
       - Repo search (Ctrl+Shift+F): `7` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`crono-set-elapsed`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `crono-set-elapsed`
     - Symbol: `ipcMain.on`
@@ -511,7 +511,7 @@
       - Repo search (Ctrl+Shift+F): `6` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`crono-state`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 5 matches in 3 files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `5` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'crono-state'`, `webContents.send(`, `.webContents.send(`
     - Symbol: `broadcastCronoState`, `getCronoState`
@@ -546,7 +546,7 @@
       - Repo search (Ctrl+Shift+F): `3` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `1`; Verified at: `682c26a`
     - Contract [`crono-toggle`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `crono-toggle`
     - Symbol: `ipcMain.on`
@@ -570,7 +570,7 @@
       - Repo search (Ctrl+Shift+F): `34` matches in `3` files (top: `electron/main.js`, `electron/presets_main.js`, `electron/settings.js`); Verified at: `682c26a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `24` hits in `electron/main.js`; Verified at: `682c26a`
     - Contract [`floating-close`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `floating-close`
     - Symbol: `ipcMain.handle`
@@ -595,7 +595,7 @@
       - Repo search (Ctrl+Shift+F): `8` matches in `1` file (incl. 1 comment; top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `7` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`floating-open`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'floating-open'`, `ipcMain.handle(`
     - Symbol: `broadcastCronoState`
@@ -618,7 +618,7 @@
       - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`flotante-closed`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 3 files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `3` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'flotante-closed'`, `webContents.send(`, `.webContents.send(`
     - Symbol: `createFloatingWindow`
@@ -644,7 +644,7 @@
       - Repo search (Ctrl+Shift+F): `7` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `public/js/timer.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`flotante-command`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/flotante_preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'flotante-command'`, `ipcMain.on(`, `ipcRenderer.on(`
     - Symbol: `setCronoElapsed`
@@ -670,7 +670,7 @@
       - Repo search (Ctrl+Shift+F): `40` matches in `5` files (top: `electron/main.js`, `electron/text_state.js`, `public/renderer.js`, `public/manual.js`, `public/js/constants.js`); Verified at: `682c26a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `682c26a`
     - Contract [`get-app-config`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 3 files (top: `electron/main.js`, `electron/preload.js`, `electron/manual_preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `3` matches in `3` files (top: `electron/main.js`, `electron/preload.js`, `electron/manual_preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `get-app-config`
     - Symbol: `ipcMain.handle`
@@ -695,7 +695,7 @@
       - Repo search (Ctrl+Shift+F): `4` matches in `2` files (top: `electron/main.js`, `electron/menu_builder.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `3` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`language-selected`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/language_preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/language_preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'language-selected'`, `ipcMain.once(`, `ipcRenderer.once(`
     - Symbol: `createLanguageWindow`
@@ -721,7 +721,7 @@
       - Repo search (Ctrl+Shift+F): `107` matches in `5` files (top: `electron/main.js`, `electron/presets_main.js`, `electron/settings.js`, `electron/text_state.js`, `electron/updater.js`); Verified at: `682c26a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `29` hits in `electron/main.js`; Verified at: `682c26a`
     - Contract [`manual-editor-ready`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `manual-editor-ready`
     - Symbol: `mainWin.webContents.send`
@@ -743,7 +743,7 @@
       - Repo search (Ctrl+Shift+F): `107` matches in `5` files (top: `electron/main.js`, `electron/presets_main.js`, `electron/settings.js`, `electron/text_state.js`, `electron/updater.js`); Verified at: `682c26a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `29` hits in `electron/main.js`; Verified at: `682c26a`
     - Contract [`manual-editor-ready`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `3` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'manual-editor-ready'`, `webContents.send(`, `.webContents.send(`
     - Symbol: `mainWin.webContents.send`
@@ -768,7 +768,7 @@
       - Repo search (Ctrl+Shift+F): `66` matches in `5` files (top: `electron/main.js`, `electron/modal_state.js`, `electron/presets_main.js`, `electron/settings.js`, `electron/text_state.js`); Verified at: `682c26a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `26` hits in `electron/main.js`; Verified at: `682c26a`
     - Contract [`manual-init-text`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 2 files (top: `electron/main.js`, `electron/manual_preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `3` matches in `2` files (top: `electron/main.js`, `electron/manual_preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'manual-init-text'`, `webContents.send(`, `.webContents.send(`
     - Symbol: `editorWin`, `textState.getCurrentText`
@@ -791,7 +791,7 @@
       - Repo search (Ctrl+Shift+F): `66` matches in `5` files (top: `electron/main.js`, `electron/modal_state.js`, `electron/presets_main.js`, `electron/settings.js`, `electron/text_state.js`); Verified at: `682c26a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `26` hits in `electron/main.js`; Verified at: `682c26a`
     - Contract [`manual-init-text`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 2 files (top: `electron/main.js`, `electron/manual_preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `3` matches in `2` files (top: `electron/main.js`, `electron/manual_preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'manual-init-text'`, `webContents.send(`, `.webContents.send(`
     - Symbol: `editorWin`, `textState.getCurrentText`
@@ -814,7 +814,7 @@
       - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `682c26a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `682c26a`
     - Contract [`open-editor`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `open-editor`
     - Symbol: `ipcMain.handle`
@@ -838,7 +838,7 @@
       - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`open-preset-modal`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 2 matches in 2 files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `2` matches in `2` files (top: `electron/main.js`, `electron/preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `open-preset-modal`
     - Symbol: `ipcMain.handle`
@@ -860,7 +860,7 @@
       - Repo search (Ctrl+Shift+F): `2` matches in `1` file (top: `electron/main.js`); Verified at: `bc16c9a`
       - Shift+F12 (tooling-derived; file-local; NOT authoritative): `2` hits in `electron/main.js`; Verified at: `bc16c9a`
     - Contract [`preset-init`]:
-      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: 3 matches in 2 files (top: `electron/main.js`, `electron/preset_preload.js`); Verified at: `bc16c9a`
+      - Repo search (Ctrl+Shift+F) [surface only; fill from B2.2]: `3` matches in `2` files (top: `electron/main.js`, `electron/preset_preload.js`); Verified at: `bc16c9a`
   - Suggested queries (optional):
     - Contract: `'preset-init'`, `webContents.send(`, `.webContents.send(`
     - Symbol: `createPresetWindow`

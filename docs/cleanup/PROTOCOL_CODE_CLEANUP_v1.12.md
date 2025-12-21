@@ -157,6 +157,9 @@ Use the surface-only regex (replace `<KEY>` with the literal key):
 
 `(ipcMain\.(handle|on|once)|ipcRenderer\.(invoke|send|on|once)|webContents\.send)\(\s*['"]<KEY>['"]`
 
+For symbols repo search use regex
+`\b<SYMBOL>\b`
+
 Delegated IPC registration surface (first arg is ipcMain; not a string key):
 `\.registerIpc\s*\(\s*ipcMain\b`
 
