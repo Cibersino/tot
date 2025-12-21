@@ -1,5 +1,5 @@
 ## ÁRBOL DE CARPETAS Y ARCHIVOS PRINCIPALES ##
-version 0.0.930
+version 0.0.930dev
 
 ```
 tot-readingmeter/
@@ -9,13 +9,11 @@ tot-readingmeter/
 │ │ ├── defaults_presets.json      
 │ │ ├── defaults_presets_en.json   
 │ │ └── defaults_presets_es.json
-│ ├── current_text.json            # {current_text.json.default en git}
-│ ├── modal_state.json             # {current_text.json.default en git}
+│ ├── current_text.json            # {ignorado por git}
+│ ├── modal_state.json             # {ignorado por git}
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
 │ ├── bugs.md
-│ ├── CONTRACTS.md
-│ ├── modularizacion_plan.md
 │ ├── ToDo.txt
 │ └── tree_folders_files.md
 ├── electron/
@@ -84,7 +82,15 @@ tot-readingmeter/
 │ ├── manual.css
 │ ├── flotante.css
 │ └── style.css
-├── eslintrc.js
+├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
+│ └── ast_tools/
+│   ├── node_modules/              # {acorn}
+│   ├── b1_inventory.cjs
+│   ├── b2_contract_lock.cjs
+│   ├── b2_3_observability_scan.cjs
+│   ├── b3_candidates_scan.cjs
+│   ├── package.json
+│   └── package-lock.json
 ├── package.json
 ├── package-lock.json
 ├── README.md

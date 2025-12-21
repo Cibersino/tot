@@ -1,20 +1,20 @@
 // electron/fs_storage.js
-// Utilidades de acceso a disco compartidas por el proceso principal
+// Disk access utilities shared by the main process
 
 const fs = require('fs');
 const path = require('path');
 
-// Carpeta de configuracion base
+// Base configuration folder
 const CONFIG_DIR = path.join(__dirname, '..', 'config');
 
-// Carpeta de presets por defecto en config
+// Default presets folder in config
 const CONFIG_PRESETS_DIR = path.join(CONFIG_DIR, 'presets_defaults');
 
 function ensureConfigDir() {
   try {
     if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
   } catch (e) {
-    console.error('No se pudo crear config dir:', e);
+    console.error('Error creating config dir:', e);
   }
 }
 
@@ -24,7 +24,7 @@ function loadJson(filePath, fallback = {}) {
     const raw = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(raw || '{}');
   } catch (e) {
-    console.error(`Error leyendo JSON ${filePath}:`, e);
+    console.error(`Error reading JSON ${filePath}:`, e);
     return fallback;
   }
 }
@@ -33,7 +33,7 @@ function saveJson(filePath, obj) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
   } catch (e) {
-    console.error(`Error escribiendo JSON ${filePath}:`, e);
+    console.error(`Error writing JSON ${filePath}:`, e);
   }
 }
 
@@ -43,7 +43,7 @@ function ensureConfigPresetsDir() {
       fs.mkdirSync(CONFIG_PRESETS_DIR, { recursive: true });
     }
   } catch (err) {
-    console.error('No se pudo crear config/presets_defaults:', err);
+    console.error('Error creating config/presets_defaults:', err);
   }
 }
 

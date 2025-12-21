@@ -1,5 +1,6 @@
+// public/js/timer.js
 (() => {
-  console.debug("[timer.js] modulo cargado");
+  console.debug('[timer.js] module loaded');
 
   function formatTimer(ms) {
     const totalSeconds = Math.floor((ms || 0) / 1000);
@@ -10,7 +11,7 @@
   }
 
   function parseTimerInput(input) {
-    const match = String(input || "").match(/^(\d+):([0-5]\d):([0-5]\d)$/);
+    const match = String(input || '').match(/^(\d+):([0-5]\d):([0-5]\d)$/);
     if (!match) return null;
     const hours = parseInt(match[1], 10);
     const minutes = parseInt(match[2], 10);
@@ -37,13 +38,13 @@
       if (realWpmDisplay) realWpmDisplay.textContent = `${velocidadFormateada} WPM`;
       return realWpm;
     }
-    if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
+    if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
     return 0;
   }
 
   function uiResetTimer({ timerDisplay, realWpmDisplay, tToggle, playLabel = '>' }) {
-    if (timerDisplay) timerDisplay.value = "00:00:00";
-    if (realWpmDisplay) realWpmDisplay.innerHTML = "&nbsp;";
+    if (timerDisplay) timerDisplay.value = '00:00:00';
+    if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
     if (tToggle) tToggle.textContent = playLabel;
   }
 
@@ -58,7 +59,7 @@
     pauseLabel = '||'
   }) {
     if (!electronAPI || typeof electronAPI.openFloatingWindow !== 'function') {
-      console.warn("openFloatingWindow no disponible en electronAPI");
+      console.warn('openFloatingWindow unavailable in electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
@@ -88,7 +89,7 @@
       }
       return null;
     } catch (e) {
-      console.error("Error abriendo flotante:", e);
+      console.error('Error loading  flotante:', e);
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
@@ -96,14 +97,14 @@
 
   async function closeFloating({ electronAPI, toggleVF }) {
     if (!electronAPI || typeof electronAPI.closeFloatingWindow !== 'function') {
-      console.warn("closeFloatingWindow no disponible en electronAPI");
+      console.warn('closeFloatingWindow unavailable in electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return;
     }
     try {
       await electronAPI.closeFloatingWindow();
     } catch (e) {
-      console.error("Error cerrando flotante:", e);
+      console.error('Error closing flotante:', e);
     } finally {
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
     }
@@ -121,22 +122,55 @@
     idiomaActual,
     realWpmDisplay,
     setElapsed,
-    setLastComputedElapsed
+    setLastComputedElapsed,
+    running = false,
+    baselineElapsed = null,
+    baselineDisplay = null
   }) {
+    const effectiveBaselineElapsed = (typeof baselineElapsed === 'number')
+      ? baselineElapsed
+      : (typeof setElapsed === 'function' ? setElapsed() : 0);
+    const effectiveBaselineDisplay = baselineDisplay || formatTimer(effectiveBaselineElapsed || 0);
+    const inputValue = String(value || '').trim();
+
+    // If the stopwatch is running, ignore manual edits and restore the current display
+    if (running) {
+      if (timerDisplay) {
+        timerDisplay.value = effectiveBaselineDisplay;
+      }
+      return null;
+    }
+
+    // No change: keep baseline (including fractional ms) untouched
+    if (inputValue === effectiveBaselineDisplay) {
+      if (timerDisplay) timerDisplay.value = effectiveBaselineDisplay;
+      if (typeof setElapsed === 'function' && typeof effectiveBaselineElapsed === 'number') {
+        setElapsed(effectiveBaselineElapsed);
+      }
+      return effectiveBaselineElapsed;
+    }
+
     const parsed = (timerModule && timerModule.parseTimerInput)
       ? timerModule.parseTimerInput(value)
       : parseTimerInput(value);
 
     if (parsed === null) {
-      if (timerDisplay && typeof setElapsed === "function") {
-        timerDisplay.value = formatTimer(setElapsed());
+      if (timerDisplay) {
+        timerDisplay.value = effectiveBaselineDisplay;
       }
       return null;
     }
 
     const msRounded = Math.floor(parsed / 1000) * 1000;
+    if (msRounded < 0) {
+      if (timerDisplay) {
+        timerDisplay.value = effectiveBaselineDisplay;
+      }
+      return null;
+    }
+
     const fallbackLocal = async () => {
-      if (typeof setElapsed === "function") setElapsed(msRounded);
+      if (typeof setElapsed === 'function') setElapsed(msRounded);
       if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
       await actualizarVelocidadRealFromElapsed({
         ms: msRounded,
@@ -147,7 +181,7 @@
         idiomaActual,
         realWpmDisplay
       });
-      if (typeof setLastComputedElapsed === "function") setLastComputedElapsed(msRounded);
+      if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
     };
 
     if (electronAPI && typeof electronAPI.setCronoElapsed === 'function') {
@@ -163,10 +197,10 @@
           idiomaActual,
           realWpmDisplay
         });
-        if (typeof setLastComputedElapsed === "function") setLastComputedElapsed(msRounded);
+        if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
         return msRounded;
       } catch (e) {
-        console.error("Error enviando setCronoElapsed:", e);
+        console.error('Error sending setCronoElapsed:', e);
         await fallbackLocal();
         return msRounded;
       }
@@ -194,6 +228,10 @@
   }) {
     const newElapsed = typeof state?.elapsed === 'number' ? state.elapsed : 0;
     const newRunning = !!state?.running;
+
+    if (timerDisplay) {
+      timerDisplay.disabled = newRunning;
+    }
 
     if (timerDisplay && !timerEditing) {
       timerDisplay.value = state?.display || formatTimer(newElapsed);

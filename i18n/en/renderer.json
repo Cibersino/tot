@@ -94,7 +94,7 @@
     },
     "alerts": {
       "clipboard_overflow": "Clipboard text exceeds the maximum allowed and will be truncated.",
-      "too_big": "Cannot add text: maximum size reached.",
+      "text_limit": "Cannot add text: maximum size reached.",
       "clipboard_error": "An error occurred while pasting from clipboard. Check console.",
       "paste_error": "An error occurred while pasting from clipboard. Check console.",
       "clear_error": "An error occurred while clearing text. Check console.",
@@ -123,12 +123,12 @@
       "wip_colabora": "WIP: Collaboration info will appear here in a future version."
     },
     "editor_alerts": {
-      "too_big_clipboard": "Text too large to paste directly. Use the main window buttons.",
+      "clipboard_too_big": "Text too large to paste directly. Use the main window buttons.",
       "drop_too_big": "Dropped text is too large. Use the main window buttons to add large text.",
       "clipboard_no_text": "Clipboard does not contain plain text.",
       "drop_no_text": "Drop: no plain text detected.",
-      "truncated_limit": "Cannot write more text: maximum size reached.",
-      "too_big": "Cannot paste more text: maximum size reached.",
+      "type_limit": "Cannot write more text: maximum size reached.",
+      "paste_limit": "Cannot paste more text: maximum size reached.",
       "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
       "drop_truncated": "Dragged text exceeded the available space and was truncated.",
       "text_truncated": "Text was truncated to fit the application limit.",
