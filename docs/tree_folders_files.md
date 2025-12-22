@@ -10,7 +10,7 @@ tot-readingmeter/
 │ │ ├── defaults_presets_en.json   
 │ │ └── defaults_presets_es.json
 │ ├── current_text.json            # {ignorado por git}
-│ ├── modal_state.json             # {ignorado por git}
+│ ├── editor_state.json             # {ignorado por git}
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
 │ ├── cleanup/
@@ -27,13 +27,13 @@ tot-readingmeter/
 │ ├── main.js
 │ ├── preload.js
 │ ├── language_preload.js
-│ ├── manual_preload.js
+│ ├── editor_preload.js
 │ ├── preset_preload.js
 │ ├── flotante_preload.js
 │ ├── fs_storage.js
 │ ├── settings.js
 │ ├── text_state.js
-│ ├── modal_state.js
+│ ├── editor_state.js
 │ ├── presets_main.js
 │ ├── menu_builder.js
 │ └── updater.js
@@ -72,17 +72,17 @@ tot-readingmeter/
 │ │ ├── menu_actions.js
 │ │ ├── notify.js
 │ │ ├── presets.js
-│ │ └── timer.js
+│ │ └── crono.js
 │ ├── renderer.js
-│ ├── manual.js
+│ ├── editor.js
 │ ├── preset_modal.js
 │ ├── flotante.js
 │ ├── index.html
 │ ├── language_window.html
-│ ├── manual.html
+│ ├── editor.html
 │ ├── preset_modal.html
 │ ├── flotante.html
-│ ├── manual.css
+│ ├── editor.css
 │ ├── flotante.css
 │ └── style.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}

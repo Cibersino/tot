@@ -1,9 +1,9 @@
-// electron/modal_state.js
+// electron/editor_state.js
 const { screen } = require('electron');
 const path = require('path');
 const { CONFIG_DIR, loadJson, saveJson } = require('./fs_storage');
 
-const MODAL_STATE_FILE = path.join(CONFIG_DIR, 'modal_state.json');
+const MODAL_STATE_FILE = path.join(CONFIG_DIR, 'editor_state.json');
 
 const DEFAULT_STATE = {
   maximized: true,

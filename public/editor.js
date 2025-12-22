@@ -1,4 +1,4 @@
-// public/manual.js
+// public/editor.js
 console.log('Manual editor starting...');
 
 const { AppConstants } = window;
