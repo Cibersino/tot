@@ -86,7 +86,7 @@ const api = {
         return ipcRenderer.invoke('floating-close');
     },
 
-    // Hold listener to notify that the float was closed (main emits 'float-closed')
+    // Hold listener to notify that the flotante was closed (main emits 'flotante-closed')
     onFloatingClosed: (cb) => {
         const listener = () => { try { cb(); } catch (e) { console.error('floating closed callback error:', e); } };
         ipcRenderer.on('flotante-closed', listener);

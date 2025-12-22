@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('flotanteAPI', {
     ipcRenderer.send('flotante-command', cmd);
   },
 
-  // Float closing notification (main emits 'float-closed' when closing)
+  // Flotante closing notification (main emits 'flotante-closed' when closing)
   onClose: (cb) => {
     const wrapper = () => { try { cb && cb(); } catch (e) { console.error(e); } };
     ipcRenderer.on('flotante-closed', wrapper);

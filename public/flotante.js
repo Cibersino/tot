@@ -1,4 +1,4 @@
-// public/float.js
+// public/flotante.js
 const timerEl = document.getElementById('timer');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
