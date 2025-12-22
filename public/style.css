@@ -514,7 +514,7 @@ select#presets {
 }
 
 /* Loader para apertura del editor manual */
-.manual-loader {
+.editor-loader {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -523,16 +523,16 @@ select#presets {
   border: 2px solid rgba(0, 0, 0, 0.15);
   border-top-color: rgba(0, 0, 0, 0.7);
   border-radius: 50%;
-  animation: manual-spin 0.9s linear infinite;
+  animation: editor-spin 0.9s linear infinite;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
   z-index: 20;
 }
-.manual-loader.visible {
+.editor-loader.visible {
   opacity: 1;
 }
-@keyframes manual-spin {
+@keyframes editor-spin {
   to {
     transform: rotate(360deg);
   }

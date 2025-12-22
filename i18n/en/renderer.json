@@ -81,7 +81,7 @@
       "cancel": "Cancel",
       "save": "Save"
     },
-    "modal_editor": {
+    "editor": {
       "title": "Editor — Full text",
       "placeholder": "Type or paste here...",
       "calc_button": "CALCULATE",

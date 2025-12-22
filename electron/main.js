@@ -11,7 +11,7 @@ const {
 
 const settingsState = require('./settings');
 const textState = require('./text_state');
-const modalState = require('./editor_state');
+const editorState = require('./editor_state');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const updater = require('./updater');
@@ -150,7 +150,7 @@ function createMainWindow() {
 
 function createEditorWindow() {
   // Load initial state from editor_state.js
-  const state = modalState.loadInitialState(loadJson);
+  const state = editorState.loadInitialState(loadJson);
 
   // Is there a saved and valid reduced state?
   const hasReduced =
@@ -195,29 +195,29 @@ function createEditorWindow() {
       // Send initial currentText to the editor (when it's ready)
       try {
         const initialText = textState.getCurrentText();
-        editorWin.webContents.send('manual-init-text', {
+        editorWin.webContents.send('editor-init-text', {
           text: initialText || '',
           meta: { source: 'main', action: 'init' }
         });
       } catch (err) {
-        console.error('Error sending manual-init-text to editor:', err);
+        console.error('Error sending editor-init-text to editor:', err);
       }
 
       // Notify the main window that the editor is ready
       try {
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('manual-editor-ready');
+          mainWin.webContents.send('editor-ready');
         }
       } catch (err) {
-        console.error('Error notifying manual-editor-ready to main window:', err);
+        console.error('Error notifying editor-ready to main window:', err);
       }
     } catch (e) {
-      console.error('Error showing manual editor:', e);
+      console.error('Error showing editor:', e);
     }
   });
 
   // Delegate state management (maximized/reduced, fallback, persistence) to the editor_state module
-  modalState.attachTo(editorWin, loadJson, saveJson);
+  editorState.attachTo(editorWin, loadJson, saveJson);
 
   // Clear reference when the window is completely closed
   editorWin.on('closed', () => {
@@ -426,7 +426,7 @@ function snapWindowFullyIntoWorkArea(win) {
 
 /**
  * Cross-platform guard:
- * - Windows: will-move (manual gate) + moved (one-shot end-of-move).
+ * - Windows: will-move (user gate) + moved (one-shot end-of-move).
  * - macOS: moved is alias of move; use end-of-move by stability on move.
  * - Linux: no will-move/moved per docs; use stability on move.
  */
@@ -434,18 +434,18 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
   snapWindowFullyIntoWorkArea(win);
 
   let snapping = false;
-  let manualMoveArmed = false;
+  let userMoveArmed = false;
 
   // will-move: only when the user drags by hand (Windows/macOS). :contentReference[oaicite:1]{index=1}
   win.on('will-move', () => {
-    if (!snapping) manualMoveArmed = true;
+    if (!snapping) userMoveArmed = true;
   });
 
   if (process.platform === 'win32') {
     // moved: emitted once at the end of the movement in Windows. :contentReference[oaicite:2]{index=2}
     win.on('moved', () => {
-      if (!manualMoveArmed || snapping || win.isDestroyed()) return;
-      manualMoveArmed = false;
+      if (!userMoveArmed || snapping || win.isDestroyed()) return;
+      userMoveArmed = false;
       snapping = true;
       try {
         snapWindowFullyIntoWorkArea(win);
@@ -472,18 +472,18 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
   win.on('move', () => {
     if (snapping || win.isDestroyed()) return;
 
-    // Linux: no will-move in the current doc; treat any move as manual.
-    if (process.platform === 'linux') manualMoveArmed = true;
+    // Linux: no will-move in the current doc; treat any move as user.
+    if (process.platform === 'linux') userMoveArmed = true;
 
-    if (!manualMoveArmed) return;
+    if (!userMoveArmed) return;
 
     lastMoveAt = Date.now();
     clearTimer();
     timer = setTimeout(() => {
       if (Date.now() - lastMoveAt < endMoveMs) return;
-      if (!manualMoveArmed || snapping || win.isDestroyed()) return;
+      if (!userMoveArmed || snapping || win.isDestroyed()) return;
 
-      manualMoveArmed = false;
+      userMoveArmed = false;
       snapping = true;
       try {
         snapWindowFullyIntoWorkArea(win);
@@ -747,20 +747,20 @@ ipcMain.handle('open-editor', () => {
     editorWin.show();
     try {
       const initialText = textState.getCurrentText();
-      editorWin.webContents.send('manual-init-text', {
+      editorWin.webContents.send('editor-init-text', {
         text: initialText || '',
         meta: { source: 'main', action: 'init' },
       });
     } catch (err) {
-      console.error('Error sending manual-init-text from open-editor:', err);
+      console.error('Error sending editor-init-text from open-editor:', err);
     }
     try {
       if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send('manual-editor-ready');
+        mainWin.webContents.send('editor-ready');
       }
     } catch (e) {
       console.warn(
-        'Unable to notify manual-editor-ready (editor already open):',
+        'Unable to notify editor-ready (editor already open):',
         e
       );
     }

@@ -15,7 +15,7 @@
     alert(msg);
   }
 
-  function notifyManual(key, { type = 'info', duration = 4500 } = {}) {
+  function notifyEditor(key, { type = 'info', duration = 4500 } = {}) {
     const msg = resolveText(key);
     // showNotice already exists in editor.js
     if (typeof window.showNotice === 'function') {
@@ -25,6 +25,6 @@
 
   window.Notify = {
     notifyMain,
-    notifyManual
+    notifyEditor
   };
 })();

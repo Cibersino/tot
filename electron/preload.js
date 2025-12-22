@@ -93,11 +93,11 @@ const api = {
         return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (e) { console.error('removeListener error:', e); } };
     },
 
-    // Manual editor ready (to hide loader in main window)
-    onManualEditorReady: (cb) => {
-        const listener = () => { try { cb(); } catch (err) { console.error('manual-ready callback error:', err); } };
-        ipcRenderer.on('manual-editor-ready', listener);
-        return () => { try { ipcRenderer.removeListener('manual-editor-ready', listener); } catch (e) { console.error('removeListener error (manual-editor-ready):', e); } };
+    // editor ready (to hide loader in main window)
+    onEditorReady: (cb) => {
+        const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
+        ipcRenderer.on('editor-ready', listener);
+        return () => { try { ipcRenderer.removeListener('editor-ready', listener); } catch (e) { console.error('removeListener error (editor-ready):', e); } };
     }
 };
 

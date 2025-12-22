@@ -46,7 +46,7 @@ const resultsTitle = document.getElementById('results-title');
 const cronTitle = document.getElementById('cron-title');
 
 const toggleVF = document.getElementById('toggleVF');
-const manualLoader = document.getElementById('manualLoader');
+const editorLoader = document.getElementById('editorLoader');
 
 // References to presets elements
 const presetsSelect = document.getElementById('presets');
@@ -430,9 +430,9 @@ const loadPresets = async () => {
         window.electronAPI.onSettingsUpdated(settingsChangeHandler);
       } // If it doesn't exist, there's no listener available and nothing happens
 
-      if (typeof window.electronAPI.onManualEditorReady === 'function') {
-        window.electronAPI.onManualEditorReady(() => {
-          hideManualLoader();
+      if (typeof window.electronAPI.onEditorReady === 'function') {
+        window.electronAPI.onEditorReady(() => {
+          hideeditorLoader();
         });
       }
     }
@@ -851,12 +851,12 @@ btnAppendClipboardNewLine.addEventListener('click', async () => {
 });
 
 btnEdit.addEventListener('click', async () => {
-  showManualLoader();
+  showeditorLoader();
   try {
     await window.electronAPI.openEditor();
   } catch (err) {
-    console.error('Error opening editor manual:', err);
-    hideManualLoader();
+    console.error('Error opening editor:', err);
+    hideeditorLoader();
   }
 });
 
@@ -1032,13 +1032,13 @@ let timerBaselineDisplay = null;
 // Last elapsed for which we calculate WPM (avoid repeated recalculations)
 let lastComputedElapsedForWpm = null;
 
-function showManualLoader() {
-  if (manualLoader) manualLoader.classList.add('visible');
+function showeditorLoader() {
+  if (editorLoader) editorLoader.classList.add('visible');
   if (btnEdit) btnEdit.disabled = true;
 }
 
-function hideManualLoader() {
-  if (manualLoader) manualLoader.classList.remove('visible');
+function hideeditorLoader() {
+  if (editorLoader) editorLoader.classList.remove('visible');
   if (btnEdit) btnEdit.disabled = false;
 }
 
