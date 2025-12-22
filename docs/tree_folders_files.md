@@ -4,7 +4,7 @@ version 0.0.930dev
 ```
 tot-readingmeter/
 ├── build-output/                  # {vacío} {carpeta ignorada por git}
-├── config/
+├── config/                        # {carpeta y archivos generados en primer arranque}
 │ ├── presets_defaults/            # {carpeta ignorada por git}
 │ │ ├── defaults_presets.json      
 │ │ ├── defaults_presets_en.json   
@@ -13,6 +13,9 @@ tot-readingmeter/
 │ ├── modal_state.json             # {ignorado por git}
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
+│ ├── cleanup/
+│ │ ├── _files_to_rename.md
+│ │ └── _plan_rename_files.md
 │ ├── bugs.md
 │ ├── ToDo.txt
 │ └── tree_folders_files.md
@@ -75,7 +78,7 @@ tot-readingmeter/
 │ ├── preset_modal.js
 │ ├── flotante.js
 │ ├── index.html
-│ ├── language_modal.html
+│ ├── language_window.html
 │ ├── manual.html
 │ ├── preset_modal.html
 │ ├── flotante.html

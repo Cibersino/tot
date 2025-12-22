@@ -20,7 +20,7 @@ const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
 
 // Language modal assets
-const LANGUAGE_MODAL_HTML = path.join(__dirname, '../public/language_modal.html');
+const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 
 ensureConfigDir();
@@ -344,7 +344,7 @@ function createLanguageWindow() {
   });
 
   langWin.setMenu(null);
-  langWin.loadFile(LANGUAGE_MODAL_HTML);
+  langWin.loadFile(LANGUAGE_WINDOW_HTML);
 
   langWin.once('ready-to-show', () => {
     langWin.show();
