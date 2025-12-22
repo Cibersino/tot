@@ -17,7 +17,7 @@
 
   function notifyManual(key, { type = 'info', duration = 4500 } = {}) {
     const msg = resolveText(key);
-    // showNotice already exists in manual.js
+    // showNotice already exists in editor.js
     if (typeof window.showNotice === 'function') {
       window.showNotice(msg, { type, duration });
     }

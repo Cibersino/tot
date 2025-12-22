@@ -1,4 +1,4 @@
-// electron/manual_preload.js
+// electron/editor_preload.js
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('manualAPI', {

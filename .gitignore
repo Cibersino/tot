@@ -24,7 +24,7 @@ Thumbs.db
 
 # Electron / app user config (no versionear datos de usuario)
 config/current_text.json
-config/modal_state.json
+config/editor_state.json
 config/user_settings.json
 config/presets_defaults/
 

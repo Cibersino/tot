@@ -11,7 +11,7 @@ const {
 
 const settingsState = require('./settings');
 const textState = require('./text_state');
-const modalState = require('./modal_state');
+const modalState = require('./editor_state');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const updater = require('./updater');
@@ -149,7 +149,7 @@ function createMainWindow() {
 }
 
 function createEditorWindow() {
-  // Load initial state from modal_state.js
+  // Load initial state from editor_state.js
   const state = modalState.loadInitialState(loadJson);
 
   // Is there a saved and valid reduced state?
@@ -172,7 +172,7 @@ function createEditorWindow() {
     maximizable: true,
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, 'manual_preload.js'),
+      preload: path.join(__dirname, 'editor_preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false
@@ -181,7 +181,7 @@ function createEditorWindow() {
 
   editorWin.setMenu(null);
   editorWin.setMenuBarVisibility(false);
-  editorWin.loadFile(path.join(__dirname, '../public/manual.html'));
+  editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
 
   editorWin.once('ready-to-show', () => {
     try {
@@ -216,7 +216,7 @@ function createEditorWindow() {
     }
   });
 
-  // Delegate state management (maximized/reduced, fallback, persistence) to the modal_state module
+  // Delegate state management (maximized/reduced, fallback, persistence) to the editor_state module
   modalState.attachTo(editorWin, loadJson, saveJson);
 
   // Clear reference when the window is completely closed
