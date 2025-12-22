@@ -9,7 +9,7 @@ electron/manual_preload.js
 - Notes:           Rename (lexicón editor): electron/manual_preload.js -> electron/editor_preload.js.
                   Nota: window.manualAPI se mantiene por ahora (contrato).
 
-public/js/menu.js
+public/js/menu.js [LISTO]
 - Observed Role:   Wiring/dispatcher en renderer para acciones de menú: escucha window.electronAPI.onMenuClick(...), registra handlers y gestiona unsubscribe.
 - Rule(s) failed?: 2
 - Keep?:           Y

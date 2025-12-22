@@ -69,7 +69,7 @@ tot-readingmeter/
 │ │ ├── count.js
 │ │ ├── format.js
 │ │ ├── i18n.js
-│ │ ├── menu.js
+│ │ ├── menu_actions.js
 │ │ ├── notify.js
 │ │ ├── presets.js
 │ │ └── timer.js

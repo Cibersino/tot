@@ -646,7 +646,7 @@ const loadPresets = async () => {
   }
 
   // ======================= TOP BAR: Register actions with menuActions =======================
-  // Ensure menu.js is loaded (script included before renderer.js)
+  // Ensure menu_actions.js is loaded (script included before renderer.js)
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {  
     window.menuActions.registerMenuAction('guia_basica', () => { showInfoModal('guia_basica') });
     window.menuActions.registerMenuAction('instrucciones_completas', () => { showInfoModal('instrucciones') });
@@ -726,7 +726,7 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('acerca_de', () => { showInfoModal('acerca_de') });
 
     // Generic example for viewing payloads not explicitly registered:
-    // (optional) Registering a 'catch-all' is not necessary; menu.js already logs payloads without a handler.
+    // (optional) Registering a 'catch-all' is not necessary; menu_actions.js already logs payloads without a handler.
   } else {
     // If menuActions is unavailable, register a direct receiver (fallback)
     if (window.electronAPI && typeof window.electronAPI.onMenuClick === 'function') {
