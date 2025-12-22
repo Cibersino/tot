@@ -1122,7 +1122,7 @@ if (toggleVF) {
   });
 }
 
-// If the float is closed from main (or destroyed), we clean it up Local timers
+// If the flotante is closed from main (or destroyed), we clean it up Local timers
 if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'function') {
   window.electronAPI.onFloatingClosed(() => {
     if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
