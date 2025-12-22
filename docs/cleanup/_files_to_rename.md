@@ -37,7 +37,7 @@ public/manual.js
 - Notes:           Rename (lexicón editor): public/manual.js -> public/editor.js.
                   Nota: window.manualAPI se mantiene por ahora (contrato).
 
-public/js/timer.js
+public/js/timer.js [LISTO]
 - Observed Role:   Lógica de crono/tiempo + control de flotante: formateo/parsing, cálculo velocidad real desde elapsed, openFloating/closeFloating, handler de estado crono.
 - Rule(s) failed?: 1, 3
 - Keep?:           Y
