@@ -1,6 +1,6 @@
-// public/js/timer.js
+// public/js/crono.js
 (() => {
-  console.debug('[timer.js] module loaded');
+  console.debug('[crono.js] module loaded');
 
   function formatTimer(ms) {
     const totalSeconds = Math.floor((ms || 0) / 1000);

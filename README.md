@@ -30,7 +30,7 @@ npm start
 * `config/user_settings.json` — guarda presets personalizados y configuración de usuario.
 * `config/current_text.json` — almacena el texto actual al cerrar la app.
 * `public/manual.js` — scripts del editor de texto completo.
-* `public/js/menu.js` — router interno de acciones del menú.
+* `public/js/menu_actions.js` — router interno de acciones del menú.
 * `public/style.css` y `public/manual.css` — estilos para la pantalla principal y editor.
 * `public/index.html`, `public/manual.html`, `public/preset_modal.html` — vistas principales y modales.
 
