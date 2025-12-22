@@ -454,7 +454,7 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
       }
     });
 
-    win.on('closed', () => {});
+    win.on('closed', () => { });
     return;
   }
 
@@ -558,33 +558,46 @@ async function createFloatingWindow(options = {}) {
   const createOpts = Object.assign({}, bwOpts, pos, options);
 
   floatingWin = new BrowserWindow(createOpts);
-  installFloatingWorkAreaGuard(floatingWin, { endMoveMs: 80 });
+  const win = floatingWin;
 
-  // Load the HTML of the floating window
-  try {
-    await floatingWin.loadFile(FLOATER_HTML);
-  } catch (e) {
-    console.error('Error loading floating HTML:', e);
-  }
+  installFloatingWorkAreaGuard(win, { endMoveMs: 80 });
 
-  // Ensure the window starts fully inside the workArea of the display chosen by its center.
-  try {
-    snapWindowFullyIntoWorkArea(floatingWin);
-  } catch (e) {
-    /* noop */
-  }
+  // Track whether the window is in the process of closing; used to de-noise load failures in stress tests.
+  let winClosing = false;
+  win.on('close', () => { winClosing = true; });
 
   // Notify closure so the main renderer can clean up state
-  floatingWin.on('closed', () => {
-    floatingWin = null;
+  win.on('closed', () => {
+    // Only clear the global ref if it still points to this instance.
+    if (floatingWin === win) {
+      floatingWin = null;
+    }
+
     // Notify the main renderer if it needs to clean up state
     if (mainWin && mainWin.webContents) {
       try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }
     }
   });
 
+  // Load the HTML of the floating window
+  try {
+    await win.loadFile(FLOATER_HTML);
+  } catch (e) {
+    // Expected if the window is closed while loadFile is in-flight (e.g., open/close stress test).
+    if (!winClosing && !win.isDestroyed()) {
+      console.error('Error loading floating HTML:', e);
+    }
+  }
+
+  // Ensure the window starts fully inside the workArea of the display chosen by its center.
+  try {
+    snapWindowFullyIntoWorkArea(win);
+  } catch (e) {
+    /* noop */
+  }
+
   // Optional: if the floating window should not steal focus, use showInactive(); here we want immediate interaction so we keep focusable=true and let it take focus.
-  return floatingWin;
+  return win;
 }
 
 // ---------------- Main stopwatch (timekeeping + broadcast) ---------------- //
@@ -708,13 +721,15 @@ ipcMain.handle('floating-open', async () => {
   }
 });
 
-// IPC: close floating window
 ipcMain.handle('floating-close', async () => {
   try {
-    if (floatingWin && !floatingWin.isDestroyed()) {
-      floatingWin.close();
-      floatingWin = null;
+    const win = floatingWin;
+
+    if (win && !win.isDestroyed()) {
+      // NO hacer floatingWin = null aquí; el 'closed' handler debe dejar el puntero en null.
+      win.close();
     }
+
     return { ok: true };
   } catch (e) {
     console.error('Error processing floating-close:', e);
