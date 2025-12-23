@@ -1,11 +1,11 @@
 // public/flotante.js
-const timerEl = document.getElementById('timer');
+const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
 
 // defensive: if any element does not exist, we exit silently (avoids crashes)
-if (!timerEl) {
-  console.error('flotante: element #timer not found');
+if (!cronoEl) {
+  console.error('flotante: element #crono not found');
 }
 if (!btnToggle) {
   console.error('flotante: element #toggle not found');
@@ -23,18 +23,18 @@ function renderState(state) {
   if (!state) return;
   lastState = Object.assign({}, lastState, state || {});
   // We prefer display if you send it
-  if (timerEl) {
+  if (cronoEl) {
     if (state.display) {
-      timerEl.textContent = state.display;
-    } else if (typeof state.elapsed === 'number' && window.RendererTimer && typeof window.RendererTimer.formatTimer === 'function') {
-      timerEl.textContent = window.RendererTimer.formatTimer(state.elapsed);
+      cronoEl.textContent = state.display;
+    } else if (typeof state.elapsed === 'number' && window.RendererCrono && typeof window.RendererCrono.formatCrono === 'function') {
+      cronoEl.textContent = window.RendererCrono.formatCrono(state.elapsed);
     } else if (typeof state.elapsed === 'number') {
       // simple fallback
       const totalSeconds = Math.floor(state.elapsed / 1000);
       const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
       const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
       const s = String(totalSeconds % 60).padStart(2, '0');
-      timerEl.textContent = `${h}:${m}:${s}`;
+      cronoEl.textContent = `${h}:${m}:${s}`;
     }
   }
   // Button status
@@ -63,8 +63,8 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
     }
 
     try { await loadRendererTranslations(lang); } catch (_) { /* noop */ }
-    playLabel = tRenderer('renderer.main.timer.play_symbol', playLabel);
-    pauseLabel = tRenderer('renderer.main.timer.pause_symbol', pauseLabel);
+    playLabel = tRenderer('renderer.main.crono.play_symbol', playLabel);
+    pauseLabel = tRenderer('renderer.main.crono.pause_symbol', pauseLabel);
     // Refresh button with the current translated label
     if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
   } catch (e) {

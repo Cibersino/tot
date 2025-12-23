@@ -2,7 +2,7 @@
 (() => {
   console.debug('[crono.js] module loaded');
 
-  function formatTimer(ms) {
+  function formatCrono(ms) {
     const totalSeconds = Math.floor((ms || 0) / 1000);
     const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
     const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
@@ -10,7 +10,7 @@
     return `${hours}:${minutes}:${seconds}`;
   }
 
-  function parseTimerInput(input) {
+  function parseCronoInput(input) {
     const match = String(input || '').match(/^(\d+):([0-5]\d):([0-5]\d)$/);
     if (!match) return null;
     const hours = parseInt(match[1], 10);
@@ -42,8 +42,8 @@
     return 0;
   }
 
-  function uiResetTimer({ timerDisplay, realWpmDisplay, tToggle, playLabel = '>' }) {
-    if (timerDisplay) timerDisplay.value = '00:00:00';
+  function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel = '>' }) {
+    if (cronoDisplay) cronoDisplay.value = '00:00:00';
     if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
     if (tToggle) tToggle.textContent = playLabel;
   }
@@ -51,8 +51,8 @@
   async function openFlotante({
     electronAPI,
     toggleVF,
-    timerDisplay,
-    timerEditing,
+    cronoDisplay,
+    cronoEditing,
     tToggle,
     setElapsedRunning,
     playLabel = '>',
@@ -77,11 +77,11 @@
             const elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
             const running = !!state.running;
             if (setElapsedRunning) setElapsedRunning(elapsed, running);
-            if (timerDisplay && !timerEditing) {
-              timerDisplay.value = state.display || formatTimer(elapsed);
+            if (cronoDisplay && !cronoEditing) {
+              cronoDisplay.value = state.display || formatCrono(elapsed);
             }
             if (tToggle) tToggle.textContent = running ? pauseLabel : playLabel;
-            return { elapsed, running, display: timerDisplay ? timerDisplay.value : state.display };
+            return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
           }
         } catch (e) {
           /* noop */
@@ -112,8 +112,8 @@
 
   async function applyManualTime({
     value,
-    timerDisplay,
-    timerModule = null,
+    cronoDisplay,
+    cronoModule = null,
     electronAPI = null,
     currentText,
     contarTexto,
@@ -130,48 +130,48 @@
     const effectiveBaselineElapsed = (typeof baselineElapsed === 'number')
       ? baselineElapsed
       : (typeof setElapsed === 'function' ? setElapsed() : 0);
-    const effectiveBaselineDisplay = baselineDisplay || formatTimer(effectiveBaselineElapsed || 0);
+    const effectiveBaselineDisplay = baselineDisplay || formatCrono(effectiveBaselineElapsed || 0);
     const inputValue = String(value || '').trim();
 
     // If the stopwatch is running, ignore manual edits and restore the current display
     if (running) {
-      if (timerDisplay) {
-        timerDisplay.value = effectiveBaselineDisplay;
+      if (cronoDisplay) {
+        cronoDisplay.value = effectiveBaselineDisplay;
       }
       return null;
     }
 
     // No change: keep baseline (including fractional ms) untouched
     if (inputValue === effectiveBaselineDisplay) {
-      if (timerDisplay) timerDisplay.value = effectiveBaselineDisplay;
+      if (cronoDisplay) cronoDisplay.value = effectiveBaselineDisplay;
       if (typeof setElapsed === 'function' && typeof effectiveBaselineElapsed === 'number') {
         setElapsed(effectiveBaselineElapsed);
       }
       return effectiveBaselineElapsed;
     }
 
-    const parsed = (timerModule && timerModule.parseTimerInput)
-      ? timerModule.parseTimerInput(value)
-      : parseTimerInput(value);
+    const parsed = (cronoModule && cronoModule.parseCronoInput)
+      ? cronoModule.parseCronoInput(value)
+      : parseCronoInput(value);
 
     if (parsed === null) {
-      if (timerDisplay) {
-        timerDisplay.value = effectiveBaselineDisplay;
+      if (cronoDisplay) {
+        cronoDisplay.value = effectiveBaselineDisplay;
       }
       return null;
     }
 
     const msRounded = Math.floor(parsed / 1000) * 1000;
     if (msRounded < 0) {
-      if (timerDisplay) {
-        timerDisplay.value = effectiveBaselineDisplay;
+      if (cronoDisplay) {
+        cronoDisplay.value = effectiveBaselineDisplay;
       }
       return null;
     }
 
     const fallbackLocal = async () => {
       if (typeof setElapsed === 'function') setElapsed(msRounded);
-      if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
+      if (cronoDisplay) cronoDisplay.value = formatCrono(msRounded);
       await actualizarVelocidadRealFromElapsed({
         ms: msRounded,
         currentText,
@@ -187,7 +187,7 @@
     if (electronAPI && typeof electronAPI.setCronoElapsed === 'function') {
       try {
         await electronAPI.setCronoElapsed(msRounded);
-        if (timerDisplay) timerDisplay.value = formatTimer(msRounded);
+        if (cronoDisplay) cronoDisplay.value = formatCrono(msRounded);
         await actualizarVelocidadRealFromElapsed({
           ms: msRounded,
           currentText,
@@ -212,8 +212,8 @@
 
   function handleCronoState({
     state,
-    timerDisplay,
-    timerEditing,
+    cronoDisplay,
+    cronoEditing,
     tToggle,
     realWpmDisplay,
     currentText,
@@ -229,12 +229,12 @@
     const newElapsed = typeof state?.elapsed === 'number' ? state.elapsed : 0;
     const newRunning = !!state?.running;
 
-    if (timerDisplay) {
-      timerDisplay.disabled = newRunning;
+    if (cronoDisplay) {
+      cronoDisplay.disabled = newRunning;
     }
 
-    if (timerDisplay && !timerEditing) {
-      timerDisplay.value = state?.display || formatTimer(newElapsed);
+    if (cronoDisplay && !cronoEditing) {
+      cronoDisplay.value = state?.display || formatCrono(newElapsed);
     }
 
     if (tToggle) tToggle.textContent = newRunning ? pauseLabel : playLabel;
@@ -267,8 +267,8 @@
       }
     }
 
-    if (!newRunning && newElapsed === 0 && !timerEditing) {
-      uiResetTimer({ timerDisplay, realWpmDisplay, tToggle, playLabel });
+    if (!newRunning && newElapsed === 0 && !cronoEditing) {
+      uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel });
       updatedLast = 0;
     }
 
@@ -280,11 +280,11 @@
     };
   }
 
-  window.RendererTimer = {
-    formatTimer,
-    parseTimerInput,
+  window.RendererCrono = {
+    formatCrono,
+    parseCronoInput,
     actualizarVelocidadRealFromElapsed,
-    uiResetTimer,
+    uiResetCrono,
     openFlotante,
     closeFlotante,
     applyManualTime,

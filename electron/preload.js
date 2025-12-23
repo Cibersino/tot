@@ -67,7 +67,7 @@ const api = {
         return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (e) { console.error('removeListener error:', e); } };
     },
 
-    // Central Timer API (renderer <-> main)
+    // Central Crono API (renderer <-> main)
     sendCronoToggle: () => ipcRenderer.send('crono-toggle'),
     sendCronoReset: () => ipcRenderer.send('crono-reset'),
     setCronoElapsed: (ms) => ipcRenderer.send('crono-set-elapsed', ms),

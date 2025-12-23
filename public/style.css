@@ -349,7 +349,7 @@ select#presets {
   box-sizing: border-box;
 }
 
-.cronometro .timer-row {
+.cronometro .crono-row {
   display: flex;
   gap: 6px;
   align-items: center;
@@ -358,7 +358,7 @@ select#presets {
   margin-bottom: 4px;
 }
 
-.cronometro .timer-box {
+.cronometro .crono-box {
   height: 16px;
   width: 66px;
   padding: 4px;
@@ -366,7 +366,7 @@ select#presets {
   text-align: center;
 }
 
-.cronometro .timer-box:disabled {
+.cronometro .crono-box:disabled {
   opacity: 1;
   color: inherit;
   background-color: white;
@@ -378,7 +378,7 @@ select#presets {
   color: #333;
 }
 
-.cronometro .timer-controls {
+.cronometro .crono-controls {
   display: flex;
   gap: 6px;
   align-items: center;
