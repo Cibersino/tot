@@ -1,7 +1,8 @@
-## ÁRBOL DE CARPETAS Y ARCHIVOS PRINCIPALES ##
-version 0.0.930dev
+# ÁRBOL DE CARPETAS Y ARCHIVOS PRINCIPALES ##
 
-```
+version app 0.0.930dev
+
+```ASCII
 tot-readingmeter/
 ├── build-output/                  # {vacío} {carpeta ignorada por git}
 ├── config/                        # {carpeta y archivos generados en primer arranque}
@@ -10,7 +11,7 @@ tot-readingmeter/
 │ │ ├── defaults_presets_en.json   
 │ │ └── defaults_presets_es.json
 │ ├── current_text.json            # {ignorado por git}
-│ ├── editor_state.json             # {ignorado por git}
+│ ├── editor_state.json            # {ignorado por git}
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
 │ ├── cleanup/
@@ -94,6 +95,7 @@ tot-readingmeter/
 │   ├── b3_candidates_scan.cjs
 │   ├── package.json
 │   └── package-lock.json
+├── .eslintrc.cjs
 ├── package.json
 ├── package-lock.json
 ├── README.md
