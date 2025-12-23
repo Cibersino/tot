@@ -42,7 +42,7 @@
       "help": {
         "title": "Information (pending)"
       },
-      "timer": {
+      "crono": {
         "title": "STOPWATCH",
         "speed": "Speed:",
         "controls_label": "Stopwatch controls",

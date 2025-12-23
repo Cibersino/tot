@@ -611,7 +611,7 @@ let crono = {
 let cronoInterval = null;
 const CRONO_BROADCAST_MS = 1000; // Adjustable if you want less resource consumption
 
-function formatTimerMs(ms) {
+function formatCronoMs(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
   const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
@@ -621,7 +621,7 @@ function formatTimerMs(ms) {
 
 function getCronoState() {
   const elapsedNow = crono.running ? (crono.elapsed + (Date.now() - crono.startTs)) : crono.elapsed;
-  return { elapsed: elapsedNow, running: !!crono.running, display: formatTimerMs(elapsedNow) };
+  return { elapsed: elapsedNow, running: !!crono.running, display: formatCronoMs(elapsedNow) };
 }
 
 function broadcastCronoState() {

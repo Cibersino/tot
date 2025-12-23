@@ -97,7 +97,7 @@ function applyTranslations() {
   if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title', selectorTitle.textContent || '');
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
   if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title', resultsTitle.textContent || '');
-  if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.timer.title', cronTitle.textContent || '');
+  if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title', cronTitle.textContent || '');
   // Speed Selector labels
   const wpmLabel = document.querySelector('.wpm-row span');
   if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label', wpmLabel.textContent || '');
@@ -114,19 +114,19 @@ function applyTranslations() {
   // Stopwatch: Speed label and controls aria-label
   const realWpmLabel = document.querySelector('.realwpm');
   if (realWpmLabel && realWpmLabel.firstChild) {
-    realWpmLabel.firstChild.textContent = tRenderer('renderer.main.timer.speed', realWpmLabel.firstChild.textContent || '');
+    realWpmLabel.firstChild.textContent = tRenderer('renderer.main.crono.speed', realWpmLabel.firstChild.textContent || '');
   }
-  const timerControls = document.querySelector('.timer-controls');
-  if (timerControls) {
-    const ariaLabel = tRenderer('renderer.main.timer.controls_label', timerControls.getAttribute('aria-label') || '');
-    if (ariaLabel) timerControls.setAttribute('aria-label', ariaLabel);
+  const cronoControls = document.querySelector('.crono-controls');
+  if (cronoControls) {
+    const ariaLabel = tRenderer('renderer.main.crono.controls_label', cronoControls.getAttribute('aria-label') || '');
+    if (ariaLabel) cronoControls.setAttribute('aria-label', ariaLabel);
   }
-  const labelsCrono = getTimerLabels();
+  const labelsCrono = getCronoLabels();
   if (tToggle) tToggle.textContent = running ? labelsCrono.pauseLabel : labelsCrono.playLabel;
   // Abbreviated label for the floating window
   const vfLabel = document.querySelector('.vf-label');
   if (vfLabel) {
-    vfLabel.textContent = tRenderer('renderer.main.timer.flotante_short', vfLabel.textContent || vfLabel.textContent);
+    vfLabel.textContent = tRenderer('renderer.main.crono.flotante_short', vfLabel.textContent || vfLabel.textContent);
   }
   
   // Help button (title)
@@ -241,22 +241,22 @@ async function updatePreviewAndResults(text) {
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
   resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
 
-  // If detect that the text has changed from the previous state -> reset the timer in main
+  // If detect that the text has changed from the previous state -> reset the crono in main
   if (textChanged) {
     try {
       if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
-        // We ask main to reset the timer (authority). We also perform an immediate UI reset.
+        // We ask main to reset the crono (authority). We also perform an immediate UI reset.
         window.electronAPI.sendCronoReset();
-        uiResetTimer();
+        uiResetCrono();
         lastComputedElapsedForWpm = 0;
       } else {
         // Local fallback if no IPC (rare)
-        uiResetTimer();
+        uiResetCrono();
         lastComputedElapsedForWpm = 0;
       }
     } catch (err) {
       console.error('Error requesting stopwatch reset after text change:', err);
-      uiResetTimer();
+      uiResetCrono();
       lastComputedElapsedForWpm = 0;
     }
   }
@@ -266,10 +266,10 @@ async function updatePreviewAndResults(text) {
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
     try {
-      const res = timerModule.handleCronoState({
+      const res = cronoModule.handleCronoState({
         state,
-        timerDisplay,
-        timerEditing,
+        cronoDisplay,
+        cronoEditing,
         tToggle,
         realWpmDisplay,
         currentText,
@@ -279,7 +279,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
         idiomaActual,
         prevRunning,
         lastComputedElapsedForWpm,
-        ...getTimerLabels()
+        ...getCronoLabels()
       });
       if (res) {
         elapsed = res.elapsed;
@@ -1003,32 +1003,32 @@ btnResetDefaultPresets.addEventListener('click', async () => {
 });
 
 // ======================= STOPWATCH =======================
-const timerDisplay = document.getElementById('timerDisplay');
+const cronoDisplay = document.getElementById('cronoDisplay');
 
 // Prevent main broadcasts from overwriting the current edit
-if (timerDisplay) {
-  timerDisplay.addEventListener('focus', () => {
-    timerEditing = true;
+if (cronoDisplay) {
+  cronoDisplay.addEventListener('focus', () => {
+    cronoEditing = true;
   });
-  timerDisplay.addEventListener('blur', () => {
+  cronoDisplay.addEventListener('blur', () => {
     // The blur event will execute applyManualTime (already registered) which will update the stopwatch in main
-    timerEditing = false;
+    cronoEditing = false;
   });
 }
 
-const tToggle = document.getElementById('timerToggle');
-const tReset = document.getElementById('timerReset');
+const tToggle = document.getElementById('cronoToggle');
+const tReset = document.getElementById('cronoReset');
 
 // Local mirror of the stopwatch state (synchronized from main via onCronoState)
 let elapsed = 0;
 let running = false;
 // Flag to detect transitions and prevent continuous recalculations
 let prevRunning = false;
-// Indicates if the user is manually editing the timer field (to prevent overwriting)
-let timerEditing = false;
+// Indicates if the user is manually editing the crono field (to prevent overwriting)
+let cronoEditing = false;
 // Baseline elapsed/display captured on focus to avoid losing fractional seconds if unchanged
-let timerBaselineElapsed = null;
-let timerBaselineDisplay = null;
+let cronoBaselineElapsed = null;
+let cronoBaselineDisplay = null;
 // Last elapsed for which we calculate WPM (avoid repeated recalculations)
 let lastComputedElapsedForWpm = null;
 
@@ -1042,16 +1042,16 @@ function hideeditorLoader() {
   if (btnEdit) btnEdit.disabled = false;
 }
 
-const timerModule = (typeof window !== 'undefined') ? window.RendererTimer : null;
+const cronoModule = (typeof window !== 'undefined') ? window.RendererCrono : null;
 
-const getTimerLabels = () => ({
-  playLabel: tRenderer ? tRenderer('renderer.main.timer.play_symbol', '>') : '>',
-  pauseLabel: tRenderer ? tRenderer('renderer.main.timer.pause_symbol', '||') : '||'
+const getCronoLabels = () => ({
+  playLabel: tRenderer ? tRenderer('renderer.main.crono.play_symbol', '>') : '>',
+  pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
 });
 
-const formatTimer = (ms) => timerModule.formatTimer(ms);
+const formatCrono = (ms) => cronoModule.formatCrono(ms);
 
-const actualizarVelocidadRealFromElapsed = (ms) => timerModule.actualizarVelocidadRealFromElapsed({
+const actualizarVelocidadRealFromElapsed = (ms) => cronoModule.actualizarVelocidadRealFromElapsed({
   ms,
   currentText,
   contarTexto,
@@ -1061,12 +1061,12 @@ const actualizarVelocidadRealFromElapsed = (ms) => timerModule.actualizarVelocid
   realWpmDisplay
 });
 
-const uiResetTimer = () => {
+const uiResetCrono = () => {
   elapsed = 0;
   running = false;
   prevRunning = false;
-  const { playLabel } = getTimerLabels();
-  timerModule.uiResetTimer({ timerDisplay, realWpmDisplay, tToggle, playLabel });
+  const { playLabel } = getCronoLabels();
+  cronoModule.uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel });
 };
 
 tToggle.addEventListener('click', () => {
@@ -1084,13 +1084,13 @@ tReset.addEventListener('click', () => {
 // --- Floating window control (FW) ---
 // Open FW
 const openFlotante = async () => {
-  const res = await timerModule.openFlotante({
+  const res = await cronoModule.openFlotante({
     electronAPI: window.electronAPI,
     toggleVF,
-    timerDisplay,
-    timerEditing,
+    cronoDisplay,
+    cronoEditing,
     tToggle,
-    ...getTimerLabels(),
+    ...getCronoLabels(),
     setElapsedRunning: (elapsedVal, runningVal) => {
       elapsed = elapsedVal;
       running = runningVal;
@@ -1103,7 +1103,7 @@ const openFlotante = async () => {
 };
 
 const closeFlotante = async () => {
-  await timerModule.closeFlotante({ electronAPI: window.electronAPI, toggleVF });
+  await cronoModule.closeFlotante({ electronAPI: window.electronAPI, toggleVF });
 };
 
 // toggle WF from the UI (switch)
@@ -1122,7 +1122,7 @@ if (toggleVF) {
   });
 }
 
-// If the flotante is closed from main (or destroyed), we clean it up Local timers
+// If the flotante is closed from main (or destroyed), we clean it up
 if (window.electronAPI && typeof window.electronAPI.onFlotanteClosed === 'function') {
   window.electronAPI.onFlotanteClosed(() => {
     if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
@@ -1130,12 +1130,12 @@ if (window.electronAPI && typeof window.electronAPI.onFlotanteClosed === 'functi
 }
 
 // ======================= Manual stopwatch editing =======================
-const parseTimerInput = (input) => timerModule.parseTimerInput(input);
+const parseCronoInput = (input) => cronoModule.parseCronoInput(input);
 
 const applyManualTime = () => {
-  timerModule.applyManualTime({
-    value: timerDisplay.value,
-    timerDisplay,
+  cronoModule.applyManualTime({
+    value: cronoDisplay.value,
+    cronoDisplay,
     electronAPI: window.electronAPI,
     currentText,
     contarTexto,
@@ -1143,7 +1143,7 @@ const applyManualTime = () => {
     formatearNumero,
     idiomaActual,
     realWpmDisplay,
-    ...getTimerLabels(),
+    ...getCronoLabels(),
     setElapsed: (msVal) => {
       if (typeof msVal === 'number') {
         elapsed = msVal;
@@ -1152,29 +1152,29 @@ const applyManualTime = () => {
     },
     setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; },
     running,
-    baselineElapsed: timerBaselineElapsed,
-    baselineDisplay: timerBaselineDisplay
+    baselineElapsed: cronoBaselineElapsed,
+    baselineDisplay: cronoBaselineDisplay
   });
-  timerBaselineElapsed = null;
-  timerBaselineDisplay = null;
+  cronoBaselineElapsed = null;
+  cronoBaselineDisplay = null;
 };
 
-if (timerDisplay) {
-  timerDisplay.addEventListener('focus', () => {
-    timerEditing = true;
-    timerBaselineElapsed = elapsed;
-    timerBaselineDisplay = timerDisplay.value;
+if (cronoDisplay) {
+  cronoDisplay.addEventListener('focus', () => {
+    cronoEditing = true;
+    cronoBaselineElapsed = elapsed;
+    cronoBaselineDisplay = cronoDisplay.value;
   });
 
-  timerDisplay.addEventListener('blur', () => {
-    timerEditing = false;
+  cronoDisplay.addEventListener('blur', () => {
+    cronoEditing = false;
     applyManualTime();
   });
 
-  timerDisplay.addEventListener('keydown', (e) => {
+  cronoDisplay.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      timerDisplay.blur();
+      cronoDisplay.blur();
     }
   });
 }
