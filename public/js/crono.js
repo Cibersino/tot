@@ -48,7 +48,7 @@
     if (tToggle) tToggle.textContent = playLabel;
   }
 
-  async function openFloating({
+  async function openFlotante({
     electronAPI,
     toggleVF,
     timerDisplay,
@@ -58,13 +58,13 @@
     playLabel = '>',
     pauseLabel = '||'
   }) {
-    if (!electronAPI || typeof electronAPI.openFloatingWindow !== 'function') {
-      console.warn('openFloatingWindow unavailable in electronAPI');
+    if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function') {
+      console.warn('openFlotanteWindow unavailable in electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
     try {
-      await electronAPI.openFloatingWindow();
+      await electronAPI.openFlotanteWindow();
       if (toggleVF) {
         toggleVF.checked = true;
         toggleVF.setAttribute('aria-checked', 'true');
@@ -95,14 +95,14 @@
     }
   }
 
-  async function closeFloating({ electronAPI, toggleVF }) {
-    if (!electronAPI || typeof electronAPI.closeFloatingWindow !== 'function') {
-      console.warn('closeFloatingWindow unavailable in electronAPI');
+  async function closeFlotante({ electronAPI, toggleVF }) {
+    if (!electronAPI || typeof electronAPI.closeFlotanteWindow !== 'function') {
+      console.warn('closeFlotanteWindow unavailable in electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return;
     }
     try {
-      await electronAPI.closeFloatingWindow();
+      await electronAPI.closeFlotanteWindow();
     } catch (e) {
       console.error('Error closing flotante:', e);
     } finally {
@@ -285,8 +285,8 @@
     parseTimerInput,
     actualizarVelocidadRealFromElapsed,
     uiResetTimer,
-    openFloating,
-    closeFloating,
+    openFlotante,
+    closeFlotante,
     applyManualTime,
     handleCronoState
   };

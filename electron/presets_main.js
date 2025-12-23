@@ -104,7 +104,7 @@ function copyDefaultPresetsIfMissing() {
  *
  * @param {Electron.IpcMain} ipcMain
  * @param {Object} opts
- * @param {Function} opts.getWindows - () => ({ mainWin, editorWin, presetWin, floatingWin, langWin })
+ * @param {Function} opts.getWindows - () => ({ mainWin, editorWin, presetWin, flotanteWin, langWin })
  */
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain) {
@@ -126,7 +126,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         settingsState.broadcastSettingsUpdated(settings, windows);
       } else {
         // Defensive fallback if for some reason it is not exported
-        const { mainWin, editorWin, presetWin, floatingWin } = windows;
+        const { mainWin, editorWin, presetWin, flotanteWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('settings-updated', settings);
         }
@@ -136,8 +136,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         if (presetWin && !presetWin.isDestroyed()) {
           presetWin.webContents.send('settings-updated', settings);
         }
-        if (floatingWin && !floatingWin.isDestroyed()) {
-          floatingWin.webContents.send('settings-updated', settings);
+        if (flotanteWin && !flotanteWin.isDestroyed()) {
+          flotanteWin.webContents.send('settings-updated', settings);
         }
       }
     } catch (err) {

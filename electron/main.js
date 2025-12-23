@@ -43,7 +43,7 @@ let mainWin = null, // main window
   editorWin = null, // modal window to edit current text
   presetWin = null, // modal window for new/edit preset wpm
   langWin = null, // language selection modal (first launch)
-  floatingWin = null; // floating stopwatch window
+  flotanteWin = null; // floating stopwatch window
 let currentLanguage = 'es';
 
 // Build menu with i18n translations (delegated to menu_builder.js)
@@ -287,7 +287,7 @@ settingsState.registerIpc(ipcMain, {
     editorWin,
     presetWin,
     langWin,
-    floatingWin,
+    flotanteWin,
   }),
   buildAppMenu,
   getCurrentLanguage: () => currentLanguage,
@@ -307,7 +307,7 @@ presetsMain.registerIpc(ipcMain, {
     editorWin,
     presetWin,
     langWin,
-    floatingWin,
+    flotanteWin,
   }),
 });
 
@@ -370,9 +370,9 @@ function createLanguageWindow() {
 }
 
 // ----------------- Floating Window (PIP) -----------------
-const FLOATER_PRELOAD = path.join(__dirname, 'flotante_preload.js');
+const FLOTANTE_PRELOAD = path.join(__dirname, 'flotante_preload.js');
 // Floating window HTML path: place it in ../public to maintain convention
-const FLOATER_HTML = path.join(__dirname, '../public/flotante.html');
+const FLOTANTE_HTML = path.join(__dirname, '../public/flotante.html');
 
 function clampInt(n, min, max) {
   const lo = Math.min(min, max);
@@ -430,7 +430,7 @@ function snapWindowFullyIntoWorkArea(win) {
  * - macOS: moved is alias of move; use end-of-move by stability on move.
  * - Linux: no will-move/moved per docs; use stability on move.
  */
-function installFloatingWorkAreaGuard(win, opts = {}) {
+function installWorkAreaGuard(win, opts = {}) {
   snapWindowFullyIntoWorkArea(win);
 
   let snapping = false;
@@ -496,14 +496,14 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
   win.on('closed', () => clearTimer());
 }
 
-async function createFloatingWindow(options = {}) {
+async function createflotanteWindow(options = {}) {
   // If it already exists and wasn't destroyed, restore it (don't recreate it)
-  if (floatingWin && !floatingWin.isDestroyed()) {
+  if (flotanteWin && !flotanteWin.isDestroyed()) {
     // Apply a forced position if it was requested
     if (options && (typeof options.x === 'number' || typeof options.y === 'number')) {
-      try { floatingWin.setBounds({ x: options.x || floatingWin.getBounds().x, y: options.y || floatingWin.getBounds().y }); } catch (e) { /* noop */ }
+      try { flotanteWin.setBounds({ x: options.x || flotanteWin.getBounds().x, y: options.y || flotanteWin.getBounds().y }); } catch (e) { /* noop */ }
     }
-    return floatingWin;
+    return flotanteWin;
   }
 
   const bwOpts = {
@@ -517,7 +517,7 @@ async function createFloatingWindow(options = {}) {
     skipTaskbar: true,
     focusable: true,
     webPreferences: {
-      preload: FLOATER_PRELOAD,
+      preload: FLOTANTE_PRELOAD,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false
@@ -557,10 +557,10 @@ async function createFloatingWindow(options = {}) {
   // Combine calculated options with bwOpts, allowing caller to override
   const createOpts = Object.assign({}, bwOpts, pos, options);
 
-  floatingWin = new BrowserWindow(createOpts);
-  const win = floatingWin;
+  flotanteWin = new BrowserWindow(createOpts);
+  const win = flotanteWin;
 
-  installFloatingWorkAreaGuard(win, { endMoveMs: 80 });
+  installWorkAreaGuard(win, { endMoveMs: 80 });
 
   // Track whether the window is in the process of closing; used to de-noise load failures in stress tests.
   let winClosing = false;
@@ -569,8 +569,8 @@ async function createFloatingWindow(options = {}) {
   // Notify closure so the main renderer can clean up state
   win.on('closed', () => {
     // Only clear the global ref if it still points to this instance.
-    if (floatingWin === win) {
-      floatingWin = null;
+    if (flotanteWin === win) {
+      flotanteWin = null;
     }
 
     // Notify the main renderer if it needs to clean up state
@@ -581,11 +581,11 @@ async function createFloatingWindow(options = {}) {
 
   // Load the HTML of the floating window
   try {
-    await win.loadFile(FLOATER_HTML);
+    await win.loadFile(FLOTANTE_HTML);
   } catch (e) {
     // Expected if the window is closed while loadFile is in-flight (e.g., open/close stress test).
     if (!winClosing && !win.isDestroyed()) {
-      console.error('Error loading floating HTML:', e);
+      console.error('Error loading flotante HTML:', e);
     }
   }
 
@@ -627,7 +627,7 @@ function getCronoState() {
 function broadcastCronoState() {
   const state = getCronoState();
   try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
-  try { if (floatingWin && !floatingWin.isDestroyed()) floatingWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
+  try { if (flotanteWin && !flotanteWin.isDestroyed()) flotanteWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
   try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
 }
 
@@ -636,7 +636,7 @@ function ensureCronoInterval() {
   cronoInterval = setInterval(() => {
     broadcastCronoState();
     // Option: stop the interval if nobody listens and the timer is not running
-    if (!crono.running && !mainWin && !floatingWin && !editorWin) {
+    if (!crono.running && !mainWin && !flotanteWin && !editorWin) {
       clearInterval(cronoInterval);
       cronoInterval = null;
     }
@@ -709,30 +709,30 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
 });
 
 // IPC: open floating window
-ipcMain.handle('floating-open', async () => {
+ipcMain.handle('flotante-open', async () => {
   try {
-    await createFloatingWindow();
+    await createflotanteWindow();
     try { broadcastCronoState(); } catch (e) {/*noop*/ }
     if (crono.running) ensureCronoInterval();
     return { ok: true };
   } catch (e) {
-    console.error('Error processing floating-open:', e);
+    console.error('Error processing flotante-open:', e);
     return { ok: false, error: String(e) };
   }
 });
 
-ipcMain.handle('floating-close', async () => {
+ipcMain.handle('flotante-close', async () => {
   try {
-    const win = floatingWin;
+    const win = flotanteWin;
 
     if (win && !win.isDestroyed()) {
-      // NO hacer floatingWin = null aquí; el 'closed' handler debe dejar el puntero en null.
+      // NO hacer flotanteWin = null aquí; el 'closed' handler debe dejar el puntero en null.
       win.close();
     }
 
     return { ok: true };
   } catch (e) {
-    console.error('Error processing floating-close:', e);
+    console.error('Error processing flotante-close:', e);
     return { ok: false, error: String(e) };
   }
 });

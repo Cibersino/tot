@@ -19,7 +19,7 @@
         "delete_preset": "Eliminar preset seleccionado",
         "reset_presets": "Restaurar presets por defecto",
         "help_button": "Información (pendiente)",
-        "floating_window": "Ventana flotante"
+        "flotante_window": "Ventana flotante"
       },
       "speed": {
         "title": "VELOCIDAD DE LECTURA",
@@ -46,8 +46,8 @@
         "title": "CRONÓMETRO",
         "speed": "Velocidad:",
         "controls_label": "Controles del cronómetro",
-        "floating": "Ventana flotante",
-        "floating_short": "VF",
+        "flotante": "Ventana flotante",
+        "flotante_short": "VF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
       },
@@ -89,8 +89,8 @@
       "clear": "🗑",
       "clear_title": "Vaciar"
     },
-    "modal_floating": {
-      "title": "toT —  Cronómetro (flotante)"
+    "modal_flotante": {
+      "title": "toT —  Cronómetro (ventana flotante)"
     },
     "alerts": {   
       "clipboard_overflow": "El texto del portapapeles supera el tamaño máximo permitido y será truncado.",

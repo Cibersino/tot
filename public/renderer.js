@@ -92,7 +92,7 @@ function applyTranslations() {
   if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets', btnResetDefaultPresets.title || '');
   // Floating Window toggle
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
-  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.floating_window', vfSwitchLabel.title || '');
+  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window', vfSwitchLabel.title || '');
   // Section Titles
   if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title', selectorTitle.textContent || '');
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
@@ -126,7 +126,7 @@ function applyTranslations() {
   // Abbreviated label for the floating window
   const vfLabel = document.querySelector('.vf-label');
   if (vfLabel) {
-    vfLabel.textContent = tRenderer('renderer.main.timer.floating_short', vfLabel.textContent || vfLabel.textContent);
+    vfLabel.textContent = tRenderer('renderer.main.timer.flotante_short', vfLabel.textContent || vfLabel.textContent);
   }
   
   // Help button (title)
@@ -1083,8 +1083,8 @@ tReset.addEventListener('click', () => {
 
 // --- Floating window control (FW) ---
 // Open FW
-const openFloating = async () => {
-  const res = await timerModule.openFloating({
+const openFlotante = async () => {
+  const res = await timerModule.openFlotante({
     electronAPI: window.electronAPI,
     toggleVF,
     timerDisplay,
@@ -1102,8 +1102,8 @@ const openFloating = async () => {
   }
 };
 
-const closeFloating = async () => {
-  await timerModule.closeFloating({ electronAPI: window.electronAPI, toggleVF });
+const closeFlotante = async () => {
+  await timerModule.closeFlotante({ electronAPI: window.electronAPI, toggleVF });
 };
 
 // toggle WF from the UI (switch)
@@ -1114,17 +1114,17 @@ if (toggleVF) {
     toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
 
     if (wantOpen) {
-      await openFloating();
-      // openFloating handles revert in case of error
+      await openFlotante();
+      // openFlotante handles revert in case of error
     } else {
-      await closeFloating();
+      await closeFlotante();
     }
   });
 }
 
 // If the flotante is closed from main (or destroyed), we clean it up Local timers
-if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'function') {
-  window.electronAPI.onFloatingClosed(() => {
+if (window.electronAPI && typeof window.electronAPI.onFlotanteClosed === 'function') {
+  window.electronAPI.onFlotanteClosed(() => {
     if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
   });
 }

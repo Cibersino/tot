@@ -79,16 +79,16 @@ const api = {
     },
 
     // ------------------ APIs for the floating window (updated) ------------------
-    openFloatingWindow: async () => {
-        return ipcRenderer.invoke('floating-open');
+    openFlotanteWindow: async () => {
+        return ipcRenderer.invoke('flotante-open');
     },
-    closeFloatingWindow: async () => {
-        return ipcRenderer.invoke('floating-close');
+    closeFlotanteWindow: async () => {
+        return ipcRenderer.invoke('flotante-close');
     },
 
     // Hold listener to notify that the flotante was closed (main emits 'flotante-closed')
-    onFloatingClosed: (cb) => {
-        const listener = () => { try { cb(); } catch (e) { console.error('floating closed callback error:', e); } };
+    onFlotanteClosed: (cb) => {
+        const listener = () => { try { cb(); } catch (e) { console.error('flotante closed callback error:', e); } };
         ipcRenderer.on('flotante-closed', listener);
         return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (e) { console.error('removeListener error:', e); } };
     },
