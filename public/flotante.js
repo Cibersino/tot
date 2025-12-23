@@ -1,4 +1,4 @@
-// public/float.js
+// public/flotante.js
 const timerEl = document.getElementById('timer');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
@@ -42,7 +42,7 @@ function renderState(state) {
 }
 
 if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
-  // onState now listens to 'chrono-state' (main)
+  // onState now listens to 'crono-state' (main)
   window.flotanteAPI.onState((state) => {
     try { renderState(state); } catch (e) { console.error(e); }
   });
@@ -86,7 +86,7 @@ window.addEventListener('keydown', (ev) => {
     ev.preventDefault();
     if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'toggle' });
   } else if (ev.key === 'r' || ev.key === 'R' || ev.key === 'Escape') {
-    // 'r' or Escape -> reset (Escape can close floating; choose 'r')
+    // 'r' or Escape -> reset (Escape can close flotante; choose 'r')
     if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'reset' });
   }
 });

@@ -1,4 +1,4 @@
-// public/js/menu.js
+// public/js/menu_actions.js
 (function () {
     const registry = new Map();
 
@@ -25,7 +25,7 @@
     }
 
     function handleMenuClick(payload) {
-        console.log('menu-click received (menu.js):', payload);
+        console.log('menu-click received (menu_actions.js):', payload);
         const action = registry.get(payload);
         if (action) {
             try {

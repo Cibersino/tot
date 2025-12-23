@@ -168,7 +168,7 @@ function saveSettings(nextSettings) {
  */
 function broadcastSettingsUpdated(settings, windows) {
     if (!windows) return;
-    const { mainWin, editorWin, presetWin, floatingWin } = windows;
+    const { mainWin, editorWin, presetWin, flotanteWin } = windows;
 
     try {
         if (mainWin && !mainWin.isDestroyed()) {
@@ -180,8 +180,8 @@ function broadcastSettingsUpdated(settings, windows) {
         if (presetWin && !presetWin.isDestroyed()) {
             presetWin.webContents.send('settings-updated', settings);
         }
-        if (floatingWin && !floatingWin.isDestroyed()) {
-            floatingWin.webContents.send('settings-updated', settings);
+        if (flotanteWin && !flotanteWin.isDestroyed()) {
+            flotanteWin.webContents.send('settings-updated', settings);
         }
     } catch (err) {
         console.error('[settings] Error notifying settings-updated:', err);
@@ -197,7 +197,7 @@ function broadcastSettingsUpdated(settings, windows) {
 function registerIpc(
     ipcMain,
     {
-        getWindows,          // () => ({ mainWin, editorWin, presetWin, langWin, floatingWin })
+        getWindows,          // () => ({ mainWin, editorWin, presetWin, langWin, flotanteWin })
         buildAppMenu,       // function(lang)
         getCurrentLanguage, // () => currentLanguage
         setCurrentLanguage, // (lang) => void

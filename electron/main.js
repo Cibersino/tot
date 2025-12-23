@@ -11,7 +11,7 @@ const {
 
 const settingsState = require('./settings');
 const textState = require('./text_state');
-const modalState = require('./modal_state');
+const editorState = require('./editor_state');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const updater = require('./updater');
@@ -20,7 +20,7 @@ const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
 
 // Language modal assets
-const LANGUAGE_MODAL_HTML = path.join(__dirname, '../public/language_modal.html');
+const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 
 ensureConfigDir();
@@ -43,7 +43,7 @@ let mainWin = null, // main window
   editorWin = null, // modal window to edit current text
   presetWin = null, // modal window for new/edit preset wpm
   langWin = null, // language selection modal (first launch)
-  floatingWin = null; // floating stopwatch window
+  flotanteWin = null; // floating stopwatch window
 let currentLanguage = 'es';
 
 // Build menu with i18n translations (delegated to menu_builder.js)
@@ -149,8 +149,8 @@ function createMainWindow() {
 }
 
 function createEditorWindow() {
-  // Load initial state from modal_state.js
-  const state = modalState.loadInitialState(loadJson);
+  // Load initial state from editor_state.js
+  const state = editorState.loadInitialState(loadJson);
 
   // Is there a saved and valid reduced state?
   const hasReduced =
@@ -172,7 +172,7 @@ function createEditorWindow() {
     maximizable: true,
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, 'manual_preload.js'),
+      preload: path.join(__dirname, 'editor_preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false
@@ -181,7 +181,7 @@ function createEditorWindow() {
 
   editorWin.setMenu(null);
   editorWin.setMenuBarVisibility(false);
-  editorWin.loadFile(path.join(__dirname, '../public/manual.html'));
+  editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
 
   editorWin.once('ready-to-show', () => {
     try {
@@ -195,29 +195,29 @@ function createEditorWindow() {
       // Send initial currentText to the editor (when it's ready)
       try {
         const initialText = textState.getCurrentText();
-        editorWin.webContents.send('manual-init-text', {
+        editorWin.webContents.send('editor-init-text', {
           text: initialText || '',
           meta: { source: 'main', action: 'init' }
         });
       } catch (err) {
-        console.error('Error sending manual-init-text to editor:', err);
+        console.error('Error sending editor-init-text to editor:', err);
       }
 
       // Notify the main window that the editor is ready
       try {
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('manual-editor-ready');
+          mainWin.webContents.send('editor-ready');
         }
       } catch (err) {
-        console.error('Error notifying manual-editor-ready to main window:', err);
+        console.error('Error notifying editor-ready to main window:', err);
       }
     } catch (e) {
-      console.error('Error showing manual editor:', e);
+      console.error('Error showing editor:', e);
     }
   });
 
-  // Delegate state management (maximized/reduced, fallback, persistence) to the modal_state module
-  modalState.attachTo(editorWin, loadJson, saveJson);
+  // Delegate state management (maximized/reduced, fallback, persistence) to the editor_state module
+  editorState.attachTo(editorWin, loadJson, saveJson);
 
   // Clear reference when the window is completely closed
   editorWin.on('closed', () => {
@@ -287,7 +287,7 @@ settingsState.registerIpc(ipcMain, {
     editorWin,
     presetWin,
     langWin,
-    floatingWin,
+    flotanteWin,
   }),
   buildAppMenu,
   getCurrentLanguage: () => currentLanguage,
@@ -307,7 +307,7 @@ presetsMain.registerIpc(ipcMain, {
     editorWin,
     presetWin,
     langWin,
-    floatingWin,
+    flotanteWin,
   }),
 });
 
@@ -344,7 +344,7 @@ function createLanguageWindow() {
   });
 
   langWin.setMenu(null);
-  langWin.loadFile(LANGUAGE_MODAL_HTML);
+  langWin.loadFile(LANGUAGE_WINDOW_HTML);
 
   langWin.once('ready-to-show', () => {
     langWin.show();
@@ -370,9 +370,9 @@ function createLanguageWindow() {
 }
 
 // ----------------- Floating Window (PIP) -----------------
-const FLOATER_PRELOAD = path.join(__dirname, 'flotante_preload.js');
+const FLOTANTE_PRELOAD = path.join(__dirname, 'flotante_preload.js');
 // Floating window HTML path: place it in ../public to maintain convention
-const FLOATER_HTML = path.join(__dirname, '../public/flotante.html');
+const FLOTANTE_HTML = path.join(__dirname, '../public/flotante.html');
 
 function clampInt(n, min, max) {
   const lo = Math.min(min, max);
@@ -426,26 +426,26 @@ function snapWindowFullyIntoWorkArea(win) {
 
 /**
  * Cross-platform guard:
- * - Windows: will-move (manual gate) + moved (one-shot end-of-move).
+ * - Windows: will-move (user gate) + moved (one-shot end-of-move).
  * - macOS: moved is alias of move; use end-of-move by stability on move.
  * - Linux: no will-move/moved per docs; use stability on move.
  */
-function installFloatingWorkAreaGuard(win, opts = {}) {
+function installWorkAreaGuard(win, opts = {}) {
   snapWindowFullyIntoWorkArea(win);
 
   let snapping = false;
-  let manualMoveArmed = false;
+  let userMoveArmed = false;
 
   // will-move: only when the user drags by hand (Windows/macOS). :contentReference[oaicite:1]{index=1}
   win.on('will-move', () => {
-    if (!snapping) manualMoveArmed = true;
+    if (!snapping) userMoveArmed = true;
   });
 
   if (process.platform === 'win32') {
     // moved: emitted once at the end of the movement in Windows. :contentReference[oaicite:2]{index=2}
     win.on('moved', () => {
-      if (!manualMoveArmed || snapping || win.isDestroyed()) return;
-      manualMoveArmed = false;
+      if (!userMoveArmed || snapping || win.isDestroyed()) return;
+      userMoveArmed = false;
       snapping = true;
       try {
         snapWindowFullyIntoWorkArea(win);
@@ -454,7 +454,7 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
       }
     });
 
-    win.on('closed', () => {});
+    win.on('closed', () => { });
     return;
   }
 
@@ -472,18 +472,18 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
   win.on('move', () => {
     if (snapping || win.isDestroyed()) return;
 
-    // Linux: no will-move in the current doc; treat any move as manual.
-    if (process.platform === 'linux') manualMoveArmed = true;
+    // Linux: no will-move in the current doc; treat any move as user.
+    if (process.platform === 'linux') userMoveArmed = true;
 
-    if (!manualMoveArmed) return;
+    if (!userMoveArmed) return;
 
     lastMoveAt = Date.now();
     clearTimer();
     timer = setTimeout(() => {
       if (Date.now() - lastMoveAt < endMoveMs) return;
-      if (!manualMoveArmed || snapping || win.isDestroyed()) return;
+      if (!userMoveArmed || snapping || win.isDestroyed()) return;
 
-      manualMoveArmed = false;
+      userMoveArmed = false;
       snapping = true;
       try {
         snapWindowFullyIntoWorkArea(win);
@@ -496,14 +496,14 @@ function installFloatingWorkAreaGuard(win, opts = {}) {
   win.on('closed', () => clearTimer());
 }
 
-async function createFloatingWindow(options = {}) {
+async function createflotanteWindow(options = {}) {
   // If it already exists and wasn't destroyed, restore it (don't recreate it)
-  if (floatingWin && !floatingWin.isDestroyed()) {
+  if (flotanteWin && !flotanteWin.isDestroyed()) {
     // Apply a forced position if it was requested
     if (options && (typeof options.x === 'number' || typeof options.y === 'number')) {
-      try { floatingWin.setBounds({ x: options.x || floatingWin.getBounds().x, y: options.y || floatingWin.getBounds().y }); } catch (e) { /* noop */ }
+      try { flotanteWin.setBounds({ x: options.x || flotanteWin.getBounds().x, y: options.y || flotanteWin.getBounds().y }); } catch (e) { /* noop */ }
     }
-    return floatingWin;
+    return flotanteWin;
   }
 
   const bwOpts = {
@@ -517,7 +517,7 @@ async function createFloatingWindow(options = {}) {
     skipTaskbar: true,
     focusable: true,
     webPreferences: {
-      preload: FLOATER_PRELOAD,
+      preload: FLOTANTE_PRELOAD,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false
@@ -557,34 +557,47 @@ async function createFloatingWindow(options = {}) {
   // Combine calculated options with bwOpts, allowing caller to override
   const createOpts = Object.assign({}, bwOpts, pos, options);
 
-  floatingWin = new BrowserWindow(createOpts);
-  installFloatingWorkAreaGuard(floatingWin, { endMoveMs: 80 });
+  flotanteWin = new BrowserWindow(createOpts);
+  const win = flotanteWin;
 
-  // Load the HTML of the floating window
-  try {
-    await floatingWin.loadFile(FLOATER_HTML);
-  } catch (e) {
-    console.error('Error loading floating HTML:', e);
-  }
+  installWorkAreaGuard(win, { endMoveMs: 80 });
 
-  // Ensure the window starts fully inside the workArea of the display chosen by its center.
-  try {
-    snapWindowFullyIntoWorkArea(floatingWin);
-  } catch (e) {
-    /* noop */
-  }
+  // Track whether the window is in the process of closing; used to de-noise load failures in stress tests.
+  let winClosing = false;
+  win.on('close', () => { winClosing = true; });
 
   // Notify closure so the main renderer can clean up state
-  floatingWin.on('closed', () => {
-    floatingWin = null;
+  win.on('closed', () => {
+    // Only clear the global ref if it still points to this instance.
+    if (flotanteWin === win) {
+      flotanteWin = null;
+    }
+
     // Notify the main renderer if it needs to clean up state
     if (mainWin && mainWin.webContents) {
       try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }
     }
   });
 
+  // Load the HTML of the floating window
+  try {
+    await win.loadFile(FLOTANTE_HTML);
+  } catch (e) {
+    // Expected if the window is closed while loadFile is in-flight (e.g., open/close stress test).
+    if (!winClosing && !win.isDestroyed()) {
+      console.error('Error loading flotante HTML:', e);
+    }
+  }
+
+  // Ensure the window starts fully inside the workArea of the display chosen by its center.
+  try {
+    snapWindowFullyIntoWorkArea(win);
+  } catch (e) {
+    /* noop */
+  }
+
   // Optional: if the floating window should not steal focus, use showInactive(); here we want immediate interaction so we keep focusable=true and let it take focus.
-  return floatingWin;
+  return win;
 }
 
 // ---------------- Main stopwatch (timekeeping + broadcast) ---------------- //
@@ -614,7 +627,7 @@ function getCronoState() {
 function broadcastCronoState() {
   const state = getCronoState();
   try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
-  try { if (floatingWin && !floatingWin.isDestroyed()) floatingWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
+  try { if (flotanteWin && !flotanteWin.isDestroyed()) flotanteWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
   try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
 }
 
@@ -623,7 +636,7 @@ function ensureCronoInterval() {
   cronoInterval = setInterval(() => {
     broadcastCronoState();
     // Option: stop the interval if nobody listens and the timer is not running
-    if (!crono.running && !mainWin && !floatingWin && !editorWin) {
+    if (!crono.running && !mainWin && !flotanteWin && !editorWin) {
       clearInterval(cronoInterval);
       cronoInterval = null;
     }
@@ -696,28 +709,30 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
 });
 
 // IPC: open floating window
-ipcMain.handle('floating-open', async () => {
+ipcMain.handle('flotante-open', async () => {
   try {
-    await createFloatingWindow();
+    await createflotanteWindow();
     try { broadcastCronoState(); } catch (e) {/*noop*/ }
     if (crono.running) ensureCronoInterval();
     return { ok: true };
   } catch (e) {
-    console.error('Error processing floating-open:', e);
+    console.error('Error processing flotante-open:', e);
     return { ok: false, error: String(e) };
   }
 });
 
-// IPC: close floating window
-ipcMain.handle('floating-close', async () => {
+ipcMain.handle('flotante-close', async () => {
   try {
-    if (floatingWin && !floatingWin.isDestroyed()) {
-      floatingWin.close();
-      floatingWin = null;
+    const win = flotanteWin;
+
+    if (win && !win.isDestroyed()) {
+      // NO hacer flotanteWin = null aquí; el 'closed' handler debe dejar el puntero en null.
+      win.close();
     }
+
     return { ok: true };
   } catch (e) {
-    console.error('Error processing floating-close:', e);
+    console.error('Error processing flotante-close:', e);
     return { ok: false, error: String(e) };
   }
 });
@@ -747,20 +762,20 @@ ipcMain.handle('open-editor', () => {
     editorWin.show();
     try {
       const initialText = textState.getCurrentText();
-      editorWin.webContents.send('manual-init-text', {
+      editorWin.webContents.send('editor-init-text', {
         text: initialText || '',
         meta: { source: 'main', action: 'init' },
       });
     } catch (err) {
-      console.error('Error sending manual-init-text from open-editor:', err);
+      console.error('Error sending editor-init-text from open-editor:', err);
     }
     try {
       if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send('manual-editor-ready');
+        mainWin.webContents.send('editor-ready');
       }
     } catch (e) {
       console.warn(
-        'Unable to notify manual-editor-ready (editor already open):',
+        'Unable to notify editor-ready (editor already open):',
         e
       );
     }

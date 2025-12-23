@@ -1,9 +1,9 @@
-// electron/modal_state.js
+// electron/editor_state.js
 const { screen } = require('electron');
 const path = require('path');
 const { CONFIG_DIR, loadJson, saveJson } = require('./fs_storage');
 
-const MODAL_STATE_FILE = path.join(CONFIG_DIR, 'modal_state.json');
+const EDITOR_STATE_FILE = path.join(CONFIG_DIR, 'editor_state.json');
 
 const DEFAULT_STATE = {
   maximized: true,
@@ -55,10 +55,10 @@ function normalizeState(raw) {
 function loadInitialState(customLoadJson) {
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
   try {
-    const raw = loader(MODAL_STATE_FILE, DEFAULT_STATE);
+    const raw = loader(EDITOR_STATE_FILE, DEFAULT_STATE);
     return normalizeState(raw);
   } catch (e) {
-    console.error('[modal_state] Error reading initial state:', e);
+    console.error('[editor_state] Error reading initial state:', e);
     return { ...DEFAULT_STATE };
   }
 }
@@ -77,7 +77,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       if (editorWin.isMaximized()) return;
 
       const bounds = editorWin.getBounds();
-      const current = loader(MODAL_STATE_FILE, { maximized: false, reduced: null });
+      const current = loader(EDITOR_STATE_FILE, { maximized: false, reduced: null });
       const state = normalizeState(current);
 
       if (!state.reduced && state.maximized === true) {
@@ -91,9 +91,9 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
         y: bounds.y
       };
 
-      saver(MODAL_STATE_FILE, state);
+      saver(EDITOR_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error saving editor reduced state:', e);
+      console.error('[editor_state] Error saving editor reduced state:', e);
     }
   };
 
@@ -103,19 +103,19 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   // RULE A - when maximizing, we only update flag maximized
   editorWin.on('maximize', () => {
     try {
-      const current = loader(MODAL_STATE_FILE, { maximized: true, reduced: null });
+      const current = loader(EDITOR_STATE_FILE, { maximized: true, reduced: null });
       const state = normalizeState(current);
       state.maximized = true;
-      saver(MODAL_STATE_FILE, state);
+      saver(EDITOR_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error updating state in maximize:', e);
+      console.error('[editor_state] Error updating state in maximize:', e);
     }
   });
 
   // RULE D - when exiting maximized, restore reduced or apply fallback
   editorWin.on('unmaximize', () => {
     try {
-      const current = loader(MODAL_STATE_FILE, { maximized: false, reduced: null });
+      const current = loader(EDITOR_STATE_FILE, { maximized: false, reduced: null });
       const state = normalizeState(current);
       state.maximized = false;
 
@@ -143,21 +143,21 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
         state.reduced = reduced;
       }
 
-      saver(MODAL_STATE_FILE, state);
+      saver(EDITOR_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error handling editor unmaximize:', e);
+      console.error('[editor_state] Error handling editor unmaximize:', e);
     }
   });
 
   // RULE C - when closing, we persist flag maximized and keep previous reduced
   editorWin.on('close', () => {
     try {
-      const current = loader(MODAL_STATE_FILE, { maximized: false, reduced: null });
+      const current = loader(EDITOR_STATE_FILE, { maximized: false, reduced: null });
       const state = normalizeState(current);
       state.maximized = editorWin.isMaximized();
-      saver(MODAL_STATE_FILE, state);
+      saver(EDITOR_STATE_FILE, state);
     } catch (e) {
-      console.error('[modal_state] Error saving editor closed state:', e);
+      console.error('[editor_state] Error saving editor closed state:', e);
     }
   });
 }

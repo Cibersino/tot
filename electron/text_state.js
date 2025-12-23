@@ -96,7 +96,7 @@ function init(options) {
  * - get-current-text
  * - set-current-text
  * - force-clear-editor
- * y maneja el broadcast al editor manual.
+ * y maneja el broadcast al editor.
  */
 function registerIpc(ipcMain, windowsResolver) {
   if (typeof windowsResolver === 'function') {
@@ -149,16 +149,16 @@ function registerIpc(ipcMain, windowsResolver) {
         }
       }
 
-      // Notify manual editor with object { text, meta }
+      // Notify editor with object { text, meta }
       if (editorWin && !editorWin.isDestroyed()) {
         try {
-          editorWin.webContents.send('manual-text-updated', {
+          editorWin.webContents.send('editor-text-updated', {
             text: currentText,
             meta: incomingMeta || { source: 'main', action: 'set' },
           });
         } catch (err) {
           console.error(
-            'Error sending manual-text-updated to editorWin:',
+            'Error sending editor-text-updated to editorWin:',
             err
           );
         }
@@ -196,9 +196,9 @@ function registerIpc(ipcMain, windowsResolver) {
       // Notify the editor to run its local cleaning logic
       if (editorWin && !editorWin.isDestroyed()) {
         try {
-          editorWin.webContents.send('manual-force-clear', '');
+          editorWin.webContents.send('editor-force-clear', '');
         } catch (e) {
-          console.error('Error sending manual-force-clear:', e);
+          console.error('Error sending editor-force-clear:', e);
         }
       }
 

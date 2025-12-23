@@ -46,7 +46,7 @@ const resultsTitle = document.getElementById('results-title');
 const cronTitle = document.getElementById('cron-title');
 
 const toggleVF = document.getElementById('toggleVF');
-const manualLoader = document.getElementById('manualLoader');
+const editorLoader = document.getElementById('editorLoader');
 
 // References to presets elements
 const presetsSelect = document.getElementById('presets');
@@ -92,7 +92,7 @@ function applyTranslations() {
   if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets', btnResetDefaultPresets.title || '');
   // Floating Window toggle
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
-  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.floating_window', vfSwitchLabel.title || '');
+  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window', vfSwitchLabel.title || '');
   // Section Titles
   if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title', selectorTitle.textContent || '');
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
@@ -126,7 +126,7 @@ function applyTranslations() {
   // Abbreviated label for the floating window
   const vfLabel = document.querySelector('.vf-label');
   if (vfLabel) {
-    vfLabel.textContent = tRenderer('renderer.main.timer.floating_short', vfLabel.textContent || vfLabel.textContent);
+    vfLabel.textContent = tRenderer('renderer.main.timer.flotante_short', vfLabel.textContent || vfLabel.textContent);
   }
   
   // Help button (title)
@@ -430,9 +430,9 @@ const loadPresets = async () => {
         window.electronAPI.onSettingsUpdated(settingsChangeHandler);
       } // If it doesn't exist, there's no listener available and nothing happens
 
-      if (typeof window.electronAPI.onManualEditorReady === 'function') {
-        window.electronAPI.onManualEditorReady(() => {
-          hideManualLoader();
+      if (typeof window.electronAPI.onEditorReady === 'function') {
+        window.electronAPI.onEditorReady(() => {
+          hideeditorLoader();
         });
       }
     }
@@ -646,7 +646,7 @@ const loadPresets = async () => {
   }
 
   // ======================= TOP BAR: Register actions with menuActions =======================
-  // Ensure menu.js is loaded (script included before renderer.js)
+  // Ensure menu_actions.js is loaded (script included before renderer.js)
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {  
     window.menuActions.registerMenuAction('guia_basica', () => { showInfoModal('guia_basica') });
     window.menuActions.registerMenuAction('instrucciones_completas', () => { showInfoModal('instrucciones') });
@@ -726,7 +726,7 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('acerca_de', () => { showInfoModal('acerca_de') });
 
     // Generic example for viewing payloads not explicitly registered:
-    // (optional) Registering a 'catch-all' is not necessary; menu.js already logs payloads without a handler.
+    // (optional) Registering a 'catch-all' is not necessary; menu_actions.js already logs payloads without a handler.
   } else {
     // If menuActions is unavailable, register a direct receiver (fallback)
     if (window.electronAPI && typeof window.electronAPI.onMenuClick === 'function') {
@@ -851,12 +851,12 @@ btnAppendClipboardNewLine.addEventListener('click', async () => {
 });
 
 btnEdit.addEventListener('click', async () => {
-  showManualLoader();
+  showeditorLoader();
   try {
     await window.electronAPI.openEditor();
   } catch (err) {
-    console.error('Error opening editor manual:', err);
-    hideManualLoader();
+    console.error('Error opening editor:', err);
+    hideeditorLoader();
   }
 });
 
@@ -1032,13 +1032,13 @@ let timerBaselineDisplay = null;
 // Last elapsed for which we calculate WPM (avoid repeated recalculations)
 let lastComputedElapsedForWpm = null;
 
-function showManualLoader() {
-  if (manualLoader) manualLoader.classList.add('visible');
+function showeditorLoader() {
+  if (editorLoader) editorLoader.classList.add('visible');
   if (btnEdit) btnEdit.disabled = true;
 }
 
-function hideManualLoader() {
-  if (manualLoader) manualLoader.classList.remove('visible');
+function hideeditorLoader() {
+  if (editorLoader) editorLoader.classList.remove('visible');
   if (btnEdit) btnEdit.disabled = false;
 }
 
@@ -1083,8 +1083,8 @@ tReset.addEventListener('click', () => {
 
 // --- Floating window control (FW) ---
 // Open FW
-const openFloating = async () => {
-  const res = await timerModule.openFloating({
+const openFlotante = async () => {
+  const res = await timerModule.openFlotante({
     electronAPI: window.electronAPI,
     toggleVF,
     timerDisplay,
@@ -1102,8 +1102,8 @@ const openFloating = async () => {
   }
 };
 
-const closeFloating = async () => {
-  await timerModule.closeFloating({ electronAPI: window.electronAPI, toggleVF });
+const closeFlotante = async () => {
+  await timerModule.closeFlotante({ electronAPI: window.electronAPI, toggleVF });
 };
 
 // toggle WF from the UI (switch)
@@ -1114,17 +1114,17 @@ if (toggleVF) {
     toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
 
     if (wantOpen) {
-      await openFloating();
-      // openFloating handles revert in case of error
+      await openFlotante();
+      // openFlotante handles revert in case of error
     } else {
-      await closeFloating();
+      await closeFlotante();
     }
   });
 }
 
-// If the float is closed from main (or destroyed), we clean it up Local timers
-if (window.electronAPI && typeof window.electronAPI.onFloatingClosed === 'function') {
-  window.electronAPI.onFloatingClosed(() => {
+// If the flotante is closed from main (or destroyed), we clean it up Local timers
+if (window.electronAPI && typeof window.electronAPI.onFlotanteClosed === 'function') {
+  window.electronAPI.onFlotanteClosed(() => {
     if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
   });
 }

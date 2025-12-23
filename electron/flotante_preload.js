@@ -2,7 +2,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('flotanteAPI', {
-  // Receive status updates from main (channel is now 'chrono-state')
+  // Receive status updates from main (channel is now 'crono-state')
   onState: (cb) => {
     const wrapper = (_e, state) => {
       try { cb(state); } catch (e) { console.error(e); }
@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('flotanteAPI', {
     ipcRenderer.send('flotante-command', cmd);
   },
 
-  // Float closing notification (main emits 'float-closed' when closing)
+  // Flotante closing notification (main emits 'flotante-closed' when closing)
   onClose: (cb) => {
     const wrapper = () => { try { cb && cb(); } catch (e) { console.error(e); } };
     ipcRenderer.on('flotante-closed', wrapper);

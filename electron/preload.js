@@ -79,25 +79,25 @@ const api = {
     },
 
     // ------------------ APIs for the floating window (updated) ------------------
-    openFloatingWindow: async () => {
-        return ipcRenderer.invoke('floating-open');
+    openFlotanteWindow: async () => {
+        return ipcRenderer.invoke('flotante-open');
     },
-    closeFloatingWindow: async () => {
-        return ipcRenderer.invoke('floating-close');
+    closeFlotanteWindow: async () => {
+        return ipcRenderer.invoke('flotante-close');
     },
 
-    // Hold listener to notify that the float was closed (main emits 'float-closed')
-    onFloatingClosed: (cb) => {
-        const listener = () => { try { cb(); } catch (e) { console.error('floating closed callback error:', e); } };
+    // Hold listener to notify that the flotante was closed (main emits 'flotante-closed')
+    onFlotanteClosed: (cb) => {
+        const listener = () => { try { cb(); } catch (e) { console.error('flotante closed callback error:', e); } };
         ipcRenderer.on('flotante-closed', listener);
         return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (e) { console.error('removeListener error:', e); } };
     },
 
-    // Manual editor ready (to hide loader in main window)
-    onManualEditorReady: (cb) => {
-        const listener = () => { try { cb(); } catch (err) { console.error('manual-ready callback error:', err); } };
-        ipcRenderer.on('manual-editor-ready', listener);
-        return () => { try { ipcRenderer.removeListener('manual-editor-ready', listener); } catch (e) { console.error('removeListener error (manual-editor-ready):', e); } };
+    // editor ready (to hide loader in main window)
+    onEditorReady: (cb) => {
+        const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
+        ipcRenderer.on('editor-ready', listener);
+        return () => { try { ipcRenderer.removeListener('editor-ready', listener); } catch (e) { console.error('removeListener error (editor-ready):', e); } };
     }
 };
 
