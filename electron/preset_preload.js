@@ -1,5 +1,7 @@
 // electron/preset_preload.js
 const { contextBridge, ipcRenderer } = require('electron');
+const { initDeadcodeAuditPreload } = require('./deadcode_audit_preload');
+initDeadcodeAuditPreload(ipcRenderer);
 
 contextBridge.exposeInMainWorld('presetAPI', {
   createPreset: (preset) => ipcRenderer.invoke('create-preset', preset),

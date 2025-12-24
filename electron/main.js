@@ -2,6 +2,10 @@
 const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 const path = require('path');
 
+const DEADCODE_AUDIT_CHANNEL = '__deadcode_audit__ipc_used';
+const DEADCODE_AUDIT_ENABLED = process.env.DEADCODE_AUDIT === '1';
+const deadcodeAudit = initDeadcodeAuditMain(ipcMain, app);
+
 const {
   CONFIG_DIR,
   ensureConfigDir,
@@ -52,6 +56,8 @@ function buildAppMenu(lang) {
   menuBuilder.buildAppMenu(effectiveLang, {
     mainWindow: mainWin,
     onOpenLanguage: () => createLanguageWindow(),
+    auditMenuDefined: deadcodeAudit && deadcodeAudit.recordMenuDefined,
+    auditMenuUsed: deadcodeAudit && deadcodeAudit.recordMenuUsed,
   });
 }
 
@@ -861,3 +867,126 @@ app.on('will-quit', () => {
     console.error('Error clearing stopwatch in will-quit:', e);
   }
 });
+
+function initDeadcodeAuditMain(ipcMain, app) {
+  if (!DEADCODE_AUDIT_ENABLED) return null;
+
+  const IPC_DEFINED = new Set();
+  const IPC_USED = new Set();
+  const MAIN_PUSH_SENT = new Set();
+  const MENU_DEFINED = new Set();
+  const MENU_USED = new Set();
+
+  const isAuditChannel = (channel) => channel === DEADCODE_AUDIT_CHANNEL;
+
+  const normalizeChannel = (channel) => {
+    if (typeof channel === 'string') return channel;
+    if (typeof channel === 'number' || typeof channel === 'boolean') return String(channel);
+    if (!channel) return null;
+    try {
+      const str = String(channel);
+      if (!str || str === '[object Object]') return null;
+      return str;
+    } catch (_e) {
+      return null;
+    }
+  };
+
+  const normalizeMenuCommand = (payload) => {
+    if (!payload) return null;
+    if (typeof payload === 'string') return payload;
+    if (typeof payload === 'object') {
+      const candidate = payload.id || payload.command || payload.cmd || payload.action || payload.routeId;
+      if (typeof candidate === 'string' && candidate.trim()) return candidate;
+    }
+    return null;
+  };
+
+  const recordDefined = (channel) => {
+    const c = normalizeChannel(channel);
+    if (!c || isAuditChannel(c)) return;
+    IPC_DEFINED.add(c);
+  };
+
+  const recordUsed = (channel) => {
+    const c = normalizeChannel(channel);
+    if (!c || isAuditChannel(c)) return;
+    IPC_USED.add(c);
+  };
+
+  const recordMainPush = (channel) => {
+    const c = normalizeChannel(channel);
+    if (!c || isAuditChannel(c)) return;
+    MAIN_PUSH_SENT.add(c);
+  };
+
+  const recordMenuDefined = (payload) => {
+    const cmd = normalizeMenuCommand(payload);
+    if (cmd) MENU_DEFINED.add(cmd);
+  };
+
+  const recordMenuUsed = (payload) => {
+    const cmd = normalizeMenuCommand(payload);
+    if (cmd) MENU_USED.add(cmd);
+  };
+
+  const originalHandle = ipcMain.handle.bind(ipcMain);
+  ipcMain.handle = function (channel, ...args) {
+    recordDefined(channel);
+    return originalHandle(channel, ...args);
+  };
+
+  const originalOn = ipcMain.on.bind(ipcMain);
+  ipcMain.on = function (channel, listener) {
+    recordDefined(channel);
+    return originalOn(channel, listener);
+  };
+
+  const originalOnce = ipcMain.once.bind(ipcMain);
+  ipcMain.once = function (channel, listener) {
+    recordDefined(channel);
+    return originalOnce(channel, listener);
+  };
+
+  ipcMain.on(DEADCODE_AUDIT_CHANNEL, (_event, payload) => {
+    if (!payload || payload.type !== 'ipc-used') return;
+    recordUsed(payload.channel);
+  });
+
+  app.on('browser-window-created', (_event, win) => {
+    try {
+      const wc = win && win.webContents;
+      if (!wc || typeof wc.send !== 'function') return;
+      const originalSend = wc.send.bind(wc);
+      wc.send = function (channel, ...args) {
+        recordMainPush(channel);
+        return originalSend(channel, ...args);
+      };
+    } catch (e) {
+      console.error('Error installing send audit wrapper:', e);
+    }
+  });
+
+  const toSorted = (set) => Array.from(set).sort();
+  let reportLogged = false;
+  const emitReport = () => {
+    if (reportLogged) return;
+    reportLogged = true;
+    const report = {
+      IPC_DEFINED: toSorted(IPC_DEFINED),
+      IPC_USED: toSorted(IPC_USED),
+      MAIN_PUSH_SENT: toSorted(MAIN_PUSH_SENT),
+      MENU_DEFINED: toSorted(MENU_DEFINED),
+      MENU_USED: toSorted(MENU_USED),
+    };
+    console.log(JSON.stringify(report));
+  };
+
+  app.on('will-quit', emitReport);
+  process.on('exit', emitReport);
+
+  return {
+    recordMenuDefined,
+    recordMenuUsed,
+  };
+}

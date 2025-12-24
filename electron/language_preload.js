@@ -1,5 +1,7 @@
 // electron/language_preload.js
 const { contextBridge, ipcRenderer } = require('electron');
+const { initDeadcodeAuditPreload } = require('./deadcode_audit_preload');
+initDeadcodeAuditPreload(ipcRenderer);
 
 contextBridge.exposeInMainWorld('languageAPI', {
   setLanguage: async (lang) => {
