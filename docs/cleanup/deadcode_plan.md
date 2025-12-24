@@ -135,7 +135,15 @@ Salida esperada:
 
 * una tabla con filas `{window_id?, html_or_url, preload, evidence}`.
 * `evidence` = `path:line` + snippet mínimo.
-* Si `html/preload` no es literal de string: marcar **DYNAMIC/UNKNOWN**.
+
+* Clasificación obligatoria (para html/preload/script src):
+  - **LITERAL**: string literal `'...'` / `"..."`.
+  - **DETERMINISTIC_COMPUTED**: construido solo con `__dirname` (o equivalente) + `path.join/resolve` + literales,
+    sin variables, sin condicionales, sin templates, sin lectura de env/JSON.
+  - **DYNAMIC/UNKNOWN**: cualquier otro caso (variables, indirection, condiciones, templates, runtime data).
+* Regla:
+  - **LITERAL** y **DETERMINISTIC_COMPUTED** se consideran *resolvibles* para alimentar `knip.json entry[]` (registrar el método de resolución).
+  - **DYNAMIC/UNKNOWN** NO se rellena: se registra como riesgo y se cierra con evidencia dinámica (Fase 4) antes de tocar Clase C.
 
 #### Fuente 2: Scripts cargados por HTML (renderer)
 
@@ -183,8 +191,7 @@ Output:
 
 Crear (o actualizar) en `docs/cleanup/`:
 
-* `docs/cleanup/EntryPointsInventory.md` (tabla final con evidencia)
-* `docs/cleanup/EntryPointsUnknowns.md` (solo DYNAMIC/UNKNOWN + riesgo + plan de compensación en Fase 4)
+* `docs/cleanup/EntryPointsInventory.md` (inventario final con evidencia, e incluye una sección "Unknowns / Risks")
 
 ### 2.4 Construir `knip.json` desde el inventario (sin inventar entries)
 
@@ -212,8 +219,8 @@ Modelo base (esqueleto; tu lista real sale del inventario):
 
 Regla:
 
-* `entry[]` se llena **solo** con entrypoints confirmados por `EntryPointsInventory.md`.
-* Si hay DYNAMIC/UNKNOWN que podría introducir entrypoints, no se “rellena”: se deja fuera y se registra el riesgo en `EntryPointsUnknowns.md`.
+* `entry[]` se llena **solo** con entrypoints confirmados por `EntryPointsInventory.md` que sean **LITERAL** o **DETERMINISTIC_COMPUTED**.
+* Si hay **DYNAMIC/UNKNOWN** que podría introducir entrypoints, no se “rellena”: se deja fuera y se registra en la sección "Unknowns / Risks" del mismo inventario.
 
 ### 2.5 Gate de calibración knip
 
@@ -313,7 +320,7 @@ Nota:
 ```text
 Input:
 - tool outputs in docs/cleanup/_evidence/deadcode/<RUN_ID>/*.log
-- EntryPointsInventory.md + EntryPointsUnknowns.md
+- EntryPointsInventory.md (incluye sección "Unknowns / Risks")
 
 Task (NO code changes):
 Create/Update docs/cleanup/DeadCodeLedger.md with entries grouped into:
@@ -328,6 +335,11 @@ Rules:
 Output:
 - full ledger content ready to paste
 ```
+
+**Nota PowerShell/git grep:** patrones que contienen `(` y `)` deben ejecutarse con `git grep -F` (fixed string) para evitar errores de regex (“Unmatched (”). Ejemplos:
+- `git grep -n -F "webContents.send(" ...`
+- `git grep -n -F "getElementById(" ...`
+- `git grep -n -F "querySelector(" ...`
 
 ---
 
