@@ -5,6 +5,23 @@ Run:
 - Evidence folder: docs/cleanup/_evidence/deadcode/20251223-130514/
 - Madge seed: electron/main.js (VERIFIED by evidence in EntryPointsInventory.md)
 
+Additional dynamic evidence (Phase 4 — DEADCODE_AUDIT):
+- RUN_ID (audit smoke / wide coverage): 20251223-130514
+  - Evidence file: docs/cleanup/_evidence/deadcode/20251223-130514/runtime_contracts.log
+  - Captured JSON (single object on shutdown)
+- RUN_ID (audit baseline / noclick): 20251224-133600
+  - Evidence file: docs/cleanup/_evidence/deadcode/20251224-133600/runtime_contracts.noclick.log
+  - Captured JSON (single object on shutdown)
+
+Additional focused static evidence (Phase 4 — targeted closure):
+- RUN_ID (grep preset-deleted/restored): 20251224-141817
+  - Evidence files:
+    - docs/cleanup/_evidence/deadcode/20251224-141817/contracts.preset-deleted.grep.log
+    - docs/cleanup/_evidence/deadcode/20251224-141817/contracts.preset-restored.grep.log
+- RUN_ID (grep crono-state): 20251224-141839
+  - Evidence file:
+    - docs/cleanup/_evidence/deadcode/20251224-141839/contracts.crono-state.grep.log
+
 Tool outputs ingested (Phase 3):
 - madge.orphans.log
 - madge.circular.log
@@ -19,8 +36,52 @@ Tool outputs ingested (Phase 3):
 
 Rules recap:
 - A/B: static strong evidence + smoke test before deletion.
-- C: static evidence + dynamic evidence (used vs defined) before deletion.
+- C: static evidence + dynamic evidence (used vs defined / sent vs listened) before deletion.
 - D: failure visibility policy; do not delete “because unused”.
+
+---
+
+## Phase 4 — Dynamic evidence summary (DEADCODE_AUDIT=1)
+Purpose:
+- Close contract uncertainty by observing runtime: IPC registrations, renderer IPC usage/subscriptions, main push events executed, and menu usage.
+Interpretation note:
+- IPC_USED includes invoke/send AND listener subscription (ipcRenderer.on/once). It is “contract surface touched”, not “message executed”.
+
+### 4.1 Audit baseline (noclick) — 20251224-133600
+Observed (from runtime_contracts.noclick.log):
+- MENU_USED = [] while MENU_DEFINED populated (sanity check OK).
+- MAIN_PUSH_SENT minimal (only `crono-state` observed in this baseline).
+- IPC_DEFINED is run-dependent: `language-selected` absent here, consistent with conditional registration (e.g., language window not opened).
+
+Key takeaways:
+- MENU contract instrumentation is clean (no false MENU_USED).
+- Some IPC registrations are conditional and will not appear in short runs.
+
+### 4.2 Audit smoke (wide coverage) — 20251223-130514
+Observed (from runtime_contracts.log):
+- MENU_DEFINED == MENU_USED (all commands clicked at least once during the run).
+- MAIN_PUSH_SENT contains:
+  - crono-state, current-text-updated, editor-force-clear, editor-init-text, editor-ready, editor-text-updated,
+    flotante-closed, menu-click, preset-created, preset-deleted, preset-init, preset-restored, settings-updated
+- IPC_USED does NOT contain `preset-deleted` nor `preset-restored`.
+
+Derived closure signal (critical):
+- Sent-but-not-listened candidates (MAIN_PUSH_SENT − IPC_USED):
+  - `preset-deleted`
+  - `preset-restored`
+
+### 4.3 Focused closure for push-only channels (static repo evidence) — 20251224-141817
+Evidence (repo-wide fixed-string grep; excludes docs/** and *.md):
+- `preset-deleted`:
+  - Found only as send/log strings in electron/presets_main.js
+  - No occurrences in any preload/renderer listener code
+- `preset-restored`:
+  - Found only as send/log strings in electron/presets_main.js
+  - No occurrences in any preload/renderer listener code
+
+Conclusion:
+- `preset-deleted` and `preset-restored` are push-only channels that are executed (MAIN_PUSH_SENT) but have no listeners anywhere (not present in IPC_USED and no static occurrences outside send sites).
+- Treat as Class C candidates for removal (dead push contract / orphan event), subject to one focused smoke test on preset delete/restore flows.
 
 ---
 
@@ -92,7 +153,7 @@ Important: CommonJS/property access and dynamic path loading create false positi
 ---
 
 ## Class C — Contracts (IPC / preload bridges / renderer events / DOM / i18n / persistence)
-Status: PARTIAL (static inventory captured; dynamic “used vs defined” still required before deletion).
+Status: PARTIAL (static inventory captured; dynamic “used vs defined / sent vs listened” still required before deletion).
 
 ### C0 — contextBridge exposed globals (renderer contract surface)
 Evidence: `contextBridge.exposeInMainWorld(...)` (3.4.C)
@@ -183,8 +244,10 @@ Updater:
 
 ---
 
-### C2 — IPC fire-and-forget channels (send/on) — PARTIAL (static: defined+referenced+push sender inventory; dynamic closure pending)
-Evidence: ipcMain.on/once + ipcRenderer.send + ipcRenderer.on + webContents.send inventory (`contracts.webContents.send.log`)
+### C2 — IPC fire-and-forget channels (send/on + main push events)
+Status:
+- Static inventory: grounded (listeners + senders via `contracts.webContents.send.log`)
+- Dynamic closure: improved by Phase 4 audit + targeted greps
 
 Renderer -> main (send/on):
 - `crono-toggle`
@@ -206,6 +269,10 @@ Renderer -> main (send/on):
 Main -> renderer (push events)
 
 Closed (static: listener observed + sender observed):
+- `crono-state`
+  - Listener (ipcRenderer.on): electron/preload.js AND electron/flotante_preload.js
+  - Sender (webContents.send): electron/main.js (multiple sites)
+  - Targeted grep evidence: docs/cleanup/_evidence/deadcode/20251224-141839/contracts.crono-state.grep.log
 - `editor-init-text`
   - Listener: electron/editor_preload.js:10 (ipcRenderer.on)
   - Sender: electron/main.js:198 AND electron/main.js:765 (webContents.send)
@@ -218,9 +285,6 @@ Closed (static: listener observed + sender observed):
 - `flotante-closed`
   - Listener: electron/preload.js:92 AND electron/flotante_preload.js:22
   - Sender: electron/main.js:578 (webContents.send)
-- `crono-state`
-  - Listener: electron/preload.js:77 AND electron/flotante_preload.js:10 AND electron/editor_preload.js:?
-  - Sender: electron/main.js:629, 630, 631 (webContents.send)
 - `menu-click`
   - Listener: electron/preload.js:47
   - Sender: electron/menu_builder.js:57 (webContents.send)
@@ -239,16 +303,22 @@ Closed (static: listener observed + sender observed):
 - `preset-created`
   - Listener: electron/preload.js:24
   - Sender: electron/presets_main.js:299 AND electron/presets_main.js:668 (webContents.send)
-- `crono-state` note:
-  - Sender targets include mainWin/flotanteWin/editorWin (multiple sends). Listener set should be revalidated in static scan if needed.
 
-Unpaired (sender observed; listener NOT YET FOUND in current static inventory):
+CLOSED AS DEAD (sender-only; no listeners anywhere):
 - `preset-deleted`
   - Sender: electron/presets_main.js:386, 406, 431, 663 (webContents.send)
-  - Listener: NOT FOUND (requires a focused repo-wide grep for ipcRenderer.on / exposed wrapper)
+  - Dynamic evidence: present in MAIN_PUSH_SENT (audit smoke) but absent from IPC_USED
+  - Static evidence:
+    - docs/cleanup/_evidence/deadcode/20251224-141817/contracts.preset-deleted.grep.log
+  - Action candidate: remove these send sites (Class C micro-batch)
+  - Verification: focused smoke test (delete preset flow) after change
 - `preset-restored`
   - Sender: electron/presets_main.js:530 (webContents.send)
-  - Listener: NOT FOUND (same closure as above)
+  - Dynamic evidence: present in MAIN_PUSH_SENT (audit smoke) but absent from IPC_USED
+  - Static evidence:
+    - docs/cleanup/_evidence/deadcode/20251224-141817/contracts.preset-restored.grep.log
+  - Action candidate: remove this send site (Class C micro-batch)
+  - Verification: focused smoke test (restore defaults flow) after change
 
 ---
 
@@ -338,8 +408,8 @@ querySelector:
   - This is a contract surface that cannot be closed statically to a fixed ID set without tracing `sectionId`.
 - IPC channel names and contextBridge exposure names remain literal in current evidence (no dynamic channel construction observed so far).
 - Contract closure note:
-  - Main->renderer push event inventory is now statically grounded via `contracts.webContents.send.log`.
-  - Unpaired push channels (`preset-deleted`, `preset-restored`) remain “needs closure” until we find listener(s) or confirm non-use via Phase 4 dynamic evidence.
+  - Main->renderer push event inventory is statically grounded via `contracts.webContents.send.log`.
+  - `preset-deleted` and `preset-restored` were closed as dead push-only channels in Phase 4 (see Sections 4.2–4.3 and C2).
 
 ---
 

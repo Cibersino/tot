@@ -1,5 +1,7 @@
 // flotante_preload.js
 const { contextBridge, ipcRenderer } = require('electron');
+const { initDeadcodeAuditPreload } = require('./deadcode_audit_preload');
+initDeadcodeAuditPreload(ipcRenderer);
 
 contextBridge.exposeInMainWorld('flotanteAPI', {
   // Receive status updates from main (channel is now 'crono-state')

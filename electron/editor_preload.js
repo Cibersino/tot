@@ -1,5 +1,7 @@
 // electron/editor_preload.js
 const { contextBridge, ipcRenderer } = require('electron');
+const { initDeadcodeAuditPreload } = require('./deadcode_audit_preload');
+initDeadcodeAuditPreload(ipcRenderer);
 
 contextBridge.exposeInMainWorld('editorAPI', {
   getCurrentText: () => ipcRenderer.invoke('get-current-text'),
