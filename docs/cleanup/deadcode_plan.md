@@ -63,7 +63,7 @@ $run = Get-Date -Format "yyyyMMdd-HHmmss"
 $EVID = "docs\cleanup\_evidence\deadcode\$run"
 New-Item -ItemType Directory -Force -Path $EVID | Out-Null
 "$EVID" | Write-Host
-````
+```
 
 ### Git: ignorar evidencia (solo logs)
 
@@ -465,6 +465,31 @@ Output:
 - list of files changed
 - verification checklist (smoke test steps)
 ```
+
+---
+
+## Fase 6 — Retirar instrumentación de diagnóstico (DEADCODE_AUDIT)
+
+Objetivo: una vez completadas las eliminaciones (Fase 5) y pasada la smoke final, **volver el repo a su estado normal** removiendo el “scaffolding” de instrumentación usado solo para diagnóstico.
+
+Regla: hacer este retiro como un **micro-batch dedicado** (idealmente un commit separado) y correr smoke test final sin `DEADCODE_AUDIT`.
+
+Checklist de retiro (sin refactors, solo revertir el diagnóstico):
+1) **Eliminar el helper de preload** de auditoría (p.ej. `electron/deadcode_audit_preload.js`) si existe en el repo.
+2) **Remover los hooks en preloads** que lo consumen (p.ej. `require('./deadcode_audit_preload')` + `initDeadcodeAuditPreload(ipcRenderer)`).
+3) **Remover la instrumentación en main**:
+   - Constantes/flags de auditoría (`process.env.DEADCODE_AUDIT === '1'` y canales `__deadcode_audit__...`).
+   - Wrapper/función `initDeadcodeAuditMain(...)` y su wiring.
+4) **Remover el wiring de menú** agregado para auditoría:
+   - Opciones `auditMenuDefined/auditMenuUsed` en el constructor del menú.
+   - Helpers locales introducidos solo para marcar “menu defined/used” (p.ej. `menuCmd(...)`).
+5) **Validación estática**:
+   - `git grep -n -F "DEADCODE_AUDIT" -- .` (y grep del canal `__deadcode_audit__`/`__deadcode_audit__ipc_used`) debe quedar vacío (excluyendo docs si corresponde).
+6) **Smoke test final (sin auditoría)**:
+   - `npm start` sin `DEADCODE_AUDIT` y ejecutar el set mínimo de escenarios (los mismos del plan).
+   - Confirmar que **no** se imprime el JSON de auditoría al cerrar.
+
+Evidencia: registrar el log de la corrida final en `docs/cleanup/_evidence/deadcode/<RUN_ID_FINAL_SMOKE>/` (o equivalente) para cerrar el ciclo.
 
 ---
 

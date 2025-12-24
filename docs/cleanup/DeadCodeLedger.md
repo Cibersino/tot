@@ -99,9 +99,15 @@ Status: candidates only (no code change in Phase 3). Closure: inspect context, d
 - Evidence: ESLint warns `getCurrentLanguage` defined but never used.
 - Closure plan: verify if kept for API symmetry/exports; if unused, delete or move behind explicit export surface; smoke test.
 
-### A3 — public/editor.js:L107
-- Evidence: ESLint warns `showNotice` defined but never used.
-- Closure plan: verify if called from HTML/onclick or other scripts; if unused, remove; smoke test editor flows.
+### A3 — public/editor.js:L107 (`showNotice`) — NO DEAD (contrato global/window usado dinámicamente)
+- Evidence (static):
+  - Definición: `function showNotice(msg, { duration = 4500, type = 'info' } = {}) { ... }` en `public/editor.js`.
+  - Consumo dinámico: `public/js/notify.js` llama `window.showNotice(msg, { type, duration })` si existe.
+- Diagnóstico: **NO ES CÓDIGO MUERTO**. Es un contrato “cross-script” (global/window). La señal “unused” en el archivo es un **falso positivo** si se analiza solo por referencias dentro del mismo archivo.
+- Closure plan:
+  - Mantener.
+  - (Opcional) Endurecer el contrato documentando/asegurando el orden de carga de scripts (p.ej. `editor.js` antes que `notify.js`) o exponiendo explícitamente `window.showNotice = showNotice`.
+  - Cualquier cambio aquí requiere smoke test de notificaciones en el editor.
 
 ### A4 — public/js/count.js:L5 and L16
 - Evidence: ESLint warns `language` is defined but never used (two sites).
@@ -124,18 +130,16 @@ Status: candidates only (no code change in Phase 3). Closure: inspect context, d
 ## Class B — Export/File disconnected (graph/tool signals; requires verification)
 Important: CommonJS/property access and dynamic path loading create false positives. Treat as candidates with gates.
 
-### B1 — `electron/presets/defaults_presets*.js` flagged “unused” by tools but dynamically loaded
-- Evidence:
-  - knip: “Unused files (3)” for defaults_presets.js / defaults_presets_en.js / defaults_presets_es.js
-  - madge orphans includes these files
-  - repo-wide grep shows dynamic loading in `electron/presets_main.js`:
-    - path.join(..., 'defaults_presets.js')
-    - template `defaults_presets_${langCode}.js`
-    - regex `^defaults_presets.*\.js$`
-- Classification: **B-candidate BLOCKED** by dynamic loading → treat as DYNAMIC/UNKNOWN until Phase 4 closure.
-- Closure plan (Phase 4):
-  - instrument preset loader to log actual loaded defaults files by langCode, across smoke test.
-  - If never loaded: candidate B with dynamic evidence; if loaded: not dead.
+### B1 — `electron/presets/defaults_presets*.js` — CLOSED: NO DEAD (dynamic require / fs scan)
+- Evidence (static):
+  - `electron/presets_main.js` construye paths y **requiere dinámicamente** presets por defecto:
+    - `path.join(__dirname, 'presets', 'defaults_presets.js')`
+    - `defaults_presets_${langCode}.js` y filtrado por regex `^defaults_presets.*\\.js$` (vía `fs.readdirSync`).
+- Diagnóstico: herramientas tipo knip/madge/depcheck pueden marcar estos archivos como “unused/orphan” por la combinación de `require()` dinámico + selección por filesystem. Esto es un **falso positivo** de análisis estático.
+- Clasificación: **NO DEAD** (mantener).
+- Closure plan:
+  - Mantener estos archivos.
+  - (Opcional) Ajustar configuración de herramientas (knip/depcheck) para excluir/whitelist estos presets por defecto y reducir ruido futuro.
 
 ### B2 — Unused exports (knip “Unused exports (21)”)
 - Evidence: knip lists multiple exports in:
