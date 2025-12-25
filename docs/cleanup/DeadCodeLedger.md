@@ -22,6 +22,10 @@ Additional focused static evidence (Phase 4 — targeted closure):
   - Evidence file:
     - docs/cleanup/_evidence/deadcode/20251224-141839/contracts.crono-state.grep.log
 
+Additional execution evidence (Phase 5 — micro-batches):
+- RUN_ID (Batch-01 patch + post-grep + smoke): 20251225-085925
+  - Evidence folder: docs/cleanup/_evidence/deadcode/20251225-085925/
+
 Tool outputs ingested (Phase 3):
 - madge.orphans.log
 - madge.circular.log
@@ -82,6 +86,25 @@ Evidence (repo-wide fixed-string grep; excludes docs/** and *.md):
 Conclusion:
 - `preset-deleted` and `preset-restored` are push-only channels that are executed (MAIN_PUSH_SENT) but have no listeners anywhere (not present in IPC_USED and no static occurrences outside send sites).
 - Treat as Class C candidates for removal (dead push contract / orphan event), subject to one focused smoke test on preset delete/restore flows.
+
+---
+
+## Phase 5 — Micro-batches execution log (minimal diffs + focused smoke tests)
+
+### 5.1 Batch-01 — remove dead push-only channels: `preset-deleted`, `preset-restored`
+Change:
+- Removed all `webContents.send('preset-deleted', ...)` and `webContents.send('preset-restored', ...)` sites from `electron/presets_main.js`.
+
+Verification:
+- Focused static post-check: `git grep -n "preset-deleted" -- electron/presets_main.js` and `git grep -n "preset-restored" -- electron/presets_main.js` must return empty (see evidence logs).
+- Focused smoke test: delete preset flow + restore defaults flow (see smoke log).
+
+Evidence (Phase 5 / Batch-01):
+- RUN_ID: 20251225-085925
+  - docs/cleanup/_evidence/deadcode/20251225-085925/patch.electron_presets_main_js.diff.log
+  - docs/cleanup/_evidence/deadcode/20251225-085925/post.contracts.preset-deleted.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-085925/post.contracts.preset-restored.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-085925/smoke.presets_delete_restore.log
 
 ---
 
@@ -308,21 +331,21 @@ Closed (static: listener observed + sender observed):
   - Listener: electron/preload.js:24
   - Sender: electron/presets_main.js:299 AND electron/presets_main.js:668 (webContents.send)
 
-CLOSED AS DEAD (sender-only; no listeners anywhere):
+REMOVED (Phase 5 / Batch-01; sender-only; no listeners anywhere):
 - `preset-deleted`
-  - Sender: electron/presets_main.js:386, 406, 431, 663 (webContents.send)
-  - Dynamic evidence: present in MAIN_PUSH_SENT (audit smoke) but absent from IPC_USED
-  - Static evidence:
+  - Pre-removal sender sites (Phase 4 evidence): electron/presets_main.js:386, 406, 431, 663 (webContents.send)
+  - Dynamic closure (Phase 4): present in MAIN_PUSH_SENT (audit smoke) but absent from IPC_USED
+  - Static closure (Phase 4):
     - docs/cleanup/_evidence/deadcode/20251224-141817/contracts.preset-deleted.grep.log
-  - Action candidate: remove these send sites (Class C micro-batch)
-  - Verification: focused smoke test (delete preset flow) after change
+  - Removal (Phase 5 / Batch-01): send sites deleted from `electron/presets_main.js` (no remaining occurrences)
+  - Verification: see Phase 5 / Batch-01 evidence + focused smoke log
 - `preset-restored`
-  - Sender: electron/presets_main.js:530 (webContents.send)
-  - Dynamic evidence: present in MAIN_PUSH_SENT (audit smoke) but absent from IPC_USED
-  - Static evidence:
+  - Pre-removal sender site (Phase 4 evidence): electron/presets_main.js:530 (webContents.send)
+  - Dynamic closure (Phase 4): present in MAIN_PUSH_SENT (audit smoke) but absent from IPC_USED
+  - Static closure (Phase 4):
     - docs/cleanup/_evidence/deadcode/20251224-141817/contracts.preset-restored.grep.log
-  - Action candidate: remove this send site (Class C micro-batch)
-  - Verification: focused smoke test (restore defaults flow) after change
+  - Removal (Phase 5 / Batch-01): send site deleted from `electron/presets_main.js` (no remaining occurrences)
+  - Verification: see Phase 5 / Batch-01 evidence + focused smoke log
 
 ---
 
@@ -413,7 +436,7 @@ querySelector:
 - IPC channel names and contextBridge exposure names remain literal in current evidence (no dynamic channel construction observed so far).
 - Contract closure note:
   - Main->renderer push event inventory is statically grounded via `contracts.webContents.send.log`.
-  - `preset-deleted` and `preset-restored` were closed as dead push-only channels in Phase 4 (see Sections 4.2–4.3 and C2).
+  - `preset-deleted` and `preset-restored` were closed as dead push-only channels in Phase 4 (see Sections 4.2–4.3 and C2) and removed in Phase 5 / Batch-01.
 
 ---
 
