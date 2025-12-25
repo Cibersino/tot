@@ -24,7 +24,18 @@ Additional focused static evidence (Phase 4 — targeted closure):
 
 Additional execution evidence (Phase 5 — micro-batches):
 - RUN_ID (Batch-01 patch + post-grep + smoke): 20251225-085925
-  - Evidence folder: docs/cleanup/_evidence/deadcode/20251225-085925/
+  - Evidence files:
+    - docs/cleanup/_evidence/deadcode/20251225-085925/patch.electron_presets_main_js.diff.log
+    - docs/cleanup/_evidence/deadcode/20251225-085925/post.contracts.preset-deleted.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-085925/post.contracts.preset-restored.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-085925/smoke.presets_delete_restore.log
+
+- RUN_ID (Batch-02 patch + post-grep + smoke): 20251225-095824
+  - Evidence files:
+    - docs/cleanup/_evidence/deadcode/20251225-095824/patch.electron_menu_builder_js.diff.log
+    - docs/cleanup/_evidence/deadcode/20251225-095824/post.export.loadMainTranslations.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-095824/post.usage.menuBuilder_loadMainTranslations.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-095824/smoke.menu_builder_exports.log
 
 Tool outputs ingested (Phase 3):
 - madge.orphans.log
@@ -106,6 +117,24 @@ Evidence (Phase 5 / Batch-01):
   - docs/cleanup/_evidence/deadcode/20251225-085925/post.contracts.preset-restored.grep.log
   - docs/cleanup/_evidence/deadcode/20251225-085925/smoke.presets_delete_restore.log
 
+### 5.2 Batch-02 — unused exports (knip LOW/MED): remove unused export surface (micro-batches)
+
+#### 5.2.1 micro-batch — `electron/menu_builder.js`: stop exporting `loadMainTranslations` (internal helper retained)
+Change:
+- Removed `loadMainTranslations` from `module.exports` in `electron/menu_builder.js` (function remains and is still used internally by `getDialogTexts` and `buildAppMenu`).
+
+Verification:
+- Post-check export: `git grep -n "loadMainTranslations," -- electron/menu_builder.js` (must be empty).
+- Post-check usage (property access): `git grep -n "menuBuilder\.loadMainTranslations" -- .` (must be empty).
+- Smoke test: `npm start` (PASS).
+
+Evidence (Phase 5 / Batch-02):
+- RUN_ID: 20251225-095824
+  - docs/cleanup/_evidence/deadcode/20251225-095824/patch.electron_menu_builder_js.diff.log
+  - docs/cleanup/_evidence/deadcode/20251225-095824/post.export.loadMainTranslations.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-095824/post.usage.menuBuilder_loadMainTranslations.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-095824/smoke.menu_builder_exports.log
+
 ---
 
 ## Class A — Local / lexical (ESLint `no-unused-vars` candidates)
@@ -176,6 +205,14 @@ Important: CommonJS/property access and dynamic path loading create false positi
 - Classification: **B-candidate (signal only)**; cannot delete based on knip alone.
 - Closure plan:
   - For each export: perform repo-wide reference check (static) and (if needed) dynamic trace (Phase 4) before deletion.
+
+Phase 5 closures (Batch-02 micro-batches):
+- B2.1 — `electron/menu_builder.js`: `loadMainTranslations` export — REMOVED (export surface only; internal helper retained)
+  - Evidence (RUN_ID 20251225-095824):
+    - docs/cleanup/_evidence/deadcode/20251225-095824/patch.electron_menu_builder_js.diff.log
+    - docs/cleanup/_evidence/deadcode/20251225-095824/post.export.loadMainTranslations.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-095824/post.usage.menuBuilder_loadMainTranslations.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-095824/smoke.menu_builder_exports.log
 
 ---
 
