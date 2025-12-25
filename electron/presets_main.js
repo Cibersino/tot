@@ -624,5 +624,4 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
 module.exports = {
   registerIpc,
-  loadDefaultPresetsCombined,
 };

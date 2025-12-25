@@ -37,6 +37,17 @@ Additional execution evidence (Phase 5 — micro-batches):
     - docs/cleanup/_evidence/deadcode/20251225-095824/post.usage.menuBuilder_loadMainTranslations.grep.log
     - docs/cleanup/_evidence/deadcode/20251225-095824/smoke.menu_builder_exports.log
 
+- RUN_ID (Batch-02 patch + pre/post-grep + smoke; presets_main exports): 20251225-102709
+  - Evidence files:
+    - docs/cleanup/_evidence/deadcode/20251225-102709/pre.usage.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/pre.usage.presetsMain_loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/pre.bracket.sq.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/pre.bracket.dq.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/patch.electron_presets_main_js.exports.diff.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/post.export.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/post.usage.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/smoke.batch02_presets_exports.log
+
 Tool outputs ingested (Phase 3):
 - madge.orphans.log
 - madge.circular.log
@@ -135,6 +146,27 @@ Evidence (Phase 5 / Batch-02):
   - docs/cleanup/_evidence/deadcode/20251225-095824/post.usage.menuBuilder_loadMainTranslations.grep.log
   - docs/cleanup/_evidence/deadcode/20251225-095824/smoke.menu_builder_exports.log
 
+#### 5.2.2 micro-batch — `electron/presets_main.js`: stop exporting `loadDefaultPresetsCombined` (internal helper retained)
+Change:
+- Removed `loadDefaultPresetsCombined` from `module.exports` in `electron/presets_main.js` (function retained; behavior unchanged).
+
+Verification:
+- Pre-check (repo-wide): `git grep` for identifier usage + property/bracket access (see evidence).
+- Post-check export: `git grep -n "loadDefaultPresetsCombined," -- electron/presets_main.js` (must be empty).
+- Post-check repo-wide: `git grep -n -- "loadDefaultPresetsCombined" -- .` (usage should remain internal-only).
+- Smoke test: `npm start` (PASS).
+
+Evidence (Phase 5 / Batch-02):
+- RUN_ID: 20251225-102709
+  - docs/cleanup/_evidence/deadcode/20251225-102709/pre.usage.loadDefaultPresetsCombined.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-102709/pre.usage.presetsMain_loadDefaultPresetsCombined.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-102709/pre.bracket.sq.loadDefaultPresetsCombined.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-102709/pre.bracket.dq.loadDefaultPresetsCombined.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-102709/patch.electron_presets_main_js.exports.diff.log
+  - docs/cleanup/_evidence/deadcode/20251225-102709/post.export.loadDefaultPresetsCombined.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-102709/post.usage.loadDefaultPresetsCombined.grep.log
+  - docs/cleanup/_evidence/deadcode/20251225-102709/smoke.batch02_presets_exports.log
+
 ---
 
 ## Class A — Local / lexical (ESLint `no-unused-vars` candidates)
@@ -213,6 +245,17 @@ Phase 5 closures (Batch-02 micro-batches):
     - docs/cleanup/_evidence/deadcode/20251225-095824/post.export.loadMainTranslations.grep.log
     - docs/cleanup/_evidence/deadcode/20251225-095824/post.usage.menuBuilder_loadMainTranslations.grep.log
     - docs/cleanup/_evidence/deadcode/20251225-095824/smoke.menu_builder_exports.log
+
+- B2.2 — `electron/presets_main.js`: `loadDefaultPresetsCombined` export — REMOVED (export surface only; internal helper retained)
+  - Evidence (RUN_ID 20251225-102709):
+    - docs/cleanup/_evidence/deadcode/20251225-102709/pre.usage.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/pre.usage.presetsMain_loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/pre.bracket.sq.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/pre.bracket.dq.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/patch.electron_presets_main_js.exports.diff.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/post.export.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/post.usage.loadDefaultPresetsCombined.grep.log
+    - docs/cleanup/_evidence/deadcode/20251225-102709/smoke.batch02_presets_exports.log
 
 ---
 
