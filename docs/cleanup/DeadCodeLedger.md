@@ -61,22 +61,73 @@
   - post.usage.updater_checkForUpdates.grep.log
   - smoke.batch02_updater_exports.log
 
-- RUN_ID (Batch-02.4 patch + pre/post-grep + smoke; settings exports): 20251226-074013
-  - Evidence files:
-    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.usage.loadNumberFormatDefaults.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.usage.normalizeSettings.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.usage.settingsState_loadNumberFormatDefaults.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.usage.settingsState_normalizeSettings.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.bracket.sq.loadNumberFormatDefaults.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.bracket.dq.loadNumberFormatDefaults.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.bracket.sq.normalizeSettings.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.bracket.dq.normalizeSettings.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/patch.electron_settings_js.exports.diff.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/post.export.loadNumberFormatDefaults.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/post.export.normalizeSettings.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/post.usage.settingsState_loadNumberFormatDefaults.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/post.usage.settingsState_normalizeSettings.grep.log
-    - docs/cleanup/_evidence/deadcode/20251226-074013/smoke.batch02_settings_exports.log
+- RUN_ID: 20251226-074013 (Batch-02.4 micro-batch: settings exports)
+  - pre.usage.loadNumberFormatDefaults.grep.log
+  - pre.usage.normalizeSettings.grep.log
+  - pre.usage.settingsState_loadNumberFormatDefaults.grep.log
+  - pre.usage.settingsState_normalizeSettings.grep.log
+  - pre.bracket.sq.loadNumberFormatDefaults.grep.log
+  - pre.bracket.dq.loadNumberFormatDefaults.grep.log
+  - pre.bracket.sq.normalizeSettings.grep.log
+  - pre.bracket.dq.normalizeSettings.grep.log
+  - patch.electron_settings_js.exports.diff.log
+  - post.export.loadNumberFormatDefaults.grep.log
+  - post.export.normalizeSettings.grep.log
+  - post.usage.settingsState_loadNumberFormatDefaults.grep.log
+  - post.usage.settingsState_normalizeSettings.grep.log
+  - smoke.batch02_settings_exports.log
+
+- RUN_ID: 20251226-083027 (Batch-02.5 attempted removal: text_state export getCurrentText — FAILED)
+  - pre.usage.getCurrentText.grep.log
+  - pre.require.text_state.grep.log
+  - pre.usage.anyobj_getCurrentText.grep.log
+  - pre.bracket.sq.getCurrentText.grep.log
+  - pre.bracket.dq.getCurrentText.grep.log
+  - patch.electron_text_state_js.exports.diff.log
+  - post.export.getCurrentText.grep.log
+  - post.usage.anyobj_getCurrentText.grep.log
+  - post.bracket.sq.getCurrentText.grep.log
+  - post.bracket.dq.getCurrentText.grep.log
+  - smoke.batch02_text_state_exports.log
+
+- RUN_ID: 20251226-093413 (Phase 5 retro-audit validation of prior export-surface removals; RetroAuditCorrections.md; NO VERIFICABLE: replace with actual RUN_ID folder name)
+  - retro.loadMainTranslations.importers.grep.log
+  - retro.loadMainTranslations.all_importer_refs.grep.log
+  - retro.loadMainTranslations.external_refs.grep.log
+  - retro.loadMainTranslations.prop_anyobj.importers.grep.log
+  - retro.loadMainTranslations.bracket.sq.importers.grep.log
+  - retro.loadMainTranslations.bracket.dq.importers.grep.log
+  - retro.loadMainTranslations.post.export_item.grep.log
+  - retro.loadDefaultPresetsCombined.importers.grep.log
+  - retro.loadDefaultPresetsCombined.all_importer_refs.grep.log
+  - retro.loadDefaultPresetsCombined.external_refs.grep.log
+  - retro.loadDefaultPresetsCombined.prop_anyobj.importers.grep.log
+  - retro.loadDefaultPresetsCombined.bracket.sq.importers.grep.log
+  - retro.loadDefaultPresetsCombined.bracket.dq.importers.grep.log
+  - retro.loadDefaultPresetsCombined.post.export_item.grep.log
+  - retro.checkForUpdates.importers.grep.log
+  - retro.checkForUpdates.all_importer_refs.grep.log
+  - retro.checkForUpdates.external_refs.grep.log
+  - retro.checkForUpdates.prop_anyobj.importers.grep.log
+  - retro.checkForUpdates.bracket.sq.importers.grep.log
+  - retro.checkForUpdates.bracket.dq.importers.grep.log
+  - retro.checkForUpdates.post.export_item.grep.log
+  - retro.loadNumberFormatDefaults.importers.grep.log
+  - retro.loadNumberFormatDefaults.all_importer_refs.grep.log
+  - retro.loadNumberFormatDefaults.external_refs.grep.log
+  - retro.loadNumberFormatDefaults.prop_anyobj.importers.grep.log
+  - retro.loadNumberFormatDefaults.bracket.sq.importers.grep.log
+  - retro.loadNumberFormatDefaults.bracket.dq.importers.grep.log
+  - retro.loadNumberFormatDefaults.post.export_item.grep.log
+  - retro.normalizeSettings.importers.grep.log
+  - retro.normalizeSettings.all_importer_refs.grep.log
+  - retro.normalizeSettings.external_refs.grep.log
+  - retro.normalizeSettings.prop_anyobj.importers.grep.log
+  - retro.normalizeSettings.bracket.sq.importers.grep.log
+  - retro.normalizeSettings.bracket.dq.importers.grep.log
+  - retro.normalizeSettings.post.export_item.grep.log
+  - retro.regression.smoke.log
+  - retro.regression.errors.extract.log
 
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - madge.orphans.log
@@ -100,14 +151,16 @@
 ---
 
 ## 3) Evidence matrix (micro-batches standard)
-> Use this exact matrix for any “unused export” removal (knip LOW/MED signals):
-1) PRE: identifier grep (repo-wide)
-2) PRE: property access grep (e.g. `obj.ident`)
-3) PRE: bracket access grep (sq + dq): `['ident']` / `["ident"]`
-4) PATCH: minimal diff (export surface only; keep internal helper)
-5) POST: export grep (must be empty)
-6) POST: usage grep (must be empty for external access; internal uses allowed)
-7) SMOKE: focused scenario (depends on module)
+> Use this exact matrix for any “unused export” removal (knip LOW/MED signals).
+> Rationale: repo-wide identifier greps can be polluted by symbol collisions; the hard gate must be importer-scoped.
+
+1) PRE: discover importers of the owner module (CommonJS `require(...)`, scoped to `electron/`)
+2) PRE: identifier grep for `sym` scoped to importer files (catches destructuring/direct refs)
+3) PRE: property access grep `.$sym` scoped to importer files
+4) PRE: bracket access grep (sq + dq) scoped to importer files: `['sym']` / `["sym"]`
+5) PATCH: minimal diff (export surface only; keep internal helper)
+6) POST: export grep in owner (must be empty): `^\s*sym\s*,?\s*$`
+7) SMOKE: focused scenario (depends on module); treat any runtime console error as FAIL
 
 ---
 
@@ -213,17 +266,46 @@ Verification:
 Evidence:
 - RUN_ID: 20251226-074013 (see §1.3)
 
-### 5.3 Batch-02 (NEXT) — electron/text_state.js unused export: `getCurrentText` (knip LOW/MED)
-Signal:
-- knip reports unused exports in electron/text_state.js: (init/registerIpc/getCurrentText).
+#### 5.2.5 micro-batch — `electron/text_state.js`: attempted removal of `getCurrentText` export — FAILED (external consumer)
 
-Rules:
-- Do NOT touch until you replicate §3 evidence matrix exactly.
+Change (attempt):
+- Removed `getCurrentText` from `module.exports` in `electron/text_state.js`.
 
-Required smoke scope for text_state.js:
-- Main window: paste/type text, ensure counters update.
-- Editor window: open editor, ensure initial text arrives and subsequent edits sync.
-- Any “clear” action that triggers editor force-clear / current-text-updated paths.
+Gate rule:
+- If pre-check shows **any external consumers** (outside `electron/text_state.js`) for `.getCurrentText`, STOP (do not remove the export surface).
+
+Observed (pre-check; external usage exists):
+- `electron/main.js:203` — `textState.getCurrentText()`
+- `electron/main.js:770` — `textState.getCurrentText()`
+- (Renderer contract still exists via preload bridges)
+  - `public/editor.js:427` — `window.editorAPI.getCurrentText()`
+  - `public/renderer.js:339,821` — `window.electronAPI.getCurrentText()`
+
+Result (smoke):
+- Runtime error on app start:
+  - `TypeError: textState.getCurrentText is not a function`
+  - Logged at `electron/main.js:203` (editor init path).
+
+Conclusion:
+- **NO DEAD / FALSE POSITIVE** for “unused export”.
+- `getCurrentText` is a required export consumed by main process via property access (`textState.getCurrentText`).
+- Action: **revert** export removal (keep `getCurrentText` in `module.exports`) before proceeding with further batches.
+
+Evidence:
+- RUN_ID: 20251226-083027 (see §1.3)
+
+
+#### 5.2.6 Retro-audit validation (Phase 5 export removals) — TO FILL (context-preserving)
+Purpose:
+- Retro-validate Batch-02.1–02.4 export-surface removals using importer-scoped gates (to avoid repo-wide symbol-collision false positives).
+- Run one control-negative to prove the gate detects real usage (e.g., `text_state:getCurrentText`).
+
+Status:
+- NO VERIFICABLE in this ledger alone: fill PASS/FAIL once the retro-audit RUN_ID folder exists in the evidence index.
+
+Evidence:
+- RUN_ID: 20251226-093413 (see §1.3)
+
 
 ---
 
