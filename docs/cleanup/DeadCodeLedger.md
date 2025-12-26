@@ -61,6 +61,23 @@
   - post.usage.updater_checkForUpdates.grep.log
   - smoke.batch02_updater_exports.log
 
+- RUN_ID (Batch-02.4 patch + pre/post-grep + smoke; settings exports): 20251226-074013
+  - Evidence files:
+    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.usage.loadNumberFormatDefaults.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.usage.normalizeSettings.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.usage.settingsState_loadNumberFormatDefaults.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.usage.settingsState_normalizeSettings.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.bracket.sq.loadNumberFormatDefaults.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.bracket.dq.loadNumberFormatDefaults.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.bracket.sq.normalizeSettings.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/pre.bracket.dq.normalizeSettings.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/patch.electron_settings_js.exports.diff.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/post.export.loadNumberFormatDefaults.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/post.export.normalizeSettings.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/post.usage.settingsState_loadNumberFormatDefaults.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/post.usage.settingsState_normalizeSettings.grep.log
+    - docs/cleanup/_evidence/deadcode/20251226-074013/smoke.batch02_settings_exports.log
+
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - madge.orphans.log
 - madge.circular.log
@@ -183,13 +200,30 @@ Verification:
 Evidence:
 - RUN_ID: 20251225-121246 (see §1.3)
 
-### 5.3 Batch-02 (NEXT) — electron/settings.js unused exports (knip LOW/MED)
-Signal:
-- Next “knip LOW/MED unused export” pattern likely lands in electron/settings.js (large export surface).
+#### 5.2.4 micro-batch — electron/settings.js: stop exporting `normalizeSettings` and `loadNumberFormatDefaults` (internal helpers retained)
+Change:
+- Removed `normalizeSettings` and `loadNumberFormatDefaults` from `module.exports` in electron/settings.js (functions retained; behavior unchanged).
 
-Do NOT touch until you replicate §3 evidence matrix exactly.
-Required smoke scope for settings.js:
-- Settings read/write + language set + mode conteo set (settings + idioma + modo conteo).
+Verification:
+- Pre: identifier/property/bracket checks (per §3).
+- Post: export grep empty for both symbols in electron/settings.js.
+- Post: usage grep for `settingsState.normalizeSettings` and `settingsState.loadNumberFormatDefaults` must be empty.
+- Smoke: `npm start` + settings read/write + language set + mode conteo set.
+
+Evidence:
+- RUN_ID: 20251226-074013 (see §1.3)
+
+### 5.3 Batch-02 (NEXT) — electron/text_state.js unused export: `getCurrentText` (knip LOW/MED)
+Signal:
+- knip reports unused exports in electron/text_state.js: (init/registerIpc/getCurrentText).
+
+Rules:
+- Do NOT touch until you replicate §3 evidence matrix exactly.
+
+Required smoke scope for text_state.js:
+- Main window: paste/type text, ensure counters update.
+- Editor window: open editor, ensure initial text arrives and subsequent edits sync.
+- Any “clear” action that triggers editor force-clear / current-text-updated paths.
 
 ---
 
@@ -255,6 +289,7 @@ Phase 5 closures (Batch-02):
 - B2.1 menu_builder.js: `loadMainTranslations` export REMOVED — RUN_ID 20251225-095824
 - B2.2 presets_main.js: `loadDefaultPresetsCombined` export REMOVED — RUN_ID 20251225-102709
 - B2.3 updater.js: `checkForUpdates` export REMOVED — RUN_ID 20251225-121246
+- B2.4 settings.js: `normalizeSettings` + `loadNumberFormatDefaults` exports REMOVED — RUN_ID 20251226-074013
 
 ---
 
