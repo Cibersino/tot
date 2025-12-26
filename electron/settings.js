@@ -358,8 +358,6 @@ module.exports = {
     registerIpc,
     getSettings,
     saveSettings,
-    normalizeSettings,
-    loadNumberFormatDefaults,
     applyFallbackLanguageIfUnset,
     broadcastSettingsUpdated,
 };
