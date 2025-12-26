@@ -418,41 +418,125 @@ Plantilla de commit message:
   Ej:
 * `deadcode(B2.4): drop settings exports loadNumberFormatDefaults + normalizeSettings (RUN_ID 20251226-074013)`
 
+
+**Y reemplázalo por este bloque completo:**
+
+```md
 ### 5.3 Matriz de evidencia para unused exports (Clase B; patrón knip LOW/MED)
+
+Regla (alineada con el ledger):
+- Los greps repo-wide por identificador pueden contaminarse por **colisiones de símbolos**.
+- Por lo tanto, el **hard gate para “unused export surface” debe ser importer-scoped**:
+  - primero descubres importadores reales del owner module (CommonJS `require(...)`, scoped a `electron/`)
+  - luego buscas el símbolo SOLO dentro de esos importadores.
 
 Para CADA export que se elimina del `module.exports` (función retenida internamente):
 
-* Pre-check: identificador repo-wide (incluye destructuring/calls)
-* Pre-check: property access (`settingsState.<name>`)
-* Pre-check: bracket access (`['name']` y `["name"]`)
-* Patch: `git diff -- <file>`
-* Post-check: export removido (`git grep "<name>," -- <file>`)
-* Post-check: property/bracket access debe quedar vacío repo-wide
-* Smoke focalizado del dominio (settings/idioma/modo conteo, etc.)
+**PRE (pinned a HEAD):**
+1) Descubrir importadores del owner module (CommonJS `require(...)`, scoped a `electron/`).
+2) Identifier grep de `sym` scoped a importers (captura destructuring / refs directas).
+3) Property access grep `.$sym` scoped a importers.
+4) Bracket access grep `['sym']` y `["sym"]` scoped a importers.
+5) HARD GATE: si existe cualquier referencia en importers → **NO es seguro remover el export** (STOP y clasificar como NO DEAD / USED_EXTERNALLY).
 
-Script recomendado (PowerShell):
+**PATCH:**
+6) Diff mínimo: remover SOLO la entrada en `module.exports` (retener helper interno).
+
+**POST (working tree):**
+7) Export grep en owner: debe estar vacío para el ítem de lista (línea suelta en `module.exports`).
+8) (Opcional pero recomendado) Re-ejecutar el gate importer-scoped en working tree para confirmar que no apareció uso externo durante el cambio.
+
+**SMOKE:**
+9) Smoke focalizado; cualquier error de consola runtime = FAIL.
+
+Script recomendado (PowerShell; por símbolo; PowerShell-safe):
 
 ```powershell
 $RUN_ID = (Get-Date -Format "yyyyMMdd-HHmmss")
-$EVID = "docs\cleanup\_evidence\deadcode\$RUN_ID"
+$EVID   = "docs\cleanup\_evidence\deadcode\$RUN_ID"
 New-Item -ItemType Directory -Force -Path $EVID | Out-Null
 
-# PRE-CHECKS (pinned to HEAD)
-git grep -n -- "<NAME>" HEAD -- . | Out-File -Encoding utf8 "$EVID\pre.usage.<NAME>.grep.log"
-git grep -n -- "<ALIAS>\.<NAME>" HEAD -- . | Out-File -Encoding utf8 "$EVID\pre.usage.<ALIAS>_<NAME>.grep.log"
-git grep -n -F -- "['<NAME>']" HEAD -- . | Out-File -Encoding utf8 "$EVID\pre.bracket.sq.<NAME>.grep.log"
-git grep -n -F -- '["<NAME>"]' HEAD -- . | Out-File -Encoding utf8 "$EVID\pre.bracket.dq.<NAME>.grep.log"
+$REF = "HEAD"
 
-# PATCH EVIDENCE (after editing)
-git diff -- <FILE> | Out-File -Encoding utf8 "$EVID\patch.<FILE_DOTPATH>.diff.log"
+# Rellena por micro-batch:
+$owner = "<OWNER_FILE>"   # e.g. electron/settings.js
+$sym   = "<SYM_NAME>"     # e.g. normalizeSettings
 
-# POST-CHECKS (current working tree)
-git grep -n "<NAME>," -- <FILE> | Out-File -Encoding utf8 "$EVID\post.export.<NAME>.grep.log"
-git grep -n -- "<ALIAS>\.<NAME>" -- . | Out-File -Encoding utf8 "$EVID\post.usage.<ALIAS>_<NAME>.grep.log"
+$stem = [IO.Path]::GetFileNameWithoutExtension($owner)
+
+# ----------------------------
+# PRE: descubrir importadores (scoped a electron/)
+# ----------------------------
+$stemEsc = [regex]::Escape($stem)
+$reqPat  = "require\(\s*['""][^'""]*${stemEsc}(\.js)?['""]\s*\)"
+$req     = git grep -n -E $reqPat $REF -- electron 2>$null
+
+$importerFiles = @(
+  $req | ForEach-Object { ($_ -split ':',4)[1] } | Sort-Object -Unique
+)
+
+$importerFiles | Out-File -Encoding utf8 "$EVID\pre.importers.$sym.grep.log"
+
+# Si no hay importadores detectados, el gate NO prueba ausencia de uso (podría existir require dinámico).
+# En ese caso: registra logs vacíos y exige revisión manual adicional.
+if ($importerFiles.Count -eq 0) {
+  "" | Out-File -Encoding utf8 "$EVID\pre.external_refs.$sym.grep.log"
+  "" | Out-File -Encoding utf8 "$EVID\pre.prop_anyobj.$sym.grep.log"
+  "" | Out-File -Encoding utf8 "$EVID\pre.bracket.sq.$sym.grep.log"
+  "" | Out-File -Encoding utf8 "$EVID\pre.bracket.dq.$sym.grep.log"
+  throw "HARD GATE INCONCLUSIVE: no importers found for '$owner' (sym '$sym'). Check for dynamic require/fs-scan before removing export."
+}
+
+# ----------------------------
+# PRE: identifier / property / bracket SOLO en importers
+# ----------------------------
+$all = git grep -n -- $sym $REF -- $importerFiles 2>$null
+$all | Out-File -Encoding utf8 "$EVID\pre.all_importer_refs.$sym.grep.log"
+
+$prop = git grep -n -F -- (".{0}" -f $sym) $REF -- $importerFiles 2>$null
+$prop | Out-File -Encoding utf8 "$EVID\pre.prop_anyobj.$sym.grep.log"
+
+$bsqPat = "['{0}']" -f $sym
+$bdqPat = '["{0}"]' -f $sym
+
+$bsq = git grep -n -F -- $bsqPat $REF -- $importerFiles 2>$null
+$bdq = git grep -n -F -- $bdqPat $REF -- $importerFiles 2>$null
+
+$bsq | Out-File -Encoding utf8 "$EVID\pre.bracket.sq.$sym.grep.log"
+$bdq | Out-File -Encoding utf8 "$EVID\pre.bracket.dq.$sym.grep.log"
+
+# External refs = cualquier match en importers (si hay, NO es seguro remover export)
+$external = @()
+if ($all)  { $external += $all }
+if ($prop) { $external += $prop }
+if ($bsq)  { $external += $bsq }
+if ($bdq)  { $external += $bdq }
+
+$external | Out-File -Encoding utf8 "$EVID\pre.external_refs.$sym.grep.log"
+
+if ($external.Count -gt 0) {
+  throw "HARD GATE FAIL: '$sym' aparece en importers de '$owner'. NO remover export."
+}
+
+# ----------------------------
+# (EDIT MANUAL/CODEX) remover sym de module.exports en $owner
+# ----------------------------
+
+# PATCH EVIDENCE
+$ownerDot = ($owner -replace '[\\/]', '_')
+git diff -- $owner | Out-File -Encoding utf8 "$EVID\patch.$ownerDot.diff.log"
+
+# POST: export list item (línea suelta dentro de module.exports)
+git grep -n -E "^\s*${sym}\s*,?\s*$" -- $owner |
+  Out-File -Encoding utf8 "$EVID\post.export_item.$sym.grep.log"
 
 # SMOKE
-npm start 2>&1 | Tee-Object "$EVID\smoke.<ledgerkey>.log"
+npm start 2>&1 | Tee-Object "$EVID\smoke.$sym.log"
 ```
+
+Notas:
+- Este gate evita falsos FAIL por “colisión de nombre” (mismo identificador en módulos no relacionados).
+- Si el owner module se carga dinámicamente (fs-scan / require no literal), este gate puede ser inconcluso: STOP y trata el caso como HIGH hasta cerrar con evidencia adicional (o Phase 4 si corresponde).
 
 ### 5.4 (Codex) Implementación por micro-batch con trazabilidad ledger→diff
 
