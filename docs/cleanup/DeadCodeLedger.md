@@ -90,7 +90,7 @@
   - post.bracket.dq.getCurrentText.grep.log
   - smoke.batch02_text_state_exports.log
 
-- RUN_ID: 20251226-093413 (Phase 5 retro-audit validation of prior export-surface removals; RetroAuditCorrections.md; NO VERIFICABLE: replace with actual RUN_ID folder name)
+- RUN_ID: 20251226-093413 (Phase 5 retro-audit validation of prior export-surface removals; RetroAuditCorrections.md; PASS)
   - retro.loadMainTranslations.importers.grep.log
   - retro.loadMainTranslations.all_importer_refs.grep.log
   - retro.loadMainTranslations.external_refs.grep.log
@@ -295,13 +295,16 @@ Evidence:
 - RUN_ID: 20251226-083027 (see §1.3)
 
 
-#### 5.2.6 Retro-audit validation (Phase 5 export removals) — TO FILL (context-preserving)
+#### 5.2.6 Retro-audit validation (Phase 5 export removals) — PASS (closed)
 Purpose:
 - Retro-validate Batch-02.1–02.4 export-surface removals using importer-scoped gates (to avoid repo-wide symbol-collision false positives).
 - Run one control-negative to prove the gate detects real usage (e.g., `text_state:getCurrentText`).
 
 Status:
-- NO VERIFICABLE in this ledger alone: fill PASS/FAIL once the retro-audit RUN_ID folder exists in the evidence index.
+- PASS (importer-scoped gates + post-checks clean; control-negative + smoke clean).
+- Control-negative: `retro.getCurrentText.external_refs.grep.log` is non-empty (gate detects real usage).
+- Batch-02.1–02.4 targets: all `retro.<sym>.external_refs.grep.log` are empty; all `retro.<sym>.post.export_item.grep.log` are empty.
+- Regression: `retro.regression.errors.extract.log` is empty.
 
 Evidence:
 - RUN_ID: 20251226-093413 (see §1.3)
