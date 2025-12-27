@@ -5,7 +5,7 @@
 ---
 
 ## 0) Bootstrap metadata
-- HEAD: 472cbf03e829fe57922be1dff6313fee9a4653ab
+- HEAD: a25a037ed80abca3baedf6433e38ebe24c451418
 - Madge seed: electron/main.js (VERIFIED by evidence in EntryPointsInventory.md)
 - Evidence root: docs/cleanup/_evidence/deadcode/
 
@@ -197,6 +197,16 @@
   - smoke.A5.errors.grep.log
   - git_status.post.log
 
+- RUN_ID: 20251227-170712 (B2 PRE gate FAIL: editor_state export `loadInitialState` is USED_EXTERNALLY)
+  - head.pre.log
+  - pre.importers.editor_state.grep.log
+  - pre.external_refs.loadInitialState.grep.log
+
+- RUN_ID: 20251227-172132 (B2 PRE gate FAIL: editor_state export `attachTo` is USED_EXTERNALLY)
+  - head.pre.log
+  - pre.importers.editor_state.grep.log
+  - pre.external_refs.attachTo.grep.log
+
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - madge.orphans.log
 - madge.circular.log
@@ -376,6 +386,31 @@ Status:
 Evidence:
 - RUN_ID: 20251226-093413 (see §1.3)
 
+#### 5.2.7 micro-batch — `electron/editor_state.js`: attempted removal of `loadInitialState` export — ABORTED (external consumer)
+Gate rule:
+- If pre-check shows any external consumer for `editorState.loadInitialState`, STOP (do not remove export).
+
+Observed (pre-check; external usage exists):
+- `electron/main.js:159` — `editorState.loadInitialState(loadJson);`
+
+Conclusion:
+- **NO DEAD / USED_EXTERNALLY** for “unused export”.
+- Keep `loadInitialState` in `module.exports`.
+
+Evidence:
+- RUN_ID: 20251227-170712 (see §1.3)
+
+#### 5.2.8 micro-batch — `electron/editor_state.js`: attempted removal of `attachTo` export — ABORTED (external consumer)
+Observed (pre-check; external usage exists):
+- `electron/main.js:226` — `editorState.attachTo(editorWin, loadJson, saveJson);`
+
+Conclusion:
+- **NO DEAD / USED_EXTERNALLY** for “unused export”.
+- Keep `attachTo` in `module.exports`.
+
+Evidence:
+- RUN_ID: 20251227-172132 (see §1.3)
+
 ---
 
 ## 6) Class A — Local / lexical (ESLint no-unused-vars candidates)
@@ -471,6 +506,8 @@ Phase 5 closures (Batch-02):
 - B2.3 updater.js: `checkForUpdates` export REMOVED — RUN_ID 20251225-121246
 - B2.4 settings.js: `normalizeSettings` + `loadNumberFormatDefaults` exports REMOVED — RUN_ID 20251226-074013
 - B2.5 text_state.js: `getCurrentText` export NO DEAD (USED_EXTERNALLY) — RUN_ID 20251226-083027
+- B2.6 editor_state.js: `loadInitialState` export NO DEAD (USED_EXTERNALLY) — RUN_ID 20251227-170712
+- B2.7 editor_state.js: `attachTo` export NO DEAD (USED_EXTERNALLY) — RUN_ID 20251227-172132
 
 ---
 
