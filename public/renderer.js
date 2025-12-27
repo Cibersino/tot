@@ -128,7 +128,7 @@ function applyTranslations() {
   if (vfLabel) {
     vfLabel.textContent = tRenderer('renderer.main.crono.flotante_short', vfLabel.textContent || vfLabel.textContent);
   }
-  
+
   // Help button (title)
   if (btnHelp) {
     const helpTitle = tRenderer('renderer.main.tooltips.help_button', btnHelp.getAttribute('title') || '');
@@ -291,15 +291,6 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       console.error('Error handling crono-state in renderer:', e);
     }
   });
-}
-
-// ======================= Show real speed (WPM) =======================
-async function mostrarVelocidadReal(realWpm) {
-  const idioma = idiomaActual;
-  const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
-  // Apply the same formatting to the real speed
-  const velocidadFormateada = formatearNumero(realWpm, separadorMiles, separadorDecimal);
-  realWpmDisplay.textContent = `${velocidadFormateada} WPM`;
 }
 
 // ======================= Load presets (merge + shadowing) =======================
@@ -647,7 +638,7 @@ const loadPresets = async () => {
 
   // ======================= TOP BAR: Register actions with menuActions =======================
   // Ensure menu_actions.js is loaded (script included before renderer.js)
-  if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {  
+  if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
     window.menuActions.registerMenuAction('guia_basica', () => { showInfoModal('guia_basica') });
     window.menuActions.registerMenuAction('instrucciones_completas', () => { showInfoModal('instrucciones') });
     window.menuActions.registerMenuAction('faq', () => { showInfoModal('faq') });
@@ -725,16 +716,8 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('readme', () => { showInfoModal('readme') });
     window.menuActions.registerMenuAction('acerca_de', () => { showInfoModal('acerca_de') });
 
-    // Generic example for viewing payloads not explicitly registered:
-    // (optional) Registering a 'catch-all' is not necessary; menu_actions.js already logs payloads without a handler.
   } else {
-    // If menuActions is unavailable, register a direct receiver (fallback)
-    if (window.electronAPI && typeof window.electronAPI.onMenuClick === 'function') {
-      window.electronAPI.onMenuClick((payload) => {
-      });
-    } else {
-      console.warn('menuActions and electronAPI.onMenuClick unavailable - the top bar will not be handled by the renderer.');
-    }
+    console.warn('menuActions unavailable - the top bar will not be handled by the renderer.');
   }
 })();
 
@@ -1049,18 +1032,6 @@ const getCronoLabels = () => ({
   pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
 });
 
-const formatCrono = (ms) => cronoModule.formatCrono(ms);
-
-const actualizarVelocidadRealFromElapsed = (ms) => cronoModule.actualizarVelocidadRealFromElapsed({
-  ms,
-  currentText,
-  contarTexto,
-  obtenerSeparadoresDeNumeros,
-  formatearNumero,
-  idiomaActual,
-  realWpmDisplay
-});
-
 const uiResetCrono = () => {
   elapsed = 0;
   running = false;
@@ -1108,7 +1079,7 @@ const closeFlotante = async () => {
 
 // toggle WF from the UI (switch)
 if (toggleVF) {
-  toggleVF.addEventListener('change', async (ev) => {
+  toggleVF.addEventListener('change', async () => {
     const wantOpen = !!toggleVF.checked;
     // Optimistic: reflect aria-checked immediately
     toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
@@ -1130,8 +1101,6 @@ if (window.electronAPI && typeof window.electronAPI.onFlotanteClosed === 'functi
 }
 
 // ======================= Manual stopwatch editing =======================
-const parseCronoInput = (input) => cronoModule.parseCronoInput(input);
-
 const applyManualTime = () => {
   cronoModule.applyManualTime({
     value: cronoDisplay.value,
