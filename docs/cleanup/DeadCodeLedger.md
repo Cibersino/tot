@@ -154,6 +154,20 @@
   - smoke.A1.log
   - smoke.A1.errors.grep.log
 
+- RUN_ID: 20251226-213650 (A3 micro-batch: harden showNotice global contract)
+  - run_id.txt
+  - evidence_path.txt
+  - git_status.pre.log
+  - rg.showNotice.editor.pre.log
+  - rg.showNotice.notify.pre.log
+  - eslint.pre.log
+  - patch.A3.diff.log
+  - rg.showNotice.editor.post.log
+  - eslint.post.log
+  - git_status.post.log
+  - smoke.A3.log
+  - smoke.A3.errors.grep.log
+
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - madge.orphans.log
 - madge.circular.log
@@ -319,7 +333,6 @@ Conclusion:
 Evidence:
 - RUN_ID: 20251226-083027 (see §1.3)
 
-
 #### 5.2.6 Retro-audit validation (Phase 5 export removals) — PASS (closed)
 Purpose:
 - Retro-validate Batch-02.1–02.4 export-surface removals using importer-scoped gates (to avoid repo-wide symbol-collision false positives).
@@ -334,11 +347,10 @@ Status:
 Evidence:
 - RUN_ID: 20251226-093413 (see §1.3)
 
-
 ---
 
 ## 6) Class A — Local / lexical (ESLint no-unused-vars candidates)
-Status: PARTIAL (A1, A2 closed in Phase 5; remaining are candidates).
+Status: PARTIAL (A1–A3 closed in Phase 5; remaining are candidates).
 
 ### A1 — electron/main.js:L826 — CLOSED: removed unused `language-selected` handler params
 - Change: removed unused handler params from the `ipcMain.once('language-selected', ...)` registration (`(_evt, lang)` → `()`).
@@ -356,12 +368,17 @@ Status: PARTIAL (A1, A2 closed in Phase 5; remaining are candidates).
   - Smoke: PASS (no error matches; `smoke.A2.errors.grep.log` is whitespace-only).
 - Evidence: RUN_ID 20251226-201750 (see §1.3)
 
-### A3 — public/editor.js:L107 (`showNotice`) — NO DEAD (global/window dynamic contract)
+### A3 — public/editor.js:L107 (`showNotice`) — NO DEAD (global/window dynamic contract) — CLOSED: HARDENED (explicit global export)
 - Evidence (static):
   - Definition: `function showNotice(...) { ... }` in public/editor.js.
   - Dynamic consumption: public/js/notify.js calls `window.showNotice(...)` if present.
-- Diagnosis: NOT dead code; “unused in-file” is a false positive for cross-script globals.
-- Closure: keep. Optional hardening: document/ensure script load order, or explicitly assign `window.showNotice = showNotice`. Smoke editor notifications if touched.
+- Change:
+  - Added explicit assignment: `window.showNotice = showNotice;` (make the cross-script/global contract intentional and visible to static tools).
+- Verification:
+  - Post: `rg -n "window\.showNotice\s*=\s*showNotice" public/editor.js` is non-empty (per logs).
+  - Post: ESLint no-unused-vars warning removed for `showNotice` in public/editor.js (per logs).
+  - Smoke: PASS (no error matches in `smoke.A3.log`; `smoke.A3.errors.grep.log` is whitespace-only).
+- Evidence: RUN_ID 20251226-213650 (see §1.3)
 
 ### A4 — public/js/count.js:L5 and L16
 - Evidence: ESLint warns `language` defined but unused (two sites).
@@ -374,7 +391,7 @@ Status: PARTIAL (A1, A2 closed in Phase 5; remaining are candidates).
   - L1052 `formatCrono` assigned but never used
   - L1054 `actualizarVelocidadRealFromElapsed` assigned but never used
   - L1111 `ev`
-  - L1133 `parseCronoInput` assigned but never used
+  - L1133 `parseCronoInput` is assigned a value but never used
 - Closure:
   - Confirm dynamic references (DOM events, window globals).
   - If truly unused: remove; smoke renderer + crono flows.

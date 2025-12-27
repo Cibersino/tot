@@ -133,6 +133,9 @@ function showNotice(msg, { duration = 4500, type = 'info' } = {}) {
   }
 }
 
+// Expose for cross-script notifications (used by public/js/notify.js)
+window.showNotice = showNotice;
+
 // ---------- focus helpers ---------- //
 function restoreFocusToEditor(pos = null) {
   try {
