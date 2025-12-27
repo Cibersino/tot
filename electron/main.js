@@ -296,7 +296,6 @@ settingsState.registerIpc(ipcMain, {
     flotanteWin,
   }),
   buildAppMenu,
-  getCurrentLanguage: () => currentLanguage,
   setCurrentLanguage: (lang) => {
     const trimmed =
       lang && typeof lang === 'string' && lang.trim()
