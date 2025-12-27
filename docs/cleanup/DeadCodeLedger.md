@@ -5,7 +5,7 @@
 ---
 
 ## 0) Bootstrap metadata
-- HEAD: a25a037ed80abca3baedf6433e38ebe24c451418
+- HEAD: f7863ac75ce77a27e6478b81f62771a0f183f19e
 - Madge seed: electron/main.js (VERIFIED by evidence in EntryPointsInventory.md)
 - Evidence root: docs/cleanup/_evidence/deadcode/
 
@@ -207,17 +207,27 @@
   - pre.importers.editor_state.grep.log
   - pre.external_refs.attachTo.grep.log
 
+- RUN_ID: 20251227-183903 (B2 PRE gate pack: remaining unused-export signals — ALL FAIL => USED_EXTERNALLY)
+  - git_status.pre.log
+  - head.pre.log
+  - pre.importers.*.grep.log
+  - pre.external_refs.*.grep.log
+  - result.*.txt
+  - (supporting) pre.all_importer_refs.*.grep.log
+  - (supporting) pre.prop_anyobj.*.grep.log
+  - (supporting) pre.bracket.*.grep.log
+
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
-- madge.orphans.log
-- madge.circular.log
-- depcheck.run.log
-- eslint.run.log
-- (prior calibration) knip.run.log + EntryPointsInventory.md
-- contracts.webContents.send.log
-- contracts.dom.getElementById.log
-- contracts.dom.querySelector.log
-- fallback.catch.noop_only.log
-- fallback.webContents.send.sites.log
+- RUN_ID: 20251227-184005 (Phase 3 sweep: eslint + knip + madge + depcheck; reproducible)
+  - git_status.pre.log
+  - head.pre.log
+  - eslint.log
+  - knip.log
+  - madge.circular.log
+  - madge.orphans.log
+  - depcheck.log
+  - run_id.txt
+  - evidence_path.txt
 
 ---
 
@@ -489,14 +499,15 @@ Important: CommonJS property access + dynamic path loading create false positive
 - Diagnosis: knip/madge/depcheck may mark as orphan due to dynamic require + fs selection → false positive.
 - Action: keep. Optional: whitelist/exclude in tooling config.
 
-### B2 — Unused exports (knip “Unused exports (21)”) — PARTIAL closures in Phase 5
-- Signal: knip lists multiple exports in:
-  - electron/settings.js (init/registerIpc/getSettings/saveSettings/normalizeSettings/loadNumberFormatDefaults/applyFallbackLanguageIfUnset/broadcastSettingsUpdated)
+### B2 — Unused exports (knip) — CLOSED (by gates/closures)
+- Signal: knip reports “Unused exports” in RUN_ID 20251227-184005, including exports in:
+  - electron/settings.js (init/registerIpc/getSettings/saveSettings/applyFallbackLanguageIfUnset/broadcastSettingsUpdated)
   - electron/text_state.js (init/registerIpc/getCurrentText)
   - electron/editor_state.js (loadInitialState/attachTo)
-  - electron/menu_builder.js (loadMainTranslations/getDialogTexts/buildAppMenu)
-  - electron/presets_main.js (registerIpc/loadDefaultPresetsCombined)
-  - electron/updater.js (registerIpc/checkForUpdates/scheduleInitialCheck)
+  - electron/menu_builder.js (getDialogTexts/buildAppMenu)
+  - electron/presets_main.js (registerIpc)
+  - electron/updater.js (registerIpc/scheduleInitialCheck)
+  - deadcode_audit_preload.js (DEADCODE_AUDIT_CHANNEL/DEADCODE_AUDIT_ENABLED)
 - Reliability note: some exports are used via property access; knip alone is not sufficient proof.
 - Closure rule: apply §3 evidence matrix + focused smoke before removing export surface.
 
@@ -508,6 +519,46 @@ Phase 5 closures (Batch-02):
 - B2.5 text_state.js: `getCurrentText` export NO DEAD (USED_EXTERNALLY) — RUN_ID 20251226-083027
 - B2.6 editor_state.js: `loadInitialState` export NO DEAD (USED_EXTERNALLY) — RUN_ID 20251227-170712
 - B2.7 editor_state.js: `attachTo` export NO DEAD (USED_EXTERNALLY) — RUN_ID 20251227-172132
+
+- B2.8 settings.js: `init`, `registerIpc`, `getSettings`, `saveSettings`, `applyFallbackLanguageIfUnset`, `broadcastSettingsUpdated`
+  - Status: NO DEAD / USED_EXTERNALLY
+  - Evidence: RUN_ID 20251227-183903
+
+- B2.9 text_state.js: `init`, `registerIpc`
+  - Status: NO DEAD / USED_EXTERNALLY
+  - Evidence: RUN_ID 20251227-183903
+
+- B2.10 menu_builder.js: `getDialogTexts`, `buildAppMenu`
+  - Status: NO DEAD / USED_EXTERNALLY
+  - Evidence: RUN_ID 20251227-183903
+
+- B2.11 presets_main.js: `registerIpc`
+  - Status: NO DEAD / USED_EXTERNALLY
+  - Evidence: RUN_ID 20251227-183903
+
+- B2.12 updater.js: `registerIpc`, `scheduleInitialCheck`
+  - Status: NO DEAD / USED_EXTERNALLY
+  - Evidence: RUN_ID 20251227-183903
+
+- B2.13 deadcode_audit_preload.js: `DEADCODE_AUDIT_CHANNEL`, `DEADCODE_AUDIT_ENABLED`
+  - Status: DEFERRED (audit scaffolding; remove in Phase 6)
+  - Evidence: knip signal in RUN_ID 20251227-184005
+
+### B3 — Unused files (knip) — NO DEAD (known dynamic require/fs-scan false positives)
+- Signal: knip reports “Unused files” in RUN_ID 20251227-184005 for:
+  - electron/presets/defaults_presets.js
+  - electron/presets/defaults_presets_en.js
+  - electron/presets/defaults_presets_es.js
+- Status: NO DEAD (already closed as dynamic require/fs scan; see B1)
+- Evidence: RUN_ID 20251227-184005 + prior B1 rationale
+
+### B4 — Toolchain devDependencies flagged unused by depcheck/knip (do not remove)
+- Signal (RUN_ID 20251227-184005):
+  - depcheck reports unused devDependencies: depcheck, knip, madge
+  - knip reports unused devDependencies: depcheck, madge
+- Interpretation: tooling invoked via CLI/npx/scripts; absence of runtime require() is expected
+- Status: NO ACTION / KEEP (toolchain reproducibility)
+- Evidence: RUN_ID 20251227-184005
 
 ---
 
