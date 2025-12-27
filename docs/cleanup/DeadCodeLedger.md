@@ -110,7 +110,7 @@
   - retro.checkForUpdates.external_refs.grep.log
   - retro.checkForUpdates.prop_anyobj.importers.grep.log
   - retro.checkForUpdates.bracket.sq.importers.grep.log
-  - retro.checkForUpdates.bracket.dq.importers.grep.log
+  - retro.checkForUpdates.bracket.dq importers.grep.log
   - retro.checkForUpdates.post.export_item.grep.log
   - retro.loadNumberFormatDefaults.importers.grep.log
   - retro.loadNumberFormatDefaults.all_importer_refs.grep.log
@@ -124,7 +124,7 @@
   - retro.normalizeSettings.external_refs.grep.log
   - retro.normalizeSettings.prop_anyobj.importers.grep.log
   - retro.normalizeSettings.bracket.sq.importers.grep.log
-  - retro.normalizeSettings.bracket.dq.importers.grep.log
+  - retro.normalizeSettings.bracket.dq importers.grep.log
   - retro.normalizeSettings.post.export_item.grep.log
   - retro.regression.smoke.log
   - retro.regression.errors.extract.log
@@ -167,6 +167,18 @@
   - git_status.post.log
   - smoke.A3.log
   - smoke.A3.errors.grep.log
+
+- RUN_ID: 20251226-234329 (A4 micro-batch: remove unused `language` params in count.js)
+  - run_id.txt
+  - evidence_path.txt
+  - git_status.pre.log
+  - rg.count.A4.pre.log
+  - eslint.pre.log
+  - patch.A4.diff.log
+  - rg.count.A4.post.log
+  - eslint.post.log
+  - smoke.A4.log
+  - smoke.A4.errors.grep.log
 
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - madge.orphans.log
@@ -305,13 +317,12 @@ Verification:
 Evidence:
 - RUN_ID: 20251226-074013 (see §1.3)
 
-#### 5.2.5 micro-batch — `electron/text_state.js`: attempted removal of `getCurrentText` export — FAILED (external consumer)
-
+#### 5.2.5 micro-batch — electron/text_state.js: attempted removal of getCurrentText export — FAILED (external consumer)
 Change (attempt):
 - Removed `getCurrentText` from `module.exports` in `electron/text_state.js`.
 
 Gate rule:
-- If pre-check shows **any external consumers** (outside `electron/text_state.js`) for `.getCurrentText`, STOP (do not remove the export surface).
+- If pre-check shows any external consumers (outside `electron/text_state.js`) for `.getCurrentText`, STOP (do not remove the export surface).
 
 Observed (pre-check; external usage exists):
 - `electron/main.js:203` — `textState.getCurrentText()`
@@ -326,9 +337,9 @@ Result (smoke):
   - Logged at `electron/main.js:203` (editor init path).
 
 Conclusion:
-- **NO DEAD / FALSE POSITIVE** for “unused export”.
+- NO DEAD / FALSE POSITIVE for “unused export”.
 - `getCurrentText` is a required export consumed by main process via property access (`textState.getCurrentText`).
-- Action: **revert** export removal (keep `getCurrentText` in `module.exports`) before proceeding with further batches.
+- Action: revert export removal (keep `getCurrentText` in `module.exports`) before proceeding with further batches.
 
 Evidence:
 - RUN_ID: 20251226-083027 (see §1.3)
@@ -350,7 +361,7 @@ Evidence:
 ---
 
 ## 6) Class A — Local / lexical (ESLint no-unused-vars candidates)
-Status: PARTIAL (A1–A3 closed in Phase 5; remaining are candidates).
+Status: PARTIAL (A1–A4 closed in Phase 5; remaining are candidates).
 
 ### A1 — electron/main.js:L826 — CLOSED: removed unused `language-selected` handler params
 - Change: removed unused handler params from the `ipcMain.once('language-selected', ...)` registration (`(_evt, lang)` → `()`).
@@ -380,16 +391,29 @@ Status: PARTIAL (A1–A3 closed in Phase 5; remaining are candidates).
   - Smoke: PASS (no error matches in `smoke.A3.log`; `smoke.A3.errors.grep.log` is whitespace-only).
 - Evidence: RUN_ID 20251226-213650 (see §1.3)
 
-### A4 — public/js/count.js:L5 and L16
-- Evidence: ESLint warns `language` defined but unused (two sites).
-- Closure: remove param or use it (formatting/i18n); smoke count.
+### A4 — public/js/count.js:L5 and L16 — CLOSED: removed unused `language` params (simple + fallback only)
+- Evidence: ESLint warned `language` defined but never used in:
+  - `contarTextoSimple(texto, language)`
+  - `contarTextoPrecisoFallback(texto, language)`
+- Change:
+  - Removed the unused `language` parameter from:
+    - `contarTextoSimple(texto)` (previously `contarTextoSimple(texto, language)`)
+    - `contarTextoPrecisoFallback(texto)` (previously `contarTextoPrecisoFallback(texto, language)`)
+  - Updated call sites accordingly:
+    - `contarTextoPrecisoFallback(texto, language)` → `contarTextoPrecisoFallback(texto)`
+    - `contarTextoSimple(texto, idioma)` → `contarTextoSimple(texto)`
+  - Kept `contarTextoPreciso(texto, language)` unchanged (language remains part of the “precise” path contract).
+- Verification:
+  - Post: ESLint no-unused-vars warnings for `public/js/count.js` removed (per logs).
+  - Smoke: PASS (no error matches in `smoke.A4.log`; `smoke.A4.errors.grep.log` is whitespace-only).
+- Evidence: RUN_ID 20251226-234329 (see §1.3)
 
 ### A5 — public/renderer.js unused vars/assigned functions
 - Evidence (ESLint no-unused-vars):
   - L297 `mostrarVelocidadReal`
   - L733 `payload`
-  - L1052 `formatCrono` assigned but never used
-  - L1054 `actualizarVelocidadRealFromElapsed` assigned but never used
+  - L1052 `formatCrono` is assigned a value but never used
+  - L1054 `actualizarVelocidadRealFromElapsed` is assigned a value but never used
   - L1111 `ev`
   - L1133 `parseCronoInput` is assigned a value but never used
 - Closure:
