@@ -68,7 +68,7 @@ $run  = Get-Date -Format "yyyyMMdd-HHmmss"
 $EVID = "docs\cleanup\_evidence\deadcode\$run"
 New-Item -ItemType Directory -Force -Path $EVID | Out-Null
 "$EVID" | Write-Host
-````
+```
 
 Git ignore recomendado (solo logs):
 Crear/asegurar `docs/cleanup/_evidence/.gitignore`:
@@ -418,10 +418,6 @@ Plantilla de commit message:
   Ej:
 * `deadcode(B2.4): drop settings exports loadNumberFormatDefaults + normalizeSettings (RUN_ID 20251226-074013)`
 
-
-**Y reemplázalo por este bloque completo:**
-
-```md
 ### 5.3 Matriz de evidencia para unused exports (Clase B; patrón knip LOW/MED)
 
 Regla (alineada con el ledger):
@@ -472,7 +468,7 @@ $reqPat  = "require\(\s*['""][^'""]*${stemEsc}(\.js)?['""]\s*\)"
 $req     = git grep -n -E $reqPat $REF -- electron 2>$null
 
 $importerFiles = @(
-  $req | ForEach-Object { ($_ -split ':',4)[1] } | Sort-Object -Unique
+  $req | ForEach-Object { ($_ -split ':',3)[0] } | Sort-Object -Unique
 )
 
 $importerFiles | Out-File -Encoding utf8 "$EVID\pre.importers.$sym.grep.log"
@@ -493,7 +489,7 @@ if ($importerFiles.Count -eq 0) {
 $all = git grep -n -- $sym $REF -- $importerFiles 2>$null
 $all | Out-File -Encoding utf8 "$EVID\pre.all_importer_refs.$sym.grep.log"
 
-$prop = git grep -n -F -- (".{0}" -f $sym) $REF -- $importerFiles 2>$null
+$prop = git grep -n -F -- ".$sym" $REF -- $importerFiles 2>$null
 $prop | Out-File -Encoding utf8 "$EVID\pre.prop_anyobj.$sym.grep.log"
 
 $bsqPat = "['{0}']" -f $sym

@@ -470,6 +470,7 @@ Phase 5 closures (Batch-02):
 - B2.2 presets_main.js: `loadDefaultPresetsCombined` export REMOVED — RUN_ID 20251225-102709
 - B2.3 updater.js: `checkForUpdates` export REMOVED — RUN_ID 20251225-121246
 - B2.4 settings.js: `normalizeSettings` + `loadNumberFormatDefaults` exports REMOVED — RUN_ID 20251226-074013
+- B2.5 text_state.js: `getCurrentText` export NO DEAD (USED_EXTERNALLY) — RUN_ID 20251226-083027
 
 ---
 
