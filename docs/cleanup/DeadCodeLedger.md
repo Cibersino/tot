@@ -141,6 +141,19 @@
   - smoke.A2.log
   - smoke.A2.errors.grep.log
 
+- RUN_ID: 20251226-210621 (A1 micro-batch: remove unused language-selected handler params)
+  - run_id.txt
+  - evidence_path.txt
+  - git_status.pre.log
+  - rg.language-selected.pre.log
+  - eslint.pre.log
+  - patch.A1.diff.log
+  - rg.language-selected.post.log
+  - eslint.post.log
+  - git_status.post.log
+  - smoke.A1.log
+  - smoke.A1.errors.grep.log
+
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - madge.orphans.log
 - madge.circular.log
@@ -325,11 +338,15 @@ Evidence:
 ---
 
 ## 6) Class A — Local / lexical (ESLint no-unused-vars candidates)
-Status: candidates only (no code change in Phase 3). Closure: decide + smoke.
+Status: PARTIAL (A1, A2 closed in Phase 5; remaining are candidates).
 
-### A1 — electron/main.js:L821
-- Evidence: ESLint warns `_evt` and `lang` defined but unused.
-- Closure: rename to `_evt`, `_lang` (or `_`) or use them; or add narrow eslint-disable; smoke.
+### A1 — electron/main.js:L826 — CLOSED: removed unused `language-selected` handler params
+- Change: removed unused handler params from the `ipcMain.once('language-selected', ...)` registration (`(_evt, lang)` → `()`).
+- Verification:
+  - Post: `rg -n "ipcMain\.once\('language-selected'" electron/main.js` shows `ipcMain.once('language-selected', () => {`.
+  - Post: ESLint no-unused-vars warnings removed for `_evt` and `lang` in electron/main.js (per logs).
+  - Smoke: PASS (no error matches in `smoke.A1.log`; `smoke.A1.errors.grep.log` is whitespace-only).
+- Evidence: RUN_ID 20251226-210621 (see §1.3)
 
 ### A2 — electron/settings.js:L202 — CLOSED: REMOVED (unused getCurrentLanguage wire)
 - Change: removed unused `getCurrentLanguage` wiring between `electron/main.js` and `electron/settings.js` (`registerIpc` destructuring + call-site object).

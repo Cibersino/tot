@@ -823,7 +823,7 @@ app.whenReady().then(() => {
   if (!settings.language || settings.language === '') {
     // First time: Show language modal
     createLanguageWindow();
-    ipcMain.once('language-selected', (_evt, lang) => {
+    ipcMain.once('language-selected', () => {
       try {
         if (!mainWin) createMainWindow();
       } catch (e) {
