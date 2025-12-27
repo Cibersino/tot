@@ -129,6 +129,18 @@
   - retro.regression.smoke.log
   - retro.regression.errors.extract.log
 
+- RUN_ID: 20251226-201750 (A2 micro-batch: remove unused getCurrentLanguage wire)
+  - run_id.txt
+  - evidence_path.txt
+  - git_status.pre.log
+  - rg.getCurrentLanguage.pre.log
+  - eslint.pre.log
+  - patch.A2.diff.log
+  - rg.getCurrentLanguage.post.log
+  - eslint.post.log
+  - smoke.A2.log
+  - smoke.A2.errors.grep.log
+
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - madge.orphans.log
 - madge.circular.log
@@ -319,9 +331,13 @@ Status: candidates only (no code change in Phase 3). Closure: decide + smoke.
 - Evidence: ESLint warns `_evt` and `lang` defined but unused.
 - Closure: rename to `_evt`, `_lang` (or `_`) or use them; or add narrow eslint-disable; smoke.
 
-### A2 — electron/settings.js:L202
-- Evidence: ESLint warns `getCurrentLanguage` defined but unused.
-- Closure: verify if kept for API symmetry/exports; if unused, delete or move behind explicit export surface; smoke.
+### A2 — electron/settings.js:L202 — CLOSED: REMOVED (unused getCurrentLanguage wire)
+- Change: removed unused `getCurrentLanguage` wiring between `electron/main.js` and `electron/settings.js` (`registerIpc` destructuring + call-site object).
+- Verification:
+  - Post: `rg -n "getCurrentLanguage" electron/main.js electron/settings.js` => empty (per logs).
+  - Post: ESLint no-unused-vars warning removed for `getCurrentLanguage` (per logs).
+  - Smoke: PASS (no error matches; `smoke.A2.errors.grep.log` is whitespace-only).
+- Evidence: RUN_ID 20251226-201750 (see §1.3)
 
 ### A3 — public/editor.js:L107 (`showNotice`) — NO DEAD (global/window dynamic contract)
 - Evidence (static):

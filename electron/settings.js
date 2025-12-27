@@ -199,7 +199,6 @@ function registerIpc(
     {
         getWindows,          // () => ({ mainWin, editorWin, presetWin, langWin, flotanteWin })
         buildAppMenu,       // function(lang)
-        getCurrentLanguage, // () => currentLanguage
         setCurrentLanguage, // (lang) => void
     }
 ) {
