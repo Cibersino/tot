@@ -381,19 +381,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           settings = settingsState.saveSettings(settings);
           broadcast(settings);
 
-          try {
-            if (mainWin && !mainWin.isDestroyed()) {
-              mainWin.webContents.send('preset-deleted', {
-                name,
-                action: 'deleted_and_ignored',
-              });
-            }
-          } catch (e) {
-            console.error(
-              '[presets_main] Error sending preset-deleted (deleted_and_ignored):',
-              e
-            );
-          }
           return { ok: true, action: 'deleted_and_ignored' };
         } else {
           // Personalized only: delete it
@@ -401,19 +388,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           settings = settingsState.saveSettings(settings);
           broadcast(settings);
 
-          try {
-            if (mainWin && !mainWin.isDestroyed()) {
-              mainWin.webContents.send('preset-deleted', {
-                name,
-                action: 'deleted_custom',
-              });
-            }
-          } catch (e) {
-            console.error(
-              '[presets_main] Error sending preset-deleted (deleted_custom):',
-              e
-            );
-          }
           return { ok: true, action: 'deleted_custom' };
         }
       } else {
@@ -426,19 +400,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           settings = settingsState.saveSettings(settings);
           broadcast(settings);
 
-          try {
-            if (mainWin && !mainWin.isDestroyed()) {
-              mainWin.webContents.send('preset-deleted', {
-                name,
-                action: 'ignored_default',
-              });
-            }
-          } catch (e) {
-            console.error(
-              '[presets_main] Error sending preset-deleted (ignored_default):',
-              e
-            );
-          }
           return { ok: true, action: 'ignored_default' };
         }
       }
@@ -524,21 +485,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       settings = settingsState.saveSettings(settings);
       broadcast(settings);
-
-      try {
-        if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('preset-restored', {
-            removedCustom,
-            unignored,
-            language: lang,
-          });
-        }
-      } catch (e) {
-        console.error(
-          '[presets_main] Error sending preset-restored:',
-          e
-        );
-      }
 
       return { ok: true, action: 'restored', removedCustom, unignored };
     } catch (e) {
@@ -659,12 +605,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         const windows = resolveWindows();
         const { mainWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
-          if (deletedAction) {
-            mainWin.webContents.send('preset-deleted', {
-              name: originalName,
-              action: deletedAction,
-            });
-          }
           mainWin.webContents.send('preset-created', newPreset);
         }
       } catch (e) {
@@ -684,5 +624,4 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
 module.exports = {
   registerIpc,
-  loadDefaultPresetsCombined,
 };

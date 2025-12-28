@@ -217,7 +217,6 @@ function buildAppMenu(lang, opts = {}) {
 }
 
 module.exports = {
-    loadMainTranslations,
     getDialogTexts,
     buildAppMenu,
 };

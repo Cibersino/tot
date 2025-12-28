@@ -2,7 +2,7 @@
 (() => {
   console.debug('[count.js] module loaded');
 
-  function contarTextoSimple(texto, language) {
+  function contarTextoSimple(texto) {
     const conEspacios = texto.length;
     const sinEspacios = texto.replace(/\s+/g, '').length;
     const palabras = texto.trim() === '' ? 0 : texto.trim().split(/\s+/).length;
@@ -13,7 +13,7 @@
     return typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function';
   }
 
-  function contarTextoPrecisoFallback(texto, language) {
+  function contarTextoPrecisoFallback(texto) {
     const graphemes = [...texto];
     const conEspacios = graphemes.length;
     const sinEspacios = graphemes.filter(c => !/\s/.test(c)).length;
@@ -23,7 +23,7 @@
 
   function contarTextoPreciso(texto, language) {
     if (!hasIntlSegmenter()) {
-      return contarTextoPrecisoFallback(texto, language);
+      return contarTextoPrecisoFallback(texto);
     }
     const segGraf = new Intl.Segmenter(language, { granularity: 'grapheme' });
     const grafemas = [...segGraf.segment(texto)];
@@ -39,7 +39,7 @@
     const modoConteo = opts.modoConteo === 'simple' ? 'simple' : 'preciso';
     const idioma = opts.idioma || 'es';
     return (modoConteo === 'simple')
-      ? contarTextoSimple(texto, idioma)
+      ? contarTextoSimple(texto)
       : contarTextoPreciso(texto, idioma);
   }
 

@@ -47,6 +47,13 @@
     const tr = (path, fallback) => tRenderer(path, fallback);
     const mr = (path, params = {}, fallback = '') => msgRenderer(path, params, fallback);
 
+    const __WARN_ONCE_PRESET_MODAL = new Set();
+    function warnOncePresetModal(key, ...args) {
+      if (__WARN_ONCE_PRESET_MODAL.has(key)) return;
+      __WARN_ONCE_PRESET_MODAL.add(key);
+      console.warn(...args);
+    }
+
     async function ensurePresetTranslations(lang) {
       const target = (lang || '').toLowerCase() || 'es';
       if (translationsLoadedFor === target) return;
@@ -87,7 +94,13 @@
                 const settings = await window.presetAPI.getSettings();
                 if (settings && settings.language) idiomaActual = settings.language || idiomaActual;
               }
-            } catch (e) { /* noop */ }
+            } catch (e) {
+              warnOncePresetModal(
+                'preset_api.getSettings',
+                '[preset_modal] presetAPI.getSettings failed:',
+                e
+              );
+            }
 
             await ensurePresetTranslations(idiomaActual);
             const incomingMode = (payload.mode === 'edit') ? 'edit' : 'new';

@@ -163,6 +163,5 @@ function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef
 
 module.exports = {
   registerIpc,
-  checkForUpdates,
   scheduleInitialCheck,
 };

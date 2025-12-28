@@ -18,6 +18,14 @@ let lastState = { elapsed: 0, running: false, display: '00:00:00' };
 let playLabel = '>';
 let pauseLabel = '||';
 
+// Visibility helper: warn only once per key (flotante scope)
+const __WARN_ONCE_FLOTANTE = new Set();
+function warnOnceFlotante(key, ...args) {
+  if (__WARN_ONCE_FLOTANTE.has(key)) return;
+  __WARN_ONCE_FLOTANTE.add(key);
+  console.warn(...args);
+}
+
 // Refresh view (expected to receive { elapsed, running, display })
 function renderState(state) {
   if (!state) return;
@@ -59,10 +67,19 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
       try {
         const settings = await window.flotanteAPI.getSettings();
         if (settings && settings.language) lang = settings.language;
-      } catch (e) { /* noop */ }
+      } catch (e) {
+        warnOnceFlotante('flotante.getSettings', '[flotante] getSettings failed (ignored):', e);
+      }
     }
 
-    try { await loadRendererTranslations(lang); } catch (_) { /* noop */ }
+    try { await loadRendererTranslations(lang); } catch (e) {
+      warnOnceFlotante(
+        'flotante.loadRendererTranslations',
+        `[flotante] loadRendererTranslations(${lang}) failed (ignored):`,
+        e
+      );
+    }
+
     playLabel = tRenderer('renderer.main.crono.play_symbol', playLabel);
     pauseLabel = tRenderer('renderer.main.crono.pause_symbol', pauseLabel);
     // Refresh button with the current translated label
