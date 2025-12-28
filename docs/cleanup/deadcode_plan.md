@@ -601,4 +601,3 @@ La calibración de entrypoints (Fase 2). Si no modelas:
 * scripts por `<script src>` (orden)
 * contratos por strings
   Entonces “unused” será ruido y te hará borrar cosas vivas.
-

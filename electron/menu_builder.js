@@ -7,14 +7,6 @@ const { app, Menu } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-// Rate-limited warnings (avoid log spam in normal usage)
-const __WARN_ONCE_MENU_BUILDER = new Set();
-function warnOnceMenuBuilder(key, ...args) {
-    if (__WARN_ONCE_MENU_BUILDER.has(key)) return;
-    __WARN_ONCE_MENU_BUILDER.add(key);
-    console.warn(...args);
-}
-
 // Helpers: load main (menu/dialog) translations from i18n
 function loadMainTranslations(lang) {
     const langCode = (lang || 'es').toLowerCase() || 'es';
@@ -58,58 +50,15 @@ function buildAppMenu(lang, opts = {}) {
     const mainWindow = opts.mainWindow || null;
     const onOpenLanguage =
         typeof opts.onOpenLanguage === 'function' ? opts.onOpenLanguage : null;
-    const auditMenuDefined =
-        typeof opts.auditMenuDefined === 'function' ? opts.auditMenuDefined : null;
-    const auditMenuUsed =
-        typeof opts.auditMenuUsed === 'function' ? opts.auditMenuUsed : null;
 
     const sendMenuClick = (payload) => {
         if (!mainWindow || mainWindow.isDestroyed()) return;
         try {
-            if (auditMenuUsed) auditMenuUsed(payload);
             mainWindow.webContents.send('menu-click', payload);
         } catch (err) {
             console.error('[menu_builder] Error sending menu-click:', payload, err);
         }
     };
-
-    const menuCmd = (payload) => {
-        if (auditMenuDefined) auditMenuDefined(payload);
-        return payload;
-    };
-
-    // DEADCODE_AUDIT: record all menu commands as "defined" at build time
-    try {
-        if (auditMenuDefined) {
-            [
-                'guia_basica',
-                'instrucciones_completas',
-                'faq',
-                'cargador_texto',
-                'contador_imagen',
-                'test_velocidad',
-                'diseno_skins',
-                'diseno_crono_flotante',
-                'diseno_fuentes',
-                'diseno_colores',
-                'shortcuts',
-                'presets_por_defecto',
-                'discord',
-                'avisos',
-                'links_interes',
-                'colabora',
-                'actualizar_version',
-                'readme',
-                'acerca_de',
-            ].forEach((cmd) => auditMenuDefined(cmd));
-        }
-    } catch (err) {
-        warnOnceMenuBuilder(
-            'deadcode_audit.menu_defined',
-            '[menu_builder] DEADCODE_AUDIT: auditMenuDefined failed:',
-            err
-        );
-    }
 
     const menuTemplate = [
         {
@@ -117,15 +66,15 @@ function buildAppMenu(lang, opts = {}) {
             submenu: [
                 {
                     label: m.guia_basica || 'Guide',
-                    click: () => sendMenuClick(menuCmd('guia_basica')),
+                    click: () => sendMenuClick('guia_basica'),
                 },
                 {
                     label: m.instrucciones_completas || 'Instructions',
-                    click: () => sendMenuClick(menuCmd('instrucciones_completas')),
+                    click: () => sendMenuClick('instrucciones_completas'),
                 },
                 {
                     label: m.faq || 'FAQ',
-                    click: () => sendMenuClick(menuCmd('faq')),
+                    click: () => sendMenuClick('faq'),
                 },
             ],
         },
@@ -134,15 +83,15 @@ function buildAppMenu(lang, opts = {}) {
             submenu: [
                 {
                     label: m.cargador_texto || 'Text loader',
-                    click: () => sendMenuClick(menuCmd('cargador_texto')),
+                    click: () => sendMenuClick('cargador_texto'),
                 },
                 {
                     label: m.cargador_imagen || 'Image loader',
-                    click: () => sendMenuClick(menuCmd('contador_imagen')),
+                    click: () => sendMenuClick('contador_imagen'),
                 },
                 {
                     label: m.test_velocidad || 'Speed test',
-                    click: () => sendMenuClick(menuCmd('test_velocidad')),
+                    click: () => sendMenuClick('test_velocidad'),
                 },
             ],
         },
@@ -170,29 +119,29 @@ function buildAppMenu(lang, opts = {}) {
                     submenu: [
                         {
                             label: m.skins || 'Skins',
-                            click: () => sendMenuClick(menuCmd('diseno_skins')),
+                            click: () => sendMenuClick('diseno_skins'),
                         },
                         {
                             label: m.crono_flotante || 'FW',
-                            click: () => sendMenuClick(menuCmd('diseno_crono_flotante')),
+                            click: () => sendMenuClick('diseno_crono_flotante'),
                         },
                         {
                             label: m.fuentes || 'Fonts',
-                            click: () => sendMenuClick(menuCmd('diseno_fuentes')),
+                            click: () => sendMenuClick('diseno_fuentes'),
                         },
                         {
                             label: m.colores || 'Colors',
-                            click: () => sendMenuClick(menuCmd('diseno_colores')),
+                            click: () => sendMenuClick('diseno_colores'),
                         },
                     ],
                 },
                 {
                     label: m.shortcuts || 'Shortcuts',
-                    click: () => sendMenuClick(menuCmd('shortcuts')),
+                    click: () => sendMenuClick('shortcuts'),
                 },
                 {
                     label: m.presets_por_defecto || 'Default presets',
-                    click: () => sendMenuClick(menuCmd('presets_por_defecto')),
+                    click: () => sendMenuClick('presets_por_defecto'),
                 },
             ],
         },
@@ -201,36 +150,36 @@ function buildAppMenu(lang, opts = {}) {
             submenu: [
                 {
                     label: m.discord || 'Discord',
-                    click: () => sendMenuClick(menuCmd('discord')),
+                    click: () => sendMenuClick('discord'),
                 },
                 {
                     label: m.avisos || 'News & updates',
-                    click: () => sendMenuClick(menuCmd('avisos')),
+                    click: () => sendMenuClick('avisos'),
                 },
             ],
         },
         {
             label: m.links_interes || 'Links',
-            click: () => sendMenuClick(menuCmd('links_interes')),
+            click: () => sendMenuClick('links_interes'),
         },
         {
             label: m.colabora || '($)',
-            click: () => sendMenuClick(menuCmd('colabora')),
+            click: () => sendMenuClick('colabora'),
         },
         {
             label: m.ayuda || '?',
             submenu: [
                 {
                     label: m.actualizar_version || 'Update',
-                    click: () => sendMenuClick(menuCmd('actualizar_version')),
+                    click: () => sendMenuClick('actualizar_version'),
                 },
                 {
                     label: m.readme || 'Readme',
-                    click: () => sendMenuClick(menuCmd('readme')),
+                    click: () => sendMenuClick('readme'),
                 },
                 {
                     label: m.acerca_de || 'About',
-                    click: () => sendMenuClick(menuCmd('acerca_de')),
+                    click: () => sendMenuClick('acerca_de'),
                 },
             ],
         },

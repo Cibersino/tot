@@ -1,7 +1,5 @@
 // electron/preload.js
 const { contextBridge, clipboard, ipcRenderer } = require('electron');
-const { initDeadcodeAuditPreload } = require('./deadcode_audit_preload');
-initDeadcodeAuditPreload(ipcRenderer);
 
 const api = {
     // Clipboard / editor / presets / settings (we preserve all existing settings)

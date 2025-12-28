@@ -5,7 +5,7 @@
 ---
 
 ## 0) Bootstrap metadata
-- HEAD: 348ad8fffb32be457ec698345390b5cc2595d422
+- HEAD: abf690e22ffe9387afc39b42a6c6d91a9d20bd13
 - Madge seed: electron/main.js (VERIFIED by evidence in EntryPointsInventory.md)
 - Evidence root: docs/cleanup/_evidence/deadcode/
 
@@ -296,7 +296,7 @@
   - smoke.D2D3.log
   - git_status.post.log
 
-- RUN_ID: 20251228-095004 (D6.1 micro-batch: repo noop markers — menu_builder/preset_modal/crono)
+- RUN_ID: 20251228-095004 (D6.1 micro-batch: repo noop markers — menu_builder/preset_modal/crono; later menu_builder portion superseded by Phase 6 removal of DEADCODE_AUDIT scaffolding)
   - git_status.pre.log
   - head.pre.log
   - rg.noop_markers.repo.log
@@ -318,6 +318,21 @@
   - depcheck.log
   - run_id.txt
   - evidence_path.txt
+
+### 1.5 Phase 6 — remove diagnostic instrumentation (DEADCODE_AUDIT)
+- RUN_ID: 20251228-104021 (remove DEADCODE_AUDIT scaffolding: delete deadcode_audit_preload.js + remove wiring; post-grep docs-only; eslint+smoke)
+  - run_id.txt
+  - evidence_path.txt
+  - git_status.pre.log
+  - head.pre.log
+  - pre.DEADCODE_AUDIT.grep.log
+  - pre.DEADCODE_AUDIT_CHANNEL.grep.log
+  - patch.phase6_remove_audit.diff.log
+  - post.DEADCODE_AUDIT.grep.log
+  - post.DEADCODE_AUDIT_CHANNEL.grep.log
+  - eslint.post.log
+  - smoke.phase6_remove_audit.log
+  - git_status.post.log
 
 ---
 
@@ -343,6 +358,9 @@
 ---
 
 ## 4) Phase 4 — Dynamic evidence summary (DEADCODE_AUDIT=1)
+Note:
+- The DEADCODE_AUDIT scaffolding used to produce this section was removed in Phase 6 (RUN_ID 20251228-104021). This section is retained as historical closure evidence.
+
 Purpose:
 - Close contract uncertainty by observing runtime: IPC registrations, renderer IPC usage/subscriptions, main push events executed, and menu usage.
 Interpretation note:
@@ -597,7 +615,7 @@ Important: CommonJS property access + dynamic path loading create false positive
   - electron/menu_builder.js (getDialogTexts/buildAppMenu)
   - electron/presets_main.js (registerIpc)
   - electron/updater.js (registerIpc/scheduleInitialCheck)
-  - deadcode_audit_preload.js (DEADCODE_AUDIT_CHANNEL/DEADCODE_AUDIT_ENABLED)
+  - deadcode_audit_preload.js (DEADCODE_AUDIT_CHANNEL/DEADCODE_AUDIT_ENABLED) — REMOVED in Phase 6 (see B2.13)
 - Reliability note: some exports are used via property access; knip alone is not sufficient proof.
 - Closure rule: apply §3 evidence matrix + focused smoke before removing export surface.
 
@@ -631,8 +649,10 @@ Phase 5 closures (Batch-02):
   - Evidence: RUN_ID 20251227-183903
 
 - B2.13 deadcode_audit_preload.js: `DEADCODE_AUDIT_CHANNEL`, `DEADCODE_AUDIT_ENABLED`
-  - Status: DEFERRED (audit scaffolding; remove in Phase 6)
-  - Evidence: knip signal in RUN_ID 20251227-184005
+  - Status: CLOSED: REMOVED (Phase 6; file deleted; preload wiring + main wiring removed)
+  - Evidence:
+    - Removal: RUN_ID 20251228-104021 (§1.5)
+    - Prior signal (historical): RUN_ID 20251227-184005 (§1.4)
 
 ### B3 — Unused files (knip) — NO DEAD (known dynamic require/fs-scan false positives)
 - Signal: knip reports “Unused files” in RUN_ID 20251227-184005 for:
@@ -861,19 +881,17 @@ Policy:
 
 - Evidence: RUN_ID 20251228-005543 (§1.3)
 
-### D6 — Remaining repo-wide noop markers (menu_builder / preset_modal / crono)
+### D6 — Remaining repo-wide noop markers (preset_modal / crono)
 - Status: MITIGATED (visibility) — D6.1 replaces remaining noop markers with warnOnce helpers.
+- Note:
+  - Earlier, menu_builder had a noop marker only in a temporary DEADCODE_AUDIT block; that entire scaffolding was removed in Phase 6 (RUN_ID 20251228-104021), so menu_builder no longer belongs to this class.
 
-- PRE (repo-wide noop marker gate; captured in your run):
-  - `electron/menu_builder.js:98` — `} catch (_e) { /* noop */ }`
+#### D6.1 micro-batch — repo noop markers cleanup (preset_modal / crono)
+- PRE (repo-wide noop marker gate; captured):
   - `public/preset_modal.js:90` — `} catch (e) { /* noop */ }`
   - `public/js/crono.js:87` — `/* noop */`
-  - (Allowed exception / ignored per policy for this audit): `electron/deadcode_audit_preload.js:15`
 
 - PATCH (D6.1):
-  - `electron/menu_builder.js`
-    - Added `warnOnceMenuBuilder(...)` helper (rate-limited).
-    - Replaced noop catch around the “DEADCODE_AUDIT: record all menu commands” try-block with `warnOnceMenuBuilder(...)`.
   - `public/preset_modal.js`
     - Added `warnOncePresetModal(...)` helper (rate-limited).
     - Replaced noop catch around `window.presetAPI.getSettings()` with `warnOncePresetModal(...)`.
@@ -882,18 +900,18 @@ Policy:
     - Replaced noop catch around `electronAPI.getCronoState()` with `warnOnceCrono(...)`.
 
 - POST (repo-wide noop marker gate):
-  - Output contains only `electron/deadcode_audit_preload.js:15` (audit scaffolding); the three product-code markers are removed.
+  - In Phase 5, the only remaining match after D6.1 was inside audit scaffolding.
+  - After Phase 6 (audit scaffolding removed), rerun the same gate (excluding docs) should be empty; treat any remaining `/* noop */` as a regression.
 
 - Verification:
   - `npm run lint`: PASS
   - `npm start` smoke: PASS
 
 - Evidence:
-  - RUN_ID: 20251228-095004 (see §1.3)
+  - D6.1: RUN_ID 20251228-095004 (§1.3)
+  - Audit removal (removes the last known leftover match from D6.1): RUN_ID 20251228-104021 (§1.5)
 
 Closure plan (visibility, not deletion):
 - Prefer guards (`if (win && !win.isDestroyed())`) over blanket try/catch.
 - Add minimal, rate-limited `console.warn` (or equivalent) where appropriate.
 - Smoke test after each micro-change (these correlate with window lifecycle races).
-
----
