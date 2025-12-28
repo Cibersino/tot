@@ -7,6 +7,14 @@ const { app, Menu } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
+// Rate-limited warnings (avoid log spam in normal usage)
+const __WARN_ONCE_MENU_BUILDER = new Set();
+function warnOnceMenuBuilder(key, ...args) {
+    if (__WARN_ONCE_MENU_BUILDER.has(key)) return;
+    __WARN_ONCE_MENU_BUILDER.add(key);
+    console.warn(...args);
+}
+
 // Helpers: load main (menu/dialog) translations from i18n
 function loadMainTranslations(lang) {
     const langCode = (lang || 'es').toLowerCase() || 'es';
@@ -95,7 +103,13 @@ function buildAppMenu(lang, opts = {}) {
                 'acerca_de',
             ].forEach((cmd) => auditMenuDefined(cmd));
         }
-    } catch (_e) { /* noop */ }
+    } catch (err) {
+        warnOnceMenuBuilder(
+            'deadcode_audit.menu_defined',
+            '[menu_builder] DEADCODE_AUDIT: auditMenuDefined failed:',
+            err
+        );
+    }
 
     const menuTemplate = [
         {

@@ -2,6 +2,13 @@
 (() => {
   console.debug('[crono.js] module loaded');
 
+  const __WARN_ONCE_CRONO = new Set();
+  function warnOnceCrono(key, ...args) {
+    if (__WARN_ONCE_CRONO.has(key)) return;
+    __WARN_ONCE_CRONO.add(key);
+    console.warn(...args);
+  }
+
   function formatCrono(ms) {
     const totalSeconds = Math.floor((ms || 0) / 1000);
     const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
@@ -84,7 +91,7 @@
             return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
           }
         } catch (e) {
-          /* noop */
+          warnOnceCrono('electronAPI.getCronoState', '[crono] getCronoState failed:', e);
         }
       }
       return null;
