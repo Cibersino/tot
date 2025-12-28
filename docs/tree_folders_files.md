@@ -14,9 +14,7 @@ tot-readingmeter/
 │ ├── editor_state.json            # {ignorado por git}
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
-│ ├── cleanup/
-│ │ ├── _files_to_rename.md
-│ │ └── _plan_rename_files.md
+│ ├── cleanup/                     # {vacío}
 │ ├── bugs.md
 │ ├── ToDo.txt
 │ └── tree_folders_files.md
@@ -87,14 +85,6 @@ tot-readingmeter/
 │ ├── flotante.css
 │ └── style.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
-│ └── ast_tools/
-│   ├── node_modules/              # {acorn}
-│   ├── b1_inventory.cjs
-│   ├── b2_contract_lock.cjs
-│   ├── b2_3_observability_scan.cjs
-│   ├── b3_candidates_scan.cjs
-│   ├── package.json
-│   └── package-lock.json
 ├── .eslintrc.cjs
 ├── package.json
 ├── package-lock.json
