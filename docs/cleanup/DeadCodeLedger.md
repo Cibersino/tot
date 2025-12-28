@@ -5,7 +5,7 @@
 ---
 
 ## 0) Bootstrap metadata
-- HEAD: 0589694b66db4ecd742c36e14118b52a7dfe9f9d
+- HEAD: 348ad8fffb32be457ec698345390b5cc2595d422
 - Madge seed: electron/main.js (VERIFIED by evidence in EntryPointsInventory.md)
 - Evidence root: docs/cleanup/_evidence/deadcode/
 
@@ -295,6 +295,17 @@
   - rg.D2D3.warnOnceEditor.editor.post.log
   - smoke.D2D3.log
   - git_status.post.log
+
+- RUN_ID: 20251228-095004 (D6.1 micro-batch: repo noop markers — menu_builder/preset_modal/crono)
+  - git_status.pre.log
+  - head.pre.log
+  - rg.noop_markers.repo.log
+  - run_id.txt
+  - evidence_path.txt
+  - patch.noop_cleanup.diff.log
+  - rg.noop_markers.repo.post.log
+  - eslint.post.log
+  - smoke.noop_cleanup.log
 
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - RUN_ID: 20251227-184005 (Phase 3 sweep: eslint + knip + madge + depcheck; reproducible)
@@ -849,6 +860,36 @@ Policy:
   - Smoke: PASS (`smoke.D5_1.log`).
 
 - Evidence: RUN_ID 20251228-005543 (§1.3)
+
+### D6 — Remaining repo-wide noop markers (menu_builder / preset_modal / crono)
+- Status: MITIGATED (visibility) — D6.1 replaces remaining noop markers with warnOnce helpers.
+
+- PRE (repo-wide noop marker gate; captured in your run):
+  - `electron/menu_builder.js:98` — `} catch (_e) { /* noop */ }`
+  - `public/preset_modal.js:90` — `} catch (e) { /* noop */ }`
+  - `public/js/crono.js:87` — `/* noop */`
+  - (Allowed exception / ignored per policy for this audit): `electron/deadcode_audit_preload.js:15`
+
+- PATCH (D6.1):
+  - `electron/menu_builder.js`
+    - Added `warnOnceMenuBuilder(...)` helper (rate-limited).
+    - Replaced noop catch around the “DEADCODE_AUDIT: record all menu commands” try-block with `warnOnceMenuBuilder(...)`.
+  - `public/preset_modal.js`
+    - Added `warnOncePresetModal(...)` helper (rate-limited).
+    - Replaced noop catch around `window.presetAPI.getSettings()` with `warnOncePresetModal(...)`.
+  - `public/js/crono.js`
+    - Added `warnOnceCrono(...)` helper (rate-limited).
+    - Replaced noop catch around `electronAPI.getCronoState()` with `warnOnceCrono(...)`.
+
+- POST (repo-wide noop marker gate):
+  - Output contains only `electron/deadcode_audit_preload.js:15` (audit scaffolding); the three product-code markers are removed.
+
+- Verification:
+  - `npm run lint`: PASS
+  - `npm start` smoke: PASS
+
+- Evidence:
+  - RUN_ID: 20251228-095004 (see §1.3)
 
 Closure plan (visibility, not deletion):
 - Prefer guards (`if (win && !win.isDestroyed())`) over blanket try/catch.
