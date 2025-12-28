@@ -29,6 +29,14 @@ const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 
 ensureConfigDir();
 
+// Visibility helper: warn only once per key
+const __WARN_ONCE = new Set();
+function warnOnce(key, ...args) {
+  if (__WARN_ONCE.has(key)) return;
+  __WARN_ONCE.add(key);
+  console.warn(...args);
+}
+
 // Canonical source of the text limit.
 // Keep fallbacks synchronized in text_state.js and constants.js.
 const MAX_TEXT_CHARS = 10000000;
@@ -325,7 +333,7 @@ updater.registerIpc(ipcMain, {
 // Create language selection window (small, light)
 function createLanguageWindow() {
   if (langWin && !langWin.isDestroyed()) {
-    try { langWin.focus(); } catch (e) { /* noop */ }
+    try { langWin.focus(); } catch (e) { warnOnce('langWin.focus', 'langWin.focus failed (ignored):', e); }
     return;
   }
 
@@ -506,7 +514,9 @@ async function createflotanteWindow(options = {}) {
   if (flotanteWin && !flotanteWin.isDestroyed()) {
     // Apply a forced position if it was requested
     if (options && (typeof options.x === 'number' || typeof options.y === 'number')) {
-      try { flotanteWin.setBounds({ x: options.x || flotanteWin.getBounds().x, y: options.y || flotanteWin.getBounds().y }); } catch (e) { /* noop */ }
+      try { flotanteWin.setBounds({ x: options.x || flotanteWin.getBounds().x, y: options.y || flotanteWin.getBounds().y }); } catch (e) {
+        warnOnce('flotanteWin.setBounds', 'flotanteWin.setBounds failed (ignored):', e);
+      }
     }
     return flotanteWin;
   }
@@ -579,8 +589,12 @@ async function createflotanteWindow(options = {}) {
     }
 
     // Notify the main renderer if it needs to clean up state
-    if (mainWin && mainWin.webContents) {
-      try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }
+    try {
+      if (mainWin && !mainWin.isDestroyed() && mainWin.webContents && !mainWin.webContents.isDestroyed()) {
+        mainWin.webContents.send('flotante-closed');
+      }
+    } catch (err) {
+      warnOnce('mainWin.send.flotante-closed', "mainWin send('flotante-closed') failed (ignored):", err);
     }
   });
 
@@ -598,7 +612,7 @@ async function createflotanteWindow(options = {}) {
   try {
     snapWindowFullyIntoWorkArea(win);
   } catch (e) {
-    /* noop */
+    warnOnce('snapWindowFullyIntoWorkArea', 'snapWindowFullyIntoWorkArea failed (ignored):', e);
   }
 
   // Optional: if the floating window should not steal focus, use showInactive(); here we want immediate interaction so we keep focusable=true and let it take focus.
@@ -631,9 +645,9 @@ function getCronoState() {
 
 function broadcastCronoState() {
   const state = getCronoState();
-  try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
-  try { if (flotanteWin && !flotanteWin.isDestroyed()) flotanteWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
-  try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }
+  try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) { warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', e); }
+  try { if (flotanteWin && !flotanteWin.isDestroyed()) flotanteWin.webContents.send('crono-state', state); } catch (e) { warnOnce('send.crono-state.flotanteWin', 'send crono-state to flotanteWin failed (ignored):', e); }
+  try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) { warnOnce('send.crono-state.editorWin', 'send crono-state to editorWin failed (ignored):', e); }
 }
 
 function ensureCronoInterval() {
@@ -717,7 +731,7 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
 ipcMain.handle('flotante-open', async () => {
   try {
     await createflotanteWindow();
-    try { broadcastCronoState(); } catch (e) {/*noop*/ }
+    try { broadcastCronoState(); } catch (e) { warnOnce('broadcastCronoState.after.flotante-open', 'broadcastCronoState failed after flotante-open (ignored):', e); }
     if (crono.running) ensureCronoInterval();
     return { ok: true };
   } catch (e) {
@@ -832,7 +846,7 @@ app.whenReady().then(() => {
         try {
           if (langWin && !langWin.isDestroyed()) langWin.close();
         } catch (e) {
-          /* noop */
+          warnOnce('langWin.close.after.language-selected', 'langWin.close failed after language-selected (ignored):', e);
         }
       }
       updater.scheduleInitialCheck();

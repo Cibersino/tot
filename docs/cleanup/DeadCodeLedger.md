@@ -217,6 +217,22 @@
   - (supporting) pre.prop_anyobj.*.grep.log
   - (supporting) pre.bracket.*.grep.log
 
+- RUN_ID: 20251227-192943 (D1.1 micro-batch: main swallow visibility — replace noop markers with warnOnce + guards)
+  - git_status.pre.log
+  - head.pre.log
+  - rg.D1.noop_catches.main.pre.log
+  - rg.D1.webContents_send.main.pre.log
+  - rg.D1.setBounds.main.pre.log
+  - rg.D1.noop_markers.main.pre.log
+  - rg.D1.noop_markers.main.pre.context.log
+  - patch.D1_1.diff.log
+  - eslint.post.log
+  - rg.D1.noop_markers.main.post.log
+  - smoke.D1_1.log
+  - git_status.post.log
+  - run_id.txt
+  - evidence_path.txt
+
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - RUN_ID: 20251227-184005 (Phase 3 sweep: eslint + knip + madge + depcheck; reproducible)
   - git_status.pre.log
@@ -659,12 +675,30 @@ Evidence sources:
 - fallback.webContents.send.sites.log
 
 ### D1 — Electron main swallow sites (HIGH: hides lifecycle/race failures)
-- electron/main.js:
-  - L323 `try { langWin.focus(); } catch (e) { /* noop */ }`
-  - L504 `try { flotanteWin.setBounds(...) } catch (e) { /* noop */ }`
-  - L578 `try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }`
-  - L629–L631 `try { ...webContents.send('crono-state', ...) } catch (e) {/*noop*/ }`
-  - L715 `try { broadcastCronoState(); } catch (e) {/*noop*/ }`
+- Status: MITIGATED (visibility) — D1.1 replaced silent noop catches with warnOnce + added guards where applicable.
+
+- PRE (noop markers inventory; 9 sites; captured):
+  - L328 `try { langWin.focus(); } catch (e) { /* noop */ }`
+  - L509 `try { flotanteWin.setBounds(...); } catch (e) { /* noop */ }`
+  - L583 `try { mainWin.webContents.send('flotante-closed'); } catch (err) { /* noop */ }`
+  - L599–L601 `try { snapWindowFullyIntoWorkArea(win); } catch (e) { /* noop */ }` (marker at L601)
+  - L634 `try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
+  - L635 `try { if (flotanteWin && !flotanteWin.isDestroyed()) flotanteWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
+  - L636 `try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) {/*noop*/ }`
+  - L720 `try { broadcastCronoState(); } catch (e) {/*noop*/ }`
+  - L833–L835 `try { if (langWin && !langWin.isDestroyed()) langWin.close(); } catch (e) { /* noop */ }` (marker at L835)
+
+- PATCH (D1.1):
+  - Introduced `warnOnce(...)` helper (rate-limited console.warn).
+  - Replaced the noop catches at the swallow sites with `warnOnce(...)` (visibility instead of silence).
+  - Hardened `webContents.send('flotante-closed')` with `!isDestroyed()` checks (window + webContents) prior to send.
+  - Evidence: see `patch.D1_1.diff.log` in RUN_ID 20251227-192943.
+
+- POST:
+  - `rg.D1.noop_markers.main.post.log` (post-marker inventory)
+  - `eslint.post.log`
+  - `smoke.D1_1.log`
+  - Evidence: RUN_ID 20251227-192943 (§1.3)
 
 Policy:
 - Do not remove “because unused”. Closure path is visibility (log/guard/metric), not deletion.
