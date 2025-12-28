@@ -5,7 +5,7 @@
 ---
 
 ## 0) Bootstrap metadata
-- HEAD: 738e9e0ac1641bfebe90e0fb184823b3dcabeb97
+- HEAD: 1fddf78c129a01d8aea081d140daf500d2afbea3
 - Madge seed: electron/main.js (VERIFIED by evidence in EntryPointsInventory.md)
 - Evidence root: docs/cleanup/_evidence/deadcode/
 
@@ -250,6 +250,20 @@
   - git_status.post.log
   - run_id.txt
   - evidence_path.txt
+
+- RUN_ID: 20251228-005543 (D5.1 micro-batch: renderer swallow visibility — replace noop markers with warnOnceRenderer)
+  - git_status.pre.log
+  - head.pre.log
+  - rg.D5.noop_markers.renderer.pre.log
+  - rg.D5.noop_markers.renderer.pre.context.log
+  - rg.D5.warnOnce.existing.pre.log
+  - run_id.txt
+  - evidence_path.txt
+  - patch.D5_1.diff.log
+  - eslint.post.log
+  - rg.D5.noop_markers.renderer.post.log
+  - smoke.D5_1.log
+  - git_status.post.log
 
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
 - RUN_ID: 20251227-184005 (Phase 3 sweep: eslint + knip + madge + depcheck; reproducible)
@@ -748,7 +762,30 @@ Risk:
 - Evidence: RUN_ID 20251227-235800 (§1.3)
 
 ### D5 — Swallowed renderer sync failures (LOW/MED)
-- public/renderer.js: settings sync / general try-noop sites (at least two)
+- Status: MITIGATED (visibility) — D5.1 replaced silent noop catches with warnOnceRenderer.
+
+- PRE (noop markers inventory; 3 sites; captured):
+  - public/renderer.js:
+    - L387 multi-line noop in i18n load (`loadRendererTranslations(idiomaActual)`)
+    - L478 `try { syncToggleFromSettings(settingsCache || {}); } catch (e) { /* noop */ }`
+    - L911 `} catch (e) { /* noop */ }` (console.debug wrapper around openPresetModal payload)
+
+- Guard rail (PRE):
+  - Verified no pre-existing `warnOnce` / `__WARN_ONCE` in renderer.js (avoid redeclare).
+
+- PATCH (D5.1):
+  - Introduced `warnOnceRenderer(...)` helper with `__WARN_ONCE_RENDERER` set (rate-limited console.warn).
+  - Replaced the 3 noop catches with `warnOnceRenderer(...)`:
+    - i18n loader failures (`loadRendererTranslations`)
+    - settings toggle sync (`syncToggleFromSettings`)
+    - console.debug failures (openPresetModal payload log)
+
+- POST:
+  - `rg.D5.noop_markers.renderer.post.log` must be empty.
+  - ESLint: PASS (`eslint.post.log`).
+  - Smoke: PASS (`smoke.D5_1.log`).
+
+- Evidence: RUN_ID 20251228-005543 (§1.3)
 
 Closure plan (visibility, not deletion):
 - Prefer guards (`if (win && !win.isDestroyed())`) over blanket try/catch.

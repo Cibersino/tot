@@ -56,6 +56,14 @@ const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
 const presetDescription = document.getElementById('presetDescription');
 
+// Visibility helper: warn only once per key (renderer scope)
+const __WARN_ONCE_RENDERER = new Set();
+function warnOnceRenderer(key, ...args) {
+  if (__WARN_ONCE_RENDERER.has(key)) return;
+  __WARN_ONCE_RENDERER.add(key);
+  console.warn(...args);
+}
+
 let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
@@ -383,8 +391,12 @@ const loadPresets = async () => {
           idiomaActual = nuevoIdioma;
           try {
             await loadRendererTranslations(idiomaActual);
-          } catch (_) {
-            /* noop */
+          } catch (e) {
+            warnOnceRenderer(
+              'renderer.loadRendererTranslations',
+              `[renderer] loadRendererTranslations(${idiomaActual}) failed (ignored):`,
+              e
+            );
           }
           applyTranslations();
           // Reload presets for the new language and synchronize selection
@@ -475,7 +487,11 @@ const loadPresets = async () => {
         };
 
         // Perform immediate synchronization with settingsCache (already loaded)
-        try { syncToggleFromSettings(settingsCache || {}); } catch (e) { /* noop */ }
+        try {
+          syncToggleFromSettings(settingsCache || {});
+        } catch (e) {
+          warnOnceRenderer('renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', e);
+        }
       }
     } catch (ex) {
       console.error('Error initialazing toggleModoPreciso:', ex);
@@ -908,7 +924,9 @@ btnEditPreset.addEventListener('click', async () => {
     const payload = { wpm: wpm, mode: 'edit', preset: preset };
     try {
       console.debug('[renderer] openPresetModal payload:', payload);
-    } catch (e) { /* noop */ }
+    } catch (e) {
+      warnOnceRenderer('renderer.console.debug.openPresetModal', '[renderer] console.debug failed (ignored):', e);
+    }
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
     } else {
