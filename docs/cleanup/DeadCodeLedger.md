@@ -5,7 +5,7 @@
 ---
 
 ## 0) Bootstrap metadata
-- HEAD: 050af41aaab687c185805acb893320e63fbf2662
+- HEAD: 0589694b66db4ecd742c36e14118b52a7dfe9f9d
 - Madge seed: electron/main.js (VERIFIED by evidence in EntryPointsInventory.md)
 - Evidence root: docs/cleanup/_evidence/deadcode/
 
@@ -278,6 +278,22 @@
   - rg.D4.warnOnce.flotante.post.oldnames.log
   - rg.D4.warnOnceFlotante.flotante.post.log
   - smoke.D4_2.log
+  - git_status.post.log
+
+- RUN_ID: 20251228-075627 (D2–D3 micro-batch: editor swallow visibility — replace noop markers with warnOnceEditor)
+  - run_id.txt
+  - evidence_path.txt
+  - git_status.pre.log
+  - head.pre.log
+  - rg.D2D3.noop_markers.editor.pre.log
+  - rg.D2D3.noop_markers.editor.pre.context.log
+  - rg.D2D3.warnOnceEditor.existing.pre.log
+  - rg.D2D3.warnOnceEditor.exists.pre.log
+  - patch.D2D3.diff.log
+  - eslint.post.log
+  - rg.D2D3.noop_markers.editor.post.log
+  - rg.D2D3.warnOnceEditor.editor.post.log
+  - smoke.D2D3.log
   - git_status.post.log
 
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
@@ -751,12 +767,33 @@ Policy:
 - Do not remove “because unused”. Closure path is visibility (log/guard/metric), not deletion.
 
 ### D2 — Renderer swallow sites around DOM/UI cleanup (LOW/MED)
-- public/editor.js: notice remove/focus/select protected by noop catches (multiple sites)
+- Status: MITIGATED (visibility) — D2/D3 micro-batch in editor: replace noop markers with warnOnceEditor.
+- Scope (public/editor.js):
+  - Notice lifecycle: remove() on click + timeout used to be swallowed via noop markers.
+  - Focus restoration: prevActive.focus() failures were swallowed via noop markers.
+  - Selection: editor.select() failures were swallowed via noop marker.
+- Change:
+  - Introduced editor-scoped warn-once helper: `__WARN_ONCE_EDITOR` + `warnOnceEditor(key, ...)`.
+  - Replaced noop-marker catches with `warnOnceEditor(...)` (visibility instead of silence).
+- Verification:
+  - POST: noop marker grep must be empty for editor.js (`rg.D2D3.noop_markers.editor.post.log`).
+  - POST: new helper symbols present (`rg.D2D3.warnOnceEditor.editor.post.log`).
+  - Smoke: PASS (`smoke.D2D3.log`).
+- Evidence: RUN_ID 20251228-075627 (§1.3)
 
 ### D3 — Renderer swallow sites around bridge calls (MED/HIGH)
-- public/editor.js: editorAPI setCurrentText fallbacks wrapped in nested try/noop
-Risk:
-- Can mask broken preload bridge or contract regressions during refactors.
+- Status: MITIGATED (visibility) — D2/D3 micro-batch in editor: replace noop markers with warnOnceEditor.
+- Scope (public/editor.js):
+  - Bridge fallback calls to `window.editorAPI.setCurrentText(...)` previously had nested `try { ... } catch (e2) { /* noop */ }`.
+  - Covered sites include (per your diff/logs): drop postprocess fallback, typing truncate fallback, trash clear fallback, and calcWhileTyping toggle fallback.
+- Change:
+  - Replaced nested noop-marker catches with `warnOnceEditor(...)` to surface contract/preload breakages without turning them into hard failures.
+- Risk note (unchanged):
+  - Can still mask upstream errors if the caller ignores return paths; but now leaves a rate-limited signal in console for diagnosis.
+- Verification:
+  - POST: noop marker grep empty (`rg.D2D3.noop_markers.editor.post.log`).
+  - Smoke: PASS (`smoke.D2D3.log`).
+- Evidence: RUN_ID 20251228-075627 (§1.3)
 
 ### D4 — Swallowed i18n loader failures (LOW/MED)
 - Status: MITIGATED (visibility) — D4.1 replaced silent noop catches with warnOnce in flotante renderer; D4.2 normalized helper names to avoid global collisions.
