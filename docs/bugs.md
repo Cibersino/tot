@@ -1,3 +1,4 @@
+- Los catch (e), catch (e2), catch (err).
 - Cambiar ventana de selección de idioma para que sea un dropdown list y no botones.
 - Doble aviso cuando no hay preset que borrar.
 - Menú shortcuts no entrega nada.
