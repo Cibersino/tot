@@ -5,7 +5,7 @@
 ---
 
 ## 0) Bootstrap metadata
-- HEAD: 1fddf78c129a01d8aea081d140daf500d2afbea3
+- HEAD: 050af41aaab687c185805acb893320e63fbf2662
 - Madge seed: electron/main.js (VERIFIED by evidence in EntryPointsInventory.md)
 - Evidence root: docs/cleanup/_evidence/deadcode/
 
@@ -263,6 +263,21 @@
   - eslint.post.log
   - rg.D5.noop_markers.renderer.post.log
   - smoke.D5_1.log
+  - git_status.post.log
+
+- RUN_ID: 20251228-012226 (D4.2 micro-batch: flotante warnOnce helper — normalize to unique identifiers)
+  - git_status.pre.log
+  - head.pre.log
+  - rg.D4.warnOnce.flotante.pre.log
+  - rg.D4.warnOnce.flotante.pre.context.log
+  - rg.D4.warnOnceFlotante.exists.pre.log
+  - run_id.txt
+  - evidence_path.txt
+  - patch.D4_2.diff.log
+  - eslint.post.log
+  - rg.D4.warnOnce.flotante.post.oldnames.log
+  - rg.D4.warnOnceFlotante.flotante.post.log
+  - smoke.D4_2.log
   - git_status.post.log
 
 ### 1.4 Phase 3 — tool outputs ingested (static scan)
@@ -744,7 +759,7 @@ Risk:
 - Can mask broken preload bridge or contract regressions during refactors.
 
 ### D4 — Swallowed i18n loader failures (LOW/MED)
-- Status: MITIGATED (visibility) — D4.1 replaced silent noop catches with warnOnce in flotante renderer.
+- Status: MITIGATED (visibility) — D4.1 replaced silent noop catches with warnOnce in flotante renderer; D4.2 normalized helper names to avoid global collisions.
 
 - PRE (noop markers; captured):
   - public/flotante.js:
@@ -752,14 +767,25 @@ Risk:
     - L65 `} catch (_) { /* noop */ }` (i18n load: `loadRendererTranslations(lang)`)
 
 - PATCH (D4.1):
-  - Introduced local `warnOnce(...)` helper (rate-limited console.warn).
-  - Replaced both noop catches with `warnOnce(...)` (visibility instead of silence).
+  - Introduced a local warnOnce helper (rate-limited console.warn).
+  - Replaced both noop catches with warnOnce(...) (visibility instead of silence).
+  - Evidence: RUN_ID 20251227-235800 (§1.3)
+
+- PATCH (D4.2):
+  - Normalized helper identifiers to be flotante-scoped and collision-safe in classic-script global scope:
+    - `__WARN_ONCE` → `__WARN_ONCE_FLOTANTE`
+    - `warnOnce(...)` → `warnOnceFlotante(...)`
+  - No behavior change; only identifier normalization.
+  - Evidence: RUN_ID 20251228-012226 (§1.3)
 
 - POST:
-  - `rg.D4.noop_markers.flotante.post.log` must be empty.
-  - Smoke: PASS.
+  - `rg.D4.warnOnce.flotante.post.oldnames.log` must be empty (no `__WARN_ONCE` / `warnOnce(` leftovers).
+  - ESLint: PASS (`eslint.post.log`).
+  - Smoke: PASS (`smoke.D4_2.log`).
 
-- Evidence: RUN_ID 20251227-235800 (§1.3)
+- Evidence:
+  - D4.1: RUN_ID 20251227-235800 (§1.3)
+  - D4.2: RUN_ID 20251228-012226 (§1.3)
 
 ### D5 — Swallowed renderer sync failures (LOW/MED)
 - Status: MITIGATED (visibility) — D5.1 replaced silent noop catches with warnOnceRenderer.
