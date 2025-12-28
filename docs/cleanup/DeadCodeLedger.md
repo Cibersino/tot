@@ -5,7 +5,7 @@
 ---
 
 ## 0) Bootstrap metadata
-- HEAD: f7863ac75ce77a27e6478b81f62771a0f183f19e
+- HEAD: 738e9e0ac1641bfebe90e0fb184823b3dcabeb97
 - Madge seed: electron/main.js (VERIFIED by evidence in EntryPointsInventory.md)
 - Evidence root: docs/cleanup/_evidence/deadcode/
 
@@ -229,6 +229,24 @@
   - eslint.post.log
   - rg.D1.noop_markers.main.post.log
   - smoke.D1_1.log
+  - git_status.post.log
+  - run_id.txt
+  - evidence_path.txt
+
+- RUN_ID: 20251227-235800 (D2–D5 PRE inventory + D4.1 micro-batch: flotante swallow visibility)
+  - git_status.pre.log
+  - head.pre.log
+  - rg.D2D3.noop_markers.editor.pre.log
+  - rg.D2D3.noop_markers.editor.context.log
+  - rg.D4.noop_markers.flotante.pre.log
+  - rg.D4.noop_markers.flotante.context.log
+  - rg.D5.noop_markers.renderer.pre.log
+  - rg.D5.noop_markers.renderer.context.log
+  - rg.D2D5.empty_catch.public.pre.log
+  - patch.D4_1.diff.log
+  - eslint.post.log
+  - rg.D4.noop_markers.flotante.post.log
+  - smoke.D4_1.log
   - git_status.post.log
   - run_id.txt
   - evidence_path.txt
@@ -712,7 +730,22 @@ Risk:
 - Can mask broken preload bridge or contract regressions during refactors.
 
 ### D4 — Swallowed i18n loader failures (LOW/MED)
-- public/flotante.js: translation loading wrapped in noop catch
+- Status: MITIGATED (visibility) — D4.1 replaced silent noop catches with warnOnce in flotante renderer.
+
+- PRE (noop markers; captured):
+  - public/flotante.js:
+    - L62 `} catch (e) { /* noop */ }` (settings read: `window.flotanteAPI.getSettings()`)
+    - L65 `} catch (_) { /* noop */ }` (i18n load: `loadRendererTranslations(lang)`)
+
+- PATCH (D4.1):
+  - Introduced local `warnOnce(...)` helper (rate-limited console.warn).
+  - Replaced both noop catches with `warnOnce(...)` (visibility instead of silence).
+
+- POST:
+  - `rg.D4.noop_markers.flotante.post.log` must be empty.
+  - Smoke: PASS.
+
+- Evidence: RUN_ID 20251227-235800 (§1.3)
 
 ### D5 — Swallowed renderer sync failures (LOW/MED)
 - public/renderer.js: settings sync / general try-noop sites (at least two)
