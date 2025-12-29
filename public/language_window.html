@@ -71,7 +71,7 @@
 
   <script src="js/log.js"></script>
   <script>
-    const log = window.Log.get('language');
+    const log = window.getLogger('language');
     const btnEs = document.getElementById('btnEs');
     const btnEn = document.getElementById('btnEn');
 
@@ -89,7 +89,7 @@
       try {
         await window.languageAPI.setLanguage('en');
       } catch (e) {
-        console.error("Error setLanguage en:", e);
+        log.error("Error setLanguage en:", e);
       } finally {
         window.close();
       }

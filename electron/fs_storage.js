@@ -3,6 +3,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const Log = require('./log');
+
+const log = Log.get('fs-storage');
 
 // Base configuration folder
 const CONFIG_DIR = path.join(__dirname, '..', 'config');
@@ -14,7 +17,7 @@ function ensureConfigDir() {
   try {
     if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
   } catch (err) {
-    console.error('Error creating config dir:', err);
+    log.error('Error creating config dir:', err);
   }
 }
 
@@ -24,7 +27,7 @@ function loadJson(filePath, fallback = {}) {
     const raw = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(raw || '{}');
   } catch (err) {
-    console.error(`Error reading JSON ${filePath}:`, err);
+    log.error(`Error reading JSON ${filePath}:`, err);
     return fallback;
   }
 }
@@ -33,7 +36,7 @@ function saveJson(filePath, obj) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
   } catch (err) {
-    console.error(`Error writing JSON ${filePath}:`, err);
+    log.error(`Error writing JSON ${filePath}:`, err);
   }
 }
 
@@ -43,7 +46,7 @@ function ensureConfigPresetsDir() {
       fs.mkdirSync(CONFIG_PRESETS_DIR, { recursive: true });
     }
   } catch (err) {
-    console.error('Error creating config/presets_defaults:', err);
+    log.error('Error creating config/presets_defaults:', err);
   }
 }
 

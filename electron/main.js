@@ -1,6 +1,7 @@
 // electron/main.js
 const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 const path = require('path');
+const Log = require('./log');
 
 const {
   CONFIG_DIR,
@@ -15,6 +16,7 @@ const editorState = require('./editor_state');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const updater = require('./updater');
+const log = Log.get('main');
 
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
 const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
@@ -25,13 +27,7 @@ const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 
 ensureConfigDir();
 
-// Visibility helper: warn only once per key
-const __WARN_ONCE = new Set();
-function warnOnce(key, ...args) {
-  if (__WARN_ONCE.has(key)) return;
-  __WARN_ONCE.add(key);
-  console.warn(...args);
-}
+const warnOnce = (...args) => log.warnOnce(...args);
 
 // Canonical source of the text limit.
 // Keep fallbacks synchronized in text_state.js and constants.js.
@@ -83,7 +79,7 @@ function registerDevShortcuts(mainWin) {
       }
     });
   } catch (err) {
-    console.warn('Error registering development shortcuts:', err);
+    log.warn('Error registering development shortcuts:', err);
   }
 }
 
@@ -91,7 +87,7 @@ function unregisterShortcuts() {
   try {
     globalShortcut.unregisterAll();
   } catch (err) {
-    console.warn('Error unregistering global shortcuts:', err);
+    log.warn('Error unregistering global shortcuts:', err);
   }
 }
 
@@ -127,7 +123,7 @@ function createMainWindow() {
         try {
           editorWin.close();
         } catch (err) {
-          console.error('Error closing editorWin from mainWin.close:', err);
+          log.error('Error closing editorWin from mainWin.close:', err);
         }
       }
 
@@ -135,11 +131,11 @@ function createMainWindow() {
         try {
           presetWin.close();
         } catch (err) {
-          console.error('Error closing presetWin from mainWin.close:', err);
+          log.error('Error closing presetWin from mainWin.close:', err);
         }
       }
     } catch (err) {
-      console.error('Error in mainWin.close handler:', err);
+      log.error('Error in mainWin.close handler:', err);
     }
   });
 
@@ -151,7 +147,7 @@ function createMainWindow() {
     try {
       app.quit();
     } catch (err) {
-      console.error('Error calling app.quit() in mainWin.closed:', err);
+      log.error('Error calling app.quit() in mainWin.closed:', err);
     }
   });
 }
@@ -208,7 +204,7 @@ function createEditorWindow() {
           meta: { source: 'main', action: 'init' }
         });
       } catch (err) {
-        console.error('Error sending editor-init-text to editor:', err);
+        log.error('Error sending editor-init-text to editor:', err);
       }
 
       // Notify the main window that the editor is ready
@@ -217,10 +213,10 @@ function createEditorWindow() {
           mainWin.webContents.send('editor-ready');
         }
       } catch (err) {
-        console.error('Error notifying editor-ready to main window:', err);
+        log.error('Error notifying editor-ready to main window:', err);
       }
     } catch (err) {
-      console.error('Error showing editor:', err);
+      log.error('Error showing editor:', err);
     }
   });
 
@@ -242,7 +238,7 @@ function createPresetWindow(initialData) {
       // send init with whole payload (may include wpm/mode/preset)
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (err) {
-      console.error('Error sending init to presetWin already open:', err);
+      log.error('Error sending init to presetWin already open:', err);
     }
     return;
   }
@@ -273,7 +269,7 @@ function createPresetWindow(initialData) {
     try {
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (err) {
-      console.error('Error sending preset-init:', err);
+      log.error('Error sending preset-init:', err);
     }
   });
 
@@ -363,14 +359,14 @@ function createLanguageWindow() {
       // If the user closes without choosing, force a fallback to 'es' if no language is defined
       settingsState.applyFallbackLanguageIfUnset('es');
     } catch (err) {
-      console.error('Error applying fallback language:', err);
+      log.error('Error applying fallback language:', err);
     } finally {
       langWin = null;
       // Ensure mainWin is created after closing the modal
       try {
         if (!mainWin) createMainWindow();
       } catch (err) {
-        console.error('Error creating mainWin after closing language modal:', err);
+        log.error('Error creating mainWin after closing language modal:', err);
       }
     }
   });
@@ -556,7 +552,7 @@ async function createflotanteWindow(options = {}) {
       pos.y = y;
     }
   } catch (err) {
-    console.warn('Position could not be calculated from screen.getPrimaryDisplay(); using the default FW position.', err);
+    log.warn('Position could not be calculated from screen.getPrimaryDisplay(); using the default FW position.', err);
   }
 
   // If x/y were provided explicitly in options, respect them (allow override)
@@ -598,7 +594,7 @@ async function createflotanteWindow(options = {}) {
   } catch (err) {
     // Expected if the window is closed while loadFile is in-flight (e.g., open/close stress test).
     if (!winClosing && !win.isDestroyed()) {
-      console.error('Error loading flotante HTML:', err);
+      log.error('Error loading flotante HTML:', err);
     }
   }
 
@@ -709,16 +705,16 @@ ipcMain.on('crono-toggle', () => {
   try {
     if (crono.running) stopCrono(); else startCrono();
   } catch (err) {
-    console.error('Error in crono-toggle:', err);
+    log.error('Error in crono-toggle:', err);
   }
 });
 
 ipcMain.on('crono-reset', () => {
-  try { resetCrono(); } catch (err) { console.error('Error in crono-reset:', err); }
+  try { resetCrono(); } catch (err) { log.error('Error in crono-reset:', err); }
 });
 
 ipcMain.on('crono-set-elapsed', (_ev, ms) => {
-  try { setCronoElapsed(ms); } catch (err) { console.error('Error in crono-set-elapsed:', err); }
+  try { setCronoElapsed(ms); } catch (err) { log.error('Error in crono-set-elapsed:', err); }
 });
 
 // IPC: open floating window
@@ -729,7 +725,7 @@ ipcMain.handle('flotante-open', async () => {
     if (crono.running) ensureCronoInterval();
     return { ok: true };
   } catch (err) {
-    console.error('Error processing flotante-open:', err);
+    log.error('Error processing flotante-open:', err);
     return { ok: false, error: String(err) };
   }
 });
@@ -745,7 +741,7 @@ ipcMain.handle('flotante-close', async () => {
 
     return { ok: true };
   } catch (err) {
-    console.error('Error processing flotante-close:', err);
+    log.error('Error processing flotante-close:', err);
     return { ok: false, error: String(err) };
   }
 });
@@ -763,7 +759,7 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
     }
     // broadcastCronoState() is already called by the previous functions
   } catch (err) {
-    console.error('Error processing flotante-command in main:', err);
+    log.error('Error processing flotante-command in main:', err);
   }
 });
 
@@ -780,14 +776,14 @@ ipcMain.handle('open-editor', () => {
         meta: { source: 'main', action: 'init' },
       });
     } catch (err) {
-      console.error('Error sending editor-init-text from open-editor:', err);
+      log.error('Error sending editor-init-text from open-editor:', err);
     }
     try {
       if (mainWin && !mainWin.isDestroyed()) {
         mainWin.webContents.send('editor-ready');
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         'Unable to notify editor-ready (editor already open):',
         err
       );
@@ -812,7 +808,7 @@ ipcMain.handle('get-app-config', async () => {
   try {
     return { ok: true, maxTextChars: MAX_TEXT_CHARS };
   } catch (err) {
-    console.error('Error processing get-app-config:', err);
+    log.error('Error processing get-app-config:', err);
     return { ok: false, error: String(err), maxTextChars: 1e7 };
   }
 });
@@ -835,7 +831,7 @@ app.whenReady().then(() => {
       try {
         if (!mainWin) createMainWindow();
       } catch (err) {
-        console.error('Error creating mainWin after selecting language:', err);
+        log.error('Error creating mainWin after selecting language:', err);
       } finally {
         try {
           if (langWin && !langWin.isDestroyed()) langWin.close();
@@ -871,6 +867,6 @@ app.on('will-quit', () => {
       cronoInterval = null;
     }
   } catch (err) {
-    console.error('Error clearing stopwatch in will-quit:', err);
+    log.error('Error clearing stopwatch in will-quit:', err);
   }
 });

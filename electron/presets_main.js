@@ -5,7 +5,9 @@
 const fs = require('fs');
 const path = require('path');
 const { dialog, shell } = require('electron');
+const Log = require('./log');
 
+const log = Log.get('presets-main');
 const { CONFIG_PRESETS_DIR, ensureConfigPresetsDir } = require('./fs_storage');
 const settingsState = require('./settings');
 const menuBuilder = require('./menu_builder');
@@ -29,7 +31,7 @@ function loadPresetArrayFromJs(filePath) {
     }
     return Array.isArray(data) ? data : [];
   } catch (err) {
-    console.error(`[presets_main] Error loading preset file ${filePath}:`, err);
+    log.error(`[presets_main] Error loading preset file ${filePath}:`, err);
     return [];
   }
 }
@@ -83,11 +85,11 @@ function copyDefaultPresetsIfMissing() {
             }
             if (!Array.isArray(arr)) arr = [];
             fs.writeFileSync(dest, JSON.stringify(arr, null, 2), 'utf8');
-            console.debug(
+            log.debug(
               `[presets_main] Copied default preset: ${src} -> ${dest}`
             );
           } catch (err) {
-            console.error(
+            log.error(
               `[presets_main] Error converting preset ${src} a JSON:`,
               err
             );
@@ -95,7 +97,7 @@ function copyDefaultPresetsIfMissing() {
         }
       });
   } catch (err) {
-    console.error('[presets_main] Error in copyDefaultPresetsIfMissing:', err);
+    log.error('[presets_main] Error in copyDefaultPresetsIfMissing:', err);
   }
 }
 
@@ -141,7 +143,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         }
       }
     } catch (err) {
-      console.error('[presets_main] Error in broadcast settings-updated:', err);
+      log.error('[presets_main] Error in broadcast settings-updated:', err);
     }
   }
 
@@ -188,7 +190,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             fs.readFileSync(path.join(CONFIG_PRESETS_DIR, generalJson), 'utf8')
           );
         } catch (err) {
-          console.error('[presets_main] Error parsing', generalJson, err);
+          log.error('[presets_main] Error parsing', generalJson, err);
           general = [];
         }
       } else {
@@ -209,7 +211,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             );
             if (Array.isArray(arr)) languagePresets[lang] = arr;
           } catch (err) {
-            console.error('[presets_main] Error parsing', n, err);
+            log.error('[presets_main] Error parsing', n, err);
           }
         });
 
@@ -235,7 +237,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             }
             if (Array.isArray(arr)) languagePresets[lang] = arr;
           } catch (err) {
-            console.error('[presets_main] Error loading', n, err);
+            log.error('[presets_main] Error loading', n, err);
           }
         });
 
@@ -244,7 +246,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         languagePresets,
       };
     } catch (err) {
-      console.error(
+      log.error(
         '[presets_main] Error providing default presets (get-default-presets):',
         err
       );
@@ -259,7 +261,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       // shell.openPath returns '' on success, or an error string
       const result = await shell.openPath(CONFIG_PRESETS_DIR);
       if (typeof result === 'string' && result.length > 0) {
-        console.error(
+        log.error(
           '[presets_main] shell.openPath() returned error:',
           result
         );
@@ -267,7 +269,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
       return { ok: true };
     } catch (err) {
-      console.error(
+      log.error(
         '[presets_main] Error opening presets_defaults folder:',
         err
       );
@@ -299,12 +301,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           mainWin.webContents.send('preset-created', preset);
         }
       } catch (err) {
-        console.error('[presets_main] Error sending preset-created:', err);
+        log.error('[presets_main] Error sending preset-created:', err);
       }
 
       return { ok: true };
     } catch (err) {
-      console.error('[presets_main] Error creating preset:', err);
+      log.error('[presets_main] Error creating preset:', err);
       return { ok: false, error: String(err) };
     }
   });
@@ -332,7 +334,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
               'FALLBACK: No preset selected to delete',
           });
         } catch (err) {
-          console.error(
+          log.error(
             '[presets_main] Error showing dialog delete none:',
             err
           );
@@ -407,7 +409,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       // Not found in user presets or default presets
       return { ok: false, code: 'NOT_FOUND' };
     } catch (err) {
-      console.error('[presets_main] Error in request-delete-preset:', err);
+      log.error('[presets_main] Error in request-delete-preset:', err);
       return { ok: false, error: String(err) };
     }
   });
@@ -488,7 +490,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       return { ok: true, action: 'restored', removedCustom, unignored };
     } catch (err) {
-      console.error(
+      log.error(
         '[presets_main] Error restoring default presets:',
         err
       );
@@ -514,7 +516,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       });
       return { ok: true };
     } catch (err) {
-      console.error(
+      log.error(
         '[presets_main] Error showing dialog no-selection-edit:',
         err
       );
@@ -608,7 +610,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           mainWin.webContents.send('preset-created', newPreset);
         }
       } catch (err) {
-        console.error(
+        log.error(
           '[presets_main] Error sending events after edit-preset:',
           err
         );
@@ -616,7 +618,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       return { ok: true, action: 'edited', deletedAction };
     } catch (err) {
-      console.error('[presets_main] Error editing preset:', err);
+      log.error('[presets_main] Error editing preset:', err);
       return { ok: false, error: String(err) };
     }
   });

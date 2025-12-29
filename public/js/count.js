@@ -1,6 +1,8 @@
 // public/js/count.js
 (() => {
-  console.debug('[count.js] module loaded');
+  const log = window.getLogger('count');
+
+  log.debug('[count.js] module loaded');
 
   function contarTextoSimple(texto) {
     const conEspacios = texto.length;
