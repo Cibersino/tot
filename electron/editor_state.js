@@ -2,7 +2,9 @@
 const { screen } = require('electron');
 const path = require('path');
 const { CONFIG_DIR, loadJson, saveJson } = require('./fs_storage');
+const Log = require('./log');
 
+const log = Log.get('editor-state');
 const EDITOR_STATE_FILE = path.join(CONFIG_DIR, 'editor_state.json');
 
 const DEFAULT_STATE = {
@@ -58,7 +60,7 @@ function loadInitialState(customLoadJson) {
     const raw = loader(EDITOR_STATE_FILE, DEFAULT_STATE);
     return normalizeState(raw);
   } catch (err) {
-    console.error('[editor_state] Error reading initial state:', err);
+    log.error('[editor_state] Error reading initial state:', err);
     return { ...DEFAULT_STATE };
   }
 }
@@ -93,7 +95,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
       saver(EDITOR_STATE_FILE, state);
     } catch (err) {
-      console.error('[editor_state] Error saving editor reduced state:', err);
+      log.error('[editor_state] Error saving editor reduced state:', err);
     }
   };
 
@@ -108,7 +110,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       state.maximized = true;
       saver(EDITOR_STATE_FILE, state);
     } catch (err) {
-      console.error('[editor_state] Error updating state in maximize:', err);
+      log.error('[editor_state] Error updating state in maximize:', err);
     }
   });
 
@@ -145,7 +147,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
       saver(EDITOR_STATE_FILE, state);
     } catch (err) {
-      console.error('[editor_state] Error handling editor unmaximize:', err);
+      log.error('[editor_state] Error handling editor unmaximize:', err);
     }
   });
 
@@ -157,7 +159,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       state.maximized = editorWin.isMaximized();
       saver(EDITOR_STATE_FILE, state);
     } catch (err) {
-      console.error('[editor_state] Error saving editor closed state:', err);
+      log.error('[editor_state] Error saving editor closed state:', err);
     }
   });
 }

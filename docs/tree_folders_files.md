@@ -35,7 +35,8 @@ tot-readingmeter/
 │ ├── editor_state.js
 │ ├── presets_main.js
 │ ├── menu_builder.js
-│ └── updater.js
+│ ├── updater.js
+│ └── log.js
 ├── i18n/
 │ ├── es/
 │ │ ├── main.json
@@ -71,7 +72,8 @@ tot-readingmeter/
 │ │ ├── menu_actions.js
 │ │ ├── notify.js
 │ │ ├── presets.js
-│ │ └── crono.js
+│ │ ├── crono.js
+│ │ └── log.js
 │ ├── renderer.js
 │ ├── editor.js
 │ ├── preset_modal.js

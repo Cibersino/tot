@@ -1,5 +1,7 @@
 // public/renderer.js
-console.log('Renderer main starting...');
+const log = window.getLogger('renderer');
+
+log.debug('Renderer main starting...');
 
 const { AppConstants } = window;
 if (!AppConstants) {
@@ -57,12 +59,7 @@ const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets')
 const presetDescription = document.getElementById('presetDescription');
 
 // Visibility helper: warn only once per key (renderer scope)
-const __WARN_ONCE_RENDERER = new Set();
-function warnOnceRenderer(key, ...args) {
-  if (__WARN_ONCE_RENDERER.has(key)) return;
-  __WARN_ONCE_RENDERER.add(key);
-  console.warn(...args);
-}
+const warnOnceRenderer = (...args) => log.warnOnce(...args);
 
 let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
@@ -153,7 +150,7 @@ function applyTranslations() {
       MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
     }
   } catch (err) {
-    console.error('Could not get getAppConfig using defaults:', err);
+    log.error('Could not get getAppConfig using defaults:', err);
   }
 
   // Load user settings ONCE when the renderer starts
@@ -170,10 +167,10 @@ function applyTranslations() {
       // Refresh the initial view with the loaded translations
       updatePreviewAndResults(currentText);
     } catch (err) {
-      console.warn('Could not apply initial translations in renderer:', err);
+      log.warn('Could not apply initial translations in renderer:', err);
     }
   } catch (err) {
-    console.error('Could not get user settings at startup:', err);
+    log.error('Could not get user settings at startup:', err);
     // Current language is set to 'es' by default
   }
 })();
@@ -187,7 +184,7 @@ let allPresetsCache = [];
 // ======================= Presets module =======================
 const { combinePresets, fillPresetsSelect, applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};
 if (!combinePresets || !fillPresetsSelect || !applyPresetSelection || !loadPresetsIntoDom) {
-  console.error('[renderer] RendererPresets not available');
+  log.error('[renderer] RendererPresets not available');
 }
 
 // ======================= Text Count =======================
@@ -210,7 +207,7 @@ function setModoConteo(nuevoModo) {
 // ======================= HHh MMm SSs format =======================
 const { getTimeParts, formatTimeFromWords, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
 if (!getTimeParts || !formatTimeFromWords || !obtenerSeparadoresDeNumeros || !formatearNumero) {
-  console.error('[renderer] FormatUtils not available');
+  log.error('[renderer] FormatUtils not available');
 }
 
 // ======================= Update view and results =======================
@@ -263,7 +260,7 @@ async function updatePreviewAndResults(text) {
         lastComputedElapsedForWpm = 0;
       }
     } catch (err) {
-      console.error('Error requesting stopwatch reset after text change:', err);
+      log.error('Error requesting stopwatch reset after text change:', err);
       uiResetCrono();
       lastComputedElapsedForWpm = 0;
     }
@@ -296,7 +293,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
         lastComputedElapsedForWpm = res.lastComputedElapsedForWpm;
       }
     } catch (err) {
-      console.error('Error handling crono-state in renderer:', err);
+      log.error('Error handling crono-state in renderer:', err);
     }
   });
 }
@@ -322,7 +319,7 @@ const loadPresets = async () => {
     }
     return allPresetsCache;
   } catch (err) {
-    console.error('Error loading presets:', err);
+    log.error('Error loading presets:', err);
     if (presetsSelect) presetsSelect.innerHTML = '';
     if (presetDescription) presetDescription.textContent = '';
     allPresetsCache = [];
@@ -361,7 +358,7 @@ const loadPresets = async () => {
             }
           }
         } catch (err) {
-          console.error('Error handling preset-created event:', err);
+          log.error('Error handling preset-created event:', err);
         }
       });
     }
@@ -412,7 +409,7 @@ const loadPresets = async () => {
               wpm = selected.wpm;
             }
           } catch (err) {
-            console.error('Error loading presets after language change:', err);
+            log.error('Error loading presets after language change:', err);
           }
           updatePreviewAndResults(currentText);
         }
@@ -422,7 +419,7 @@ const loadPresets = async () => {
         }
         updatePreviewAndResults(currentText);
       } catch (err) {
-        console.error('Error handling settings change:', err);
+        log.error('Error handling settings change:', err);
       }
     };
 
@@ -466,11 +463,11 @@ const loadPresets = async () => {
               try {
                 await window.electronAPI.setModeConteo(nuevoModo);
               } catch (err) {
-                console.error('Error persisting modeCount using setModeCount:', err);
+                log.error('Error persisting modeCount using setModeCount:', err);
               }
             }
           } catch (err) {
-            console.error('Error handling change of toggleModoPreciso:', err);
+            log.error('Error handling change of toggleModoPreciso:', err);
           }
         });
 
@@ -482,7 +479,7 @@ const loadPresets = async () => {
             const modo = (s && s.modeConteo) ? s.modeConteo : modoConteo;
             toggleModoPreciso.checked = (modo === 'preciso');
           } catch (err) {
-            console.error('Error syncing toggle from settings:', err);
+            log.error('Error syncing toggle from settings:', err);
           }
         };
 
@@ -494,11 +491,11 @@ const loadPresets = async () => {
         }
       }
     } catch (err) {
-      console.error('Error initialazing toggleModoPreciso:', err);
+      log.error('Error initialazing toggleModoPreciso:', err);
     }
 
   } catch (err) {
-    console.error('Error initialazing renderer:', err);
+    log.error('Error initialazing renderer:', err);
   }
   /* --- Info modal utility --- */
   const infoModal = document.getElementById('infoModal');
@@ -513,7 +510,7 @@ const loadPresets = async () => {
       infoModal.setAttribute('aria-hidden', 'true');
       infoModalContent.innerHTML = '<div class="info-loading">Cargando...</div>';
     } catch (err) {
-      console.error('Error closing modal info:', err);
+      log.error('Error closing modal info:', err);
     }
   }
 
@@ -533,7 +530,7 @@ const loadPresets = async () => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.text();
     } catch (err) {
-      console.debug('fetchText error:', path, err);
+      log.debug('fetchText error:', path, err);
       return null;
     }
   }
@@ -554,7 +551,7 @@ const loadPresets = async () => {
       });
       return doc.body.innerHTML;
     } catch (err) {
-      console.warn('translateInfoHtml failed:', err);
+      log.warn('translateInfoHtml failed:', err);
       return htmlString;
     }
   }
@@ -642,7 +639,7 @@ const loadPresets = async () => {
           // Finally, focus on the content so the reader can use the keyboard
           if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
         } catch (err) {
-          console.error('Error moving modal to section:', err);
+          log.error('Error moving modal to section:', err);
           if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
         }
       });
@@ -686,7 +683,7 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('presets_por_defecto', async () => {
       try {
         if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== 'function') {
-          console.warn('openDefaultPresetsFolder not available at electronAPI');
+          log.warn('openDefaultPresetsFolder not available at electronAPI');
           Notify.notifyMain('renderer.alerts.open_presets_unsupported');
           return;
         }
@@ -694,16 +691,16 @@ const loadPresets = async () => {
         const res = await window.electronAPI.openDefaultPresetsFolder();
         if (res && res.ok) {
           // Folder opened successfully; do not show intrusive notifications
-          console.debug('config/presets_defaults floder opened in explorer.');
+          log.debug('config/presets_defaults floder opened in explorer.');
           return;
         }
 
         // In case of failure, inform the user
         const errMsg = res && res.error ? String(res.error) : 'Desconocido';
-        console.error('default presets folder failed to open:', errMsg);
+        log.error('default presets folder failed to open:', errMsg);
         Notify.notifyMain('renderer.alerts.open_presets_fail');
       } catch (err) {
-        console.error('default presets folder failed to open', err);
+        log.error('default presets folder failed to open', err);
         Notify.notifyMain('renderer.alerts.open_presets_error');
       }
     });
@@ -725,7 +722,7 @@ const loadPresets = async () => {
       try {
         await window.electronAPI.checkForUpdates();
       } catch (err) {
-        console.error('Error requesting checkForUpdates:', err);
+        log.error('Error requesting checkForUpdates:', err);
       }
     });
 
@@ -733,7 +730,7 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('acerca_de', () => { showInfoModal('acerca_de') });
 
   } else {
-    console.warn('menuActions unavailable - the top bar will not be handled by the renderer.');
+    log.warn('menuActions unavailable - the top bar will not be handled by the renderer.');
   }
 })();
 
@@ -794,7 +791,7 @@ btnCountClipboard.addEventListener('click', async () => {
   try {
     let clip = await window.electronAPI.readClipboard() || '';
     if (clip.length > MAX_TEXT_CHARS) {
-      console.warn('Clipboard content exceeds the allowed size - it will be truncated.');
+      log.warn('Clipboard content exceeds the allowed size - it will be truncated.');
       clip = clip.slice(0, MAX_TEXT_CHARS);
       Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
@@ -808,7 +805,7 @@ btnCountClipboard.addEventListener('click', async () => {
     updatePreviewAndResults(resp && resp.text ? resp.text : clip);
     resp && resp.truncated && Notify.notifyMain('renderer.editor_alerts.text_truncated');
   } catch (err) {
-    console.error('clipboard error:', err);
+    log.error('clipboard error:', err);
     Notify.notifyMain('renderer.alerts.clipboard_error');
   }
 });
@@ -844,7 +841,7 @@ btnAppendClipboardNewLine.addEventListener('click', async () => {
       Notify.notifyMain('renderer.editor_alerts.text_truncated');
     }
   } catch (err) {
-    console.error('An error occurred while pasting the clipboard:', err);
+    log.error('An error occurred while pasting the clipboard:', err);
     Notify.notifyMain('renderer.alerts.paste_error');
   }
 });
@@ -854,7 +851,7 @@ btnEdit.addEventListener('click', async () => {
   try {
     await window.electronAPI.openEditor();
   } catch (err) {
-    console.error('Error opening editor:', err);
+    log.error('Error opening editor:', err);
     hideeditorLoader();
   }
 });
@@ -869,10 +866,10 @@ btnEmptyMain.addEventListener('click', async () => {
 
     updatePreviewAndResults(resp && resp.text ? resp.text : '');
     if (window.electronAPI && typeof window.electronAPI.forceClearEditor === 'function') {
-      try { await window.electronAPI.forceClearEditor(); } catch (err) { console.error('Error invoking forceClearEditor:', err); }
+      try { await window.electronAPI.forceClearEditor(); } catch (err) { log.error('Error invoking forceClearEditor:', err); }
     }
   } catch (err) {
-    console.error('Error clearing text from main window:', err);
+    log.error('Error clearing text from main window:', err);
     Notify.notifyMain('renderer.alerts.clear_error');
   }
 });
@@ -890,11 +887,11 @@ btnNewPreset.addEventListener('click', () => {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(wpm);
     } else {
-      console.warn('openPresetModal unavailable in electronAPI');
+      log.warn('openPresetModal unavailable in electronAPI');
       Notify.notifyMain('renderer.alerts.modal_unavailable');
     }
   } catch (err) {
-    console.error('Error opening new preset modal:', err);
+    log.error('Error opening new preset modal:', err);
   }
 });
 
@@ -923,9 +920,9 @@ btnEditPreset.addEventListener('click', async () => {
     // Open modal in edit mode. We pass an object with mode and the preset data.
     const payload = { wpm: wpm, mode: 'edit', preset: preset };
     try {
-      console.debug('[renderer] openPresetModal payload:', payload);
+      log.debug('[renderer] openPresetModal payload:', payload);
     } catch (err) {
-      warnOnceRenderer('renderer.console.debug.openPresetModal', '[renderer] console.debug failed (ignored):', err);
+      warnOnceRenderer('renderer.log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
     }
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
@@ -933,7 +930,7 @@ btnEditPreset.addEventListener('click', async () => {
       Notify.notifyMain('renderer.alerts.edit_unavailable');
     }
   } catch (err) {
-    console.error('Error opening edit preset modal:', err);
+    log.error('Error opening edit preset modal:', err);
     Notify.notifyMain('renderer.alerts.edit_error');
   }
 });
@@ -964,11 +961,11 @@ btnDeletePreset.addEventListener('click', async () => {
         return;
       }
       // Unexpected error: log and show a simple alert
-      console.error('Error deleting preset:', res && res.error ? res.error : res);
+      log.error('Error deleting preset:', res && res.error ? res.error : res);
       Notify.notifyMain('renderer.alerts.delete_error');
     }
   } catch (err) {
-    console.error('Error in deletion request:', err);
+    log.error('Error in deletion request:', err);
     Notify.notifyMain('renderer.alerts.delete_error');
   }
 });
@@ -994,11 +991,11 @@ btnResetDefaultPresets.addEventListener('click', async () => {
         // User cancelled in native dialog; nothing to do
         return;
       }
-      console.error('Error restoring presets:', res && res.error ? res.error : res);
+      log.error('Error restoring presets:', res && res.error ? res.error : res);
       Notify.notifyMain('renderer.alerts.restore_error');
     }
   } catch (err) {
-    console.error('Error in restoring request:', err);
+    log.error('Error in restoring request:', err);
     Notify.notifyMain('renderer.alerts.restore_error');
   }
 });

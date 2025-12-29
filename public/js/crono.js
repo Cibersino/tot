@@ -1,13 +1,8 @@
 // public/js/crono.js
 (() => {
-  console.debug('[crono.js] module loaded');
+  const log = window.getLogger('crono');
 
-  const __WARN_ONCE_CRONO = new Set();
-  function warnOnceCrono(key, ...args) {
-    if (__WARN_ONCE_CRONO.has(key)) return;
-    __WARN_ONCE_CRONO.add(key);
-    console.warn(...args);
-  }
+  log.debug('[crono.js] module loaded');
 
   function formatCrono(ms) {
     const totalSeconds = Math.floor((ms || 0) / 1000);
@@ -66,7 +61,7 @@
     pauseLabel = '||'
   }) {
     if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function') {
-      console.warn('openFlotanteWindow unavailable in electronAPI');
+      log.warn('openFlotanteWindow unavailable in electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
@@ -91,12 +86,12 @@
             return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
           }
         } catch (err) {
-          warnOnceCrono('electronAPI.getCronoState', '[crono] getCronoState failed:', err);
+          log.warnOnce('crono.getCronoState', '[crono] getCronoState failed:', err);
         }
       }
       return null;
     } catch (err) {
-      console.error('Error loading  flotante:', err);
+      log.error('Error loading  flotante:', err);
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
@@ -104,14 +99,14 @@
 
   async function closeFlotante({ electronAPI, toggleVF }) {
     if (!electronAPI || typeof electronAPI.closeFlotanteWindow !== 'function') {
-      console.warn('closeFlotanteWindow unavailable in electronAPI');
+      log.warn('closeFlotanteWindow unavailable in electronAPI');
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return;
     }
     try {
       await electronAPI.closeFlotanteWindow();
     } catch (err) {
-      console.error('Error closing flotante:', err);
+      log.error('Error closing flotante:', err);
     } finally {
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
     }
@@ -207,7 +202,7 @@
         if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
         return msRounded;
       } catch (err) {
-        console.error('Error sending setCronoElapsed:', err);
+        log.error('Error sending setCronoElapsed:', err);
         await fallbackLocal();
         return msRounded;
       }

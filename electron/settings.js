@@ -3,6 +3,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const Log = require('./log');
+
+const log = Log.get('settings');
 
 // Dependencies injected from main.js
 let _loadJson = null;
@@ -51,7 +54,7 @@ function loadNumberFormatDefaults(lang) {
 
         return { thousands, decimal };
     } catch (err) {
-        console.error(
+        log.error(
             '[settings] Error loading numberFormat defaults for',
             lang,
             err
@@ -127,7 +130,7 @@ function init({ loadJson, saveJson, settingsFile }) {
     try {
         _saveJson(_settingsFile, _currentSettings);
     } catch (err) {
-        console.error('[settings] Error persisting settings in init:', err);
+        log.error('[settings] Error persisting settings in init:', err);
     }
 
     return _currentSettings;
@@ -158,7 +161,7 @@ function saveSettings(nextSettings) {
             _saveJson(_settingsFile, normalized);
         }
     } catch (err) {
-        console.error('[settings] Error saving settings:', err);
+        log.error('[settings] Error saving settings:', err);
     }
     return _currentSettings;
 }
@@ -184,7 +187,7 @@ function broadcastSettingsUpdated(settings, windows) {
             flotanteWin.webContents.send('settings-updated', settings);
         }
     } catch (err) {
-        console.error('[settings] Error notifying settings-updated:', err);
+        log.error('[settings] Error notifying settings-updated:', err);
     }
 }
 
@@ -211,7 +214,7 @@ function registerIpc(
         try {
             return getSettings();
         } catch (err) {
-            console.error('Error in get-settings:', err);
+            log.error('Error in get-settings:', err);
             return { language: 'es', presets: [] };
         }
     });
@@ -259,7 +262,7 @@ function registerIpc(
                 try {
                     buildAppMenu(effectiveLang);
                 } catch (err) {
-                    console.warn('[settings] Error rebuilding menu:', err);
+                    log.warn('[settings] Error rebuilding menu:', err);
                 }
             }
 
@@ -279,7 +282,7 @@ function registerIpc(
                     langWin.setMenuBarVisibility(false);
                 }
             } catch (err) {
-                console.warn(
+                log.warn(
                     '[settings] Error hiding menu in secondary windows:',
                     err
                 );
@@ -289,7 +292,7 @@ function registerIpc(
 
             return { ok: true, language: chosen };
         } catch (err) {
-            console.error('Error saving language:', err);
+            log.error('Error saving language:', err);
             return { ok: false, error: String(err) };
         }
     });
@@ -306,7 +309,7 @@ function registerIpc(
 
             return { ok: true, mode: settings.modeConteo };
         } catch (err) {
-            console.error('Error in set-mode-conteo:', err);
+            log.error('Error in set-mode-conteo:', err);
             return { ok: false, error: String(err) };
         }
     });
@@ -348,7 +351,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
             saveSettings(settings);
         }
     } catch (err) {
-        console.error('[settings] Error applying fallback language:', err);
+        log.error('[settings] Error applying fallback language:', err);
     }
 }
 

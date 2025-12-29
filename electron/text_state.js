@@ -1,5 +1,8 @@
 // electron/text_state.js
 const fs = require('fs');
+const Log = require('./log');
+
+const log = Log.get('text-state');
 
 // Shared internal status
 let currentText = '';
@@ -31,7 +34,7 @@ function persistCurrentTextOnQuit() {
       }
     }
   } catch (err) {
-    console.error('Error persisting text in quit:', err);
+    log.error('Error persisting text in quit:', err);
   }
 }
 
@@ -70,7 +73,7 @@ function init(options) {
     }
 
     if (txt.length > MAX_TEXT_CHARS) {
-      console.warn(
+      log.warn(
         `Initial text exceeds MAX_TEXT_CHARS (${txt.length} > ${MAX_TEXT_CHARS}); truncated and saved.`
       );
       txt = txt.slice(0, MAX_TEXT_CHARS);
@@ -81,7 +84,7 @@ function init(options) {
 
     currentText = txt;
   } catch (err) {
-    console.error('Error loading current_text.json:', err);
+    log.error('Error loading current_text.json:', err);
     currentText = '';
   }
 
@@ -131,7 +134,7 @@ function registerIpc(ipcMain, windowsResolver) {
       if (text.length > MAX_TEXT_CHARS) {
         text = text.slice(0, MAX_TEXT_CHARS);
         truncated = true;
-        console.warn(
+        log.warn(
           'set-current-text: entry truncated to ' + MAX_TEXT_CHARS + ' chars.'
         );
       }
@@ -145,7 +148,7 @@ function registerIpc(ipcMain, windowsResolver) {
         try {
           mainWin.webContents.send('current-text-updated', currentText);
         } catch (err) {
-          console.error('Error sending current-text-updated to mainWin:', err);
+          log.error('Error sending current-text-updated to mainWin:', err);
         }
       }
 
@@ -157,7 +160,7 @@ function registerIpc(ipcMain, windowsResolver) {
             meta: incomingMeta || { source: 'main', action: 'set' },
           });
         } catch (err) {
-          console.error(
+          log.error(
             'Error sending editor-text-updated to editorWin:',
             err
           );
@@ -171,7 +174,7 @@ function registerIpc(ipcMain, windowsResolver) {
         text: currentText,
       };
     } catch (err) {
-      console.error('Error in set-current-text:', err);
+      log.error('Error in set-current-text:', err);
       return { ok: false, error: String(err) };
     }
   });
@@ -189,7 +192,7 @@ function registerIpc(ipcMain, windowsResolver) {
         try {
           mainWin.webContents.send('current-text-updated', currentText);
         } catch (err) {
-          console.error('Error sending current-text-updated in force-clear-editor:', err);
+          log.error('Error sending current-text-updated in force-clear-editor:', err);
         }
       }
 
@@ -198,13 +201,13 @@ function registerIpc(ipcMain, windowsResolver) {
         try {
           editorWin.webContents.send('editor-force-clear', '');
         } catch (err) {
-          console.error('Error sending editor-force-clear:', err);
+          log.error('Error sending editor-force-clear:', err);
         }
       }
 
       return { ok: true };
     } catch (err) {
-      console.error('Error in force-clear-editor:', err);
+      log.error('Error in force-clear-editor:', err);
       return { ok: false, error: String(err) };
     }
   });

@@ -6,6 +6,9 @@
 const { app, Menu } = require('electron');
 const fs = require('fs');
 const path = require('path');
+const Log = require('./log');
+
+const log = Log.get('menu');
 
 // Helpers: load main (menu/dialog) translations from i18n
 function loadMainTranslations(lang) {
@@ -13,7 +16,7 @@ function loadMainTranslations(lang) {
     const file = path.join(__dirname, '..', 'i18n', langCode, 'main.json');
     try {
         if (!fs.existsSync(file)) {
-            console.warn('[menu_builder] main.json no found for', langCode, 'in', file);
+            log.warn('[menu_builder] main.json no found for', langCode, 'in', file);
             return null;
         }
         let raw = fs.readFileSync(file, 'utf8');
@@ -21,7 +24,7 @@ function loadMainTranslations(lang) {
         raw = raw.replace(/^\uFEFF/, '');
         return JSON.parse(raw || '{}');
     } catch (err) {
-        console.error('[menu_builder] Error loading translations from main.json:', err);
+        log.error('[menu_builder] Error loading translations from main.json:', err);
         return null;
     }
 }
@@ -56,7 +59,7 @@ function buildAppMenu(lang, opts = {}) {
         try {
             mainWindow.webContents.send('menu-click', payload);
         } catch (err) {
-            console.error('[menu_builder] Error sending menu-click:', payload, err);
+            log.error('[menu_builder] Error sending menu-click:', payload, err);
         }
     };
 
@@ -106,7 +109,7 @@ function buildAppMenu(lang, opts = {}) {
                             try {
                                 onOpenLanguage();
                             } catch (err) {
-                                console.error(
+                                log.error(
                                     '[menu_builder] Error in callback onOpenLanguage:',
                                     err
                                 );
@@ -201,7 +204,7 @@ function buildAppMenu(lang, opts = {}) {
                         try {
                             mainWindow.webContents.toggleDevTools();
                         } catch (err) {
-                            console.error(
+                            log.error(
                                 '[menu_builder] Error toggling DevTools from menu:',
                                 err
                             );

@@ -1,6 +1,8 @@
 // public/js/presets.js
 (() => {
-  console.debug('[presets.js] module loaded');
+  const log = window.getLogger('presets');
+
+  log.debug('[presets.js] module loaded');
 
   function combinePresets({ settings = {}, defaults = {} }) {
     const lang = settings.language || 'es';
@@ -64,7 +66,7 @@
     try {
       defaults = await electronAPI.getDefaultPresets();
     } catch (err) {
-      console.error('Error getting default presets from main:', err);
+      log.error('Error getting default presets from main:', err);
     }
 
     const finalList = combinePresets({ settings, defaults });

@@ -1,7 +1,7 @@
-- Limpiar/mantener console.debug, console.warn, console.error, console.log, etc.
 - Cambiar ventana de selección de idioma para que sea un dropdown list y no botones.
 - Doble aviso cuando no hay preset que borrar.
 - Menú shortcuts no entrega nada.
+- Los avisos del editor manual se demoran mucho.
 - Pestañeos (estar atentos a cuando ocurren y registrar):
     - Al guardar un preset.
     - Al cancelar o cerrar el modal preset.
