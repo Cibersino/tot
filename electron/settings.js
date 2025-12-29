@@ -50,11 +50,11 @@ function loadNumberFormatDefaults(lang) {
             ',';
 
         return { thousands, decimal };
-    } catch (e) {
+    } catch (err) {
         console.error(
             '[settings] Error loading numberFormat defaults for',
             lang,
-            e
+            err
         );
         return null;
     }
@@ -126,8 +126,8 @@ function init({ loadJson, saveJson, settingsFile }) {
 
     try {
         _saveJson(_settingsFile, _currentSettings);
-    } catch (e) {
-        console.error('[settings] Error persisting settings in init:', e);
+    } catch (err) {
+        console.error('[settings] Error persisting settings in init:', err);
     }
 
     return _currentSettings;
@@ -157,8 +157,8 @@ function saveSettings(nextSettings) {
         if (_saveJson && _settingsFile) {
             _saveJson(_settingsFile, normalized);
         }
-    } catch (e) {
-        console.error('[settings] Error saving settings:', e);
+    } catch (err) {
+        console.error('[settings] Error saving settings:', err);
     }
     return _currentSettings;
 }
@@ -210,8 +210,8 @@ function registerIpc(
     ipcMain.handle('get-settings', async () => {
         try {
             return getSettings();
-        } catch (e) {
-            console.error('Error in get-settings:', e);
+        } catch (err) {
+            console.error('Error in get-settings:', err);
             return { language: 'es', presets: [] };
         }
     });
@@ -258,8 +258,8 @@ function registerIpc(
             if (typeof buildAppMenu === 'function') {
                 try {
                     buildAppMenu(effectiveLang);
-                } catch (menuErr) {
-                    console.warn('[settings] Error rebuilding menu:', menuErr);
+                } catch (err) {
+                    console.warn('[settings] Error rebuilding menu:', err);
                 }
             }
 
@@ -278,10 +278,10 @@ function registerIpc(
                     langWin.setMenu(null);
                     langWin.setMenuBarVisibility(false);
                 }
-            } catch (menuErr) {
+            } catch (err) {
                 console.warn(
                     '[settings] Error hiding menu in secondary windows:',
-                    menuErr
+                    err
                 );
             }
 
@@ -347,8 +347,8 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
 
             saveSettings(settings);
         }
-    } catch (e) {
-        console.error('[settings] Error applying fallback language:', e);
+    } catch (err) {
+        console.error('[settings] Error applying fallback language:', err);
     }
 }
 

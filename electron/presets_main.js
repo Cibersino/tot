@@ -243,10 +243,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         general: Array.isArray(general) ? general : [],
         languagePresets,
       };
-    } catch (e) {
+    } catch (err) {
       console.error(
         '[presets_main] Error providing default presets (get-default-presets):',
-        e
+        err
       );
       return { general: [], languagePresets: {} };
     }
@@ -298,14 +298,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('preset-created', preset);
         }
-      } catch (e) {
-        console.error('[presets_main] Error sending preset-created:', e);
+      } catch (err) {
+        console.error('[presets_main] Error sending preset-created:', err);
       }
 
       return { ok: true };
-    } catch (e) {
-      console.error('[presets_main] Error creating preset:', e);
-      return { ok: false, error: String(e) };
+    } catch (err) {
+      console.error('[presets_main] Error creating preset:', err);
+      return { ok: false, error: String(err) };
     }
   });
 
@@ -331,10 +331,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
               dialogTexts.delete_preset_none ||
               'FALLBACK: No preset selected to delete',
           });
-        } catch (e) {
+        } catch (err) {
           console.error(
             '[presets_main] Error showing dialog delete none:',
-            e
+            err
           );
         }
         return { ok: false, code: 'NO_NAME' };
@@ -406,9 +406,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       // Not found in user presets or default presets
       return { ok: false, code: 'NOT_FOUND' };
-    } catch (e) {
-      console.error('[presets_main] Error in request-delete-preset:', e);
-      return { ok: false, error: String(e) };
+    } catch (err) {
+      console.error('[presets_main] Error in request-delete-preset:', err);
+      return { ok: false, error: String(err) };
     }
   });
 
@@ -487,12 +487,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       broadcast(settings);
 
       return { ok: true, action: 'restored', removedCustom, unignored };
-    } catch (e) {
+    } catch (err) {
       console.error(
         '[presets_main] Error restoring default presets:',
-        e
+        err
       );
-      return { ok: false, error: String(e) };
+      return { ok: false, error: String(err) };
     }
   });
 
@@ -513,12 +513,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           'FALLBACK: No preset selected to edit',
       });
       return { ok: true };
-    } catch (e) {
+    } catch (err) {
       console.error(
         '[presets_main] Error showing dialog no-selection-edit:',
-        e
+        err
       );
-      return { ok: false, error: String(e) };
+      return { ok: false, error: String(err) };
     }
   });
 
@@ -607,17 +607,17 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('preset-created', newPreset);
         }
-      } catch (e) {
+      } catch (err) {
         console.error(
           '[presets_main] Error sending events after edit-preset:',
-          e
+          err
         );
       }
 
       return { ok: true, action: 'edited', deletedAction };
-    } catch (e) {
-      console.error('[presets_main] Error editing preset:', e);
-      return { ok: false, error: String(e) };
+    } catch (err) {
+      console.error('[presets_main] Error editing preset:', err);
+      return { ok: false, error: String(err) };
     }
   });
 }

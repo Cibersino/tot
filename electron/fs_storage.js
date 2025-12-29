@@ -13,8 +13,8 @@ const CONFIG_PRESETS_DIR = path.join(CONFIG_DIR, 'presets_defaults');
 function ensureConfigDir() {
   try {
     if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  } catch (e) {
-    console.error('Error creating config dir:', e);
+  } catch (err) {
+    console.error('Error creating config dir:', err);
   }
 }
 
@@ -23,8 +23,8 @@ function loadJson(filePath, fallback = {}) {
     if (!fs.existsSync(filePath)) return fallback;
     const raw = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(raw || '{}');
-  } catch (e) {
-    console.error(`Error reading JSON ${filePath}:`, e);
+  } catch (err) {
+    console.error(`Error reading JSON ${filePath}:`, err);
     return fallback;
   }
 }
@@ -32,8 +32,8 @@ function loadJson(filePath, fallback = {}) {
 function saveJson(filePath, obj) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
-  } catch (e) {
-    console.error(`Error writing JSON ${filePath}:`, e);
+  } catch (err) {
+    console.error(`Error writing JSON ${filePath}:`, err);
   }
 }
 

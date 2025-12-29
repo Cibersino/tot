@@ -17,8 +17,8 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines w
     } else if (cfg && cfg.maxTextChars) {
       MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
     }
-  } catch (e) {
-    console.error('editor: failed to get getAppConfig, using defaults:', e);
+  } catch (err) {
+    console.error('editor: failed to get getAppConfig, using defaults:', err);
   }
   try {
     if (window.editorAPI && typeof window.editorAPI.getSettings === 'function') {
@@ -28,8 +28,8 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines w
       }
     }
     await applyEditorTranslations();
-  } catch (e) {
-    console.warn('editor: failed to apply initial translations:', e);
+  } catch (err) {
+    console.warn('editor: failed to apply initial translations:', err);
   }
   // rest of init (getCurrentText etc.) -you already have an existing init, integrate with yours
 })();
@@ -52,7 +52,7 @@ function warnOnceEditor(key, ...args) {
   __WARN_ONCE_EDITOR.add(key);
   try {
     console.warn('[editor]', key, ...args);
-  } catch (_) {
+  } catch {
     // ignore console failures
   }
 }
@@ -140,14 +140,14 @@ function showNotice(msg, { duration = 4500, type = 'info' } = {}) {
     container.appendChild(n);
     n.addEventListener('click', () => {
       try { n.remove(); }
-      catch (e) { warnOnceEditor('notice.remove.click', 'failed to remove notice on click (ignored):', e); }
+      catch (err) { warnOnceEditor('notice.remove.click', 'failed to remove notice on click (ignored):', err); }
     });
     setTimeout(() => {
       try { n.remove(); }
-      catch (e) { warnOnceEditor('notice.remove.timeout', 'failed to remove notice on timeout (ignored):', e); }
+      catch (err) { warnOnceEditor('notice.remove.timeout', 'failed to remove notice on timeout (ignored):', err); }
     }, duration);
-  } catch (e) {
-    console.debug('showNotice error:', e);
+  } catch (err) {
+    console.debug('showNotice error:', err);
   }
 }
 
@@ -167,12 +167,12 @@ function restoreFocusToEditor(pos = null) {
         } else {
           if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(pos, pos);
         }
-      } catch (e) {
-        console.debug('restoreFocusToEditor error:', e);
+      } catch (err) {
+        console.debug('restoreFocusToEditor error:', err);
       }
     }, 0);
-  } catch (e) {
-    console.debug('restoreFocusToEditor wrapper error:', e);
+  } catch (err) {
+    console.debug('restoreFocusToEditor wrapper error:', err);
   }
 }
 
@@ -183,7 +183,7 @@ try {
     editor.style.whiteSpace = 'pre-wrap';
     editor.style.wordBreak = 'break-word';
   }
-} catch (e) { console.debug('editor: failed to apply wrap styles:', e); }
+} catch (err) { console.debug('editor: failed to apply wrap styles:', err); }
 
 // ---------- Local insertion (best preserving undo) ---------- //
 function tryNativeInsertAtSelection(text) {
@@ -195,7 +195,7 @@ function tryNativeInsertAtSelection(text) {
     try {
       const ok = document.execCommand && document.execCommand('insertText', false, text);
       if (ok) return true;
-    } catch (e) {
+    } catch {
       // follow fallback
     }
 
@@ -214,8 +214,8 @@ function tryNativeInsertAtSelection(text) {
     const newCaret = before.length + text.length;
     if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(newCaret, newCaret);
     return true;
-  } catch (e) {
-    console.error('tryNativeInsertAtSelection error:', e);
+  } catch (err) {
+    console.error('tryNativeInsertAtSelection error:', err);
     return false;
   }
 }
@@ -225,12 +225,12 @@ function sendCurrentTextToMainWithMeta(action = 'insert') {
     const payload = { text: editor.value, meta: { source: 'editor', action } };
     const res = window.editorAPI.setCurrentText(payload);
     handleTruncationResponse(res);
-  } catch (e) {
+  } catch {
     try {
       const resFallback = window.editorAPI.setCurrentText(editor.value);
       handleTruncationResponse(resFallback);
-    } catch (e2) {
-      console.error('Error sending set-current-text (fallback):', e2);
+    } catch (err) {
+      console.error('Error sending set-current-text (fallback):', err);
     }
   }
 }
@@ -246,8 +246,8 @@ function handleTruncationResponse(resPromise) {
         console.error('Error handling truncated response:', err);
       });
     }
-  } catch (e) {
-    console.error('handleTruncationResponse error:', e);
+  } catch (err) {
+    console.error('handleTruncationResponse error:', err);
   }
 }
 
@@ -279,8 +279,8 @@ function insertTextAtCursor(rawText) {
 
     restoreFocusToEditor();
     return { inserted: toInsert.length, truncated };
-  } catch (e) {
-    console.error('insertTextAtCursor error:', e);
+  } catch (err) {
+    console.error('insertTextAtCursor error:', err);
     return { inserted: 0, truncated: false };
   }
 }
@@ -290,8 +290,8 @@ function dispatchNativeInputEvent() {
   try {
     const ev = new Event('input', { bubbles: true });
     editor.dispatchEvent(ev);
-  } catch (e) {
-    console.error('dispatchNativeInputEvent error:', e);
+  } catch (err) {
+    console.error('dispatchNativeInputEvent error:', err);
   }
 }
 
@@ -349,12 +349,12 @@ async function applyExternalUpdate(payload) {
               editor.value = editor.value + toInsert;
               dispatchNativeInputEvent();
             }
-          } catch (t) {
+          } catch {
             editor.value = editor.value + toInsert;
             dispatchNativeInputEvent();
           } finally {
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (e) { warnOnceEditor('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', e); }
+            catch (err) { warnOnceEditor('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
           }
           return;
         } else {
@@ -362,13 +362,13 @@ async function applyExternalUpdate(payload) {
             editor.style.visibility = 'hidden';
             editor.value = newText;
             dispatchNativeInputEvent();
-          } catch (e) {
+          } catch {
             editor.value = newText;
             dispatchNativeInputEvent();
           } finally {
             editor.style.visibility = '';
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (e) { warnOnceEditor('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', e); }
+            catch (err) { warnOnceEditor('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
           }
           if (truncated) {
             Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
@@ -384,11 +384,11 @@ async function applyExternalUpdate(payload) {
           editor.focus();
           if (typeof editor.select === 'function') {
             try { editor.select(); }
-            catch (e) { warnOnceEditor('editor.select', 'editor.select() failed (ignored):', e); }
+            catch (err) { warnOnceEditor('editor.select', 'editor.select() failed (ignored):', err); }
           }
           else if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(0, editor.value.length);
           let execOK = false;
-          try { execOK = document.execCommand && document.execCommand('insertText', false, newText); } catch (t) { execOK = false; }
+          try { execOK = document.execCommand && document.execCommand('insertText', false, newText); } catch { execOK = false; }
           if (!execOK) {
             if (typeof editor.setRangeText === 'function') {
               editor.setRangeText(newText, 0, editor.value.length, 'end');
@@ -398,12 +398,12 @@ async function applyExternalUpdate(payload) {
               dispatchNativeInputEvent();
             }
           }
-        } catch (e) {
+        } catch {
           editor.value = newText;
           dispatchNativeInputEvent();
         } finally {
           try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (e) { warnOnceEditor('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', e); }
+          catch (err) { warnOnceEditor('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
         }
         if (truncated) {
           Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
@@ -414,13 +414,13 @@ async function applyExternalUpdate(payload) {
           editor.style.visibility = 'hidden';
           editor.value = newText;
           dispatchNativeInputEvent();
-        } catch (e) {
+        } catch {
           editor.value = newText;
           dispatchNativeInputEvent();
         } finally {
           editor.style.visibility = '';
           try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (e) { warnOnceEditor('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', e); }
+          catch (err) { warnOnceEditor('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
         }
         if (truncated)
           if (truncated) {
@@ -435,7 +435,7 @@ async function applyExternalUpdate(payload) {
       editor.style.visibility = 'hidden';
       editor.value = newText;
       dispatchNativeInputEvent();
-    } catch (e) {
+    } catch {
       editor.value = newText;
       dispatchNativeInputEvent();
     } finally {
@@ -444,8 +444,8 @@ async function applyExternalUpdate(payload) {
     if (truncated) {
       Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
     }
-  } catch (e) {
-    console.error('applyExternalUpdate error:', e);
+  } catch (err) {
+    console.error('applyExternalUpdate error:', err);
   }
 }
 
@@ -456,8 +456,8 @@ async function applyExternalUpdate(payload) {
     await applyExternalUpdate({ text: t || '', meta: { source: 'main', action: 'init' } });
     // initial state of CALCULATE button
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
-  } catch (e) {
-    console.error('Error initializing editor:', e);
+  } catch (err) {
+    console.error('Error initializing editor:', err);
   }
 })();
 
@@ -470,9 +470,9 @@ window.editorAPI.onForceClear(() => {
     suppressLocalUpdate = true;
     editor.value = '';
     // Update main too (keep state consistent)
-    try { window.editorAPI.setCurrentText({ text: '', meta: { source: 'editor', action: 'clear' } }); } catch (e) { window.editorAPI.setCurrentText(''); }
-  } catch (e) {
-    console.error('Error in onForceClear:', e);
+    try { window.editorAPI.setCurrentText({ text: '', meta: { source: 'editor', action: 'clear' } }); } catch { window.editorAPI.setCurrentText(''); }
+  } catch (err) {
+    console.error('Error in onForceClear:', err);
   } finally {
     suppressLocalUpdate = false;
     restoreFocusToEditor();
@@ -499,8 +499,8 @@ if (editor) {
 
       Notify.notifyEditor('renderer.editor_alerts.clipboard_too_big', { type: 'warn', duration: 5000 });
       restoreFocusToEditor();
-    } catch (e) {
-      console.error('paste handler error:', e);
+    } catch (err) {
+      console.error('paste handler error:', err);
       restoreFocusToEditor();
     }
   });
@@ -540,22 +540,22 @@ if (editor) {
           try {
             const res = window.editorAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'drop' } });
             handleTruncationResponse(res);
-          } catch (e) {
+          } catch {
             try {
               const resFallback = window.editorAPI.setCurrentText(editor.value);
               handleTruncationResponse(resFallback);
-            } catch (e2) {
-              warnOnceEditor('setCurrentText.drop.fallback', 'editorAPI.setCurrentText fallback failed (ignored):', e2);
+            } catch (err) {
+              warnOnceEditor('setCurrentText.drop.fallback', 'editorAPI.setCurrentText fallback failed (ignored):', err);
             }
           }
-        } catch (e) {
-          console.error('drop postprocess error:', e);
+        } catch (err) {
+          console.error('drop postprocess error:', err);
         }
       }, 0);
 
       // NO preventDefault: allow native insertion
-    } catch (e) {
-      console.error('drop handler error:', e);
+    } catch (err) {
+      console.error('drop handler error:', err);
       restoreFocusToEditor();
     }
   });
@@ -571,13 +571,13 @@ editor.addEventListener('input', () => {
     try {
       const res = window.editorAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'truncated' } });
       handleTruncationResponse(res);
-    } catch (e) {
-      console.error('editor: error sending set-current-text after truncate:', e);
+    } catch (err) {
+      console.error('editor: error sending set-current-text after truncate:', err);
       try {
         const resFallback = window.editorAPI.setCurrentText(editor.value);
         handleTruncationResponse(resFallback);
-      } catch (e2) {
-        warnOnceEditor('setCurrentText.truncate.fallback', 'editorAPI.setCurrentText fallback failed (ignored):', e2);
+      } catch (innerErr) {
+        warnOnceEditor('setCurrentText.truncate.fallback', 'editorAPI.setCurrentText fallback failed (ignored):', innerErr);
       }
     }
     restoreFocusToEditor();
@@ -591,8 +591,8 @@ editor.addEventListener('input', () => {
         try {
           const res = window.editorAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'typing' } });
           handleTruncationResponse(res);
-        } catch (e) {
-          try { const resFallback = window.editorAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (e2) { console.error('Error sending set-current-text typing:', e2); }
+        } catch {
+          try { const resFallback = window.editorAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (err) { console.error('Error sending set-current-text typing:', err); }
         }
       }, DEBOUNCE_MS);
     }
@@ -606,12 +606,12 @@ btnTrash.addEventListener('click', () => {
   try {
     const res = window.editorAPI.setCurrentText({ text: '', meta: { source: 'editor', action: 'clear' } });
     handleTruncationResponse(res);
-  } catch (e) {
+  } catch {
     try {
       const resFallback = window.editorAPI.setCurrentText('');
       handleTruncationResponse(resFallback);
-    } catch (e2) {
-      warnOnceEditor('setCurrentText.trash.clear.fallback', 'editorAPI.setCurrentText fallback failed (ignored):', e2);
+    } catch (err) {
+      warnOnceEditor('setCurrentText.trash.clear.fallback', 'editorAPI.setCurrentText fallback failed (ignored):', err);
     }
   }
   restoreFocusToEditor();
@@ -623,8 +623,8 @@ if (btnCalc) btnCalc.addEventListener('click', () => {
     const res = window.editorAPI.setCurrentText({ text: editor.value || '', meta: { source: 'editor', action: 'overwrite' } });
     handleTruncationResponse(res);
     // Do not close the modal or ask anything -per spec
-  } catch (e) {
-    console.error('Error executing CALCULAR:', e);
+  } catch (err) {
+    console.error('Error executing CALCULAR:', err);
     Notify.notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
     restoreFocusToEditor();
   }
@@ -639,15 +639,15 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     try {
       const res = window.editorAPI.setCurrentText({ text: editor.value || '', meta: { source: 'editor', action: 'typing_toggle_on' } });
       handleTruncationResponse(res);
-    } catch (e) {
+    } catch {
       try {
         const resFallback = window.editorAPI.setCurrentText(editor.value || '');
         handleTruncationResponse(resFallback);
-      } catch (e2) {
+      } catch (err) {
         warnOnceEditor(
           'setCurrentText.typing_toggle_on.fallback',
           'editorAPI.setCurrentText fallback failed (typing toggle on ignored):',
-          e2
+          err
         );
       }
     }

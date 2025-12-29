@@ -30,8 +30,8 @@ function persistCurrentTextOnQuit() {
         saveJson(SETTINGS_FILE, settings);
       }
     }
-  } catch (e) {
-    console.error('Error persisting text in quit:', e);
+  } catch (err) {
+    console.error('Error persisting text in quit:', err);
   }
 }
 
@@ -80,8 +80,8 @@ function init(options) {
     }
 
     currentText = txt;
-  } catch (e) {
-    console.error('Error loading current_text.json:', e);
+  } catch (err) {
+    console.error('Error loading current_text.json:', err);
     currentText = '';
   }
 
@@ -188,8 +188,8 @@ function registerIpc(ipcMain, windowsResolver) {
       if (mainWin && !mainWin.isDestroyed()) {
         try {
           mainWin.webContents.send('current-text-updated', currentText);
-        } catch (e) {
-          console.error('Error sending current-text-updated in force-clear-editor:', e);
+        } catch (err) {
+          console.error('Error sending current-text-updated in force-clear-editor:', err);
         }
       }
 
@@ -197,15 +197,15 @@ function registerIpc(ipcMain, windowsResolver) {
       if (editorWin && !editorWin.isDestroyed()) {
         try {
           editorWin.webContents.send('editor-force-clear', '');
-        } catch (e) {
-          console.error('Error sending editor-force-clear:', e);
+        } catch (err) {
+          console.error('Error sending editor-force-clear:', err);
         }
       }
 
       return { ok: true };
-    } catch (e) {
-      console.error('Error in force-clear-editor:', e);
-      return { ok: false, error: String(e) };
+    } catch (err) {
+      console.error('Error in force-clear-editor:', err);
+      return { ok: false, error: String(err) };
     }
   });
 }
