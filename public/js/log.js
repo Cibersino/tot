@@ -88,10 +88,25 @@
     return currentLevelName;
   }
 
+  function getLogger(scope) {
+    if (window.Log && typeof window.Log.get === 'function') {
+      return window.Log.get(scope);
+    }
+    return {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      warnOnce: () => {},
+      errorOnce: () => {},
+    };
+  }
+
   window.Log = {
     get: makeLogger,
     setLevel,
     getLevel,
     LEVELS: LEVEL_NAMES,
   };
+  window.getLogger = getLogger;
 })();

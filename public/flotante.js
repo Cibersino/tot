@@ -1,30 +1,24 @@
 // public/flotante.js
+const log = window.getLogger('flotante');
+
 const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
 
 // defensive: if any element does not exist, we exit silently (avoids crashes)
 if (!cronoEl) {
-  console.error('flotante: element #crono not found');
+  log.error('flotante: element #crono not found');
 }
 if (!btnToggle) {
-  console.error('flotante: element #toggle not found');
+  log.error('flotante: element #toggle not found');
 }
 if (!btnReset) {
-  console.error('flotante: element #reset not found');
+  log.error('flotante: element #reset not found');
 }
 
 let lastState = { elapsed: 0, running: false, display: '00:00:00' };
 let playLabel = '>';
 let pauseLabel = '||';
-
-// Visibility helper: warn only once per key (flotante scope)
-const __WARN_ONCE_FLOTANTE = new Set();
-function warnOnceFlotante(key, ...args) {
-  if (__WARN_ONCE_FLOTANTE.has(key)) return;
-  __WARN_ONCE_FLOTANTE.add(key);
-  console.warn(...args);
-}
 
 // Refresh view (expected to receive { elapsed, running, display })
 function renderState(state) {
@@ -52,7 +46,7 @@ function renderState(state) {
 if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
   // onState now listens to 'crono-state' (main)
   window.flotanteAPI.onState((state) => {
-    try { renderState(state); } catch (err) { console.error(err); }
+    try { renderState(state); } catch (err) { log.error(err); }
   });
 }
 
@@ -68,12 +62,12 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
         const settings = await window.flotanteAPI.getSettings();
         if (settings && settings.language) lang = settings.language;
       } catch (err) {
-        warnOnceFlotante('flotante.getSettings', '[flotante] getSettings failed (ignored):', err);
+        log.warnOnce('flotante.getSettings', '[flotante] getSettings failed (ignored):', err);
       }
     }
 
     try { await loadRendererTranslations(lang); } catch (err) {
-      warnOnceFlotante(
+      log.warnOnce(
         'flotante.loadRendererTranslations',
         `[flotante] loadRendererTranslations(${lang}) failed (ignored):`,
         err
@@ -85,7 +79,7 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
     // Refresh button with the current translated label
     if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
   } catch (err) {
-    console.error('Error loading translations in flotante:', err);
+    log.error('Error loading translations in flotante:', err);
   }
 })();
 

@@ -6,7 +6,9 @@ const { dialog, shell } = require('electron');
 const https = require('https');
 const path = require('path');
 const fs = require('fs');
+const Log = require('./log');
 
+const log = Log.get('updater');
 const menuBuilder = require('./menu_builder');
 
 // Version/download paths and URLs
@@ -123,7 +125,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
       shell.openExternal(DOWNLOAD_URL);
     }
   } catch (err) {
-    console.warn('checkForUpdates failed:', err);
+    log.warn('checkForUpdates failed:', err);
   }
 }
 
@@ -133,7 +135,7 @@ function scheduleInitialCheck() {
   updateCheckDone = true;
   // we do not check manual: if it fails, the user is not informed
   checkForUpdates({ manual: false }).catch((err) => {
-    console.warn('initial checkForUpdates failed:', err);
+    log.warn('initial checkForUpdates failed:', err);
   });
 }
 
