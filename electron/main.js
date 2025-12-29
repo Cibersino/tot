@@ -126,20 +126,20 @@ function createMainWindow() {
       if (editorWin && !editorWin.isDestroyed()) {
         try {
           editorWin.close();
-        } catch (e) {
-          console.error('Error closing editorWin from mainWin.close:', e);
+        } catch (err) {
+          console.error('Error closing editorWin from mainWin.close:', err);
         }
       }
 
       if (presetWin && !presetWin.isDestroyed()) {
         try {
           presetWin.close();
-        } catch (e) {
-          console.error('Error closing presetWin from mainWin.close:', e);
+        } catch (err) {
+          console.error('Error closing presetWin from mainWin.close:', err);
         }
       }
-    } catch (e) {
-      console.error('Error in mainWin.close handler:', e);
+    } catch (err) {
+      console.error('Error in mainWin.close handler:', err);
     }
   });
 
@@ -150,8 +150,8 @@ function createMainWindow() {
     // Force an orderly application exit
     try {
       app.quit();
-    } catch (e) {
-      console.error('Error calling app.quit() in mainWin.closed:', e);
+    } catch (err) {
+      console.error('Error calling app.quit() in mainWin.closed:', err);
     }
   });
 }
@@ -219,8 +219,8 @@ function createEditorWindow() {
       } catch (err) {
         console.error('Error notifying editor-ready to main window:', err);
       }
-    } catch (e) {
-      console.error('Error showing editor:', e);
+    } catch (err) {
+      console.error('Error showing editor:', err);
     }
   });
 
@@ -241,8 +241,8 @@ function createPresetWindow(initialData) {
       presetWin.focus();
       // send init with whole payload (may include wpm/mode/preset)
       presetWin.webContents.send('preset-init', initialData || {});
-    } catch (e) {
-      console.error('Error sending init to presetWin already open:', e);
+    } catch (err) {
+      console.error('Error sending init to presetWin already open:', err);
     }
     return;
   }
@@ -272,8 +272,8 @@ function createPresetWindow(initialData) {
     // Send initial payload (may contain wpm, mode and preset data)
     try {
       presetWin.webContents.send('preset-init', initialData || {});
-    } catch (e) {
-      console.error('Error sending preset-init:', e);
+    } catch (err) {
+      console.error('Error sending preset-init:', err);
     }
   });
 
@@ -327,7 +327,7 @@ updater.registerIpc(ipcMain, {
 // Create language selection window (small, light)
 function createLanguageWindow() {
   if (langWin && !langWin.isDestroyed()) {
-    try { langWin.focus(); } catch (e) { warnOnce('langWin.focus', 'langWin.focus failed (ignored):', e); }
+    try { langWin.focus(); } catch (err) { warnOnce('langWin.focus', 'langWin.focus failed (ignored):', err); }
     return;
   }
 
@@ -362,15 +362,15 @@ function createLanguageWindow() {
     try {
       // If the user closes without choosing, force a fallback to 'es' if no language is defined
       settingsState.applyFallbackLanguageIfUnset('es');
-    } catch (e) {
-      console.error('Error applying fallback language:', e);
+    } catch (err) {
+      console.error('Error applying fallback language:', err);
     } finally {
       langWin = null;
       // Ensure mainWin is created after closing the modal
       try {
         if (!mainWin) createMainWindow();
-      } catch (e) {
-        console.error('Error creating mainWin after closing language modal:', e);
+      } catch (err) {
+        console.error('Error creating mainWin after closing language modal:', err);
       }
     }
   });
@@ -508,8 +508,8 @@ async function createflotanteWindow(options = {}) {
   if (flotanteWin && !flotanteWin.isDestroyed()) {
     // Apply a forced position if it was requested
     if (options && (typeof options.x === 'number' || typeof options.y === 'number')) {
-      try { flotanteWin.setBounds({ x: options.x || flotanteWin.getBounds().x, y: options.y || flotanteWin.getBounds().y }); } catch (e) {
-        warnOnce('flotanteWin.setBounds', 'flotanteWin.setBounds failed (ignored):', e);
+      try { flotanteWin.setBounds({ x: options.x || flotanteWin.getBounds().x, y: options.y || flotanteWin.getBounds().y }); } catch (err) {
+        warnOnce('flotanteWin.setBounds', 'flotanteWin.setBounds failed (ignored):', err);
       }
     }
     return flotanteWin;
@@ -555,8 +555,8 @@ async function createflotanteWindow(options = {}) {
       pos.x = x;
       pos.y = y;
     }
-  } catch (e) {
-    console.warn('Position could not be calculated from screen.getPrimaryDisplay(); using the default FW position.', e);
+  } catch (err) {
+    console.warn('Position could not be calculated from screen.getPrimaryDisplay(); using the default FW position.', err);
   }
 
   // If x/y were provided explicitly in options, respect them (allow override)
@@ -595,18 +595,18 @@ async function createflotanteWindow(options = {}) {
   // Load the HTML of the floating window
   try {
     await win.loadFile(FLOTANTE_HTML);
-  } catch (e) {
+  } catch (err) {
     // Expected if the window is closed while loadFile is in-flight (e.g., open/close stress test).
     if (!winClosing && !win.isDestroyed()) {
-      console.error('Error loading flotante HTML:', e);
+      console.error('Error loading flotante HTML:', err);
     }
   }
 
   // Ensure the window starts fully inside the workArea of the display chosen by its center.
   try {
     snapWindowFullyIntoWorkArea(win);
-  } catch (e) {
-    warnOnce('snapWindowFullyIntoWorkArea', 'snapWindowFullyIntoWorkArea failed (ignored):', e);
+  } catch (err) {
+    warnOnce('snapWindowFullyIntoWorkArea', 'snapWindowFullyIntoWorkArea failed (ignored):', err);
   }
 
   // Optional: if the floating window should not steal focus, use showInactive(); here we want immediate interaction so we keep focusable=true and let it take focus.
@@ -639,9 +639,9 @@ function getCronoState() {
 
 function broadcastCronoState() {
   const state = getCronoState();
-  try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (e) { warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', e); }
-  try { if (flotanteWin && !flotanteWin.isDestroyed()) flotanteWin.webContents.send('crono-state', state); } catch (e) { warnOnce('send.crono-state.flotanteWin', 'send crono-state to flotanteWin failed (ignored):', e); }
-  try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (e) { warnOnce('send.crono-state.editorWin', 'send crono-state to editorWin failed (ignored):', e); }
+  try { if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state); } catch (err) { warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', err); }
+  try { if (flotanteWin && !flotanteWin.isDestroyed()) flotanteWin.webContents.send('crono-state', state); } catch (err) { warnOnce('send.crono-state.flotanteWin', 'send crono-state to flotanteWin failed (ignored):', err); }
+  try { if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state); } catch (err) { warnOnce('send.crono-state.editorWin', 'send crono-state to editorWin failed (ignored):', err); }
 }
 
 function ensureCronoInterval() {
@@ -708,29 +708,29 @@ ipcMain.handle('crono-get-state', () => {
 ipcMain.on('crono-toggle', () => {
   try {
     if (crono.running) stopCrono(); else startCrono();
-  } catch (e) {
-    console.error('Error in crono-toggle:', e);
+  } catch (err) {
+    console.error('Error in crono-toggle:', err);
   }
 });
 
 ipcMain.on('crono-reset', () => {
-  try { resetCrono(); } catch (e) { console.error('Error in crono-reset:', e); }
+  try { resetCrono(); } catch (err) { console.error('Error in crono-reset:', err); }
 });
 
 ipcMain.on('crono-set-elapsed', (_ev, ms) => {
-  try { setCronoElapsed(ms); } catch (e) { console.error('Error in crono-set-elapsed:', e); }
+  try { setCronoElapsed(ms); } catch (err) { console.error('Error in crono-set-elapsed:', err); }
 });
 
 // IPC: open floating window
 ipcMain.handle('flotante-open', async () => {
   try {
     await createflotanteWindow();
-    try { broadcastCronoState(); } catch (e) { warnOnce('broadcastCronoState.after.flotante-open', 'broadcastCronoState failed after flotante-open (ignored):', e); }
+    try { broadcastCronoState(); } catch (err) { warnOnce('broadcastCronoState.after.flotante-open', 'broadcastCronoState failed after flotante-open (ignored):', err); }
     if (crono.running) ensureCronoInterval();
     return { ok: true };
-  } catch (e) {
-    console.error('Error processing flotante-open:', e);
-    return { ok: false, error: String(e) };
+  } catch (err) {
+    console.error('Error processing flotante-open:', err);
+    return { ok: false, error: String(err) };
   }
 });
 
@@ -744,9 +744,9 @@ ipcMain.handle('flotante-close', async () => {
     }
 
     return { ok: true };
-  } catch (e) {
-    console.error('Error processing flotante-close:', e);
-    return { ok: false, error: String(e) };
+  } catch (err) {
+    console.error('Error processing flotante-close:', err);
+    return { ok: false, error: String(err) };
   }
 });
 
@@ -762,8 +762,8 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
       setCronoElapsed(Number(cmd.value) || 0);
     }
     // broadcastCronoState() is already called by the previous functions
-  } catch (e) {
-    console.error('Error processing flotante-command in main:', e);
+  } catch (err) {
+    console.error('Error processing flotante-command in main:', err);
   }
 });
 
@@ -786,10 +786,10 @@ ipcMain.handle('open-editor', () => {
       if (mainWin && !mainWin.isDestroyed()) {
         mainWin.webContents.send('editor-ready');
       }
-    } catch (e) {
+    } catch (err) {
       console.warn(
         'Unable to notify editor-ready (editor already open):',
-        e
+        err
       );
     }
   }
@@ -811,9 +811,9 @@ ipcMain.handle('open-preset-modal', (_event, payload) => {
 ipcMain.handle('get-app-config', async () => {
   try {
     return { ok: true, maxTextChars: MAX_TEXT_CHARS };
-  } catch (e) {
-    console.error('Error processing get-app-config:', e);
-    return { ok: false, error: String(e), maxTextChars: 1e7 };
+  } catch (err) {
+    console.error('Error processing get-app-config:', err);
+    return { ok: false, error: String(err), maxTextChars: 1e7 };
   }
 });
 
@@ -834,13 +834,13 @@ app.whenReady().then(() => {
     ipcMain.once('language-selected', () => {
       try {
         if (!mainWin) createMainWindow();
-      } catch (e) {
-        console.error('Error creating mainWin after selecting language:', e);
+      } catch (err) {
+        console.error('Error creating mainWin after selecting language:', err);
       } finally {
         try {
           if (langWin && !langWin.isDestroyed()) langWin.close();
-        } catch (e) {
-          warnOnce('langWin.close.after.language-selected', 'langWin.close failed after language-selected (ignored):', e);
+        } catch (err) {
+          warnOnce('langWin.close.after.language-selected', 'langWin.close failed after language-selected (ignored):', err);
         }
       }
       updater.scheduleInitialCheck();
@@ -870,7 +870,7 @@ app.on('will-quit', () => {
       clearInterval(cronoInterval);
       cronoInterval = null;
     }
-  } catch (e) {
-    console.error('Error clearing stopwatch in will-quit:', e);
+  } catch (err) {
+    console.error('Error clearing stopwatch in will-quit:', err);
   }
 });

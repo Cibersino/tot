@@ -94,11 +94,11 @@
                 const settings = await window.presetAPI.getSettings();
                 if (settings && settings.language) idiomaActual = settings.language || idiomaActual;
               }
-            } catch (e) {
+            } catch (err) {
               warnOncePresetModal(
                 'preset_api.getSettings',
                 '[preset_modal] presetAPI.getSettings failed:',
-                e
+                err
               );
             }
 

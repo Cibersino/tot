@@ -52,7 +52,7 @@ function renderState(state) {
 if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
   // onState now listens to 'crono-state' (main)
   window.flotanteAPI.onState((state) => {
-    try { renderState(state); } catch (e) { console.error(e); }
+    try { renderState(state); } catch (err) { console.error(err); }
   });
 }
 
@@ -67,16 +67,16 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
       try {
         const settings = await window.flotanteAPI.getSettings();
         if (settings && settings.language) lang = settings.language;
-      } catch (e) {
-        warnOnceFlotante('flotante.getSettings', '[flotante] getSettings failed (ignored):', e);
+      } catch (err) {
+        warnOnceFlotante('flotante.getSettings', '[flotante] getSettings failed (ignored):', err);
       }
     }
 
-    try { await loadRendererTranslations(lang); } catch (e) {
+    try { await loadRendererTranslations(lang); } catch (err) {
       warnOnceFlotante(
         'flotante.loadRendererTranslations',
         `[flotante] loadRendererTranslations(${lang}) failed (ignored):`,
-        e
+        err
       );
     }
 
@@ -84,8 +84,8 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
     pauseLabel = tRenderer('renderer.main.crono.pause_symbol', pauseLabel);
     // Refresh button with the current translated label
     if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
-  } catch (e) {
-    console.error('Error loading translations in flotante:', e);
+  } catch (err) {
+    console.error('Error loading translations in flotante:', err);
   }
 })();
 

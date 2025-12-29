@@ -43,7 +43,7 @@ function fetchRemoteVersion(url) {
         res.on('data', chunk => { data += chunk; });
         res.on('end', () => resolve(String(data || '').trim()));
       }).on('error', () => resolve(null));
-    } catch (e) {
+    } catch {
       resolve(null);
     }
   });
@@ -62,7 +62,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     let localVer = null;
     try {
       localVer = fs.readFileSync(VERSION_FILE, 'utf8').trim();
-    } catch (e) {
+    } catch {
       // no local VERSION, continue without warning
       return;
     }
@@ -154,8 +154,8 @@ function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef
           manual: true,
         });
         return { ok: true };
-      } catch (e) {
-        return { ok: false, error: String(e) };
+      } catch (err) {
+        return { ok: false, error: String(err) };
       }
     });
   }

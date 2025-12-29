@@ -90,13 +90,13 @@
             if (tToggle) tToggle.textContent = running ? pauseLabel : playLabel;
             return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
           }
-        } catch (e) {
-          warnOnceCrono('electronAPI.getCronoState', '[crono] getCronoState failed:', e);
+        } catch (err) {
+          warnOnceCrono('electronAPI.getCronoState', '[crono] getCronoState failed:', err);
         }
       }
       return null;
-    } catch (e) {
-      console.error('Error loading  flotante:', e);
+    } catch (err) {
+      console.error('Error loading  flotante:', err);
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
       return null;
     }
@@ -110,8 +110,8 @@
     }
     try {
       await electronAPI.closeFlotanteWindow();
-    } catch (e) {
-      console.error('Error closing flotante:', e);
+    } catch (err) {
+      console.error('Error closing flotante:', err);
     } finally {
       if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
     }
@@ -206,8 +206,8 @@
         });
         if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
         return msRounded;
-      } catch (e) {
-        console.error('Error sending setCronoElapsed:', e);
+      } catch (err) {
+        console.error('Error sending setCronoElapsed:', err);
         await fallbackLocal();
         return msRounded;
       }

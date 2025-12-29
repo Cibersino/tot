@@ -50,8 +50,8 @@ const api = {
         return () => {
             try {
                 ipcRenderer.removeListener('menu-click', wrapper);
-            } catch (e) {
-                console.error('Error removing menu listener:', e);
+            } catch (err) {
+                console.error('Error removing menu listener:', err);
             }
         };
     },
@@ -64,7 +64,7 @@ const api = {
         };
         ipcRenderer.on('settings-updated', listener);
         // return function to remove listener if used by caller
-        return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (e) { console.error('removeListener error:', e); } };
+        return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error:', err); } };
     },
 
     // Central Crono API (renderer <-> main)
@@ -75,7 +75,7 @@ const api = {
     onCronoState: (cb) => {
         const wrapper = (_e, state) => { try { cb(state); } catch (err) { console.error('onCronoState callback error:', err); } };
         ipcRenderer.on('crono-state', wrapper);
-        return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (e) { console.error('removeListener error (crono-state):', e); } };
+        return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (err) { console.error('removeListener error (crono-state):', err); } };
     },
 
     // ------------------ APIs for the floating window (updated) ------------------
@@ -88,16 +88,16 @@ const api = {
 
     // Hold listener to notify that the flotante was closed (main emits 'flotante-closed')
     onFlotanteClosed: (cb) => {
-        const listener = () => { try { cb(); } catch (e) { console.error('flotante closed callback error:', e); } };
+        const listener = () => { try { cb(); } catch (err) { console.error('flotante closed callback error:', err); } };
         ipcRenderer.on('flotante-closed', listener);
-        return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (e) { console.error('removeListener error:', e); } };
+        return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (err) { console.error('removeListener error:', err); } };
     },
 
     // editor ready (to hide loader in main window)
     onEditorReady: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
         ipcRenderer.on('editor-ready', listener);
-        return () => { try { ipcRenderer.removeListener('editor-ready', listener); } catch (e) { console.error('removeListener error (editor-ready):', e); } };
+        return () => { try { ipcRenderer.removeListener('editor-ready', listener); } catch (err) { console.error('removeListener error (editor-ready):', err); } };
     }
 };
 

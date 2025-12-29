@@ -63,8 +63,8 @@
     let defaults = { general: [], languagePresets: {} };
     try {
       defaults = await electronAPI.getDefaultPresets();
-    } catch (e) {
-      console.error('Error getting default presets from main:', e);
+    } catch (err) {
+      console.error('Error getting default presets from main:', err);
     }
 
     const finalList = combinePresets({ settings, defaults });

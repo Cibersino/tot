@@ -18,8 +18,8 @@
         rendererTranslationsLang = target;
         return data;
       }
-    } catch (e) {
-      console.warn('[i18n] Unable to load renderer translations:', e);
+    } catch (err) {
+      console.warn('[i18n] Unable to load renderer translations:', err);
     }
     rendererTranslations = null;
     rendererTranslationsLang = null;
