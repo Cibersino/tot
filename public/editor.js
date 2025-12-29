@@ -1,5 +1,7 @@
 // public/editor.js
-console.log('Manual editor starting...');
+const log = window.getLogger('editor');
+
+log.debug('Manual editor starting...');
 
 const { AppConstants } = window;
 if (!AppConstants) {
@@ -18,7 +20,7 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines w
       MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
     }
   } catch (err) {
-    console.error('editor: failed to get getAppConfig, using defaults:', err);
+    log.error('editor: failed to get getAppConfig, using defaults:', err);
   }
   try {
     if (window.editorAPI && typeof window.editorAPI.getSettings === 'function') {
@@ -29,7 +31,7 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines w
     }
     await applyEditorTranslations();
   } catch (err) {
-    console.warn('editor: failed to apply initial translations:', err);
+    log.warn('editor: failed to apply initial translations:', err);
   }
   // rest of init (getCurrentText etc.) -you already have an existing init, integrate with yours
 })();
@@ -46,16 +48,7 @@ const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
 
 // Visibility helper: warn only once per key (editor scope)
-const __WARN_ONCE_EDITOR = new Set();
-function warnOnceEditor(key, ...args) {
-  if (__WARN_ONCE_EDITOR.has(key)) return;
-  __WARN_ONCE_EDITOR.add(key);
-  try {
-    console.warn('[editor]', key, ...args);
-  } catch {
-    // ignore console failures
-  }
-}
+const warnOnceEditor = (...args) => log.warnOnce(...args);
 
 // --- i18n loader for editor (uses RendererI18n global) ---
 let idiomaActual = 'es';
@@ -147,7 +140,7 @@ function showNotice(msg, { duration = 4500, type = 'info' } = {}) {
       catch (err) { warnOnceEditor('notice.remove.timeout', 'failed to remove notice on timeout (ignored):', err); }
     }, duration);
   } catch (err) {
-    console.debug('showNotice error:', err);
+    log.debug('showNotice error:', err);
   }
 }
 
@@ -168,11 +161,11 @@ function restoreFocusToEditor(pos = null) {
           if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(pos, pos);
         }
       } catch (err) {
-        console.debug('restoreFocusToEditor error:', err);
+        log.debug('restoreFocusToEditor error:', err);
       }
     }, 0);
   } catch (err) {
-    console.debug('restoreFocusToEditor wrapper error:', err);
+    log.debug('restoreFocusToEditor wrapper error:', err);
   }
 }
 
@@ -183,7 +176,7 @@ try {
     editor.style.whiteSpace = 'pre-wrap';
     editor.style.wordBreak = 'break-word';
   }
-} catch (err) { console.debug('editor: failed to apply wrap styles:', err); }
+} catch (err) { log.debug('editor: failed to apply wrap styles:', err); }
 
 // ---------- Local insertion (best preserving undo) ---------- //
 function tryNativeInsertAtSelection(text) {
@@ -215,7 +208,7 @@ function tryNativeInsertAtSelection(text) {
     if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(newCaret, newCaret);
     return true;
   } catch (err) {
-    console.error('tryNativeInsertAtSelection error:', err);
+    log.error('tryNativeInsertAtSelection error:', err);
     return false;
   }
 }
@@ -230,7 +223,7 @@ function sendCurrentTextToMainWithMeta(action = 'insert') {
       const resFallback = window.editorAPI.setCurrentText(editor.value);
       handleTruncationResponse(resFallback);
     } catch (err) {
-      console.error('Error sending set-current-text (fallback):', err);
+      log.error('Error sending set-current-text (fallback):', err);
     }
   }
 }
@@ -243,11 +236,11 @@ function handleTruncationResponse(resPromise) {
           Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
         }
       }).catch((err) => {
-        console.error('Error handling truncated response:', err);
+        log.error('Error handling truncated response:', err);
       });
     }
   } catch (err) {
-    console.error('handleTruncationResponse error:', err);
+    log.error('handleTruncationResponse error:', err);
   }
 }
 
@@ -280,7 +273,7 @@ function insertTextAtCursor(rawText) {
     restoreFocusToEditor();
     return { inserted: toInsert.length, truncated };
   } catch (err) {
-    console.error('insertTextAtCursor error:', err);
+    log.error('insertTextAtCursor error:', err);
     return { inserted: 0, truncated: false };
   }
 }
@@ -291,7 +284,7 @@ function dispatchNativeInputEvent() {
     const ev = new Event('input', { bubbles: true });
     editor.dispatchEvent(ev);
   } catch (err) {
-    console.error('dispatchNativeInputEvent error:', err);
+    log.error('dispatchNativeInputEvent error:', err);
   }
 }
 
@@ -445,7 +438,7 @@ async function applyExternalUpdate(payload) {
       Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
     }
   } catch (err) {
-    console.error('applyExternalUpdate error:', err);
+    log.error('applyExternalUpdate error:', err);
   }
 }
 
@@ -457,7 +450,7 @@ async function applyExternalUpdate(payload) {
     // initial state of CALCULATE button
     btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
   } catch (err) {
-    console.error('Error initializing editor:', err);
+    log.error('Error initializing editor:', err);
   }
 })();
 
@@ -472,7 +465,7 @@ window.editorAPI.onForceClear(() => {
     // Update main too (keep state consistent)
     try { window.editorAPI.setCurrentText({ text: '', meta: { source: 'editor', action: 'clear' } }); } catch { window.editorAPI.setCurrentText(''); }
   } catch (err) {
-    console.error('Error in onForceClear:', err);
+    log.error('Error in onForceClear:', err);
   } finally {
     suppressLocalUpdate = false;
     restoreFocusToEditor();
@@ -500,7 +493,7 @@ if (editor) {
       Notify.notifyEditor('renderer.editor_alerts.clipboard_too_big', { type: 'warn', duration: 5000 });
       restoreFocusToEditor();
     } catch (err) {
-      console.error('paste handler error:', err);
+      log.error('paste handler error:', err);
       restoreFocusToEditor();
     }
   });
@@ -549,13 +542,13 @@ if (editor) {
             }
           }
         } catch (err) {
-          console.error('drop postprocess error:', err);
+          log.error('drop postprocess error:', err);
         }
       }, 0);
 
       // NO preventDefault: allow native insertion
     } catch (err) {
-      console.error('drop handler error:', err);
+      log.error('drop handler error:', err);
       restoreFocusToEditor();
     }
   });
@@ -572,7 +565,7 @@ editor.addEventListener('input', () => {
       const res = window.editorAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'truncated' } });
       handleTruncationResponse(res);
     } catch (err) {
-      console.error('editor: error sending set-current-text after truncate:', err);
+      log.error('editor: error sending set-current-text after truncate:', err);
       try {
         const resFallback = window.editorAPI.setCurrentText(editor.value);
         handleTruncationResponse(resFallback);
@@ -592,7 +585,7 @@ editor.addEventListener('input', () => {
           const res = window.editorAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'typing' } });
           handleTruncationResponse(res);
         } catch {
-          try { const resFallback = window.editorAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (err) { console.error('Error sending set-current-text typing:', err); }
+          try { const resFallback = window.editorAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (err) { log.error('Error sending set-current-text typing:', err); }
         }
       }, DEBOUNCE_MS);
     }
@@ -624,7 +617,7 @@ if (btnCalc) btnCalc.addEventListener('click', () => {
     handleTruncationResponse(res);
     // Do not close the modal or ask anything -per spec
   } catch (err) {
-    console.error('Error executing CALCULAR:', err);
+    log.error('Error executing CALCULAR:', err);
     Notify.notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
     restoreFocusToEditor();
   }

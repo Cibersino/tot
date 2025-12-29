@@ -1,6 +1,8 @@
 // public/js/i18n.js
 (() => {
-  console.debug('[i18n.js] module loaded');
+  const log = window.getLogger('i18n');
+
+  log.debug('[i18n.js] module loaded');
 
   let rendererTranslations = null;
   let rendererTranslationsLang = null;
@@ -19,7 +21,7 @@
         return data;
       }
     } catch (err) {
-      console.warn('[i18n] Unable to load renderer translations:', err);
+      log.warn('[i18n] Unable to load renderer translations:', err);
     }
     rendererTranslations = null;
     rendererTranslationsLang = null;

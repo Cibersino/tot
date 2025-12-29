@@ -2,6 +2,8 @@
 (function () {
   'use strict';
 
+  const log = window.getLogger('preset-modal');
+
   document.addEventListener('DOMContentLoaded', function () {
     // Selecting DOM elements
     const h3El = document.querySelector('h3');
@@ -13,9 +15,9 @@
     const charCountEl = document.getElementById('charCount');
     const hintEl = document.querySelector('.hint');
 
-    // If elements are missing, we abort and leave a warning in the console.
+    // If elements are missing, we abort and leave a warning via the log.
     if (!nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
-      console.warn('preset_modal: missing DOM elements, modal script was not initialized.');
+      log.warn('preset_modal: missing DOM elements, modal script was not initialized.');
       return;
     }
 
@@ -46,13 +48,6 @@
     }
     const tr = (path, fallback) => tRenderer(path, fallback);
     const mr = (path, params = {}, fallback = '') => msgRenderer(path, params, fallback);
-
-    const __WARN_ONCE_PRESET_MODAL = new Set();
-    function warnOncePresetModal(key, ...args) {
-      if (__WARN_ONCE_PRESET_MODAL.has(key)) return;
-      __WARN_ONCE_PRESET_MODAL.add(key);
-      console.warn(...args);
-    }
 
     async function ensurePresetTranslations(lang) {
       const target = (lang || '').toLowerCase() || 'es';
@@ -95,8 +90,8 @@
                 if (settings && settings.language) idiomaActual = settings.language || idiomaActual;
               }
             } catch (err) {
-              warnOncePresetModal(
-                'preset_api.getSettings',
+              log.warnOnce(
+                'preset-modal.getSettings',
                 '[preset_modal] presetAPI.getSettings failed:',
                 err
               );
@@ -123,11 +118,11 @@
             const currLen = descEl.value ? descEl.value.length : 0;
             charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) }, `${Math.max(0, descMaxLength - currLen)} caracteres restantes`);
           } catch (err) {
-            console.error('Error applying preset-init data:', err);
+            log.error('Error applying preset-init data:', err);
           }
         });
       } catch (err) {
-        console.error('Error setting up presetAPI.onInit listener:', err);
+        log.error('Error setting up presetAPI.onInit listener:', err);
       }
     }
 
@@ -183,7 +178,7 @@
             } else {
               if (res && res.code === 'CANCELLED') return;
               Notify.notifyMain('renderer.preset_alerts.edit_error');
-              console.error('Error editing preset (response):', res);
+              log.error('Error editing preset (response):', res);
             }
           }
         } else {
@@ -193,13 +188,13 @@
               window.close();
             } else {
               Notify.notifyMain('renderer.preset_alerts.create_error');
-              console.error('Error creating preset (response):', res);
+              log.error('Error creating preset (response):', res);
             }
           }
         }
       } catch (err) {
         Notify.notifyMain('renderer.preset_alerts.process_error');
-        console.error('Error in save preset:', err);
+        log.error('Error in save preset:', err);
       }
     });
 
