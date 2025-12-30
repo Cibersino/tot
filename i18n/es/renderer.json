@@ -85,7 +85,6 @@
       "open_presets_unsupported": "No es posible abrir la carpeta de presets en este entorno.",
       "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.",
       "open_presets_fail": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.",
-      "wip": "WIP: Aquí se abrirá {feature} en una futura versión.",
       "wip_cargador_texto": "WIP: Aquí se abrirá el cargador de archivos de texto en una futura versión.",
       "wip_contador_imagen": "WIP: Aquí se abrirá el cargador de im?genes con texto en una futura versión.",
       "wip_test_velocidad": "WIP: Aquí se abrirá el test de velocidad de lectura en una futura versión.",

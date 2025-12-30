@@ -85,7 +85,6 @@
       "open_presets_unsupported": "Cannot open presets folder in this environment.",
       "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
       "open_presets_fail": "Could not open the default presets folder. Check console for details.",
-      "wip": "WIP: This feature will open in a future version: {feature}.",
       "wip_cargador_texto": "WIP: The text file loader will open here in a future version.",
       "wip_contador_imagen": "WIP: The image text loader will open here in a future version.",
       "wip_test_velocidad": "WIP: The reading speed test will open here in a future version.",
