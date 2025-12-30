@@ -439,13 +439,13 @@ function installWorkAreaGuard(win, opts = {}) {
   let snapping = false;
   let userMoveArmed = false;
 
-  // will-move: only when the user drags by hand (Windows/macOS). :contentReference[oaicite:1]{index=1}
+  // will-move: only when the user drags by hand (Windows/macOS).
   win.on('will-move', () => {
     if (!snapping) userMoveArmed = true;
   });
 
   if (process.platform === 'win32') {
-    // moved: emitted once at the end of the movement in Windows. :contentReference[oaicite:2]{index=2}
+    // moved: emitted once at the end of the movement in Windows.
     win.on('moved', () => {
       if (!userMoveArmed || snapping || win.isDestroyed()) return;
       userMoveArmed = false;
