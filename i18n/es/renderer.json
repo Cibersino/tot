@@ -24,7 +24,6 @@
       "speed": {
         "title": "VELOCIDAD DE LECTURA",
         "wpm_label": "palabras por minuto (WPM)",
-        "presets_placeholder": "Presets",
         "new": "Nuevo",
         "edit": "Editar",
         "delete": "🗑",
@@ -39,33 +38,14 @@
         "precise_mode": "Modo preciso",
         "precise_tooltip": "Basado en Intl.Segmenter"
       },
-      "help": {
-        "title": "Información (pendiente)"
-      },
       "crono": {
         "title": "CRONÓMETRO",
         "speed": "Velocidad:",
         "controls_label": "Controles del cronómetro",
-        "flotante": "Ventana flotante",
         "flotante_short": "VF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
-      },
-      "spare": {
-        "title": "Sección disponible"
-      },
-      "info_modal": {
-        "title": "Info",
-        "close": "Cerrar",
-        "loading": "Cargando..."
       }
-    },
-    "modal_language": {
-      "title": "Seleccionar idioma",
-      "heading": "Seleccione idioma / Select language",
-      "es": "Español",
-      "en": "English",
-      "note": "La selección se guardará y se usará en próximos inicios de la aplicación."
     },
     "modal_preset": {
       "title_new": "Nuevo preset",
@@ -89,9 +69,6 @@
       "clear": "🗑",
       "clear_title": "Vaciar"
     },
-    "modal_flotante": {
-      "title": "toT —  Cronómetro (ventana flotante)"
-    },
     "alerts": {   
       "clipboard_overflow": "El texto del portapapeles supera el tamaño máximo permitido y será truncado.",
       "text_limit": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",
@@ -108,11 +85,9 @@
       "open_presets_unsupported": "No es posible abrir la carpeta de presets en este entorno.",
       "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.",
       "open_presets_fail": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.",
-      "wip": "WIP: Aquí se abrirá {feature} en una futura versión.",
       "wip_cargador_texto": "WIP: Aquí se abrirá el cargador de archivos de texto en una futura versión.",
       "wip_contador_imagen": "WIP: Aquí se abrirá el cargador de im?genes con texto en una futura versión.",
       "wip_test_velocidad": "WIP: Aquí se abrirá el test de velocidad de lectura en una futura versión.",
-      "wip_idioma": "WIP: Aquí se abrirá el selector de idioma en una futura versión.",
       "wip_diseno_skins": "WIP: Aquí se abrirá el selector de skins en una futura versión.",
       "wip_diseno_crono": "WIP: Aquí se abrirá la configuración del cronómetro flotante en una futura versión.",
       "wip_diseno_fuentes": "WIP: Aquí se abrirá el selector de fuentes en una futura versión.",
@@ -133,7 +108,6 @@
       "paste_truncated": "El texto pegado se ha truncado para no exceder el máximo permitido.",
       "drop_truncated": "El texto arrastrado excedía el espacio disponible y fue truncado.",
       "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",
-      "paste_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola.",
       "calc_error": "Ocurrió un error al calcular. Revisa la consola."
     },
     "preset_alerts": {

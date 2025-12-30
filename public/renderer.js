@@ -664,9 +664,6 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('test_velocidad', () => {
       Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP
     });
-    window.menuActions.registerMenuAction('preferencias_idioma', () => {
-      Notify.notifyMain('renderer.alerts.wip_idioma'); // WIP
-    });
     window.menuActions.registerMenuAction('diseno_skins', () => {
       Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
     });
@@ -924,7 +921,7 @@ btnEditPreset.addEventListener('click', async () => {
     try {
       log.debug('[renderer] openPresetModal payload:', payload);
     } catch (err) {
-      warnOnceRenderer('renderer.log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+      warnOnceRenderer('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
     }
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);

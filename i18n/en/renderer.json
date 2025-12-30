@@ -24,7 +24,6 @@
       "speed": {
         "title": "READING SPEED",
         "wpm_label": "words per minute (WPM)",
-        "presets_placeholder": "Presets",
         "new": "New",
         "edit": "Edit",
         "delete": "🗑",
@@ -39,33 +38,14 @@
         "precise_mode": "Precise mode",
         "precise_tooltip": "Based on Intl.Segmenter"
       },
-      "help": {
-        "title": "Information (pending)"
-      },
       "crono": {
         "title": "STOPWATCH",
         "speed": "Speed:",
         "controls_label": "Stopwatch controls",
-        "flotante": "Floating window",
         "flotante_short": "FW",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
-      },
-      "spare": {
-        "title": "Available section"
-      },
-      "info_modal": {
-        "title": "Info",
-        "close": "Close",
-        "loading": "Loading..."
       }
-    },
-    "modal_language": {
-      "title": "Select language",
-      "heading": "Select language / Seleccione idioma",
-      "es": "Spanish",
-      "en": "English",
-      "note": "The selection will be saved and used next time the app starts."
     },
     "modal_preset": {
       "title_new": "New preset",
@@ -89,9 +69,6 @@
       "clear": "🗑",
       "clear_title": "Clear"
     },
-    "modal_flotante": {
-      "title": "toT —  Stopwatch (floating window)"
-    },
     "alerts": {
       "clipboard_overflow": "Clipboard text exceeds the maximum allowed and will be truncated.",
       "text_limit": "Cannot add text: maximum size reached.",
@@ -108,11 +85,9 @@
       "open_presets_unsupported": "Cannot open presets folder in this environment.",
       "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
       "open_presets_fail": "Could not open the default presets folder. Check console for details.",
-      "wip": "WIP: This feature will open in a future version: {feature}.",
       "wip_cargador_texto": "WIP: The text file loader will open here in a future version.",
       "wip_contador_imagen": "WIP: The image text loader will open here in a future version.",
       "wip_test_velocidad": "WIP: The reading speed test will open here in a future version.",
-      "wip_idioma": "WIP: The language selector will open here in a future version.",
       "wip_diseno_skins": "WIP: The skins selector will open here in a future version.",
       "wip_diseno_crono": "WIP: Floating chronometer settings will open here in a future version.",
       "wip_diseno_fuentes": "WIP: The fonts selector will open here in a future version.",
@@ -133,7 +108,6 @@
       "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
       "drop_truncated": "Dragged text exceeded the available space and was truncated.",
       "text_truncated": "Text was truncated to fit the application limit.",
-      "paste_error": "An error occurred while pasting from clipboard. Check console.",
       "calc_error": "An error occurred while calculating. Check console."
     },
     "preset_alerts": {
