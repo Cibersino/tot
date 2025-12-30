@@ -278,48 +278,6 @@ function createPresetWindow(initialData) {
   });
 }
 
-// IPC related to text state (delegated to text_state)
-textState.registerIpc(ipcMain, () => ({
-  mainWin,
-  editorWin,
-}));
-
-// IPC related to settings (delegated to settingsState)
-settingsState.registerIpc(ipcMain, {
-  getWindows: () => ({
-    mainWin,
-    editorWin,
-    presetWin,
-    langWin,
-    flotanteWin,
-  }),
-  buildAppMenu,
-  setCurrentLanguage: (lang) => {
-    const trimmed =
-      lang && typeof lang === 'string' && lang.trim()
-        ? lang.trim()
-        : 'es';
-    currentLanguage = trimmed;
-  },
-});
-
-// IPC related to presets (delegated to presetsMain)
-presetsMain.registerIpc(ipcMain, {
-  getWindows: () => ({
-    mainWin,
-    editorWin,
-    presetWin,
-    langWin,
-    flotanteWin,
-  }),
-});
-
-// IPC related to updates (delegated to updater)
-updater.registerIpc(ipcMain, {
-  mainWinRef: () => mainWin,
-  currentLanguageRef: () => currentLanguage,
-});
-
 // Create language selection window (small, light)
 function createLanguageWindow() {
   if (langWin && !langWin.isDestroyed()) {
@@ -371,6 +329,48 @@ function createLanguageWindow() {
     }
   });
 }
+
+// IPC related to text state (delegated to text_state)
+textState.registerIpc(ipcMain, () => ({
+  mainWin,
+  editorWin,
+}));
+
+// IPC related to settings (delegated to settingsState)
+settingsState.registerIpc(ipcMain, {
+  getWindows: () => ({
+    mainWin,
+    editorWin,
+    presetWin,
+    langWin,
+    flotanteWin,
+  }),
+  buildAppMenu,
+  setCurrentLanguage: (lang) => {
+    const trimmed =
+      lang && typeof lang === 'string' && lang.trim()
+        ? lang.trim()
+        : 'es';
+    currentLanguage = trimmed;
+  },
+});
+
+// IPC related to presets (delegated to presetsMain)
+presetsMain.registerIpc(ipcMain, {
+  getWindows: () => ({
+    mainWin,
+    editorWin,
+    presetWin,
+    langWin,
+    flotanteWin,
+  }),
+});
+
+// IPC related to updates (delegated to updater)
+updater.registerIpc(ipcMain, {
+  mainWinRef: () => mainWin,
+  currentLanguageRef: () => currentLanguage,
+});
 
 // ----------------- Floating Window (PIP) -----------------
 const FLOTANTE_PRELOAD = path.join(__dirname, 'flotante_preload.js');
