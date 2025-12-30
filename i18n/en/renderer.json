@@ -42,7 +42,6 @@
         "title": "STOPWATCH",
         "speed": "Speed:",
         "controls_label": "Stopwatch controls",
-        "flotante": "Floating window",
         "flotante_short": "FW",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
