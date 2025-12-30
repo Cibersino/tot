@@ -664,9 +664,6 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('test_velocidad', () => {
       Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP
     });
-    window.menuActions.registerMenuAction('preferencias_idioma', () => {
-      Notify.notifyMain('renderer.alerts.wip_idioma'); // WIP
-    });
     window.menuActions.registerMenuAction('diseno_skins', () => {
       Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
     });
