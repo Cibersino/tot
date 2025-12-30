@@ -499,7 +499,7 @@ function installWorkAreaGuard(win, opts = {}) {
   win.on('closed', () => clearTimer());
 }
 
-async function createflotanteWindow(options = {}) {
+async function createFlotanteWindow(options = {}) {
   // If it already exists and wasn't destroyed, restore it (don't recreate it)
   if (flotanteWin && !flotanteWin.isDestroyed()) {
     // Apply a forced position if it was requested
@@ -720,7 +720,7 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
 // IPC: open floating window
 ipcMain.handle('flotante-open', async () => {
   try {
-    await createflotanteWindow();
+    await createFlotanteWindow();
     try { broadcastCronoState(); } catch (err) { warnOnce('broadcastCronoState.after.flotante-open', 'broadcastCronoState failed after flotante-open (ignored):', err); }
     if (crono.running) ensureCronoInterval();
     return { ok: true };
