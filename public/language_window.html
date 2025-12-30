@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Seleccionar idioma</title>
+  <title>Seleccione idioma / Select language</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -24,28 +24,23 @@
     h3 {
       margin: 0;
       font-size: 18px;
+      text-align: center;
     }
 
     .langs {
-      display: flex;
-      gap: 12px;
+      width: 100%;
+      max-width: 320px;
       margin-top: 8px;
     }
 
-    button {
-      padding: 8px 14px;
+    select {
+      width: 100%;
+      padding: 8px 10px;
       font-size: 14px;
       border-radius: 6px;
       border: 1px solid #bbb;
       background: #fff;
-      cursor: pointer;
-    }
-
-    button.primary {
-      background: #1e7ae6;
-      color: #fff;
-      border-color: #1661c4;
-      font-weight: 600;
+      color: #222;
     }
 
     .note {
@@ -61,9 +56,12 @@
   <div class="center" role="dialog" aria-labelledby="lang-title">
     <h3 id="lang-title">Seleccione idioma / Select language</h3>
 
-    <div class="langs" role="group" aria-label="Idiomas disponibles">
-      <button id="btnEs" class="primary" title="Español">Español</button>
-      <button id="btnEn" title="English">English</button>
+    <div class="langs">
+      <select id="langSelect" aria-label="Idiomas disponibles / Available languages">
+        <option value="" selected>— Seleccione / Select —</option>
+        <option value="es">Español</option>
+        <option value="en">English</option>
+      </select>
     </div>
 
     <div class="note">La selección se guardará y se usará en próximos inicios de la aplicación.</div>
@@ -72,30 +70,22 @@
   <script src="js/log.js"></script>
   <script>
     const log = window.getLogger('language');
-    const btnEs = document.getElementById('btnEs');
-    const btnEn = document.getElementById('btnEn');
+    const langSelect = document.getElementById('langSelect');
 
-    btnEs.addEventListener('click', async () => {
+    langSelect.addEventListener('change', async () => {
+      const lang = String(langSelect.value || '').trim();
+      if (!lang) return;
+
       try {
-        await window.languageAPI.setLanguage('es');
-      } catch (e) {
-        log.error("Error setLanguage es:", e);
-      } finally {
+        await window.languageAPI.setLanguage(lang);
         window.close();
+      } catch (e) {
+        log.error("Error setLanguage:", e);
+        // return to placeholder to allow retry
+        langSelect.value = '';
       }
     });
-
-    btnEn.addEventListener('click', async () => {
-      try {
-        await window.languageAPI.setLanguage('en');
-      } catch (e) {
-        log.error("Error setLanguage en:", e);
-      } finally {
-        window.close();
-      }
-    });
-
-    // Optional: if user closes window without selection, main will apply fallback = 'es'
+    // Note: If the user closes the window without selecting anything, main applies fallback only if settings.language is empty.
   </script>
 </body>
 
