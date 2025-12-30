@@ -339,7 +339,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             err
           );
         }
-        return { ok: false, code: 'NO_NAME' };
+        return { ok: false, code: 'NO_SELECTION' };
       }
 
       // Ask confirmation (native dialog)
