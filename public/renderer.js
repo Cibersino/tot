@@ -921,7 +921,7 @@ btnEditPreset.addEventListener('click', async () => {
     try {
       log.debug('[renderer] openPresetModal payload:', payload);
     } catch (err) {
-      warnOnceRenderer('renderer.log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+      warnOnceRenderer('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
     }
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
