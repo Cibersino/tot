@@ -24,7 +24,6 @@
       "speed": {
         "title": "VELOCIDAD DE LECTURA",
         "wpm_label": "palabras por minuto (WPM)",
-        "presets_placeholder": "Presets",
         "new": "Nuevo",
         "edit": "Editar",
         "delete": "🗑",
@@ -39,9 +38,6 @@
         "precise_mode": "Modo preciso",
         "precise_tooltip": "Basado en Intl.Segmenter"
       },
-      "help": {
-        "title": "Información (pendiente)"
-      },
       "crono": {
         "title": "CRONÓMETRO",
         "speed": "Velocidad:",
@@ -50,22 +46,7 @@
         "flotante_short": "VF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
-      },
-      "spare": {
-        "title": "Sección disponible"
-      },
-      "info_modal": {
-        "title": "Info",
-        "close": "Cerrar",
-        "loading": "Cargando..."
       }
-    },
-    "modal_language": {
-      "title": "Seleccionar idioma",
-      "heading": "Seleccione idioma / Select language",
-      "es": "Español",
-      "en": "English",
-      "note": "La selección se guardará y se usará en próximos inicios de la aplicación."
     },
     "modal_preset": {
       "title_new": "Nuevo preset",
@@ -88,9 +69,6 @@
       "calc_while_typing": "Calcular mientras escribe",
       "clear": "🗑",
       "clear_title": "Vaciar"
-    },
-    "modal_flotante": {
-      "title": "toT —  Cronómetro (ventana flotante)"
     },
     "alerts": {   
       "clipboard_overflow": "El texto del portapapeles supera el tamaño máximo permitido y será truncado.",
@@ -132,7 +110,6 @@
       "paste_truncated": "El texto pegado se ha truncado para no exceder el máximo permitido.",
       "drop_truncated": "El texto arrastrado excedía el espacio disponible y fue truncado.",
       "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",
-      "paste_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola.",
       "calc_error": "Ocurrió un error al calcular. Revisa la consola."
     },
     "preset_alerts": {

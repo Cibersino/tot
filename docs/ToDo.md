@@ -4,8 +4,6 @@
 
 * Revisión y depuración del código *
 
-- Depurar json.
-
 # Más adelante #
 
 * Nuevas funciones *

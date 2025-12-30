@@ -24,7 +24,6 @@
       "speed": {
         "title": "READING SPEED",
         "wpm_label": "words per minute (WPM)",
-        "presets_placeholder": "Presets",
         "new": "New",
         "edit": "Edit",
         "delete": "🗑",
@@ -39,9 +38,6 @@
         "precise_mode": "Precise mode",
         "precise_tooltip": "Based on Intl.Segmenter"
       },
-      "help": {
-        "title": "Information (pending)"
-      },
       "crono": {
         "title": "STOPWATCH",
         "speed": "Speed:",
@@ -50,22 +46,7 @@
         "flotante_short": "FW",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
-      },
-      "spare": {
-        "title": "Available section"
-      },
-      "info_modal": {
-        "title": "Info",
-        "close": "Close",
-        "loading": "Loading..."
       }
-    },
-    "modal_language": {
-      "title": "Select language",
-      "heading": "Select language / Seleccione idioma",
-      "es": "Spanish",
-      "en": "English",
-      "note": "The selection will be saved and used next time the app starts."
     },
     "modal_preset": {
       "title_new": "New preset",
@@ -88,9 +69,6 @@
       "calc_while_typing": "Calculate while typing",
       "clear": "🗑",
       "clear_title": "Clear"
-    },
-    "modal_flotante": {
-      "title": "toT —  Stopwatch (floating window)"
     },
     "alerts": {
       "clipboard_overflow": "Clipboard text exceeds the maximum allowed and will be truncated.",
@@ -132,7 +110,6 @@
       "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
       "drop_truncated": "Dragged text exceeded the available space and was truncated.",
       "text_truncated": "Text was truncated to fit the application limit.",
-      "paste_error": "An error occurred while pasting from clipboard. Check console.",
       "calc_error": "An error occurred while calculating. Check console."
     },
     "preset_alerts": {
