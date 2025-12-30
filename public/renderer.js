@@ -656,30 +656,32 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('instrucciones_completas', () => { showInfoModal('instrucciones') });
     window.menuActions.registerMenuAction('faq', () => { showInfoModal('faq') });
     window.menuActions.registerMenuAction('cargador_texto', () => {
-      Notify.notifyMain('renderer.alerts.wip_cargador_texto'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_cargador_texto'); // WIP
     });
     window.menuActions.registerMenuAction('contador_imagen', () => {
-      Notify.notifyMain('renderer.alerts.wip_contador_imagen'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_contador_imagen'); // WIP
     });
     window.menuActions.registerMenuAction('test_velocidad', () => {
-      Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP
     });
     window.menuActions.registerMenuAction('preferencias_idioma', () => {
-      Notify.notifyMain('renderer.alerts.wip_idioma'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_idioma'); // WIP
     });
     window.menuActions.registerMenuAction('diseno_skins', () => {
-      Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
     });
     window.menuActions.registerMenuAction('diseno_crono_flotante', () => {
-      Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // WIP
     });
     window.menuActions.registerMenuAction('diseno_fuentes', () => {
-      Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // WIP
     });
     window.menuActions.registerMenuAction('diseno_colores', () => {
-      Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // WIP
     });
-
+    window.menuActions.registerMenuAction('shortcuts', () => {
+      Notify.notifyMain('renderer.alerts.wip_shortcuts'); // WIP
+    });
     window.menuActions.registerMenuAction('presets_por_defecto', async () => {
       try {
         if (!window.electronAPI || typeof window.electronAPI.openDefaultPresetsFolder !== 'function') {
@@ -706,16 +708,16 @@ const loadPresets = async () => {
     });
 
     window.menuActions.registerMenuAction('avisos', () => {
-      Notify.notifyMain('renderer.alerts.wip_avisos'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_avisos'); // WIP
     });
     window.menuActions.registerMenuAction('discord', () => {
-      Notify.notifyMain('renderer.alerts.wip_discord'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_discord'); // WIP
     });
     window.menuActions.registerMenuAction('links_interes', () => {
-      Notify.notifyMain('renderer.alerts.wip_links_interes'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_links_interes'); // WIP
     });
     window.menuActions.registerMenuAction('colabora', () => {
-      Notify.notifyMain('renderer.alerts.wip_colabora'); // TEMP
+      Notify.notifyMain('renderer.alerts.wip_colabora'); // WIP
     });
 
     window.menuActions.registerMenuAction('actualizar_version', async () => {

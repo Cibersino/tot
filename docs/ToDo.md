@@ -2,6 +2,8 @@
 
 # ÍTEM ACTUAL #
 
+- Cambiar ventana de selección de idioma para que sea un dropdown list y no botones.
+
 * Revisión y depuración del código *
 
 # Más adelante #
