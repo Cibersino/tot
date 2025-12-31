@@ -1,4 +1,6 @@
 // electron/main.js
+'use strict';
+
 const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 const path = require('path');
 const Log = require('./log');

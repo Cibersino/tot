@@ -1,4 +1,6 @@
 // public/flotante.js
+'use strict';
+
 const log = window.getLogger('flotante');
 
 const cronoEl = document.getElementById('crono');

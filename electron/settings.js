@@ -1,5 +1,6 @@
 // electron/settings.js
 // Centralized management of user_settings.json: language, modeCount, numberFormatting, etc.
+'use strict';
 
 const fs = require('fs');
 const path = require('path');

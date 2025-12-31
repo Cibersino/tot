@@ -1,4 +1,6 @@
 // electron/preload.js
+'use strict';
+
 const { contextBridge, clipboard, ipcRenderer } = require('electron');
 const Log = require('./log');
 

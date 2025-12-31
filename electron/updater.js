@@ -1,6 +1,6 @@
 // electron/updater.js
-// update system: version comparison, remote query, and native update dialogs
-// and native update dialogs.
+// update system: version comparison, remote query, and native update dialogs and native update dialogs.
+'use strict';
 
 const { dialog, shell } = require('electron');
 const https = require('https');

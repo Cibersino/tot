@@ -1,4 +1,6 @@
 // electron/language_preload.js
+'use strict';
+
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('languageAPI', {

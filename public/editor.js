@@ -1,5 +1,6 @@
 // public/editor.js
 /* global Notify */
+'use strict';
 
 const log = window.getLogger('editor');
 

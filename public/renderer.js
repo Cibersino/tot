@@ -1,5 +1,6 @@
 // public/renderer.js
 /* global Notify */
+'use strict';
 
 const log = window.getLogger('renderer');
 

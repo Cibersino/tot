@@ -1,6 +1,6 @@
 // electron/presets_main.js
-// Presets logic in the main process: defaults, settings.presets,
-// native dialogs and associated IPC handlers.
+// Presets logic in the main process: defaults, settings.presets, native dialogs and associated IPC handlers.
+'use strict';
 
 const fs = require('fs');
 const path = require('path');

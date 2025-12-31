@@ -1,4 +1,6 @@
 // electron/text_state.js
+'use strict';
+
 const fs = require('fs');
 const Log = require('./log');
 

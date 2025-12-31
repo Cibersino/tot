@@ -1,4 +1,6 @@
 // electron/editor_state.js
+'use strict';
+
 const { screen } = require('electron');
 const path = require('path');
 const { CONFIG_DIR, loadJson, saveJson } = require('./fs_storage');

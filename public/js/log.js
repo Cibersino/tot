@@ -1,4 +1,5 @@
 // public/js/log.js
+'use strict';
 
 /**
  * LOGGING POLICY (toT — Reading Meter)

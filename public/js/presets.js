@@ -1,4 +1,6 @@
 // public/js/presets.js
+'use strict';
+
 (() => {
   const log = window.getLogger('presets');
 

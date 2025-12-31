@@ -1,4 +1,6 @@
 // public/js/menu_actions.js
+'use strict';
+
 (function () {
     const log = window.getLogger('menu-actions');
 
