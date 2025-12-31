@@ -4,6 +4,13 @@
 
 * Revisión y depuración del código *
 
+- Eliminar send huérfanos.
+- Idioma de comments.
+- Presets `.js` a presets `.json`
+- Ordenar/limpiar archivo por archivo
+  - Revisar avisos logs, de acuerdo a la política en los `log.js`.
+  - Comments coherentes y útiles, tomando a `main.js` como modelo.
+
 # Más adelante #
 
 * Nuevas funciones *

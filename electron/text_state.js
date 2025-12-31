@@ -41,10 +41,10 @@ function persistCurrentTextOnQuit() {
 }
 
 /**
- * Inicializa el estado de texto:
- * - Carga desde CURRENT_TEXT_FILE
- * - Aplica truncado inicial por MAX_TEXT_CHARS
- * - Registra persistencia en app.before-quit
+ * Initialize the text state:
+ * -Load from CURRENT_TEXT_FILE
+ * -Apply initial truncation by MAX_TEXT_CHARS
+ * -Register persistence in app.before-quit
  */
 function init(options) {
   const opts = options || {};
@@ -97,11 +97,11 @@ function init(options) {
 }
 
 /**
- * Registra los handlers IPC relacionados con currentText:
- * - get-current-text
- * - set-current-text
- * - force-clear-editor
- * y maneja el broadcast al editor.
+ * Register the IPC handlers related to currentText:
+ * -get-current-text
+ * -set-current-text
+ * -force-clear-editor
+ * and handles the broadcast to the editor.
  */
 function registerIpc(ipcMain, windowsResolver) {
   if (typeof windowsResolver === 'function') {

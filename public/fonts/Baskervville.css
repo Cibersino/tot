@@ -1,7 +1,7 @@
 @font-face {
   font-family: "Baskervville";
   src: url("../fonts/Baskervville-VariableFont_wght.ttf") format("truetype");
-  font-weight: 400 700; /* rango de pesos del variable */
+  font-weight: 400 700; /* variable weight range */
   font-style: normal;
 }
 

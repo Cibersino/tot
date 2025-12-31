@@ -22,7 +22,7 @@ html,body {
   color: #fff;
   border-radius: 10px;
   backdrop-filter: blur(6px);
-  -webkit-app-region: drag; /* toda la ventana arrastrable por defecto */
+  -webkit-app-region: drag; /* all window draggable by default */
   font-family: system-ui, sans-serif;
 }
 
@@ -35,7 +35,7 @@ html,body {
 .controls {
   display: flex;
   gap: 6px;
-  -webkit-app-region: no-drag; /* botones deben ser clicables */
+  -webkit-app-region: no-drag; /* buttons must be clickable */
 }
 
 .btn {
