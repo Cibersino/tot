@@ -1,4 +1,33 @@
 // public/js/log.js
+
+/**
+ * LOGGING POLICY (toT — Reading Meter)
+ *
+ * Levels (lowest → highest): silent < error < warn < info < debug
+ * Default: warn (minimize noise in normal operation).
+ *
+ * Intended usage across the repo:
+ * - error: unexpected failures that break an intended action or invariant.
+ *          Typical: exceptions caught in IPC handlers, failed critical I/O, failed window loads when not closing.
+ * - warn: recoverable anomalies / degraded behavior / fallback paths.
+ *         Typical: “using default position”, “shortcut register failed”, “could not apply optional behavior”.
+ * - info: high-level lifecycle/state transitions (low volume).
+ * - debug: verbose diagnostics; may be noisy; safe to spam.
+ *
+ * Once-variants (deduplicated per process/page):
+ * - warnOnce: use for expected transient failures that can repeat frequently and would spam logs.
+ *             Canonical example: webContents.send() to a destroyed window during shutdown/races.
+ * - errorOnce: like warnOnce but for repeated error-class events (should be rare).
+ *
+ * warnOnce/errorOnce signature:
+ * - warnOnce(key, ...args): explicit stable dedupe key.
+ * - warnOnce(...args): auto-key derived from args (args[0] string preferred, else JSON(args)).
+ *
+ * Configuration source:
+ * - main: process.env.TOT_LOG_LEVEL
+ * - renderer: window.TOT_LOG_LEVEL or localStorage('tot.logLevel')
+ */
+
 (() => {
   const LEVELS = { silent: 0, error: 1, warn: 2, info: 3, debug: 4 };
   const LEVEL_NAMES = Object.keys(LEVELS);
@@ -8,9 +37,9 @@
     return LEVELS[s] !== undefined ? s : 'warn'; // default = WARN
   }
 
-  // Fuente de verdad del nivel en renderer:
-  // 1) window.TOT_LOG_LEVEL (temporal, útil en DevTools)
-  // 2) localStorage 'tot.logLevel' (persistente)
+  // Source of truth of level in renderer:
+  // 1) window.TOT_LOG_LEVEL (temporary, useful in DevTools)
+  // 2) localStorage 'tot.logLevel' (persistent)
   // 3) default 'warn'
   function readInitialLevel() {
     const fromWindow = normalizeLevelName(window.TOT_LOG_LEVEL);
@@ -47,7 +76,7 @@
 
     return {
       debug: (...args) => { if (should('debug')) console.debug(prefix('debug', sc), ...args); },
-      info:  (...args) => { if (should('info'))  console.log(prefix('info', sc), ...args); },
+      info:  (...args) => { if (should('info'))  console.info(prefix('info', sc), ...args); },
       warn:  (...args) => { if (should('warn'))  console.warn(prefix('warn', sc), ...args); },
       error: (...args) => { if (should('error')) console.error(prefix('error', sc), ...args); },
 
