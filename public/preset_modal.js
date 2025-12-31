@@ -1,6 +1,8 @@
 // public/preset_modal.js
+/* global Notify */
+'use strict';
+
 (function () {
-  'use strict';
 
   const log = window.getLogger('preset-modal');
 
