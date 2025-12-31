@@ -1,18 +1,46 @@
 // electron/log.js
 'use strict';
 
+/**
+ * LOGGING POLICY (toT — Reading Meter)
+ *
+ * Levels (lowest → highest): silent < error < warn < info < debug
+ * Default: warn (minimize noise in normal operation).
+ *
+ * Intended usage across the repo:
+ * - error: unexpected failures that break an intended action or invariant.
+ *          Typical: exceptions caught in IPC handlers, failed critical I/O, failed window loads when not closing.
+ * - warn: recoverable anomalies / degraded behavior / fallback paths.
+ *         Typical: “using default position”, “shortcut register failed”, “could not apply optional behavior”.
+ * - info: high-level lifecycle/state transitions (low volume).
+ * - debug: verbose diagnostics; may be noisy; safe to spam.
+ *
+ * Once-variants (deduplicated per process/page):
+ * - warnOnce: use for expected transient failures that can repeat frequently and would spam logs.
+ *             Canonical example: webContents.send() to a destroyed window during shutdown/races.
+ * - errorOnce: like warnOnce but for repeated error-class events (should be rare).
+ *
+ * warnOnce/errorOnce signature:
+ * - warnOnce(key, ...args): explicit stable dedupe key.
+ * - warnOnce(...args): auto-key derived from args (args[0] string preferred, else JSON(args)).
+ *
+ * Configuration source:
+ * - main: process.env.TOT_LOG_LEVEL
+ * - renderer: window.TOT_LOG_LEVEL or localStorage('tot.logLevel')
+ */
+
 const LEVELS = { silent: 0, error: 1, warn: 2, info: 3, debug: 4 };
 const LEVEL_NAMES = Object.keys(LEVELS);
 
 function normalizeLevelName(x) {
   const s = String(x || '').toLowerCase().trim();
-  return LEVELS[s] !== undefined ? s : 'warn'; // default = WARN (mínimo ruido)
+  return LEVELS[s] !== undefined ? s : 'warn'; // default = WARN (minimum noise)
 }
 
 let currentLevelName = normalizeLevelName(process.env.TOT_LOG_LEVEL);
 let currentLevel = LEVELS[currentLevelName];
 
-// Dedupe global para warnOnce/errorOnce (por proceso)
+// Global dedupe for warnOnce/errorOnce (per process)
 const once = new Set();
 
 function should(levelName) {
@@ -24,11 +52,11 @@ function prefix(levelName, scope) {
 }
 
 function keyFromArgs(scope, levelName, args) {
-  // Si el primer arg es string, sirve como key natural
+  // If the first arg is string, it serves as the natural key
   const first = args[0];
   if (typeof first === 'string' && first.length <= 200) return `${levelName}:${scope}:${first}`;
 
-  // Fallback: clave genérica estable
+  // Fallback: stable generic key
   try {
     return `${levelName}:${scope}:${JSON.stringify(args)}`.slice(0, 500);
   } catch {
@@ -41,13 +69,13 @@ function makeLogger(scope) {
 
   return {
     debug: (...args) => { if (should('debug')) console.debug(prefix('debug', sc), ...args); },
-    info:  (...args) => { if (should('info'))  console.log(prefix('info', sc), ...args); },
+    info:  (...args) => { if (should('info'))  console.info(prefix('info', sc), ...args); },
     warn:  (...args) => { if (should('warn'))  console.warn(prefix('warn', sc), ...args); },
     error: (...args) => { if (should('error')) console.error(prefix('error', sc), ...args); },
 
-    // Firma flexible:
-    // - warnOnce(key, ...args)  -> si key y hay args, dedupe por key
-    // - warnOnce(...args)       -> dedupe por args[0] string o JSON(args)
+    // Flexible once-logging:
+    // - warnOnce(key, ...args)  -> if key and args, dedupe for key
+    // - warnOnce(...args)       -> dedupe for args[0] string or JSON(args)
     warnOnce: (keyOrFirst, ...rest) => {
       if (!should('warn')) return;
 
