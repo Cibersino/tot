@@ -8,6 +8,12 @@
 
 * Nuevas funciones *
 
+- Guardar y cargar current texts
+  - Agregar botones cargar y guardar en el Selector de texto de la ventana principal
+  - Al guardar, se guarda el texto vigente actual en alguna carpeta.
+  - Al cargar, se reemplaza el texto vigente por el seleccionado.
+  - Se guardan y cargan desde una carpeta del usuario (puede ser una subcarpeta de config).
+
 - Extractores de caracteres y palabras en:
   - Archivos de imagen:
     - Ejemplo: foto de una página común de un libro
@@ -25,6 +31,26 @@
         - hechos de imagenes
         - protegido
   - (Averiguar sistema OCR como extractor de palabras)
+
+- Selector de Tareas:
+  - Objetivo: sumar el tiempo estimado de varios textos "vigentes".
+  - Modo: 
+    - Hay un selector de tareas en la ventana principal. 
+      - Se pueden crear, guardar y cargar tareas (a partir de un selector). Muy similar al selector de presets.
+      - Al crear una Tarea, se abre una tabla editable, botones cargar y guardar al lado de cada fila, y un cuadro al comienzo con el "Tiempo total":
+      - Las columans de cada tabla de tarea: Texto; Tiempo; %C; Falta; Tipo; Enlace; Comentario.
+        - Texto: el nombre del texto. El usuario pone lo que quiera.
+        - Tiempo: el tiempo estimado. El usuario debe ponerlo, bajo un formato estricto.
+        - %C: El porcentaje de completado. El usuario debe ponerlo, bajo formato estricto. Por defecto: 0%.
+        - Falta: El tiempo faltante. Es el tiempo * 100-"%C". 
+        - Tipo: puede ser "web", "doc", "pdf", etc. Lo pone el usuario. Se le proponen opciones, pero puede poner lo que quiera.
+        - Enlace: un ícono que contiene la pagina o el path del archivo. Al seleccionarlo, abre.
+        - Comentario: Es un ícono con tooltip hoover editable (para reducir espacio).
+      - El "Tiempo total": la suma de la columna falta.  
+      - Botones guardar y cargar. Guardan o cargan la fila desde una tabla general ordenada alfabéticamente. 
+        - "Guardar" guarda la fila seleccionada en una tabla interna de la app (todas las columnas menos "%C" y "Falta"). Pregunta si guarda o no el comentario antes de guardar.
+        - "Cargar" abre la tabla interna y permite seleccionar una fila y cargarla o eliminarla. Al cargarla se agrega a la tabla de tareas.
+  - Cada tablas de tarea y la tabla general, se localizan dentro de una subcarpeta de config.
 
 - Test de velocidad de lectura:
   - Al abrir este test, primero se informa al usuario en que consiste (avisando que se sobrescribirá el texto vigente, entre otras cosas).
