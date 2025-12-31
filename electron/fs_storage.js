@@ -1,5 +1,6 @@
 // electron/fs_storage.js
 // Disk access utilities shared by the main process
+'use strict';
 
 const fs = require('fs');
 const path = require('path');

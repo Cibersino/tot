@@ -1,4 +1,6 @@
 // public/js/i18n.js
+'use strict';
+
 (() => {
   const log = window.getLogger('i18n');
 

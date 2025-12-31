@@ -1,7 +1,6 @@
 // electron/menu_builder.js
-//
-// Construction of the native menu and dialog texts of main,
-// from i18n/<lang>/main.json.
+// Construction of the native menu and dialog texts of main from i18n/<lang>/main.json.
+'use strict';
 
 const { app, Menu } = require('electron');
 const fs = require('fs');

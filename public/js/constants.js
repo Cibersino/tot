@@ -1,4 +1,6 @@
 // public/js/constants.js
+'use strict';
+
 (() => {
   const DEFAULTS = {
     MAX_TEXT_CHARS: 10_000_000, // Fallback for renderer. Real limit from main.js

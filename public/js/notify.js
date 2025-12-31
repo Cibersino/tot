@@ -1,4 +1,6 @@
 // public/js/notify.js
+'use strict';
+
 (() => {
   function resolveText(key) {
     const { RendererI18n } = window || {};

@@ -1,4 +1,6 @@
 // public/js/count.js
+'use strict';
+
 (() => {
   const log = window.getLogger('count');
 

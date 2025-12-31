@@ -1,4 +1,6 @@
 // electron/editor_preload.js
+'use strict';
+
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('editorAPI', {

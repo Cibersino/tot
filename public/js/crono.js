@@ -1,4 +1,6 @@
 // public/js/crono.js
+'use strict';
+
 (() => {
   const log = window.getLogger('crono');
 

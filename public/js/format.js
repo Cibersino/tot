@@ -1,4 +1,6 @@
 // public/js/fomat.js
+'use strict';
+
 (() => {
   const log = window.getLogger('format');
 

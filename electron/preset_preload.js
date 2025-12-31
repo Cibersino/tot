@@ -1,4 +1,6 @@
 // electron/preset_preload.js
+'use strict';
+
 const { contextBridge, ipcRenderer } = require('electron');
 const Log = require('./log');
 
