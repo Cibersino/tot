@@ -9,7 +9,7 @@
 // - Create and coordinate application windows (main, editor, preset modal, language picker, floating stopwatch).
 // - Initialize shared state backed by JSON files (settings + current text) via dedicated modules.
 // - Register IPC endpoints used by renderer windows.
-// - Keep the stopwatch state consistent across windows (specially the floating window) while the app is running.
+// - Keep the stopwatch state consistent across windows (especially the floating window) while the app is running.
 
 // =============================================================================
 // Imports (external + internal modules)
@@ -49,7 +49,7 @@ const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 // Ensure config directory exists before any module tries to read/write JSON.
 ensureConfigDir();
 
-// Convenience wrapper: warnOnce is used to avoid log spam in expected, repeated “ignored” failures.
+// Convenience wrapper: warnOnce is used to avoid log spam in expected, repeated "ignored" failures.
 const warnOnce = (...args) => log.warnOnce(...args);
 
 // Canonical source of the text limit.
@@ -76,8 +76,8 @@ textState.init({
 // - close dependent windows when quitting.
 
 let mainWin = null;     // Main window (index.html)
-let editorWin = null;   // Editor window (editor.html) — user edits current text
-let presetWin = null;   // Preset modal (preset_modal.html) — create/edit preset
+let editorWin = null;   // Editor window (editor.html) - user edits current text
+let presetWin = null;   // Preset modal (preset_modal.html) - create/edit preset
 let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating stopwatch window (flotante.html)
 
@@ -143,7 +143,7 @@ function unregisterShortcuts() {
 
 /**
  * Create the main application window.
- * This is the first “real” window after language selection (if needed).
+ * This is the first "real" window after language selection (if needed).
  */
 function createMainWindow() {
   // NOTE: useContentSize:true => width/height apply to content area (exclude window borders).
@@ -194,7 +194,7 @@ function createMainWindow() {
     }
   });
 
-  // When the main window is gone, exit the application (Windows/Linux behavior).
+  // When the main window is gone, quit the application (current behavior is cross-platform).
   mainWin.on('closed', () => {
     mainWin = null;
 
@@ -216,7 +216,7 @@ function createEditorWindow() {
   // Load initial window state (size/position/maximized) from editor_state.js.
   const state = editorState.loadInitialState(loadJson);
 
-  // Determine whether we have a valid saved “reduced” (non-maximized) state.
+  // Determine whether we have a valid saved "reduced" (non-maximized) state.
   const hasReduced =
     state &&
     state.reduced &&
@@ -447,7 +447,7 @@ updater.registerIpc(ipcMain, {
 });
 
 // =============================================================================
-// Floating window (Picture-in-Picture stopwatch) — window placement safety
+// Floating window - window placement safety
 // =============================================================================
 
 const FLOTANTE_PRELOAD = path.join(__dirname, 'flotante_preload.js');
@@ -476,7 +476,7 @@ function getWindowCenter(bounds) {
 }
 
 /**
- * Pick the display that “owns” the window center.
+ * Pick the display that "owns" the window center.
  * This is used when snapping the floating window inside the visible work area.
  */
 function getDisplayByWindowCenter(bounds) {
@@ -512,7 +512,7 @@ function snapWindowFullyIntoWorkArea(win) {
 /**
  * Work-area guard (cross-platform):
  * - Windows: uses will-move + moved (end-of-move event).
- * - macOS/Linux: uses a short “stability timer” after move events.
+ * - macOS/Linux: uses a short "stability timer" after move events.
  *
  * Goal:
  * - Keep the floating window fully visible (not hidden behind taskbar/dock or off-screen).
@@ -543,11 +543,11 @@ function installWorkAreaGuard(win, opts = {}) {
     });
 
     // Keep a no-op handler for symmetry; could host future cleanup.
-    win.on('closed', () => {});
+    win.on('closed', () => { });
     return;
   }
 
-  // macOS + Linux: approximate “end-of-move” via a short timer after the last move event.
+  // macOS + Linux: approximate "end-of-move" via a short timer after the last move event.
   const endMoveMs = typeof opts.endMoveMs === 'number' ? opts.endMoveMs : 80;
 
   let lastMoveAt = 0;
@@ -597,10 +597,10 @@ async function createFlotanteWindow(options = {}) {
     // Optional: apply forced position if requested.
     if (options && (typeof options.x === 'number' || typeof options.y === 'number')) {
       try {
-        flotanteWin.setBounds({
-          x: options.x || flotanteWin.getBounds().x,
-          y: options.y || flotanteWin.getBounds().y,
-        });
+        const b = flotanteWin.getBounds();
+        const nx = (typeof options.x === 'number') ? options.x : b.x;
+        const ny = (typeof options.y === 'number') ? options.y : b.y;
+        flotanteWin.setBounds({ x: nx, y: ny });
       } catch (err) {
         warnOnce('flotanteWin.setBounds', 'flotanteWin.setBounds failed (ignored):', err);
       }
@@ -659,7 +659,7 @@ async function createFlotanteWindow(options = {}) {
 
   installWorkAreaGuard(win, { endMoveMs: 80 });
 
-  // Track if the window is closing to avoid noisy “load failed” logs during stress open/close.
+  // Track if the window is closing to avoid noisy "load failed" logs during stress open/close.
   let winClosing = false;
   win.on('close', () => { winClosing = true; });
 
@@ -734,8 +734,8 @@ function getCronoState() {
 }
 
 /**
- * Broadcast the current stopwatch state to floating window.
- * These sends are best-effort: floating window might not exist or might be closing.
+ * Broadcast the current stopwatch state to renderer windows (main + floating).
+ * These sends are best-effort: a target window might not exist or might be closing.
  */
 function broadcastCronoState() {
   const state = getCronoState();
@@ -751,25 +751,23 @@ function broadcastCronoState() {
   } catch (err) {
     warnOnce('send.crono-state.flotanteWin', 'send crono-state to flotanteWin failed (ignored):', err);
   }
+}
 
-  try {
-    if (editorWin && !editorWin.isDestroyed()) editorWin.webContents.send('crono-state', state);
-  } catch (err) {
-    warnOnce('send.crono-state.editorWin', 'send crono-state to editorWin failed (ignored):', err);
+function stopCronoIntervalIfIdle() {
+  if (cronoInterval && !crono.running) {
+    clearInterval(cronoInterval);
+    cronoInterval = null;
   }
 }
 
 function ensureCronoInterval() {
   if (cronoInterval) return;
-
   cronoInterval = setInterval(() => {
-    broadcastCronoState();
-
-    // Optimization: stop the interval if nothing is running and no floating window exist.
-    if (!crono.running && !mainWin && !flotanteWin && !editorWin) {
-      clearInterval(cronoInterval);
-      cronoInterval = null;
+    if (!crono.running) {
+      stopCronoIntervalIfIdle();
+      return;
     }
+    broadcastCronoState();
   }, CRONO_BROADCAST_MS);
 }
 
@@ -788,6 +786,7 @@ function stopCrono() {
     crono.startTs = null;
     crono.running = false;
     broadcastCronoState();
+    stopCronoIntervalIfIdle();
   }
 }
 
@@ -796,6 +795,7 @@ function resetCrono() {
   crono.startTs = null;
   crono.elapsed = 0;
   broadcastCronoState();
+  stopCronoIntervalIfIdle();
 }
 
 /**
@@ -819,6 +819,7 @@ function setCronoElapsed(ms) {
   crono.startTs = null;
   crono.running = false;
   broadcastCronoState();
+  stopCronoIntervalIfIdle();
 }
 
 // =============================================================================
