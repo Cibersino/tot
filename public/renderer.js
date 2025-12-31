@@ -1,4 +1,6 @@
 // public/renderer.js
+/* global Notify */
+
 const log = window.getLogger('renderer');
 
 log.debug('Renderer main starting...');

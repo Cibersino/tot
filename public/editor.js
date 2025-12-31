@@ -1,4 +1,6 @@
 // public/editor.js
+/* global Notify */
+
 const log = window.getLogger('editor');
 
 log.debug('Manual editor starting...');
