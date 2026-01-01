@@ -4,10 +4,10 @@
   --border: #e6e6e6;
   --gap: 8px;
   --bottom-height: 52px;
-  /* altura de la barra inferior */
+  /* bottom bar height */
 }
 
-/* Normalize básicos */
+/* Basic Normalize */
 html,
 body {
   height: 100%;
@@ -17,7 +17,7 @@ body {
   box-sizing: border-box;
 }
 
-/* Layout: columna vertical, textarea flexible */
+/* Layout: vertical column, flexible textarea */
 body {
   display: flex;
   flex-direction: column;
@@ -25,13 +25,13 @@ body {
   gap: 0;
 }
 
-/* Área de texto: ocupa todo el espacio disponible */
+/* Text area: occupies all available space */
 #editorArea {
   width: 100%;
   flex: 1 1 auto;
-  /* crecer y ocupar el espacio */
+  /* grow and occupy space */
   min-height: 0;
-  /* importante para que el flex funcione en algunos entornos */
+  /* important for the flex to work in some environments */
   box-sizing: border-box;
   padding: 12px;
   font-family: 'Baskervville', serif;
@@ -45,7 +45,7 @@ body {
   overflow: auto;
 }
 
-/* Barra inferior fija en el pie del modal */
+/* Fixed bottom bar on the foot of the modal */
 .bottom-bar {
   height: var(--bottom-height);
   min-height: var(--bottom-height);
@@ -59,14 +59,14 @@ body {
   gap: 12px;
 }
 
-/* Controles izquierdos (CALCULAR + checkbox) */
+/* Left controls (CALCULATE + checkbox) */
 .bottom-bar .left-controls {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* Botón CALCULAR */
+/* CALCULATE button */
 #btnCalc {
   padding: 8px 12px;
   border-radius: 6px;
@@ -82,7 +82,7 @@ body {
   cursor: default;
 }
 
-/* Checkbox label */
+/* checkbox label */
 .calc-label {
   display: inline-flex;
   align-items: center;
@@ -92,7 +92,7 @@ body {
   user-select: none;
 }
 
-/* Botón vaciar (alineado a la derecha) */
+/* Trash button (right aligned) */
 #btnTrash {
   display: inline-flex;
   align-items: center;
@@ -111,7 +111,7 @@ body {
   border-color: #e6bebe;
 }
 
-/* Animación simple para botones de la barra inferior */
+/* Simple animation for bottom bar buttons */
 #btnCalc,
 #btnTrash {
   transition: background 0.12s ease-out,
@@ -119,10 +119,10 @@ body {
     transform 0.05s linear;
 }
 
-/* Botón CALCULAR (solo cuando está habilitado) */
+/* CALCULATE button (only when enabled) */
 #btnCalc:not([disabled]):hover {
   background: #fff5f5;
-  /* mismo hover que el botón vaciar */
+  /* same hover as the trash button */
   border-color: #e6bebe;
 }
 
@@ -132,14 +132,14 @@ body {
   transform: translateY(1px);
 }
 
-/* Botón vaciar — estado presionado */
+/* Trash button - pressed state */
 #btnTrash:active {
   background: #ffe0e0;
   border-color: #d99b9b;
   transform: translateY(1px);
 }
 
-/* Pequeñas adaptaciones para ventanas pequeñas */
+/* Small adaptations for small windows */
 @media (max-width: 560px) {
   .bottom-bar {
     padding: 6px;

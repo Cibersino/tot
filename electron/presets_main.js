@@ -37,8 +37,8 @@ function loadPresetArrayFromJs(filePath) {
 }
 
 /**
- * Carga presets por defecto combinados (generales + por idioma).
- * Fuente: electron/presets/defaults_presets.js + defaults_presets_<lang>.js
+ * Loads combined default presets (general + per language).
+ * Source: electron/presets/defaults_presets.js + defaults_presets_<lang>.js
  */
 function loadDefaultPresetsCombined(lang) {
   const presetsDir = PRESETS_SOURCE_DIR;
@@ -53,8 +53,8 @@ function loadDefaultPresetsCombined(lang) {
 }
 
 /**
- * Copia inicial de presets por defecto desde electron/presets/*.js
- * hacia config/presets_defaults/*.json (solo si no existen).
+ * Initial copy of default presets from electron/presets/*.js
+ * to config/presets_defaults/*.json (only if they do not exist).
  */
 function copyDefaultPresetsIfMissing() {
   try {
@@ -102,11 +102,11 @@ function copyDefaultPresetsIfMissing() {
 }
 
 /**
- * Registro de handlers IPC relacionados con presets.
+ * Registration of IPC handlers related to presets.
  *
  * @param {Electron.IpcMain} ipcMain
  * @param {Object} opts
- * @param {Function} opts.getWindows - () => ({ mainWin, editorWin, presetWin, flotanteWin, langWin })
+ * @param {Function} opts.getWindows -() => ({ mainWin, editorWin, presetWin, floatingWin, langWin })
  */
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain) {
@@ -128,18 +128,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         settingsState.broadcastSettingsUpdated(settings, windows);
       } else {
         // Defensive fallback if for some reason it is not exported
-        const { mainWin, editorWin, presetWin, flotanteWin } = windows;
+        const { mainWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('settings-updated', settings);
-        }
-        if (editorWin && !editorWin.isDestroyed()) {
-          editorWin.webContents.send('settings-updated', settings);
-        }
-        if (presetWin && !presetWin.isDestroyed()) {
-          presetWin.webContents.send('settings-updated', settings);
-        }
-        if (flotanteWin && !flotanteWin.isDestroyed()) {
-          flotanteWin.webContents.send('settings-updated', settings);
         }
       }
     } catch (err) {
