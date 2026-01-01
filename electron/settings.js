@@ -8,6 +8,14 @@ const Log = require('./log');
 
 const log = Log.get('settings');
 
+const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
+const getLangBase = (lang) => {
+    const tag = normalizeLangTag(lang);
+    if (!tag) return '';
+    const idx = tag.indexOf('-');
+    return idx > 0 ? tag.slice(0, idx) : tag;
+};
+
 // Dependencies injected from main.js
 let _loadJson = null;
 let _saveJson = null;
@@ -22,7 +30,7 @@ let _currentSettings = null;
  */
 function loadNumberFormatDefaults(lang) {
     try {
-        const langCode = (lang || 'es').toLowerCase();
+        const langCode = getLangBase(lang) || 'es';
         const filePath = path.join(
             __dirname,
             '..',
@@ -84,36 +92,34 @@ function normalizeSettings(s) {
     }
 
     // Ensure numberFormatting has defaults for current language (from i18n if available)
-    const lang =
+    const langTag =
         s.language && typeof s.language === 'string' && s.language.trim()
-            ? s.language.trim()
-            : 'es';
+            ? normalizeLangTag(s.language)
+            : '';
+    const langBase = getLangBase(langTag) || 'es';
+    if (langTag) s.language = langTag;
 
     // If legacy presets exist, migrate them once into the bucket of the current language and drop the old field.
     if (Array.isArray(s.presets)) {
-        if (!Array.isArray(s.presets_by_language[lang])) {
-            s.presets_by_language[lang] = s.presets.slice();
+        if (!Array.isArray(s.presets_by_language[langBase])) {
+            s.presets_by_language[langBase] = s.presets.slice();
         }
         delete s.presets;
     }
 
-    if (!Array.isArray(s.presets_by_language[lang])) {
-        s.presets_by_language[lang] = [];
+    if (!Array.isArray(s.presets_by_language[langBase])) {
+        s.presets_by_language[langBase] = [];
     }
 
-    if (!s.numberFormatting[lang]) {
-        const nf = loadNumberFormatDefaults(lang);
+    if (!s.numberFormatting[langBase]) {
+        const nf = loadNumberFormatDefaults(langBase);
         if (nf && nf.thousands && nf.decimal) {
-            s.numberFormatting[lang] = {
+            s.numberFormatting[langBase] = {
                 separadorMiles: nf.thousands,
                 separadorDecimal: nf.decimal,
             };
         } else {
-            // simple fallback
-            s.numberFormatting[lang] =
-                lang === 'en'
-                    ? { separadorMiles: ',', separadorDecimal: '.' }
-                    : { separadorMiles: '.', separadorDecimal: ',' };
+            s.numberFormatting[langBase] = { separadorMiles: '.', separadorDecimal: ',' };
         }
     }
 
@@ -228,27 +234,24 @@ function registerIpc(
     // set-language: saves language, ensures numberFormatting and rebuilds menu
     ipcMain.handle('set-language', async (_event, lang) => {
         try {
-            const chosen = String(lang || '').trim();
-            const effectiveLang = chosen || 'es';
+            const chosenRaw = String(lang || '');
+            const chosen = normalizeLangTag(chosenRaw);
+            const effectiveLang = chosen || '';
+            const base = getLangBase(effectiveLang) || 'es';
 
             let settings = getSettings();
             settings.language = chosen;
 
             settings.numberFormatting = settings.numberFormatting || {};
-            if (!settings.numberFormatting[effectiveLang]) {
-                const nf = loadNumberFormatDefaults(effectiveLang);
+            if (!settings.numberFormatting[base]) {
+                const nf = loadNumberFormatDefaults(base);
                 if (nf && nf.thousands && nf.decimal) {
-                    settings.numberFormatting[effectiveLang] = {
+                    settings.numberFormatting[base] = {
                         separadorMiles: nf.thousands,
                         separadorDecimal: nf.decimal,
                     };
-                } else if (effectiveLang === 'en') {
-                    settings.numberFormatting[effectiveLang] = {
-                        separadorMiles: ',',
-                        separadorDecimal: '.',
-                    };
                 } else {
-                    settings.numberFormatting[effectiveLang] = {
+                    settings.numberFormatting[base] = {
                         separadorMiles: '.',
                         separadorDecimal: ',',
                     };
@@ -258,7 +261,7 @@ function registerIpc(
             settings = saveSettings(settings);
 
             if (typeof setCurrentLanguage === 'function') {
-                setCurrentLanguage(effectiveLang);
+                setCurrentLanguage(effectiveLang || 'es');
             }
 
             const windows = typeof getWindows === 'function' ? getWindows() : {};
@@ -330,24 +333,20 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
     try {
         let settings = getSettings();
         if (!settings.language || settings.language === '') {
-            const lang = fallbackLang || 'es';
+            const lang = normalizeLangTag(fallbackLang);
+            const base = getLangBase(lang) || 'es';
             settings.language = lang;
             settings.numberFormatting = settings.numberFormatting || {};
 
-            if (!settings.numberFormatting[lang]) {
-                const nf = loadNumberFormatDefaults(lang);
+            if (!settings.numberFormatting[base]) {
+                const nf = loadNumberFormatDefaults(base);
                 if (nf && nf.thousands && nf.decimal) {
-                    settings.numberFormatting[lang] = {
+                    settings.numberFormatting[base] = {
                         separadorMiles: nf.thousands,
                         separadorDecimal: nf.decimal,
                     };
-                } else if (lang === 'en') {
-                    settings.numberFormatting[lang] = {
-                        separadorMiles: ',',
-                        separadorDecimal: '.',
-                    };
                 } else {
-                    settings.numberFormatting[lang] = {
+                    settings.numberFormatting[base] = {
                         separadorMiles: '.',
                         separadorDecimal: ',',
                     };

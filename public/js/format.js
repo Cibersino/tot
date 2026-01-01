@@ -6,6 +6,14 @@
 
   log.debug('[format.js] module loaded');
 
+  const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
+  const getLangBase = (lang) => {
+    const tag = normalizeLangTag(lang);
+    if (!tag) return '';
+    const idx = tag.indexOf('-');
+    return idx > 0 ? tag.slice(0, idx) : tag;
+  };
+
   function getTimeParts(words, wpm) {
     if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };
     const totalSeconds = Math.round((words / wpm) * 60);
@@ -22,13 +30,11 @@
   }
 
   const obtenerSeparadoresDeNumeros = async (idioma, settingsCache) => {
-    const lang = (idioma || '').toLowerCase() || 'es';
+    const tag = normalizeLangTag(idioma) || 'es';
+    const lang = getLangBase(tag) || 'es';
     const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
     if (nf && nf[lang]) return nf[lang];
 
-    if (lang.startsWith('en')) {
-      return { separadorMiles: ',', separadorDecimal: '.' };
-    }
     return { separadorMiles: '.', separadorDecimal: ',' };
   };
 

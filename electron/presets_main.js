@@ -16,7 +16,7 @@ const menuBuilder = require('./menu_builder');
 const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
 
 // Helpers: presets defaults (general + per language if exists)
-function sanitizeLangCode(lang) {
+function normalizeLangBase(lang) {
   if (typeof lang !== 'string') return '';
   const base = lang.trim().toLowerCase().split(/[-_]/)[0];
   return /^[a-z0-9]+$/.test(base) ? base : '';
@@ -43,7 +43,7 @@ function loadPresetArrayFromJs(filePath) {
 function loadDefaultPresetsCombined(lang) {
   const presetsDir = PRESETS_SOURCE_DIR;
   const combined = loadPresetArrayFromJs(path.join(presetsDir, 'defaults_presets.js')).slice();
-  const langCode = sanitizeLangCode(lang);
+  const langCode = normalizeLangBase(lang);
   if (langCode) {
     const langFile = path.join(presetsDir, `defaults_presets_${langCode}.js`);
     const langPresets = loadPresetArrayFromJs(langFile);
@@ -145,11 +145,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       s.language && typeof s.language === 'string' && s.language.trim()
         ? s.language.trim()
         : 'es';
-    return sanitizeLangCode(lang) || 'es';
+    return normalizeLangBase(lang) || 'es';
   }
 
   function getUserPresets(settings, lang) {
-    const langCode = sanitizeLangCode(lang) || 'es';
+    const langCode = normalizeLangBase(lang) || 'es';
     if (typeof settings.presets_by_language !== 'object' || settings.presets_by_language === null || Array.isArray(settings.presets_by_language)) {
       settings.presets_by_language = {};
     }

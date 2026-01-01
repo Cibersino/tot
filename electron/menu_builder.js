@@ -9,28 +9,48 @@ const Log = require('./log');
 
 const log = Log.get('menu');
 
+const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
+const getLangBase = (lang) => {
+    const tag = normalizeLangTag(lang);
+    if (!tag) return '';
+    const idx = tag.indexOf('-');
+    return idx > 0 ? tag.slice(0, idx) : tag;
+};
+
 // Helpers: load main (menu/dialog) translations from i18n
 function loadMainTranslations(lang) {
-    const langCode = (lang || 'es').toLowerCase() || 'es';
-    const file = path.join(__dirname, '..', 'i18n', langCode, 'main.json');
-    try {
-        if (!fs.existsSync(file)) {
-            log.warn('[menu_builder] main.json no found for', langCode, 'in', file);
-            return null;
+    const requested = normalizeLangTag(lang) || 'es';
+    const base = getLangBase(requested) || 'es';
+    const candidates = [];
+    if (requested) candidates.push(requested);
+    if (base && base !== requested) candidates.push(base);
+    if (!candidates.includes('es')) candidates.push('es');
+    for (const langCode of candidates) {
+        const langBase = getLangBase(langCode) || langCode;
+        const files = [];
+        if (langCode.includes('-')) {
+            files.push(path.join(__dirname, '..', 'i18n', langBase, langCode, 'main.json'));
         }
-        let raw = fs.readFileSync(file, 'utf8');
-        // Remove BOM UTF-8 if it exists
-        raw = raw.replace(/^\uFEFF/, '');
-        return JSON.parse(raw || '{}');
-    } catch (err) {
-        log.error('[menu_builder] Error loading translations from main.json:', err);
-        return null;
+        files.push(path.join(__dirname, '..', 'i18n', langCode, 'main.json'));
+        try {
+            for (const file of files) {
+                if (!fs.existsSync(file)) {
+                    continue;
+                }
+                let raw = fs.readFileSync(file, 'utf8');
+                // Remove BOM UTF-8 if it exists
+                raw = raw.replace(/^\uFEFF/, '');
+                return JSON.parse(raw || '{}');
+            }
+        } catch (err) {
+            log.error('[menu_builder] Error loading translations from main.json:', err);
+        }
     }
+    return {};
 }
 
 function getDialogTexts(lang) {
-    const langCode = (lang || 'es').toLowerCase() || 'es';
-    const tr = loadMainTranslations(langCode);
+    const tr = loadMainTranslations(lang);
     const tMain = tr && tr.main ? tr.main : {};
     return tMain.dialog || {};
 }
@@ -44,7 +64,7 @@ function getDialogTexts(lang) {
  * @param {Function} [opts.onOpenLanguage] - Callback to open the language selection window.
  */
 function buildAppMenu(lang, opts = {}) {
-    const effectiveLang = (lang || 'es').toLowerCase();
+    const effectiveLang = normalizeLangTag(lang) || 'es';
     const tr = loadMainTranslations(effectiveLang) || {};
     const tMain = tr.main || {};
     const m = tMain.menu || {};

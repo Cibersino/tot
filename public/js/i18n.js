@@ -9,21 +9,44 @@
   let rendererTranslations = null;
   let rendererTranslationsLang = null;
 
+  const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
+  const getLangBase = (lang) => {
+    const tag = normalizeLangTag(lang);
+    if (!tag) return '';
+    const idx = tag.indexOf('-');
+    return idx > 0 ? tag.slice(0, idx) : tag;
+  };
+
   async function loadRendererTranslations(lang) {
-    const target = (lang || '').toLowerCase() || 'es';
-    if (rendererTranslations && rendererTranslationsLang === target) return rendererTranslations;
-    try {
-      const resp = await fetch(`../i18n/${target}/renderer.json`);
-      if (resp && resp.ok) {
-        const raw = await resp.text();
-        const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
-        const data = JSON.parse(cleaned || '{}');
-        rendererTranslations = data;
-        rendererTranslationsLang = target;
-        return data;
+    const requested = normalizeLangTag(lang) || 'es';
+    if (rendererTranslations && rendererTranslationsLang === requested) return rendererTranslations;
+    const base = getLangBase(requested) || 'es';
+    const candidates = [];
+    if (requested) candidates.push(requested);
+    if (base && base !== requested) candidates.push(base);
+    if (!candidates.includes('es')) candidates.push('es');
+    for (const target of candidates) {
+      const targetBase = getLangBase(target) || target;
+      const paths = [];
+      if (target.includes('-')) {
+        paths.push(`../i18n/${targetBase}/${target}/renderer.json`);
       }
-    } catch (err) {
-      log.warn('[i18n] Unable to load renderer translations:', err);
+      paths.push(`../i18n/${target}/renderer.json`);
+      try {
+        for (const p of paths) {
+          const resp = await fetch(p);
+          if (resp && resp.ok) {
+            const raw = await resp.text();
+            const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
+            const data = JSON.parse(cleaned || '{}');
+            rendererTranslations = data;
+            rendererTranslationsLang = requested;
+            return data;
+          }
+        }
+      } catch (err) {
+        log.warn('[i18n] Unable to load renderer translations:', err);
+      }
     }
     rendererTranslations = null;
     rendererTranslationsLang = null;

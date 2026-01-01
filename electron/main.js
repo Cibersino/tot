@@ -423,11 +423,11 @@ settingsState.registerIpc(ipcMain, {
   }),
   buildAppMenu,
   setCurrentLanguage: (lang) => {
-    const trimmed =
-      lang && typeof lang === 'string' && lang.trim()
-        ? lang.trim()
+    const normalized =
+      lang && typeof lang === 'string'
+        ? lang.trim().toLowerCase().replace(/_/g, '-')
         : 'es';
-    currentLanguage = trimmed;
+    currentLanguage = normalized || 'es';
   },
 });
 
