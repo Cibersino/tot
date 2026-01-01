@@ -17,8 +17,8 @@ let _settingsFile = null;
 let _currentSettings = null;
 
 /**
- * Carga los defaults de formato numerico desde i18n/<lang>/numberFormat.json
- * Retorna { thousands, decimal } o null si no se pudo cargar.
+ * Load the number format defaults from i18n/<lang>/numberFormat.json
+ * Returns { thousands, decimal } or null if the load failed.
  */
 function loadNumberFormatDefaults(lang) {
     try {
@@ -35,7 +35,7 @@ function loadNumberFormatDefaults(lang) {
         let raw = fs.readFileSync(filePath, 'utf8');
         if (!raw) return null;
 
-        // Remove UTF-8 BOM if exists (avoids SyntaxError: Unexpected token '∩╗┐')
+        // Remove UTF-8 BOM if exists
         raw = raw.replace(/^\uFEFF/, '');
 
         const json = JSON.parse(raw);
@@ -65,8 +65,8 @@ function loadNumberFormatDefaults(lang) {
 }
 
 /**
- * Normalizar settings: asegurar campos por defecto sin sobrescribir los existentes.
- * Mantiene la logica anterior de main.js.
+ * Normalize settings: ensure default fields without overwriting existing ones.
+ * Maintains the previous main.js logic.
  */
 function normalizeSettings(s) {
     s = s || {};
@@ -107,10 +107,10 @@ function normalizeSettings(s) {
 }
 
 /**
- * Inicializacion desde main.js
- * - Inyecta loadJson/saveJson y ruta de SETTINGS_FILE.
- * - Lee, normaliza y persiste user_settings.json.
- * - Deja _currentSettings cacheado.
+ * Initialization from main.js
+ * -Inject loadJson/saveJson and SETTINGS_FILE path.
+ * -Read, normalize and persist user_settings.json.
+ * -Leave _currentSettings cached.
  */
 function init({ loadJson, saveJson, settingsFile }) {
     if (typeof loadJson !== 'function' || typeof saveJson !== 'function') {
@@ -138,7 +138,7 @@ function init({ loadJson, saveJson, settingsFile }) {
 }
 
 /**
- * Devuelve el settings actual normalizado desde cache o disco.
+ * Returns the current settings normalized from cache or disk.
  */
 function getSettings() {
     if (!_loadJson || !_settingsFile) {
@@ -151,7 +151,7 @@ function getSettings() {
 }
 
 /**
- * Normaliza y persiste settings, actualizando el cache.
+ * Normalizes and persists settings, updating the cache.
  */
 function saveSettings(nextSettings) {
     if (!nextSettings) return getSettings();
@@ -168,24 +168,15 @@ function saveSettings(nextSettings) {
 }
 
 /**
- * Broadcast centralizado de 'settings-updated' a ventanas conocidas.
+ * Centralized broadcast of 'settings-updated' to the main window.
  */
 function broadcastSettingsUpdated(settings, windows) {
     if (!windows) return;
-    const { mainWin, editorWin, presetWin, flotanteWin } = windows;
+    const { mainWin } = windows;
 
     try {
         if (mainWin && !mainWin.isDestroyed()) {
             mainWin.webContents.send('settings-updated', settings);
-        }
-        if (editorWin && !editorWin.isDestroyed()) {
-            editorWin.webContents.send('settings-updated', settings);
-        }
-        if (presetWin && !presetWin.isDestroyed()) {
-            presetWin.webContents.send('settings-updated', settings);
-        }
-        if (flotanteWin && !flotanteWin.isDestroyed()) {
-            flotanteWin.webContents.send('settings-updated', settings);
         }
     } catch (err) {
         log.error('[settings] Error notifying settings-updated:', err);
@@ -193,10 +184,10 @@ function broadcastSettingsUpdated(settings, windows) {
 }
 
 /**
- * Registra IPC relacionados con configuracion general:
- * - get-settings
- * - set-language
- * - set-mode-conteo
+ * Registers IPC related to general configuration:
+ * -get-settings
+ * -set-language
+ * -set-mode-count
  */
 function registerIpc(
     ipcMain,
@@ -317,9 +308,9 @@ function registerIpc(
 }
 
 /**
- * Fallback para el caso en que el modal de idioma se cierra sin seleccionar nada.
- * Si settings.language esta vacio, fuerza fallbackLang (por defecto 'es')
- * y asegura numberFormatting[fallbackLang].
+ * Fallback for the case where the language modal closes without selecting anything.
+ * If settings.language is empty, force fallbackLang (default 'es')
+ * and ensures numberFormatting[fallbackLang].
  */
 function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
     try {

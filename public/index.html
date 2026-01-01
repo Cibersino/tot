@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<!-- public/index.html -->
+<!doctype html>
 <html lang="es">
 
 <head>
@@ -18,12 +19,12 @@
     <img id="devLogo" src="./assets/logo-cibersin.svg" alt="Cibersin" />
   </div>
 
-  <!-- Contenedor principal -->
+  <!-- Main container -->
   <div class="app-container">
-    <!-- Loader de editor (esquina superior derecha) -->
+    <!-- Editor Loader (top right corner) -->
     <div id="editorLoader" class="editor-loader" aria-live="polite" title="Cargando editor"></div>
 
-    <!-- 1) SELECTOR DE TEXTO -->
+    <!-- 1) TEXT SELECTOR -->
     <section class="selector-text" aria-labelledby="selector-title">
       <h3 id="selector-title" class="section-title">Primera y última parte del texto analizado:</h3>
       <pre id="textPreview">(vacío)</pre>
@@ -37,7 +38,7 @@
       </div>
     </section>
 
-    <!-- 2) VELOCIDAD DE LECTURA -->
+    <!-- 2) READING SPEED -->
     <aside class="velocity" aria-labelledby="vel-title">
       <h4 id="vel-title" class="section-title">VELOCIDAD DE LECTURA</h4>
       <div class="wpm-row">
@@ -56,13 +57,13 @@
       <div id="presetDescription" class="preset-description" aria-live="polite"></div>
     </aside>
 
-    <!-- 3) RESULTADOS DEL CONTEO -->
+    <!-- 3) COUNTING RESULTS -->
     <aside class="results" aria-labelledby="results-title">
       <h4 id="results-title" class="section-title">RESULTADOS DEL CONTEO</h4>
       <div class="result-highlight" role="status" aria-live="polite">
         <div class="big-time" id="resTime">⏱ Tiempo estimado de lectura: 0h 0m 0s</div>
       </div>
-      <!-- Row: resultados (izq) + toggle (derecha) -->
+      <!-- Row: results (left) + toggle (right) -->
       <div class="results-row">
         <div class="result-list">
           <div id="resWords">Palabras: 0</div>
@@ -82,7 +83,7 @@
       </div>
     </aside>
 
-    <!-- 4) CRONÓMETRO -->
+    <!-- 4) STOPWATCH -->
     <section class="cronometro" aria-labelledby="cron-title">
       <h4 id="cron-title" class="section-title">CRONÓMETRO</h4>
       <div class="crono-row">
@@ -102,12 +103,12 @@
       </div>
     </section>
 
-    <!-- 5) SECCIÓN DISPONIBLE -->
+    <!-- 5) AVAILABLE SECTION -->
     <section class="spare" aria-label="Sección disponible">
-      <!-- Espacio reservado para funciones futuras -->
+      <!-- Space reserved for future functions -->
     </section>
     
-    <!-- INFO MODAL MENÚ -->
+    <!-- MENU INFO MODAL -->
     <div id="infoModal" class="info-modal" aria-hidden="true" role="dialog" aria-labelledby="infoModalTitle"
       aria-modal="true">
       <div class="info-modal-backdrop" id="infoModalBackdrop"></div>
@@ -117,7 +118,7 @@
           <button id="infoModalClose" class="btn-standard" aria-label="Cerrar">🗙</button>
         </header>
         <main id="infoModalContent" class="info-modal-content" tabindex="0">
-          <!-- Contenido cargado dinámicamente -->
+          <!-- Dynamically loaded content -->
           <div class="info-loading">Cargando...</div>
         </main>
       </div>

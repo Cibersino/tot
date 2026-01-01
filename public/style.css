@@ -4,17 +4,17 @@
   --control-height: 26px;
   --bg-color: #f4ecd8;
 
-  /* Dimensiones */
+  /* Dimensions */
   --sidebar-width: 420px;
   --logo-width: 220px;
   --logo-height: 56px;
 
-  /* Espaciado (Padding) */
+  /* Padding */
   --section-padding-vertical: 4px;
   --section-padding-horizontal: 6px;
   --section-heading-gap: 4px;
 
-  /* Colores y estilos para secciones */
+  /* Colors and styles for sections */
   --selector-bg: var(--bg-color);
   --velocity-bg: var(--bg-color);
   --results-bg: var(--bg-color);
@@ -37,7 +37,7 @@ body {
   background: #fdf6e3;
 }
 
-/* Títulos */
+/* Titles */
 .section-title {
   margin: 0;
   padding: 0;
@@ -50,14 +50,14 @@ body {
   display: block;
 }
 
-/* Contenedor Principal */
+/* Main Container */
 .app-container {
   position: relative;
   height: 100vh;
   padding: calc(var(--logo-height) + 8px) 8px 8px 8px;
 }
 
-/* Estilo común para Secciones */
+/* Common style for Sections */
 .app-container>section,
 .app-container>aside {
   position: absolute;
@@ -67,7 +67,7 @@ body {
   background: var(--selector-bg);
 }
 
-/* Botones globales */
+/* Global buttons */
 .btn-standard {
   display: inline-flex;
   align-items: center;
@@ -106,7 +106,7 @@ body {
   cursor: not-allowed;
 }
 
-/* Logo (fijo) */
+/* Logo (fixed) */
 .logo-container {
   position: fixed;
   top: 6px;
@@ -135,7 +135,7 @@ body {
   pointer-events: auto;
 }
 
-/* SECCIÓN SELECTOR DE TEXTO */
+/* TEXT SELECTOR SECTION */
 .selector-text {
   top: 67px;
   left: 4px;
@@ -147,7 +147,7 @@ body {
   box-sizing: border-box;
 }
 
-/* Previsualización del Texto */
+/* Text Preview */
 pre#textPreview {
   background: #fafafa;
   color: #333;
@@ -167,7 +167,7 @@ pre#textPreview {
   margin-bottom: 4px;
 }
 
-/* SECCIÓN VELOCIDAD DE LECTURA */
+/* READING SPEED SECTION */
 .velocity {
   top: 228px;
   left: 4px;
@@ -211,7 +211,7 @@ select#presets {
   font-size: 15px;
 }
 
-/* Descripción de presets */
+/* Preset Description */
 .preset-description {
   margin-top: 6px;
   min-height: 22px;
@@ -219,20 +219,20 @@ select#presets {
   font-size: 13px;
 }
 
-/* SECCIÓN RESULTADOS DEL CONTEO */
+/* COUNTING RESULTS SECTION */
 .results {
-  position: relative;          /* necesario para que .help-row absolute funcione */
+  position: relative;          /* needed for .help-row absolute to work */
   top: 228px;
   left: 407px;
   height: 155px;
   width: 416px;
   background: var(--results-bg);
   border: 1px solid var(--section-border);
-  padding: 8px 10px;          /* algo más de padding para respiración */
+  padding: 8px 10px;
   box-sizing: border-box;
 }
 
-/* highlight (sin cambios importantes) */
+/* highlight */
 .result-highlight {
   background: #ffb6c1;
   border: 1px dashed #e6c07a;
@@ -247,27 +247,27 @@ select#presets {
   font-size: 18px;
 }
 
-/* Nueva fila que contiene la lista de resultados (izquierda) y el toggle (derecha) */
+/* Row containing the results list (left) and the toggle (right) */
 .results-row {
   display: flex;
-  align-items: flex-start;    /* alineamos al top para que el switch quede a la altura de "Palabras" */
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 6px;
 }
 
-/* Lista de resultados: columna, sin alterar la alineación vertical del conjunto */
+/* Results list */
 .result-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex: 1 1 auto;             /* ocupa el espacio disponible a la izquierda */
-  min-width: 0;               /* evita overflow en contenedores pequeños */
+  flex: 1 1 auto;             /* occupies the available space on the left */
+  min-width: 0;               /* avoids overflow in small containers */
   color: var(--text-color);
   font-size: 1.00rem;
 }
 
-/* Wrapper del toggle alineado a la derecha */
+/* Right-aligned toggle wrapper */
 .toggle-wrapper {
   display: flex;
   align-items: flex-start;
@@ -276,7 +276,7 @@ select#presets {
   flex: 0 0 auto;
 }
 
-/* Ajuste semántico de la etiqueta del toggle */
+/* Semantic tuning of the toggle label */
 .toggle-label {
   font-size: 0.9rem;
   font-weight: 500;
@@ -285,7 +285,7 @@ select#presets {
   color: var(--text-color);
 }
 
-/* Estilo estándar de switch */
+/* Standard switch style */
 .switch {
   position: relative;
   display: inline-block;
@@ -329,14 +329,14 @@ select#presets {
   transform: translateX(20px);
 }
 
-/* Mantener ayuda en la esquina inferior derecha */
+/* Help in the bottom right corner */
 .help-row {
   position: absolute;
   bottom: 6px;
   right: 6px;
 }
 
-/* SECCIÓN CRONÓMETRO */
+/* CHRONOMETER SECTION */
 .cronometro {
   top: 388px;
   left: 4px;
@@ -384,16 +384,16 @@ select#presets {
   align-items: center;
 }
 
-/* Wrapper específico del switch VF */
+/* VF switch specific wrapper */
 .vf-switch-wrapper {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto; /* empuja el switch hacia el borde derecho del grupo */
+  margin-left: auto; /* push the switch to the right edge of the group */
   flex: 0 0 auto;
 }
 
-/* Etiqueta "VF" situada a la derecha del switch */
+/* "VF" label located on the right of the switch */
 .vf-label {
   font-size: 0.9rem;
   font-weight: 600;
@@ -403,7 +403,7 @@ select#presets {
   line-height: 1;
 }
 
-/* SECCION DISPONIBLE */
+/* SPARE SECTION */
 .spare {
   top: 388px;
   left: 241px;
@@ -415,7 +415,7 @@ select#presets {
   box-sizing: border-box;
 }
 
-/* Info modal menú */
+/* Menu modal info */
 .info-modal {
   display: none;
   position: fixed;
@@ -454,14 +454,14 @@ select#presets {
 
 .info-modal-header {
   position: sticky;
-  top: 0;                         /* permanece en la parte superior del panel */
+  top: 0;                         /* stays at the top of the panel */
   display: flex;
   align-items: center;
-  justify-content: flex-end;      /* botón "Cerrar" a la derecha */
+  justify-content: flex-end;      /* "Close" button on the right */
   height: var(--info-header-height);
-  padding: 0;                /* espacio horizontal para el botón */
-  z-index: 1002;                  /* por encima del contenido */
-  background: transparent;        /* deja el contenido visible debajo si quieres */
+  padding: 0;                     /* horizontal space for button */
+  z-index: 1002;                  /* above the content */
+  background: transparent;        /* leave the content visible below */
 }
 
 .info-modal-header h2 {
@@ -513,7 +513,7 @@ select#presets {
   padding: 8px
 }
 
-/* Loader para apertura del editor manual */
+/* Loader for opening the manual editor */
 .editor-loader {
   position: absolute;
   top: 10px;
