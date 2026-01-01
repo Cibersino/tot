@@ -86,7 +86,7 @@
       "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.",
       "open_presets_fail": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.",
       "wip_cargador_texto": "WIP: Aquí se abrirá el cargador de archivos de texto en una futura versión.",
-      "wip_contador_imagen": "WIP: Aquí se abrirá el cargador de im?genes con texto en una futura versión.",
+      "wip_contador_imagen": "WIP: Aquí se abrirá el cargador de imágenes con texto en una futura versión.",
       "wip_test_velocidad": "WIP: Aquí se abrirá el test de velocidad de lectura en una futura versión.",
       "wip_diseno_skins": "WIP: Aquí se abrirá el selector de skins en una futura versión.",
       "wip_diseno_crono": "WIP: Aquí se abrirá la configuración del cronómetro flotante en una futura versión.",
@@ -95,7 +95,7 @@
       "wip_shortcuts": "WIP: Aquí se abrirá el selector de atajos en una futura versión.",
       "wip_avisos": "WIP: Aquí se mostrarán los avisos y novedades en una futura versión.",
       "wip_discord": "WIP: Aquí se abrirá el enlace a Discord en una futura versión.",
-      "wip_links_interes": "WIP: Aquí se mostrarán los links de inter?s en una futura versión.",
+      "wip_links_interes": "WIP: Aquí se mostrarán los links de interés en una futura versión.",
       "wip_colabora": "WIP: Aquí se mostrará la información para colaborar en una futura versión."
     },
     "editor_alerts": {
