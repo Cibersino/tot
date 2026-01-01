@@ -1,5 +1,5 @@
 // electron/presets_main.js
-// Presets logic in the main process: defaults, settings.presets, native dialogs and associated IPC handlers.
+// Presets logic in the main process: defaults, settings.presets_by_language, native dialogs and associated IPC handlers.
 'use strict';
 
 const fs = require('fs');
@@ -148,6 +148,17 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return sanitizeLangCode(lang) || 'es';
   }
 
+  function getUserPresets(settings, lang) {
+    const langCode = sanitizeLangCode(lang) || 'es';
+    if (typeof settings.presets_by_language !== 'object' || settings.presets_by_language === null || Array.isArray(settings.presets_by_language)) {
+      settings.presets_by_language = {};
+    }
+    if (!Array.isArray(settings.presets_by_language[langCode])) {
+      settings.presets_by_language[langCode] = [];
+    }
+    return settings.presets_by_language[langCode];
+  }
+
   // Replace {placeholders} in i18n dialog strings.
   // If a key is missing, keep the placeholder unchanged (useful for debugging).
   function interpolateDialogText(template, vars = {}) {
@@ -272,14 +283,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   ipcMain.handle('create-preset', (_event, preset) => {
     try {
       let settings = settingsState.getSettings();
-      settings.presets = settings.presets || [];
+      const lang = getEffectiveLang(settings);
+      const userPresets = getUserPresets(settings, lang);
 
       // If preset name already exists in user's presets, overwrite that one
-      const idx = settings.presets.findIndex((p) => p.name === preset.name);
+      const idx = userPresets.findIndex((p) => p.name === preset.name);
       if (idx >= 0) {
-        settings.presets[idx] = preset;
+        userPresets[idx] = preset;
       } else {
-        settings.presets.push(preset);
+        userPresets.push(preset);
       }
 
       settings = settingsState.saveSettings(settings);
@@ -352,8 +364,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const defaultsCombined = loadDefaultPresetsCombined(lang);
 
       // Normalize structures
-      settings.presets = settings.presets || [];
-      const idxUser = settings.presets.findIndex((p) => p.name === name);
+      const userPresets = getUserPresets(settings, lang);
+      const idxUser = userPresets.findIndex((p) => p.name === name);
       const isDefault = defaultsCombined.find((p) => p.name === name);
 
       // Ensure disabled_default_presets structure
@@ -367,7 +379,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         // There is a personalized preset with that name
         if (isDefault) {
           // Remove personalized preset and mark default as ignored
-          settings.presets.splice(idxUser, 1);
+          userPresets.splice(idxUser, 1);
           if (!settings.disabled_default_presets[lang].includes(name)) {
             settings.disabled_default_presets[lang].push(name);
           }
@@ -377,7 +389,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           return { ok: true, action: 'deleted_and_ignored' };
         } else {
           // Personalized only: delete it
-          settings.presets.splice(idxUser, 1);
+          userPresets.splice(idxUser, 1);
           settings = settingsState.saveSettings(settings);
           broadcast(settings);
 
@@ -429,7 +441,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const defaultsCombined = loadDefaultPresetsCombined(lang);
-      settings.presets = settings.presets || [];
+      const userPresets = getUserPresets(settings, lang);
 
       const defaultNames = new Set(
         defaultsCombined.map((p) => p && p.name).filter(Boolean)
@@ -438,7 +450,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const unignored = [];
 
       // Remove or keep user presets depending on whether they shadow defaults
-      settings.presets = settings.presets.filter((p) => {
+      settings.presets_by_language[lang] = userPresets.filter((p) => {
         if (!p || !p.name) return false;
         if (defaultNames.has(p.name)) {
           removedCustom.push(p.name);
@@ -543,9 +555,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const defaultsCombined = loadDefaultPresetsCombined(lang);
-      settings.presets = settings.presets || [];
+      const userPresets = getUserPresets(settings, lang);
 
-      const idxUser = settings.presets.findIndex(
+      const idxUser = userPresets.findIndex(
         (p) => p.name === originalName
       );
       const isDefault = defaultsCombined.find(
@@ -562,7 +574,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       if (idxUser >= 0) {
         if (isDefault) {
-          settings.presets.splice(idxUser, 1);
+          userPresets.splice(idxUser, 1);
           if (
             !settings.disabled_default_presets[lang].includes(originalName)
           ) {
@@ -570,7 +582,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           }
           deletedAction = 'deleted_and_ignored';
         } else {
-          settings.presets.splice(idxUser, 1);
+          userPresets.splice(idxUser, 1);
           deletedAction = 'deleted_custom';
         }
       } else if (isDefault) {
@@ -582,14 +594,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         deletedAction = 'ignored_default';
       }
 
-      const newList = settings.presets || [];
-      const idxNew = newList.findIndex((p) => p.name === newPreset.name);
+      const idxNew = userPresets.findIndex((p) => p.name === newPreset.name);
       if (idxNew >= 0) {
-        newList[idxNew] = newPreset;
+        userPresets[idxNew] = newPreset;
       } else {
-        newList.push(newPreset);
+        userPresets.push(newPreset);
       }
-      settings.presets = newList;
 
       settings = settingsState.saveSettings(settings);
       broadcast(settings);

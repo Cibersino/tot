@@ -30,7 +30,7 @@ function persistCurrentTextOnQuit() {
 
     // Maintain previous behavior: ensure SETTINGS_FILE exists
     if (loadJson && saveJson && SETTINGS_FILE) {
-      const settings = loadJson(SETTINGS_FILE, { language: 'es', presets: [] });
+      const settings = loadJson(SETTINGS_FILE, { language: 'es', presets_by_language: {}, disabled_default_presets: {} });
       if (!fs.existsSync(SETTINGS_FILE)) {
         saveJson(SETTINGS_FILE, settings);
       }
