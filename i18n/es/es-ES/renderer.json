@@ -1,0 +1,148 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Primera y última parte del texto analizado: (ES)",
+      "selector_empty": "(vacío)",
+      "buttons": {
+        "overwrite_clipboard": "Sobrescribir portapapeles (ES)",
+        "append_clipboard_newline": "Pegar portapapeles nueva línea (ES)",
+        "edit": "Editor manual (ES)",
+        "clear": "🗑 (ES)"
+      },
+      "tooltips": {
+        "overwrite_clipboard": "Reemplazar texto con el portapapeles (ES)",
+        "append_clipboard_newline": "Pegar portapapeles al final en nueva línea (ES)",
+        "edit": "Abrir ventana del texto completo (ES)",
+        "clear": "Vaciar texto vigente (ES)",
+        "new_preset": "Crear un nuevo preset (ES)",
+        "edit_preset": "Editar preset seleccionado (ES)",
+        "delete_preset": "Eliminar preset seleccionado (ES)",
+        "reset_presets": "Restaurar presets por defecto (ES)",
+        "help_button": "Información (pendiente) (ES)",
+        "flotante_window": "Ventana flotante (ES)"
+      },
+      "speed": {
+        "title": "VELOCIDAD DE LECTURA (ES)",
+        "wpm_label": "palabras por minuto (WPM) (ES)",
+        "new": "Nuevo (ES)",
+        "edit": "Editar (ES)",
+        "delete": "🗑 (ES)",
+        "reset_defaults": "R (ES)"
+      },
+      "results": {
+        "title": "RESULTADOS DEL CONTEO (ES)",
+        "time": "⏱ Tiempo estimado de lectura: {h}h {m}m {s}s (ES)",
+        "words": "Palabras: {n} (ES)",
+        "chars_no_space": "Chars w/o space: {n} (ES)",
+        "chars": "Caracteres: {n} (ES)",
+        "precise_mode": "Modo preciso (ES)",
+        "precise_tooltip": "Basado en Intl.Segmenter (ES)"
+      },
+      "crono": {
+        "title": "CRONÓMETRO (ES)",
+        "speed": "Velocidad: (ES)",
+        "controls_label": "Controles del cronómetro (ES)",
+        "flotante_short": "VF (ES)",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      }
+    },
+    "modal_preset": {
+      "title_new": "Nuevo preset (ES)",
+      "title_edit": "Editar preset (ES)",
+      "heading_new": "Crear nuevo preset (ES)",
+      "heading_edit": "Editar preset seleccionado (ES)",
+      "name": "Nombre:",
+      "wpm": "WPM:",
+      "description": "Descripción:",
+      "placeholder": "Descripción breve...",
+      "char_count": "{remaining} caracteres restantes",
+      "hint": "Los presets personalizados se guardan en la configuración del usuario. (ES)",
+      "cancel": "Cancelar (ES)",
+      "save": "Guardar (ES)"
+    },
+    "editor": {
+      "title": "Editor — Texto completo (ES)",
+      "placeholder": "Escribe o pega aquí...",
+      "calc_button": "CALCULAR (ES)",
+      "calc_while_typing": "Calcular mientras escribe (ES)",
+      "clear": "🗑 (ES)",
+      "clear_title": "Vaciar (ES)"
+    },
+    "alerts": {   
+      "clipboard_overflow": "El texto del portapapeles supera el tamaño máximo permitido y será truncado. (ES)",
+      "text_limit": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido. (ES)",
+      "clipboard_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola. (ES)",
+      "paste_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola. (ES)",
+      "clear_error": "Ocurrió un error al vaciar el texto. Revisa la consola. (ES)",
+      "modal_unavailable": "Funcionalidad de modal no disponible. (ES)",
+      "edit_none": "No hay ningún preset seleccionado para editar (ES)",
+      "preset_not_found": "Preset seleccionado no encontrado en caché. (ES)",
+      "edit_unavailable": "Funcionalidad de edición no disponible. (ES)",
+      "edit_error": "Ocurrió un error al intentar editar el preset. Revisa la consola. (ES)",
+      "delete_error": "Ocurrió un error al borrar el preset. Revisa la consola. (ES)",
+      "restore_error": "Ocurrió un error al restaurar presets. Revisa la consola. (ES)",
+      "open_presets_unsupported": "No es posible abrir la carpeta de presets en este entorno. (ES)",
+      "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola. (ES)",
+      "open_presets_fail": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles. (ES)",
+      "wip_cargador_texto": "WIP: Aquí se abrirá el cargador de archivos de texto en una futura versión. (ES)",
+      "wip_contador_imagen": "WIP: Aquí se abrirá el cargador de imágenes con texto en una futura versión. (ES)",
+      "wip_test_velocidad": "WIP: Aquí se abrirá el test de velocidad de lectura en una futura versión. (ES)",
+      "wip_diseno_skins": "WIP: Aquí se abrirá el selector de skins en una futura versión. (ES)",
+      "wip_diseno_crono": "WIP: Aquí se abrirá la configuración del cronómetro flotante en una futura versión. (ES)",
+      "wip_diseno_fuentes": "WIP: Aquí se abrirá el selector de fuentes en una futura versión. (ES)",
+      "wip_diseno_colores": "WIP: Aquí se abrirá el selector de colores en una futura versión. (ES)",
+      "wip_shortcuts": "WIP: Aquí se abrirá el selector de atajos en una futura versión. (ES)",
+      "wip_avisos": "WIP: Aquí se mostrarán los avisos y novedades en una futura versión. (ES)",
+      "wip_discord": "WIP: Aquí se abrirá el enlace a Discord en una futura versión. (ES)",
+      "wip_links_interes": "WIP: Aquí se mostrarán los links de interés en una futura versión. (ES)",
+      "wip_colabora": "WIP: Aquí se mostrará la información para colaborar en una futura versión. (ES)"
+    },
+    "editor_alerts": {
+      "clipboard_too_big": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal. (ES)",
+      "drop_too_big": "Arrastrado: texto demasiado grande. Usa los botones de la ventana principal. (ES)",
+      "clipboard_no_text": "El portapapeles no contiene texto plano. (ES)",
+      "drop_no_text": "Arrastrado: no se detectó texto plano. (ES)",
+      "type_limit": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido. (ES)",
+      "paste_limit": "No es posible pegar más texto: ya se alcanzó el tamaño máximo permitido. (ES)",
+      "paste_truncated": "El texto pegado se ha truncado para no exceder el máximo permitido. (ES)",
+      "drop_truncated": "El texto arrastrado excedía el espacio disponible y fue truncado. (ES)",
+      "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación. (ES)",
+      "calc_error": "Ocurrió un error al calcular. Revisa la consola. (ES)"
+    },
+    "preset_alerts": {
+      "name_empty": "El nombre no puede estar vacío. (ES)",
+      "wpm_invalid": "WPM debe ser un número entre 50 y 500. (ES)",
+      "create_error": "Ocurrió un error al crear el preset. Revisa la consola. (ES)",     
+      "edit_error": "Ocurrió un error al editar el preset. Revisa la consola. (ES)",
+      "process_error": "Ocurrió un error al procesar el preset. Revisa la consola. (ES)"
+    },
+    "info": {
+      "acerca_de": {
+        "app_name": "toT — Reading Meter (ES)",
+        "title": "Acerca de (ES)",
+        "subtitle": "Subtítulo (ES)",
+        "body": "Estamos trabajando para usted. (ES)"
+      },
+      "readme": {
+        "app_name": "toT — Reading Meter (ES)",
+        "title": "Readme (ES)",
+        "subtitle": "Subtítulo (ES)",
+        "body": "Estamos trabajando para usted. (ES)"
+      },
+      "instrucciones": {
+        "app_name": "toT — Reading Meter (ES)",
+        "title": "Manual de uso (ES)",
+        "nav_basic": "Guía básica (ES)",
+        "nav_full": "Instrucciones completas (ES)",
+        "nav_faq": "Preguntas frecuentes (FAQ) (ES)",
+        "section_basic_title": "Guía básica (ES)",
+        "section_basic_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. ",
+        "section_full_title": "Instrucciones completas (ES)",
+        "section_full_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. ",
+        "section_faq_title": "Preguntas frecuentes (FAQ) (ES)",
+        "section_faq_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. "
+      }
+    }
+  }
+}
