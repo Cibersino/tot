@@ -15,6 +15,9 @@ const menuBuilder = require('./menu_builder');
 // Default presets source folder (.js)
 const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
 
+const normalizeLangTag = (lang) =>
+  (lang || '').trim().toLowerCase().replace(/_/g, '-');
+
 // Helpers: presets defaults (general + per language if exists)
 function normalizeLangBase(lang) {
   if (typeof lang !== 'string') return '';
@@ -320,7 +323,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       // Load settings and dialog texts before any message
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
-      const dialogTexts = menuBuilder.getDialogTexts(lang);
+      const dialogLang = normalizeLangTag(settings.language) || lang;
+      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
       const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
       const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
 
@@ -422,7 +426,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     try {
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
-      const dialogTexts = menuBuilder.getDialogTexts(lang);
+      const dialogLang = normalizeLangTag(settings.language) || lang;
+      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
       const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
       const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
 
@@ -433,7 +438,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         defaultId: 1,
         cancelId: 1,
         message:
-          interpolateDialogText(dialogTexts.restore_defaults_confirm, { lang }) ||
+          interpolateDialogText(dialogTexts.restore_defaults_confirm, { lang: dialogLang }) ||
           'FALLBACK: Restore default presets to original?',
       });
       if (conf.response === 1) {
@@ -506,7 +511,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     try {
       const settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
-      const dialogTexts = menuBuilder.getDialogTexts(lang);
+      const dialogLang = normalizeLangTag(settings.language) || lang;
+      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
 
       const { mainWin } = resolveWindows();
       await dialog.showMessageBox(mainWin || null, {
@@ -536,7 +542,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
-      const dialogTexts = menuBuilder.getDialogTexts(lang);
+      const dialogLang = normalizeLangTag(settings.language) || lang;
+      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
 
       const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
       const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
