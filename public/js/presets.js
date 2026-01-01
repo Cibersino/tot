@@ -8,7 +8,9 @@
 
   function combinePresets({ settings = {}, defaults = {} }) {
     const lang = settings.language || 'es';
-    const userPresets = Array.isArray(settings.presets) ? settings.presets.slice() : [];
+    const userPresets = (settings.presets_by_language && Array.isArray(settings.presets_by_language[lang]))
+      ? settings.presets_by_language[lang].slice()
+      : [];
     const generalDefaults = Array.isArray(defaults.general) ? defaults.general.slice() : [];
     const langPresets = (defaults.languagePresets && defaults.languagePresets[lang] && Array.isArray(defaults.languagePresets[lang]))
       ? defaults.languagePresets[lang]
@@ -61,7 +63,7 @@
   }) {
     if (!electronAPI) throw new Error('electronAPI requerido para cargar presets');
 
-    const settings = (await electronAPI.getSettings()) || { language, presets: [] };
+    const settings = (await electronAPI.getSettings()) || { language, presets_by_language: {} };
     const lang = settings.language || language || 'es';
 
     let defaults = { general: [], languagePresets: {} };

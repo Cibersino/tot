@@ -71,7 +71,9 @@ function loadNumberFormatDefaults(lang) {
 function normalizeSettings(s) {
     s = s || {};
     if (typeof s.language !== 'string') s.language = '';
-    if (!Array.isArray(s.presets)) s.presets = [];
+    if (typeof s.presets_by_language !== 'object' || Array.isArray(s.presets_by_language) || s.presets_by_language === null) {
+        s.presets_by_language = {};
+    }
     if (typeof s.numberFormatting !== 'object') {
         s.numberFormatting = s.numberFormatting || {};
     }
@@ -86,6 +88,18 @@ function normalizeSettings(s) {
         s.language && typeof s.language === 'string' && s.language.trim()
             ? s.language.trim()
             : 'es';
+
+    // If legacy presets exist, migrate them once into the bucket of the current language and drop the old field.
+    if (Array.isArray(s.presets)) {
+        if (!Array.isArray(s.presets_by_language[lang])) {
+            s.presets_by_language[lang] = s.presets.slice();
+        }
+        delete s.presets;
+    }
+
+    if (!Array.isArray(s.presets_by_language[lang])) {
+        s.presets_by_language[lang] = [];
+    }
 
     if (!s.numberFormatting[lang]) {
         const nf = loadNumberFormatDefaults(lang);
@@ -124,7 +138,7 @@ function init({ loadJson, saveJson, settingsFile }) {
     _saveJson = saveJson;
     _settingsFile = settingsFile;
 
-    const raw = _loadJson(_settingsFile, { language: '', presets: [] });
+    const raw = _loadJson(_settingsFile, { language: '', presets_by_language: {}, disabled_default_presets: {} });
     const normalized = normalizeSettings(raw);
     _currentSettings = normalized;
 
@@ -145,7 +159,7 @@ function getSettings() {
         throw new Error('[settings] getSettings llamado antes de init');
     }
     // Always reload from disk to reflect changes made outside settingsState
-    const raw = _loadJson(_settingsFile, { language: '', presets: [] });
+    const raw = _loadJson(_settingsFile, { language: '', presets_by_language: {}, disabled_default_presets: {} });
     _currentSettings = normalizeSettings(raw);
     return _currentSettings;
 }
@@ -207,7 +221,7 @@ function registerIpc(
             return getSettings();
         } catch (err) {
             log.error('Error in get-settings:', err);
-            return { language: 'es', presets: [] };
+            return { language: 'es', presets_by_language: {}, disabled_default_presets: {} };
         }
     });
 

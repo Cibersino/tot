@@ -4,6 +4,7 @@
 
 * Revisión y depuración del código *
 
+- Mejorar idioma para admitir variantes regionales.
 - Presets `.js` a presets `.json`
 - Ordenar/limpiar archivo por archivo
   - Revisar avisos logs, de acuerdo a la política en los `log.js`.
