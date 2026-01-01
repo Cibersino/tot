@@ -4,7 +4,7 @@
 /**
  * LOGGING POLICY (toT - Reading Meter)
  *
- * Levels (lowest → highest): silent < error < warn < info < debug
+ * Levels (lowest to highest): silent < error < warn < info < debug
  * Default: warn (minimize noise in normal operation).
  *
  * Intended usage across the repo:
