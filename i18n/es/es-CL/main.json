@@ -22,7 +22,7 @@
       "discord": "Discord",
       "avisos": "Chismesitos",
       "links_interes": "Links bacanes",
-      "colabora": "RAJATE CON UNA MONE'A ($)",
+      "colabora": "RAJATE CON UNA MONEA ($)",
       "ayuda": "¿Tai perdío?",
       "actualizar_version": "Ponerse al día con la última versión",
       "readme": "Léeme po, ctm",
@@ -46,7 +46,7 @@
       "update_download": "Bájatela",
       "update_later": "Mañana vemos",
       "update_up_to_date_title": "Estái joya",
-      "update_up_to_date_message": "Ya tenís la última versión, ({local}).",
+      "update_up_to_date_message": "Ya tenís la última versión ({local}).",
       "update_failed_title": "Cagó la hueá",
       "update_failed_message": "No pudimos cachar la mano. Mira si tenís internet."
     }
