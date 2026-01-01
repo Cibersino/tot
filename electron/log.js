@@ -2,16 +2,16 @@
 'use strict';
 
 /**
- * LOGGING POLICY (toT — Reading Meter)
+ * LOGGING POLICY (toT - Reading Meter)
  *
- * Levels (lowest → highest): silent < error < warn < info < debug
+ * Levels (lowest to highest): silent < error < warn < info < debug
  * Default: warn (minimize noise in normal operation).
  *
  * Intended usage across the repo:
  * - error: unexpected failures that break an intended action or invariant.
  *          Typical: exceptions caught in IPC handlers, failed critical I/O, failed window loads when not closing.
  * - warn: recoverable anomalies / degraded behavior / fallback paths.
- *         Typical: “using default position”, “shortcut register failed”, “could not apply optional behavior”.
+ *         Typical: "using default position", "shortcut register failed", "could not apply optional behavior".
  * - info: high-level lifecycle/state transitions (low volume).
  * - debug: verbose diagnostics; may be noisy; safe to spam.
  *

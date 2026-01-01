@@ -132,7 +132,7 @@ body {
   transform: translateY(1px);
 }
 
-/* Trash button — pressed state */
+/* Trash button - pressed state */
 #btnTrash:active {
   background: #ffe0e0;
   border-color: #d99b9b;

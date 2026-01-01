@@ -35,7 +35,7 @@ function loadNumberFormatDefaults(lang) {
         let raw = fs.readFileSync(filePath, 'utf8');
         if (!raw) return null;
 
-        // Remove UTF-8 BOM if exists (avoids SyntaxError: Unexpected token '∩╗┐')
+        // Remove UTF-8 BOM if exists
         raw = raw.replace(/^\uFEFF/, '');
 
         const json = JSON.parse(raw);
