@@ -4,7 +4,6 @@
 
 * Revisión y depuración del código *
 
-- Eliminar send huérfanos.
 - Idioma de comments.
 - Presets `.js` a presets `.json`
 - Ordenar/limpiar archivo por archivo
