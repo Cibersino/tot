@@ -18,7 +18,7 @@
 
 ## Nivel 1: Refactor estructural y cleanup (obligatorio)
 
-Objetivo: que el archivo sea **navegable** y, si es que facilita más la lectura humana, lo más **lineal** posible, sin tocar comportamiento.
+Objetivo: que el archivo sea **navegable** y, si es que facilita más la lectura humana, lo más **lineal** posible, sin tocar comportamiento ni romper los timings necesarios.
 
 **1.1 Reordenamiento por bloques**
 
@@ -97,6 +97,7 @@ Ejemplos típicos:
 * Basarse en la lógica aplicada a archivos ya revisados (p.ej. `main.js`).
 * Ajustar nivel por recuperabilidad.
 * Mensajes cortos y accionables, consistentes con el estilo del proyecto.
+* No dejar ningún fallback silencioso.
 
 ---
 
