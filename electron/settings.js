@@ -143,7 +143,15 @@ function ensureNumberFormattingForBase(settings, base) {
  * - Ensure language-dependent buckets exist for the current language base.
  */
 function normalizeSettings(s) {
-  s = s || {};
+  const isObject = !!s && typeof s === 'object' && !Array.isArray(s);
+  if (!isObject) {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidRoot',
+      'Settings root is invalid; using empty object:',
+      { type: typeof s, isArray: Array.isArray(s), isNull: s === null }
+    );
+    s = {};
+  }
 
   // language must be a string; empty string means "unset".
   if (typeof s.language !== 'string') s.language = '';
@@ -255,10 +263,10 @@ function normalizeSettings(s) {
  */
 function init({ loadJson, saveJson, settingsFile }) {
   if (typeof loadJson !== 'function' || typeof saveJson !== 'function') {
-    throw new Error('[settings] init requiere loadJson y saveJson');
+    throw new Error('[settings] init requires loadJson and saveJson');
   }
   if (!settingsFile) {
-    throw new Error('[settings] init requiere settingsFile');
+    throw new Error('[settings] init requires settingsFile');
   }
 
   _loadJson = loadJson;
@@ -289,7 +297,7 @@ function init({ loadJson, saveJson, settingsFile }) {
  */
 function getSettings() {
   if (!_loadJson || !_settingsFile) {
-    throw new Error('[settings] getSettings llamado antes de init');
+    throw new Error('[settings] getSettings called before init');
   }
 
   const raw = _loadJson(_settingsFile, {
@@ -397,7 +405,7 @@ function registerIpc(
   }
 ) {
   if (!ipcMain) {
-    throw new Error('[settings] registerIpc requiere ipcMain');
+    throw new Error('[settings] registerIpc requires ipcMain');
   }
 
   // get-settings: returns the current settings object (normalized)
@@ -424,6 +432,7 @@ function registerIpc(
       const chosenRaw = String(lang || '');
       const chosen = normalizeLangTag(chosenRaw);
       const effectiveLang = chosen || '';
+      const menuLang = effectiveLang || 'es';
 
       let settings = getSettings();
       settings.language = chosen;
@@ -431,7 +440,7 @@ function registerIpc(
       settings = saveSettings(settings);
 
       if (typeof setCurrentLanguage === 'function') {
-        setCurrentLanguage(effectiveLang || 'es');
+        setCurrentLanguage(menuLang);
       }
 
       const windows = typeof getWindows === 'function' ? getWindows() : {};
@@ -439,9 +448,9 @@ function registerIpc(
       // Rebuild the app menu using the new language (best-effort).
       if (typeof buildAppMenu === 'function') {
         try {
-          buildAppMenu(effectiveLang);
+          buildAppMenu(menuLang);
         } catch (err) {
-          log.warn('menu rebuild failed (ignored):', effectiveLang, err);
+          log.warn('menu rebuild failed (ignored):', menuLang, err);
         }
       }
 
