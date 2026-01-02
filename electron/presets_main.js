@@ -41,15 +41,44 @@ function loadPresetArrayFromJs(filePath) {
 
 /**
  * Loads combined default presets (general + per language).
- * Source: electron/presets/defaults_presets.js + defaults_presets_<lang>.js
+ * Source: config/presets_defaults/*.json (fallback to bundled JS only if JSON is missing)
  */
 function loadDefaultPresetsCombined(lang) {
-  const presetsDir = PRESETS_SOURCE_DIR;
-  const combined = loadPresetArrayFromJs(path.join(presetsDir, 'defaults_presets.js')).slice();
+  ensureConfigPresetsDir();
+
+  let combined = [];
+  const generalJson = path.join(CONFIG_PRESETS_DIR, 'defaults_presets.json');
+  if (fs.existsSync(generalJson)) {
+    try {
+      const raw = fs.readFileSync(generalJson, 'utf8');
+      const arr = JSON.parse(raw || '[]');
+      if (Array.isArray(arr)) combined = arr.slice();
+    } catch (err) {
+      log.error('[presets_main] Error parsing defaults_presets.json:', err);
+    }
+  }
+  if (!Array.isArray(combined) || combined.length === 0) {
+    combined = loadPresetArrayFromJs(path.join(PRESETS_SOURCE_DIR, 'defaults_presets.js')).slice();
+  }
+
   const langCode = normalizeLangBase(lang);
   if (langCode) {
-    const langFile = path.join(presetsDir, `defaults_presets_${langCode}.js`);
-    const langPresets = loadPresetArrayFromJs(langFile);
+    let langPresets = [];
+    const langJson = path.join(CONFIG_PRESETS_DIR, `defaults_presets_${langCode}.json`);
+    if (fs.existsSync(langJson)) {
+      try {
+        const raw = fs.readFileSync(langJson, 'utf8');
+        const arr = JSON.parse(raw || '[]');
+        if (Array.isArray(arr)) langPresets = arr.slice();
+      } catch (err) {
+        log.error(`[presets_main] Error parsing defaults_presets_${langCode}.json:`, err);
+      }
+    }
+    if (!Array.isArray(langPresets) || langPresets.length === 0) {
+      langPresets = loadPresetArrayFromJs(
+        path.join(PRESETS_SOURCE_DIR, `defaults_presets_${langCode}.js`)
+      );
+    }
     if (langPresets.length) combined.push(...langPresets);
   }
   return combined;
