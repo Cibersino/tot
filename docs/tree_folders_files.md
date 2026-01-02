@@ -20,9 +20,9 @@ tot-readingmeter/
 │ └── tree_folders_files.md
 ├── electron/
 │ ├── presets/
-│ │ ├── defaults_presets.js
-│ │ ├── defaults_presets_en.js
-│ │ └── defaults_presets_es.js
+│ │ ├── defaults_presets.json
+│ │ ├── defaults_presets_en.json
+│ │ └── defaults_presets_es.json
 │ ├── main.js
 │ ├── preload.js
 │ ├── language_preload.js
