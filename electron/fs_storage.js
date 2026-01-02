@@ -4,18 +4,18 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Disk utilities for the main process.
+// File system helpers for the Electron main process.
+//
 // Responsibilities:
-// - Define canonical config paths used by the app.
-// - Ensure required config folders exist.
-// - Read/write small JSON files used for persistent state (settings, current text, etc.).
+// - Resolve the app's config paths under ./config.
+// - Ensure required config folders exist before reading/writing files.
+// - Read/write small JSON state files (settings, current text, etc.) safely.
 //
 // Notes:
-// - All operations are synchronous (main process only).
-// - loadJson() returns a caller-provided fallback on missing/invalid JSON.
+// - This module is intentionally synchronous (main process only).
 
 // =============================================================================
-// Imports (external + internal modules)
+// Imports / logger
 // =============================================================================
 
 const fs = require('fs');
@@ -59,7 +59,7 @@ function ensureConfigPresetsDir() {
 
 function loadJson(filePath, fallback = {}) {
   try {
-    // Missing file is not an error: callers decide what the fallback should be.
+    // Missing file is recoverable: callers decide what the fallback should be.
     if (!fs.existsSync(filePath)) {
       log.warnOnce(
         `fs_storage.loadJson:missing:${String(filePath)}`,
@@ -86,8 +86,7 @@ function loadJson(filePath, fallback = {}) {
 
     return JSON.parse(raw);
   } catch (err) {
-    // Recoverable by design: we return fallback and the app can continue.
-    // Deduplicate to avoid log spam if a file is repeatedly read while invalid.
+    // Invalid JSON is recoverable: return fallback and continue running.
     log.warnOnce(
       `fs_storage.loadJson:failed:${String(filePath)}`,
       'loadJson failed (using fallback):',
@@ -100,7 +99,7 @@ function loadJson(filePath, fallback = {}) {
 
 function saveJson(filePath, obj) {
   try {
-    // Ensure parent directory exists so callers don't depend on init ordering.
+    // Ensure the parent folder exists so callers do not depend on init ordering.
     const parentDir = path.dirname(filePath);
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true });
