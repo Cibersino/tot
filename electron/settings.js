@@ -370,7 +370,7 @@ function broadcastSettingsUpdated(settings, windows) {
 function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
   try {
     let settings = getSettings();
-    if (!settings.language || settings.language === '') {
+    if (!settings.language || settings.language === 'es') {
       const lang = normalizeLangTag(fallbackLang);
       const base = getLangBase(lang) || 'es';
       settings.language = lang;
