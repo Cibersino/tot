@@ -496,7 +496,14 @@ function snapWindowFullyIntoWorkArea(win) {
   const b = win.getBounds();
   const display = getDisplayByWindowCenter(b);
   const wa = display && display.workArea ? display.workArea : null;
-  if (!wa) return;
+
+  if (!wa) {
+    warnOnce(
+      'snapWindowFullyIntoWorkArea.noWorkArea',
+      'snapWindowFullyIntoWorkArea: display.workArea unavailable; snap skipped (ignored).'
+    );
+    return;
+  }
 
   const maxX = wa.x + wa.width - b.width;
   const maxY = wa.y + wa.height - b.height;
@@ -636,7 +643,12 @@ async function createFlotanteWindow(options = {}) {
     const display = screen.getPrimaryDisplay();
     const wa = display && display.workArea ? display.workArea : null;
 
-    if (wa) {
+    if (!wa) {
+      warnOnce(
+        'flotante.position.noWorkArea',
+        'Flotante position: primary display workArea unavailable; using OS default position (ignored).'
+      );
+    } else {
       const marginRight = typeof options.marginRight === 'number' ? options.marginRight : DEFAULT_MARGIN_RIGHT;
       const marginBottom = typeof options.marginBottom === 'number' ? options.marginBottom : DEFAULT_MARGIN_BOTTOM;
 
@@ -644,7 +656,7 @@ async function createFlotanteWindow(options = {}) {
       pos.y = wa.y + wa.height - bwOpts.height - marginBottom;
     }
   } catch (err) {
-    log.warn('Position could not be calculated from screen.getPrimaryDisplay(); using the default FW position.', err);
+    log.warn('Flotante position: screen.getPrimaryDisplay failed; using OS defaults.', err);
   }
 
   // Allow explicit overrides.
@@ -893,7 +905,10 @@ ipcMain.handle('flotante-close', async () => {
 
 ipcMain.on('flotante-command', (_ev, cmd) => {
   try {
-    if (!cmd || !cmd.cmd) return;
+    if (!cmd || !cmd.cmd) {
+      warnOnce('flotante-command.invalid', 'flotante-command ignored: payload missing cmd (ignored).');
+      return;
+    }
 
     if (cmd.cmd === 'toggle') {
       if (crono.running) stopCrono(); else startCrono();
@@ -939,7 +954,10 @@ ipcMain.handle('open-editor', () => {
 
 // Preset modal: open (with payload normalization)
 ipcMain.handle('open-preset-modal', (_event, payload) => {
-  if (!mainWin) return;
+  if (!mainWin) {
+    warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
+    return;
+  }
 
   let initialData = {};
   if (typeof payload === 'number') {
