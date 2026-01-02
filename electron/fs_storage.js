@@ -22,6 +22,16 @@ function ensureConfigDir() {
   }
 }
 
+function ensureConfigPresetsDir() {
+  try {
+    if (!fs.existsSync(CONFIG_PRESETS_DIR)) {
+      fs.mkdirSync(CONFIG_PRESETS_DIR, { recursive: true });
+    }
+  } catch (err) {
+    log.error('Error creating config/presets_defaults:', err);
+  }
+}
+
 function loadJson(filePath, fallback = {}) {
   try {
     if (!fs.existsSync(filePath)) return fallback;
@@ -41,21 +51,11 @@ function saveJson(filePath, obj) {
   }
 }
 
-function ensureConfigPresetsDir() {
-  try {
-    if (!fs.existsSync(CONFIG_PRESETS_DIR)) {
-      fs.mkdirSync(CONFIG_PRESETS_DIR, { recursive: true });
-    }
-  } catch (err) {
-    log.error('Error creating config/presets_defaults:', err);
-  }
-}
-
 module.exports = {
   CONFIG_DIR,
   CONFIG_PRESETS_DIR,
   ensureConfigDir,
   ensureConfigPresetsDir,
   loadJson,
-  saveJson
+  saveJson,
 };
