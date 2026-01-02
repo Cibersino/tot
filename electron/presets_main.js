@@ -25,58 +25,44 @@ function normalizeLangBase(lang) {
   return /^[a-z0-9]+$/.test(base) ? base : '';
 }
 
-function loadPresetArrayFromJs(filePath) {
+function loadPresetArrayFromJson(filePath) {
   try {
     if (!fs.existsSync(filePath)) return [];
-    let data = require(filePath);
-    if (!Array.isArray(data) && data && Array.isArray(data.default)) {
-      data = data.default;
-    }
-    return Array.isArray(data) ? data : [];
+    const raw = fs.readFileSync(filePath, 'utf8');
+    const arr = JSON.parse(raw || '[]');
+    return Array.isArray(arr) ? arr : [];
   } catch (err) {
-    log.error(`[presets_main] Error loading preset file ${filePath}:`, err);
+    log.error(`[presets_main] Error loading preset JSON ${filePath}:`, err);
     return [];
   }
 }
 
 /**
  * Loads combined default presets (general + per language).
- * Source: config/presets_defaults/*.json (fallback to bundled JS only if JSON is missing)
+ * Source: config/presets_defaults/*.json (fallback to bundled JSON only if missing)
  */
 function loadDefaultPresetsCombined(lang) {
   ensureConfigPresetsDir();
 
-  let combined = [];
-  const generalJson = path.join(CONFIG_PRESETS_DIR, 'defaults_presets.json');
-  if (fs.existsSync(generalJson)) {
-    try {
-      const raw = fs.readFileSync(generalJson, 'utf8');
-      const arr = JSON.parse(raw || '[]');
-      if (Array.isArray(arr)) combined = arr.slice();
-    } catch (err) {
-      log.error('[presets_main] Error parsing defaults_presets.json:', err);
-    }
-  }
-  if (!Array.isArray(combined) || combined.length === 0) {
-    combined = loadPresetArrayFromJs(path.join(PRESETS_SOURCE_DIR, 'defaults_presets.js')).slice();
+  const combined =
+    loadPresetArrayFromJson(path.join(CONFIG_PRESETS_DIR, 'defaults_presets.json')).slice();
+  if (!combined.length) {
+    combined.push(
+      ...loadPresetArrayFromJson(path.join(PRESETS_SOURCE_DIR, 'defaults_presets.json'))
+    );
   }
 
   const langCode = normalizeLangBase(lang);
   if (langCode) {
-    let langPresets = [];
-    const langJson = path.join(CONFIG_PRESETS_DIR, `defaults_presets_${langCode}.json`);
-    if (fs.existsSync(langJson)) {
-      try {
-        const raw = fs.readFileSync(langJson, 'utf8');
-        const arr = JSON.parse(raw || '[]');
-        if (Array.isArray(arr)) langPresets = arr.slice();
-      } catch (err) {
-        log.error(`[presets_main] Error parsing defaults_presets_${langCode}.json:`, err);
-      }
-    }
-    if (!Array.isArray(langPresets) || langPresets.length === 0) {
-      langPresets = loadPresetArrayFromJs(
-        path.join(PRESETS_SOURCE_DIR, `defaults_presets_${langCode}.js`)
+    const langPresets =
+      loadPresetArrayFromJson(
+        path.join(CONFIG_PRESETS_DIR, `defaults_presets_${langCode}.json`)
+      ).slice();
+    if (!langPresets.length) {
+      langPresets.push(
+        ...loadPresetArrayFromJson(
+          path.join(PRESETS_SOURCE_DIR, `defaults_presets_${langCode}.json`)
+        )
       );
     }
     if (langPresets.length) combined.push(...langPresets);
@@ -85,7 +71,7 @@ function loadDefaultPresetsCombined(lang) {
 }
 
 /**
- * Initial copy of default presets from electron/presets/*.js
+ * Initial copy of default presets from electron/presets/*.json
  * to config/presets_defaults/*.json (only if they do not exist).
  */
 function copyDefaultPresetsIfMissing() {
@@ -96,33 +82,25 @@ function copyDefaultPresetsIfMissing() {
 
     const entries = fs.readdirSync(PRESETS_SOURCE_DIR);
     entries
-      .filter((name) => /^defaults_presets.*\.js$/i.test(name))
+      .filter((name) => /^defaults_presets.*\.json$/i.test(name))
       .forEach((fname) => {
         const src = path.join(PRESETS_SOURCE_DIR, fname);
         const dest = path.join(
           CONFIG_PRESETS_DIR,
-          fname.replace(/\.js$/i, '.json')
+          fname
         );
 
-        // Only copy if the source JS exists and the JSON does not yet exist
+        // Only copy if the source JSON exists and the destination does not yet exist
         if (fs.existsSync(src) && !fs.existsSync(dest)) {
           try {
-            let arr = require(src);
-            if (
-              !Array.isArray(arr) &&
-              arr &&
-              Array.isArray(arr.default)
-            ) {
-              arr = arr.default;
-            }
-            if (!Array.isArray(arr)) arr = [];
-            fs.writeFileSync(dest, JSON.stringify(arr, null, 2), 'utf8');
+            const raw = fs.readFileSync(src, 'utf8');
+            fs.writeFileSync(dest, raw, 'utf8');
             log.debug(
               `[presets_main] Copied default preset: ${src} -> ${dest}`
             );
           } catch (err) {
             log.error(
-              `[presets_main] Error converting preset ${src} a JSON:`,
+              `[presets_main] Error copying preset ${src} a JSON:`,
               err
             );
           }
@@ -227,9 +205,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           log.error('[presets_main] Error parsing', generalJson, err);
           general = [];
         }
-      } else {
-        const n = path.join(PRESETS_SOURCE_DIR, 'defaults_presets.js');
-        general = fs.existsSync(n) ? require(n) : [];
+      }
+      if (!Array.isArray(general) || general.length === 0) {
+        general = loadPresetArrayFromJson(
+          path.join(PRESETS_SOURCE_DIR, 'defaults_presets.json')
+        );
       }
 
       // Load defaults by language from JSON: defaults_presets_<lang>.json
@@ -249,29 +229,22 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           }
         });
 
-      // If any language is missing in JSON, try to load from the source JS
+      // If any language is missing in JSON, try to load from the bundled JSON seeds
       const srcEntries = fs.existsSync(PRESETS_SOURCE_DIR)
         ? fs.readdirSync(PRESETS_SOURCE_DIR)
         : [];
       srcEntries
-        .filter((n) => /^defaults_presets_([a-z0-9-]+)\.js$/i.test(n))
+        .filter((n) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(n))
         .forEach((n) => {
-          const match = /^defaults_presets_([a-z0-9-]+)\.js$/i.exec(n);
+          const match = /^defaults_presets_([a-z0-9-]+)\.json$/i.exec(n);
           if (!match || !match[1]) return;
           const lang = match[1].toLowerCase();
-          if (languagePresets[lang]) return; // already loaded from JSON
+          if (languagePresets[lang]) return; // already loaded from config JSON
           try {
-            let arr = require(path.join(PRESETS_SOURCE_DIR, n));
-            if (
-              !Array.isArray(arr) &&
-              arr &&
-              Array.isArray(arr.default)
-            ) {
-              arr = arr.default;
-            }
+            const arr = loadPresetArrayFromJson(path.join(PRESETS_SOURCE_DIR, n));
             if (Array.isArray(arr)) languagePresets[lang] = arr;
           } catch (err) {
-            log.error('[presets_main] Error loading', n, err);
+            log.error('[presets_main] Error loading bundled preset', n, err);
           }
         });
 
