@@ -65,6 +65,35 @@ function loadNumberFormatDefaults(lang) {
   }
 }
 
+function ensureNumberFormattingForBase(settings, base) {
+  if (!settings || typeof settings !== 'object') return;
+
+  const langBase = getLangBase(base) || 'es';
+
+  if (
+    typeof settings.numberFormatting !== 'object' ||
+    Array.isArray(settings.numberFormatting) ||
+    settings.numberFormatting === null
+  ) {
+    settings.numberFormatting = {};
+  }
+
+  if (settings.numberFormatting[langBase]) return;
+
+  const nf = loadNumberFormatDefaults(langBase);
+  if (nf && nf.thousands && nf.decimal) {
+    settings.numberFormatting[langBase] = {
+      separadorMiles: nf.thousands,
+      separadorDecimal: nf.decimal,
+    };
+  } else {
+    settings.numberFormatting[langBase] = {
+      separadorMiles: '.',
+      separadorDecimal: ',',
+    };
+  }
+}
+
 /**
  * Normalize settings: ensure default fields without overwriting existing ones.
  * Maintains the previous main.js logic.
@@ -82,8 +111,13 @@ function normalizeSettings(s) {
     s.presets_by_language = {};
   }
 
-  if (typeof s.numberFormatting !== 'object') {
-    s.numberFormatting = s.numberFormatting || {};
+  // Ensure numberFormatting is a plain object (settings may contain null/array/invalid types).
+  if (
+    typeof s.numberFormatting !== 'object' ||
+    Array.isArray(s.numberFormatting) ||
+    s.numberFormatting === null
+  ) {
+    s.numberFormatting = {};
   }
 
   // Persist default count mode: 'precise'
@@ -112,20 +146,7 @@ function normalizeSettings(s) {
     s.presets_by_language[langBase] = [];
   }
 
-  if (!s.numberFormatting[langBase]) {
-    const nf = loadNumberFormatDefaults(langBase);
-    if (nf && nf.thousands && nf.decimal) {
-      s.numberFormatting[langBase] = {
-        separadorMiles: nf.thousands,
-        separadorDecimal: nf.decimal,
-      };
-    } else {
-      s.numberFormatting[langBase] = {
-        separadorMiles: '.',
-        separadorDecimal: ',',
-      };
-    }
-  }
+  ensureNumberFormattingForBase(s, langBase);
 
   return s;
 }
@@ -233,22 +254,8 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
       const lang = normalizeLangTag(fallbackLang);
       const base = getLangBase(lang) || 'es';
       settings.language = lang;
-      settings.numberFormatting = settings.numberFormatting || {};
 
-      if (!settings.numberFormatting[base]) {
-        const nf = loadNumberFormatDefaults(base);
-        if (nf && nf.thousands && nf.decimal) {
-          settings.numberFormatting[base] = {
-            separadorMiles: nf.thousands,
-            separadorDecimal: nf.decimal,
-          };
-        } else {
-          settings.numberFormatting[base] = {
-            separadorMiles: '.',
-            separadorDecimal: ',',
-          };
-        }
-      }
+      ensureNumberFormattingForBase(settings, base);
 
       saveSettings(settings);
     }
@@ -296,21 +303,7 @@ function registerIpc(
       let settings = getSettings();
       settings.language = chosen;
 
-      settings.numberFormatting = settings.numberFormatting || {};
-      if (!settings.numberFormatting[base]) {
-        const nf = loadNumberFormatDefaults(base);
-        if (nf && nf.thousands && nf.decimal) {
-          settings.numberFormatting[base] = {
-            separadorMiles: nf.thousands,
-            separadorDecimal: nf.decimal,
-          };
-        } else {
-          settings.numberFormatting[base] = {
-            separadorMiles: '.',
-            separadorDecimal: ',',
-          };
-        }
-      }
+      ensureNumberFormattingForBase(settings, base);
 
       settings = saveSettings(settings);
 
