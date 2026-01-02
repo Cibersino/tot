@@ -1,6 +1,22 @@
 // electron/fs_storage.js
-// Disk access utilities shared by the main process
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Disk utilities for the main process.
+// Responsibilities:
+// - Define canonical config paths used by the app.
+// - Ensure required config folders exist.
+// - Read/write small JSON files used for persistent state (settings, current text, etc.).
+//
+// Notes:
+// - All operations are synchronous (main process only).
+// - loadJson() returns a caller-provided fallback on missing/invalid JSON.
+
+// =============================================================================
+// Imports (external + internal modules)
+// =============================================================================
 
 const fs = require('fs');
 const path = require('path');
@@ -8,17 +24,22 @@ const Log = require('./log');
 
 const log = Log.get('fs-storage');
 
-// Base configuration folder
-const CONFIG_DIR = path.join(__dirname, '..', 'config');
+// =============================================================================
+// Config paths
+// =============================================================================
 
-// Default presets folder in config
+const CONFIG_DIR = path.join(__dirname, '..', 'config');
 const CONFIG_PRESETS_DIR = path.join(CONFIG_DIR, 'presets_defaults');
+
+// =============================================================================
+// Directory helpers
+// =============================================================================
 
 function ensureConfigDir() {
   try {
     if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
   } catch (err) {
-    log.error('Error creating config dir:', err);
+    log.error('ensureConfigDir failed:', CONFIG_DIR, err);
   }
 }
 
@@ -28,12 +49,17 @@ function ensureConfigPresetsDir() {
       fs.mkdirSync(CONFIG_PRESETS_DIR, { recursive: true });
     }
   } catch (err) {
-    log.error('Error creating config/presets_defaults:', err);
+    log.error('ensureConfigPresetsDir failed:', CONFIG_PRESETS_DIR, err);
   }
 }
 
+// =============================================================================
+// JSON helpers
+// =============================================================================
+
 function loadJson(filePath, fallback = {}) {
   try {
+    // Missing file is not an error: callers decide what the fallback should be.
     if (!fs.existsSync(filePath)) return fallback;
 
     let raw = fs.readFileSync(filePath, 'utf8');
@@ -47,7 +73,7 @@ function loadJson(filePath, fallback = {}) {
     // Deduplicate to avoid log spam if a file is repeatedly read while invalid.
     log.warnOnce(
       `fs_storage.loadJson:${String(filePath)}`,
-      'Error reading/parsing JSON (using fallback):',
+      'loadJson failed (using fallback):',
       filePath,
       err
     );
@@ -65,9 +91,13 @@ function saveJson(filePath, obj) {
 
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
   } catch (err) {
-    log.error(`Error writing JSON ${filePath}:`, err);
+    log.error('saveJson failed:', filePath, err);
   }
 }
+
+// =============================================================================
+// Exports
+// =============================================================================
 
 module.exports = {
   CONFIG_DIR,
@@ -77,3 +107,7 @@ module.exports = {
   loadJson,
   saveJson,
 };
+
+// =============================================================================
+// End of fs_storage.js
+// =============================================================================
