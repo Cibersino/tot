@@ -93,8 +93,8 @@ Ejemplos típicos:
 
 ## Nivel 4: Logs (después de estabilizar el flujo)
 
-* Obligatorio: revisar la política explícita de los archivos log.js.
-* Basarse en la lógica aplicada a archivos ya revisados (p.ej. main.js).
+* Obligatorio: revisar la política explícita de los archivos `log.js` (se ven como `electron_log.js` y `public_js_log.js` en tu carpeta raíz).
+* Basarse en la lógica aplicada a archivos ya revisados (p.ej. `main.js`).
 * Ajustar nivel por recuperabilidad.
 * Mensajes cortos y accionables, consistentes con el estilo del proyecto.
 
@@ -104,7 +104,7 @@ Ejemplos típicos:
 
 * Ajustar comentarios para que sirvan de orientación cualquier persona con pocos conocimientos técnicos.
 * Revisar comentarios y borrarlos, reescribirlos o agregar otros si son aporte real.
-* Seguir formato de main.js:
+* Seguir formato de `main.js`:
   - Overview conciso (responsibilities),
   - secciones visibles,
   - marcador de “End of …” al final.
