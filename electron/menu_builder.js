@@ -71,37 +71,59 @@ const getLangBase = (lang) => {
 function loadMainTranslations(lang) {
     const requested = normalizeLangTag(lang) || 'es';
     const base = getLangBase(requested) || 'es';
+
     const candidates = [];
     if (requested) candidates.push(requested);
     if (base && base !== requested) candidates.push(base);
     if (!candidates.includes('es')) candidates.push('es');
+
     for (const langCode of candidates) {
         const langBase = getLangBase(langCode) || langCode;
+
         const files = [];
         if (langCode.includes('-')) {
             files.push(path.join(__dirname, '..', 'i18n', langBase, langCode, 'main.json'));
         }
         files.push(path.join(__dirname, '..', 'i18n', langCode, 'main.json'));
-        try {
-            for (const file of files) {
-                if (!fs.existsSync(file)) {
-                    continue;
-                }
+
+        for (const file of files) {
+            if (!fs.existsSync(file)) continue;
+
+            try {
                 let raw = fs.readFileSync(file, 'utf8');
+
                 // Remove UTF-8 BOM if present (some editors add it and JSON.parse fails).
                 raw = raw.replace(/^\uFEFF/, '');
-                return JSON.parse(raw || '{}');
+
+                // Empty/whitespace-only file is treated as invalid JSON (recoverable).
+                if (raw.trim() === '') {
+                    log.warnOnce(
+                        `menu_builder.loadMainTranslations:empty:${requested}:${langCode}:${String(file)}`,
+                        'main.json is empty (trying fallback):',
+                        { requested, langCode, file }
+                    );
+                    continue;
+                }
+
+                return JSON.parse(raw);
+            } catch (err) {
+                // Recoverable by design: try other candidates and/or fall back to {}.
+                log.warnOnce(
+                    `menu_builder.loadMainTranslations:failed:${requested}:${langCode}:${String(file)}`,
+                    'Failed to load/parse main.json (trying fallback):',
+                    { requested, langCode, file },
+                    err
+                );
             }
-        } catch (err) {
-            // Recoverable by design: we will try other candidates and/or fall back to {}.
-            log.warnOnce(
-                `menu_builder.loadMainTranslations:${requested}:${langCode}`,
-                'Failed to load/parse main.json; using fallback.',
-                { requested, langCode, files },
-                err
-            );
         }
     }
+
+    // Nothing could be loaded from any candidate file: return {} but do not stay silent.
+    log.warnOnce(
+        `menu_builder.loadMainTranslations:none:${requested}`,
+        'No main.json could be loaded (using empty translations):',
+        { requested, base, candidates }
+    );
     return {};
 }
 
@@ -148,16 +170,32 @@ function buildAppMenu(lang, opts = {}) {
     const onOpenLanguage =
         typeof opts.onOpenLanguage === 'function' ? opts.onOpenLanguage : null;
 
-    // Best-effort IPC: if the main window is not available, we just ignore the click.
+    // Best-effort IPC: if the main window is not available, we log once and ignore the click.
     // This avoids crashes during startup/shutdown or when the window is closing.
     const sendMenuClick = (payload) => {
-        if (!mainWindow || mainWindow.isDestroyed()) return;
+        if (!mainWindow) {
+            log.warnOnce(
+                `menu_builder.sendMenuClick:noWindow:${String(payload)}`,
+                'menu-click dropped (no mainWindow):',
+                payload
+            );
+            return;
+        }
+        if (mainWindow.isDestroyed()) {
+            log.warnOnce(
+                `menu_builder.sendMenuClick:destroyed:${String(payload)}`,
+                'menu-click dropped (mainWindow destroyed):',
+                payload
+            );
+            return;
+        }
+
         try {
             mainWindow.webContents.send('menu-click', payload);
         } catch (err) {
             // Expected in some window lifecycle races; deduplicate to avoid log spam.
             log.warnOnce(
-                `menu_builder.sendMenuClick:${String(payload)}`,
+                `menu_builder.sendMenuClick:sendFailed:${String(payload)}`,
                 "webContents.send('menu-click') failed (ignored):",
                 payload,
                 err
@@ -222,6 +260,11 @@ function buildAppMenu(lang, opts = {}) {
                                     err
                                 );
                             }
+                        } else {
+                            log.warnOnce(
+                                'menu_builder.onOpenLanguage.missing',
+                                'Language menu clicked but no handler was provided (ignored).'
+                            );
                         }
                     },
                 },
