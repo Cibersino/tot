@@ -136,12 +136,11 @@ function ensureNumberFormattingForBase(settings, base) {
 }
 
 // =============================================================================
-// Settings normalization (includes legacy migration)
+// Settings normalization
 // =============================================================================
 /**
  * Normalizes settings without overwriting existing valid values.
  * Notes:
- * - legacy "presets" is migrated once into presets_by_language[langBase].
  * - numberFormatting is enforced via ensureNumberFormattingForBase().
  */
 function normalizeSettings(s) {
@@ -179,14 +178,6 @@ function normalizeSettings(s) {
 
   const langBase = getLangBase(langTag) || 'es';
   if (langTag) s.language = langTag;
-
-  // If legacy presets exist, migrate them once and remove the old field.
-  if (Array.isArray(s.presets)) {
-    if (!Array.isArray(s.presets_by_language[langBase])) {
-      s.presets_by_language[langBase] = s.presets.slice();
-    }
-    delete s.presets;
-  }
 
   if (!Array.isArray(s.presets_by_language[langBase])) {
     s.presets_by_language[langBase] = [];
