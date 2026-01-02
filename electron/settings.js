@@ -75,6 +75,11 @@ function ensureNumberFormattingForBase(settings, base) {
     Array.isArray(settings.numberFormatting) ||
     settings.numberFormatting === null
   ) {
+    log.warnOnce(
+      'settings.ensureNumberFormattingForBase.invalidNumberFormatting',
+      'Invalid numberFormatting; resetting to empty object:',
+      { type: typeof settings.numberFormatting, isArray: Array.isArray(settings.numberFormatting) }
+    );
     settings.numberFormatting = {};
   }
 
@@ -87,6 +92,12 @@ function ensureNumberFormattingForBase(settings, base) {
       separadorDecimal: nf.decimal,
     };
   } else {
+    log.warnOnce(
+      `settings.ensureNumberFormattingForBase.default:${langBase}`,
+      'Using default number formatting (fallback):',
+      langBase,
+      { separadorMiles: '.', separadorDecimal: ',' }
+    );
     settings.numberFormatting[langBase] = {
       separadorMiles: '.',
       separadorDecimal: ',',
@@ -220,7 +231,12 @@ function saveSettings(nextSettings) {
       _saveJson(_settingsFile, normalized);
     }
   } catch (err) {
-    log.error('[settings] Error saving settings:', err);
+    log.errorOnce(
+      `settings.saveSettings.persist:${String(_settingsFile)}`,
+      'saveSettings failed (not persisted):',
+      _settingsFile,
+      err
+    );
   }
 
   return _currentSettings;
@@ -238,7 +254,11 @@ function broadcastSettingsUpdated(settings, windows) {
       mainWin.webContents.send('settings-updated', settings);
     }
   } catch (err) {
-    log.error('[settings] Error notifying settings-updated:', err);
+    log.warnOnce(
+      'settings.broadcastSettingsUpdated',
+      'settings-updated notify failed (ignored):',
+      err
+    );
   }
 }
 
@@ -254,6 +274,11 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
       const lang = normalizeLangTag(fallbackLang);
       const base = getLangBase(lang) || 'es';
       settings.language = lang;
+      log.warnOnce(
+        `settings.applyFallbackLanguageIfUnset.applied:${base}`,
+        'Language was unset; applying fallback language:',
+        lang
+      );
 
       ensureNumberFormattingForBase(settings, base);
 
@@ -287,7 +312,7 @@ function registerIpc(
     try {
       return getSettings();
     } catch (err) {
-      log.error('Error in get-settings:', err);
+      log.errorOnce('settings.ipc.get-settings', 'IPC get-settings failed (using safe fallback):', err);
       return { language: 'es', presets_by_language: {}, disabled_default_presets: {} };
     }
   });
