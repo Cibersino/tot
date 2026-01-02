@@ -1,5 +1,5 @@
 // electron/presets_main.js
-// Presets logic in the main process: defaults, settings.presets, native dialogs and associated IPC handlers.
+// Presets logic in the main process: defaults, settings.presets_by_language, native dialogs and associated IPC handlers.
 'use strict';
 
 const fs = require('fs');
@@ -15,8 +15,11 @@ const menuBuilder = require('./menu_builder');
 // Default presets source folder (.js)
 const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
 
+const normalizeLangTag = (lang) =>
+  (lang || '').trim().toLowerCase().replace(/_/g, '-');
+
 // Helpers: presets defaults (general + per language if exists)
-function sanitizeLangCode(lang) {
+function normalizeLangBase(lang) {
   if (typeof lang !== 'string') return '';
   const base = lang.trim().toLowerCase().split(/[-_]/)[0];
   return /^[a-z0-9]+$/.test(base) ? base : '';
@@ -38,15 +41,44 @@ function loadPresetArrayFromJs(filePath) {
 
 /**
  * Loads combined default presets (general + per language).
- * Source: electron/presets/defaults_presets.js + defaults_presets_<lang>.js
+ * Source: config/presets_defaults/*.json (fallback to bundled JS only if JSON is missing)
  */
 function loadDefaultPresetsCombined(lang) {
-  const presetsDir = PRESETS_SOURCE_DIR;
-  const combined = loadPresetArrayFromJs(path.join(presetsDir, 'defaults_presets.js')).slice();
-  const langCode = sanitizeLangCode(lang);
+  ensureConfigPresetsDir();
+
+  let combined = [];
+  const generalJson = path.join(CONFIG_PRESETS_DIR, 'defaults_presets.json');
+  if (fs.existsSync(generalJson)) {
+    try {
+      const raw = fs.readFileSync(generalJson, 'utf8');
+      const arr = JSON.parse(raw || '[]');
+      if (Array.isArray(arr)) combined = arr.slice();
+    } catch (err) {
+      log.error('[presets_main] Error parsing defaults_presets.json:', err);
+    }
+  }
+  if (!Array.isArray(combined) || combined.length === 0) {
+    combined = loadPresetArrayFromJs(path.join(PRESETS_SOURCE_DIR, 'defaults_presets.js')).slice();
+  }
+
+  const langCode = normalizeLangBase(lang);
   if (langCode) {
-    const langFile = path.join(presetsDir, `defaults_presets_${langCode}.js`);
-    const langPresets = loadPresetArrayFromJs(langFile);
+    let langPresets = [];
+    const langJson = path.join(CONFIG_PRESETS_DIR, `defaults_presets_${langCode}.json`);
+    if (fs.existsSync(langJson)) {
+      try {
+        const raw = fs.readFileSync(langJson, 'utf8');
+        const arr = JSON.parse(raw || '[]');
+        if (Array.isArray(arr)) langPresets = arr.slice();
+      } catch (err) {
+        log.error(`[presets_main] Error parsing defaults_presets_${langCode}.json:`, err);
+      }
+    }
+    if (!Array.isArray(langPresets) || langPresets.length === 0) {
+      langPresets = loadPresetArrayFromJs(
+        path.join(PRESETS_SOURCE_DIR, `defaults_presets_${langCode}.js`)
+      );
+    }
     if (langPresets.length) combined.push(...langPresets);
   }
   return combined;
@@ -145,7 +177,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       s.language && typeof s.language === 'string' && s.language.trim()
         ? s.language.trim()
         : 'es';
-    return sanitizeLangCode(lang) || 'es';
+    return normalizeLangBase(lang) || 'es';
+  }
+
+  function getUserPresets(settings, lang) {
+    const langCode = normalizeLangBase(lang) || 'es';
+    if (typeof settings.presets_by_language !== 'object' || settings.presets_by_language === null || Array.isArray(settings.presets_by_language)) {
+      settings.presets_by_language = {};
+    }
+    if (!Array.isArray(settings.presets_by_language[langCode])) {
+      settings.presets_by_language[langCode] = [];
+    }
+    return settings.presets_by_language[langCode];
   }
 
   // Replace {placeholders} in i18n dialog strings.
@@ -272,14 +315,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   ipcMain.handle('create-preset', (_event, preset) => {
     try {
       let settings = settingsState.getSettings();
-      settings.presets = settings.presets || [];
+      const lang = getEffectiveLang(settings);
+      const userPresets = getUserPresets(settings, lang);
 
       // If preset name already exists in user's presets, overwrite that one
-      const idx = settings.presets.findIndex((p) => p.name === preset.name);
+      const idx = userPresets.findIndex((p) => p.name === preset.name);
       if (idx >= 0) {
-        settings.presets[idx] = preset;
+        userPresets[idx] = preset;
       } else {
-        settings.presets.push(preset);
+        userPresets.push(preset);
       }
 
       settings = settingsState.saveSettings(settings);
@@ -308,7 +352,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       // Load settings and dialog texts before any message
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
-      const dialogTexts = menuBuilder.getDialogTexts(lang);
+      const dialogLang = normalizeLangTag(settings.language) || lang;
+      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
       const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
       const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
 
@@ -352,8 +397,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const defaultsCombined = loadDefaultPresetsCombined(lang);
 
       // Normalize structures
-      settings.presets = settings.presets || [];
-      const idxUser = settings.presets.findIndex((p) => p.name === name);
+      const userPresets = getUserPresets(settings, lang);
+      const idxUser = userPresets.findIndex((p) => p.name === name);
       const isDefault = defaultsCombined.find((p) => p.name === name);
 
       // Ensure disabled_default_presets structure
@@ -367,7 +412,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         // There is a personalized preset with that name
         if (isDefault) {
           // Remove personalized preset and mark default as ignored
-          settings.presets.splice(idxUser, 1);
+          userPresets.splice(idxUser, 1);
           if (!settings.disabled_default_presets[lang].includes(name)) {
             settings.disabled_default_presets[lang].push(name);
           }
@@ -377,7 +422,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           return { ok: true, action: 'deleted_and_ignored' };
         } else {
           // Personalized only: delete it
-          settings.presets.splice(idxUser, 1);
+          userPresets.splice(idxUser, 1);
           settings = settingsState.saveSettings(settings);
           broadcast(settings);
 
@@ -410,7 +455,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     try {
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
-      const dialogTexts = menuBuilder.getDialogTexts(lang);
+      const dialogLang = normalizeLangTag(settings.language) || lang;
+      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
       const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
       const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
 
@@ -421,7 +467,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         defaultId: 1,
         cancelId: 1,
         message:
-          interpolateDialogText(dialogTexts.restore_defaults_confirm, { lang }) ||
+          interpolateDialogText(dialogTexts.restore_defaults_confirm, { lang: dialogLang }) ||
           'FALLBACK: Restore default presets to original?',
       });
       if (conf.response === 1) {
@@ -429,7 +475,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const defaultsCombined = loadDefaultPresetsCombined(lang);
-      settings.presets = settings.presets || [];
+      const userPresets = getUserPresets(settings, lang);
 
       const defaultNames = new Set(
         defaultsCombined.map((p) => p && p.name).filter(Boolean)
@@ -438,7 +484,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const unignored = [];
 
       // Remove or keep user presets depending on whether they shadow defaults
-      settings.presets = settings.presets.filter((p) => {
+      settings.presets_by_language[lang] = userPresets.filter((p) => {
         if (!p || !p.name) return false;
         if (defaultNames.has(p.name)) {
           removedCustom.push(p.name);
@@ -494,7 +540,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     try {
       const settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
-      const dialogTexts = menuBuilder.getDialogTexts(lang);
+      const dialogLang = normalizeLangTag(settings.language) || lang;
+      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
 
       const { mainWin } = resolveWindows();
       await dialog.showMessageBox(mainWin || null, {
@@ -524,7 +571,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
-      const dialogTexts = menuBuilder.getDialogTexts(lang);
+      const dialogLang = normalizeLangTag(settings.language) || lang;
+      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
 
       const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
       const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
@@ -543,9 +591,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const defaultsCombined = loadDefaultPresetsCombined(lang);
-      settings.presets = settings.presets || [];
+      const userPresets = getUserPresets(settings, lang);
 
-      const idxUser = settings.presets.findIndex(
+      const idxUser = userPresets.findIndex(
         (p) => p.name === originalName
       );
       const isDefault = defaultsCombined.find(
@@ -562,7 +610,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       if (idxUser >= 0) {
         if (isDefault) {
-          settings.presets.splice(idxUser, 1);
+          userPresets.splice(idxUser, 1);
           if (
             !settings.disabled_default_presets[lang].includes(originalName)
           ) {
@@ -570,7 +618,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           }
           deletedAction = 'deleted_and_ignored';
         } else {
-          settings.presets.splice(idxUser, 1);
+          userPresets.splice(idxUser, 1);
           deletedAction = 'deleted_custom';
         }
       } else if (isDefault) {
@@ -582,14 +630,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         deletedAction = 'ignored_default';
       }
 
-      const newList = settings.presets || [];
-      const idxNew = newList.findIndex((p) => p.name === newPreset.name);
+      const idxNew = userPresets.findIndex((p) => p.name === newPreset.name);
       if (idxNew >= 0) {
-        newList[idxNew] = newPreset;
+        userPresets[idxNew] = newPreset;
       } else {
-        newList.push(newPreset);
+        userPresets.push(newPreset);
       }
-      settings.presets = newList;
 
       settings = settingsState.saveSettings(settings);
       broadcast(settings);

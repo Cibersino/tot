@@ -6,18 +6,28 @@
 
   log.debug('[presets.js] module loaded');
 
+  const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
+  const getLangBase = (lang) => {
+    const tag = normalizeLangTag(lang);
+    if (!tag) return '';
+    const idx = tag.indexOf('-');
+    return idx > 0 ? tag.slice(0, idx) : tag;
+  };
+
   function combinePresets({ settings = {}, defaults = {} }) {
-    const lang = settings.language || 'es';
-    const userPresets = Array.isArray(settings.presets) ? settings.presets.slice() : [];
+    const langBase = getLangBase(settings.language) || 'es';
+    const userPresets = (settings.presets_by_language && Array.isArray(settings.presets_by_language[langBase]))
+      ? settings.presets_by_language[langBase].slice()
+      : [];
     const generalDefaults = Array.isArray(defaults.general) ? defaults.general.slice() : [];
-    const langPresets = (defaults.languagePresets && defaults.languagePresets[lang] && Array.isArray(defaults.languagePresets[lang]))
-      ? defaults.languagePresets[lang]
+    const langPresets = (defaults.languagePresets && defaults.languagePresets[langBase] && Array.isArray(defaults.languagePresets[langBase]))
+      ? defaults.languagePresets[langBase]
       : [];
 
     let combined = generalDefaults.concat(langPresets);
 
-    const disabledByUser = (settings.disabled_default_presets && Array.isArray(settings.disabled_default_presets[lang]))
-      ? settings.disabled_default_presets[lang]
+    const disabledByUser = (settings.disabled_default_presets && Array.isArray(settings.disabled_default_presets[langBase]))
+      ? settings.disabled_default_presets[langBase]
       : [];
     if (disabledByUser.length > 0) {
       combined = combined.filter(p => !disabledByUser.includes(p.name));
@@ -61,8 +71,8 @@
   }) {
     if (!electronAPI) throw new Error('electronAPI requerido para cargar presets');
 
-    const settings = (await electronAPI.getSettings()) || { language, presets: [] };
-    const lang = settings.language || language || 'es';
+    const settings = (await electronAPI.getSettings()) || { language, presets_by_language: {} };
+    const lang = getLangBase(settings.language || language) || 'es';
 
     let defaults = { general: [], languagePresets: {} };
     try {
