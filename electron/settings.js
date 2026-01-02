@@ -51,7 +51,7 @@ let _currentSettings = null;
 // =============================================================================
 /**
  * Loads i18n/<langBase>/numberFormat.json and extracts separators.
- * Returns { thousands, decimal } or null if unavailable.
+ * Returns { thousands, decimal } or null if unavailable/invalid.
  */
 function loadNumberFormatDefaults(lang) {
   try {
@@ -67,19 +67,17 @@ function loadNumberFormatDefaults(lang) {
 
     const json = JSON.parse(raw);
 
-    const thousands =
-      json.thousands ||
-      json.thousandsSeparator ||
-      json.separadorMiles ||
-      json.sepMiles ||
-      '.';
+    const thousands = typeof json.thousands === 'string' ? json.thousands : '';
+    const decimal = typeof json.decimal === 'string' ? json.decimal : '';
 
-    const decimal =
-      json.decimal ||
-      json.decimalSeparator ||
-      json.separadorDecimal ||
-      json.sepDecimal ||
-      ',';
+    if (!thousands || !decimal) {
+      log.warnOnce(
+        `settings.loadNumberFormatDefaults.invalidSchema:${langCode}`,
+        'Invalid numberFormat.json schema; expected { thousands, decimal } as non-empty strings:',
+        { langCode, filePath, keys: json && typeof json === 'object' ? Object.keys(json) : [] }
+      );
+      return null;
+    }
 
     return { thousands, decimal };
   } catch (err) {
@@ -208,7 +206,21 @@ function normalizeSettings(s) {
   const langBase = getLangBase(langTag) || 'es';
   if (langTag) s.language = langTag;
 
-  if (!Array.isArray(s.presets_by_language[langBase])) {
+  // presets_by_language[langBase]:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof s.presets_by_language[langBase] === 'undefined') {
+    s.presets_by_language[langBase] = [];
+  } else if (!Array.isArray(s.presets_by_language[langBase])) {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidPresetsByLanguageEntry',
+      'Invalid presets_by_language entry; forcing empty array:',
+      {
+        langBase,
+        type: typeof s.presets_by_language[langBase],
+        isArray: Array.isArray(s.presets_by_language[langBase]),
+      }
+    );
     s.presets_by_language[langBase] = [];
   }
 
@@ -380,7 +392,11 @@ function registerIpc(
         'IPC get-settings failed (using safe fallback):',
         err
       );
-      return { language: 'es', presets_by_language: {}, disabled_default_presets: {} };
+      return normalizeSettings({
+        language: 'es',
+        presets_by_language: {},
+        disabled_default_presets: {},
+      });
     }
   });
 
