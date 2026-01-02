@@ -60,19 +60,36 @@ function ensureConfigPresetsDir() {
 function loadJson(filePath, fallback = {}) {
   try {
     // Missing file is not an error: callers decide what the fallback should be.
-    if (!fs.existsSync(filePath)) return fallback;
+    if (!fs.existsSync(filePath)) {
+      log.warnOnce(
+        `fs_storage.loadJson:missing:${String(filePath)}`,
+        'loadJson missing (using fallback):',
+        filePath
+      );
+      return fallback;
+    }
 
     let raw = fs.readFileSync(filePath, 'utf8');
 
     // Remove UTF-8 BOM if present (some editors add it and JSON.parse may fail).
     raw = raw.replace(/^\uFEFF/, '');
 
-    return JSON.parse(raw || '{}');
+    // Empty/whitespace-only file is treated as invalid JSON (recoverable).
+    if (raw.trim() === '') {
+      log.warnOnce(
+        `fs_storage.loadJson:empty:${String(filePath)}`,
+        'loadJson empty file (using fallback):',
+        filePath
+      );
+      return fallback;
+    }
+
+    return JSON.parse(raw);
   } catch (err) {
     // Recoverable by design: we return fallback and the app can continue.
     // Deduplicate to avoid log spam if a file is repeatedly read while invalid.
     log.warnOnce(
-      `fs_storage.loadJson:${String(filePath)}`,
+      `fs_storage.loadJson:failed:${String(filePath)}`,
       'loadJson failed (using fallback):',
       filePath,
       err
