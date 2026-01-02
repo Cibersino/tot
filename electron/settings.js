@@ -8,12 +8,14 @@ const Log = require('./log');
 
 const log = Log.get('settings');
 
-const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
+const normalizeLangTag = (lang) =>
+  (lang || '').trim().toLowerCase().replace(/_/g, '-');
+
 const getLangBase = (lang) => {
-    const tag = normalizeLangTag(lang);
-    if (!tag) return '';
-    const idx = tag.indexOf('-');
-    return idx > 0 ? tag.slice(0, idx) : tag;
+  const tag = normalizeLangTag(lang);
+  if (!tag) return '';
+  const idx = tag.indexOf('-');
+  return idx > 0 ? tag.slice(0, idx) : tag;
 };
 
 // Dependencies injected from main.js
@@ -29,47 +31,38 @@ let _currentSettings = null;
  * Returns { thousands, decimal } or null if the load failed.
  */
 function loadNumberFormatDefaults(lang) {
-    try {
-        const langCode = getLangBase(lang) || 'es';
-        const filePath = path.join(
-            __dirname,
-            '..',
-            'i18n',
-            langCode,
-            'numberFormat.json'
-        );
-        if (!fs.existsSync(filePath)) return null;
+  try {
+    const langCode = getLangBase(lang) || 'es';
+    const filePath = path.join(__dirname, '..', 'i18n', langCode, 'numberFormat.json');
+    if (!fs.existsSync(filePath)) return null;
 
-        let raw = fs.readFileSync(filePath, 'utf8');
-        if (!raw) return null;
+    let raw = fs.readFileSync(filePath, 'utf8');
+    if (!raw) return null;
 
-        // Remove UTF-8 BOM if exists
-        raw = raw.replace(/^\uFEFF/, '');
+    // Remove UTF-8 BOM if exists
+    raw = raw.replace(/^\uFEFF/, '');
 
-        const json = JSON.parse(raw);
+    const json = JSON.parse(raw);
 
-        const thousands =
-            json.thousands ||
-            json.thousandsSeparator ||
-            json.separadorMiles ||
-            json.sepMiles ||
-            '.';
-        const decimal =
-            json.decimal ||
-            json.decimalSeparator ||
-            json.separadorDecimal ||
-            json.sepDecimal ||
-            ',';
+    const thousands =
+      json.thousands ||
+      json.thousandsSeparator ||
+      json.separadorMiles ||
+      json.sepMiles ||
+      '.';
 
-        return { thousands, decimal };
-    } catch (err) {
-        log.error(
-            '[settings] Error loading numberFormat defaults for',
-            lang,
-            err
-        );
-        return null;
-    }
+    const decimal =
+      json.decimal ||
+      json.decimalSeparator ||
+      json.separadorDecimal ||
+      json.sepDecimal ||
+      ',';
+
+    return { thousands, decimal };
+  } catch (err) {
+    log.error('[settings] Error loading numberFormat defaults for', lang, err);
+    return null;
+  }
 }
 
 /**
@@ -77,53 +70,64 @@ function loadNumberFormatDefaults(lang) {
  * Maintains the previous main.js logic.
  */
 function normalizeSettings(s) {
-    s = s || {};
-    if (typeof s.language !== 'string') s.language = '';
-    if (typeof s.presets_by_language !== 'object' || Array.isArray(s.presets_by_language) || s.presets_by_language === null) {
-        s.presets_by_language = {};
-    }
-    if (typeof s.numberFormatting !== 'object') {
-        s.numberFormatting = s.numberFormatting || {};
-    }
+  s = s || {};
 
-    // Persist default count mode: 'precise'
-    if (!s.modeConteo || (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple')) {
-        s.modeConteo = 'preciso';
-    }
+  if (typeof s.language !== 'string') s.language = '';
 
-    // Ensure numberFormatting has defaults for current language (from i18n if available)
-    const langTag =
-        s.language && typeof s.language === 'string' && s.language.trim()
-            ? normalizeLangTag(s.language)
-            : '';
-    const langBase = getLangBase(langTag) || 'es';
-    if (langTag) s.language = langTag;
+  if (
+    typeof s.presets_by_language !== 'object' ||
+    Array.isArray(s.presets_by_language) ||
+    s.presets_by_language === null
+  ) {
+    s.presets_by_language = {};
+  }
 
-    // If legacy presets exist, migrate them once into the bucket of the current language and drop the old field.
-    if (Array.isArray(s.presets)) {
-        if (!Array.isArray(s.presets_by_language[langBase])) {
-            s.presets_by_language[langBase] = s.presets.slice();
-        }
-        delete s.presets;
-    }
+  if (typeof s.numberFormatting !== 'object') {
+    s.numberFormatting = s.numberFormatting || {};
+  }
 
+  // Persist default count mode: 'precise'
+  if (!s.modeConteo || (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple')) {
+    s.modeConteo = 'preciso';
+  }
+
+  // Ensure numberFormatting has defaults for current language (from i18n if available)
+  const langTag =
+    s.language && typeof s.language === 'string' && s.language.trim()
+      ? normalizeLangTag(s.language)
+      : '';
+
+  const langBase = getLangBase(langTag) || 'es';
+  if (langTag) s.language = langTag;
+
+  // If legacy presets exist, migrate them once into the bucket of the current language and drop the old field.
+  if (Array.isArray(s.presets)) {
     if (!Array.isArray(s.presets_by_language[langBase])) {
-        s.presets_by_language[langBase] = [];
+      s.presets_by_language[langBase] = s.presets.slice();
     }
+    delete s.presets;
+  }
 
-    if (!s.numberFormatting[langBase]) {
-        const nf = loadNumberFormatDefaults(langBase);
-        if (nf && nf.thousands && nf.decimal) {
-            s.numberFormatting[langBase] = {
-                separadorMiles: nf.thousands,
-                separadorDecimal: nf.decimal,
-            };
-        } else {
-            s.numberFormatting[langBase] = { separadorMiles: '.', separadorDecimal: ',' };
-        }
+  if (!Array.isArray(s.presets_by_language[langBase])) {
+    s.presets_by_language[langBase] = [];
+  }
+
+  if (!s.numberFormatting[langBase]) {
+    const nf = loadNumberFormatDefaults(langBase);
+    if (nf && nf.thousands && nf.decimal) {
+      s.numberFormatting[langBase] = {
+        separadorMiles: nf.thousands,
+        separadorDecimal: nf.decimal,
+      };
+    } else {
+      s.numberFormatting[langBase] = {
+        separadorMiles: '.',
+        separadorDecimal: ',',
+      };
     }
+  }
 
-    return s;
+  return s;
 }
 
 /**
@@ -133,74 +137,124 @@ function normalizeSettings(s) {
  * -Leave _currentSettings cached.
  */
 function init({ loadJson, saveJson, settingsFile }) {
-    if (typeof loadJson !== 'function' || typeof saveJson !== 'function') {
-        throw new Error('[settings] init requiere loadJson y saveJson');
-    }
-    if (!settingsFile) {
-        throw new Error('[settings] init requiere settingsFile');
-    }
+  if (typeof loadJson !== 'function' || typeof saveJson !== 'function') {
+    throw new Error('[settings] init requiere loadJson y saveJson');
+  }
+  if (!settingsFile) {
+    throw new Error('[settings] init requiere settingsFile');
+  }
 
-    _loadJson = loadJson;
-    _saveJson = saveJson;
-    _settingsFile = settingsFile;
+  _loadJson = loadJson;
+  _saveJson = saveJson;
+  _settingsFile = settingsFile;
 
-    const raw = _loadJson(_settingsFile, { language: '', presets_by_language: {}, disabled_default_presets: {} });
-    const normalized = normalizeSettings(raw);
-    _currentSettings = normalized;
+  const raw = _loadJson(_settingsFile, {
+    language: '',
+    presets_by_language: {},
+    disabled_default_presets: {},
+  });
 
-    try {
-        _saveJson(_settingsFile, _currentSettings);
-    } catch (err) {
-        log.error('[settings] Error persisting settings in init:', err);
-    }
+  const normalized = normalizeSettings(raw);
+  _currentSettings = normalized;
 
-    return _currentSettings;
+  try {
+    _saveJson(_settingsFile, _currentSettings);
+  } catch (err) {
+    log.error('[settings] Error persisting settings in init:', err);
+  }
+
+  return _currentSettings;
 }
 
 /**
  * Returns the current settings normalized from cache or disk.
  */
 function getSettings() {
-    if (!_loadJson || !_settingsFile) {
-        throw new Error('[settings] getSettings llamado antes de init');
-    }
-    // Always reload from disk to reflect changes made outside settingsState
-    const raw = _loadJson(_settingsFile, { language: '', presets_by_language: {}, disabled_default_presets: {} });
-    _currentSettings = normalizeSettings(raw);
-    return _currentSettings;
+  if (!_loadJson || !_settingsFile) {
+    throw new Error('[settings] getSettings llamado antes de init');
+  }
+
+  // Always reload from disk to reflect changes made outside settingsState
+  const raw = _loadJson(_settingsFile, {
+    language: '',
+    presets_by_language: {},
+    disabled_default_presets: {},
+  });
+
+  _currentSettings = normalizeSettings(raw);
+  return _currentSettings;
 }
 
 /**
  * Normalizes and persists settings, updating the cache.
  */
 function saveSettings(nextSettings) {
-    if (!nextSettings) return getSettings();
-    const normalized = normalizeSettings(nextSettings);
-    _currentSettings = normalized;
-    try {
-        if (_saveJson && _settingsFile) {
-            _saveJson(_settingsFile, normalized);
-        }
-    } catch (err) {
-        log.error('[settings] Error saving settings:', err);
+  if (!nextSettings) return getSettings();
+
+  const normalized = normalizeSettings(nextSettings);
+  _currentSettings = normalized;
+
+  try {
+    if (_saveJson && _settingsFile) {
+      _saveJson(_settingsFile, normalized);
     }
-    return _currentSettings;
+  } catch (err) {
+    log.error('[settings] Error saving settings:', err);
+  }
+
+  return _currentSettings;
 }
 
 /**
  * Centralized broadcast of 'settings-updated' to the main window.
  */
 function broadcastSettingsUpdated(settings, windows) {
-    if (!windows) return;
-    const { mainWin } = windows;
+  if (!windows) return;
+  const { mainWin } = windows;
 
-    try {
-        if (mainWin && !mainWin.isDestroyed()) {
-            mainWin.webContents.send('settings-updated', settings);
-        }
-    } catch (err) {
-        log.error('[settings] Error notifying settings-updated:', err);
+  try {
+    if (mainWin && !mainWin.isDestroyed()) {
+      mainWin.webContents.send('settings-updated', settings);
     }
+  } catch (err) {
+    log.error('[settings] Error notifying settings-updated:', err);
+  }
+}
+
+/**
+ * Fallback for the case where the language modal closes without selecting anything.
+ * If settings.language is empty, force fallbackLang (default 'es')
+ * and ensures numberFormatting[fallbackLang].
+ */
+function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
+  try {
+    let settings = getSettings();
+    if (!settings.language || settings.language === '') {
+      const lang = normalizeLangTag(fallbackLang);
+      const base = getLangBase(lang) || 'es';
+      settings.language = lang;
+      settings.numberFormatting = settings.numberFormatting || {};
+
+      if (!settings.numberFormatting[base]) {
+        const nf = loadNumberFormatDefaults(base);
+        if (nf && nf.thousands && nf.decimal) {
+          settings.numberFormatting[base] = {
+            separadorMiles: nf.thousands,
+            separadorDecimal: nf.decimal,
+          };
+        } else {
+          settings.numberFormatting[base] = {
+            separadorMiles: '.',
+            separadorDecimal: ',',
+          };
+        }
+      }
+
+      saveSettings(settings);
+    }
+  } catch (err) {
+    log.error('[settings] Error applying fallback language:', err);
+  }
 }
 
 /**
@@ -210,161 +264,125 @@ function broadcastSettingsUpdated(settings, windows) {
  * -set-mode-count
  */
 function registerIpc(
-    ipcMain,
-    {
-        getWindows,          // () => ({ mainWin, editorWin, presetWin, langWin, flotanteWin })
-        buildAppMenu,       // function(lang)
-        setCurrentLanguage, // (lang) => void
-    }
+  ipcMain,
+  {
+    getWindows, // () => ({ mainWin, editorWin, presetWin, langWin, flotanteWin })
+    buildAppMenu, // function(lang)
+    setCurrentLanguage, // (lang) => void
+  }
 ) {
-    if (!ipcMain) {
-        throw new Error('[settings] registerIpc requiere ipcMain');
-    }
+  if (!ipcMain) {
+    throw new Error('[settings] registerIpc requiere ipcMain');
+  }
 
-    // get-settings: returns the current settings object (normalized)
-    ipcMain.handle('get-settings', async () => {
-        try {
-            return getSettings();
-        } catch (err) {
-            log.error('Error in get-settings:', err);
-            return { language: 'es', presets_by_language: {}, disabled_default_presets: {} };
-        }
-    });
-
-    // set-language: saves language, ensures numberFormatting and rebuilds menu
-    ipcMain.handle('set-language', async (_event, lang) => {
-        try {
-            const chosenRaw = String(lang || '');
-            const chosen = normalizeLangTag(chosenRaw);
-            const effectiveLang = chosen || '';
-            const base = getLangBase(effectiveLang) || 'es';
-
-            let settings = getSettings();
-            settings.language = chosen;
-
-            settings.numberFormatting = settings.numberFormatting || {};
-            if (!settings.numberFormatting[base]) {
-                const nf = loadNumberFormatDefaults(base);
-                if (nf && nf.thousands && nf.decimal) {
-                    settings.numberFormatting[base] = {
-                        separadorMiles: nf.thousands,
-                        separadorDecimal: nf.decimal,
-                    };
-                } else {
-                    settings.numberFormatting[base] = {
-                        separadorMiles: '.',
-                        separadorDecimal: ',',
-                    };
-                }
-            }
-
-            settings = saveSettings(settings);
-
-            if (typeof setCurrentLanguage === 'function') {
-                setCurrentLanguage(effectiveLang || 'es');
-            }
-
-            const windows = typeof getWindows === 'function' ? getWindows() : {};
-
-            // Rebuild menu with the new language
-            if (typeof buildAppMenu === 'function') {
-                try {
-                    buildAppMenu(effectiveLang);
-                } catch (err) {
-                    log.warn('[settings] Error rebuilding menu:', err);
-                }
-            }
-
-            // Hide the toolbar in secondary windows (editor, preset, language)
-            try {
-                const { editorWin, presetWin, langWin } = windows;
-                if (editorWin && !editorWin.isDestroyed()) {
-                    editorWin.setMenu(null);
-                    editorWin.setMenuBarVisibility(false);
-                }
-                if (presetWin && !presetWin.isDestroyed()) {
-                    presetWin.setMenu(null);
-                    presetWin.setMenuBarVisibility(false);
-                }
-                if (langWin && !langWin.isDestroyed()) {
-                    langWin.setMenu(null);
-                    langWin.setMenuBarVisibility(false);
-                }
-            } catch (err) {
-                log.warn(
-                    '[settings] Error hiding menu in secondary windows:',
-                    err
-                );
-            }
-
-            broadcastSettingsUpdated(settings, windows);
-
-            return { ok: true, language: chosen };
-        } catch (err) {
-            log.error('Error saving language:', err);
-            return { ok: false, error: String(err) };
-        }
-    });
-
-    // set-mode-count: simple/precise + broadcast
-    ipcMain.handle('set-mode-conteo', async (_event, mode) => {
-        try {
-            let settings = getSettings();
-            settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
-            settings = saveSettings(settings);
-
-            const windows = typeof getWindows === 'function' ? getWindows() : {};
-            broadcastSettingsUpdated(settings, windows);
-
-            return { ok: true, mode: settings.modeConteo };
-        } catch (err) {
-            log.error('Error in set-mode-conteo:', err);
-            return { ok: false, error: String(err) };
-        }
-    });
-}
-
-/**
- * Fallback for the case where the language modal closes without selecting anything.
- * If settings.language is empty, force fallbackLang (default 'es')
- * and ensures numberFormatting[fallbackLang].
- */
-function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
+  // get-settings: returns the current settings object (normalized)
+  ipcMain.handle('get-settings', async () => {
     try {
-        let settings = getSettings();
-        if (!settings.language || settings.language === '') {
-            const lang = normalizeLangTag(fallbackLang);
-            const base = getLangBase(lang) || 'es';
-            settings.language = lang;
-            settings.numberFormatting = settings.numberFormatting || {};
-
-            if (!settings.numberFormatting[base]) {
-                const nf = loadNumberFormatDefaults(base);
-                if (nf && nf.thousands && nf.decimal) {
-                    settings.numberFormatting[base] = {
-                        separadorMiles: nf.thousands,
-                        separadorDecimal: nf.decimal,
-                    };
-                } else {
-                    settings.numberFormatting[base] = {
-                        separadorMiles: '.',
-                        separadorDecimal: ',',
-                    };
-                }
-            }
-
-            saveSettings(settings);
-        }
+      return getSettings();
     } catch (err) {
-        log.error('[settings] Error applying fallback language:', err);
+      log.error('Error in get-settings:', err);
+      return { language: 'es', presets_by_language: {}, disabled_default_presets: {} };
     }
+  });
+
+  // set-language: saves language, ensures numberFormatting and rebuilds menu
+  ipcMain.handle('set-language', async (_event, lang) => {
+    try {
+      const chosenRaw = String(lang || '');
+      const chosen = normalizeLangTag(chosenRaw);
+      const effectiveLang = chosen || '';
+      const base = getLangBase(effectiveLang) || 'es';
+
+      let settings = getSettings();
+      settings.language = chosen;
+
+      settings.numberFormatting = settings.numberFormatting || {};
+      if (!settings.numberFormatting[base]) {
+        const nf = loadNumberFormatDefaults(base);
+        if (nf && nf.thousands && nf.decimal) {
+          settings.numberFormatting[base] = {
+            separadorMiles: nf.thousands,
+            separadorDecimal: nf.decimal,
+          };
+        } else {
+          settings.numberFormatting[base] = {
+            separadorMiles: '.',
+            separadorDecimal: ',',
+          };
+        }
+      }
+
+      settings = saveSettings(settings);
+
+      if (typeof setCurrentLanguage === 'function') {
+        setCurrentLanguage(effectiveLang || 'es');
+      }
+
+      const windows = typeof getWindows === 'function' ? getWindows() : {};
+
+      // Rebuild menu with the new language
+      if (typeof buildAppMenu === 'function') {
+        try {
+          buildAppMenu(effectiveLang);
+        } catch (err) {
+          log.warn('[settings] Error rebuilding menu:', err);
+        }
+      }
+
+      // Hide the toolbar in secondary windows (editor, preset, language)
+      try {
+        const { editorWin, presetWin, langWin } = windows;
+
+        if (editorWin && !editorWin.isDestroyed()) {
+          editorWin.setMenu(null);
+          editorWin.setMenuBarVisibility(false);
+        }
+
+        if (presetWin && !presetWin.isDestroyed()) {
+          presetWin.setMenu(null);
+          presetWin.setMenuBarVisibility(false);
+        }
+
+        if (langWin && !langWin.isDestroyed()) {
+          langWin.setMenu(null);
+          langWin.setMenuBarVisibility(false);
+        }
+      } catch (err) {
+        log.warn('[settings] Error hiding menu in secondary windows:', err);
+      }
+
+      broadcastSettingsUpdated(settings, windows);
+
+      return { ok: true, language: chosen };
+    } catch (err) {
+      log.error('Error saving language:', err);
+      return { ok: false, error: String(err) };
+    }
+  });
+
+  // set-mode-count: simple/precise + broadcast
+  ipcMain.handle('set-mode-conteo', async (_event, mode) => {
+    try {
+      let settings = getSettings();
+      settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
+      settings = saveSettings(settings);
+
+      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      broadcastSettingsUpdated(settings, windows);
+
+      return { ok: true, mode: settings.modeConteo };
+    } catch (err) {
+      log.error('Error in set-mode-conteo:', err);
+      return { ok: false, error: String(err) };
+    }
+  });
 }
 
 module.exports = {
-    init,
-    registerIpc,
-    getSettings,
-    saveSettings,
-    applyFallbackLanguageIfUnset,
-    broadcastSettingsUpdated,
+  init,
+  registerIpc,
+  getSettings,
+  saveSettings,
+  applyFallbackLanguageIfUnset,
+  broadcastSettingsUpdated,
 };
