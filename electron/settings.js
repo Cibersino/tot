@@ -4,11 +4,13 @@
 // =============================================================================
 // Overview
 // =============================================================================
+// This module owns persisted user settings (user_settings.json).
+//
 // Responsibilities:
-// - Load, normalize, and persist user settings (user_settings.json) via injected loadJson/saveJson.
+// - Load settings from disk (via injected loadJson/saveJson) and normalize shape/types.
 // - Keep language tags consistent (normalize language tag + base language).
 // - Ensure numberFormatting[langBase] exists (from i18n/<lang>/numberFormat.json or safe defaults).
-// - Expose a small state API (init/getSettings/saveSettings) with an in-memory cache.
+// - Provide a small state API (init/getSettings/saveSettings) backed by an in-memory cache.
 // - Register IPC handlers (get-settings, set-language, set-mode-conteo) and broadcast settings-updated.
 // - Apply a logged fallback language when the language modal closes without a selection.
 // =============================================================================
@@ -25,6 +27,8 @@ const log = Log.get('settings');
 // =============================================================================
 // Language helpers
 // =============================================================================
+// Language tags are normalized to lowercase and use '-' as separator (e.g., "en-US" -> "en-us").
+// The "base" is the first part (e.g., "en-us" -> "en").
 const normalizeLangTag = (lang) =>
   (lang || '').trim().toLowerCase().replace(/_/g, '-');
 
@@ -38,19 +42,19 @@ const getLangBase = (lang) => {
 // =============================================================================
 // Injected dependencies + cache
 // =============================================================================
-// Dependencies injected from main.js
+// Dependencies injected from main.js (centralized file I/O).
 let _loadJson = null;
 let _saveJson = null;
 let _settingsFile = null;
 
-// Cache in memory of the last normalized settings
+// Last normalized settings kept in memory.
 let _currentSettings = null;
 
 // =============================================================================
 // Number format defaults loader
 // =============================================================================
 /**
- * Loads i18n/<langBase>/numberFormat.json and extracts separators.
+ * Reads i18n/<langBase>/numberFormat.json and returns separators.
  * Returns { thousands, decimal } or null if unavailable/invalid.
  */
 function loadNumberFormatDefaults(lang) {
@@ -63,7 +67,7 @@ function loadNumberFormatDefaults(lang) {
     let raw = fs.readFileSync(filePath, 'utf8');
     if (!raw) return null;
 
-    // Remove UTF-8 BOM if present (some editors may add it).
+    // Some editors may add a UTF-8 BOM.
     raw = raw.replace(/^\uFEFF/, '');
 
     const json = JSON.parse(raw);
@@ -98,7 +102,7 @@ function loadNumberFormatDefaults(lang) {
 // =============================================================================
 /**
  * Ensures settings.numberFormatting[langBase] exists.
- * If missing, populate from i18n; otherwise use safe defaults and log once.
+ * If missing, load separators from i18n; otherwise use safe defaults and log once.
  */
 function ensureNumberFormattingForBase(settings, base) {
   if (!settings || typeof settings !== 'object') return;
@@ -132,12 +136,16 @@ function ensureNumberFormattingForBase(settings, base) {
 // =============================================================================
 /**
  * Normalizes settings without overwriting existing valid values.
- * Notes:
- * - numberFormatting is enforced via ensureNumberFormattingForBase().
+ *
+ * Goals:
+ * - Keep the persisted schema stable even if the file is missing/edited externally.
+ * - Convert invalid shapes to safe defaults (and log once).
+ * - Ensure language-dependent buckets exist for the current language base.
  */
 function normalizeSettings(s) {
   s = s || {};
 
+  // language must be a string; empty string means "unset".
   if (typeof s.language !== 'string') s.language = '';
 
   // presets_by_language:
@@ -158,7 +166,7 @@ function normalizeSettings(s) {
     s.presets_by_language = {};
   }
 
-  // Ensure numberFormatting is a plain object (may be missing/null/array/invalid types).
+  // numberFormatting must be a plain object (may be missing/null/array/invalid types).
   if (typeof s.numberFormatting === 'undefined') {
     s.numberFormatting = {};
   } else if (
@@ -174,7 +182,7 @@ function normalizeSettings(s) {
     s.numberFormatting = {};
   }
 
-  // Ensure disabled_default_presets is a plain object (may be missing/null/array/invalid types).
+  // disabled_default_presets must be a plain object (may be missing/null/array/invalid types).
   if (typeof s.disabled_default_presets === 'undefined') {
     s.disabled_default_presets = {};
   } else if (
@@ -231,6 +239,7 @@ function normalizeSettings(s) {
     s.presets_by_language[langBase] = [];
   }
 
+  // Ensure number formatting exists for the current base language.
   ensureNumberFormattingForBase(s, langBase);
 
   return s;
@@ -241,8 +250,8 @@ function normalizeSettings(s) {
 // =============================================================================
 /**
  * Initializes the module (called from main.js).
- * - Injects loadJson/saveJson and settingsFile path.
- * - Reads, normalizes, caches, and persists settings.
+ * - Stores injected dependencies and settings file path.
+ * - Loads, normalizes, caches, and persists settings once on startup.
  */
 function init({ loadJson, saveJson, settingsFile }) {
   if (typeof loadJson !== 'function' || typeof saveJson !== 'function') {
@@ -275,8 +284,8 @@ function init({ loadJson, saveJson, settingsFile }) {
 }
 
 /**
- * Returns the current settings, always normalized.
- * Note: it reloads from disk to reflect external changes.
+ * Reads the current settings from disk and returns a normalized object.
+ * This reflects external edits to the settings file.
  */
 function getSettings() {
   if (!_loadJson || !_settingsFile) {
@@ -294,7 +303,8 @@ function getSettings() {
 }
 
 /**
- * Normalizes and persists settings, updating the cache.
+ * Normalizes and persists settings, updating the in-memory cache.
+ * If nextSettings is falsy, it reloads from disk (getSettings()).
  */
 function saveSettings(nextSettings) {
   if (!nextSettings) return getSettings();
@@ -323,6 +333,7 @@ function saveSettings(nextSettings) {
 // =============================================================================
 /**
  * Sends 'settings-updated' to the main window (best-effort).
+ * This may fail during shutdown/races; failures are logged once and ignored.
  */
 function broadcastSettingsUpdated(settings, windows) {
   if (!windows) return;
@@ -345,8 +356,8 @@ function broadcastSettingsUpdated(settings, windows) {
 // Fallback language
 // =============================================================================
 /**
- * If the language modal closes without selecting anything, apply a logged fallback language.
- * This is intentionally non-silent: it changes settings.language and persists it.
+ * If the language modal closes without selecting anything, apply a fallback language.
+ * This is intentionally not silent: it modifies settings.language and persists it.
  */
 function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
   try {
@@ -372,7 +383,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
 // IPC
 // =============================================================================
 /**
- * Registers IPC related to settings:
+ * Registers IPC handlers related to settings:
  * - get-settings
  * - set-language
  * - set-mode-conteo
@@ -407,7 +418,7 @@ function registerIpc(
     }
   });
 
-  // set-language: saves language, ensures numberFormatting, rebuilds menu, broadcasts
+  // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
     try {
       const chosenRaw = String(lang || '');
@@ -425,7 +436,7 @@ function registerIpc(
 
       const windows = typeof getWindows === 'function' ? getWindows() : {};
 
-      // Rebuild menu with the new language
+      // Rebuild the app menu using the new language (best-effort).
       if (typeof buildAppMenu === 'function') {
         try {
           buildAppMenu(effectiveLang);
@@ -434,7 +445,7 @@ function registerIpc(
         }
       }
 
-      // Hide the toolbar in secondary windows (editor, preset, language)
+      // Hide the toolbar/menu in secondary windows (best-effort).
       try {
         const { editorWin, presetWin, langWin } = windows;
 
@@ -465,7 +476,7 @@ function registerIpc(
     }
   });
 
-  // set-mode-conteo: simple/preciso + broadcast
+  // set-mode-conteo: updates modeConteo and broadcasts
   ipcMain.handle('set-mode-conteo', async (_event, mode) => {
     try {
       let settings = getSettings();
