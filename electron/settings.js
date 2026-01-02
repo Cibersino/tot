@@ -135,11 +135,21 @@ function normalizeSettings(s) {
 
   if (typeof s.language !== 'string') s.language = '';
 
-  if (
+  // presets_by_language:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof s.presets_by_language === 'undefined') {
+    s.presets_by_language = {};
+  } else if (
     typeof s.presets_by_language !== 'object' ||
     Array.isArray(s.presets_by_language) ||
     s.presets_by_language === null
   ) {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidPresetsByLanguage',
+      'Invalid presets_by_language; resetting to empty object:',
+      { type: typeof s.presets_by_language, isArray: Array.isArray(s.presets_by_language) }
+    );
     s.presets_by_language = {};
   }
 
@@ -175,8 +185,17 @@ function normalizeSettings(s) {
     s.disabled_default_presets = {};
   }
 
-  // Persist default count mode: 'preciso'
-  if (!s.modeConteo || (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple')) {
+  // modeConteo:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof s.modeConteo === 'undefined') {
+    s.modeConteo = 'preciso';
+  } else if (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple') {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidModeConteo',
+      'Invalid modeConteo; forcing default:',
+      { value: s.modeConteo }
+    );
     s.modeConteo = 'preciso';
   }
 
