@@ -35,16 +35,34 @@ function ensureConfigPresetsDir() {
 function loadJson(filePath, fallback = {}) {
   try {
     if (!fs.existsSync(filePath)) return fallback;
-    const raw = fs.readFileSync(filePath, 'utf8');
+
+    let raw = fs.readFileSync(filePath, 'utf8');
+
+    // Remove UTF-8 BOM if present (some editors add it and JSON.parse may fail).
+    raw = raw.replace(/^\uFEFF/, '');
+
     return JSON.parse(raw || '{}');
   } catch (err) {
-    log.error(`Error reading JSON ${filePath}:`, err);
+    // Recoverable by design: we return fallback and the app can continue.
+    // Deduplicate to avoid log spam if a file is repeatedly read while invalid.
+    log.warnOnce(
+      `fs_storage.loadJson:${String(filePath)}`,
+      'Error reading/parsing JSON (using fallback):',
+      filePath,
+      err
+    );
     return fallback;
   }
 }
 
 function saveJson(filePath, obj) {
   try {
+    // Ensure parent directory exists so callers don't depend on init ordering.
+    const parentDir = path.dirname(filePath);
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
   } catch (err) {
     log.error(`Error writing JSON ${filePath}:`, err);
