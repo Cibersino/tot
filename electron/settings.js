@@ -165,6 +165,22 @@ function normalizeSettings(s) {
     s.numberFormatting = {};
   }
 
+  // Ensure disabled_default_presets is a plain object (may be missing/null/array/invalid types).
+  if (typeof s.disabled_default_presets === 'undefined') {
+    s.disabled_default_presets = {};
+  } else if (
+    typeof s.disabled_default_presets !== 'object' ||
+    Array.isArray(s.disabled_default_presets) ||
+    s.disabled_default_presets === null
+  ) {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidDisabledDefaultPresets',
+      'Invalid disabled_default_presets; resetting to empty object:',
+      { type: typeof s.disabled_default_presets, isArray: Array.isArray(s.disabled_default_presets) }
+    );
+    s.disabled_default_presets = {};
+  }
+
   // Persist default count mode: 'preciso'
   if (!s.modeConteo || (s.modeConteo !== 'preciso' && s.modeConteo !== 'simple')) {
     s.modeConteo = 'preciso';
@@ -313,9 +329,6 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
         'Language was unset; applying fallback language:',
         lang
       );
-
-      ensureNumberFormattingForBase(settings, base);
-
       saveSettings(settings);
     }
   } catch (err) {
@@ -364,12 +377,9 @@ function registerIpc(
       const chosenRaw = String(lang || '');
       const chosen = normalizeLangTag(chosenRaw);
       const effectiveLang = chosen || '';
-      const base = getLangBase(effectiveLang) || 'es';
 
       let settings = getSettings();
       settings.language = chosen;
-
-      ensureNumberFormattingForBase(settings, base);
 
       settings = saveSettings(settings);
 
