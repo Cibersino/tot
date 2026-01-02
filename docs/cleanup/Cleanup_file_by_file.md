@@ -125,4 +125,4 @@ Ejemplos típicos:
 
 * Eliminar legacy o resabios tras refactorizaciones o cualquier cambio en la app.
 * Revisar que todo el código haya quedado coherente.
-* Smoke test y/o análisis debug para diagnosticar que los cambios realizados no rompieron la app.
+* Cuando lo anterior esté listo: Smoke test y/o análisis debug para diagnosticar que los cambios realizados no rompieron la app.
