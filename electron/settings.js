@@ -100,19 +100,6 @@ function ensureNumberFormattingForBase(settings, base) {
 
   const langBase = getLangBase(base) || 'es';
 
-  if (
-    typeof settings.numberFormatting !== 'object' ||
-    Array.isArray(settings.numberFormatting) ||
-    settings.numberFormatting === null
-  ) {
-    log.warnOnce(
-      'settings.ensureNumberFormattingForBase.invalidNumberFormatting',
-      'Invalid numberFormatting; resetting to empty object:',
-      { type: typeof settings.numberFormatting, isArray: Array.isArray(settings.numberFormatting) }
-    );
-    settings.numberFormatting = {};
-  }
-
   if (settings.numberFormatting[langBase]) return;
 
   const nf = loadNumberFormatDefaults(langBase);
@@ -156,12 +143,19 @@ function normalizeSettings(s) {
     s.presets_by_language = {};
   }
 
-  // Ensure numberFormatting is a plain object (settings may contain null/array/invalid types).
-  if (
+  // Ensure numberFormatting is a plain object (may be missing/null/array/invalid types).
+  if (typeof s.numberFormatting === 'undefined') {
+    s.numberFormatting = {};
+  } else if (
     typeof s.numberFormatting !== 'object' ||
     Array.isArray(s.numberFormatting) ||
     s.numberFormatting === null
   ) {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidNumberFormatting',
+      'Invalid numberFormatting; resetting to empty object:',
+      { type: typeof s.numberFormatting, isArray: Array.isArray(s.numberFormatting) }
+    );
     s.numberFormatting = {};
   }
 
