@@ -1,5 +1,13 @@
 # Plan orden y limpieza por archivo
 
+## Elección de archivo:
+
+Archivos ya ordenados y limpiados:
+- `electron/main.js`
+- `electron/menu_builder.js`
+- `electron/fs_storage.js`
+- `electron/settings.js`
+
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
 **0.1 Mapa de lectura**
@@ -116,4 +124,5 @@ Ejemplos típicos:
 ## Nivel 6: Limpieza final y Smoke test
 
 * Eliminar legacy o resabios tras refactorizaciones o cualquier cambio en la app.
+* Revisar que todo el código haya quedado coherente.
 * Smoke test y/o análisis debug para diagnosticar que los cambios realizados no rompieron la app.
