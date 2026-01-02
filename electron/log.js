@@ -16,6 +16,7 @@
  * - debug: verbose diagnostics; may be noisy; safe to spam.
  *
  * Once-variants (deduplicated per process/page):
+ * Use warnOnce/errorOnce only for high-frequency repeatable events where additional occurrences add no new diagnostic value; do not use once-variants when repetition is needed for reproduction during testing.
  * - warnOnce: use for expected transient failures that can repeat frequently and would spam logs.
  *             Canonical example: webContents.send() to a destroyed window during shutdown/races.
  * - errorOnce: like warnOnce but for repeated error-class events (should be rare).
