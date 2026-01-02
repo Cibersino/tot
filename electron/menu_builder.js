@@ -4,23 +4,11 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// This module builds the native (top) application menu and provides localized
-// dialog texts for the main process.
-//
-// Key idea (Electron architecture):
-// - The native menu is created in the MAIN PROCESS.
-// - The visible UI lives in a RENDERER WINDOW (the main window).
-// - When a user clicks a menu item, we notify the renderer by sending an IPC
-//   message: mainWindow.webContents.send('menu-click', <actionId>).
-//
-// Translations source:
-// - Menu labels and dialog texts are loaded from: i18n/<lang>/main.json
-// - We implement a safe fallback chain so the app still works even if some
-//   translation files are missing or invalid.
-//
-// This file is intentionally "logic-light":
-// - It does not open windows directly (except via an optional callback).
-// - It only builds menu templates, loads translations, and emits menu actions.
+// Builds the native application menu from i18n/<lang>/main.json.
+// Responsibilities:
+// - Load main-process translations (menu + dialogs) with a safe fallback chain.
+// - Build and install the application menu.
+// - Forward menu actions to the main renderer via 'menu-click'.
 
 // =============================================================================
 // Imports (external modules)
@@ -105,7 +93,13 @@ function loadMainTranslations(lang) {
                 return JSON.parse(raw || '{}');
             }
         } catch (err) {
-            log.error('[menu_builder] Error loading translations from main.json:', err);
+            // Recoverable by design: we will try other candidates and/or fall back to {}.
+            log.warnOnce(
+                `menu_builder.loadMainTranslations:${requested}:${langCode}`,
+                'Failed to load/parse main.json; using fallback.',
+                { requested, langCode, files },
+                err
+            );
         }
     }
     return {};
@@ -161,7 +155,13 @@ function buildAppMenu(lang, opts = {}) {
         try {
             mainWindow.webContents.send('menu-click', payload);
         } catch (err) {
-            log.error('[menu_builder] Error sending menu-click:', payload, err);
+            // Expected in some window lifecycle races; deduplicate to avoid log spam.
+            log.warnOnce(
+                `menu_builder.sendMenuClick:${String(payload)}`,
+                "webContents.send('menu-click') failed (ignored):",
+                payload,
+                err
+            );
         }
     };
 
@@ -215,8 +215,10 @@ function buildAppMenu(lang, opts = {}) {
                             try {
                                 onOpenLanguage();
                             } catch (err) {
-                                log.error(
-                                    '[menu_builder] Error in callback onOpenLanguage:',
+                                // User-visible action (language picker) failed; treat as an error, but deduplicate.
+                                log.errorOnce(
+                                    'menu_builder.onOpenLanguage',
+                                    'onOpenLanguage callback failed:',
                                     err
                                 );
                             }
@@ -313,8 +315,10 @@ function buildAppMenu(lang, opts = {}) {
                         try {
                             mainWindow.webContents.toggleDevTools();
                         } catch (err) {
-                            log.error(
-                                '[menu_builder] Error toggling DevTools from menu:',
+                            // Dev-only and recoverable; warn + dedupe to avoid noise.
+                            log.warnOnce(
+                                'menu_builder.toggleDevTools',
+                                'toggleDevTools failed (ignored):',
                                 err
                             );
                         }
