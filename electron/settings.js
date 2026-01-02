@@ -54,9 +54,10 @@ let _currentSettings = null;
  * Returns { thousands, decimal } or null if unavailable/invalid.
  */
 function loadNumberFormatDefaults(lang) {
+  const langCode = getLangBase(lang) || 'es';
+  const filePath = path.join(__dirname, '..', 'i18n', langCode, 'numberFormat.json');
+
   try {
-    const langCode = getLangBase(lang) || 'es';
-    const filePath = path.join(__dirname, '..', 'i18n', langCode, 'numberFormat.json');
     if (!fs.existsSync(filePath)) return null;
 
     let raw = fs.readFileSync(filePath, 'utf8');
@@ -73,7 +74,7 @@ function loadNumberFormatDefaults(lang) {
     if (!thousands || !decimal) {
       log.warnOnce(
         `settings.loadNumberFormatDefaults.invalidSchema:${langCode}`,
-        'Invalid numberFormat.json schema; expected { thousands, decimal } as non-empty strings:',
+        'numberFormat.json schema invalid (expected non-empty thousands/decimal strings):',
         { langCode, filePath, keys: json && typeof json === 'object' ? Object.keys(json) : [] }
       );
       return null;
@@ -81,7 +82,13 @@ function loadNumberFormatDefaults(lang) {
 
     return { thousands, decimal };
   } catch (err) {
-    log.error('[settings] Error loading numberFormat defaults for', lang, err);
+    // Recoverable: caller will apply default separators (fallback).
+    log.warnOnce(
+      `settings.loadNumberFormatDefaults.read:${langCode}`,
+      'numberFormat defaults load failed (using fallback):',
+      { langCode, filePath },
+      err
+    );
     return null;
   }
 }
@@ -261,7 +268,7 @@ function init({ loadJson, saveJson, settingsFile }) {
   try {
     _saveJson(_settingsFile, _currentSettings);
   } catch (err) {
-    log.error('[settings] Error persisting settings in init:', err);
+    log.error('init failed to persist settings:', _settingsFile, err);
   }
 
   return _currentSettings;
@@ -357,7 +364,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
       saveSettings(settings);
     }
   } catch (err) {
-    log.error('[settings] Error applying fallback language:', err);
+    log.error('applyFallbackLanguageIfUnset failed:', err);
   }
 }
 
@@ -423,7 +430,7 @@ function registerIpc(
         try {
           buildAppMenu(effectiveLang);
         } catch (err) {
-          log.warn('[settings] Error rebuilding menu:', err);
+          log.warn('menu rebuild failed (ignored):', effectiveLang, err);
         }
       }
 
@@ -446,14 +453,14 @@ function registerIpc(
           langWin.setMenuBarVisibility(false);
         }
       } catch (err) {
-        log.warn('[settings] Error hiding menu in secondary windows:', err);
+        log.warn('hide menu in secondary windows failed (ignored):', err);
       }
 
       broadcastSettingsUpdated(settings, windows);
 
       return { ok: true, language: chosen };
     } catch (err) {
-      log.error('Error saving language:', err);
+      log.error('IPC set-language failed:', err);
       return { ok: false, error: String(err) };
     }
   });
@@ -470,7 +477,7 @@ function registerIpc(
 
       return { ok: true, mode: settings.modeConteo };
     } catch (err) {
-      log.error('Error in set-mode-conteo:', err);
+      log.error('IPC set-mode-conteo failed:', err);
       return { ok: false, error: String(err) };
     }
   });
