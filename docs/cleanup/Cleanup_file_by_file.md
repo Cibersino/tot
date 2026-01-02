@@ -101,7 +101,7 @@ Ejemplos típicos:
 
 ---
 
-## Nivel 5: Comentarios (al final)
+## Nivel 5: Comentarios
 
 * Ajustar comentarios para que sirvan de orientación cualquier persona con pocos conocimientos técnicos.
 * Revisar comentarios y borrarlos, reescribirlos o agregar otros si son aporte real.
@@ -109,5 +109,11 @@ Ejemplos típicos:
   - Overview conciso (responsibilities),
   - secciones visibles,
   - marcador de “End of …” al final.
+* Todos los comentarios deben ser en inglés (pero sin traducir los nombres o claves que usa el código, aunque estén en otro idioma).
 
 ---
+
+## Nivel 6: Limpieza final y Smoke test
+
+* Eliminar legacy o resabios tras refactorizaciones o cualquier cambio en la app.
+* Smoke test y/o análisis debug para diagnosticar que los cambios realizados no rompieron la app.
