@@ -1,27 +1,47 @@
 // electron/text_state.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Own in-memory current text and enforce max length.
+// - Load/save current_text.json on startup and before-quit.
+// - Ensure settings file exists on quit (legacy behavior).
+// - Register IPC handlers for get-current-text, set-current-text, force-clear-editor.
+// - Broadcast text updates to main and editor windows (best-effort).
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 const fs = require('fs');
 const Log = require('./log');
 
 const log = Log.get('text-state');
 
+// =============================================================================
+// Shared state and injected dependencies
+// =============================================================================
 // Default limit. The effective limit is injected from main.js via init({ maxTextChars }).
 let MAX_TEXT_CHARS = 10_000_000; 
 
-// Shared internal status
+// Current text held in memory; persisted on quit (also saved during init if it is truncated).
 let currentText = '';
 
-// Injected dependencies
+// Injected dependencies and file paths (set in init).
 let loadJson = null;
 let saveJson = null;
 let CURRENT_TEXT_FILE = null;
 let SETTINGS_FILE = null;
 let appRef = null;
 
-// Window resolver (main/editor)
+// Window resolver for best-effort UI notifications.
 let getWindows = () => ({ mainWin: null, editorWin: null });
 
+// =============================================================================
+// Helpers
+// =============================================================================
+// Best-effort window send; avoids throwing during shutdown races.
 function safeSend(win, channel, payload) {
   if (!win || win.isDestroyed()) {
     return;
@@ -38,6 +58,7 @@ function safeSend(win, channel, payload) {
   }
 }
 
+// Persist current text and ensure settings file exists (legacy behavior).
 function persistCurrentTextOnQuit() {
   try {
     if (saveJson && CURRENT_TEXT_FILE) {
@@ -61,11 +82,14 @@ function persistCurrentTextOnQuit() {
   }
 }
 
+// =============================================================================
+// Entrypoints
+// =============================================================================
 /**
  * Initialize the text state:
- * -Load from CURRENT_TEXT_FILE
- * -Apply initial truncation by MAX_TEXT_CHARS
- * -Register persistence in app.before-quit
+ * - Load from CURRENT_TEXT_FILE
+ * - Apply initial truncation by MAX_TEXT_CHARS
+ * - Register persistence in app.before-quit
  */
 function init(options) {
   const opts = options || {};
@@ -218,8 +242,15 @@ function getCurrentText() {
   return currentText || '';
 }
 
+// =============================================================================
+// Exports
+// =============================================================================
 module.exports = {
   init,
   registerIpc,
   getCurrentText,
 };
+
+// =============================================================================
+// End of text_state.js
+// =============================================================================

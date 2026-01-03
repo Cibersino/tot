@@ -296,6 +296,44 @@ Apply changes only to the target file.
   - marcador de “End of …” al final.
 * Todos los comentarios deben ser en inglés (pero sin traducir los nombres o claves que usa el código, aunque estén en otro idioma).
 
+### Prompt Nivel 5 para Codex:
+```
+# File: <TARGET_FILE>
+
+Level 5 — Comments (reader-oriented, main.js style).
+
+Objective: Improve comments so the file is easier to understand for a new contributor with limited context, while keeping comments genuinely useful (explain intent/constraints, not obvious syntax). Follow the project’s comment style as in electron/main.js:
+- concise "Overview" with responsibilities,
+- visible section dividers that match the file’s real structure,
+- an explicit "End of <file>" marker at the end.
+
+Constraints:
+- Do NOT change runtime behavior in any way (no logic changes, no contract changes, no timing changes).
+- This level is comments-only: you may adjust whitespace around comments and move *comments* to better locations, but do not move code unless it is required to keep a section header adjacent to the block it describes.
+- All comments must be in English and use plain ASCII characters only (avoid fancy quotes, em dashes, non-ASCII bullets, etc.).
+- Do not translate or rename identifiers/IPC channel names/JSON keys; reference them exactly as they appear in code.
+
+What to do:
+1) Add or rewrite the top "Overview" comment:
+   - 3–7 bullet responsibilities max.
+   - Mention key side effects or ownership (e.g., IPC handlers, persistence timing) only at a high level.
+2) Add section dividers that match the file’s true blocks (only what exists):
+   - Imports / logger
+   - Shared state / injected deps
+   - Helpers
+   - Entrypoints (init, IPC registration, etc.)
+   - Exports
+3) Review existing comments and JSDoc blocks:
+   - Remove redundant “what the code already says” comments.
+   - Fix any drift: comments must match actual behavior.
+   - Prefer “why / constraints / edge cases” over “what”.
+4) Add an end-of-file marker comment:
+   - "End of <file>" in the same style as electron/main.js.
+
+After editing (mandatory short report):
+- List the comment changes you made in 3–8 bullets (e.g., "Added Overview responsibilities", "Removed redundant inline comments", "Aligned section dividers with actual block order").
+- Confirm explicitly: "No functional changes; comments-only."
+```
 ---
 
 ## Nivel 6: Revision final
