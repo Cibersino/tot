@@ -183,6 +183,49 @@ Ejemplos típicos:
 * riesgo explícito,
 * plan de validación claro.
 
+### Prompt Nivel 3 para Codex:
+```
+# File: electron/text_state.js
+
+Level 3 — Architecture / contract changes (exceptional; evidence-driven).
+
+Objective: Only if there is strong evidence of real pain that cannot be addressed in Levels 1–2, propose and (if justified) implement a minimal architecture/contract change that measurably improves the situation.
+
+Entry criteria (must be satisfied):
+- Direct evidence in code OR a reproducible bug/issue:
+  - point to the exact call sites / usage patterns in the repo, OR
+  - provide a minimal reproduction (steps) that demonstrates the pain.
+- Explicit risk assessment: what could break and where.
+- Clear validation plan: how to confirm correctness after the change.
+
+Process:
+1) First, inspect the repo to identify whether electron/text_state.js has a real pain point that requires Level 3:
+   - duplicated responsibility across modules,
+   - unstable/ambiguous contract for IPC payloads/returns,
+   - sync/async mismatch causing issues,
+   - multiple consumers depending on inconsistent semantics,
+   - cross-module coupling (e.g., settings bootstrap inside text_state) that is causing bugs or maintenance problems.
+2) If NO strong evidence exists, do NOT change code. Instead, output a short “No Level 3 justified” note and list the evidence you checked.
+3) If evidence DOES exist, apply the smallest possible Level 3 change that resolves it:
+   - keep the change minimal (avoid broad rewrites),
+   - update all affected consumers in the repo consistently,
+   - avoid introducing unnecessary architecture.
+
+Anti “refactor that makes it worse” rule:
+If a change:
+- introduces more concepts than it removes,
+- increases indirection without reducing real pain,
+- forces readers to read more to understand the same behavior,
+then discard it or scale it back.
+
+Mandatory Gate output (for each non-trivial change you make):
+- Evidence: one sentence + where it appears (file(s)/function(s) or repro steps).
+- Risk: one sentence.
+- Validation: how to verify (manual smoke path, repo grep, or a concrete runtime check).
+
+You may inspect the repo as needed. If you implement anything, ensure the repo builds/runs and the app’s IPC paths still work.
+```
+
 ---
 
 ## Nivel 4: Logs (después de estabilizar el flujo)
