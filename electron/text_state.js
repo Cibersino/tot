@@ -22,7 +22,7 @@ let appRef = null;
 // Window resolver (main/editor)
 let getWindows = () => ({ mainWin: null, editorWin: null });
 
-function safeSend(win, channel, payload, errorMessage) {
+function safeSend(win, channel, payload) {
   if (!win || win.isDestroyed()) {
     return;
   }
@@ -30,7 +30,11 @@ function safeSend(win, channel, payload, errorMessage) {
   try {
     win.webContents.send(channel, payload);
   } catch (err) {
-    log.error(errorMessage, err);
+    log.warnOnce(
+      `text_state.safeSend:${channel}`,
+      `webContents.send('${channel}') failed (ignored):`,
+      err
+    );
   }
 }
 
@@ -82,13 +86,18 @@ function init(options) {
       ? loadJson(CURRENT_TEXT_FILE, { text: '' })
       : { text: '' };
 
-    const hasTextProp =
-      raw &&
-      typeof raw === 'object' &&
-      Object.prototype.hasOwnProperty.call(raw, 'text');
+    const isRawObject = raw && typeof raw === 'object';
+    const hasTextProp = isRawObject && Object.prototype.hasOwnProperty.call(raw, 'text');
+    const isRawString = typeof raw === 'string';
     let txt = hasTextProp ? String(raw.text || '') : '';
-    if (!hasTextProp && typeof raw === 'string') {
+    if (!hasTextProp && isRawString) {
       txt = raw;
+    }
+    if (!hasTextProp && !isRawString && typeof raw !== 'undefined') {
+      log.warnOnce(
+        'text_state.init.unexpectedShape',
+        'current_text.json has unexpected shape; using empty string.'
+      );
     }
 
     if (txt.length > MAX_TEXT_CHARS) {
@@ -135,10 +144,16 @@ function registerIpc(ipcMain, windowsResolver) {
   // set-current-text: accept { text, meta } or simple string
   ipcMain.handle('set-current-text', (_event, payload) => {
     try {
+      const isPayloadObject = payload && typeof payload === 'object';
       const hasTextProp =
-        payload &&
-        typeof payload === 'object' &&
+        isPayloadObject &&
         Object.prototype.hasOwnProperty.call(payload, 'text');
+      if (isPayloadObject && !hasTextProp) {
+        log.warnOnce(
+          'text_state.setCurrentText.missingText',
+          'set-current-text payload missing text; using String(payload).'
+        );
+      }
       const incomingMeta = hasTextProp ? payload.meta || null : null;
       let text = hasTextProp ? String(payload.text || '') : String(payload || '');
 
@@ -147,6 +162,7 @@ function registerIpc(ipcMain, windowsResolver) {
         text = text.slice(0, MAX_TEXT_CHARS);
         truncated = true;
         log.warn(
+          'text_state.setCurrentText.truncated',
           'set-current-text: entry truncated to ' + MAX_TEXT_CHARS + ' chars.'
         );
       }
@@ -156,23 +172,13 @@ function registerIpc(ipcMain, windowsResolver) {
       const { mainWin, editorWin } = getWindows() || {};
 
       // Notify main window (for renderer to update preview/results)
-      safeSend(
-        mainWin,
-        'current-text-updated',
-        currentText,
-        'Error sending current-text-updated to mainWin:'
-      );
+      safeSend(mainWin, 'current-text-updated', currentText);
 
       // Notify editor with object { text, meta }
-      safeSend(
-        editorWin,
-        'editor-text-updated',
-        {
-          text: currentText,
-          meta: incomingMeta || { source: 'main', action: 'set' },
-        },
-        'Error sending editor-text-updated to editorWin:'
-      );
+      safeSend(editorWin, 'editor-text-updated', {
+        text: currentText,
+        meta: incomingMeta || { source: 'main', action: 'set' },
+      });
 
       return {
         ok: true,
@@ -195,20 +201,10 @@ function registerIpc(ipcMain, windowsResolver) {
       currentText = '';
 
       // Notify main window (as in main.js stable)
-      safeSend(
-        mainWin,
-        'current-text-updated',
-        currentText,
-        'Error sending current-text-updated in force-clear-editor:'
-      );
+      safeSend(mainWin, 'current-text-updated', currentText);
 
       // Notify the editor to run its local cleaning logic
-      safeSend(
-        editorWin,
-        'editor-force-clear',
-        '',
-        'Error sending editor-force-clear:'
-      );
+      safeSend(editorWin, 'editor-force-clear', '');
 
       return { ok: true };
     } catch (err) {
