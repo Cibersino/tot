@@ -121,8 +121,15 @@ Ejemplos típicos:
 
 ---
 
-## Nivel 6: Limpieza final y Smoke test
+## Nivel 6: Revision final
 
 * Eliminar legacy o resabios tras refactorizaciones o cualquier cambio en la app.
 * Revisar que todo el código haya quedado coherente.
+
+---
+
+## Nivel 7: Smoke test
+
 * Cuando lo anterior esté listo: Smoke test y/o análisis debug para diagnosticar que los cambios realizados no rompieron la app.
+
+---
