@@ -185,7 +185,7 @@ function registerIpc(ipcMain, windowsResolver) {
       if (text.length > MAX_TEXT_CHARS) {
         text = text.slice(0, MAX_TEXT_CHARS);
         truncated = true;
-        log.warn(
+        log.warnOnce(
           'text_state.setCurrentText.truncated',
           'set-current-text: entry truncated to ' + MAX_TEXT_CHARS + ' chars.'
         );
