@@ -61,9 +61,17 @@ function loadJson(filePath, fallback = {}) {
   try {
     // Missing file is recoverable: callers decide what the fallback should be.
     if (!fs.existsSync(filePath)) {
+      const baseName = path.basename(String(filePath));
+      let note = '';
+      if (baseName === 'current_text.json') {
+        note = ' (note: may be normal on first run; file is created on quit)';
+      } else if (baseName === 'user_settings.json') {
+        note = ' (note: may be normal on first run; file is created during startup)';
+      }
+
       log.warnOnce(
         `fs_storage.loadJson:missing:${String(filePath)}`,
-        'loadJson missing (using fallback):',
+        `loadJson missing (using fallback):${note}`,
         filePath
       );
       return fallback;
