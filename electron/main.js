@@ -615,6 +615,15 @@ function installWorkAreaGuard(win, opts = {}) {
  * - We compute a default position near bottom-right of the work area.
  */
 async function createFlotanteWindow(options = {}) {
+  // Normalize options to avoid TypeError when callers pass null (or other non-object values).
+  if (!options || typeof options !== 'object') {
+    warnOnce(
+      'flotante.options.invalid',
+      'createFlotanteWindow: invalid options; using defaults (ignored).'
+    );
+    options = {};
+  }
+
   // If it already exists and wasn't destroyed, restore it (don't recreate it).
   if (flotanteWin && !flotanteWin.isDestroyed()) {
     // Optional: apply forced position if requested.
