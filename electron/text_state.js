@@ -42,7 +42,12 @@ function persistCurrentTextOnQuit() {
 
     // Maintain previous behavior: ensure SETTINGS_FILE exists
     if (loadJson && saveJson && SETTINGS_FILE) {
-      const settings = loadJson(SETTINGS_FILE, { language: 'es', presets_by_language: {}, disabled_default_presets: {} });
+      const settingsDefaults = {
+        language: 'es',
+        presets_by_language: {},
+        disabled_default_presets: {},
+      };
+      const settings = loadJson(SETTINGS_FILE, settingsDefaults);
       if (!fs.existsSync(SETTINGS_FILE)) {
         saveJson(SETTINGS_FILE, settings);
       }
@@ -77,13 +82,13 @@ function init(options) {
       ? loadJson(CURRENT_TEXT_FILE, { text: '' })
       : { text: '' };
 
-    let txt = '';
-    if (raw && typeof raw === 'object' && Object.prototype.hasOwnProperty.call(raw, 'text')) {
-      txt = String(raw.text || '');
-    } else if (typeof raw === 'string') {
+    const hasTextProp =
+      raw &&
+      typeof raw === 'object' &&
+      Object.prototype.hasOwnProperty.call(raw, 'text');
+    let txt = hasTextProp ? String(raw.text || '') : '';
+    if (!hasTextProp && typeof raw === 'string') {
       txt = raw;
-    } else {
-      txt = '';
     }
 
     if (txt.length > MAX_TEXT_CHARS) {
@@ -130,19 +135,12 @@ function registerIpc(ipcMain, windowsResolver) {
   // set-current-text: accept { text, meta } or simple string
   ipcMain.handle('set-current-text', (_event, payload) => {
     try {
-      let incomingMeta = null;
-      let text = '';
-
-      if (
+      const hasTextProp =
         payload &&
         typeof payload === 'object' &&
-        Object.prototype.hasOwnProperty.call(payload, 'text')
-      ) {
-        text = String(payload.text || '');
-        incomingMeta = payload.meta || null;
-      } else {
-        text = String(payload || '');
-      }
+        Object.prototype.hasOwnProperty.call(payload, 'text');
+      const incomingMeta = hasTextProp ? payload.meta || null : null;
+      let text = hasTextProp ? String(payload.text || '') : String(payload || '');
 
       let truncated = false;
       if (text.length > MAX_TEXT_CHARS) {
