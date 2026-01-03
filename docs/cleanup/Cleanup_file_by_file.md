@@ -24,7 +24,7 @@ Archivos ya ordenados y limpiados:
 
 ### Prompt Nivel 0 para Codex:
 ```
-# Target file: electron/text_state.js
+# Target file: <TARGET_FILE>
 
 For this response only, produce a Level 0 minimal diagnosis of the file (short, descriptive, no code changes).
 
@@ -67,11 +67,11 @@ Se cumple “lectura más o menos lineal” + no hay cambios observables del con
 
 ### Prompt Nivel 1 para Codex:
 ```
-# File: electron/text_state.js
+# File: <TARGET_FILE>
 
 Level 1 — Structural refactor and cleanup.
 
-Objective: make electron/text_state.js navigable and, where it helps, more linearly readable, without changing observable behavior/contract or breaking any timing-dependent behavior.
+Objective: make target file navigable and, where it helps, more linearly readable, without changing observable behavior/contract or breaking any timing-dependent behavior.
 
 Constraints:
 - Preserve behavior and the observable contract as-is (public API, IPC surface, payload/return shapes, side effects).
@@ -91,7 +91,7 @@ What to do (flexible, use judgment):
   - remove obvious duplication only when semantics stay identical,
   - improve local naming only when it reduces ambiguity and is behavior-preserving.
 
-You may inspect the repo as needed to understand how this module is used, but apply changes only to electron/text_state.js.
+You may inspect the repo as needed to understand how this module is used, but apply changes only to target file.
 ```
 
 ---
@@ -128,11 +128,11 @@ Por cada cambio no trivial: **ganancia** (1 frase) + **costo** (1 frase) + **val
 
 ### Prompt Nivel 2 para Codex:
 ```
-# File: electron/text_state.js
+# File: <TARGET_FILE>
 
 Level 2 — Clarity / robustness refactor (controlled).
 
-Objective: improve internal clarity and robustness of electron/text_state.js while keeping the module’s observable behavior/contract intact, and without introducing unnecessary architecture.
+Objective: improve internal clarity and robustness of target file while keeping the module’s observable behavior/contract intact, and without introducing unnecessary architecture.
 
 Constraints:
 - Preserve the observable contract as-is (public API, IPC surface, payload/return shapes, side effects, timing).
@@ -161,7 +161,7 @@ For every non-trivial change you apply, include:
 - Cost: one sentence.
 - Validation: how to verify (manual check, smoke path, or simple repo grep).
 
-You may inspect the repo as needed to understand how this module is used, but apply changes only to electron/text_state.js.
+You may inspect the repo as needed to understand how this module is used, but apply changes only to target file.
 ```
 
 ---
@@ -185,7 +185,7 @@ Ejemplos típicos:
 
 ### Prompt Nivel 3 para Codex:
 ```
-# File: electron/text_state.js
+# File: <TARGET_FILE>
 
 Level 3 — Architecture / contract changes (exceptional; evidence-driven).
 
@@ -199,7 +199,7 @@ Entry criteria (must be satisfied):
 - Clear validation plan: how to confirm correctness after the change.
 
 Process:
-1) First, inspect the repo to identify whether electron/text_state.js has a real pain point that requires Level 3:
+1) First, inspect the repo to identify whether target file has a real pain point that requires Level 3:
    - duplicated responsibility across modules,
    - unstable/ambiguous contract for IPC payloads/returns,
    - sync/async mismatch causing issues,
@@ -236,6 +236,54 @@ You may inspect the repo as needed. If you implement anything, ensure the repo b
 * Mensajes cortos y accionables, consistentes con el estilo del proyecto.
 * No dejar ningún fallback silencioso.
 
+### Prompt Nivel 4 para Codex:
+```
+# File: <TARGET_FILE>
+
+Level 4 — Logs (policy-driven tuning after flow stabilization).
+
+Objective: Align logging in the target file with the project’s logging policy and style (as used in electron/main.js), so that:
+- log levels match recoverability (error vs warn vs info),
+- high-frequency “best-effort” failures do not spam (use warnOnce/errorOnce appropriately),
+- dangerous fallbacks are not silent (but avoid noisy logging),
+- messages are short, actionable, and consistent with the repo.
+
+Constraints:
+- Do NOT change observable runtime behavior/contract (public API, IPC surface, payload/return shapes, side effects, timing).
+- Changes in this level should be limited to logging behavior (levels/messages/once-deduping) and minimal local structure needed to support that.
+- Avoid over-logging: no new high-volume logs on normal, healthy paths.
+
+Reference material (inspect before editing):
+- Logging policy: electron/log.js and public/js/log.js.
+- Style baseline: electron/main.js (how it logs best-effort webContents.send failures, ignored races, and recoverable fallbacks).
+
+What to do:
+1) Audit every logging site in the target file (warn/error/info) and every best-effort path that can fail silently (e.g., payload shape fallbacks, send-to-window races).
+2) For each, decide the correct level:
+   - error: unexpected failures that break an intended action or invariant.
+   - warn: recoverable anomalies / degraded behavior / fallback paths.
+   - info: high-level lifecycle/state transitions (low volume).
+   - Once-variants (deduplicated per process/page):
+     - Use warnOnce/errorOnce only for high-frequency repeatable events where additional occurrences add no new diagnostic value; do not use once-variants when repetition is needed for reproduction during testing.
+     - warnOnce: use for expected transient failures that can repeat frequently and would spam logs.
+     - errorOnce: like warnOnce but for repeated error-class events (should be rare).
+3) Ensure “no dangerous silent fallback”:
+   - If the code accepts/normalizes an invalid or suspicious input shape and falls back to a degraded behavior, consider adding a warn or warnOnce with a stable dedupe key.
+   - Do not add warnings for expected, benign conditions (e.g., a window not existing).
+4) Keep log strings concise and consistent with the repo (prefer “failed (ignored):” wording for best-effort sends when appropriate).
+
+Anti “refactor that makes it worse” rule:
+If a proposed logging change introduces more complexity than it removes, increases indirection without reducing noise/ambiguity, or makes the file harder to scan, discard or simplify it.
+
+After editing (mandatory report):
+- List each non-trivial log change you made with:
+  - Gain: one sentence.
+  - Cost: one sentence.
+  - Validation: how to verify (simple manual action, smoke path, or grep).
+- If you find no meaningful log improvements that meet the constraints, make no changes and briefly explain why.
+
+Apply changes only to the target file.
+```
 ---
 
 ## Nivel 5: Comentarios
