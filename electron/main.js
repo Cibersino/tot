@@ -423,10 +423,26 @@ settingsState.registerIpc(ipcMain, {
   }),
   buildAppMenu,
   setCurrentLanguage: (lang) => {
-    const normalized =
-      lang && typeof lang === 'string'
-        ? lang.trim().toLowerCase().replace(/_/g, '-')
-        : 'es';
+    if (typeof lang !== 'string') {
+      warnOnce(
+        'setCurrentLanguage.invalid',
+        'setCurrentLanguage: invalid lang; fallback to "es" (ignored).'
+      );
+      currentLanguage = 'es';
+      return;
+    }
+
+    const trimmed = lang.trim();
+    if (!trimmed) {
+      warnOnce(
+        'setCurrentLanguage.empty',
+        'setCurrentLanguage: empty lang; fallback to "es" (ignored).'
+      );
+      currentLanguage = 'es';
+      return;
+    }
+
+    const normalized = trimmed.toLowerCase().replace(/_/g, '-');
     currentLanguage = normalized || 'es';
   },
 });
@@ -815,10 +831,22 @@ function resetCrono() {
  * Value is rounded down to the nearest second.
  */
 function setCronoElapsed(ms) {
-  if (crono.running) return;
+  if (crono.running) {
+    warnOnce(
+      'crono.setElapsed.whileRunning',
+      'crono-set-elapsed ignored: crono is running (ignored).'
+    );
+    return;
+  }
 
   const n = Number(ms);
-  if (!Number.isFinite(n)) return;
+  if (!Number.isFinite(n)) {
+    warnOnce(
+      'crono.setElapsed.invalidNumber',
+      'crono-set-elapsed ignored: invalid elapsed value (ignored).'
+    );
+    return;
+  }
 
   const msRounded = Math.max(0, Math.floor(n / 1000) * 1000);
 
@@ -912,12 +940,42 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
     if (cmd.cmd === 'toggle') {
       if (crono.running) stopCrono(); else startCrono();
-    } else if (cmd.cmd === 'reset') {
-      resetCrono();
-    } else if (cmd.cmd === 'set' && typeof cmd.value !== 'undefined') {
-      setCronoElapsed(Number(cmd.value) || 0);
+      return;
     }
-    // No need to call broadcastCronoState() here: the above functions already do it.
+
+    if (cmd.cmd === 'reset') {
+      resetCrono();
+      return;
+    }
+
+    if (cmd.cmd === 'set') {
+      if (typeof cmd.value === 'undefined') {
+        warnOnce(
+          'flotante-command.set.missingValue',
+          'flotante-command set ignored: payload missing value (ignored).'
+        );
+        return;
+      }
+
+      const n = Number(cmd.value);
+      if (!Number.isFinite(n)) {
+        warnOnce(
+          'flotante-command.set.invalidNumber',
+          'flotante-command set: invalid value; coerced to 0 (ignored).'
+        );
+        setCronoElapsed(0);
+        return;
+      }
+
+      setCronoElapsed(n);
+      return;
+    }
+
+    warnOnce(
+      'flotante-command.unknown',
+      'flotante-command ignored: unknown cmd (ignored):',
+      String(cmd.cmd)
+    );
   } catch (err) {
     log.error('Error processing flotante-command in main:', err);
   }
@@ -964,6 +1022,11 @@ ipcMain.handle('open-preset-modal', (_event, payload) => {
     initialData = { wpm: payload };
   } else if (payload && typeof payload === 'object') {
     initialData = payload;
+  } else if (typeof payload !== 'undefined') {
+    warnOnce(
+      'open-preset-modal.invalidPayload',
+      'open-preset-modal: invalid payload; using defaults (ignored).'
+    );
   }
 
   createPresetWindow(initialData);
