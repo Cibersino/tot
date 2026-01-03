@@ -67,6 +67,8 @@ function loadJson(filePath, fallback = {}) {
         note = ' (note: may be normal on first run; file is created on quit)';
       } else if (baseName === 'user_settings.json') {
         note = ' (note: may be normal on first run; file is created during startup)';
+      } else if (baseName === 'editor_state.json') {
+        note = ' (note: may be normal on first run; file is created when editor window is opened for the first time)';        
       }
 
       log.warnOnce(
