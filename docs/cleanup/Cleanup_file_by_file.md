@@ -22,6 +22,25 @@ Archivos ya ordenados y limpiados:
 
 **Regla:** aquí no se proponen soluciones todavía; solo se identifica qué estorba.
 
+### Prompt Nivel 0 para Codex:
+```
+# Target file: electron/text_state.js
+
+For this response only, produce a Level 0 minimal diagnosis of the file (short, descriptive, no code changes).
+
+## 0.1 Reading map
+- What is the file’s actual block order today? (imports, constants/config, helpers, main logic/handlers, exports)
+- Where does linear reading break? (jumps, mixed responsibilities, duplication, nesting)
+  - For each obstacle: name the exact identifier (function/variable) and include a micro-quote (≤ 15 words) to locate it.
+
+## 0.2 Contract map
+- What does the module expose? (exports / public entrypoints / side effects)
+- What invariants does it suggest? (expected inputs, tolerated errors, fallbacks)
+- If present, describe the IPC contract:
+  - List every ipcMain.handle(<channel>) present.
+  - For each: input shape (if any), return shape, and any outgoing webContents.send(...) messages (channel + payload shape).
+```
+
 ---
 
 ## Nivel 1: Refactor estructural y cleanup (obligatorio)
@@ -45,6 +64,35 @@ Propuesta (hay flexibilidad, no tiene que ser necesariamente así):
 
 **Gate para pasar de Nivel 1 a 2:**
 Se cumple “lectura más o menos lineal” + no hay cambios observables del contrato.
+
+### Prompt Nivel 1 para Codex:
+```
+# File: electron/text_state.js
+
+Level 1 — Structural refactor and cleanup.
+
+Objective: make electron/text_state.js navigable and, where it helps, more linearly readable, without changing observable behavior/contract or breaking any timing-dependent behavior.
+
+Constraints:
+- Preserve behavior and the observable contract as-is (public API, IPC surface, payload/return shapes, side effects).
+- Preserve truncation + persistence behavior and timing.
+
+Anti “refactor that makes it worse” rule:
+If a change:
+- introduces more concepts than it removes,
+- increases indirection without reducing branches/duplication,
+- forces the reader to read more to understand the same behavior,
+then discard it or scale it down to a smaller Level 1 change.
+
+What to do (flexible, use judgment):
+- Reorder the file into coherent blocks (e.g., imports → constants/config → helpers → main logic/handlers/entrypoints → exports). This is guidance, not a rigid layout.
+- Apply safe local simplifications:
+  - reduce nesting via early returns only when behavior is identical,
+  - remove obvious duplication only when semantics stay identical,
+  - improve local naming only when it reduces ambiguity and is behavior-preserving.
+
+You may inspect the repo as needed to understand how this module is used, but apply changes only to electron/text_state.js.
+```
 
 ---
 
@@ -77,6 +125,44 @@ Aquí se permiten cambios internos que **sí** mejoran el diseño, sin caer en a
 
 **Gate para aceptar Nivel 2:**
 Por cada cambio no trivial: **ganancia** (1 frase) + **costo** (1 frase) + **validación** (cómo comprobar).
+
+### Prompt Nivel 2 para Codex:
+```
+# File: electron/text_state.js
+
+Level 2 — Clarity / robustness refactor (controlled).
+
+Objective: improve internal clarity and robustness of electron/text_state.js while keeping the module’s observable behavior/contract intact, and without introducing unnecessary architecture.
+
+Constraints:
+- Preserve the observable contract as-is (public API, IPC surface, payload/return shapes, side effects, timing).
+- Avoid “silent” problematic cases, but also avoid over-logging (no noisy logging).
+
+Anti “refactor that makes it worse” rule:
+If a change:
+- introduces more concepts than it removes,
+- increases indirection without reducing branches/duplication,
+- forces the reader to read more to understand the same behavior,
+then discard it or scale it down to Level 1.
+
+Allowed Level 2 moves (use judgment):
+- Add small helpers ONLY if they:
+  - eliminate real duplication or centralize a repeated edge case,
+  - reduce branching/nesting complexity,
+  - remain local/easy to understand (no “jumping around” required).
+- Make implicit edge cases explicit only when it affects decisions (e.g., distinguish “missing” vs “invalid” inputs where relevant).
+- Improve error handling where it is currently implicit or risky:
+  - remove dangerous silent fallbacks,
+  - keep logs proportional (warn/error only when it genuinely helps diagnosing state).
+
+Gate output requirement (mandatory):
+For every non-trivial change you apply, include:
+- Gain: one sentence.
+- Cost: one sentence.
+- Validation: how to verify (manual check, smoke path, or simple repo grep).
+
+You may inspect the repo as needed to understand how this module is used, but apply changes only to electron/text_state.js.
+```
 
 ---
 

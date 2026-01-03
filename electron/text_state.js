@@ -6,11 +6,11 @@ const Log = require('./log');
 
 const log = Log.get('text-state');
 
-// Shared internal status
-let currentText = '';
-
 // Default limit. The effective limit is injected from main.js via init({ maxTextChars }).
 let MAX_TEXT_CHARS = 10_000_000; 
+
+// Shared internal status
+let currentText = '';
 
 // Injected dependencies
 let loadJson = null;
@@ -21,6 +21,18 @@ let appRef = null;
 
 // Window resolver (main/editor)
 let getWindows = () => ({ mainWin: null, editorWin: null });
+
+function safeSend(win, channel, payload, errorMessage) {
+  if (!win || win.isDestroyed()) {
+    return;
+  }
+
+  try {
+    win.webContents.send(channel, payload);
+  } catch (err) {
+    log.error(errorMessage, err);
+  }
+}
 
 function persistCurrentTextOnQuit() {
   try {
@@ -146,28 +158,23 @@ function registerIpc(ipcMain, windowsResolver) {
       const { mainWin, editorWin } = getWindows() || {};
 
       // Notify main window (for renderer to update preview/results)
-      if (mainWin && !mainWin.isDestroyed()) {
-        try {
-          mainWin.webContents.send('current-text-updated', currentText);
-        } catch (err) {
-          log.error('Error sending current-text-updated to mainWin:', err);
-        }
-      }
+      safeSend(
+        mainWin,
+        'current-text-updated',
+        currentText,
+        'Error sending current-text-updated to mainWin:'
+      );
 
       // Notify editor with object { text, meta }
-      if (editorWin && !editorWin.isDestroyed()) {
-        try {
-          editorWin.webContents.send('editor-text-updated', {
-            text: currentText,
-            meta: incomingMeta || { source: 'main', action: 'set' },
-          });
-        } catch (err) {
-          log.error(
-            'Error sending editor-text-updated to editorWin:',
-            err
-          );
-        }
-      }
+      safeSend(
+        editorWin,
+        'editor-text-updated',
+        {
+          text: currentText,
+          meta: incomingMeta || { source: 'main', action: 'set' },
+        },
+        'Error sending editor-text-updated to editorWin:'
+      );
 
       return {
         ok: true,
@@ -190,22 +197,20 @@ function registerIpc(ipcMain, windowsResolver) {
       currentText = '';
 
       // Notify main window (as in main.js stable)
-      if (mainWin && !mainWin.isDestroyed()) {
-        try {
-          mainWin.webContents.send('current-text-updated', currentText);
-        } catch (err) {
-          log.error('Error sending current-text-updated in force-clear-editor:', err);
-        }
-      }
+      safeSend(
+        mainWin,
+        'current-text-updated',
+        currentText,
+        'Error sending current-text-updated in force-clear-editor:'
+      );
 
       // Notify the editor to run its local cleaning logic
-      if (editorWin && !editorWin.isDestroyed()) {
-        try {
-          editorWin.webContents.send('editor-force-clear', '');
-        } catch (err) {
-          log.error('Error sending editor-force-clear:', err);
-        }
-      }
+      safeSend(
+        editorWin,
+        'editor-force-clear',
+        '',
+        'Error sending editor-force-clear:'
+      );
 
       return { ok: true };
     } catch (err) {
