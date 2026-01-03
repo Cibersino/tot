@@ -921,7 +921,7 @@ ipcMain.handle('flotante-open', async () => {
   }
 });
 
-ipcMain.handle('flotante-close', async () => {
+ipcMain.handle('flotante-close', () => {
   try {
     const win = flotanteWin;
 
@@ -990,57 +990,70 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
 // Editor window: open (create or focus) and push current text
 ipcMain.handle('open-editor', () => {
-  if (!editorWin || editorWin.isDestroyed()) {
-    createEditorWindow();
-  } else {
-    editorWin.show();
+  try {
+    if (!editorWin || editorWin.isDestroyed()) {
+      createEditorWindow();
+    } else {
+      editorWin.show();
 
-    // Re-send current text to ensure editor is in sync (best-effort).
-    try {
-      const initialText = textState.getCurrentText();
-      editorWin.webContents.send('editor-init-text', {
-        text: initialText || '',
-        meta: { source: 'main', action: 'init' },
-      });
-    } catch (err) {
-      log.error('Error sending editor-init-text from open-editor:', err);
-    }
-
-    // Notify main UI that editor is ready (it already is, but keeps state consistent).
-    try {
-      if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send('editor-ready');
+      // Re-send current text to ensure editor is in sync (best-effort).
+      try {
+        const initialText = textState.getCurrentText();
+        editorWin.webContents.send('editor-init-text', {
+          text: initialText || '',
+          meta: { source: 'main', action: 'init' },
+        });
+      } catch (err) {
+        log.error('Error sending editor-init-text from open-editor:', err);
       }
-    } catch (err) {
-      log.warn('Unable to notify editor-ready (editor already open):', err);
+
+      // Notify main UI that editor is ready (it already is, but keeps state consistent).
+      try {
+        if (mainWin && !mainWin.isDestroyed()) {
+          mainWin.webContents.send('editor-ready');
+        }
+      } catch (err) {
+        log.warn('Unable to notify editor-ready (editor already open):', err);
+      }
     }
+
+    return { ok: true };
+  } catch (err) {
+    log.error('Error processing open-editor:', err);
+    return { ok: false, error: String(err) };
   }
 });
 
 // Preset modal: open (with payload normalization)
 ipcMain.handle('open-preset-modal', (_event, payload) => {
-  if (!mainWin) {
-    warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
-    return;
-  }
+  try {
+    if (!mainWin) {
+      warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
+      return { ok: false, error: 'main window not ready' };
+    }
 
-  let initialData = {};
-  if (typeof payload === 'number') {
-    initialData = { wpm: payload };
-  } else if (payload && typeof payload === 'object') {
-    initialData = payload;
-  } else if (typeof payload !== 'undefined') {
-    warnOnce(
-      'open-preset-modal.invalidPayload',
-      'open-preset-modal: invalid payload; using defaults (ignored).'
-    );
-  }
+    let initialData = {};
+    if (typeof payload === 'number') {
+      initialData = { wpm: payload };
+    } else if (payload && typeof payload === 'object') {
+      initialData = payload;
+    } else if (typeof payload !== 'undefined') {
+      warnOnce(
+        'open-preset-modal.invalidPayload',
+        'open-preset-modal: invalid payload; using defaults (ignored).'
+      );
+    }
 
-  createPresetWindow(initialData);
+    createPresetWindow(initialData);
+    return { ok: true };
+  } catch (err) {
+    log.error('Error processing open-preset-modal:', err);
+    return { ok: false, error: String(err) };
+  }
 });
 
 // Expose read-only configuration to renderers (so UI can enforce shared constraints)
-ipcMain.handle('get-app-config', async () => {
+ipcMain.handle('get-app-config', () => {
   try {
     return { ok: true, maxTextChars: MAX_TEXT_CHARS };
   } catch (err) {
