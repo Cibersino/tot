@@ -341,10 +341,61 @@ After editing (mandatory short report):
 * Eliminar legacy o resabios tras refactorizaciones o cualquier cambio en la app.
 * Revisar que todo el código haya quedado coherente.
 
+### Prompt Nivel 6 para Codex:
+```
+# File: <TARGET_FILE>
+
+Level 6 — Final review (coherence + leftover cleanup after refactors).
+
+Objective: Do a careful final pass to ensure the target file is coherent end-to-end after Levels 1–5:
+- remove leftovers / dead code / stale patterns introduced by earlier refactors,
+- ensure internal consistency (naming, control flow, invariants, helper usage),
+- ensure logging API usage matches the repo policy (no signature drift),
+- ensure comments and code agree (no drift),
+while preserving the module’s observable behavior/contract and timing.
+
+Constraints:
+- Preserve observable behavior/contract as-is (public API, IPC surface, payload/return shapes, side effects, timing).
+- Avoid architecture changes and cross-module rewrites. If a change affects consumers, it is Level 3 and should NOT be done here.
+- Prefer minimal edits with clear local payoff. Default to "no change" if uncertain.
+
+Anti “refactor that makes it worse” rule:
+If a change:
+- introduces more concepts than it removes,
+- increases indirection without reducing real complexity,
+- forces the reader to read more to understand the same behavior,
+then discard it or scale it down.
+
+What to do:
+1) Coherence scan (target file only; repo inspection allowed):
+   - Look for "leftovers" from prior levels: unused locals/params, duplicated checks, inconsistent helper signatures, inconsistent naming, stale comments, inconsistent return shapes, redundant branching.
+2) Contract consistency check:
+   - Verify the IPC handlers and exports still match actual call sites and expected payload/return shapes.
+   - If you find a mismatch, only fix it if it can be done locally without changing the contract; otherwise report it as Level 3 evidence (no code change).
+   - If call sites look consistent, do not spend output budget enumerating them; focus on issues that require local fixes.
+3) Logging API consistency check:
+   - Verify each log call matches the actual logging API (method names + argument shapes) as defined in electron/log.js (and relevant usage patterns in electron/main.js).
+   - If you detect signature drift (e.g., passing a dedupe key to a non-once method), correct it in the smallest way that preserves intended logging behavior and avoids spam.
+4) Comment/code alignment:
+   - Ensure comments describe real behavior and constraints; remove or adjust any drift introduced during prior edits.
+
+Mandatory gate output (for each non-trivial change you apply):
+- Change: one sentence describing what you changed.
+- Gain: one sentence.
+- Cost: one sentence.
+- Risk: one sentence (what could break).
+- Validation: how to verify (manual smoke path and/or a simple repo grep).
+
+If you find no changes that clearly improve coherence without risk, make no edits and output:
+- "No Level 6 changes justified" + 3–8 bullets of what you checked.
+
+Apply changes only to the target file.
+```
+
 ---
 
 ## Nivel 7: Smoke test
 
-* Cuando lo anterior esté listo: Smoke test y/o análisis debug para diagnosticar que los cambios realizados no rompieron la app.
+* Cuando lo anterior esté listo: Smoke test y/o análisis debug para diagnosticar que los cambios realizados (desde nivel 1 a 6) no rompieron la app.
 
 ---
