@@ -54,7 +54,7 @@ ensureConfigDir();
 const warnOnce = (...args) => log.warnOnce(...args);
 
 // Maximum allowed characters for the current text (safety limit for memory/performance).
-// Keep fallbacks synchronized in text_state.js and constants.js (renderer side).
+// Renderer fallback lives in public/js/constants.js; main/text_state use MAX_TEXT_CHARS and injected maxTextChars.
 
 // Initialize shared text state early (current_text.json).
 // This module owns loading/saving current text and its IPC surface.
