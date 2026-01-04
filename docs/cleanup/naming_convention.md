@@ -30,7 +30,7 @@
 
 1. **UPPER_SNAKE_CASE only for true constants (`const`)** at module scope (paths, URLs, intervals, fixed caps, enums/dicts).
 
-   * Example (main): `const MAX_TEXT_CHARS = 10000000;` (`electron/main.js`).
+   * Example (main): `const MAX_TEXT_CHARS = 10000000;` (`electron/constants_main.js`).
 
 2. **Defaults must be explicit and immutable.**
 
@@ -46,8 +46,8 @@
 
 5. **camelCase for IPC payload keys and JSON config fields.**
 
-   * Choose one canonical key (e.g., `maxTextChars`).
-   * Any alternate spellings (UPPERCASE or snake_case) are treated as **legacy aliases** and must be documented explicitly if retained.
+   * Use the canonical key (`maxTextChars`).
+   * Do not accept alternate spellings for this value in config/IPC.
 
 6. **Environment override keys remain UPPER_SNAKE_CASE** (standard practice).
 
@@ -66,10 +66,10 @@
 
 ### Example A — True constant at module scope (OK)
 
-`electron/main.js`:
+`electron/constants_main.js`:
 
 * `const MAX_TEXT_CHARS = 10000000;`
-* Used to populate the IPC config and inject into text state.
+* Imported by `electron/main.js` to populate the IPC config and inject into text state.
 
 ### Example B — IPC payload key (OK)
 
@@ -78,60 +78,55 @@
 * returns `{ ok: true, maxTextChars: MAX_TEXT_CHARS }`
   This follows Rule 5 (camelCase payload).
 
-### Example C — Effective config stored as UPPERCASE `let` (policy violation)
+### Example C — Effective config stored as camelCase (OK)
 
-`public/renderer.js`:
+`public/renderer.js`, `public/editor.js`:
 
-* `let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS;`
-* later: `MAX_TEXT_CHARS = AppConstants.applyConfig(cfg);`
-  Under this policy, this should be camelCase (effective config).
+* `let maxTextChars = AppConstants.MAX_TEXT_CHARS;`
+* later: `maxTextChars = AppConstants.applyConfig(cfg);`
+  This follows Rule 3 (effective config is camelCase).
 
 ### Example D — Module cache in UPPERCASE `let` (policy violation)
 
 `electron/text_state.js`:
 
 * `let CURRENT_TEXT_FILE = null;`
+* `let SETTINGS_FILE = null;`
 * assigned in `init()` from options.
   Under this policy, this should be camelCase because it is runtime state/cache.
 
-### Example E — Export name/type mismatch (high-priority violation)
+### Example E — Export name/type match (OK)
 
-`electron/log.js`:
+`electron/log.js`, `public/js/log.js`:
 
-* internal: `const LEVELS = {...}` and `const LEVEL_NAMES = Object.keys(LEVELS)`
-* export: `LEVELS: LEVEL_NAMES`
-  Same pattern exists in `public/js/log.js`.
-  This violates Rule 8 and is a concrete correctness/maintainability issue (name implies map, value is list).
+* `LEVELS` exports the map and `LEVEL_NAMES` exports the list.
+  This aligns with Rule 8 (export name matches value type).
 
 ## 5. Current violations and ambiguities (tracked)
 
-### V1 — Export name/type mismatch (Rule 8)
+### V1 — Export name/type mismatch (Rule 8) — RESOLVED
 
-* `electron/log.js`: `LEVELS` exported but value is `LEVEL_NAMES`
-* `public/js/log.js`: same mismatch
-  **Priority:** P0 (highest).
-  **Reason:** misleading API surface.
+* `electron/log.js`: `LEVELS` exports the map; `LEVEL_NAMES` exports the list.
+* `public/js/log.js`: same fix.
+  **Status:** Done (P0).
 
-### V2 — Effective config represented as UPPERCASE `let` (Rules 3/7)
+### V2 — Effective config represented as UPPERCASE `let` (Rules 3/7) — RESOLVED
 
-* `public/renderer.js`, `public/editor.js`: `let MAX_TEXT_CHARS ...` then reassigned after `getAppConfig()`
-  **Priority:** P1.
-  **Reason:** misleading invariant signal.
+* `public/renderer.js`, `public/editor.js`: `maxTextChars` is used for the effective limit.
+  **Status:** Done (P1).
 
 ### V3 — Runtime module caches represented as UPPERCASE `let` (Rule 4)
 
-* `electron/text_state.js`: `CURRENT_TEXT_FILE`, `SETTINGS_FILE`, `MAX_TEXT_CHARS` are mutable module-level bindings
+* `electron/text_state.js`: `CURRENT_TEXT_FILE`, `SETTINGS_FILE` are mutable module-level bindings
   **Priority:** P1.
   **Reason:** conflates constants with injected runtime state.
 
-### V4 — Multiple accepted config keys (Rule 5)
+### V4 — Multiple accepted config keys (Rule 5) — RESOLVED
 
-`public/js/constants.js` accepts:
+`public/js/constants.js` accepts only:
 
 * `cfg.maxTextChars` (canonical)
-* `cfg.MAX_TEXT_CHARS` and `cfg.max_text_chars` (legacy aliases)
-  **Priority:** P2 (depends on whether anything external uses the aliases).
-  **Action:** decide whether aliases are needed; document or deprecate.
+  **Status:** Done (P2).
 
 ## 6. Normalization plan (point-by-point; evidence-gated)
 
@@ -162,12 +157,9 @@
 
 **Item 2:** `MAX_TEXT_CHARS` naming across layers
 
-* Keep main’s `const MAX_TEXT_CHARS` (true constant) or rename to `DEFAULT_MAX_TEXT_CHARS` if you want to emphasize “default cap”.
+* Keep main’s `const MAX_TEXT_CHARS` in `electron/constants_main.js` (true constant).
 * Rename renderer/editor mutable locals to camelCase (e.g., `maxTextChars` or `effectiveMaxTextChars`).
-* In `constants.js`, decide whether `AppConstants.MAX_TEXT_CHARS` should be:
-
-  * true constant (no mutation), or
-  * treated as config object (then rename object or property to avoid “constant” semantics).
+* In `constants.js`, `AppConstants.MAX_TEXT_CHARS` is a true constant; `applyConfig` returns the effective value without mutation.
 * Requirements:
 
   * No behavior change: ensure truncation still enforces cap.
@@ -186,17 +178,15 @@
 
 **Item 4:** `applyConfig()` accepted keys
 
-* Keep `maxTextChars` canonical.
-* If aliases are truly needed, document them explicitly as legacy and add a deprecation strategy.
-* If not needed, remove aliases later (breaking-change risk depends on consumers).
+* Keep `maxTextChars` canonical; legacy aliases are removed (Patch 2.4).
 
 ## 7. Tracking checklist (copy/paste)
 
-* [ ] P0: Logger export mismatch (`LEVELS` vs `LEVEL_NAMES`) — `electron/log.js`, `public/js/log.js`
-* [ ] P1: Renderer effective config casing — `public/renderer.js` (`MAX_TEXT_CHARS` local)
-* [ ] P1: Editor effective config casing — `public/editor.js` (`MAX_TEXT_CHARS` local)
-* [ ] P1: text_state module caches casing — `electron/text_state.js` (`CURRENT_TEXT_FILE`, `SETTINGS_FILE`, `MAX_TEXT_CHARS`)
-* [ ] P2: Config keys canonicalization — `public/js/constants.js` (`applyConfig` accepted keys)
+* [x] P0: Logger export mismatch (`LEVELS` vs `LEVEL_NAMES`) — `electron/log.js`, `public/js/log.js`
+* [x] P1: Renderer effective config casing — `public/renderer.js` (`maxTextChars` local)
+* [x] P1: Editor effective config casing — `public/editor.js` (`maxTextChars` local)
+* [ ] P1: text_state module caches casing — `electron/text_state.js` (`CURRENT_TEXT_FILE`, `SETTINGS_FILE`)
+* [x] P2: Config keys canonicalization — `public/js/constants.js` (`applyConfig` accepted keys)
 * [ ] P?: Any additional UPPERCASE `let` variables found by inventory (append here)
 
 ## 8. Enforcement (lightweight, practical)

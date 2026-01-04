@@ -17,7 +17,7 @@ In scope (Phase 2):
 Out of scope (explicitly not Phase 2):
 - User-configurable setting persisted in settings/user_settings.json.
 - Re-architecting IPC model beyond what is needed to propagate `maxTextChars`.
-- Removing accepted legacy keys (`cfg.MAX_TEXT_CHARS`, `cfg.max_text_chars`) unless explicitly scheduled later.
+- Legacy config key removal (handled in Patch 2.4).
 
 ## Definitions
 - **Hard cap (authoritative):** developer-tunable hard limit used by main/text_state to prevent crashes/OOM.
@@ -168,15 +168,14 @@ Status:
 
 ---
 
-### Patch 2.4 (Optional / Later) — Legacy key rationalization
+### Patch 2.4 — Legacy key removal (cfg.maxTextChars only)
 Goal:
-- Decide whether to keep accepting `cfg.MAX_TEXT_CHARS` and `cfg.max_text_chars`.
-- Document as legacy or schedule removal.
+- Remove legacy config keys so only `cfg.maxTextChars` is accepted.
 
 Status:
-- [x] Not scheduled
+- [ ] Not scheduled
 - [ ] Scheduled
-- [ ] Done
+- [x] Done
 
 ## Risks and hard gates
 ### Key risk
@@ -330,7 +329,6 @@ Hard constraints:
 Required outcome (high-level, let implementation follow the repo’s existing structure):
 1) public/js/constants.js
 - `AppConstants.applyConfig(cfg)` must NOT mutate `this.MAX_TEXT_CHARS` (or any equivalent mutable storage for the effective limit).
-- Preserve the currently-supported input keys (`cfg.MAX_TEXT_CHARS`, `cfg.max_text_chars`) if they exist in the repo today (do not change/remove them in this patch).
 - Provide a way for renderer/editor to obtain a computed effective maxTextChars from a config object WITHOUT mutating AppConstants, while keeping fallback default as `DEFAULTS.MAX_TEXT_CHARS`.
 - Additional clarification (minimal): `applyConfig(cfg)` must always return a NUMBER (never null/undefined). If cfg does not contain a valid positive value, return the existing constant value already stored on AppConstants (do not force-reset to DEFAULTS, and do not require new validation branches in callers).
 
@@ -401,3 +399,11 @@ Code evidence:
 Checks (verified):
 - `rg -n -S "this\\.MAX_TEXT_CHARS\\s*=" .\\public\\js\\constants.js` (no matches)
 - `rg -n -S "\\b(let|var)\\s+MAX_TEXT_CHARS\\b" .\\public\\renderer.js .\\public\\editor.js` (no matches)
+
+### Patch 2.4 - DONE (remove legacy cfg keys; maxTextChars only)
+
+Code evidence:
+- `public/js/constants.js:20-25` applyConfig reads `cfg.maxTextChars` only and returns a number
+
+Checks (verified):
+- `rg -n -S "cfg\\.MAX_TEXT_CHARS|cfg\\.max_text_chars" .\\electron .\\public` (no matches)
