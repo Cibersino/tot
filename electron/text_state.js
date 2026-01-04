@@ -16,6 +16,7 @@
 // =============================================================================
 const fs = require('fs');
 const Log = require('./log');
+const { MAX_TEXT_CHARS } = require('./constants_main');
 
 const log = Log.get('text-state');
 
@@ -23,7 +24,7 @@ const log = Log.get('text-state');
 // Shared state and injected dependencies
 // =============================================================================
 // Default limit. The effective limit is injected from main.js via init({ maxTextChars }).
-let MAX_TEXT_CHARS = 10_000_000; 
+let maxTextChars = MAX_TEXT_CHARS;
 
 // Current text held in memory; persisted on quit (also saved during init if it is truncated).
 let currentText = '';
@@ -88,7 +89,7 @@ function persistCurrentTextOnQuit() {
 /**
  * Initialize the text state:
  * - Load from CURRENT_TEXT_FILE
- * - Apply initial truncation by MAX_TEXT_CHARS
+ * - Apply initial truncation by maxTextChars
  * - Register persistence in app.before-quit
  */
 function init(options) {
@@ -101,10 +102,10 @@ function init(options) {
   appRef = opts.app || null;
 
   if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
-    MAX_TEXT_CHARS = opts.maxTextChars;
+    maxTextChars = opts.maxTextChars;
   }
 
-  // Initial load from disk + truncated if MAX_TEXT_CHARS is exceeded
+  // Initial load from disk + truncated if maxTextChars is exceeded
   try {
     let raw = loadJson
       ? loadJson(CURRENT_TEXT_FILE, { text: '' })
@@ -124,11 +125,11 @@ function init(options) {
       );
     }
 
-    if (txt.length > MAX_TEXT_CHARS) {
+    if (txt.length > maxTextChars) {
       log.warn(
-        `Initial text exceeds MAX_TEXT_CHARS (${txt.length} > ${MAX_TEXT_CHARS}); truncated and saved.`
+        `Initial text exceeds maxTextChars (${txt.length} > ${maxTextChars}); truncated and saved.`
       );
-      txt = txt.slice(0, MAX_TEXT_CHARS);
+      txt = txt.slice(0, maxTextChars);
       if (saveJson && CURRENT_TEXT_FILE) {
         saveJson(CURRENT_TEXT_FILE, { text: txt });
       }
@@ -182,12 +183,12 @@ function registerIpc(ipcMain, windowsResolver) {
       let text = hasTextProp ? String(payload.text || '') : String(payload || '');
 
       let truncated = false;
-      if (text.length > MAX_TEXT_CHARS) {
-        text = text.slice(0, MAX_TEXT_CHARS);
+      if (text.length > maxTextChars) {
+        text = text.slice(0, maxTextChars);
         truncated = true;
         log.warnOnce(
           'text_state.setCurrentText.truncated',
-          'set-current-text: entry truncated to ' + MAX_TEXT_CHARS + ' chars.'
+          'set-current-text: entry truncated to ' + maxTextChars + ' chars.'
         );
       }
 
