@@ -18,6 +18,7 @@
 const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 const path = require('path');
 const Log = require('./log');
+const { MAX_TEXT_CHARS } = require('./constants_main');
 
 const {
   CONFIG_DIR,
@@ -54,7 +55,6 @@ const warnOnce = (...args) => log.warnOnce(...args);
 
 // Maximum allowed characters for the current text (safety limit for memory/performance).
 // Keep fallbacks synchronized in text_state.js and constants.js (renderer side).
-const MAX_TEXT_CHARS = 10000000;
 
 // Initialize shared text state early (current_text.json).
 // This module owns loading/saving current text and its IPC surface.
@@ -1131,3 +1131,4 @@ app.on('will-quit', () => {
 // =============================================================================
 // End of main.js
 // =============================================================================
+
