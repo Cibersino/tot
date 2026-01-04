@@ -148,6 +148,7 @@
 
   * Option A: export `LEVELS` as the map and add `LEVEL_NAMES` explicitly, or
   * Option B: keep the list but rename export to `LEVEL_NAMES`.
+  
 * Requirements:
 
   * Repo-wide search for consumers (Codex/rg) before changing.
