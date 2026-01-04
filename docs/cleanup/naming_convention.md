@@ -11,7 +11,7 @@
 
 * Make identifier casing communicate mutability and lifecycle (compile-time constant vs runtime state).
 * Avoid misleading API names (export name must match value type/semantics).
-* Make config propagation (main → renderer/editor) explicit, stable, and auditable.
+* Make config propagation (main -> renderer/editor) explicit, stable, and auditable.
 
 ### Non-goals
 
@@ -42,7 +42,7 @@
 
 4. **camelCase for module state/cache** that can change at runtime (text buffers, injected file paths, window refs, timers, caches).
 
-   * Example (current code that violates this): `let CURRENT_TEXT_FILE = null;` (`electron/text_state.js`).
+   * Example: `let currentTextFile = null;` (`electron/text_state.js`).
 
 5. **camelCase for IPC payload keys and JSON config fields.**
 
@@ -187,7 +187,7 @@
 * [x] P1: Editor effective config casing — `public/editor.js` (`maxTextChars` local)
 * [x] P1: text_state module caches casing — `electron/text_state.js` (`currentTextFile`, `settingsFile`)
 * [x] P2: Config keys canonicalization — `public/js/constants.js` (`applyConfig` accepted keys)
-* [ ] P?: Any additional UPPERCASE `let` variables found by inventory (append here)
+* Additional UPPERCASE `let/var` items are tracked via pre-PR scans (none in the latest inventory).
 
 ## 8. Enforcement (lightweight, practical)
 
