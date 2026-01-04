@@ -86,14 +86,14 @@
 * later: `maxTextChars = AppConstants.applyConfig(cfg);`
   This follows Rule 3 (effective config is camelCase).
 
-### Example D — Module cache in UPPERCASE `let` (policy violation)
+### Example D — Module cache in camelCase (OK)
 
 `electron/text_state.js`:
 
-* `let CURRENT_TEXT_FILE = null;`
-* `let SETTINGS_FILE = null;`
+* `let currentTextFile = null;`
+* `let settingsFile = null;`
 * assigned in `init()` from options.
-  Under this policy, this should be camelCase because it is runtime state/cache.
+  This follows Rule 4 (runtime state/cache in camelCase).
 
 ### Example E — Export name/type match (OK)
 
@@ -115,11 +115,10 @@
 * `public/renderer.js`, `public/editor.js`: `maxTextChars` is used for the effective limit.
   **Status:** Done (P1).
 
-### V3 — Runtime module caches represented as UPPERCASE `let` (Rule 4)
+### V3 — Runtime module caches represented as UPPERCASE `let` (Rule 4) — RESOLVED
 
-* `electron/text_state.js`: `CURRENT_TEXT_FILE`, `SETTINGS_FILE` are mutable module-level bindings
-  **Priority:** P1.
-  **Reason:** conflates constants with injected runtime state.
+* `electron/text_state.js`: `currentTextFile`, `settingsFile` are camelCase module-level bindings.
+  **Status:** Done (P1).
 
 ### V4 — Multiple accepted config keys (Rule 5) — RESOLVED
 
@@ -186,7 +185,7 @@
 * [x] P0: Logger export mismatch (`LEVELS` vs `LEVEL_NAMES`) — `electron/log.js`, `public/js/log.js`
 * [x] P1: Renderer effective config casing — `public/renderer.js` (`maxTextChars` local)
 * [x] P1: Editor effective config casing — `public/editor.js` (`maxTextChars` local)
-* [ ] P1: text_state module caches casing — `electron/text_state.js` (`CURRENT_TEXT_FILE`, `SETTINGS_FILE`)
+* [x] P1: text_state module caches casing — `electron/text_state.js` (`currentTextFile`, `settingsFile`)
 * [x] P2: Config keys canonicalization — `public/js/constants.js` (`applyConfig` accepted keys)
 * [ ] P?: Any additional UPPERCASE `let` variables found by inventory (append here)
 

@@ -32,8 +32,8 @@ let currentText = '';
 // Injected dependencies and file paths (set in init).
 let loadJson = null;
 let saveJson = null;
-let CURRENT_TEXT_FILE = null;
-let SETTINGS_FILE = null;
+let currentTextFile = null;
+let settingsFile = null;
 let appRef = null;
 
 // Window resolver for best-effort UI notifications.
@@ -62,20 +62,20 @@ function safeSend(win, channel, payload) {
 // Persist current text and ensure settings file exists (compatibility behavior).
 function persistCurrentTextOnQuit() {
   try {
-    if (saveJson && CURRENT_TEXT_FILE) {
-      saveJson(CURRENT_TEXT_FILE, { text: currentText || '' });
+    if (saveJson && currentTextFile) {
+      saveJson(currentTextFile, { text: currentText || '' });
     }
 
     // Maintain previous behavior: ensure SETTINGS_FILE exists
-    if (loadJson && saveJson && SETTINGS_FILE) {
+    if (loadJson && saveJson && settingsFile) {
       const settingsDefaults = {
         language: 'es',
         presets_by_language: {},
         disabled_default_presets: {},
       };
-      const settings = loadJson(SETTINGS_FILE, settingsDefaults);
-      if (!fs.existsSync(SETTINGS_FILE)) {
-        saveJson(SETTINGS_FILE, settings);
+      const settings = loadJson(settingsFile, settingsDefaults);
+      if (!fs.existsSync(settingsFile)) {
+        saveJson(settingsFile, settings);
       }
     }
   } catch (err) {
@@ -88,7 +88,7 @@ function persistCurrentTextOnQuit() {
 // =============================================================================
 /**
  * Initialize the text state:
- * - Load from CURRENT_TEXT_FILE
+ * - Load from currentTextFile
  * - Apply initial truncation using the effective hard cap
  * - Register persistence in app.before-quit
  */
@@ -97,8 +97,8 @@ function init(options) {
 
   loadJson = opts.loadJson;
   saveJson = opts.saveJson;
-  CURRENT_TEXT_FILE = opts.currentTextFile;
-  SETTINGS_FILE = opts.settingsFile;
+  currentTextFile = opts.currentTextFile;
+  settingsFile = opts.settingsFile;
   appRef = opts.app || null;
 
   if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
@@ -108,7 +108,7 @@ function init(options) {
   // Initial load from disk + truncated if hard cap is exceeded
   try {
     let raw = loadJson
-      ? loadJson(CURRENT_TEXT_FILE, { text: '' })
+      ? loadJson(currentTextFile, { text: '' })
       : { text: '' };
 
     const isRawObject = raw && typeof raw === 'object';
@@ -130,8 +130,8 @@ function init(options) {
         `Initial text exceeds effective hard cap (${txt.length} > ${maxTextChars}); truncated and saved.`
       );
       txt = txt.slice(0, maxTextChars);
-      if (saveJson && CURRENT_TEXT_FILE) {
-        saveJson(CURRENT_TEXT_FILE, { text: txt });
+      if (saveJson && currentTextFile) {
+        saveJson(currentTextFile, { text: txt });
       }
     }
 
