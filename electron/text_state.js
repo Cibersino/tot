@@ -23,7 +23,7 @@ const log = Log.get('text-state');
 // =============================================================================
 // Shared state and injected dependencies
 // =============================================================================
-// Default limit. The effective limit is injected from main.js via init({ maxTextChars }).
+// Default from constants_main.js; effective limit may be injected from main.js via init({ maxTextChars }).
 let maxTextChars = MAX_TEXT_CHARS;
 
 // Current text held in memory; persisted on quit (also saved during init if it is truncated).
@@ -66,7 +66,7 @@ function persistCurrentTextOnQuit() {
       saveJson(currentTextFile, { text: currentText || '' });
     }
 
-    // Maintain previous behavior: ensure SETTINGS_FILE exists
+    // Maintain previous behavior: ensure settings file exists.
     if (loadJson && saveJson && settingsFile) {
       const settingsDefaults = {
         language: 'es',
