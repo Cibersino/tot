@@ -11,8 +11,6 @@
   - Revisar avisos logs para que sean consistentes con la política y lógica establecida en los `log.js`.
   - Comments coherentes y útiles, tomando a `main.js` como modelo.
 
-NOTA: Todos los fallbacks de la app deben ser ruidosos. No pueden ser silenciosos. Agregar esa política a los `log.js`.
-
 # Más adelante #
 
 * Nuevas funciones *
