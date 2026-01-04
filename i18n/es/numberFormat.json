@@ -1,6 +1,4 @@
 ﻿{
-  "numberFormat": {
-    "thousands": ".",
-    "decimal": ","
-  }
+  "thousands": ".",
+  "decimal": ","
 }

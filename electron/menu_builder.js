@@ -1,13 +1,42 @@
 // electron/menu_builder.js
-// Construction of the native menu and dialog texts of main from i18n/<lang>/main.json.
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Builds the app's native (top) menu and main-process dialog texts.
+// Responsibilities:
+// - Load translations from i18n/<lang>/main.json with a safe fallback chain.
+// - Build and install the application menu.
+// - Forward menu actions to the main renderer via 'menu-click'.
+
+// =============================================================================
+// Imports (external modules)
+// =============================================================================
 
 const { app, Menu } = require('electron');
 const fs = require('fs');
 const path = require('path');
+
+// =============================================================================
+// Imports (internal modules)
+// =============================================================================
+
 const Log = require('./log');
 
 const log = Log.get('menu');
+
+// =============================================================================
+// Language helpers
+// =============================================================================
+// We normalize language tags so folder/file paths are predictable.
+// Examples:
+// - 'es_CL' -> 'es-cl'
+// - 'EN'    -> 'en'
+//
+// "Base language" is the part before a region:
+// - 'es-cl' -> 'es'
+// - 'en-us' -> 'en'
 
 const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
 const getLangBase = (lang) => {
@@ -17,37 +46,88 @@ const getLangBase = (lang) => {
     return idx > 0 ? tag.slice(0, idx) : tag;
 };
 
-// Helpers: load main (menu/dialog) translations from i18n
+// =============================================================================
+// Translation loading
+// =============================================================================
+// Translations live under i18n/<lang>/main.json.
+//
+// Fallback chain (in order):
+// 1) requested tag (e.g. 'es-cl')
+// 2) base tag      (e.g. 'es')
+// 3) 'es' as a final safe fallback
+//
+// For each language code we try these file candidates:
+// - If it has a region (contains '-'):
+//     i18n/<base>/<full>/main.json   (example: i18n/es/es-cl/main.json)
+// - Always:
+//     i18n/<lang>/main.json          (example: i18n/es/main.json)
+//
+// Behavior:
+// - If a candidate file is missing, we try the next one.
+// - If a file is empty/invalid JSON, we log once and try the next one.
+// - If nothing can be loaded, we return {} and the menu uses hardcoded labels.
+
 function loadMainTranslations(lang) {
     const requested = normalizeLangTag(lang) || 'es';
     const base = getLangBase(requested) || 'es';
+
     const candidates = [];
     if (requested) candidates.push(requested);
     if (base && base !== requested) candidates.push(base);
     if (!candidates.includes('es')) candidates.push('es');
+
     for (const langCode of candidates) {
         const langBase = getLangBase(langCode) || langCode;
+
         const files = [];
         if (langCode.includes('-')) {
             files.push(path.join(__dirname, '..', 'i18n', langBase, langCode, 'main.json'));
         }
         files.push(path.join(__dirname, '..', 'i18n', langCode, 'main.json'));
-        try {
-            for (const file of files) {
-                if (!fs.existsSync(file)) {
+
+        for (const file of files) {
+            if (!fs.existsSync(file)) continue;
+
+            try {
+                let raw = fs.readFileSync(file, 'utf8');
+
+                // Remove UTF-8 BOM if present (some editors add it and JSON.parse fails).
+                raw = raw.replace(/^\uFEFF/, '');
+
+                if (raw.trim() === '') {
+                    log.warnOnce(
+                        `menu_builder.loadMainTranslations:empty:${requested}:${langCode}:${String(file)}`,
+                        'main.json is empty (trying fallback):',
+                        { requested, langCode, file }
+                    );
                     continue;
                 }
-                let raw = fs.readFileSync(file, 'utf8');
-                // Remove BOM UTF-8 if it exists
-                raw = raw.replace(/^\uFEFF/, '');
-                return JSON.parse(raw || '{}');
+
+                return JSON.parse(raw);
+            } catch (err) {
+                log.warnOnce(
+                    `menu_builder.loadMainTranslations:failed:${requested}:${langCode}:${String(file)}`,
+                    'Failed to load/parse main.json (trying fallback):',
+                    { requested, langCode, file },
+                    err
+                );
             }
-        } catch (err) {
-            log.error('[menu_builder] Error loading translations from main.json:', err);
         }
     }
+
+    log.warnOnce(
+        `menu_builder.loadMainTranslations:none:${requested}`,
+        'No main.json could be loaded (using empty translations):',
+        { requested, base, candidates }
+    );
     return {};
 }
+
+// =============================================================================
+// Public helper: dialog texts
+// =============================================================================
+// Some dialogs are shown by the main process (Electron native dialogs).
+// This returns the "main.dialog" section from the translation file.
 
 function getDialogTexts(lang) {
     const tr = loadMainTranslations(lang);
@@ -55,13 +135,19 @@ function getDialogTexts(lang) {
     return tMain.dialog || {};
 }
 
+// =============================================================================
+// Public helper: build the native application menu
+// =============================================================================
+
 /**
- * Build the native menu of the app.
+ * Builds and installs the native menu.
+ * - Labels come from i18n/<lang>/main.json (with fallbacks).
+ * - Clicks send an action id to the renderer via 'menu-click'.
  *
  * @param {string} lang - Language code (e.g. 'es', 'en').
  * @param {object} [opts]
- * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Main window to send 'menu-click'.
- * @param {Function} [opts.onOpenLanguage] - Callback to open the language selection window.
+ * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Target window for 'menu-click'.
+ * @param {Function} [opts.onOpenLanguage] - Callback that opens the language selection window.
  */
 function buildAppMenu(lang, opts = {}) {
     const effectiveLang = normalizeLangTag(lang) || 'es';
@@ -70,18 +156,46 @@ function buildAppMenu(lang, opts = {}) {
     const m = tMain.menu || {};
 
     const mainWindow = opts.mainWindow || null;
+
+    // Optional hook: the menu can trigger the language picker window.
     const onOpenLanguage =
         typeof opts.onOpenLanguage === 'function' ? opts.onOpenLanguage : null;
 
+    // Send a menu action to the renderer.
+    // If the window is missing/closing, we drop the action and log once (best-effort IPC).
     const sendMenuClick = (payload) => {
-        if (!mainWindow || mainWindow.isDestroyed()) return;
+        if (!mainWindow) {
+            log.warnOnce(
+                `menu_builder.sendMenuClick:noWindow:${String(payload)}`,
+                'menu-click dropped (no mainWindow):',
+                payload
+            );
+            return;
+        }
+        if (mainWindow.isDestroyed()) {
+            log.warnOnce(
+                `menu_builder.sendMenuClick:destroyed:${String(payload)}`,
+                'menu-click dropped (mainWindow destroyed):',
+                payload
+            );
+            return;
+        }
+
         try {
             mainWindow.webContents.send('menu-click', payload);
         } catch (err) {
-            log.error('[menu_builder] Error sending menu-click:', payload, err);
+            log.warnOnce(
+                `menu_builder.sendMenuClick:sendFailed:${String(payload)}`,
+                "webContents.send('menu-click') failed (ignored):",
+                payload,
+                err
+            );
         }
     };
 
+    // Menu template:
+    // - Prefer translated labels when available.
+    // - Each click emits a stable action id (string).
     const menuTemplate = [
         {
             label: m.como_usar || 'Como usar la app?',
@@ -122,17 +236,23 @@ function buildAppMenu(lang, opts = {}) {
             submenu: [
                 {
                     label: m.idioma || 'Language',
-                    // Here we used to call createLanguageWindow() directly in main.js.
+                    // The window lifecycle is handled by main.js; this module only calls the hook.
                     click: () => {
                         if (onOpenLanguage) {
                             try {
                                 onOpenLanguage();
                             } catch (err) {
-                                log.error(
-                                    '[menu_builder] Error in callback onOpenLanguage:',
+                                log.errorOnce(
+                                    'menu_builder.onOpenLanguage',
+                                    'onOpenLanguage callback failed:',
                                     err
                                 );
                             }
+                        } else {
+                            log.warnOnce(
+                                'menu_builder.onOpenLanguage.missing',
+                                'Language menu clicked but no handler was provided (ignored).'
+                            );
                         }
                     },
                 },
@@ -207,7 +327,9 @@ function buildAppMenu(lang, opts = {}) {
         },
     ];
 
-    // Dev menu (only if enabled by environment variable)
+    // Development menu:
+    // - Hidden in packaged builds.
+    // - In development, shown only if SHOW_DEV_MENU=1.
     const showDevMenu = process.env.SHOW_DEV_MENU === '1';
     if (!app.isPackaged && showDevMenu) {
         menuTemplate.push({
@@ -223,8 +345,9 @@ function buildAppMenu(lang, opts = {}) {
                         try {
                             mainWindow.webContents.toggleDevTools();
                         } catch (err) {
-                            log.error(
-                                '[menu_builder] Error toggling DevTools from menu:',
+                            log.warnOnce(
+                                'menu_builder.toggleDevTools',
+                                'toggleDevTools failed (ignored):',
                                 err
                             );
                         }
@@ -234,11 +357,20 @@ function buildAppMenu(lang, opts = {}) {
         });
     }
 
+    // Apply the menu to the application.
     const appMenu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(appMenu);
 }
+
+// =============================================================================
+// Exports
+// =============================================================================
 
 module.exports = {
     getDialogTexts,
     buildAppMenu,
 };
+
+// =============================================================================
+// End of menu_builder.js
+// =============================================================================

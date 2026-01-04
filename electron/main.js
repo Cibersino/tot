@@ -4,12 +4,12 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main process entrypoint for the application.
+// Main process entry point (Electron).
 // Responsibilities:
-// - Create and coordinate application windows (main, editor, preset modal, language picker, floating stopwatch).
-// - Initialize shared state backed by JSON files (settings + current text) via dedicated modules.
-// - Register IPC endpoints used by renderer windows.
-// - Keep the stopwatch state consistent across windows (especially the floating window) while the app is running.
+// - Ensure persistent storage is ready (config folder + JSON-backed state).
+// - Create and manage application windows (main, editor, preset modal, language picker, flotante stopwatch).
+// - Register IPC handlers used by renderer windows (the visible UI).
+// - Own the stopwatch ("crono") state and broadcast updates to any open UI windows.
 
 // =============================================================================
 // Imports (external + internal modules)
@@ -49,10 +49,10 @@ const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
 // Ensure config directory exists before any module tries to read/write JSON.
 ensureConfigDir();
 
-// Convenience wrapper: warnOnce is used to avoid log spam in expected, repeated "ignored" failures.
+// Helper to avoid repeating the same warning many times (keeps logs readable).
 const warnOnce = (...args) => log.warnOnce(...args);
 
-// Canonical source of the text limit.
+// Maximum allowed characters for the current text (safety limit for memory/performance).
 // Keep fallbacks synchronized in text_state.js and constants.js (renderer side).
 const MAX_TEXT_CHARS = 10000000;
 
@@ -70,10 +70,7 @@ textState.init({
 // =============================================================================
 // Global window references (singletons)
 // =============================================================================
-// We keep references so we can:
-// - focus existing windows instead of creating duplicates,
-// - send IPC messages to them,
-// - close dependent windows when quitting.
+// We keep references so we can reuse windows (avoid duplicates), send IPC messages and close related windows during shutdown.
 
 let mainWin = null;     // Main window (index.html)
 let editorWin = null;   // Editor window (editor.html) - user edits current text
@@ -89,7 +86,7 @@ let currentLanguage = 'es';
 
 /**
  * Rebuild the application menu using i18n translations.
- * The actual menu definition lives in menu_builder.js; this is just the orchestration.
+ * The menu definition is in menu_builder.js; this function just wires it to mainWin.
  */
 function buildAppMenu(lang) {
   const effectiveLang = lang || currentLanguage || 'es';
@@ -101,7 +98,7 @@ function buildAppMenu(lang) {
 
 /**
  * Developer-only global shortcuts (disabled in packaged builds).
- * These are quality-of-life actions during development and testing.
+ * Used for quick inspection and reload during development.
  */
 function registerDevShortcuts(mainWin) {
   if (app.isPackaged) return;
@@ -142,11 +139,11 @@ function unregisterShortcuts() {
 // =============================================================================
 
 /**
- * Create the main application window.
+ * Create the main application window (public/index.html).
  * This is the first "real" window after language selection (if needed).
  */
 function createMainWindow() {
-  // NOTE: useContentSize:true => width/height apply to content area (exclude window borders).
+  // NOTE: useContentSize:true => width/height apply to the content area (exclude window borders).
   mainWin = new BrowserWindow({
     width: 828,
     height: 490,
@@ -170,8 +167,7 @@ function createMainWindow() {
   // Dev-only shortcuts for inspection/reload.
   registerDevShortcuts(mainWin);
 
-  // When the main window starts closing, request dependent windows to close too.
-  // We do not block closing; we just try to clean up related windows.
+  // Best-effort shutdown: when the main window closes, try to close auxiliary windows too.
   mainWin.on('close', () => {
     try {
       if (editorWin && !editorWin.isDestroyed()) {
@@ -194,7 +190,7 @@ function createMainWindow() {
     }
   });
 
-  // When the main window is gone, quit the application (current behavior is cross-platform).
+  // Release reference and quit the app once the main window is gone.
   mainWin.on('closed', () => {
     mainWin = null;
 
@@ -209,11 +205,11 @@ function createMainWindow() {
 }
 
 /**
- * Create the editor window (text editing).
+ * Create the editor window (public/editor.html).
  * The editor uses editor_state.js to remember size/position/maximized state.
  */
 function createEditorWindow() {
-  // Load initial window state (size/position/maximized) from editor_state.js.
+  // Load last saved window state (size/position/maximized) from editor_state.js.
   const state = editorState.loadInitialState(loadJson);
 
   // Determine whether we have a valid saved "reduced" (non-maximized) state.
@@ -234,7 +230,7 @@ function createEditorWindow() {
     resizable: true,
     minimizable: true,
     maximizable: true,
-    show: false, // show only after ready-to-show to avoid flicker
+    show: false, // Show only after ready-to-show to avoid flicker.
     webPreferences: {
       preload: path.join(__dirname, 'editor_preload.js'),
       contextIsolation: true,
@@ -249,7 +245,7 @@ function createEditorWindow() {
 
   editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
 
-  // When the window is ready, apply maximized state (if needed), show it, and send initial data.
+  // When ready, apply maximized state (if needed), show it, and send initial data.
   editorWin.once('ready-to-show', () => {
     try {
       // If it was last closed maximized, reopen maximized.
@@ -259,8 +255,7 @@ function createEditorWindow() {
 
       editorWin.show();
 
-      // Send initial current text to the editor.
-      // The renderer will render it and allow editing.
+      // Send current text so the editor can render and allow editing.
       try {
         const initialText = textState.getCurrentText();
         editorWin.webContents.send('editor-init-text', {
@@ -284,18 +279,19 @@ function createEditorWindow() {
     }
   });
 
-  // Delegate persistent window-state management (maximized/reduced, persistence) to editor_state.js.
+  // Delegate persistent window-state management to editor_state.js.
   editorState.attachTo(editorWin, loadJson, saveJson);
 
-  // Drop reference on close to allow garbage collection and re-create later.
+  // Drop reference on close so the window can be recreated later.
   editorWin.on('closed', () => {
     editorWin = null;
   });
 }
 
 /**
- * Create the preset modal window (create/edit WPM presets).
- * If the modal is already open, we focus it and push the latest init payload.
+ * Create the preset modal window (public/preset_modal.html).
+ * This is a modal dialog for creating/editing WPM presets.
+ * If already open, focus it and resend the latest init payload.
  */
 function createPresetWindow(initialData) {
   // If already open, focus and re-send init data (so the modal can update itself).
@@ -315,7 +311,7 @@ function createPresetWindow(initialData) {
     resizable: false,
     minimizable: false,
     maximizable: false,
-    parent: mainWin, // Modal blocks the parent window while open
+    parent: mainWin, // Modal blocks the parent window while open.
     modal: true,
     show: false,
     webPreferences: {
@@ -346,7 +342,8 @@ function createPresetWindow(initialData) {
 
 /**
  * Create the language selection window (first launch).
- * This window is NOT modal relative to mainWin because it may be opened before mainWin exists.
+ * This is a small window used only to select the UI language on first run.
+ * It is not modal relative to mainWin because it can be opened before mainWin exists.
  */
 function createLanguageWindow() {
   if (langWin && !langWin.isDestroyed()) {
@@ -384,7 +381,7 @@ function createLanguageWindow() {
     langWin.show();
   });
 
-  // If the user closes the language window without choosing, apply a safe fallback.
+  // If the user closes the language window without choosing, persist a safe fallback and continue startup.
   langWin.on('closed', () => {
     try {
       settingsState.applyFallbackLanguageIfUnset('es');
@@ -393,7 +390,7 @@ function createLanguageWindow() {
     } finally {
       langWin = null;
 
-      // Ensure the app can proceed even if the user dismissed the modal.
+      // Ensure the app can proceed even if the user dismissed the window.
       try {
         if (!mainWin) createMainWindow();
       } catch (err) {
@@ -406,7 +403,8 @@ function createLanguageWindow() {
 // =============================================================================
 // IPC registration (delegated modules)
 // =============================================================================
-// main.js owns the windows; feature modules own their IPC contract and internal logic.
+// main.js owns windows. Feature modules own their IPC contract and internal logic.
+// We provide window references and callbacks so modules can notify the UI.
 
 textState.registerIpc(ipcMain, () => ({
   mainWin,
@@ -423,10 +421,27 @@ settingsState.registerIpc(ipcMain, {
   }),
   buildAppMenu,
   setCurrentLanguage: (lang) => {
-    const normalized =
-      lang && typeof lang === 'string'
-        ? lang.trim().toLowerCase().replace(/_/g, '-')
-        : 'es';
+    // Normalize language tags (example: "es", "en", "pt-br").
+    if (typeof lang !== 'string') {
+      warnOnce(
+        'setCurrentLanguage.invalid',
+        'setCurrentLanguage: invalid lang; fallback to "es" (ignored).'
+      );
+      currentLanguage = 'es';
+      return;
+    }
+
+    const trimmed = lang.trim();
+    if (!trimmed) {
+      warnOnce(
+        'setCurrentLanguage.empty',
+        'setCurrentLanguage: empty lang; fallback to "es" (ignored).'
+      );
+      currentLanguage = 'es';
+      return;
+    }
+
+    const normalized = trimmed.toLowerCase().replace(/_/g, '-');
     currentLanguage = normalized || 'es';
   },
 });
@@ -449,6 +464,9 @@ updater.registerIpc(ipcMain, {
 // =============================================================================
 // Floating window - window placement safety
 // =============================================================================
+// The flotante window is a small always-on-top stopwatch UI.
+// We keep it fully visible by clamping its bounds to the display "work area"
+// (the usable desktop area excluding taskbar/dock).
 
 const FLOTANTE_PRELOAD = path.join(__dirname, 'flotante_preload.js');
 const FLOTANTE_HTML = path.join(__dirname, '../public/flotante.html');
@@ -477,7 +495,7 @@ function getWindowCenter(bounds) {
 
 /**
  * Pick the display that "owns" the window center.
- * This is used when snapping the floating window inside the visible work area.
+ * Used to decide which monitor's work area should be used for snapping.
  */
 function getDisplayByWindowCenter(bounds) {
   const center = getWindowCenter(bounds);
@@ -496,7 +514,14 @@ function snapWindowFullyIntoWorkArea(win) {
   const b = win.getBounds();
   const display = getDisplayByWindowCenter(b);
   const wa = display && display.workArea ? display.workArea : null;
-  if (!wa) return;
+
+  if (!wa) {
+    warnOnce(
+      'snapWindowFullyIntoWorkArea.noWorkArea',
+      'snapWindowFullyIntoWorkArea: display.workArea unavailable; snap skipped (ignored).'
+    );
+    return;
+  }
 
   const maxX = wa.x + wa.width - b.width;
   const maxY = wa.y + wa.height - b.height;
@@ -510,12 +535,8 @@ function snapWindowFullyIntoWorkArea(win) {
 }
 
 /**
- * Work-area guard (cross-platform):
- * - Windows: uses will-move + moved (end-of-move event).
- * - macOS/Linux: uses a short "stability timer" after move events.
- *
- * Goal:
- * - Keep the floating window fully visible (not hidden behind taskbar/dock or off-screen).
+ * Work-area guard (cross-platform).
+ * Goal: after a user drags the window, snap it back into the visible work area so it cannot end up partially off-screen.
  */
 function installWorkAreaGuard(win, opts = {}) {
   // Snap immediately on creation.
@@ -524,13 +545,13 @@ function installWorkAreaGuard(win, opts = {}) {
   let snapping = false;
   let userMoveArmed = false;
 
-  // will-move: only when the user drags by hand (Windows/macOS).
+  // will-move: fired when the user starts dragging the window (Windows/macOS).
   win.on('will-move', () => {
     if (!snapping) userMoveArmed = true;
   });
 
   if (process.platform === 'win32') {
-    // moved: emitted once at the end of the movement in Windows.
+    // moved: emitted once at the end of the movement on Windows.
     win.on('moved', () => {
       if (!userMoveArmed || snapping || win.isDestroyed()) return;
       userMoveArmed = false;
@@ -547,7 +568,7 @@ function installWorkAreaGuard(win, opts = {}) {
     return;
   }
 
-  // macOS + Linux: approximate "end-of-move" via a short timer after the last move event.
+  // macOS + Linux: approximate "end of move" with a short timer after the last move event.
   const endMoveMs = typeof opts.endMoveMs === 'number' ? opts.endMoveMs : 80;
 
   let lastMoveAt = 0;
@@ -561,7 +582,7 @@ function installWorkAreaGuard(win, opts = {}) {
   win.on('move', () => {
     if (snapping || win.isDestroyed()) return;
 
-    // Linux: treat any move as user-driven (docs differ by platform).
+    // Linux: treat any move event as user-driven (platform behavior varies).
     if (process.platform === 'linux') userMoveArmed = true;
 
     if (!userMoveArmed) return;
@@ -569,7 +590,6 @@ function installWorkAreaGuard(win, opts = {}) {
     lastMoveAt = Date.now();
     clearTimer();
     timer = setTimeout(() => {
-      // If new move events happened recently, wait a bit longer.
       if (Date.now() - lastMoveAt < endMoveMs) return;
       if (!userMoveArmed || snapping || win.isDestroyed()) return;
 
@@ -587,11 +607,20 @@ function installWorkAreaGuard(win, opts = {}) {
 }
 
 /**
- * Create (or restore) the floating stopwatch window.
- * - If already open, we reuse it (avoid duplicates).
- * - We compute a default position near bottom-right of the work area.
+ * Create (or restore) the floating stopwatch window (public/flotante.html).
+ * - If already open, reuse it (avoid duplicates).
+ * - Default position: near bottom-right of the primary display work area.
  */
 async function createFlotanteWindow(options = {}) {
+  // Normalize options to avoid TypeError when callers pass null (or other non-object values).
+  if (!options || typeof options !== 'object') {
+    warnOnce(
+      'flotante.options.invalid',
+      'createFlotanteWindow: invalid options; using defaults (ignored).'
+    );
+    options = {};
+  }
+
   // If it already exists and wasn't destroyed, restore it (don't recreate it).
   if (flotanteWin && !flotanteWin.isDestroyed()) {
     // Optional: apply forced position if requested.
@@ -626,7 +655,7 @@ async function createFlotanteWindow(options = {}) {
     },
   };
 
-  // Margins so the window is not flush against edges / scrollbars (px).
+  // Margins so the window is not flush against edges (px).
   const DEFAULT_MARGIN_RIGHT = 30;
   const DEFAULT_MARGIN_BOTTOM = 20;
 
@@ -636,7 +665,12 @@ async function createFlotanteWindow(options = {}) {
     const display = screen.getPrimaryDisplay();
     const wa = display && display.workArea ? display.workArea : null;
 
-    if (wa) {
+    if (!wa) {
+      warnOnce(
+        'flotante.position.noWorkArea',
+        'Flotante position: primary display workArea unavailable; using OS default position (ignored).'
+      );
+    } else {
       const marginRight = typeof options.marginRight === 'number' ? options.marginRight : DEFAULT_MARGIN_RIGHT;
       const marginBottom = typeof options.marginBottom === 'number' ? options.marginBottom : DEFAULT_MARGIN_BOTTOM;
 
@@ -644,7 +678,7 @@ async function createFlotanteWindow(options = {}) {
       pos.y = wa.y + wa.height - bwOpts.height - marginBottom;
     }
   } catch (err) {
-    log.warn('Position could not be calculated from screen.getPrimaryDisplay(); using the default FW position.', err);
+    log.warn('Flotante position: screen.getPrimaryDisplay failed; using OS defaults.', err);
   }
 
   // Allow explicit overrides.
@@ -659,7 +693,7 @@ async function createFlotanteWindow(options = {}) {
 
   installWorkAreaGuard(win, { endMoveMs: 80 });
 
-  // Track if the window is closing to avoid noisy "load failed" logs during stress open/close.
+  // Track close to avoid noisy "load failed" logs during stress open/close.
   let winClosing = false;
   win.on('close', () => { winClosing = true; });
 
@@ -679,7 +713,7 @@ async function createFlotanteWindow(options = {}) {
     }
   });
 
-  // Load the HTML content. If the user closes quickly, loadFile may reject; treat as expected in stress tests.
+  // Load the HTML content. If the user closes quickly, loadFile may reject; treat as expected.
   try {
     await win.loadFile(FLOTANTE_HTML);
   } catch (err) {
@@ -701,13 +735,13 @@ async function createFlotanteWindow(options = {}) {
 // =============================================================================
 // Stopwatch (crono)
 // =============================================================================
-// Why main process?
-// - To conserve the functionality of floating window even when main UI is not visible.
+// The stopwatch lives in the main process so it keeps working even if the UI windows
+// are hidden/reloaded, and so the flotante window can stay consistent.
 
 let crono = {
   running: false,
-  elapsed: 0, // accumulated milliseconds while paused/stopped
-  startTs: null, // timestamp when started (for running delta)
+  elapsed: 0,   // Accumulated milliseconds while paused/stopped.
+  startTs: null // Timestamp when started (used to compute running delta).
 };
 
 let cronoInterval = null;
@@ -734,8 +768,8 @@ function getCronoState() {
 }
 
 /**
- * Broadcast the current stopwatch state to renderer windows (main + floating).
- * These sends are best-effort: a target window might not exist or might be closing.
+ * Broadcast the current stopwatch state to renderer windows (main + flotante).
+ * Best-effort: a window may be closing or not exist.
  */
 function broadcastCronoState() {
   const state = getCronoState();
@@ -760,6 +794,7 @@ function stopCronoIntervalIfIdle() {
   }
 }
 
+// Keep a lightweight timer only while the stopwatch is running.
 function ensureCronoInterval() {
   if (cronoInterval) return;
   cronoInterval = setInterval(() => {
@@ -803,10 +838,22 @@ function resetCrono() {
  * Value is rounded down to the nearest second.
  */
 function setCronoElapsed(ms) {
-  if (crono.running) return;
+  if (crono.running) {
+    warnOnce(
+      'crono.setElapsed.whileRunning',
+      'crono-set-elapsed ignored: crono is running (ignored).'
+    );
+    return;
+  }
 
   const n = Number(ms);
-  if (!Number.isFinite(n)) return;
+  if (!Number.isFinite(n)) {
+    warnOnce(
+      'crono.setElapsed.invalidNumber',
+      'crono-set-elapsed ignored: invalid elapsed value (ignored).'
+    );
+    return;
+  }
 
   const msRounded = Math.max(0, Math.floor(n / 1000) * 1000);
 
@@ -854,7 +901,7 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
   }
 });
 
-// Floating window: open/close + commands from the floating UI
+// Floating window: open/close + commands from the flotante UI
 ipcMain.handle('flotante-open', async () => {
   try {
     await createFlotanteWindow();
@@ -874,7 +921,7 @@ ipcMain.handle('flotante-open', async () => {
   }
 });
 
-ipcMain.handle('flotante-close', async () => {
+ipcMain.handle('flotante-close', () => {
   try {
     const win = flotanteWin;
 
@@ -893,16 +940,49 @@ ipcMain.handle('flotante-close', async () => {
 
 ipcMain.on('flotante-command', (_ev, cmd) => {
   try {
-    if (!cmd || !cmd.cmd) return;
+    if (!cmd || !cmd.cmd) {
+      warnOnce('flotante-command.invalid', 'flotante-command ignored: payload missing cmd (ignored).');
+      return;
+    }
 
     if (cmd.cmd === 'toggle') {
       if (crono.running) stopCrono(); else startCrono();
-    } else if (cmd.cmd === 'reset') {
-      resetCrono();
-    } else if (cmd.cmd === 'set' && typeof cmd.value !== 'undefined') {
-      setCronoElapsed(Number(cmd.value) || 0);
+      return;
     }
-    // No need to call broadcastCronoState() here: the above functions already do it.
+
+    if (cmd.cmd === 'reset') {
+      resetCrono();
+      return;
+    }
+
+    if (cmd.cmd === 'set') {
+      if (typeof cmd.value === 'undefined') {
+        warnOnce(
+          'flotante-command.set.missingValue',
+          'flotante-command set ignored: payload missing value (ignored).'
+        );
+        return;
+      }
+
+      const n = Number(cmd.value);
+      if (!Number.isFinite(n)) {
+        warnOnce(
+          'flotante-command.set.invalidNumber',
+          'flotante-command set: invalid value; coerced to 0 (ignored).'
+        );
+        setCronoElapsed(0);
+        return;
+      }
+
+      setCronoElapsed(n);
+      return;
+    }
+
+    warnOnce(
+      'flotante-command.unknown',
+      'flotante-command ignored: unknown cmd (ignored):',
+      String(cmd.cmd)
+    );
   } catch (err) {
     log.error('Error processing flotante-command in main:', err);
   }
@@ -910,49 +990,70 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
 // Editor window: open (create or focus) and push current text
 ipcMain.handle('open-editor', () => {
-  if (!editorWin || editorWin.isDestroyed()) {
-    createEditorWindow();
-  } else {
-    editorWin.show();
+  try {
+    if (!editorWin || editorWin.isDestroyed()) {
+      createEditorWindow();
+    } else {
+      editorWin.show();
 
-    // Re-send current text to ensure editor is in sync (best-effort).
-    try {
-      const initialText = textState.getCurrentText();
-      editorWin.webContents.send('editor-init-text', {
-        text: initialText || '',
-        meta: { source: 'main', action: 'init' },
-      });
-    } catch (err) {
-      log.error('Error sending editor-init-text from open-editor:', err);
-    }
-
-    // Notify main UI that editor is ready (it already is, but keeps state consistent).
-    try {
-      if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send('editor-ready');
+      // Re-send current text to ensure editor is in sync (best-effort).
+      try {
+        const initialText = textState.getCurrentText();
+        editorWin.webContents.send('editor-init-text', {
+          text: initialText || '',
+          meta: { source: 'main', action: 'init' },
+        });
+      } catch (err) {
+        log.error('Error sending editor-init-text from open-editor:', err);
       }
-    } catch (err) {
-      log.warn('Unable to notify editor-ready (editor already open):', err);
+
+      // Notify main UI that editor is ready (it already is, but keeps state consistent).
+      try {
+        if (mainWin && !mainWin.isDestroyed()) {
+          mainWin.webContents.send('editor-ready');
+        }
+      } catch (err) {
+        log.warn('Unable to notify editor-ready (editor already open):', err);
+      }
     }
+
+    return { ok: true };
+  } catch (err) {
+    log.error('Error processing open-editor:', err);
+    return { ok: false, error: String(err) };
   }
 });
 
 // Preset modal: open (with payload normalization)
 ipcMain.handle('open-preset-modal', (_event, payload) => {
-  if (!mainWin) return;
+  try {
+    if (!mainWin) {
+      warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
+      return { ok: false, error: 'main window not ready' };
+    }
 
-  let initialData = {};
-  if (typeof payload === 'number') {
-    initialData = { wpm: payload };
-  } else if (payload && typeof payload === 'object') {
-    initialData = payload;
+    let initialData = {};
+    if (typeof payload === 'number') {
+      initialData = { wpm: payload };
+    } else if (payload && typeof payload === 'object') {
+      initialData = payload;
+    } else if (typeof payload !== 'undefined') {
+      warnOnce(
+        'open-preset-modal.invalidPayload',
+        'open-preset-modal: invalid payload; using defaults (ignored).'
+      );
+    }
+
+    createPresetWindow(initialData);
+    return { ok: true };
+  } catch (err) {
+    log.error('Error processing open-preset-modal:', err);
+    return { ok: false, error: String(err) };
   }
-
-  createPresetWindow(initialData);
 });
 
 // Expose read-only configuration to renderers (so UI can enforce shared constraints)
-ipcMain.handle('get-app-config', async () => {
+ipcMain.handle('get-app-config', () => {
   try {
     return { ok: true, maxTextChars: MAX_TEXT_CHARS };
   } catch (err) {
@@ -979,7 +1080,7 @@ app.whenReady().then(() => {
   if (!settings.language || settings.language === '') {
     createLanguageWindow();
 
-    // Renderer emits 'language-selected' once the user picks a language.
+    // The language window notifies the main process via IPC once the user picks a language.
     ipcMain.once('language-selected', () => {
       try {
         if (!mainWin) createMainWindow();

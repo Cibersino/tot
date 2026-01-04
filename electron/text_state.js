@@ -1,27 +1,64 @@
 // electron/text_state.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Own in-memory current text and enforce max length.
+// - Load/save current_text.json on startup and before-quit.
+// - Ensure settings file exists on quit (legacy behavior).
+// - Register IPC handlers for get-current-text, set-current-text, force-clear-editor.
+// - Broadcast text updates to main and editor windows (best-effort).
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 const fs = require('fs');
 const Log = require('./log');
 
 const log = Log.get('text-state');
 
-// Shared internal status
-let currentText = '';
-
+// =============================================================================
+// Shared state and injected dependencies
+// =============================================================================
 // Default limit. The effective limit is injected from main.js via init({ maxTextChars }).
 let MAX_TEXT_CHARS = 10_000_000; 
 
-// Injected dependencies
+// Current text held in memory; persisted on quit (also saved during init if it is truncated).
+let currentText = '';
+
+// Injected dependencies and file paths (set in init).
 let loadJson = null;
 let saveJson = null;
 let CURRENT_TEXT_FILE = null;
 let SETTINGS_FILE = null;
 let appRef = null;
 
-// Window resolver (main/editor)
+// Window resolver for best-effort UI notifications.
 let getWindows = () => ({ mainWin: null, editorWin: null });
 
+// =============================================================================
+// Helpers
+// =============================================================================
+// Best-effort window send; avoids throwing during shutdown races.
+function safeSend(win, channel, payload) {
+  if (!win || win.isDestroyed()) {
+    return;
+  }
+
+  try {
+    win.webContents.send(channel, payload);
+  } catch (err) {
+    log.warnOnce(
+      `text_state.safeSend:${channel}`,
+      `webContents.send('${channel}') failed (ignored):`,
+      err
+    );
+  }
+}
+
+// Persist current text and ensure settings file exists (legacy behavior).
 function persistCurrentTextOnQuit() {
   try {
     if (saveJson && CURRENT_TEXT_FILE) {
@@ -30,7 +67,12 @@ function persistCurrentTextOnQuit() {
 
     // Maintain previous behavior: ensure SETTINGS_FILE exists
     if (loadJson && saveJson && SETTINGS_FILE) {
-      const settings = loadJson(SETTINGS_FILE, { language: 'es', presets_by_language: {}, disabled_default_presets: {} });
+      const settingsDefaults = {
+        language: 'es',
+        presets_by_language: {},
+        disabled_default_presets: {},
+      };
+      const settings = loadJson(SETTINGS_FILE, settingsDefaults);
       if (!fs.existsSync(SETTINGS_FILE)) {
         saveJson(SETTINGS_FILE, settings);
       }
@@ -40,11 +82,14 @@ function persistCurrentTextOnQuit() {
   }
 }
 
+// =============================================================================
+// Entrypoints
+// =============================================================================
 /**
  * Initialize the text state:
- * -Load from CURRENT_TEXT_FILE
- * -Apply initial truncation by MAX_TEXT_CHARS
- * -Register persistence in app.before-quit
+ * - Load from CURRENT_TEXT_FILE
+ * - Apply initial truncation by MAX_TEXT_CHARS
+ * - Register persistence in app.before-quit
  */
 function init(options) {
   const opts = options || {};
@@ -65,13 +110,18 @@ function init(options) {
       ? loadJson(CURRENT_TEXT_FILE, { text: '' })
       : { text: '' };
 
-    let txt = '';
-    if (raw && typeof raw === 'object' && Object.prototype.hasOwnProperty.call(raw, 'text')) {
-      txt = String(raw.text || '');
-    } else if (typeof raw === 'string') {
+    const isRawObject = raw && typeof raw === 'object';
+    const hasTextProp = isRawObject && Object.prototype.hasOwnProperty.call(raw, 'text');
+    const isRawString = typeof raw === 'string';
+    let txt = hasTextProp ? String(raw.text || '') : '';
+    if (!hasTextProp && isRawString) {
       txt = raw;
-    } else {
-      txt = '';
+    }
+    if (!hasTextProp && !isRawString && typeof raw !== 'undefined') {
+      log.warnOnce(
+        'text_state.init.unexpectedShape',
+        'current_text.json has unexpected shape; using empty string.'
+      );
     }
 
     if (txt.length > MAX_TEXT_CHARS) {
@@ -118,25 +168,25 @@ function registerIpc(ipcMain, windowsResolver) {
   // set-current-text: accept { text, meta } or simple string
   ipcMain.handle('set-current-text', (_event, payload) => {
     try {
-      let incomingMeta = null;
-      let text = '';
-
-      if (
-        payload &&
-        typeof payload === 'object' &&
-        Object.prototype.hasOwnProperty.call(payload, 'text')
-      ) {
-        text = String(payload.text || '');
-        incomingMeta = payload.meta || null;
-      } else {
-        text = String(payload || '');
+      const isPayloadObject = payload && typeof payload === 'object';
+      const hasTextProp =
+        isPayloadObject &&
+        Object.prototype.hasOwnProperty.call(payload, 'text');
+      if (isPayloadObject && !hasTextProp) {
+        log.warnOnce(
+          'text_state.setCurrentText.missingText',
+          'set-current-text payload missing text; using String(payload).'
+        );
       }
+      const incomingMeta = hasTextProp ? payload.meta || null : null;
+      let text = hasTextProp ? String(payload.text || '') : String(payload || '');
 
       let truncated = false;
       if (text.length > MAX_TEXT_CHARS) {
         text = text.slice(0, MAX_TEXT_CHARS);
         truncated = true;
-        log.warn(
+        log.warnOnce(
+          'text_state.setCurrentText.truncated',
           'set-current-text: entry truncated to ' + MAX_TEXT_CHARS + ' chars.'
         );
       }
@@ -146,28 +196,13 @@ function registerIpc(ipcMain, windowsResolver) {
       const { mainWin, editorWin } = getWindows() || {};
 
       // Notify main window (for renderer to update preview/results)
-      if (mainWin && !mainWin.isDestroyed()) {
-        try {
-          mainWin.webContents.send('current-text-updated', currentText);
-        } catch (err) {
-          log.error('Error sending current-text-updated to mainWin:', err);
-        }
-      }
+      safeSend(mainWin, 'current-text-updated', currentText);
 
       // Notify editor with object { text, meta }
-      if (editorWin && !editorWin.isDestroyed()) {
-        try {
-          editorWin.webContents.send('editor-text-updated', {
-            text: currentText,
-            meta: incomingMeta || { source: 'main', action: 'set' },
-          });
-        } catch (err) {
-          log.error(
-            'Error sending editor-text-updated to editorWin:',
-            err
-          );
-        }
-      }
+      safeSend(editorWin, 'editor-text-updated', {
+        text: currentText,
+        meta: incomingMeta || { source: 'main', action: 'set' },
+      });
 
       return {
         ok: true,
@@ -190,22 +225,10 @@ function registerIpc(ipcMain, windowsResolver) {
       currentText = '';
 
       // Notify main window (as in main.js stable)
-      if (mainWin && !mainWin.isDestroyed()) {
-        try {
-          mainWin.webContents.send('current-text-updated', currentText);
-        } catch (err) {
-          log.error('Error sending current-text-updated in force-clear-editor:', err);
-        }
-      }
+      safeSend(mainWin, 'current-text-updated', currentText);
 
       // Notify the editor to run its local cleaning logic
-      if (editorWin && !editorWin.isDestroyed()) {
-        try {
-          editorWin.webContents.send('editor-force-clear', '');
-        } catch (err) {
-          log.error('Error sending editor-force-clear:', err);
-        }
-      }
+      safeSend(editorWin, 'editor-force-clear', '');
 
       return { ok: true };
     } catch (err) {
@@ -219,8 +242,15 @@ function getCurrentText() {
   return currentText || '';
 }
 
+// =============================================================================
+// Exports
+// =============================================================================
 module.exports = {
   init,
   registerIpc,
   getCurrentText,
 };
+
+// =============================================================================
+// End of text_state.js
+// =============================================================================
