@@ -37,11 +37,11 @@ Out of scope (explicitly not Phase 2):
   - `electron/text_state.js:104-105 maxTextChars = opts.maxTextChars;`
   - Truncation: `electron/text_state.js:128-132` and `186-191`
 - Renderer/editor locals:
-  - `public/renderer.js:69 let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS;` + reassignments `151,153`
-  - `public/editor.js:13 let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS;` + reassignments `21,23`
+  - `public/renderer.js:69 let maxTextChars = AppConstants.MAX_TEXT_CHARS;` + reassignments `151-153`
+  - `public/editor.js:13 let maxTextChars = AppConstants.MAX_TEXT_CHARS;` + reassignments `21-23`
 - Renderer constants + config parsing helper:
   - `public/js/constants.js:6 DEFAULTS.MAX_TEXT_CHARS = 10_000_000` (fallback)
-  - `public/js/constants.js:21–25 applyConfig()` currently mutates `this.MAX_TEXT_CHARS`
+  - `public/js/constants.js:20-25 applyConfig()` returns number without mutating `this.MAX_TEXT_CHARS`
 
 ## Completed prerequisite (Phase 1 P0)
 - Logger export mismatch fixed: `LEVELS` now exports the map and `LEVEL_NAMES` exports the list.
@@ -162,9 +162,9 @@ Smoke checklist:
 - IPC success path updates effective value; IPC failure path uses fallback.
 
 Status:
-- [x] Pending
+- [ ] Pending
 - [ ] In progress
-- [ ] Done (evidence attached)
+- [x] Done (evidence attached)
 
 ---
 
@@ -304,7 +304,53 @@ Deliverable:
 ```
 
 ### Patch 2.3 prompt (English)
-(To be written when Patch 2.2 is complete and verified.)
+
+```
+Task: Implement Patch 2.3 from `docs/cleanup/phase2_max_text_chars_model1.md`
+(Model 1: main-authoritative hard cap).
+
+Intent (behavior-preserving):
+- Make renderer-side handling of the hard cap consistent with Model 1:
+  - Main remains authoritative and exposes `maxTextChars` via IPC.
+  - Renderer/editor use a local camelCase `maxTextChars` as the effective runtime limit.
+  - Renderer fallback is explicit and non-authoritative (defaults only) when IPC fails.
+- Ensure `public/js/constants.js` is NOT a mutable “effective config store” for this value.
+
+Target files (exact):
+- MOD: public/js/constants.js
+- MOD: public/renderer.js
+- MOD: public/editor.js
+Do NOT modify any other files.
+
+Hard constraints:
+- No unrelated refactors; avoid formatting churn.
+- No IPC contract changes (channel names / payload shapes / key names unchanged).
+- Preserve observable behavior: truncation semantics, UI flows, and existing editor/renderer behaviors.
+
+Required outcome (high-level, let implementation follow the repo’s existing structure):
+1) public/js/constants.js
+- `AppConstants.applyConfig(cfg)` must NOT mutate `this.MAX_TEXT_CHARS` (or any equivalent mutable storage for the effective limit).
+- Preserve the currently-supported input keys (`cfg.MAX_TEXT_CHARS`, `cfg.max_text_chars`) if they exist in the repo today (do not change/remove them in this patch).
+- Provide a way for renderer/editor to obtain a computed effective maxTextChars from a config object WITHOUT mutating AppConstants, while keeping fallback default as `DEFAULTS.MAX_TEXT_CHARS`.
+- Additional clarification (minimal): `applyConfig(cfg)` must always return a NUMBER (never null/undefined). If cfg does not contain a valid positive value, return the existing constant value already stored on AppConstants (do not force-reset to DEFAULTS, and do not require new validation branches in callers).
+
+2) public/renderer.js and public/editor.js
+- Replace local mutable `MAX_TEXT_CHARS` variables with local camelCase `maxTextChars`.
+- On IPC success, set `maxTextChars` from the IPC result (`maxTextChars` key), or via `applyConfig(cfg)` if that is the repo’s existing pattern.
+- On IPC failure, keep the existing defaults-only behavior (do not introduce new “reset” assignments).
+- Ensure truncation uses the local `maxTextChars` consistently (no remaining reassignments to a `MAX_TEXT_CHARS` local).
+
+Repo-evidence gates (must hold after changes):
+- No runtime mutation of `AppConstants.MAX_TEXT_CHARS` (no writes; ideally no `this.MAX_TEXT_CHARS` usage in constants.js config application).
+- Renderer/editor no longer declare or reassign a local `MAX_TEXT_CHARS` variable for the effective limit (they use `maxTextChars`).
+- Invalid/missing cfg does not overwrite an already-initialized local effective limit.
+- No other code in `public/` relies on `AppConstants.MAX_TEXT_CHARS` as a mutable source (update call sites if any exist).
+
+Deliverable:
+- Provide a clean diff covering ONLY the three target files.
+- 1–3 bullets summarizing the changes.
+- Include brief repo-evidence that the gates hold (e.g., the key search confirming no mutation sites remain).
+```
 
 ## Evidence log (append-only)
 Record commands and outputs proving each patch:
@@ -344,3 +390,14 @@ Code evidence:
 Checks (verified):
 - `rg -n -S "\\b(let|var)\\s+MAX_TEXT_CHARS\\b" .\\electron\\text_state.js` (no matches)
 - `rg -n -S -F "10_000_000" .\\electron\\text_state.js` (no matches)
+
+### Patch 2.3 - DONE (renderer/editor local maxTextChars + constants applyConfig purity)
+
+Code evidence:
+- `public/js/constants.js:20-25` applyConfig returns number without mutating `this.MAX_TEXT_CHARS`
+- `public/renderer.js:69` local `maxTextChars` default + IPC assignment `151-153`
+- `public/editor.js:13` local `maxTextChars` default + IPC assignment `21-23`
+
+Checks (verified):
+- `rg -n -S "this\\.MAX_TEXT_CHARS\\s*=" .\\public\\js\\constants.js` (no matches)
+- `rg -n -S "\\b(let|var)\\s+MAX_TEXT_CHARS\\b" .\\public\\renderer.js .\\public\\editor.js` (no matches)

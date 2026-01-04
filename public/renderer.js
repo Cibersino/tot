@@ -66,7 +66,7 @@ const warnOnceRenderer = (...args) => log.warnOnce(...args);
 
 let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
-let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
+let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
 // --- Global cache and state for count/language ---
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
 let idiomaActual = 'es';      // Initializes on startup
@@ -148,9 +148,9 @@ function applyTranslations() {
   try {
     const cfg = await window.electronAPI.getAppConfig();
     if (AppConstants && typeof AppConstants.applyConfig === 'function') {
-      MAX_TEXT_CHARS = AppConstants.applyConfig(cfg);
+      maxTextChars = AppConstants.applyConfig(cfg);
     } else if (cfg && cfg.maxTextChars) {
-      MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
+      maxTextChars = Number(cfg.maxTextChars) || maxTextChars;
     }
   } catch (err) {
     log.error('Could not get getAppConfig using defaults:', err);
@@ -792,9 +792,9 @@ wpmInput.addEventListener('keydown', (e) => {
 btnCountClipboard.addEventListener('click', async () => {
   try {
     let clip = await window.electronAPI.readClipboard() || '';
-    if (clip.length > MAX_TEXT_CHARS) {
+    if (clip.length > maxTextChars) {
       log.warn('Clipboard content exceeds the allowed size - it will be truncated.');
-      clip = clip.slice(0, MAX_TEXT_CHARS);
+      clip = clip.slice(0, maxTextChars);
       Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
 
@@ -821,7 +821,7 @@ btnAppendClipboardNewLine.addEventListener('click', async () => {
     let joiner = '';
     if (current) joiner = current.endsWith('\n') || current.endsWith('\r') ? '\n' : '\n\n';
 
-    const available = MAX_TEXT_CHARS - current.length;
+    const available = maxTextChars - current.length;
     if (available <= 0) {
       Notify.notifyMain('renderer.alerts.text_limit');
       return;

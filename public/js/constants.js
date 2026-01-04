@@ -20,7 +20,7 @@
     applyConfig(cfg = {}) {
       const max = Number(cfg.maxTextChars || cfg.MAX_TEXT_CHARS || cfg.max_text_chars);
       if (Number.isFinite(max) && max > 0) {
-        this.MAX_TEXT_CHARS = max;
+        return max;
       }
       return this.MAX_TEXT_CHARS;
     }
