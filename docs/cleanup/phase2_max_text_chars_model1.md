@@ -29,12 +29,13 @@ Out of scope (explicitly not Phase 2):
 - Main hard cap constant:
   - `electron/constants_main.js:4 const MAX_TEXT_CHARS = 10000000;`
   - Main import: `electron/main.js:21 const { MAX_TEXT_CHARS } = require('./constants_main');`
-  - IPC: `electron/main.js:1062–1066` returns `{ ok: true, maxTextChars: MAX_TEXT_CHARS }`
-  - Injection: `electron/main.js:64–71` passes `maxTextChars` into text_state.init
+  - IPC: `electron/main.js:1056-1059` returns `{ ok: true, maxTextChars: MAX_TEXT_CHARS }`
+  - Injection: `electron/main.js:61-67` passes `maxTextChars` into text_state.init
 - Main text_state cache + truncation:
-  - `electron/text_state.js:26 let MAX_TEXT_CHARS = 10_000_000;`
-  - `electron/text_state.js:104 MAX_TEXT_CHARS = opts.maxTextChars;`
-  - Truncation: `electron/text_state.js:127–131` and `185–190`
+  - `electron/text_state.js:19 const { MAX_TEXT_CHARS } = require('./constants_main');`
+  - `electron/text_state.js:27 let maxTextChars = MAX_TEXT_CHARS;`
+  - `electron/text_state.js:104-105 maxTextChars = opts.maxTextChars;`
+  - Truncation: `electron/text_state.js:128-132` and `186-191`
 - Renderer/editor locals:
   - `public/renderer.js:69 let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS;` + reassignments `151,153`
   - `public/editor.js:13 let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS;` + reassignments `21,23`
@@ -126,8 +127,8 @@ Smoke checklist:
 
 Status:
 - [ ] Pending
-- [x] In progress
-- [ ] Done (evidence attached)
+- [ ] In progress
+- [x] Done (evidence attached)
 
 ---
 
@@ -312,7 +313,7 @@ Record commands and outputs proving each patch:
 - runtime DevTools logs (minimal excerpts)
 - smoke results
 
-### Patch 2.1 — DONE (main-authoritative hard cap constant extraction)
+### Patch 2.1 - DONE (main-authoritative hard cap constant extraction)
 
 Code evidence:
 - `electron/constants_main.js`:
@@ -331,3 +332,15 @@ Checks (verified):
   - Output: `{ ok: true, maxTextChars: 10000000 }`
 - Smoke:
   - App starts; no regressions observed in truncation paths.
+
+### Patch 2.2 - DONE (text_state cache rename + default source)
+
+Code evidence:
+- `electron/text_state.js`:
+  - `const { MAX_TEXT_CHARS } = require('./constants_main');`
+  - `let maxTextChars = MAX_TEXT_CHARS;`
+  - truncation uses `maxTextChars` (`electron/text_state.js:128-132` and `186-191`)
+
+Checks (verified):
+- `rg -n -S "\\b(let|var)\\s+MAX_TEXT_CHARS\\b" .\\electron\\text_state.js` (no matches)
+- `rg -n -S -F "10_000_000" .\\electron\\text_state.js` (no matches)
