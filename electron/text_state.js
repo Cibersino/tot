@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Own in-memory current text and enforce max length.
 // - Load/save current_text.json on startup and before-quit.
-// - Ensure settings file exists on quit (legacy behavior).
+// - Ensure settings file exists on quit (compatibility behavior).
 // - Register IPC handlers for get-current-text, set-current-text, force-clear-editor.
 // - Broadcast text updates to main and editor windows (best-effort).
 
@@ -59,7 +59,7 @@ function safeSend(win, channel, payload) {
   }
 }
 
-// Persist current text and ensure settings file exists (legacy behavior).
+// Persist current text and ensure settings file exists (compatibility behavior).
 function persistCurrentTextOnQuit() {
   try {
     if (saveJson && CURRENT_TEXT_FILE) {
@@ -89,7 +89,7 @@ function persistCurrentTextOnQuit() {
 /**
  * Initialize the text state:
  * - Load from CURRENT_TEXT_FILE
- * - Apply initial truncation by maxTextChars
+ * - Apply initial truncation using the effective hard cap
  * - Register persistence in app.before-quit
  */
 function init(options) {
@@ -105,7 +105,7 @@ function init(options) {
     maxTextChars = opts.maxTextChars;
   }
 
-  // Initial load from disk + truncated if maxTextChars is exceeded
+  // Initial load from disk + truncated if hard cap is exceeded
   try {
     let raw = loadJson
       ? loadJson(CURRENT_TEXT_FILE, { text: '' })
@@ -127,7 +127,7 @@ function init(options) {
 
     if (txt.length > maxTextChars) {
       log.warn(
-        `Initial text exceeds maxTextChars (${txt.length} > ${maxTextChars}); truncated and saved.`
+        `Initial text exceeds effective hard cap (${txt.length} > ${maxTextChars}); truncated and saved.`
       );
       txt = txt.slice(0, maxTextChars);
       if (saveJson && CURRENT_TEXT_FILE) {
@@ -188,7 +188,7 @@ function registerIpc(ipcMain, windowsResolver) {
         truncated = true;
         log.warnOnce(
           'text_state.setCurrentText.truncated',
-          'set-current-text: entry truncated to ' + maxTextChars + ' chars.'
+          'set-current-text: entry truncated to effective hard cap of ' + maxTextChars + ' chars.'
         );
       }
 
