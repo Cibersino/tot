@@ -18,7 +18,7 @@
   const AppConstants = {
     ...DEFAULTS,
     applyConfig(cfg = {}) {
-      const max = Number(cfg.maxTextChars || cfg.MAX_TEXT_CHARS || cfg.max_text_chars);
+      const max = Number(cfg.maxTextChars);
       if (Number.isFinite(max) && max > 0) {
         return max;
       }
