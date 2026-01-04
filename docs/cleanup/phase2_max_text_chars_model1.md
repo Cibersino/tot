@@ -27,9 +27,10 @@ Out of scope (explicitly not Phase 2):
 ## Current pipeline evidence (localizers)
 (From repo-wide `rg` outputs; keep updated as patches land)
 - Main hard cap constant:
-  - `electron/main.js:57 const MAX_TEXT_CHARS = 10000000;`
-  - IPC: `electron/main.js:1055–1059` returns `{ ok: true, maxTextChars: MAX_TEXT_CHARS }`
-  - Injection: `electron/main.js:61–67` passes `maxTextChars` into text_state.init
+  - `electron/constants_main.js:4 const MAX_TEXT_CHARS = 10000000;`
+  - Main import: `electron/main.js:21 const { MAX_TEXT_CHARS } = require('./constants_main');`
+  - IPC: `electron/main.js:1062–1066` returns `{ ok: true, maxTextChars: MAX_TEXT_CHARS }`
+  - Injection: `electron/main.js:64–71` passes `maxTextChars` into text_state.init
 - Main text_state cache + truncation:
   - `electron/text_state.js:26 let MAX_TEXT_CHARS = 10_000_000;`
   - `electron/text_state.js:104 MAX_TEXT_CHARS = opts.maxTextChars;`
@@ -93,7 +94,7 @@ Codex prompt (English):
 Status:
 - [ ] Pending
 - [ ] In progress
-- [ ] Done (evidence attached)
+- [x] Done (evidence attached)
 
 ---
 
@@ -125,7 +126,7 @@ Smoke checklist:
 
 Status:
 - [ ] Pending
-- [ ] In progress
+- [x] In progress
 - [ ] Done (evidence attached)
 
 ---
@@ -160,7 +161,7 @@ Smoke checklist:
 - IPC success path updates effective value; IPC failure path uses fallback.
 
 Status:
-- [ ] Pending
+- [x] Pending
 - [ ] In progress
 - [ ] Done (evidence attached)
 
@@ -172,7 +173,7 @@ Goal:
 - Document as legacy or schedule removal.
 
 Status:
-- [ ] Not scheduled
+- [x] Not scheduled
 - [ ] Scheduled
 - [ ] Done
 
@@ -201,8 +202,62 @@ Hard gate before Patch 2.2:
 ## Codex prompts
 
 ### Patch 2.1 prompt (English)
-Task: Introduce `electron/constants_main.js` and import it from `electron/main.js`.
-(Insert the exact prompt used in the chat for Patch 2.1.)
+
+```
+Task: Implement Patch 2.1 from `docs/cleanup/phase2_max_text_chars_model1.md` (Model 1: main-authoritative hard cap).
+
+Goal (behavior-preserving):
+- Centralize the developer-tunable hard cap for MAX_TEXT_CHARS on the main (Node/Electron) side in a new module.
+- No behavior change. No IPC contract change. No formatting churn.
+
+References (must follow):
+- `docs/cleanup/phase2_max_text_chars_model1.md` — Patch 2.1 section (introduce `electron/constants_main.js`, import it from `electron/main.js`).
+- `docs/cleanup/naming_convention.md` — UPPER_SNAKE_CASE is allowed only for true `const` constants; IPC payload keys remain camelCase.
+
+Target files (exact):
+- NEW: `electron/constants_main.js`
+- MOD: `electron/main.js`
+Do NOT modify any other files in this patch.
+
+Required code changes:
+1) Create `electron/constants_main.js` (CommonJS, `use strict`), exporting:
+   - `MAX_TEXT_CHARS` as a true constant set to `10000000`.
+   Keep this file minimal (only what Patch 2.1 needs). No extra refactors.
+
+2) In `electron/main.js`:
+   - Locate the current main hard cap definition (currently `const MAX_TEXT_CHARS = 10000000;` per the Phase 2 doc; confirm the exact location in your repo).
+   - Replace it with an import from `./constants_main`, using the existing module style (CommonJS):
+     Example:
+       const { MAX_TEXT_CHARS } = require('./constants_main');
+   - Ensure all existing uses of MAX_TEXT_CHARS in main remain unchanged in behavior (textState.init injection and get-app-config IPC response must still use the same numeric value and the same payload key `maxTextChars`).
+
+Constraints:
+- No unrelated refactors.
+- No rename cascades.
+- No changes to IPC channel names, payload shapes, return shapes, defaults, or error handling.
+- Avoid formatting churn; change only the minimal lines required.
+
+Verification (required, evidence-gated):
+A) Pre-check commands (PowerShell):
+- rg -n -S -F "const MAX_TEXT_CHARS" .\electron\main.js
+- rg -n -S -F "maxTextChars:" .\electron\main.js
+
+B) Post-check commands:
+- node -e "console.log(require('./electron/constants_main').MAX_TEXT_CHARS)"
+- rg -n -S -F "constants_main" .\electron\main.js
+
+C) Runtime smoke:
+- Start the app.
+- In main window DevTools, run: window.electronAPI.getAppConfig()
+  Expected: returned object still includes `maxTextChars` and its value equals 10000000 (same as before).
+
+Deliverable:
+- Provide a clean diff (preferred) showing:
+  - full content of the new file `electron/constants_main.js`,
+  - the minimal edit to `electron/main.js` (import + removal of the old local const).
+- Include exact repo-local paths and the line numbers of the modified block in `electron/main.js`.
+- Summarize changes in 1–3 bullets.
+```
 
 ### Patch 2.2 prompt (English)
 (To be written when Patch 2.1 is complete and verified.)
@@ -216,3 +271,23 @@ Record commands and outputs proving each patch:
 - node -e checks
 - runtime DevTools logs (minimal excerpts)
 - smoke results
+
+### Patch 2.1 — DONE (main-authoritative hard cap constant extraction)
+
+Code evidence:
+- `electron/constants_main.js`:
+  - `const MAX_TEXT_CHARS = 10000000;`
+- `electron/main.js`:
+  - imports `MAX_TEXT_CHARS` from `./constants_main`
+  - `get-app-config` returns `{ ok: true, maxTextChars: MAX_TEXT_CHARS }`
+  - injects `maxTextChars: MAX_TEXT_CHARS` into `text_state.init({ ... })`
+
+Checks (verified):
+- Node:
+  - `node -e "console.log(require('./electron/constants_main').MAX_TEXT_CHARS)"`
+  - Output: `10000000`
+- Runtime (DevTools, main window):
+  - `await window.electronAPI.getAppConfig()`
+  - Output: `{ ok: true, maxTextChars: 10000000 }`
+- Smoke:
+  - App starts; no regressions observed in truncation paths.
