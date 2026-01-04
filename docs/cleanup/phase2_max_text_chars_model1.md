@@ -260,7 +260,47 @@ Deliverable:
 ```
 
 ### Patch 2.2 prompt (English)
-(To be written when Patch 2.1 is complete and verified.)
+
+```
+Task: Implement Patch 2.2 from `docs/cleanup/phase2_max_text_chars_model1.md` (Model 1: main-authoritative hard cap).
+
+Intent (behavior-preserving):
+- Normalize naming inside `electron/text_state.js` to follow `docs/cleanup/naming_convention.md`:
+  - UPPER_SNAKE_CASE only for true constants
+  - mutable/runtime cache must be camelCase (`maxTextChars`)
+- Remove numeric literal drift in `electron/text_state.js` by sourcing the default hard-cap value from the main-authoritative knob introduced in Patch 2.1 (`electron/constants_main.js`) and/or the existing init injection pathway, without changing observable behavior.
+
+Target file (exact):
+- MOD: `electron/text_state.js`
+Do NOT modify any other files in this patch.
+
+Hard constraints:
+- No unrelated refactors; avoid formatting churn.
+- Preserve observable behavior and contract:
+  - truncation semantics and thresholds remain identical
+  - existing exported API stays the same (names, shapes, return values)
+  - IPC behavior and payload shapes remain unchanged
+  - logging behavior (levels/messages) remains unchanged, except where strictly necessary to avoid ambiguity about which limit is being enforced
+
+Additional constraints (to avoid the previous misstep):
+- Do NOT introduce a new semantic constant name such as `DEFAULT_MAX_TEXT_CHARS` (or any `DEFAULT_*` alias) for the authoritative knob.
+  - Import/use the authoritative constant as `MAX_TEXT_CHARS` (UPPER_SNAKE_CASE is correct for a true const).
+- Ensure log/message wording is not ambiguous:
+  - If a log line refers to the enforced limit, it must clearly refer to the effective runtime limit (`maxTextChars`) and must not label it as `MAX_TEXT_CHARS` unless it is explicitly describing the authoritative knob.
+  - Avoid “legacy label” framing; keep wording consistent with Model 1 (authoritative knob vs effective runtime value).
+
+Repo-evidence gates (must be true after the change):
+1) `electron/text_state.js` contains no mutable `MAX_TEXT_CHARS` binding (mutable cache becomes `maxTextChars`).
+2) `electron/text_state.js` no longer hardcodes `10_000_000` as a local default; the default comes from the authoritative main constant and/or init injection.
+3) Truncation paths use the effective mutable cache value (`maxTextChars`) consistently.
+4) No new `DEFAULT_*` naming layer was introduced for the authoritative knob.
+5) Any log text that mentions the limit is conceptually consistent (no “MAX_TEXT_CHARS” label paired with a `maxTextChars` value).
+
+Deliverable:
+- Provide a clean diff for `electron/text_state.js` only, including line numbers of the changed blocks.
+- Summarize changes in 1–3 bullets.
+- Include brief evidence that the gates hold (e.g., the key rg checks you ran).
+```
 
 ### Patch 2.3 prompt (English)
 (To be written when Patch 2.2 is complete and verified.)
