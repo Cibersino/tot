@@ -39,6 +39,7 @@ tot-readingmeter/
 │ ├── presets_main.js
 │ ├── menu_builder.js
 │ ├── updater.js
+│ ├── constants_main.js
 │ └── log.js
 ├── i18n/
 │ ├── es/
