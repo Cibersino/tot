@@ -805,7 +805,7 @@ btnCountClipboard.addEventListener('click', async () => {
     });
 
     updatePreviewAndResults(resp && resp.text ? resp.text : clip);
-    resp && resp.truncated && Notify.notifyMain('renderer.editor_alerts.text_truncated');
+    resp && resp.truncated && Notify.notifyMain('renderer.alerts.append_overflow');
   } catch (err) {
     log.error('clipboard error:', err);
     Notify.notifyMain('renderer.alerts.clipboard_error');
@@ -840,11 +840,11 @@ btnAppendClipboardNewLine.addEventListener('click', async () => {
 
     // Notify truncation only if main confirms it
     if (resp && resp.truncated) {
-      Notify.notifyMain('renderer.editor_alerts.text_truncated');
+      Notify.notifyMain('renderer.alerts.append_overflow');
     }
   } catch (err) {
     log.error('An error occurred while pasting the clipboard:', err);
-    Notify.notifyMain('renderer.alerts.paste_error');
+    Notify.notifyMain('renderer.alerts.append_error');
   }
 });
 

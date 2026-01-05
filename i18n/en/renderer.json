@@ -70,10 +70,11 @@
       "clear_title": "Clear"
     },
     "alerts": {
-      "clipboard_overflow": "Clipboard text exceeds the maximum allowed and will be truncated.",
+      "clipboard_overflow": "Clipboard text exceeds the maximum allowed and was truncated.",
+      "append_overflow": "Append text exceeds the maximum allowed and was truncated.",
       "text_limit": "Cannot add text: maximum size reached.",
       "clipboard_error": "An error occurred while pasting from clipboard. Check console.",
-      "paste_error": "An error occurred while pasting from clipboard. Check console.",
+      "append_error": "An error occurred while appending text. Check console.",
       "clear_error": "An error occurred while clearing text. Check console.",
       "modal_unavailable": "Modal functionality not available.",
       "edit_none": "No preset selected to edit",
@@ -99,9 +100,9 @@
       "wip_colabora": "WIP: Collaboration info will appear here in a future version."
     },
     "editor_alerts": {
-      "clipboard_too_big": "Text too large to paste directly. Use the main window buttons.",
+      "paste_too_big": "Text too large to paste directly. Use the main window buttons.",
       "drop_too_big": "Dropped text is too large. Use the main window buttons to add large text.",
-      "clipboard_no_text": "Clipboard does not contain plain text.",
+      "paste_no_text": "Clipboard does not contain plain text.",
       "drop_no_text": "Drop: no plain text detected.",
       "type_limit": "Cannot write more text: maximum size reached.",
       "paste_limit": "Cannot paste more text: maximum size reached.",
