@@ -70,6 +70,8 @@
       "clear_title": "Vaciar"
     },
     "alerts": {   
+      "clipboard_too_large": "El texto del portapapeles es demasiado grande para procesarlo. Reducelo e intentalo de nuevo.",
+      "append_too_large": "El texto resultante es demasiado grande para procesarlo. Reducelo e intentalo de nuevo.",
       "clipboard_overflow": "El texto del portapapeles excede el tamaño máximo permitido y fue truncado.",
       "append_overflow": "El texto agregado excede el tamaño máximo permitido y fue truncado.",
       "text_limit": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",

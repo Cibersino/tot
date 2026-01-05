@@ -70,6 +70,8 @@
       "clear_title": "Clear"
     },
     "alerts": {
+      "clipboard_too_large": "Clipboard content is too large to process. Please reduce it and try again.",
+      "append_too_large": "Resulting text is too large to process. Please reduce it and try again.",
       "clipboard_overflow": "Clipboard text exceeds the maximum allowed and was truncated.",
       "append_overflow": "Append text exceeds the maximum allowed and was truncated.",
       "text_limit": "Cannot add text: maximum size reached.",

@@ -67,6 +67,7 @@ const warnOnceRenderer = (...args) => log.warnOnce(...args);
 let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
+let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
 // --- Global cache and state for count/language ---
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
 let idiomaActual = 'es';      // Initializes on startup
@@ -151,6 +152,11 @@ function applyTranslations() {
       maxTextChars = AppConstants.applyConfig(cfg);
     } else if (cfg && cfg.maxTextChars) {
       maxTextChars = Number(cfg.maxTextChars) || maxTextChars;
+    }
+    if (cfg && typeof cfg.maxIpcChars === 'number' && cfg.maxIpcChars > 0) {
+      maxIpcChars = Number(cfg.maxIpcChars) || maxIpcChars;
+    } else {
+      maxIpcChars = maxTextChars * 4;
     }
   } catch (err) {
     log.error('Could not get getAppConfig using defaults:', err);
@@ -793,11 +799,20 @@ btnCountClipboard.addEventListener('click', async () => {
   try {
     let clip = await window.electronAPI.readClipboard() || '';
 
+    if (clip.length > maxIpcChars) {
+      Notify.notifyMain('renderer.alerts.clipboard_too_large');
+      return;
+    }
+
     // Send object with meta (overwrite)
     const resp = await window.electronAPI.setCurrentText({
       text: clip,
       meta: { source: 'main-window', action: 'overwrite', clipboardText: clip }
     });
+
+    if (resp && resp.ok === false) {
+      throw new Error(resp.error || 'set-current-text failed');
+    }
 
     updatePreviewAndResults(resp && resp.text ? resp.text : clip);
     if (resp && resp.truncated) {
@@ -818,6 +833,12 @@ btnAppendClipboardNewLine.addEventListener('click', async () => {
     let joiner = '';
     if (current) joiner = current.endsWith('\n') || current.endsWith('\r') ? '\n' : '\n\n';
 
+    const projectedLen = current.length + (current ? joiner.length : 0) + clip.length;
+    if (projectedLen > maxIpcChars) {
+      Notify.notifyMain('renderer.alerts.append_too_large');
+      return;
+    }
+
     const available = maxTextChars - current.length;
     if (available <= 0) {
       Notify.notifyMain('renderer.alerts.text_limit');
@@ -831,6 +852,10 @@ btnAppendClipboardNewLine.addEventListener('click', async () => {
       text: newFull,
       meta: { source: 'main-window', action: 'append_newline', clipboardText: clip }
     });
+
+    if (resp && resp.ok === false) {
+      throw new Error(resp.error || 'set-current-text failed');
+    }
 
     updatePreviewAndResults(resp && resp.text ? resp.text : newFull);
 
