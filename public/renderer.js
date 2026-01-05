@@ -792,11 +792,6 @@ wpmInput.addEventListener('keydown', (e) => {
 btnCountClipboard.addEventListener('click', async () => {
   try {
     let clip = await window.electronAPI.readClipboard() || '';
-    if (clip.length > maxTextChars) {
-      log.warn('Clipboard content exceeds the allowed size - it will be truncated.');
-      clip = clip.slice(0, maxTextChars);
-      Notify.notifyMain('renderer.alerts.clipboard_overflow');
-    }
 
     // Send object with meta (overwrite)
     const resp = await window.electronAPI.setCurrentText({
@@ -805,7 +800,9 @@ btnCountClipboard.addEventListener('click', async () => {
     });
 
     updatePreviewAndResults(resp && resp.text ? resp.text : clip);
-    resp && resp.truncated && Notify.notifyMain('renderer.alerts.append_overflow');
+    if (resp && resp.truncated) {
+      Notify.notifyMain('renderer.alerts.clipboard_overflow');
+    }
   } catch (err) {
     log.error('clipboard error:', err);
     Notify.notifyMain('renderer.alerts.clipboard_error');
@@ -827,8 +824,7 @@ btnAppendClipboardNewLine.addEventListener('click', async () => {
       return;
     }
 
-    const toAdd = clip.slice(0, available);
-    const newFull = current + (current ? joiner : '') + toAdd;
+    const newFull = current + (current ? joiner : '') + clip;
 
     // Send object with meta (append_newline)
     const resp = await window.electronAPI.setCurrentText({
