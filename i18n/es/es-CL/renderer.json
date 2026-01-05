@@ -5,13 +5,13 @@
       "selector_empty": "(está pelao)",
       "buttons": {
         "overwrite_clipboard": "Chantarle el copipeist",
-        "append_clipboard_newline": "Pegar la hueá abajo",
+        "append_clipboard": "Pegar la hueá abajo",
         "edit": "Meterle mano al texto",
         "clear": "🗑 pitiarse todo"
       },
       "tooltips": {
         "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
-        "append_clipboard_newline": "Pegar lo copiao en la línea de abajo",
+        "append_clipboard": "Pegar lo copiao en la línea de abajo",
         "edit": "Truquearse con el texto completo",
         "clear": "Limpieza es viveza",
         "new_preset": "Armar nuevo preset",

@@ -5,13 +5,13 @@
       "selector_empty": "(empty)",
       "buttons": {
         "overwrite_clipboard": "Overwrite clipboard",
-        "append_clipboard_newline": "Paste clipboard new line",
+        "append_clipboard": "Paste clipboard new line",
         "edit": "Manual editor",
         "clear": "🗑"
       },
       "tooltips": {
         "overwrite_clipboard": "Replace current text with clipboard",
-        "append_clipboard_newline": "Append clipboard at the end (new line)",
+        "append_clipboard": "Append clipboard at the end (new line)",
         "edit": "Open full text window",
         "clear": "Clear current text",
         "new_preset": "Create a new preset",

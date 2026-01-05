@@ -5,13 +5,13 @@
       "selector_empty": "(vacío)",
       "buttons": {
         "overwrite_clipboard": "Sobrescribir portapapeles",
-        "append_clipboard_newline": "Pegar portapapeles nueva línea",
+        "append_clipboard": "Pegar portapapeles nueva línea",
         "edit": "Editor manual",
         "clear": "🗑"
       },
       "tooltips": {
         "overwrite_clipboard": "Reemplazar texto con el portapapeles",
-        "append_clipboard_newline": "Pegar portapapeles al final en nueva línea",
+        "append_clipboard": "Pegar portapapeles al final en nueva línea",
         "edit": "Abrir ventana del texto completo",
         "clear": "Vaciar texto vigente",
         "new_preset": "Crear un nuevo preset",
