@@ -807,7 +807,7 @@ btnCountClipboard.addEventListener('click', async () => {
     // Send object with meta (overwrite)
     const resp = await window.electronAPI.setCurrentText({
       text: clip,
-      meta: { source: 'main-window', action: 'overwrite', clipboardText: clip }
+      meta: { source: 'main-window', action: 'overwrite' }
     });
 
     if (resp && resp.ok === false) {
@@ -850,7 +850,7 @@ btnAppendClipboardNewLine.addEventListener('click', async () => {
     // Send object with meta (append_newline)
     const resp = await window.electronAPI.setCurrentText({
       text: newFull,
-      meta: { source: 'main-window', action: 'append_newline', clipboardText: clip }
+      meta: { source: 'main-window', action: 'append_newline' }
     });
 
     if (resp && resp.ok === false) {
