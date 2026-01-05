@@ -186,7 +186,7 @@ function registerIpc(ipcMain, windowsResolver) {
       if (text.length > maxTextChars) {
         text = text.slice(0, maxTextChars);
         truncated = true;
-        log.warnOnce(
+        log.warn(
           'text_state.setCurrentText.truncated',
           'set-current-text: entry truncated to effective hard cap of ' + maxTextChars + ' chars.'
         );
