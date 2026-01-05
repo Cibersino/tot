@@ -358,7 +358,7 @@ function createLanguageWindow() {
 
   langWin = new BrowserWindow({
     width: 420,
-    height: 220,
+    height: 360,
     resizable: false,
     minimizable: false,
     maximizable: false,
