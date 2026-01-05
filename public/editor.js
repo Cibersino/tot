@@ -483,7 +483,7 @@ if (editor) {
       ev.stopPropagation();
       const text = (ev.clipboardData && ev.clipboardData.getData('text/plain')) || '';
       if (!text) {
-        Notify.notifyEditor('renderer.editor_alerts.clipboard_no_text', { type: 'warn' });
+        Notify.notifyEditor('renderer.editor_alerts.paste_no_text', { type: 'warn' });
         restoreFocusToEditor();
         return;
       }
@@ -493,7 +493,7 @@ if (editor) {
         return;
       }
 
-      Notify.notifyEditor('renderer.editor_alerts.clipboard_too_big', { type: 'warn', duration: 5000 });
+      Notify.notifyEditor('renderer.editor_alerts.paste_too_big', { type: 'warn', duration: 5000 });
       restoreFocusToEditor();
     } catch (err) {
       log.error('paste handler error:', err);

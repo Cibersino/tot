@@ -70,10 +70,11 @@
       "clear_title": "Vaciar"
     },
     "alerts": {   
-      "clipboard_overflow": "El texto del portapapeles supera el tamaño máximo permitido y será truncado.",
+      "clipboard_overflow": "El texto del portapapeles excede el tamaño máximo permitido y fue truncado.",
+      "append_overflow": "El texto agregado excede el tamaño máximo permitido y fue truncado.",
       "text_limit": "No es posible agregar texto: ya se alcanzó el tamaño máximo permitido.",
       "clipboard_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola.",
-      "paste_error": "Ocurrió un error al pegar el portapapeles. Revisa la consola.",
+      "append_error": "Ocurrió un error al agregar texto. Revisa la consola.",
       "clear_error": "Ocurrió un error al vaciar el texto. Revisa la consola.",
       "modal_unavailable": "Funcionalidad de modal no disponible.",
       "edit_none": "No hay ningún preset seleccionado para editar",
@@ -99,9 +100,9 @@
       "wip_colabora": "WIP: Aquí se mostrará la información para colaborar en una futura versión."
     },
     "editor_alerts": {
-      "clipboard_too_big": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
+      "paste_too_big": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
       "drop_too_big": "Arrastrado: texto demasiado grande. Usa los botones de la ventana principal.",
-      "clipboard_no_text": "El portapapeles no contiene texto plano.",
+      "paste_no_text": "El portapapeles no contiene texto plano.",
       "drop_no_text": "Arrastrado: no se detectó texto plano.",
       "type_limit": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido.",
       "paste_limit": "No es posible pegar más texto: ya se alcanzó el tamaño máximo permitido.",

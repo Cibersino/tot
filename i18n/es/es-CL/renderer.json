@@ -71,9 +71,10 @@
     },
     "alerts": {   
       "clipboard_overflow": "La hueá que copiaste es muy larga, la tuve que mochar.",
+      "append_overflow": "La hueá que querís agregar es muy larga, la tuve que mochar.",
       "text_limit": "No entra na' más: ya se llenó la hueá.",
       "clipboard_error": "Cagó la hueá al pegar. Lorea la consola.",
-      "paste_error": "Mala volá al pegar. Lorea la consola.",
+      "append_error": "Cagó la hueá al agregar texto. Lorea la consola.",
       "clear_error": "No se pudo borrar. Lorea la consola.",
       "modal_unavailable": "Esa ventanita todavía no está lista.",
       "edit_none": "No habís marcao niun preset pa' editar, pajarón.",
@@ -99,9 +100,9 @@
       "wip_colabora": "WIP: Aquí nos haremos millonarios ($)."
     },
     "editor_alerts": {
-      "clipboard_too_big": "La hueá es muy grande. Usa los botones de afuera.",
+      "paste_too_big": "La hueá es muy grande. Usa los botones de afuera.",
       "drop_too_big": "Tiraste mucha info. Usa los botones de afuera.",
-      "clipboard_no_text": "No tenís nada de texto copiao, está pelao.",
+      "paste_no_text": "No tenís nada de texto copiao, está pelao.",
       "drop_no_text": "Lo que tiraste no tiene niuna letra.",
       "type_limit": "Ya no podís escribir más, se llenó.",
       "paste_limit": "Ya no podís pegar más, se llenó.",
