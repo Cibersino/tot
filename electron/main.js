@@ -35,6 +35,7 @@ const presetsMain = require('./presets_main');
 const updater = require('./updater');
 
 const log = Log.get('main');
+log.debug('Main process starting...');
 
 // =============================================================================
 // File locations (persistent user data)

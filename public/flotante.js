@@ -3,6 +3,8 @@
 
 const log = window.getLogger('flotante');
 
+log.debug('Flotante starting...');
+
 const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');

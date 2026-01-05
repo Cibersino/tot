@@ -95,6 +95,10 @@ function copyDefaultPresetsIfMissing() {
           try {
             const raw = fs.readFileSync(src, 'utf8');
             fs.writeFileSync(dest, raw, 'utf8');
+            log.warnOnce(
+              'presets_main:defaults:copied',
+              '[presets_main] Default presets copied to user config (may be normal on first run).'
+            );
             log.debug(
               `[presets_main] Copied default preset: ${src} -> ${dest}`
             );

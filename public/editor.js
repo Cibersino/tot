@@ -143,7 +143,7 @@ function showNotice(msg, { duration = 4500, type = 'info' } = {}) {
       catch (err) { warnOnceEditor('notice.remove.timeout', 'failed to remove notice on timeout (ignored):', err); }
     }, duration);
   } catch (err) {
-    log.debug('showNotice error:', err);
+    log.warnOnce('editor:showNotice:catch', 'showNotice failed (ignored):', err);
   }
 }
 
@@ -164,11 +164,11 @@ function restoreFocusToEditor(pos = null) {
           if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(pos, pos);
         }
       } catch (err) {
-        log.debug('restoreFocusToEditor error:', err);
+        log.warnOnce('editor:restoreFocus:inner_catch', 'restoreFocusToEditor failed (ignored):', err);
       }
     }, 0);
   } catch (err) {
-    log.debug('restoreFocusToEditor wrapper error:', err);
+    log.warnOnce('editor:restoreFocus:outer_catch', 'restoreFocusToEditor wrapper failed (ignored):', err);
   }
 }
 
@@ -179,7 +179,7 @@ try {
     editor.style.whiteSpace = 'pre-wrap';
     editor.style.wordBreak = 'break-word';
   }
-} catch (err) { log.debug('editor: failed to apply wrap styles:', err); }
+} catch (err) { log.warnOnce('editor:wrapStyles:apply_failed', 'editor wrap styles failed (ignored):', err); }
 
 // ---------- Local insertion (best preserving undo) ---------- //
 function tryNativeInsertAtSelection(text) {

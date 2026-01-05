@@ -4,8 +4,6 @@
 (() => {
   const log = window.getLogger('count');
 
-  log.debug('[count.js] module loaded');
-
   function contarTextoSimple(texto) {
     const conEspacios = texto.length;
     const sinEspacios = texto.replace(/\s+/g, '').length;
