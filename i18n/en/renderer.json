@@ -5,7 +5,7 @@
       "selector_empty": "(empty)",
       "buttons": {
         "overwrite_clipboard": "Overwrite clipboard",
-        "append_clipboard": "Paste clipboard new line",
+        "append_clipboard": "Append clipboard",
         "edit": "Manual editor",
         "clear": "🗑"
       },

@@ -5,7 +5,7 @@
       "selector_empty": "(vacío)",
       "buttons": {
         "overwrite_clipboard": "Sobrescribir portapapeles",
-        "append_clipboard": "Pegar portapapeles nueva línea",
+        "append_clipboard": "Agregar portapapeles",
         "edit": "Editor manual",
         "clear": "🗑"
       },
