@@ -20,8 +20,8 @@ const {
 } = AppConstants;
 
 const textPreview = document.getElementById('textPreview');
-const btnCountClipboard = document.getElementById('btnCountClipboard');
-const btnAppendClipboardNewLine = document.getElementById('btnAppendClipboardNewLine');
+const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
+const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
 const btnHelp = document.getElementById('btnHelp');
@@ -81,13 +81,13 @@ if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
 function applyTranslations() {
   if (!tRenderer) return;
   // Text Selector buttons
-  if (btnCountClipboard) btnCountClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnCountClipboard.textContent || '');
-  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.textContent = tRenderer('renderer.main.buttons.append_clipboard_newline', btnAppendClipboardNewLine.textContent || '');
+  if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
+  if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard_newline', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
   if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear', btnEmptyMain.textContent || '');
   // Text Selector tooltips
-  if (btnCountClipboard) btnCountClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnCountClipboard.title || '');
-  if (btnAppendClipboardNewLine) btnAppendClipboardNewLine.title = tRenderer('renderer.main.tooltips.append_clipboard_newline', btnAppendClipboardNewLine.title || '');
+  if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
+  if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard_newline', btnAppendClipboard.title || '');
   if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
   if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
   // Presets
@@ -795,7 +795,7 @@ wpmInput.addEventListener('keydown', (e) => {
 });
 
 // ======================= Overwrite with clipboard button =======================
-btnCountClipboard.addEventListener('click', async () => {
+btnOverwriteClipboard.addEventListener('click', async () => {
   try {
     let clip = await window.electronAPI.readClipboard() || '';
 
@@ -825,7 +825,7 @@ btnCountClipboard.addEventListener('click', async () => {
 });
 
 // ======================= 'Paste clipboard in new line' button =======================
-btnAppendClipboardNewLine.addEventListener('click', async () => {
+btnAppendClipboard.addEventListener('click', async () => {
   try {
     const clip = await window.electronAPI.readClipboard() || '';
     const current = await window.electronAPI.getCurrentText() || '';
