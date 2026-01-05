@@ -16,7 +16,7 @@
 // =============================================================================
 const fs = require('fs');
 const Log = require('./log');
-const { MAX_TEXT_CHARS } = require('./constants_main');
+const { MAX_TEXT_CHARS, MAX_IPC_MULTIPLIER, MAX_IPC_CHARS } = require('./constants_main');
 
 const log = Log.get('text-state');
 
@@ -25,6 +25,7 @@ const log = Log.get('text-state');
 // =============================================================================
 // Default from constants_main.js; effective limit may be injected from main.js via init({ maxTextChars }).
 let maxTextChars = MAX_TEXT_CHARS;
+let maxIpcChars = MAX_IPC_CHARS;
 
 // Current text held in memory; persisted on quit (also saved during init if it is truncated).
 let currentText = '';
@@ -104,6 +105,7 @@ function init(options) {
   if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
     maxTextChars = opts.maxTextChars;
   }
+  maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
 
   // Initial load from disk + truncated if hard cap is exceeded
   try {
@@ -181,6 +183,14 @@ function registerIpc(ipcMain, windowsResolver) {
       }
       const incomingMeta = hasTextProp ? payload.meta || null : null;
       let text = hasTextProp ? String(payload.text || '') : String(payload || '');
+
+      if (text.length > maxIpcChars) {
+        log.warnOnce(
+          'text_state.setCurrentText.payload_too_large',
+          `set-current-text payload too large (${text.length} > ${maxIpcChars}); rejecting.`
+        );
+        throw new Error('set-current-text payload too large');
+      }
 
       let truncated = false;
       if (text.length > maxTextChars) {

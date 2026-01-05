@@ -70,8 +70,10 @@
       "clear_title": "Pitiarse too"
     },
     "alerts": {   
-      "clipboard_overflow": "La hueá que copiaste es muy larga, la tuve que mochar.",
-      "append_overflow": "La hueá que querís agregar es muy larga, la tuve que mochar.",
+      "clipboard_too_large": "Chaaa, el texto del portapapeles es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
+      "append_too_large": "El texto resultante es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
+      "clipboard_overflow": "Te fuiste en la volá, la hueá que copiaste es muy larga, la tuve que mochar.",
+      "append_overflow": "Te fuiste en la volá, La hueá que querís agregar es muy larga, la tuve que mochar.",
       "text_limit": "No entra na' más: ya se llenó la hueá.",
       "clipboard_error": "Cagó la hueá al pegar. Lorea la consola.",
       "append_error": "Cagó la hueá al agregar texto. Lorea la consola.",
