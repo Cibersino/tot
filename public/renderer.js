@@ -539,7 +539,7 @@ const loadPresets = async () => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.text();
     } catch (err) {
-      log.debug('fetchText error:', path, err);
+      log.warnOnce('renderer:fetchText:failed', 'fetchText failed; info modal will fallback:', path, err);
       return null;
     }
   }
