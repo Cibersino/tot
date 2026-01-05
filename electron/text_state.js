@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Own in-memory current text and enforce max length.
 // - Load/save current_text.json on startup and before-quit.
-// - Ensure settings file exists on quit (legacy behavior).
+// - Ensure settings file exists on quit (compatibility behavior).
 // - Register IPC handlers for get-current-text, set-current-text, force-clear-editor.
 // - Broadcast text updates to main and editor windows (best-effort).
 
@@ -16,14 +16,16 @@
 // =============================================================================
 const fs = require('fs');
 const Log = require('./log');
+const { MAX_TEXT_CHARS, MAX_IPC_MULTIPLIER, MAX_IPC_CHARS } = require('./constants_main');
 
 const log = Log.get('text-state');
 
 // =============================================================================
 // Shared state and injected dependencies
 // =============================================================================
-// Default limit. The effective limit is injected from main.js via init({ maxTextChars }).
-let MAX_TEXT_CHARS = 10_000_000; 
+// Default from constants_main.js; effective limit may be injected from main.js via init({ maxTextChars }).
+let maxTextChars = MAX_TEXT_CHARS;
+let maxIpcChars = MAX_IPC_CHARS;
 
 // Current text held in memory; persisted on quit (also saved during init if it is truncated).
 let currentText = '';
@@ -31,8 +33,8 @@ let currentText = '';
 // Injected dependencies and file paths (set in init).
 let loadJson = null;
 let saveJson = null;
-let CURRENT_TEXT_FILE = null;
-let SETTINGS_FILE = null;
+let currentTextFile = null;
+let settingsFile = null;
 let appRef = null;
 
 // Window resolver for best-effort UI notifications.
@@ -58,23 +60,23 @@ function safeSend(win, channel, payload) {
   }
 }
 
-// Persist current text and ensure settings file exists (legacy behavior).
+// Persist current text and ensure settings file exists (compatibility behavior).
 function persistCurrentTextOnQuit() {
   try {
-    if (saveJson && CURRENT_TEXT_FILE) {
-      saveJson(CURRENT_TEXT_FILE, { text: currentText || '' });
+    if (saveJson && currentTextFile) {
+      saveJson(currentTextFile, { text: currentText || '' });
     }
 
-    // Maintain previous behavior: ensure SETTINGS_FILE exists
-    if (loadJson && saveJson && SETTINGS_FILE) {
+    // Maintain previous behavior: ensure settings file exists.
+    if (loadJson && saveJson && settingsFile) {
       const settingsDefaults = {
         language: 'es',
         presets_by_language: {},
         disabled_default_presets: {},
       };
-      const settings = loadJson(SETTINGS_FILE, settingsDefaults);
-      if (!fs.existsSync(SETTINGS_FILE)) {
-        saveJson(SETTINGS_FILE, settings);
+      const settings = loadJson(settingsFile, settingsDefaults);
+      if (!fs.existsSync(settingsFile)) {
+        saveJson(settingsFile, settings);
       }
     }
   } catch (err) {
@@ -87,8 +89,8 @@ function persistCurrentTextOnQuit() {
 // =============================================================================
 /**
  * Initialize the text state:
- * - Load from CURRENT_TEXT_FILE
- * - Apply initial truncation by MAX_TEXT_CHARS
+ * - Load from currentTextFile
+ * - Apply initial truncation using the effective hard cap
  * - Register persistence in app.before-quit
  */
 function init(options) {
@@ -96,18 +98,19 @@ function init(options) {
 
   loadJson = opts.loadJson;
   saveJson = opts.saveJson;
-  CURRENT_TEXT_FILE = opts.currentTextFile;
-  SETTINGS_FILE = opts.settingsFile;
+  currentTextFile = opts.currentTextFile;
+  settingsFile = opts.settingsFile;
   appRef = opts.app || null;
 
   if (typeof opts.maxTextChars === 'number' && opts.maxTextChars > 0) {
-    MAX_TEXT_CHARS = opts.maxTextChars;
+    maxTextChars = opts.maxTextChars;
   }
+  maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
 
-  // Initial load from disk + truncated if MAX_TEXT_CHARS is exceeded
+  // Initial load from disk + truncated if hard cap is exceeded
   try {
     let raw = loadJson
-      ? loadJson(CURRENT_TEXT_FILE, { text: '' })
+      ? loadJson(currentTextFile, { text: '' })
       : { text: '' };
 
     const isRawObject = raw && typeof raw === 'object';
@@ -124,13 +127,13 @@ function init(options) {
       );
     }
 
-    if (txt.length > MAX_TEXT_CHARS) {
+    if (txt.length > maxTextChars) {
       log.warn(
-        `Initial text exceeds MAX_TEXT_CHARS (${txt.length} > ${MAX_TEXT_CHARS}); truncated and saved.`
+        `Initial text exceeds effective hard cap (${txt.length} > ${maxTextChars}); truncated and saved.`
       );
-      txt = txt.slice(0, MAX_TEXT_CHARS);
-      if (saveJson && CURRENT_TEXT_FILE) {
-        saveJson(CURRENT_TEXT_FILE, { text: txt });
+      txt = txt.slice(0, maxTextChars);
+      if (saveJson && currentTextFile) {
+        saveJson(currentTextFile, { text: txt });
       }
     }
 
@@ -181,13 +184,21 @@ function registerIpc(ipcMain, windowsResolver) {
       const incomingMeta = hasTextProp ? payload.meta || null : null;
       let text = hasTextProp ? String(payload.text || '') : String(payload || '');
 
-      let truncated = false;
-      if (text.length > MAX_TEXT_CHARS) {
-        text = text.slice(0, MAX_TEXT_CHARS);
-        truncated = true;
+      if (text.length > maxIpcChars) {
         log.warnOnce(
+          'text_state.setCurrentText.payload_too_large',
+          `set-current-text payload too large (${text.length} > ${maxIpcChars}); rejecting.`
+        );
+        throw new Error('set-current-text payload too large');
+      }
+
+      let truncated = false;
+      if (text.length > maxTextChars) {
+        text = text.slice(0, maxTextChars);
+        truncated = true;
+        log.warn(
           'text_state.setCurrentText.truncated',
-          'set-current-text: entry truncated to ' + MAX_TEXT_CHARS + ' chars.'
+          'set-current-text: entry truncated to effective hard cap of ' + maxTextChars + ' chars.'
         );
       }
 

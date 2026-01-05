@@ -14,7 +14,10 @@ tot-readingmeter/
 │ ├── editor_state.json            # {ignorado por git}
 │ └── user_settings.json           # {ignorado por git}
 ├── docs/
-│ ├── cleanup/                     # {vacío}
+│ ├── cleanup/
+│ │ ├── _evidence/
+│ │ ├── cleanup_file_by_file.md
+│ │ └── naming_convention.md
 │ ├── bugs.md
 │ ├── ToDo.txt
 │ └── tree_folders_files.md
@@ -36,6 +39,7 @@ tot-readingmeter/
 │ ├── presets_main.js
 │ ├── menu_builder.js
 │ ├── updater.js
+│ ├── constants_main.js
 │ └── log.js
 ├── i18n/
 │ ├── es/

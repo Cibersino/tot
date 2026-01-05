@@ -117,5 +117,6 @@ module.exports = {
   get: makeLogger,
   setLevel,
   getLevel,
-  LEVELS: LEVEL_NAMES,
+  LEVELS,
+  LEVEL_NAMES,
 };

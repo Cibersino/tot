@@ -137,7 +137,8 @@
     get: makeLogger,
     setLevel,
     getLevel,
-    LEVELS: LEVEL_NAMES,
+    LEVELS,
+    LEVEL_NAMES,
   };
   window.getLogger = getLogger;
 })();
