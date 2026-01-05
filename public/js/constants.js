@@ -3,7 +3,7 @@
 
 (() => {
   const DEFAULTS = {
-    MAX_TEXT_CHARS: 10_000_000, // Fallback for renderer. Real limit from main.js
+    MAX_TEXT_CHARS: 10_000_000, // Renderer fallback. Real limit from main (constants_main.js via IPC).
     PASTE_ALLOW_LIMIT: 10_000,
     SMALL_UPDATE_THRESHOLD: 200_000,
     WPM_MIN: 50,
@@ -17,10 +17,11 @@
 
   const AppConstants = {
     ...DEFAULTS,
+    // Pure: returns effective maxTextChars from cfg.maxTextChars without mutating AppConstants.
     applyConfig(cfg = {}) {
-      const max = Number(cfg.maxTextChars || cfg.MAX_TEXT_CHARS || cfg.max_text_chars);
+      const max = Number(cfg.maxTextChars);
       if (Number.isFinite(max) && max > 0) {
-        this.MAX_TEXT_CHARS = max;
+        return max;
       }
       return this.MAX_TEXT_CHARS;
     }

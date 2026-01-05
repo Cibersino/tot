@@ -18,6 +18,7 @@
 const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 const path = require('path');
 const Log = require('./log');
+const { MAX_TEXT_CHARS, MAX_IPC_CHARS } = require('./constants_main');
 
 const {
   CONFIG_DIR,
@@ -53,8 +54,7 @@ ensureConfigDir();
 const warnOnce = (...args) => log.warnOnce(...args);
 
 // Maximum allowed characters for the current text (safety limit for memory/performance).
-// Keep fallbacks synchronized in text_state.js and constants.js (renderer side).
-const MAX_TEXT_CHARS = 10000000;
+// Renderer fallback lives in public/js/constants.js; main/text_state use MAX_TEXT_CHARS and injected maxTextChars.
 
 // Initialize shared text state early (current_text.json).
 // This module owns loading/saving current text and its IPC surface.
@@ -1055,10 +1055,10 @@ ipcMain.handle('open-preset-modal', (_event, payload) => {
 // Expose read-only configuration to renderers (so UI can enforce shared constraints)
 ipcMain.handle('get-app-config', () => {
   try {
-    return { ok: true, maxTextChars: MAX_TEXT_CHARS };
+    return { ok: true, maxTextChars: MAX_TEXT_CHARS, maxIpcChars: MAX_IPC_CHARS };
   } catch (err) {
     log.error('Error processing get-app-config:', err);
-    return { ok: false, error: String(err), maxTextChars: 1e7 };
+    return { ok: false, error: String(err), maxTextChars: 1e7, maxIpcChars: MAX_IPC_CHARS };
   }
 });
 

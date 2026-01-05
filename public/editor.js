@@ -10,7 +10,7 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[editor] AppConstants no disponible; verifica la carga de constants.js');
 }
-let MAX_TEXT_CHARS = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
+let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
 const PASTE_ALLOW_LIMIT = AppConstants.PASTE_ALLOW_LIMIT; // Threshold that determines whether the text editor is allowed to do native paste/drop insertion.
 const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines when an external update (from main) should be applied with native mechanism (fast, preserves undo/redo) or by full value replacement (safer but incompatible with undo/redo).
 
@@ -18,9 +18,9 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines w
   try {
     const cfg = await window.editorAPI.getAppConfig();
     if (AppConstants && typeof AppConstants.applyConfig === 'function') {
-      MAX_TEXT_CHARS = AppConstants.applyConfig(cfg);
+      maxTextChars = AppConstants.applyConfig(cfg);
     } else if (cfg && cfg.maxTextChars) {
-      MAX_TEXT_CHARS = Number(cfg.maxTextChars) || MAX_TEXT_CHARS;
+      maxTextChars = Number(cfg.maxTextChars) || maxTextChars;
     }
   } catch (err) {
     log.error('editor: failed to get getAppConfig, using defaults:', err);
@@ -249,7 +249,7 @@ function handleTruncationResponse(resPromise) {
 
 function insertTextAtCursor(rawText) {
   try {
-    const available = MAX_TEXT_CHARS - editor.value.length;
+    const available = maxTextChars - editor.value.length;
     if (available <= 0) {
       Notify.notifyEditor('renderer.editor_alerts.paste_limit', { type: 'warn' });
       restoreFocusToEditor();
@@ -305,8 +305,8 @@ async function applyExternalUpdate(payload) {
     }
 
     let truncated = false;
-    if (newText.length > MAX_TEXT_CHARS) {
-      newText = newText.slice(0, MAX_TEXT_CHARS);
+    if (newText.length > maxTextChars) {
+      newText = newText.slice(0, maxTextChars);
       truncated = true;
     }
 
@@ -483,7 +483,7 @@ if (editor) {
       ev.stopPropagation();
       const text = (ev.clipboardData && ev.clipboardData.getData('text/plain')) || '';
       if (!text) {
-        Notify.notifyEditor('renderer.editor_alerts.clipboard_no_text', { type: 'warn' });
+        Notify.notifyEditor('renderer.editor_alerts.paste_no_text', { type: 'warn' });
         restoreFocusToEditor();
         return;
       }
@@ -493,7 +493,7 @@ if (editor) {
         return;
       }
 
-      Notify.notifyEditor('renderer.editor_alerts.clipboard_too_big', { type: 'warn', duration: 5000 });
+      Notify.notifyEditor('renderer.editor_alerts.paste_too_big', { type: 'warn', duration: 5000 });
       restoreFocusToEditor();
     } catch (err) {
       log.error('paste handler error:', err);
@@ -527,8 +527,8 @@ if (editor) {
       setTimeout(() => {
         try {
           // Ensure maximum truncation
-          if (editor.value.length > MAX_TEXT_CHARS) {
-            editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
+          if (editor.value.length > maxTextChars) {
+            editor.value = editor.value.slice(0, maxTextChars);
             dispatchNativeInputEvent();
             Notify.notifyEditor('renderer.editor_alerts.drop_truncated', { type: 'warn', duration: 5000 });
           }
@@ -561,8 +561,8 @@ if (editor) {
 editor.addEventListener('input', () => {
   if (suppressLocalUpdate) return;
 
-  if (editor.value && editor.value.length > MAX_TEXT_CHARS) {
-    editor.value = editor.value.slice(0, MAX_TEXT_CHARS);
+  if (editor.value && editor.value.length > maxTextChars) {
+    editor.value = editor.value.slice(0, maxTextChars);
     Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
     try {
       const res = window.editorAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'truncated' } });
