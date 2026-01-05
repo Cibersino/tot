@@ -6,19 +6,17 @@
  *
  * Levels (lowest to highest): silent < error < warn < info < debug
  * Default: warn (minimize noise in normal operation).
+ * Policy: All fallbacks must be noisy (no silent fallbacks). If a fallback can trigger frequently, use warnOnce with an explicit stable key.
  *
  * Intended usage across the repo:
- * - error: unexpected failures that break an intended action or invariant.
- *          Typical: exceptions caught in IPC handlers, failed critical I/O, failed window loads when not closing.
- * - warn: recoverable anomalies / degraded behavior / fallback paths.
- *         Typical: "using default position", "shortcut register failed", "could not apply optional behavior".
+ * - error: unexpected failures that break an intended action or invariant. Typical: exceptions caught in IPC handlers, failed critical I/O, failed window loads when not closing.
+ * - warn: recoverable anomalies / degraded behavior / fallback paths. Typical: "using default position", "shortcut register failed", "could not apply optional behavior".
  * - info: high-level lifecycle/state transitions (low volume).
  * - debug: verbose diagnostics; may be noisy; safe to spam.
  *
  * Once-variants (deduplicated per process/page):
  * Use warnOnce/errorOnce only for high-frequency repeatable events where additional occurrences add no new diagnostic value; do not use once-variants when repetition is needed for reproduction during testing.
- * - warnOnce: use for expected transient failures that can repeat frequently and would spam logs.
- *             Canonical example: webContents.send() to a destroyed window during shutdown/races.
+ * - warnOnce: use for expected transient failures that can repeat frequently and would spam logs. Canonical example: webContents.send() to a destroyed window during shutdown/races.
  * - errorOnce: like warnOnce but for repeated error-class events (should be rare).
  *
  * warnOnce/errorOnce signature:
