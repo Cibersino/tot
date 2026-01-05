@@ -2,7 +2,6 @@
 'use strict';
 
 (() => {
-  const log = window.getLogger('format');
 
   const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
   const getLangBase = (lang) => {

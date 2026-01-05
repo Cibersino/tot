@@ -2,7 +2,6 @@
 'use strict';
 
 (() => {
-  const log = window.getLogger('count');
 
   function contarTextoSimple(texto) {
     const conEspacios = texto.length;
