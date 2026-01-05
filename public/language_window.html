@@ -7,19 +7,34 @@
   <title>Seleccione idioma / Select language</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    html,
+    body {
+      height: 100%;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      margin: 12px;
+      margin: 0;
+      padding: 16px;
       color: #222;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .center {
+      width: 100%;
+      max-width: 360px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100%;
       gap: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
     }
 
     h3 {
@@ -30,11 +45,12 @@
 
     .langs {
       width: 100%;
-      max-width: 320px;
-      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    select {
+    #langFilter {
       width: 100%;
       padding: 8px 10px;
       font-size: 14px;
@@ -44,11 +60,76 @@
       color: #222;
     }
 
+    #langFilter:focus-visible {
+      outline: 2px solid #2b78ff;
+      outline-offset: 1px;
+    }
+
+    .lang-list {
+      width: 100%;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      background: #fff;
+      max-height: 40vh;
+      overflow-y: auto;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .lang-list.is-disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .lang-item,
+    .lang-empty {
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .lang-item {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lang-item:hover {
+      background: #f2f2f2;
+    }
+
+    .lang-item:focus-visible {
+      outline: 2px solid #2b78ff;
+      outline-offset: 1px;
+    }
+
+    .lang-tag {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .lang-empty {
+      color: #777;
+      cursor: default;
+    }
+
     .note {
       font-size: 12px;
       color: #666;
       text-align: center;
-      max-width: 360px;
+      width: 100%;
+    }
+
+    .status {
+      margin-top: 4px;
+      min-height: 14px;
+    }
+
+    .status.is-error {
+      color: #b00020;
     }
   </style>
 </head>
@@ -58,35 +139,183 @@
     <h3 id="lang-title">Seleccione idioma / Select language</h3>
 
     <div class="langs">
-      <select id="langSelect" aria-label="Idiomas disponibles / Available languages">
-        <option value="" selected>— Seleccione / Select —</option>
-        <option value="es">Español</option>
-        <option value="es-cl">Chileno</option>
-        <option value="en">English</option>
-      </select>
+      <input id="langFilter" type="text" placeholder="Buscar / Search"
+        aria-label="Buscar idioma / Search language" autocomplete="off" />
+      <div id="langList" class="lang-list" role="listbox"
+        aria-label="Idiomas disponibles / Available languages"></div>
     </div>
 
-    <div class="note">If you identify a translation error, please report it.</div>
+    <div class="note">
+      <div>If you identify a translation error, please report it.</div>
+      <div id="statusLine" class="status" role="status" aria-live="polite"></div>
+    </div>
   </div>
 
   <script src="js/log.js"></script>
   <script>
-    const log = window.getLogger('language');
-    const langSelect = document.getElementById('langSelect');
+    const log = window.getLogger ? window.getLogger('language') : console;
+    const langFilter = document.getElementById('langFilter');
+    const langList = document.getElementById('langList');
+    const statusLine = document.getElementById('statusLine');
 
-    langSelect.addEventListener('change', async () => {
-      const lang = String(langSelect.value || '').trim();
-      if (!lang) return;
+    const languages = [
+      { tag: 'es', label: 'Espa\u00f1ol' },
+      { tag: 'es-cl', label: 'Chileno' },
+      { tag: 'en', label: 'English' },
+    ];
 
+    let filteredLanguages = languages.slice();
+    let focusedIndex = -1;
+    let isBusy = false;
+
+    const getItems = () => Array.from(langList.querySelectorAll('.lang-item'));
+
+    const setStatus = (message, isError = false) => {
+      statusLine.textContent = message || '';
+      statusLine.classList.toggle('is-error', isError);
+    };
+
+    const setBusy = (busy, message) => {
+      isBusy = busy;
+      langFilter.disabled = busy;
+      langList.classList.toggle('is-disabled', busy);
+      langList.setAttribute('aria-disabled', busy ? 'true' : 'false');
+      if (message !== undefined) {
+        setStatus(message, false);
+      }
+    };
+
+    const setFocusedIndex = (index, shouldFocus = true) => {
+      const items = getItems();
+      if (!items.length) {
+        focusedIndex = -1;
+        return;
+      }
+      const bounded = Math.max(0, Math.min(index, items.length - 1));
+      items.forEach((item, i) => {
+        const selected = i === bounded;
+        item.setAttribute('tabindex', selected ? '0' : '-1');
+        item.setAttribute('aria-selected', selected ? 'true' : 'false');
+      });
+      focusedIndex = bounded;
+      if (shouldFocus) {
+        items[bounded].focus();
+      }
+    };
+
+    const renderList = () => {
+      const query = langFilter.value.trim().toLowerCase();
+      filteredLanguages = languages.filter((lang) => {
+        return lang.label.toLowerCase().includes(query) || lang.tag.toLowerCase().includes(query);
+      });
+
+      langList.innerHTML = '';
+      focusedIndex = -1;
+
+      if (!filteredLanguages.length) {
+        const empty = document.createElement('div');
+        empty.className = 'lang-empty';
+        empty.setAttribute('role', 'option');
+        empty.setAttribute('aria-disabled', 'true');
+        empty.textContent = 'No matches';
+        langList.appendChild(empty);
+        return;
+      }
+
+      filteredLanguages.forEach((lang, index) => {
+        const item = document.createElement('div');
+        item.className = 'lang-item';
+        item.setAttribute('role', 'option');
+        item.setAttribute('tabindex', '-1');
+        item.setAttribute('aria-selected', 'false');
+        item.dataset.tag = lang.tag;
+        item.dataset.index = String(index);
+
+        const label = document.createElement('span');
+        label.className = 'lang-label';
+        label.textContent = lang.label;
+
+        const tag = document.createElement('span');
+        tag.className = 'lang-tag';
+        tag.textContent = lang.tag;
+
+        item.append(label, tag);
+        langList.appendChild(item);
+      });
+    };
+
+    const selectLanguage = async (lang) => {
+      if (!lang || isBusy) return;
+
+      setBusy(true, 'Applying language...');
       try {
         await window.languageAPI.setLanguage(lang);
         window.close();
       } catch (e) {
-        log.error("Error setLanguage:", e);
-        // return to placeholder to allow retry
-        langSelect.value = '';
+        log.error('Error setLanguage:', e);
+        setBusy(false);
+        setStatus('Unable to set language. Try again.', true);
+      }
+    };
+
+    langFilter.addEventListener('input', () => {
+      if (isBusy) return;
+      setStatus('');
+      renderList();
+    });
+
+    langFilter.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') {
+        const items = getItems();
+        if (!items.length || isBusy) return;
+        event.preventDefault();
+        setFocusedIndex(0);
       }
     });
+
+    langList.addEventListener('click', (event) => {
+      if (isBusy) return;
+      const item = event.target.closest('.lang-item');
+      if (!item) return;
+      const index = Number(item.dataset.index);
+      setFocusedIndex(index, false);
+      selectLanguage(item.dataset.tag);
+    });
+
+    langList.addEventListener('keydown', (event) => {
+      if (isBusy) return;
+      const items = getItems();
+      if (!items.length) return;
+
+      const currentIndex = focusedIndex >= 0 ? focusedIndex : items.indexOf(document.activeElement);
+      let nextIndex = currentIndex;
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        nextIndex = Math.min((currentIndex >= 0 ? currentIndex + 1 : 0), items.length - 1);
+        setFocusedIndex(nextIndex);
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        nextIndex = Math.max((currentIndex >= 0 ? currentIndex - 1 : 0), 0);
+        setFocusedIndex(nextIndex);
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        if (currentIndex >= 0 && items[currentIndex]) {
+          selectLanguage(items[currentIndex].dataset.tag);
+        }
+      }
+    });
+
+    langList.addEventListener('focusin', (event) => {
+      const item = event.target.closest('.lang-item');
+      if (!item) return;
+      const index = Number(item.dataset.index);
+      if (!Number.isNaN(index)) {
+        focusedIndex = index;
+      }
+    });
+
+    renderList();
     // Note: If the user closes the window without selecting anything, main applies fallback only if settings.language is empty.
   </script>
 </body>
