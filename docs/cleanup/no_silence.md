@@ -1,364 +1,326 @@
-# Plan "no silence"
+# Plan “no silence” (idioma) — REPLANTEADO
+
+Este documento ahora tiene **dos objetivos**, en este orden:
+
+0) **Solidificar la cadena de mando del idioma** (reducir fallbacks dispersos y “defaults” locales).  
+1) Recién después, ejecutar el plan **“no silence”** (eliminar silencios técnicos y decidir notificaciones al usuario).
+
+La hipótesis es que **muchos “fallbacks” actuales existen porque falta una autoridad única del idioma**, no porque el dominio lo requiera.
+
+
+## 0) Cadena de mando fundamental (autoridad de arriba hacia abajo)
+
+### 0.1 Definiciones (términos normativos)
+
+* **DEFAULT_LANG**: idioma “de fábrica” (build/instalación).  
+  - Debe existir siempre y estar completo en recursos críticos.  
+  - Si DEFAULT_LANG no puede cargarse en un subsistema → **falla grave de build/distribución** (no “fallback”).
+
+* **SELECTED_LANG**: idioma elegido por el usuario y persistido en settings.  
+  - Debe existir siempre (en runtime) una vez que la app entra a operación normal.
+  - En primer arranque, el selector de idioma ocurre antes de que el usuario pueda operar otras ventanas.
+
+* **base(tag)**: versión base del tag (ej.: `es-cl` → `es`).
+
+* **Idioma efectivo por subsistema (EFFECTIVE_LANG[subsystem])**: idioma que el subsistema termina usando para cargar su bundle/config, siguiendo las reglas uniformes de 0.2.
+
+### 0.2 Reglas uniformes por subsistema (bundle vs key)
+
+Regla A — **Carga de bundle** (archivo JSON del subsistema):
+1) intentar bundle de `SELECTED_LANG`
+2) si falla carga/parse/no existe → intentar `base(SELECTED_LANG)` (si es distinto)
+3) si falla → intentar `DEFAULT_LANG`
+4) si falla `DEFAULT_LANG` → **fatal (build roto)**
+
+Regla B — **Lookup de keys** (una clave dentro del bundle ya cargado):
+1) buscar key en bundle de `EFFECTIVE_LANG[subsystem]`
+2) si falta → buscar la misma key en bundle de `DEFAULT_LANG`
+3) si falta → usar **hardcoded fallback** (o el “fallback string” ya existente en la llamada)
+
+Nota importante: en lookup de keys **no se cae a base(selected)**. El base se usa solo para resolver “bundle faltante”; para keys faltantes el siguiente escalón es `DEFAULT_LANG`.
+
+### 0.3 Qué significa “fallar” en Nivel 2 (selección inicial)
+
+En esta cadena de mando, “falla” de selección **no significa** “selected incompleto” ni “bundle faltante en subsistemas”.
+Significa solo que `SELECTED_LANG` **no coincide** con el tag exacto elegido por el usuario, por dos causas permitidas:
+
+1) **Normalización regional a base**: el usuario eligió `xx-YY`, pero se degrada a `xx` (p.ej. `es-cl` → `es`).  
+2) **No selección**: el usuario cierra la ventana sin elegir → `SELECTED_LANG` queda igual al idioma ya vigente (en primer arranque, coincide con DEFAULT_LANG).
+
+En ambos casos, `SELECTED_LANG` existe siempre.
+
+### 0.4 Separación crítica: fallbacks del *selector* vs fallbacks de *idioma*
+
+El selector (ventana + manifest) tiene fallbacks propios (p.ej. lista de idiomas).
+Eso **no debe confundirse** con la cadena de mando de idioma (DEFAULT/SELECTED).
+El selector solo es el mecanismo para fijar/actualizar `SELECTED_LANG`.
+
 
 ## 1) Distinción “silencioso técnico” vs “silencioso al usuario”
 
 * **Silencioso técnico** = no hay log (warn/error/once) o el log no respeta la política de `log.js`.
 * **Silencioso al usuario** = no hay notificación/UI feedback.
 
-Orden de implementación del plan:
-1. primero eliminar silencios técnicos,
-2. después decidir qué casos requieren notificación.
+Orden de implementación (actualizado):
+1) **Fase 0**: alinear el código a la cadena de mando (sección 0) y reducir fallbacks dispersos.
+2) **Fase 1**: eliminar silencios técnicos (logs).
+3) **Fase 2**: decidir qué casos requieren notificación al usuario.
 
 ### 1.1 Default transitorio vs fallback (para evitar ambigüedad)
 
-Para este plan distinguimos:
+* **Default transitorio**: valor inicial necesario antes de que exista información (bootstrapping).  
+  - Puede loguearse como `info/debug` (o `warnOnce` si se confirma que impacta UX final), pero no necesariamente como `warn`.
 
-* **Default transitorio**: valor inicial necesario antes de que exista información (p.ej. antes de cargar settings). No es “recuperación” ante un error; es *bootstrapping*.  
-  - Puede ser deseable loguearlo como `info`/`debug` (o `warnOnce` si se usa como “degradación real”), pero no necesariamente como `warn` en todos los casos.
-
-* **Fallback**: sustitución/degradación causada por dato inválido/ausente/error (p.ej. `normalizeLangTag` vacío, assets i18n faltantes, parse error, IPC falla, etc.).  
+* **Fallback**: sustitución/degradación causada por dato inválido/ausente/error.  
   - Regla del plan: **ningún fallback puede ser silencioso técnicamente**.
 
 Regla práctica:
 * Si el “default” se usa **porque faltó algo o falló algo**, trátalo como fallback (debe loguear).
 * Si es **solo un valor de arranque** y luego se reemplaza al cargar settings, puede tratarse como default transitorio (log opcional, idealmente sin ruido).
 
+
 ## 2) Dónde se ven los logs hoy (canales)
 
-* **Main process** (`electron_log.js`): logs se ven por `console.*` del proceso main. En desarrollo normalmente se ven en el **terminal** desde donde se lanza Electron.
-* **Renderer** (`public_js_log.js`): logs salen por `console.*` del renderer. Se ven en la **consola de DevTools** de esa ventana (por ejemplo, la ventana de idioma tiene su propia consola).
+* **Main process** (`electron_log.js`): logs por `console.*` del proceso main (en dev se ven en el terminal).
+* **Renderer** (`public_js_log.js`): logs por `console.*` del renderer (en DevTools de esa ventana).
 
-Esto importa porque “no silencioso técnico” puede cumplirse, pero igual “no lo ves” si no abres DevTools de esa ventana. Eso es distinto de “no hay log”.
+Esto importa porque “no silencioso técnico” puede cumplirse, pero igual “no lo ves” si no abres DevTools de esa ventana.
+
 
 ## 3) Reglas operacionales de logging (alineadas a `log.js`)
 
-Objetivo de fase 1: garantizar **cobertura de logs** sin destruir la señal (evitar spam).
+Objetivo de fase 1: garantizar cobertura de logs sin destruir la señal.
 
 Reglas mínimas:
-
-* **warn**: degradación recuperable (fallback) que no aborta flujo, pero implica pérdida de intención o pérdida de calidad.
-* **error**: falla que rompe intención del usuario o deja el sistema en estado inesperado (requiere rollback o ruta alternativa).
-* **warnOnce/errorOnce**: usar cuando el fallback puede dispararse repetidamente (alta frecuencia) y spamear.  
-  - Requisito: **key estable** (determinística) que permita deduplicar.
+* **warn**: degradación recuperable (fallback) con pérdida de intención o calidad.
+* **error**: falla que rompe intención del usuario o deja el sistema en estado inesperado.
+* **warnOnce/errorOnce**: usar cuando el fallback puede dispararse repetidamente (alta frecuencia).  
+  - Requisito: **key estable** (determinística) para deduplicar.
 
 ### 3.1 Control de ruido (alta frecuencia)
 
-Hay fallbacks que pueden ocurrir cientos/miles de veces (p.ej. “missing translation key” o `tRenderer` devolviendo fallback).
+No loguear “por evento” en callsites de alta frecuencia (p.ej. missing translation key).
+Preferir:
+* `warnOnce` por “subsystem degraded” (una vez por ventana/idioma/subsistema),
+* o agregación (contadores y un único warn en un punto natural), si existe ese punto.
 
-Regla del plan:
-* No loguear “por evento” en callsites de alta frecuencia.
-* Preferir:
-  - `warnOnce` por “subsystem degraded” (p.ej. “renderer translations missing; falling back to hardcoded strings”),
-  - `warnOnce` por “bundle cargado pero faltan claves” (p.ej. una sola vez por ventana/idioma),
-  - o agregación (contar eventos en memoria y emitir un solo warn al final de la operación; solo si existe un punto natural).
 
-Esto mantiene “no silencio técnico” sin arruinar los logs.
+## 4) Checklist de conformidad con la cadena de mando (Fase 0)
 
-## 4) Inventario de fallbacks relacionados con idioma (con estado de logging)
+Esta sección es la que debe “cerrarse” antes de revisar logs/notificaciones.
 
-Formato copy/paste (sin tabla). Marco:
+### 4.1 Autoridad central (DEFAULT_LANG + SELECTED_LANG)
 
-* **OK** = ya tiene logs (warn/error/once) en ruta de fallback.
-* **PARCIAL** = loguea solo algunos subcasos; hay rutas de fallback sin log.
-* **SILENCIOSO** = cae a fallback sin log.
+Requisitos:
+* Existe un **DEFAULT_LANG** definido y el build garantiza recursos críticos para ese idioma.
+* Existe y se persiste un **SELECTED_LANG**:
+  - Primer arranque: se fija antes de que el usuario opere el resto.
+  - Runtime: se puede sobrescribir desde el selector.
 
-### Grupo A — Selector de idioma (manifest + ventana)
+Invariantes:
+* Al entrar a operación normal, el sistema puede afirmar:  
+  `DEFAULT_LANG` existe y `SELECTED_LANG` existe.
 
-**A1. Manifest IPC fallback (main.js / get-available-languages)**
+### 4.2 Regla uniforme de bundle por subsistema
 
-* Disparador: `languages.json` faltante/ilegible; JSON inválido; array vacío/entradas inválidas
-* Fallback: devuelve `FALLBACK_LANGUAGES`
-* Logging: **OK** (warn/warn/error según caso)
-* Visibilidad: **usuario sí** (lista reducida), **técnico en terminal**
+Cada subsistema que carga bundle (menu, renderer translations, etc.) debe aplicar exactamente:
+`selected → base(selected) → default → fatal si default falla`
 
-**A1b. Manifest sanitization (main.js / get-available-languages)**
+### 4.3 Regla uniforme de keys por subsistema
 
-* Disparador: `languages.json` contiene algunas entradas inválidas (tag/label vacíos, tipos erróneos)
-* “Fallback”: se filtran/descartan entradas inválidas (degradación parcial; no cae al fallback total)
-* Logging: **SILENCIOSO**
-* Nota: decidir si se loguea (idealmente `warnOnce` con key estable por “manifest contains invalid entries”, sin spamear por entrada).
+Cada lookup debe aplicar exactamente:
+`effective → default → hardcoded`
 
-**A2. Picker fallback (language_window.html / loadLanguages)**
+y evitar:
+* “key fallback” hacia `base(selected)` (eso solo aplica en carga de bundle).
 
-* Disparador:
-  - `getAvailableLanguages` no existe / lanza error (IPC falla)  
-  - `loadLanguages()` lanza (ruta catch)
-  - `getAvailableLanguages` retorna vacío/valor inválido sin throw (degradación “normal” hacia fallback)
-* Fallback: `fallbackLanguages` (lista reducida)
-* Logging: **PARCIAL**
-  - **OK** cuando hay throw: `log.error('Error getAvailableLanguages:', e)` / `log.error('Error loadLanguages:', e)`
-  - **SILENCIOSO** cuando `available` llega vacío/invalid sin throw y se cae al `else` (no hay log)
-* Visibilidad: **usuario sí**, **técnico en DevTools del picker**
+### 4.4 Eliminación de “defaults” locales dispersos
 
-### Grupo B — Estado de idioma en main/settings
+Objetivo: que ventanas/módulos no inventen su propio “idioma por defecto” salvo como **fallback explícito al DEFAULT_LANG** (y logueado cuando corresponde).
 
-**B1. setCurrentLanguage inválido/vacío (main.js)**
+Esto apunta a reducir el inventario de “fallbacks” a unos pocos puntos controlados.
 
-* Disparador: lang no-string / trim vacío / normalización queda vacía
-* Fallback: fuerza `'es'`
-* Logging: **OK** (`warnOnce(...)`)
-* Visibilidad: usuario sí (menu en español), técnico en terminal
 
-**B2. default temprano `currentLanguage='es'` y `settings.language || 'es'` (main.js)**
+## 5) Inventario (actual) — reetiquetado para Fase 0 + Fase 1
 
-* Disparador: settings.language falsy (antes de abrir picker)
-* Tipo: **default transitorio** (aunque luego se abre picker) o **fallback** si termina afectando UX final
-* Logging: **SILENCIOSO**
-* Nota: decisión pendiente: si se considera fallback (por “falta de settings.language”), debe loguear (probablemente `warnOnce` para no spamear). Si se considera default transitorio, el log puede ser opcional (`info/debug`) o `warnOnce` solo si persiste/impacta.
+El inventario se mantiene, pero ahora cada ítem se evalúa en 2 ejes:
 
-**B3. Cierre de ventana de idioma sin seleccionar (settings.js / applyFallbackLanguageIfUnset)**
+* **Modelo (Fase 0)**:
+  - **CONFORME**: encaja con la cadena (sección 0).
+  - **DRIFT**: es un default/fallback local que debería colapsar hacia el modelo.
+  - **ESPECÍFICO (selector)**: pertenece al selector/manifest, no al idioma del sistema.
 
-* Disparador: `settings.language` sigue unset cuando se cierra picker
-* Fallback: persiste `'es'` (o fallbackLang configurado)
-* Logging: **OK** (`warnOnce` al aplicar + `error` si falla)
-* Visibilidad: usuario sí (termina en español), técnico en terminal
+* **Logging (Fase 1)**:
+  - **OK / PARCIAL / SILENCIOSO** como antes.
 
-**B4. get-settings IPC fallback (settings.js)**
+### Grupo A — Selector de idioma (manifest + ventana)  [ESPECÍFICO selector]
 
-* Disparador: excepción al servir `get-settings`
-* Fallback: settings seguros con `language:'es'`
-* Logging: **OK** (`errorOnce`)
-* Visibilidad: usuario sí (renderers reciben default), técnico en terminal
+**A1. Manifest IPC fallback (main.js / get-available-languages)**  
+* Rol: alimentar selector, no fijar idioma del sistema.  
+* Logging: **OK** (warn/error según caso)  
+* Modelo: **ESPECÍFICO (selector)**
 
-**B5. set-language: menuLang fallback (settings.js / handler set-language)**
+**A1b. Manifest sanitization (main.js / get-available-languages)**  
+* Disparador: entradas inválidas se filtran (degradación parcial).  
+* Logging: **SILENCIOSO**  
+* Modelo: **ESPECÍFICO (selector)**  
+* Nota: decidir `warnOnce` global (“manifest contains invalid entries”), sin spam por entrada.
 
-* Disparador: `normalizeLangTag` produce vacío
-* Fallback: `menuLang='es'` para reconstruir menú
-* Logging: **SILENCIOSO**
-* Esto es un fallback degradante y hoy no deja rastro.
+**A2. Picker fallback (language_window.html / loadLanguages)**  
+* Disparador: IPC falla/throw o retorno vacío/invalid sin throw.  
+* Logging: **PARCIAL** (OK en throw; SILENCIOSO en “vacío sin throw”)  
+* Modelo: **ESPECÍFICO (selector)**  
+* Nota: el selector debería loguear también cuando cae a fallback por retorno vacío/invalid sin throw.
 
-**B6. normalizeSettings: langBase fallback a 'es' (settings.js)**
+### Grupo B — Autoridad de idioma (DEFAULT/SELECTED)  [Fase 0 central]
 
-* Disparador: `settings.language` inválido/vacío al normalizar settings
-* Fallback: `langBase='es'` para presets_by_language y numberFormatting
-* Logging: **SILENCIOSO**
-* Relevante porque puede ocultar que `settings.language` está malformado.
+**B1. setCurrentLanguage inválido/vacío (main.js)**  
+* Logging: **OK** (warnOnce)  
+* Modelo: **DRIFT** si “fuerza 'es'” está hardcoded en vez de depender de DEFAULT_LANG.  
+  - Objetivo Fase 0: que el fallback sea a DEFAULT_LANG (no a literal).
 
-### Grupo C — Traducciones de menú (main/menu_builder)
+**B2. default temprano `currentLanguage='es'` y `settings.language || 'es'` (main.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** (hardcode y ambigüedad default transitorio vs fallback).  
+  - Objetivo Fase 0: expresar explícitamente DEFAULT_LANG y distinguir bootstrapping vs fallback.
 
-**C1. loadMainTranslations: JSON vacío/parse error (menu_builder.js)**
+**B3. Cierre de ventana de idioma sin seleccionar (settings.js / applyFallbackLanguageIfUnset)**  
+* Logging: **OK**  
+* Modelo: **CONFORME** si aplica “no selección ⇒ selected queda como estaba (en primer arranque: default)”.  
+  - Revisar que el comportamiento sea exactamente ese (y que el fallback sea a DEFAULT_LANG, no literal).
 
-* Disparador: archivo existe pero JSON vacío / parse falla
-* Fallback: intenta base / es; si todo falla devuelve `{}` (y el menú cae a hardcoded labels)
-* Logging: **OK** (warnOnce en esos casos)
+**B4. get-settings IPC fallback (settings.js)**  
+* Logging: **OK**  
+* Modelo: **DRIFT** si retorna language `'es'` literal; debería referenciar DEFAULT_LANG.
 
-**C2. loadMainTranslations: “archivo no existe” en un candidato (menu_builder.js)**
+**B5. set-language: menuLang fallback (settings.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** (fallback degradante sin rastro; además suele estar hardcoded a 'es').
 
-* Disparador: falta `i18n/<lang>/main.json` para el lang solicitado o para el base
-* Fallback: prueba siguiente candidato silenciosamente; solo loguea cuando ninguno carga
-* Logging: **PARCIAL** (puede haber fallback “requested -> base” sin log)
-* Requiere un log del tipo “asset missing; using fallback candidate”. Debe cuidarse el ruido (idealmente `warnOnce` por idioma/candidato).
+**B6. normalizeSettings: langBase fallback a 'es' (settings.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** si hardcodea 'es' en vez de DEFAULT_LANG/base(DEFAULT_LANG).
 
-**C3. loadMainTranslations: lang inválido -> 'es' (menu_builder.js)**
+### Grupo C — Subsistema menú (menu_builder)  [Reglas 0.2]
 
-* Disparador: `normalizeLangTag(lang)` produce vacío al comenzar el chain
-* Fallback: el loader usa `'es'` como requested (antes de intentar candidates)
-* Logging: **SILENCIOSO**
-* Nota: distinto de “no existe archivo”: es lang inválido/malformado.
+**C1. JSON vacío/parse error (menu_builder.js)**  
+* Logging: **OK**  
+* Modelo: **PARCIAL/DRIFT** hasta confirmar que el chain es `selected → base → default` (y no otros defaults dispersos).
 
-**C4. effectiveLang fallback a 'es' (menu_builder.js)**
+**C2. “archivo no existe” en candidato (menu_builder.js)**  
+* Logging: **PARCIAL**  
+* Modelo: **DRIFT** si el chain no coincide exactamente con 0.2 o si “missing asset” no está observado.
 
-* Disparador: lang inválido al construir menú (capa “menu build”)
-* Fallback: usa `'es'` para lookup
-* Logging: **SILENCIOSO**
-* Nota: revisar si esto es redundante con C3 o si ocurre en distintos puntos del flujo.
+**C3. lang inválido → 'es' (loader) (menu_builder.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** (debe resolverse contra DEFAULT_LANG).
 
-**C5. Key missing -> hardcoded labels (menu_builder.js)**
+**C4. effectiveLang fallback a 'es' (menu_builder.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** si no usa DEFAULT_LANG.
 
-* Disparador: falta clave en translations
-* Fallback: etiqueta hardcodeada
-* Logging: **SILENCIOSO** (y puede ser masivo si faltan muchas claves)
-* Requiere control de ruido: no log por key; preferir `warnOnce` agregada por “missing keys in main.json”.
+**C5. Key missing → hardcoded labels (menu_builder.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **PARCIAL**: debería ser `effective → default → hardcoded` con control de ruido (warnOnce agregado), no por key.
 
-### Grupo D — Traducciones renderer (i18n.js / notify.js)
+### Grupo D — Subsistema renderer translations (i18n.js / notify.js)  [Reglas 0.2]
 
-**D1. loadRendererTranslations: excepción de fetch/parse (i18n.js)**
+**D1. excepción fetch/parse (i18n.js)**  
+* Logging: **OK**  
+* Modelo: **PARCIAL** hasta confirmar chain `selected → base → default`.
 
-* Disparador: error real (throw)
-* Fallback: intenta chain; si falla retorna null
-* Logging: **OK** para excepciones
+**D2. 404/no ok (i18n.js)**  
+* Logging: **PARCIAL**  
+* Modelo: **DRIFT/PARCIAL** (falta observabilidad de “missing asset”, y chain debe alinearse a 0.2).
 
-**D2. loadRendererTranslations: 404/no ok (i18n.js)**
+**D2b. lang inválido → 'es' (i18n.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** (debe caer a DEFAULT_LANG).
 
-* Disparador: recurso no existe (resp.ok false)
-* Fallback: intenta siguiente candidato; si ninguno, retorna null
-* Logging: **PARCIAL** (no log en “missing asset”)
-* Requiere un log del tipo “asset missing; using fallback candidate”, cuidando el ruido (idealmente `warnOnce` por idioma/candidato/ventana).
+**D3/D4. tRenderer/msgRenderer fallback (i18n.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **PARCIAL**: el lookup debería ser `effective → default → hardcoded`, con control de ruido (warnOnce agregado), no por llamada.
 
-**D2b. loadRendererTranslations: lang inválido -> 'es' (i18n.js)**
+**D5. notify fallback a key (notify.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **PARCIAL**: debería emitir `warnOnce` cuando detecta “i18n missing/degraded”, sin spam.
 
-* Disparador: `normalizeLangTag(lang)` produce vacío al iniciar carga
-* Fallback: usa `'es'` como requested/base para el chain
-* Logging: **SILENCIOSO**
-* Nota: es un fallback distinto del “missing asset”; apunta a input inválido.
+### Grupo E — Formato numérico  [debería alinearse a DEFAULT/SELECTED]
 
-**D3. tRenderer fallback string (i18n.js)**
+**E1. numberFormat defaults (settings.js)**  
+* Logging: **OK**  
+* Modelo: **PARCIAL** (confirmar que el fallback final sea DEFAULT_LANG/base(DEFAULT_LANG)).
 
-* Disparador: clave inexistente o path inválido
-* Fallback: retorna fallback provisto
-* Logging: **SILENCIOSO**
-* Alta frecuencia: preferir `warnOnce` a nivel “subsystem degraded” o agregación, no por llamada.
+**E2. renderer number formatting fallback (format.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** si hardcodea 'es' o separadores sin referenciar DEFAULT_LANG.
 
-**D4. msgRenderer fallback (i18n.js)**
+### Grupo F — Conteo/segmentación  [debería confiar en SELECTED + DEFAULT]
 
-* Disparador: traducción vacía/falsy
-* Fallback: retorna fallback provisto
-* Logging: **SILENCIOSO**
-* Alta frecuencia: mismo criterio que D3.
+**F1. count: idioma default 'es' (count.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** si hardcodea 'es' en vez de DEFAULT_LANG o de un idioma efectivo del sistema.
 
-**D5. notify: fallback a key (notify.js)**
+**F2. falta Intl.Segmenter (count.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **NO-IDIOMA** (esto es fallback de plataforma, no de idioma; se mantiene en el inventario porque impacta comportamiento lingüístico).
 
-* Disparador: no existe `RendererI18n.msgRenderer` o retorna falsy
-* Fallback: retorna la key literal
-* Logging: **SILENCIOSO**
-* Alta frecuencia potencial: preferir `warnOnce` cuando notify detecta “i18n missing”.
+### Grupo G — Ventanas/consumidores (renderer/editor/preset_modal/presets)
 
-### Grupo E — Formato numérico
+Estos ítems suelen ser **síntomas** de falta de autoridad central (defaults locales).
 
-**E1. numberFormat defaults (settings.js)**
+**G1/G2/G3. renderer: idiomaActual = 'es' por default (renderer.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** (debería depender de SELECTED/DEFAULT provistos por settings; si falla IPC → DEFAULT_LANG explícito).
 
-* Disparador: schema inválido / parse error / falta defaults / no se puede asegurar numberFormatting[base]
-* Fallback: separadores por defecto
-* Logging: **OK** (warnOnce en “usando fallback”)
+**G4. editor: defaults a 'es' (editor.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT**
 
-**E2. renderer number formatting fallback (format.js)**
+**G5. preset_modal: default 'es' + getSettings failure (preset_modal.js)**  
+* Logging: **OK** para el fallo, pero default ‘es’ sigue **SILENCIOSO**  
+* Modelo: **DRIFT** si hardcodea.
 
-* Disparador: idioma vacío o falta `settingsCache.numberFormatting[lang]`
-* Fallback: usa base 'es' y separadores default
-* Logging: **SILENCIOSO**
+**G6/G6b. presets: base fallback + safe defaults (presets.js)**  
+* Logging: **SILENCIOSO**  
+* Modelo: **DRIFT** si la seguridad depende de literales 'es' en vez de DEFAULT_LANG.
 
-### Grupo F — Conteo/segmentación
+**G7. presets_main: fallbacks de textos “FALLBACK: …”**  
+* Logging: **SILENCIOSO**  
+* Modelo: **PARCIAL**: son hardcoded fallbacks válidos, pero deben alinearse a `effective → default → hardcoded` y dejar rastro técnico (sin spam).
 
-**F1. count: idioma default 'es' (count.js)**
 
-* Disparador: opts.idioma falsy
-* Fallback: usa 'es'
-* Logging: **SILENCIOSO**
+## 6) Plan de ejecución (reordenado)
 
-**F2. count: falta Intl.Segmenter (count.js)**
+### 6.0 Fase 0 — Solidificar cadena de mando (antes de logs)
 
-* Disparador: entorno sin Segmenter
-* Fallback: regex
-* Logging: **SILENCIOSO**
+Meta: reducir dispersión y alinear subsistemas a la regla uniforme.
 
-### Grupo G — Renderers específicos (renderer/editor/preset_modal/presets)
+Entregables:
+* Definir/centralizar DEFAULT_LANG (sin literales “es” dispersos como autoridad).
+* Garantizar existencia de SELECTED_LANG (primer arranque + runtime).
+* Implementar por subsistema:
+  - resolver bundle: `selected → base → default → fatal`
+  - resolver keys: `effective → default → hardcoded`
+* Colapsar defaults locales (renderer/editor/modal/presets) hacia la autoridad central.
 
-**G1. renderer: idiomaActual inicial 'es' (renderer.js)**
+### 6.1 Fase 1 — Logs (no silencios técnicos)
 
-* Disparador: arranque antes de settings / o settings faltante
-* Tipo: default transitorio o fallback (según impacto final)
-* Fallback: 'es'
-* Logging: **SILENCIOSO**
-
-**G2. renderer: post getSettings -> language faltante (renderer.js)**
-
-* Disparador: settingsCache.language falsy
-* Fallback: 'es'
-* Logging: **SILENCIOSO**
-
-**G3. renderer: settings-updated -> language faltante (renderer.js)**
-
-* Disparador: settingsCache.language falsy
-* Fallback: 'es'
-* Logging: **SILENCIOSO**
-
-**G4. editor: idiomaActual default 'es' / target 'es' en ensureEditorTranslations (editor.js)**
-
-* Disparador: settings.language faltante
-* Fallback: 'es'
-* Logging: **SILENCIOSO**
-
-**G5. preset_modal: default 'es' + getSettings failure (preset_modal.js)**
-
-* Disparador: getSettings falla (error real)
-* Fallback: mantiene idiomaActual
-* Logging: **OK** para el fallo (warnOnce)
-* Pero el default ‘es’ como fallback de idioma: **SILENCIOSO** (si se considera fallback y no solo default transitorio)
-
-**G6. presets.js: base-language fallback a 'es' (presets.js)**
-
-* Disparador: settings.language missing/invalid
-* Fallback: langBase 'es'
-* Logging: **SILENCIOSO**
-
-**G6b. presets.js: getSettings() falsy -> safe defaults (presets.js)**
-
-* Disparador: `electronAPI.getSettings()` retorna falsy (sin throw)
-* Fallback: usa `{ language: 'es', presets_by_language: {} }` u objeto seguro equivalente
-* Logging: **SILENCIOSO**
-* Nota: distinto de “language missing”: aquí falla/ausencia de settings completos.
-
-**G7. presets_main: fallbacks de textos de diálogos (“FALLBACK: …”)**
-
-* Disparador:
-  - faltan traducciones/dialog texts
-  - `settings.language` inválido/missing y se cae a `normalizeLangTag(settings.language) || lang`
-* Fallback: strings hardcodeadas y/o uso de `lang` como idioma efectivo
-* Logging: **SILENCIOSO**
-* Alta frecuencia baja (dialogs puntuales), pero igualmente no debería ser silencioso técnicamente.
-
-## 5) Plan de ejecución (Fase 1 logs)
-
-Tu propuesta: dividir fase 1 en (1A) agregar logs faltantes y (1B) evaluar/corregir logs existentes.
+Tu propuesta original se mantiene, pero solo después de Fase 0:
+1) agregar logs faltantes,
+2) evaluar/corregir logs existentes.
 
 Regla de operación:
 * Usar Codex para implementar cambios con cobertura y sin olvidos.
-* Después de cada operación: revisión humana + **actualizar este documento** (inventario OK/PARCIAL/SILENCIOSO).
+* Después de cada operación: revisión humana + actualizar este documento (estado Modelo + estado Logging).
 
-### 5.1 Fase 1A — Cobertura (agregar logs faltantes)
+### 6.2 Fase 2 — Notificaciones al usuario
 
-Cola por archivo (prioridad sugerida por impacto y “centralidad” del idioma):
+Se decide después de:
+* tener la cadena de mando estable,
+* y tener observabilidad técnica completa.
 
-1) `language_window.html`:
-* A2 (rama “available vacío/invalid sin throw”) y decidir si loguear también en A2 cuando se usa fallback por retorno inválido.
+Casos prioritarios (se mantienen):
+1) Usuario cierra ventana sin elegir idioma.
+2) Usuario elige idioma X pero queda idioma Y (requiere observar “requested X vs effective Y”).
 
-2) `settings.js`:
-* B2, B5, B6
-
-3) `menu_builder.js`:
-* C2, C3, C4/C5 (con control de ruido)
-
-4) `i18n.js`:
-* D2, D2b, D3, D4 (con control de ruido)
-
-5) `notify.js`:
-* D5 (con control de ruido)
-
-6) `format.js`:
-* E2
-
-7) `count.js`:
-* F1, F2
-
-8) `renderer.js`:
-* G1, G2, G3
-
-9) `editor.js`:
-* G4
-
-10) `preset_modal.js`:
-* G5 (solo lo “default es” si se decide tratarlo como fallback)
-
-11) `presets.js`:
-* G6, G6b
-
-12) `presets_main.js`:
-* G7
-
-### 5.2 Fase 1B — Calidad (corregir logs existentes)
-
-Revisar y corregir donde sea necesario:
-
-* Nivel correcto (warn vs error)
-* Uso consistente de `warnOnce`/`errorOnce` con key estable (evitar spam)
-* Mensajes con contexto mínimo: idioma solicitado, idioma aplicado, asset/ruta faltante, operación (IPC/menu/render)
-* Coherencia con política declarada en `electron_log.js` / `public_js_log.js`
-
-## 6) Dos casos de notificación al usuario prioritarios (Fase 2)
-
-1. **Usuario cierra ventana sin elegir idioma**: hoy cae en `applyFallbackLanguageIfUnset` y **sí loguea**; falta decidir mecanismo de notificación.
-2. **Usuario elige idioma X, pero queda idioma Y**: hoy esto no se detecta de forma explícita como “inconsistencia”. Se puede dar por:
-   * manifest ofrece tags que luego no tienen assets (renderer/menu) y el sistema cae a defaults sin avisar (mantiene idioma cargado o produce idioma base o default o ‘es’),
-   * normalización/validación mantiene idioma ya cargado o produce idioma base o default o ‘es’.
-
-Para notificar esto con rigor, primero necesitas que el sistema pueda **observar** “se solicitó X” vs “se aplicó realmente Y” (y que eso emita log/flag).
