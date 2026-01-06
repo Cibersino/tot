@@ -1,0 +1,12 @@
+[
+  { "tag": "es", "label": "Español" },
+  { "tag": "es-cl", "label": "Chileno" },
+  { "tag": "en", "label": "English" },
+  { "tag": "en-us", "label": "American English" },
+  { "tag": "en-gb", "label": "British English" },
+  { "tag": "fr", "label": "Français" },
+  { "tag": "de", "label": "Deutsch" },
+  { "tag": "zh", "label": "中文" },
+  { "tag": "ja", "label": "日本語" },
+  { "tag": "ru", "label": "Русский" }
+]
