@@ -4,8 +4,6 @@
 (() => {
   const log = window.getLogger('crono');
 
-  log.debug('[crono.js] module loaded');
-
   function formatCrono(ms) {
     const totalSeconds = Math.floor((ms || 0) / 1000);
     const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');

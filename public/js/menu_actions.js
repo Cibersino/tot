@@ -61,7 +61,10 @@
                 } else {
                     // Not all preload implementations return unsubscribe. We accept that.
                     _unsubscribeMenuClick = null;
-                    log.debug('menuActions: listener registered in electronAPI.onMenuClick (without unsubscribe)');
+                    log.warnOnce(
+                        'menu_actions:onMenuClick:no_unsubscribe',
+                        'menuActions: onMenuClick did not return unsubscribe; listener cannot be removed'
+                    );
                 }
                 return true;
             } catch (err) {
@@ -94,7 +97,10 @@
                 }
                 _unsubscribeMenuClick = null;
             } else {
-                log.debug('menuActions: unsubscribe unavailable (cannot unsubscribe)');
+                log.warnOnce(
+                    'menu_actions:stopListening:no_unsubscribe',
+                    'menuActions: stopListening cannot unsubscribe; no unsubscribe handle available'
+                );
             }
         },
 

@@ -2,9 +2,6 @@
 'use strict';
 
 (() => {
-  const log = window.getLogger('format');
-
-  log.debug('[format.js] module loaded');
 
   const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
   const getLangBase = (lang) => {

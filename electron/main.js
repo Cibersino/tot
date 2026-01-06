@@ -16,6 +16,7 @@
 // =============================================================================
 
 const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
+const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
 const { MAX_TEXT_CHARS, MAX_IPC_CHARS } = require('./constants_main');
@@ -35,6 +36,7 @@ const presetsMain = require('./presets_main');
 const updater = require('./updater');
 
 const log = Log.get('main');
+log.debug('Main process starting...');
 
 // =============================================================================
 // File locations (persistent user data)
@@ -46,6 +48,12 @@ const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
 // Language selection modal (first launch) assets
 const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
+// Fallback exists if the manifest is missing/corrupt so the picker still works.
+// Keep this list intentionally minimal to avoid drift and make fallback usage obvious.
+const FALLBACK_LANGUAGES = [
+  { tag: 'es', label: 'Español' },
+  { tag: 'en', label: 'English' },
+];
 
 // Ensure config directory exists before any module tries to read/write JSON.
 ensureConfigDir();
@@ -357,7 +365,7 @@ function createLanguageWindow() {
 
   langWin = new BrowserWindow({
     width: 420,
-    height: 220,
+    height: 360,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -873,6 +881,41 @@ function setCronoElapsed(ms) {
 // IPC (main-owned handlers that directly manipulate windows or crono)
 // =============================================================================
 
+// Language manifest loader for the language selection window.
+ipcMain.handle('get-available-languages', async () => {
+  const manifestPath = path.join(app.getAppPath(), 'i18n', 'languages.json');
+
+  try {
+    const raw = await fs.promises.readFile(manifestPath, 'utf8');
+    const parsed = JSON.parse(raw);
+
+    if (!Array.isArray(parsed)) {
+      log.warn('Language manifest invalid (expected array). Using fallback:', manifestPath);
+      return FALLBACK_LANGUAGES;
+    }
+
+    const filtered = parsed.reduce((acc, entry) => {
+      if (!entry || typeof entry !== 'object') return acc;
+      const tag = typeof entry.tag === 'string' ? entry.tag.trim() : '';
+      const label = typeof entry.label === 'string' ? entry.label.trim() : '';
+      if (!tag || !label) return acc;
+      acc.push({ tag, label });
+      return acc;
+    }, []);
+
+    if (!filtered.length) {
+      log.warn('Language manifest empty or invalid entries. Using fallback:', manifestPath);
+      return FALLBACK_LANGUAGES;
+    }
+
+    return filtered;
+  } catch (err) {
+    log.error('Error loading language manifest. Using fallback:', err);
+    return FALLBACK_LANGUAGES;
+  }
+});
+
+// Stopwatch (crono) IPC handlers
 ipcMain.handle('crono-get-state', () => {
   return getCronoState();
 });

@@ -4,8 +4,6 @@
 (() => {
   const log = window.getLogger('i18n');
 
-  log.debug('[i18n.js] module loaded');
-
   let rendererTranslations = null;
   let rendererTranslationsLang = null;
 

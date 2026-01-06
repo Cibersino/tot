@@ -17,7 +17,8 @@ tot-readingmeter/
 │ ├── cleanup/
 │ │ ├── _evidence/
 │ │ ├── cleanup_file_by_file.md
-│ │ └── naming_convention.md
+│ │ ├── naming_convention.md
+│ │ └── no_silence.md
 │ ├── bugs.md
 │ ├── ToDo.txt
 │ └── tree_folders_files.md
@@ -46,10 +47,11 @@ tot-readingmeter/
 │ │ ├── main.json
 │ │ ├── numberFormat.json
 │ │ └── renderer.json
-│ └── en/
-│   ├── main.json
-│   ├── numberFormat.json
-│   └── renderer.json
+│ ├── en/
+│ │ ├── main.json
+│ │ ├── numberFormat.json
+│ │ └── renderer.json
+│ └── languages.json
 ├── node_modules/                  # {varias carpetas y archivos} {carpeta ignorada por git}
 ├── public/
 │ ├── assets/

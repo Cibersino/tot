@@ -6,6 +6,8 @@
 
   const log = window.getLogger('preset-modal');
 
+  log.debug('Preset modal starting...');
+
   document.addEventListener('DOMContentLoaded', function () {
     // Selecting DOM elements
     const h3El = document.querySelector('h3');
