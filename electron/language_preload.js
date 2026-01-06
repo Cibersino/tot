@@ -11,5 +11,6 @@ contextBridge.exposeInMainWorld('languageAPI', {
     // Signal selection so main can continue startup
     ipcRenderer.send('language-selected', tag);
     return res;
-  }
+  },
+  getAvailableLanguages: () => ipcRenderer.invoke('get-available-languages'),
 });
