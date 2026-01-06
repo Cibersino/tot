@@ -71,18 +71,30 @@ Formato copy/paste (sin tabla). Marco:
 * Logging: **OK** (warn/warn/error según caso)
 * Visibilidad: **usuario sí** (lista reducida), **técnico en terminal**
 
+**A1b. Manifest sanitization (main.js / get-available-languages)**
+
+* Disparador: `languages.json` contiene algunas entradas inválidas (tag/label vacíos, tipos erróneos)
+* “Fallback”: se filtran/descartan entradas inválidas (degradación parcial; no cae al fallback total)
+* Logging: **SILENCIOSO**
+* Nota: decidir si se loguea (idealmente `warnOnce` con key estable por “manifest contains invalid entries”, sin spamear por entrada).
+
 **A2. Picker fallback (language_window.html / loadLanguages)**
 
-* Disparador: `getAvailableLanguages` no existe / lanza error / devuelve vacío; `loadLanguages()` falla
+* Disparador:
+  - `getAvailableLanguages` no existe / lanza error (IPC falla)  
+  - `loadLanguages()` lanza (ruta catch)
+  - `getAvailableLanguages` retorna vacío/valor inválido sin throw (degradación “normal” hacia fallback)
 * Fallback: `fallbackLanguages` (lista reducida)
-* Logging: **OK** (`log.error(...)`)
+* Logging: **PARCIAL**
+  - **OK** cuando hay throw: `log.error('Error getAvailableLanguages:', e)` / `log.error('Error loadLanguages:', e)`
+  - **SILENCIOSO** cuando `available` llega vacío/invalid sin throw y se cae al `else` (no hay log)
 * Visibilidad: **usuario sí**, **técnico en DevTools del picker**
 
 ### Grupo B — Estado de idioma en main/settings
 
 **B1. setCurrentLanguage inválido/vacío (main.js)**
 
-* Disparador: lang no-string / trim vacío
+* Disparador: lang no-string / trim vacío / normalización queda vacía
 * Fallback: fuerza `'es'`
 * Logging: **OK** (`warnOnce(...)`)
 * Visibilidad: usuario sí (menu en español), técnico en terminal
@@ -137,13 +149,21 @@ Formato copy/paste (sin tabla). Marco:
 * Logging: **PARCIAL** (puede haber fallback “requested -> base” sin log)
 * Requiere un log del tipo “asset missing; using fallback candidate”. Debe cuidarse el ruido (idealmente `warnOnce` por idioma/candidato).
 
-**C3. effectiveLang fallback a 'es' (menu_builder.js)**
+**C3. loadMainTranslations: lang inválido -> 'es' (menu_builder.js)**
 
-* Disparador: lang inválido
-* Fallback: usa `'es'`
+* Disparador: `normalizeLangTag(lang)` produce vacío al comenzar el chain
+* Fallback: el loader usa `'es'` como requested (antes de intentar candidates)
 * Logging: **SILENCIOSO**
+* Nota: distinto de “no existe archivo”: es lang inválido/malformado.
 
-**C4. Key missing -> hardcoded labels (menu_builder.js)**
+**C4. effectiveLang fallback a 'es' (menu_builder.js)**
+
+* Disparador: lang inválido al construir menú (capa “menu build”)
+* Fallback: usa `'es'` para lookup
+* Logging: **SILENCIOSO**
+* Nota: revisar si esto es redundante con C3 o si ocurre en distintos puntos del flujo.
+
+**C5. Key missing -> hardcoded labels (menu_builder.js)**
 
 * Disparador: falta clave en translations
 * Fallback: etiqueta hardcodeada
@@ -164,6 +184,13 @@ Formato copy/paste (sin tabla). Marco:
 * Fallback: intenta siguiente candidato; si ninguno, retorna null
 * Logging: **PARCIAL** (no log en “missing asset”)
 * Requiere un log del tipo “asset missing; using fallback candidate”, cuidando el ruido (idealmente `warnOnce` por idioma/candidato/ventana).
+
+**D2b. loadRendererTranslations: lang inválido -> 'es' (i18n.js)**
+
+* Disparador: `normalizeLangTag(lang)` produce vacío al iniciar carga
+* Fallback: usa `'es'` como requested/base para el chain
+* Logging: **SILENCIOSO**
+* Nota: es un fallback distinto del “missing asset”; apunta a input inválido.
 
 **D3. tRenderer fallback string (i18n.js)**
 
@@ -254,10 +281,19 @@ Formato copy/paste (sin tabla). Marco:
 * Fallback: langBase 'es'
 * Logging: **SILENCIOSO**
 
+**G6b. presets.js: getSettings() falsy -> safe defaults (presets.js)**
+
+* Disparador: `electronAPI.getSettings()` retorna falsy (sin throw)
+* Fallback: usa `{ language: 'es', presets_by_language: {} }` u objeto seguro equivalente
+* Logging: **SILENCIOSO**
+* Nota: distinto de “language missing”: aquí falla/ausencia de settings completos.
+
 **G7. presets_main: fallbacks de textos de diálogos (“FALLBACK: …”)**
 
-* Disparador: faltan traducciones/dialog texts
-* Fallback: strings hardcodeadas
+* Disparador:
+  - faltan traducciones/dialog texts
+  - `settings.language` inválido/missing y se cae a `normalizeLangTag(settings.language) || lang`
+* Fallback: strings hardcodeadas y/o uso de `lang` como idioma efectivo
 * Logging: **SILENCIOSO**
 * Alta frecuencia baja (dialogs puntuales), pero igualmente no debería ser silencioso técnicamente.
 
@@ -273,37 +309,40 @@ Regla de operación:
 
 Cola por archivo (prioridad sugerida por impacto y “centralidad” del idioma):
 
-1) `settings.js`:
+1) `language_window.html`:
+* A2 (rama “available vacío/invalid sin throw”) y decidir si loguear también en A2 cuando se usa fallback por retorno inválido.
+
+2) `settings.js`:
 * B2, B5, B6
 
-2) `menu_builder.js`:
-* C2, C3, C4 (con control de ruido)
+3) `menu_builder.js`:
+* C2, C3, C4/C5 (con control de ruido)
 
-3) `i18n.js`:
-* D2, D3, D4 (con control de ruido)
+4) `i18n.js`:
+* D2, D2b, D3, D4 (con control de ruido)
 
-4) `notify.js`:
+5) `notify.js`:
 * D5 (con control de ruido)
 
-5) `format.js`:
+6) `format.js`:
 * E2
 
-6) `count.js`:
+7) `count.js`:
 * F1, F2
 
-7) `renderer.js`:
+8) `renderer.js`:
 * G1, G2, G3
 
-8) `editor.js`:
+9) `editor.js`:
 * G4
 
-9) `preset_modal.js`:
+10) `preset_modal.js`:
 * G5 (solo lo “default es” si se decide tratarlo como fallback)
 
-10) `presets.js`:
-* G6
+11) `presets.js`:
+* G6, G6b
 
-11) `presets_main.js`:
+12) `presets_main.js`:
 * G7
 
 ### 5.2 Fase 1B — Calidad (corregir logs existentes)
