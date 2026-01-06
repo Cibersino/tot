@@ -48,6 +48,8 @@ const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
 // Language selection modal (first launch) assets
 const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
+// Fallback exists if the manifest is missing/corrupt so the picker still works.
+// Keep this list intentionally minimal to avoid drift and make fallback usage obvious.
 const FALLBACK_LANGUAGES = [
   { tag: 'es', label: 'Español' },
   { tag: 'en', label: 'English' },
@@ -884,7 +886,7 @@ ipcMain.handle('get-available-languages', async () => {
   const manifestPath = path.join(app.getAppPath(), 'i18n', 'languages.json');
 
   try {
-    const raw = fs.readFileSync(manifestPath, 'utf8');
+    const raw = await fs.promises.readFile(manifestPath, 'utf8');
     const parsed = JSON.parse(raw);
 
     if (!Array.isArray(parsed)) {
@@ -965,7 +967,7 @@ ipcMain.handle('flotante-open', async () => {
 ipcMain.handle('flotante-close', () => {
   try {
     const win = flotanteWin;
-    
+
     if (win && !win.isDestroyed()) {
       // IMPORTANT: do not set flotanteWin = null here.
       // The 'closed' handler is responsible for clearing the reference.

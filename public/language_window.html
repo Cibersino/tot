@@ -162,6 +162,7 @@
     const langList = document.getElementById('langList');
     const statusLine = document.getElementById('statusLine');
 
+    // Local fallback duplicates the manifest list in case IPC fails.
     const fallbackLanguages = [
       { tag: 'es', label: 'Español' },
       { tag: 'en', label: 'English' },
@@ -342,7 +343,16 @@
       renderList();
     };
 
-    loadLanguages();
+    (async () => {
+      try {
+        await loadLanguages();
+      } catch (e) {
+        log.error('Error loadLanguages:', e);
+        languages = fallbackLanguages.slice();
+        filteredLanguages = languages.slice();
+        renderList();
+      }
+    })();
     // Note: If the user closes the window without selecting anything, main applies fallback only if settings.language is empty.
   </script>
 </body>
