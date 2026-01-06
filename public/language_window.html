@@ -162,13 +162,13 @@
     const langList = document.getElementById('langList');
     const statusLine = document.getElementById('statusLine');
 
-    const languages = [
+    const fallbackLanguages = [
       { tag: 'es', label: 'Español' },
-      { tag: 'es-cl', label: 'Chileno' },
       { tag: 'en', label: 'English' },
     ];
 
-    let filteredLanguages = languages.slice();
+    let languages = [];
+    let filteredLanguages = [];
     let focusedIndex = -1;
     let isBusy = false;
 
@@ -319,7 +319,30 @@
       }
     });
 
-    renderList();
+    const loadLanguages = async () => {
+      let available = [];
+
+      try {
+        if (window.languageAPI && typeof window.languageAPI.getAvailableLanguages === 'function') {
+          available = await window.languageAPI.getAvailableLanguages();
+        } else {
+          throw new Error('getAvailableLanguages unavailable');
+        }
+      } catch (e) {
+        log.error('Error getAvailableLanguages:', e);
+      }
+
+      if (Array.isArray(available) && available.length) {
+        languages = available;
+      } else {
+        languages = fallbackLanguages.slice();
+      }
+
+      filteredLanguages = languages.slice();
+      renderList();
+    };
+
+    loadLanguages();
     // Note: If the user closes the window without selecting anything, main applies fallback only if settings.language is empty.
   </script>
 </body>

@@ -46,10 +46,11 @@ tot-readingmeter/
 │ │ ├── main.json
 │ │ ├── numberFormat.json
 │ │ └── renderer.json
-│ └── en/
-│   ├── main.json
-│   ├── numberFormat.json
-│   └── renderer.json
+│ ├── en/
+│ │ ├── main.json
+│ │ ├── numberFormat.json
+│ │ └── renderer.json
+│ └── languages.json
 ├── node_modules/                  # {varias carpetas y archivos} {carpeta ignorada por git}
 ├── public/
 │ ├── assets/

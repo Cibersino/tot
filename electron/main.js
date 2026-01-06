@@ -16,6 +16,7 @@
 // =============================================================================
 
 const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
+const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
 const { MAX_TEXT_CHARS, MAX_IPC_CHARS } = require('./constants_main');
@@ -47,6 +48,10 @@ const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
 // Language selection modal (first launch) assets
 const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
+const FALLBACK_LANGUAGES = [
+  { tag: 'es', label: 'Español' },
+  { tag: 'en', label: 'English' },
+];
 
 // Ensure config directory exists before any module tries to read/write JSON.
 ensureConfigDir();
@@ -874,6 +879,41 @@ function setCronoElapsed(ms) {
 // IPC (main-owned handlers that directly manipulate windows or crono)
 // =============================================================================
 
+// Language manifest loader for the language selection window.
+ipcMain.handle('get-available-languages', async () => {
+  const manifestPath = path.join(app.getAppPath(), 'i18n', 'languages.json');
+
+  try {
+    const raw = fs.readFileSync(manifestPath, 'utf8');
+    const parsed = JSON.parse(raw);
+
+    if (!Array.isArray(parsed)) {
+      log.warn('Language manifest invalid (expected array). Using fallback:', manifestPath);
+      return FALLBACK_LANGUAGES;
+    }
+
+    const filtered = parsed.reduce((acc, entry) => {
+      if (!entry || typeof entry !== 'object') return acc;
+      const tag = typeof entry.tag === 'string' ? entry.tag.trim() : '';
+      const label = typeof entry.label === 'string' ? entry.label.trim() : '';
+      if (!tag || !label) return acc;
+      acc.push({ tag, label });
+      return acc;
+    }, []);
+
+    if (!filtered.length) {
+      log.warn('Language manifest empty or invalid entries. Using fallback:', manifestPath);
+      return FALLBACK_LANGUAGES;
+    }
+
+    return filtered;
+  } catch (err) {
+    log.error('Error loading language manifest. Using fallback:', err);
+    return FALLBACK_LANGUAGES;
+  }
+});
+
+// Stopwatch (crono) IPC handlers
 ipcMain.handle('crono-get-state', () => {
   return getCronoState();
 });
@@ -925,7 +965,7 @@ ipcMain.handle('flotante-open', async () => {
 ipcMain.handle('flotante-close', () => {
   try {
     const win = flotanteWin;
-
+    
     if (win && !win.isDestroyed()) {
       // IMPORTANT: do not set flotanteWin = null here.
       // The 'closed' handler is responsible for clearing the reference.
