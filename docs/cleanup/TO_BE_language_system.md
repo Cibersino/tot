@@ -20,6 +20,7 @@ Este contrato define el comportamiento deseado (TO-BE) para:
    - defaults por idioma,
    - persistencia de “preset seleccionado” por idioma,
    - refresh y canales de evento asociados.
+6. `modeConteo` en lo que afecta **representación dependiente de idioma** (sin acoplar presets).
 
 **Fuera de alcance:**
 - Cronómetro/flotante como feature en sí (salvo si muestra strings/formatos dependientes de idioma).
@@ -30,13 +31,14 @@ Este contrato define el comportamiento deseado (TO-BE) para:
 
 ## 2) Objetivo de alto nivel
 
-Garantizar que **toda decisión dependiente de idioma** (strings, formato numérico, presets por idioma, selección de preset por idioma) responda a un **contrato uniforme**, con:
+Garantizar que **toda decisión dependiente de idioma** (strings, formato numérico, presets por idioma, selección de preset por idioma, representación de resultados) responda a un **contrato uniforme**, con:
 
-- una cadena de mando clara (DEFAULT vs SELECTED),
+- cadena de mando clara (DEFAULT vs SELECTED),
 - una clave canónica única para indexación por idioma (`langKey`),
 - reglas consistentes para carga de bundles y lookup de keys (Regla A / Regla B),
 - propagación runtime verificable (sin “push fantasma”),
-- ausencia de “silencios técnicos” en fallbacks relevantes.
+- ausencia de “silencios técnicos” en fallbacks relevantes,
+- persistencia compatible con el comportamiento actual (sin pérdida de datos del usuario).
 
 ---
 
@@ -61,7 +63,7 @@ Garantizar que **toda decisión dependiente de idioma** (strings, formato numér
   Clave única usada para indexación “por idioma” en settings y recursos (equivalente funcional de `langBase` actual, pero el nombre y la implementación pueden cambiar).  
   **Regla:** `langKey` se deriva por una función única y centralizada; ningún subsistema recomputa su propia variante.
 
-> Nota: El contrato permite que `langKey` sea equivalente a “base(tag)” hoy, pero no obliga a conservar el nombre `langBase`. Lo que se exige es **equivalencia funcional** y **centralización**.
+> Nota: El contrato permite que `langKey` sea equivalente a “base(tag)” hoy, pero no obliga a conservar el nombre `langBase`. Lo que se exige es **equivalencia funcional**, **centralización** y **compatibilidad con datos persistidos existentes** (sección 4.4).
 
 ---
 
@@ -76,7 +78,49 @@ Garantizar que **toda decisión dependiente de idioma** (strings, formato numér
 - Runtime: si el usuario intenta setear un idioma inválido, `SELECTED_LANG` no se degrada a vacío; se mantiene el valor anterior o se aplica un fallback controlado (sin silencios técnicos).
 
 ### 4.3 Derivación única de `langKey`
-- Toda indexación por idioma (presets, formato numérico, etc.) usa `langKey` derivado de SELECTED_LANG mediante una función/contrato único.
+- Toda indexación por idioma (presets, formato numérico, selección de preset, etc.) usa `langKey` derivado de SELECTED_LANG mediante una función/contrato único.
+
+### 4.4 Persistencia y rol de `config/*.json` (mantener AS-IS adaptado)
+
+#### 4.4.1 Raíz de persistencia (carpeta `config/`)
+- La persistencia de la app vive en archivos JSON bajo una carpeta de configuración (p.ej. `config/`).
+- Este contrato trata la persistencia de idioma **como parte del archivo de settings del usuario** (p.ej. `user_settings.json`), sin imponer cambios de arquitectura en el resto de archivos JSON.
+
+#### 4.4.2 Autoridad y “default transitorio” vs “persistencia”
+- Los valores default usados para arrancar UI antes de leer settings son **transitorios** (no autoritativos).
+- Un fallback que forme parte del contrato (p.ej. “si no hay idioma persistido, persistir DEFAULT”) **sí** debe materializarse en el archivo de settings para eliminar ambigüedad futura (SELECTED_LANG nunca vacío).
+- “DEFAULT_LANG” es una garantía del build (no depende de config). El config solo persiste el **SELECTED_LANG** del usuario.
+
+#### 4.4.3 Claves de settings que participan en el subsistema de idioma
+Para mantener el comportamiento actual, el contrato exige preservar (o migrar sin pérdida) las claves existentes que modelan:
+
+- **Idioma seleccionado**
+  - Una clave persistida para `SELECTED_LANG` (tag) en el archivo de settings.
+  - La normalización/validación se aplica al leer/escribir; el valor persistido no debe quedar vacío.
+
+- **Indexación por idioma (colecciones y selecciones por idioma)**
+  - Presets de usuario por `langKey`.
+  - Defaults por `langKey` (aunque su fuente pueda no vivir en settings; su *selección* sí depende de idioma).
+  - Preset seleccionado por `langKey` (persistido por idioma).
+  - Cualquier lista “disabled_default_presets” (si existe en el comportamiento actual) también por `langKey`.
+
+- **Formato numérico**
+  - `numberFormatting` (o estructura equivalente) indexada por `langKey`.
+
+- **`modeConteo`**
+  - Persistido en settings como una preferencia independiente del idioma, pero su representación (números/strings) debe respetar el idioma vigente.
+
+> Regla: el contrato fija **semántica**. El nombre exacto de cada clave puede mantenerse tal cual exista hoy. Si una clave cambia de nombre/estructura, debe existir migración (sección 4.4.4) sin pérdida de datos.
+
+#### 4.4.4 Compatibilidad hacia atrás y migración de datos (obligatorio si cambia `langKey`/esquema)
+- La adopción de `langKey` centralizado no puede “desconectar” datos persistidos existentes indexados por el esquema anterior.
+- Para mantener el comportamiento actual:
+  - O bien `langKey` produce exactamente las mismas claves que el esquema actual para los idiomas existentes del usuario,
+  - O bien se implementa una migración determinista que re-mapea los buckets por idioma al nuevo `langKey` (presets, selección, disabled, numberFormatting).
+- Lectura robusta:
+  - claves ausentes se inicializan explícitamente con defaults coherentes,
+  - claves desconocidas no se destruyen (preservación forward-compat),
+  - normalización de tipos/shape al cargar settings es obligatoria para evitar “estado medio válido” silencioso.
 
 ---
 
@@ -87,13 +131,13 @@ Para cada subsistema de traducción (p.ej., menú, renderer principal, editor, m
 
 1) Cargar **bundle DEFAULT** (obligatorio).  
 2) Intentar bundle **SELECTED**; si no existe/fracasa, intentar **equivalente base** del seleccionado (vía la lógica centralizada); si falla, usar overlay vacío.  
-3) Producir un **bundle efectivo** (por merge o por doble lookup), que mantenga la prioridad:
+3) Establecer un mecanismo de resolución efectivo (por merge/overlay o por doble lookup centralizado) que mantenga la prioridad:
    - overlay (selected/base) sobre default.
 
 ### 5.2 Regla B — Lookup de keys (por subsistema)
 Para resolver una key:
 
-1) Buscar key en el bundle efectivo (selected/base sobre default).  
+1) Buscar key en el mecanismo efectivo (selected/base sobre default).  
 2) Si falta incluso ahí, usar fallback hardcoded (último recurso).
 
 **Invariante:** una key faltante en selected/base **no** debe producir hardcoded si esa key existe en DEFAULT.
@@ -105,7 +149,7 @@ Para resolver una key:
 ### 6.1 Semántica de actualización
 Ante cualquier cambio de settings que afecte idioma (p.ej. cambio de SELECTED_LANG):
 
-- settings se actualiza/persiste,
+- settings se actualiza/persiste (archivo de settings en `config/`),
 - se emite un evento de actualización (p.ej., `settings-updated`),
 - y las ventanas relevantes deben **estar suscritas** para ejecutar su rutina de “aplicar settings”.
 
@@ -141,17 +185,18 @@ Cuando una ventana aplica idioma (por startup o update):
 
 ---
 
-## 8) Presets — contrato TO-BE cerrado
+## 8) Presets — contrato TO-BE cerrado (mantener AS-IS adaptado)
 
-### 8.1 Presets de usuario por idioma (mantener AS-IS adaptado)
-- Los presets de usuario se almacenan/organizan por `langKey`.
+### 8.1 Presets de usuario por idioma
+- Los presets de usuario se almacenan/organizan por `langKey` (persistencia en settings).
 - Cambiar idioma cambia el conjunto de presets de usuario visibles/operativos para esa ventana.
 
-### 8.2 Defaults por idioma (mantener AS-IS adaptado)
+### 8.2 Defaults por idioma
 - Los “default presets” se obtienen por idioma (`langKey`) y constituyen el baseline por idioma.
+- Si existe una estructura de “defaults deshabilitados” persistida (AS-IS), debe permanecer indexada por `langKey`.
 
-### 8.3 Preset seleccionado por idioma (mantener AS-IS adaptado)
-- El “preset seleccionado” se persiste por `langKey`.
+### 8.3 Preset seleccionado por idioma
+- El “preset seleccionado” se persiste por `langKey` en el archivo de settings, manteniendo el comportamiento actual.
 - Cambiar idioma cambia el preset activo al correspondiente a ese `langKey`.
 
 ### 8.4 Refresh y eventos
@@ -187,7 +232,7 @@ Cuando una ventana aplica idioma (por startup o update):
 
 Se considera “cumplido” el contrato cuando, como mínimo:
 
-1) **SELECTED_LANG nunca queda vacío** (primer arranque y runtime).
+1) **SELECTED_LANG nunca queda vacío** (primer arranque y runtime) y queda persistido en settings.
 2) Cambiar idioma en runtime actualiza **sin reinicio**:
    - menú,
    - UI principal,
@@ -199,24 +244,27 @@ Se considera “cumplido” el contrato cuando, como mínimo:
    - separadores correctos por idioma,
    - sin divergencias entre ventanas.
 5) Presets:
-   - listas por idioma (`langKey`),
+   - listas por idioma (`langKey`) sin pérdida de datos previos,
    - defaults por idioma,
    - preset seleccionado por idioma persistente,
    - refresh correcto ante crear/editar/borrar/restaurar, sin estado inválido silencioso.
 6) `modeConteo`:
    - no altera el modelo de presets,
    - recalcula resultados; el render respeta formato vigente del idioma.
+7) Compatibilidad de persistencia:
+   - ningún cambio de `langKey`/esquema rompe presets existentes, selecciones existentes o `numberFormatting` ya guardado.
 
 ---
 
 ## 12) Secuencia recomendada de implementación (gates conceptuales, no código)
 
-1) **Mapa AS-IS** completo y evidenciado (ya existente como artefacto de apoyo).
+1) **Mapa AS-IS** completo y evidenciado (artefacto de apoyo).
 2) **Autoridad única**: eliminar estados paralelos de idioma; settings manda.
-3) **Transporte runtime**: garantizar suscripción y reaplicación consistente en ventanas.
-4) **Strings**: aplicar Regla A/B uniformemente en proveedores (menú + renderer + modales).
-5) **Formato numérico**: fuente única + fallback coherente sin silencios técnicos.
-6) **Presets por idioma**: adaptar al nuevo modelo (`langKey` central), mantener comportamiento actual.
-7) **Purga legacy**: remover cadenas/duplicaciones/fallbacks que queden obsoletos.
+3) **Persistencia compatible**: asegurar que `langKey` centralizado no rompe buckets existentes (o migración).
+4) **Transporte runtime**: garantizar suscripción y reaplicación consistente en ventanas.
+5) **Strings**: aplicar Regla A/B uniformemente en proveedores (menú + renderer + modales).
+6) **Formato numérico**: fuente única + fallback coherente sin silencios técnicos.
+7) **Presets por idioma**: adaptar al nuevo modelo (`langKey` central), mantener comportamiento actual.
+8) **Purga legacy**: remover cadenas/duplicaciones/fallbacks que queden obsoletos.
 
 ---
