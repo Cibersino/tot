@@ -1,5 +1,38 @@
 # Mapa AS-IS consolidado (lo que HAY HOY)
 
+**Baseline / snapshot:** este mapa describe el estado AS-IS evidenciado **antes** de implementar Gate A (Autoridad única en main + `langKey` canónico en settings).  
+Para trabajar sobre el estado **post-Gate A** sin rehacer el mapa, usa el addendum siguiente como “delta” gate-relevante.
+
+## ADDENDUM — Delta Gate A (post-implementación; sin re-mapear)
+
+Cambios gate-relevantes confirmados por los parches aplicados:
+
+1) **Se elimina la autoridad paralela en main (`currentLanguage` / `setCurrentLanguage`).**
+   - Menú: el idioma efectivo se resuelve desde settings (SELECTED_LANG) vía un helper tipo `getSelectedLanguage()` en `electron/main.js`.
+   - Updater: `currentLanguageRef` pasa a consultar settings (p. ej. `currentLanguageRef: () => getSelectedLanguage()`), no un state local.
+   - Implicación para este mapa: las aristas **(9), (10), (22), (40), (41)** quedan como **baseline pre-Gate A** y no describen el estado actual.
+
+   Localizador operativo (post-Gate A, por búsqueda):
+   - `electron/main.js`: buscar `function getSelectedLanguage` y el llamado `buildAppMenu()` sin `currentLanguage`.
+   - `electron/main.js`: buscar `updater.registerIpc` y `currentLanguageRef`.
+   - `electron/settings.js`: buscar `registerIpc(` y verificar que ya no recibe `setCurrentLanguage`.
+
+2) **`langKey` canónico centralizado en settings.**
+   - Se introduce `deriveLangKey(langTag)` (equivalente funcional del `langBase` previo) como derivación única.
+   - Se usa para indexación de buckets por idioma (p. ej. `numberFormatting[...]`, `presets_by_language[...]`).
+
+   Localizador operativo:
+   - `electron/settings.js`: buscar `deriveLangKey` y usos en `ensureNumberFormatting...` y `normalizeSettings`.
+
+3) **Invariante TO-BE 4.2 reforzado en IPC `set-language`: no degrada a vacío.**
+   - Si `normalizeLangTag(tag)` produce `''` (inválido/vacío), se **loguea** (warnOnce) pero **no** se persiste `settings.language = ''` (se conserva el valor previo).
+   - Esto elimina la degradación de SELECTED_LANG a vacío en runtime.
+
+   Localizador operativo:
+   - `electron/settings.js`: buscar `ipcMain.handle('set-language'` y el patrón `if (chosen) { settings.language = chosen; ... saveSettings ... }`.
+
+---
+
 Convencion:
 **N) [Actor] VALOR: ORIGEN -> OPERACION -> DESTINO**
 Cada arista incluye su **localizador** (archivo + rango de lineas).

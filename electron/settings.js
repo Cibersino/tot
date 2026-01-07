@@ -455,9 +455,10 @@ function registerIpc(
       }
 
       let settings = getSettings();
-      settings.language = chosen;
-
-      settings = saveSettings(settings);
+      if (chosen) {
+        settings.language = chosen;
+        settings = saveSettings(settings);
+      }
 
       const menuLang = settings.language || 'es';
 

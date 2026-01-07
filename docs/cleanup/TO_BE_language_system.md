@@ -268,3 +268,11 @@ Se considera “cumplido” el contrato cuando, como mínimo:
 8) **Purga legacy**: remover cadenas/duplicaciones/fallbacks que queden obsoletos.
 
 ---
+
+### 12.1 Estado de implementación (registro mínimo; no modifica el contrato)
+
+- **2026-01-07 — Gate A completado (gates 2 y 3):**
+  - (2) **Autoridad única:** removido estado paralelo de idioma en main; menú/updater resuelven idioma desde settings (SELECTED_LANG).
+  - (3) **Persistencia compatible / `langKey`:** derivación única centralizada (`deriveLangKey`) equivalente funcional del esquema previo; sin migración ni cambio de buckets.
+  - Invariante 4.2 reforzado: `set-language` inválido/vacío **no** degrada SELECTED_LANG a `''` (se conserva el valor previo; se loguea warnOnce).
+- Siguiente: **Gate 4 (Transporte runtime)**: suscripción + reaplicación consistente en ventanas relevantes.
