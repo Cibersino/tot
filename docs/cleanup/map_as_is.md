@@ -45,7 +45,7 @@ Cada arista incluye su **localizador** (archivo + rango de lineas).
     Localizador: `electron/main.js:L356-L389`.
 
 13. **[langWin preload -> main] `get-available-languages`**: `ipcRenderer.invoke('get-available-languages')` -> **send** -> `ipcMain.handle('get-available-languages')`
-    Localizador: `electron/language_preload.js:L15-L15` + `electron/main.js:L885-L916`.
+    Localizador: `electron/language_preload.js:L6-L16` + `electron/main.js:L885-L916`.
 
 14. **[main] manifest idiomas**: `i18n/languages.json` -> **loadResource** -> `availableLanguages`
     Localizador: `electron/main.js:L886-L911`.
@@ -60,7 +60,7 @@ Cada arista incluye su **localizador** (archivo + rango de lineas).
     Localizador: `public/language_window.html:L252-L258`.
 
 18. **[langWin preload -> main] `set-language`**: `ipcRenderer.invoke('set-language', tag)` -> **send** -> `ipcMain.handle('set-language')`
-    Localizador: `electron/language_preload.js:L7-L10` + `electron/settings.js:L430-L486`.
+    Localizador: `electron/language_preload.js:L6-L16` + `electron/settings.js:L430-L486`.
 
 19. **[main/settings] `chosen`**: `tag` -> **normalize** -> `chosen`
     Localizador: `electron/settings.js:L432-L435`.
@@ -78,7 +78,7 @@ Cada arista incluye su **localizador** (archivo + rango de lineas).
     Localizador: `electron/settings.js:L448-L452` + `electron/main.js:L99-L105`.
 
 24. **[langWin preload -> main] `language-selected`**: `ipcRenderer.send('language-selected', tag)` -> **send** -> `ipcMain.once('language-selected', ...)`
-    Localizador: `electron/language_preload.js:L11-L12` + `electron/main.js:L1126-L1136`.
+    Localizador: `electron/language_preload.js:L6-L16` + `electron/main.js:L1126-L1136`.
 
 25. **[main] `language-selected`**: evento -> **receive** -> `createMainWindow(); close langWin`
     Localizador: `electron/main.js:L1126-L1136`.
@@ -118,7 +118,7 @@ Cada arista incluye su **localizador** (archivo + rango de lineas).
     Localizador: `public/language_window.html:L252-L258`.
 
 36. **[langWin preload -> main] `set-language`**: `ipcRenderer.invoke('set-language', tag)` -> **send** -> `ipcMain.handle('set-language')`
-    Localizador: `electron/language_preload.js:L7-L10` + `electron/settings.js:L430-L486`.
+    Localizador: `electron/language_preload.js:L6-L16` + `electron/settings.js:L430-L486`.
 
 37. **[main/settings] `chosen`**: `tag` -> **normalize** -> `chosen`
     Localizador: `electron/settings.js:L432-L435`.
@@ -255,10 +255,13 @@ Cada arista incluye su **localizador** (archivo + rango de lineas).
 75. **[renderer/presets] `userPresets`**: `settings.presets_by_language[langBase]` -> **assign** -> `userPresets`
     Localizador: `public/js/presets.js:L17-L19`.
 
-76. **[renderer/presets -> main] `get-default-presets`**: `ipcRenderer.invoke('get-default-presets')` -> **send** -> `ipcMain.handle('get-default-presets')`
-    Localizador: `public/js/presets.js:L76-L78` + `electron/preload.js:L32-L33` + `electron/presets_main.js:L188-L210`.
+76. **[renderer/presets] `electronAPI.getDefaultPresets()`**: `window.electronAPI.getDefaultPresets()` -> **apply** -> `defaults`
+    Localizador: `public/js/presets.js:L75-L78`.
 
-77. **[renderer/presets] `finalList`**: (`settings`, `defaults`) -> **derive** -> `finalList`
+77. **[preload -> main] `get-default-presets`**: `ipcRenderer.invoke('get-default-presets')` -> **send** -> `ipcMain.handle('get-default-presets')`
+    Localizador: `electron/preload.js:L32-L33` + `electron/presets_main.js:L188-L210`.
+
+78. **[renderer/presets] `finalList`**: (`settings`, `defaults`) -> **derive** -> `finalList`
     Localizador: `public/js/presets.js:L15-L38` + `public/js/presets.js:L82-L83`.
 
 ---
@@ -267,139 +270,145 @@ Cada arista incluye su **localizador** (archivo + rango de lineas).
 
 ### 4.1 Menu (electron/menu_builder.js)
 
-78. **[menu_builder] `requested`**: input `lang` -> **normalize** -> `requested`
+79. **[menu_builder] `requested`**: input `lang` -> **normalize** -> `requested`
     Localizador: `electron/menu_builder.js:L70-L72`.
 
-79. **[menu_builder] `base`**: `requested` -> **derive** -> `base`
+80. **[menu_builder] `base`**: `requested` -> **derive** -> `base`
     Localizador: `electron/menu_builder.js:L71-L72`.
 
-80. **[menu_builder] candidates**: `[requested] (+ base si distinto) (+ 'es' si no esta)` -> **assign** -> `candidates[]`
+81. **[menu_builder] candidates**: `[requested] (+ base si distinto) (+ 'es' si no esta)` -> **assign** -> `candidates[]`
     Localizador: `electron/menu_builder.js:L74-L78`.
 
-81. **[menu_builder] paths por candidato**: `candidate` -> **derive** -> `files[]` (orden)
+82. **[menu_builder] paths por candidato**: `candidate` -> **derive** -> `files[]` (orden)
     Localizador: `electron/menu_builder.js:L82-L86`.
 
-82. **[menu_builder] carga**: `files[]` -> **loadResource** -> `translations` (primer JSON valido gana)
+83. **[menu_builder] carga**: `files[]` -> **loadResource** -> `translations` (primer JSON valido gana)
     Localizador: `electron/menu_builder.js:L88-L106`.
 
 ### 4.2 Renderer UI strings (public/js/i18n.js)
 
-83. **[renderer i18n] `requested`**: input `lang` -> **normalize** -> `requested`
+84. **[renderer i18n] `requested`**: input `lang` -> **normalize** -> `requested`
     Localizador: `public/js/i18n.js:L18-L20`.
 
-84. **[renderer i18n] `base`**: `requested` -> **derive** -> `base`
+85. **[renderer i18n] `base`**: `requested` -> **derive** -> `base`
     Localizador: `public/js/i18n.js:L21-L21`.
 
-85. **[renderer i18n] candidates**: `[requested] (+ base si distinto) (+ 'es' si no esta)` -> **assign** -> `candidates[]`
+86. **[renderer i18n] candidates**: `[requested] (+ base si distinto) (+ 'es' si no esta)` -> **assign** -> `candidates[]`
     Localizador: `public/js/i18n.js:L22-L25`.
 
-86. **[renderer i18n] paths por candidato**: `target` -> **derive** -> `paths[]` (orden)
+87. **[renderer i18n] paths por candidato**: `target` -> **derive** -> `paths[]` (orden)
     Localizador: `public/js/i18n.js:L29-L33`.
 
-87. **[renderer i18n] carga**: `fetch(path)` -> **loadResource** -> `rendererTranslations` (primer JSON valido gana)
+88. **[renderer i18n] carga**: `fetch(path)` -> **loadResource** -> `rendererTranslations` (primer JSON valido gana)
     Localizador: `public/js/i18n.js:L34-L42`.
 
 ---
 
 ## SECTION 5 - Numeric formatting (AS-IS)
 
-88. **[mainWin renderer] obtenerSeparadoresDeNumeros**: `idiomaActual` -> **apply** -> `obtenerSeparadoresDeNumeros(idiomaActual, settingsCache)`
+89. **[mainWin renderer] obtenerSeparadoresDeNumeros**: `idiomaActual` -> **apply** -> `obtenerSeparadoresDeNumeros(idiomaActual, settingsCache)`
     Localizador: `public/renderer.js:L242-L249`.
 
-89. **[renderer/format] `langTag`**: input `idioma` -> **normalize** -> `langTag`
+90. **[renderer/format] `langTag`**: input `idioma` -> **normalize** -> `langTag`
     Localizador: `public/js/format.js:L29-L31`.
 
-90. **[renderer/format] `langBase`**: `langTag` -> **derive** -> `langBase`
+91. **[renderer/format] `langBase`**: `langTag` -> **derive** -> `langBase`
     Localizador: `public/js/format.js:L31-L31`.
 
-91. **[renderer/format] `nf`**: `settings.numberFormatting` -> **read** -> `nf`
+92. **[renderer/format] `nf`**: `settings.numberFormatting` -> **read** -> `nf`
     Localizador: `public/js/format.js:L32-L32`.
 
-92. **[renderer/format] rama A (existe)**: `nf[langBase]` -> **apply** -> `nf[langBase]`
+93. **[renderer/format] rama A (existe)**: `nf[langBase]` -> **apply** -> `nf[langBase]`
     Localizador: `public/js/format.js:L33-L33`.
 
-93. **[renderer/format] rama B (no existe)**: hardcoded `{ separadorMiles: '.', separadorDecimal: ',' }` -> **apply** -> `{ separadorMiles: '.', separadorDecimal: ',' }`
+94. **[renderer/format] rama B (no existe)**: hardcoded `{ separadorMiles: '.', separadorDecimal: ',' }` -> **apply** -> `{ separadorMiles: '.', separadorDecimal: ',' }`
     Localizador: `public/js/format.js:L35-L35`.
 
 ---
 
 ## SECTION 6 - Multi-window semantics (AS-IS): push vs pull
 
-94. **[main/settings] `settings-updated` (SEND #1)**: `settings` -> **send** -> `mainWin.webContents.send('settings-updated', settings)`
+95. **[main/settings] `settings-updated` (SEND #1)**: `settings` -> **send** -> `mainWin.webContents.send('settings-updated', settings)`
     Localizador: `electron/settings.js:L346-L352`.
 
-95. **[main/presets] `settings-updated` (SEND #2)**: `settings` -> **send** -> `mainWin.webContents.send('settings-updated', settings)`
+96. **[main/presets] `settings-updated` (SEND #2)**: `settings` -> **send** -> `mainWin.webContents.send('settings-updated', settings)`
     Localizador: `electron/presets_main.js:L138-L148`.
 
-96. **[mainWin preload] `settings-updated` listener**: `'settings-updated'` -> **receive** -> `ipcRenderer.on('settings-updated', listener)`
-    Localizador: `electron/preload.js:L66-L70`.
+97. **[mainWin preload] `settings-updated` listener**: `'settings-updated'` -> **receive** -> `ipcRenderer.on('settings-updated', listener)`
+    Localizador: `electron/preload.js:L66-L73`.
 
-97. **[mainWin renderer] apply settings-updated**: `newSettings` -> **apply** -> `settingsChangeHandler(newSettings)`
+98. **[mainWin renderer] `onSettingsChanged`**: `window.electronAPI.onSettingsChanged(settingsChangeHandler)` -> **apply** -> `settingsChangeHandler`
+    Localizador: `public/renderer.js:L435-L439`.
+
+99. **[mainWin renderer] apply settings-updated**: `newSettings` -> **apply** -> `settingsChangeHandler(newSettings)`
     Localizador: `public/renderer.js:L391-L433`.
 
-98. **[editor preload] settings-updated listener**: `ipcRenderer.on('settings-updated', ...)` -> **receive** -> NOT FOUND
-    Localizador: `electron/editor_preload.js:L1-L21`.
+100. **[editor preload] settings-updated listener**: `ipcRenderer.on('settings-updated', ...)` -> **receive** -> NOT FOUND
+     Localizador: `electron/editor_preload.js:L1-L21`.
 
-99. **[preset preload] settings-updated listener**: `ipcRenderer.on('settings-updated', ...)` -> **receive** -> NOT FOUND
-    Localizador: `electron/preset_preload.js:L1-L67`.
+101. **[preset preload] settings-updated listener**: `ipcRenderer.on('settings-updated', ...)` -> **receive** -> NOT FOUND
+     Localizador: `electron/preset_preload.js:L1-L67`.
 
-100. **[flotante preload] settings-updated listener**: `ipcRenderer.on('settings-updated', ...)` -> **receive** -> NOT FOUND
+102. **[flotante preload] settings-updated listener**: `ipcRenderer.on('settings-updated', ...)` -> **receive** -> NOT FOUND
      Localizador: `electron/flotante_preload.js:L1-L26`.
 
-101. **[language preload] settings-updated listener**: `ipcRenderer.on('settings-updated', ...)` -> **receive** -> NOT FOUND
+103. **[language preload] settings-updated listener**: `ipcRenderer.on('settings-updated', ...)` -> **receive** -> NOT FOUND
      Localizador: `electron/language_preload.js:L1-L16`.
 
-102. **[editor preload -> main] `get-settings`**: `ipcRenderer.invoke('get-settings')` -> **send** -> `ipcMain.handle('get-settings')`
+104. **[editor preload -> main] `get-settings`**: `ipcRenderer.invoke('get-settings')` -> **send** -> `ipcMain.handle('get-settings')`
      Localizador: `electron/editor_preload.js:L6-L10` + `electron/settings.js:L411-L427`.
 
-103. **[editor renderer] idiomaActual**: `settings.language` -> **assign** -> `idiomaActual`
+105. **[editor renderer] idiomaActual**: `settings.language` -> **assign** -> `idiomaActual`
      Localizador: `public/editor.js:L29-L33`.
 
-104. **[editor renderer] aplicar traducciones**: `idiomaActual` -> **apply** -> `applyEditorTranslations()`
+106. **[editor renderer] aplicar traducciones**: `idiomaActual` -> **apply** -> `applyEditorTranslations()`
      Localizador: `public/editor.js:L28-L36`.
 
-105. **[preset modal preload -> main] `get-settings`**: `ipcRenderer.invoke('get-settings')` -> **send** -> `ipcMain.handle('get-settings')`
+107. **[preset modal preload -> main] `get-settings`**: `ipcRenderer.invoke('get-settings')` -> **send** -> `ipcMain.handle('get-settings')`
      Localizador: `electron/preset_preload.js:L67-L67` + `electron/settings.js:L411-L427`.
 
-106. **[preset modal renderer] idiomaActual**: `settings.language` -> **assign** -> `idiomaActual`
+108. **[preset modal renderer] idiomaActual**: `settings.language` -> **assign** -> `idiomaActual`
      Localizador: `public/preset_modal.js:L92-L95`.
 
-107. **[preset modal renderer] aplicar traducciones**: `idiomaActual` -> **apply** -> `applyPresetTranslations(mode)`
+109. **[preset modal renderer] aplicar traducciones**: `idiomaActual` -> **apply** -> `applyPresetTranslations(mode)`
      Localizador: `public/preset_modal.js:L104-L121`.
 
-108. **[flotante preload -> main] `get-settings`**: `ipcRenderer.invoke('get-settings')` -> **send** -> `ipcMain.handle('get-settings')`
+110. **[flotante preload -> main] `get-settings`**: `ipcRenderer.invoke('get-settings')` -> **send** -> `ipcMain.handle('get-settings')`
      Localizador: `electron/flotante_preload.js:L24-L25` + `electron/settings.js:L411-L427`.
 
-109. **[flotante renderer] lang**: `settings.language` -> **assign** -> `lang`
+111. **[flotante renderer] lang**: `settings.language` -> **assign** -> `lang`
      Localizador: `public/flotante.js:L63-L68`.
 
-110. **[flotante renderer] aplicar traducciones**: `lang` -> **apply** -> `loadRendererTranslations(lang)`
+112. **[flotante renderer] aplicar traducciones**: `lang` -> **apply** -> `loadRendererTranslations(lang)`
      Localizador: `public/flotante.js:L58-L79`.
 
 ---
 
 ## SECTION 7 - Event channels (AS-IS): `preset-created`
 
-111. **[main/presets] `preset-created` (SEND #1)**: `preset` -> **send** -> `mainWin.webContents.send('preset-created', preset)`
+113. **[main/presets] `preset-created` (SEND #1)**: `preset` -> **send** -> `mainWin.webContents.send('preset-created', preset)`
      Localizador: `electron/presets_main.js:L309-L313`.
 
-112. **[main/presets] `preset-created` (SEND #2)**: `newPreset` -> **send** -> `mainWin.webContents.send('preset-created', newPreset)`
+114. **[main/presets] `preset-created` (SEND #2)**: `newPreset` -> **send** -> `mainWin.webContents.send('preset-created', newPreset)`
      Localizador: `electron/presets_main.js:L620-L624`.
 
-113. **[mainWin preload] `preset-created` listener**: `'preset-created'` -> **receive** -> `ipcRenderer.on('preset-created', ...)`
-     Localizador: `electron/preload.js:L28-L29`.
+115. **[mainWin preload] `preset-created` listener**: `'preset-created'` -> **receive** -> `ipcRenderer.on('preset-created', ...)`
+     Localizador: `electron/preload.js:L27-L30`.
 
-114. **[mainWin renderer] apply preset-created**: `preset` -> **apply** -> `loadPresets()`
+116. **[mainWin renderer] `onPresetCreated`**: `window.electronAPI.onPresetCreated(...)` -> **apply** -> `preset-created` subscription
+     Localizador: `public/renderer.js:L355-L373`.
+
+117. **[mainWin renderer] apply preset-created**: `preset` -> **apply** -> `loadPresets()`
      Localizador: `public/renderer.js:L354-L367`.
 
-115. **[editor preload] preset-created listener**: `ipcRenderer.on('preset-created', ...)` -> **receive** -> NOT FOUND
+118. **[editor preload] preset-created listener**: `ipcRenderer.on('preset-created', ...)` -> **receive** -> NOT FOUND
      Localizador: `electron/editor_preload.js:L1-L21`.
 
-116. **[preset preload] preset-created listener**: `ipcRenderer.on('preset-created', ...)` -> **receive** -> NOT FOUND
+119. **[preset preload] preset-created listener**: `ipcRenderer.on('preset-created', ...)` -> **receive** -> NOT FOUND
      Localizador: `electron/preset_preload.js:L1-L67`.
 
-117. **[flotante preload] preset-created listener**: `ipcRenderer.on('preset-created', ...)` -> **receive** -> NOT FOUND
+120. **[flotante preload] preset-created listener**: `ipcRenderer.on('preset-created', ...)` -> **receive** -> NOT FOUND
      Localizador: `electron/flotante_preload.js:L1-L26`.
 
-118. **[language preload] preset-created listener**: `ipcRenderer.on('preset-created', ...)` -> **receive** -> NOT FOUND
+121. **[language preload] preset-created listener**: `ipcRenderer.on('preset-created', ...)` -> **receive** -> NOT FOUND
      Localizador: `electron/language_preload.js:L1-L16`.
