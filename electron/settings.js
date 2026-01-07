@@ -39,6 +39,9 @@ const getLangBase = (lang) => {
   return idx > 0 ? tag.slice(0, idx) : tag;
 };
 
+// Canonical key for language-indexed buckets (presets, numberFormatting, etc.).
+const deriveLangKey = (langTag) => getLangBase(langTag) || 'es';
+
 // =============================================================================
 // Injected dependencies + cache
 // =============================================================================
@@ -58,7 +61,7 @@ let _currentSettings = null;
  * Returns { thousands, decimal } or null if unavailable/invalid.
  */
 function loadNumberFormatDefaults(lang) {
-  const langCode = getLangBase(lang) || 'es';
+  const langCode = deriveLangKey(lang);
   const filePath = path.join(__dirname, '..', 'i18n', langCode, 'numberFormat.json');
 
   try {
@@ -107,24 +110,24 @@ function loadNumberFormatDefaults(lang) {
 function ensureNumberFormattingForBase(settings, base) {
   if (!settings || typeof settings !== 'object') return;
 
-  const langBase = getLangBase(base) || 'es';
+  const langKey = deriveLangKey(base);
 
-  if (settings.numberFormatting[langBase]) return;
+  if (settings.numberFormatting[langKey]) return;
 
-  const nf = loadNumberFormatDefaults(langBase);
+  const nf = loadNumberFormatDefaults(langKey);
   if (nf && nf.thousands && nf.decimal) {
-    settings.numberFormatting[langBase] = {
+    settings.numberFormatting[langKey] = {
       separadorMiles: nf.thousands,
       separadorDecimal: nf.decimal,
     };
   } else {
     log.warnOnce(
-      `settings.ensureNumberFormattingForBase.default:${langBase}`,
+      `settings.ensureNumberFormattingForBase.default:${langKey}`,
       'Using default number formatting (fallback):',
-      langBase,
+      langKey,
       { separadorMiles: '.', separadorDecimal: ',' }
     );
-    settings.numberFormatting[langBase] = {
+    settings.numberFormatting[langKey] = {
       separadorMiles: '.',
       separadorDecimal: ',',
     };
@@ -154,7 +157,14 @@ function normalizeSettings(s) {
   }
 
   // language must be a string; empty string means "unset".
-  if (typeof s.language !== 'string') s.language = '';
+  if (typeof s.language !== 'string') {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidLanguage',
+      'Invalid settings.language; forcing empty string:',
+      { type: typeof s.language }
+    );
+    s.language = '';
+  }
 
   // presets_by_language:
   // - missing -> default (silent)
@@ -226,7 +236,14 @@ function normalizeSettings(s) {
       ? normalizeLangTag(s.language)
       : '';
 
-  const langBase = getLangBase(langTag) || 'es';
+  if (!langTag) {
+    log.warnOnce(
+      'settings.normalizeSettings.emptyLanguage',
+      'settings.language is empty; language-dependent buckets will use fallback "es".'
+    );
+  }
+
+  const langBase = deriveLangKey(langTag);
   if (langTag) s.language = langTag;
 
   // presets_by_language[langBase]:
@@ -372,7 +389,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
     let settings = getSettings();
     if (!settings.language) {
       const lang = normalizeLangTag(fallbackLang);
-      const base = getLangBase(lang) || 'es';
+      const base = deriveLangKey(lang);
       settings.language = lang;
 
       log.warnOnce(
@@ -401,7 +418,6 @@ function registerIpc(
   {
     getWindows, // () => ({ mainWin, editorWin, presetWin, langWin, flotanteWin })
     buildAppMenu, // function(lang)
-    setCurrentLanguage, // (lang) => void
   }
 ) {
   if (!ipcMain) {
@@ -431,17 +447,19 @@ function registerIpc(
     try {
       const chosenRaw = String(lang || '');
       const chosen = normalizeLangTag(chosenRaw);
-      const effectiveLang = chosen || '';
-      const menuLang = effectiveLang || 'es';
+      if (!chosen) {
+        log.warnOnce(
+          'settings.set-language.invalid',
+          'set-language called with empty/invalid language; falling back to "es" for menu.'
+        );
+      }
 
       let settings = getSettings();
       settings.language = chosen;
 
       settings = saveSettings(settings);
 
-      if (typeof setCurrentLanguage === 'function') {
-        setCurrentLanguage(menuLang);
-      }
+      const menuLang = settings.language || 'es';
 
       const windows = typeof getWindows === 'function' ? getWindows() : {};
 
