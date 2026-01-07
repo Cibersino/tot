@@ -17,6 +17,7 @@ tot-readingmeter/
 │ ├── cleanup/
 │ │ ├── _evidence/
 │ │ ├── cleanup_file_by_file.md
+│ │ ├── map_as_is.md
 │ │ ├── naming_convention.md
 │ │ └── no_silence.md
 │ ├── bugs.md
