@@ -275,4 +275,10 @@ Se considera “cumplido” el contrato cuando, como mínimo:
   - (2) **Autoridad única:** removido estado paralelo de idioma en main; menú/updater resuelven idioma desde settings (SELECTED_LANG).
   - (3) **Persistencia compatible / `langKey`:** derivación única centralizada (`deriveLangKey`) equivalente funcional del esquema previo; sin migración ni cambio de buckets.
   - Invariante 4.2 reforzado: `set-language` inválido/vacío **no** degrada SELECTED_LANG a `''` (se conserva el valor previo; se loguea warnOnce).
-- Siguiente: **Gate 4 (Transporte runtime)**: suscripción + reaplicación consistente en ventanas relevantes.
+
+- **2026-01-07 — Gate B completado (Gate 4: Transporte runtime):**
+  - `settings-updated` se difunde (best-effort) a `mainWin`, `editorWin`, `presetWin`, `flotanteWin`.
+  - Se agregan suscripciones por ventana (preload + renderer) para re-aplicar strings en runtime al cambiar idioma, sin reinicio.
+  - Language picker se mantiene sin suscripción por ser ventana transitoria (decisión explícita).
+
+  - Siguiente: Gates 5–7 (strings Regla A/B, formato numérico por `langKey`, presets por idioma) y luego cierre final.

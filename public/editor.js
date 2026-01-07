@@ -90,6 +90,19 @@ async function applyEditorTranslations() {
   }
 }
 
+if (window.editorAPI && typeof window.editorAPI.onSettingsChanged === 'function') {
+  window.editorAPI.onSettingsChanged(async (settings) => {
+    try {
+      const nextLang = settings && settings.language ? settings.language : '';
+      if (!nextLang || nextLang === idiomaActual) return;
+      idiomaActual = nextLang;
+      await applyEditorTranslations();
+    } catch (err) {
+      log.warn('editor: failed to apply settings update:', err);
+    }
+  });
+}
+
 // ---------- Notices ---------- //
 function ensureNoticeContainer() {
   let c = document.getElementById('__editor_notice_container');

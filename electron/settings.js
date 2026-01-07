@@ -357,24 +357,30 @@ function saveSettings(nextSettings) {
 // Broadcast
 // =============================================================================
 /**
- * Sends 'settings-updated' to the main window (best-effort).
+ * Sends 'settings-updated' to open windows (best-effort).
  * This may fail during shutdown/races; failures are logged once and ignored.
  */
 function broadcastSettingsUpdated(settings, windows) {
   if (!windows) return;
-  const { mainWin } = windows;
+  const targets = [
+    { win: windows.mainWin, name: 'mainWin' },
+    { win: windows.editorWin, name: 'editorWin' },
+    { win: windows.presetWin, name: 'presetWin' },
+    { win: windows.flotanteWin, name: 'flotanteWin' },
+  ];
 
-  try {
-    if (mainWin && !mainWin.isDestroyed()) {
-      mainWin.webContents.send('settings-updated', settings);
+  targets.forEach(({ win, name }) => {
+    if (!win || win.isDestroyed()) return;
+    try {
+      win.webContents.send('settings-updated', settings);
+    } catch (err) {
+      log.warnOnce(
+        `settings.broadcastSettingsUpdated.${name}`,
+        'settings-updated notify failed (ignored):',
+        err
+      );
     }
-  } catch (err) {
-    log.warnOnce(
-      'settings.broadcastSettingsUpdated',
-      'settings-updated notify failed (ignored):',
-      err
-    );
-  }
+  });
 }
 
 // =============================================================================

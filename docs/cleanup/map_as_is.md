@@ -31,6 +31,45 @@ Cambios gate-relevantes confirmados por los parches aplicados:
    Localizador operativo:
    - `electron/settings.js`: buscar `ipcMain.handle('set-language'` y el patrón `if (chosen) { settings.language = chosen; ... saveSettings ... }`.
 
+## ADDENDUM — Delta Gate B (post-implementación; Gate 4 Transporte runtime)
+
+Cambios gate-relevantes confirmados por los parches aplicados (sin re-mapear):
+
+1) **`settings-updated` ahora se difunde a todas las ventanas activas relevantes (best-effort).**
+   - Targets: `mainWin`, `editorWin`, `presetWin`, `flotanteWin`.
+   - El envío es best-effort; fallas se loguean con `warnOnce` por ventana (no rompe flujo).
+
+   Localizador operativo:
+   - `electron/settings.js`: buscar `function broadcastSettingsUpdated` y el arreglo `targets = [` con `mainWin/editorWin/presetWin/flotanteWin`.
+
+2) **Cada ventana relevante implementa suscripción runtime a `settings-updated` vía preload (`onSettingsChanged`).**
+   - Editor: `editorAPI.onSettingsChanged(...)`
+   - Preset modal: `presetAPI.onSettingsChanged(...)`
+   - Flotante: `flotanteAPI.onSettingsChanged(...)`
+   - Cada helper expone un `unsubscribe` que remueve el listener.
+
+   Localizador operativo:
+   - `electron/editor_preload.js`: buscar `onSettingsChanged` y `ipcRenderer.on('settings-updated'`
+   - `electron/preset_preload.js`: buscar `onSettingsChanged`
+   - `electron/flotante_preload.js`: buscar `onSettingsChanged`
+
+3) **Re-aplicación de strings en runtime (sin refactor de Regla A/B):**
+   - `public/editor.js`: al cambiar `settings.language`, se actualiza `idiomaActual` y se re-ejecuta `applyEditorTranslations()`.
+   - `public/preset_modal.js`: al cambiar `settings.language`, se actualiza `idiomaActual` y se re-ejecuta `applyPresetTranslations(mode)`.
+   - `public/flotante.js`: se factoriza `applyFlotanteTranslations(lang)` y se re-aplican labels (play/pause) al cambiar idioma; se evita recarga innecesaria con `translationsLoadedFor`.
+
+   Localizador operativo:
+   - `public/editor.js`: buscar `editorAPI.onSettingsChanged` y `applyEditorTranslations`
+   - `public/preset_modal.js`: buscar `presetAPI.onSettingsChanged` y `applyPresetTranslations`
+   - `public/flotante.js`: buscar `applyFlotanteTranslations` + `flotanteAPI.onSettingsChanged` + `translationsLoadedFor`
+
+4) **Language window (picker) sin suscripción a `settings-updated` (decisión explícita).**
+   - Justificación: ventana transitoria; no requiere re-aplicación en vivo más allá de su acción de selección/cierre.
+
+5) **Implicación para este mapa (baseline pre-Gate B):**
+   - Cualquier arista que indique que `settings-updated` solo notifica a `mainWin` queda **stale post-Gate B**.
+   - Cualquier arista que afirme que `editor/preset/flotante` no tienen listeners de settings queda **stale post-Gate B**.
+
 ---
 
 Convencion:

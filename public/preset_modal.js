@@ -130,6 +130,19 @@
       }
     }
 
+    if (window.presetAPI && typeof window.presetAPI.onSettingsChanged === 'function') {
+      window.presetAPI.onSettingsChanged(async (settings) => {
+        try {
+          const nextLang = settings && settings.language ? settings.language : '';
+          if (!nextLang || nextLang === idiomaActual) return;
+          idiomaActual = nextLang;
+          await applyPresetTranslations(mode);
+        } catch (err) {
+          log.warn('preset_modal: failed to apply settings update:', err);
+        }
+      });
+    }
+
     // helper function to build preset from inputs (minimum validations)
     function buildPresetFromInputs() {
       const name = (nameEl.value || '').trim();
