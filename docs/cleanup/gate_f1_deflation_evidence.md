@@ -204,3 +204,156 @@ Scope: electron/** and public/** only (code, plus public/*.html as runtime evide
    - public/flotante.js: lines 102-109.
 3) Result:
    - No provable re-entrant init in these files; STOP.
+
+# Gate F1.2 Corrections (evidence-only) — Deflation Decisions
+
+Scope: electron/** and public/** (public/*.html used for runtime dependency evidence). No code changes; this file supersedes prior conclusions for the three evaluations below.
+
+---
+
+## (1) PUBLIC — Host selection for DEFAULT_LANG (and shared constants)
+
+Findings (evidence)
+- public/js/i18n.js exposes a global via `window.RendererI18n = { loadRendererTranslations, tRenderer, msgRenderer }` (lines 180–184). No DEFAULT_LANG exposure yet, but i18n is the language subsystem owner.  
+  Locator: public/js/i18n.js:180–184.
+- public/js/constants.js exposes `window.AppConstants` (line 34) and includes a static DEFAULTS object (lines 5–16) but no language constant.  
+  Locator: public/js/constants.js:5–34.
+- Script load order (current):
+  - public/index.html: `./js/i18n.js` (line 133) before `./js/presets.js` (134), `./js/count.js` (135), `./js/format.js` (136), and `renderer.js` (138).  
+    Locator: public/index.html:129–138.
+  - public/editor.html: `js/i18n.js` (line 28) before `editor.js` (line 30).  
+    Locator: public/editor.html:26–30.
+  - public/preset_modal.html: `js/i18n.js` (line 55) before `preset_modal.js` (line 57).  
+    Locator: public/preset_modal.html:53–57.
+  - public/flotante.html: `js/i18n.js` (line 20) before `flotante.js` (line 22).  
+    Locator: public/flotante.html:19–22.
+- constants.js is not currently loaded in public/flotante.html; to use AppConstants as host, a new `<script src="js/constants.js">` would need to be inserted between lines 20–21 (before `js/crono.js` and `flotante.js`) to ensure availability.
+
+Host decision (evidence-based)
+- **Preferred host: public/js/i18n.js** (RendererI18n).  
+  Rationale: i18n.js is already loaded on all relevant entrypoints; no HTML changes are needed to make it common across all DEFAULT_LANG call sites. AppConstants would require at least one HTML insertion (flotante.html), so it is less minimal.
+
+Deflation estimate
+- Remove 7 duplicate `DEFAULT_LANG` constants across 8 public files.
+
+Risk notes (Gate F2)
+- Ensure the shared constant is exposed on `window.RendererI18n` before any dependent scripts execute (load order already satisfies this).
+
+---
+
+## (2) ELECTRON PRELOADS — Duplicated onSettingsChanged wrappers
+
+Findings (evidence)
+- Wrapper pattern appears in all four preloads (same semantics: create listener, `ipcRenderer.on('settings-updated', ...)`, return unsubscribe calling removeListener with try/catch):
+  - electron/preload.js: onSettingsChanged wrapper lines 69–75.  
+    Locator: electron/preload.js:69–75.
+  - electron/editor_preload.js: onSettingsChanged wrapper lines 20–25.  
+    Locator: electron/editor_preload.js:20–25.
+  - electron/preset_preload.js: onSettingsChanged wrapper lines 68–73.  
+    Locator: electron/preset_preload.js:68–73.
+  - electron/flotante_preload.js: onSettingsChanged wrapper lines 26–31.  
+    Locator: electron/flotante_preload.js:26–31.
+- All four preloads already require the same logging module:
+  - electron/preload.js: `const Log = require('./log');` (line 5).
+  - electron/editor_preload.js: `const Log = require('./log');` (line 5).
+  - electron/preset_preload.js: `const Log = require('./log');` (line 5).
+  - electron/flotante_preload.js: `const Log = require('./log');` (line 5).
+- Proposed host safety:
+  - electron/log.js imports no BrowserWindow/app/Menu and has no side effects beyond logging setup; it reads `process.env` and defines helper functions (lines 1–120).  
+    Locator: electron/log.js:1–120.
+
+Host decision (evidence-based)
+- **MERGEABLE via existing host: electron/log.js**.  
+  Rationale: all preloads already depend on log.js; adding a helper export there introduces no new require edges and no cycles. Helper can accept `ipcRenderer`, `log`, and channel name as arguments to avoid importing Electron inside log.js.
+
+Deflation estimate
+- Remove 3 wrapper clones across 4 preloads (single shared helper used by all).
+
+Risk notes (Gate F2)
+- Keep helper signature explicit to avoid coupling log.js to Electron APIs; preserve per-preload error messages if required for diagnostics.
+
+---
+
+## (3) ELECTRON lang parsing helpers — MERGEABLE VIA HARDENING?
+
+Findings (evidence)
+- Definitions:
+  - electron/settings.js: `normalizeLangTag` lines 33–34; `getLangBase` lines 36–40.  
+    Locator: electron/settings.js:33–40.
+  - electron/menu_builder.js: `normalizeLangTag` line 42; `getLangBase` lines 43–48.  
+    Locator: electron/menu_builder.js:42–48.
+  - electron/presets_main.js: `normalizeLangTag` lines 19–20; `normalizeLangBase` lines 23–26 (regex validates base with `/^[a-z0-9]+$/`).  
+    Locator: electron/presets_main.js:19–26.
+- Dataflow for language values:
+  - language preload normalizes input before IPC: `String(lang || '').trim().toLowerCase().replace(/_/g, '-')` (line 8).  
+    Locator: electron/language_preload.js:8.
+  - settings IPC `set-language` normalizes again using `normalizeLangTag` (line 493).  
+    Locator: electron/settings.js:490–505.
+  - settings normalization of persisted settings applies `normalizeLangTag` (line 255).  
+    Locator: electron/settings.js:252–256.
+  - menu builder normalizes `lang` via `normalizeLangTag` before loading menu translations (line 220).  
+    Locator: electron/menu_builder.js:219–221.
+  - presets_main derives base for defaults via `normalizeLangBase` (line 173).  
+    Locator: electron/presets_main.js:166–174.
+
+Decision
+- **NOT MERGEABLE (STOP)** for “merge via hardening” at this time.  
+  Rationale: although all upstream flows normalize case and separators, there is no evidence in-scope that valid tags are restricted to bases matching `/^[a-z0-9]+$/`. Tightening `getLangBase` everywhere to the regex behavior could reject inputs that are currently accepted (e.g., tags with non-alphanumeric base segments). Without proof of tag constraints from in-scope dataflow, hardening cannot be justified.
+
+Deflation estimate
+- STOP (no safe merge).
+
+Risk notes (Gate F2)
+- If later evidence proves all runtime tags are within `[a-z0-9-]` (e.g., via manifest or enforced validation), re-evaluate for “MERGEABLE VIA HARDENING.”
+nes 426-429.
+   - public/editor.js: lines 94-105.
+   - public/preset_modal.js: lines 134-145.
+   - public/flotante.js: lines 102-109.
+3) Result:
+   - No provable re-entrant init in these files; STOP.
+nes 426-429.
+   - public/editor.js: lines 94-105.
+   - public/preset_modal.js: lines 134-145.
+   - public/flotante.js: lines 102-109.
+3) Result:
+   - No provable re-entrant init in these files; STOP.
+nes 426-429.
+   - public/editor.js: lines 94-105.
+   - public/preset_modal.js: lines 134-145.
+   - public/flotante.js: lines 102-109.
+3) Result:
+   - No provable re-entrant init in these files; STOP.
+nes 426-429.
+   - public/editor.js: lines 94-105.
+   - public/preset_modal.js: lines 134-145.
+   - public/flotante.js: lines 102-109.
+3) Result:
+   - No provable re-entrant init in these files; STOP.
+nes 426-429.
+   - public/editor.js: lines 94-105.
+   - public/preset_modal.js: lines 134-145.
+   - public/flotante.js: lines 102-109.
+3) Result:
+   - No provable re-entrant init in these files; STOP.
+these files.
+- Conclusion: no listener-accumulation candidate provable with current repo evidence.
+nes 426-429.
+   - public/editor.js: lines 94-105.
+   - public/preset_modal.js: lines 134-145.
+   - public/flotante.js: lines 102-109.
+3) Result:
+   - No provable re-entrant init in these files; STOP.
+these files.
+- Conclusion: no listener-accumulation candidate provable with current repo evidence.
+nes 426-429.
+   - public/editor.js: lines 94-105.
+   - public/preset_modal.js: lines 134-145.
+   - public/flotante.js: lines 102-109.
+3) Result:
+   - No provable re-entrant init in these files; STOP.
+nes 426-429.
+   - public/editor.js: lines 94-105.
+   - public/preset_modal.js: lines 134-145.
+   - public/flotante.js: lines 102-109.
+3) Result:
+   - No provable re-entrant init in these files; STOP.
