@@ -424,3 +424,114 @@ Deflation estimate:
 - If mergeable, could remove 2 helper clones (menu_builder + presets_main) by reusing settings helpers; blocked.
 Risk notes:
 - Hardening could change file-path selection or preset bucket selection for tags with non-alnum base, leading to different defaults/presets.
+
+---
+
+# Gate F1.4 Addendum (assistant audit, evidence-only, pack-based)
+
+Este addendum consolida (a) las conclusiones de la revisión anterior (post-F1.3) y (b) la revisión actual usando evidencia directa de los archivos subidos (HTML + public/** + electron/** relevantes).
+
+## A) Estado de la revisión anterior (post-F1.3): conclusiones registradas
+
+1) **Mejora material en F1.3 (criterio)**: F1.3 corrigió el sesgo “dependency host” y volvió a un criterio contract-first (contrato/responsabilidad > conveniencia de dependencias).
+2) **Problema objetivo persistente**: el documento quedó autocontradictorio (F1/F1.2 decían host en i18n.js; F1.3 decía host en constants.js) y además contiene “basura” repetida al final (fragmentos “nes 426-429…” duplicados muchas veces). Eso invalida al documento como “artefacto final” hasta limpieza.
+3) **Dudas abiertas que había que cerrar con evidencia adicional**:
+   - Si existía enumeración/manifest “source-of-truth” para idiomas (para evaluar hardening).
+   - Si existía un host preload/IPC ya presente (para evaluar STOP vs MERGEABLE en wrappers de preloads).
+
+## B) Revisión actual (con evidencia del set subido): decisiones consolidadas
+
+### B1) PUBLIC — DEFAULT_LANG: host por contrato + prerequisitos runtime
+
+**Evidencia (contrato y uso real)**
+- `public/js/constants.js` expone `window.AppConstants` y ya opera como autoridad de constantes (no “bucket nominal”):
+  - Define `AppConstants` y lo publica en `window` (constants.js:18–34).
+- Los window scripts consumen activamente `AppConstants` y fallan si no existe:
+  - renderer.js: `const { AppConstants } = window; if (!AppConstants) throw ...` (renderer.js:10–16) y luego extrae límites (renderer.js:18–30).
+  - editor.js: mismo patrón (editor.js:10–15) y extrae límites (editor.js:17–18).
+  - preset_modal.js: mismo patrón (preset_modal.js:29–35).
+
+**Estado de load-order (HTML)**
+- index.html ya carga `js/constants.js` antes de `js/i18n.js` (index.html:129–133).
+- editor.html carga `js/i18n.js` antes de `js/constants.js` (editor.html:28–29) — hoy esto es suficiente para `editor.js` (porque `editor.js` viene después), pero **NO** es suficiente si `i18n.js` debe leer DEFAULT_LANG desde AppConstants (deflation total).
+- preset_modal.html idem: `js/i18n.js` antes de `js/constants.js` (preset_modal.html:55–56).
+- flotante.html **no** carga `js/constants.js` (flotante.html:19–22 muestra `js/log.js`, `js/i18n.js`, `js/crono.js`, `flotante.js`).
+
+**Decisión consolidada (contract-first)**
+- **Host preferido para DEFAULT_LANG: `public/js/constants.js` (AppConstants)**.
+  - Motivo: ya es autoridad efectiva de constantes transversales (renderer/editor/preset_modal) y su “contrato” es exactamente constants authority. `public/js/i18n.js` es subsistema de traducciones (loader + t/msg), no autoridad de constantes.
+
+**Implicancia Gate F2 (si el objetivo es deflation total)**
+- Para que `public/js/i18n.js` también deje de declarar DEFAULT_LANG y lo lea de AppConstants:
+  - editor.html: mover `js/constants.js` antes de `js/i18n.js`.
+  - preset_modal.html: mover `js/constants.js` antes de `js/i18n.js`.
+  - flotante.html: insertar `js/constants.js` y además asegurar que quede antes de `js/i18n.js`.
+
+**Precedencia explícita**
+- Esta decisión **supera** lo declarado en F1-A1/F1.2 que proponía host en `public/js/i18n.js`.
+
+---
+
+### B2) ELECTRON PRELOADS — onSettingsChanged wrapper: STOP reforzado (búsqueda exhaustiva)
+
+**Evidencia de duplicación (preloads)**
+- Cada preload define su propio wrapper `onSettingsChanged` con `ipcRenderer.on('settings-updated', ...)` y unsubscribe con `removeListener`:
+  - electron/preload.js: bloque `onSettingsChanged` (preload.js:73–75).
+  - electron/editor_preload.js: bloque `onSettingsChanged` (editor_preload.js:24–25).
+  - electron/preset_preload.js: bloque `onSettingsChanged` (preset_preload.js:72–73).
+  - electron/flotante_preload.js: bloque `onSettingsChanged` (flotante_preload.js:30–31).
+
+**Búsqueda de host existente (evidence-based)**
+- En el árbol (tree_folders_files.md) no aparece ningún módulo “boundary preload shared” existente (tipo `preload_utils.js`, `ipc_bridge.js`, etc.). Solo están los preloads por ventana.
+- El único módulo común requerido por todos los preloads es el logger (`./log`), pero su contrato es logging/policy, no IPC helper (contract mismatch).
+
+**Decisión consolidada**
+- **STOP**: no hay host contract-correct existente para consolidar wrappers **sin**:
+  - crear un módulo nuevo (prohibido bajo tus restricciones), o
+  - introducir dependencias cruzadas entre preloads (también contract-mismatch: mezclar APIs window-specific).
+
+**Precedencia explícita**
+- Esta decisión reafirma lo que se argumentó en la revisión post-F1.3: la idea “MERGEABLE en log.js” (F1.2) queda **superada** por contract mismatch.
+
+---
+
+### B3) ELECTRON language helpers — “MERGEABLE VIA HARDENING” ahora SÍ (con repo-proof de enumeración)
+
+Aquí el punto crítico era si existía evidencia de que los idiomas/tags válidos están acotados a un set controlado (para justificar endurecer `getLangBase`/`normalizeLangBase` sin cambiar inputs válidos).
+
+**Evidencia: source enumeration controlada (end-to-end)**
+- main.js expone IPC `get-available-languages` leyendo `i18n/languages.json`:
+  - `ipcMain.handle('get-available-languages', ...)` (main.js:885–918).
+  - Lee archivo: `path.join(__dirname, '..', 'i18n', 'languages.json')` (main.js:899).
+  - Normaliza shape: requiere `tag` y `label` no vacíos (main.js:902–911) y retorna lista filtrada.
+- language_preload.js entrega esa lista al renderer:
+  - `getAvailableLanguages: () => ipcRenderer.invoke('get-available-languages')` (language_preload.js:18–21).
+- language_window.html construye la UI desde esa lista (no input libre):
+  - `const available = await window.languageAPI.getAvailableLanguages();` (language_window.html:328).
+  - Renderiza botones por cada `{tag,label}` (language_window.html:345–356).
+  - Al click: `await window.languageAPI.setLanguage(lang)` donde `lang` proviene de `dataset.lang` (language_window.html:256–259).
+
+**Repo-proof del criterio de hardening**
+- El manifest `i18n/languages.json` (pack subido) contiene tags:
+  - `es`, `es-cl`, `en`, `en-us`, `en-gb`, `fr`, `de`, `zh`, `ja`, `ru`.
+- En todos esos casos, el **base** (segmento antes del primer `-`) cumple `/^[a-z0-9]+$/`.
+- Por lo tanto, endurecer “base normalization” al estilo `normalizeLangBase()` de presets_main (regex para base) **no cambia inputs válidos** del dataflow real; solo afectaría valores fuera del manifest (p.ej. settings tampered o IPC externo no legítimo).
+
+**Decisión consolidada**
+- **MERGEABLE VIA HARDENING** para unificar helpers de idioma en main-process modules:
+  - settings.js (settings.js:35–43) y menu_builder.js (menu_builder.js:52–59) tienen helpers equivalentes.
+  - presets_main.js agrega defensa extra `normalizeLangBase` con regex (presets_main.js:23–27), ahora justificable como comportamiento estándar porque el source-of-truth de tags lo respeta.
+
+**Límites (se mantienen)**
+- El inline normalize en `language_preload.js` sigue siendo **STOP** para deflation (barrera preload/main): consolidarlo requeriría un módulo shared preload-safe o cruzar boundary.
+
+**Precedencia explícita**
+- Esta decisión **supera** el STOP de F1.3 en “merge via hardening”, porque ahora sí hay repo-proof de enumeración/manifest para idiomas (main.js + language_preload.js + language_window.html + languages.json).
+
+---
+
+## C) Nota de higiene del artefacto (no cambia decisiones, pero debe registrarse)
+
+El documento actual contiene un tramo corrupto/duplicado (“nes 426-429...” repetido múltiples veces). Eso no es evidencia; es basura de edición. Recomendación documental:
+- En la próxima pasada de limpieza del artefacto, borrar esas repeticiones y agregar una regla de precedencia explícita:
+  - “F1.3 + F1.4 supersede F1/F1.2 para DEFAULT_LANG host, preloads wrapper decision, y hardening decision”.
