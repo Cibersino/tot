@@ -426,8 +426,6 @@ const loadPresets = async () => {
     if (window.electronAPI) {
       if (typeof window.electronAPI.onSettingsChanged === 'function') {
         window.electronAPI.onSettingsChanged(settingsChangeHandler);
-      } else if (typeof window.electronAPI.onSettingsUpdated === 'function') {
-        window.electronAPI.onSettingsUpdated(settingsChangeHandler);
       } // If it doesn't exist, there's no listener available and nothing happens
 
       if (typeof window.electronAPI.onEditorReady === 'function') {

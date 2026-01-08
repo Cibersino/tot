@@ -174,6 +174,17 @@ Cambios gate-relevantes confirmados por los parches aplicados (sin re-mapear):
    - `electron/settings.js:L25-L45`
    - `public/renderer.js:L1-L12`
 
+## ADDENDUM - Delta Gate E (follow-up)
+
+Cambios gate-relevantes (solo alta prioridad) confirmados por repo (sin re-mapear):
+
+1) **Se elimina suscripcion legacy `onSettingsUpdated` en renderer principal.**
+   - El renderer principal ahora se suscribe solo via `onSettingsChanged` (un solo canal efectivo).
+
+   Localizador operativo:
+   - `public/renderer.js`: bloque de suscripcion `window.electronAPI.onSettingsChanged(settingsChangeHandler)`.
+   - `electron/preload.js`: `onSettingsChanged` dentro de `electronAPI` (contextBridge).
+
 ---
 
 Convencion:
