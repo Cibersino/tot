@@ -122,3 +122,85 @@ Scope: electron/** and public/** only (code, plus public/*.html as runtime evide
    - public/flotante.js: onSettingsChanged registration at lines 102-109.
 3) Result:
    - No re-entrant init or repeated DOMContentLoaded usage is visible in these files. Duplicate subscription risk not provable from code. STOP.
+
+# Gate F1.1 Addendum Evidence Report - Deflation Candidates (electron/public)
+
+## Scope + method
+- Scanned electron/** and public/** plus public/*.html for script load order evidence.
+- Treated electron/** dependencies as require/import graph; treated public/** dependencies as HTML <script> order + window globals.
+- Only evidence-backed candidates are listed; uncertain items are marked STOP.
+
+## New candidates not covered (or underdeveloped) in Gate F1 redo
+
+### F1.1-A1 - electron - Category A (Duplicated helper)
+1) What: `normalizeLangTag` helper (normalize language tags to lowercase, '-' separators).
+2) Where (3 occurrences, top-level helper definitions):
+   - electron/settings.js: `normalizeLangTag` at lines 33-34.
+   - electron/menu_builder.js: `normalizeLangTag` at line 42.
+   - electron/presets_main.js: `normalizeLangTag` at lines 19-20.
+3) Semantic equivalence proof:
+   - All three implementations use `(lang || '').trim().toLowerCase().replace(/_/g, '-')`.
+4) Host feasibility (electron runtime, require graph):
+   - Proposed host: electron/settings.js (language helper owner).
+   - Evidence: presets_main already requires settings.js (`const settingsState = require('./settings')`, line 13), so it can reuse exported helper without new dependency.
+   - menu_builder does not currently require settings.js; adding `require('./settings')` does not create a cycle because settings.js has no dependency on menu_builder (no `require('./menu_builder')` in settings.js).
+5) Deflation estimate:
+   - Remove 2 helper clones across 3 files.
+6) Risk notes:
+   - Ensure exported helper from settings.js is side-effect-safe when required by menu_builder.
+
+### F1.1-A2 - electron - Category A (Duplicated helper) - STOP (no safe host for all call sites)
+1) What: `normalizeLangTag` logic duplicated in language preload `setLanguage` normalization.
+2) Where (inline duplication):
+   - electron/language_preload.js: inline normalization `String(lang || '').trim().toLowerCase().replace(/_/g, '-')` at line 8.
+   - Same logic appears in electron/settings.js (lines 33-34), electron/menu_builder.js (line 42), electron/presets_main.js (lines 19-20).
+3) Semantic equivalence proof:
+   - The inline expression matches the exact normalizeLangTag logic used elsewhere.
+4) Host feasibility (electron runtime, require graph):
+   - NO SAFE HOST under rules: language_preload currently requires only Electron APIs (line 4). Importing settings.js in a preload would introduce a main-process module into a renderer-preload context.
+   - Importing menu_builder in a preload would pull in Menu/app usage (menu_builder requires electron/Menu at lines 17-19), not suitable for preload.
+5) Deflation estimate:
+   - Would remove 1 inline duplication, but blocked by host feasibility.
+6) Risk notes:
+   - Consolidation would risk preload/main coupling; STOP.
+
+### F1.1-A3 - electron - Category A (Duplicated helper pattern) - STOP (no safe host)
+1) What: repeated IPC listener wrapper pattern for `onSettingsChanged` in preloads.
+2) Where (4 occurrences, each defines wrapper + ipcRenderer.on + removeListener):
+   - electron/preload.js: `onSettingsChanged` lines 69-75.
+   - electron/editor_preload.js: `onSettingsChanged` lines 20-25.
+   - electron/preset_preload.js: `onSettingsChanged` lines 68-73.
+   - electron/flotante_preload.js: `onSettingsChanged` lines 26-31.
+3) Semantic equivalence proof:
+   - Each constructs a listener wrapper with try/catch, registers `ipcRenderer.on('settings-updated', listener)`, and returns an unsubscribe that calls `removeListener` with error handling.
+4) Host feasibility (electron runtime, require graph):
+   - NO SAFE HOST under rules: no existing shared module is already required by all preloads that could host a helper without introducing a new dependency.
+   - Using electron/preload.js as host would create a preload-to-preload dependency (not currently present).
+5) Deflation estimate:
+   - Would remove 3 helper clones across 4 files, but blocked by host feasibility.
+6) Risk notes:
+   - Consolidation likely requires a new shared module or a cross-preload dependency; STOP.
+
+### F1.1-B1 - public - Category B (Redundant execution) - STOP (not provably redundant)
+1) What: potential duplicate initial `updatePreviewAndResults(t || '')` calls during renderer init.
+2) Where:
+   - public/renderer.js: after `getCurrentText()` at lines 345-347.
+   - public/renderer.js: after `loadPresets()` at lines 383-387.
+3) Semantic equivalence proof:
+   - NOT MERGEABLE: `loadPresets()` can change `wpm` and `currentPresetName`, which affects downstream time calculations inside `updatePreviewAndResults`; therefore the second call can produce different outputs even with same `currentText`.
+4) Host feasibility:
+   - N/A.
+5) Deflation estimate:
+   - STOP; cannot prove redundancy without behavior risk.
+6) Risk notes:
+   - Removing either call risks stale output after preset selection initialization.
+
+### F1.1-C1 - Category C (Listener accumulation) - STOP (no evidence)
+1) What: potential multiple registrations of `onSettingsChanged` in window scripts.
+2) Evidence scan (single registration per lifecycle, already in Gate F1):
+   - public/renderer.js: lines 426-429.
+   - public/editor.js: lines 94-105.
+   - public/preset_modal.js: lines 134-145.
+   - public/flotante.js: lines 102-109.
+3) Result:
+   - No provable re-entrant init in these files; STOP.
