@@ -295,4 +295,4 @@ Se considera “cumplido” el contrato cuando, como mínimo:
   - Se eliminaron prefijos "FALLBACK:" en dialogs user-facing (presets/updater), manteniendo `resolveDialogText` + `warnOnce`.
   - Se centralizo DEFAULT_LANG en fallbacks de idioma del sistema (main/settings/renderers/presets/count) sin cambiar buckets.
   - Sin migraciones ni cambios de esquema.
-
+  - Follow-up: se elimino la suscripcion legacy `onSettingsUpdated` en renderer principal (solo `onSettingsChanged`).
