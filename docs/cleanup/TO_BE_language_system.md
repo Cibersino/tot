@@ -286,4 +286,9 @@ Se considera “cumplido” el contrato cuando, como mínimo:
   - Formato numérico: `numberFormatting[langKey]` con fallback a bucket DEFAULT antes de hardcoded, con `warnOnce`.
   - Dialogs main-process (presets/updater): keys faltantes logueadas con `warnOnce` (sin fallback silencioso).
 
-- Siguiente: **Gate D (Gate 7: Presets por idioma / langKey)** — defaults por idioma + presets usuario por idioma + “preset seleccionado” persistido por idioma + refrescos mínimos por evento.
+- **2026-01-07 — Gate D completado (Gate 7: Presets por idioma / langKey):**
+  - Se agrega persistencia del “preset seleccionado” por idioma vía `selected_preset_by_language[langKey]` en settings (sin migración).
+  - La selección se aplica en startup y al cambiar idioma en runtime; si falta/no existe el preset, se hace fallback determinista + `warnOnce` y se corrige el estado persistido (sin estado inválido silencioso).
+  - Se mantiene intacta la persistencia existente de presets por idioma (`presets_by_language[...]`); no hay renombres de buckets.
+
+- Siguiente: **Gate E (Gate 8: Purga legacy)** — remover resabios/duplicaciones/fallbacks obsoletos que hayan quedado tras Gates A–D, manteniendo el contrato TO-BE y “no silence”.

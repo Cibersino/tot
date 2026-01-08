@@ -38,20 +38,6 @@
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  function getSelectedPresetName(settings, langBase, currentPresetName) {
-    const persisted =
-      settings &&
-      settings.selected_preset_by_language &&
-      typeof settings.selected_preset_by_language[langBase] === 'string'
-        ? settings.selected_preset_by_language[langBase].trim()
-        : '';
-    if (persisted) return persisted;
-    if (typeof currentPresetName === 'string' && currentPresetName.trim()) {
-      return currentPresetName.trim();
-    }
-    return '';
-  }
-
   function fillPresetsSelect(list = [], selectEl) {
     if (!selectEl) return;
     selectEl.innerHTML = '';

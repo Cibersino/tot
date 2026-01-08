@@ -106,6 +106,54 @@ Cambios gate-relevantes confirmados por los parches aplicados (sin re-mapear):
    - Donde el mapa describa fallback numérico directo a hardcoded, queda stale post-Gate C:
      ahora es **langKey -> DEFAULT bucket -> hardcoded**, con `warnOnce`.
 
+## ADDENDUM — Delta Gate D (post-implementación; Gate 7 Presets por idioma / selección persistida)
+
+Cambios gate-relevantes confirmados por los parches aplicados (sin re-mapear):
+
+1) **Se agrega bucket de selección de preset por idioma en settings (persistencia compatible).**
+   - Nuevo bucket: `selected_preset_by_language` (objeto) indexado por `langKey`.
+   - Normalización:
+     - si falta → `{}` (default seguro),
+     - si tipo inválido → `warnOnce` y reset a `{}`,
+     - entradas por idioma: `trim()`, vacío se elimina, tipo no-string se elimina con `warnOnce`.
+
+   Localizadores operativos:
+   - `electron/settings.js`: buscar `selected_preset_by_language` dentro de `normalizeSettings(...)`, y en defaults de `init/getSettings`.
+
+2) **Nuevo IPC para persistir selección por idioma: `set-selected-preset`.**
+   - Flujo: renderer → preload → main(settings).
+   - Reglas:
+     - nombre inválido/vacío → `warnOnce` (ignorado),
+     - `langKey` se deriva desde `settings.language` vía `deriveLangKey`,
+     - si `settings.language` está vacío → `warnOnce` + se usa fallback `langKey`,
+     - micro-opt: si el valor persistido ya coincide, retorna OK sin escribir a disco.
+
+   Localizadores operativos:
+   - `electron/settings.js`: buscar `ipcMain.handle('set-selected-preset'`.
+   - `electron/preload.js`: buscar `setSelectedPreset: (name) => ipcRenderer.invoke('set-selected-preset', name)`.
+
+3) **Selección aplicada y autocorrección (renderer/presets) sin reinicio.**
+   - `public/js/presets.js`:
+     - prioridad: `selected_preset_by_language[langKey]` → `currentPresetName` → fallback determinista (`default` o primer preset).
+     - si NO hay selección persistida y tampoco preset actual → `warnOnce` `presets.selectedPreset.none:<langKey>` y se persiste la selección segura.
+     - si hay selección persistida pero no existe en la lista → `warnOnce` `presets.selectedPreset.missing:<langKey>` y fallback + persistencia correctiva.
+   - `public/renderer.js`:
+     - se elimina el override inicial “seleccionar default siempre”;
+     - al cambiar idioma (Gate B), se recarga presets y la selección se resuelve por `langKey`;
+     - al cambiar selección en UI y al crear preset, se persiste vía `electronAPI.setSelectedPreset(...)`;
+     - delete/restore defaults recargan presets y permiten que el fallback aplique selección válida (no deja selección inválida silenciosa).
+
+   Localizadores operativos:
+   - `public/js/presets.js`: buscar `presets.selectedPreset.none:` y `presets.selectedPreset.missing:`.
+   - `public/renderer.js`: buscar `electronAPI.setSelectedPreset` y la sección donde antes se forzaba `default` al inicio.
+
+4) **Implicación para este mapa (baseline pre-Gate D):**
+   - Cualquier descripción de “selección inicial siempre default” queda stale post-Gate D.
+   - Cualquier descripción de “selección no persistida por idioma” queda stale post-Gate D:
+     ahora existe `selected_preset_by_language[langKey]` + autocorrección con `warnOnce`.
+   - Cualquier descripción de “delete/restore limpia selección” queda stale post-Gate D:
+     ahora se recarga y se asegura una selección válida por idioma.
+
 ---
 
 Convencion:
