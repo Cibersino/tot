@@ -357,3 +357,70 @@ nes 426-429.
    - public/flotante.js: lines 102-109.
 3) Result:
    - No provable re-entrant init in these files; STOP.
+
+## Gate F1.3 Corrections (evidence-only, contract-first)
+
+### (1) PUBLIC: DEFAULT_LANG host decision (contract-first)
+Findings (evidence):
+- public/js/constants.js defines DEFAULTS and exposes window.AppConstants (lines 5-34).
+- public/js/i18n.js exposes window.RendererI18n with loadRendererTranslations/tRenderer/msgRenderer (lines 50-183).
+- HTML entrypoints script order:
+  - public/index.html: log.js 129, constants.js 130, i18n.js 133, presets.js 134, count.js 135, format.js 136, renderer.js 138.
+  - public/editor.html: i18n.js 28, constants.js 29, editor.js 30.
+  - public/preset_modal.html: i18n.js 55, constants.js 56, preset_modal.js 57.
+  - public/flotante.html: log.js 19, i18n.js 20, crono.js 21, flotante.js 22 (constants.js not loaded).
+Decision (contract-first):
+- Choose public/js/constants.js as DEFAULT_LANG host (constants owner). public/js/i18n.js is a translation loader, not a constants authority.
+Minimal HTML insert/reorder plan (evidence-only; no edits):
+- public/index.html: already loads constants.js before i18n.js (lines 129-133).
+- public/editor.html: move constants.js before i18n.js (lines 28-29).
+- public/preset_modal.html: move constants.js before i18n.js (lines 55-56).
+- public/flotante.html: insert <script src="js/constants.js"></script> between lines 19-20 (before i18n.js).
+Deflation estimate:
+- Remove 7 duplicate DEFAULT_LANG constants across 8 public files (same scope as F1-A1).
+Risk notes:
+- Any i18n.js use of DEFAULT_LANG must read from AppConstants only after constants.js loads.
+
+### (2) ELECTRON PRELOADS: onSettingsChanged wrapper duplication (contract-first)
+Findings (evidence):
+- Wrapper pattern appears in:
+  - electron/preload.js: onSettingsChanged uses ipcRenderer.on('settings-updated') + removeListener (lines 69-75).
+  - electron/editor_preload.js: onSettingsChanged wrapper (lines 20-25).
+  - electron/preset_preload.js: onSettingsChanged wrapper (lines 68-73).
+  - electron/flotante_preload.js: onSettingsChanged wrapper (lines 26-31).
+- Each preload only requires electron + ./log (electron/preload.js:4-5, electron/editor_preload.js:4-5, electron/preset_preload.js:4-5, electron/flotante_preload.js:4-5).
+- ipcRenderer occurs only in preloads (electron/preload.js:4, electron/editor_preload.js:4, electron/preset_preload.js:4, electron/flotante_preload.js:4, electron/language_preload.js:4).
+Candidate host search (contract-first):
+- electron/log.js is logging policy only (lines 1-24) -> contract mismatch.
+- electron/constants_main.js exports constants (lines 1-9) -> contract mismatch.
+- electron/settings.js owns persisted settings + IPC handlers (lines 7-15) -> main-only, not a preload helper.
+- electron/menu_builder.js owns menus/dialogs and uses app/Menu (lines 7-18) -> main-only, not preload-safe.
+Decision:
+- STOP: no contract-correct existing host module for a shared preload IPC wrapper without creating a new module or crossing boundary.
+Deflation estimate:
+- Would remove 3 wrapper clones across 4 preloads, but blocked.
+Risk notes:
+- Forcing a main-process module into preloads would violate the boundary and risk side effects.
+
+### (3) ELECTRON language helpers: merge via hardening?
+Findings (evidence):
+- Variants:
+  - electron/settings.js: normalizeLangTag (33-34), getLangBase (36-39), deriveLangKey (44).
+  - electron/menu_builder.js: normalizeLangTag (42), getLangBase (43-45).
+  - electron/presets_main.js: normalizeLangTag (19-20), normalizeLangBase with regex /^[a-z0-9]+$/ (23-26).
+  - electron/language_preload.js: inline normalization (8).
+- Base usage:
+  - electron/menu_builder.js: getLangBase for i18n paths (145-151).
+  - electron/settings.js: deriveLangKey for numberFormat path (44, 65-66).
+  - electron/presets_main.js: normalizeLangBase for defaults_presets_<lang>.json (66-70).
+- Dataflow constraints:
+  - public/language_window.html calls window.languageAPI.setLanguage(lang) (257-258).
+  - electron/language_preload.js normalizes but does not validate (7-10).
+  - electron/settings.js set-language normalizes but does not validate beyond empty (490-499).
+  - electron/settings.js normalizeSettings uses normalizeLangTag on persisted settings (255-266).
+Decision:
+- STOP (NOT MERGEABLE VIA HARDENING): no repo-proof that valid language tags/bases are restricted to /^[a-z0-9]+$/; stricter normalizeLangBase could change behavior for valid-but-nonconforming tags from settings or manifest inputs.
+Deflation estimate:
+- If mergeable, could remove 2 helper clones (menu_builder + presets_main) by reusing settings helpers; blocked.
+Risk notes:
+- Hardening could change file-path selection or preset bucket selection for tags with non-alnum base, leading to different defaults/presets.
