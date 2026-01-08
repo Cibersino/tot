@@ -5,6 +5,7 @@
 const log = window.getLogger('editor');
 
 log.debug('Manual editor starting...');
+const DEFAULT_LANG = 'es';
 
 const { AppConstants } = window;
 if (!AppConstants) {
@@ -29,7 +30,7 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines w
     if (window.editorAPI && typeof window.editorAPI.getSettings === 'function') {
       const settings = await window.editorAPI.getSettings();
       if (settings && settings.language) {
-        idiomaActual = settings.language || 'es';
+        idiomaActual = settings.language || DEFAULT_LANG;
       }
     }
     await applyEditorTranslations();
@@ -54,7 +55,7 @@ let suppressLocalUpdate = false;
 const warnOnceEditor = (...args) => log.warnOnce(...args);
 
 // --- i18n loader for editor (uses RendererI18n global) ---
-let idiomaActual = 'es';
+let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
 
 const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
@@ -65,7 +66,7 @@ if (!loadRendererTranslations || !tRenderer) {
 const tr = (path, fallback) => tRenderer(path, fallback);
 
 async function ensureEditorTranslations(lang) {
-  const target = (lang || '').toLowerCase() || 'es';
+  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
   if (translationsLoadedFor === target) return;
   await loadRendererTranslations(target);
   translationsLoadedFor = target;

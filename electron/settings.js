@@ -23,6 +23,7 @@ const path = require('path');
 const Log = require('./log');
 
 const log = Log.get('settings');
+const DEFAULT_LANG = 'es';
 
 // =============================================================================
 // Language helpers
@@ -40,7 +41,7 @@ const getLangBase = (lang) => {
 };
 
 // Canonical key for language-indexed buckets (presets, numberFormatting, etc.).
-const deriveLangKey = (langTag) => getLangBase(langTag) || 'es';
+const deriveLangKey = (langTag) => getLangBase(langTag) || DEFAULT_LANG;
 
 // =============================================================================
 // Injected dependencies + cache
@@ -257,7 +258,7 @@ function normalizeSettings(s) {
   if (!langTag) {
     log.warnOnce(
       'settings.normalizeSettings.emptyLanguage',
-      'settings.language is empty; language-dependent buckets will use fallback "es".'
+      `settings.language is empty; language-dependent buckets will use fallback "${DEFAULT_LANG}".`
     );
   }
 
@@ -426,7 +427,7 @@ function broadcastSettingsUpdated(settings, windows) {
  * If the language modal closes without selecting anything, apply a fallback language.
  * This is intentionally not silent: it modifies settings.language and persists it.
  */
-function applyFallbackLanguageIfUnset(fallbackLang = 'es') {
+function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
   try {
     let settings = getSettings();
     if (!settings.language) {
@@ -477,7 +478,7 @@ function registerIpc(
         err
       );
       return normalizeSettings({
-        language: 'es',
+        language: DEFAULT_LANG,
         presets_by_language: {},
         selected_preset_by_language: {},
         disabled_default_presets: {},
@@ -493,7 +494,7 @@ function registerIpc(
       if (!chosen) {
         log.warnOnce(
           'settings.set-language.invalid',
-          'set-language called with empty/invalid language; falling back to "es" for menu.'
+          `set-language called with empty/invalid language; falling back to "${DEFAULT_LANG}" for menu.`
         );
       }
 
@@ -503,7 +504,7 @@ function registerIpc(
         settings = saveSettings(settings);
       }
 
-      const menuLang = settings.language || 'es';
+      const menuLang = settings.language || DEFAULT_LANG;
 
       const windows = typeof getWindows === 'function' ? getWindows() : {};
 
@@ -581,7 +582,7 @@ function registerIpc(
       if (!langTag) {
         log.warnOnce(
           'settings.set-selected-preset.emptyLanguage',
-          'settings.language is empty; using fallback langKey for preset selection.'
+          `settings.language is empty; using fallback "${DEFAULT_LANG}" langKey for preset selection.`
         );
       }
       const langKey = deriveLangKey(langTag);

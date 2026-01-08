@@ -37,6 +37,7 @@ const updater = require('./updater');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
+const DEFAULT_LANG = 'es';
 
 // =============================================================================
 // File locations (persistent user data)
@@ -99,12 +100,12 @@ function getSelectedLanguage() {
         'main.menu.language.empty',
         'Settings language is empty; falling back to "es" for menu.'
       );
-      return 'es';
+      return DEFAULT_LANG;
     }
     return lang;
   } catch (err) {
     log.error('Failed to read settings language for menu; falling back to "es":', err);
-    return 'es';
+    return DEFAULT_LANG;
   }
 }
 
@@ -415,7 +416,7 @@ function createLanguageWindow() {
   // If the user closes the language window without choosing, persist a safe fallback and continue startup.
   langWin.on('closed', () => {
     try {
-      settingsState.applyFallbackLanguageIfUnset('es');
+    settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
     } catch (err) {
       log.error('Error applying fallback language:', err);
     } finally {

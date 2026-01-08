@@ -154,6 +154,26 @@ Cambios gate-relevantes confirmados por los parches aplicados (sin re-mapear):
    - Cualquier descripción de “delete/restore limpia selección” queda stale post-Gate D:
      ahora se recarga y se asegura una selección válida por idioma.
 
+## ADDENDUM - Delta Gate E (post-implementacion; sin re-mapear)
+
+Cambios gate-relevantes confirmados por los parches aplicados (sin re-mapear):
+
+1) **Se eliminan prefijos "FALLBACK:" en dialogs user-facing del main process.**
+   - Presets/updater ahora usan textos limpios en fallbacks, manteniendo `resolveDialogText` + `warnOnce`.
+
+   Localizador operativo:
+   - `electron/presets_main.js:L337-L386`
+   - `electron/updater.js:L83-L140`
+
+2) **DEFAULT_LANG centralizado en fallbacks de idioma del sistema.**
+   - Sustituye hardcoded "es" en fallbacks de idioma/seleccion en main/settings/renderers.
+   - No cambia buckets ni esquema persistido.
+
+   Localizador operativo:
+   - `electron/main.js:L38-L108`
+   - `electron/settings.js:L25-L45`
+   - `public/renderer.js:L1-L12`
+
 ---
 
 Convencion:

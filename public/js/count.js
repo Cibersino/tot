@@ -2,6 +2,7 @@
 'use strict';
 
 (() => {
+  const DEFAULT_LANG = 'es';
 
   function contarTextoSimple(texto) {
     const conEspacios = texto.length;
@@ -38,7 +39,7 @@
 
   function contarTexto(texto, opts = {}) {
     const modoConteo = opts.modoConteo === 'simple' ? 'simple' : 'preciso';
-    const idioma = opts.idioma || 'es';
+    const idioma = opts.idioma || DEFAULT_LANG;
     return (modoConteo === 'simple')
       ? contarTextoSimple(texto)
       : contarTextoPreciso(texto, idioma);

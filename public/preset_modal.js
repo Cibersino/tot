@@ -7,6 +7,7 @@
   const log = window.getLogger('preset-modal');
 
   log.debug('Preset modal starting...');
+  const DEFAULT_LANG = 'es';
 
   document.addEventListener('DOMContentLoaded', function () {
     // Selecting DOM elements
@@ -43,7 +44,7 @@
 
     let mode = 'new';
     let originalName = null;
-    let idiomaActual = 'es';
+    let idiomaActual = DEFAULT_LANG;
     let translationsLoadedFor = null;
 
     const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
@@ -54,7 +55,7 @@
     const mr = (path, params = {}, fallback = '') => msgRenderer(path, params, fallback);
 
     async function ensurePresetTranslations(lang) {
-      const target = (lang || '').toLowerCase() || 'es';
+      const target = (lang || '').toLowerCase() || DEFAULT_LANG;
       if (translationsLoadedFor === target) return;
       await loadRendererTranslations(target);
       translationsLoadedFor = target;

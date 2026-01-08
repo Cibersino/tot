@@ -291,4 +291,8 @@ Se considera “cumplido” el contrato cuando, como mínimo:
   - La selección se aplica en startup y al cambiar idioma en runtime; si falta/no existe el preset, se hace fallback determinista + `warnOnce` y se corrige el estado persistido (sin estado inválido silencioso).
   - Se mantiene intacta la persistencia existente de presets por idioma (`presets_by_language[...]`); no hay renombres de buckets.
 
-- Siguiente: **Gate E (Gate 8: Purga legacy)** — remover resabios/duplicaciones/fallbacks obsoletos que hayan quedado tras Gates A–D, manteniendo el contrato TO-BE y “no silence”.
+- **2026-01-07 - Gate E completado (Gate 8: Purga legacy):**
+  - Se eliminaron prefijos "FALLBACK:" en dialogs user-facing (presets/updater), manteniendo `resolveDialogText` + `warnOnce`.
+  - Se centralizo DEFAULT_LANG en fallbacks de idioma del sistema (main/settings/renderers/presets/count) sin cambiar buckets.
+  - Sin migraciones ni cambios de esquema.
+
