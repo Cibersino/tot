@@ -25,6 +25,16 @@ function normalizeLangBase(lang) {
   return /^[a-z0-9]+$/.test(base) ? base : '';
 }
 
+function resolveDialogText(dialogTexts, key, fallback) {
+  if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
+  log.warnOnce(
+    `presets_main.dialog.missing:${key}`,
+    'Missing dialog translation key (using fallback):',
+    key
+  );
+  return fallback;
+}
+
 function loadPresetArrayFromJson(filePath) {
   try {
     if (!fs.existsSync(filePath)) return [];
@@ -331,8 +341,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const lang = getEffectiveLang(settings);
       const dialogLang = normalizeLangTag(settings.language) || lang;
       const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
-      const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
-      const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
+      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'FALLBACK: Yes, continue');
+      const noLabel = resolveDialogText(dialogTexts, 'no', 'FALLBACK: No, cancel');
 
       // If no name provided, show information dialog and exit
       if (!name) {
@@ -340,11 +350,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           const { mainWin } = resolveWindows();
           await dialog.showMessageBox(mainWin || null, {
             type: 'none',
-            buttons: [dialogTexts.ok || 'FALLBACK: OK'],
+            buttons: [resolveDialogText(dialogTexts, 'ok', 'FALLBACK: OK')],
             defaultId: 0,
             message:
-              dialogTexts.delete_preset_none ||
-              'FALLBACK: No preset selected to delete',
+              resolveDialogText(
+                dialogTexts,
+                'delete_preset_none',
+                'FALLBACK: No preset selected to delete'
+              ),
           });
         } catch (err) {
           log.error(
@@ -364,7 +377,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         cancelId: 1,
         message:
           interpolateDialogText(dialogTexts.delete_preset_confirm, { name }) ||
-          'FALLBACK: Are you sure you want to delete this preset?',
+          resolveDialogText(
+            dialogTexts,
+            'delete_preset_confirm',
+            'FALLBACK: Are you sure you want to delete this preset?'
+          ),
       });
       if (conf.response === 1) {
         return { ok: false, code: 'CANCELLED' };
@@ -434,8 +451,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const lang = getEffectiveLang(settings);
       const dialogLang = normalizeLangTag(settings.language) || lang;
       const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
-      const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
-      const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
+      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'FALLBACK: Yes, continue');
+      const noLabel = resolveDialogText(dialogTexts, 'no', 'FALLBACK: No, cancel');
 
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
@@ -445,7 +462,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         cancelId: 1,
         message:
           interpolateDialogText(dialogTexts.restore_defaults_confirm, { lang: dialogLang }) ||
-          'FALLBACK: Restore default presets to original?',
+          resolveDialogText(
+            dialogTexts,
+            'restore_defaults_confirm',
+            'FALLBACK: Restore default presets to original?'
+          ),
       });
       if (conf.response === 1) {
         return { ok: false, code: 'CANCELLED' };
@@ -523,11 +544,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { mainWin } = resolveWindows();
       await dialog.showMessageBox(mainWin || null, {
         type: 'none',
-        buttons: [(dialogTexts && dialogTexts.ok) || 'FALLBACK: OK'],
+        buttons: [resolveDialogText(dialogTexts, 'ok', 'FALLBACK: OK')],
         defaultId: 0,
         message:
-          (dialogTexts && dialogTexts.edit_preset_none) ||
-          'FALLBACK: No preset selected to edit',
+          resolveDialogText(
+            dialogTexts,
+            'edit_preset_none',
+            'FALLBACK: No preset selected to edit'
+          ),
       });
       return { ok: true };
     } catch (err) {
@@ -551,8 +575,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const dialogLang = normalizeLangTag(settings.language) || lang;
       const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
 
-      const yesLabel = dialogTexts.yes || 'FALLBACK: Yes, continue';
-      const noLabel = dialogTexts.no || 'FALLBACK: No, cancel';
+      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'FALLBACK: Yes, continue');
+      const noLabel = resolveDialogText(dialogTexts, 'no', 'FALLBACK: No, cancel');
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
@@ -561,7 +585,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         cancelId: 1,
         message:
           interpolateDialogText(dialogTexts.edit_preset_confirm, { name: originalName }) ||
-          'FALLBACK: Are you sure you want to edit the preset?',
+          resolveDialogText(
+            dialogTexts,
+            'edit_preset_confirm',
+            'FALLBACK: Are you sure you want to edit the preset?'
+          ),
       });
       if (conf.response === 1) {
         return { ok: false, code: 'CANCELLED' };

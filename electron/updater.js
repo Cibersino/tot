@@ -23,6 +23,16 @@ let currentLanguageRef = () => 'es';
 // Avoid multiple checks in the same life cycle
 let updateCheckDone = false;
 
+function resolveDialogText(dialogTexts, key, fallback) {
+  if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
+  log.warnOnce(
+    `updater.dialog.missing:${key}`,
+    'Missing dialog translation key (using fallback):',
+    key
+  );
+  return fallback;
+}
+
 function compareVersions(a, b) {
   const pa = String(a || '').trim().split('.').map(n => parseInt(n, 10) || 0);
   const pb = String(b || '').trim().split('.').map(n => parseInt(n, 10) || 0);
@@ -72,11 +82,15 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     const remoteVer = await fetchRemoteVersion(VERSION_REMOTE_URL);
     if (!remoteVer) {
       if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = dlg.update_failed_title || 'FALLBACK: Update check failed';
-        const message = dlg.update_failed_message || 'FALLBACK: Could not check for updates. Please check your connection and try again.';
+        const title = resolveDialogText(dlg, 'update_failed_title', 'FALLBACK: Update check failed');
+        const message = resolveDialogText(
+          dlg,
+          'update_failed_message',
+          'FALLBACK: Could not check for updates. Please check your connection and try again.'
+        );
         await dialog.showMessageBox(mainWin, {
           type: 'none',
-          buttons: [dlg.ok || 'OK'],
+          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
           defaultId: 0,
           title,
           message,
@@ -87,12 +101,16 @@ async function checkForUpdates({ lang, manual = false } = {}) {
 
     if (compareVersions(remoteVer, localVer) <= 0) {
       if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = dlg.update_up_to_date_title || 'FALLBACK: You are up to date';
-        const message = (dlg.update_up_to_date_message || 'FALLBACK: You already have the latest version.')
+        const title = resolveDialogText(dlg, 'update_up_to_date_title', 'FALLBACK: You are up to date');
+        const message = resolveDialogText(
+          dlg,
+          'update_up_to_date_message',
+          'FALLBACK: You already have the latest version.'
+        )
           .replace('{local}', localVer);
         await dialog.showMessageBox(mainWin, {
           type: 'none',
-          buttons: [dlg.ok || 'OK'],
+          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
           defaultId: 0,
           title,
           message,
@@ -106,12 +124,16 @@ async function checkForUpdates({ lang, manual = false } = {}) {
       return;
     }
 
-    const title = dlg.update_title || 'FALLBACK: Update available';
-    const message = (dlg.update_message || 'FALLBACK: A new version is available. Download now?')
+    const title = resolveDialogText(dlg, 'update_title', 'FALLBACK: Update available');
+    const message = resolveDialogText(
+      dlg,
+      'update_message',
+      'FALLBACK: A new version is available. Download now?'
+    )
       .replace('{remote}', remoteVer)
       .replace('{local}', localVer);
-    const btnDownload = dlg.update_download || 'FALLBACK: Download';
-    const btnLater = dlg.update_later || 'FALLBACK: Later';
+    const btnDownload = resolveDialogText(dlg, 'update_download', 'FALLBACK: Download');
+    const btnLater = resolveDialogText(dlg, 'update_later', 'FALLBACK: Later');
 
     const res = await dialog.showMessageBox(mainWin, {
       type: 'none',

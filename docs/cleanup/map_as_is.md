@@ -70,6 +70,42 @@ Cambios gate-relevantes confirmados por los parches aplicados (sin re-mapear):
    - Cualquier arista que indique que `settings-updated` solo notifica a `mainWin` queda **stale post-Gate B**.
    - Cualquier arista que afirme que `editor/preset/flotante` no tienen listeners de settings queda **stale post-Gate B**.
 
+## ADDENDUM — Delta Gate C (post-implementación; Gates 5–6 Strings + Number formatting)
+
+Cambios gate-relevantes confirmados por los parches aplicados (sin re-mapear):
+
+1) **Strings: Regla A/B aplicada (DEFAULT obligatorio + overlay opcional + merge).**
+   - Menú (main process): `menu_builder.js` carga DEFAULT (`es`) y luego overlay (tag/base), y hace merge profundo.
+   - Renderers: `public/js/i18n.js` carga DEFAULT (`es`) como baseline y overlay (tag/base) opcional; hace merge profundo.
+   - Regla de keys faltantes: si falta una key en overlay (o en el objeto merge), se usa DEFAULT; cuando falta la key se emite `warnOnce` (no silencioso).
+   - Nota: si falta el bundle DEFAULT (build-time issue), se loguea `errorOnce` y se cae a fallback duro para no romper UI.
+
+   Localizadores operativos:
+   - `electron/menu_builder.js`: buscar `DEFAULT_LANG = 'es'`, `loadMainTranslations`, `deepMerge`, `resolveMenuLabel`.
+   - `public/js/i18n.js`: buscar `DEFAULT_LANG = 'es'`, `rendererDefaultTranslations`, `deepMerge`, `tRenderer` con `warnOnce`.
+
+2) **Formato numérico: deriva por langKey y cae a DEFAULT bucket antes de hardcoded.**
+   - `public/js/format.js`:
+     - intenta `settings.numberFormatting[langKey]`
+     - si falta, usa bucket DEFAULT (`es`) con `warnOnce`
+     - si falta también DEFAULT, usa separadores hardcoded con `warnOnce`
+
+   Localizador operativo:
+   - `public/js/format.js`: buscar `DEFAULT_LANG = 'es'` y `format.numberFormatting.fallback` / `format.numberFormatting.missing`.
+
+3) **Main-process dialogs: trazabilidad de keys faltantes.**
+   - Dialog texts en `presets_main.js` y `updater.js` usan `resolveDialogText` con `warnOnce` cuando falta una key, en vez de fallback silencioso.
+
+   Localizadores operativos:
+   - `electron/presets_main.js`: buscar `resolveDialogText` + `presets_main.dialog.missing:`
+   - `electron/updater.js`: buscar `resolveDialogText` + `updater.dialog.missing:`
+
+4) **Implicación para este mapa (baseline pre-Gate C):**
+   - Donde el mapa describa “candidates es-first-hit” para bundles, queda stale post-Gate C:
+     ahora es **DEFAULT-first + overlay + merge**.
+   - Donde el mapa describa fallback numérico directo a hardcoded, queda stale post-Gate C:
+     ahora es **langKey -> DEFAULT bucket -> hardcoded**, con `warnOnce`.
+
 ---
 
 Convencion:

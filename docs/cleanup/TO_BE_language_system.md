@@ -281,4 +281,9 @@ Se considera “cumplido” el contrato cuando, como mínimo:
   - Se agregan suscripciones por ventana (preload + renderer) para re-aplicar strings en runtime al cambiar idioma, sin reinicio.
   - Language picker se mantiene sin suscripción por ser ventana transitoria (decisión explícita).
 
-  - Siguiente: Gates 5–7 (strings Regla A/B, formato numérico por `langKey`, presets por idioma) y luego cierre final.
+- **2026-01-07 — Gate C completado (Gates 5–6: Strings + Formato numérico):**
+  - Regla A/B aplicada: DEFAULT (`es`) obligatorio + overlay (tag/base) opcional + merge; keys faltantes caen a DEFAULT con `warnOnce`.
+  - Formato numérico: `numberFormatting[langKey]` con fallback a bucket DEFAULT antes de hardcoded, con `warnOnce`.
+  - Dialogs main-process (presets/updater): keys faltantes logueadas con `warnOnce` (sin fallback silencioso).
+
+- Siguiente: **Gate D (Gate 7: Presets por idioma / langKey)** — defaults por idioma + presets usuario por idioma + “preset seleccionado” persistido por idioma + refrescos mínimos por evento.
