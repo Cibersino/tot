@@ -8,6 +8,7 @@ const { dialog, shell } = require('electron');
 const Log = require('./log');
 
 const log = Log.get('presets-main');
+const DEFAULT_LANG = 'es';
 const { CONFIG_PRESETS_DIR, ensureConfigPresetsDir } = require('./fs_storage');
 const settingsState = require('./settings');
 const menuBuilder = require('./menu_builder');
@@ -168,12 +169,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     const lang =
       s.language && typeof s.language === 'string' && s.language.trim()
         ? s.language.trim()
-        : 'es';
-    return normalizeLangBase(lang) || 'es';
+        : DEFAULT_LANG;
+    return normalizeLangBase(lang) || DEFAULT_LANG;
   }
 
   function getUserPresets(settings, lang) {
-    const langCode = normalizeLangBase(lang) || 'es';
+    const langCode = normalizeLangBase(lang) || DEFAULT_LANG;
     if (typeof settings.presets_by_language !== 'object' || settings.presets_by_language === null || Array.isArray(settings.presets_by_language)) {
       settings.presets_by_language = {};
     }
@@ -341,8 +342,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const lang = getEffectiveLang(settings);
       const dialogLang = normalizeLangTag(settings.language) || lang;
       const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
-      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'FALLBACK: Yes, continue');
-      const noLabel = resolveDialogText(dialogTexts, 'no', 'FALLBACK: No, cancel');
+      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
+      const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
 
       // If no name provided, show information dialog and exit
       if (!name) {
@@ -350,13 +351,13 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           const { mainWin } = resolveWindows();
           await dialog.showMessageBox(mainWin || null, {
             type: 'none',
-            buttons: [resolveDialogText(dialogTexts, 'ok', 'FALLBACK: OK')],
+            buttons: [resolveDialogText(dialogTexts, 'ok', 'OK')],
             defaultId: 0,
             message:
               resolveDialogText(
                 dialogTexts,
                 'delete_preset_none',
-                'FALLBACK: No preset selected to delete'
+                'No preset selected to delete'
               ),
           });
         } catch (err) {
@@ -380,7 +381,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           resolveDialogText(
             dialogTexts,
             'delete_preset_confirm',
-            'FALLBACK: Are you sure you want to delete this preset?'
+            'Are you sure you want to delete this preset?'
           ),
       });
       if (conf.response === 1) {
@@ -451,8 +452,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const lang = getEffectiveLang(settings);
       const dialogLang = normalizeLangTag(settings.language) || lang;
       const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
-      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'FALLBACK: Yes, continue');
-      const noLabel = resolveDialogText(dialogTexts, 'no', 'FALLBACK: No, cancel');
+      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
+      const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
 
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
@@ -465,7 +466,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           resolveDialogText(
             dialogTexts,
             'restore_defaults_confirm',
-            'FALLBACK: Restore default presets to original?'
+            'Restore default presets to original?'
           ),
       });
       if (conf.response === 1) {
@@ -544,13 +545,13 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { mainWin } = resolveWindows();
       await dialog.showMessageBox(mainWin || null, {
         type: 'none',
-        buttons: [resolveDialogText(dialogTexts, 'ok', 'FALLBACK: OK')],
+        buttons: [resolveDialogText(dialogTexts, 'ok', 'OK')],
         defaultId: 0,
         message:
           resolveDialogText(
             dialogTexts,
             'edit_preset_none',
-            'FALLBACK: No preset selected to edit'
+            'No preset selected to edit'
           ),
       });
       return { ok: true };
@@ -575,8 +576,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const dialogLang = normalizeLangTag(settings.language) || lang;
       const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
 
-      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'FALLBACK: Yes, continue');
-      const noLabel = resolveDialogText(dialogTexts, 'no', 'FALLBACK: No, cancel');
+      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
+      const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
@@ -588,7 +589,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           resolveDialogText(
             dialogTexts,
             'edit_preset_confirm',
-            'FALLBACK: Are you sure you want to edit the preset?'
+            'Are you sure you want to edit the preset?'
           ),
       });
       if (conf.response === 1) {

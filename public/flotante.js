@@ -4,6 +4,7 @@
 const log = window.getLogger('flotante');
 
 log.debug('Flotante starting...');
+const DEFAULT_LANG = 'es';
 
 const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');
@@ -59,7 +60,7 @@ async function applyFlotanteTranslations(lang) {
   const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
   if (!loadRendererTranslations || !tRenderer) return;
 
-  const target = (lang || '').toLowerCase() || 'es';
+  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
   if (translationsLoadedFor !== target) {
     try {
       await loadRendererTranslations(target);
@@ -82,7 +83,7 @@ async function applyFlotanteTranslations(lang) {
 // Try to load translations for play/pause symbols (use renderer.i18n)
 (async () => {
   try {
-    let lang = 'es';
+    let lang = DEFAULT_LANG;
     if (window.flotanteAPI && typeof window.flotanteAPI.getSettings === 'function') {
       try {
         const settings = await window.flotanteAPI.getSettings();

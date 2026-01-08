@@ -5,6 +5,7 @@
 const log = window.getLogger('renderer');
 
 log.debug('Renderer main starting...');
+const DEFAULT_LANG = 'es';
 
 const { AppConstants } = window;
 if (!AppConstants) {
@@ -70,7 +71,7 @@ let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main resp
 let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
 // --- Global cache and state for count/language ---
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
-let idiomaActual = 'es';      // Initializes on startup
+let idiomaActual = DEFAULT_LANG; // Initializes on startup
 let settingsCache = {};       // Settings cache (number formatting, language, etc.)
 // --- i18n renderer translations cache ---
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
@@ -166,7 +167,7 @@ function applyTranslations() {
   try {
     const settings = await window.electronAPI.getSettings();
     settingsCache = settings || {};
-    idiomaActual = settingsCache.language || 'es';
+    idiomaActual = settingsCache.language || DEFAULT_LANG;
     if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
 
     // Load and apply renderer translations
@@ -180,7 +181,7 @@ function applyTranslations() {
     }
   } catch (err) {
     log.error('Could not get user settings at startup:', err);
-    // Current language is set to 'es' by default
+    // Current language is set to DEFAULT_LANG by default
   }
 })();
 
@@ -390,7 +391,7 @@ const loadPresets = async () => {
     const settingsChangeHandler = async (newSettings) => {
       try {
         settingsCache = newSettings || {};
-        const nuevoIdioma = settingsCache.language || 'es';
+        const nuevoIdioma = settingsCache.language || DEFAULT_LANG;
         const idiomaCambio = (nuevoIdioma !== idiomaActual);
         if (idiomaCambio) {
           idiomaActual = nuevoIdioma;

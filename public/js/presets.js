@@ -3,6 +3,7 @@
 
 (() => {
   const log = window.getLogger('presets');
+  const DEFAULT_LANG = 'es';
 
   const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
   const getLangBase = (lang) => {
@@ -13,7 +14,7 @@
   };
 
   function combinePresets({ settings = {}, defaults = {} }) {
-    const langBase = getLangBase(settings.language) || 'es';
+    const langBase = getLangBase(settings.language) || DEFAULT_LANG;
     const userPresets = (settings.presets_by_language && Array.isArray(settings.presets_by_language[langBase]))
       ? settings.presets_by_language[langBase].slice()
       : [];
@@ -60,7 +61,7 @@
 
   async function loadPresetsIntoDom({
     electronAPI,
-    language = 'es',
+    language = DEFAULT_LANG,
     currentPresetName = null,
     selectEl,
     wpmInput,
@@ -70,7 +71,7 @@
     if (!electronAPI) throw new Error('electronAPI requerido para cargar presets');
 
     const settings = (await electronAPI.getSettings()) || { language, presets_by_language: {} };
-    const lang = getLangBase(settings.language || language) || 'es';
+    const lang = getLangBase(settings.language || language) || DEFAULT_LANG;
 
     let defaults = { general: [], languagePresets: {} };
     try {
