@@ -535,3 +535,217 @@ Aquí el punto crítico era si existía evidencia de que los idiomas/tags válid
 El documento actual contiene un tramo corrupto/duplicado (“nes 426-429...” repetido múltiples veces). Eso no es evidencia; es basura de edición. Recomendación documental:
 - En la próxima pasada de limpieza del artefacto, borrar esas repeticiones y agregar una regla de precedencia explícita:
   - “F1.3 + F1.4 supersede F1/F1.2 para DEFAULT_LANG host, preloads wrapper decision, y hardening decision”.
+
+# Gate F1 — Consolidated Decisions (Authoritative) + F2 Implementation Plan
+
+This section is AUTHORITATIVE for Gate F2. Where earlier sections (F1 / F1.1 / F1.2 / F1.3) conflict, this section supersedes them.
+
+## 0) Consolidated decisions (what will be implemented in F2)
+
+### D0.1 PUBLIC DEFAULT_LANG — host decision (contract-first)
+Decision:
+- Host DEFAULT_LANG in `public/js/constants.js` under `window.AppConstants` (constants authority).
+- This supersedes F1-A1 and F1.2 where DEFAULT_LANG was proposed under `public/js/i18n.js`.
+
+Rationale:
+- `AppConstants` is already actively consumed by window scripts (renderer/editor/preset_modal) and treated as a required runtime authority (throws if missing).
+- `i18n.js` remains the translation subsystem owner; it should read DEFAULT_LANG from AppConstants after load-order is correct.
+
+F2 implication:
+- Ensure `constants.js` loads BEFORE `i18n.js` on every entrypoint that loads `i18n.js`.
+- Ensure `constants.js` is loaded on flotante entrypoint (currently missing per F1.3).
+
+Deflation target:
+- Remove DEFAULT_LANG duplicates across the 8 public files listed in F1-A1.
+
+---
+
+### D0.2 PUBLIC normalizeLangTag/getLangBase — host decision
+Decision:
+- Keep language parsing helpers in `public/js/i18n.js` (RendererI18n) and reuse from other public/js modules via the `window.RendererI18n` API.
+- This keeps “constants authority” (AppConstants) separate from “i18n/language parsing owner” (RendererI18n).
+
+Deflation target:
+- Remove helper clones in `public/js/presets.js` and `public/js/format.js` (and any additional duplicates found in-scope, e.g. `public/js/count.js` if present as per F1-A2).
+
+---
+
+### D0.3 ELECTRON preload onSettingsChanged wrapper — STOP
+Decision:
+- STOP for consolidating the duplicated preload `onSettingsChanged` wrappers under current constraints (no new modules; no contract-mismatched host like log.js; no cross-preload coupling).
+
+This supersedes F1.2’s “MERGEABLE via log.js” conclusion.
+
+---
+
+### D0.4 ELECTRON DEFAULT_LANG — implement as planned (constants_main)
+Decision:
+- Keep the candidate F1-A5: centralize electron DEFAULT_LANG in `electron/constants_main.js` and remove duplicates in the 5 electron files listed in F1-A5.
+
+---
+
+### D0.5 ELECTRON resolveDialogText(dialogTexts, key, fallback) — implement as planned (menu_builder)
+Decision:
+- Keep candidate F1-A3: host shared dialog-text resolution helper in `electron/menu_builder.js` (dialogs/texts owner) and reuse from `electron/presets_main.js` and `electron/updater.js`.
+
+---
+
+### D0.6 ELECTRON language helpers — implement merge with controlled hardening ONLY IF enumeration path is confirmed
+Decision:
+- Implement candidate F1-A4 (and F1.1-A1): unify `normalizeLangTag` + `getLangBase` under a single electron owner (preferred: `electron/settings.js`, which already owns language normalization for persisted settings).
+- OPTIONAL hardening alignment with `presets_main.normalizeLangBase` is allowed ONLY if the runtime language selection is proven to be sourced from a controlled enumeration (manifest-driven) rather than free-form user input.
+
+Practical rule for F2:
+- If (and only if) language selection is driven by `i18n/languages.json` → IPC → language_window (manifest-controlled), then:
+  - adopt the stricter base rule (alnum base) as the shared standard, because it does not affect valid tags from the manifest and only changes behavior for tampered/invalid inputs.
+- If this proof is not fully present in-repo, implement ONLY the merge of identical semantics (no hardening change) and leave presets_main’s stricter behavior as-is (STOP for hardening).
+
+Note:
+- `electron/language_preload.js` inline normalization remains STOP (preload/main boundary).
+
+---
+
+### D0.7 PUBLIC renderer redundant execution — implement as planned
+Decision:
+- Implement F1-B1: remove the provably redundant duplicate `updatePreviewAndResults(currentText)` call in `public/renderer.js` when `idiomaCambio` is true (preserving correctness for `modeConteo` changes).
+
+---
+
+## 1) F2 implementation plan (minimal diffs, ordered)
+
+### Step 1 — PUBLIC runtime prerequisites (HTML load-order + constants authority)
+Files:
+- `public/js/constants.js`
+- `public/js/i18n.js`
+- `public/index.html`
+- `public/editor.html`
+- `public/preset_modal.html`
+- `public/flotante.html`
+
+Changes:
+1) Add `DEFAULT_LANG` to AppConstants (single source of truth).
+2) Update `public/js/i18n.js` to read DEFAULT_LANG from `window.AppConstants.DEFAULT_LANG` (no local DEFAULT_LANG constant).
+3) Enforce load-order: `constants.js` must load before `i18n.js` on entrypoints that load i18n.
+4) Ensure flotante entrypoint loads `constants.js` (and before i18n.js).
+
+Acceptance checks:
+- No window throws “AppConstants no disponible” on any entrypoint.
+- i18n loads without relying on a local DEFAULT_LANG.
+
+---
+
+### Step 2 — PUBLIC DEFAULT_LANG deduplication (remove 7 duplicates)
+Files (per F1-A1):
+- `public/renderer.js`
+- `public/editor.js`
+- `public/preset_modal.js`
+- `public/flotante.js`
+- `public/js/i18n.js`
+- `public/js/presets.js`
+- `public/js/format.js`
+- `public/js/count.js` (if present)
+
+Changes:
+- Replace local `DEFAULT_LANG = 'es'` with `AppConstants.DEFAULT_LANG` (or destructure once at top).
+- Remove the duplicated constant declarations.
+
+Acceptance checks:
+- Language fallback/default behavior unchanged (still defaults to same language value, now sourced from AppConstants).
+- No ReferenceError for AppConstants (guarded by Step 1 load-order).
+
+---
+
+### Step 3 — PUBLIC helper deduplication (normalizeLangTag/getLangBase)
+Files:
+- `public/js/i18n.js`
+- `public/js/presets.js`
+- `public/js/format.js` (and any other duplicates found in-scope)
+
+Changes:
+1) Expose the helpers on `window.RendererI18n` (or equivalent existing export object).
+2) Remove duplicated helper implementations from presets/format and call the shared ones.
+
+Acceptance checks:
+- No change in normalization semantics.
+- Script load order already satisfies RendererI18n availability where used (confirm on index.html; other entrypoints only if those scripts load there).
+
+---
+
+### Step 4 — PUBLIC redundant execution (renderer)
+Files:
+- `public/renderer.js`
+
+Change:
+- Refactor the `settings-updated` handler so `updatePreviewAndResults(currentText)` is called exactly once per event under the `idiomaCambio` path, while preserving correctness when `modeConteo` changes.
+
+Acceptance checks:
+- Language change still triggers exactly one render/update.
+- Mode change still triggers a render/update after mode is applied.
+
+---
+
+### Step 5 — ELECTRON DEFAULT_LANG deduplication (constants_main)
+Files:
+- `electron/constants_main.js`
+- `electron/main.js`
+- `electron/menu_builder.js`
+- `electron/settings.js`
+- `electron/presets_main.js`
+- `electron/updater.js`
+
+Changes:
+- Add DEFAULT_LANG export to `constants_main.js`.
+- Replace the 4 duplicate constants with imports from constants_main.
+
+Acceptance checks:
+- No require cycles introduced (constants_main must remain low-level).
+- Default language behavior unchanged.
+
+---
+
+### Step 6 — ELECTRON dialog helper deduplication (resolveDialogText)
+Files:
+- `electron/menu_builder.js`
+- `electron/presets_main.js`
+- `electron/updater.js`
+
+Changes:
+- Add/export shared helper from menu_builder (dialog texts owner).
+- Replace duplicated implementations in presets_main/updater with calls to the shared helper, preserving warnOnce key prefix behavior (parameterized).
+
+Acceptance checks:
+- Missing dialog text behavior unchanged (warnOnce + fallback).
+
+---
+
+### Step 7 — ELECTRON language helpers merge (settings as owner)
+Files:
+- `electron/settings.js`
+- `electron/menu_builder.js`
+- `electron/presets_main.js`
+
+Changes (base merge, always allowed):
+- Export `normalizeLangTag` + `getLangBase` from settings.js (or another contract-correct existing owner).
+- Update menu_builder + presets_main to reuse them.
+- Remove duplicates.
+
+Optional hardening (only if enumeration is proven manifest-driven end-to-end):
+- Align base handling to the stricter rule (alnum base), ensuring valid manifest tags are unaffected.
+- Keep preload boundary intact (language_preload stays local).
+
+Acceptance checks:
+- i18n path selection still resolves correctly for current supported languages.
+- presets defaults file selection remains correct (`defaults_presets_<base>.json` behavior preserved).
+
+---
+
+## 2) F2 smoke checklist (human-run; minimal)
+1) Launch app (main window) → no console errors; UI renders.
+2) Open Editor window → no “AppConstants missing” error; editor works.
+3) Open Preset modal → no missing AppConstants; preset list renders.
+4) Open Flotante window → no missing AppConstants; i18n strings render.
+5) Change language via language window → all open windows receive `settings-updated` and update once; no duplicate render artifacts.
+6) Restart app → persisted language respected; fallbacks behave as before.
+7) Trigger any dialogs relying on dialogTexts (presets/updater flows) → texts resolved; missing keys still warnOnce + fallback.
+
+END.
