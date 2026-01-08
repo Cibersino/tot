@@ -380,7 +380,7 @@ const loadPresets = async () => {
     }
 
     // Load presets and save them to the cache
-    const allPresets = await loadPresets();
+    await loadPresets();
 
     // Update the final view with the possible initial WPM
     updatePreviewAndResults(t || '');

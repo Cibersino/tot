@@ -97,7 +97,21 @@
     fillPresetsSelect(finalList, selectEl);
 
     let selected = null;
-    const selectedName = getSelectedPresetName(settings, lang, currentPresetName);
+    const persisted =
+      settings &&
+      settings.selected_preset_by_language &&
+      typeof settings.selected_preset_by_language[lang] === 'string'
+        ? settings.selected_preset_by_language[lang].trim()
+        : '';
+    const hasCurrent = typeof currentPresetName === 'string' && currentPresetName.trim();
+    const selectedName = persisted || (hasCurrent ? currentPresetName.trim() : '');
+    if (!selectedName && !persisted && !hasCurrent) {
+      log.warnOnce(
+        `presets.selectedPreset.none:${lang}`,
+        'No persisted preset selection for langKey; selecting safe default and persisting.',
+        { lang }
+      );
+    }
     if (selectedName) {
       selected = finalList.find(p => p.name === selectedName) || null;
       if (!selected) {
@@ -114,12 +128,6 @@
 
     if (selected) {
       applyPresetSelection(selected, { selectEl, wpmInput, wpmSlider, presetDescription });
-      const persisted =
-        settings &&
-        settings.selected_preset_by_language &&
-        typeof settings.selected_preset_by_language[lang] === 'string'
-          ? settings.selected_preset_by_language[lang].trim()
-          : '';
       if (selected.name && selected.name !== persisted) {
         try {
           if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {

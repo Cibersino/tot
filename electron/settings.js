@@ -586,6 +586,9 @@ function registerIpc(
       }
       const langKey = deriveLangKey(langTag);
       settings.selected_preset_by_language = settings.selected_preset_by_language || {};
+      if (settings.selected_preset_by_language[langKey] === name) {
+        return { ok: true, langKey, name };
+      }
       settings.selected_preset_by_language[langKey] = name;
       settings = saveSettings(settings);
       return { ok: true, langKey, name };
