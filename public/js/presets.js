@@ -38,6 +38,20 @@
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  function getSelectedPresetName(settings, langBase, currentPresetName) {
+    const persisted =
+      settings &&
+      settings.selected_preset_by_language &&
+      typeof settings.selected_preset_by_language[langBase] === 'string'
+        ? settings.selected_preset_by_language[langBase].trim()
+        : '';
+    if (persisted) return persisted;
+    if (typeof currentPresetName === 'string' && currentPresetName.trim()) {
+      return currentPresetName.trim();
+    }
+    return '';
+  }
+
   function fillPresetsSelect(list = [], selectEl) {
     if (!selectEl) return;
     selectEl.innerHTML = '';
@@ -83,8 +97,16 @@
     fillPresetsSelect(finalList, selectEl);
 
     let selected = null;
-    if (currentPresetName) {
-      selected = finalList.find(p => p.name === currentPresetName) || null;
+    const selectedName = getSelectedPresetName(settings, lang, currentPresetName);
+    if (selectedName) {
+      selected = finalList.find(p => p.name === selectedName) || null;
+      if (!selected) {
+        log.warnOnce(
+          `presets.selectedPreset.missing:${lang}`,
+          'Selected preset not found; falling back to safe preset:',
+          { requested: selectedName, lang }
+        );
+      }
     }
     if (!selected) {
       selected = finalList.find(p => p.name === 'default') || finalList[0] || null;
@@ -92,6 +114,21 @@
 
     if (selected) {
       applyPresetSelection(selected, { selectEl, wpmInput, wpmSlider, presetDescription });
+      const persisted =
+        settings &&
+        settings.selected_preset_by_language &&
+        typeof settings.selected_preset_by_language[lang] === 'string'
+          ? settings.selected_preset_by_language[lang].trim()
+          : '';
+      if (selected.name && selected.name !== persisted) {
+        try {
+          if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
+            await electronAPI.setSelectedPreset(selected.name);
+          }
+        } catch (err) {
+          log.error('Error persisting selected preset:', err);
+        }
+      }
     } else {
       if (selectEl) selectEl.selectedIndex = -1;
       if (presetDescription) presetDescription.textContent = '';
