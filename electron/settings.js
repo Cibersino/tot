@@ -184,6 +184,24 @@ function normalizeSettings(s) {
     s.presets_by_language = {};
   }
 
+  // selected_preset_by_language:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof s.selected_preset_by_language === 'undefined') {
+    s.selected_preset_by_language = {};
+  } else if (
+    typeof s.selected_preset_by_language !== 'object' ||
+    Array.isArray(s.selected_preset_by_language) ||
+    s.selected_preset_by_language === null
+  ) {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidSelectedPresetByLanguage',
+      'Invalid selected_preset_by_language; resetting to empty object:',
+      { type: typeof s.selected_preset_by_language, isArray: Array.isArray(s.selected_preset_by_language) }
+    );
+    s.selected_preset_by_language = {};
+  }
+
   // numberFormatting must be a plain object (may be missing/null/array/invalid types).
   if (typeof s.numberFormatting === 'undefined') {
     s.numberFormatting = {};
@@ -264,6 +282,22 @@ function normalizeSettings(s) {
     s.presets_by_language[langBase] = [];
   }
 
+  const selectedPreset = s.selected_preset_by_language[langBase];
+  if (typeof selectedPreset !== 'undefined') {
+    if (typeof selectedPreset !== 'string') {
+      log.warnOnce(
+        'settings.normalizeSettings.invalidSelectedPresetEntry',
+        'Invalid selected_preset_by_language entry; removing:',
+        { langBase, type: typeof selectedPreset }
+      );
+      delete s.selected_preset_by_language[langBase];
+    } else if (!selectedPreset.trim()) {
+      delete s.selected_preset_by_language[langBase];
+    } else {
+      s.selected_preset_by_language[langBase] = selectedPreset.trim();
+    }
+  }
+
   // Ensure number formatting exists for the current base language.
   ensureNumberFormattingForBase(s, langBase);
 
@@ -293,6 +327,7 @@ function init({ loadJson, saveJson, settingsFile }) {
   const raw = _loadJson(_settingsFile, {
     language: '',
     presets_by_language: {},
+    selected_preset_by_language: {},
     disabled_default_presets: {},
   });
 
@@ -320,6 +355,7 @@ function getSettings() {
   const raw = _loadJson(_settingsFile, {
     language: '',
     presets_by_language: {},
+    selected_preset_by_language: {},
     disabled_default_presets: {},
   });
 
@@ -443,6 +479,7 @@ function registerIpc(
       return normalizeSettings({
         language: 'es',
         presets_by_language: {},
+        selected_preset_by_language: {},
         disabled_default_presets: {},
       });
     }
@@ -523,6 +560,37 @@ function registerIpc(
       return { ok: true, mode: settings.modeConteo };
     } catch (err) {
       log.error('IPC set-mode-conteo failed:', err);
+      return { ok: false, error: String(err) };
+    }
+  });
+
+  // set-selected-preset: persists selection per language
+  ipcMain.handle('set-selected-preset', async (_event, presetName) => {
+    try {
+      const name = typeof presetName === 'string' ? presetName.trim() : '';
+      if (!name) {
+        log.warnOnce(
+          'settings.set-selected-preset.invalid',
+          'set-selected-preset called with empty/invalid preset name (ignored).'
+        );
+        return { ok: false, error: 'invalid' };
+      }
+
+      let settings = getSettings();
+      const langTag = settings && typeof settings.language === 'string' ? settings.language : '';
+      if (!langTag) {
+        log.warnOnce(
+          'settings.set-selected-preset.emptyLanguage',
+          'settings.language is empty; using fallback langKey for preset selection.'
+        );
+      }
+      const langKey = deriveLangKey(langTag);
+      settings.selected_preset_by_language = settings.selected_preset_by_language || {};
+      settings.selected_preset_by_language[langKey] = name;
+      settings = saveSettings(settings);
+      return { ok: true, langKey, name };
+    } catch (err) {
+      log.error('IPC set-selected-preset failed:', err);
       return { ok: false, error: String(err) };
     }
   });

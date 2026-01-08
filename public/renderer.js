@@ -363,6 +363,13 @@ const loadPresets = async () => {
               currentPresetName = found.name;
               applyPresetSelection(found, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
               wpm = found.wpm;
+              if (window.electronAPI && typeof window.electronAPI.setSelectedPreset === 'function') {
+                try {
+                  await window.electronAPI.setSelectedPreset(found.name);
+                } catch (err) {
+                  log.error('Error persisting preset-created selection:', err);
+                }
+              }
               updatePreviewAndResults(currentText);
             }
           }
@@ -374,14 +381,6 @@ const loadPresets = async () => {
 
     // Load presets and save them to the cache
     const allPresets = await loadPresets();
-
-    // Select the initial 'default' preset from the general settings and set it visually
-    const initialPreset = allPresets.find(p => p.name === 'default');
-    if (initialPreset) {
-      currentPresetName = initialPreset.name;
-      applyPresetSelection(initialPreset, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
-      wpm = initialPreset.wpm;
-    }
 
     // Update the final view with the possible initial WPM
     updatePreviewAndResults(t || '');
@@ -407,16 +406,7 @@ const loadPresets = async () => {
           applyTranslations();
           // Reload presets for the new language and synchronize selection
           try {
-            const updated = await loadPresets();
-            let selected = updated.find(p => p.name === currentPresetName);
-            if (!selected) {
-              selected = updated.find(p => p.name === 'default') || updated[0];
-            }
-            if (selected) {
-              currentPresetName = selected.name;
-              applyPresetSelection(selected, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
-              wpm = selected.wpm;
-            }
+            await loadPresets();
           } catch (err) {
             log.error('Error loading presets after language change:', err);
           }
@@ -756,6 +746,11 @@ presetsSelect.addEventListener('change', () => {
     wpmInput.value = wpm;
     wpmSlider.value = wpm;
     presetDescription.textContent = preset.description || '';
+    if (window.electronAPI && typeof window.electronAPI.setSelectedPreset === 'function') {
+      window.electronAPI.setSelectedPreset(preset.name).catch((err) => {
+        log.error('Error persisting selected preset:', err);
+      });
+    }
     updatePreviewAndResults(currentText);
   }
 });
@@ -966,11 +961,9 @@ btnDeletePreset.addEventListener('click', async () => {
     const res = await window.electronAPI.requestDeletePreset(name);
 
     if (res && res.ok) {
-      // On success, reload presets and clear selection. Do not change WPM.
+      // On success, reload presets and apply fallback selection if needed.
       await loadPresets();
-      presetsSelect.selectedIndex = -1;
-      currentPresetName = null;
-      presetDescription.textContent = '';
+      updatePreviewAndResults(currentText);
       // No further UI dialog required - main already showed confirmation earlier.
       return;
     } else {
@@ -1002,12 +995,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
     if (res && res.ok) {
       // Reload presets to reflect restored defaults
       await loadPresets();
-
-      // After restoration we leave selection cleared (consistently with delete behavior).
-      presetsSelect.selectedIndex = -1;
-      currentPresetName = null;
-      presetDescription.textContent = '';
-
+      updatePreviewAndResults(currentText);
       return;
     } else {
       if (res && res.code === 'CANCELLED') {

@@ -32,6 +32,9 @@ const api = {
     // Get default presets from main (electron/presets/*.js)
     getDefaultPresets: () => ipcRenderer.invoke('get-default-presets'),
 
+    // Persist selected preset per language (settings)
+    setSelectedPreset: (name) => ipcRenderer.invoke('set-selected-preset', name),
+
     // Request preset deletion (main will show native dialogs and perform persistence)
     requestDeletePreset: (name) => ipcRenderer.invoke('request-delete-preset', name),
 
