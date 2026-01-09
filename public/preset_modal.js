@@ -29,7 +29,7 @@
     if (!AppConstants) {
       throw new Error('[preset_modal] AppConstants no disponible; verifica la carga de constants.js');
     }
-    const { PRESET_DESC_MAX, PRESET_NAME_MAX, WPM_MIN, WPM_MAX } = AppConstants;
+    const { DEFAULT_LANG, PRESET_DESC_MAX, PRESET_NAME_MAX, WPM_MIN, WPM_MAX } = AppConstants;
 
     // Initial configuration
     const descMaxLength = PRESET_DESC_MAX;
@@ -43,7 +43,7 @@
 
     let mode = 'new';
     let originalName = null;
-    let idiomaActual = 'es';
+    let idiomaActual = DEFAULT_LANG;
     let translationsLoadedFor = null;
 
     const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
@@ -54,7 +54,7 @@
     const mr = (path, params = {}, fallback = '') => msgRenderer(path, params, fallback);
 
     async function ensurePresetTranslations(lang) {
-      const target = (lang || '').toLowerCase() || 'es';
+      const target = (lang || '').toLowerCase() || DEFAULT_LANG;
       if (translationsLoadedFor === target) return;
       await loadRendererTranslations(target);
       translationsLoadedFor = target;
@@ -128,6 +128,19 @@
       } catch (err) {
         log.error('Error setting up presetAPI.onInit listener:', err);
       }
+    }
+
+    if (window.presetAPI && typeof window.presetAPI.onSettingsChanged === 'function') {
+      window.presetAPI.onSettingsChanged(async (settings) => {
+        try {
+          const nextLang = settings && settings.language ? settings.language : '';
+          if (!nextLang || nextLang === idiomaActual) return;
+          idiomaActual = nextLang;
+          await applyPresetTranslations(mode);
+        } catch (err) {
+          log.warn('preset_modal: failed to apply settings update:', err);
+        }
+      });
     }
 
     // helper function to build preset from inputs (minimum validations)

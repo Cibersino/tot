@@ -23,28 +23,47 @@ const path = require('path');
 // =============================================================================
 
 const Log = require('./log');
+const { DEFAULT_LANG } = require('./constants_main');
+const { normalizeLangTag, getLangBase } = require('./settings');
 
 const log = Log.get('menu');
 
-// =============================================================================
-// Language helpers
-// =============================================================================
-// We normalize language tags so folder/file paths are predictable.
-// Examples:
-// - 'es_CL' -> 'es-cl'
-// - 'EN'    -> 'en'
-//
-// "Base language" is the part before a region:
-// - 'es-cl' -> 'es'
-// - 'en-us' -> 'en'
+const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 
-const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
-const getLangBase = (lang) => {
-    const tag = normalizeLangTag(lang);
-    if (!tag) return '';
-    const idx = tag.indexOf('-');
-    return idx > 0 ? tag.slice(0, idx) : tag;
+const deepMerge = (base, overlay) => {
+    const result = Object.assign({}, base || {});
+    if (!overlay) return result;
+    Object.keys(overlay).forEach((key) => {
+        if (isPlainObject(result[key]) && isPlainObject(overlay[key])) {
+            result[key] = deepMerge(result[key], overlay[key]);
+        } else {
+            result[key] = overlay[key];
+        }
+    });
+    return result;
 };
+
+function resolveMenuLabel(obj, key, fallback) {
+    if (obj && typeof obj[key] === 'string') return obj[key];
+    log.warnOnce(
+        `menu_builder.missingKey:${key}`,
+        'Missing menu translation key (using fallback):',
+        key
+    );
+    return fallback;
+}
+
+function resolveDialogText(dialogTexts, key, fallback, opts = {}) {
+    if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
+    const logger = opts.log || log;
+    const prefix = opts.warnPrefix || 'menu_builder.dialog.missing';
+    logger.warnOnce(
+        `${prefix}:${key}`,
+        'Missing dialog translation key (using fallback):',
+        key
+    );
+    return fallback;
+}
 
 // =============================================================================
 // Translation loading
@@ -68,59 +87,100 @@ const getLangBase = (lang) => {
 // - If nothing can be loaded, we return {} and the menu uses hardcoded labels.
 
 function loadMainTranslations(lang) {
-    const requested = normalizeLangTag(lang) || 'es';
-    const base = getLangBase(requested) || 'es';
+    const requested = normalizeLangTag(lang);
+    if (!requested) {
+        log.warnOnce(
+            'menu_builder.loadMainTranslations.emptyLang',
+            'Invalid language tag for menu; using default bundle only.'
+        );
+    }
 
-    const candidates = [];
-    if (requested) candidates.push(requested);
-    if (base && base !== requested) candidates.push(base);
-    if (!candidates.includes('es')) candidates.push('es');
+    const base = getLangBase(requested) || '';
 
-    for (const langCode of candidates) {
-        const langBase = getLangBase(langCode) || langCode;
+    const defaultBundle = loadBundle(DEFAULT_LANG, DEFAULT_LANG, true);
+    if (!defaultBundle) {
+        log.errorOnce(
+            `menu_builder.loadMainTranslations.defaultMissing:${DEFAULT_LANG}`,
+            'Default main.json missing or invalid (using empty defaults):',
+            DEFAULT_LANG
+        );
+    }
 
-        const files = [];
-        if (langCode.includes('-')) {
-            files.push(path.join(__dirname, '..', 'i18n', langBase, langCode, 'main.json'));
-        }
-        files.push(path.join(__dirname, '..', 'i18n', langCode, 'main.json'));
-
-        for (const file of files) {
-            if (!fs.existsSync(file)) continue;
-
-            try {
-                let raw = fs.readFileSync(file, 'utf8');
-
-                // Remove UTF-8 BOM if present (some editors add it and JSON.parse fails).
-                raw = raw.replace(/^\uFEFF/, '');
-
-                if (raw.trim() === '') {
-                    log.warnOnce(
-                        `menu_builder.loadMainTranslations:empty:${requested}:${langCode}:${String(file)}`,
-                        'main.json is empty (trying fallback):',
-                        { requested, langCode, file }
-                    );
-                    continue;
-                }
-
-                return JSON.parse(raw);
-            } catch (err) {
-                log.warnOnce(
-                    `menu_builder.loadMainTranslations:failed:${requested}:${langCode}:${String(file)}`,
-                    'Failed to load/parse main.json (trying fallback):',
-                    { requested, langCode, file },
-                    err
-                );
-            }
+    let overlay = null;
+    if (requested && requested !== DEFAULT_LANG) {
+        overlay = loadOverlay(requested, base);
+        if (!overlay) {
+            log.warnOnce(
+                `menu_builder.loadMainTranslations.overlayMissing:${requested}`,
+                'No overlay main.json found (using default only):',
+                { requested, base }
+            );
         }
     }
 
-    log.warnOnce(
-        `menu_builder.loadMainTranslations:none:${requested}`,
-        'No main.json could be loaded (using empty translations):',
-        { requested, base, candidates }
-    );
-    return {};
+    return deepMerge(defaultBundle || {}, overlay || {});
+}
+
+function loadOverlay(requested, base) {
+    const candidates = [];
+    if (requested) candidates.push(requested);
+    if (base && base !== requested) candidates.push(base);
+
+    for (const langCode of candidates) {
+        const parsed = loadBundle(langCode, requested, false);
+        if (parsed) return parsed;
+    }
+
+    return null;
+}
+
+function loadBundle(langCode, requested, required) {
+    const langBase = getLangBase(langCode) || langCode;
+
+    const files = [];
+    if (langCode.includes('-')) {
+        files.push(path.join(__dirname, '..', 'i18n', langBase, langCode, 'main.json'));
+    }
+    files.push(path.join(__dirname, '..', 'i18n', langCode, 'main.json'));
+
+    for (const file of files) {
+        if (!fs.existsSync(file)) continue;
+
+        try {
+            let raw = fs.readFileSync(file, 'utf8');
+
+            // Remove UTF-8 BOM if present (some editors add it and JSON.parse fails).
+            raw = raw.replace(/^\uFEFF/, '');
+
+            if (raw.trim() === '') {
+                log.warnOnce(
+                    `menu_builder.loadMainTranslations:empty:${requested || langCode}:${langCode}:${String(file)}`,
+                    'main.json is empty (trying fallback):',
+                    { requested, langCode, file }
+                );
+                continue;
+            }
+
+            return JSON.parse(raw);
+        } catch (err) {
+            log.warnOnce(
+                `menu_builder.loadMainTranslations:failed:${requested || langCode}:${langCode}:${String(file)}`,
+                'Failed to load/parse main.json (trying fallback):',
+                { requested, langCode, file },
+                err
+            );
+        }
+    }
+
+    if (required) {
+        log.errorOnce(
+            `menu_builder.loadMainTranslations.requiredMissing:${langCode}`,
+            'Required main.json missing/invalid:',
+            { langCode, files }
+        );
+    }
+
+    return null;
 }
 
 // =============================================================================
@@ -150,7 +210,7 @@ function getDialogTexts(lang) {
  * @param {Function} [opts.onOpenLanguage] - Callback that opens the language selection window.
  */
 function buildAppMenu(lang, opts = {}) {
-    const effectiveLang = normalizeLangTag(lang) || 'es';
+    const effectiveLang = normalizeLangTag(lang) || DEFAULT_LANG;
     const tr = loadMainTranslations(effectiveLang) || {};
     const tMain = tr.main || {};
     const m = tMain.menu || {};
@@ -198,44 +258,44 @@ function buildAppMenu(lang, opts = {}) {
     // - Each click emits a stable action id (string).
     const menuTemplate = [
         {
-            label: m.como_usar || 'Como usar la app?',
+            label: resolveMenuLabel(m, 'como_usar', 'Como usar la app?'),
             submenu: [
                 {
-                    label: m.guia_basica || 'Guide',
+                    label: resolveMenuLabel(m, 'guia_basica', 'Guide'),
                     click: () => sendMenuClick('guia_basica'),
                 },
                 {
-                    label: m.instrucciones_completas || 'Instructions',
+                    label: resolveMenuLabel(m, 'instrucciones_completas', 'Instructions'),
                     click: () => sendMenuClick('instrucciones_completas'),
                 },
                 {
-                    label: m.faq || 'FAQ',
+                    label: resolveMenuLabel(m, 'faq', 'FAQ'),
                     click: () => sendMenuClick('faq'),
                 },
             ],
         },
         {
-            label: m.herramientas || 'Tools',
+            label: resolveMenuLabel(m, 'herramientas', 'Tools'),
             submenu: [
                 {
-                    label: m.cargador_texto || 'Text loader',
+                    label: resolveMenuLabel(m, 'cargador_texto', 'Text loader'),
                     click: () => sendMenuClick('cargador_texto'),
                 },
                 {
-                    label: m.cargador_imagen || 'Image loader',
+                    label: resolveMenuLabel(m, 'cargador_imagen', 'Image loader'),
                     click: () => sendMenuClick('contador_imagen'),
                 },
                 {
-                    label: m.test_velocidad || 'Speed test',
+                    label: resolveMenuLabel(m, 'test_velocidad', 'Speed test'),
                     click: () => sendMenuClick('test_velocidad'),
                 },
             ],
         },
         {
-            label: m.preferencias || 'Preferences',
+            label: resolveMenuLabel(m, 'preferencias', 'Preferences'),
             submenu: [
                 {
-                    label: m.idioma || 'Language',
+                    label: resolveMenuLabel(m, 'idioma', 'Language'),
                     // The window lifecycle is handled by main.js; this module only calls the hook.
                     click: () => {
                         if (onOpenLanguage) {
@@ -257,70 +317,70 @@ function buildAppMenu(lang, opts = {}) {
                     },
                 },
                 {
-                    label: m.diseno || 'Design',
+                    label: resolveMenuLabel(m, 'diseno', 'Design'),
                     submenu: [
                         {
-                            label: m.skins || 'Skins',
+                            label: resolveMenuLabel(m, 'skins', 'Skins'),
                             click: () => sendMenuClick('diseno_skins'),
                         },
                         {
-                            label: m.crono_flotante || 'FW',
+                            label: resolveMenuLabel(m, 'crono_flotante', 'FW'),
                             click: () => sendMenuClick('diseno_crono_flotante'),
                         },
                         {
-                            label: m.fuentes || 'Fonts',
+                            label: resolveMenuLabel(m, 'fuentes', 'Fonts'),
                             click: () => sendMenuClick('diseno_fuentes'),
                         },
                         {
-                            label: m.colores || 'Colors',
+                            label: resolveMenuLabel(m, 'colores', 'Colors'),
                             click: () => sendMenuClick('diseno_colores'),
                         },
                     ],
                 },
                 {
-                    label: m.shortcuts || 'Shortcuts',
+                    label: resolveMenuLabel(m, 'shortcuts', 'Shortcuts'),
                     click: () => sendMenuClick('shortcuts'),
                 },
                 {
-                    label: m.presets_por_defecto || 'Default presets',
+                    label: resolveMenuLabel(m, 'presets_por_defecto', 'Default presets'),
                     click: () => sendMenuClick('presets_por_defecto'),
                 },
             ],
         },
         {
-            label: m.comunidad || 'Community',
+            label: resolveMenuLabel(m, 'comunidad', 'Community'),
             submenu: [
                 {
-                    label: m.discord || 'Discord',
+                    label: resolveMenuLabel(m, 'discord', 'Discord'),
                     click: () => sendMenuClick('discord'),
                 },
                 {
-                    label: m.avisos || 'News & updates',
+                    label: resolveMenuLabel(m, 'avisos', 'News & updates'),
                     click: () => sendMenuClick('avisos'),
                 },
             ],
         },
         {
-            label: m.links_interes || 'Links',
+            label: resolveMenuLabel(m, 'links_interes', 'Links'),
             click: () => sendMenuClick('links_interes'),
         },
         {
-            label: m.colabora || '($)',
+            label: resolveMenuLabel(m, 'colabora', '($)'),
             click: () => sendMenuClick('colabora'),
         },
         {
-            label: m.ayuda || '?',
+            label: resolveMenuLabel(m, 'ayuda', '?'),
             submenu: [
                 {
-                    label: m.actualizar_version || 'Update',
+                    label: resolveMenuLabel(m, 'actualizar_version', 'Update'),
                     click: () => sendMenuClick('actualizar_version'),
                 },
                 {
-                    label: m.readme || 'Readme',
+                    label: resolveMenuLabel(m, 'readme', 'Readme'),
                     click: () => sendMenuClick('readme'),
                 },
                 {
-                    label: m.acerca_de || 'About',
+                    label: resolveMenuLabel(m, 'acerca_de', 'About'),
                     click: () => sendMenuClick('acerca_de'),
                 },
             ],
@@ -333,12 +393,12 @@ function buildAppMenu(lang, opts = {}) {
     const showDevMenu = process.env.SHOW_DEV_MENU === '1';
     if (!app.isPackaged && showDevMenu) {
         menuTemplate.push({
-            label: m.desarrollo || 'Development',
+            label: resolveMenuLabel(m, 'desarrollo', 'Development'),
             submenu: [
-                { role: 'reload', label: m.recargar || 'Reload' },
-                { role: 'forcereload', label: m.forcereload || 'Force reload' },
+                { role: 'reload', label: resolveMenuLabel(m, 'recargar', 'Reload') },
+                { role: 'forcereload', label: resolveMenuLabel(m, 'forcereload', 'Force reload') },
                 {
-                    label: m.toggle_devtools || 'Toggle DevTools',
+                    label: resolveMenuLabel(m, 'toggle_devtools', 'Toggle DevTools'),
                     accelerator: 'Ctrl+Shift+I',
                     click: () => {
                         if (!mainWindow || mainWindow.isDestroyed()) return;
@@ -369,6 +429,7 @@ function buildAppMenu(lang, opts = {}) {
 module.exports = {
     getDialogTexts,
     buildAppMenu,
+    resolveDialogText,
 };
 
 // =============================================================================

@@ -1,12 +1,12 @@
 ﻿{
   "main": {
     "menu": {
-      "como_usar": "¿Cómo es la hueá?",
+      "como_usar": "¿Cómo es la custión?",
       "guia_basica": "Explicación piola",
       "instrucciones_completas": "Toda la pulenta",
       "faq": "No te quedís con dudas",
       "herramientas": "Artilugios",
-      "cargador_texto": "Sube la hueá",
+      "cargador_texto": "Sube la custión",
       "cargador_imagen": "Sube la tofo",
       "test_velocidad": "Qué tan rápido leís",
       "preferencias": "A tu pinta",
@@ -18,15 +18,15 @@
       "colores": "Los matices del barrio",
       "shortcuts": "La movía rápida del teclado",
       "presets_por_defecto": "Lo que viene de fábrica",
-      "comunidad": "La pobla",
+      "comunidad": "El barrio",
       "discord": "Discord",
       "avisos": "Chismesitos",
       "links_interes": "Links bacanes",
       "colabora": "RAJATE CON UNA MONEA ($)",
       "ayuda": "¿Tai perdío?",
       "actualizar_version": "Ponerse al día con la última versión",
-      "readme": "Léeme po, ctm",
-      "acerca_de": "De quién es esta hueá",
+      "readme": "Léeme po",
+      "acerca_de": "De quién es esta custión",
       "desarrollo": "La cocina",
       "recargar": "Dárselo de nuevo",
       "forcereload": "Reiniciar a la mala",
@@ -37,7 +37,7 @@
       "yes": "Voh dale",
       "no": "No, sorri hno",
       "delete_preset_confirm": "¿Querís pitiarte el preset \"{name}\"?",
-      "delete_preset_none": "No habís marcao niuna hueá pa' borrar, pajarón",
+      "delete_preset_none": "No habís marcao niuna custión pa' borrar, pajarón",
       "restore_defaults_confirm": "¿Querí dejar todo como estaba al principio? Se va a borrar toda la mano que le metiste a los presets del \"{lang}\".",
       "edit_preset_none": "No tenís niun preset elegío pa' meterle mano",
       "edit_preset_confirm": "¿Le vai a refaccionar el corte al \"{name}\" por este de ahora?",
@@ -47,7 +47,7 @@
       "update_later": "Mañana vemos",
       "update_up_to_date_title": "Estái joya",
       "update_up_to_date_message": "Ya tenís la última versión ({local}).",
-      "update_failed_title": "Cagó la hueá",
+      "update_failed_title": "Cagó la custión",
       "update_failed_message": "No pudimos cachar la mano. Mira si tenís internet."
     }
   }

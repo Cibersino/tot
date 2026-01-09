@@ -19,7 +19,7 @@ const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electro
 const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
-const { MAX_TEXT_CHARS, MAX_IPC_CHARS } = require('./constants_main');
+const { MAX_TEXT_CHARS, MAX_IPC_CHARS, DEFAULT_LANG } = require('./constants_main');
 
 const {
   CONFIG_DIR,
@@ -86,18 +86,41 @@ let presetWin = null;   // Preset modal (preset_modal.html) - create/edit preset
 let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating stopwatch window (flotante.html)
 
-let currentLanguage = 'es';
-
 // =============================================================================
 // Menu + development utilities
 // =============================================================================
+
+function getSelectedLanguage() {
+  try {
+    const settings = settingsState.getSettings();
+    const lang = settings && typeof settings.language === 'string' ? settings.language.trim() : '';
+    if (!lang) {
+      warnOnce(
+        'main.menu.language.empty',
+        'Settings language is empty; falling back to "es" for menu.'
+      );
+      return DEFAULT_LANG;
+    }
+    return lang;
+  } catch (err) {
+    log.error('Failed to read settings language for menu; falling back to "es":', err);
+    return DEFAULT_LANG;
+  }
+}
 
 /**
  * Rebuild the application menu using i18n translations.
  * The menu definition is in menu_builder.js; this function just wires it to mainWin.
  */
 function buildAppMenu(lang) {
-  const effectiveLang = lang || currentLanguage || 'es';
+  const candidate = typeof lang === 'string' ? lang.trim() : '';
+  if (lang && !candidate) {
+    warnOnce(
+      'main.menu.language.invalid',
+      'Invalid menu language override; using settings language instead.'
+    );
+  }
+  const effectiveLang = candidate || getSelectedLanguage();
   menuBuilder.buildAppMenu(effectiveLang, {
     mainWindow: mainWin,
     onOpenLanguage: () => createLanguageWindow(),
@@ -170,7 +193,7 @@ function createMainWindow() {
   mainWin.loadFile(path.join(__dirname, '../public/index.html'));
 
   // Build top menu using translations.
-  buildAppMenu(currentLanguage);
+  buildAppMenu();
 
   // Dev-only shortcuts for inspection/reload.
   registerDevShortcuts(mainWin);
@@ -392,7 +415,7 @@ function createLanguageWindow() {
   // If the user closes the language window without choosing, persist a safe fallback and continue startup.
   langWin.on('closed', () => {
     try {
-      settingsState.applyFallbackLanguageIfUnset('es');
+    settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
     } catch (err) {
       log.error('Error applying fallback language:', err);
     } finally {
@@ -428,30 +451,6 @@ settingsState.registerIpc(ipcMain, {
     flotanteWin,
   }),
   buildAppMenu,
-  setCurrentLanguage: (lang) => {
-    // Normalize language tags (example: "es", "en", "pt-br").
-    if (typeof lang !== 'string') {
-      warnOnce(
-        'setCurrentLanguage.invalid',
-        'setCurrentLanguage: invalid lang; fallback to "es" (ignored).'
-      );
-      currentLanguage = 'es';
-      return;
-    }
-
-    const trimmed = lang.trim();
-    if (!trimmed) {
-      warnOnce(
-        'setCurrentLanguage.empty',
-        'setCurrentLanguage: empty lang; fallback to "es" (ignored).'
-      );
-      currentLanguage = 'es';
-      return;
-    }
-
-    const normalized = trimmed.toLowerCase().replace(/_/g, '-');
-    currentLanguage = normalized || 'es';
-  },
 });
 
 presetsMain.registerIpc(ipcMain, {
@@ -466,7 +465,7 @@ presetsMain.registerIpc(ipcMain, {
 
 updater.registerIpc(ipcMain, {
   mainWinRef: () => mainWin,
-  currentLanguageRef: () => currentLanguage,
+  currentLanguageRef: () => getSelectedLanguage(),
 });
 
 // =============================================================================
@@ -1116,8 +1115,6 @@ app.whenReady().then(() => {
     saveJson,
     settingsFile: SETTINGS_FILE,
   });
-
-  currentLanguage = settings.language || 'es';
 
   // First run: show language picker before creating the main window.
   if (!settings.language || settings.language === '') {

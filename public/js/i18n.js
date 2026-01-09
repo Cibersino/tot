@@ -6,6 +6,10 @@
 
   let rendererTranslations = null;
   let rendererTranslationsLang = null;
+  let rendererDefaultTranslations = null;
+
+  const { AppConstants } = window;
+  const { DEFAULT_LANG } = AppConstants;
 
   const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
   const getLangBase = (lang) => {
@@ -15,54 +19,153 @@
     return idx > 0 ? tag.slice(0, idx) : tag;
   };
 
+  const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
+
+  const deepMerge = (base, overlay) => {
+    const result = Object.assign({}, base || {});
+    if (!overlay) return result;
+    Object.keys(overlay).forEach((key) => {
+      if (isPlainObject(result[key]) && isPlainObject(overlay[key])) {
+        result[key] = deepMerge(result[key], overlay[key]);
+      } else {
+        result[key] = overlay[key];
+      }
+    });
+    return result;
+  };
+
+  const getPath = (obj, path) => {
+    if (!obj || !path) return undefined;
+    const parts = path.split('.');
+    let cur = obj;
+    for (const p of parts) {
+      if (cur && Object.prototype.hasOwnProperty.call(cur, p)) {
+        cur = cur[p];
+      } else {
+        return undefined;
+      }
+    }
+    return cur;
+  };
+
   async function loadRendererTranslations(lang) {
-    const requested = normalizeLangTag(lang) || 'es';
-    if (rendererTranslations && rendererTranslationsLang === requested) return rendererTranslations;
-    const base = getLangBase(requested) || 'es';
+    const requested = normalizeLangTag(lang);
+    if (!requested) {
+      log.warnOnce(
+        'i18n.loadRendererTranslations.emptyLang',
+        'Invalid language tag; using default bundle only.'
+      );
+    }
+
+    const selected = requested || DEFAULT_LANG;
+    if (rendererTranslations && rendererTranslationsLang === selected) return rendererTranslations;
+
+    if (!rendererDefaultTranslations) {
+      const defaults = await loadBundle(DEFAULT_LANG, DEFAULT_LANG, true);
+      if (!defaults) {
+        log.errorOnce(
+          `i18n.loadRendererTranslations.defaultMissing:${DEFAULT_LANG}`,
+          'Default renderer.json missing or invalid (using empty defaults):',
+          DEFAULT_LANG
+        );
+      }
+      rendererDefaultTranslations = defaults || {};
+    }
+
+    let overlay = null;
+    if (selected && selected !== DEFAULT_LANG) {
+      overlay = await loadOverlay(selected, getLangBase(selected));
+      if (!overlay) {
+        log.warnOnce(
+          `i18n.loadRendererTranslations.overlayMissing:${selected}`,
+          'No overlay renderer.json found (using default only):',
+          { selected }
+        );
+      }
+    }
+
+    rendererTranslations = deepMerge(rendererDefaultTranslations || {}, overlay || {});
+    rendererTranslationsLang = selected;
+    return rendererTranslations;
+  }
+
+  async function loadOverlay(requested, base) {
     const candidates = [];
     if (requested) candidates.push(requested);
     if (base && base !== requested) candidates.push(base);
-    if (!candidates.includes('es')) candidates.push('es');
+
     for (const target of candidates) {
-      const targetBase = getLangBase(target) || target;
-      const paths = [];
-      if (target.includes('-')) {
-        paths.push(`../i18n/${targetBase}/${target}/renderer.json`);
-      }
-      paths.push(`../i18n/${target}/renderer.json`);
+      if (target === DEFAULT_LANG) continue;
+      const data = await loadBundle(target, requested, false);
+      if (data) return data;
+    }
+
+    return null;
+  }
+
+  async function loadBundle(langCode, requested, required) {
+    const targetBase = getLangBase(langCode) || langCode;
+    const paths = [];
+    if (langCode.includes('-')) {
+      paths.push(`../i18n/${targetBase}/${langCode}/renderer.json`);
+    }
+    paths.push(`../i18n/${langCode}/renderer.json`);
+
+    for (const p of paths) {
       try {
-        for (const p of paths) {
-          const resp = await fetch(p);
-          if (resp && resp.ok) {
-            const raw = await resp.text();
-            const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
-            const data = JSON.parse(cleaned || '{}');
-            rendererTranslations = data;
-            rendererTranslationsLang = requested;
-            return data;
-          }
+        const resp = await fetch(p);
+        if (!resp || !resp.ok) continue;
+        const raw = await resp.text();
+        const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
+        if (!cleaned.trim()) {
+          log.warnOnce(
+            `i18n.loadRendererTranslations.empty:${requested || langCode}:${langCode}:${p}`,
+            'renderer.json is empty (trying fallback):',
+            { requested, langCode, path: p }
+          );
+          continue;
+        }
+        try {
+          return JSON.parse(cleaned || '{}');
+        } catch (err) {
+          log.warnOnce(
+            `i18n.loadRendererTranslations.parse:${requested || langCode}:${langCode}:${p}`,
+            'Failed to parse renderer.json (trying fallback):',
+            { requested, langCode, path: p },
+            err
+          );
         }
       } catch (err) {
-        log.warn('[i18n] Unable to load renderer translations:', err);
+        log.warnOnce(
+          `i18n.loadRendererTranslations.fetch:${requested || langCode}:${langCode}:${p}`,
+          'Failed to fetch renderer.json (trying fallback):',
+          { requested, langCode, path: p },
+          err
+        );
       }
     }
-    rendererTranslations = null;
-    rendererTranslationsLang = null;
+
+    if (required) {
+      log.errorOnce(
+        `i18n.loadRendererTranslations.requiredMissing:${langCode}`,
+        'Required renderer.json missing/invalid:',
+        { langCode, paths }
+      );
+    }
+
     return null;
   }
 
   function tRenderer(path, fallback) {
     if (!rendererTranslations) return fallback;
-    const parts = path.split('.');
-    let cur = rendererTranslations;
-    for (const p of parts) {
-      if (cur && Object.prototype.hasOwnProperty.call(cur, p)) {
-        cur = cur[p];
-      } else {
-        return fallback;
-      }
-    }
-    return (typeof cur === 'string') ? cur : fallback;
+    const value = getPath(rendererTranslations, path);
+    if (typeof value === 'string') return value;
+    log.warnOnce(
+      `i18n.missingKey:${rendererTranslationsLang || 'unknown'}:${path}`,
+      'Missing translation key (using fallback):',
+      { path, lang: rendererTranslationsLang }
+    );
+    return fallback;
   }
 
   function msgRenderer(path, params = {}, fallback = '') {
@@ -78,6 +181,8 @@
   window.RendererI18n = {
     loadRendererTranslations,
     tRenderer,
-    msgRenderer
+    msgRenderer,
+    normalizeLangTag,
+    getLangBase
   };
 })();
