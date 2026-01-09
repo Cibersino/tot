@@ -262,7 +262,7 @@ function normalizeSettings(s) {
   if (!langTag) {
     log.warnOnce(
       'settings.normalizeSettings.emptyLanguage',
-      `settings.language is empty; language-dependent buckets will use fallback "${DEFAULT_LANG}".`
+      `settings.language is empty; language-dependent buckets will use fallback "${DEFAULT_LANG}" (may be normal on first run).`
     );
   }
 
