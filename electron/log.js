@@ -14,6 +14,11 @@
  * - info: high-level lifecycle/state transitions (low volume).
  * - debug: verbose diagnostics; may be noisy; safe to spam.
  *
+ * Bootstrap vs in-regime fallbacks (classification):
+ * - BOOTSTRAP (pre-init): logs whose message or explicit dedupe key starts with "BOOTSTRAP:" indicate a transitory default used only before this context finishes initialization (authoritative state not yet available).
+ *   Constraint: a BOOTSTRAP fallback MUST become unreachable after init; if it can occur after init, it is NOT bootstrap. If observed after init, treat as a bug and log accordingly (warn/error).
+ * - In-regime (default): any fallback not marked as BOOTSTRAP is treated as runtime behavior (degradation/recoverable anomaly) under the normal policy.
+ *
  * Once-variants (deduplicated per process/page; OUTPUT dedupe only):
  * warnOnce/errorOnce deduplicate log EMISSION only; they do NOT imply the underlying event should happen only once. A single app session may have multiple processes/pages, so the same warning can appear once per process/page.
  * Use warnOnce/errorOnce only for high-frequency repeatable events where additional occurrences add no new diagnostic value; do not use once-variants when repetition is needed for reproduction during testing.
