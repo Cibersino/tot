@@ -1,8 +1,8 @@
 {
   "renderer": {
     "main": {
-      "selector_title": "El principio y el final de la hueá:",
-      "selector_empty": "(está pelao)",
+      "selector_title": "El principio y el final del coso:",
+      "selector_empty": "(pelao)",
       "buttons": {
         "overwrite_clipboard": "Chantarle lo copiao",
         "append_clipboard": "Añadirle lo copiao",
@@ -30,7 +30,7 @@
         "reset_defaults": "R"
       },
       "results": {
-        "title": "EL CONTEO DE LA HUEÁ",
+        "title": "EL CONTEO DE LA CUSTIÓN",
         "time": "⏱ Si leís como decís: {h}h {m}m {s}s",
         "words": "Palabras: {n}",
         "chars_no_space": "Letras sin espacio: {n}",
@@ -54,7 +54,7 @@
       "heading_edit": "Arreglar el preset",
       "name": "Nombre:",
       "wpm": "WPM:",
-      "description": "De qué hueá se trata:",
+      "description": "De qué se trata la custión:",
       "placeholder": "Un resumen cortito...",
       "char_count": "Te quedan {remaining} letras",
       "hint": "Los presets quedan guardaos en el sistema.",
@@ -63,7 +63,7 @@
     },
     "editor": {
       "title": "Editor — El texto completito",
-      "placeholder": "Escribe o pega la hueá aquí...",
+      "placeholder": "Escribe o pega la custión aquí...",
       "calc_button": "CALCULEISHON",
       "calc_while_typing": "Contar mientras escribís",
       "clear": "🗑",
@@ -72,16 +72,16 @@
     "alerts": {   
       "clipboard_too_large": "Chaaa, el texto del portapapeles es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
       "append_too_large": "El texto resultante es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
-      "clipboard_overflow": "Te fuiste en la volá, la hueá que copiaste es muy larga, la tuve que mochar.",
-      "append_overflow": "Te fuiste en la volá, La hueá que querís agregar es muy larga, la tuve que mochar.",
-      "text_limit": "No entra na' más: ya se llenó la hueá.",
-      "clipboard_error": "Cagó la hueá al pegar. Lorea la consola.",
-      "append_error": "Cagó la hueá al agregar texto. Lorea la consola.",
-      "clear_error": "No se pudo borrar. Lorea la consola.",
+      "clipboard_overflow": "Te fuiste en la volá, la custión que copiaste es muy larga, la tuve que mochar.",
+      "append_overflow": "Te fuiste en la volá, La custión que querís agregar es muy larga, la tuve que mochar.",
+      "text_limit": "No entra na' más: ya se llenó la custión.",
+      "clipboard_error": "Cagó la custión al pegar. Lorea la consola.",
+      "append_error": "Cagó la custión al agregar texto. Lorea la consola.",
+      "clear_error": "No te lo pudiste pitiar. Lorea la consola.",
       "modal_unavailable": "Esa ventanita todavía no está lista.",
       "edit_none": "No habís marcao niun preset pa' editar, pajarón.",
       "preset_not_found": "No pillamos el preset en la caleta.",
-      "edit_unavailable": "Todavía no se puede editar esta hueá.",
+      "edit_unavailable": "Todavía no se puede editar esta custión.",
       "edit_error": "Drama al editar el preset. Lorea la consola.",
       "delete_error": "No se pudo borrar el preset. Lorea la consola.",
       "restore_error": "Cagó el reseteo de los presets. Lorea la consola.",
@@ -102,7 +102,7 @@
       "wip_colabora": "WIP: Aquí nos haremos millonarios ($)."
     },
     "editor_alerts": {
-      "paste_too_big": "La hueá es muy grande. Usa los botones de afuera.",
+      "paste_too_big": "La custión es muy grande. Usa los botones de afuera.",
       "drop_too_big": "Tiraste mucha info. Usa los botones de afuera.",
       "paste_no_text": "No tenís nada de texto copiao, está pelao.",
       "drop_no_text": "Lo que tiraste no tiene niuna letra.",
@@ -123,19 +123,19 @@
     "info": {
       "acerca_de": {
         "app_name": "toT — Reading Meter",
-        "title": "De qué trata la hueá",
+        "title": "De qué trata la custión",
         "subtitle": "Subtítulo",
         "body": "Tamos trabajando pa' usté."
       },
       "readme": {
         "app_name": "toT — Reading Meter",
-        "title": "Léeme po, ctm",
+        "title": "Léeme po",
         "subtitle": "Subtítulo",
         "body": "Tamos trabajando pa' usté."
       },
       "instrucciones": {
         "app_name": "toT — Reading Meter",
-        "title": "Manual de la hueá",
+        "title": "Manual de la custión",
         "nav_basic": "Explicación piola",
         "nav_full": "Toda la pulenta",
         "nav_faq": "No te quedís con dudas",

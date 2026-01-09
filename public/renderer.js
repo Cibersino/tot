@@ -12,6 +12,7 @@ if (!AppConstants) {
 }
 
 const {
+  DEFAULT_LANG,
   WPM_MIN,
   WPM_MAX,
   PREVIEW_INLINE_THRESHOLD,
@@ -70,8 +71,8 @@ let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main resp
 let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
 // --- Global cache and state for count/language ---
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
-let idiomaActual = 'es';      // Initializes on startup
-let settingsCache = {};       // Settings cache (number formatting, language, etc.)
+let idiomaActual = DEFAULT_LANG; // Initializes on startup
+let settingsCache = null;     // Settings cache (number formatting, language, etc.)
 // --- i18n renderer translations cache ---
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
@@ -166,7 +167,7 @@ function applyTranslations() {
   try {
     const settings = await window.electronAPI.getSettings();
     settingsCache = settings || {};
-    idiomaActual = settingsCache.language || 'es';
+    idiomaActual = settingsCache.language || DEFAULT_LANG;
     if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
 
     // Load and apply renderer translations
@@ -180,7 +181,8 @@ function applyTranslations() {
     }
   } catch (err) {
     log.error('Could not get user settings at startup:', err);
-    // Current language is set to 'es' by default
+    // Current language is set to DEFAULT_LANG by default
+    settingsCache = {};
   }
 })();
 
@@ -363,6 +365,13 @@ const loadPresets = async () => {
               currentPresetName = found.name;
               applyPresetSelection(found, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
               wpm = found.wpm;
+              if (window.electronAPI && typeof window.electronAPI.setSelectedPreset === 'function') {
+                try {
+                  await window.electronAPI.setSelectedPreset(found.name);
+                } catch (err) {
+                  log.error('Error persisting preset-created selection:', err);
+                }
+              }
               updatePreviewAndResults(currentText);
             }
           }
@@ -373,15 +382,7 @@ const loadPresets = async () => {
     }
 
     // Load presets and save them to the cache
-    const allPresets = await loadPresets();
-
-    // Select the initial 'default' preset from the general settings and set it visually
-    const initialPreset = allPresets.find(p => p.name === 'default');
-    if (initialPreset) {
-      currentPresetName = initialPreset.name;
-      applyPresetSelection(initialPreset, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
-      wpm = initialPreset.wpm;
-    }
+    await loadPresets();
 
     // Update the final view with the possible initial WPM
     updatePreviewAndResults(t || '');
@@ -391,7 +392,7 @@ const loadPresets = async () => {
     const settingsChangeHandler = async (newSettings) => {
       try {
         settingsCache = newSettings || {};
-        const nuevoIdioma = settingsCache.language || 'es';
+        const nuevoIdioma = settingsCache.language || DEFAULT_LANG;
         const idiomaCambio = (nuevoIdioma !== idiomaActual);
         if (idiomaCambio) {
           idiomaActual = nuevoIdioma;
@@ -407,20 +408,10 @@ const loadPresets = async () => {
           applyTranslations();
           // Reload presets for the new language and synchronize selection
           try {
-            const updated = await loadPresets();
-            let selected = updated.find(p => p.name === currentPresetName);
-            if (!selected) {
-              selected = updated.find(p => p.name === 'default') || updated[0];
-            }
-            if (selected) {
-              currentPresetName = selected.name;
-              applyPresetSelection(selected, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
-              wpm = selected.wpm;
-            }
+            await loadPresets();
           } catch (err) {
             log.error('Error loading presets after language change:', err);
           }
-          updatePreviewAndResults(currentText);
         }
         if (settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo) {
           modoConteo = settingsCache.modeConteo;
@@ -435,8 +426,6 @@ const loadPresets = async () => {
     if (window.electronAPI) {
       if (typeof window.electronAPI.onSettingsChanged === 'function') {
         window.electronAPI.onSettingsChanged(settingsChangeHandler);
-      } else if (typeof window.electronAPI.onSettingsUpdated === 'function') {
-        window.electronAPI.onSettingsUpdated(settingsChangeHandler);
       } // If it doesn't exist, there's no listener available and nothing happens
 
       if (typeof window.electronAPI.onEditorReady === 'function') {
@@ -756,6 +745,11 @@ presetsSelect.addEventListener('change', () => {
     wpmInput.value = wpm;
     wpmSlider.value = wpm;
     presetDescription.textContent = preset.description || '';
+    if (window.electronAPI && typeof window.electronAPI.setSelectedPreset === 'function') {
+      window.electronAPI.setSelectedPreset(preset.name).catch((err) => {
+        log.error('Error persisting selected preset:', err);
+      });
+    }
     updatePreviewAndResults(currentText);
   }
 });
@@ -966,11 +960,9 @@ btnDeletePreset.addEventListener('click', async () => {
     const res = await window.electronAPI.requestDeletePreset(name);
 
     if (res && res.ok) {
-      // On success, reload presets and clear selection. Do not change WPM.
+      // On success, reload presets and apply fallback selection if needed.
       await loadPresets();
-      presetsSelect.selectedIndex = -1;
-      currentPresetName = null;
-      presetDescription.textContent = '';
+      updatePreviewAndResults(currentText);
       // No further UI dialog required - main already showed confirmation earlier.
       return;
     } else {
@@ -1002,12 +994,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
     if (res && res.ok) {
       // Reload presets to reflect restored defaults
       await loadPresets();
-
-      // After restoration we leave selection cleared (consistently with delete behavior).
-      presetsSelect.selectedIndex = -1;
-      currentPresetName = null;
-      presetDescription.textContent = '';
-
+      updatePreviewAndResults(currentText);
       return;
     } else {
       if (res && res.code === 'CANCELLED') {

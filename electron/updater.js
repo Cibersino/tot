@@ -10,6 +10,7 @@ const Log = require('./log');
 
 const log = Log.get('updater');
 const menuBuilder = require('./menu_builder');
+const { DEFAULT_LANG } = require('./constants_main');
 
 // Version/download paths and URLs
 const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
@@ -18,10 +19,16 @@ const DOWNLOAD_URL = 'https://github.com/Cibersino/tot-readingmeter/releases/lat
 
 // Lazy references to external state
 let mainWinRef = () => null;
-let currentLanguageRef = () => 'es';
+let currentLanguageRef = () => DEFAULT_LANG;
 
 // Avoid multiple checks in the same life cycle
 let updateCheckDone = false;
+
+const resolveDialogText = (dialogTexts, key, fallback) =>
+  menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+    log,
+    warnPrefix: 'updater.dialog.missing'
+  });
 
 function compareVersions(a, b) {
   const pa = String(a || '').trim().split('.').map(n => parseInt(n, 10) || 0);
@@ -56,7 +63,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     const effectiveLang =
       (lang && String(lang).trim()) ||
       (typeof currentLanguageRef === 'function' && currentLanguageRef()) ||
-      'es';
+      DEFAULT_LANG;
 
     const mainWin = typeof mainWinRef === 'function' ? mainWinRef() : null;
     const dlg = menuBuilder.getDialogTexts(effectiveLang) || {};
@@ -72,11 +79,15 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     const remoteVer = await fetchRemoteVersion(VERSION_REMOTE_URL);
     if (!remoteVer) {
       if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = dlg.update_failed_title || 'FALLBACK: Update check failed';
-        const message = dlg.update_failed_message || 'FALLBACK: Could not check for updates. Please check your connection and try again.';
+        const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
+        const message = resolveDialogText(
+          dlg,
+          'update_failed_message',
+          'Could not check for updates. Please check your connection and try again.'
+        );
         await dialog.showMessageBox(mainWin, {
           type: 'none',
-          buttons: [dlg.ok || 'OK'],
+          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
           defaultId: 0,
           title,
           message,
@@ -87,12 +98,16 @@ async function checkForUpdates({ lang, manual = false } = {}) {
 
     if (compareVersions(remoteVer, localVer) <= 0) {
       if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = dlg.update_up_to_date_title || 'FALLBACK: You are up to date';
-        const message = (dlg.update_up_to_date_message || 'FALLBACK: You already have the latest version.')
+        const title = resolveDialogText(dlg, 'update_up_to_date_title', 'You are up to date');
+        const message = resolveDialogText(
+          dlg,
+          'update_up_to_date_message',
+          'You already have the latest version.'
+        )
           .replace('{local}', localVer);
         await dialog.showMessageBox(mainWin, {
           type: 'none',
-          buttons: [dlg.ok || 'OK'],
+          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
           defaultId: 0,
           title,
           message,
@@ -106,12 +121,16 @@ async function checkForUpdates({ lang, manual = false } = {}) {
       return;
     }
 
-    const title = dlg.update_title || 'FALLBACK: Update available';
-    const message = (dlg.update_message || 'FALLBACK: A new version is available. Download now?')
+    const title = resolveDialogText(dlg, 'update_title', 'Update available');
+    const message = resolveDialogText(
+      dlg,
+      'update_message',
+      'A new version is available. Download now?'
+    )
       .replace('{remote}', remoteVer)
       .replace('{local}', localVer);
-    const btnDownload = dlg.update_download || 'FALLBACK: Download';
-    const btnLater = dlg.update_later || 'FALLBACK: Later';
+    const btnDownload = resolveDialogText(dlg, 'update_download', 'Download');
+    const btnLater = resolveDialogText(dlg, 'update_later', 'Later');
 
     const res = await dialog.showMessageBox(mainWin, {
       type: 'none',
@@ -152,7 +171,7 @@ function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef
     ipcMain.handle('check-for-updates', async () => {
       try {
         await checkForUpdates({
-          lang: typeof currentLanguageRef === 'function' ? currentLanguageRef() : 'es',
+          lang: typeof currentLanguageRef === 'function' ? currentLanguageRef() : DEFAULT_LANG,
           manual: true,
         });
         return { ok: true };

@@ -1,3 +1,4 @@
+- Bug intermitente. Demora de cierre del editor condicionado por tipo de texto vigente. No hemos podido reproducirlo nuevamente.
 - Los avisos del editor manual se demoran mucho.
 - Pestañeos (estar atentos a cuando ocurren y registrar):
     - Al guardar un preset.

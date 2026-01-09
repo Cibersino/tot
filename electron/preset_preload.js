@@ -65,4 +65,11 @@ contextBridge.exposeInMainWorld('presetAPI', {
     ipcRenderer.invoke('edit-preset', { originalName, newPreset }),
 
   getSettings: () => ipcRenderer.invoke('get-settings'),
+  onSettingsChanged: (cb) => {
+    const listener = (_e, settings) => {
+      try { cb(settings); } catch (err) { log.error('settings callback error:', err); }
+    };
+    ipcRenderer.on('settings-updated', listener);
+    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { log.error('removeListener error (settings-updated):', err); } };
+  },
 });

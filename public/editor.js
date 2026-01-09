@@ -10,9 +10,8 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[editor] AppConstants no disponible; verifica la carga de constants.js');
 }
+const { DEFAULT_LANG, PASTE_ALLOW_LIMIT, SMALL_UPDATE_THRESHOLD } = AppConstants;
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
-const PASTE_ALLOW_LIMIT = AppConstants.PASTE_ALLOW_LIMIT; // Threshold that determines whether the text editor is allowed to do native paste/drop insertion.
-const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines when an external update (from main) should be applied with native mechanism (fast, preserves undo/redo) or by full value replacement (safer but incompatible with undo/redo).
 
 (async () => {
   try {
@@ -29,7 +28,7 @@ const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines w
     if (window.editorAPI && typeof window.editorAPI.getSettings === 'function') {
       const settings = await window.editorAPI.getSettings();
       if (settings && settings.language) {
-        idiomaActual = settings.language || 'es';
+        idiomaActual = settings.language || DEFAULT_LANG;
       }
     }
     await applyEditorTranslations();
@@ -54,7 +53,7 @@ let suppressLocalUpdate = false;
 const warnOnceEditor = (...args) => log.warnOnce(...args);
 
 // --- i18n loader for editor (uses RendererI18n global) ---
-let idiomaActual = 'es';
+let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
 
 const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
@@ -65,7 +64,7 @@ if (!loadRendererTranslations || !tRenderer) {
 const tr = (path, fallback) => tRenderer(path, fallback);
 
 async function ensureEditorTranslations(lang) {
-  const target = (lang || '').toLowerCase() || 'es';
+  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
   if (translationsLoadedFor === target) return;
   await loadRendererTranslations(target);
   translationsLoadedFor = target;
@@ -88,6 +87,19 @@ async function applyEditorTranslations() {
   if (bottomBar) {
     bottomBar.setAttribute('aria-label', tr('renderer.editor.title', bottomBar.getAttribute('aria-label') || ''));
   }
+}
+
+if (window.editorAPI && typeof window.editorAPI.onSettingsChanged === 'function') {
+  window.editorAPI.onSettingsChanged(async (settings) => {
+    try {
+      const nextLang = settings && settings.language ? settings.language : '';
+      if (!nextLang || nextLang === idiomaActual) return;
+      idiomaActual = nextLang;
+      await applyEditorTranslations();
+    } catch (err) {
+      log.warn('editor: failed to apply settings update:', err);
+    }
+  });
 }
 
 // ---------- Notices ---------- //

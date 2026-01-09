@@ -5,6 +5,12 @@ const log = window.getLogger('flotante');
 
 log.debug('Flotante starting...');
 
+const { AppConstants } = window;
+if (!AppConstants) {
+  throw new Error('[flotante] AppConstants no disponible; verifica la carga de constants.js');
+}
+const { DEFAULT_LANG } = AppConstants;
+
 const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
@@ -23,6 +29,7 @@ if (!btnReset) {
 let lastState = { elapsed: 0, running: false, display: '00:00:00' };
 let playLabel = '>';
 let pauseLabel = '||';
+let translationsLoadedFor = null;
 
 // Refresh view (expected to receive { elapsed, running, display })
 function renderState(state) {
@@ -54,13 +61,34 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
   });
 }
 
+async function applyFlotanteTranslations(lang) {
+  const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
+  if (!loadRendererTranslations || !tRenderer) return;
+
+  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
+  if (translationsLoadedFor !== target) {
+    try {
+      await loadRendererTranslations(target);
+      translationsLoadedFor = target;
+    } catch (err) {
+      log.warnOnce(
+        'flotante.loadRendererTranslations',
+        `[flotante] loadRendererTranslations(${target}) failed (ignored):`,
+        err
+      );
+      return;
+    }
+  }
+
+  playLabel = tRenderer('renderer.main.crono.play_symbol', playLabel);
+  pauseLabel = tRenderer('renderer.main.crono.pause_symbol', pauseLabel);
+  if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
+}
+
 // Try to load translations for play/pause symbols (use renderer.i18n)
 (async () => {
   try {
-    const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
-    if (!loadRendererTranslations || !tRenderer) return;
-
-    let lang = 'es';
+    let lang = DEFAULT_LANG;
     if (window.flotanteAPI && typeof window.flotanteAPI.getSettings === 'function') {
       try {
         const settings = await window.flotanteAPI.getSettings();
@@ -70,22 +98,21 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
       }
     }
 
-    try { await loadRendererTranslations(lang); } catch (err) {
-      log.warnOnce(
-        'flotante.loadRendererTranslations',
-        `[flotante] loadRendererTranslations(${lang}) failed (ignored):`,
-        err
-      );
-    }
-
-    playLabel = tRenderer('renderer.main.crono.play_symbol', playLabel);
-    pauseLabel = tRenderer('renderer.main.crono.pause_symbol', pauseLabel);
-    // Refresh button with the current translated label
-    if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
+    await applyFlotanteTranslations(lang);
   } catch (err) {
     log.error('Error loading translations in flotante:', err);
   }
 })();
+
+if (window.flotanteAPI && typeof window.flotanteAPI.onSettingsChanged === 'function') {
+  window.flotanteAPI.onSettingsChanged((settings) => {
+    const nextLang = settings && settings.language ? settings.language : '';
+    if (!nextLang || nextLang === translationsLoadedFor) return;
+    applyFlotanteTranslations(nextLang).catch((err) => {
+      log.warn('flotante: failed to apply settings update:', err);
+    });
+  });
+}
 
 // Buttons: send commands to main
 btnToggle.addEventListener('click', () => {
