@@ -3,6 +3,7 @@
 
 (() => {
   const DEFAULTS = {
+    DEFAULT_LANG: 'es',
     MAX_TEXT_CHARS: 10_000_000, // Renderer fallback. Real limit from main (constants_main.js via IPC).
     PASTE_ALLOW_LIMIT: 10_000,
     SMALL_UPDATE_THRESHOLD: 200_000,

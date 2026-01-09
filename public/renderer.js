@@ -5,7 +5,6 @@
 const log = window.getLogger('renderer');
 
 log.debug('Renderer main starting...');
-const DEFAULT_LANG = 'es';
 
 const { AppConstants } = window;
 if (!AppConstants) {
@@ -13,6 +12,7 @@ if (!AppConstants) {
 }
 
 const {
+  DEFAULT_LANG,
   WPM_MIN,
   WPM_MAX,
   PREVIEW_INLINE_THRESHOLD,
@@ -411,7 +411,6 @@ const loadPresets = async () => {
           } catch (err) {
             log.error('Error loading presets after language change:', err);
           }
-          updatePreviewAndResults(currentText);
         }
         if (settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo) {
           modoConteo = settingsCache.modeConteo;

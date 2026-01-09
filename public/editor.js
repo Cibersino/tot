@@ -5,15 +5,13 @@
 const log = window.getLogger('editor');
 
 log.debug('Manual editor starting...');
-const DEFAULT_LANG = 'es';
 
 const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[editor] AppConstants no disponible; verifica la carga de constants.js');
 }
+const { DEFAULT_LANG, PASTE_ALLOW_LIMIT, SMALL_UPDATE_THRESHOLD } = AppConstants;
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
-const PASTE_ALLOW_LIMIT = AppConstants.PASTE_ALLOW_LIMIT; // Threshold that determines whether the text editor is allowed to do native paste/drop insertion.
-const SMALL_UPDATE_THRESHOLD = AppConstants.SMALL_UPDATE_THRESHOLD; // Defines when an external update (from main) should be applied with native mechanism (fast, preserves undo/redo) or by full value replacement (safer but incompatible with undo/redo).
 
 (async () => {
   try {

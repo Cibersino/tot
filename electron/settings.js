@@ -21,9 +21,9 @@
 const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
+const { DEFAULT_LANG } = require('./constants_main');
 
 const log = Log.get('settings');
-const DEFAULT_LANG = 'es';
 
 // =============================================================================
 // Language helpers
@@ -33,15 +33,19 @@ const DEFAULT_LANG = 'es';
 const normalizeLangTag = (lang) =>
   (lang || '').trim().toLowerCase().replace(/_/g, '-');
 
+const normalizeLangBase = (lang) => {
+  if (typeof lang !== 'string') return DEFAULT_LANG;
+  const base = lang.trim().toLowerCase().split(/[-_]/)[0];
+  return /^[a-z0-9]+$/.test(base) ? base : DEFAULT_LANG;
+};
+
 const getLangBase = (lang) => {
   const tag = normalizeLangTag(lang);
-  if (!tag) return '';
-  const idx = tag.indexOf('-');
-  return idx > 0 ? tag.slice(0, idx) : tag;
+  return normalizeLangBase(tag);
 };
 
 // Canonical key for language-indexed buckets (presets, numberFormatting, etc.).
-const deriveLangKey = (langTag) => getLangBase(langTag) || DEFAULT_LANG;
+const deriveLangKey = (langTag) => getLangBase(langTag);
 
 // =============================================================================
 // Injected dependencies + cache
@@ -604,6 +608,10 @@ function registerIpc(
 // Exports
 // =============================================================================
 module.exports = {
+  normalizeLangTag,
+  normalizeLangBase,
+  getLangBase,
+  deriveLangKey,
   init,
   registerIpc,
   getSettings,

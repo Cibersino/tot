@@ -23,29 +23,10 @@ const path = require('path');
 // =============================================================================
 
 const Log = require('./log');
+const { DEFAULT_LANG } = require('./constants_main');
+const { normalizeLangTag, getLangBase } = require('./settings');
 
 const log = Log.get('menu');
-const DEFAULT_LANG = 'es';
-
-// =============================================================================
-// Language helpers
-// =============================================================================
-// We normalize language tags so folder/file paths are predictable.
-// Examples:
-// - 'es_CL' -> 'es-cl'
-// - 'EN'    -> 'en'
-//
-// "Base language" is the part before a region:
-// - 'es-cl' -> 'es'
-// - 'en-us' -> 'en'
-
-const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
-const getLangBase = (lang) => {
-    const tag = normalizeLangTag(lang);
-    if (!tag) return '';
-    const idx = tag.indexOf('-');
-    return idx > 0 ? tag.slice(0, idx) : tag;
-};
 
 const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 
@@ -67,6 +48,18 @@ function resolveMenuLabel(obj, key, fallback) {
     log.warnOnce(
         `menu_builder.missingKey:${key}`,
         'Missing menu translation key (using fallback):',
+        key
+    );
+    return fallback;
+}
+
+function resolveDialogText(dialogTexts, key, fallback, opts = {}) {
+    if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
+    const logger = opts.log || log;
+    const prefix = opts.warnPrefix || 'menu_builder.dialog.missing';
+    logger.warnOnce(
+        `${prefix}:${key}`,
+        'Missing dialog translation key (using fallback):',
         key
     );
     return fallback;
@@ -436,6 +429,7 @@ function buildAppMenu(lang, opts = {}) {
 module.exports = {
     getDialogTexts,
     buildAppMenu,
+    resolveDialogText,
 };
 
 // =============================================================================

@@ -8,33 +8,20 @@ const { dialog, shell } = require('electron');
 const Log = require('./log');
 
 const log = Log.get('presets-main');
-const DEFAULT_LANG = 'es';
+const { DEFAULT_LANG } = require('./constants_main');
 const { CONFIG_PRESETS_DIR, ensureConfigPresetsDir } = require('./fs_storage');
 const settingsState = require('./settings');
+const { normalizeLangTag, normalizeLangBase } = settingsState;
 const menuBuilder = require('./menu_builder');
 
 // Default presets source folder (.js)
 const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
 
-const normalizeLangTag = (lang) =>
-  (lang || '').trim().toLowerCase().replace(/_/g, '-');
-
-// Helpers: presets defaults (general + per language if exists)
-function normalizeLangBase(lang) {
-  if (typeof lang !== 'string') return '';
-  const base = lang.trim().toLowerCase().split(/[-_]/)[0];
-  return /^[a-z0-9]+$/.test(base) ? base : '';
-}
-
-function resolveDialogText(dialogTexts, key, fallback) {
-  if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
-  log.warnOnce(
-    `presets_main.dialog.missing:${key}`,
-    'Missing dialog translation key (using fallback):',
-    key
-  );
-  return fallback;
-}
+const resolveDialogText = (dialogTexts, key, fallback) =>
+  menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+    log,
+    warnPrefix: 'presets_main.dialog.missing'
+  });
 
 function loadPresetArrayFromJson(filePath) {
   try {

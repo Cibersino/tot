@@ -10,7 +10,7 @@ const Log = require('./log');
 
 const log = Log.get('updater');
 const menuBuilder = require('./menu_builder');
-const DEFAULT_LANG = 'es';
+const { DEFAULT_LANG } = require('./constants_main');
 
 // Version/download paths and URLs
 const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
@@ -24,15 +24,11 @@ let currentLanguageRef = () => DEFAULT_LANG;
 // Avoid multiple checks in the same life cycle
 let updateCheckDone = false;
 
-function resolveDialogText(dialogTexts, key, fallback) {
-  if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
-  log.warnOnce(
-    `updater.dialog.missing:${key}`,
-    'Missing dialog translation key (using fallback):',
-    key
-  );
-  return fallback;
-}
+const resolveDialogText = (dialogTexts, key, fallback) =>
+  menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+    log,
+    warnPrefix: 'updater.dialog.missing'
+  });
 
 function compareVersions(a, b) {
   const pa = String(a || '').trim().split('.').map(n => parseInt(n, 10) || 0);
