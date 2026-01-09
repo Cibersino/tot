@@ -22,6 +22,9 @@
   }
 
   const obtenerSeparadoresDeNumeros = async (idioma, settingsCache) => {
+    if (settingsCache === null) {
+      return { separadorMiles: '.', separadorDecimal: ',' };
+    }
     const tag = normalizeLangTag(idioma) || DEFAULT_LANG;
     const langKey = getLangBase(tag) || DEFAULT_LANG;
     const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
