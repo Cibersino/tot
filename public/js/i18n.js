@@ -8,7 +8,8 @@
   let rendererTranslationsLang = null;
   let rendererDefaultTranslations = null;
 
-  const DEFAULT_LANG = 'es';
+  const { AppConstants } = window;
+  const { DEFAULT_LANG } = AppConstants;
 
   const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
   const getLangBase = (lang) => {
@@ -180,6 +181,8 @@
   window.RendererI18n = {
     loadRendererTranslations,
     tRenderer,
-    msgRenderer
+    msgRenderer,
+    normalizeLangTag,
+    getLangBase
   };
 })();

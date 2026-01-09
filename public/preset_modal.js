@@ -7,7 +7,6 @@
   const log = window.getLogger('preset-modal');
 
   log.debug('Preset modal starting...');
-  const DEFAULT_LANG = 'es';
 
   document.addEventListener('DOMContentLoaded', function () {
     // Selecting DOM elements
@@ -30,7 +29,7 @@
     if (!AppConstants) {
       throw new Error('[preset_modal] AppConstants no disponible; verifica la carga de constants.js');
     }
-    const { PRESET_DESC_MAX, PRESET_NAME_MAX, WPM_MIN, WPM_MAX } = AppConstants;
+    const { DEFAULT_LANG, PRESET_DESC_MAX, PRESET_NAME_MAX, WPM_MIN, WPM_MAX } = AppConstants;
 
     // Initial configuration
     const descMaxLength = PRESET_DESC_MAX;

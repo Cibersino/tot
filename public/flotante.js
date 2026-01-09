@@ -4,7 +4,12 @@
 const log = window.getLogger('flotante');
 
 log.debug('Flotante starting...');
-const DEFAULT_LANG = 'es';
+
+const { AppConstants } = window;
+if (!AppConstants) {
+  throw new Error('[flotante] AppConstants no disponible; verifica la carga de constants.js');
+}
+const { DEFAULT_LANG } = AppConstants;
 
 const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');

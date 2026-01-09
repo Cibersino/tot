@@ -3,15 +3,8 @@
 
 (() => {
   const log = window.getLogger('format');
-  const DEFAULT_LANG = 'es';
-
-  const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
-  const getLangBase = (lang) => {
-    const tag = normalizeLangTag(lang);
-    if (!tag) return '';
-    const idx = tag.indexOf('-');
-    return idx > 0 ? tag.slice(0, idx) : tag;
-  };
+  const { DEFAULT_LANG } = window.AppConstants;
+  const { normalizeLangTag, getLangBase } = window.RendererI18n;
 
   function getTimeParts(words, wpm) {
     if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };

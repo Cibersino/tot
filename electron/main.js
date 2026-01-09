@@ -19,7 +19,7 @@ const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electro
 const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
-const { MAX_TEXT_CHARS, MAX_IPC_CHARS } = require('./constants_main');
+const { MAX_TEXT_CHARS, MAX_IPC_CHARS, DEFAULT_LANG } = require('./constants_main');
 
 const {
   CONFIG_DIR,
@@ -37,7 +37,6 @@ const updater = require('./updater');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
-const DEFAULT_LANG = 'es';
 
 // =============================================================================
 // File locations (persistent user data)

@@ -2,7 +2,7 @@
 'use strict';
 
 (() => {
-  const DEFAULT_LANG = 'es';
+  const { DEFAULT_LANG } = window.AppConstants;
 
   function contarTextoSimple(texto) {
     const conEspacios = texto.length;
