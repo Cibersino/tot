@@ -72,7 +72,7 @@ let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main respon
 // --- Global cache and state for count/language ---
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
 let idiomaActual = DEFAULT_LANG; // Initializes on startup
-let settingsCache = {};       // Settings cache (number formatting, language, etc.)
+let settingsCache = null;     // Settings cache (number formatting, language, etc.)
 // --- i18n renderer translations cache ---
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
@@ -182,6 +182,7 @@ function applyTranslations() {
   } catch (err) {
     log.error('Could not get user settings at startup:', err);
     // Current language is set to DEFAULT_LANG by default
+    settingsCache = {};
   }
 })();
 
