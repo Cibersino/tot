@@ -4,15 +4,6 @@
 
 * Revisión y depuración del código *
 
-- Plan "no silence" (idioma) (`no_silence.md`)
-
-- Ordenar/limpiar archivo por archivn (`cleanup_file_by_file.md`).
-  - Diagnóstico.
-  - Reorganización estructural.
-  - Refactorización.
-  - Revisar avisos logs para que sean consistentes con la política y lógica establecida en los `log.js`.
-  - Comments coherentes y útiles, tomando a `main.js` como modelo.
-
 # Más adelante #
 
 Las ventanas de la app a veces (por motivos que pueden ser independientes de la app) demoran en quedar completamente cargadas (por ejemplo: con el idioma final, con el texto vigente totalmente visible, etc). Creo que hay que ver caso a caso y buscar el mejor arreglo posible, balanceando la experiencia visual del usuario y la experiencia de ejecución del usuario. La ventana principal, al menos durante el arranque de la app, no la dejaría visible al usuario hasta que esté "completamente" cargada. A lo mejor, esa espera podría cubrirse con un splash. Tanto la ventana principal, como la ventana del editor manual, si pasa un cierto tiempo sin que estén completamente cargadas (¿300ms?), las "congelaría" de alguna manera (la dejaría gris o algo así), y/o mostraría un "loading" hasta que estén completamente cargadas. Aquí también se podría usar, para la ventana principal, el spin loader que ya usamos cuando se abre la ventana del editor manual y aun esta no carga. Para la ventana de editor manual, este spin loader podría replicarse. En todos los casos hay que definir bien qué significa "completamente cargada" para que podamos implementar esto. ¿Qué te parecen esas propuestas? ¿Que otras propuestas recomiendas evaluar?
