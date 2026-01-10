@@ -18,7 +18,7 @@
         "edit_preset": "Editar preset seleccionado",
         "delete_preset": "Eliminar preset seleccionado",
         "reset_presets": "Restaurar presets por defecto",
-        "help_button": "Información (pendiente)",
+        "help_button": "Mostrar consejo útil",
         "flotante_window": "Ventana flotante"
       },
       "speed": {
@@ -37,6 +37,14 @@
         "chars": "Caracteres: {n}",
         "precise_mode": "Modo preciso",
         "precise_tooltip": "Basado en Intl.Segmenter"
+      },
+      "tips": {
+        "results_help": {
+          "tip1": "Tip: El modo Preciso usa Intl.Segmenter; los resultados pueden variar levemente respecto a Simple.",
+          "tip2": "Tip: Puedes alternar entre Simple/Preciso y los resultados se actualizan de inmediato.",
+          "tip3": "Tip: Los presets de WPM se guardan entre sesiones; ajusta WPM para reflejar tu velocidad real.",
+          "tip4": "Tip: Usa el Editor manual para validar conteos cuando trabajes con textos largos."
+        }
       },
       "crono": {
         "title": "CRONÓMETRO",

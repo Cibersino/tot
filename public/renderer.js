@@ -27,6 +27,14 @@ const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
 const btnHelp = document.getElementById('btnHelp');
 
+const HELP_TIP_KEY_LIST = Object.freeze([
+  'renderer.main.tips.results_help.tip1',
+  'renderer.main.tips.results_help.tip2',
+  'renderer.main.tips.results_help.tip3',
+  'renderer.main.tips.results_help.tip4'
+]);
+let lastHelpTipIdx = -1;
+
 const resChars = document.getElementById('resChars');
 const resCharsNoSpace = document.getElementById('resCharsNoSpace');
 const resWords = document.getElementById('resWords');
@@ -894,6 +902,44 @@ btnEmptyMain.addEventListener('click', async () => {
 // '?' Button (for now, it's just there; no functionality)
 if (btnHelp) {
   btnHelp.addEventListener('click', () => {
+    const tipCount = HELP_TIP_KEY_LIST.length;
+    if (!tipCount) {
+      log.error('Help tip list is empty.');
+      if (typeof Notify?.notifyMain === 'function') {
+        Notify.notifyMain('renderer.main.tips.results_help.tip1');
+      }
+      return;
+    }
+
+    let idx = Math.floor(Math.random() * tipCount);
+    if (tipCount > 1 && idx === lastHelpTipIdx) {
+      idx = Math.floor(Math.random() * (tipCount - 1));
+      if (idx >= lastHelpTipIdx) idx += 1;
+    }
+    lastHelpTipIdx = idx;
+
+    const tipKey = HELP_TIP_KEY_LIST[idx];
+
+    try {
+      if (typeof Notify?.toastMain === 'function') {
+        Notify.toastMain(tipKey);
+      } else if (typeof Notify?.notifyMain === 'function') {
+        Notify.notifyMain(tipKey);
+      } else {
+        log.error('Notify API unavailable for help tips.');
+      }
+    } catch (err) {
+      log.error('Error showing help tip:', err);
+      try {
+        if (typeof Notify?.notifyMain === 'function') {
+          Notify.notifyMain(tipKey);
+        } else {
+          log.error('Notify notifyMain unavailable for help tip fallback.');
+        }
+      } catch (fallbackErr) {
+        log.error('Help tip fallback failed:', fallbackErr);
+      }
+    }
   });
 }
 
