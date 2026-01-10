@@ -93,3 +93,6 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 
 ### Changed
 - Consolidación de flujos de presets (Nuevo / Borrar / Restaurar) y handlers IPC asociados.
+
+## Before [0.0.3]
+- Tempus edax rerum
