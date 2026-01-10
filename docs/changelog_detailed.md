@@ -471,3 +471,8 @@ function setIdiomaActual(nuevoIdioma) {
 * Implementación del botón **Editar** con confirmación nativa.
 * Consolidación de flujos de presets: Nuevo, Borrar, Restaurar y handlers IPC asociados.
 * Funcionalidad estable y retrocompatible de editor y cronómetro.
+
+## Before [0.0.3]
+
+  Tempus edax rerum
+  
