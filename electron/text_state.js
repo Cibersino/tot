@@ -15,6 +15,7 @@
 // Imports / logger
 // =============================================================================
 const fs = require('fs');
+const { BrowserWindow, clipboard } = require('electron');
 const Log = require('./log');
 const { MAX_TEXT_CHARS, MAX_IPC_MULTIPLIER, MAX_IPC_CHARS } = require('./constants_main');
 
@@ -167,6 +168,19 @@ function registerIpc(ipcMain, windowsResolver) {
   ipcMain.handle('get-current-text', async () => {
     return currentText || '';
   });
+  ipcMain.handle('clipboard-read-text', (event) => {
+    const { mainWin } = getWindows() || {};
+    const senderWin = BrowserWindow.fromWebContents(event.sender);
+    if (!mainWin || mainWin.isDestroyed() || !senderWin || senderWin !== mainWin) {
+      return { ok: false, error: 'unauthorized', text: '', length: 0 };
+    }
+    const text = String(clipboard.readText() || '');
+    if (text.length > maxIpcChars) {
+      return { ok: false, tooLarge: true, length: text.length, text: '' };
+    }
+    return { ok: true, length: text.length, text };
+  });
+
 
   // set-current-text: accept { text, meta } or simple string
   ipcMain.handle('set-current-text', (_event, payload) => {

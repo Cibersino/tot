@@ -799,7 +799,15 @@ wpmInput.addEventListener('keydown', (e) => {
 // ======================= Overwrite with clipboard button =======================
 btnOverwriteClipboard.addEventListener('click', async () => {
   try {
-    let clip = await window.electronAPI.readClipboard() || '';
+    const res = await window.electronAPI.readClipboard();
+    if (res && res.ok === false) {
+      if (res.tooLarge === true) {
+        Notify.notifyMain('renderer.alerts.clipboard_too_large');
+        return;
+      }
+      throw new Error(res.error || 'clipboard read failed');
+    }
+    let clip = (res && typeof res === 'object') ? (res.text || '') : (res || '');
 
     if (clip.length > maxIpcChars) {
       Notify.notifyMain('renderer.alerts.clipboard_too_large');
@@ -829,7 +837,15 @@ btnOverwriteClipboard.addEventListener('click', async () => {
 // ======================= 'Paste clipboard in new line' button =======================
 btnAppendClipboard.addEventListener('click', async () => {
   try {
-    const clip = await window.electronAPI.readClipboard() || '';
+    const res = await window.electronAPI.readClipboard();
+    if (res && res.ok === false) {
+      if (res.tooLarge === true) {
+        Notify.notifyMain('renderer.alerts.append_too_large');
+        return;
+      }
+      throw new Error(res.error || 'clipboard read failed');
+    }
+    const clip = (res && typeof res === 'object') ? (res.text || '') : (res || '');
     const current = await window.electronAPI.getCurrentText() || '';
 
     let joiner = '';

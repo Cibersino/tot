@@ -1,12 +1,12 @@
 // electron/preload.js
 'use strict';
 
-const { contextBridge, clipboard, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 
 const api = {
     // Clipboard / editor / presets / settings (we preserve all existing settings)
-    readClipboard: () => clipboard.readText(),
+    readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
     openEditor: () => ipcRenderer.invoke('open-editor'),
     checkForUpdates: (manual = false) => ipcRenderer.invoke('check-for-updates', { manual }),
     // openPresetModal accepts an optional argument: number (wpm) or object { wpm, mode, preset }
