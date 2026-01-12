@@ -8,7 +8,7 @@ const { dialog, shell } = require('electron');
 const Log = require('./log');
 
 const log = Log.get('presets-main');
-const { DEFAULT_LANG } = require('./constants_main');
+const { DEFAULT_LANG, MAX_PRESET_STR_CHARS } = require('./constants_main');
 const { CONFIG_PRESETS_DIR, ensureConfigPresetsDir } = require('./fs_storage');
 const settingsState = require('./settings');
 const { normalizeLangTag, normalizeLangBase } = settingsState;
@@ -22,8 +22,6 @@ const resolveDialogText = (dialogTexts, key, fallback) =>
     log,
     warnPrefix: 'presets_main.dialog.missing'
   });
-
-const MAX_PRESET_STR_CHARS = 65536;
 
 function isPlainObject(x) {
   if (!x || typeof x !== 'object') return false;
@@ -739,4 +737,5 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
 module.exports = {
   registerIpc,
+  sanitizePresetInput,
 };
