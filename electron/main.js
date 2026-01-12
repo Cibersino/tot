@@ -186,7 +186,7 @@ function createMainWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
     },
   });
 
@@ -266,7 +266,7 @@ function createEditorWindow() {
       preload: path.join(__dirname, 'editor_preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
     },
   });
 
@@ -349,7 +349,7 @@ function createPresetWindow(initialData) {
       preload: path.join(__dirname, 'preset_preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
     },
   });
 
@@ -401,7 +401,7 @@ function createLanguageWindow() {
       preload: LANGUAGE_PRELOAD,
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
     },
   });
 
@@ -658,7 +658,7 @@ async function createFlotanteWindow(options = {}) {
       preload: FLOTANTE_PRELOAD,
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
     },
   };
 

@@ -2,9 +2,7 @@
 'use strict';
 
 const { contextBridge, ipcRenderer } = require('electron');
-const Log = require('./log');
 
-const log = Log.get('editor-preload');
 
 contextBridge.exposeInMainWorld('editorAPI', {
   getCurrentText: () => ipcRenderer.invoke('get-current-text'),
@@ -19,10 +17,10 @@ contextBridge.exposeInMainWorld('editorAPI', {
   },
   onSettingsChanged: (cb) => {
     const listener = (_e, settings) => {
-      try { cb(settings); } catch (err) { log.error('settings callback error:', err); }
+      try { cb(settings); } catch (err) { console.error('settings callback error:', err); }
     };
     ipcRenderer.on('settings-updated', listener);
-    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { log.error('removeListener error (settings-updated):', err); } };
+    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error (settings-updated):', err); } };
   },
   // Listener to force clear content (main will send 'editor-force-clear')
   onForceClear: (cb) => {
