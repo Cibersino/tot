@@ -23,6 +23,44 @@ const resolveDialogText = (dialogTexts, key, fallback) =>
     warnPrefix: 'presets_main.dialog.missing'
   });
 
+const MAX_PRESET_STR_CHARS = 65536;
+
+function isPlainObject(x) {
+  if (!x || typeof x !== 'object') return false;
+  return Object.getPrototypeOf(x) === Object.prototype;
+}
+
+function sanitizePresetInput(raw) {
+  if (!isPlainObject(raw)) {
+    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET_SHAPE' };
+  }
+
+  const name = String(raw.name || '').trim();
+  const description = String(raw.description || '').trim();
+  const wpmNum = Number(raw.wpm);
+
+  if (!name) {
+    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET' };
+  }
+
+  if (name.length > MAX_PRESET_STR_CHARS || description.length > MAX_PRESET_STR_CHARS) {
+    return { ok: false, error: 'preset payload too large', code: 'PAYLOAD_TOO_LARGE' };
+  }
+
+  if (!Number.isFinite(wpmNum)) {
+    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET' };
+  }
+
+  return {
+    ok: true,
+    preset: {
+      name,
+      wpm: Math.round(wpmNum),
+      description,
+    },
+  };
+}
+
 function loadPresetArrayFromJson(filePath) {
   try {
     if (!fs.existsSync(filePath)) return [];
@@ -289,16 +327,26 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   // Handle preset creation request from preset modal
   ipcMain.handle('create-preset', (_event, preset) => {
     try {
+      const sanitized = sanitizePresetInput(preset);
+      if (!sanitized.ok) {
+        log.warnOnce(
+          'presets_main.create-preset.invalid',
+          '[presets_main] create-preset invalid payload (ignored).'
+        );
+        return { ok: false, error: sanitized.error, code: sanitized.code };
+      }
+
+      const sanitizedPreset = sanitized.preset;
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
       const userPresets = getUserPresets(settings, lang);
 
       // If preset name already exists in user's presets, overwrite that one
-      const idx = userPresets.findIndex((p) => p.name === preset.name);
+      const idx = userPresets.findIndex((p) => p.name === sanitizedPreset.name);
       if (idx >= 0) {
-        userPresets[idx] = preset;
+        userPresets[idx] = sanitizedPreset;
       } else {
-        userPresets.push(preset);
+        userPresets.push(sanitizedPreset);
       }
 
       settings = settingsState.saveSettings(settings);
@@ -308,7 +356,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { mainWin } = resolveWindows();
       try {
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('preset-created', preset);
+          mainWin.webContents.send('preset-created', sanitizedPreset);
         }
       } catch (err) {
         log.error('[presets_main] Error sending preset-created:', err);
@@ -324,6 +372,25 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   // Request to delete a preset (handles native dialogs + persistence)
   ipcMain.handle('request-delete-preset', async (_event, name) => {
     try {
+      if (typeof name !== 'undefined' && name !== null && typeof name !== 'string') {
+        log.warnOnce(
+          'presets_main.request-delete-preset.invalid_name',
+          '[presets_main] request-delete-preset invalid name (ignored).'
+        );
+        return { ok: false, error: 'invalid name', code: 'INVALID_NAME' };
+      }
+      if (typeof name === 'string') {
+        const trimmed = name.trim();
+        if (trimmed.length > MAX_PRESET_STR_CHARS) {
+          log.warnOnce(
+            'presets_main.request-delete-preset.name_too_large',
+            '[presets_main] request-delete-preset name too large (ignored).'
+          );
+          return { ok: false, error: 'invalid name', code: 'INVALID_NAME' };
+        }
+        name = trimmed;
+      }
+
       // Load settings and dialog texts before any message
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
@@ -552,12 +619,28 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // Edit-preset handler (confirmation + silent delete + create)
-  ipcMain.handle('edit-preset', async (_event, { originalName, newPreset }) => {
+  ipcMain.handle('edit-preset', async (_event, payload) => {
     try {
+      const originalName =
+        isPlainObject(payload) && Object.prototype.hasOwnProperty.call(payload, 'originalName')
+          ? String(payload.originalName || '').trim()
+          : '';
       if (!originalName) {
-        return { ok: false, code: 'NO_ORIGINAL_NAME' };
+        return { ok: false, code: 'NO_ORIGINAL_NAME', error: 'invalid originalName' };
       }
 
+      const sanitized = sanitizePresetInput(
+        isPlainObject(payload) ? payload.newPreset : null
+      );
+      if (!sanitized.ok) {
+        log.warnOnce(
+          'presets_main.edit-preset.invalid',
+          '[presets_main] edit-preset invalid payload (ignored).'
+        );
+        return { ok: false, error: sanitized.error, code: sanitized.code };
+      }
+
+      const sanitizedPreset = sanitized.preset;
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
       const dialogLang = normalizeLangTag(settings.language) || lang;
@@ -623,11 +706,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         deletedAction = 'ignored_default';
       }
 
-      const idxNew = userPresets.findIndex((p) => p.name === newPreset.name);
+      const idxNew = userPresets.findIndex((p) => p.name === sanitizedPreset.name);
       if (idxNew >= 0) {
-        userPresets[idxNew] = newPreset;
+        userPresets[idxNew] = sanitizedPreset;
       } else {
-        userPresets.push(newPreset);
+        userPresets.push(sanitizedPreset);
       }
 
       settings = settingsState.saveSettings(settings);
@@ -637,7 +720,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         const windows = resolveWindows();
         const { mainWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('preset-created', newPreset);
+          mainWin.webContents.send('preset-created', sanitizedPreset);
         }
       } catch (err) {
         log.error(

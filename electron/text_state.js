@@ -20,6 +20,28 @@ const Log = require('./log');
 const { MAX_TEXT_CHARS, MAX_IPC_MULTIPLIER, MAX_IPC_CHARS } = require('./constants_main');
 
 const log = Log.get('text-state');
+const MAX_META_STR_CHARS = 4096;
+
+function isPlainObject(x) {
+  if (!x || typeof x !== 'object') return false;
+  return Object.getPrototypeOf(x) === Object.prototype;
+}
+
+function sanitizeMeta(raw) {
+  if (!isPlainObject(raw)) return null;
+
+  const source = typeof raw.source === 'string' ? raw.source.trim() : '';
+  const action = typeof raw.action === 'string' ? raw.action.trim() : '';
+
+  if (source && source.length > MAX_META_STR_CHARS) return null;
+  if (action && action.length > MAX_META_STR_CHARS) return null;
+  if (!source && !action) return null;
+
+  const out = {};
+  if (source) out.source = source;
+  if (action) out.action = action;
+  return out;
+}
 
 // =============================================================================
 // Shared state and injected dependencies
@@ -195,7 +217,7 @@ function registerIpc(ipcMain, windowsResolver) {
           'set-current-text payload missing text; using String(payload).'
         );
       }
-      const incomingMeta = hasTextProp ? payload.meta || null : null;
+      const incomingMeta = hasTextProp ? sanitizeMeta(payload.meta) : null;
       let text = hasTextProp ? String(payload.text || '') : String(payload || '');
 
       if (text.length > maxIpcChars) {

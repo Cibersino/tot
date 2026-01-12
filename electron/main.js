@@ -61,6 +61,45 @@ ensureConfigDir();
 // Helper to avoid repeating the same warning many times (keeps logs readable).
 const warnOnce = (...args) => log.warnOnce(...args);
 
+const MAX_PRESET_STR_CHARS = 65536;
+const MAX_META_STR_CHARS = 4096;
+
+function isPlainObject(x) {
+  if (!x || typeof x !== 'object') return false;
+  return Object.getPrototypeOf(x) === Object.prototype;
+}
+
+function sanitizePresetInput(raw) {
+  if (!isPlainObject(raw)) {
+    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET_SHAPE' };
+  }
+
+  const name = String(raw.name || '').trim();
+  const description = String(raw.description || '').trim();
+  const wpmNum = Number(raw.wpm);
+
+  if (!name) {
+    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET' };
+  }
+
+  if (name.length > MAX_PRESET_STR_CHARS || description.length > MAX_PRESET_STR_CHARS) {
+    return { ok: false, error: 'preset payload too large', code: 'PAYLOAD_TOO_LARGE' };
+  }
+
+  if (!Number.isFinite(wpmNum)) {
+    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET' };
+  }
+
+  return {
+    ok: true,
+    preset: {
+      name,
+      wpm: Math.round(wpmNum),
+      description,
+    },
+  };
+}
+
 // Maximum allowed characters for the current text (safety limit for memory/performance).
 // Renderer fallback lives in public/js/constants.js; main/text_state use MAX_TEXT_CHARS and injected maxTextChars.
 
@@ -1067,18 +1106,46 @@ ipcMain.handle('open-editor', () => {
 });
 
 // Preset modal: open (with payload normalization)
-ipcMain.handle('open-preset-modal', (_event, payload) => {
+ipcMain.handle('open-preset-modal', (event, payload) => {
   try {
     if (!mainWin) {
       warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
       return { ok: false, error: 'main window not ready' };
     }
 
+    const senderWin = BrowserWindow.fromWebContents(event.sender);
+    if (!senderWin || senderWin !== mainWin) {
+      warnOnce('open-preset-modal.unauthorized', 'open-preset-modal unauthorized (ignored).');
+      return { ok: false, error: 'unauthorized' };
+    }
+
     let initialData = {};
-    if (typeof payload === 'number') {
-      initialData = { wpm: payload };
-    } else if (payload && typeof payload === 'object') {
-      initialData = payload;
+    if (Number.isFinite(payload)) {
+      initialData = { wpm: Number(payload) };
+    } else if (isPlainObject(payload)) {
+      if (Object.prototype.hasOwnProperty.call(payload, 'wpm')) {
+        const wpmNum = Number(payload.wpm);
+        if (Number.isFinite(wpmNum)) {
+          initialData.wpm = wpmNum;
+        }
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, 'mode')) {
+        const mode = String(payload.mode || '').trim();
+        if (mode && mode.length <= MAX_META_STR_CHARS) {
+          initialData.mode = mode;
+        }
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, 'preset')) {
+        const sanitized = sanitizePresetInput(payload.preset);
+        if (sanitized.ok) {
+          initialData.preset = sanitized.preset;
+        } else {
+          warnOnce(
+            'open-preset-modal.invalidPreset',
+            'open-preset-modal: invalid preset payload (ignored).'
+          );
+        }
+      }
     } else if (typeof payload !== 'undefined') {
       warnOnce(
         'open-preset-modal.invalidPayload',
