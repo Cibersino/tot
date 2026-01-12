@@ -1,14 +1,12 @@
 // electron/preload.js
 'use strict';
 
-const { contextBridge, clipboard, ipcRenderer } = require('electron');
-const Log = require('./log');
+const { contextBridge, ipcRenderer } = require('electron');
 
-const log = Log.get('preload');
 
 const api = {
     // Clipboard / editor / presets / settings (we preserve all existing settings)
-    readClipboard: () => clipboard.readText(),
+    readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
     openEditor: () => ipcRenderer.invoke('open-editor'),
     checkForUpdates: (manual = false) => ipcRenderer.invoke('check-for-updates', { manual }),
     // openPresetModal accepts an optional argument: number (wpm) or object { wpm, mode, preset }
@@ -50,7 +48,7 @@ const api = {
     // ======================= Stable listener for top bar =======================
     onMenuClick: (cb) => {
         const wrapper = (_e, payload) => {
-            try { cb(payload); } catch (err) { log.error('menuAPI callback error:', err); }
+            try { cb(payload); } catch (err) { console.error('menuAPI callback error:', err); }
         };
         ipcRenderer.on('menu-click', wrapper);
 
@@ -59,7 +57,7 @@ const api = {
             try {
                 ipcRenderer.removeListener('menu-click', wrapper);
             } catch (err) {
-                log.error('Error removing menu listener:', err);
+                console.error('Error removing menu listener:', err);
             }
         };
     },
@@ -68,11 +66,11 @@ const api = {
 
     onSettingsChanged: (cb) => {
         const listener = (ev, newSettings) => {
-            try { cb(newSettings); } catch (err) { log.error('settings callback error:', err); }
+            try { cb(newSettings); } catch (err) { console.error('settings callback error:', err); }
         };
         ipcRenderer.on('settings-updated', listener);
         // return function to remove listener if used by caller
-        return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { log.error('removeListener error:', err); } };
+        return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error:', err); } };
     },
 
     // Central Crono API (renderer <-> main)
@@ -81,9 +79,9 @@ const api = {
     setCronoElapsed: (ms) => ipcRenderer.send('crono-set-elapsed', ms),
     getCronoState: () => ipcRenderer.invoke('crono-get-state'),
     onCronoState: (cb) => {
-        const wrapper = (_e, state) => { try { cb(state); } catch (err) { log.error('onCronoState callback error:', err); } };
+        const wrapper = (_e, state) => { try { cb(state); } catch (err) { console.error('onCronoState callback error:', err); } };
         ipcRenderer.on('crono-state', wrapper);
-        return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (err) { log.error('removeListener error (crono-state):', err); } };
+        return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (err) { console.error('removeListener error (crono-state):', err); } };
     },
 
     // ------------------ APIs for the floating window (updated) ------------------
@@ -96,16 +94,16 @@ const api = {
 
     // Hold listener to notify that the flotante was closed (main emits 'flotante-closed')
     onFlotanteClosed: (cb) => {
-        const listener = () => { try { cb(); } catch (err) { log.error('flotante closed callback error:', err); } };
+        const listener = () => { try { cb(); } catch (err) { console.error('flotante closed callback error:', err); } };
         ipcRenderer.on('flotante-closed', listener);
-        return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (err) { log.error('removeListener error:', err); } };
+        return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (err) { console.error('removeListener error:', err); } };
     },
 
     // editor ready (to hide loader in main window)
     onEditorReady: (cb) => {
-        const listener = () => { try { cb(); } catch (err) { log.error('editor-ready callback error:', err); } };
+        const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
         ipcRenderer.on('editor-ready', listener);
-        return () => { try { ipcRenderer.removeListener('editor-ready', listener); } catch (err) { log.error('removeListener error (editor-ready):', err); } };
+        return () => { try { ipcRenderer.removeListener('editor-ready', listener); } catch (err) { console.error('removeListener error (editor-ready):', err); } };
     }
 };
 

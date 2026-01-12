@@ -103,59 +103,44 @@ if (window.editorAPI && typeof window.editorAPI.onSettingsChanged === 'function'
 }
 
 // ---------- Notices ---------- //
-function ensureNoticeContainer() {
-  let c = document.getElementById('__editor_notice_container');
-  if (!c) {
-    c = document.createElement('div');
-    c.id = '__editor_notice_container';
-    Object.assign(c.style, {
-      position: 'fixed',
-      top: '12px',
-      right: '12px',
-      zIndex: 2147483647,
-      maxWidth: 'min(560px, calc(100% - 24px))',
-      pointerEvents: 'none',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '8px'
-    });
-    document.body.appendChild(c);
-  }
-  return c;
-}
+function showNotice(msg, opts = {}) {
+  const text = (typeof msg === 'string') ? msg : String(msg);
+  let type = 'info';
+  let duration = 4500;
 
-function showNotice(msg, { duration = 4500, type = 'info' } = {}) {
+  if (typeof opts === 'number') {
+    duration = opts;
+  } else if (opts && typeof opts === 'object') {
+    if (Object.prototype.hasOwnProperty.call(opts, 'type')) {
+      type = opts.type || 'info';
+    }
+    if (Object.prototype.hasOwnProperty.call(opts, 'duration')) {
+      duration = opts.duration;
+    }
+  }
+
   try {
-    const container = ensureNoticeContainer();
-    const n = document.createElement('div');
-    n.className = '__editor_notice';
-    n.textContent = msg;
-    n.style.pointerEvents = 'auto';
-    const base = {
-      padding: '10px 14px',
-      borderRadius: '8px',
-      boxShadow: '0 6px 18px rgba(0,0,0,0.14)',
-      fontSize: '13px',
-      lineHeight: '1.2',
-      color: '#0b0b0b',
-      maxWidth: '100%',
-      wordBreak: 'break-word',
-      background: '#e6f4ff'
-    };
-    if (type === 'warn') base.background = '#fff4e6';
-    if (type === 'error') base.background = '#ffe6e6';
-    Object.assign(n.style, base);
-    container.appendChild(n);
-    n.addEventListener('click', () => {
-      try { n.remove(); }
-      catch (err) { warnOnceEditor('notice.remove.click', 'failed to remove notice on click (ignored):', err); }
-    });
-    setTimeout(() => {
-      try { n.remove(); }
-      catch (err) { warnOnceEditor('notice.remove.timeout', 'failed to remove notice on timeout (ignored):', err); }
-    }, duration);
+    if (typeof Notify?.toastEditorText === 'function') {
+      Notify.toastEditorText(text, { type, duration });
+      return;
+    }
+    log.error('showNotice unavailable: Notify.toastEditorText missing.');
+    if (typeof Notify?.notifyMain === 'function') {
+      Notify.notifyMain(text);
+    } else {
+      log.error('showNotice fallback unavailable: Notify.notifyMain missing.');
+    }
   } catch (err) {
-    log.warnOnce('editor:showNotice:catch', 'showNotice failed (ignored):', err);
+    log.error('showNotice failed:', err);
+    try {
+      if (typeof Notify?.notifyMain === 'function') {
+        Notify.notifyMain(text);
+      } else {
+        log.error('showNotice fallback unavailable: Notify.notifyMain missing.');
+      }
+    } catch (fallbackErr) {
+      log.error('showNotice fallback failed:', fallbackErr);
+    }
   }
 }
 

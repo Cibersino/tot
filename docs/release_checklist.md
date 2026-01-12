@@ -38,12 +38,18 @@ Checklist mecánico para preparar y publicar una nueva versión.
 ## 6) Documentación pública
 - [ ] `README.md`: verificar que no quede desactualizado (links, sección de descarga/uso y referencias a docs).
 
-## 7) Documentación de apoyo
+## 7) Baseline de seguridad (Issue #72)
+- [ ] `docs/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:
+  - [ ] Ship Gate: todo `[PASS]`.
+  - [ ] Post-packaging Gate: ejecutado sobre el artefacto final y todo `[PASS]`.
+  - [ ] Si queda `[PENDING]` o `[BLOCKER]`: no publicar.
+
+## 8) Documentación de apoyo
 - [ ] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
 - [ ] Verificar que no existe un tracker duplicado de bugs en docs:
   - [ ] Bugs/requests viven en GitHub Issues + Milestones + Project (no duplicar en `docs/bugs.md`).
 
-## 8) Chequeo final de consistencia
+## 9) Chequeo final de consistencia
 La versión `X.Y.Z` debe coincidir idéntica en:
 - [ ] `VERSION`
 - [ ] `package.json`
