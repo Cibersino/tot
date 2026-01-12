@@ -17,10 +17,9 @@
 const fs = require('fs');
 const { BrowserWindow, clipboard } = require('electron');
 const Log = require('./log');
-const { MAX_TEXT_CHARS, MAX_IPC_MULTIPLIER, MAX_IPC_CHARS } = require('./constants_main');
+const { MAX_TEXT_CHARS, MAX_IPC_MULTIPLIER, MAX_IPC_CHARS, MAX_META_STR_CHARS } = require('./constants_main');
 
 const log = Log.get('text-state');
-const MAX_META_STR_CHARS = 4096;
 
 function isPlainObject(x) {
   if (!x || typeof x !== 'object') return false;

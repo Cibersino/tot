@@ -19,7 +19,7 @@ const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electro
 const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
-const { MAX_TEXT_CHARS, MAX_IPC_CHARS, DEFAULT_LANG } = require('./constants_main');
+const { MAX_TEXT_CHARS, MAX_IPC_CHARS, MAX_META_STR_CHARS, DEFAULT_LANG } = require('./constants_main');
 
 const {
   CONFIG_DIR,
@@ -61,43 +61,9 @@ ensureConfigDir();
 // Helper to avoid repeating the same warning many times (keeps logs readable).
 const warnOnce = (...args) => log.warnOnce(...args);
 
-const MAX_PRESET_STR_CHARS = 65536;
-const MAX_META_STR_CHARS = 4096;
-
 function isPlainObject(x) {
   if (!x || typeof x !== 'object') return false;
   return Object.getPrototypeOf(x) === Object.prototype;
-}
-
-function sanitizePresetInput(raw) {
-  if (!isPlainObject(raw)) {
-    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET_SHAPE' };
-  }
-
-  const name = String(raw.name || '').trim();
-  const description = String(raw.description || '').trim();
-  const wpmNum = Number(raw.wpm);
-
-  if (!name) {
-    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET' };
-  }
-
-  if (name.length > MAX_PRESET_STR_CHARS || description.length > MAX_PRESET_STR_CHARS) {
-    return { ok: false, error: 'preset payload too large', code: 'PAYLOAD_TOO_LARGE' };
-  }
-
-  if (!Number.isFinite(wpmNum)) {
-    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET' };
-  }
-
-  return {
-    ok: true,
-    preset: {
-      name,
-      wpm: Math.round(wpmNum),
-      description,
-    },
-  };
 }
 
 // Maximum allowed characters for the current text (safety limit for memory/performance).
@@ -1136,7 +1102,7 @@ ipcMain.handle('open-preset-modal', (event, payload) => {
         }
       }
       if (Object.prototype.hasOwnProperty.call(payload, 'preset')) {
-        const sanitized = sanitizePresetInput(payload.preset);
+        const sanitized = presetsMain.sanitizePresetInput(payload.preset);
         if (sanitized.ok) {
           initialData.preset = sanitized.preset;
         } else {
