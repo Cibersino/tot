@@ -2,9 +2,7 @@
 'use strict';
 
 const { contextBridge, ipcRenderer } = require('electron');
-const Log = require('./log');
 
-const log = Log.get('preset_preload');
 
 let lastInitData = null;
 const initCallbacks = new Set();
@@ -18,14 +16,14 @@ ipcRenderer.on('preset-init', (_e, data) => {
     try {
       cb(data);
     } catch (err) {
-      log.error('preset-init callback error:', err);
+      console.error('preset-init callback error:', err);
     }
   }
 });
 
 function onInit(cb) {
   if (typeof cb !== 'function') {
-    log.error('presetAPI.onInit called with non-function callback:', cb);
+    console.error('presetAPI.onInit called with non-function callback:', cb);
     return () => {};
   }
 
@@ -39,7 +37,7 @@ function onInit(cb) {
       try {
         cb(lastInitData);
       } catch (err) {
-        log.error('preset-init replay callback error:', err);
+        console.error('preset-init replay callback error:', err);
       }
     }, 0);
   }
@@ -49,7 +47,7 @@ function onInit(cb) {
     try {
       initCallbacks.delete(cb);
     } catch (err) {
-      log.error('preset-init unsubscribe error:', err);
+      console.error('preset-init unsubscribe error:', err);
     }
   };
 }
@@ -67,9 +65,9 @@ contextBridge.exposeInMainWorld('presetAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   onSettingsChanged: (cb) => {
     const listener = (_e, settings) => {
-      try { cb(settings); } catch (err) { log.error('settings callback error:', err); }
+      try { cb(settings); } catch (err) { console.error('settings callback error:', err); }
     };
     ipcRenderer.on('settings-updated', listener);
-    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { log.error('removeListener error (settings-updated):', err); } };
+    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error (settings-updated):', err); } };
   },
 });

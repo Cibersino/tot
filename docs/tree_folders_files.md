@@ -26,6 +26,7 @@ tot-readingmeter/
 │ │ └── no_silence.md
 │ ├── changelog_detailed.md
 │ ├── release_checklist.md
+│ ├── security_baseline.md
 │ └── tree_folders_files.md
 ├── electron/
 │ ├── presets/
@@ -85,6 +86,7 @@ tot-readingmeter/
 │ │ ├── crono.js
 │ │ └── log.js
 │ ├── renderer.js
+│ ├── language_window.js
 │ ├── editor.js
 │ ├── preset_modal.js
 │ ├── flotante.js

@@ -1,6 +1,11 @@
 // public/js/log.js
 'use strict';
 
+/* NOTE: Preload scripts run under sandbox constraints.
+ * Preloads temporarily use minimal console-based logging (no ./log import) to allow sandbox:true.
+ * This is an intentional security posture decision for 0.1.0.
+ */
+
 /**
  * LOGGING POLICY (toT - Reading Meter)
  *
