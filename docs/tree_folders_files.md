@@ -85,6 +85,7 @@ tot-readingmeter/
 │ │ ├── crono.js
 │ │ └── log.js
 │ ├── renderer.js
+│ ├── language_window.js
 │ ├── editor.js
 │ ├── preset_modal.js
 │ ├── flotante.js
