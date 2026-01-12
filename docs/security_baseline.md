@@ -1,10 +1,11 @@
-# Issue #58 - Evidence slice: File boundaries & Updater policy
+# Issue #72 - Evidence slice: File boundaries & Updater policy
 
 Date: `2026-01-12`
 Objective: Prepare app security before the first build.
 Scope: This document covers only file boundaries + updater policy evidence.  
-Other baseline areas (IPC surface, BrowserWindow/preloads, CSP) are documented elsewhere in the Issue #58 baseline notes.  
-This slice should not be read as the full Issue #58 security baseline.
+Other baseline areas (IPC surface, BrowserWindow/preloads, CSP) are documented elsewhere in the Issue #72 baseline notes.  
+This slice should not be read as the full Issue #72 security baseline.
+https://github.com/Cibersino/tot-readingmeter/issues/72
 
 ## PART 1 — Evidence pointers (raw)
 
