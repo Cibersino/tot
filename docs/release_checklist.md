@@ -40,13 +40,14 @@ Checklist mecánico para preparar y publicar una nueva versión.
 - [x] `LICENSE`: confirmar que va incluido en el **zip final**.
 - [x] Licencias del runtime: confirmar que el **zip final** incluye: `LICENSE.electron.txt` y `LICENSES.chromium.html` (raíz del zip).
 - [x] Assets redistribuidos (fuentes/logos): revisar los archivos efectivos a distribuir:
-  - [x] `public/fonts/**` (fuentes incluidas): `Baskervville` (OFL).
-  - [x] `public/assets/**` (logos/íconos incluidos): No hay licencias adicionales.
-- [x] Dependencias runtime incluidas: revisar el zip final y confirmar que no se incluye material dev; si existe `resources/app.asar/node_modules/**` o `resources/app.asar.unpacked/node_modules/**`, verificar que sean solo deps necesarias de ejecución.
-  - La app no tiene dependencias runtime.
-- [x] Servicios externos / términos (incluye `GitHub`): revisar `electron/updater.js` (y cualquier otro módulo con URLs) y confirmar endpoints esperados, sin credenciales embebidas, y uso consistente con términos.
-  - Servicios externos (runtime): solo electron/updater.js. Endpoints: raw.githubusercontent.com/.../VERSION (check de versión) y github.com/.../releases/latest (abre descarga).
-- [ ] `public/info/acerca_de.html`: verificar/actualizar el texto visible en la app para “Licencias / Créditos” (dentro del artefacto queda en `resources/app.asar/public/info/acerca_de.html`).
+  - [x] `public/fonts/**` (fuentes incluidas): licencia `Baskervville` guardada en `public/fonts/LICENSE_Baskervville_OFL.txt`.
+  - [x] `public/assets/**` (logos/íconos incluidos): diseños propios; no hay licencias adicionales.
+- [x] Dependencias runtime incluidas: no hay `node_modules` runtime (no deps de ejecución).
+- [x] Servicios externos / términos (incluye `GitHub`): solo `electron/updater.js`.
+  - Endpoints: `raw.githubusercontent.com/.../VERSION` (check de versión) y `github.com/.../releases/latest` (abre descarga).
+  - Sin credenciales embebidas.
+- [ ] `public/info/acerca_de.html`: verificar/actualizar el texto visible en la app para “Licencias / Créditos”
+  - En el artefacto queda en: `resources/app.asar/public/info/acerca_de.html`.
 
 ## 7) Baseline de seguridad
 - [x] `docs/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:
