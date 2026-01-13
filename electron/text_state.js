@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Own in-memory current text and enforce max length.
-// - Load/save current_text.json on startup and before-quit.
+// - Load/save current text state on startup and before-quit.
 // - Ensure settings file exists on quit (compatibility behavior).
 // - Register IPC handlers for get-current-text, set-current-text, force-clear-editor.
 // - Broadcast text updates to main and editor windows (best-effort).
@@ -145,7 +145,7 @@ function init(options) {
     if (!hasTextProp && !isRawString && typeof raw !== 'undefined') {
       log.warnOnce(
         'text_state.init.unexpectedShape',
-        'current_text.json has unexpected shape; using empty string.'
+        'Current text file has unexpected shape; using empty string.'
       );
     }
 
@@ -161,7 +161,7 @@ function init(options) {
 
     currentText = txt;
   } catch (err) {
-    log.error('Error loading current_text.json:', err);
+    log.error('Error loading current text file:', err);
     currentText = '';
   }
 

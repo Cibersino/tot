@@ -9,7 +9,7 @@ const Log = require('./log');
 
 const log = Log.get('presets-main');
 const { DEFAULT_LANG, MAX_PRESET_STR_CHARS } = require('./constants_main');
-const { CONFIG_PRESETS_DIR, ensureConfigPresetsDir } = require('./fs_storage');
+const { getConfigPresetsDir, ensureConfigPresetsDir } = require('./fs_storage');
 const settingsState = require('./settings');
 const { normalizeLangTag, normalizeLangBase } = settingsState;
 const menuBuilder = require('./menu_builder');
@@ -73,13 +73,14 @@ function loadPresetArrayFromJson(filePath) {
 
 /**
  * Loads combined default presets (general + per language).
- * Source: config/presets_defaults/*.json (fallback to bundled JSON only if missing)
+ * Source: userData config presets_defaults JSON (fallback to bundled JSON only if missing)
  */
 function loadDefaultPresetsCombined(lang) {
   ensureConfigPresetsDir();
+  const presetsDir = getConfigPresetsDir();
 
   const combined =
-    loadPresetArrayFromJson(path.join(CONFIG_PRESETS_DIR, 'defaults_presets.json')).slice();
+    loadPresetArrayFromJson(path.join(presetsDir, 'defaults_presets.json')).slice();
   if (!combined.length) {
     combined.push(
       ...loadPresetArrayFromJson(path.join(PRESETS_SOURCE_DIR, 'defaults_presets.json'))
@@ -90,7 +91,7 @@ function loadDefaultPresetsCombined(lang) {
   if (langCode) {
     const langPresets =
       loadPresetArrayFromJson(
-        path.join(CONFIG_PRESETS_DIR, `defaults_presets_${langCode}.json`)
+        path.join(presetsDir, `defaults_presets_${langCode}.json`)
       ).slice();
     if (!langPresets.length) {
       langPresets.push(
@@ -106,11 +107,12 @@ function loadDefaultPresetsCombined(lang) {
 
 /**
  * Initial copy of default presets from electron/presets/*.json
- * to config/presets_defaults/*.json (only if they do not exist).
+ * to userData config presets_defaults JSON (only if they do not exist).
  */
 function copyDefaultPresetsIfMissing() {
   try {
     ensureConfigPresetsDir();
+    const presetsDir = getConfigPresetsDir();
 
     if (!fs.existsSync(PRESETS_SOURCE_DIR)) return;
 
@@ -120,7 +122,7 @@ function copyDefaultPresetsIfMissing() {
       .forEach((fname) => {
         const src = path.join(PRESETS_SOURCE_DIR, fname);
         const dest = path.join(
-          CONFIG_PRESETS_DIR,
+          presetsDir,
           fname
         );
 
@@ -222,12 +224,13 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   ipcMain.handle('get-default-presets', () => {
     try {
       ensureConfigPresetsDir();
+      const presetsDir = getConfigPresetsDir();
 
       let general = [];
       const languagePresets = {};
 
-      const entries = fs.existsSync(CONFIG_PRESETS_DIR)
-        ? fs.readdirSync(CONFIG_PRESETS_DIR)
+      const entries = fs.existsSync(presetsDir)
+        ? fs.readdirSync(presetsDir)
         : [];
 
       // Load general defaults
@@ -237,7 +240,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       if (generalJson) {
         try {
           general = JSON.parse(
-            fs.readFileSync(path.join(CONFIG_PRESETS_DIR, generalJson), 'utf8')
+            fs.readFileSync(path.join(presetsDir, generalJson), 'utf8')
           );
         } catch (err) {
           log.error('[presets_main] Error parsing', generalJson, err);
@@ -259,7 +262,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           const lang = match[1].toLowerCase();
           try {
             const arr = JSON.parse(
-              fs.readFileSync(path.join(CONFIG_PRESETS_DIR, n), 'utf8')
+              fs.readFileSync(path.join(presetsDir, n), 'utf8')
             );
             if (Array.isArray(arr)) languagePresets[lang] = arr;
           } catch (err) {
@@ -303,8 +306,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   ipcMain.handle('open-default-presets-folder', async () => {
     try {
       ensureConfigPresetsDir();
+      const presetsDir = getConfigPresetsDir();
       // shell.openPath returns '' on success, or an error string
-      const result = await shell.openPath(CONFIG_PRESETS_DIR);
+      const result = await shell.openPath(presetsDir);
       if (typeof result === 'string' && result.length > 0) {
         log.error(
           '[presets_main] shell.openPath() returned error:',
