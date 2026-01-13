@@ -19,16 +19,16 @@ Leyenda:
 
 ## 1) Veredicto (0.1.0)
 
-**Veredicto actual:** **CONDICIONAL (NO distribuir hasta cerrar Ship Gate completo + Post-packaging Gate).**
+**Veredicto actual:** **PASS (OK distribuir 0.1.0).**
 
 Estado por gate:
-- **Ship Gate (repo/código + release hygiene):** **PENDING**
+- **Ship Gate (repo/código + release hygiene):** **PASS**
   - Postura de seguridad del runtime: **PASS** (secciones 2–9)
-  - Release hygiene (sección 10): **PENDING** (debe cerrarse antes del build final)
-- **Post-packaging Gate (artefacto build):** **PENDING** (debe ejecutarse sobre el instalador/zip final antes de publicar)
+  - Release hygiene (sección 10): **PASS**
+- **Post-packaging Gate (artefacto build):** **PASS** (ejecutado sobre el zip final)
 
-Motivo del veredicto condicional:
-- La seguridad de distribución depende del artefacto real (contenido efectivo + supply-chain) y de que el repo/config de release no arrastre material sensible o de desarrollo al build.
+Notas:
+- Este veredicto aplica **solo** al artefacto inspeccionado. Si se re-empaqueta, se debe re-ejecutar el Post-packaging Gate.
 
 ---
 
@@ -184,21 +184,21 @@ Criterio de bloqueo:
 Este bloque es relevante para seguridad de distribución porque controla supply-chain accidental (secrets, material dev, artefactos no intencionados) y configuración de build.
 
 Checklist:
-- [PENDING] Secret hygiene:
+- [PASS] Secret hygiene:
   - No hay llaves/tokens/credenciales hardcodeadas (incluye `.env`, tokens en JS, URLs con credenciales, etc.).
   - No hay archivos de volcado/logs de desarrollo con datos sensibles versionados.
   - Criterio: si se detecta un secreto, es incidente y bloquea publicación hasta rotación/remoción.
 
-- [PENDING] Packaging excludes (política “no arrastrar dev”):
+- [PASS] Packaging excludes (política “no arrastrar dev”):
   - La configuración de empaquetado excluye explícitamente directorios no distribuibles (mínimo: `tools_local/` y equivalentes).
   - Excluye backups, evidence folders, scripts internos que no sean runtime.
 
-- [PENDING] DevTools / Debug hooks (política para build distribuible):
+- [PASS] DevTools / Debug hooks (política para build distribuible):
   - En build empaquetado: DevTools **no se abre automáticamente**.
   - En build empaquetado: no existe un menú/atajo propio de la app que abra DevTools salvo modo debug explícito.
   - Nota: que DevTools exista en `npm start` (modo dev) es normal y no es señal de inseguridad del release.
 
-- [PENDING] Source maps (si aplica):
+- [PASS] Source maps (si aplica):
   - Decidir y verificar política: si se distribuyen sourcemaps, debe ser intencional.
   - Si no se distribuyen, asegurarse de que no queden `.map` dentro del artefacto.
 
@@ -226,11 +226,11 @@ No re-valida postura de seguridad “en fuente” (IPC/CSP/etc.) salvo en la med
 - `node_modules` **solo** de producción (dependencias necesarias para ejecutar la app; sin devDependencies).
 
 Checklist:
-- [PENDING] Listado **exacto** de dependencias de producción incluidas en el build (top-level):
+- [PASS] Listado **exacto** de dependencias de producción incluidas en el build (top-level):
   - Enumerar `resources/app.asar/node_modules` o `resources/app/node_modules` y registrar nombres + versiones.
   - Resultado (pegar debajo):
-    - - (Pegar lista)
-- [PENDING] Sanity check de vulnerabilidades sobre dependencias de producción (mínimo: verificar ausencia de CVEs críticas conocidas en runtime deps).
+    - No se incluyen dependencias npm de producción en el artefacto (no hay node_modules); runtime = Electron.
+- [PASS] Sanity check de vulnerabilidades sobre dependencias de producción (mínimo: verificar ausencia de CVEs críticas conocidas en runtime deps).
 
 Criterio de bloqueo:
 - Dependencias inesperadas de runtime o material sensible incluido por error.
@@ -238,16 +238,14 @@ Criterio de bloqueo:
 ## 12) Checklist mínimo post-empaquetado (artefacto final)
 
 Checklist:
-- [PENDING] Inspeccionar el contenido del artefacto:
+- [PASS] Inspeccionar el contenido del artefacto:
   - Confirmar que solo incluye lo esperado (app + recursos + runtime).
   - Confirmar ausencia de archivos sensibles (tokens, llaves, `.env`, dumps, logs de dev).
   - Confirmar ausencia de material de desarrollo no intencionado (herramientas locales, evidence folders, backups).
   - Confirmar que las páginas renderer incluidas corresponden al set esperado (no se incluyen HTML “extra” no revisados).
 
-- [PENDING] Smoke “renderer containment” sobre el artefacto:
-  - Confirmar (observacionalmente) que renderer no expone Node:
-    - `window.require` no existe
-    - `window.process` no existe
+- [PASS] Smoke “renderer containment” sobre el artefacto:
+  - Confirmar que renderer no expone Node (`window.require` / `window.process`).
   - Confirmar que funcionalidades principales operan sin pedir permisos no esperados.
 
 Criterio de bloqueo:
@@ -263,6 +261,6 @@ La app queda marcada como **“suficientemente segura para distribuir 0.1.0”**
 - Ship Gate: todo PASS (incluye runtime security posture + release hygiene), y
 - Post-packaging Gate: todo PASS (incluyendo dependencias runtime listadas y revisadas).
 
-Hasta entonces, el veredicto permanece **CONDICIONAL (NO publicar)**.
+Veredicto final: **PASS (OK publicar 0.1.0)**.
 
 ---
