@@ -2,7 +2,7 @@
 
 Desktop app (Electron) to count words/characters and estimate reading time.
 
-**Version:** see [`VERSION`](VERSION) and [GitHub Releases](https://github.com/Cibersino/tot-readingmeter/releases).
+**Version:** source of truth is `package.json` (`"version"`). Releases are tagged as `vX.Y.Z` on GitHub — see [GitHub Releases](https://github.com/Cibersino/tot-readingmeter/releases).
 **Roadmap:** GitHub Project: [toT Roadmap](https://github.com/users/Cibersino/projects/2)
 
 ---
