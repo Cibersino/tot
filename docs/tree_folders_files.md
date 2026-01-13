@@ -72,7 +72,8 @@ tot-readingmeter/
 │ ├── fonts/
 │ │ ├── Baskervville-VariableFont_wght.ttf
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
-│ │ └── Baskervville.css
+│ │ ├── Baskervville.css
+│ │ └── LICENSE_Baskervville_OFL.txt
 │ ├── info/
 │ │ ├── acerca_de.html
 │ │ ├── instrucciones.html
