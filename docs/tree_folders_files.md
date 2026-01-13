@@ -9,11 +9,14 @@ No es un inventario exhaustivo de cada archivo.
 
 ```ASCII
 tot-readingmeter/
+├── .vscode/                       # {carpeta ignorada por git}
+│ ├── settings.json
+│ └── tasks.json
 ├── build-output/                  # {vacío} {carpeta ignorada por git}
 ├── config/                        # {carpeta y archivos generados en primer arranque}
 │ ├── presets_defaults/            # {carpeta ignorada por git}
-│ │ ├── defaults_presets.json      
-│ │ ├── defaults_presets_en.json   
+│ │ ├── defaults_presets.json   
+│ │ ├── defaults_presets_en.json
 │ │ └── defaults_presets_es.json
 │ ├── current_text.json            # {ignorado por git}
 │ ├── editor_state.json            # {ignorado por git}
@@ -60,10 +63,9 @@ tot-readingmeter/
 │ └── languages.json
 ├── public/
 │ ├── assets/
-│ │ ├── logo-cibersin.ico
-│ │ ├── logo-cibersin.png
-│ │ ├── logo-cibersin.svg
-│ │ ├── logo-tot.ico
+│ │ ├── logo-cibersino.ico
+│ │ ├── logo-cibersino.png
+│ │ ├── logo-cibersino.svg
 │ │ ├── logo-tot.png
 │ │ └── logo-tot.svg
 │ ├── components/                  # {vacío}
@@ -99,7 +101,11 @@ tot-readingmeter/
 │ ├── flotante.css
 │ └── style.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
+├── editorconfig
 ├── .eslintrc.cjs
+├── .gitattributes
+├── .gitiginore
+├── jsconfig.json
 ├── package.json
 ├── package-lock.json
 ├── ToDo.md

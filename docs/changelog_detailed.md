@@ -428,7 +428,7 @@ function setIdiomaActual(nuevoIdioma) {
 * Logos nuevos
 
   * Mejora de logo toT
-  * Inserción de logo Cibersin
+  * Inserción de logo Cibersino
 
 ---
 
