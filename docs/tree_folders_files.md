@@ -112,8 +112,7 @@ tot-readingmeter/
 ├── ToDo.md
 ├── CHANGELOG.md
 ├── README.md
-├── LICENSE
-└── VERSION
+└── LICENSE
 ```
 
 ## Guía rápida
