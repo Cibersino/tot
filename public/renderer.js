@@ -562,6 +562,26 @@ const loadPresets = async () => {
     }
   }
 
+  async function hydrateAboutVersion(container) {
+    const versionEl = container ? container.querySelector('#appVersion') : null;
+    if (!versionEl) return;
+
+    if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
+      warnOnceRenderer('renderer.about.version.unavailable', 'getAppVersion not available for About modal.');
+      versionEl.textContent = 'N/A';
+      return;
+    }
+
+    try {
+      const version = await window.electronAPI.getAppVersion();
+      const cleaned = typeof version === 'string' ? version.trim() : '';
+      versionEl.textContent = cleaned || 'N/A';
+    } catch (err) {
+      log.error('Error fetching app version for About modal:', err);
+      versionEl.textContent = 'N/A';
+    }
+  }
+
   async function showInfoModal(key, opts = {}) {
     // key: 'readme' | 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
     const sectionTitles = {
@@ -614,6 +634,9 @@ const loadPresets = async () => {
     // Translate if i18n is loaded and then add content
     const translatedHtml = translateInfoHtml(tryHtml, translationKey);
     infoModalContent.innerHTML = translatedHtml;
+    if (key === 'acerca_de') {
+      await hydrateAboutVersion(infoModalContent);
+    }
 
     // Ensure the panel starts at the top before scrolling
     const panel = document.querySelector('.info-modal-panel');

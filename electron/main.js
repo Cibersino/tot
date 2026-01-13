@@ -1093,6 +1093,15 @@ ipcMain.handle('get-app-config', () => {
   }
 });
 
+ipcMain.handle('get-app-version', () => {
+  try {
+    return String(app.getVersion() || '').trim();
+  } catch (err) {
+    log.error('Error processing get-app-version:', err);
+    return '';
+  }
+});
+
 // =============================================================================
 // App lifecycle (startup, activate, quit)
 // =============================================================================

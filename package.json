@@ -35,7 +35,6 @@
       "electron/**",
       "public/**",
       "i18n/**",
-      "VERSION",
       "LICENSE"
     ],
     "win": {
