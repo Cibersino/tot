@@ -582,6 +582,35 @@ const loadPresets = async () => {
     }
   }
 
+  async function hydrateAboutEnvironment(container) {
+    const envEl = container ? container.querySelector('#appEnv') : null;
+    if (!envEl) return;
+
+    if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
+      warnOnceRenderer('renderer.about.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
+      envEl.textContent = 'N/A';
+      return;
+    }
+
+    try {
+      const info = await window.electronAPI.getAppRuntimeInfo();
+      const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
+      const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
+      const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
+      const osLabel = platformMap[platform] || platform;
+
+      if (!osLabel || !arch) {
+        envEl.textContent = 'N/A';
+        return;
+      }
+
+      envEl.textContent = `${osLabel} (${arch})`;
+    } catch (err) {
+      log.error('Error fetching app environment for About modal:', err);
+      envEl.textContent = 'N/A';
+    }
+  }
+
   async function showInfoModal(key, opts = {}) {
     // key: 'readme' | 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
     const sectionTitles = {
@@ -636,6 +665,7 @@ const loadPresets = async () => {
     infoModalContent.innerHTML = translatedHtml;
     if (key === 'acerca_de') {
       await hydrateAboutVersion(infoModalContent);
+      await hydrateAboutEnvironment(infoModalContent);
     }
 
     // Ensure the panel starts at the top before scrolling

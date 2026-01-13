@@ -1102,6 +1102,18 @@ ipcMain.handle('get-app-version', () => {
   }
 });
 
+ipcMain.handle('get-app-runtime-info', () => {
+  try {
+    return {
+      platform: process.platform,
+      arch: process.arch,
+    };
+  } catch (err) {
+    log.error('Error processing get-app-runtime-info:', err);
+    return { platform: '', arch: '' };
+  }
+});
+
 // =============================================================================
 // App lifecycle (startup, activate, quit)
 // =============================================================================
