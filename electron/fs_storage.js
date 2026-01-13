@@ -7,7 +7,7 @@
 // File system helpers for the Electron main process.
 //
 // Responsibilities:
-// - Resolve the app's config paths under ./config.
+// - Resolve the app's config paths under app.getPath('userData') plus the 'config' subfolder.
 // - Ensure required config folders exist before reading/writing files.
 // - Read/write small JSON state files (settings, current text, etc.) safely.
 //
@@ -28,28 +28,64 @@ const log = Log.get('fs-storage');
 // Config paths
 // =============================================================================
 
-const CONFIG_DIR = path.join(__dirname, '..', 'config');
-const CONFIG_PRESETS_DIR = path.join(CONFIG_DIR, 'presets_defaults');
+let CONFIG_DIR = null;
 
 // =============================================================================
 // Directory helpers
 // =============================================================================
 
+function initStorage(app) {
+  if (!app || typeof app.getPath !== 'function') {
+    throw new Error('[fs_storage] initStorage requires Electron app');
+  }
+  if (typeof app.isReady === 'function' && !app.isReady()) {
+    throw new Error('[fs_storage] initStorage called before app is ready');
+  }
+
+  CONFIG_DIR = path.join(app.getPath('userData'), 'config');
+}
+
+function getConfigDir() {
+  if (!CONFIG_DIR) {
+    throw new Error('[fs_storage] CONFIG_DIR is not initialized');
+  }
+  return CONFIG_DIR;
+}
+
+function getConfigPresetsDir() {
+  return path.join(getConfigDir(), 'presets_defaults');
+}
+
+function getSettingsFile() {
+  return path.join(getConfigDir(), 'user_settings.json');
+}
+
+function getCurrentTextFile() {
+  return path.join(getConfigDir(), 'current_text.json');
+}
+
+function getEditorStateFile() {
+  return path.join(getConfigDir(), 'editor_state.json');
+}
+
 function ensureConfigDir() {
   try {
-    if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
+    const dir = getConfigDir();
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   } catch (err) {
-    log.error('ensureConfigDir failed:', CONFIG_DIR, err);
+    log.error('ensureConfigDir failed:', CONFIG_DIR || '(uninitialized)', err);
   }
 }
 
 function ensureConfigPresetsDir() {
+  let presetsDir = null;
   try {
-    if (!fs.existsSync(CONFIG_PRESETS_DIR)) {
-      fs.mkdirSync(CONFIG_PRESETS_DIR, { recursive: true });
+    presetsDir = getConfigPresetsDir();
+    if (!fs.existsSync(presetsDir)) {
+      fs.mkdirSync(presetsDir, { recursive: true });
     }
   } catch (err) {
-    log.error('ensureConfigPresetsDir failed:', CONFIG_PRESETS_DIR, err);
+    log.error('ensureConfigPresetsDir failed:', presetsDir || '(uninitialized)', err);
   }
 }
 
@@ -126,8 +162,12 @@ function saveJson(filePath, obj) {
 // =============================================================================
 
 module.exports = {
-  CONFIG_DIR,
-  CONFIG_PRESETS_DIR,
+  initStorage,
+  getConfigDir,
+  getConfigPresetsDir,
+  getSettingsFile,
+  getCurrentTextFile,
+  getEditorStateFile,
   ensureConfigDir,
   ensureConfigPresetsDir,
   loadJson,

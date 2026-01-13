@@ -38,7 +38,7 @@ Checklist mecánico para preparar y publicar una nueva versión.
 ## 6) Documentación pública
 - [ ] `README.md`: verificar que no quede desactualizado (links, sección de descarga/uso y referencias a docs).
 
-## 7) Baseline de seguridad (Issue #72)
+## 7) Baseline de seguridad
 - [ ] `docs/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:
   - [ ] Ship Gate: todo `[PASS]`.
   - [ ] Post-packaging Gate: ejecutado sobre el artefacto final y todo `[PASS]`.
