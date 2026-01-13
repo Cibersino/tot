@@ -1,7 +1,8 @@
-# baseline_security.md — Baseline de seguridad para distribuir 0.1.0 (Issue #72)
+# Baseline de seguridad para distribuir 0.1.0 (Issue #72)
 
-Date: 2026-01-12  
-Project: toT – Reading Meter  
+Fecha: `2026-01-12`  
+Versión app: `0.1.0`
+
 Pregunta única que responde este documento: **¿La app es suficientemente segura para ser distribuida?**
 
 Este baseline está diseñado como **checklist operativo**.  
@@ -164,7 +165,7 @@ Criterio de bloqueo:
 Modelo aceptado 0.1.0: **actualización dirigida por el usuario**.
 
 Checklist:
-- [PASS] El check de versión consulta un endpoint HTTPS fijo (texto de versión).
+- [PASS] El check de versión consulta un endpoint HTTPS fijo (GitHub Releases API `.../releases/latest`, campo `tag_name`).
 - [PASS] Si hay update, se solicita consentimiento explícito del usuario.
 - [PASS] La acción de “Download” abre el release oficial en navegador externo.
 - [PASS] No existe descarga silenciosa de binarios.
@@ -221,8 +222,7 @@ No re-valida postura de seguridad “en fuente” (IPC/CSP/etc.) salvo en la med
 - App bundle (p. ej. `app.asar` y/o recursos equivalentes) con:
   - `electron/**` (main + módulos de negocio),
   - `public/**` (renderer),
-  - `i18n/**`,
-  - `VERSION` u otros assets requeridos.
+  - `i18n/**`.
 - `node_modules` **solo** de producción (dependencias necesarias para ejecutar la app; sin devDependencies).
 
 Checklist:

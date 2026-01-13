@@ -21,7 +21,12 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - Se prohíbe volver a usar el “patch como build counter” (ej. `0.0.930`, `0.0.901`, etc.) en nuevas versiones.
 - Pre-releases permitidos cuando aplique: `-alpha.N`, `-beta.N`, `-rc.N` (manteniendo `MAJOR.MINOR.PATCH` base).
 
-### 3) Formato mecánico (post-0.0.930)
+### 3) Fuente de verdad y tags (post-0.0.930)
+- Fuente de verdad única de versión: `package.json` (`app.getVersion()`).
+- Tag de release obligatorio en GitHub: `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`) o `vMAJOR.MINOR.PATCH-rc.N` (p. ej. `v0.2.0-rc.1`).
+- Regla estricta: el updater requiere prefijo `v` (minúscula) en el `tag_name` de la latest release.
+
+### 4) Formato mecánico (post-0.0.930)
 Cada versión nueva debe usar este esqueleto (secciones en este orden; **omitir** las que no apliquen):
 
 - `### Added`

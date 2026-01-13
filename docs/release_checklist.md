@@ -2,10 +2,14 @@
 
 Checklist mecánico para preparar y publicar una nueva versión.
 
+Fecha: `2026-01-12`  
+Versión app: `0.1.0`
+
 ## 1) Regla de versión (SemVer)
 - Desde `0.1.0` en adelante, usar SemVer estricto: `MAJOR.MINOR.PATCH`.
 - No volver a usar `0.0.XYY` como contador de builds.
 - Si aplica pre-release: `-alpha.N`, `-beta.N`, `-rc.N` (sobre base `MAJOR.MINOR.PATCH`).
+- Tag de release obligatorio en GitHub: `vX.Y.Z` (p. ej. `v0.1.0`), o `vX.Y.Z-rc.N` si aplica.
 
 ## 2) Preparación del changelog
 - [ ] `docs/changelog_detailed.md`: mover entradas desde `## [Unreleased]` a `## [X.Y.Z] - YYYY-MM-DD`.
@@ -32,9 +36,9 @@ Checklist mecánico para preparar y publicar una nueva versión.
 - Nota: `ToDo.md` es un stub fijo que apunta al Project; no se usa para mantener estado.
 
 ## 5) Alinear la versión (fuentes de verdad)
-- [x] `VERSION`: debe ser exactamente `X.Y.Z`.
-- [x] `package.json`: `"version": "X.Y.Z"`.
+- [x] `package.json`: `"version": "X.Y.Z"` (fuente de verdad; `app.getVersion()`).
 - [x] `package-lock.json`: consistente con `package.json` (actualizar/regenerar según flujo del repo).
+- [ ] GitHub tag del release: `vX.Y.Z` (prefijo `v` obligatorio).
 
 ## 6) Legalidad (licencias/redistribución)
 - [x] `LICENSE`: confirmar que va incluido en el **zip final**.
@@ -44,7 +48,7 @@ Checklist mecánico para preparar y publicar una nueva versión.
   - [x] `public/assets/**` (logos/íconos incluidos): diseños propios; no hay licencias adicionales.
 - [x] Dependencias runtime incluidas: no hay `node_modules` runtime (no deps de ejecución).
 - [x] Servicios externos / términos (incluye `GitHub`): solo `electron/updater.js`.
-  - Endpoints: `raw.githubusercontent.com/.../VERSION` (check de versión) y `github.com/.../releases/latest` (abre descarga).
+  - Endpoints: `api.github.com/.../releases/latest` (check de versión vía `tag_name`) y `github.com/.../releases/latest` (abre descarga).
   - Sin credenciales embebidas.
 - [ ] `public/info/acerca_de.html`: verificar/actualizar el texto visible en la app para “Licencias / Créditos”
   - En el artefacto queda en: `resources/app.asar/public/info/acerca_de.html`.
@@ -64,6 +68,6 @@ Checklist mecánico para preparar y publicar una nueva versión.
 
 ## 10) Chequeo final de consistencia
 La versión `X.Y.Z` debe coincidir idéntica en:
-- [x] `VERSION`
 - [x] `package.json`
 - [x] `package-lock.json`
+- [ ] tag de release en GitHub (después de `v`)
