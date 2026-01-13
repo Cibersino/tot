@@ -1,7 +1,7 @@
 {
   "name": "tot-readingmeter",
   "version": "0.1.0",
-  "description": "Contador y estimador de tiempo de lectura",
+  "description": "toT — Reading Meter. Contador y estimador de tiempo de lectura",
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
@@ -24,7 +24,7 @@
   },
   "build": {
     "appId": "com.cibersino.tot-readingmeter",
-    "productName": "toT - Reading Meter",
+    "productName": "toT — Reading Meter",
     "asar": false,
     "directories": {
       "output": "build-output",
