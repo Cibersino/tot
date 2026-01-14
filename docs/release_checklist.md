@@ -12,32 +12,32 @@ Versión app: `0.1.0`
 - Tag de release obligatorio en GitHub: `vX.Y.Z` (p. ej. `v0.1.0`), o `vX.Y.Z-rc.N` si aplica.
 
 ## 2) Preparación del changelog
-- [ ] `docs/changelog_detailed.md`: reflejar el release `X.Y.Z` con detalle.
-- [ ] `CHANGELOG.md`: reflejar el release `X.Y.Z` con resumen.
-- [ ] La fecha `YYYY-MM-DD` del release debe ser consistente entre `CHANGELOG.md` y `docs/changelog_detailed.md`
+- [x] `docs/changelog_detailed.md`: reflejar el release `X.Y.Z` con detalle.
+- [x] `CHANGELOG.md`: reflejar el release `X.Y.Z` con resumen.
+- [x] La fecha `YYYY-MM-DD` del release debe ser consistente entre `CHANGELOG.md` y `docs/changelog_detailed.md`
 
 ## 3) Tracker (GitHub Issues) y milestone
-- [ ] GitHub Issues: revisar el milestone `X.Y.Z`:
-  - [ ] Issues resueltos: cerrar (idealmente referenciando commit/PR si existe).
-  - [ ] Issues no resueltos: mover al próximo milestone (p. ej. `X.Y.(Z+1)` o `X.(Y+1).0`).
-  - [ ] Labels mínimos:
-    - [ ] Cada `bug` tiene `area:*` y severidad `S0–S3`.
-    - [ ] Quitar `status:needs-triage` si ya hay repro/confirmación y clasificación suficiente.
-- [ ] GitHub Milestone: cerrar el milestone `X.Y.Z` al publicar el release (y crear el siguiente si corresponde).
+- [x] GitHub Issues: revisar el milestone `X.Y.Z`:
+  - [x] Issues resueltos: cerrar (idealmente referenciando commit/PR si existe).
+  - [x] Issues no resueltos: mover al próximo milestone (p. ej. `X.Y.(Z+1)` o `X.(Y+1).0`).
+  - [x] Labels mínimos:
+    - [x] Cada `bug` tiene `area:*` y severidad `S0–S3`.
+    - [x] Quitar `status:needs-triage` si ya hay repro/confirmación y clasificación suficiente.
+- [x] GitHub Milestone: cerrar el milestone `X.Y.Z` al publicar el release (y crear el siguiente si corresponde).
 
 ## 4) Roadmap (GitHub Project “toT Roadmap”)
 - [x] Project: revisar el Project “toT Roadmap”:
   - [x] Vista por milestone: filtrar por `X.Y.Z` (o equivalente) y verificar consistencia con el milestone del repo.
-  - [ ] Para cada Issue del release:
-    - [ ] `Status`: dejar en estado final (p. ej. Done) si se cerró, o mover fuera del release si se postergó.
-    - [ ] Si el Issue cambió de milestone, reflejar el cambio también en el Project (mismo milestone/campo).
-  - [ ] No dejar Issues “fantasma”: todo Issue relevante del release debe estar en el Project (si no, agregarlo).
+  - [x] Para cada Issue del release:
+    - [x] `Status`: dejar en estado final (p. ej. Done) si se cerró, o mover fuera del release si se postergó.
+    - [x] Si el Issue cambió de milestone, reflejar el cambio también en el Project (mismo milestone/campo).
+  - [x] No dejar Issues “fantasma”: todo Issue relevante del release debe estar en el Project (si no, agregarlo).
 - Nota: `ToDo.md` es un stub fijo que apunta al Project; no se usa para mantener estado.
 
 ## 5) Alinear la versión (fuentes de verdad)
 - [x] `package.json`: `"version": "X.Y.Z"` (fuente de verdad; `app.getVersion()`).
 - [x] `package-lock.json`: consistente con `package.json` (actualizar/regenerar según flujo del repo).
-- [ ] GitHub tag del release: `vX.Y.Z` (prefijo `v` obligatorio).
+- [x] GitHub tag del release: `vX.Y.Z` (prefijo `v` obligatorio).
 
 ## 6) Legalidad (licencias/redistribución)
 - [x] `LICENSE`: confirmar que va incluido en el **zip final**.
@@ -59,7 +59,7 @@ Versión app: `0.1.0`
 
 ## 8) Documentación pública
 - [x] `README.md`: verificar que no quede desactualizado.
-- [ ] `public/info/instrucciones.html`: verificar que no quede desactualizado.
+- [x] `public/info/instrucciones.html`: verificar que no quede desactualizado.
 - [x] `public/info/*.html`: en el build empaquetado, verificar que los links abren fuera de la app (navegador/visor del sistema) y no navegan la ventana principal.
 
 ## 9) Documentación de apoyo
@@ -69,4 +69,4 @@ Versión app: `0.1.0`
 La versión `X.Y.Z` debe coincidir idéntica en:
 - [x] `package.json`
 - [x] `package-lock.json`
-- [ ] tag de release en GitHub (después de `v`)
+- [x] tag de release en GitHub (después de `v`)
