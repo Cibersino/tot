@@ -526,6 +526,39 @@ const loadPresets = async () => {
 
         ev.preventDefault();
 
+        if (rawHref.startsWith('appdoc:')) {
+          const docKey = rawHref.slice('appdoc:'.length).trim();
+          if (!window.electronAPI || typeof window.electronAPI.openAppDoc !== 'function') {
+            warnOnceRenderer(
+              'renderer.info.appdoc.missing',
+              'openAppDoc not available; blocked app doc:',
+              docKey
+            );
+            return;
+          }
+
+          window.electronAPI.openAppDoc(docKey)
+            .then((result) => {
+              if (!result || result.ok !== true) {
+                warnOnceRenderer(
+                  'renderer.info.appdoc.blocked',
+                  'App doc blocked or failed:',
+                  docKey,
+                  result
+                );
+              }
+            })
+            .catch((err) => {
+              warnOnceRenderer(
+                'renderer.info.appdoc.error',
+                'App doc request failed:',
+                docKey,
+                err
+              );
+            });
+          return;
+        }
+
         const resolvedHref = link.href || rawHref;
         if (!window.electronAPI || typeof window.electronAPI.openExternalUrl !== 'function') {
           warnOnceRenderer(

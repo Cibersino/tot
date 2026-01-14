@@ -18,6 +18,7 @@
 const { app, BrowserWindow, ipcMain, screen, globalShortcut, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const Log = require('./log');
 const { MAX_TEXT_CHARS, MAX_IPC_CHARS, MAX_META_STR_CHARS, DEFAULT_LANG } = require('./constants_main');
 
@@ -64,10 +65,40 @@ const ALLOWED_EXTERNAL_HOSTS = new Set([
   'api.github.com',
   'raw.githubusercontent.com',
 ]);
+const APP_DOC_FILES = Object.freeze({
+  'license-app': 'LICENSE',
+  'license-electron': 'LICENSE.electron.txt',
+  'licenses-chromium': 'LICENSES.chromium.html',
+});
+const APP_DOC_BASKERVVILLE = 'license-baskervville';
 
 function isPlainObject(x) {
   if (!x || typeof x !== 'object') return false;
   return Object.getPrototypeOf(x) === Object.prototype;
+}
+
+async function fileExists(filePath) {
+  try {
+    await fs.promises.access(filePath, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function getTempDir() {
+  try {
+    return app.getPath('temp');
+  } catch {
+    return os.tmpdir();
+  }
+}
+
+async function copyToTemp(srcPath, tempName) {
+  const tempPath = path.join(getTempDir(), tempName);
+  const data = await fs.promises.readFile(srcPath);
+  await fs.promises.writeFile(tempPath, data);
+  return tempPath;
 }
 
 // Maximum allowed characters for the current text (safety limit for memory/performance).
@@ -1146,6 +1177,73 @@ ipcMain.handle('open-external-url', async (_e, url) => {
     return { ok: true };
   } catch (err) {
     log.error('Error processing open-external-url:', err);
+    return { ok: false, reason: 'error' };
+  }
+});
+
+ipcMain.handle('open-app-doc', async (_e, docKey) => {
+  try {
+    const rawKey = typeof docKey === 'string' ? docKey.trim() : '';
+    if (!rawKey) {
+      log.warn('open-app-doc blocked: empty or invalid docKey:', docKey);
+      return { ok: false, reason: 'blocked' };
+    }
+
+    if (rawKey === APP_DOC_BASKERVVILLE) {
+      const srcPath = path.join(app.getAppPath(), 'public', 'fonts', 'LICENSE_Baskervville_OFL.txt');
+      if (!(await fileExists(srcPath))) {
+        log.warn('open-app-doc not found:', rawKey);
+        return { ok: false, reason: 'not_found' };
+      }
+
+      const tempPath = await copyToTemp(srcPath, 'tot-readingmeter_LICENSE_Baskervville_OFL.txt');
+      const openResult = await shell.openPath(tempPath);
+      if (openResult) {
+        log.warn('open-app-doc open failed:', rawKey, openResult);
+        return { ok: false, reason: 'open_failed' };
+      }
+
+      return { ok: true };
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(APP_DOC_FILES, rawKey)) {
+      log.warn('open-app-doc blocked: unknown doc key:', rawKey);
+      return { ok: false, reason: 'blocked' };
+    }
+
+    const fileName = APP_DOC_FILES[rawKey];
+    const candidates = [];
+    if (process.resourcesPath) {
+      candidates.push(path.join(process.resourcesPath, '..', fileName));
+      candidates.push(path.join(process.resourcesPath, fileName));
+    }
+
+    for (const candidate of candidates) {
+      if (!(await fileExists(candidate))) continue;
+      const openResult = await shell.openPath(candidate);
+      if (openResult) {
+        log.warn('open-app-doc open failed:', rawKey, openResult);
+        return { ok: false, reason: 'open_failed' };
+      }
+      return { ok: true };
+    }
+
+    const fallbackPath = path.join(app.getAppPath(), fileName);
+    if (!(await fileExists(fallbackPath))) {
+      log.warn('open-app-doc not found:', rawKey);
+      return { ok: false, reason: 'not_found' };
+    }
+
+    const tempPath = await copyToTemp(fallbackPath, `tot-readingmeter_${fileName}`);
+    const openResult = await shell.openPath(tempPath);
+    if (openResult) {
+      log.warn('open-app-doc open failed:', rawKey, openResult);
+      return { ok: false, reason: 'open_failed' };
+    }
+
+    return { ok: true };
+  } catch (err) {
+    log.error('Error processing open-app-doc:', err);
     return { ok: false, reason: 'error' };
   }
 });
