@@ -35,7 +35,8 @@
       "electron/**",
       "public/**",
       "i18n/**",
-      "LICENSE"
+      "LICENSE",
+      "PRIVACY.md"
     ],
     "win": {
       "icon": "public/assets/logo-cibersino.ico",
