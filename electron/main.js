@@ -1189,6 +1189,31 @@ ipcMain.handle('open-app-doc', async (_e, docKey) => {
       return { ok: false, reason: 'blocked' };
     }
 
+    if (!app.isPackaged && (rawKey === 'license-electron' || rawKey === 'licenses-chromium')) {
+      log.warn('open-app-doc not available in dev; requires packaged build:', rawKey);
+      return { ok: false, reason: 'not_available_in_dev' };
+    }
+
+    if (!app.isPackaged && rawKey === 'license-app') {
+      const devCandidates = [
+        path.join(process.cwd(), 'LICENSE'),
+        path.join(app.getAppPath(), 'LICENSE'),
+      ];
+
+      for (const candidate of devCandidates) {
+        if (!(await fileExists(candidate))) continue;
+        const openResult = await shell.openPath(candidate);
+        if (openResult) {
+          log.warn('open-app-doc open failed:', rawKey, openResult);
+          return { ok: false, reason: 'open_failed' };
+        }
+        return { ok: true };
+      }
+
+      log.warn('open-app-doc not found (dev LICENSE):', rawKey);
+      return { ok: false, reason: 'not_found' };
+    }
+
     if (rawKey === APP_DOC_BASKERVVILLE) {
       const srcPath = path.join(app.getAppPath(), 'public', 'fonts', 'LICENSE_Baskervville_OFL.txt');
       if (!(await fileExists(srcPath))) {
