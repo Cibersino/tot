@@ -509,90 +509,7 @@ const loadPresets = async () => {
   const infoModalClose = document.getElementById('infoModalClose');
   const infoModalTitle = document.getElementById('infoModalTitle');
   const infoModalContent = document.getElementById('infoModalContent');
-
-  function bindInfoModalExternalLinks(container) {
-    if (!container || container.dataset.externalLinksBound === '1') return;
-    container.dataset.externalLinksBound = '1';
-
-    container.addEventListener('click', (ev) => {
-      try {
-        const target = ev.target;
-        if (!target || typeof target.closest !== 'function') return;
-        const link = target.closest('a');
-        if (!link || !container.contains(link)) return;
-
-        const rawHref = (link.getAttribute('href') || '').trim();
-        if (!rawHref || rawHref.startsWith('#')) return;
-
-        ev.preventDefault();
-
-        if (rawHref.startsWith('appdoc:')) {
-          const docKey = rawHref.slice('appdoc:'.length).trim();
-          if (!window.electronAPI || typeof window.electronAPI.openAppDoc !== 'function') {
-            warnOnceRenderer(
-              'renderer.info.appdoc.missing',
-              'openAppDoc not available; blocked app doc:',
-              docKey
-            );
-            return;
-          }
-
-          window.electronAPI.openAppDoc(docKey)
-            .then((result) => {
-              if (!result || result.ok !== true) {
-                warnOnceRenderer(
-                  'renderer.info.appdoc.blocked',
-                  'App doc blocked or failed:',
-                  docKey,
-                  result
-                );
-              }
-            })
-            .catch((err) => {
-              warnOnceRenderer(
-                'renderer.info.appdoc.error',
-                'App doc request failed:',
-                docKey,
-                err
-              );
-            });
-          return;
-        }
-
-        const resolvedHref = link.href || rawHref;
-        if (!window.electronAPI || typeof window.electronAPI.openExternalUrl !== 'function') {
-          warnOnceRenderer(
-            'renderer.info.external.missing',
-            'openExternalUrl not available; blocked navigation to:',
-            resolvedHref
-          );
-          return;
-        }
-
-        window.electronAPI.openExternalUrl(resolvedHref)
-          .then((result) => {
-            if (!result || result.ok !== true) {
-              warnOnceRenderer(
-                'renderer.info.external.blocked',
-                'External URL blocked or failed:',
-                resolvedHref,
-                result
-              );
-            }
-          })
-          .catch((err) => {
-            warnOnceRenderer(
-              'renderer.info.external.error',
-              'External URL request failed:',
-              resolvedHref,
-              err
-            );
-          });
-      } catch (err) {
-        log.error('Error handling info modal link click:', err);
-      }
-    });
-  }
+  const { bindInfoModalLinks } = window.InfoModalLinks || {};
 
   function closeInfoModal() {
     try {
@@ -747,7 +664,9 @@ const loadPresets = async () => {
     // Translate if i18n is loaded and then add content
     const translatedHtml = translateInfoHtml(tryHtml, translationKey);
     infoModalContent.innerHTML = translatedHtml;
-    bindInfoModalExternalLinks(infoModalContent);
+    if (typeof bindInfoModalLinks === 'function') {
+      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI, warnOnceRenderer, log });
+    }
     if (key === 'acerca_de') {
       await hydrateAboutVersion(infoModalContent);
       await hydrateAboutEnvironment(infoModalContent);
