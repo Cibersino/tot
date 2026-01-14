@@ -17,6 +17,7 @@ const api = {
     getAppConfig: () => ipcRenderer.invoke('get-app-config'),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     getAppRuntimeInfo: () => ipcRenderer.invoke('get-app-runtime-info'),
+    openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url),
     onCurrentTextUpdated: (cb) => {
         ipcRenderer.on('current-text-updated', (_e, text) => cb(text));
     },
