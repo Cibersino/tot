@@ -60,8 +60,8 @@ Versión app: `0.1.0`
   - [x] Si queda `[PENDING]` o `[BLOCKER]`: no publicar.
 
 ## 8) Documentación pública
-- [ ] `README.md`: verificar que no quede desactualizado (links, sección de descarga/uso y referencias a docs).
-  - [ ] Debe quedar alineado con `public/info/readme.html`
+- [ ] `README.md`: verificar que no quede desactualizado.
+- [ ] `public/info/instrucciones.html`: verificar que no quede desactualizado.
 
 ## 9) Documentación de apoyo
 - [ ] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
