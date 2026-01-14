@@ -50,18 +50,19 @@
       <h3>Privacidad y datos</h3>
       <ul>
         <li><strong>Telemetría:</strong> no se recopilan métricas ni se envían datos de uso.</li>
-        <li><strong>Texto del usuario:</strong> no se transmite a servicios externos.</li>
+        <li><strong>Texto del usuario:</strong> el contenido que ingresas/pegas en la app no se envía a Internet ni se
+          comparte con servidores de los desarrolladores (se procesa localmente).</li>
         <li><strong>Almacenamiento:</strong> la configuración y el estado se guardan localmente en el equipo del
           usuario.</li>
         <li><strong>Actualizaciones:</strong> la app solo consulta información pública de versiones y abre el navegador
           para descargar; no descarga ni instala actualizaciones automáticamente.</li>
       </ul>
       <p>
-        <strong>Conectividad:</strong> la app puede consultar, mediante HTTPS, información pública de versiones en
-        GitHub para verificar si existe una versión más reciente. Si hay una versión nueva, puede abrir la página
-        oficial de releases en el navegador del sistema para descargarla. Esta verificación no incluye el texto
-        analizado; sin embargo, como en toda conexión a un servicio externo, GitHub recibirá la dirección IP del usuario
-        y metadatos HTTP estándar.
+        <strong>Conectividad:</strong> solo para verificar actualizaciones en GitHub y abrir releases en el navegador.
+        No se envía tu texto; GitHub verá tu IP (tráfico HTTPS estándar).
+      </p>
+      <p>
+        Para más detalles, ver la política de privacidad en el repositorio:
       </p>
     </section>
 
@@ -69,25 +70,27 @@
 
     <section aria-label="Licencias y avisos">
       <h3>Licencias y avisos</h3>
-
       <p>
-        Esta distribución incluye los siguientes avisos y licencias:
+        La app se distribuye bajo licencia MIT. Además, esta distribución incluye componentes y recursos de terceros
+        con sus propias licencias, cuyos textos se entregan junto al build:
       </p>
-
       <ul>
         <li>
-          <strong>toT — Reading Meter</strong>: licencia MIT. Texto completo incluido como <code>LICENSE</code> en la
-          distribución.
+          <strong>toT — Reading Meter</strong> — MIT:
+          ver <code>LICENSE</code>.
         </li>
         <li>
-          <strong>Tipografía Baskervville</strong>: SIL Open Font License 1.1 (OFL).
-          Copia incluida como <code>public/fonts/LICENSE_Baskervville_OFL.txt</code>.
+          <strong>Tipografía Baskervville</strong> — SIL Open Font License 1.1 (OFL):
+          ver <code>public/fonts/LICENSE_Baskervville_OFL.txt</code>.
         </li>
         <li>
-          <strong>Electron / Chromium</strong>: licencias incluidas como <code>LICENSE.electron.txt</code> y
-          <code>LICENSES.chromium.html</code> (en la raíz de la distribución).
+          <strong>Electron / Chromium</strong> — avisos y licencias del runtime:
+          ver <code>LICENSE.electron.txt</code> y <code>LICENSES.chromium.html</code> (en la raíz de la distribución).
         </li>
       </ul>
+      <p>
+        Si falta alguno de estos archivos en la distribución, repórtalo como incidente de packaging.
+      </p>
     </section>
 
     <hr>
