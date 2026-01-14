@@ -1,43 +1,56 @@
 # toT — Reading Meter
 
-Desktop app (Electron) to count words/characters and estimate reading time.
-
-**Version:** source of truth is `package.json` (`"version"`). Releases are tagged as `vX.Y.Z` on GitHub — see [GitHub Releases](https://github.com/Cibersino/tot-readingmeter/releases).
-**Roadmap:** GitHub Project: [toT Roadmap](https://github.com/users/Cibersino/projects/2)
-
----
+Desktop (Electron) app to count words/characters and estimate reading time.
 
 ## Features
 
-- Supports multi-language UI (ES/EN).
-- Text counting: words and characters (with/without spaces). Precise mode uses `Intl.Segmenter` (when available) with language-aware segmentation.
-- Reading time estimation (configurable WPM — words per minute).
-- WPM presets: create, edit, delete, restore defaults (persisted between sessions).
+- Word and character counting (with/without spaces).
+- “Precise mode” word segmentation using `Intl.Segmenter` (when available).
+- Reading-time estimation with configurable WPM (words per minute).
+- WPM presets: create/edit/delete + restore defaults (persisted between sessions).
 - Stopwatch with real WPM calculation; optional floating window.
+- Multi-language UI. (ES/EN for the moment).
 
 ---
 
-## How to use
+## Requirements
 
-Usage instructions are included in the app menu (Guide / Instructions / FAQ).
+### End users
+- **Windows (portable build)**: Windows 10/11 (64-bit).
+- **Planned**: macOS and Linux (not officially supported yet).
 
----
-
-## Download / Run (end users)
-
-Download builds from GitHub Releases (when available): [GitHub Releases](https://github.com/Cibersino/tot-readingmeter/releases).
-
-Planned release work is tracked in the roadmap project.
+### Developers (run from source)
+- Node.js 18+ (recommended: current LTS)
+- npm (bundled with Node.js)
 
 ---
 
+## Installation / How to run
+
+1) Go to [GitHub Releases](https://github.com/Cibersino/tot-readingmeter/releases) and download the latest **Windows portable `.zip`**.
+2) Extract the `.zip` to any folder.
+3) Run the `.exe` inside the extracted folder.
+
+Notes:
+- This is a **portable build** (no installer).
+- User settings/state are stored locally on your machine.
+
+---
+
+## Usage
+
+Usage instructions are included in the app menu (“How to use?”).
+
+---
+
+<!-- ## Screenshots
+
+TODO
+
+---
+-->
 ## Run from source (development)
 
-Requirements:
-- Node.js 18+ (recommended: current LTS)
-- A system compatible with Electron
-
-Steps:
 ```bash
 git clone https://github.com/Cibersino/tot-readingmeter.git
 cd tot-readingmeter
@@ -49,17 +62,18 @@ npm start
 
 ## Documentation
 
-- Release process: [`docs/release_checklist.md`](docs/release_checklist.md)
-- Changelog (short): [`CHANGELOG.md`](CHANGELOG.md)
-- Changelog (detailed): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
-- Repo structure / important files: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
+* Release process checklist: [`docs/release_checklist.md`](docs/release_checklist.md)
+* Changelog (short): [`CHANGELOG.md`](CHANGELOG.md)
+* Changelog (detailed): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
+* Repo structure / key files: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
+* Privacy policy (offline): [`PRIVACY.md`](PRIVACY.md)
 
 ---
 
-## Bug reports / Feature requests
+## Bug reports / feature requests
 
-- Use GitHub Issues (labels: `area:*`, `S0–S3`, `status:*`).
-- Track prioritization and milestones in the GitHub Project: [toT Roadmap](https://github.com/users/Cibersino/projects/2)
+* Use GitHub Issues.
+* Planning and prioritization: [toT Roadmap](https://github.com/users/Cibersino/projects/2)
 
 ---
 
@@ -70,5 +84,3 @@ MIT — see [`LICENSE`](LICENSE).
 ## Author
 
 [Cibersino](https://github.com/Cibersino)
-
----
