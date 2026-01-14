@@ -15,7 +15,7 @@
 // Imports (external + internal modules)
 // =============================================================================
 
-const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, globalShortcut, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
@@ -57,6 +57,13 @@ const FALLBACK_LANGUAGES = [
 
 // Helper to avoid repeating the same warning many times (keeps logs readable).
 const warnOnce = (...args) => log.warnOnce(...args);
+
+const ALLOWED_EXTERNAL_HOSTS = new Set([
+  'github.com',
+  'www.github.com',
+  'api.github.com',
+  'raw.githubusercontent.com',
+]);
 
 function isPlainObject(x) {
   if (!x || typeof x !== 'object') return false;
@@ -1111,6 +1118,35 @@ ipcMain.handle('get-app-runtime-info', () => {
   } catch (err) {
     log.error('Error processing get-app-runtime-info:', err);
     return { platform: '', arch: '' };
+  }
+});
+
+ipcMain.handle('open-external-url', async (_e, url) => {
+  try {
+    const raw = typeof url === 'string' ? url.trim() : '';
+    if (!raw) {
+      log.warn('open-external-url blocked: empty or invalid URL:', url);
+      return { ok: false, reason: 'blocked' };
+    }
+
+    let parsed;
+    try {
+      parsed = new URL(raw);
+    } catch (err) {
+      log.warn('open-external-url blocked: invalid URL:', raw);
+      return { ok: false, reason: 'blocked' };
+    }
+
+    if (parsed.protocol !== 'https:' || !ALLOWED_EXTERNAL_HOSTS.has(parsed.hostname)) {
+      log.warn('open-external-url blocked: disallowed URL:', parsed.toString());
+      return { ok: false, reason: 'blocked' };
+    }
+
+    await shell.openExternal(parsed.toString());
+    return { ok: true };
+  } catch (err) {
+    log.error('Error processing open-external-url:', err);
+    return { ok: false, reason: 'error' };
   }
 });
 
