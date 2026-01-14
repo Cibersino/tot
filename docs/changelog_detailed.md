@@ -37,7 +37,7 @@ Cada versión nueva debe usar este esqueleto (secciones en este orden; **omitir*
 - `### Arreglado`
 - `### Removido`
 - `### Migración` (obligatoria si hay acciones requeridas por el usuario o por la persistencia)
-- `### Contratos` (IPC/storage/IDs; obligatoria si se tocó algún contrato)
+- `### Contratos tocados` (IPC/storage/IDs; obligatoria si se tocó algún contrato)
 - `### Archivos` (opcional; solo si aporta trazabilidad)
 - `### Issues conocidos` (opcional)
 - `### Notas` (opcional)
@@ -244,9 +244,149 @@ Reglas:
 
 ### Migración
 
-- 
+- No aplica, es el primer release.
 
-### Contratos
+### Contratos tocados
+
+#### 1) IPC (main): canales **nuevos / renombrados / removidos**
+
+- **Nuevo** `open-external-url` (`ipcMain.handle`) — `electron/link_openers.js:47`
+  - Input: `url` (string).
+  - Output: `{ ok: true }` o `{ ok: false, reason: <string> }`.
+  - Regla contractual: **solo abre** URLs que pasen la allowlist (GitHub hosts); el resto se rechaza.
+
+- **Nuevo** `open-app-doc` (`ipcMain.handle`) — `electron/link_openers.js:76`
+  - Input: `docKey` (string).
+  - Output: `{ ok: true }` o `{ ok: false, reason: <string> }`.
+  - Regla contractual: `docKey` va por **allowlist** (ver §4 “appdoc keys”).
+
+- **Nuevo** `get-available-languages` (`ipcMain.handle`) — `electron/main.js:846`
+  - Output: `Array<{ tag: string, label: string }>` (sin wrapper `{ok:...}`).
+
+- **Nuevo** `get-app-version` (`ipcMain.handle`) — `electron/main.js:1097`
+  - Output: `string` (versión); fallback: `'unknown'`.
+
+- **Nuevo** `get-app-runtime-info` (`ipcMain.handle`) — `electron/main.js:1106`
+  - Output: `{ platform: string, arch: string }`.
+
+- **Nuevo** `clipboard-read-text` (`ipcMain.handle`) — `electron/text_state.js:192`
+  - Output: `{ ok: true, text: string }` o `{ ok: false, reason: string }`.
+  - Regla contractual: **autoriza solo** a la ventana principal (valida el sender).
+  - Regla contractual: respeta límite `maxIpcChars` (puede truncar/rechazar según implementación).
+
+- **Nuevo** `set-selected-preset` (`ipcMain.handle`) — `electron/settings.js:573`
+  - Input: `presetName` (string).
+  - Output: `{ ok: true, langKey: string, name: string }` o `{ ok: false, error: string }`.
+  - Regla contractual: la selección queda **bucketizada por idioma base** (`langKey`).
+
+- **Renombrado** `floating-open` → `flotante-open` (`ipcMain.handle`) — `electron/main.js:909`
+  - Mismo propósito (abrir ventana flotante), **cambia el nombre del canal**.
+
+- **Renombrado** `floating-close` → `flotante-close` (`ipcMain.handle`) — `electron/main.js:928`
+  - Mismo propósito (cerrar ventana flotante), **cambia el nombre del canal**.
+
+- **Removido** `floating-open` (canal legacy).
+- **Removido** `floating-close` (canal legacy).
+
+#### 2) IPC (main): canales existentes con **shape/semántica tocada**
+
+- **Cambiado** `get-app-config` (`ipcMain.handle`) — `electron/main.js:1088`
+  - Antes (0.0.930): retornaba al menos `maxTextChars`.
+  - Ahora (0.1.0): retorna `{ ok: true, maxTextChars: number, maxIpcChars: number }`.
+  - Contrato: `maxIpcChars` pasa a ser límite explícito para payloads IPC grandes.
+
+- **Cambiado** `set-current-text` (`ipcMain.handle`) — `electron/text_state.js:207`
+  - Input aceptado:
+    - `string`, o
+    - `{ text: string, meta?: object }`.
+  - Reglas contractuales:
+    - Rechaza payloads demasiado grandes según `maxIpcChars`.
+    - Aplica hard cap: trunca `text` a `maxTextChars`.
+    - `meta` se sanitiza/whitelistea (no se persisten/propagan claves arbitrarias).
+  - Output: `{ ok: true, truncated: boolean, length: number, text: string }` o `{ ok: false, error: string }`.
+  - Nota: esto es un **cambio contractual real** (shape de retorno + validación/limitación).
+
+- **Tocado** `open-preset-modal` (`ipcMain.handle`) — `electron/main.js:1029`
+  - Semántica tocada: ahora se identifica `senderWin` desde `event.sender` (reduce ambigüedad del “quién abrió”).
+  - Payload tolerado sigue siendo “número WPM o payload objeto”, pero con validaciones más estrictas (contrato más duro: inputs inválidos se rechazan antes).
+
+- **Tocado** `edit-preset` (`ipcMain.handle`) — `electron/presets_main.js:304`
+  - Semántica tocada: se endurece el shape validado/sanitizado del preset antes de persistir y antes de emitir eventos (mismo canal, contrato más estricto).
+
+- **Tocado** `create-preset` / `request-delete-preset` / `request-restore-defaults` (`ipcMain.handle`) — `electron/presets_main.js`
+  - Semántica tocada: sanitización/normalización previa a persistencia/emisión; el “payload efectivo” emitido al renderer puede cambiar (mismo evento/canal, datos normalizados).
+
+#### 3) IPC eventos (main ↔ renderer): canales renombrados/agregados
+
+- **Renombrados** eventos “Manual → Editor” (main ↔ editor renderer):
+  - `manual-init-text` → `editor-init-text`
+  - `manual-editor-ready` → `editor-ready`
+  - `manual-text-updated` → `editor-text-updated`
+  - `manual-force-clear` → `editor-force-clear`
+  - Impacto contractual: cualquier listener antiguo (`manual-*`) deja de dispararse.
+
+- **Nuevo** evento `flotante-closed` (main → renderer)
+  - Contrato: notifica a la ventana principal que la flotante fue cerrada (listener expuesto en preload).
+
+- **Tocado** `language-selected` (renderer → main)
+  - Canal se mantiene, pero el emisor ahora trabaja con **tag** (`es`, `es-cl`, etc.); main ya no depende del argumento para cerrar la ventana (contrato más tolerante).
+
+- **Menú (contrato interno “action key”)**
+  - **Removida** action key `readme` (ya no debe emitirse ni manejarse en renderer).
+
+#### 4) Preloads (surface contract): objetos expuestos y métodos tocados
+
+- **Removido** `manualAPI` (preload legacy).
+- **Agregado** `editorAPI` (nuevo preload) con métodos:
+  - `getCurrentText() -> invoke('get-current-text')`
+  - `setCurrentText(t) -> invoke('set-current-text', t)`
+  - `getAppConfig() -> invoke('get-app-config')`
+  - `getSettings() -> invoke('get-settings')`
+  - (Contratos: nombres de métodos + canales invocados + shape de retorno de `set-current-text` cambió; ver §2.)
+
+- **Tocado** `electronAPI` (preload principal): cambios contractuales observables
+  - **Nuevo** `readClipboard() -> invoke('clipboard-read-text')`.
+  - **Nuevo** `getAppVersion() -> invoke('get-app-version')`.
+  - **Nuevo** `getAppRuntimeInfo() -> invoke('get-app-runtime-info')`.
+  - **Nuevo** `openExternalUrl(url) -> invoke('open-external-url', url)`.
+  - **Nuevo** `openAppDoc(docKey) -> invoke('open-app-doc', docKey)`.
+  - **Nuevo** `setSelectedPreset(name) -> invoke('set-selected-preset', name)`.
+  - **Renombrado** plumbing de flotante:
+    - `openFlotanteWindow()` ahora usa `invoke('flotante-open')` (antes `floating-open`).
+    - `closeFlotanteWindow()` ahora usa `invoke('flotante-close')` (antes `floating-close`).
+  - **Nuevo** listener: `onFlotanteClosed(cb)` (evento `flotante-closed`).
+
+- **Tocado** `languageAPI` (preload de ventana de idioma)
+  - `setLanguage(tag)` ahora usa `invoke('set-language', tag)` y `send('language-selected', tag)`.
+  - **Nuevo** `getAvailableLanguages() -> invoke('get-available-languages')`.
+
+- `presetAPI` se mantiene nominalmente, pero la semántica de `editPreset(...)` queda bajo un pipeline más estricto (sanitización/validación server-side) — ver §2.
+
+#### 5) Storage / persistencia: paths y schema tocados
+
+- **Cambiado** root de persistencia: `CONFIG_DIR` ahora vive bajo `app.getPath('userData')/config` (ya no bajo el árbol del repo).
+  - Contrato de ubicación: `user_settings.json`, `current_text.json`, `editor_state.json` se leen/escriben desde ese root.
+  - Contrato “guardrail”: operar sin init explícito de storage pasa a ser error.
+
+- **Renombrado** archivo de estado de ventana:
+  - `modal_state.json` (legacy) → `editor_state.json` (nuevo naming/archivo efectivo).
+
+- **Tocado** `user_settings.json` (schema efectivo normalizado)
+  - `language` se trata como **tag** (y se deriva base para bucketing).
+  - Se consolida bucketing por idioma base para presets/selección/disabled defaults:
+    - `presets_by_language`
+    - `selected_preset_by_language`
+    - `disabled_default_presets`
+  - `modeConteo` queda validado contra set permitido.
+  - Nota: aunque existieran piezas antes, el contrato “canon” que el código normaliza/persiste queda como arriba.
+
+#### 6) appdoc keys (contrato: claves allowlisted → archivo local permitido)
+
+- `privacy-policy` → `PRIVACY.md`
+- `license-app` → `LICENSE`
+- `license-baskervville` → `public/fonts/LICENSE_Baskervville_OFL.txt`
+- `license-electron` → `LICENSE.electron.txt`
+- `licenses-chromium` → `LICENSES.chromium.html`
 
 #### IPC (main) — nuevos / modificados
 
