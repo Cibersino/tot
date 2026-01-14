@@ -15,6 +15,7 @@ const APP_DOC_FILES = Object.freeze({
   'license-app': 'LICENSE',
   'license-electron': 'LICENSE.electron.txt',
   'licenses-chromium': 'LICENSES.chromium.html',
+  'privacy-policy': 'PRIVACY.md',
 });
 const APP_DOC_BASKERVVILLE = 'license-baskervville';
 
@@ -85,10 +86,16 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
         return { ok: false, reason: 'not_available_in_dev' };
       }
 
-      if (!app.isPackaged && rawKey === 'license-app') {
+      if (!app.isPackaged && (rawKey === 'license-app' || rawKey === 'privacy-policy')) {
+        const fileName = APP_DOC_FILES[rawKey];
+        if (!fileName) {
+          log.warn('open-app-doc blocked: unknown doc key:', rawKey);
+          return { ok: false, reason: 'blocked' };
+        }
+
         const devCandidates = [
-          path.join(process.cwd(), 'LICENSE'),
-          path.join(app.getAppPath(), 'LICENSE'),
+          path.join(process.cwd(), fileName),
+          path.join(app.getAppPath(), fileName),
         ];
 
         for (const candidate of devCandidates) {
@@ -101,7 +108,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
           return { ok: true };
         }
 
-        log.warn('open-app-doc not found (dev LICENSE):', rawKey);
+        log.warn('open-app-doc not found (dev doc):', rawKey, fileName);
         return { ok: false, reason: 'not_found' };
       }
 
