@@ -53,10 +53,15 @@
         <li><strong>Texto del usuario:</strong> no se transmite a servicios externos.</li>
         <li><strong>Almacenamiento:</strong> la configuración y el estado se guardan localmente en el equipo del
           usuario.</li>
+        <li><strong>Actualizaciones:</strong> la app solo consulta información pública de versiones y abre el navegador
+          para descargar; no descarga ni instala actualizaciones automáticamente.</li>
       </ul>
       <p>
-        Conectividad: la app puede consultar GitHub Releases para verificar si existe una versión más reciente y puede
-        abrir la página de releases para descargarla. No se envía el contenido del texto analizado.
+        <strong>Conectividad:</strong> la app puede consultar, mediante HTTPS, información pública de versiones en
+        GitHub para verificar si existe una versión más reciente. Si hay una versión nueva, puede abrir la página
+        oficial de releases en el navegador del sistema para descargarla. Esta verificación no incluye el texto
+        analizado; sin embargo, como en toda conexión a un servicio externo, GitHub recibirá la dirección IP del usuario
+        y metadatos HTTP estándar.
       </p>
     </section>
 
