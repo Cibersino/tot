@@ -376,10 +376,6 @@ function buildAppMenu(lang, opts = {}) {
                     click: () => sendMenuClick('actualizar_version'),
                 },
                 {
-                    label: resolveMenuLabel(m, 'readme', 'Readme'),
-                    click: () => sendMenuClick('readme'),
-                },
-                {
                     label: resolveMenuLabel(m, 'acerca_de', 'About'),
                     click: () => sendMenuClick('acerca_de'),
                 },

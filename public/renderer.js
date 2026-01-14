@@ -613,9 +613,8 @@ const loadPresets = async () => {
   }
 
   async function showInfoModal(key, opts = {}) {
-    // key: 'readme' | 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
+    // key: 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
     const sectionTitles = {
-      readme: 'Readme',
       instrucciones: 'Instrucciones completas',
       guia_basica: 'Guia basica',
       faq: 'Preguntas frecuentes (FAQ)',
@@ -629,9 +628,7 @@ const loadPresets = async () => {
     let fileToLoad = null;
     let sectionId = null;
 
-    if (key === 'readme') {
-      fileToLoad = './info/readme.html';
-    } else if (key === 'acerca_de') {
+    if (key === 'acerca_de') {
       fileToLoad = './info/acerca_de.html';
     } else if (key === 'guia_basica' || key === 'instrucciones' || key === 'faq') {
       fileToLoad = './info/instrucciones.html';
@@ -788,7 +785,6 @@ const loadPresets = async () => {
       }
     });
 
-    window.menuActions.registerMenuAction('readme', () => { showInfoModal('readme') });
     window.menuActions.registerMenuAction('acerca_de', () => { showInfoModal('acerca_de') });
 
   } else {
