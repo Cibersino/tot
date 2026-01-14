@@ -50,8 +50,8 @@ Versión app: `0.1.0`
 - [x] Servicios externos / términos (incluye `GitHub`): solo `electron/updater.js`.
   - Endpoints: `api.github.com/.../releases/latest` (check de versión vía `tag_name`) y `github.com/.../releases/latest` (abre descarga).
   - Sin credenciales embebidas.
-- [ ] `public/info/acerca_de.html`: verificar/actualizar el texto visible en la app para “Licencias / Créditos”
-  - En el artefacto queda en: `resources/app.asar/public/info/acerca_de.html`.
+- [x] `public/info/acerca_de.html`: verificar/actualizar el texto visible en la app para “Licencias / Créditos”.
+- [x] `public/info/*.html`: verificar que los links abren fuera de la app (navegador/visor del sistema) y no navegan la ventana principal.
 
 ## 7) Baseline de seguridad
 - [x] `docs/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:

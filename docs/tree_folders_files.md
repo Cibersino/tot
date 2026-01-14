@@ -49,6 +49,7 @@ tot-readingmeter/
 │ ├── presets_main.js
 │ ├── menu_builder.js
 │ ├── updater.js
+│ ├── link_openers.js
 │ ├── constants_main.js
 │ └── log.js
 ├── i18n/
@@ -87,6 +88,7 @@ tot-readingmeter/
 │ │ ├── notify.js
 │ │ ├── presets.js
 │ │ ├── crono.js
+│ │ ├── info_modal_links.js
 │ │ └── log.js
 │ ├── renderer.js
 │ ├── language_window.js
