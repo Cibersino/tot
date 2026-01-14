@@ -29,7 +29,7 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 ### 4) Formato mecánico (post-0.0.930)
 Cada versión nueva debe usar este esqueleto (secciones en este orden; **omitir** las que no apliquen):
 
-- `### Added`
+- `### Added` (fecha y último commit)
 - `### Changed`
 - `### Fixed`
 - `### Removed`
