@@ -113,6 +113,7 @@ tot-readingmeter/
 ├── package-lock.json
 ├── ToDo.md
 ├── CHANGELOG.md
+├── PRIVACY.md
 ├── README.md
 └── LICENSE
 ```

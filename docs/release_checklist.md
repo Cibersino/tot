@@ -51,7 +51,7 @@ Versión app: `0.1.0`
   - Endpoints: `api.github.com/.../releases/latest` (check de versión vía `tag_name`) y `github.com/.../releases/latest` (abre descarga).
   - Sin credenciales embebidas.
 - [x] `public/info/acerca_de.html`: verificar/actualizar el texto visible en la app para “Licencias / Créditos”.
-- [x] `public/info/*.html`: verificar que los links abren fuera de la app (navegador/visor del sistema) y no navegan la ventana principal.
+- [x] `public/info/*.html`: en el build empaquetado, verificar que los links abren fuera de la app (navegador/visor del sistema) y no navegan la ventana principal.
 
 ## 7) Baseline de seguridad
 - [x] `docs/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:
