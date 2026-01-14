@@ -9,6 +9,56 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Histórico (hasta 0.0.930, inclusive):** no SemVer estricto. Se usó `0.0.XYY` como contador incremental de builds dentro del ciclo `0.0.X`.
 - **Desde 0.1.0 en adelante:** SemVer estricto `MAJOR.MINOR.PATCH` (p. ej. `0.1.0`, `0.1.1`, `0.2.0`, `1.0.0`). Se prohíbe volver a usar `0.0.XYY` como contador de builds.
 - **Pre-releases (cuando aplique):** `-alpha.N`, `-beta.N`, `-rc.N` sobre una base `MAJOR.MINOR.PATCH`.
+- **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
+- **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
+
+## [0.1.0] Primer release público
+- Fecha: `2026-01-14`
+
+### Added
+- Primer build distribuible para usuarios finales: **Windows x64 portable `.zip`** (sin instalador) vía `electron-builder` (scripts `dist` / `dist:win`, output `build-output/`, `artifactName` versionado).
+- **Apertura de enlaces endurecida** para releases:
+  - URLs externas solo vía IPC `open-external-url` y **allowlist de hosts GitHub**.
+  - Docs locales vía IPC `open-app-doc` y claves allowlisted consumidas como `appdoc:<key>` desde páginas info.
+- **Logging “no silencios”** (main + renderer): loggers dedicados con helpers `warnOnce/errorOnce` para evitar spam y registrar fallas reales.
+- **Ventana de idioma** dedicada (reemplaza el modal anterior): selector con búsqueda/filtro y navegación por teclado; manifiesto `i18n/languages.json`.
+- Nuevo locale: **es-CL** (Spanish, Chile).
+- Licencia redistribuible de la fuente incluida: `public/fonts/LICENSE_Baskervville_OFL.txt`.
+- Ayuda contextual: botón **“?”** (`btnHelp`) entrega tips aleatorios usando el sistema de notificaciones.
+
+### Changed
+- **Seguridad del renderer**: ventanas corren con `webPreferences.sandbox: true`; acciones privilegiadas pasan a IPC explícitos (p. ej. abrir enlaces/docs, clipboard).
+- **Persistencia**: el estado deja de vivir junto a la app y se mueve a `app.getPath('userData')/config` (I/O JSON más robusto, con guardrails y logging de estados missing/empty/failed).
+- **Updater**: cambia backend a **GitHub Releases API** (`/releases/latest`) y comparación SemVer desde `tag_name` (requiere tags `vMAJOR.MINOR.PATCH`); política se mantiene: informar y abrir navegador (sin auto-instalar).
+- **Rework de ventanas/UX**:
+  - “Manual” pasa a **Editor** (nuevo renderer + preload dedicado; IPC `manual-*` → `editor-*`).
+  - “Timer” pasa a **Crono** (rename a `crono` y estandarización de canales `crono-*`).
+  - “Floating” pasa a **Flotante** (IPC `floating-*` → `flotante-*`).
+- **Menú y acciones**: router de acciones en renderer se consolida en `menu_actions`; el infomodal deja de soportar la key `readme`.
+- **i18n en renderer**: pasa a modelo base + overlay (soporte de overlay regional como `es-CL` sobre `es`) con fallback/logging consistente.
+- **Presets/settings**:
+  - Defaults pasan de **JS a JSON** (`defaults_presets*.json`).
+  - Settings y presets se **bucketizan por idioma base** (presets/selección/disabled defaults); nuevo IPC `set-selected-preset`.
+  - Sanitización/validación más estricta de presets antes de persistir y antes de emitir eventos.
+- **Límites de payloads IPC**:
+  - `get-app-config` expone `maxTextChars` y `maxIpcChars`.
+  - `set-current-text` endurece validación (rechaza payloads demasiado grandes), aplica hard cap y sanitiza `meta`.
+- Notificaciones: `notify.js` evoluciona a sistema de **toasts** (contenedor DOM + autocierre).
+
+### Fixed
+- Eliminación sistemática de fallas silenciosas (`try/catch noop`) reemplazadas por logging controlado (incluye envíos `webContents.send()` best-effort durante shutdown/races).
+- Robustez de init en preset modal: `onInit(cb)` re-emite último payload si el listener se registra después del `preset-init` (evita race).
+- Conteo/constantes: `applyConfig(cfg)` deja de mutar global y retorna límite efectivo; simplificación del conteo “simple” con default de idioma consolidado.
+- Sandbox compatibility: lectura de clipboard movida a main vía `clipboard-read-text` (con restricción por sender y límites).
+
+### Removed
+- Feature completa **in-app README**: `public/info/readme.html` + entrypoints (menú/action key/router/i18n) asociados.
+- Artefactos legacy reemplazados por el rework:
+  - `public/manual.js` + `electron/manual_preload.js`
+  - `public/language_modal.html`
+  - defaults presets en JS
+  - templates `.default` en `config/`
+- Asset obsoleto: `public/assets/logo-tot.ico`.
 
 ## [0.0.930] - 2025-12-11
 ### Changed

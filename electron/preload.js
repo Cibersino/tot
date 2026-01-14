@@ -15,6 +15,10 @@ const api = {
     getCurrentText: () => ipcRenderer.invoke('get-current-text'),
     setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
     getAppConfig: () => ipcRenderer.invoke('get-app-config'),
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    getAppRuntimeInfo: () => ipcRenderer.invoke('get-app-runtime-info'),
+    openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url),
+    openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey),
     onCurrentTextUpdated: (cb) => {
         ipcRenderer.on('current-text-updated', (_e, text) => cb(text));
     },

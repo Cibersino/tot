@@ -2,12 +2,10 @@
 'use strict';
 
 const { screen } = require('electron');
-const path = require('path');
-const { CONFIG_DIR, loadJson, saveJson } = require('./fs_storage');
+const { getEditorStateFile, loadJson, saveJson } = require('./fs_storage');
 const Log = require('./log');
 
 const log = Log.get('editor-state');
-const EDITOR_STATE_FILE = path.join(CONFIG_DIR, 'editor_state.json');
 
 const DEFAULT_STATE = {
   maximized: true,
@@ -59,7 +57,8 @@ function normalizeState(raw) {
 function loadInitialState(customLoadJson) {
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
   try {
-    const raw = loader(EDITOR_STATE_FILE, DEFAULT_STATE);
+    const filePath = getEditorStateFile();
+    const raw = loader(filePath, DEFAULT_STATE);
     return normalizeState(raw);
   } catch (err) {
     log.error('[editor_state] Error reading initial state:', err);
@@ -73,6 +72,14 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
   const saver = typeof customSaveJson === 'function' ? customSaveJson : saveJson;
+  let editorStateFile = null;
+
+  try {
+    editorStateFile = getEditorStateFile();
+  } catch (err) {
+    log.error('[editor_state] getEditorStateFile failed:', err);
+    return;
+  }
 
   // RULE B - save reduced state when the window is NOT maximized
   const saveReducedState = () => {
@@ -81,7 +88,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       if (editorWin.isMaximized()) return;
 
       const bounds = editorWin.getBounds();
-      const current = loader(EDITOR_STATE_FILE, { maximized: false, reduced: null });
+      const current = loader(editorStateFile, { maximized: false, reduced: null });
       const state = normalizeState(current);
 
       if (!state.reduced && state.maximized === true) {
@@ -95,7 +102,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
         y: bounds.y
       };
 
-      saver(EDITOR_STATE_FILE, state);
+      saver(editorStateFile, state);
     } catch (err) {
       log.error('[editor_state] Error saving editor reduced state:', err);
     }
@@ -107,10 +114,10 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   // RULE A - when maximizing, we only update flag maximized
   editorWin.on('maximize', () => {
     try {
-      const current = loader(EDITOR_STATE_FILE, { maximized: true, reduced: null });
+      const current = loader(editorStateFile, { maximized: true, reduced: null });
       const state = normalizeState(current);
       state.maximized = true;
-      saver(EDITOR_STATE_FILE, state);
+      saver(editorStateFile, state);
     } catch (err) {
       log.error('[editor_state] Error updating state in maximize:', err);
     }
@@ -119,7 +126,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   // RULE D - when exiting maximized, restore reduced or apply fallback
   editorWin.on('unmaximize', () => {
     try {
-      const current = loader(EDITOR_STATE_FILE, { maximized: false, reduced: null });
+      const current = loader(editorStateFile, { maximized: false, reduced: null });
       const state = normalizeState(current);
       state.maximized = false;
 
@@ -147,7 +154,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
         state.reduced = reduced;
       }
 
-      saver(EDITOR_STATE_FILE, state);
+      saver(editorStateFile, state);
     } catch (err) {
       log.error('[editor_state] Error handling editor unmaximize:', err);
     }
@@ -156,10 +163,10 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   // RULE C - when closing, we persist flag maximized and keep previous reduced
   editorWin.on('close', () => {
     try {
-      const current = loader(EDITOR_STATE_FILE, { maximized: false, reduced: null });
+      const current = loader(editorStateFile, { maximized: false, reduced: null });
       const state = normalizeState(current);
       state.maximized = editorWin.isMaximized();
-      saver(EDITOR_STATE_FILE, state);
+      saver(editorStateFile, state);
     } catch (err) {
       log.error('[editor_state] Error saving editor closed state:', err);
     }

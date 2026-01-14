@@ -2,10 +2,8 @@
 // update system: version comparison, remote query, and native update dialogs and native update dialogs.
 'use strict';
 
-const { dialog, shell } = require('electron');
+const { dialog, shell, app } = require('electron');
 const https = require('https');
-const path = require('path');
-const fs = require('fs');
 const Log = require('./log');
 
 const log = Log.get('updater');
@@ -13,8 +11,7 @@ const menuBuilder = require('./menu_builder');
 const { DEFAULT_LANG } = require('./constants_main');
 
 // Version/download paths and URLs
-const VERSION_FILE = path.join(__dirname, '..', 'VERSION');
-const VERSION_REMOTE_URL = 'https://raw.githubusercontent.com/Cibersino/tot-readingmeter/main/VERSION';
+const RELEASES_API_URL = 'https://api.github.com/repos/Cibersino/tot-readingmeter/releases/latest';
 const DOWNLOAD_URL = 'https://github.com/Cibersino/tot-readingmeter/releases/latest';
 
 // Lazy references to external state
@@ -30,29 +27,101 @@ const resolveDialogText = (dialogTexts, key, fallback) =>
     warnPrefix: 'updater.dialog.missing'
   });
 
-function compareVersions(a, b) {
-  const pa = String(a || '').trim().split('.').map(n => parseInt(n, 10) || 0);
-  const pb = String(b || '').trim().split('.').map(n => parseInt(n, 10) || 0);
-  const len = Math.max(pa.length, pb.length);
-  for (let i = 0; i < len; i++) {
-    const va = pa[i] || 0;
-    const vb = pb[i] || 0;
-    if (va > vb) return 1;
-    if (va < vb) return -1;
+const SEMVER_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+.*)?$/;
+
+function parseSemVer(version) {
+  const raw = String(version || '').trim();
+  const match = SEMVER_RE.exec(raw);
+  if (!match) return null;
+
+  const major = Number(match[1]);
+  const minor = Number(match[2]);
+  const patch = Number(match[3]);
+  if (!Number.isFinite(major) || !Number.isFinite(minor) || !Number.isFinite(patch)) return null;
+
+  const prerelease = match[4] ? match[4].split('.').filter(Boolean) : [];
+  return { major, minor, patch, prerelease, raw };
+}
+
+function comparePrerelease(aIds, bIds) {
+  const aLen = aIds.length;
+  const bLen = bIds.length;
+
+  if (aLen === 0 && bLen === 0) return 0;
+  if (aLen === 0) return 1;
+  if (bLen === 0) return -1;
+
+  const max = Math.max(aLen, bLen);
+  for (let i = 0; i < max; i++) {
+    if (i >= aLen) return -1;
+    if (i >= bLen) return 1;
+
+    const aId = aIds[i];
+    const bId = bIds[i];
+    const aNum = /^[0-9]+$/.test(aId);
+    const bNum = /^[0-9]+$/.test(bId);
+
+    if (aNum && bNum) {
+      const aVal = Number(aId);
+      const bVal = Number(bId);
+      if (aVal > bVal) return 1;
+      if (aVal < bVal) return -1;
+      continue;
+    }
+
+    if (aNum && !bNum) return -1;
+    if (!aNum && bNum) return 1;
+
+    if (aId > bId) return 1;
+    if (aId < bId) return -1;
   }
+
   return 0;
 }
 
-function fetchRemoteVersion(url) {
+function compareSemVer(a, b) {
+  if (a.major !== b.major) return a.major > b.major ? 1 : -1;
+  if (a.minor !== b.minor) return a.minor > b.minor ? 1 : -1;
+  if (a.patch !== b.patch) return a.patch > b.patch ? 1 : -1;
+  return comparePrerelease(a.prerelease, b.prerelease);
+}
+
+function fetchLatestReleaseTag(url) {
   return new Promise((resolve) => {
     try {
-      https.get(url, (res) => {
-        if (res.statusCode !== 200) return resolve(null);
+      https.get(url, {
+        headers: {
+          'User-Agent': 'tot-readingmeter',
+          'Accept': 'application/vnd.github+json',
+        }
+      }, (res) => {
+        if (res.statusCode !== 200) {
+          log.warn('Latest release fetch failed with status:', res.statusCode);
+          res.resume();
+          return resolve(null);
+        }
         let data = '';
         res.on('data', chunk => { data += chunk; });
-        res.on('end', () => resolve(String(data || '').trim()));
-      }).on('error', () => resolve(null));
-    } catch {
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(String(data || '').trim() || '{}');
+            const tag = parsed && typeof parsed.tag_name === 'string' ? parsed.tag_name.trim() : '';
+            if (!tag) {
+              log.warn('Latest release payload missing tag_name.');
+              return resolve(null);
+            }
+            resolve(tag);
+          } catch (err) {
+            log.warn('Failed to parse latest release JSON:', err);
+            resolve(null);
+          }
+        });
+      }).on('error', (err) => {
+        log.warn('Latest release fetch error:', err);
+        resolve(null);
+      });
+    } catch (err) {
+      log.warn('Latest release fetch failed:', err);
       resolve(null);
     }
   });
@@ -70,14 +139,15 @@ async function checkForUpdates({ lang, manual = false } = {}) {
 
     let localVer = null;
     try {
-      localVer = fs.readFileSync(VERSION_FILE, 'utf8').trim();
-    } catch {
-      // no local VERSION, continue without warning
-      return;
+      localVer = String(app.getVersion() || '').trim();
+    } catch (err) {
+      log.warn('Could not read local app version:', err);
+      localVer = '';
     }
 
-    const remoteVer = await fetchRemoteVersion(VERSION_REMOTE_URL);
-    if (!remoteVer) {
+    const localParsed = parseSemVer(localVer);
+    if (!localParsed) {
+      log.warn('Local version is not valid SemVer:', localVer);
       if (manual && mainWin && !mainWin.isDestroyed()) {
         const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
         const message = resolveDialogText(
@@ -96,7 +166,69 @@ async function checkForUpdates({ lang, manual = false } = {}) {
       return;
     }
 
-    if (compareVersions(remoteVer, localVer) <= 0) {
+    const remoteTag = await fetchLatestReleaseTag(RELEASES_API_URL);
+    if (!remoteTag) {
+      if (manual && mainWin && !mainWin.isDestroyed()) {
+        const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
+        const message = resolveDialogText(
+          dlg,
+          'update_failed_message',
+          'Could not check for updates. Please check your connection and try again.'
+        );
+        await dialog.showMessageBox(mainWin, {
+          type: 'none',
+          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
+          defaultId: 0,
+          title,
+          message,
+        });
+      }
+      return;
+    }
+
+    if (!remoteTag.startsWith('v')) {
+      log.warn('Latest release tag is missing required "v" prefix:', remoteTag);
+      if (manual && mainWin && !mainWin.isDestroyed()) {
+        const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
+        const message = resolveDialogText(
+          dlg,
+          'update_failed_message',
+          'Could not check for updates. Please check your connection and try again.'
+        );
+        await dialog.showMessageBox(mainWin, {
+          type: 'none',
+          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
+          defaultId: 0,
+          title,
+          message,
+        });
+      }
+      return;
+    }
+
+    const remoteVer = remoteTag.slice(1).trim();
+    const remoteParsed = parseSemVer(remoteVer);
+    if (!remoteParsed) {
+      log.warn('Remote version is not valid SemVer:', remoteVer);
+      if (manual && mainWin && !mainWin.isDestroyed()) {
+        const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
+        const message = resolveDialogText(
+          dlg,
+          'update_failed_message',
+          'Could not check for updates. Please check your connection and try again.'
+        );
+        await dialog.showMessageBox(mainWin, {
+          type: 'none',
+          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
+          defaultId: 0,
+          title,
+          message,
+        });
+      }
+      return;
+    }
+
+    if (compareSemVer(remoteParsed, localParsed) <= 0) {
       if (manual && mainWin && !mainWin.isDestroyed()) {
         const title = resolveDialogText(dlg, 'update_up_to_date_title', 'You are up to date');
         const message = resolveDialogText(
