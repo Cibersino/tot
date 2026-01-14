@@ -27,8 +27,8 @@ Versión app: `0.1.0`
 - [ ] GitHub Milestone: cerrar el milestone `X.Y.Z` al publicar el release (y crear el siguiente si corresponde).
 
 ## 4) Roadmap (GitHub Project “toT Roadmap”)
-- [ ] Project: revisar el Project “toT Roadmap”:
-  - [ ] Vista por milestone: filtrar por `X.Y.Z` (o equivalente) y verificar consistencia con el milestone del repo.
+- [x] Project: revisar el Project “toT Roadmap”:
+  - [x] Vista por milestone: filtrar por `X.Y.Z` (o equivalente) y verificar consistencia con el milestone del repo.
   - [ ] Para cada Issue del release:
     - [ ] `Status`: dejar en estado final (p. ej. Done) si se cerró, o mover fuera del release si se postergó.
     - [ ] Si el Issue cambió de milestone, reflejar el cambio también en el Project (mismo milestone/campo).
@@ -59,12 +59,12 @@ Versión app: `0.1.0`
   - [x] Si queda `[PENDING]` o `[BLOCKER]`: no publicar.
 
 ## 8) Documentación pública
-- [ ] `README.md`: verificar que no quede desactualizado.
+- [x] `README.md`: verificar que no quede desactualizado.
 - [ ] `public/info/instrucciones.html`: verificar que no quede desactualizado.
 - [x] `public/info/*.html`: en el build empaquetado, verificar que los links abren fuera de la app (navegador/visor del sistema) y no navegan la ventana principal.
 
 ## 9) Documentación de apoyo
-- [ ] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
+- [x] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
 
 ## 10) Chequeo final de consistencia
 La versión `X.Y.Z` debe coincidir idéntica en:
