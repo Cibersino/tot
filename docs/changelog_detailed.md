@@ -54,8 +54,8 @@ Reglas:
 ### Fecha release y último commit
 
 - Fecha: `2026-01-14`
-- Último commit: `<TBD>`
-- Baseline técnico usado para auditoría: `0.0.930` (commit `68a4ef4`) → `<TBD>`
+- Último commit: `0ef3ea4`
+- Baseline técnico usado para auditoría: `0.0.930` (commit `68a4ef4`) → `0ef3ea4`
 
 ### Resumen de cambios
 
