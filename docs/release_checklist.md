@@ -12,9 +12,8 @@ Versión app: `0.1.0`
 - Tag de release obligatorio en GitHub: `vX.Y.Z` (p. ej. `v0.1.0`), o `vX.Y.Z-rc.N` si aplica.
 
 ## 2) Preparación del changelog
-- [ ] `docs/changelog_detailed.md`: mover entradas desde `## [Unreleased]` a `## [X.Y.Z] - YYYY-MM-DD`.
-- [ ] `docs/changelog_detailed.md`: dejar `## [Unreleased]` vacío (o “sin entradas aún”).
-- [ ] `CHANGELOG.md`: reflejar el release `X.Y.Z` con resumen (sin detalle técnico; puede linkear al detallado).
+- [ ] `docs/changelog_detailed.md`: reflejar el release `X.Y.Z` con detalle.
+- [ ] `CHANGELOG.md`: reflejar el release `X.Y.Z` con resumen.
 - [ ] La fecha `YYYY-MM-DD` del release debe ser consistente entre `CHANGELOG.md` y `docs/changelog_detailed.md`
 
 ## 3) Tracker (GitHub Issues) y milestone
