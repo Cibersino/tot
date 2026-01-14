@@ -4,7 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// This module owns persisted user settings (user_settings.json).
+// This module owns persisted user settings.
 //
 // Responsibilities:
 // - Load settings from disk (via injected loadJson/saveJson) and normalize shape/types.

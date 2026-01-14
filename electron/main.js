@@ -15,15 +15,17 @@
 // Imports (external + internal modules)
 // =============================================================================
 
-const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, globalShortcut, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
 const { MAX_TEXT_CHARS, MAX_IPC_CHARS, MAX_META_STR_CHARS, DEFAULT_LANG } = require('./constants_main');
 
 const {
-  CONFIG_DIR,
+  initStorage,
   ensureConfigDir,
+  getSettingsFile,
+  getCurrentTextFile,
   loadJson,
   saveJson,
 } = require('./fs_storage');
@@ -34,6 +36,7 @@ const editorState = require('./editor_state');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const updater = require('./updater');
+const { registerLinkIpc } = require('./link_openers');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -41,9 +44,7 @@ log.debug('Main process starting...');
 // =============================================================================
 // File locations (persistent user data)
 // =============================================================================
-
-const SETTINGS_FILE = path.join(CONFIG_DIR, 'user_settings.json');
-const CURRENT_TEXT_FILE = path.join(CONFIG_DIR, 'current_text.json');
+// Resolved after app readiness (requires app.getPath('userData')).
 
 // Language selection modal (first launch) assets
 const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');
@@ -55,9 +56,6 @@ const FALLBACK_LANGUAGES = [
   { tag: 'en', label: 'English' },
 ];
 
-// Ensure config directory exists before any module tries to read/write JSON.
-ensureConfigDir();
-
 // Helper to avoid repeating the same warning many times (keeps logs readable).
 const warnOnce = (...args) => log.warnOnce(...args);
 
@@ -68,17 +66,6 @@ function isPlainObject(x) {
 
 // Maximum allowed characters for the current text (safety limit for memory/performance).
 // Renderer fallback lives in public/js/constants.js; main/text_state use MAX_TEXT_CHARS and injected maxTextChars.
-
-// Initialize shared text state early (current_text.json).
-// This module owns loading/saving current text and its IPC surface.
-textState.init({
-  loadJson,
-  saveJson,
-  currentTextFile: CURRENT_TEXT_FILE,
-  settingsFile: SETTINGS_FILE,
-  app,
-  maxTextChars: MAX_TEXT_CHARS,
-});
 
 // =============================================================================
 // Global window references (singletons)
@@ -441,37 +428,7 @@ function createLanguageWindow() {
 // =============================================================================
 // main.js owns windows. Feature modules own their IPC contract and internal logic.
 // We provide window references and callbacks so modules can notify the UI.
-
-textState.registerIpc(ipcMain, () => ({
-  mainWin,
-  editorWin,
-}));
-
-settingsState.registerIpc(ipcMain, {
-  getWindows: () => ({
-    mainWin,
-    editorWin,
-    presetWin,
-    langWin,
-    flotanteWin,
-  }),
-  buildAppMenu,
-});
-
-presetsMain.registerIpc(ipcMain, {
-  getWindows: () => ({
-    mainWin,
-    editorWin,
-    presetWin,
-    langWin,
-    flotanteWin,
-  }),
-});
-
-updater.registerIpc(ipcMain, {
-  mainWinRef: () => mainWin,
-  currentLanguageRef: () => getSelectedLanguage(),
-});
+// Registration happens after app readiness in app.whenReady().
 
 // =============================================================================
 // Floating window - window placement safety
@@ -1137,16 +1094,95 @@ ipcMain.handle('get-app-config', () => {
   }
 });
 
+ipcMain.handle('get-app-version', () => {
+  try {
+    return String(app.getVersion() || '').trim();
+  } catch (err) {
+    log.error('Error processing get-app-version:', err);
+    return '';
+  }
+});
+
+ipcMain.handle('get-app-runtime-info', () => {
+  try {
+    return {
+      platform: process.platform,
+      arch: process.arch,
+    };
+  } catch (err) {
+    log.error('Error processing get-app-runtime-info:', err);
+    return { platform: '', arch: '' };
+  }
+});
+
+registerLinkIpc({ ipcMain, app, shell, log });
+
 // =============================================================================
 // App lifecycle (startup, activate, quit)
 // =============================================================================
 
 app.whenReady().then(() => {
+  try {
+    initStorage(app);
+  } catch (err) {
+    log.error('Storage init failed:', err);
+    throw err;
+  }
+
+  // Ensure config directory exists before any module tries to read/write JSON.
+  ensureConfigDir();
+
+  const SETTINGS_FILE = getSettingsFile();
+  const CURRENT_TEXT_FILE = getCurrentTextFile();
+
+  // Initialize shared text state early (current text file).
+  // This module owns loading/saving current text and its IPC surface.
+  textState.init({
+    loadJson,
+    saveJson,
+    currentTextFile: CURRENT_TEXT_FILE,
+    settingsFile: SETTINGS_FILE,
+    app,
+    maxTextChars: MAX_TEXT_CHARS,
+  });
+
   // Load settings (normalized and persisted) via settingsState.
   const settings = settingsState.init({
     loadJson,
     saveJson,
     settingsFile: SETTINGS_FILE,
+  });
+
+  // IPC registration (delegated modules).
+  textState.registerIpc(ipcMain, () => ({
+    mainWin,
+    editorWin,
+  }));
+
+  settingsState.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+      editorWin,
+      presetWin,
+      langWin,
+      flotanteWin,
+    }),
+    buildAppMenu,
+  });
+
+  presetsMain.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+      editorWin,
+      presetWin,
+      langWin,
+      flotanteWin,
+    }),
+  });
+
+  updater.registerIpc(ipcMain, {
+    mainWinRef: () => mainWin,
+    currentLanguageRef: () => getSelectedLanguage(),
   });
 
   // First run: show language picker before creating the main window.

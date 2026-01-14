@@ -9,11 +9,14 @@ No es un inventario exhaustivo de cada archivo.
 
 ```ASCII
 tot-readingmeter/
+├── .vscode/                       # {carpeta ignorada por git}
+│ ├── settings.json
+│ └── tasks.json
 ├── build-output/                  # {vacío} {carpeta ignorada por git}
 ├── config/                        # {carpeta y archivos generados en primer arranque}
 │ ├── presets_defaults/            # {carpeta ignorada por git}
-│ │ ├── defaults_presets.json      
-│ │ ├── defaults_presets_en.json   
+│ │ ├── defaults_presets.json   
+│ │ ├── defaults_presets_en.json
 │ │ └── defaults_presets_es.json
 │ ├── current_text.json            # {ignorado por git}
 │ ├── editor_state.json            # {ignorado por git}
@@ -46,6 +49,7 @@ tot-readingmeter/
 │ ├── presets_main.js
 │ ├── menu_builder.js
 │ ├── updater.js
+│ ├── link_openers.js
 │ ├── constants_main.js
 │ └── log.js
 ├── i18n/
@@ -60,21 +64,20 @@ tot-readingmeter/
 │ └── languages.json
 ├── public/
 │ ├── assets/
-│ │ ├── logo-cibersin.ico
-│ │ ├── logo-cibersin.png
-│ │ ├── logo-cibersin.svg
-│ │ ├── logo-tot.ico
+│ │ ├── logo-cibersino.ico
+│ │ ├── logo-cibersino.png
+│ │ ├── logo-cibersino.svg
 │ │ ├── logo-tot.png
 │ │ └── logo-tot.svg
 │ ├── components/                  # {vacío}
 │ ├── fonts/
 │ │ ├── Baskervville-VariableFont_wght.ttf
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
-│ │ └── Baskervville.css
+│ │ ├── Baskervville.css
+│ │ └── LICENSE_Baskervville_OFL.txt
 │ ├── info/
 │ │ ├── acerca_de.html
-│ │ ├── instrucciones.html
-│ │ └── readme.html
+│ │ └── instrucciones.html
 │ ├── js/
 │ │ ├── constants.js
 │ │ ├── count.js
@@ -84,6 +87,7 @@ tot-readingmeter/
 │ │ ├── notify.js
 │ │ ├── presets.js
 │ │ ├── crono.js
+│ │ ├── info_modal_links.js
 │ │ └── log.js
 │ ├── renderer.js
 │ ├── language_window.js
@@ -99,14 +103,18 @@ tot-readingmeter/
 │ ├── flotante.css
 │ └── style.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
+├── editorconfig
 ├── .eslintrc.cjs
+├── .gitattributes
+├── .gitiginore
+├── jsconfig.json
 ├── package.json
 ├── package-lock.json
 ├── ToDo.md
 ├── CHANGELOG.md
+├── PRIVACY.md
 ├── README.md
-├── LICENSE
-└── VERSION
+└── LICENSE
 ```
 
 ## Guía rápida

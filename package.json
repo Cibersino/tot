@@ -1,22 +1,54 @@
 {
   "name": "tot-readingmeter",
-  "version": "0.0.930",
-  "description": "Contador y estimador de tiempo de lectura",
+  "version": "0.1.0",
+  "description": "Estimador de tiempo de lectura",
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint \".\" --ext .js"
+    "lint": "eslint \".\" --ext .js",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win --x64"
   },
   "keywords": [],
-  "author": "Cibersin",
+  "author": "Cibersino",
   "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
     "depcheck": "^1.4.7",
     "electron": "^39.2.2",
+    "electron-builder": "^26.4.0",
     "eslint": "^8.57.0",
     "knip": "^5.76.3",
     "madge": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.cibersino.tot-readingmeter",
+    "productName": "toT — Reading Meter",
+    "asar": true,
+    "directories": {
+      "output": "build-output",
+      "buildResources": "public/assets"
+    },
+    "files": [
+      "package.json",
+      "electron/**",
+      "public/**",
+      "i18n/**",
+      "LICENSE",
+      "PRIVACY.md"
+    ],
+    "win": {
+      "icon": "public/assets/logo-cibersino.ico",
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "artifactName": "toT-ReadingMeter-${version}-win-${arch}.${ext}"
   }
 }

@@ -4,19 +4,110 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';">
-
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="title">Acerca de toT — Reading Meter</title>
+  <title data-i18n="title">Acerca de — toT — Reading Meter</title>
 </head>
 
 <body>
   <h3 data-i18n="app_name">toT — Reading Meter</h3>
   <h1 data-i18n="title">Acerca de</h1>
-  <h2 data-i18n="subtitle">Subtítulo</h2>
-  <div>
-    <p data-i18n="body">Estamos trabajando para usted.</p>
-  </div>
+  <main>
+
+    <section aria-label="Versión">
+      <h3>Versión</h3>
+      <ul>
+        <li><strong>Versión:</strong> <span id="appVersion"></span></li>
+        <li><strong>Plataforma:</strong> Desktop (Electron)</li>
+        <li><strong>Entorno:</strong> <span id="appEnv"></span></li>
+      </ul>
+    </section>
+
+    <hr>
+
+    <section aria-label="Soporte y contacto">
+      <h3>Soporte y contacto</h3>
+      <ul>
+        <li><strong>Repositorio:</strong>
+          <code><a href="https://github.com/Cibersino/tot-readingmeter">github.com/Cibersino/tot-readingmeter</a></code>
+        </li>
+        <li><strong>Reportar bugs / sugerencias:</strong>
+          <code><a href="https://github.com/Cibersino/tot-readingmeter/issues">github.com/Cibersino/tot-readingmeter/issues</a></code>
+        </li>
+      </ul>
+      <p>
+        Incluye la versión y pasos para reproducir.
+      </p>
+    </section>
+
+    <hr>
+
+    <section aria-label="Privacidad y datos">
+      <h3>Privacidad y datos</h3>
+      <ul>
+        <li><strong>Telemetría:</strong> no se recopilan métricas ni se envían datos de uso.</li>
+        <li><strong>Texto del usuario:</strong> el contenido que ingresas/pegas en la app no se envía a Internet ni se
+          comparte con servidores de los desarrolladores (se procesa localmente).</li>
+        <li><strong>Almacenamiento:</strong> la configuración y el estado se guardan localmente en el equipo del
+          usuario.</li>
+        <li><strong>Actualizaciones:</strong> la app solo consulta información pública de versiones y abre el navegador
+          para descargar; no descarga ni instala actualizaciones automáticamente.</li>
+      </ul>
+      <p>
+        <strong>Conectividad:</strong> solo para verificar actualizaciones en GitHub y abrir releases en el navegador.
+        No se envía tu texto; GitHub verá tu IP (tráfico HTTPS estándar).
+      </p>
+      <p>
+        Para más detalles, ver el documento de
+        <code><a href="appdoc:privacy-policy">PRIVACY.md</a></code>.
+      </p>
+    </section>
+
+    <hr>
+
+    <section aria-label="Licencias y avisos">
+      <h3>Licencias y avisos</h3>
+      <p>
+        La app se distribuye bajo licencia MIT. Además, esta distribución incluye componentes y recursos de terceros
+        con sus propias licencias, cuyos textos se entregan junto al build:
+      </p>
+      <ul>
+        <li>
+          <strong>toT — Reading Meter</strong> — MIT:
+          ver <code><a href="appdoc:license-app">LICENSE</a></code>.
+        </li>
+        <li>
+          <strong>Tipografía Baskervville</strong> — SIL Open Font License 1.1 (OFL):
+          ver <code><a href="appdoc:license-baskervville">LICENSE_Baskervville_OFL.txt</a></code>.
+        </li>
+        <li>
+          <strong>Electron / Chromium</strong> — avisos y licencias del runtime:
+          ver <code><a href="appdoc:license-electron">LICENSE.electron.txt</a></code> y
+          <code><a href="appdoc:licenses-chromium">LICENSES.chromium.html</a></code>.
+        </li>
+      </ul>
+    </section>
+
+    <hr>
+
+    <section aria-label="Garantías y responsabilidad">
+      <h3>Garantías y responsabilidad</h3>
+      <p>
+        Este software se entrega “tal cual”, sin garantías. El uso es bajo responsabilidad del usuario.
+      </p>
+    </section>
+
+    <hr>
+
+    <section aria-label="Créditos">
+      <h3>Créditos</h3>
+      <ul>
+        <li><strong>Autor / desarrollador:</strong> <a href="https://github.com/Cibersino">Cibersino</a></li>
+        <li><strong>Runtime:</strong> Electron (Chromium + Node.js).</li>
+      </ul>
+    </section>
+  </main>
 </body>
 
 </html>

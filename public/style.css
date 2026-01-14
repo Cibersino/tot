@@ -469,22 +469,22 @@ select#presets {
 }
 
 .info-modal-content {
-  font-size: 24px;
+  font-size: 16px;
   color: #222;
   line-height: 1.45;
   margin-top: calc(-1 * var(--info-header-height));
 }
 
 .info-modal-content h1 {
-  font-size: 28px;
+  font-size: 24px;
 }
 
 .info-modal-content h2 {
-  font-size: 26px;
+  font-size: 20px;
 }
 
 .info-modal-content h3 {
-  font-size: 20px;
+  font-size: 16px;
   font-style: italic;
   padding-top: 0
 }
