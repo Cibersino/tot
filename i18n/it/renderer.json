@@ -1,0 +1,145 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Prima e ultima parte del testo analizzato:",
+      "selector_empty": "(vuoto)",
+      "buttons": {
+        "overwrite_clipboard": "Sovrascrivi appunti",
+        "append_clipboard": "Aggiungi appunti",
+        "edit": "⌨",
+        "clear": "🗑"
+      },
+      "tooltips": {
+        "overwrite_clipboard": "Sostituire il testo corrente con gli appunti",
+        "append_clipboard": "Aggiungi il testo degli appunti alla fine del testo corrente (nuova riga)",
+        "edit": "Apri la finestra del testo corrente completo",
+        "clear": "Svuota il testo corrente",
+        "new_preset": "Crea un nuovo preset",
+        "edit_preset": "Modifica il preset selezionato",
+        "delete_preset": "Elimina il preset selezionato",
+        "reset_presets": "Ripristina i preset predefiniti",
+        "help_button": "Aiuto",
+        "flotante_window": "Finestra fluttuante"
+      },
+      "speed": {
+        "title": "VELOCITÀ DI LETTURA",
+        "wpm_label": "parole al minuto (WPM)",
+        "new": "Nuovo",
+        "edit": "Modifica",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "RISULTATI DELLA CONTATORE",
+        "time": "⏱ Tempo stimato di lettura: {h}h {m}m {s}s",
+        "words": "Parole: {n}",
+        "chars_no_space": "Chars w/o space: {n}",
+        "chars": "Caratteri: {n}",
+        "precise_mode": "Modalità precisa",
+        "precise_tooltip": "Basato su Intl.Segmenter"
+      },
+      "crono": {
+        "title": "CRONOMETRO",
+        "speed": "Velocità:",
+        "controls_label": "Controlli del cronometro",
+        "flotante_short": "FF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      }
+    },
+    "modal_preset": {
+      "title_new": "Nuovo preset",
+      "title_edit": "Modifica preset",
+      "heading_new": "Crea un nuovo preset",
+      "heading_edit": "Modifica il preset selezionato",
+      "name": "Nome:",
+      "wpm": "WPM:",
+      "description": "Descrizione:",
+      "placeholder": "Breve descrizione...",
+      "char_count": "{remaining} caratteri rimanenti",
+      "hint": "I preset personalizzati sono memorizzati nelle impostazioni utente.",
+      "cancel": "Annulla",
+      "save": "Salva"
+    },
+    "editor": {
+      "title": "Editor — Testo completo",
+      "placeholder": "Incolla o digita qui il tuo testo...",
+      "calc_button": "CALCOLA",
+      "calc_while_typing": "Calcola durante la digitazione",
+      "clear": "🗑",
+      "clear_title": "Svuota"
+    },
+    "alerts": {
+      "clipboard_too_large": "Il testo degli appunti è troppo grande per essere elaborato. Riducilo e riprova.",
+      "append_too_large": "Il testo risultante è troppo grande per essere elaborato. Riducilo e riprova.",
+      "clipboard_overflow": "Il testo degli appunti supera il massimo consentito ed è stato troncato.",
+      "append_overflow": "Il testo da aggiungere supera il massimo consentito ed è stato troncato.",
+      "text_limit": "Non è possibile aggiungere testo: dimensione massima raggiunta.",
+      "clipboard_error": "Si è verificato un errore durante l'elaborazione degli appunti. Controlla la console.",
+      "append_error": "Si è verificato un errore durante l'aggiunta del testo. Controlla la console.",
+      "clear_error": "Si è verificato un errore durante la cancellazione del testo. Controlla la console.",
+      "modal_unavailable": "Funzionalità modale non disponibile.",
+      "edit_none": "Nessun preset selezionato da modificare.",
+      "preset_not_found": "Il preset selezionato non è stato trovato nella cache.",
+      "edit_unavailable": "Funzionalità di modifica non disponibile.",
+      "edit_error": "Si è verificato un errore durante la modifica del preset. Controlla la console.",
+      "delete_error": "Si è verificato un errore durante l'eliminazione del preset. Controlla la console.",
+      "restore_error": "Si è verificato un errore durante il ripristino dei preset. Controlla la console.",
+      "open_presets_unsupported": "L'apertura dei preset non è supportata in questo ambiente.",
+      "open_presets_error": "Si è verificato un errore durante l'apertura dei preset. Controlla la console.",
+      "open_presets_fail": "Impossibile aprire la cartella dei preset predefiniti. Controlla la console per ulteriori dettagli.",
+      "wip_cargador_texto": "WIP: In una versione futura, sarà possibile importare testo da file di testo qui.",
+      "wip_cargador_imagen": "WIP: In una versione futura, sarà possibile importare testo da file immagine qui.",
+      "wip_test_velocidad": "WIP: Il test di velocità di lettura si aprirà qui in una versione futura.",
+      "wip_diseno_skins": "WIP: Il selettore di skin si aprirà qui in una versione futura.",
+      "wip_diseno_crono": "WIP: I parametri del cronometro fluttuante si apriranno qui in una versione futura.",
+      "wip_diseno_fuentes": "WIP: Il selettore di font si aprirà qui in una versione futura.",
+      "wip_diseno_colores": "WIP: Il selettore di colori si aprirà qui in una versione futura.",
+      "wip_shortcuts": "WIP: Il selettore di scorciatoie da tastiera si aprirà qui in una versione futura.",
+      "wip_avisos": "WIP: Gli avvisi e notizie appariranno qui in una versione futura.",
+      "wip_discord": "WIP: Il link di Discord si aprirà qui in una versione futura.",
+      "wip_links_interes": "WIP: I link di interesse si apriranno qui in una versione futura.",
+      "wip_colabora": "WIP: Le informazioni sulla collaborazione si apriranno qui in una versione futura."
+    },
+    "editor_alerts": {
+      "paste_too_big": "Il testo è troppo grande per essere incollato direttamente. Usa i pulsanti della finestra principale.",
+      "drop_too_big": "Il testo trascinato è troppo grande. Usa i pulsanti della finestra principale per aggiungere grandi quantità di testo.",
+      "paste_no_text": "Gli appunti non contengono testo semplice.",
+      "drop_no_text": "Trascina e rilascia: nessun testo semplice rilevato.",
+      "type_limit": "Non è possibile scrivere più testo: dimensione massima raggiunta.",
+      "paste_limit": "Non è possibile incollare più testo: dimensione massima raggiunta.",
+      "paste_truncated": "Il testo incollato è stato troncato perché supera la dimensione massima consentita.",
+      "drop_truncated": "Il testo trascinato ha superato lo spazio disponibile ed è stato troncato.",
+      "text_truncated": "Il testo è stato troncato per adattarsi al limite massimo dell'applicazione.",
+      "calc_error": "Si è verificato un errore durante il calcolo. Controlla la console."
+    },
+    "preset_alerts": {
+      "name_empty": "Il nome non può essere vuoto.",
+      "wpm_invalid": "WPM deve essere un numero tra 50 e 500.",
+      "create_error": "Si è verificato un errore durante la creazione del preset. Controlla la console.",
+      "edit_error": "Si è verificato un errore durante la modifica del preset. Controlla la console.",
+      "process_error": "Si è verificato un errore durante il processo del preset. Controlla la console."
+    },
+    "info": {
+      "acerca_de": {
+        "app_name": "toT — Reading Meter",
+        "title": "Informazioni",
+        "subtitle": "Sottotitolo",
+        "body": "Lavoro in corso."
+      },
+      "instrucciones": {
+        "app_name": "toT — Reading Meter",
+        "title": "Manuale d'uso",
+        "nav_basic": "Guida di base",
+        "nav_full": "Istruzioni complete",
+        "nav_faq": "Domande frequenti (FAQ)",
+        "section_basic_title": "Guida di base",
+        "section_basic_body": "Lavoro in corso.",
+        "section_full_title": "Istruzioni complete",
+        "section_full_body": "Lavoro in corso.",
+        "section_faq_title": "Domande frequenti (FAQ)",
+        "section_faq_body": "Lavoro in corso."
+      }
+    }
+  }
+}

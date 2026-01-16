@@ -1,0 +1,49 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Come utilizzare l'app?",
+      "guia_basica": "Guida di base",
+      "instrucciones_completas": "Istruzioni complete",
+      "faq": "Domande frequenti (FAQ)",
+      "herramientas": "Strumenti",
+      "cargador_texto": "Importa testo da file di testo",
+      "cargador_imagen": "Importa testo da immagini",
+      "test_velocidad": "Test di velocità di lettura",
+      "preferencias": "Preferenze",
+      "idioma": "Lingua",
+      "diseno": "Design",
+      "skins": "Skins",
+      "crono_flotante": "Cronometro fluttuante",
+      "fuentes": "Font",
+      "colores": "Colori",
+      "shortcuts": "Scorciatoie da tastiera",
+      "presets_por_defecto": "Presets predefiniti",
+      "comunidad": "Comunità",
+      "discord": "Discord",
+      "avisos": "Notizie e annunci",
+      "links_interes": "Link di interesse",
+      "colabora": "CONTRIBUISCI ($)",
+      "ayuda": "?",
+      "actualizar_version": "Aggiorna versione",
+      "acerca_de": "Informazioni"
+    },
+    "dialog": {
+      "ok": "OK",
+      "yes": "Sì, continuare",
+      "no": "No, annullare",
+      "delete_preset_confirm": "Sei sicuro di voler eliminare il preset \"{name}\"?",
+      "delete_preset_none": "Nessun preset selezionato da eliminare.",
+      "restore_defaults_confirm": "Sei sicuro di voler ripristinare i preset predefiniti (generali e per la lingua \"{lang}\")? Questo annullerà tutte le modifiche e cancellazioni dei preset predefiniti per la lingua attiva.",
+      "edit_preset_none": "Nessun preset selezionato.",
+      "edit_preset_confirm": "Sei sicuro di voler sostituire \"{name}\" con il preset corrente?",
+      "update_title": "Nuova versione disponibile",
+      "update_message": "Una nuova versione {remote} è disponibile. Versione attuale: {local}. Vuoi scaricarla ora?",
+      "update_download": "Scarica ora",
+      "update_later": "Più tardi",
+      "update_up_to_date_title": "Versione aggiornata.",
+      "update_up_to_date_message": "Hai già l'ultima versione ({local}).",
+      "update_failed_title": "Controllo aggiornamento fallito.",
+      "update_failed_message": "Verifica la connessione e riprova."
+    }
+  }
+}

@@ -1,5 +1,10 @@
 [
   { "tag": "es", "label": "Español" },
   { "tag": "es-cl", "label": "Chileno" },
-  { "tag": "en", "label": "English" }
+  { "tag": "arn", "label": "Mapudungun" },
+  { "tag": "en", "label": "English" },
+  { "tag": "fr", "label": "Français" },
+  { "tag": "de", "label": "Deutsch" },
+  { "tag": "it", "label": "Italiano" },
+  { "tag": "pt", "label": "Português" }
 ]

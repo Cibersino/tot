@@ -283,7 +283,7 @@ function buildAppMenu(lang, opts = {}) {
                 },
                 {
                     label: resolveMenuLabel(m, 'cargador_imagen', 'Image loader'),
-                    click: () => sendMenuClick('contador_imagen'),
+                    click: () => sendMenuClick('cargador_imagen'),
                 },
                 {
                     label: resolveMenuLabel(m, 'test_velocidad', 'Speed test'),

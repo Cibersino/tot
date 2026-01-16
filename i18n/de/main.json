@@ -1,0 +1,49 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Wie benutzt man die App?",
+      "guia_basica": "Grundlegende Anleitung",
+      "instrucciones_completas": "Vollständige Anweisungen",
+      "faq": "Häufig gestellte Fragen (FAQ)",
+      "herramientas": "Werkzeuge",
+      "cargador_texto": "Text aus Textdateien importieren",
+      "cargador_imagen": "Text aus Bildern importieren",
+      "test_velocidad": "Lesegeschwindigkeitstest",
+      "preferencias": "Einstellungen",
+      "idioma": "Sprache",
+      "diseno": "Design",
+      "skins": "Skins",
+      "crono_flotante": "Schwebende Stoppuhr",
+      "fuentes": "Schriftarten",
+      "colores": "Farben",
+      "shortcuts": "Tastenkombinationen",
+      "presets_por_defecto": "Standard-Presets",
+      "comunidad": "Gemeinschaft",
+      "discord": "Discord",
+      "avisos": "Ankündigungen und Neuigkeiten",
+      "links_interes": "Nützliche Links",
+      "colabora": "MITWIRKEN ($)",
+      "ayuda": "?",
+      "actualizar_version": "Aktualisieren auf die neueste Version",
+      "acerca_de": "Über"
+    },
+    "dialog": {
+      "ok": "OK",
+      "yes": "Ja, fortfahren",
+      "no": "Nein, abbrechen",
+      "delete_preset_confirm": "Preset \"{name}\" löschen?",
+      "delete_preset_none": "Kein Preset zum Löschen ausgewählt.",
+      "restore_defaults_confirm": "Standard-Presets (allgemein und Sprache \"{lang}\") auf Original zurücksetzen? Dies wird alle Änderungen und Löschungen der Standard-Presets für die aktive Sprache rückgängig machen.",
+      "edit_preset_none": "Kein Preset ausgewählt zum Bearbeiten.",
+      "edit_preset_confirm": "Sind Sie sicher, dass Sie \"{name}\" mit dem aktuellen Preset ersetzen möchten?",
+      "update_title": "Aktualisierung verfügbar",
+      "update_message": "Eine neue Version {remote} ist verfügbar. Aktuell: {local}. Jetzt herunterladen?",
+      "update_download": "Herunterladen",
+      "update_later": "Später",
+      "update_up_to_date_title": "Sie sind auf dem neuesten Stand.",
+      "update_up_to_date_message": "Sie haben bereits die neueste Version ({local}).",
+      "update_failed_title": "Aktualisierungsprüfung fehlgeschlagen.",
+      "update_failed_message": "Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+    }
+  }
+}

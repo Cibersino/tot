@@ -52,15 +52,7 @@ tot-readingmeter/
 │ ├── link_openers.js
 │ ├── constants_main.js
 │ └── log.js
-├── i18n/
-│ ├── es/
-│ │ ├── main.json
-│ │ ├── numberFormat.json
-│ │ └── renderer.json
-│ ├── en/
-│ │ ├── main.json
-│ │ ├── numberFormat.json
-│ │ └── renderer.json
+├── i18n/                          # {varias subcarpetas de idioma}
 │ └── languages.json
 ├── public/
 │ ├── assets/
