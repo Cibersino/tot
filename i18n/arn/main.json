@@ -1,0 +1,49 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "¿Chumngechi püneal tachi app?",
+      "guia_basica": "Pichi kellu",
+      "instrucciones_completas": "Kom wüldungu",
+      "faq": "Ramtun ka llowün (FAQ)",
+      "herramientas": "Küzawtuwe",
+      "cargador_texto": "Nentual wirin chew müley wirintun",
+      "cargador_imagen": "Nentual wirin adentun mu",
+      "test_velocidad": "Lef chillkatun test",
+      "preferencias": "Düllin",
+      "idioma": "Kezungun",
+      "diseno": "Ad",
+      "skins": "Adentun",
+      "crono_flotante": "Üngümwe weñyefe",
+      "fuentes": "Wirintun",
+      "colores": "Vvün",
+      "shortcuts": "Pichi rüpü teclado mu",
+      "presets_por_defecto": "Presets chumgechi müley",
+      "comunidad": "Lof",
+      "discord": "Discord",
+      "avisos": "Dungu ka we dungu",
+      "links_interes": "Links nielu dungu",
+      "colabora": "KELLUAFUIMI ($)",
+      "ayuda": "?",
+      "actualizar_version": "Küpal we version",
+      "acerca_de": "Tachi app dungu"
+    },
+    "dialog": {
+      "ok": "Llowün",
+      "yes": "May, amulepe",
+      "no": "No, katrüntun",
+      "delete_preset_confirm": "¿Ñamümual tachi preset \"{name}\"?",
+      "delete_preset_none": "Ngelay preset düllilu ñamümual.",
+      "restore_defaults_confirm": "¿Wiño elual presets chumgechi müyey (kom ka tachi kezungun mu \"{lang}\")? Kom tachi ñamümün ka weyulkan wiñotuy.",
+      "edit_preset_none": "Ngelay preset düllilu wiriael.",
+      "edit_preset_confirm": "¿Kümeafuimi wiriael \"{name}\" tachi we dungu mu?",
+      "update_title": "Müley we dungu",
+      "update_message": "Müley kiñe we version {remote}. Tachi müley: {local}. ¿Küpalafui tati?",
+      "update_download": "Küpal",
+      "update_later": "Kangelu antü",
+      "update_up_to_date_title": "Alün-antü mu müleimi.",
+      "update_up_to_date_message": "Nieimi tachi afkechi version ({local}).",
+      "update_failed_title": "Welulkuy kintual we dungu.",
+      "update_failed_message": "Kintunge tami fütukan ka wiño pültrünnge."
+    }
+  }
+}

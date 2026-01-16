@@ -1,13 +1,13 @@
 ﻿{
   "main": {
     "menu": {
-      "como_usar": "How to use the app?",
+      "como_usar": "How to use",
       "guia_basica": "Basic guide",
-      "instrucciones_completas": "Complete instructions",
-      "faq": "Frequently Asked Questions (FAQ)",
+      "instrucciones_completas": "Full instructions",
+      "faq": "Frequently asked questions (FAQ)",
       "herramientas": "Tools",
-      "cargador_texto": "Text file loader",
-      "cargador_imagen": "Image text loader",
+      "cargador_texto": "Import text from text files",
+      "cargador_imagen": "Import text from images",
       "test_velocidad": "Reading speed test",
       "preferencias": "Preferences",
       "idioma": "Language",
@@ -20,7 +20,7 @@
       "presets_por_defecto": "Default presets",
       "comunidad": "Community",
       "discord": "Discord",
-      "avisos": "News & updates",
+      "avisos": "Announcements & news",
       "links_interes": "Useful links",
       "colabora": "CONTRIBUTE ($)",
       "ayuda": "?",
@@ -36,18 +36,18 @@
       "yes": "Yes, continue",
       "no": "No, cancel",
       "delete_preset_confirm": "Delete preset \"{name}\"?",
-      "delete_preset_none": "No preset selected to delete",
+      "delete_preset_none": "No preset selected to delete.",
       "restore_defaults_confirm": "Restore default presets (general and language \"{lang}\") to original? This will revert removals and changes to default presets for the active language.",
-      "edit_preset_none": "No preset selected to edit",
+      "edit_preset_none": "No preset selected to edit.",
       "edit_preset_confirm": "Are you sure you want to replace \"{name}\" with the current preset?",
       "update_title": "Update available",
       "update_message": "A new version {remote} is available. Current: {local}. Download now?",
       "update_download": "Download",
       "update_later": "Later",
-      "update_up_to_date_title": "You are up to date",
+      "update_up_to_date_title": "You are up to date.",
       "update_up_to_date_message": "You already have the latest version ({local}).",
-      "update_failed_title": "Update check failed",
-      "update_failed_message": "Could not check for updates. Please check your connection and try again."
+      "update_failed_title": "Update check failed.",
+      "update_failed_message": "Check your connection and try again."
     }
   }
 }

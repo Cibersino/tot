@@ -6,8 +6,8 @@
       "instrucciones_completas": "Instrucciones completas",
       "faq": "Preguntas frecuentes (FAQ)",
       "herramientas": "Herramientas",
-      "cargador_texto": "Cargador de archivo de texto",
-      "cargador_imagen": "Cargador de imágenes con texto",
+      "cargador_texto": "Importar texto desde archivos de texto",
+      "cargador_imagen": "Importar texto desde imágenes",
       "test_velocidad": "Test de velocidad de lectura",
       "preferencias": "Preferencias",
       "idioma": "Idioma",
@@ -36,18 +36,18 @@
       "yes": "Sí, continuar",
       "no": "No, cancelar",
       "delete_preset_confirm": "¿Eliminar el preset \"{name}\"?",
-      "delete_preset_none": "No hay ningún preset seleccionado para borrar",
+      "delete_preset_none": "No hay ningún preset seleccionado para borrar.",
       "restore_defaults_confirm": "¿Restaurar presets por defecto (generales y para el idioma \"{lang}\") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.",
-      "edit_preset_none": "No hay ningún preset seleccionado para editar",
+      "edit_preset_none": "No hay ningún preset seleccionado para editar.",
       "edit_preset_confirm": "¿Está seguro de editar \"{name}\" por el actual?",
       "update_title": "Actualización disponible",
       "update_message": "Hay una versión nueva {remote}. Actual: {local}. ¿Descargar ahora?",
       "update_download": "Descargar",
       "update_later": "Más tarde",
-      "update_up_to_date_title": "Ya estás al día",
+      "update_up_to_date_title": "Estás al día.",
       "update_up_to_date_message": "Ya tienes la última versión ({local}).",
-      "update_failed_title": "No se pudo comprobar",
-      "update_failed_message": "No se pudo comprobar si hay actualizaciones. Revisa tu conexión y vuelve a intentar."
+      "update_failed_title": "La comprobación de actualizaciones falló.",
+      "update_failed_message": "Revisa tu conexión y vuelve a intentar."
     }
   }
 }
