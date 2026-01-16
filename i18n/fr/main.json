@@ -1,0 +1,49 @@
+﻿{
+  "main": {
+    "menu": {
+      "como_usar": "Comment utiliser",
+      "guia_basica": "Guide de base",
+      "instrucciones_completas": "Instructions complètes",
+      "faq": "Foire aux questions (FAQ)",
+      "herramientas": "Outils",
+      "cargador_texto": "Importer du texte depuis des fichiers texte",
+      "cargador_imagen": "Importer du texte depuis des images",
+      "test_velocidad": "Test de vitesse",
+      "preferencias": "Préférences",
+      "idioma": "Langue",
+      "diseno": "Design",
+      "skins": "Thèmes",
+      "crono_flotante": "Chronomètre flottant",
+      "fuentes": "Polices",
+      "colores": "Couleurs",
+      "shortcuts": "Raccourcis clavier",
+      "presets_por_defecto": "Presets par défaut",
+      "comunidad": "Communauté",
+      "discord": "Discord",
+      "avisos": "Annonces et nouvelles",
+      "links_interes": "Liens d'intérêt",
+      "colabora": "CONTRIBUER ($)",
+      "ayuda": "?",
+      "actualizar_version": "Mettre à jour la version",
+      "acerca_de": "À propos"
+    },
+    "dialog": {
+      "ok": "OK",
+      "yes": "Oui, continuer",
+      "no": "Non, annuler",
+      "delete_preset_confirm": "Êtes-vous sûr de vouloir supprimer le preset \"{name}\" ?",
+      "delete_preset_none": "Aucun preset sélectionné.",
+      "restore_defaults_confirm": "Êtes-vous sûr de vouloir restaurer les presets par défaut (généraux et pour la langue \"{lang}\") ? Cela annulera toutes les modifications et suppressions de presets par défaut pour la langue active.",
+      "edit_preset_none": "Aucun preset sélectionné.",
+      "edit_preset_confirm": "Êtes-vous sûr de vouloir remplacer \"{name}\" par le preset actuel ?",
+      "update_title": "Nouvelle version disponible",
+      "update_message": "Une nouvelle version {remote} est disponible. Version actuelle : {local}. Voulez-vous télécharger maintenant ?",
+      "update_download": "Télécharger maintenant",
+      "update_later": "Plus tard",
+      "update_up_to_date_title": "Version à jour.",
+      "update_up_to_date_message": "Vous avez déjà la dernière version ({local}).",
+      "update_failed_title": "Échec de la vérification de mise à jour.",
+      "update_failed_message": "Vérifiez votre connexion et réessayez."
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "main": {
+    "menu": {
+      "como_usar": "Como usar o app?",
+      "guia_basica": "Guia Básico",
+      "instrucciones_completas": "Instruções Completas",
+      "faq": "Perguntas frequentes (FAQ)",
+      "herramientas": "Ferramentas",
+      "cargador_texto": "Importar texto de arquivos de texto",
+      "cargador_imagen": "Importar texto de imagens",
+      "test_velocidad": "Teste de Velocidade",
+      "preferencias": "Preferências",
+      "idioma": "Idioma",
+      "diseno": "Design",
+      "skins": "Skins",
+      "crono_flotante": "Cronômetro Flutuante",
+      "fuentes": "Fontes",
+      "colores": "Cores",
+      "shortcuts": "Atalhos de Teclado",
+      "presets_por_defecto": "Presets padrão",
+      "comunidad": "Comunidade",
+      "discord": "Discord",
+      "avisos": "Avisos e notícias",
+      "links_interes": "Links de Interesse",
+      "colabora": "COLABORE ($)",
+      "ayuda": "?",
+      "actualizar_version": "Atualizar para a última versão",
+      "acerca_de": "Sobre"
+    },
+    "dialog": {
+      "ok": "OK",
+      "yes": "Sim, continuar",
+      "no": "Não, cancelar",
+      "delete_preset_confirm": "Tem certeza que deseja excluir o preset \"{name}\"?",
+      "delete_preset_none": "Nenhum preset selecionado para excluir.",
+      "restore_defaults_confirm": "Tem certeza que deseja restaurar os presets padrão (gerais e para o idioma \"{lang}\")? Isso cancelará todas as modificações e exclusões de presets padrão para o idioma ativo.",
+      "edit_preset_none": "Nenhum preset selecionado.",
+      "edit_preset_confirm": "Tem certeza que deseja substituir \"{name}\" pelo preset atual?",
+      "update_title": "Nova versão disponível",
+      "update_message": "Uma nova versão {remote} está disponível. Versão atual: {local}. Deseja baixar agora?",
+      "update_download": "Baixar agora",
+      "update_later": "Mais tarde",
+      "update_up_to_date_title": "Versão atualizada.",
+      "update_up_to_date_message": "Você já possui a última versão ({local}).",
+      "update_failed_title": "Falha ao verificar atualizações.",
+      "update_failed_message": "Verifique sua conexão e tente novamente."
+    }
+  }
+}
