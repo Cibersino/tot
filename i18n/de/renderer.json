@@ -1,0 +1,145 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Erster und letzter Teil des analysierten Textes:",
+      "selector_empty": "(leer)",
+      "buttons": {
+        "overwrite_clipboard": "Zwischenablage überschreiben",
+        "append_clipboard": "Zwischenablage anhängen",
+        "edit": "⌨",
+        "clear": "🗑"
+      },
+      "tooltips": {
+        "overwrite_clipboard": "Aktuellen Text mit der Zwischenablage ersetzen",
+        "append_clipboard": "Hängen Sie die Zwischenablage am Ende des aktuellen Textes an (neue Zeile)",
+        "edit": "Öffnen Sie das vollständige aktuelle Textfenster",
+        "clear": "Aktuellen Text löschen",
+        "new_preset": "Erstellen Sie ein neues Preset",
+        "edit_preset": "Bearbeiten Sie das ausgewählte Preset",
+        "delete_preset": "Löschen Sie das ausgewählte Preset",
+        "reset_presets": "Standard-Presets wiederherstellen",
+        "help_button": "Zeigen Sie einen nützlichen Tipp an",
+        "flotante_window": "Schwebendes Fenster"
+      },
+      "speed": {
+        "title": "LESEGESCHWINDIGKEIT",
+        "wpm_label": "Wörter pro Minute (WPM)",
+        "new": "Neu",
+        "edit": "Bearbeiten",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "ERGEBNISSE ZÄHLEN",
+        "time": "⏱ Geschätzte Lesezeit: {h}h {m}m {s}s",
+        "words": "Wörter: {n}",
+        "chars_no_space": "Chars w/o space: {n}",
+        "chars": "Zeichen: {n}",
+        "precise_mode": "Präziser Modus",
+        "precise_tooltip": "Basierend auf Intl.Segmenter"
+      },
+      "crono": {
+        "title": "STOPPUHR",
+        "speed": "Geschwindigkeit:",
+        "controls_label": "Stoppuhr-Steuerung",
+        "flotante_short": "SF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      }
+    },
+    "modal_preset": {
+      "title_new": "Neues Preset",
+      "title_edit": "Preset bearbeiten",
+      "heading_new": "Neues Preset erstellen",
+      "heading_edit": "Ausgewähltes Preset bearbeiten",
+      "name": "Name:",
+      "wpm": "WPM:",
+      "description": "Beschreibung:",
+      "placeholder": "Kurze Beschreibung...",
+      "char_count": "{remaining} Zeichen übrig",
+      "hint": "Benutzerdefinierte Presets werden in den Benutzereinstellungen gespeichert.",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    },
+    "editor": {
+      "title": "Editor — Vollständiger Text",
+      "placeholder": "Hier eingeben oder einfügen...",
+      "calc_button": "Berechnen",
+      "calc_while_typing": "Während des Tippens berechnen",
+      "clear": "🗑",
+      "clear_title": "Löschen"
+    },
+    "alerts": {
+      "clipboard_too_large": "Der Text in der Zwischenablage ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
+      "append_too_large": "Der resultierende Text ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
+      "clipboard_overflow": "Der Text in der Zwischenablage überschreitet die maximal zulässige Länge und wurde gekürzt.",
+      "append_overflow": "Der angehängte Text überschreitet die maximal zulässige Länge und wurde gekürzt.",
+      "text_limit": "Kann Text nicht hinzufügen: Maximale Größe erreicht.",
+      "clipboard_error": "Beim Einfügen aus der Zwischenablage ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+      "append_error": "Beim Anhängen an den Text ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+      "clear_error": "Beim Löschen des Textes ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+      "modal_unavailable": "Die Modal-Funktionalität ist nicht verfügbar.",
+      "edit_none": "Kein Preset ausgewählt zum Bearbeiten.",
+      "preset_not_found": "Preset im Cache nicht gefunden.",
+      "edit_unavailable": "Bearbeitungsfunktion nicht verfügbar.",
+      "edit_error": "Beim Bearbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+      "delete_error": "Beim Löschen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+      "restore_error": "Beim Wiederherstellen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+      "open_presets_unsupported": "Das Öffnen von Presets wird in dieser Umgebung nicht unterstützt.",
+      "open_presets_error": "Beim Öffnen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+      "open_presets_fail": "Konnte die Standard-Preset-Ordner nicht öffnen. Überprüfen Sie die Konsole für weitere Details.",
+      "wip_cargador_texto": "WIP: In einer zukünftigen Version, wird es möglich sein, Text aus Textdateien hier zu importieren.",
+      "wip_cargador_imagen": "WIP: In einer zukünftigen Version, wird es möglich sein, Text aus Bilddateien hier zu importieren.",
+      "wip_test_velocidad": "WIP: Der Lesegeschwindigkeitstest wird hier in einer zukünftigen Version geöffnet.",
+      "wip_diseno_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",
+      "wip_diseno_crono": "WIP: Die Einstellungen für die schwebende Stoppuhr werden hier in einer zukünftigen Version geöffnet.",
+      "wip_diseno_fuentes": "WIP: Der Schriftarten-Selektor wird hier in einer zukünftigen Version geöffnet.",
+      "wip_diseno_colores": "WIP: Der Farb-Selektor wird hier in einer zukünftigen Version geöffnet.",
+      "wip_shortcuts": "WIP: Der Tastenkombinations-Selektor wird hier in einer zukünftigen Version geöffnet.",
+      "wip_avisos": "WIP: Die Ankündigungen und Neuigkeiten werden hier in einer zukünftigen Version angezeigt.",
+      "wip_discord": "WIP: Der Discord-Link wird hier in einer zukünftigen Version geöffnet.",
+      "wip_links_interes": "WIP: Nützliche Links werden hier in einer zukünftigen Version angezeigt.",
+      "wip_colabora": "WIP: Informationen zum Mitwirken werden hier in einer zukünftigen Version angezeigt."
+    },
+    "editor_alerts": {
+      "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",
+      "drop_too_big": "Abgelegter Text ist zu groß. Verwenden Sie die Schaltflächen im Hauptfenster, um großen Text hinzuzufügen.",
+      "paste_no_text": "Die Zwischenablage enthält keinen reinen Text.",
+      "drop_no_text": "Ziehen und Ablegen: Kein reiner Text erkannt.",
+      "type_limit": "Kann nicht mehr Text tippen: Maximale Größe erreicht.",
+      "paste_limit": "Kann nicht mehr Text einfügen: Maximale Größe erreicht.",
+      "paste_truncated": "Eingefügter Text wurde gekürzt, um das Maximum zu vermeiden.",
+      "drop_truncated": "Abgelegter Text hat den verfügbaren Speicherplatz überschritten und wurde gekürzt.",
+      "text_truncated": "Text wurde gekürzt, um die Anwendungsgrenze zu passen.",
+      "calc_error": "Beim Berechnen ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
+    },
+    "preset_alerts": {
+      "name_empty": "Name darf nicht leer sein.",
+      "wpm_invalid": "WPM muss eine Zahl zwischen 50 und 500 sein.",
+      "create_error": "Beim Erstellen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",      
+      "edit_error": "Beim Bearbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+      "process_error": "Beim Verarbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
+    },
+    "info": {
+      "acerca_de": {
+        "app_name": "toT — Reading Meter",
+        "title": "Über",
+        "subtitle": "Lesemeter",
+        "body": "In Arbeit."
+      },
+      "instrucciones": {
+        "app_name": "toT — Reading Meter",
+        "title": "Benutzerhandbuch",
+        "nav_basic": "Grundlegende Anleitung",
+        "nav_full": "Vollständige Anweisungen",
+        "nav_faq": "Häufig gestellte Fragen (FAQ)",
+        "section_basic_title": "Grundlegende Anleitung",
+        "section_basic_body": "In Arbeit.",
+        "section_full_title": "Vollständige Anweisungen",
+        "section_full_body": "In Arbeit.",
+        "section_faq_title": "Häufig gestellte Fragen (FAQ)",
+        "section_faq_body": "In Arbeit."
+      }
+    }
+  }
+}

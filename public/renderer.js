@@ -718,8 +718,8 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('cargador_texto', () => {
       Notify.notifyMain('renderer.alerts.wip_cargador_texto'); // WIP
     });
-    window.menuActions.registerMenuAction('contador_imagen', () => {
-      Notify.notifyMain('renderer.alerts.wip_contador_imagen'); // WIP
+    window.menuActions.registerMenuAction('cargador_imagen', () => {
+      Notify.notifyMain('renderer.alerts.wip_cargador_imagen'); // WIP
     });
     window.menuActions.registerMenuAction('test_velocidad', () => {
       Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP

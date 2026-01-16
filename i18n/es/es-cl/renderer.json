@@ -6,8 +6,8 @@
       "buttons": {
         "overwrite_clipboard": "Chantarle lo copiao",
         "append_clipboard": "Añadirle lo copiao",
-        "edit": "Meterle mano al texto",
-        "clear": "🗑 pitiarse todo"
+        "edit": "⌨",
+        "clear": "🗑"
       },
       "tooltips": {
         "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
@@ -96,8 +96,8 @@
       "open_presets_unsupported": "No se puede abrir la carpeta aquí, hno.",
       "open_presets_error": "Drama al intentar abrir la carpeta. Lorea la consola.",
       "open_presets_fail": "No pudimos abrir la carpeta de presets. Lorea la consola.",
-      "wip_cargador_texto": "WIP: Aquí se viene el cargador de archivos más adelante.",
-      "wip_contador_imagen": "WIP: Aquí se viene el contador de letras pa' las fotos.",
+      "wip_cargador_texto": "WIP: Aquí se viene el chupaletras desde archivos de texto.",
+      "wip_cargador_imagen": "WIP: Aquí se viene el chupaletras desde fotos.",
       "wip_test_velocidad": "WIP: Aquí se viene el test de los víos.",
       "wip_diseno_skins": "WIP: Aquí vamos a cambiar las pilchas.",
       "wip_diseno_crono": "WIP: Aquí vamos a arreglar el reloj porfiado.",

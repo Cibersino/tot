@@ -1,0 +1,145 @@
+{
+  "renderer": {
+    "main": {
+      "selector_title": "Wünne ka afkechi trokiñ wirin:",
+      "selector_empty": "(welli)",
+      "buttons": {
+        "overwrite_clipboard": "Wirintun portapapeles mu",
+        "append_clipboard": "Yafkantun portapapeles",
+        "edit": "⌨",
+        "clear": "🗑"
+      },
+      "tooltips": {
+        "overwrite_clipboard": "Kangelu wirin tachi portapapeles mu",
+        "append_clipboard": "Pültrün tachi portapapeles afkechi wirin mu (we ruka)",
+        "edit": "Nülan wirin weyel tati",
+        "clear": "Nentun kom wirin",
+        "new_preset": "Dewman we preset",
+        "edit_preset": "Wirin düllilu preset",
+        "delete_preset": "Ñamümün düllilu preset",
+        "reset_presets": "Wiño elual presets",
+        "help_button": "Pengelün kellu dungu",
+        "flotante_window": "Ventana weñyefe"
+      },
+      "speed": {
+        "title": "LEF CHILLKATUN",
+        "wpm_label": "dungu kiñe minuto mu (WPM)",
+        "new": "We",
+        "edit": "Wirin",
+        "delete": "🗑",
+        "reset_defaults": "R"
+      },
+      "results": {
+        "title": "CHUMTEN MÜLEY",
+        "time": "⏱ Chillkatun antü: {h}h {m}m {s}s",
+        "words": "Dungu: {n}",
+        "chars_no_space": "Wirintun welli ngelulu: {n}",
+        "chars": "Wirin: {n}",
+        "precise_mode": "Rüf rakiduam",
+        "precise_tooltip": "Inatun Intl.Segmenter mu"
+      },
+      "crono": {
+        "title": "ÜNGÜMWE",
+        "speed": "Lef:",
+        "controls_label": "Üngümwe küzawtuwe",
+        "flotante_short": "VF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      }
+    },
+    "modal_preset": {
+      "title_new": "We preset",
+      "title_edit": "Wirin preset",
+      "heading_new": "Dewman we preset",
+      "heading_edit": "Wirin düllilu preset",
+      "name": "Üi:",
+      "wpm": "WPM:",
+      "description": "Nütram:",
+      "placeholder": "Pichi nütram...",
+      "char_count": "{remaining} wirin müley",
+      "hint": "Presets elkünutuy tachi configuración pünefe mu.",
+      "cancel": "Katrüntun",
+      "save": "Elkünun"
+    },
+    "editor": {
+      "title": "Editor — Kom wirin",
+      "placeholder": "Wiringe faw...",
+      "calc_button": "RAKIDUAMNGE",
+      "calc_while_typing": "Rakiduamnge wirin mu",
+      "clear": "🗑",
+      "clear_title": "Lifün"
+    },
+    "alerts": {
+      "clipboard_too_large": "Portapapeles wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
+      "append_too_large": "Wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
+      "clipboard_overflow": "Wirin portapapeles mu afiy, pichikünutuy.",
+      "append_overflow": "Yafkantun wirin afiy, pichikünutuy.",
+      "text_limit": "Pewfala wirin: afiy tachi fütra wirin.",
+      "clipboard_error": "Welulkuy pültrün mu. Kintunge consola.",
+      "append_error": "Welulkuy yafkantun wirin mu. Kintunge consola.",
+      "clear_error": "Welulkuy lifün mu. Kintunge consola.",
+      "modal_unavailable": "Modal ngelay küzaw mu.",
+      "edit_none": "Ngelay preset düllilu wiriael.",
+      "preset_not_found": "Ngelay preset caché mu.",
+      "edit_unavailable": "Wirintun ngelay küzaw mu.",
+      "edit_error": "Welulkuy wirin preset mu. Kintunge consola.",
+      "delete_error": "Welulkuy ñamümün preset mu. Kintunge consola.",
+      "restore_error": "Welulkuy wiñotun mu. Kintunge consola.",
+      "open_presets_unsupported": "Pewfala nülan presets faw.",
+      "open_presets_error": "Welulkuy nülan mu presets. Kintunge consola.",
+      "open_presets_fail": "Pewfala nülan presets ruka. Kintunge consola.",
+      "wip_cargador_texto": "WIP: Faw nentual wirin chew müley wirin küpalechi version mu.",
+      "wip_cargador_imagen": "WIP: Faw nentual wirin adentun mu küpalechi version mu.",
+      "wip_test_velocidad": "WIP: Faw nülai test lef chillkatun küpalechi version mu.",
+      "wip_diseno_skins": "WIP: Faw nülai düllin skins küpalechi version mu.",
+      "wip_diseno_crono": "WIP: Faw nülai configuration üngümwe küpalechi version mu.",
+      "wip_diseno_fuentes": "WIP: Faw nülai düllin wirintun küpalechi version mu.",
+      "wip_diseno_colores": "WIP: Faw nülai düllin vvün küpalechi version mu.",
+      "wip_shortcuts": "WIP: Faw nülai düllin shortcuts küpalechi version mu.",
+      "wip_avisos": "WIP: Faw pengelai we dungu küpalechi version mu.",
+      "wip_discord": "WIP: Faw nülai Discord küpalechi version mu.",
+      "wip_links_interes": "WIP: Faw pengelai links küpalechi version mu.",
+      "wip_colabora": "WIP: Faw pengelai chumngechi kelluafui küpalechi version mu."
+    },
+    "editor_alerts": {
+      "paste_too_big": "Wirin rume fütra pültrüal. Püne tati botones ventana mu.",
+      "drop_too_big": "Wirin küpalyelu rume fütra. Püne tati botones ventana mu.",
+      "paste_no_text": "Portapapeles nielay wirin.",
+      "drop_no_text": "Küpalyelu: nielay wirin faw.",
+      "type_limit": "Pewfala wirin: afiy tachi fütra wirin.",
+      "paste_limit": "Pewfala pültrün: afiy tachi fütra wirin.",
+      "paste_truncated": "Pültrün wirin pichikünutuy.",
+      "drop_truncated": "Küpalyelu wirin afiy ka pichikünutuy.",
+      "text_truncated": "Wirin pichikünutuy tachi app mu.",
+      "calc_error": "Welulkuy rakiduam mu. Kintunge consola."
+    },
+    "preset_alerts": {
+      "name_empty": "Üi welli mülay.",
+      "wpm_invalid": "WPM müley 50 ka 500 mu.",
+      "create_error": "Welulkuy dewman preset mu.",
+      "edit_error": "Welulkuy wirin preset mu.",
+      "process_error": "Welulkuy küzaw preset mu."
+    },
+    "info": {
+      "acerca_de": {
+        "app_name": "toT — Reading Meter",
+        "title": "Dungu mu",
+        "subtitle": "Pichi üi",
+        "body": "Küzawkiliyiñ tami kellual."
+      },
+      "instrucciones": {
+        "app_name": "toT — Reading Meter",
+        "title": "Chumngechi püneal",
+        "nav_basic": "Pichi kellu",
+        "nav_full": "Kom wüldungu",
+        "nav_faq": "Ramtun ka llowün (FAQ)",
+        "section_basic_title": "Pichi kellu",
+        "section_basic_body": "Küzawkiliyiñ tami kellual.",
+        "section_full_title": "Kom wüldungu",
+        "section_full_body": "Küzawkiliyiñ tami kellual.",
+        "section_faq_title": "Ramtun ka llowün (FAQ)",
+        "section_faq_body": "Küzawkiliyiñ tami kellual."
+      }
+    }
+  }
+}
