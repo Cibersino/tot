@@ -154,9 +154,7 @@ function restoreFocusToEditor(pos = null) {
       try {
         if (!editor) return;
         editor.focus();
-        if (typeof pos === 'number' && !Number.isNaN(pos)) {
-          if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(pos, pos);
-        }
+        setCaretSafe(pos);
       } catch (err) {
         log.warnOnce('editor:restoreFocus:inner_catch', 'restoreFocusToEditor failed (ignored):', err);
       }
@@ -164,6 +162,31 @@ function restoreFocusToEditor(pos = null) {
   } catch (err) {
     log.warnOnce('editor:restoreFocus:outer_catch', 'restoreFocusToEditor wrapper failed (ignored):', err);
   }
+}
+
+function getSelectionRange() {
+  const start = typeof editor.selectionStart === 'number' ? editor.selectionStart : editor.value.length;
+  const end = typeof editor.selectionEnd === 'number' ? editor.selectionEnd : start;
+  return { start, end };
+}
+
+function setSelectionSafe(start, end) {
+  if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(start, end);
+}
+
+function setCaretSafe(pos) {
+  if (typeof pos === 'number' && !Number.isNaN(pos)) {
+    setSelectionSafe(pos, pos);
+  }
+}
+
+function selectAllEditor() {
+  if (typeof editor.select === 'function') {
+    try { editor.select(); }
+    catch (err) { warnOnceEditor('editor.select', 'editor.select() failed (ignored):', err); }
+    return;
+  }
+  setSelectionSafe(0, editor.value.length);
 }
 
 // styles //
@@ -178,8 +201,7 @@ try {
 // ---------- Local insertion (best preserving undo) ---------- //
 function tryNativeInsertAtSelection(text) {
   try {
-    const start = typeof editor.selectionStart === 'number' ? editor.selectionStart : editor.value.length;
-    const end = typeof editor.selectionEnd === 'number' ? editor.selectionEnd : start;
+    const { start, end } = getSelectionRange();
 
     // try execCommand
     try {
@@ -193,7 +215,7 @@ function tryNativeInsertAtSelection(text) {
     if (typeof editor.setRangeText === 'function') {
       editor.setRangeText(text, start, end, 'end');
       const newCaret = start + text.length;
-      if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(newCaret, newCaret);
+      setCaretSafe(newCaret);
       return true;
     }
 
@@ -202,7 +224,7 @@ function tryNativeInsertAtSelection(text) {
     const after = editor.value.slice(end);
     editor.value = before + text + after;
     const newCaret = before.length + text.length;
-    if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(newCaret, newCaret);
+    setCaretSafe(newCaret);
     return true;
   } catch (err) {
     log.error('tryNativeInsertAtSelection error:', err);
@@ -210,19 +232,36 @@ function tryNativeInsertAtSelection(text) {
   }
 }
 
-function sendCurrentTextToMainWithMeta(action = 'insert') {
+function sendCurrentTextToMain(action, options = {}) {
+  const hasText = Object.prototype.hasOwnProperty.call(options, 'text');
+  const text = hasText ? options.text : editor.value;
+  const onPrimaryError = typeof options.onPrimaryError === 'function' ? options.onPrimaryError : null;
+  const onFallbackError = typeof options.onFallbackError === 'function' ? options.onFallbackError : null;
+
   try {
-    const payload = { text: editor.value, meta: { source: 'editor', action } };
+    const payload = { text, meta: { source: 'editor', action } };
     const res = window.editorAPI.setCurrentText(payload);
     handleTruncationResponse(res);
-  } catch {
+    return true;
+  } catch (err) {
+    if (onPrimaryError) onPrimaryError(err);
     try {
-      const resFallback = window.editorAPI.setCurrentText(editor.value);
+      const resFallback = window.editorAPI.setCurrentText(text);
       handleTruncationResponse(resFallback);
-    } catch (err) {
-      log.error('Error sending set-current-text (fallback):', err);
+      return true;
+    } catch (fallbackErr) {
+      if (onFallbackError) {
+        onFallbackError(fallbackErr);
+      } else {
+        log.error('Error sending set-current-text (fallback):', fallbackErr);
+      }
+      return false;
     }
   }
+}
+
+function sendCurrentTextToMainWithMeta(action = 'insert') {
+  sendCurrentTextToMain(action);
 }
 
 function handleTruncationResponse(resPromise) {
@@ -330,7 +369,7 @@ async function applyExternalUpdate(payload) {
           try {
             editor.focus();
             const tpos = editor.value.length;
-            if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(tpos, tpos);
+            setCaretSafe(tpos);
             const ok = document.execCommand && document.execCommand('insertText', false, toInsert);
             if (!ok && typeof editor.setRangeText === 'function') {
               editor.setRangeText(toInsert, tpos, tpos, 'end');
@@ -372,11 +411,7 @@ async function applyExternalUpdate(payload) {
       if (useNative) {
         try {
           editor.focus();
-          if (typeof editor.select === 'function') {
-            try { editor.select(); }
-            catch (err) { warnOnceEditor('editor.select', 'editor.select() failed (ignored):', err); }
-          }
-          else if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(0, editor.value.length);
+          selectAllEditor();
           let execOK = false;
           try { execOK = document.execCommand && document.execCommand('insertText', false, newText); } catch { execOK = false; }
           if (!execOK) {
@@ -460,7 +495,7 @@ window.editorAPI.onForceClear(() => {
     suppressLocalUpdate = true;
     editor.value = '';
     // Update main too (keep state consistent)
-    try { window.editorAPI.setCurrentText({ text: '', meta: { source: 'editor', action: 'clear' } }); } catch { window.editorAPI.setCurrentText(''); }
+    sendCurrentTextToMain('clear', { text: '' });
   } catch (err) {
     log.error('Error in onForceClear:', err);
   } finally {
@@ -527,17 +562,13 @@ if (editor) {
             Notify.notifyEditor('renderer.editor_alerts.drop_truncated', { type: 'warn', duration: 5000 });
           }
           // Notifying the main-mark coming from the editor to avoid eco-back.
-          try {
-            const res = window.editorAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'drop' } });
-            handleTruncationResponse(res);
-          } catch {
-            try {
-              const resFallback = window.editorAPI.setCurrentText(editor.value);
-              handleTruncationResponse(resFallback);
-            } catch (err) {
-              warnOnceEditor('setCurrentText.drop.fallback', 'editorAPI.setCurrentText fallback failed (ignored):', err);
-            }
-          }
+          sendCurrentTextToMain('drop', {
+            onFallbackError: (err) => warnOnceEditor(
+              'setCurrentText.drop.fallback',
+              'editorAPI.setCurrentText fallback failed (ignored):',
+              err
+            )
+          });
         } catch (err) {
           log.error('drop postprocess error:', err);
         }
@@ -558,18 +589,14 @@ editor.addEventListener('input', () => {
   if (editor.value && editor.value.length > maxTextChars) {
     editor.value = editor.value.slice(0, maxTextChars);
     Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
-    try {
-      const res = window.editorAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'truncated' } });
-      handleTruncationResponse(res);
-    } catch (err) {
-      log.error('editor: error sending set-current-text after truncate:', err);
-      try {
-        const resFallback = window.editorAPI.setCurrentText(editor.value);
-        handleTruncationResponse(resFallback);
-      } catch (innerErr) {
-        warnOnceEditor('setCurrentText.truncate.fallback', 'editorAPI.setCurrentText fallback failed (ignored):', innerErr);
-      }
-    }
+    sendCurrentTextToMain('truncated', {
+      onPrimaryError: (err) => log.error('editor: error sending set-current-text after truncate:', err),
+      onFallbackError: (err) => warnOnceEditor(
+        'setCurrentText.truncate.fallback',
+        'editorAPI.setCurrentText fallback failed (ignored):',
+        err
+      )
+    });
     restoreFocusToEditor();
     return;
   }
@@ -578,12 +605,9 @@ editor.addEventListener('input', () => {
     if (debounceTimer) clearTimeout(debounceTimer);
     if (calcWhileTyping && calcWhileTyping.checked) {
       debounceTimer = setTimeout(() => {
-        try {
-          const res = window.editorAPI.setCurrentText({ text: editor.value, meta: { source: 'editor', action: 'typing' } });
-          handleTruncationResponse(res);
-        } catch {
-          try { const resFallback = window.editorAPI.setCurrentText(editor.value); handleTruncationResponse(resFallback); } catch (err) { log.error('Error sending set-current-text typing:', err); }
-        }
+        sendCurrentTextToMain('typing', {
+          onFallbackError: (err) => log.error('Error sending set-current-text typing:', err)
+        });
       }, DEBOUNCE_MS);
     }
   }
@@ -593,17 +617,14 @@ editor.addEventListener('input', () => {
 btnTrash.addEventListener('click', () => {
   editor.value = '';
   // immediately update main
-  try {
-    const res = window.editorAPI.setCurrentText({ text: '', meta: { source: 'editor', action: 'clear' } });
-    handleTruncationResponse(res);
-  } catch {
-    try {
-      const resFallback = window.editorAPI.setCurrentText('');
-      handleTruncationResponse(resFallback);
-    } catch (err) {
-      warnOnceEditor('setCurrentText.trash.clear.fallback', 'editorAPI.setCurrentText fallback failed (ignored):', err);
-    }
-  }
+  sendCurrentTextToMain('clear', {
+    text: '',
+    onFallbackError: (err) => warnOnceEditor(
+      'setCurrentText.trash.clear.fallback',
+      'editorAPI.setCurrentText fallback failed (ignored):',
+      err
+    )
+  });
   restoreFocusToEditor();
 });
 
@@ -626,21 +647,14 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     // enable automatic sending; disable CALCULATE
     btnCalc.disabled = true;
     // Also send current content once to keep sync
-    try {
-      const res = window.editorAPI.setCurrentText({ text: editor.value || '', meta: { source: 'editor', action: 'typing_toggle_on' } });
-      handleTruncationResponse(res);
-    } catch {
-      try {
-        const resFallback = window.editorAPI.setCurrentText(editor.value || '');
-        handleTruncationResponse(resFallback);
-      } catch (err) {
-        warnOnceEditor(
-          'setCurrentText.typing_toggle_on.fallback',
-          'editorAPI.setCurrentText fallback failed (typing toggle on ignored):',
-          err
-        );
-      }
-    }
+    sendCurrentTextToMain('typing_toggle_on', {
+      text: editor.value || '',
+      onFallbackError: (err) => warnOnceEditor(
+        'setCurrentText.typing_toggle_on.fallback',
+        'editorAPI.setCurrentText fallback failed (typing toggle on ignored):',
+        err
+      )
+    });
     // disable automatic sending; enable CALCULATE
   } else btnCalc.disabled = false;
 });
