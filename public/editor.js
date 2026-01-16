@@ -154,10 +154,7 @@ function restoreFocusToEditor(pos = null) {
       try {
         if (!editor) return;
         editor.focus();
-        if (pos === null) {
-          const p = editor.value ? editor.value.length : 0;
-          if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(p, p);
-        } else {
+        if (typeof pos === 'number' && !Number.isNaN(pos)) {
           if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(pos, pos);
         }
       } catch (err) {
