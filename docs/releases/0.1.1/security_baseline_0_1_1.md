@@ -1,10 +1,10 @@
 # Baseline de seguridad para distribución (por release)
 
-Fecha: `<YYYY-MM-DD>`  
-Versión app: `<MAJOR.MINOR.PATCH>`  
-Tag de release (GitHub): `v<MAJOR.MINOR.PATCH>`  
-Último commit (release): `<COMMIT_SHA>`  
-Artefacto inspeccionado: `<ZIP/INSTALLER + checksum o nombre exacto>`
+Fecha: `2026-01-17`
+Tag objetivo (GitHub): `v0.1.1`
+Commit freeze (Git): `9b056a84a509a7e4340d0df7eabbb582613719a9`
+Artefacto inspeccionado: `toT-ReadingMeter-0.1.1-win-x64.zip`
+SHA256(artefacto): `5A20412CEA3361C7E72B0B5C2252F2622515C48BB09E93685A4BE0B39EBC9ED3`
 
 Pregunta única que responde este documento: **¿La app es suficientemente segura para ser distribuida en este release?**
 
@@ -15,30 +15,30 @@ La app solo se considera “suficientemente segura para distribuir” si:
 2) **Todo el Post-packaging Gate (artefacto empaquetado) está en PASS**.
 
 Leyenda:
-- **[PASS]** Cumple.
-- **[BLOCKER]** No cumple: bloquea distribución.
-- **[PENDING]** No verificado aún, pero es requisito para distribuir (bloquea hasta ejecutar el check).
-- **[N/A]** No aplica al modelo de app. Evitar usarlo; si aparece, justificar explícitamente por qué.
+* **[PASS]** Cumple.
+* **[BLOCKER]** No cumple: bloquea distribución.
+* **[PENDING]** No verificado aún, pero es requisito para distribuir (bloquea hasta ejecutar el check).
+* **[N/A]** No aplica al modelo de app. Evitar usarlo; si aparece, justificar explícitamente por qué.
 
 Regla operativa:
-- Este baseline aplica **solo** al artefacto inspeccionado. Si se re-empaqueta, se debe re-ejecutar el Post-packaging Gate.
+* Este baseline aplica **solo** al artefacto inspeccionado. Si se re-empaqueta, se debe re-ejecutar el Post-packaging Gate.
 
 ---
 
 ## 1) Veredicto del release
 
-**Veredicto actual:** `<PASS | BLOCKER | PENDING>`  
-**Decisión:** `<OK publicar | NO publicar>`
+**Veredicto actual:** `PASS`  
+**Decisión:** `OK publicar`
 
 Estado por gate:
-- **Ship Gate (repo/código + release hygiene):** `<PASS | BLOCKER | PENDING>`
-  - Postura de seguridad del runtime (secciones 2–9): `<PASS | BLOCKER | PENDING>`
-  - Release hygiene (sección 10): `<PASS | BLOCKER | PENDING>`
-- **Post-packaging Gate (artefacto build):** `<PASS | BLOCKER | PENDING>`
+* **Ship Gate (repo/código + release hygiene):** `PASS`
+  * Postura de seguridad del runtime (secciones 2–9): `PASS`
+  * Release hygiene (sección 10): `PASS`
+* **Post-packaging Gate (artefacto build):** `PASS`
 
 Notas:
-- Si el veredicto es PASS, registrar el identificador del artefacto validado (nombre exacto + hash o evidencia equivalente).
-- Si el veredicto es BLOCKER/PENDING, registrar el/los ítems bloqueantes y el plan de cierre.
+* Si el veredicto es PASS, registrar el identificador del artefacto validado (nombre exacto + hash o evidencia equivalente).
+* Si el veredicto es BLOCKER/PENDING, registrar el/los ítems bloqueantes y el plan de cierre.
 
 ---
 
@@ -47,13 +47,13 @@ Notas:
 **Objetivo práctico:** impedir escalamiento renderer → OS y acotar entradas no confiables.
 
 Checklist:
-- [PENDING] Renderer (DOM + JS) se trata como **no confiable**.
-- [PENDING] Proceso main es el **punto de enforcement** (política).
-- [PENDING] Preloads son el **único puente** entre renderer y capacidades privilegiadas.
-- [PENDING] La app no depende de cargar contenido remoto arbitrario para operar.
+* [PASS] Renderer (DOM + JS) se trata como **no confiable**.
+* [PASS] Proceso main es el **punto de enforcement** (política).
+* [PASS] Preloads son el **único puente** entre renderer y capacidades privilegiadas.
+* [PASS] La app no depende de cargar contenido remoto arbitrario para operar.
 
 Notas / evidencia:
-- Indicar si existen superficies que consumen HTML/texto no confiable (p. ej. editor, previews) y cómo se acota el riesgo (CSP + sandbox + IPC whitelist).
+* Indicar si existen superficies que consumen HTML/texto no confiable (p. ej. editor, previews) y cómo se acota el riesgo (CSP + sandbox + IPC whitelist).
 
 ---
 
@@ -62,38 +62,38 @@ Notas / evidencia:
 **Invariantes requeridas en todas las ventanas** (main / editor / preset / language / flotante / otras):
 
 Checklist:
-- [PENDING] `contextIsolation: true`
-- [PENDING] `nodeIntegration: false`
-- [PENDING] `sandbox: true`
-- [PENDING] No se usa `enableRemoteModule` (si aparece: incidente).
-- [PENDING] No hay `webview` embebidos (`webviewTag` / `<webview>`).
-- [PENDING] No se navega a contenido remoto para renderizar UI (modelo local-first / local-only, salvo excepción explícita documentada).
+* [PASS] `contextIsolation: true`
+* [PASS] `nodeIntegration: false`
+* [PASS] `sandbox: true`
+* [PASS] No se usa `enableRemoteModule` (si aparece: incidente).
+* [PASS] No hay `webview` embebidos (`webviewTag` / `<webview>`).
+* [PASS] No se navega a contenido remoto para renderizar UI (modelo local-first / local-only, salvo excepción explícita documentada).
 
 Criterio de bloqueo:
-- Cualquier ventana que deshabilite `sandbox`, habilite `nodeIntegration`, o deshabilite `contextIsolation`.
+* Cualquier ventana que deshabilite `sandbox`, habilite `nodeIntegration`, o deshabilite `contextIsolation`.
 
 Evidencia mínima sugerida:
-- Lista de ventanas y dónde se setean `webPreferences` (archivo + referencia aproximada de línea).
+* Lista de ventanas y dónde se setean `webPreferences` (archivo + referencia aproximada de línea).
 
 ---
 
 ## 4) Preload posture (superficie expuesta) — Ship Gate
 
 Principios operativos:
-- API expuesta a renderer debe ser **pequeña, intencional y whitelist-based**.
-- Renderer no debe poder invocar capacidades privilegiadas “genéricas” (ej. `invoke(channel, payload)` libre).
+* API expuesta a renderer debe ser **pequeña, intencional y whitelist-based**.
+* Renderer no debe poder invocar capacidades privilegiadas “genéricas” (ej. `invoke(channel, payload)` libre).
 
 Checklist:
-- [PENDING] Preloads exponen API vía `contextBridge` y no exponen Node a renderer.
-- [PENDING] Preloads no implementan file I/O, network I/O, ni ejecución dinámica.
-- [PENDING] Preloads no exponen superficies amplias (ej. acceso directo a `ipcRenderer` sin wrapper de propósito).
-- [PENDING] Logging en preload es mínimo; decisiones de seguridad se aplican en main.
+* [PASS] Preloads exponen API vía `contextBridge` y no exponen Node a renderer.
+* [PASS] Preloads no implementan file I/O, network I/O, ni ejecución dinámica.
+* [PASS] Preloads no exponen superficies amplias (ej. acceso directo a `ipcRenderer` sin wrapper de propósito).
+* [PASS] Logging en preload es mínimo; decisiones de seguridad se aplican en main.
 
 Criterio de bloqueo:
-- Cualquier preload que exponga capacidades genéricas que permitan al renderer ampliar superficie (p. ej. “invoke cualquier canal”, “eval”, “require”, “fs”).
+* Cualquier preload que exponga capacidades genéricas que permitan al renderer ampliar superficie (p. ej. “invoke cualquier canal”, “eval”, “require”, “fs”).
 
 Evidencia mínima sugerida:
-- Enumeración de APIs expuestas (`window.*API`) + lista de métodos y su propósito (por preload).
+* Enumeración de APIs expuestas (`window.*API`) + lista de métodos y su propósito (por preload).
 
 ---
 
@@ -104,89 +104,89 @@ Evidencia mínima sugerida:
 Requisitos mínimos (aplican a canales de impacto: clipboard, texto, presets, apertura de modales/ventanas, apertura de URLs/docs, etc.):
 
 Checklist:
-- [PENDING] Disciplina de esquema (plain object donde corresponde; coerción/normalización de tipos).
-- [PENDING] Whitelisting de campos (ignorar/dropear campos desconocidos; no “passthrough”).
-- [PENDING] Size fuses para strings controlables por el renderer (texto, nombres/descripciones, meta).
-- [PENDING] Sender restriction cuando el canal debe pertenecer a una ventana específica.
-- [PENDING] Fallos recuperables devuelven respuesta estructurada `{ ok:false, ... }` y feedback UX cuando aplica.
+* [PASS] Disciplina de esquema (plain object donde corresponde; coerción/normalización de tipos).
+* [PASS] Whitelisting de campos (ignorar/dropear campos desconocidos; no “passthrough”).
+* [PASS] Size fuses para strings controlables por el renderer (texto, nombres/descripciones, meta).
+* [PASS] Sender restriction cuando el canal debe pertenecer a una ventana específica.
+* [PASS] Fallos recuperables devuelven respuesta estructurada `{ ok:false, ... }` y feedback UX cuando aplica.
 
 Mapa de superficies “de impacto” (completar por release, al menos con los canales relevantes):
-- [PENDING] Clipboard bridge (lectura/escritura si existe): tamaño + control de origen.
-- [PENDING] Ingesta/edición de texto: límites + tratamiento seguro de meta.
-- [PENDING] Presets: creación/edición/borrado con sanitización y límites.
-- [PENDING] Apertura de modales/ventanas: payload acotado + control de origen.
-- [PENDING] Apertura de enlaces/docs: allowlist + validación + no “open arbitrary”.
+* [PASS] Clipboard bridge (lectura/escritura si existe): tamaño + control de origen.
+* [PASS] Ingesta/edición de texto: límites + tratamiento seguro de meta.
+* [PASS] Presets: creación/edición/borrado con sanitización y límites.
+* [PASS] Apertura de modales/ventanas: payload acotado + control de origen.
+* [PASS] Apertura de enlaces/docs: allowlist + validación + no “open arbitrary”.
 
 Criterio de bloqueo:
-- Añadir un canal IPC nuevo de impacto sin: whitelist, size fuse y (si aplica) sender guard.
+* Añadir un canal IPC nuevo de impacto sin: whitelist, size fuse y (si aplica) sender guard.
 
 Evidencia mínima sugerida:
-- Lista de canales IPC “de impacto” y dónde se registran (archivo + referencia aproximada).
-- Para cada canal: shape de request/response y validaciones relevantes.
+* Lista de canales IPC “de impacto” y dónde se registran (archivo + referencia aproximada).
+* Para cada canal: shape de request/response y validaciones relevantes.
 
 ---
 
 ## 6) CSP baseline — Ship Gate
 
 Objetivo:
-- Reducir probabilidad y blast radius de inyección (XSS/DOM injection) en superficies renderer.
-- Evitar que inyección derive en puente privilegiado.
+* Reducir probabilidad y blast radius de inyección (XSS/DOM injection) en superficies renderer.
+* Evitar que inyección derive en puente privilegiado.
 
 Baseline mínimo aceptable (ajustar solo con justificación explícita):
-- `default-src 'self';`
-- `script-src 'self';`
-- `style-src 'self' 'unsafe-inline';` **(excepción aceptada solo si está justificada)**
-- `object-src 'none';`
-- `base-uri 'none';`
+* `default-src 'self';`
+* `script-src 'self';`
+* `style-src 'self' 'unsafe-inline';` **(excepción aceptada solo si está justificada)**
+* `object-src 'none';`
+* `base-uri 'none';`
 
 Checklist:
-- [PENDING] CSP presente en **todas** las páginas HTML de ventanas renderer.
-- [PENDING] `script-src 'self'` (sin fuentes remotas; sin `unsafe-eval`; sin inline scripts).
-- [PENDING] No hay `<script>` inline en HTML.
-- [PENDING] No hay handlers inline tipo `onclick=...`.
-- [PENDING] Si existe `style-src 'unsafe-inline'`, su uso está justificado y acotado (solo estilos).
+* [PASS] CSP presente en **todas** las páginas HTML de ventanas renderer.
+* [PASS] `script-src 'self'` (sin fuentes remotas; sin `unsafe-eval`; sin inline scripts).
+* [PASS] No hay `<script>` inline en HTML.
+* [PASS] No hay handlers inline tipo `onclick=...`.
+* [PASS] Si existe `style-src 'unsafe-inline'`, su uso está justificado y acotado (solo estilos).
 
 Criterio de bloqueo:
-- Cualquier necesidad de relajar `script-src` (p. ej. `unsafe-eval`, scripts remotos, o permitir inline scripts).
+* Cualquier necesidad de relajar `script-src` (p. ej. `unsafe-eval`, scripts remotos, o permitir inline scripts).
 
 Evidencia mínima sugerida:
-- Lista de HTMLs con su CSP (muestra representativa o verificación sistemática).
+* Lista de HTMLs con su CSP (muestra representativa o verificación sistemática).
 
 ---
 
 ## 7) File boundaries (lectura/escritura) — Ship Gate
 
 Principio:
-- Escrituras persistentes acotadas a storage propio de la app con nombres de archivo conocidos.
-- Renderer no aporta rutas arbitrarias a operaciones de I/O del main.
+* Escrituras persistentes acotadas a storage propio de la app con nombres de archivo conocidos.
+* Renderer no aporta rutas arbitrarias a operaciones de I/O del main.
 
 Checklist:
-- [PENDING] Persistencia de usuario confinada a un directorio controlado por la app (p. ej. `app.getPath('userData')/...`).
-- [PENDING] No existe lectura/escritura arbitraria por rutas entregadas por renderer (salvo diseño explícito con validación fuerte).
-- [PENDING] Entradas no confiables que llegan a persistencia (texto, presets) están acotadas por tamaño y saneo antes de persistir.
-- [PENDING] Lecturas i18n limitadas al árbol `i18n/` y las claves/tags se normalizan.
+* [PASS] Persistencia de usuario confinada a un directorio controlado por la app (p. ej. `app.getPath('userData')/...`).
+* [PASS] No existe lectura/escritura arbitraria por rutas entregadas por renderer (salvo diseño explícito con validación fuerte).
+* [PASS] Entradas no confiables que llegan a persistencia (texto, presets) están acotadas por tamaño y saneo antes de persistir.
+* [PASS] Lecturas i18n limitadas al árbol `i18n/` y las claves/tags se normalizan.
 
 Criterio de bloqueo:
-- Introducir rutas controladas por renderer para lectura/escritura sin validación estricta y sin rediseño de seguridad.
+* Introducir rutas controladas por renderer para lectura/escritura sin validación estricta y sin rediseño de seguridad.
 
 Evidencia mínima sugerida:
-- Inventario de archivos persistidos + ubicación base + quién puede escribirlos.
-- Enumeración de rutas abiertas por diálogos del sistema (si existen) y cómo se validan.
+* Inventario de archivos persistidos + ubicación base + quién puede escribirlos.
+* Enumeración de rutas abiertas por diálogos del sistema (si existen) y cómo se validan.
 
 ---
 
 ## 8) Clipboard posture — Ship Gate
 
 Checklist:
-- [PENDING] Clipboard se trata como input no confiable.
-- [PENDING] Lectura/escritura de clipboard ocurre en main vía IPC bridge (no directo en renderer).
-- [PENDING] Payload acotado: si excede el límite permitido, no se transporta (respuesta estructurada + UX preservada).
+* [PASS] Clipboard se trata como input no confiable.
+* [PASS] Lectura/escritura de clipboard ocurre en main vía IPC bridge (no directo en renderer).
+* [PASS] Payload acotado: si excede el límite permitido, no se transporta (respuesta estructurada + UX preservada).
 
 Criterio de bloqueo:
-- Permitir que renderer lea clipboard directamente o transportar clipboard sin límite de tamaño.
+* Permitir que renderer lea clipboard directamente o transportar clipboard sin límite de tamaño.
 
 Evidencia mínima sugerida:
-- Canales IPC de clipboard + sender restriction (si aplica) + size fuse.
+* Canales IPC de clipboard + sender restriction (si aplica) + size fuse.
 
 ---
 
@@ -195,21 +195,21 @@ Evidencia mínima sugerida:
 Modelo recomendado: **actualización dirigida por el usuario** (user-driven).
 
 Checklist:
-- [PENDING] El check de versión consulta un endpoint HTTPS fijo y conocido (documentar cuál).
-- [PENDING] Si hay update, se solicita consentimiento explícito del usuario.
-- [PENDING] La acción de “Download” abre el release oficial en navegador externo (o flujo equivalente bajo control del usuario).
-- [PENDING] No existe descarga silenciosa de binarios.
-- [PENDING] No existe ejecución automática de instaladores.
-- [PENDING] No existe auto-update in-app (download/quitAndInstall/etc.).
+* [PASS] El check de versión consulta un endpoint HTTPS fijo y conocido (documentar cuál).
+* [PASS] Si hay update, se solicita consentimiento explícito del usuario.
+* [PASS] La acción de “Download” abre el release oficial en navegador externo (o flujo equivalente bajo control del usuario).
+* [PASS] No existe descarga silenciosa de binarios.
+* [PASS] No existe ejecución automática de instaladores.
+* [PASS] No existe auto-update in-app (download/quitAndInstall/etc.).
 
 Riesgo residual (completar si aplica):
-- [PENDING] Si no hay verificación criptográfica propia de artefactos, justificar por qué el modelo de updater no descarga/ejecuta automáticamente.
+* [PASS] Si no hay verificación criptográfica propia de artefactos, justificar por qué el modelo de updater no descarga/ejecuta automáticamente.
 
 Criterio de bloqueo:
-- Cualquier flujo que descargue/ejecute updates dentro de la app sin una revisión de seguridad separada.
+* Cualquier flujo que descargue/ejecute updates dentro de la app sin una revisión de seguridad separada.
 
 Evidencia mínima sugerida:
-- Endpoint usado + decisión de UX + confirmación de que no existe auto-update.
+* Endpoint usado + decisión de UX + confirmación de que no existe auto-update.
 
 ---
 
@@ -218,31 +218,31 @@ Evidencia mínima sugerida:
 Este bloque es relevante para seguridad de distribución porque controla supply-chain accidental (secrets, material dev, artefactos no intencionados) y configuración de build.
 
 Checklist:
-- [PENDING] Secret hygiene:
-  - No hay llaves/tokens/credenciales hardcodeadas (incluye `.env`, tokens en JS, URLs con credenciales, etc.).
-  - No hay archivos de volcado/logs de desarrollo con datos sensibles versionados.
-  - Si se detecta un secreto: incidente y bloquea publicación hasta rotación/remoción.
+* [PASS] Secret hygiene:
+  * No hay llaves/tokens/credenciales hardcodeadas (incluye `.env`, tokens en JS, URLs con credenciales, etc.).
+  * No hay archivos de volcado/logs de desarrollo con datos sensibles versionados.
+  * Si se detecta un secreto: incidente y bloquea publicación hasta rotación/remoción.
 
-- [PENDING] Packaging excludes (política “no arrastrar dev”):
-  - La configuración de empaquetado excluye explícitamente directorios no distribuibles (mínimo: `tools_local/` y equivalentes).
-  - Excluye backups, evidence folders, scripts internos que no sean runtime.
+* [PASS] Packaging excludes (política “no arrastrar dev”):
+  * La configuración de empaquetado excluye explícitamente directorios no distribuibles (mínimo: `tools_local/` y equivalentes).
+  * Excluye backups, evidence folders, scripts internos que no sean runtime.
 
-- [PENDING] DevTools / Debug hooks (política para build distribuible):
-  - En build empaquetado: DevTools **no se abre automáticamente**.
-  - En build empaquetado: no existe un menú/atajo propio de la app que abra DevTools salvo modo debug explícito.
-  - Nota: DevTools en modo dev es normal.
+* [PASS] DevTools / Debug hooks (política para build distribuible):
+  * En build empaquetado: DevTools **no se abre automáticamente**.
+  * En build empaquetado: no existe un menú/atajo propio de la app que abra DevTools salvo modo debug explícito.
+  * Nota: DevTools en modo dev es normal.
 
-- [PENDING] Source maps (si aplica):
-  - Política intencional: distribuir o no distribuir `.map`.
-  - Verificar cumplimiento (no `.map` accidentales si la política es “no”).
+* [PASS] Source maps (si aplica):
+  * Política intencional: distribuir o no distribuir `.map`.
+  * Verificar cumplimiento (no `.map` accidentales si la política es “no”).
 
 Criterio de bloqueo:
-- Cualquier secreto encontrado en repo o incluido por build.
-- `tools_local/` (o equivalentes) no excluido por configuración antes de empaquetar.
-- Build empaquetado configurado para abrir DevTools automáticamente o dejar debug hooks no intencionales.
+* Cualquier secreto encontrado en repo o incluido por build.
+* `tools_local/` (o equivalentes) no excluido por configuración antes de empaquetar.
+* Build empaquetado configurado para abrir DevTools automáticamente o dejar debug hooks no intencionales.
 
 Evidencia mínima sugerida:
-- Comandos/outputs usados para verificar (p. ej. grep de secretos, inspección de config build, etc.).
+* Comandos/outputs usados para verificar (p. ej. grep de secretos, inspección de config build, etc.).
 
 ---
 
@@ -254,53 +254,53 @@ No re-valida postura de seguridad “en fuente” (IPC/CSP/etc.) salvo en la med
 ## 11) Dependencias incluidas en el build (solo runtime)
 
 **Bloque de dependencias runtime (lo que se integra en el build):**
-- Runtime (Electron + Chromium + Node embebido).
-- App bundle (p. ej. `app.asar` y/o recursos equivalentes).
-- `node_modules` solo de producción (si corresponde; si no hay, declararlo explícitamente).
+* Runtime (Electron + Chromium + Node embebido).
+* App bundle (p. ej. `app.asar` y/o recursos equivalentes).
+* `node_modules` solo de producción (si corresponde; si no hay, declararlo explícitamente).
 
 Checklist:
-- [PENDING] Listado exacto de dependencias de producción incluidas en el build (top-level):
-  - Enumerar `resources/app.asar/node_modules` o ruta equivalente y registrar nombres + versiones.
-  - Resultado (pegar debajo):
-    - `<TBD: lista exacta o “no hay node_modules en artefacto”>`
+* [PASS] Listado exacto de dependencias de producción incluidas en el build (top-level):
+  * Enumerar `resources/app.asar/node_modules` o ruta equivalente y registrar nombres + versiones.
+  * Resultado (pegar debajo):
+    * `no hay node_modules en artefacto`
 
-- [PENDING] Sanity check de vulnerabilidades sobre dependencias runtime (mínimo: ausencia de CVEs críticas conocidas en deps incluidas o justificación/mitigación si existen).
+* [PASS] Sanity check de vulnerabilidades sobre dependencias runtime (mínimo: ausencia de CVEs críticas conocidas en deps incluidas o justificación/mitigación si existen).
 
 Criterio de bloqueo:
-- Dependencias inesperadas de runtime o material sensible incluido por error.
+* Dependencias inesperadas de runtime o material sensible incluido por error.
 
 ---
 
 ## 12) Checklist mínimo post-empaquetado (artefacto final)
 
 Checklist:
-- [PENDING] Inspección de contenido del artefacto:
-  - Confirmar que solo incluye lo esperado (app + recursos + runtime).
-  - Confirmar ausencia de archivos sensibles (tokens, llaves, `.env`, dumps, logs de dev).
-  - Confirmar ausencia de material de desarrollo no intencionado (herramientas locales, evidence folders, backups).
-  - Confirmar que las páginas renderer incluidas corresponden al set esperado (no HTML “extra” no revisado).
+* [PASS] Inspección de contenido del artefacto:
+  * Confirmar que solo incluye lo esperado (app + recursos + runtime).
+  * Confirmar ausencia de archivos sensibles (tokens, llaves, `.env`, dumps, logs de dev).
+  * Confirmar ausencia de material de desarrollo no intencionado (herramientas locales, evidence folders, backups).
+  * Confirmar que las páginas renderer incluidas corresponden al set esperado (no HTML “extra” no revisado).
 
-- [PENDING] Smoke “renderer containment” sobre el artefacto:
-  - Confirmar que renderer no expone Node (`window.require` / `window.process`).
-  - Confirmar que funcionalidades principales operan sin pedir permisos no esperados.
+* [PASS] Smoke “renderer containment” sobre el artefacto:
+  * Confirmar que renderer no expone Node (`window.require` / `window.process`).
+  * Confirmar que funcionalidades principales operan sin pedir permisos no esperados.
 
 Criterio de bloqueo:
-- Cualquier hallazgo de material dev/sensible dentro del artefacto.
-- Inclusión de páginas renderer/HTML no esperadas (no revisadas) en el artefacto.
-- Señales de escalamiento renderer→Node (existencia de `window.require`/`window.process` en renderer).
+* Cualquier hallazgo de material dev/sensible dentro del artefacto.
+* Inclusión de páginas renderer/HTML no esperadas (no revisadas) en el artefacto.
+* Señales de escalamiento renderer→Node (existencia de `window.require`/`window.process` en renderer).
 
 Evidencia mínima sugerida:
-- Evidencia de inspección (lista de archivos o capturas del árbol) + prueba mínima de “no Node en renderer”.
+* Evidencia de inspección (lista de archivos o capturas del árbol) + prueba mínima de “no Node en renderer”.
 
 ---
 
 ## 13) Resultado final (cómo cerrar el veredicto)
 
 La app queda marcada como **“suficientemente segura para distribuir este release”** únicamente cuando:
-- Ship Gate: todo PASS (incluye runtime security posture + release hygiene), y
-- Post-packaging Gate: todo PASS (incluyendo dependencias runtime listadas y revisadas).
+* Ship Gate: todo PASS (incluye runtime security posture + release hygiene), y
+* Post-packaging Gate: todo PASS (incluyendo dependencias runtime listadas y revisadas).
 
-Veredicto final: `<PASS/BLOCKER>`  
-Artefacto validado: `<nombre exacto + hash/evidencia>`
+Veredicto final: `PASS`  
+Artefacto validado: `toT-ReadingMeter-0.1.1-win-x64.zip`
 
 ---

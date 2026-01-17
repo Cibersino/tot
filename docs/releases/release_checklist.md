@@ -2,36 +2,39 @@
 
 Checklist mecánico para preparar y publicar una nueva versión.
 
-Fecha: `YYYY-MM-DD`  
-Versión app: `X.Y.Z`
+Fecha: `<YYYY-MM-DD>`
+Tag objetivo (GitHub): `v<MAJOR.MINOR.PATCH>`
+Commit freeze (Git): `<SHA_COMMIT>`
+Artefacto inspeccionado: `<ZIP/INSTALLER>`
+SHA256(artefacto): `<SHA256>`
 
 ## 0. Regla de versión (SemVer)
-- Desde `0.1.0` en adelante, usar SemVer estricto: `MAJOR.MINOR.PATCH`.
-- No volver a usar `0.0.XYY` como contador de builds.
-- Si aplica pre-release: `-alpha.N`, `-beta.N`, `-rc.N` (sobre base `MAJOR.MINOR.PATCH`).
-- Tag de release obligatorio en GitHub: `vX.Y.Z` (p. ej. `v0.1.0`), o `vX.Y.Z-rc.N` si aplica.
+* Desde `0.1.0` en adelante, usar SemVer estricto: `MAJOR.MINOR.PATCH`.
+* No volver a usar `0.0.XYY` como contador de builds.
+* Si aplica pre-release: `-alpha.N`, `-beta.N`, `-rc.N` (sobre base `MAJOR.MINOR.PATCH`).
+* Tag de release obligatorio en GitHub: `vX.Y.Z` (p. ej. `v0.1.0`), o `vX.Y.Z-rc.N` si aplica.
 
 ## 1. Tracker (GitHub Issues), milestone y Roadmap
-- [ ] GitHub Issues: revisar el milestone `X.Y.Z`:
-  - [ ] Issues resueltos: cerrar (idealmente referenciando commit/PR si existe).
-  - [ ] Issues no resueltos: mover al próximo milestone (p. ej. `X.Y.(Z+1)` o `X.(Y+1).0`).
-  - [ ] Labels mínimos:
-    - [ ] Cada `bug` tiene `area:*` y severidad `S0–S3`.
-    - [ ] Quitar `status:needs-triage` si ya hay repro/confirmación y clasificación suficiente.
-- [ ] Roadmap (GitHub Project “toT Roadmap”):
-  - [ ] Vista por milestone: filtrar por `X.Y.Z` (o equivalente) y verificar consistencia con el milestone del repo.
-  - [ ] Para cada Issue del release:
-    - [ ] `Status`: dejar en estado final (p. ej. Done) si se cerró, o mover fuera del release si se postergó.
-    - [ ] Si el Issue cambió de milestone, reflejar el cambio también en el Project (mismo milestone/campo).
-  - [ ] No dejar Issues “fantasma”: todo Issue relevante del release debe estar en el Project (si no, agregarlo).
-- Nota: `ToDo.md` es un stub fijo que apunta al Project; no se usa para mantener estado.
+* [ ] GitHub Issues: revisar el milestone `X.Y.Z`:
+  * [ ] Issues resueltos: cerrar (idealmente referenciando commit/PR si existe).
+  * [ ] Issues no resueltos: mover al próximo milestone (p. ej. `X.Y.(Z+1)` o `X.(Y+1).0`).
+  * [ ] Labels mínimos:
+    * [ ] Cada `bug` tiene `area:*` y severidad `S0–S3`.
+    * [ ] Quitar `status:needs-triage` si ya hay repro/confirmación y clasificación suficiente.
+* [ ] Roadmap (GitHub Project “toT Roadmap”):
+  * [ ] Vista por milestone: filtrar por `X.Y.Z` (o equivalente) y verificar consistencia con el milestone del repo.
+  * [ ] Para cada Issue del release:
+    * [ ] `Status`: dejar en estado final (p. ej. Done) si se cerró, o mover fuera del release si se postergó.
+    * [ ] Si el Issue cambió de milestone, reflejar el cambio también en el Project (mismo milestone/campo).
+  * [ ] No dejar Issues “fantasma”: todo Issue relevante del release debe estar en el Project (si no, agregarlo).
+* Nota: `ToDo.md` es un stub fijo que apunta al Project; no se usa para mantener estado.
 
 ## 2. Documentación del release (antes del freeze)
 
 ### 2.1 Preparación del changelog
-- [ ] `docs/changelog_detailed.md`: reflejar el release `X.Y.Z` con detalle.
-- [ ] `CHANGELOG.md`: reflejar el release `X.Y.Z` con resumen.
-- [ ] La fecha `YYYY-MM-DD` del release debe ser consistente entre `CHANGELOG.md` y `docs/changelog_detailed.md`.
+* [ ] `docs/changelog_detailed.md`: reflejar el release `X.Y.Z` con detalle.
+* [ ] `CHANGELOG.md`: reflejar el release `X.Y.Z` con resumen.
+* [ ] La fecha `YYYY-MM-DD` del release debe ser consistente entre `CHANGELOG.md` y `docs/changelog_detailed.md`.
 
 Nota: diff útil para generar changelog (excluye `docs/`)
 ```pwsh
@@ -56,6 +59,9 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 * [ ] `package-lock.json`: consistente con `package.json` (actualizar/regenerar según flujo del repo).
 * [ ] Confirmar que `tools_local/` (y equivalentes) no está tracked ni entró al commit del release.
 * [ ] Commit final del release creado antes de empaquetar.
+  * Commit: `<HASH>`
+
+* Nota: Este commit, desde el cual se genearará el artefacto, será el que se utilice para el tag del release.
 
 ## 4. Packaging (generar artefacto final)
 
@@ -89,3 +95,16 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 * [ ] Publicar GitHub Release `vX.Y.Z` (Latest si corresponde) y adjuntar el artefacto final.
 * [ ] Release notes: usar el resumen de `CHANGELOG.md` (y/o link explícito a `docs/changelog_detailed.md`).
 * [ ] Cerrar el milestone `X.Y.Z` al publicar el release (y crear el siguiente si corresponde).
+
+## 9. Documentación del release (commit/PR)
+
+Guardar la documentación específica del release en `docs/releases/<X.Y.Z>/`.  
+**No es gate de publicación** (puede mergearse antes o después del release).
+
+* [ ] Agregar:
+  * [ ] `docs/releases/<X.Y.Z>/release_checklist_<X_Y_Z>.md`
+  * [ ] `docs/releases/<X.Y.Z>/security_baseline_<X_Y_Z>.md`
+  * [ ] `docs/releases/<X.Y.Z>/legal_baseline_<X_Y_Z>.md`
+* [ ] En los 3 docs registrar: `tag vX.Y.Z`, `SHA commit freeze`, nombre del artefacto, `SHA256` del artefacto.
+
+* [ ] Commits en rama (no `main`) + PR + merge a `main`.
