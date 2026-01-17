@@ -27,10 +27,11 @@ tot-readingmeter/
 │ │ ├── cleanup_file_by_file.md
 │ │ ├── naming_convention.md
 │ │ └── no_silence.md
+│ ├── releases/                    # {subcarpetas por release con los docs de chequeo}
+│ │ ├── release_checklist.md
+│ │ ├── security_baseline.md
+│ │ └── legal_baseline.md
 │ ├── changelog_detailed.md
-│ ├── release_checklist.md
-│ ├── security_baseline.md
-│ ├── legal_baseline.md
 │ ├── test_suite.md
 │ └── tree_folders_files.md
 ├── electron/
