@@ -30,6 +30,7 @@ tot-readingmeter/
 │ ├── changelog_detailed.md
 │ ├── release_checklist.md
 │ ├── security_baseline.md
+│ ├── legal_baseline.md
 │ ├── test_suite.md
 │ └── tree_folders_files.md
 ├── electron/
