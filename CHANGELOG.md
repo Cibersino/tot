@@ -12,6 +12,32 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
 - **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
 
+## [0.1.1] Nuevos idiomas
+- Fecha: `2026-01-16`
+
+### Added
+- Idiomas UI añadidos: Mapudungun (`arn`), Français (`fr`), Deutsch (`de`), Italiano (`it`), Português (`pt`).
+- (Docs) `docs/test_suite.md` para correr pruebas manuales de la app (Issue #65), incorporado al flujo pre-release vía `docs/release_checklist.md`.
+
+### Changed
+- `README.md` reestructurado y ahora bilingüe (ES/EN).
+- Ajuste de preview para textos cortos:
+  - `PREVIEW_INLINE_THRESHOLD`: `200` → `1200`
+  - `PREVIEW_START_CHARS`: `350` → `275`
+  - `PREVIEW_END_CHARS`: `230` → `275`
+- UX:
+  - Nota de la ventana de idioma actualizada (mensaje de contribución ES/EN).
+  - Botón de Editor manual pasa a símbolo `⌨`.
+- Menú/acciones:
+  - Acción alineada: `contador_imagen` → `cargador_imagen` + actualización de textos i18n asociados.
+- Refactor de `public/editor.js` (mejor manejo de selección/caret y robustez en inserciones).
+- Comentarios añadidos en constantes:
+  - `electron/constants_main.js`
+  - `public/js/constants.js`
+
+### Fixed
+- Editor: el caret ya no salta al final del documento después de pegar texto (Issue #77).
+
 ## [0.1.0] Primer release público
 - Fecha: `2026-01-14`
 

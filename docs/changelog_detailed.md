@@ -49,13 +49,101 @@ Reglas:
 
 ---
 
+## [0.1.1] Nuevos idiomas
+
+### Fecha release y último commit
+
+- Fecha: `2026-01-16`
+- Último commit: `<TBD>`
+- Baseline técnico usado para auditoría: `0.1.0` (commit `dffe1d9`) → `<TBD>`
+
+### Resumen de cambios
+
+- Se amplía i18n con 5 idiomas nuevos (Mapudungun `arn`, Français `fr`, Deutsch `de`, Italiano `it`, Português `pt`) y se mejoran textos existentes en `es`, `es-cl` y `en`.
+- Se refactoriza `public/editor.js` para un manejo más robusto de selección/caret y sincronización con main; incluye el fix del caret al pegar.
+- Se ajustan detalles de UX (nota de la ventana de idioma, símbolo del botón de editor) y el comportamiento de preview para textos cortos.
+- Se alinea el identificador de acción del menú para el “cargador de imágenes” y se actualizan claves i18n asociadas.
+
+### Agregado
+
+- Idiomas UI (manifiesto `i18n/languages.json`):
+  - `arn` — Mapudungun
+  - `fr` — Français
+  - `de` — Deutsch
+  - `it` — Italiano
+  - `pt` — Português
+- Paquetes i18n para cada idioma nuevo:
+  - `i18n/<tag>/main.json`, `i18n/<tag>/renderer.json`, `i18n/<tag>/numberFormat.json`.
+- Documentación de pruebas manuales:
+  - `docs/test_suite.md` (Issue #65).
+  - Referenciada en `docs/release_checklist.md` como parte de las pruebas pre-release.
+
+### Cambiado
+
+- README:
+  - `README.md` reestructurado y ahora bilingüe (ES/EN), con sección “Documentación” (checklist/changelog/árbol del repo/privacidad).
+- Preview:
+  - `public/js/constants.js`:
+    - `PREVIEW_INLINE_THRESHOLD`: `200` → `1200`.
+    - `PREVIEW_START_CHARS`: `350` → `275`.
+    - `PREVIEW_END_CHARS`: `230` → `275`.
+- UX / labels:
+  - Botón de Editor en la ventana principal pasa a símbolo `⌨` (`public/index.html` + traducciones renderer).
+  - Ventana de idioma: nota de contribución actualizada a mensaje bilingüe ES/EN (`public/language_window.html`).
+- i18n:
+  - Ajustes de copy (puntuación, tooltips y mensajes WIP) en `es`, `es-cl` y `en`.
+  - Textos del menú en `es-cl` ajustados para herramientas (p. ej. “chupaletras…”).
+- Constantes:
+  - Comentarios explicativos agregados en constantes relevantes:
+    - `electron/constants_main.js`
+    - `public/js/constants.js`
+
+### Arreglado
+
+- Editor:
+  - El caret ya no salta al final del documento después de pegar texto en el editor (Issue #77).
+    - Fix implementado en `public/editor.js` mediante utilidades de selección/caret seguras y normalización de inserciones.
+
+### Migración
+
+- No aplica.
+
+### Contratos tocados
+
+- Menú → renderer (action IDs):
+  - Acción de menú: `contador_imagen` → `cargador_imagen`.
+- i18n (keys de alertas WIP en renderer):
+  - `renderer.alerts.wip_contador_imagen` → `renderer.alerts.wip_cargador_imagen`.
+
+### Archivos
+
+- i18n:
+  - `i18n/languages.json`
+  - `i18n/{arn,de,fr,it,pt}/(main.json|renderer.json|numberFormat.json)`
+  - Ajustes en: `i18n/es/main.json`, `i18n/es/renderer.json`, `i18n/es/es-cl/main.json`, `i18n/es/es-cl/renderer.json`, `i18n/en/renderer.json`
+- UI / renderer:
+  - `public/index.html`
+  - `public/language_window.html`
+  - `public/js/constants.js`
+  - `public/renderer.js`
+  - `public/editor.js`
+- Main:
+  - `electron/constants_main.js`
+  - `electron/menu_builder.js`
+
+### Notas
+
+- El refactor de `public/editor.js` está orientado a robustez (selección/caret y envío a main) sin cambios de contratos IPC.
+
+---
+
 ## [0.1.0] Primer release público
 
 ### Fecha release y último commit
 
 - Fecha: `2026-01-14`
-- Último commit: `0ef3ea4`
-- Baseline técnico usado para auditoría: `0.0.930` (commit `68a4ef4`) → `0ef3ea4`
+- Último commit: `dffe1d9`
+- Baseline técnico usado para auditoría: `0.0.930` (commit `68a4ef4`) → `dffe1d9`
 
 ### Resumen de cambios
 
