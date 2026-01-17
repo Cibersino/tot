@@ -22,9 +22,6 @@
     "knip": "^5.76.3",
     "madge": "^8.0.0"
   },
-  "overrides": {
-    "tar": ">=7.5.3 <8"
-  },
   "build": {
     "appId": "com.cibersino.tot-readingmeter",
     "productName": "toT — Reading Meter",
