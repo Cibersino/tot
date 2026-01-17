@@ -81,6 +81,7 @@ let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main respon
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
 let idiomaActual = DEFAULT_LANG; // Initializes on startup
 let settingsCache = null;     // Settings cache (number formatting, language, etc.)
+let cronoController = null;
 // --- i18n renderer translations cache ---
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
@@ -140,7 +141,9 @@ function applyTranslations() {
     if (ariaLabel) cronoControls.setAttribute('aria-label', ariaLabel);
   }
   const labelsCrono = getCronoLabels();
-  if (tToggle) tToggle.textContent = running ? labelsCrono.pauseLabel : labelsCrono.playLabel;
+  if (cronoController && typeof cronoController.updateLabels === 'function') {
+    cronoController.updateLabels(labelsCrono);
+  }
   // Abbreviated label for the floating window
   const vfLabel = document.querySelector('.vf-label');
   if (vfLabel) {
@@ -269,55 +272,15 @@ async function updatePreviewAndResults(text) {
   resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
 }
 
-async function applyTextChangeRules(previousText, nextText) {
-  if (previousText === nextText) return;
-
-  if (!nextText) {
-    try {
-      if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
-        window.electronAPI.sendCronoReset();
-      }
-    } catch (err) {
-      log.error('Error requesting stopwatch reset after empty text:', err);
-    } finally {
-      uiResetCrono();
-      lastComputedElapsedForWpm = 0;
-    }
-    return;
-  }
-
-  if (running) return;
-
-  const effectiveElapsed = (typeof elapsed === 'number' && elapsed > 0) ? elapsed : 0;
-  if (effectiveElapsed === 0) return;
-
-  if (cronoModule && typeof cronoModule.actualizarVelocidadRealFromElapsed === 'function') {
-    try {
-      await cronoModule.actualizarVelocidadRealFromElapsed({
-        ms: effectiveElapsed,
-        currentText: nextText,
-        contarTexto,
-        obtenerSeparadoresDeNumeros,
-        formatearNumero,
-        idiomaActual,
-        realWpmDisplay
-      });
-      lastComputedElapsedForWpm = effectiveElapsed;
-    } catch (err) {
-      log.error('Error recomputing real WPM after text change:', err);
-    }
-  }
-}
-
 function setCurrentTextAndUpdateUI(text, options = {}) {
   const previousText = currentText;
   const nextText = normalizeText(text);
   currentText = nextText;
   updatePreviewAndResults(nextText);
   if (options.applyRules) {
-    applyTextChangeRules(previousText, nextText).catch((err) => {
-      log.error('Error applying text-change stopwatch rules:', err);
-    });
+    if (cronoController && typeof cronoController.handleTextChange === 'function') {
+      cronoController.handleTextChange(previousText, nextText);
+    }
   }
 }
 
@@ -325,26 +288,8 @@ function setCurrentTextAndUpdateUI(text, options = {}) {
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
     try {
-      const res = cronoModule.handleCronoState({
-        state,
-        cronoDisplay,
-        cronoEditing,
-        tToggle,
-        realWpmDisplay,
-        currentText,
-        contarTexto,
-        obtenerSeparadoresDeNumeros,
-        formatearNumero,
-        idiomaActual,
-        prevRunning,
-        lastComputedElapsedForWpm,
-        ...getCronoLabels()
-      });
-      if (res) {
-        elapsed = res.elapsed;
-        running = res.running;
-        prevRunning = res.prevRunning;
-        lastComputedElapsedForWpm = res.lastComputedElapsedForWpm;
+      if (cronoController && typeof cronoController.handleState === 'function') {
+        cronoController.handleState(state);
       }
     } catch (err) {
       log.error('Error handling crono-state in renderer:', err);
@@ -1162,33 +1107,8 @@ btnResetDefaultPresets.addEventListener('click', async () => {
 
 // ======================= STOPWATCH =======================
 const cronoDisplay = document.getElementById('cronoDisplay');
-
-// Prevent main broadcasts from overwriting the current edit
-if (cronoDisplay) {
-  cronoDisplay.addEventListener('focus', () => {
-    cronoEditing = true;
-  });
-  cronoDisplay.addEventListener('blur', () => {
-    // The blur event will execute applyManualTime (already registered) which will update the stopwatch in main
-    cronoEditing = false;
-  });
-}
-
 const tToggle = document.getElementById('cronoToggle');
 const tReset = document.getElementById('cronoReset');
-
-// Local mirror of the stopwatch state (synchronized from main via onCronoState)
-let elapsed = 0;
-let running = false;
-// Flag to detect transitions and prevent continuous recalculations
-let prevRunning = false;
-// Indicates if the user is manually editing the crono field (to prevent overwriting)
-let cronoEditing = false;
-// Baseline elapsed/display captured on focus to avoid losing fractional seconds if unchanged
-let cronoBaselineElapsed = null;
-let cronoBaselineDisplay = null;
-// Last elapsed for which we calculate WPM (avoid repeated recalculations)
-let lastComputedElapsedForWpm = null;
 
 function showeditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
@@ -1207,118 +1127,29 @@ const getCronoLabels = () => ({
   pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
 });
 
-const uiResetCrono = () => {
-  elapsed = 0;
-  running = false;
-  prevRunning = false;
-  const { playLabel } = getCronoLabels();
-  cronoModule.uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel });
-};
-
-tToggle.addEventListener('click', () => {
-  if (window.electronAPI && typeof window.electronAPI.sendCronoToggle === 'function') {
-    window.electronAPI.sendCronoToggle();
+const initCronoController = () => {
+  if (!cronoModule || typeof cronoModule.createController !== 'function') {
+    log.warn('[renderer] RendererCrono.createController not available');
+    return;
   }
-});
-
-tReset.addEventListener('click', () => {
-  if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
-    window.electronAPI.sendCronoReset();
-  }
-});
-
-// --- Floating window control (FW) ---
-// Open FW
-const openFlotante = async () => {
-  const res = await cronoModule.openFlotante({
+  const labels = getCronoLabels();
+  cronoController = cronoModule.createController({
+    elements: { cronoDisplay, tToggle, tReset, realWpmDisplay, toggleVF },
     electronAPI: window.electronAPI,
-    toggleVF,
-    cronoDisplay,
-    cronoEditing,
-    tToggle,
-    ...getCronoLabels(),
-    setElapsedRunning: (elapsedVal, runningVal) => {
-      elapsed = elapsedVal;
-      running = runningVal;
-    }
-  });
-  if (res && typeof res.elapsed === 'number') {
-    lastComputedElapsedForWpm = res.elapsed;
-    prevRunning = running;
-  }
-};
-
-const closeFlotante = async () => {
-  await cronoModule.closeFlotante({ electronAPI: window.electronAPI, toggleVF });
-};
-
-// toggle WF from the UI (switch)
-if (toggleVF) {
-  toggleVF.addEventListener('change', async () => {
-    const wantOpen = !!toggleVF.checked;
-    // Optimistic: reflect aria-checked immediately
-    toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
-
-    if (wantOpen) {
-      await openFlotante();
-      // openFlotante handles revert in case of error
-    } else {
-      await closeFlotante();
-    }
-  });
-}
-
-// If the flotante is closed from main (or destroyed), we clean it up
-if (window.electronAPI && typeof window.electronAPI.onFlotanteClosed === 'function') {
-  window.electronAPI.onFlotanteClosed(() => {
-    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
-  });
-}
-
-// ======================= Manual stopwatch editing =======================
-const applyManualTime = () => {
-  cronoModule.applyManualTime({
-    value: cronoDisplay.value,
-    cronoDisplay,
-    electronAPI: window.electronAPI,
-    currentText,
     contarTexto,
     obtenerSeparadoresDeNumeros,
     formatearNumero,
-    idiomaActual,
-    realWpmDisplay,
-    ...getCronoLabels(),
-    setElapsed: (msVal) => {
-      if (typeof msVal === 'number') {
-        elapsed = msVal;
-      }
-      return elapsed;
-    },
-    setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; },
-    running,
-    baselineElapsed: cronoBaselineElapsed,
-    baselineDisplay: cronoBaselineDisplay
+    getIdiomaActual: () => idiomaActual,
+    getCurrentText: () => currentText,
+    playLabel: labels.playLabel,
+    pauseLabel: labels.pauseLabel
   });
-  cronoBaselineElapsed = null;
-  cronoBaselineDisplay = null;
+  if (cronoController && typeof cronoController.bind === 'function') {
+    cronoController.bind();
+  }
+  if (cronoController && typeof cronoController.updateLabels === 'function') {
+    cronoController.updateLabels(labels);
+  }
 };
 
-if (cronoDisplay) {
-  cronoDisplay.addEventListener('focus', () => {
-    cronoEditing = true;
-    cronoBaselineElapsed = elapsed;
-    cronoBaselineDisplay = cronoDisplay.value;
-  });
-
-  cronoDisplay.addEventListener('blur', () => {
-    cronoEditing = false;
-    applyManualTime();
-  });
-
-  cronoDisplay.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      cronoDisplay.blur();
-    }
-  });
-}
+initCronoController();

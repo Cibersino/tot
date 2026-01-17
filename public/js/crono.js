@@ -44,6 +44,15 @@
     return 0;
   }
 
+  async function safeRecomputeRealWpm(payload) {
+    try {
+      return await actualizarVelocidadRealFromElapsed(payload);
+    } catch (err) {
+      log.error('Error updating real WPM:', err);
+      return 0;
+    }
+  }
+
   function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel = '>' }) {
     if (cronoDisplay) cronoDisplay.value = '00:00:00';
     if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
@@ -174,7 +183,7 @@
     const fallbackLocal = async () => {
       if (typeof setElapsed === 'function') setElapsed(msRounded);
       if (cronoDisplay) cronoDisplay.value = formatCrono(msRounded);
-      await actualizarVelocidadRealFromElapsed({
+      await safeRecomputeRealWpm({
         ms: msRounded,
         currentText,
         contarTexto,
@@ -190,7 +199,7 @@
       try {
         await electronAPI.setCronoElapsed(msRounded);
         if (cronoDisplay) cronoDisplay.value = formatCrono(msRounded);
-        await actualizarVelocidadRealFromElapsed({
+        await safeRecomputeRealWpm({
           ms: msRounded,
           currentText,
           contarTexto,
@@ -244,7 +253,7 @@
     let updatedLast = lastComputedElapsedForWpm;
     const becamePaused = prevRunning === true && newRunning === false;
     if (becamePaused) {
-      actualizarVelocidadRealFromElapsed({
+      void safeRecomputeRealWpm({
         ms: newElapsed,
         currentText,
         contarTexto,
@@ -256,7 +265,7 @@
       updatedLast = newElapsed;
     } else if (!newRunning) {
       if (updatedLast === null || updatedLast !== newElapsed) {
-        actualizarVelocidadRealFromElapsed({
+        void safeRecomputeRealWpm({
           ms: newElapsed,
           currentText,
           contarTexto,
@@ -282,6 +291,251 @@
     };
   }
 
+  function createController(options = {}) {
+    const elements = options.elements || {};
+    const electronAPI = options.electronAPI || null;
+
+    const deps = {
+      contarTexto: options.contarTexto,
+      obtenerSeparadoresDeNumeros: options.obtenerSeparadoresDeNumeros,
+      formatearNumero: options.formatearNumero,
+      getIdiomaActual: typeof options.getIdiomaActual === 'function' ? options.getIdiomaActual : () => null,
+      getCurrentText: typeof options.getCurrentText === 'function' ? options.getCurrentText : () => '',
+    };
+
+    let playLabel = (typeof options.playLabel === 'string') ? options.playLabel : '>';
+    let pauseLabel = (typeof options.pauseLabel === 'string') ? options.pauseLabel : '||';
+
+    let elapsed = 0;
+    let running = false;
+    let prevRunning = false;
+    let lastComputedElapsedForWpm = null;
+    let cronoEditing = false;
+    let baselineElapsed = null;
+    let baselineDisplay = null;
+    let bound = false;
+
+    const getIdiomaActual = () => deps.getIdiomaActual();
+    const getCurrentText = () => deps.getCurrentText();
+
+    const resetLocalState = () => {
+      elapsed = 0;
+      running = false;
+      prevRunning = false;
+      lastComputedElapsedForWpm = 0;
+      uiResetCrono({
+        cronoDisplay: elements.cronoDisplay,
+        realWpmDisplay: elements.realWpmDisplay,
+        tToggle: elements.tToggle,
+        playLabel
+      });
+    };
+
+    const updateLabels = (labels = {}) => {
+      if (typeof labels.playLabel === 'string') playLabel = labels.playLabel;
+      if (typeof labels.pauseLabel === 'string') pauseLabel = labels.pauseLabel;
+      if (elements.tToggle) elements.tToggle.textContent = running ? pauseLabel : playLabel;
+    };
+
+    const updateDeps = (next = {}) => {
+      if (next.contarTexto) deps.contarTexto = next.contarTexto;
+      if (next.obtenerSeparadoresDeNumeros) deps.obtenerSeparadoresDeNumeros = next.obtenerSeparadoresDeNumeros;
+      if (next.formatearNumero) deps.formatearNumero = next.formatearNumero;
+      if (typeof next.getIdiomaActual === 'function') deps.getIdiomaActual = next.getIdiomaActual;
+      if (typeof next.getCurrentText === 'function') deps.getCurrentText = next.getCurrentText;
+    };
+
+    const handleState = (state) => {
+      const res = handleCronoState({
+        state,
+        cronoDisplay: elements.cronoDisplay,
+        cronoEditing,
+        tToggle: elements.tToggle,
+        realWpmDisplay: elements.realWpmDisplay,
+        currentText: getCurrentText(),
+        contarTexto: deps.contarTexto,
+        obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
+        formatearNumero: deps.formatearNumero,
+        idiomaActual: getIdiomaActual(),
+        prevRunning,
+        lastComputedElapsedForWpm,
+        playLabel,
+        pauseLabel
+      });
+      if (res) {
+        elapsed = res.elapsed;
+        running = res.running;
+        prevRunning = res.prevRunning;
+        lastComputedElapsedForWpm = res.lastComputedElapsedForWpm;
+      }
+    };
+
+    const handleTextChange = async (previousText, nextText) => {
+      try {
+        if (previousText === nextText) return;
+
+        if (!nextText) {
+          try {
+            if (electronAPI && typeof electronAPI.sendCronoReset === 'function') {
+              electronAPI.sendCronoReset();
+            }
+          } catch (err) {
+            log.error('Error requesting stopwatch reset after empty text:', err);
+          } finally {
+            resetLocalState();
+          }
+          return;
+        }
+
+        if (running) return;
+
+        if (!(typeof elapsed === 'number' && elapsed > 0)) return;
+        if (!deps.contarTexto || !deps.obtenerSeparadoresDeNumeros || !deps.formatearNumero) return;
+
+        await safeRecomputeRealWpm({
+          ms: elapsed,
+          currentText: nextText,
+          contarTexto: deps.contarTexto,
+          obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
+          formatearNumero: deps.formatearNumero,
+          idiomaActual: getIdiomaActual(),
+          realWpmDisplay: elements.realWpmDisplay
+        });
+        lastComputedElapsedForWpm = elapsed;
+      } catch (err) {
+        log.error('Error applying text-change stopwatch rules:', err);
+      }
+    };
+
+    const openFlotanteWindow = async () => {
+      const res = await openFlotante({
+        electronAPI,
+        toggleVF: elements.toggleVF,
+        cronoDisplay: elements.cronoDisplay,
+        cronoEditing,
+        tToggle: elements.tToggle,
+        setElapsedRunning: (elapsedVal, runningVal) => {
+          elapsed = elapsedVal;
+          running = runningVal;
+        },
+        playLabel,
+        pauseLabel
+      });
+      if (res && typeof res.elapsed === 'number') {
+        lastComputedElapsedForWpm = res.elapsed;
+        prevRunning = running;
+      }
+      return res;
+    };
+
+    const closeFlotanteWindow = async () => {
+      await closeFlotante({ electronAPI, toggleVF: elements.toggleVF });
+    };
+
+    const bind = () => {
+      if (bound) return;
+      bound = true;
+
+      if (elements.tToggle) {
+        elements.tToggle.addEventListener('click', () => {
+          if (electronAPI && typeof electronAPI.sendCronoToggle === 'function') {
+            electronAPI.sendCronoToggle();
+          }
+        });
+      }
+
+      if (elements.tReset) {
+        elements.tReset.addEventListener('click', () => {
+          if (electronAPI && typeof electronAPI.sendCronoReset === 'function') {
+            electronAPI.sendCronoReset();
+          }
+        });
+      }
+
+      if (elements.toggleVF) {
+        elements.toggleVF.addEventListener('change', async () => {
+          const wantOpen = !!elements.toggleVF.checked;
+          elements.toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
+
+          if (wantOpen) {
+            await openFlotanteWindow();
+          } else {
+            await closeFlotanteWindow();
+          }
+        });
+      }
+
+      if (electronAPI && typeof electronAPI.onFlotanteClosed === 'function') {
+        electronAPI.onFlotanteClosed(() => {
+          if (elements.toggleVF) {
+            elements.toggleVF.checked = false;
+            elements.toggleVF.setAttribute('aria-checked', 'false');
+          }
+        });
+      }
+
+      if (elements.cronoDisplay) {
+        elements.cronoDisplay.addEventListener('focus', () => {
+          cronoEditing = true;
+          baselineElapsed = elapsed;
+          baselineDisplay = elements.cronoDisplay.value;
+        });
+
+        elements.cronoDisplay.addEventListener('blur', () => {
+          cronoEditing = false;
+          void applyManualTime({
+            value: elements.cronoDisplay.value,
+            cronoDisplay: elements.cronoDisplay,
+            cronoModule: window.RendererCrono,
+            electronAPI,
+            currentText: getCurrentText(),
+            contarTexto: deps.contarTexto,
+            obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
+            formatearNumero: deps.formatearNumero,
+            idiomaActual: getIdiomaActual(),
+            realWpmDisplay: elements.realWpmDisplay,
+            setElapsed: (msVal) => {
+              if (typeof msVal === 'number') {
+                elapsed = msVal;
+              }
+              return elapsed;
+            },
+            setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; },
+            running,
+            baselineElapsed,
+            baselineDisplay
+          });
+          baselineElapsed = null;
+          baselineDisplay = null;
+        });
+
+        elements.cronoDisplay.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            elements.cronoDisplay.blur();
+          }
+        });
+      }
+    };
+
+    updateLabels({ playLabel, pauseLabel });
+
+    return {
+      bind,
+      handleState,
+      handleTextChange,
+      updateLabels,
+      updateDeps,
+      getState: () => ({
+        elapsed,
+        running,
+        prevRunning,
+        lastComputedElapsedForWpm,
+        cronoEditing
+      })
+    };
+  }
+
   window.RendererCrono = {
     formatCrono,
     parseCronoInput,
@@ -290,6 +544,7 @@
     openFlotante,
     closeFlotante,
     applyManualTime,
-    handleCronoState
+    handleCronoState,
+    createController
   };
 })();
