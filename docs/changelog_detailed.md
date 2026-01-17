@@ -49,6 +49,39 @@ Reglas:
 
 ---
 
+## [Unreleased]
+
+### Resumen de cambios
+
+- El cronómetro deja de resetearse al modificar el texto vigente cuando el resultado queda **no vacío** (Issue #84).
+- El cronómetro **solo** se resetea cuando el texto vigente queda **vacío** (desde cualquier flujo: overwrite/append/vaciar/editor).
+- Se refactoriza el subsistema del cronómetro para reducir acoplamiento y eliminar duplicación de wiring/estado en `public/renderer.js`.
+
+### Arreglado
+
+- Cronómetro:
+  - Ya no se pierde el tiempo acumulado al hacer overwrite/append o aplicar cambios desde el Editor manual si el texto vigente queda no vacío (Issue #84).
+  - Al quedar el texto vigente vacío, el cronómetro se resetea completamente y queda en estado consistente (elapsed=0 y WPM real en estado neutral).
+
+### Cambiado
+
+- Reglas de actualización de WPM real (Issue #84):
+  - En cambios de texto **no vacío**: no hay reset; la velocidad real solo se actualiza inmediatamente si el cronómetro está **pausado** y `elapsed > 0`.
+  - Si `elapsed == 0`, no se recalcula nada (se mantiene estado neutral).
+  - Si el cronómetro está **corriendo**, no se fuerza recalcular en el evento de cambio de texto (se mantiene el pipeline normal de actualización).
+- Refactor cronómetro:
+  - Se mueve el wiring del cronómetro y el “mirror state” del renderer a un controller (`RendererCrono.createController`) en `public/js/crono.js`.
+  - Se estandariza el recompute async con un wrapper seguro (`safeRecomputeRealWpm`) para evitar rechazos no manejados.
+  - Se eliminan listeners duplicados del input del cronómetro en `public/renderer.js` y se centralizan en el controller.
+  - Las reglas por cambio de texto pasan a delegarse al controller (sin que el módulo se adueñe del ciclo de vida del texto).
+
+### Archivos
+
+- `public/renderer.js`
+- `public/js/crono.js`
+
+---
+
 ## [0.1.1] Nuevos idiomas
 
 ### Fecha release y último commit
