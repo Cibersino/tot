@@ -216,6 +216,12 @@ function contarTexto(texto) {
   return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
 }
 
+function normalizeText(value) {
+  if (typeof value === 'string') return value;
+  if (value === null || typeof value === 'undefined') return '';
+  return String(value);
+}
+
 // Helpers to update mode/language from other parts (e.g., menu)
 function setModoConteo(nuevoModo) {
   if (nuevoModo === 'simple' || nuevoModo === 'preciso') {
@@ -231,11 +237,8 @@ if (!getTimeParts || !formatTimeFromWords || !obtenerSeparadoresDeNumeros || !fo
 
 // ======================= Update view and results =======================
 async function updatePreviewAndResults(text) {
-  const previousText = currentText;      // Text before change
-  currentText = text || '';              // New text (normalized)
-  const textChanged = previousText !== currentText;
-
-  const displayText = currentText.replace(/\r?\n/g, '   ');
+  const normalizedText = normalizeText(text);
+  const displayText = normalizedText.replace(/\r?\n/g, '   ');
   const n = displayText.length;
 
   if (n === 0) {
@@ -249,7 +252,7 @@ async function updatePreviewAndResults(text) {
     textPreview.textContent = `${start}... | ...${end}`;
   }
 
-  const stats = contarTexto(currentText);
+  const stats = contarTexto(normalizedText);
   const idioma = idiomaActual; // Cached on startup and updated by listener if applicable
   const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
 
@@ -264,25 +267,57 @@ async function updatePreviewAndResults(text) {
 
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
   resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
+}
 
-  // If detect that the text has changed from the previous state -> reset the crono in main
-  if (textChanged) {
+async function applyTextChangeRules(previousText, nextText) {
+  if (previousText === nextText) return;
+
+  if (!nextText) {
     try {
       if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
-        // We ask main to reset the crono (authority). We also perform an immediate UI reset.
         window.electronAPI.sendCronoReset();
-        uiResetCrono();
-        lastComputedElapsedForWpm = 0;
-      } else {
-        // Local fallback if no IPC (rare)
-        uiResetCrono();
-        lastComputedElapsedForWpm = 0;
       }
     } catch (err) {
-      log.error('Error requesting stopwatch reset after text change:', err);
+      log.error('Error requesting stopwatch reset after empty text:', err);
+    } finally {
       uiResetCrono();
       lastComputedElapsedForWpm = 0;
     }
+    return;
+  }
+
+  if (running) return;
+
+  const effectiveElapsed = (typeof elapsed === 'number' && elapsed > 0) ? elapsed : 0;
+  if (effectiveElapsed === 0) return;
+
+  if (cronoModule && typeof cronoModule.actualizarVelocidadRealFromElapsed === 'function') {
+    try {
+      await cronoModule.actualizarVelocidadRealFromElapsed({
+        ms: effectiveElapsed,
+        currentText: nextText,
+        contarTexto,
+        obtenerSeparadoresDeNumeros,
+        formatearNumero,
+        idiomaActual,
+        realWpmDisplay
+      });
+      lastComputedElapsedForWpm = effectiveElapsed;
+    } catch (err) {
+      log.error('Error recomputing real WPM after text change:', err);
+    }
+  }
+}
+
+function setCurrentTextAndUpdateUI(text, options = {}) {
+  const previousText = currentText;
+  const nextText = normalizeText(text);
+  currentText = nextText;
+  updatePreviewAndResults(nextText);
+  if (options.applyRules) {
+    applyTextChangeRules(previousText, nextText).catch((err) => {
+      log.error('Error applying text-change stopwatch rules:', err);
+    });
   }
 }
 
@@ -352,12 +387,12 @@ const loadPresets = async () => {
   try {
     // Get current initial text (if any)
     const t = await window.electronAPI.getCurrentText();
-    updatePreviewAndResults(t || '');
+    setCurrentTextAndUpdateUI(t || '', { applyRules: true });
 
     // Subscription to updates from main (modal)
     if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
       window.electronAPI.onCurrentTextUpdated((text) => {
-        updatePreviewAndResults(text || '');
+        setCurrentTextAndUpdateUI(text || '', { applyRules: true });
       });
     }
 
@@ -393,7 +428,7 @@ const loadPresets = async () => {
     await loadPresets();
 
     // Update the final view with the possible initial WPM
-    updatePreviewAndResults(t || '');
+    updatePreviewAndResults(currentText);
 
     // --- Listener for settings changes from main/preload (optional) ---
     // If main/preload exposes an event, we use it to keep settingsCache and currentLanguage updated.
@@ -877,7 +912,7 @@ btnOverwriteClipboard.addEventListener('click', async () => {
       throw new Error(resp.error || 'set-current-text failed');
     }
 
-    updatePreviewAndResults(resp && resp.text ? resp.text : clip);
+    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : clip, { applyRules: true });
     if (resp && resp.truncated) {
       Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
@@ -928,7 +963,7 @@ btnAppendClipboard.addEventListener('click', async () => {
       throw new Error(resp.error || 'set-current-text failed');
     }
 
-    updatePreviewAndResults(resp && resp.text ? resp.text : newFull);
+    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : newFull, { applyRules: true });
 
     // Notify truncation only if main confirms it
     if (resp && resp.truncated) {
@@ -958,7 +993,7 @@ btnEmptyMain.addEventListener('click', async () => {
       meta: { source: 'main-window', action: 'overwrite' }
     });
 
-    updatePreviewAndResults(resp && resp.text ? resp.text : '');
+    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : '', { applyRules: true });
     if (window.electronAPI && typeof window.electronAPI.forceClearEditor === 'function') {
       try { await window.electronAPI.forceClearEditor(); } catch (err) { log.error('Error invoking forceClearEditor:', err); }
     }
