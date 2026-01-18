@@ -139,6 +139,11 @@
         "section_full_body": "In Arbeit.",
         "section_faq_title": "Häufig gestellte Fragen (FAQ)",
         "section_faq_body": "In Arbeit."
+      },
+      "links_interes": {
+        "app_name": "toT — Reading Meter",
+        "title": "Nützliche Links",
+        "section_biblio_label": "Bibliografische Referenzen"
       }
     }
   }
