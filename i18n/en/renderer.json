@@ -128,9 +128,25 @@
       "process_error": "An error occurred while processing the preset. Check console."
     },
     "info": {
+      "external": {
+        "blocked": "Link blocked",
+        "missing": "Link not found",
+        "error": "Error opening link"
+      },
+      "appdoc": {
+        "blocked": "Document blocked",
+        "missing": "Document not found",
+        "error": "Error opening document"
+      },
       "acerca_de": {
         "app_name": "toT — Reading Meter",
-        "title": "About"
+        "title": "About",
+        "version": {
+          "unavailable": "Unavailable"
+        },
+        "env": {
+          "unavailable": "Unavailable"
+        }
       },
       "instrucciones": {
         "app_name": "toT — Reading Meter",
