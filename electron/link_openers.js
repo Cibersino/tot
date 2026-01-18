@@ -10,6 +10,7 @@ const ALLOWED_EXTERNAL_HOSTS = new Set([
   'www.github.com',
   'api.github.com',
   'raw.githubusercontent.com',
+  'doi.org',
 ]);
 const APP_DOC_FILES = Object.freeze({
   'license-app': 'LICENSE',

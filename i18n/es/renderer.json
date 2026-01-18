@@ -77,7 +77,7 @@
       "clear": "🗑",
       "clear_title": "Vaciar"
     },
-    "alerts": {   
+    "alerts": {
       "clipboard_too_large": "El texto del portapapeles es demasiado grande para procesarlo. Redúcelo e inténtalo de nuevo.",
       "append_too_large": "El texto resultante es demasiado grande para procesarlo. Redúcelo e inténtalo de nuevo.",
       "clipboard_overflow": "El texto del portapapeles excede el tamaño máximo permitido y fue truncado.",
@@ -124,7 +124,7 @@
     "preset_alerts": {
       "name_empty": "El nombre no puede estar vacío.",
       "wpm_invalid": "WPM debe ser un número entre 50 y 500.",
-      "create_error": "Ocurrió un error al crear el preset. Revisa la consola.",      
+      "create_error": "Ocurrió un error al crear el preset. Revisa la consola.",
       "edit_error": "Ocurrió un error al editar el preset. Revisa la consola.",
       "process_error": "Ocurrió un error al procesar el preset. Revisa la consola."
     },
@@ -147,6 +147,11 @@
         "section_full_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. ",
         "section_faq_title": "Preguntas frecuentes (FAQ)",
         "section_faq_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. "
+      },
+      "links_interes": {
+        "app_name": "toT — Reading Meter",
+        "title": "Links de interés",
+        "section_biblio_label": "Referencias bibliográficas"
       }
     }
   }
