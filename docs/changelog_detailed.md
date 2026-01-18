@@ -104,6 +104,7 @@ Reglas:
 - Se refactoriza `public/editor.js` para un manejo más robusto de selección/caret y sincronización con main; incluye el fix del caret al pegar.
 - Se ajustan detalles de UX (nota de la ventana de idioma, símbolo del botón de editor) y el comportamiento de preview para textos cortos.
 - Se alinea el identificador de acción del menú para el “cargador de imágenes” y se actualizan claves i18n asociadas.
+- Se completan y normalizan claves i18n faltantes (ES/EN) detectadas por auditoría: errores de lista de idiomas (`main.menu.language.*`), mensajes del info modal (`renderer.info.external.*` / `renderer.info.appdoc.*`) y fallbacks del modal “Acerca de” (`renderer.info.acerca_de.*`).
 
 ### Agregado
 
@@ -115,6 +116,12 @@ Reglas:
   - `pt` — Português
 - Paquetes i18n para cada idioma nuevo:
   - `i18n/<tag>/main.json`, `i18n/<tag>/renderer.json`, `i18n/<tag>/numberFormat.json`.
+- i18n:
+  - Se agregan traducciones faltantes para:
+    - `main.menu.language.empty`, `main.menu.language.invalid`
+    - `renderer.info.external.{blocked,missing,error}`
+    - `renderer.info.appdoc.{blocked,missing,error}`
+    - `renderer.info.acerca_de.version.unavailable`, `renderer.info.acerca_de.env.unavailable`
 - Documentación de pruebas manuales:
   - `docs/test_suite.md` (Issue #65).
   - Referenciada en `docs/release_checklist.md` como parte de las pruebas pre-release.
@@ -134,6 +141,7 @@ Reglas:
 - i18n:
   - Ajustes de copy (puntuación, tooltips y mensajes WIP) en `es`, `es-cl` y `en`.
   - Textos del menú en `es-cl` ajustados para herramientas (p. ej. “chupaletras…”).
+  - Se alinea el namespace del modal “Acerca de”: `renderer.about.*` → `renderer.info.acerca_de.*` (incluye ajuste de referencias en `public/renderer.js`).
 - Constantes:
   - Comentarios explicativos agregados en constantes relevantes:
     - `electron/constants_main.js`
@@ -160,7 +168,7 @@ Reglas:
 
 - i18n:
   - `i18n/languages.json`
-  - `i18n/{arn,de,fr,it,pt}/(main.json|renderer.json|numberFormat.json)`
+  - `i18n/{es,en,arn,de,fr,it,pt}/(main.json|renderer.json|numberFormat.json)`
   - Ajustes en: `i18n/es/main.json`, `i18n/es/renderer.json`, `i18n/es/es-cl/main.json`, `i18n/es/es-cl/renderer.json`, `i18n/en/renderer.json`
 - UI / renderer:
   - `public/index.html`
