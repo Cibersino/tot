@@ -29,7 +29,11 @@
       "desarrollo": "Development",
       "recargar": "Reload",
       "forcereload": "Force reload",
-      "toggle_devtools": "Toggle DevTools"
+      "toggle_devtools": "Toggle DevTools",
+      "language": {
+        "empty": "No languages available",
+        "invalid": "Invalid language list"
+      }
     },
     "dialog": {
       "ok": "OK",
