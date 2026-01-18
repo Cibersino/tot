@@ -139,6 +139,11 @@
         "section_full_body": "Lavoro in corso.",
         "section_faq_title": "Domande frequenti (FAQ)",
         "section_faq_body": "Lavoro in corso."
+      },
+      "links_interes": {
+        "app_name": "toT — Reading Meter",
+        "title": "Link di interesse",
+        "section_biblio_label": "Riferimenti bibliografici"
       }
     }
   }

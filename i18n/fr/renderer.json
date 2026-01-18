@@ -139,6 +139,11 @@
         "section_full_body": "Nous travaillons pour vous.",
         "section_faq_title": "Foire aux questions (FAQ)",
         "section_faq_body": "Nous travaillons pour vous."
+      },
+      "links_interes": {
+        "app_name": "toT — Reading Meter",
+        "title": "Liens d'intérêt",
+        "section_biblio_label": "Références bibliographiques"
       }
     }
   }
