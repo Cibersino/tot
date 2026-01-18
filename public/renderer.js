@@ -750,9 +750,9 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('discord', () => {
       Notify.notifyMain('renderer.alerts.wip_discord'); // WIP
     });
-    window.menuActions.registerMenuAction('links_interes', () => {
-      Notify.notifyMain('renderer.alerts.wip_links_interes'); // WIP
-    });
+
+    window.menuActions.registerMenuAction('links_interes', () => { showInfoModal('links_interes') });
+
     window.menuActions.registerMenuAction('colabora', () => {
       Notify.notifyMain('renderer.alerts.wip_colabora'); // WIP
     });
