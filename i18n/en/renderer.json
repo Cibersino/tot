@@ -40,10 +40,10 @@
       },
       "tips": {
         "results_help": {
-          "tip1": "Tip: Precise mode uses Intl.Segmenter; results may differ slightly from Simple.",
-          "tip2": "Tip: You can switch between Simple/Precise and results update immediately.",
-          "tip3": "Tip: WPM presets persist between sessions; adjust WPM to match your real reading speed.",
-          "tip4": "Tip: Use the manual editor to validate counts when working with long texts."
+          "tip1": "The precise mode uses Intl.Segmenter to analyze the text according to each language.",
+          "tip2": "When manually entering a time into the stopwatch, the invisible fractions of a second are eliminated.",
+          "tip3": "'You have invented an elixir not of memory, but of reminding' (Plato)",
+          "tip4": "'Writing requires a double abstraction: abstraction from the sound of speech and abstraction from the interlocutor.' (Vygotsky)"
         }
       },
       "crono": {

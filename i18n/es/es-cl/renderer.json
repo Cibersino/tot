@@ -37,14 +37,6 @@
         "chars": "Letras totales: {n}",
         "precise_mode": "Modo fino",
         "precise_tooltip": "Contar de forma pulenta y elegante"
-      },
-      "tips": {
-        "results_help": {
-          "tip1": "Tip: El modo Fino es más pulento; los conteos pueden variar un poco respecto al Modo Básico.",
-          "tip2": "Tip: Podís cambiar entre Básico/Fino y el conteo se actualiza al toque.",
-          "tip3": "Tip: Los presets de WPM quedan guardaos; ajustalos pa' que reflejen tu ritmo real.",
-          "tip4": "Tip: Usa el editor manual pa' chequear los conteos en textos largos."
-        }
       },      
       "crono": {
         "title": "CRONÓMETRO DE LUJO",

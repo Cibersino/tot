@@ -40,10 +40,10 @@
       },
       "tips": {
         "results_help": {
-          "tip1": "Tip: El modo Preciso usa Intl.Segmenter; los resultados pueden variar levemente respecto a Simple.",
-          "tip2": "Tip: Puedes alternar entre Simple/Preciso y los resultados se actualizan de inmediato.",
-          "tip3": "Tip: Los presets de WPM se guardan entre sesiones; ajusta WPM para reflejar tu velocidad real.",
-          "tip4": "Tip: Usa el Editor manual para validar conteos cuando trabajes con textos largos."
+          "tip1": "El modo preciso utiliza Intl.Segmenter analizando el texto de acuerdo a cada idioma.",
+          "tip2": "Al insertar manualmente un tiempo en el cronómetro, se eliminan las fracciones de segundo invisibles.",
+          "tip3": "'No es, pues, un fármaco de la memoria lo que has hallado, sino un simple recordatorio.' (Platón)",
+          "tip4": "'El habla escrita exige una doble abstracciónción: del aspecto sonoro del lenguaje y del interlocutor.' (Vigotski)"
         }
       },
       "crono": {
