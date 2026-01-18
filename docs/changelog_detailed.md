@@ -56,6 +56,8 @@ Reglas:
 - El cronómetro deja de resetearse al modificar el texto vigente cuando el resultado queda **no vacío** (Issue #84).
 - El cronómetro **solo** se resetea cuando el texto vigente queda **vacío** (desde cualquier flujo: overwrite/append/vaciar/editor).
 - Se refactoriza el subsistema del cronómetro para reducir acoplamiento y eliminar duplicación de wiring/estado en `public/renderer.js`.
+- Se habilita el info modal **“Links de interés”** (Issue #83): nuevo `public/info/links_interes.html` con referencia + DOI de Brysbaert (2019), y el menú deja de mostrar WIP.
+- Se incorpora i18n del modal para **todos los idiomas disponibles** (keys `renderer.info.links_interes.*`).
 
 ### Arreglado
 
@@ -74,11 +76,17 @@ Reglas:
   - Se estandariza el recompute async con un wrapper seguro (`safeRecomputeRealWpm`) para evitar rechazos no manejados.
   - Se eliminan listeners duplicados del input del cronómetro en `public/renderer.js` y se centralizan en el controller.
   - Las reglas por cambio de texto pasan a delegarse al controller (sin que el módulo se adueñe del ciclo de vida del texto).
+- Info modal “Links de interés” (Issue #83):
+  - La acción de menú `links_interes` ahora abre `showInfoModal('links_interes')` (en lugar de notificación WIP).
+  - Allowlist de links externos: se permite `doi.org` para abrir el DOI desde el modal.
 
 ### Archivos
 
 - `public/renderer.js`
 - `public/js/crono.js`
+- `public/info/links_interes.html`
+- `electron/link_openers.js`
+- i18n: keys `renderer.info.links_interes.*` en `i18n/**/renderer.json` (todos los idiomas disponibles).
 
 ---
 
