@@ -40,7 +40,7 @@
       },
       "tips": {
         "results_help": {
-          "tip1": "The precise mode uses Intl.Segmenter to analyze the text according to each language.",
+          "tip1": "Precise mode uses Unicode segmentation to count characters (graphemes) and words using Intl.Segmenter.",
           "tip2": "When manually entering a time into the stopwatch, the invisible fractions of a second are eliminated.",
           "tip3": "'You have invented an elixir not of memory, but of reminding' (Plato)",
           "tip4": "'Writing requires a double abstraction: abstraction from the sound of speech and abstraction from the interlocutor.' (Vygotsky)"
