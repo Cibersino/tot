@@ -42,8 +42,11 @@
         "results_help": {
           "tip1": "El modo preciso usa segmentación Unicode para contar caracteres (grafemas) y palabras mediante Intl.Segmenter.",
           "tip2": "Al insertar manualmente un tiempo en el cronómetro, se eliminan las fracciones de segundo invisibles.",
-          "tip3": "'No es, pues, un fármaco de la memoria lo que has hallado, sino un simple recordatorio.' (Platón)",
-          "tip4": "'El habla escrita exige una doble abstracción: del aspecto sonoro del lenguaje y del interlocutor.' (Vigotski)"
+          "tip3": "Para seleccionar todo el texto de un área usa Ctrl + A (Windows y Linux) o Command(⌘) + A (Mac).",
+          "tip4": "Puedes seleccionar un texto seleccionando primero el texto de uno de los extremos y, con Shift apretado, hacer clic en el otro extremo.",
+          "tip5": "Un libro estándar suele contener entre 250 a 300 palabras por página (esto solo aplica a idiomas que utilizan alfabeto latino, o derivados cercanos, y con una estructura gramatical similar).",
+          "tip6": "'No es, pues, un fármaco de la memoria lo que has hallado, sino un simple recordatorio.' (Platón)",
+          "tip7": "'El habla escrita exige una doble abstracción: del aspecto sonoro del lenguaje y del interlocutor.' (Vigotski)"
         }
       },
       "crono": {
