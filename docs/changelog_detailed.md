@@ -51,6 +51,8 @@ Reglas:
 
 ## [Unreleased]
 
+## [Unreleased]
+
 ### Resumen de cambios
 
 - El cronómetro deja de resetearse al modificar el texto vigente cuando el resultado queda **no vacío** (Issue #84).
@@ -58,12 +60,16 @@ Reglas:
 - Se refactoriza el subsistema del cronómetro para reducir acoplamiento y eliminar duplicación de wiring/estado en `public/renderer.js`.
 - Se habilita el info modal **“Links de interés”** (Issue #83): nuevo `public/info/links_interes.html` con referencia + DOI de Brysbaert (2019), y el menú deja de mostrar WIP.
 - Se incorpora i18n del modal para **todos los idiomas disponibles** (keys `renderer.info.links_interes.*`).
+- El modo **Preciso** corrige el conteo de compuestos con guion (Issue #85): `e-mail`, `co-operate` y similares pasan a contar como **1 palabra**.
 
 ### Arreglado
 
-- Cronómetro:
-  - Ya no se pierde el tiempo acumulado al hacer overwrite/append o aplicar cambios desde el Editor manual si el texto vigente queda no vacío (Issue #84).
+- Cronómetro (Issue #84):
+  - Ya no se pierde el tiempo acumulado al hacer overwrite/append o aplicar cambios desde el Editor manual si el texto vigente queda no vacío.
   - Al quedar el texto vigente vacío, el cronómetro se resetea completamente y queda en estado consistente (elapsed=0 y WPM real en estado neutral).
+- Conteo (modo Preciso) — compuestos con guion (Issue #85):
+  - Se implementa regla **“alnum join”**: se cuentan como **una sola palabra** secuencias alfa-numéricas unidas por guion **sin espacios** (incluye cadenas con múltiples guiones).
+  - Set de guiones aceptados como joiners: `-` (U+002D), `‐` (U+2010), `-` (U+2011), `‒` (U+2012), `–` (U+2013), `−` (U+2212).
 
 ### Cambiado
 
@@ -84,6 +90,7 @@ Reglas:
 
 - `public/renderer.js`
 - `public/js/crono.js`
+- `public/js/count.js`
 - `public/info/links_interes.html`
 - `electron/link_openers.js`
 - i18n: keys `renderer.info.links_interes.*` en `i18n/**/renderer.json` (todos los idiomas disponibles).
