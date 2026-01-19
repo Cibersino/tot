@@ -670,9 +670,13 @@ const loadPresets = async () => {
     }
 
     const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
-    // Modal title: Display the section title (not generic 'Info')
-    const defaultTitle = sectionTitles[key] || (opts.title || 'InformaciA3n');
-    infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
+    // Modal title: manual always uses a fixed label; other pages use i18n when available.
+    if (isManual) {
+      infoModalTitle.textContent = 'Manual de uso';
+    } else {
+      const defaultTitle = sectionTitles[key] || (opts.title || 'Información');
+      infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
+    }
 
     // Open modal
     infoModal.setAttribute('aria-hidden', 'false');
