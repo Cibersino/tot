@@ -10,6 +10,11 @@
     const warnOnce = typeof warnOnceRenderer === 'function' ? warnOnceRenderer : null;
     const logger = log || console;
 
+    const escapeSelector = (value) => {
+      if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(value);
+      return String(value).replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
+    };
+
     container.addEventListener('click', (ev) => {
       try {
         const target = ev.target;
@@ -18,7 +23,36 @@
         if (!link || !container.contains(link)) return;
 
         const rawHref = (link.getAttribute('href') || '').trim();
-        if (!rawHref || rawHref.startsWith('#')) return;
+        if (!rawHref) return;
+
+        if (rawHref.startsWith('#')) {
+          ev.preventDefault();
+          const hash = rawHref.slice(1).trim();
+          const panel = container.closest('.info-modal-panel');
+          if (!hash) {
+            if (panel) {
+              panel.scrollTop = 0;
+            } else {
+              container.scrollTop = 0;
+            }
+            return;
+          }
+          const safeId = escapeSelector(hash);
+          const targetEl = container.querySelector(`#${safeId}`);
+          if (!targetEl) return;
+
+          try {
+            targetEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+          } catch {
+            if (!panel) return;
+            const panelRect = panel.getBoundingClientRect();
+            const targetRect = targetEl.getBoundingClientRect();
+            const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
+            const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
+            panel.scrollTo({ top: finalTop, behavior: 'auto' });
+          }
+          return;
+        }
 
         ev.preventDefault();
 

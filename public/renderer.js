@@ -522,6 +522,14 @@ const loadPresets = async () => {
     }
   }
 
+  async function fetchTextWithFallback(paths) {
+    for (const path of paths) {
+      const html = await fetchText(path);
+      if (html !== null) return { html, path };
+    }
+    return { html: null, path: null };
+  }
+
   // Translate the HTML loaded in the info modal using data-i18n and renderer.info.<key>.*
   function translateInfoHtml(htmlString, key) {
     // If no translation function is available, return the unmodified HTML
@@ -539,6 +547,17 @@ const loadPresets = async () => {
       return doc.body.innerHTML;
     } catch (err) {
       log.warn('translateInfoHtml failed:', err);
+      return htmlString;
+    }
+  }
+
+  function extractInfoBodyHtml(htmlString) {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlString, 'text/html');
+      return doc.body.innerHTML;
+    } catch (err) {
+      log.warn('extractInfoBodyHtml failed:', err);
       return htmlString;
     }
   }
@@ -592,6 +611,34 @@ const loadPresets = async () => {
     }
   }
 
+  const normalizeLangTagSafe = (lang) => {
+    if (window.RendererI18n && typeof window.RendererI18n.normalizeLangTag === 'function') {
+      return window.RendererI18n.normalizeLangTag(lang);
+    }
+    return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
+  };
+
+  const getLangBaseSafe = (lang) => {
+    if (window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function') {
+      return window.RendererI18n.getLangBase(lang);
+    }
+    const normalized = normalizeLangTagSafe(lang);
+    if (!normalized) return '';
+    const idx = normalized.indexOf('-');
+    return idx > 0 ? normalized.slice(0, idx) : normalized;
+  };
+
+  function getManualFileCandidates(langTag) {
+    const candidates = [];
+    const normalized = normalizeLangTagSafe(langTag);
+    const base = getLangBaseSafe(normalized);
+    if (normalized) candidates.push(normalized);
+    if (base && base !== normalized) candidates.push(base);
+    const defaultLang = normalizeLangTagSafe(DEFAULT_LANG);
+    if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
+    return candidates.map(tag => `./info/instrucciones.${tag}.html`);
+  }
+
   async function showInfoModal(key, opts = {}) {
     // key: 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
     const sectionTitles = {
@@ -604,14 +651,16 @@ const loadPresets = async () => {
     if (!infoModal || !infoModalTitle || !infoModalContent) return;
 
     // Decide which file to load based on the key.
-    // Unify basic_guide, instructions, and FAQ in ./info/instructions.html
+    // Unify basic_guide, instructions, and FAQ in the localized manual HTML.
     let fileToLoad = null;
     let sectionId = null;
+    const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
 
     if (key === 'acerca_de') {
       fileToLoad = './info/acerca_de.html';
-    } else if (key === 'guia_basica' || key === 'instrucciones' || key === 'faq') {
-      fileToLoad = './info/instrucciones.html';
+    } else if (isManual) {
+      const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
+      fileToLoad = getManualFileCandidates(langTag);
       // Map key to block ID within instructions.html
       const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
       sectionId = mapping[key] || 'instrucciones';
@@ -629,7 +678,9 @@ const loadPresets = async () => {
     infoModal.setAttribute('aria-hidden', 'false');
 
     // Load HTML
-    const tryHtml = await fetchText(fileToLoad);
+    const tryHtml = Array.isArray(fileToLoad)
+      ? (await fetchTextWithFallback(fileToLoad)).html
+      : await fetchText(fileToLoad);
     if (tryHtml === null) {
       // Fallback: Indicate missing content
       infoModalContent.innerHTML =
@@ -638,9 +689,11 @@ const loadPresets = async () => {
       return;
     }
 
-    // Translate if i18n is loaded and then add content
-    const translatedHtml = translateInfoHtml(tryHtml, translationKey);
-    infoModalContent.innerHTML = translatedHtml;
+    // Translate non-manual info pages; manual HTML is loaded as-is.
+    const renderedHtml = isManual
+      ? extractInfoBodyHtml(tryHtml)
+      : translateInfoHtml(tryHtml, translationKey);
+    infoModalContent.innerHTML = renderedHtml;
     if (typeof bindInfoModalLinks === 'function') {
       bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI, warnOnceRenderer, log });
     }
