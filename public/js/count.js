@@ -33,6 +33,34 @@
     return typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function';
   }
 
+  // Hyphen joiners we accept for "alnum join" in Precise word counting.
+  // This supports common hyphenated compounds and numeric ranges without spaces (e.g., "e-mail", "3–4").
+  const HYPHEN_JOINERS = new Set([
+    '-',        // U+002D hyphen-minus
+    '\u2010',   // U+2010 hyphen
+    '\u2011',   // U+2011 non-breaking hyphen
+    '\u2012',   // U+2012 figure dash
+    '\u2013',   // U+2013 en dash
+    '\u2212'    // U+2212 minus sign
+  ]);
+
+  // "Joinable" segments are alphanumeric-only: letters/digits across Unicode when supported.
+  let RE_ALNUM_ONLY;
+  try {
+    RE_ALNUM_ONLY = /^[\p{L}\p{N}]+$/u;
+  } catch {
+    // Defensive fallback (older JS engines): ASCII only.
+    RE_ALNUM_ONLY = /^[A-Za-z0-9]+$/;
+  }
+
+  function isHyphenJoinerSegment(s) {
+    return typeof s === 'string' && s.length === 1 && HYPHEN_JOINERS.has(s);
+  }
+
+  function isAlnumOnlySegment(s) {
+    return typeof s === 'string' && s.length > 0 && RE_ALNUM_ONLY.test(s);
+  }
+
   /**
    * Fallback "precise" counting when Intl.Segmenter is not available.
    *
@@ -62,6 +90,10 @@
    * - Word segmentation uses `granularity: 'word'` and counts only segments flagged as `isWordLike`,
    *   which excludes pure punctuation/whitespace segments.
    *
+   * Additional policy (UX-oriented):
+   * - "Alnum join" for hyphenated compounds with no spaces: alnum + hyphen + alnum counts as 1 word
+   *   (e.g., "e-mail", "co-operate", "state-of-the-art", "3-4").
+   *
    * Parameters:
    * - texto: input string to count
    * - language: BCP 47 language tag (e.g., "en", "es", "pt-BR"). The segmenter can use it to apply
@@ -80,9 +112,35 @@
     const conEspacios = grafemas.length;
     const sinEspacios = grafemas.filter(g => !/\s/.test(g.segment)).length;
 
-    // Word segmentation: count only "word-like" segments (letters/digits/etc.), excluding punctuation.
+    // Word segmentation: count only "word-like" segments, but apply "alnum join"
+    // for hyphenated compounds: alnum + hyphen + alnum => 1 word (no whitespace).
     const segPal = new Intl.Segmenter(language, { granularity: 'word' });
-    const palabras = [...segPal.segment(texto)].filter(seg => seg.isWordLike).length;
+
+    let palabras = 0;
+    let prevWasJoinableWord = false;  // immediate previous segment was wordlike + alnum-only
+    let pendingHyphenJoin = false;    // immediate previous segment was a joiner hyphen after a joinable word
+
+    for (const seg of segPal.segment(texto)) {
+      if (seg && seg.isWordLike) {
+        const joinable = isAlnumOnlySegment(seg.segment);
+
+        // Merge if the previous segment was a joiner hyphen that directly followed a joinable word,
+        // and the current wordlike segment is also joinable (no whitespace/punct in between).
+        if (!(pendingHyphenJoin && joinable)) {
+          palabras += 1;
+        }
+
+        pendingHyphenJoin = false;
+        prevWasJoinableWord = joinable;
+      } else {
+        if (seg && isHyphenJoinerSegment(seg.segment) && prevWasJoinableWord) {
+          pendingHyphenJoin = true;
+        } else {
+          pendingHyphenJoin = false;
+        }
+        prevWasJoinableWord = false;
+      }
+    }
 
     return { conEspacios, sinEspacios, palabras };
   }
