@@ -12,6 +12,25 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
 - **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
 
+## [0.1.2] Con instrucciones
+- Fecha: `2026-01-20`
+
+### Added
+- Manual de uso (Issue #85): contenido real con **3 secciones fijas** (`#instrucciones`, `#guia-basica`, `#faq`), versión **ES/EN** y **assets locales** (PNG/GIF).
+- Info modal **“Links de interés”** (Issue #83): página dedicada con referencia + DOI (apertura externa allowlisted).
+- Editor manual: búsqueda **Ctrl+F / Cmd+F** con barra de búsqueda, navegación (Enter/Shift+Enter, F3/Shift+F3), **modo modal no destructivo** (no modifica el texto; no afecta undo/redo) y **resaltado visible** del match aunque el foco quede en el input del buscador.
+
+### Changed
+- Cronómetro (Issue #84): se ajusta la semántica de reset por cambios de texto:
+  - **No** se resetea si el texto resultante queda **no vacío**.
+  - Se resetea **solo** cuando el texto vigente queda **vacío** (overwrite/append/vaciar/editor).
+- Refactor del cronómetro para reducir acoplamiento y duplicación de wiring/estado en renderer.
+- Selector de texto: iconos de overwrite/append del portapapeles actualizados a **`📋↺`** y **`📋+`**.
+
+### Fixed
+- Conteo (modo **Preciso**, Issue #85): compuestos con guion sin espacios (`e-mail`, `co-operate`, etc.) pasan a contar como **1 palabra**.
+- Cronómetro (Issue #84): se evita pérdida de tiempo acumulado en ediciones no vacías y se garantiza reset completo y consistente al quedar el texto vacío.
+
 ## [0.1.1] Nuevos idiomas
 - Fecha: `2026-01-16`
 
