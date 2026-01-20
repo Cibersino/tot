@@ -438,10 +438,13 @@ select#presets {
 
 .info-modal-panel {
   --info-header-height: 48px;
+  --info-panel-max-height: 85vh;
+  --info-media-max-height: calc(var(--info-panel-max-height) - var(--info-header-height) - 120px);
+
   position: relative;
   max-width: 860px;
   width: calc(100% - 32px);
-  max-height: 85vh;
+  max-height: var(--info-panel-max-height);
   overflow: auto;
   background: #fdf6e3;
   border-radius: 8px;
@@ -492,6 +495,26 @@ select#presets {
 .info-modal-content pre {
   white-space: pre-wrap;
   word-break: break-word
+}
+
+/* === Info modal: media sizing (images/GIFs) ===
+   Hard cap so media never exceeds the visible modal area.
+   - Always fits width.
+   - If too tall, it scales down (contain) instead of overflowing. */
+.info-modal-content figure {
+  max-width: 100%;
+  margin: 12px 0;
+}
+
+.info-modal-content figure img,
+.info-modal-content figure video {
+  display: block;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  max-height: var(--info-media-max-height);
+  object-fit: contain;
+  margin: 0 auto;
 }
 
 .info-section {
