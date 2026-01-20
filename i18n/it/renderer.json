@@ -69,6 +69,21 @@
       "clear": "🗑",
       "clear_title": "Svuota"
     },
+    "editor_find": {
+      "label": "Trova",
+      "input_placeholder": "Trova...",
+      "input_aria": "Trova nel testo",
+      "prev": "Prec",
+      "next": "Succ",
+      "close": "Chiudi",
+      "prev_title": "Occorrenza precedente",
+      "next_title": "Occorrenza successiva",
+      "close_title": "Chiudi la barra di ricerca",
+      "status_no_matches": "Nessuna corrispondenza",
+      "status_wrap_start": "Ritorno all'inizio",
+      "status_wrap_end": "Ritorno alla fine",
+      "status_empty_query": "Digita per cercare"
+    },
     "alerts": {
       "clipboard_too_large": "Il testo degli appunti è troppo grande per essere elaborato. Riducilo e riprova.",
       "append_too_large": "Il testo risultante è troppo grande per essere elaborato. Riducilo e riprova.",

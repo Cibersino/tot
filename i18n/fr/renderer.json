@@ -69,6 +69,21 @@
       "clear": "🗑",
       "clear_title": "Vider"
     },
+    "editor_find": {
+      "label": "Rechercher",
+      "input_placeholder": "Rechercher...",
+      "input_aria": "Rechercher dans le texte",
+      "prev": "Precedent",
+      "next": "Suivant",
+      "close": "Fermer",
+      "prev_title": "Correspondance precedente",
+      "next_title": "Correspondance suivante",
+      "close_title": "Fermer la barre de recherche",
+      "status_no_matches": "Aucune correspondance",
+      "status_wrap_start": "Retour au debut",
+      "status_wrap_end": "Retour a la fin",
+      "status_empty_query": "Saisir pour rechercher"
+    },
     "alerts": {
       "clipboard_too_large": "Le texte du presse-papier est trop volumineux pour être traité. Réduisez-le et réessayez.",
       "append_too_large": "Le texte résultant est trop volumineux pour être traité. Réduisez-le et réessayez.",

@@ -80,6 +80,21 @@
       "clear": "🗑",
       "clear_title": "Vaciar"
     },
+    "editor_find": {
+      "label": "Buscar",
+      "input_placeholder": "Buscar...",
+      "input_aria": "Buscar en el texto",
+      "prev": "Anterior",
+      "next": "Siguiente",
+      "close": "Cerrar",
+      "prev_title": "Coincidencia anterior",
+      "next_title": "Coincidencia siguiente",
+      "close_title": "Cerrar barra de busqueda",
+      "status_no_matches": "Sin coincidencias",
+      "status_wrap_start": "Volvió al inicio",
+      "status_wrap_end": "Volvió al final",
+      "status_empty_query": "Escribe para buscar"
+    },
     "alerts": {
       "clipboard_too_large": "El texto del portapapeles es demasiado grande para procesarlo. Redúcelo e inténtalo de nuevo.",
       "append_too_large": "El texto resultante es demasiado grande para procesarlo. Redúcelo e inténtalo de nuevo.",

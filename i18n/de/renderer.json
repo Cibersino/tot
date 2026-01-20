@@ -69,6 +69,21 @@
       "clear": "🗑",
       "clear_title": "Löschen"
     },
+    "editor_find": {
+      "label": "Suchen",
+      "input_placeholder": "Suchen...",
+      "input_aria": "Im Text suchen",
+      "prev": "Zuruck",
+      "next": "Weiter",
+      "close": "Schliessen",
+      "prev_title": "Vorheriger Treffer",
+      "next_title": "Naechster Treffer",
+      "close_title": "Suchleiste schliessen",
+      "status_no_matches": "Keine Treffer",
+      "status_wrap_start": "Zum Anfang gesprungen",
+      "status_wrap_end": "Zum Ende gesprungen",
+      "status_empty_query": "Zum Suchen tippen"
+    },
     "alerts": {
       "clipboard_too_large": "Der Text in der Zwischenablage ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
       "append_too_large": "Der resultierende Text ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
