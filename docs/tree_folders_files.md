@@ -72,7 +72,9 @@ tot-readingmeter/
 │ │ └── LICENSE_Baskervville_OFL.txt
 │ ├── info/
 │ │ ├── acerca_de.html
-│ │ └── instrucciones.html
+│ │ ├── instrucciones.es.html
+│ │ ├── instrucciones.en.html
+│ │ └── links_interes.html
 │ ├── js/
 │ │ ├── constants.js
 │ │ ├── count.js

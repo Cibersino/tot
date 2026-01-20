@@ -44,10 +44,30 @@ const calcWhileTyping = document.getElementById('calcWhileTyping');
 const btnCalc = document.getElementById('btnCalc');
 const calcLabel = document.querySelector('.calc-label');
 const bottomBar = document.getElementById('bottomBar');
+const findBar = document.getElementById('findBar');
+const findInput = document.getElementById('findInput');
+const findPrev = document.getElementById('findPrev');
+const findNext = document.getElementById('findNext');
+const findClose = document.getElementById('findClose');
+const findCount = document.getElementById('findCount');
+const findStatus = document.getElementById('findStatus');
+const findHighlightOverlay = document.getElementById('findHighlightOverlay');
+const findHighlightLayer = document.getElementById('findHighlightLayer');
 
 let debounceTimer = null;
 const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
+let findOpen = false;
+let findSelectionChanged = false;
+let findSelectionBeforeOpen = null;
+let lastFindQuery = '';
+let lastFindMatch = { index: -1, length: 0 };
+let editorReadOnlyBeforeFind = false;
+let findCountState = { query: '', total: null, limited: false, textLen: 0 };
+let findCountTimer = null;
+const FIND_COUNT_THRESHOLD = 200000;
+const FIND_COUNT_LIMIT = 2000;
+const FIND_COUNT_DEBOUNCE_MS = 150;
 
 // Visibility helper: warn only once per key (editor scope)
 const warnOnceEditor = (...args) => log.warnOnce(...args);
@@ -86,6 +106,31 @@ async function applyEditorTranslations() {
   }
   if (bottomBar) {
     bottomBar.setAttribute('aria-label', tr('renderer.editor.title', bottomBar.getAttribute('aria-label') || ''));
+  }
+  if (findBar) {
+    findBar.setAttribute('aria-label', tr('renderer.editor_find.label', findBar.getAttribute('aria-label') || 'Find'));
+  }
+  if (findInput) {
+    findInput.setAttribute('placeholder', tr('renderer.editor_find.input_placeholder', findInput.getAttribute('placeholder') || 'Find...'));
+    findInput.setAttribute('aria-label', tr('renderer.editor_find.input_aria', findInput.getAttribute('aria-label') || 'Find in text'));
+  }
+  if (findPrev) {
+    findPrev.textContent = tr('renderer.editor_find.prev', findPrev.textContent || 'Prev');
+    const prevTitle = tr('renderer.editor_find.prev_title', findPrev.title || findPrev.textContent || 'Prev');
+    findPrev.title = prevTitle;
+    findPrev.setAttribute('aria-label', prevTitle);
+  }
+  if (findNext) {
+    findNext.textContent = tr('renderer.editor_find.next', findNext.textContent || 'Next');
+    const nextTitle = tr('renderer.editor_find.next_title', findNext.title || findNext.textContent || 'Next');
+    findNext.title = nextTitle;
+    findNext.setAttribute('aria-label', nextTitle);
+  }
+  if (findClose) {
+    findClose.textContent = tr('renderer.editor_find.close', findClose.textContent || 'Close');
+    const closeTitle = tr('renderer.editor_find.close_title', findClose.title || findClose.textContent || 'Close');
+    findClose.title = closeTitle;
+    findClose.setAttribute('aria-label', closeTitle);
   }
 }
 
@@ -187,6 +232,488 @@ function selectAllEditor() {
     return;
   }
   setSelectionSafe(0, editor.value.length);
+}
+
+// ---------- Find bar (manual search on textarea.value) ---------- //
+const findCache = { text: '', lower: '' };
+
+function isFindReady() {
+  return !!(findBar && findInput && findPrev && findNext && findClose && editor);
+}
+
+function refreshFindCache() {
+  if (!editor) return;
+  const text = String(editor.value || '');
+  if (findCache.text !== text) {
+    findCache.text = text;
+    findCache.lower = text.toLowerCase();
+  }
+}
+
+function setFindStatusText(text) {
+  if (!findStatus) return;
+  findStatus.textContent = text || '';
+}
+
+function setFindCountText(text) {
+  if (!findCount) return;
+  findCount.textContent = text || '';
+}
+
+function updateFindIdleStatus() {
+  if (!findInput) return;
+  const q = String(findInput.value || '');
+  if (!q) {
+    setFindStatusText(tr('renderer.editor_find.status_empty_query', 'Type to search'));
+  } else {
+    setFindStatusText('');
+  }
+}
+
+function focusFindInput({ select = false, preventScroll = true } = {}) {
+  if (!findInput) return;
+  try {
+    findInput.focus({ preventScroll });
+  } catch {
+    findInput.focus();
+  }
+  if (select) findInput.select();
+}
+
+function openFindBar({ focusInput = true } = {}) {
+  if (!isFindReady()) return;
+  if (!findOpen) {
+    findOpen = true;
+    findBar.hidden = false;
+    findSelectionChanged = false;
+    findSelectionBeforeOpen = getSelectionRange();
+    if (editor) {
+      editorReadOnlyBeforeFind = !!editor.readOnly;
+      editor.readOnly = true;
+    }
+    clearFindHighlight();
+    detachFindScrollHandler();
+  }
+  updateFindIdleStatus();
+  scheduleFindCountUpdate();
+  if (focusInput) {
+    focusFindInput({ select: true });
+  }
+}
+
+function closeFindBar({ restoreSelection = true } = {}) {
+  if (!isFindReady() || !findOpen) return;
+  findOpen = false;
+  findBar.hidden = true;
+  if (findCountTimer) {
+    clearTimeout(findCountTimer);
+    findCountTimer = null;
+  }
+  clearFindHighlight();
+  detachFindScrollHandler();
+  setFindStatusText('');
+  setFindCountText('');
+  const prevSelection = findSelectionBeforeOpen;
+  const restore = restoreSelection && prevSelection && !findSelectionChanged;
+  findSelectionBeforeOpen = null;
+  findSelectionChanged = false;
+  if (editor) editor.readOnly = editorReadOnlyBeforeFind;
+  if (restore) {
+    const { start, end } = prevSelection;
+    editor.focus();
+    setSelectionSafe(start, end);
+  } else if (editor) {
+    editor.focus();
+  }
+}
+
+function countMatches(haystack, needle) {
+  if (!needle) return { total: 0, limited: false };
+  let count = 0;
+  let idx = 0;
+  const step = Math.max(needle.length, 1);
+  let limited = false;
+  while ((idx = haystack.indexOf(needle, idx)) !== -1) {
+    count += 1;
+    if (count >= FIND_COUNT_LIMIT) {
+      limited = true;
+      break;
+    }
+    idx += step;
+  }
+  return { total: count, limited };
+}
+
+function countMatchesUpTo(haystack, needle, endIndex) {
+  if (!needle) return 0;
+  let count = 0;
+  let idx = 0;
+  const step = Math.max(needle.length, 1);
+  while ((idx = haystack.indexOf(needle, idx)) !== -1) {
+    if (idx > endIndex) break;
+    count += 1;
+    idx += step;
+  }
+  return count;
+}
+
+function maybeUpdateFindCount(query) {
+  if (!findCount || !query) {
+    findCountState = { query: '', total: null, limited: false, textLen: 0 };
+    setFindCountText('');
+    return;
+  }
+
+  refreshFindCache();
+  const textLen = findCache.text.length;
+  if (textLen > FIND_COUNT_THRESHOLD) {
+    findCountState = { query: '', total: null, limited: false, textLen };
+    setFindCountText('');
+    return;
+  }
+
+  if (findCountState.query === query && findCountState.textLen === textLen && findCountState.total !== null) {
+    return;
+  }
+
+  const needle = query.toLowerCase();
+  const haystack = findCache.lower;
+  const { total, limited } = countMatches(haystack, needle);
+  findCountState = { query, total, limited, textLen };
+}
+
+function updateFindCountDisplay(matchIndex, query) {
+  if (!findCount) return;
+  const q = typeof query === 'string' ? query : String(findInput ? findInput.value || '' : '');
+  if (!q || findCountState.query !== q || findCountState.total === null || findCountState.total === 0) {
+    setFindCountText('');
+    return;
+  }
+  refreshFindCache();
+  const needle = q.toLowerCase();
+  const current = typeof matchIndex === 'number' && matchIndex >= 0
+    ? countMatchesUpTo(findCache.lower, needle, matchIndex)
+    : null;
+  const totalLabel = findCountState.limited ? `${findCountState.total}+` : `${findCountState.total}`;
+  setFindCountText(current ? `${current}/${totalLabel}` : totalLabel);
+}
+
+function scheduleFindCountUpdate() {
+  if (!isFindReady()) return;
+  if (findCountTimer) clearTimeout(findCountTimer);
+  const q = String(findInput.value || '');
+  if (!q) {
+    findCountState = { query: '', total: null, limited: false, textLen: 0 };
+    setFindCountText('');
+    return;
+  }
+  findCountTimer = setTimeout(() => {
+    maybeUpdateFindCount(q);
+    const matchIndex = lastFindQuery === q ? lastFindMatch.index : -1;
+    updateFindCountDisplay(matchIndex, q);
+  }, FIND_COUNT_DEBOUNCE_MS);
+}
+
+let findMirror = null;
+let findMirrorWidth = 0;
+let findScrollHandler = null;
+
+function clearFindHighlight() {
+  if (!findHighlightLayer || !findHighlightOverlay) return;
+  findHighlightLayer.innerHTML = '';
+  findHighlightOverlay.hidden = true;
+}
+
+function updateHighlightOffset() {
+  if (!findHighlightLayer || !editor) return;
+  const x = editor.scrollLeft || 0;
+  const y = editor.scrollTop || 0;
+  findHighlightLayer.style.transform = `translate(${-x}px, ${-y}px)`;
+}
+
+function attachFindScrollHandler() {
+  if (!editor || findScrollHandler) return;
+  findScrollHandler = () => updateHighlightOffset();
+  editor.addEventListener('scroll', findScrollHandler);
+  updateHighlightOffset();
+}
+
+function detachFindScrollHandler() {
+  if (!editor || !findScrollHandler) return;
+  editor.removeEventListener('scroll', findScrollHandler);
+  findScrollHandler = null;
+}
+
+function ensureFindMirror() {
+  if (findMirror) return findMirror;
+  const mirror = document.createElement('div');
+  mirror.setAttribute('aria-hidden', 'true');
+  Object.assign(mirror.style, {
+    position: 'absolute',
+    top: '0',
+    left: '-9999px',
+    visibility: 'hidden',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+    pointerEvents: 'none'
+  });
+  document.body.appendChild(mirror);
+  findMirror = mirror;
+  return mirror;
+}
+
+function syncFindMirrorStyle() {
+  if (!editor) return;
+  const mirror = ensureFindMirror();
+  const style = window.getComputedStyle(editor);
+  mirror.style.fontFamily = style.fontFamily;
+  mirror.style.fontSize = style.fontSize;
+  mirror.style.fontWeight = style.fontWeight;
+  mirror.style.fontStyle = style.fontStyle;
+  mirror.style.letterSpacing = style.letterSpacing;
+  mirror.style.lineHeight = style.lineHeight;
+  mirror.style.textTransform = style.textTransform;
+  mirror.style.padding = style.padding;
+  mirror.style.border = style.border;
+  mirror.style.boxSizing = style.boxSizing;
+  mirror.style.tabSize = style.tabSize;
+  const width = editor.clientWidth;
+  if (width && width !== findMirrorWidth) {
+    findMirrorWidth = width;
+    mirror.style.width = `${width}px`;
+  }
+}
+
+function renderFindHighlight(start, length) {
+  if (!findHighlightLayer || !findHighlightOverlay || !editor) return;
+  if (start < 0 || length <= 0) {
+    clearFindHighlight();
+    return;
+  }
+
+  syncFindMirrorStyle();
+  const mirror = ensureFindMirror();
+  const value = String(editor.value || '');
+  const safeStart = Math.max(0, Math.min(start, value.length));
+  const safeEnd = Math.max(safeStart, Math.min(safeStart + length, value.length));
+  const matchText = value.slice(safeStart, safeEnd) || '.';
+
+  mirror.textContent = value.slice(0, safeStart);
+  const mark = document.createElement('mark');
+  mark.textContent = matchText;
+  mark.style.background = 'transparent';
+  mark.style.color = 'inherit';
+  mirror.appendChild(mark);
+
+  const rects = Array.from(mark.getClientRects());
+  if (!rects.length) {
+    clearFindHighlight();
+    return;
+  }
+
+  const mirrorRect = mirror.getBoundingClientRect();
+  const frag = document.createDocumentFragment();
+  rects.forEach((rect) => {
+    const highlight = document.createElement('div');
+    highlight.className = 'find-highlight-rect';
+    const top = rect.top - mirrorRect.top;
+    const left = rect.left - mirrorRect.left;
+    highlight.style.top = `${top}px`;
+    highlight.style.left = `${left}px`;
+    highlight.style.width = `${rect.width}px`;
+    highlight.style.height = `${rect.height}px`;
+    frag.appendChild(highlight);
+  });
+
+  findHighlightLayer.innerHTML = '';
+  findHighlightLayer.appendChild(frag);
+  findHighlightOverlay.hidden = false;
+  updateHighlightOffset();
+  attachFindScrollHandler();
+}
+
+function scrollSelectionIntoView(start, end) {
+  if (!editor) return;
+  syncFindMirrorStyle();
+  const mirror = ensureFindMirror();
+  const value = String(editor.value || '');
+  const endIndex = Math.max(0, Math.min(end, value.length));
+
+  mirror.textContent = value.slice(0, endIndex);
+  const marker = document.createElement('span');
+  marker.textContent = value.slice(endIndex, endIndex + 1) || '.';
+  mirror.appendChild(marker);
+
+  const markerTop = marker.offsetTop;
+  const markerHeight = marker.offsetHeight || 16;
+
+  const viewTop = editor.scrollTop;
+  const viewBottom = viewTop + editor.clientHeight;
+  const selTop = markerTop;
+  const selBottom = markerTop + markerHeight;
+
+  let target = null;
+  if (selTop < viewTop) {
+    target = selTop - editor.clientHeight * 0.2;
+  } else if (selBottom > viewBottom) {
+    target = selBottom - editor.clientHeight * 0.8;
+  }
+
+  if (target !== null) {
+    const maxScroll = Math.max(0, editor.scrollHeight - editor.clientHeight);
+    const nextScroll = Math.min(Math.max(0, target), maxScroll);
+    editor.scrollTop = nextScroll;
+  }
+}
+
+function focusEditorSelection(start, end) {
+  try {
+    try {
+      editor.focus({ preventScroll: true });
+    } catch {
+      editor.focus();
+    }
+    setSelectionSafe(start, end);
+    scrollSelectionIntoView(start, end);
+    if (findOpen) {
+      updateHighlightOffset();
+      focusFindInput({ preventScroll: true });
+    }
+  } catch (err) {
+    log.error('focusEditorSelection failed:', err);
+  }
+}
+
+function performFind(direction) {
+  if (!isFindReady()) return false;
+  const query = String(findInput.value || '');
+  if (!query) {
+    setFindStatusText(tr('renderer.editor_find.status_empty_query', 'Type to search'));
+    setFindCountText('');
+    return false;
+  }
+
+  refreshFindCache();
+  const haystack = findCache.lower;
+  const needle = query.toLowerCase();
+
+  if (!needle) {
+    setFindStatusText(tr('renderer.editor_find.status_empty_query', 'Type to search'));
+    setFindCountText('');
+    return false;
+  }
+
+  const { start, end } = getSelectionRange();
+  const forward = direction !== -1;
+  let startIndex = forward ? end : (start - 1);
+  if (startIndex < 0) startIndex = forward ? 0 : -1;
+
+  let idx = forward
+    ? haystack.indexOf(needle, startIndex)
+    : haystack.lastIndexOf(needle, startIndex);
+
+  let wrapped = false;
+  if (idx === -1) {
+    wrapped = true;
+    idx = forward
+      ? haystack.indexOf(needle, 0)
+      : haystack.lastIndexOf(needle, haystack.length);
+  }
+
+  if (idx === -1) {
+    setFindStatusText(tr('renderer.editor_find.status_no_matches', 'No matches'));
+    lastFindQuery = query;
+    lastFindMatch = { index: -1, length: 0 };
+    clearFindHighlight();
+    detachFindScrollHandler();
+    updateFindCountDisplay(-1, query);
+    return false;
+  }
+
+  lastFindQuery = query;
+  lastFindMatch = { index: idx, length: needle.length };
+  findSelectionChanged = true;
+
+  if (wrapped) {
+    setFindStatusText(tr(
+      forward ? 'renderer.editor_find.status_wrap_start' : 'renderer.editor_find.status_wrap_end',
+      forward ? 'Wrapped to start' : 'Wrapped to end'
+    ));
+  } else {
+    setFindStatusText('');
+  }
+
+  maybeUpdateFindCount(query);
+  updateFindCountDisplay(idx, query);
+  renderFindHighlight(idx, needle.length);
+  focusEditorSelection(idx, idx + needle.length);
+  return true;
+}
+
+if (isFindReady()) {
+  findInput.addEventListener('input', () => {
+    updateFindIdleStatus();
+    clearFindHighlight();
+    detachFindScrollHandler();
+    lastFindQuery = '';
+    lastFindMatch = { index: -1, length: 0 };
+    scheduleFindCountUpdate();
+  });
+
+  findInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      performFind(e.shiftKey ? -1 : 1);
+      return;
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeFindBar();
+    }
+  });
+
+  findPrev.addEventListener('click', () => performFind(-1));
+  findNext.addEventListener('click', () => performFind(1));
+  findClose.addEventListener('click', () => closeFindBar());
+
+  document.addEventListener('keydown', (e) => {
+    const key = String(e.key || '');
+    const isFindInputTarget = e.target === findInput;
+    const isAccelF = (key === 'f' || key === 'F') && (e.ctrlKey || e.metaKey) && !e.altKey;
+    if (isAccelF) {
+      e.preventDefault();
+      openFindBar({ focusInput: true });
+      return;
+    }
+
+    if (findOpen && key === 'Enter' && !isFindInputTarget) {
+      e.preventDefault();
+      performFind(e.shiftKey ? -1 : 1);
+      return;
+    }
+
+    const isF3 = key === 'F3';
+    if (isF3) {
+      if (!findOpen) {
+        const hasQuery = String(findInput.value || '');
+        if (hasQuery) {
+          e.preventDefault();
+          openFindBar({ focusInput: false });
+          performFind(e.shiftKey ? -1 : 1);
+        }
+        return;
+      }
+      e.preventDefault();
+      performFind(e.shiftKey ? -1 : 1);
+      return;
+    }
+
+    if (findOpen && key === 'Escape' && !isFindInputTarget) {
+      e.preventDefault();
+      closeFindBar();
+    }
+  }, true);
 }
 
 // styles //
@@ -508,6 +1035,11 @@ window.editorAPI.onForceClear(() => {
 if (editor) {
   editor.addEventListener('paste', (ev) => {
     try {
+      if (findOpen || editor.readOnly) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        return;
+      }
       ev.preventDefault();
       ev.stopPropagation();
       const text = (ev.clipboardData && ev.clipboardData.getData('text/plain')) || '';
@@ -533,6 +1065,11 @@ if (editor) {
   // DROP: if small, allow native browser insertion and then notify main.
   editor.addEventListener('drop', (ev) => {
     try {
+      if (findOpen || editor.readOnly) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        return;
+      }
       const dt = ev.dataTransfer;
       const text = (dt && dt.getData && dt.getData('text/plain')) || '';
       if (!text) {
@@ -584,7 +1121,7 @@ if (editor) {
 
 // ---------- local input (typing) ---------- //
 editor.addEventListener('input', () => {
-  if (suppressLocalUpdate) return;
+  if (suppressLocalUpdate || findOpen || editor.readOnly) return;
 
   if (editor.value && editor.value.length > maxTextChars) {
     editor.value = editor.value.slice(0, maxTextChars);

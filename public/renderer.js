@@ -81,6 +81,7 @@ let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main respon
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
 let idiomaActual = DEFAULT_LANG; // Initializes on startup
 let settingsCache = null;     // Settings cache (number formatting, language, etc.)
+let cronoController = null;
 // --- i18n renderer translations cache ---
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
@@ -140,7 +141,9 @@ function applyTranslations() {
     if (ariaLabel) cronoControls.setAttribute('aria-label', ariaLabel);
   }
   const labelsCrono = getCronoLabels();
-  if (tToggle) tToggle.textContent = running ? labelsCrono.pauseLabel : labelsCrono.playLabel;
+  if (cronoController && typeof cronoController.updateLabels === 'function') {
+    cronoController.updateLabels(labelsCrono);
+  }
   // Abbreviated label for the floating window
   const vfLabel = document.querySelector('.vf-label');
   if (vfLabel) {
@@ -216,6 +219,12 @@ function contarTexto(texto) {
   return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
 }
 
+function normalizeText(value) {
+  if (typeof value === 'string') return value;
+  if (value === null || typeof value === 'undefined') return '';
+  return String(value);
+}
+
 // Helpers to update mode/language from other parts (e.g., menu)
 function setModoConteo(nuevoModo) {
   if (nuevoModo === 'simple' || nuevoModo === 'preciso') {
@@ -231,11 +240,8 @@ if (!getTimeParts || !formatTimeFromWords || !obtenerSeparadoresDeNumeros || !fo
 
 // ======================= Update view and results =======================
 async function updatePreviewAndResults(text) {
-  const previousText = currentText;      // Text before change
-  currentText = text || '';              // New text (normalized)
-  const textChanged = previousText !== currentText;
-
-  const displayText = currentText.replace(/\r?\n/g, '   ');
+  const normalizedText = normalizeText(text);
+  const displayText = normalizedText.replace(/\r?\n/g, '   ');
   const n = displayText.length;
 
   if (n === 0) {
@@ -249,7 +255,7 @@ async function updatePreviewAndResults(text) {
     textPreview.textContent = `${start}... | ...${end}`;
   }
 
-  const stats = contarTexto(currentText);
+  const stats = contarTexto(normalizedText);
   const idioma = idiomaActual; // Cached on startup and updated by listener if applicable
   const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
 
@@ -264,24 +270,16 @@ async function updatePreviewAndResults(text) {
 
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
   resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
+}
 
-  // If detect that the text has changed from the previous state -> reset the crono in main
-  if (textChanged) {
-    try {
-      if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
-        // We ask main to reset the crono (authority). We also perform an immediate UI reset.
-        window.electronAPI.sendCronoReset();
-        uiResetCrono();
-        lastComputedElapsedForWpm = 0;
-      } else {
-        // Local fallback if no IPC (rare)
-        uiResetCrono();
-        lastComputedElapsedForWpm = 0;
-      }
-    } catch (err) {
-      log.error('Error requesting stopwatch reset after text change:', err);
-      uiResetCrono();
-      lastComputedElapsedForWpm = 0;
+function setCurrentTextAndUpdateUI(text, options = {}) {
+  const previousText = currentText;
+  const nextText = normalizeText(text);
+  currentText = nextText;
+  updatePreviewAndResults(nextText);
+  if (options.applyRules) {
+    if (cronoController && typeof cronoController.handleTextChange === 'function') {
+      cronoController.handleTextChange(previousText, nextText);
     }
   }
 }
@@ -290,26 +288,8 @@ async function updatePreviewAndResults(text) {
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
     try {
-      const res = cronoModule.handleCronoState({
-        state,
-        cronoDisplay,
-        cronoEditing,
-        tToggle,
-        realWpmDisplay,
-        currentText,
-        contarTexto,
-        obtenerSeparadoresDeNumeros,
-        formatearNumero,
-        idiomaActual,
-        prevRunning,
-        lastComputedElapsedForWpm,
-        ...getCronoLabels()
-      });
-      if (res) {
-        elapsed = res.elapsed;
-        running = res.running;
-        prevRunning = res.prevRunning;
-        lastComputedElapsedForWpm = res.lastComputedElapsedForWpm;
+      if (cronoController && typeof cronoController.handleState === 'function') {
+        cronoController.handleState(state);
       }
     } catch (err) {
       log.error('Error handling crono-state in renderer:', err);
@@ -352,12 +332,12 @@ const loadPresets = async () => {
   try {
     // Get current initial text (if any)
     const t = await window.electronAPI.getCurrentText();
-    updatePreviewAndResults(t || '');
+    setCurrentTextAndUpdateUI(t || '', { applyRules: true });
 
     // Subscription to updates from main (modal)
     if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
       window.electronAPI.onCurrentTextUpdated((text) => {
-        updatePreviewAndResults(text || '');
+        setCurrentTextAndUpdateUI(text || '', { applyRules: true });
       });
     }
 
@@ -393,7 +373,7 @@ const loadPresets = async () => {
     await loadPresets();
 
     // Update the final view with the possible initial WPM
-    updatePreviewAndResults(t || '');
+    updatePreviewAndResults(currentText);
 
     // --- Listener for settings changes from main/preload (optional) ---
     // If main/preload exposes an event, we use it to keep settingsCache and currentLanguage updated.
@@ -542,6 +522,14 @@ const loadPresets = async () => {
     }
   }
 
+  async function fetchTextWithFallback(paths) {
+    for (const path of paths) {
+      const html = await fetchText(path);
+      if (html !== null) return { html, path };
+    }
+    return { html: null, path: null };
+  }
+
   // Translate the HTML loaded in the info modal using data-i18n and renderer.info.<key>.*
   function translateInfoHtml(htmlString, key) {
     // If no translation function is available, return the unmodified HTML
@@ -563,12 +551,23 @@ const loadPresets = async () => {
     }
   }
 
+  function extractInfoBodyHtml(htmlString) {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlString, 'text/html');
+      return doc.body.innerHTML;
+    } catch (err) {
+      log.warn('extractInfoBodyHtml failed:', err);
+      return htmlString;
+    }
+  }
+
   async function hydrateAboutVersion(container) {
     const versionEl = container ? container.querySelector('#appVersion') : null;
     if (!versionEl) return;
 
     if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
-      warnOnceRenderer('renderer.about.version.unavailable', 'getAppVersion not available for About modal.');
+      warnOnceRenderer('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
       versionEl.textContent = 'N/A';
       return;
     }
@@ -588,7 +587,7 @@ const loadPresets = async () => {
     if (!envEl) return;
 
     if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
-      warnOnceRenderer('renderer.about.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
+      warnOnceRenderer('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
       envEl.textContent = 'N/A';
       return;
     }
@@ -612,6 +611,34 @@ const loadPresets = async () => {
     }
   }
 
+  const normalizeLangTagSafe = (lang) => {
+    if (window.RendererI18n && typeof window.RendererI18n.normalizeLangTag === 'function') {
+      return window.RendererI18n.normalizeLangTag(lang);
+    }
+    return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
+  };
+
+  const getLangBaseSafe = (lang) => {
+    if (window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function') {
+      return window.RendererI18n.getLangBase(lang);
+    }
+    const normalized = normalizeLangTagSafe(lang);
+    if (!normalized) return '';
+    const idx = normalized.indexOf('-');
+    return idx > 0 ? normalized.slice(0, idx) : normalized;
+  };
+
+  function getManualFileCandidates(langTag) {
+    const candidates = [];
+    const normalized = normalizeLangTagSafe(langTag);
+    const base = getLangBaseSafe(normalized);
+    if (normalized) candidates.push(normalized);
+    if (base && base !== normalized) candidates.push(base);
+    const defaultLang = normalizeLangTagSafe(DEFAULT_LANG);
+    if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
+    return candidates.map(tag => `./info/instrucciones.${tag}.html`);
+  }
+
   async function showInfoModal(key, opts = {}) {
     // key: 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
     const sectionTitles = {
@@ -624,14 +651,16 @@ const loadPresets = async () => {
     if (!infoModal || !infoModalTitle || !infoModalContent) return;
 
     // Decide which file to load based on the key.
-    // Unify basic_guide, instructions, and FAQ in ./info/instructions.html
+    // Unify basic_guide, instructions, and FAQ in the localized manual HTML.
     let fileToLoad = null;
     let sectionId = null;
+    const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
 
     if (key === 'acerca_de') {
       fileToLoad = './info/acerca_de.html';
-    } else if (key === 'guia_basica' || key === 'instrucciones' || key === 'faq') {
-      fileToLoad = './info/instrucciones.html';
+    } else if (isManual) {
+      const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
+      fileToLoad = getManualFileCandidates(langTag);
       // Map key to block ID within instructions.html
       const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
       sectionId = mapping[key] || 'instrucciones';
@@ -641,15 +670,21 @@ const loadPresets = async () => {
     }
 
     const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
-    // Modal title: Display the section title (not generic 'Info')
-    const defaultTitle = sectionTitles[key] || (opts.title || 'InformaciA3n');
-    infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
+    // Modal title: manual always uses a fixed label; other pages use i18n when available.
+    if (isManual) {
+      infoModalTitle.textContent = 'Manual de uso';
+    } else {
+      const defaultTitle = sectionTitles[key] || (opts.title || 'Información');
+      infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
+    }
 
     // Open modal
     infoModal.setAttribute('aria-hidden', 'false');
 
     // Load HTML
-    const tryHtml = await fetchText(fileToLoad);
+    const tryHtml = Array.isArray(fileToLoad)
+      ? (await fetchTextWithFallback(fileToLoad)).html
+      : await fetchText(fileToLoad);
     if (tryHtml === null) {
       // Fallback: Indicate missing content
       infoModalContent.innerHTML =
@@ -658,9 +693,11 @@ const loadPresets = async () => {
       return;
     }
 
-    // Translate if i18n is loaded and then add content
-    const translatedHtml = translateInfoHtml(tryHtml, translationKey);
-    infoModalContent.innerHTML = translatedHtml;
+    // Translate non-manual info pages; manual HTML is loaded as-is.
+    const renderedHtml = isManual
+      ? extractInfoBodyHtml(tryHtml)
+      : translateInfoHtml(tryHtml, translationKey);
+    infoModalContent.innerHTML = renderedHtml;
     if (typeof bindInfoModalLinks === 'function') {
       bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI, warnOnceRenderer, log });
     }
@@ -770,9 +807,9 @@ const loadPresets = async () => {
     window.menuActions.registerMenuAction('discord', () => {
       Notify.notifyMain('renderer.alerts.wip_discord'); // WIP
     });
-    window.menuActions.registerMenuAction('links_interes', () => {
-      Notify.notifyMain('renderer.alerts.wip_links_interes'); // WIP
-    });
+
+    window.menuActions.registerMenuAction('links_interes', () => { showInfoModal('links_interes') });
+
     window.menuActions.registerMenuAction('colabora', () => {
       Notify.notifyMain('renderer.alerts.wip_colabora'); // WIP
     });
@@ -877,7 +914,7 @@ btnOverwriteClipboard.addEventListener('click', async () => {
       throw new Error(resp.error || 'set-current-text failed');
     }
 
-    updatePreviewAndResults(resp && resp.text ? resp.text : clip);
+    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : clip, { applyRules: true });
     if (resp && resp.truncated) {
       Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
@@ -928,7 +965,7 @@ btnAppendClipboard.addEventListener('click', async () => {
       throw new Error(resp.error || 'set-current-text failed');
     }
 
-    updatePreviewAndResults(resp && resp.text ? resp.text : newFull);
+    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : newFull, { applyRules: true });
 
     // Notify truncation only if main confirms it
     if (resp && resp.truncated) {
@@ -958,7 +995,7 @@ btnEmptyMain.addEventListener('click', async () => {
       meta: { source: 'main-window', action: 'overwrite' }
     });
 
-    updatePreviewAndResults(resp && resp.text ? resp.text : '');
+    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : '', { applyRules: true });
     if (window.electronAPI && typeof window.electronAPI.forceClearEditor === 'function') {
       try { await window.electronAPI.forceClearEditor(); } catch (err) { log.error('Error invoking forceClearEditor:', err); }
     }
@@ -1127,33 +1164,8 @@ btnResetDefaultPresets.addEventListener('click', async () => {
 
 // ======================= STOPWATCH =======================
 const cronoDisplay = document.getElementById('cronoDisplay');
-
-// Prevent main broadcasts from overwriting the current edit
-if (cronoDisplay) {
-  cronoDisplay.addEventListener('focus', () => {
-    cronoEditing = true;
-  });
-  cronoDisplay.addEventListener('blur', () => {
-    // The blur event will execute applyManualTime (already registered) which will update the stopwatch in main
-    cronoEditing = false;
-  });
-}
-
 const tToggle = document.getElementById('cronoToggle');
 const tReset = document.getElementById('cronoReset');
-
-// Local mirror of the stopwatch state (synchronized from main via onCronoState)
-let elapsed = 0;
-let running = false;
-// Flag to detect transitions and prevent continuous recalculations
-let prevRunning = false;
-// Indicates if the user is manually editing the crono field (to prevent overwriting)
-let cronoEditing = false;
-// Baseline elapsed/display captured on focus to avoid losing fractional seconds if unchanged
-let cronoBaselineElapsed = null;
-let cronoBaselineDisplay = null;
-// Last elapsed for which we calculate WPM (avoid repeated recalculations)
-let lastComputedElapsedForWpm = null;
 
 function showeditorLoader() {
   if (editorLoader) editorLoader.classList.add('visible');
@@ -1172,118 +1184,29 @@ const getCronoLabels = () => ({
   pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
 });
 
-const uiResetCrono = () => {
-  elapsed = 0;
-  running = false;
-  prevRunning = false;
-  const { playLabel } = getCronoLabels();
-  cronoModule.uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel });
-};
-
-tToggle.addEventListener('click', () => {
-  if (window.electronAPI && typeof window.electronAPI.sendCronoToggle === 'function') {
-    window.electronAPI.sendCronoToggle();
+const initCronoController = () => {
+  if (!cronoModule || typeof cronoModule.createController !== 'function') {
+    log.warn('[renderer] RendererCrono.createController not available');
+    return;
   }
-});
-
-tReset.addEventListener('click', () => {
-  if (window.electronAPI && typeof window.electronAPI.sendCronoReset === 'function') {
-    window.electronAPI.sendCronoReset();
-  }
-});
-
-// --- Floating window control (FW) ---
-// Open FW
-const openFlotante = async () => {
-  const res = await cronoModule.openFlotante({
+  const labels = getCronoLabels();
+  cronoController = cronoModule.createController({
+    elements: { cronoDisplay, tToggle, tReset, realWpmDisplay, toggleVF },
     electronAPI: window.electronAPI,
-    toggleVF,
-    cronoDisplay,
-    cronoEditing,
-    tToggle,
-    ...getCronoLabels(),
-    setElapsedRunning: (elapsedVal, runningVal) => {
-      elapsed = elapsedVal;
-      running = runningVal;
-    }
-  });
-  if (res && typeof res.elapsed === 'number') {
-    lastComputedElapsedForWpm = res.elapsed;
-    prevRunning = running;
-  }
-};
-
-const closeFlotante = async () => {
-  await cronoModule.closeFlotante({ electronAPI: window.electronAPI, toggleVF });
-};
-
-// toggle WF from the UI (switch)
-if (toggleVF) {
-  toggleVF.addEventListener('change', async () => {
-    const wantOpen = !!toggleVF.checked;
-    // Optimistic: reflect aria-checked immediately
-    toggleVF.setAttribute('aria-checked', wantOpen ? 'true' : 'false');
-
-    if (wantOpen) {
-      await openFlotante();
-      // openFlotante handles revert in case of error
-    } else {
-      await closeFlotante();
-    }
-  });
-}
-
-// If the flotante is closed from main (or destroyed), we clean it up
-if (window.electronAPI && typeof window.electronAPI.onFlotanteClosed === 'function') {
-  window.electronAPI.onFlotanteClosed(() => {
-    if (toggleVF) { toggleVF.checked = false; toggleVF.setAttribute('aria-checked', 'false'); }
-  });
-}
-
-// ======================= Manual stopwatch editing =======================
-const applyManualTime = () => {
-  cronoModule.applyManualTime({
-    value: cronoDisplay.value,
-    cronoDisplay,
-    electronAPI: window.electronAPI,
-    currentText,
     contarTexto,
     obtenerSeparadoresDeNumeros,
     formatearNumero,
-    idiomaActual,
-    realWpmDisplay,
-    ...getCronoLabels(),
-    setElapsed: (msVal) => {
-      if (typeof msVal === 'number') {
-        elapsed = msVal;
-      }
-      return elapsed;
-    },
-    setLastComputedElapsed: (msVal) => { lastComputedElapsedForWpm = msVal; },
-    running,
-    baselineElapsed: cronoBaselineElapsed,
-    baselineDisplay: cronoBaselineDisplay
+    getIdiomaActual: () => idiomaActual,
+    getCurrentText: () => currentText,
+    playLabel: labels.playLabel,
+    pauseLabel: labels.pauseLabel
   });
-  cronoBaselineElapsed = null;
-  cronoBaselineDisplay = null;
+  if (cronoController && typeof cronoController.bind === 'function') {
+    cronoController.bind();
+  }
+  if (cronoController && typeof cronoController.updateLabels === 'function') {
+    cronoController.updateLabels(labels);
+  }
 };
 
-if (cronoDisplay) {
-  cronoDisplay.addEventListener('focus', () => {
-    cronoEditing = true;
-    cronoBaselineElapsed = elapsed;
-    cronoBaselineDisplay = cronoDisplay.value;
-  });
-
-  cronoDisplay.addEventListener('blur', () => {
-    cronoEditing = false;
-    applyManualTime();
-  });
-
-  cronoDisplay.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      cronoDisplay.blur();
-    }
-  });
-}
+initCronoController();

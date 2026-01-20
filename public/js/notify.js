@@ -109,7 +109,7 @@
     container.style.alignItems = cfg.align;
   }
 
-  function toastMain(key, { type = 'info', duration = 4500 } = {}) {
+  function toastMain(key, { type = 'info', duration = 9000 } = {}) {
     const msg = resolveText(key);
     try {
       toastText(msg, { containerId: 'totMainToastContainer', position: 'top-right', type, duration });

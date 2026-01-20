@@ -4,8 +4,8 @@
       "selector_title": "Wünne ka afkechi trokiñ wirin:",
       "selector_empty": "(welli)",
       "buttons": {
-        "overwrite_clipboard": "Wirintun portapapeles mu",
-        "append_clipboard": "Yafkantun portapapeles",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },
@@ -69,6 +69,21 @@
       "clear": "🗑",
       "clear_title": "Lifün"
     },
+"editor_find": {
+      "label": "Kintun",
+      "input_placeholder": "Kintun...",
+      "input_aria": "Kintun wirintukun mew",
+      "prev": "Wünen",
+      "next": "Inan",
+      "close": "Nürüfün",
+      "prev_title": "Wünen kintun",
+      "next_title": "Inan kintun",
+      "close_title": "Nürüfün kintun wechun",
+      "status_no_matches": "Chem no rume kintulay",
+      "status_wrap_start": "Wiñotuy llitun mew",
+      "status_wrap_end": "Wiñotuy afpun mew",
+      "status_empty_query": "Wirin kintual"
+    },
     "alerts": {
       "clipboard_too_large": "Portapapeles wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
       "append_too_large": "Wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
@@ -98,7 +113,6 @@
       "wip_shortcuts": "WIP: Faw nülai düllin shortcuts küpalechi version mu.",
       "wip_avisos": "WIP: Faw pengelai we dungu küpalechi version mu.",
       "wip_discord": "WIP: Faw nülai Discord küpalechi version mu.",
-      "wip_links_interes": "WIP: Faw pengelai links küpalechi version mu.",
       "wip_colabora": "WIP: Faw pengelai chumngechi kelluafui küpalechi version mu."
     },
     "editor_alerts": {
@@ -123,22 +137,12 @@
     "info": {
       "acerca_de": {
         "app_name": "toT — Reading Meter",
-        "title": "Dungu mu",
-        "subtitle": "Pichi üi",
-        "body": "Küzawkiliyiñ tami kellual."
+        "title": "Dungu mu"
       },
-      "instrucciones": {
+      "links_interes": {
         "app_name": "toT — Reading Meter",
-        "title": "Chumngechi püneal",
-        "nav_basic": "Pichi kellu",
-        "nav_full": "Kom wüldungu",
-        "nav_faq": "Ramtun ka llowün (FAQ)",
-        "section_basic_title": "Pichi kellu",
-        "section_basic_body": "Küzawkiliyiñ tami kellual.",
-        "section_full_title": "Kom wüldungu",
-        "section_full_body": "Küzawkiliyiñ tami kellual.",
-        "section_faq_title": "Ramtun ka llowün (FAQ)",
-        "section_faq_body": "Küzawkiliyiñ tami kellual."
+        "title": "Ayüfalchi links",
+        "section_biblio_label": "Inatun chillka"
       }
     }
   }

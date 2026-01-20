@@ -4,8 +4,8 @@
       "selector_title": "Primera y última parte del texto analizado:",
       "selector_empty": "(vacío)",
       "buttons": {
-        "overwrite_clipboard": "Sobrescribir portapapeles",
-        "append_clipboard": "Agregar portapapeles",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },
@@ -40,10 +40,13 @@
       },
       "tips": {
         "results_help": {
-          "tip1": "Tip: El modo Preciso usa Intl.Segmenter; los resultados pueden variar levemente respecto a Simple.",
-          "tip2": "Tip: Puedes alternar entre Simple/Preciso y los resultados se actualizan de inmediato.",
-          "tip3": "Tip: Los presets de WPM se guardan entre sesiones; ajusta WPM para reflejar tu velocidad real.",
-          "tip4": "Tip: Usa el Editor manual para validar conteos cuando trabajes con textos largos."
+          "tip1": "El modo preciso usa segmentación Unicode para contar caracteres (grafemas) y palabras mediante Intl.Segmenter.",
+          "tip2": "Al insertar manualmente un tiempo en el cronómetro, se eliminan las fracciones de segundo invisibles.",
+          "tip3": "Para seleccionar todo el texto de un área usa Ctrl + A (Windows y Linux) o Command(⌘) + A (Mac).",
+          "tip4": "Puedes seleccionar un texto seleccionando primero el texto de uno de los extremos y, con Shift apretado, hacer clic en el otro extremo.",
+          "tip5": "Un libro estándar suele contener entre 250 a 300 palabras por página (esto solo aplica a idiomas que utilizan alfabeto latino, o derivados cercanos, y con una estructura gramatical similar).",
+          "tip6": "'No es, pues, un fármaco de la memoria lo que has hallado, sino un simple recordatorio.' (Platón)",
+          "tip7": "'El habla escrita exige una doble abstracción: del aspecto sonoro del lenguaje y del interlocutor.' (Vigotski)"
         }
       },
       "crono": {
@@ -77,7 +80,22 @@
       "clear": "🗑",
       "clear_title": "Vaciar"
     },
-    "alerts": {   
+    "editor_find": {
+      "label": "Buscar",
+      "input_placeholder": "Buscar...",
+      "input_aria": "Buscar en el texto",
+      "prev": "Anterior",
+      "next": "Siguiente",
+      "close": "Cerrar",
+      "prev_title": "Coincidencia anterior",
+      "next_title": "Coincidencia siguiente",
+      "close_title": "Cerrar barra de busqueda",
+      "status_no_matches": "Sin coincidencias",
+      "status_wrap_start": "Volvió al inicio",
+      "status_wrap_end": "Volvió al final",
+      "status_empty_query": "Escribe para buscar"
+    },
+    "alerts": {
       "clipboard_too_large": "El texto del portapapeles es demasiado grande para procesarlo. Redúcelo e inténtalo de nuevo.",
       "append_too_large": "El texto resultante es demasiado grande para procesarlo. Redúcelo e inténtalo de nuevo.",
       "clipboard_overflow": "El texto del portapapeles excede el tamaño máximo permitido y fue truncado.",
@@ -106,7 +124,6 @@
       "wip_shortcuts": "WIP: Aquí se abrirá el selector de atajos del teclado en una futura versión.",
       "wip_avisos": "WIP: Aquí se mostrarán los avisos y novedades en una futura versión.",
       "wip_discord": "WIP: Aquí se abrirá el enlace a Discord en una futura versión.",
-      "wip_links_interes": "WIP: Aquí se mostrarán los links de interés en una futura versión.",
       "wip_colabora": "WIP: Aquí se mostrará la información para colaborar en una futura versión."
     },
     "editor_alerts": {
@@ -124,29 +141,35 @@
     "preset_alerts": {
       "name_empty": "El nombre no puede estar vacío.",
       "wpm_invalid": "WPM debe ser un número entre 50 y 500.",
-      "create_error": "Ocurrió un error al crear el preset. Revisa la consola.",      
+      "create_error": "Ocurrió un error al crear el preset. Revisa la consola.",
       "edit_error": "Ocurrió un error al editar el preset. Revisa la consola.",
       "process_error": "Ocurrió un error al procesar el preset. Revisa la consola."
     },
     "info": {
+      "external": {
+        "blocked": "Enlace bloqueado",
+        "missing": "Enlace no encontrado",
+        "error": "Error al abrir enlace"
+      },
+      "appdoc": {
+        "blocked": "Documento bloqueado",
+        "missing": "Documento no encontrado",
+        "error": "Error al abrir documento"
+      },
       "acerca_de": {
         "app_name": "toT — Reading Meter",
         "title": "Acerca de",
-        "subtitle": "Subtítulo",
-        "body": "Estamos trabajando para usted."
+        "version": {
+          "unavailable": "No disponible"
+        },
+        "env": {
+          "unavailable": "No disponible"
+        }
       },
-      "instrucciones": {
+      "links_interes": {
         "app_name": "toT — Reading Meter",
-        "title": "Manual de uso",
-        "nav_basic": "Guía básica",
-        "nav_full": "Instrucciones completas",
-        "nav_faq": "Preguntas frecuentes (FAQ)",
-        "section_basic_title": "Guía básica",
-        "section_basic_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. ",
-        "section_full_title": "Instrucciones completas",
-        "section_full_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. ",
-        "section_faq_title": "Preguntas frecuentes (FAQ)",
-        "section_faq_body": "Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. Estamos trabajando para usted. "
+        "title": "Links de interés",
+        "section_biblio_label": "Referencias bibliográficas"
       }
     }
   }

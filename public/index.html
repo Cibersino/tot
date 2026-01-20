@@ -5,10 +5,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';">
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
   <title>toT — Reading Meter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./fonts/baskervville.css">
+  <link rel="stylesheet" href="./fonts/baskervville.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -29,10 +29,9 @@
       <h3 id="selector-title" class="section-title">Primera y última parte del texto analizado:</h3>
       <pre id="textPreview">(vacío)</pre>
       <div class="controls">
-        <button id="btnOverwriteClipboard" class="btn-standard" title="Reemplazar texto con el portapapeles">Sobrescribir
-          portapapeles</button>
+        <button id="btnOverwriteClipboard" class="btn-standard" title="Reemplazar texto con el portapapeles">📋↺</button>
         <button id="btnAppendClipboard" class="btn-standard"
-          title="Pegar portapapeles al final del texto en nueva línea">Agregar portapapeles</button>
+          title="Pegar portapapeles al final del texto en nueva línea">📋+</button>
         <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto completo">⌨</button>
         <button id="btnEmptyMain" class="btn-standard" title="Vaciar texto vigente">🗑</button>
       </div>
@@ -73,7 +72,7 @@
         <div class="toggle-wrapper" aria-hidden="false">
           <label class="toggle-label" for="toggleModoPreciso">Modo preciso</label>
           <label class="switch">
-            <input type="checkbox" id="toggleModoPreciso" role="switch" aria-checked="true">
+            <input type="checkbox" id="toggleModoPreciso" role="switch" aria-checked="true" />
             <span class="slider round" aria-hidden="true"></span>
           </label>
         </div>
@@ -88,14 +87,14 @@
       <h4 id="cron-title" class="section-title">CRONÓMETRO</h4>
       <div class="crono-row">
         <input id="cronoDisplay" class="crono-box" type="text" value="00:00:00" />
-        <div class="realwpm">Velocidad:<br><span id="realWpmDisplay">&nbsp;</span></div>
+        <div class="realwpm">Velocidad:<br /><span id="realWpmDisplay">&nbsp;</span></div>
       </div>
       <div class="crono-controls" role="group" aria-label="Controles del cronómetro">
         <button id="cronoToggle" class="btn-standard">▶</button>
         <button id="cronoReset" class="btn-standard">⏹</button>
         <div class="vf-switch-wrapper" aria-label="Ventana flotante">
           <label class="switch" title="Ventana flotante">
-            <input type="checkbox" id="toggleVF" role="switch" aria-checked="false">
+            <input type="checkbox" id="toggleVF" role="switch" aria-checked="false" />
             <span class="slider round" aria-hidden="true"></span>
           </label>
           <span class="vf-label" aria-hidden="true">VF</span>

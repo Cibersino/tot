@@ -89,13 +89,13 @@ function getSelectedLanguage() {
     if (!lang) {
       warnOnce(
         'main.menu.language.empty',
-        'Settings language is empty; falling back to "es" for menu.'
+        `Settings language is empty; falling back to "${DEFAULT_LANG}" for menu.`
       );
       return DEFAULT_LANG;
     }
     return lang;
   } catch (err) {
-    log.error('Failed to read settings language for menu; falling back to "es":', err);
+    log.error(`Failed to read settings language for menu; falling back to "${DEFAULT_LANG}":`, err);
     return DEFAULT_LANG;
   }
 }

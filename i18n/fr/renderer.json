@@ -4,8 +4,8 @@
       "selector_title": "Première et dernière partie du texte analysé :",
       "selector_empty": "(vide)",
       "buttons": {
-        "overwrite_clipboard": "Écraser presse-papier",
-        "append_clipboard": "Ajouter presse-papier",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },
@@ -69,6 +69,21 @@
       "clear": "🗑",
       "clear_title": "Vider"
     },
+    "editor_find": {
+      "label": "Rechercher",
+      "input_placeholder": "Rechercher...",
+      "input_aria": "Rechercher dans le texte",
+      "prev": "Precedent",
+      "next": "Suivant",
+      "close": "Fermer",
+      "prev_title": "Correspondance precedente",
+      "next_title": "Correspondance suivante",
+      "close_title": "Fermer la barre de recherche",
+      "status_no_matches": "Aucune correspondance",
+      "status_wrap_start": "Retour au debut",
+      "status_wrap_end": "Retour a la fin",
+      "status_empty_query": "Saisir pour rechercher"
+    },
     "alerts": {
       "clipboard_too_large": "Le texte du presse-papier est trop volumineux pour être traité. Réduisez-le et réessayez.",
       "append_too_large": "Le texte résultant est trop volumineux pour être traité. Réduisez-le et réessayez.",
@@ -98,7 +113,6 @@
       "wip_shortcuts": "WIP : Le sélecteur de raccourcis clavier s'ouvrira ici dans une version future.",
       "wip_avisos": "WIP : Les annonces et nouvelles apparaîtront ici dans une version future.",
       "wip_discord": "WIP : Le lien Discord s'ouvrira ici dans une version future.",
-      "wip_links_interes": "WIP : Les liens d'intérêt apparaîtront ici dans une version future.",
       "wip_colabora": "WIP : Les informations sur la manière de collaborer apparaîtront ici dans une version future."
     },
     "editor_alerts": {
@@ -123,22 +137,12 @@
     "info": {
       "acerca_de": {
         "app_name": "toT — Reading Meter",
-        "title": "À propos",
-        "subtitle": "Sous-titre",
-        "body": "Nous travaillons pour vous."
+        "title": "À propos"
       },
-      "instrucciones": {
+      "links_interes": {
         "app_name": "toT — Reading Meter",
-        "title": "Manuel d'utilisation",
-        "nav_basic": "Guide de base",
-        "nav_full": "Instructions complètes",
-        "nav_faq": "Foire aux questions (FAQ)",
-        "section_basic_title": "Guide de base",
-        "section_basic_body": "Nous travaillons pour vous.",
-        "section_full_title": "Instructions complètes",
-        "section_full_body": "Nous travaillons pour vous.",
-        "section_faq_title": "Foire aux questions (FAQ)",
-        "section_faq_body": "Nous travaillons pour vous."
+        "title": "Liens d'intérêt",
+        "section_biblio_label": "Références bibliographiques"
       }
     }
   }
