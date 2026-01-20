@@ -51,8 +51,6 @@ Reglas:
 
 ## [Unreleased]
 
-## [Unreleased]
-
 ### Resumen de cambios
 
 - El cronómetro deja de resetearse al modificar el texto vigente cuando el resultado queda **no vacío** (Issue #84).
@@ -62,15 +60,14 @@ Reglas:
 - Se incorpora i18n del modal para **todos los idiomas disponibles** (keys `renderer.info.links_interes.*`).
 - Manual de uso (Issue #85): se reemplaza el placeholder por contenido real con **3 secciones fijas** (IDs `#instrucciones`, `#guia-basica`, `#faq`), se agrega **HTML en inglés**, y se incorporan **assets locales** (PNG/GIF) para capturas/animaciones.
 - El modo **Preciso** corrige el conteo de compuestos con guion (Issue #85): `e-mail`, `co-operate` y similares pasan a contar como **1 palabra**.
+- Editor manual: se habilita búsqueda **Ctrl+F / Cmd+F** con barra de búsqueda, navegación de coincidencias (Enter/Shift+Enter, F3/Shift+F3), modo modal (no edita texto) y resaltado visible incluso con foco en el input.
 
-### Arreglado
+### Agregado
 
-- Cronómetro (Issue #84):
-  - Ya no se pierde el tiempo acumulado al hacer overwrite/append o aplicar cambios desde el Editor manual si el texto vigente queda no vacío.
-  - Al quedar el texto vigente vacío, el cronómetro se resetea completamente y queda en estado consistente (elapsed=0 y WPM real en estado neutral).
-- Conteo (modo Preciso) — compuestos con guion (Issue #85):
-  - Se implementa regla **“alnum join”**: se cuentan como **una sola palabra** secuencias alfa-numéricas unidas por guion **sin espacios** (incluye cadenas con múltiples guiones).
-  - Set de guiones aceptados como joiners: `-` (U+002D), `‐` (U+2010), `-` (U+2011), `‒` (U+2012), `–` (U+2013), `−` (U+2212).
+- Editor manual — Find:
+  - Barra de búsqueda embebida con input + controles **Prev / Next / Close**.
+  - Shortcuts: **Ctrl+F / Cmd+F** (abrir), **Enter / Shift+Enter** (siguiente/anterior), **F3 / Shift+F3** (siguiente/anterior), **Esc** (cerrar).
+  - Resaltado visual propio (overlay) para la coincidencia activa, independiente del highlight nativo del `<textarea>`.
 
 ### Cambiado
 
@@ -89,6 +86,23 @@ Reglas:
 - Manual de uso (Issue #85):
   - El manual deja de usar el enfoque anterior de traducción vía `data-i18n` y pasa a servirse como **HTML localizado por idioma** (ES/EN), manteniendo los IDs contractuales de secciones (`#instrucciones`, `#guia-basica`, `#faq`).
   - Se incorporan capturas/animaciones como **assets locales** (PNG/GIF) referenciados desde el HTML del manual, sin dependencias remotas (CSP-friendly).
+- Editor manual — Find (modo modal):
+  - Mientras Find está abierto el editor entra en modo **no editable** (readOnly), bloqueando input/paste/drop y capturando navegación global para evitar modificaciones accidentales.
+  - Scroll interno al match mediante medición con mirror (no depende de `setSelectionRange()`).
+  - Overlay de highlight alineado al scroll del textarea vía `transform` (sin recomputar geometría en cada scroll).
+
+### Arreglado
+
+- Cronómetro (Issue #84):
+  - Ya no se pierde el tiempo acumulado al hacer overwrite/append o aplicar cambios desde el Editor manual si el texto vigente queda no vacío.
+  - Al quedar el texto vigente vacío, el cronómetro se resetea completamente y queda en estado consistente (elapsed=0 y WPM real en estado neutral).
+- Conteo (modo Preciso) — compuestos con guion (Issue #85):
+  - Se implementa regla **“alnum join”**: se cuentan como **una sola palabra** secuencias alfa-numéricas unidas por guion **sin espacios** (incluye cadenas con múltiples guiones).
+  - Set de guiones aceptados como joiners: `-` (U+002D), `‐` (U+2010), `-` (U+2011), `‒` (U+2012), `–` (U+2013), `−` (U+2212).
+- Editor manual — Find:
+  - Navegación next/prev ahora **siempre** lleva el scroll interno del textarea a la coincidencia.
+  - Con Find abierto, **Enter ya no borra/reemplaza** texto (modo modal + captura de teclas).
+  - El resaltado de coincidencia permanece visible aunque el foco se mantenga en el input del buscador (overlay).
 
 ### Archivos
 
@@ -100,6 +114,11 @@ Reglas:
 - `public/info/instrucciones.es.html`
 - `public/info/instrucciones.en.html`
 - `public/assets/instrucciones/*` (PNG/GIF)
+- Editor manual (Find):
+  - `public/editor.html`
+  - `public/editor.css`
+  - `public/editor.js`
+  - i18n: keys `renderer.editor_find.*` en `i18n/**/renderer.json` (idiomas disponibles)
 - i18n: keys `renderer.info.links_interes.*` en `i18n/**/renderer.json` (todos los idiomas disponibles).
 
 ---
