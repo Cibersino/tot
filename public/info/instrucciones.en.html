@@ -1,0 +1,727 @@
+<!-- public/info/instrucciones.en.html -->
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>How to use — toT — Reading Meter</title>
+</head>
+
+<body>
+  <h3>toT — Reading Meter</h3>
+  <h1>How to use</h1>
+
+  <nav aria-label="Manual sections">
+    <ul>
+      <li><a href="#guia-basica">Basic guide</a></li>
+      <li><a href="#instrucciones">Full instructions</a></li>
+      <li><a href="#faq">Frequently asked questions (FAQ)</a></li>
+    </ul>
+  </nav>
+
+  <article class="instrucciones-document">
+
+    <!-- =========================================================
+         1) BASIC GUIDE
+         ========================================================= -->
+    <section id="guia-basica" class="info-section">
+      <div>
+        <h2>Basic guide</h2>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/guia-basica.gif" alt="Quick demonstration (GIF): basic flow of use"
+            loading="lazy" decoding="async" />
+        </figure>
+
+        <p><strong>Objective:</strong> in less than 1 minute, to have a <strong>current text</strong> ready, a
+          reasonable <strong>WPM</strong> and a useful <strong>estimate</strong>.</p>
+
+        <ol>
+          <li>
+            <p><strong>Load text</strong></p>
+            <ul>
+              <li>From any source: copy the text and use <strong>Overwrite clipboard</strong></li>
+              <li>If you are assembling a text in parts: use <strong>Append clipboard</strong> as many times as you need
+              </li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>Edit the text (if needed)</strong></p>
+            <ul>
+              <li>Open <strong>Manual Editor</strong> (⌨).</li>
+              <li>Correct everything weird: line breaks, hyphenation or “garbage” (menus, ads, repeated headers).
+              </li>
+              <li>You can modify or add whatever you want, by typing or pasting in the Manual Editor.</li>
+              <li>If you want to start from scratch, use <strong>🗑</strong>.</li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>Choose your reading speed (WPM)</strong></p>
+            <ul>
+              <li>If you don't want to think too much, select a <strong>preset</strong> (“Default”, etc.).</li>
+              <li>If the text is dense/technical, lower the WPM; if it is light, turn it up.</li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>Choose the counting mode</strong></p>
+            <ul>
+              <li><strong>Precise</strong>: recommended in general, and especially if your text has many signs, mixed
+                scripts or emojis (uses linguistic segmentation and graphemes)</li>
+              <li><strong>Simple</strong>: rudimentary approach based on spaces</li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>Read the results</strong></p>
+            <ul>
+              <li>Check <strong>words</strong>, <strong>characters</strong> and the <strong>estimated time</strong></li>
+              <li>If the time “doesn't add up”, go back to (2) and (3), or toggle (4) to compare.</li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>Measure your real WPM (optional, but recommended)</strong></p>
+            <ul>
+              <li>With the current text already finished, start the <strong>Stopwatch</strong> (▶) when you start
+                reading, and pause (⏸) when you finish.</li>
+              <li>Use the real WPM as a calibration to adjust your presets.</li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>If you are going to read in another app</strong></p>
+            <ul>
+              <li>Activate the <strong>Floating Window</strong> to control the Stopwatch without changing windows.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <p><strong>If something goes wrong (rapid diagnosis):</strong></p>
+        <ul>
+          <li><strong>“Weird” pasted text (PDF/columns):</strong> go through Manual Editor and clean up line
+            breaks/hyphens.
+          </li>
+          <li><strong>Absurd counts:</strong> check the text in the Manual Editor (copies from PDF often bring noise).
+          </li>
+          <li><strong>Estimate too high/too low:</strong> review your WPM and test Simple vs Precise.</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- =========================================================
+         2) FULL INSTRUCTIONS
+         ========================================================= -->
+    <section id="instrucciones" class="info-section">
+      <div>
+        <h2>Full instructions</h2>
+
+        <p>Are you hesitant to start certain readings because you don't know how much work it will really take?<br />
+          Do you find it hard to finish reading and abandon them in the middle?<br />
+          Do you want to overcome your difficulties and develop your reading skills using scientific measurement and
+          organization tools?<br />
+          Does your browser accumulate a lot of tabs and bookmarks with news and articles of interest that you don't
+          know if you will be able to read?<br />
+          Do you have to teach a class this semester and must provide your students with a realistic bibliography?<br />
+          Do you have to prepare a paper for tomorrow to present to an audience for one hour?<br />
+          Do you need to script an audiovisual capsule with precise timing?<br />
+          Is the pile of books on your bedside table growing mercilessly?<br />
+          Do you want to do experimental studies related to reading time?</p>
+
+        <p>This app is for you.</p>
+
+        <p><strong>toT — Reading Meter</strong> estimates reading time from a text and a speed set in WPM (words per
+          minute). The app also has customizable speed presets and can measure your real speed with a stopwatch.</p>
+
+        <p>This app is designed for:</p>
+        <ul>
+          <li>Quickly estimate the reading time of any text you enter or compose.</li>
+          <li>Measure and adjust your real speed in different scenarios.</li>
+          <li>Configure customized WPM presets according to the type of reader, reading mode, text complexity, language
+            or any desired parameter.</li>
+        </ul>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/ventana-principal-completa.png" alt="Screenshot: complete main window"
+            loading="lazy" decoding="async" />
+        </figure>
+
+        <hr />
+
+        <h3>Step 1 — Select and assemble the text to be measured</h3>
+
+        <p>Your first decision is <strong>how to construct the text you wish to estimate</strong>. From here on we will
+          call it <strong>current text</strong>.</p>
+
+        <h4>Route 1A — Use Clipboard (from web/PDF/any source)</h4>
+
+        <ol>
+          <li>
+            <p>Select the text in the source (article, document, chat, etc.). Options:</p>
+            <ul>
+              <li>All text in the open document/page. Right-click and “Select all”, or: Ctrl+A
+                (Windows/Linux); Cmd+A (Mac).</li>
+              <li>Only a part of the text (manual selection). For that you can:
+                <ul>
+                  <li>Left-click at the beginning of the desired text and drag the cursor to the end of the desired
+                    text.</li>
+                  <li>Select, as above, only a small part of the text at the beginning or at the end of the desired
+                    text, move the cursor to the other end of the desired text and Shift + left-click. You can adjust by
+                    holding Shift and using the arrow keys.</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+
+          <li>
+            <p>Copy. Right click and “Copy” or: Ctrl+C (Windows/Linux); Cmd+C (Mac).</p>
+          </li>
+        </ol>
+
+        <p><strong>Note:</strong> some pages or documents restrict copying or alter copying. Even so, there are methods
+          to extract/transcribe content to text (e.g., conversion or OCR). <em>toT</em> only measures the text that you
+          give it; obtaining that text and its implications are user responsibility.</p>
+
+        <ol start="3">
+          <li>
+            <p>In the main app window, choose one of these actions:</p>
+            <ul>
+              <li><strong>Overwrite clipboard</strong>: completely replaces the current text with the clipboard.</li>
+              <li><strong>Append clipboard</strong>: adds the clipboard to the end of the current text.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/selector-texto-ventana-principal.png"
+            alt="Screenshot: text selector in main window" loading="lazy" decoding="async" />
+        </figure>
+
+        <p><strong>When to use each one:</strong></p>
+        <ul>
+          <li>Use <strong>Overwrite clipboard</strong> when you are going to work with a <em>single text</em> or want to
+            restart.</li>
+          <li>Use <strong>Append clipboard</strong> when you are assembling a text “by parts” (different texts,
+            fragments, quotes, sections, chapters).</li>
+        </ul>
+
+        <p><strong>Fast quality control:</strong></p>
+        <ul>
+          <li>If you copy from PDF or formatted sources/documents, check for extraneous line breaks, dashes, or
+            invisible spaces. If you see problems, go through the Manual Editor (Path 1B or Step 2).</li>
+        </ul>
+
+        <h4>Route 1B — Type or paste directly into the Manual Editor</h4>
+
+        <ol>
+          <li>Open <strong>Manual Editor</strong> with the button <strong>⌨</strong>.</li>
+          <li>Paste or type the text directly there.</li>
+          <li>You can undo/redo as in any text editor: Ctrl+Z / Ctrl+Y (Windows/Linux); Cmd+Z / Cmd+Shift+Z (Mac).</li>
+        </ol>
+
+        <p><strong>Note:</strong> The Manual Editor, in addition to updating and saving the current text immediately, by
+          default recalculates the count and generates the estimate automatically. If you want the latter to be manual,
+          you can remove the “calculate while typing” check in the editor window and use the CALCULATE button.</p>
+
+        <p><strong>When this route is convenient:</strong></p>
+        <ul>
+          <li>You need to clean up formatting (PDF, columns, dashes).</li>
+          <li>You will be doing a lot of editing (correcting, trimming, reorganizing).</li>
+          <li>You want total control over the final document.</li>
+        </ul>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/editor-manual-sobre-ventana-principal.png"
+            alt="Screenshot: manual editor on main window" loading="lazy" decoding="async" />
+        </figure>
+
+        <h4>Route 1C — Mixing (recommended for real texts)</h4>
+
+        <ol>
+          <li>Load a quick draft with <strong>Overwrite clipboard</strong>.</li>
+          <li>Use <strong>Append clipboard</strong> to add missing sections.</li>
+          <li>Open <strong>Manual Editor</strong> to:
+            <ul>
+              <li>remove garbage (repeated headers, numbering, line breaks),</li>
+              <li>correct paragraphs,</li>
+              <li>delete content that you do not want to include in the measurement,</li>
+              <li>leave a “clean” final version.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <p><strong>Note:</strong> You can completely empty the current text quickly with the <strong>🗑</strong> button
+          in the main window or in the manual editor.</p>
+
+        <hr />
+
+        <h3>Step 2 — Verify the current text (checkpoint)</h3>
+
+        <p>Before calculating or measuring, make a minimum verification:</p>
+        <ul>
+          <li>Is the text complete?</li>
+          <li>Does it include material you don't want to measure (repeated titles, web navigation, ads)?</li>
+          <li>Are there copying artifacts (many line breaks, dashes “-” at the end of each line)?</li>
+        </ul>
+
+        <p>If the answer is “yes”, go back to the Manual Editor and correct. This step usually avoids errors in real
+          WPM and estimate.</p>
+
+        <hr />
+
+        <h3>Step 3 — Adjust the reading speed (WPM) for the estimation</h3>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/selector-velocidad-ventana-principal.png"
+            alt="Screenshot: speed selector (WPM) in main window" loading="lazy" decoding="async" />
+        </figure>
+
+        <p>Here you decide at what speed the time will be estimated.</p>
+
+        <h4>3.1 Choosing a WPM</h4>
+
+        <p>You have two options:</p>
+        <ul>
+          <li>Adjust the WPM manually. You can:
+            <ul>
+              <li>Type directly in the input.</li>
+              <li>Move the point on the horizontal bar (slider).</li>
+            </ul>
+          </li>
+          <li>Choose a <strong>preset</strong> from the preset dropdown list. Here you can have the following options:
+            <ul>
+              <li>Default presets for all languages and/or for specific languages.</li>
+              <li>User-customized presets.</li>
+            </ul>
+          </li>
+        </ul>
+
+        <p><strong>Operational recommendation:</strong></p>
+        <ul>
+          <li>If your goal is “a reasonable estimate”, use a “normal reading” preset.</li>
+          <li>If the text is technical/dense, use a slower preset.</li>
+          <li>If it is light reading, you can use a faster one.</li>
+        </ul>
+
+        <h4>3.2 Manage presets (if needed)</h4>
+
+        <ul>
+          <li><strong>Create</strong> a preset if you are missing one for your typical case (technical, screen,
+            language, etc.).</li>
+          <li><strong>Edit</strong> if your preset is systematically high/low or you want to edit its name or
+            description. You can also edit the default presets.</li>
+          <li><strong>Delete</strong> if it became noisy.</li>
+          <li><strong>Restore default presets</strong> if you want to return to the original set of default presets that
+            were edited or “deleted” (does not remove “pure” custom presets).</li>
+        </ul>
+
+        <p><strong>Expected result of Step 3:</strong></p>
+        <ul>
+          <li>The configured WPM reflects your intention (conservative/neutral/optimistic).</li>
+        </ul>
+
+        <hr />
+
+        <h3>Step 4 — Decide on counting mode (simple vs. precise)</h3>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/toggle-modo-preciso.png"
+            alt="Screenshot: counting mode toggle (simple/precise) and results" loading="lazy" decoding="async" />
+        </figure>
+
+        <h4>4.1 Differences between the two modes</h4>
+
+        <p><strong>Simple mode:</strong></p>
+        <ul>
+          <li><strong>Words:</strong> separated by spaces (and equivalent spaces).</li>
+          <li><strong>Characters:</strong> counts characters directly on the text (with and without spaces).</li>
+        </ul>
+
+        <p><strong>Precise mode:</strong></p>
+        <ul>
+          <li><strong>Characters:</strong> segments by <strong>graphemes</strong> (closest to “perceived characters” by
+            the user, useful for emojis and combinations).</li>
+          <li><strong>Words:</strong> segments with linguistic rules when available in the system (per language), and
+            avoids counting purely punctuation tokens.</li>
+        </ul>
+
+        <p><strong>What changes in practice:</strong><br />
+          They change the <strong>counts</strong> (words/characters) and therefore change the <strong>estimated
+            time</strong> and the <strong>real WPM</strong>.</p>
+
+        <h4>4.2 Technical explanation</h4>
+
+        <ul>
+          <li><strong>Simple mode:</strong> calculates <em>words</em> by separating the text by spaces (whitespace). For
+            <em>characters</em>, it counts units of the string (and then distinguishes with/without spaces).
+          </li>
+          <li><strong>Precise mode:</strong> uses system <code>Intl.Segmenter</code> to segment:
+            <ul>
+              <li><strong>Graphemes</strong> to count <em>perceived characters</em>.</li>
+              <li><strong>Words</strong> to count <em>words</em>, using the signal <code>isWordLike</code> when it
+                exists
+                (and an equivalent heuristic when it does not), to avoid counting tokens that are just punctuation.</li>
+            </ul>
+            In addition, the app applies a binding rule (<em>alnum join</em>): patterns like <code>alnum(-alnum)+</code>
+            are counted as <strong>one word</strong> (e.g. <code>e-mail</code>).
+          </li>
+        </ul>
+
+        <h4>4.3 Practical example (text + what to observe)</h4>
+
+        <p>Paste this text as “current text” and toggle between <strong>simple</strong> and <strong>precise</strong>:
+        </p>
+
+        <pre><code>alpha / beta / gamma
+我喜欢读书因为它很有趣
+Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
+
+        <p>Remember that you can duplicate the text as many times as you want with <strong>Append clipboard</strong>.
+        </p>
+
+        <p><strong>What to see:</strong></p>
+        <ul>
+          <li>In <code>alpha / beta / gamma</code>, the <strong>simple</strong> mode inflates “words” by including
+            punctuation tokens isolated by spaces (e.g. <code>/</code>).</li>
+          <li>In languages without spaces between words (e.g. Chinese), <strong>simple</strong> mode counts all pasted
+            characters as a single "word", while <strong>precise</strong> mode segments them into more units.</li>
+          <li>In the emoji line, compare the <strong>character count</strong>: <strong>precise</strong> mode aligns
+            better with what a user perceives as “a character”.
+          </li>
+        </ul>
+
+        <hr />
+
+        <h3>Step 5 — Read results (counts and estimated time)</h3>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/resultados-conteo.png" alt="Screenshot: count results and estimated time"
+            loading="lazy" decoding="async" />
+        </figure>
+
+        <p>With current text + WPM + counting mode:</p>
+        <ul>
+          <li>Check <strong>words</strong>, <strong>characters with/without spaces</strong>.</li>
+          <li>Check <strong>estimated time</strong>.</li>
+        </ul>
+
+        <p>If estimated time “does not make sense”:</p>
+        <ol>
+          <li>check that WPM is not absurd,</li>
+          <li>check text (Step 2),</li>
+          <li>compare simple vs. precise (Step 4).</li>
+        </ol>
+
+        <hr />
+
+        <h3>Step 6 — Measure your real WPM with the Stopwatch</h3>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/cronometro.png" alt="Screenshot: stopwatch and real WPM" loading="lazy"
+            decoding="async" />
+        </figure>
+
+        <p>This step is for calibration or actual measurement.</p>
+
+        <h4>6.1 Preparation (what usually fails)</h4>
+        <ul>
+          <li>Make sure that the current text is exactly what you will read.</li>
+          <li>Do not edit the text during the measurement.</li>
+          <li>Decide whether you will read the whole text or just a part of it (and adjust the current text to that
+            part).</li>
+        </ul>
+
+        <h4>6.2 Measurement</h4>
+        <ol>
+          <li>Start (▶) the Stopwatch as you begin reading.</li>
+          <li>Pause (⏸) at the end. Attention: do not press Stop (⏹) unless you want to reset the Stopwatch and return
+            to the beginning.</li>
+          <li>Observe the <strong>real WPM</strong> calculated.</li>
+        </ol>
+
+        <p><strong>Interpretation:</strong></p>
+        <ul>
+          <li>If the real WPM is consistently lower than your preset, lower that preset.</li>
+          <li>If it is consistently higher, you can raise it.</li>
+        </ul>
+
+        <p><strong>Notes:</strong></p>
+        <ul>
+          <li>You can manually insert an arbitrary time into the Stopwatch. Note: this will remove accumulated
+            (invisible) fractions of a second, if any.</li>
+          <li>If the estimated time does not match your Stopwatch time for the same apparent WPM, it is probably due to
+            the fractions of a second not displayed, the fractions of WPM not displayed on the Stopwatch and rounding.
+          </li>
+        </ul>
+
+        <h4>6.3 Floating Window (if you read in another app)</h4>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/ventana-flotante.png" alt="Screenshot: Floating Window and stopwatch control"
+            loading="lazy" decoding="async" />
+        </figure>
+
+        <p>Use the Floating Window to control the Stopwatch without constantly switching windows.</p>
+
+        <hr />
+
+        <h3>Step 7 — Local saving, cleaning and “clean” reinstallation</h3>
+
+        <h4>7.1 What is stored locally</h4>
+
+        <p>The app saves data locally to maintain your settings between sessions. In general it includes:</p>
+        <ul>
+          <li><strong>Current text</strong> (text status).</li>
+          <li><strong>Configuration</strong> (e.g. language, current WPM, counting mode).</li>
+          <li><strong>Presets</strong> (custom and default preset status).</li>
+          <li><strong>Status of windows</strong> (e.g. size/position of the editor).</li>
+        </ul>
+
+        <p><strong>Implication:</strong></p>
+        <ul>
+          <li>If you work with sensitive text, use <strong>🗑</strong> at the end and consider total cleanup.</li>
+        </ul>
+
+        <h4>7.2 Total cleanup (clean reinstallation) — with paths per system</h4>
+
+        <p>To return to “first run” status:</p>
+        <ol>
+          <li><strong>Close the app</strong> (this avoids half-written files).</li>
+          <li>Delete the local configuration folder (<strong>config</strong>).</li>
+        </ol>
+
+        <p><strong>Typical paths</strong> (<code>tot-readingmeter</code> app folder):</p>
+        <ul>
+          <li><strong>Windows:</strong> <code>%APPDATA%\tot-readingmeter\config\</code>
+            (equivalent to <code>C:\Users\&lt;YOUR_USER&gt;\AppData\Roaming\tot-readingmeter\config\</code>)
+          </li>
+          <li><strong>Linux:</strong> <code>~/.config/tot-readingmeter/config/</code> (or
+            <code>$XDG_CONFIG_HOME/tot-readingmeter/config/</code>)
+          </li>
+          <li><strong>macOS:</strong> <code>~/Library/Application Support/tot-readingmeter/config/</code></li>
+        </ul>
+
+        <ol start="3">
+          <li>Open the app and reconfigure (language, presets, etc.).</li>
+        </ol>
+
+        <hr />
+
+        <h3>Step 8 — Limits and very long texts</h3>
+
+        <ul>
+          <li>For security and performance, the app imposes a hard limit on the current text size of 10 million
+            characters. If you try to exceed it, the app <em>truncates</em> the text and displays a warning.</li>
+          <li>With extremely long texts (or complex combinations of characters) there may be delays in counting and
+            increased memory usage.</li>
+        </ul>
+
+        <p><strong>Note:</strong> 10 million characters is roughly equivalent to the 7 volumes of <em>Marcel Proust's In
+            Search of Lost Time</em> (about 100 hours of reading for a median adult).</p>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- =========================================================
+         3) FAQ
+         ========================================================= -->
+    <section id="faq" class="info-section">
+      <div>
+        <h2>Frequently asked questions (FAQ)</h2>
+
+        <h3>“Are there apps similar to <em>toT</em>?”</h3>
+        <p>Yes, there are several related tools:</p>
+        <ul>
+          <li><strong>Web calculators</strong>: estimate time from a pasted text.</li>
+          <li><strong>Browser extensions</strong>: show “estimated time” in pages.</li>
+          <li><strong>Reading/annotation apps</strong>: metrics, progress, counting or markers.</li>
+        </ul>
+        <p>What is distinctive about <em>toT</em> is that it works as an <strong>operational</strong> tool: build a
+          <strong>current text</strong> (clipboard and/or editor), set <strong>WPM/presets</strong>, compare
+          <strong>Simple vs Precise</strong>, and <strong>measure real WPM</strong> with Stopwatch (including Floating
+          Window).
+        </p>
+
+        <hr />
+
+        <h3>“How is the development and maintenance of <em>toT</em> financed?”</h3>
+        <p><em>toT</em> is a project maintained by its developers as general purpose software.<br />
+          It does not depend on monetizing your text or “selling data”.<br />
+          No advertising.</p>
+        <p>If you want to support its development, you will be able to do it through a donation/support link when it is
+          published in the repository.</p>
+        <p>You can also contribute:</p>
+        <ul>
+          <li>Reporting problems with clear reproduction steps.</li>
+          <li>Proposing concrete improvements (UX, performance, i18n, documentation).</li>
+          <li>Contributing translations or small and verifiable PRs.</li>
+        </ul>
+
+        <hr />
+
+        <h3>“Why is WPM used to estimate reading time?”</h3>
+        <p>Because <strong>WPM (words per minute)</strong> is a simple, standard and reasonably stable parameter to make
+          a <strong>first approximation</strong>.</p>
+        <p><strong>Unavoidable limitations:</strong></p>
+        <ul>
+          <li>The real WPM changes according to <strong>difficulty</strong>, <strong>language</strong>,
+            <strong>reading mode</strong> (silent or read aloud, etc), and objective (deep comprehension vs. speed
+            reading).
+          </li>
+          <li>That is why WPM is most useful when you treat it as a <strong>tunable parameter</strong>, not as
+            “truth”.</li>
+        </ul>
+        <p>The app includes a Stopwatch precisely so you can <strong>measure your real speed</strong> and adjust presets
+          empirically.</p>
+
+        <hr />
+
+        <h3>“How does the “precise mode” work?”</h3>
+        <p>On a technical level, the <strong>Precise</strong> mode seeks to segment the text in a more linguistic way:
+        </p>
+        <ul>
+          <li>Use <code>Intl.Segmenter</code> to segment <strong>Words</strong>.</li>
+          <li>Use <code>Intl.Segmenter</code> to segment <strong>Graphemes</strong> by counting "perceived" characters
+            (useful in emojis and combinations).</li>
+          <li>Avoid counting tokens that are only punctuation.</li>
+          <li>Applies a join rule (<em>alnum join</em>): <code>alnum(-alnum)+</code> patterns are counted as <strong>one
+              word</strong> (e.g. <code>e-mail</code>).</li>
+        </ul>
+        <p>The <strong>Simple</strong> mode is a space-based approach: it separates “words” by whitespace and counts
+          characters directly on the string.</p>
+
+        <hr />
+
+        <h3>“Does the app protect my privacy?”</h3>
+        <p>Essentially, <em>toT</em> operates <strong>locally</strong>. The text you paste or type is processed on your
+          machine to count/estimate.</p>
+        <p><strong>Things to distinguish:</strong></p>
+        <ul>
+          <li><strong>Text and configuration:</strong> are saved locally (for persistence between sessions).</li>
+          <li><strong>Internet:</strong> the app may require connection <strong>only</strong> when you execute actions
+            that open external resources, such as:
+            <ul>
+              <li>open external links clicked by the user,</li>
+              <li>check/open update information (e.g. on GitHub).</li>
+            </ul>
+          </li>
+        </ul>
+        <p>Practical implication: although <em>toT</em> does not “upload your text", any action that opens an external
+          site exposes to that service your IP address and normal connection metadata (as in any browser).</p>
+
+        <hr />
+
+        <h3>“How can I improve the translations and add new ones to the app?”</h3>
+        <p>Via contribution to the repository:</p>
+        <ul>
+          <li>Translations are handled as <strong>JSON files</strong> per language (and as HTML files in the case of
+            “How to use”).</li>
+          <li>To improve a translation: adjust existing strings (terminology consistent with the UI).</li>
+          <li>To add a language: it is added to the language manifest and the corresponding translation files are
+            created.</li>
+        </ul>
+        <p>Operational recommendation: before translating massively, define a minimum glossary (for example:“current
+          text”, “precise/simple mode”, “Floating Window”, “presets”, “real WPM”).</p>
+
+        <hr />
+
+        <h3>“Where can I report unwanted behavior or make requests or suggestions?”</h3>
+        <p>In GitHub (Issues):</p>
+        <ul>
+          <li>Repo: <a
+              href="https://github.com/Cibersino/tot-readingmeter">https://github.com/Cibersino/tot-readingmeter</a>
+          </li>
+          <li>Issues: <a
+              href="https://github.com/Cibersino/tot-readingmeter/issues">https://github.com/Cibersino/tot-readingmeter/issues</a>
+          </li>
+        </ul>
+        <p>For a report to be actionable, include:</p>
+        <ul>
+          <li>app version + operating system,</li>
+          <li>steps to reproduce,</li>
+          <li>expected vs. observed result,</li>
+          <li>if applicable: minimum text/pattern and screenshots.</li>
+        </ul>
+
+        <hr />
+
+        <h3>“What happens if I enter a very long text?”</h3>
+        <p>The app has a <strong>hard limit</strong> for the current text size (for performance and security): 10
+          million characters. If you exceed it, the text is <strong>truncated</strong> and a warning is displayed.</p>
+        <p>To give you an idea: 10 million characters is roughly equivalent to the 7 volumes of the famous “In Search of
+          Lost Time” by <em>Marcel Proust</em>. This is equivalent to about 100 hours of reading for a median adult.</p>
+        <p>Practical recommendations:</p>
+        <ul>
+          <li>Divide giant texts into parts (chapters/sections) and measure separately.</li>
+          <li>If you are building a corpus, use <strong>Append clipboard</strong> and control the size.</li>
+          <li>If copying from PDF/columns, first clean up in the <strong>Manual Editor</strong> (reduce garbage before
+            growing text).</li>
+        </ul>
+
+        <hr />
+
+        <h3>“Who is behind <em>toT</em>?”</h3>
+        <p>Together with the entire community that makes it possible, its main author is <strong>Cibersino</strong>:
+          <a href="https://github.com/Cibersino/">https://github.com/Cibersino/</a>, alias of the Chilean psychologist
+          <em>Manuel Neira</em>. This is his first app.
+        </p>
+
+        <hr />
+
+        <h3>“Why is the app called <em>toT</em>?”</h3>
+        <p>It is a short name designed to be associated with the central idea of the app: <strong>time</strong> +
+          <strong>text</strong> (measurement of reading time from a text).
+        </p>
+        <p>In addition, it is inspired by the Platonic myth about the Egyptian god <strong>Theuth</strong>.
+          <em>Plato</em>, in his dialogue “Phaedrus”, tells how this divinity, creator of hieroglyphics and measurer of
+          time, presents to King Ammon the invention of writing as a memory drug. The king replies that it is not a
+          remedy, but simply a reminder.
+        </p>
+
+        <hr />
+
+        <h3>“How many words does a page normally have?”</h3>
+        <p>It depends very much on the <strong>type of page</strong>, the <strong>format</strong> (size, margins, line
+          spacing, typography) and the <strong>language/writing system</strong>.</p>
+
+        <p><strong>If it is a website</strong>, it is extremely relative: there is no standard. In addition, many pages
+          include menus, banners, footers, columns, etc., which change the actual “density” of text.</p>
+
+        <p><strong>If you are referring to a book or document page</strong>, the format is important, but the language
+          is also important (a text in English/Spanish is not the same as one in Japanese, for example).</p>
+
+        <ul>
+          <li><strong>Books in languages with words separated by spaces</strong> (Latin alphabet and related): a
+            “standard” book usually contains approximately <strong>250-300 words per page</strong>.</li>
+          <li><strong>Word document</strong> (letter size, Arial 12, single spacing and standard margins): usually
+            contains approximately <strong>500-600 words per page</strong>.</li>
+        </ul>
+
+        <p>If you need a reliable figure for your case, the most direct way is to take a representative page of the same
+          material (same format and language) and measure it with <em>toT</em>.</p>
+
+        <hr />
+
+        <h3>“What studies are there on reading speed?”</h3>
+        <p>There are studies on reading speed and comprehension in different contexts.</p>
+        <p>For specific references, see <em>Menu</em> &gt; <em>Useful links</em>.</p>
+
+        <hr />
+
+        <h3>“How do I improve my reading skills?”</h3>
+        <p>(Soon here we will develop the theoretical basis and practical utility of this app)</p>
+      </div>
+    </section>
+
+  </article>
+</body>
+
+</html>
