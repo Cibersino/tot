@@ -49,7 +49,12 @@ Reglas:
 
 ---
 
-## [Unreleased]
+## [0.1.2] Con instrucciones
+
+### Fecha release y último commit
+
+- Fecha: `2026-01-16`
+- Último commit: `<TBD>`
 
 ### Resumen de cambios
 
@@ -131,8 +136,7 @@ Reglas:
 ### Fecha release y último commit
 
 - Fecha: `2026-01-16`
-- Último commit: `<TBD>`
-- Baseline técnico usado para auditoría: `0.1.0` (commit `dffe1d9`) → `<TBD>`
+- Último commit: `9b056a8`
 
 ### Resumen de cambios
 
