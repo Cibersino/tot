@@ -3,11 +3,7 @@
 ## Elección de archivo:
 
 Archivos ya ordenados y limpiados:
-- `electron/main.js`
-- `electron/menu_builder.js`
-- `electron/fs_storage.js`
-- `electron/settings.js`
-- `electron/text_state.js`
+- Ninguno
 
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
