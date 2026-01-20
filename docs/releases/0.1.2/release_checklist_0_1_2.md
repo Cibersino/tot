@@ -54,10 +54,10 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 
 ## 3. Alinear la versión (freeze justo antes del empaquetado)
 
-* [ ] Working tree limpio (sin cambios locales).
 * [ ] `package.json`: `"version": "X.Y.Z"` (fuente de verdad; `app.getVersion()`).
-* [ ] `package-lock.json`: consistente con `package.json` (actualizar/regenerar según flujo del repo).
+* [ ] `package-lock.json`: consistente con `package.json` (actualizar/regenerar según flujo del repo: npm install).
 * [ ] Confirmar que `tools_local/` (y equivalentes) no está tracked ni entró al commit del release.
+* [ ] Working tree limpio (sin cambios locales).
 * [ ] Commit final del release creado antes de empaquetar.
   * Commit: `<HASH>`
 
