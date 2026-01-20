@@ -4,8 +4,8 @@
       "selector_title": "First and last part of the analyzed text:",
       "selector_empty": "(empty)",
       "buttons": {
-        "overwrite_clipboard": "Overwrite clipboard",
-        "append_clipboard": "Append clipboard",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },
@@ -40,10 +40,13 @@
       },
       "tips": {
         "results_help": {
-          "tip1": "Tip: Precise mode uses Intl.Segmenter; results may differ slightly from Simple.",
-          "tip2": "Tip: You can switch between Simple/Precise and results update immediately.",
-          "tip3": "Tip: WPM presets persist between sessions; adjust WPM to match your real reading speed.",
-          "tip4": "Tip: Use the manual editor to validate counts when working with long texts."
+          "tip1": "Precise mode uses Unicode segmentation to count characters (graphemes) and words using Intl.Segmenter.",
+          "tip2": "When manually entering a time into the stopwatch, the invisible fractions of a second are eliminated.",
+          "tip3": "To select all the text in an area, use Ctrl + A (Windows and Linux) or Command(⌘) + A (Mac).",
+          "tip4": "You can select text by first selecting the text at one end and then, while holding down the Shift key, clicking on the other end.",
+          "tip5": "A standard book usually contains between 250 and 300 words per page (this only applies to languages that use the Latin alphabet, or close derivatives, and have a similar grammatical structure).",
+          "tip6": "'You have invented an elixir not of memory, but of reminding' (Plato)",
+          "tip7": "'Writing requires a double abstraction: abstraction from the sound of speech and abstraction from the interlocutor.' (Vygotsky)"
         }
       },
       "crono": {
@@ -77,6 +80,21 @@
       "clear": "🗑",
       "clear_title": "Clear"
     },
+    "editor_find": {
+      "label": "Find",
+      "input_placeholder": "Find...",
+      "input_aria": "Find in text",
+      "prev": "Prev",
+      "next": "Next",
+      "close": "Close",
+      "prev_title": "Previous match",
+      "next_title": "Next match",
+      "close_title": "Close find bar",
+      "status_no_matches": "No matches",
+      "status_wrap_start": "Wrapped to start",
+      "status_wrap_end": "Wrapped to end",
+      "status_empty_query": "Type to search"
+    },
     "alerts": {
       "clipboard_too_large": "Clipboard text is too large to process. Reduce it and try again.",
       "append_too_large": "Resulting text is too large to process. Reduce it and try again.",
@@ -106,7 +124,6 @@
       "wip_shortcuts": "WIP: The keyboard shortcuts selector will open here in a future version.",
       "wip_avisos": "WIP: Announcements and news will appear here in a future version.",
       "wip_discord": "WIP: The Discord link will open here in a future version.",
-      "wip_links_interes": "WIP: Useful links will appear here in a future version.",
       "wip_colabora": "WIP: Information on how to contribute will appear here in a future version."
     },
     "editor_alerts": {
@@ -129,24 +146,30 @@
       "process_error": "An error occurred while processing the preset. Check console."
     },
     "info": {
+      "external": {
+        "blocked": "Link blocked",
+        "missing": "Link not found",
+        "error": "Error opening link"
+      },
+      "appdoc": {
+        "blocked": "Document blocked",
+        "missing": "Document not found",
+        "error": "Error opening document"
+      },
       "acerca_de": {
         "app_name": "toT — Reading Meter",
         "title": "About",
-        "subtitle": "Subtitle",
-        "body": "Work in progress."
+        "version": {
+          "unavailable": "Unavailable"
+        },
+        "env": {
+          "unavailable": "Unavailable"
+        }
       },
-      "instrucciones": {
+      "links_interes": {
         "app_name": "toT — Reading Meter",
-        "title": "User manual",
-        "nav_basic": "Basic guide",
-        "nav_full": "Full instructions",
-        "nav_faq": "Frequently asked questions (FAQ)",
-        "section_basic_title": "Basic guide",
-        "section_basic_body": "Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. ",
-        "section_full_title": "Full instructions",
-        "section_full_body": "Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. ",
-        "section_faq_title": "Frequently asked questions (FAQ)",
-        "section_faq_body": "Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. Work in progress. "
+        "title": "Useful Links",
+        "section_biblio_label": "Bibliographics References"
       }
     }
   }

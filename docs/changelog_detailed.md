@@ -49,6 +49,83 @@ Reglas:
 
 ---
 
+## [Unreleased]
+
+### Resumen de cambios
+
+- El cronómetro deja de resetearse al modificar el texto vigente cuando el resultado queda **no vacío** (Issue #84).
+- El cronómetro **solo** se resetea cuando el texto vigente queda **vacío** (desde cualquier flujo: overwrite/append/vaciar/editor).
+- Se refactoriza el subsistema del cronómetro para reducir acoplamiento y eliminar duplicación de wiring/estado en `public/renderer.js`.
+- Se habilita el info modal **“Links de interés”** (Issue #83): nuevo `public/info/links_interes.html` con referencia + DOI de Brysbaert (2019), y el menú deja de mostrar WIP.
+- Se incorpora i18n del modal para **todos los idiomas disponibles** (keys `renderer.info.links_interes.*`).
+- Manual de uso (Issue #85): se reemplaza el placeholder por contenido real con **3 secciones fijas** (IDs `#instrucciones`, `#guia-basica`, `#faq`), se agrega **HTML en inglés**, y se incorporan **assets locales** (PNG/GIF) para capturas/animaciones.
+- El modo **Preciso** corrige el conteo de compuestos con guion (Issue #85): `e-mail`, `co-operate` y similares pasan a contar como **1 palabra**.
+- Editor manual: se habilita búsqueda **Ctrl+F / Cmd+F** con barra de búsqueda, navegación de coincidencias (Enter/Shift+Enter, F3/Shift+F3), modo modal (no edita texto) y resaltado visible incluso con foco en el input.
+- Selector de texto: se actualizan los iconos de overwrite/append del portapapeles a **`📋↺`** y **`📋+`**.
+
+### Agregado
+
+- Editor manual — Find:
+  - Barra de búsqueda embebida con input + controles **Prev / Next / Close**.
+  - Shortcuts: **Ctrl+F / Cmd+F** (abrir), **Enter / Shift+Enter** (siguiente/anterior), **F3 / Shift+F3** (siguiente/anterior), **Esc** (cerrar).
+  - Resaltado visual propio (overlay) para la coincidencia activa, independiente del highlight nativo del `<textarea>`.
+
+### Cambiado
+
+- Reglas de actualización de WPM real (Issue #84):
+  - En cambios de texto **no vacío**: no hay reset; la velocidad real solo se actualiza inmediatamente si el cronómetro está **pausado** y `elapsed > 0`.
+  - Si `elapsed == 0`, no se recalcula nada (se mantiene estado neutral).
+  - Si el cronómetro está **corriendo**, no se fuerza recalcular en el evento de cambio de texto (se mantiene el pipeline normal de actualización).
+- Refactor cronómetro:
+  - Se mueve el wiring del cronómetro y el “mirror state” del renderer a un controller (`RendererCrono.createController`) en `public/js/crono.js`.
+  - Se estandariza el recompute async con un wrapper seguro (`safeRecomputeRealWpm`) para evitar rechazos no manejados.
+  - Se eliminan listeners duplicados del input del cronómetro en `public/renderer.js` y se centralizan en el controller.
+  - Las reglas por cambio de texto pasan a delegarse al controller (sin que el módulo se adueñe del ciclo de vida del texto).
+- Selector de texto:
+  - Los botones de overwrite/append del portapapeles cambian sus iconos a **`📋↺`** (sobrescribir) y **`📋+`** (agregar).
+- Info modal “Links de interés” (Issue #83):
+  - La acción de menú `links_interes` ahora abre `showInfoModal('links_interes')` (en lugar de notificación WIP).
+  - Allowlist de links externos: se permite `doi.org` para abrir el DOI desde el modal.
+- Manual de uso (Issue #85):
+  - El manual deja de usar el enfoque anterior de traducción vía `data-i18n` y pasa a servirse como **HTML localizado por idioma** (ES/EN), manteniendo los IDs contractuales de secciones (`#instrucciones`, `#guia-basica`, `#faq`).
+  - Se incorporan capturas/animaciones como **assets locales** (PNG/GIF) referenciados desde el HTML del manual, sin dependencias remotas (CSP-friendly).
+- Editor manual — Find (modo modal):
+  - Mientras Find está abierto el editor entra en modo **no editable** (readOnly), bloqueando input/paste/drop y capturando navegación global para evitar modificaciones accidentales.
+  - Scroll interno al match mediante medición con mirror (no depende de `setSelectionRange()`).
+  - Overlay de highlight alineado al scroll del textarea vía `transform` (sin recomputar geometría en cada scroll).
+
+### Arreglado
+
+- Cronómetro (Issue #84):
+  - Ya no se pierde el tiempo acumulado al hacer overwrite/append o aplicar cambios desde el Editor manual si el texto vigente queda no vacío.
+  - Al quedar el texto vigente vacío, el cronómetro se resetea completamente y queda en estado consistente (elapsed=0 y WPM real en estado neutral).
+- Conteo (modo Preciso) — compuestos con guion (Issue #85):
+  - Se implementa regla **“alnum join”**: se cuentan como **una sola palabra** secuencias alfa-numéricas unidas por guion **sin espacios** (incluye cadenas con múltiples guiones).
+  - Set de guiones aceptados como joiners: `-` (U+002D), `‐` (U+2010), `-` (U+2011), `‒` (U+2012), `–` (U+2013), `−` (U+2212).
+- Editor manual — Find:
+  - Navegación next/prev ahora **siempre** lleva el scroll interno del textarea a la coincidencia.
+  - Con Find abierto, **Enter ya no borra/reemplaza** texto (modo modal + captura de teclas).
+  - El resaltado de coincidencia permanece visible aunque el foco se mantenga en el input del buscador (overlay).
+
+### Archivos
+
+- `public/renderer.js`
+- `public/js/crono.js`
+- `public/js/count.js`
+- `public/info/links_interes.html`
+- `electron/link_openers.js`
+- `public/info/instrucciones.es.html`
+- `public/info/instrucciones.en.html`
+- `public/assets/instrucciones/*` (PNG/GIF)
+- Editor manual (Find):
+  - `public/editor.html`
+  - `public/editor.css`
+  - `public/editor.js`
+  - i18n: keys `renderer.editor_find.*` en `i18n/**/renderer.json` (idiomas disponibles)
+- i18n: keys `renderer.info.links_interes.*` en `i18n/**/renderer.json` (todos los idiomas disponibles).
+
+---
+
 ## [0.1.1] Nuevos idiomas
 
 ### Fecha release y último commit
@@ -63,6 +140,7 @@ Reglas:
 - Se refactoriza `public/editor.js` para un manejo más robusto de selección/caret y sincronización con main; incluye el fix del caret al pegar.
 - Se ajustan detalles de UX (nota de la ventana de idioma, símbolo del botón de editor) y el comportamiento de preview para textos cortos.
 - Se alinea el identificador de acción del menú para el “cargador de imágenes” y se actualizan claves i18n asociadas.
+- Se completan y normalizan claves i18n faltantes (ES/EN) detectadas por auditoría: errores de lista de idiomas (`main.menu.language.*`), mensajes del info modal (`renderer.info.external.*` / `renderer.info.appdoc.*`) y fallbacks del modal “Acerca de” (`renderer.info.acerca_de.*`).
 
 ### Agregado
 
@@ -74,6 +152,12 @@ Reglas:
   - `pt` — Português
 - Paquetes i18n para cada idioma nuevo:
   - `i18n/<tag>/main.json`, `i18n/<tag>/renderer.json`, `i18n/<tag>/numberFormat.json`.
+- i18n:
+  - Se agregan traducciones faltantes para:
+    - `main.menu.language.empty`, `main.menu.language.invalid`
+    - `renderer.info.external.{blocked,missing,error}`
+    - `renderer.info.appdoc.{blocked,missing,error}`
+    - `renderer.info.acerca_de.version.unavailable`, `renderer.info.acerca_de.env.unavailable`
 - Documentación de pruebas manuales:
   - `docs/test_suite.md` (Issue #65).
   - Referenciada en `docs/release_checklist.md` como parte de las pruebas pre-release.
@@ -93,6 +177,7 @@ Reglas:
 - i18n:
   - Ajustes de copy (puntuación, tooltips y mensajes WIP) en `es`, `es-cl` y `en`.
   - Textos del menú en `es-cl` ajustados para herramientas (p. ej. “chupaletras…”).
+  - Se alinea el namespace del modal “Acerca de”: `renderer.about.*` → `renderer.info.acerca_de.*` (incluye ajuste de referencias en `public/renderer.js`).
 - Constantes:
   - Comentarios explicativos agregados en constantes relevantes:
     - `electron/constants_main.js`
@@ -119,7 +204,7 @@ Reglas:
 
 - i18n:
   - `i18n/languages.json`
-  - `i18n/{arn,de,fr,it,pt}/(main.json|renderer.json|numberFormat.json)`
+  - `i18n/{es,en,arn,de,fr,it,pt}/(main.json|renderer.json|numberFormat.json)`
   - Ajustes en: `i18n/es/main.json`, `i18n/es/renderer.json`, `i18n/es/es-cl/main.json`, `i18n/es/es-cl/renderer.json`, `i18n/en/renderer.json`
 - UI / renderer:
   - `public/index.html`

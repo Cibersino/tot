@@ -118,7 +118,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-03 Clipboard overwrite + automatic results
 **Goal:** overwrite-from-clipboard updates preview + counts + time.
 1. Copy text to clipboard.
-2. Click **Overwrite clipboard**.
+2. Click **📋↺**.
 3. Observe preview and results.
 
 **Expected:**
@@ -128,7 +128,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-04 Append clipboard (+ newline semantics)
 **Goal:** append-from-clipboard adds new content and updates counts.
 1. Copy text to clipboard.
-2. Click **Append clipboard**.
+2. Click **📋+**.
 3. Observe preview and results.
 
 **Expected:**
@@ -345,7 +345,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 3. Verify editor area contains the same text.
 
 **Expected:**
-- Editor initializes from current text. 
+- Editor initializes from current text.
 
 #### REG-EDITOR-02 Edit and propagate
 **Goal:** editor edits update main view.
@@ -372,6 +372,44 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Editor clear sends state update to main; both stay consistent.
+
+#### REG-EDITOR-05 Find (Ctrl+F) — modal mode + navigation + highlight
+**Goal:** Find works on textarea content, does not edit text, scrolls to matches, and shows highlight while focus stays in find input.
+1. Ensure editor has a text with repeated terms across multiple lines (use Small text, then add a repeated word like `prueba` in several lines).
+2. Press **Ctrl+F** (or Cmd+F on macOS).
+3. Type a query that has multiple matches.
+4. Navigate:
+   - **Enter** = next
+   - **Shift+Enter** = previous
+   - **F3** / **Shift+F3** = next/previous
+5. While Find is open:
+   - Try typing in the textarea, pressing Enter/Backspace, pasting (Ctrl+V), and dropping text.
+6. Confirm visibility:
+   - Match highlight must be visible even when focus is in the find input.
+   - Use Next/Prev to jump to matches that are off-screen; verify internal textarea scroll moves to the match.
+7. Scroll the textarea manually (mouse wheel / scrollbar) while Find remains open.
+
+**Expected:**
+- Find opens and focuses the find input.
+- Navigation selects the match and scrolls the textarea so the match is in view.
+- Text is not modifiable while Find is open (readOnly/modal behavior + blocked paste/drop/input).
+- Highlight remains visible while focus stays in the find input (overlay-based highlight).
+- Highlight stays aligned while scrolling the textarea.
+- **Esc** closes Find and restores normal editing.
+
+#### REG-EDITOR-06 Undo/Redo semantics (including Find not polluting edits)
+**Goal:** Undo/Redo behaves predictably for edits and is not affected by Find navigation.
+1. In editor, type a short string (e.g., `AAA`) in the middle of the text.
+2. Press **Ctrl+Z** (undo) → verify the insertion is reverted.
+3. Press **Ctrl+Y** (redo) (or Ctrl+Shift+Z depending on OS/browser behavior) → verify the insertion returns.
+4. Paste a short string (Ctrl+V) in the middle; undo/redo it.
+5. Open Find (**Ctrl+F**), search and navigate multiple times (Enter/F3), then close Find (Esc).
+6. Press **Ctrl+Z** once.
+
+**Expected:**
+- Undo/Redo works for typing edits and paste edits in the textarea.
+- Find open/navigate/close does not modify the document.
+- After using Find, **Ctrl+Z** undoes the last real edit (not “selection movement” from Find), and the text remains intact.
 
 ---
 

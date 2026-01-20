@@ -4,8 +4,8 @@
       "selector_title": "Primeira e última parte do texto analisado:",
       "selector_empty": "(vazio)",
       "buttons": {
-        "overwrite_clipboard": "Sobrescrever clipboard",
-        "append_clipboard": "Adicionar clipboard",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },
@@ -69,6 +69,21 @@
       "clear": "🗑",
       "clear_title": "Limpar"
     },
+    "editor_find": {
+      "label": "Buscar",
+      "input_placeholder": "Buscar...",
+      "input_aria": "Buscar no texto",
+      "prev": "Anterior",
+      "next": "Proximo",
+      "close": "Fechar",
+      "prev_title": "Correspondencia anterior",
+      "next_title": "Correspondencia seguinte",
+      "close_title": "Fechar a barra de busca",
+      "status_no_matches": "Sem correspondencias",
+      "status_wrap_start": "Voltou ao inicio",
+      "status_wrap_end": "Voltou ao fim",
+      "status_empty_query": "Digite para buscar"
+    },
     "alerts": {
       "clipboard_too_large": "O texto da área de transferência é muito grande para processar. Reduza-o e tente novamente.",
       "append_too_large": "O texto resultante é muito grande para processar. Reduza-o e tente novamente.",
@@ -98,7 +113,6 @@
       "wip_shortcuts": "WIP: O seletor de atalhos de teclado será aberto aqui em uma versão futura.",
       "wip_avisos": "WIP: Os avisos e notícias aparecerão aqui em uma versão futura.",
       "wip_discord": "WIP: O link do Discord será aberto aqui em uma versão futura.",
-      "wip_links_interes": "WIP: Os links de interesse aparecerão aqui em uma versão futura.",
       "wip_colabora": "WIP: As informações sobre colaboração aparecerão aqui em uma versão futura."
     },
     "editor_alerts": {
@@ -123,22 +137,12 @@
     "info": {
       "acerca_de": {
         "app_name": "toT — Reading Meter",
-        "title": "Sobre",
-        "subtitle": "Subtítulo",
-        "body": "Trabalho em andamento."
+        "title": "Sobre"
       },
-      "instrucciones": {
+      "links_interes": {
         "app_name": "toT — Reading Meter",
-        "title": "Manual do usuário",
-        "nav_basic": "Guia Básico",
-        "nav_full": "Instruções completas",
-        "nav_faq": "Perguntas frequentes (FAQ)",
-        "section_basic_title": "Guia Básico",
-        "section_basic_body": "Trabalho em andamento.",
-        "section_full_title": "Instruções completas",
-        "section_full_body": "Trabalho em andamento.",
-        "section_faq_title": "Perguntas frequentes (FAQ)",
-        "section_faq_body": "Trabalho em andamento."
+        "title": "Links de interesse",
+        "section_biblio_label": "Referências bibliográficas"
       }
     }
   }
