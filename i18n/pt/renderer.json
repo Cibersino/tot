@@ -69,6 +69,21 @@
       "clear": "🗑",
       "clear_title": "Limpar"
     },
+    "editor_find": {
+      "label": "Buscar",
+      "input_placeholder": "Buscar...",
+      "input_aria": "Buscar no texto",
+      "prev": "Anterior",
+      "next": "Proximo",
+      "close": "Fechar",
+      "prev_title": "Correspondencia anterior",
+      "next_title": "Correspondencia seguinte",
+      "close_title": "Fechar a barra de busca",
+      "status_no_matches": "Sem correspondencias",
+      "status_wrap_start": "Voltou ao inicio",
+      "status_wrap_end": "Voltou ao fim",
+      "status_empty_query": "Digite para buscar"
+    },
     "alerts": {
       "clipboard_too_large": "O texto da área de transferência é muito grande para processar. Reduza-o e tente novamente.",
       "append_too_large": "O texto resultante é muito grande para processar. Reduza-o e tente novamente.",

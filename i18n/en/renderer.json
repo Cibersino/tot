@@ -80,6 +80,21 @@
       "clear": "🗑",
       "clear_title": "Clear"
     },
+    "editor_find": {
+      "label": "Find",
+      "input_placeholder": "Find...",
+      "input_aria": "Find in text",
+      "prev": "Prev",
+      "next": "Next",
+      "close": "Close",
+      "prev_title": "Previous match",
+      "next_title": "Next match",
+      "close_title": "Close find bar",
+      "status_no_matches": "No matches",
+      "status_wrap_start": "Wrapped to start",
+      "status_wrap_end": "Wrapped to end",
+      "status_empty_query": "Type to search"
+    },
     "alerts": {
       "clipboard_too_large": "Clipboard text is too large to process. Reduce it and try again.",
       "append_too_large": "Resulting text is too large to process. Reduce it and try again.",

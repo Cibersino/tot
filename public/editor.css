@@ -25,6 +25,92 @@ body {
   gap: 0;
 }
 
+/* Find bar (manual search) */
+.find-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--toolbar-bg);
+  flex-wrap: wrap;
+}
+
+.find-bar[hidden] {
+  display: none;
+}
+
+.find-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+#findInput {
+  flex: 1 1 220px;
+  min-width: 120px;
+  height: 30px;
+  padding: 4px 8px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  font: 14px/1.2 "Segoe UI", Tahoma, sans-serif;
+  color: #222;
+  background: #fff;
+  outline: none;
+}
+
+#findInput:focus {
+  border-color: #b8b8b8;
+}
+
+.find-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: #555;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.find-count,
+.find-status {
+  white-space: nowrap;
+}
+
+.find-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.find-actions button {
+  padding: 6px 10px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f4f4f4;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.find-actions button:hover {
+  background: #fff5f5;
+  border-color: #e6bebe;
+}
+
+.find-actions button:active {
+  background: #ffe0e0;
+  border-color: #d99b9b;
+  transform: translateY(1px);
+}
+
 /* Text area: occupies all available space */
 #editorArea {
   width: 100%;

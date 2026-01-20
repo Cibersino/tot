@@ -44,10 +44,27 @@ const calcWhileTyping = document.getElementById('calcWhileTyping');
 const btnCalc = document.getElementById('btnCalc');
 const calcLabel = document.querySelector('.calc-label');
 const bottomBar = document.getElementById('bottomBar');
+const findBar = document.getElementById('findBar');
+const findInput = document.getElementById('findInput');
+const findPrev = document.getElementById('findPrev');
+const findNext = document.getElementById('findNext');
+const findClose = document.getElementById('findClose');
+const findCount = document.getElementById('findCount');
+const findStatus = document.getElementById('findStatus');
 
 let debounceTimer = null;
 const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
+let findOpen = false;
+let findSelectionChanged = false;
+let findSelectionBeforeOpen = null;
+let lastFindQuery = '';
+let lastFindMatch = { index: -1, length: 0 };
+let findCountState = { query: '', total: null, limited: false, textLen: 0 };
+let findCountTimer = null;
+const FIND_COUNT_THRESHOLD = 200000;
+const FIND_COUNT_LIMIT = 2000;
+const FIND_COUNT_DEBOUNCE_MS = 150;
 
 // Visibility helper: warn only once per key (editor scope)
 const warnOnceEditor = (...args) => log.warnOnce(...args);
@@ -86,6 +103,31 @@ async function applyEditorTranslations() {
   }
   if (bottomBar) {
     bottomBar.setAttribute('aria-label', tr('renderer.editor.title', bottomBar.getAttribute('aria-label') || ''));
+  }
+  if (findBar) {
+    findBar.setAttribute('aria-label', tr('renderer.editor_find.label', findBar.getAttribute('aria-label') || 'Find'));
+  }
+  if (findInput) {
+    findInput.setAttribute('placeholder', tr('renderer.editor_find.input_placeholder', findInput.getAttribute('placeholder') || 'Find...'));
+    findInput.setAttribute('aria-label', tr('renderer.editor_find.input_aria', findInput.getAttribute('aria-label') || 'Find in text'));
+  }
+  if (findPrev) {
+    findPrev.textContent = tr('renderer.editor_find.prev', findPrev.textContent || 'Prev');
+    const prevTitle = tr('renderer.editor_find.prev_title', findPrev.title || findPrev.textContent || 'Prev');
+    findPrev.title = prevTitle;
+    findPrev.setAttribute('aria-label', prevTitle);
+  }
+  if (findNext) {
+    findNext.textContent = tr('renderer.editor_find.next', findNext.textContent || 'Next');
+    const nextTitle = tr('renderer.editor_find.next_title', findNext.title || findNext.textContent || 'Next');
+    findNext.title = nextTitle;
+    findNext.setAttribute('aria-label', nextTitle);
+  }
+  if (findClose) {
+    findClose.textContent = tr('renderer.editor_find.close', findClose.textContent || 'Close');
+    const closeTitle = tr('renderer.editor_find.close_title', findClose.title || findClose.textContent || 'Close');
+    findClose.title = closeTitle;
+    findClose.setAttribute('aria-label', closeTitle);
   }
 }
 
@@ -187,6 +229,294 @@ function selectAllEditor() {
     return;
   }
   setSelectionSafe(0, editor.value.length);
+}
+
+// ---------- Find bar (manual search on textarea.value) ---------- //
+const findCache = { text: '', lower: '' };
+
+function isFindReady() {
+  return !!(findBar && findInput && findPrev && findNext && findClose && editor);
+}
+
+function refreshFindCache() {
+  if (!editor) return;
+  const text = String(editor.value || '');
+  if (findCache.text !== text) {
+    findCache.text = text;
+    findCache.lower = text.toLowerCase();
+  }
+}
+
+function setFindStatusText(text) {
+  if (!findStatus) return;
+  findStatus.textContent = text || '';
+}
+
+function setFindCountText(text) {
+  if (!findCount) return;
+  findCount.textContent = text || '';
+}
+
+function updateFindIdleStatus() {
+  if (!findInput) return;
+  const q = String(findInput.value || '');
+  if (!q) {
+    setFindStatusText(tr('renderer.editor_find.status_empty_query', 'Type to search'));
+  } else {
+    setFindStatusText('');
+  }
+}
+
+function openFindBar({ focusInput = true } = {}) {
+  if (!isFindReady()) return;
+  if (!findOpen) {
+    findOpen = true;
+    findBar.hidden = false;
+    findSelectionChanged = false;
+    findSelectionBeforeOpen = getSelectionRange();
+  }
+  updateFindIdleStatus();
+  scheduleFindCountUpdate();
+  if (focusInput) {
+    findInput.focus();
+    findInput.select();
+  }
+}
+
+function closeFindBar({ restoreSelection = true } = {}) {
+  if (!isFindReady() || !findOpen) return;
+  findOpen = false;
+  findBar.hidden = true;
+  if (findCountTimer) {
+    clearTimeout(findCountTimer);
+    findCountTimer = null;
+  }
+  setFindStatusText('');
+  setFindCountText('');
+  const prevSelection = findSelectionBeforeOpen;
+  const restore = restoreSelection && prevSelection && !findSelectionChanged;
+  findSelectionBeforeOpen = null;
+  findSelectionChanged = false;
+  if (restore) {
+    const { start, end } = prevSelection;
+    editor.focus();
+    setSelectionSafe(start, end);
+  } else if (editor) {
+    editor.focus();
+  }
+}
+
+function countMatches(haystack, needle) {
+  if (!needle) return { total: 0, limited: false };
+  let count = 0;
+  let idx = 0;
+  const step = Math.max(needle.length, 1);
+  let limited = false;
+  while ((idx = haystack.indexOf(needle, idx)) !== -1) {
+    count += 1;
+    if (count >= FIND_COUNT_LIMIT) {
+      limited = true;
+      break;
+    }
+    idx += step;
+  }
+  return { total: count, limited };
+}
+
+function countMatchesUpTo(haystack, needle, endIndex) {
+  if (!needle) return 0;
+  let count = 0;
+  let idx = 0;
+  const step = Math.max(needle.length, 1);
+  while ((idx = haystack.indexOf(needle, idx)) !== -1) {
+    if (idx > endIndex) break;
+    count += 1;
+    idx += step;
+  }
+  return count;
+}
+
+function maybeUpdateFindCount(query) {
+  if (!findCount || !query) {
+    findCountState = { query: '', total: null, limited: false, textLen: 0 };
+    setFindCountText('');
+    return;
+  }
+
+  refreshFindCache();
+  const textLen = findCache.text.length;
+  if (textLen > FIND_COUNT_THRESHOLD) {
+    findCountState = { query: '', total: null, limited: false, textLen };
+    setFindCountText('');
+    return;
+  }
+
+  if (findCountState.query === query && findCountState.textLen === textLen && findCountState.total !== null) {
+    return;
+  }
+
+  const needle = query.toLowerCase();
+  const haystack = findCache.lower;
+  const { total, limited } = countMatches(haystack, needle);
+  findCountState = { query, total, limited, textLen };
+}
+
+function updateFindCountDisplay(matchIndex, query) {
+  if (!findCount) return;
+  const q = typeof query === 'string' ? query : String(findInput ? findInput.value || '' : '');
+  if (!q || findCountState.query !== q || findCountState.total === null || findCountState.total === 0) {
+    setFindCountText('');
+    return;
+  }
+  refreshFindCache();
+  const needle = q.toLowerCase();
+  const current = typeof matchIndex === 'number' && matchIndex >= 0
+    ? countMatchesUpTo(findCache.lower, needle, matchIndex)
+    : null;
+  const totalLabel = findCountState.limited ? `${findCountState.total}+` : `${findCountState.total}`;
+  setFindCountText(current ? `${current}/${totalLabel}` : totalLabel);
+}
+
+function scheduleFindCountUpdate() {
+  if (!isFindReady()) return;
+  if (findCountTimer) clearTimeout(findCountTimer);
+  const q = String(findInput.value || '');
+  if (!q) {
+    findCountState = { query: '', total: null, limited: false, textLen: 0 };
+    setFindCountText('');
+    return;
+  }
+  findCountTimer = setTimeout(() => {
+    maybeUpdateFindCount(q);
+    const matchIndex = lastFindQuery === q ? lastFindMatch.index : -1;
+    updateFindCountDisplay(matchIndex, q);
+  }, FIND_COUNT_DEBOUNCE_MS);
+}
+
+function focusEditorSelection(start, end) {
+  try {
+    editor.focus();
+    setSelectionSafe(start, end);
+  } catch (err) {
+    log.error('focusEditorSelection failed:', err);
+  }
+}
+
+function performFind(direction) {
+  if (!isFindReady()) return false;
+  const query = String(findInput.value || '');
+  if (!query) {
+    setFindStatusText(tr('renderer.editor_find.status_empty_query', 'Type to search'));
+    setFindCountText('');
+    return false;
+  }
+
+  refreshFindCache();
+  const haystack = findCache.lower;
+  const needle = query.toLowerCase();
+
+  if (!needle) {
+    setFindStatusText(tr('renderer.editor_find.status_empty_query', 'Type to search'));
+    setFindCountText('');
+    return false;
+  }
+
+  const { start, end } = getSelectionRange();
+  const forward = direction !== -1;
+  let startIndex = forward ? end : (start - 1);
+  if (startIndex < 0) startIndex = forward ? 0 : -1;
+
+  let idx = forward
+    ? haystack.indexOf(needle, startIndex)
+    : haystack.lastIndexOf(needle, startIndex);
+
+  let wrapped = false;
+  if (idx === -1) {
+    wrapped = true;
+    idx = forward
+      ? haystack.indexOf(needle, 0)
+      : haystack.lastIndexOf(needle, haystack.length);
+  }
+
+  if (idx === -1) {
+    setFindStatusText(tr('renderer.editor_find.status_no_matches', 'No matches'));
+    lastFindQuery = query;
+    lastFindMatch = { index: -1, length: 0 };
+    updateFindCountDisplay(-1, query);
+    return false;
+  }
+
+  lastFindQuery = query;
+  lastFindMatch = { index: idx, length: needle.length };
+  findSelectionChanged = true;
+
+  if (wrapped) {
+    setFindStatusText(tr(
+      forward ? 'renderer.editor_find.status_wrap_start' : 'renderer.editor_find.status_wrap_end',
+      forward ? 'Wrapped to start' : 'Wrapped to end'
+    ));
+  } else {
+    setFindStatusText('');
+  }
+
+  maybeUpdateFindCount(query);
+  updateFindCountDisplay(idx, query);
+  focusEditorSelection(idx, idx + needle.length);
+  return true;
+}
+
+if (isFindReady()) {
+  findInput.addEventListener('input', () => {
+    updateFindIdleStatus();
+    scheduleFindCountUpdate();
+  });
+
+  findInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      performFind(e.shiftKey ? -1 : 1);
+      return;
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeFindBar();
+    }
+  });
+
+  findPrev.addEventListener('click', () => performFind(-1));
+  findNext.addEventListener('click', () => performFind(1));
+  findClose.addEventListener('click', () => closeFindBar());
+
+  document.addEventListener('keydown', (e) => {
+    const key = String(e.key || '');
+    const isAccelF = (key === 'f' || key === 'F') && (e.ctrlKey || e.metaKey) && !e.altKey;
+    if (isAccelF) {
+      e.preventDefault();
+      openFindBar({ focusInput: true });
+      return;
+    }
+
+    const isF3 = key === 'F3';
+    if (isF3) {
+      if (!findOpen) {
+        const hasQuery = String(findInput.value || '');
+        if (hasQuery) {
+          e.preventDefault();
+          openFindBar({ focusInput: false });
+          performFind(e.shiftKey ? -1 : 1);
+        }
+        return;
+      }
+      e.preventDefault();
+      performFind(e.shiftKey ? -1 : 1);
+      return;
+    }
+
+    if (findOpen && key === 'Escape') {
+      e.preventDefault();
+      closeFindBar();
+    }
+  });
 }
 
 // styles //

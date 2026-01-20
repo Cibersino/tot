@@ -37,7 +37,7 @@
         "chars": "Letras totales: {n}",
         "precise_mode": "Modo fino",
         "precise_tooltip": "Contar de forma pulenta y elegante"
-      },      
+      },
       "crono": {
         "title": "CRONÓMETRO DE LUJO",
         "speed": "Ritmo:",
@@ -69,7 +69,22 @@
       "clear": "🗑",
       "clear_title": "Pitiarse too"
     },
-    "alerts": {   
+    "editor_find": {
+      "label": "Pillar",
+      "input_placeholder": "Pilla algo...",
+      "input_aria": "Pillar palabras en la custión",
+      "prev": "Atrás",
+      "next": "Siguiente",
+      "close": "Chao",
+      "prev_title": "La de atrás",
+      "next_title": "La que sigue",
+      "close_title": "Pitiarse la barra de búsqueda",
+      "status_no_matches": "No pillamos niuna custión",
+      "status_wrap_start": "Se dio la güelta al principio",
+      "status_wrap_end": "Se dio la güelta al final",
+      "status_empty_query": "Escribe algo po"
+    },
+    "alerts": {
       "clipboard_too_large": "Chaaa, el texto del portapapeles es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
       "append_too_large": "El texto resultante es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
       "clipboard_overflow": "Te fuiste en la volá, la custión que copiaste es muy larga, la tuve que mochar.",
@@ -115,7 +130,7 @@
     "preset_alerts": {
       "name_empty": "No podís dejar el nombre vacío.",
       "wpm_invalid": "El WPM tiene que ser entre 50 y 500, no seas pajarón.",
-      "create_error": "Cagó la creación del preset. Lorea la consola.",     
+      "create_error": "Cagó la creación del preset. Lorea la consola.",
       "edit_error": "Mala volá al editar el preset. Lorea la consola.",
       "process_error": "Drama al procesar el preset. Lorea la consola."
     },
