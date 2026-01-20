@@ -239,47 +239,61 @@ You may inspect the repo as needed. If you implement anything, ensure the repo b
 
 Level 4 — Logs (policy-driven tuning after flow stabilization).
 
-Objective: Align logging in the `<TARGET_FILE>` with the project’s logging policy and style (as used in electron/main.js), so that:
-- log levels match recoverability (error vs warn vs info),
-- high-frequency “best-effort” failures do not spam (use warnOnce/errorOnce appropriately),
-- dangerous fallbacks are not silent (but avoid noisy logging),
-- messages are short, actionable, and consistent with the repo.
+Objective: Align logging in `<TARGET_FILE>` with the project logging policy and established style, so that:
+- Levels match recoverability (error vs warn vs info vs debug),
+- Fallbacks are never silent (per policy),
+- High-frequency best-effort failures do not spam (use warnOnce/errorOnce with explicit stable keys),
+- Messages are short, actionable, and consistent with the repo (see electron/main.js patterns).
 
 Constraints:
 - Do NOT change observable runtime behavior/contract (public API, IPC surface, payload/return shapes, side effects, timing).
-- Changes in this level should be limited to logging behavior (levels/messages/once-deduping) and minimal local structure needed to support that.
-- Avoid over-logging: no new high-volume logs on normal, healthy paths.
+- Changes must be limited to logging (levels/messages/dedupe) + minimal local structure required to support that.
+- Avoid over-logging: no new high-volume logs on healthy paths.
 
 Reference material (inspect before editing):
-- Logging policy: electron/log.js and public/js/log.js.
-- Style baseline: electron/main.js (how it logs best-effort webContents.send failures, ignored races, and recoverable fallbacks).
+- Logging policy headers: electron/log.js and public/js/log.js.
+- Style baseline: electron/main.js (best-effort webContents.send failures, ignored races, recoverable fallbacks).
+- If `<TARGET_FILE>` is a preload (sandbox:true context), do NOT introduce `require('./log')` or other imports that violate the preload constraint; keep minimal console-based logging consistent with the file’s existing pattern.
 
 What to do:
-1. Audit every logging site in the `<TARGET_FILE>` (warn/error/info) and every best-effort path that can fail silently (e.g., payload shape fallbacks, send-to-window races).
-2. For each, decide the correct level:
+0) Identify the runtime context of `<TARGET_FILE>` (main vs renderer vs preload) and keep the existing logger mechanism (Log.get / window.getLogger / console). Do not introduce cross-context logging dependencies.
+
+1) Audit every logging site and every fallback / best-effort path that can fail silently:
+   - payload shape normalization, defaulting, suspicious input acceptance,
+   - send-to-window races (missing/destroyed windows),
+   - optional I/O / parse / load steps with fallback behavior.
+
+2) Classify each event and choose the correct level (include debug explicitly):
    - error: unexpected failures that break an intended action or invariant.
-   - warn: recoverable anomalies / degraded behavior / fallback paths.
+   - warn: recoverable anomalies / degraded behavior / any fallback path.
    - info: high-level lifecycle/state transitions (low volume).
-   - Once-variants (deduplicated per process/page):
-     - Use warnOnce/errorOnce only for high-frequency repeatable events where additional occurrences add no new diagnostic value; do not use once-variants when repetition is needed for reproduction during testing.
-     - warnOnce: use for expected transient failures that can repeat frequently and would spam logs.
-     - errorOnce: like warnOnce but for repeated error-class events (should be rare).
-3. Ensure “no dangerous silent fallback”:
-   - If the code accepts/normalizes an invalid or suspicious input shape and falls back to a degraded behavior, consider adding a warn or warnOnce with a stable dedupe key.
-   - Do not add warnings for expected, benign conditions (e.g., a window not existing).
-4. Keep log strings concise and consistent with the repo (prefer “failed (ignored):” wording for best-effort sends when appropriate).
+   - debug: verbose diagnostics; may be noisy; do not add new debug logs unless they materially help diagnosis.
+
+3) “No silent fallbacks” rule (policy):
+   - Any fallback MUST emit at least a warn (or warnOnce) unless the behavior is explicitly a no-op by contract (i.e., not a fallback).
+   - If the fallback is BOOTSTRAP-only (pre-init), the message or explicit dedupe key MUST start with `BOOTSTRAP:` and the code path must become unreachable after init. If it can occur after init, treat it as in-regime (warn/error).
+
+4) Once-variants (deduped per process/page; output-only):
+   - Use warnOnce/errorOnce only for high-frequency repeatable events where repetition adds no diagnostic value.
+   - Prefer explicit stable keys: warnOnce('<constant.namespaced.key>', ...args) / errorOnce(...).
+   - Do NOT embed dynamic payloads or error objects in the dedupe key; keep dynamic details in the log args.
+   - Avoid auto-key mode unless args[0] is a stable short string; otherwise dedupe may not trigger reliably.
+
+5) Best-effort window sends (races):
+   - If the send is part of an intended action that is being dropped (e.g., menu action delivery), log warnOnce using the repo’s “failed (ignored):” style.
+   - If the send is a best-effort broadcast to an optional window and the contract is “do nothing if missing”, it may remain silent; do not add noise.
 
 Anti “refactor that makes it worse” rule:
-If a proposed logging change introduces more complexity than it removes, increases indirection without reducing noise/ambiguity, or makes the file harder to scan, discard or simplify it.
+If a proposed logging change increases complexity/indirection without reducing noise or ambiguity, discard or simplify it.
 
 After editing (mandatory report):
-- List each non-trivial log change you made with:
-  - Gain: one sentence.
-  - Cost: one sentence.
-  - Validation: how to verify (simple manual action, smoke path, or grep).
-- If you find no meaningful log improvements that meet the constraints, make no changes and briefly explain why.
+- List each non-trivial log change with:
+  - Gain (1 sentence),
+  - Cost (1 sentence),
+  - Validation (a simple manual action and/or a grep for the stable key).
+- If no meaningful improvements meet constraints, make no changes and explain why.
 
-Apply changes only to the `<TARGET_FILE>`.
+Apply changes only to `<TARGET_FILE>`.
 ```
 ---
 
