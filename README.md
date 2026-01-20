@@ -7,7 +7,24 @@
 
 # toT — Reading Meter
 
-Estimador de tiempo de lectura.
+¿No te atreves a empezar ciertas lecturas debido a no saber cuánto trabajo realmente te tomará?
+¿Te cuesta terminar las lecturas y las abandonas en la mitad?
+¿Quieres superar tus dificultades y desarrollar tu capacidad de lectura apoyándote en herramientas de medición y organización científicas?
+¿Tu navegador acumula un montón de pestañas y marcadores con noticias y artículos de interés, que no sabes si vas a poder leer?
+¿Tienes que dar una clase este semestre y debes entregar a tus estudiantes una bibliografía realista?
+¿Debes preparar para mañana un escrito para exponer ante un auditorio durante una hora?
+¿Necesitas hacer un guión para una cápsula audiovisual con un tiempo preciso?
+¿La ruma de libros en tu velador crece sin compasión?
+¿Quieres hacer estudios experimentales relacionados con el tiempo de lectura?
+
+*Esta app es para ti.*
+
+**toT** estima tiempo de lectura a partir de un texto y una velocidad configurada en WPM (palabras por minuto). La app también cuenta con presets de velocidad personalizables y puede medir tu velocidad real con un cronómetro.
+
+Esta app está pensada para:
+* Estimar rápidamente el tiempo de lectura de cualquier texto que introduzcas o compongas.
+* Medir y ajustar tu velocidad real en distintos escenarios.
+* *Configurar presets de WPM personalizados de acuerdo el tipo de lector, la modalidad de lectura, la complejidad de los textos, el idioma o cualquier parámetro que se desee.
 
 ## Funcionalidades
 
@@ -99,7 +116,24 @@ MIT — ver [`LICENSE`](LICENSE).
 
 # toT — Reading Meter
 
-Reading time estimator.
+Are you hesitant to start certain readings because you don't know how much work it will really take?
+Do you find it hard to finish reading and abandon them in the middle?
+Do you want to overcome your difficulties and develop your reading skills using scientific measurement and organization tools?
+Does your browser accumulate a lot of tabs and bookmarks with news and articles of interest that you don't know if you will be able to read?
+Do you have to teach a class this semester and must provide your students with a realistic bibliography?
+Do you have to prepare a paper for tomorrow to present to an audience for one hour?
+Do you need to script an audiovisual capsule with precise timing?
+Is the pile of books on your bedside table growing mercilessly?
+Do you want to do experimental studies related to reading time?
+
+*This app is for you.*
+
+**toT** estimates reading time from a text and a speed set in WPM (words per minute). The app also has customizable speed presets and can measure your real speed with a stopwatch.
+
+This app is designed for:
+* Quickly estimate the reading time of any text you enter or compose.
+* Measure and adjust your real speed in different scenarios.
+* Configure customized WPM presets according to the type of reader, reading mode, text complexity, language or any desired parameter.
 
 ## Features
 
