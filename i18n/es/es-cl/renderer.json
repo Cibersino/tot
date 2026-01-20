@@ -4,8 +4,8 @@
       "selector_title": "El principio y el final del coso:",
       "selector_empty": "(pelao)",
       "buttons": {
-        "overwrite_clipboard": "Chantarle lo copiao",
-        "append_clipboard": "Añadirle lo copiao",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },

@@ -4,8 +4,8 @@
       "selector_title": "Primeira e última parte do texto analisado:",
       "selector_empty": "(vazio)",
       "buttons": {
-        "overwrite_clipboard": "Sobrescrever clipboard",
-        "append_clipboard": "Adicionar clipboard",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },

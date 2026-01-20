@@ -4,8 +4,8 @@
       "selector_title": "First and last part of the analyzed text:",
       "selector_empty": "(empty)",
       "buttons": {
-        "overwrite_clipboard": "Overwrite clipboard",
-        "append_clipboard": "Append clipboard",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },

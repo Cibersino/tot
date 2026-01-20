@@ -4,8 +4,8 @@
       "selector_title": "Primera y última parte del texto analizado:",
       "selector_empty": "(vacío)",
       "buttons": {
-        "overwrite_clipboard": "Sobrescribir portapapeles",
-        "append_clipboard": "Agregar portapapeles",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },
