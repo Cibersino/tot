@@ -2,8 +2,8 @@
 
 Checklist mecánico para preparar y publicar una nueva versión.
 
-Fecha: `<YYYY-MM-DD>`
-Tag objetivo (GitHub): `v<MAJOR.MINOR.PATCH>`
+Fecha: `2026-01-20`
+Tag objetivo (GitHub): `v0.1.2`
 Commit freeze (Git): `<SHA_COMMIT>`
 Artefacto inspeccionado: `<ZIP/INSTALLER>`
 SHA256(artefacto): `<SHA256>`
@@ -15,26 +15,26 @@ SHA256(artefacto): `<SHA256>`
 * Tag de release obligatorio en GitHub: `vX.Y.Z` (p. ej. `v0.1.0`), o `vX.Y.Z-rc.N` si aplica.
 
 ## 1. Tracker (GitHub Issues), milestone y Roadmap
-* [ ] GitHub Issues: revisar el milestone `X.Y.Z`:
-  * [ ] Issues resueltos: cerrar (idealmente referenciando commit/PR si existe).
-  * [ ] Issues no resueltos: mover al próximo milestone (p. ej. `X.Y.(Z+1)` o `X.(Y+1).0`).
-  * [ ] Labels mínimos:
-    * [ ] Cada `bug` tiene `area:*` y severidad `S0–S3`.
-    * [ ] Quitar `status:needs-triage` si ya hay repro/confirmación y clasificación suficiente.
-* [ ] Roadmap (GitHub Project “toT Roadmap”):
-  * [ ] Vista por milestone: filtrar por `X.Y.Z` (o equivalente) y verificar consistencia con el milestone del repo.
-  * [ ] Para cada Issue del release:
-    * [ ] `Status`: dejar en estado final (p. ej. Done) si se cerró, o mover fuera del release si se postergó.
-    * [ ] Si el Issue cambió de milestone, reflejar el cambio también en el Project (mismo milestone/campo).
-  * [ ] No dejar Issues “fantasma”: todo Issue relevante del release debe estar en el Project (si no, agregarlo).
+* [x] GitHub Issues: revisar el milestone `X.Y.Z`:
+  * [x] Issues resueltos: cerrar (idealmente referenciando commit/PR si existe).
+  * [x] Issues no resueltos: mover al próximo milestone (p. ej. `X.Y.(Z+1)` o `X.(Y+1).0`).
+  * [x] Labels mínimos:
+    * [x] Cada `bug` tiene `area:*` y severidad `S0–S3`.
+    * [x] Quitar `status:needs-triage` si ya hay repro/confirmación y clasificación suficiente.
+* [x] Roadmap (GitHub Project “toT Roadmap”):
+  * [x] Vista por milestone: filtrar por `X.Y.Z` (o equivalente) y verificar consistencia con el milestone del repo.
+  * [x] Para cada Issue del release:
+    * [x] `Status`: dejar en estado final (p. ej. Done) si se cerró, o mover fuera del release si se postergó.
+    * [x] Si el Issue cambió de milestone, reflejar el cambio también en el Project (mismo milestone/campo).
+  * [x] No dejar Issues “fantasma”: todo Issue relevante del release debe estar en el Project (si no, agregarlo).
 * Nota: `ToDo.md` es un stub fijo que apunta al Project; no se usa para mantener estado.
 
 ## 2. Documentación del release (antes del freeze)
 
 ### 2.1 Preparación del changelog
-* [ ] `docs/changelog_detailed.md`: reflejar el release `X.Y.Z` con detalle.
-* [ ] `CHANGELOG.md`: reflejar el release `X.Y.Z` con resumen.
-* [ ] La fecha `YYYY-MM-DD` del release debe ser consistente entre `CHANGELOG.md` y `docs/changelog_detailed.md`.
+* [x] `docs/changelog_detailed.md`: reflejar el release `X.Y.Z` con detalle.
+* [x] `CHANGELOG.md`: reflejar el release `X.Y.Z` con resumen.
+* [x] La fecha `YYYY-MM-DD` del release debe ser consistente entre `CHANGELOG.md` y `docs/changelog_detailed.md`.
 
 Nota: diff útil para generar changelog (excluye `docs/`)
 ```pwsh
@@ -48,16 +48,16 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 
 ### 2.2 Documentación pública y de apoyo
 
-* [ ] `README.md`: verificar que no quede desactualizado.
-* [ ] `public/info/instrucciones.*.html`: verificar que no queden desactualizados.
-* [ ] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
+* [x] `README.md`: verificar que no quede desactualizado.
+* [x] `public/info/instrucciones.*.html`: verificar que no quede desactualizado.
+* [x] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
 
 ## 3. Alinear la versión (freeze justo antes del empaquetado)
 
-* [ ] `package.json`: `"version": "X.Y.Z"` (fuente de verdad; `app.getVersion()`).
-* [ ] `package-lock.json`: consistente con `package.json` (actualizar/regenerar según flujo del repo: npm install).
-* [ ] Confirmar que `tools_local/` (y equivalentes) no está tracked ni entró al commit del release.
-* [ ] Working tree limpio (sin cambios locales).
+* [x] `package.json`: `"version": "X.Y.Z"` (fuente de verdad; `app.getVersion()`).
+* [x] `package-lock.json`: consistente con `package.json` (actualizar/regenerar según flujo del repo: npm install).
+* [x] Confirmar que `tools_local/` (y equivalentes) no está tracked ni entró al commit del release.
+* [x] Working tree limpio (sin cambios locales).
 * [ ] Commit final del release creado antes de empaquetar.
   * Commit: `<HASH>`
 
