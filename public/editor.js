@@ -60,6 +60,7 @@ let findSelectionChanged = false;
 let findSelectionBeforeOpen = null;
 let lastFindQuery = '';
 let lastFindMatch = { index: -1, length: 0 };
+let editorReadOnlyBeforeFind = false;
 let findCountState = { query: '', total: null, limited: false, textLen: 0 };
 let findCountTimer = null;
 const FIND_COUNT_THRESHOLD = 200000;
@@ -267,6 +268,16 @@ function updateFindIdleStatus() {
   }
 }
 
+function focusFindInput({ select = false, preventScroll = true } = {}) {
+  if (!findInput) return;
+  try {
+    findInput.focus({ preventScroll });
+  } catch {
+    findInput.focus();
+  }
+  if (select) findInput.select();
+}
+
 function openFindBar({ focusInput = true } = {}) {
   if (!isFindReady()) return;
   if (!findOpen) {
@@ -274,12 +285,15 @@ function openFindBar({ focusInput = true } = {}) {
     findBar.hidden = false;
     findSelectionChanged = false;
     findSelectionBeforeOpen = getSelectionRange();
+    if (editor) {
+      editorReadOnlyBeforeFind = !!editor.readOnly;
+      editor.readOnly = true;
+    }
   }
   updateFindIdleStatus();
   scheduleFindCountUpdate();
   if (focusInput) {
-    findInput.focus();
-    findInput.select();
+    focusFindInput({ select: true });
   }
 }
 
@@ -297,6 +311,7 @@ function closeFindBar({ restoreSelection = true } = {}) {
   const restore = restoreSelection && prevSelection && !findSelectionChanged;
   findSelectionBeforeOpen = null;
   findSelectionChanged = false;
+  if (editor) editor.readOnly = editorReadOnlyBeforeFind;
   if (restore) {
     const { start, end } = prevSelection;
     editor.focus();
@@ -393,10 +408,96 @@ function scheduleFindCountUpdate() {
   }, FIND_COUNT_DEBOUNCE_MS);
 }
 
+let findMirror = null;
+let findMirrorWidth = 0;
+
+function ensureFindMirror() {
+  if (findMirror) return findMirror;
+  const mirror = document.createElement('div');
+  mirror.setAttribute('aria-hidden', 'true');
+  Object.assign(mirror.style, {
+    position: 'absolute',
+    top: '0',
+    left: '-9999px',
+    visibility: 'hidden',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+    pointerEvents: 'none'
+  });
+  document.body.appendChild(mirror);
+  findMirror = mirror;
+  return mirror;
+}
+
+function syncFindMirrorStyle() {
+  if (!editor) return;
+  const mirror = ensureFindMirror();
+  const style = window.getComputedStyle(editor);
+  mirror.style.fontFamily = style.fontFamily;
+  mirror.style.fontSize = style.fontSize;
+  mirror.style.fontWeight = style.fontWeight;
+  mirror.style.fontStyle = style.fontStyle;
+  mirror.style.letterSpacing = style.letterSpacing;
+  mirror.style.lineHeight = style.lineHeight;
+  mirror.style.textTransform = style.textTransform;
+  mirror.style.padding = style.padding;
+  mirror.style.border = style.border;
+  mirror.style.boxSizing = style.boxSizing;
+  mirror.style.tabSize = style.tabSize;
+  const width = editor.clientWidth;
+  if (width && width !== findMirrorWidth) {
+    findMirrorWidth = width;
+    mirror.style.width = `${width}px`;
+  }
+}
+
+function scrollSelectionIntoView(start, end) {
+  if (!editor) return;
+  syncFindMirrorStyle();
+  const mirror = ensureFindMirror();
+  const value = String(editor.value || '');
+  const endIndex = Math.max(0, Math.min(end, value.length));
+
+  mirror.textContent = value.slice(0, endIndex);
+  const marker = document.createElement('span');
+  marker.textContent = value.slice(endIndex, endIndex + 1) || '.';
+  mirror.appendChild(marker);
+
+  const markerTop = marker.offsetTop;
+  const markerHeight = marker.offsetHeight || 16;
+
+  const viewTop = editor.scrollTop;
+  const viewBottom = viewTop + editor.clientHeight;
+  const selTop = markerTop;
+  const selBottom = markerTop + markerHeight;
+
+  let target = null;
+  if (selTop < viewTop) {
+    target = selTop - editor.clientHeight * 0.2;
+  } else if (selBottom > viewBottom) {
+    target = selBottom - editor.clientHeight * 0.8;
+  }
+
+  if (target !== null) {
+    const maxScroll = Math.max(0, editor.scrollHeight - editor.clientHeight);
+    const nextScroll = Math.min(Math.max(0, target), maxScroll);
+    editor.scrollTop = nextScroll;
+  }
+}
+
 function focusEditorSelection(start, end) {
   try {
-    editor.focus();
+    try {
+      editor.focus({ preventScroll: true });
+    } catch {
+      editor.focus();
+    }
     setSelectionSafe(start, end);
+    scrollSelectionIntoView(start, end);
+    if (findOpen) {
+      focusFindInput({ preventScroll: true });
+    }
   } catch (err) {
     log.error('focusEditorSelection failed:', err);
   }
@@ -489,10 +590,17 @@ if (isFindReady()) {
 
   document.addEventListener('keydown', (e) => {
     const key = String(e.key || '');
+    const isFindInputTarget = e.target === findInput;
     const isAccelF = (key === 'f' || key === 'F') && (e.ctrlKey || e.metaKey) && !e.altKey;
     if (isAccelF) {
       e.preventDefault();
       openFindBar({ focusInput: true });
+      return;
+    }
+
+    if (findOpen && key === 'Enter' && !isFindInputTarget) {
+      e.preventDefault();
+      performFind(e.shiftKey ? -1 : 1);
       return;
     }
 
@@ -512,11 +620,11 @@ if (isFindReady()) {
       return;
     }
 
-    if (findOpen && key === 'Escape') {
+    if (findOpen && key === 'Escape' && !isFindInputTarget) {
       e.preventDefault();
       closeFindBar();
     }
-  });
+  }, true);
 }
 
 // styles //
@@ -838,6 +946,11 @@ window.editorAPI.onForceClear(() => {
 if (editor) {
   editor.addEventListener('paste', (ev) => {
     try {
+      if (findOpen || editor.readOnly) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        return;
+      }
       ev.preventDefault();
       ev.stopPropagation();
       const text = (ev.clipboardData && ev.clipboardData.getData('text/plain')) || '';
@@ -863,6 +976,11 @@ if (editor) {
   // DROP: if small, allow native browser insertion and then notify main.
   editor.addEventListener('drop', (ev) => {
     try {
+      if (findOpen || editor.readOnly) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        return;
+      }
       const dt = ev.dataTransfer;
       const text = (dt && dt.getData && dt.getData('text/plain')) || '';
       if (!text) {
@@ -914,7 +1032,7 @@ if (editor) {
 
 // ---------- local input (typing) ---------- //
 editor.addEventListener('input', () => {
-  if (suppressLocalUpdate) return;
+  if (suppressLocalUpdate || findOpen || editor.readOnly) return;
 
   if (editor.value && editor.value.length > maxTextChars) {
     editor.value = editor.value.slice(0, maxTextChars);
