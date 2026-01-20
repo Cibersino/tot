@@ -60,6 +60,7 @@ Reglas:
 - Se refactoriza el subsistema del cronómetro para reducir acoplamiento y eliminar duplicación de wiring/estado en `public/renderer.js`.
 - Se habilita el info modal **“Links de interés”** (Issue #83): nuevo `public/info/links_interes.html` con referencia + DOI de Brysbaert (2019), y el menú deja de mostrar WIP.
 - Se incorpora i18n del modal para **todos los idiomas disponibles** (keys `renderer.info.links_interes.*`).
+- Manual de uso (Issue #85): se reemplaza el placeholder por contenido real con **3 secciones fijas** (IDs `#instrucciones`, `#guia-basica`, `#faq`), se agrega **HTML en inglés**, y se incorporan **assets locales** (PNG/GIF) para capturas/animaciones.
 - El modo **Preciso** corrige el conteo de compuestos con guion (Issue #85): `e-mail`, `co-operate` y similares pasan a contar como **1 palabra**.
 
 ### Arreglado
@@ -85,6 +86,9 @@ Reglas:
 - Info modal “Links de interés” (Issue #83):
   - La acción de menú `links_interes` ahora abre `showInfoModal('links_interes')` (en lugar de notificación WIP).
   - Allowlist de links externos: se permite `doi.org` para abrir el DOI desde el modal.
+- Manual de uso (Issue #85):
+  - El manual deja de usar el enfoque anterior de traducción vía `data-i18n` y pasa a servirse como **HTML localizado por idioma** (ES/EN), manteniendo los IDs contractuales de secciones (`#instrucciones`, `#guia-basica`, `#faq`).
+  - Se incorporan capturas/animaciones como **assets locales** (PNG/GIF) referenciados desde el HTML del manual, sin dependencias remotas (CSP-friendly).
 
 ### Archivos
 
@@ -93,6 +97,9 @@ Reglas:
 - `public/js/count.js`
 - `public/info/links_interes.html`
 - `electron/link_openers.js`
+- `public/info/instrucciones.es.html`
+- `public/info/instrucciones.en.html`
+- `public/assets/instrucciones/*` (PNG/GIF)
 - i18n: keys `renderer.info.links_interes.*` en `i18n/**/renderer.json` (todos los idiomas disponibles).
 
 ---
