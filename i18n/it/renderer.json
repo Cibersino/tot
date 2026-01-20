@@ -4,8 +4,8 @@
       "selector_title": "Prima e ultima parte del testo analizzato:",
       "selector_empty": "(vuoto)",
       "buttons": {
-        "overwrite_clipboard": "Sovrascrivi appunti",
-        "append_clipboard": "Aggiungi appunti",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },

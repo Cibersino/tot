@@ -4,8 +4,8 @@
       "selector_title": "Première et dernière partie du texte analysé :",
       "selector_empty": "(vide)",
       "buttons": {
-        "overwrite_clipboard": "Écraser presse-papier",
-        "append_clipboard": "Ajouter presse-papier",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },

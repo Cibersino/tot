@@ -4,8 +4,8 @@
       "selector_title": "Erster und letzter Teil des analysierten Textes:",
       "selector_empty": "(leer)",
       "buttons": {
-        "overwrite_clipboard": "Zwischenablage überschreiben",
-        "append_clipboard": "Zwischenablage anhängen",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },

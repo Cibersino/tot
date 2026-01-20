@@ -4,8 +4,8 @@
       "selector_title": "Wünne ka afkechi trokiñ wirin:",
       "selector_empty": "(welli)",
       "buttons": {
-        "overwrite_clipboard": "Wirintun portapapeles mu",
-        "append_clipboard": "Yafkantun portapapeles",
+        "overwrite_clipboard": "📋↺",
+        "append_clipboard": "📋+",
         "edit": "⌨",
         "clear": "🗑"
       },
