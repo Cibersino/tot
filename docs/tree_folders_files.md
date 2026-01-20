@@ -13,21 +13,21 @@ tot-readingmeter/
 │ ├── settings.json
 │ └── tasks.json
 ├── build-output/                  # {vacío} {carpeta ignorada por git}
-├── config/                        # {carpeta y archivos generados en primer arranque}
-│ ├── presets_defaults/            # {carpeta ignorada por git}
+├── config/                        # {generada en primer arranque} {carpeta ignorada por git}
+│ ├── presets_defaults/
 │ │ ├── defaults_presets.json   
 │ │ ├── defaults_presets_en.json
 │ │ └── defaults_presets_es.json
-│ ├── current_text.json            # {ignorado por git}
-│ ├── editor_state.json            # {ignorado por git}
-│ └── user_settings.json           # {ignorado por git}
+│ ├── current_text.json
+│ ├── editor_state.json
+│ └── user_settings.json
 ├── docs/
 │ ├── cleanup/
 │ │ ├── _evidence/
 │ │ ├── cleanup_file_by_file.md
 │ │ ├── naming_convention.md
 │ │ └── no_silence.md
-│ ├── releases/                    # {subcarpetas por release con los docs de chequeo}
+│ ├── releases/                    # {con subcarpetas por release con docs de chequeo}
 │ │ ├── release_checklist.md
 │ │ ├── security_baseline.md
 │ │ └── legal_baseline.md
@@ -35,7 +35,7 @@ tot-readingmeter/
 │ ├── test_suite.md
 │ └── tree_folders_files.md
 ├── electron/
-│ ├── presets/
+│ ├── presets/                     # {presets para restauración de fábrica}
 │ │ ├── defaults_presets.json
 │ │ ├── defaults_presets_en.json
 │ │ └── defaults_presets_es.json
@@ -64,7 +64,6 @@ tot-readingmeter/
 │ │ ├── logo-cibersino.svg
 │ │ ├── logo-tot.png
 │ │ └── logo-tot.svg
-│ ├── components/                  # {vacío}
 │ ├── fonts/
 │ │ ├── Baskervville-VariableFont_wght.ttf
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
@@ -100,10 +99,10 @@ tot-readingmeter/
 │ ├── flotante.css
 │ └── style.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
-├── editorconfig
+├── .editorconfig
 ├── .eslintrc.cjs
 ├── .gitattributes
-├── .gitiginore
+├── .gitignore
 ├── jsconfig.json
 ├── package.json
 ├── package-lock.json
