@@ -51,6 +51,8 @@ const findNext = document.getElementById('findNext');
 const findClose = document.getElementById('findClose');
 const findCount = document.getElementById('findCount');
 const findStatus = document.getElementById('findStatus');
+const findHighlightOverlay = document.getElementById('findHighlightOverlay');
+const findHighlightLayer = document.getElementById('findHighlightLayer');
 
 let debounceTimer = null;
 const DEBOUNCE_MS = 300;
@@ -289,6 +291,8 @@ function openFindBar({ focusInput = true } = {}) {
       editorReadOnlyBeforeFind = !!editor.readOnly;
       editor.readOnly = true;
     }
+    clearFindHighlight();
+    detachFindScrollHandler();
   }
   updateFindIdleStatus();
   scheduleFindCountUpdate();
@@ -305,6 +309,8 @@ function closeFindBar({ restoreSelection = true } = {}) {
     clearTimeout(findCountTimer);
     findCountTimer = null;
   }
+  clearFindHighlight();
+  detachFindScrollHandler();
   setFindStatusText('');
   setFindCountText('');
   const prevSelection = findSelectionBeforeOpen;
@@ -410,6 +416,33 @@ function scheduleFindCountUpdate() {
 
 let findMirror = null;
 let findMirrorWidth = 0;
+let findScrollHandler = null;
+
+function clearFindHighlight() {
+  if (!findHighlightLayer || !findHighlightOverlay) return;
+  findHighlightLayer.innerHTML = '';
+  findHighlightOverlay.hidden = true;
+}
+
+function updateHighlightOffset() {
+  if (!findHighlightLayer || !editor) return;
+  const x = editor.scrollLeft || 0;
+  const y = editor.scrollTop || 0;
+  findHighlightLayer.style.transform = `translate(${-x}px, ${-y}px)`;
+}
+
+function attachFindScrollHandler() {
+  if (!editor || findScrollHandler) return;
+  findScrollHandler = () => updateHighlightOffset();
+  editor.addEventListener('scroll', findScrollHandler);
+  updateHighlightOffset();
+}
+
+function detachFindScrollHandler() {
+  if (!editor || !findScrollHandler) return;
+  editor.removeEventListener('scroll', findScrollHandler);
+  findScrollHandler = null;
+}
 
 function ensureFindMirror() {
   if (findMirror) return findMirror;
@@ -450,6 +483,54 @@ function syncFindMirrorStyle() {
     findMirrorWidth = width;
     mirror.style.width = `${width}px`;
   }
+}
+
+function renderFindHighlight(start, length) {
+  if (!findHighlightLayer || !findHighlightOverlay || !editor) return;
+  if (start < 0 || length <= 0) {
+    clearFindHighlight();
+    return;
+  }
+
+  syncFindMirrorStyle();
+  const mirror = ensureFindMirror();
+  const value = String(editor.value || '');
+  const safeStart = Math.max(0, Math.min(start, value.length));
+  const safeEnd = Math.max(safeStart, Math.min(safeStart + length, value.length));
+  const matchText = value.slice(safeStart, safeEnd) || '.';
+
+  mirror.textContent = value.slice(0, safeStart);
+  const mark = document.createElement('mark');
+  mark.textContent = matchText;
+  mark.style.background = 'transparent';
+  mark.style.color = 'inherit';
+  mirror.appendChild(mark);
+
+  const rects = Array.from(mark.getClientRects());
+  if (!rects.length) {
+    clearFindHighlight();
+    return;
+  }
+
+  const mirrorRect = mirror.getBoundingClientRect();
+  const frag = document.createDocumentFragment();
+  rects.forEach((rect) => {
+    const highlight = document.createElement('div');
+    highlight.className = 'find-highlight-rect';
+    const top = rect.top - mirrorRect.top;
+    const left = rect.left - mirrorRect.left;
+    highlight.style.top = `${top}px`;
+    highlight.style.left = `${left}px`;
+    highlight.style.width = `${rect.width}px`;
+    highlight.style.height = `${rect.height}px`;
+    frag.appendChild(highlight);
+  });
+
+  findHighlightLayer.innerHTML = '';
+  findHighlightLayer.appendChild(frag);
+  findHighlightOverlay.hidden = false;
+  updateHighlightOffset();
+  attachFindScrollHandler();
 }
 
 function scrollSelectionIntoView(start, end) {
@@ -496,6 +577,7 @@ function focusEditorSelection(start, end) {
     setSelectionSafe(start, end);
     scrollSelectionIntoView(start, end);
     if (findOpen) {
+      updateHighlightOffset();
       focusFindInput({ preventScroll: true });
     }
   } catch (err) {
@@ -543,6 +625,8 @@ function performFind(direction) {
     setFindStatusText(tr('renderer.editor_find.status_no_matches', 'No matches'));
     lastFindQuery = query;
     lastFindMatch = { index: -1, length: 0 };
+    clearFindHighlight();
+    detachFindScrollHandler();
     updateFindCountDisplay(-1, query);
     return false;
   }
@@ -562,6 +646,7 @@ function performFind(direction) {
 
   maybeUpdateFindCount(query);
   updateFindCountDisplay(idx, query);
+  renderFindHighlight(idx, needle.length);
   focusEditorSelection(idx, idx + needle.length);
   return true;
 }
@@ -569,6 +654,10 @@ function performFind(direction) {
 if (isFindReady()) {
   findInput.addEventListener('input', () => {
     updateFindIdleStatus();
+    clearFindHighlight();
+    detachFindScrollHandler();
+    lastFindQuery = '';
+    lastFindMatch = { index: -1, length: 0 };
     scheduleFindCountUpdate();
   });
 

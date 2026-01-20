@@ -24,7 +24,12 @@
     </div>
   </div>
   <!-- The textarea takes up all the available space -->
-  <textarea id="editorArea" placeholder="Escribe o pega aquí..."></textarea>
+  <div class="editor-wrap">
+    <div id="findHighlightOverlay" class="find-highlight-overlay" aria-hidden="true" hidden>
+      <div id="findHighlightLayer" class="find-highlight-layer"></div>
+    </div>
+    <textarea id="editorArea" placeholder="Escribe o pega aquí..."></textarea>
+  </div>
 
   <!-- Bottom bar: CALCULATE | checkbox | TRASH (right aligned) -->
   <div id="bottomBar" class="bottom-bar" role="region" aria-label="Controles del editor">

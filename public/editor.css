@@ -25,6 +25,36 @@ body {
   gap: 0;
 }
 
+/* Wrapper for textarea + find highlight overlay */
+.editor-wrap {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.find-highlight-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.find-highlight-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.find-highlight-rect {
+  position: absolute;
+  background: rgba(255, 230, 120, 0.6);
+  border-radius: 2px;
+}
+
 /* Find bar (manual search) */
 .find-bar {
   display: flex;
@@ -118,6 +148,8 @@ body {
   /* grow and occupy space */
   min-height: 0;
   /* important for the flex to work in some environments */
+  position: relative;
+  z-index: 1;
   box-sizing: border-box;
   padding: 12px;
   font-family: 'Baskervville', serif;
