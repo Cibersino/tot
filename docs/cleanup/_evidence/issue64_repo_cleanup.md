@@ -348,12 +348,27 @@ Observable contract/timing preserved: mismos canales IPC, payload/return shapes,
 **Validation**
 - Grep + smoke mínimo (arriba).
 
-### L3 decision: 
+### L3 decision: NO CHANGE (no Level 3 justified)
 
-### L4 decision: 
+**Evidence checked (anchors)**
+- `electron/settings.js`: IPC surface already explicit and stable:
+  - `ipcMain.handle('get-settings')` + safe fallback path; emits `settings-updated` only via `broadcastSettingsUpdated`.
+  - `ipcMain.handle('set-language' | 'set-mode-conteo' | 'set-selected-preset')` returns `{ ok: ... }` shapes.
+- `electron/language_preload.js`: direct consumer of `set-language` via `setLanguage()` → `ipcRenderer.invoke('set-language', langTag)`.
+- `electron/main.js`: stable sequencing uses `settingsState.init(...)`, `settingsState.registerIpc(...)`, then `settingsState.applyFallbackLanguageIfUnset(...)`.
+- `electron/presets_main.js`: uses `settingsState.getSettings()` / `settingsState.saveSettings()` and relies on settings broadcast semantics.
 
-### L5 decision: 
+**Risk**
+- None (no changes applied).
 
-### L6 decision: 
+**Validation**
+- Grep for: `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`, `settings-updated`.
+- Manual smoke: change language; change counting mode; select preset; verify UI updates after `settings-updated`.
+
+### L4 decision: NOT RUN (pending)
+
+### L5 decision: NOT RUN (pending)
+
+### L6 decision: NOT RUN (pending)
 
 ### L7 — Smoke checklist (human-run; code-informed)
