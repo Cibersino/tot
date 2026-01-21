@@ -858,3 +858,21 @@ Evidence checked (anchors):
 - `electron/editor_state.js` — helpers: `normalizeState`, `isValidReduced` (invariants centralized).
 - `electron/fs_storage.js` — `getEditorStateFile` / `editor_state.json` path usage (single storage contract).
 
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+Cambios aplicados (logging-only):
+- Se agregan `log.warnOnce(...)` al normalizar estado inválido en `normalizeState` (root no-objeto / `maximized` inválido si está presente / `reduced` inválido si está presente), para que los fallbacks no sean silenciosos.
+- En `attachTo` (handler de `'unmaximize'`), se agregan `log.warnOnce(...)` cuando falta `state.reduced` y se usa el fallback de colocación, y cuando no hay `display.workArea` y se usan bounds hardcodeados.
+
+Gain: Los fallbacks dejan de ser silenciosos y se deduplican con keys explícitas/estables, alineadas con la política de logging.
+Cost: Aparecen warnings (deduped) en sesiones donde exista estado persistido malformado o el display no exponga `workArea`.
+Observable contract and timing preserved: yes (logging-only; no functional changes).
+
+Risk: Bajo (solo logs).
+Validation:
+- `rg -F "editor-state.normalize." electron/editor_state.js`
+- `rg -F "editor-state.unmaximize." electron/editor_state.js`
+- Runtime (manual): forzar un `editor_state.json` con shape inválida y abrir Editor manual; observar 1 warn (deduped). Probar maximize → unmaximize sin `reduced` persistido; observar warn (deduped).
+
