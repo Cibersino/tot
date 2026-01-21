@@ -889,3 +889,18 @@ Decision: CHANGED (comments-only)
 
 Risk: none (comments-only).
 Validation: visual review (no code moved; comments adjacent to blocks; ASCII-only).
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+Checks performed (anchors):
+- Helpers/invariants: `normalizeState`, `isValidReduced` consistent with callers.
+- Logging API signatures: `log.warnOnce(...)` / `log.error(...)` argument shapes consistent.
+- Event handlers: `attachTo` (`resize`, `move`, `maximize`, `unmaximize`, `close`) keep timing/side effects intact.
+- Exports + call sites: `loadInitialState`, `attachTo` match `electron/main.js` usage.
+- Comments vs behavior: Overview + handler comments align with current logic.
+
+Observable contract and timing were preserved.
