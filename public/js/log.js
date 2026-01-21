@@ -26,8 +26,6 @@
  * Once-variants (deduplicated per process/page; OUTPUT dedupe only):
  * warnOnce/errorOnce deduplicate log EMISSION only; they do NOT imply the underlying event should happen only once. A single app session may have multiple processes/pages, so the same warning can appear once per process/page.
  * Use warnOnce/errorOnce only for high-frequency repeatable events where additional occurrences add no new diagnostic value; do not use once-variants when repetition is needed for reproduction during testing.
- * Do not store important diagnostic context only in the dedupe key; include it in the message/args (OUTPUT dedupe only).
- * If repetition is diagnostically useful (e.g., per lang/base/path/window), prefer warn/error; do not use once-variants.
  * - warnOnce: use for expected transient failures that can repeat frequently and where additional occurrences add no new diagnostic value. Canonical example: webContents.send() to a destroyed window during shutdown/races.
  * - errorOnce: like warnOnce but for repeated error-class events (should be rare).
  *
