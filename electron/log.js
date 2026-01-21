@@ -2,8 +2,7 @@
 'use strict';
 
 /* NOTE: Preload scripts run under sandbox constraints.
- * Preloads temporarily use minimal console-based logging (no ./log import) to allow sandbox:true.
- * This is an intentional security posture decision for 0.1.0.
+ * Preloads use minimal console-based logging (no ./log import) to allow sandbox:true.
  */
 
 /**
@@ -11,13 +10,13 @@
  *
  * Levels (lowest to highest): silent < error < warn < info < debug
  * Default: warn (minimize noise in normal operation).
- * Policy: All fallbacks must be noisy (no silent fallbacks). If a fallback can trigger frequently, use warnOnce with an explicit stable key.
+ * Policy: All fallbacks must be noisy (no silent fallbacks). If a fallback can trigger frequently AND repetition adds no diagnostic value, use warnOnce/errorOnce with an explicit stable key.
  *
  * Intended usage across the repo:
  * - error: unexpected failures that break an intended action or invariant. Typical: exceptions caught in IPC handlers, failed critical I/O, failed window loads when not closing.
  * - warn: recoverable anomalies / degraded behavior / fallback paths. Typical: "using default position", "shortcut register failed", "could not apply optional behavior".
  * - info: high-level lifecycle/state transitions (low volume).
- * - debug: verbose diagnostics; may be noisy; safe to spam.
+ * - debug: verbose diagnostics; may be noisy; high volume is acceptable.
  *
  * Bootstrap vs in-regime fallbacks (classification):
  * - BOOTSTRAP (pre-init): logs whose message or explicit dedupe key starts with "BOOTSTRAP:" indicate a transitory default used only before this context finishes initialization (authoritative state not yet available).
@@ -27,11 +26,16 @@
  * Once-variants (deduplicated per process/page; OUTPUT dedupe only):
  * warnOnce/errorOnce deduplicate log EMISSION only; they do NOT imply the underlying event should happen only once. A single app session may have multiple processes/pages, so the same warning can appear once per process/page.
  * Use warnOnce/errorOnce only for high-frequency repeatable events where additional occurrences add no new diagnostic value; do not use once-variants when repetition is needed for reproduction during testing.
- * - warnOnce: use for expected transient failures that can repeat frequently and would spam logs. Canonical example: webContents.send() to a destroyed window during shutdown/races.
+ * - warnOnce: use for expected transient failures that can repeat frequently and where additional occurrences add no new diagnostic value. Canonical example: webContents.send() to a destroyed window during shutdown/races.
  * - errorOnce: like warnOnce but for repeated error-class events (should be rare).
  *
+ * Key rule (explicit key mode):
+ * - The explicit key defines the dedupe bucket.
+ * - Allowed: a stable event id, optionally with a CONTROLLED variant suffix when “once per variant” is desired (e.g., lang/base/window).
+ * - Forbidden: per-occurrence / unbounded data in the key (ids, timestamps, error messages/stacks, arbitrary user input, content-derived strings).
+ *
  * warnOnce/errorOnce signature:
- * - warnOnce(key, ...args): explicit stable dedupe key (constant string).
+ * - warnOnce(key, ...args): explicit dedupe key. Must be a stable short string; may include a controlled variant suffix (see Key rule).
  * - warnOnce(...args): auto-key derived from args (args[0] string preferred, else JSON(args)); if args vary, dedupe may not trigger reliably.
  *
  * Configuration source:
