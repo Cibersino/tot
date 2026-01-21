@@ -6,10 +6,11 @@
 // =============================================================================
 // Main process entry point (Electron).
 // Responsibilities:
-// - Ensure persistent storage is ready (config folder + JSON-backed state).
+// - Initialize persistent storage paths and JSON-backed state.
 // - Create and manage application windows (main, editor, preset modal, language picker, flotante stopwatch).
-// - Register IPC handlers used by renderer windows (the visible UI).
+// - Register main-owned IPC handlers and delegate feature IPC registration.
 // - Own the stopwatch ("crono") state and broadcast updates to any open UI windows.
+// - Orchestrate app lifecycle (ready, activate, quit).
 
 // =============================================================================
 // Imports (external + internal modules)
@@ -42,7 +43,7 @@ const log = Log.get('main');
 log.debug('Main process starting...');
 
 // =============================================================================
-// File locations (persistent user data)
+// Constants / config (paths, defaults, limits)
 // =============================================================================
 // Resolved after app readiness (requires app.getPath('userData')).
 
@@ -56,6 +57,10 @@ const FALLBACK_LANGUAGES = [
   { tag: 'en', label: 'English' },
 ];
 
+// =============================================================================
+// Helpers (logging + validation)
+// =============================================================================
+
 // Helper to avoid repeating the same warning many times (keeps logs readable).
 const warnOnce = (...args) => log.warnOnce(...args);
 
@@ -67,9 +72,6 @@ function isPlainObject(x) {
 function isAliveWindow(win) {
   return !!(win && !win.isDestroyed());
 }
-
-// Maximum allowed characters for the current text (safety limit for memory/performance).
-// Renderer fallback lives in public/js/constants.js; main/text_state use MAX_TEXT_CHARS and injected maxTextChars.
 
 // =============================================================================
 // Global window references (singletons)
