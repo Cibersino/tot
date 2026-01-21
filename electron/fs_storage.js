@@ -93,6 +93,18 @@ function ensureConfigPresetsDir() {
 // JSON helpers
 // =============================================================================
 
+const LOAD_JSON_KNOWN_FILES = new Set([
+  'current_text.json',
+  'user_settings.json',
+  'editor_state.json',
+]);
+
+function getLoadJsonOnceKey(kind, filePath) {
+  const baseName = path.basename(String(filePath));
+  const variant = LOAD_JSON_KNOWN_FILES.has(baseName) ? baseName : 'other';
+  return `fs_storage.loadJson.${kind}.${variant}`;
+}
+
 function loadJson(filePath, fallback = {}) {
   try {
     // Missing file is recoverable: callers decide what the fallback should be.
@@ -104,11 +116,11 @@ function loadJson(filePath, fallback = {}) {
       } else if (baseName === 'user_settings.json') {
         note = ' (note: may be normal on first run; file is created during startup)';
       } else if (baseName === 'editor_state.json') {
-        note = ' (note: may be normal on first run; file is created when editor window is opened for the first time)';        
+        note = ' (note: may be normal on first run; file is created when editor window is opened for the first time)';
       }
 
       log.warnOnce(
-        `fs_storage.loadJson:missing:${String(filePath)}`,
+        getLoadJsonOnceKey('missing', filePath),
         `loadJson missing (using fallback):${note}`,
         filePath
       );
@@ -123,7 +135,7 @@ function loadJson(filePath, fallback = {}) {
     // Empty/whitespace-only file is treated as invalid JSON (recoverable).
     if (raw.trim() === '') {
       log.warnOnce(
-        `fs_storage.loadJson:empty:${String(filePath)}`,
+        getLoadJsonOnceKey('empty', filePath),
         'loadJson empty file (using fallback):',
         filePath
       );
@@ -134,7 +146,7 @@ function loadJson(filePath, fallback = {}) {
   } catch (err) {
     // Invalid JSON is recoverable: return fallback and continue running.
     log.warnOnce(
-      `fs_storage.loadJson:failed:${String(filePath)}`,
+      getLoadJsonOnceKey('failed', filePath),
       'loadJson failed (using fallback):',
       filePath,
       err
