@@ -318,9 +318,6 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 - Un reordenamiento estructural sería churn con payoff bajo y potencial riesgo de secuencia (menu rebuild / broadcast / best-effort windows) sin reducción material de complejidad.
 - No se identificó una simplificación local (early returns / deduplicación / naming) con ganancia clara que no agregue indirection o riesgo de timing.
 
-**Evidence**
-- Codex Level 1 report (Decision: NO CHANGE) en `tools_local/codex_reply.md` (2026-01-21).
-
 **Risk**
 - N/A (no code changes).
 
@@ -343,7 +340,6 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 Observable contract/timing preserved: mismos canales IPC, payload/return shapes, side effects y ordering.
 
 **Evidence**
-- Codex Level 2 report (Decision: CHANGED) en `tools_local/codex_reply.md` (2026-01-21).
 - Diff: reemplazo de literales por `createDefaultSettings(...)` en `init`, `getSettings`, y fallback de `get-settings`.
 
 **Risk**
@@ -385,7 +381,6 @@ Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, s
 - No functional changes; comments-only.
 
 **Evidence**
-- Codex Level 5 report (Decision: CHANGED) in `tools_local/codex_reply.md` (2026-01-21).
 - Diff confirms comment-only changes in `electron/settings.js` (Overview + IPC list).
 
 **Risk**
@@ -780,8 +775,6 @@ Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
 
 ### L0 — Diagnosis (no changes)
 
-Source: `tools_local/codex_reply.md` (Level 0)
-
 - Reading map:
   - Block order (as-is):
     - Imports (`screen`, `fs_storage`, `Log`) + logger (`Log.get('editor-state')`).
@@ -979,8 +972,6 @@ Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
 
 ### L0 — Diagnosis (no changes)
 
-Source: `tools_local/codex_reply.md` (Level 0)
-
 - Reading map:
   - Block order (as-is):
     - Header comment + `'use strict'`.
@@ -1072,3 +1063,18 @@ Decision: **NO CHANGE**
 - Default preset loading has intentional fallback paths; merging helpers risks altering edge-case behavior.
 - Structural edits would not reduce branching or cognitive load enough to justify change.
 
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: **CHANGED**
+
+Change 1: Extract dialog setup into local helpers (`getDialogContext`, `getYesNoLabels`).
+- Gain: Reduce duplicación del setup de idioma/textos/labels de diálogos en handlers (delete/restore/edit/notify), manteniendo call sites más legibles.
+- Cost: Agrega indirection pequeña dentro de `registerIpc`.
+- Validation: Grep de `getDialogContext(` y `getYesNoLabels(` y smoke manual de flujos que abren diálogos (delete preset, restore defaults, edit preset, notify-no-selection-edit).
+
+Change 2: Centralize `disabled_default_presets` initialization with `ensureDisabledDefaultPresets`.
+- Gain: Elimina duplicación del “shape-setup” y unifica la creación/normalización del array por idioma.
+- Cost: Indirection menor en los puntos que mutan `settings.disabled_default_presets`.
+- Validation: Grep de `ensureDisabledDefaultPresets(` y smoke manual de delete/edit/restore que ignoran/unignoran defaults.
+
+Observable contract, IPC surface, side effects, and timing preserved (per Codex report; diff shows handler order unchanged and only local helper extraction).
