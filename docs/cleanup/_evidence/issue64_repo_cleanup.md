@@ -160,6 +160,16 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 - Visual review: file remains readable; section headers adjacent to the blocks they describe; no non-ASCII characters introduced.
 - Baseline L7 smoke checklist unchanged (no functional changes).
 
+**L6 decision: NO CHANGE**
+
+- Checked helper usage consistency (`isAliveWindow`, `warnOnce`): signatures and call sites aligned.
+- Reviewed IPC handlers (`crono-*`, `flotante-*`, `open-*`, `get-app-*`): channel names + return shapes consistent with consumers.
+- Verified logging API usage against `electron/log.js` for deduped warnings (warnOnce/errorOnce usage).
+- Scanned for unused locals/imports introduced in Levels 1–5: none found.
+- Confirmed section headers and comments still match actual blocks (constants, helpers, window factories, IPC, lifecycle).
+
+Observable contract and timing preserved (no code changes).
+
 ### L7 — Smoke checklist (human-run)
 - [ ] `npm start` abre la app sin errores visibles.
 - [ ] Ventana principal: carga UI y conteos básicos sin errores (texto vacío/no vacío).
