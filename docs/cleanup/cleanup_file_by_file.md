@@ -451,17 +451,18 @@ Output requirement:
 
 Level 6 — Final review (coherence + leftover cleanup after refactors).
 
-Objective: Do a careful final pass to ensure the `<TARGET_FILE>` is coherent end-to-end after Levels 1–5:
+Objective:
+Do a careful final pass to ensure `<TARGET_FILE>` is coherent end-to-end after Levels 1–5:
 - remove leftovers / dead code / stale patterns introduced by earlier refactors;
 - ensure internal consistency (naming, control flow, invariants, helper usage);
 - ensure logging API usage matches the repo policy (no signature drift);
-- ensure comments and code agree (no drift);
-  while preserving the module’s observable behavior/contract and timing.
+- ensure comments and code agree (no drift); while preserving the module’s observable behavior/contract and timing.
 
 Constraints:
-- Preserve observable behavior/contract as-is (public API, IPC surface, payload/return shapes, side effects, timing).
-- Avoid architecture changes and cross-module rewrites. If a change affects consumers, it is Level 3 and should NOT be done here.
+- Preserve observable behavior/contract as-is (public API, IPC surface, payload/return shapes, side effects, timing/ordering).
+- Avoid architecture changes and cross-module rewrites. If a change affects consumers, it is Level 3 and must NOT be done here.
 - Prefer minimal edits with clear local payoff. Default to "no change" if uncertain.
+- Apply changes ONLY to `<TARGET_FILE>`.
 
 Anti “refactor that makes it worse” rule:
 If a change:
@@ -471,16 +472,17 @@ If a change:
   then discard it or scale it down.
 
 What to do:
-1. Coherence scan (`<TARGET_FILE>` only; repo inspection allowed):
-   - Look for "leftovers" from prior levels: unused locals/params, duplicated checks, inconsistent helper signatures, inconsistent naming, stale comments, inconsistent return shapes, redundant branching.
-2. Contract consistency check:
-   - Verify the IPC handlers and exports still match actual call sites and expected payload/return shapes.
-   - If you find a mismatch, only fix it if it can be done locally without changing the contract; otherwise report it as Level 3 evidence (no code change).
-   - If call sites look consistent, do not spend output budget enumerating them; focus on issues that require local fixes.
-3. Logging API consistency check:
-   - Verify each log call matches the actual logging API (method names + argument shapes) as defined in electron/log.js (and relevant usage patterns in `electron/main.js`).
+1) Coherence scan (repo inspection allowed; edits only in this file):
+   - Look for leftovers from prior levels: unused locals/params, duplicated checks,
+     inconsistent helper usage/signatures, inconsistent naming, stale comments,
+     inconsistent return shapes, redundant branching.
+2) Contract consistency check:
+   - Verify IPC handlers and exports still match actual call sites and expected payload/return shapes.
+   - If you find a mismatch, only fix it if it can be done locally WITHOUT changing the contract; otherwise report it as Level 3 evidence (no code change).
+3) Logging API consistency check:
+   - Verify each log call matches the logging API (method names + argument shapes) as defined in `electron/log.js` or `public/js/log.js`.
    - If you detect signature drift (e.g., passing a dedupe key to a non-once method), correct it in the smallest way that preserves intended logging behavior and avoids spam.
-4. Comment/code alignment:
+4) Comment/code alignment:
    - Ensure comments describe real behavior and constraints; remove or adjust any drift introduced during prior edits.
 
 Mandatory gate output (for each non-trivial change you apply):
@@ -490,10 +492,15 @@ Mandatory gate output (for each non-trivial change you apply):
 - Risk: one sentence (what could break).
 - Validation: how to verify (manual smoke path and/or a simple repo grep).
 
-If you find no changes that clearly improve coherence without risk, make no edits and output:
-- "No Level 6 changes justified" + 3–8 bullets of what you checked.
-
-Apply changes only to the `<TARGET_FILE>`.
+Output requirement:
+- Write the full Level 6 result to `tools_local/codex_reply.md` (overwrite; do not append).
+- The file must start with: `# Level 6 result: <TARGET_FILE>`
+- Include: `Decision: CHANGED | NO CHANGE`
+  - If CHANGED: list each non-trivial change with Change/Gain/Cost/Risk/Validation.
+  - If NO CHANGE: “No Level 6 changes justified” + 3–8 bullets of what you checked (anchors).
+- Include one explicit sentence confirming the observable contract/timing were preserved.
+- Do NOT output diffs (neither in chat nor in the report).
+- In chat, output only: “WROTE: tools_local/codex_reply.md”.
 ```
 
 ---
