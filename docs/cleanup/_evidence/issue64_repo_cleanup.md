@@ -323,7 +323,30 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 **Validation**
 - N/A (no code changes; baseline unchanged).
 
-### L2 decision: 
+### L2 decision: CHANGED
+
+- Change: Se centraliza el “default settings shape” introduciendo `createDefaultSettings(language = '')` y usándolo en:
+  - `init()` (default para `_loadJson`)
+  - `getSettings()` (default para `_loadJson`)
+  - IPC `get-settings` fallback (default para `normalizeSettings(...)`)
+  - Gain: elimina duplicación literal y reduce riesgo de drift (defaults en un solo lugar).
+  - Cost: agrega un helper pequeño que hay que leer para ver los defaults.
+  - Validation:
+    - `rg -n -F "createDefaultSettings" electron/settings.js`
+    - Revisar que el objeto coincide con los literales previos (`language`, `presets_by_language`, `selected_preset_by_language`, `disabled_default_presets`).
+    - Smoke mínimo: abrir app → `get-settings` → cambiar idioma (`set-language`) → cambiar modo conteo (`set-mode-conteo`) y verificar que no hay errores y que el broadcast `settings-updated` sigue ocurriendo.
+
+Observable contract/timing preserved: mismos canales IPC, payload/return shapes, side effects y ordering.
+
+**Evidence**
+- Codex Level 2 report (Decision: CHANGED) en `tools_local/codex_reply.md` (2026-01-21).
+- Diff: reemplazo de literales por `createDefaultSettings(...)` en `init`, `getSettings`, y fallback de `get-settings`.
+
+**Risk**
+- Low. Cambio local que reemplaza literales por un helper puro; no toca canales IPC ni orden de efectos.
+
+**Validation**
+- Grep + smoke mínimo (arriba).
 
 ### L3 decision: 
 
