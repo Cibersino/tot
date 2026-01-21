@@ -163,10 +163,12 @@ Por cada cambio no trivial: **ganancia** (1 frase) + **costo** (1 frase) + **val
 
 Level 2 — Clarity / robustness refactor (controlled).
 
-Objective: improve internal clarity and robustness of `<TARGET_FILE>` while keeping the module’s observable behavior/contract intact, and without introducing unnecessary architecture.
+Objective: improve internal clarity and robustness of `<TARGET_FILE>` while keeping the module’s observable behavior/contract intact, and without introducing unnecessary architecture or timing changes.
 
-Constraints:
-- Preserve the observable contract as-is (public API, IPC surface, payload/return shapes, side effects, timing).
+Hard constraints:
+- Preserve the observable contract as-is (IPC surface, channel names, payload/return shapes, side effects, timing/ordering).
+- Do NOT reorder startup sequencing inside `app.whenReady` (treat ordering as timing-sensitive unless proven otherwise).
+- Do NOT reorder IPC registration in a way that could change readiness or race behavior.
 - Avoid “silent” problematic cases, but also avoid over-logging (no noisy logging).
 
 Anti “refactor that makes it worse” rule:
@@ -174,25 +176,35 @@ If a change:
 - introduces more concepts than it removes;
 - increases indirection without reducing branches/duplication;
 - forces the reader to read more to understand the same behavior;
-  then discard it or scale it down to Level 1.
+then discard it or scale it down to Level 1 or NO CHANGE.
 
 Allowed Level 2 moves (use judgment):
 - Add small helpers ONLY if they:
   - eliminate real duplication or centralize a repeated edge case,
   - reduce branching/nesting complexity,
   - remain local/easy to understand (no “jumping around” required).
-- Make implicit edge cases explicit only when it affects decisions (e.g., distinguish “missing” vs “invalid” inputs where relevant).
-- Improve error handling where it is currently implicit or risky:
-  - remove dangerous silent fallbacks,
-  - keep logs proportional (warn/error only when it genuinely helps diagnosing state).
+- Make implicit edge cases explicit only when it affects decisions (e.g., missing vs invalid inputs).
+- Improve error handling where it is currently implicit or risky, while keeping logs proportional and deduped.
 
-Gate output requirement (mandatory):
-For every non-trivial change you apply, include:
-- Gain: one sentence.
-- Cost: one sentence.
-- Validation: how to verify (manual check, smoke path, or simple repo grep).
+Scope:
+- You may inspect the repo as needed to understand usage, but apply changes only to `<TARGET_FILE>`.
 
-You may inspect the repo as needed to understand how this module is used, but apply changes only to `<TARGET_FILE>`.
+Output requirement:
+- Apply changes directly to `<TARGET_FILE>` only if you decided CHANGED.
+- Write the full Level 2 result to a Markdown file at: `tools_local/codex_reply.md`
+- Overwrite the file contents (do not append).
+- The file must start with a header that includes the target path, e.g.:
+  `# Level 2 result: <TARGET_FILE>`
+- The report must include:
+  - Decision: CHANGED | NO CHANGE
+  - If NO CHANGE: 3–8 bullets stating why no safe Level 2 change was worth doing.
+  - If CHANGED: for every non-trivial change:
+    - Gain: one sentence.
+    - Cost: one sentence.
+    - Validation: how to verify (manual check / smoke path / simple repo grep).
+  - One explicit sentence confirming the observable contract/timing were preserved.
+- Do NOT output diffs (neither in chat nor in the report).
+- In chat, output only: “WROTE: tools_local/codex_reply.md”.
 ```
 
 ---
