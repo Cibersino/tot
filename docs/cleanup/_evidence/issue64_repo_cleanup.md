@@ -478,3 +478,13 @@ Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
 
 - IPC contract: none (no ipcMain/ipcRenderer/webContents usage).
 - Delegated IPC registration: none.
+
+### L1 decision: NO CHANGE
+
+- El archivo ya está ordenado en bloques coherentes con separadores claros (overview → imports/logger → config state → helpers → exports).
+- El flujo es simple y con baja anidación; aplicar early-returns / reordenamiento no mejora lectura sin introducir churn.
+- La duplicación es mínima y localizada; extraer helpers comunes (p.ej. ensure-dir / warnOnce wrappers) agregaría indirección sin reducir ramas/duplicación de forma significativa.
+- El único punto “mixto” es el special-casing por basename dentro de `loadJson()` para notas de “missing file”; extraerlo a mapa/helper sería un concepto nuevo con payoff marginal, así que no se justifica en L1.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
