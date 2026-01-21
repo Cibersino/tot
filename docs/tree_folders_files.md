@@ -75,14 +75,14 @@ tot-readingmeter/
 │ │ ├── instrucciones.en.html
 │ │ └── links_interes.html
 │ ├── js/
-│ │ ├── constants.js
 │ │ ├── count.js
-│ │ ├── format.js
-│ │ ├── i18n.js
-│ │ ├── menu_actions.js
-│ │ ├── notify.js
 │ │ ├── presets.js
 │ │ ├── crono.js
+│ │ ├── menu_actions.js
+│ │ ├── format.js
+│ │ ├── i18n.js
+│ │ ├── constants.js
+│ │ ├── notify.js
 │ │ ├── info_modal_links.js
 │ │ └── log.js
 │ ├── renderer.js
