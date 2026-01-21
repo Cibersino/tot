@@ -904,3 +904,68 @@ Checks performed (anchors):
 - Comments vs behavior: Overview + handler comments align with current logic.
 
 Observable contract and timing were preserved.
+
+### L7 — Smoke (human-run; editor_state.js)
+
+Result: PASS
+
+**Precondition**
+
+* App closed before touching config files.
+
+#### L7-01 Baseline: open Editor once (creates/loads editor_state.json)
+
+* [x] Action: Launch app → open Manual Editor (test_suite SM-08).
+* [x] Expected: Editor window opens; main remains responsive; no uncaught exceptions.
+* [x] Expected logs: on **clean run**, it is acceptable to see **one** warnOnce from `fs_storage.loadJson` about missing `editor_state.json` (created on first editor usage). No repeated spam.
+
+#### L7-02 Persist reduced geometry (move/resize -> reopen)
+
+* [x] Action: With editor **not maximized**, resize + move to a distinct position → close editor window → open editor again.
+* [x] Expected: Editor reopens roughly at the same size/position (reduced bounds restored).
+* [x] Expected: No new WARN/ERROR lines produced by normal move/resize activity (beyond any first-run fs_storage warning already seen).
+
+#### L7-03 Persist maximized flag (maximize -> reopen)
+
+* [x] Action: Maximize editor → close editor → open editor.
+* [x] Expected: Editor opens **maximized** again.
+* [x] Expected: No ERROR logs.
+
+#### L7-04 Unmaximize restores last reduced bounds (non-fallback path)
+
+* [x] Action: From maximized editor, click unmaximize (restore down).
+* [x] Expected: Window returns to last reduced bounds (the one you had before maximize), not the fallback placement.
+* [x] Expected logs: **no** “unmaximize: reduced bounds missing; …” warning in this healthy path.
+
+---
+
+### Optional L7 (covers L4 warnOnce fallbacks explicitly)
+
+These are optional because they require editing `editor_state.json`, but they validate the *new logging* and “no silent fallback” behavior.
+
+#### L7-05 Force unmaximize fallback when reduced is missing
+
+* [x] Setup: Close app. Backup `editor_state.json`. Replace contents with:
+
+  ```json
+  { "maximized": true, "reduced": null }
+  ```
+* [x] Action: Launch app → open editor → maximize (if not already) → unmaximize.
+* [x] Expected behavior: Editor uses fallback placement (upper-right half of current monitor workArea).
+* [x] Expected logs (deduped): one WARN line starting with:
+  * `unmaximize: reduced bounds missing; using fallback placement (ignored).`
+* [x] Dedupe check: repeat maximize/unmaximize multiple times in the same session → warning should not repeat.
+
+#### L7-06 Force normalizeState invalid-shape warnings (valid JSON, wrong shape)
+
+* [x] Setup: Close app. Backup `editor_state.json`. Replace contents with **one** of:
+  * `null`
+  * `{ "maximized": "yes", "reduced": 123 }`
+* [x] Action: Launch app → open editor.
+* [x] Expected behavior: App does not crash; editor opens using defaults/fallbacks.
+* [x] Expected logs (deduped):
+
+  * For `null`: one WARN line starting with `normalizeState: invalid state; using defaults (ignored).`
+  * For `"maximized": "yes"`: one WARN line starting with `normalizeState: invalid maximized; using default (ignored).`
+  * For `"reduced": 123`: one WARN line starting with `normalizeState: invalid reduced bounds; ignoring.`
+* [x] Dedupe check: reopen editor / retrigger within same session → each warning should emit at most once per session.
