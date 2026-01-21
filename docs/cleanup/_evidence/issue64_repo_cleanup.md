@@ -546,3 +546,16 @@ Observable contract and timing preserved: yes (logging-only; no functional chang
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
+### L6 decision: NO CHANGE (final review)
+
+No Level 6 changes justified.
+- Checked helper usage consistency (`LOAD_JSON_KNOWN_FILES`, `getLoadJsonOnceKey`, `loadJson`).
+- Checked logging API usage against `electron/log.js` (`log.warnOnce`, `log.error`).
+- Checked initialization invariants and guards (`initStorage`, `getConfigDir`).
+- Checked fallback behavior and return shapes (`loadJson`, `saveJson`).
+- Checked comments align with behavior and structure (section headers and notes).
+
+Observable contract and timing preserved: yes (no code changes).
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
