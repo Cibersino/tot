@@ -48,6 +48,16 @@ const getLangBase = (lang) => {
 const deriveLangKey = (langTag) => getLangBase(langTag);
 
 // =============================================================================
+// Settings defaults
+// =============================================================================
+const createDefaultSettings = (language = '') => ({
+  language,
+  presets_by_language: {},
+  selected_preset_by_language: {},
+  disabled_default_presets: {},
+});
+
+// =============================================================================
 // Injected dependencies + cache
 // =============================================================================
 // Dependencies injected from main.js (centralized file I/O).
@@ -329,12 +339,7 @@ function init({ loadJson, saveJson, settingsFile }) {
   _saveJson = saveJson;
   _settingsFile = settingsFile;
 
-  const raw = _loadJson(_settingsFile, {
-    language: '',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-  });
+  const raw = _loadJson(_settingsFile, createDefaultSettings());
 
   const normalized = normalizeSettings(raw);
   _currentSettings = normalized;
@@ -357,12 +362,7 @@ function getSettings() {
     throw new Error('[settings] getSettings called before init');
   }
 
-  const raw = _loadJson(_settingsFile, {
-    language: '',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-  });
+  const raw = _loadJson(_settingsFile, createDefaultSettings());
 
   _currentSettings = normalizeSettings(raw);
   return _currentSettings;
@@ -481,12 +481,7 @@ function registerIpc(
         'IPC get-settings failed (using safe fallback):',
         err
       );
-      return normalizeSettings({
-        language: DEFAULT_LANG,
-        presets_by_language: {},
-        selected_preset_by_language: {},
-        disabled_default_presets: {},
-      });
+      return normalizeSettings(createDefaultSettings(DEFAULT_LANG));
     }
   });
 
