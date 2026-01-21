@@ -1061,3 +1061,14 @@ Source: `tools_local/codex_reply.md` (Level 0)
       - `'preset-created'` payload `sanitizedPreset`; anchor: `"mainWin.webContents.send('preset-created', sanitizedPreset);"` (create-preset + edit-preset)
   - Delegated IPC registration:
     - None found in this file.
+
+### L1 — Structural refactor (Codex)
+
+Decision: **NO CHANGE**
+
+- Existing block order already follows imports → config → helpers → registerIpc → exports; reordering would not improve scanning.
+- Helpers nested inside registerIpc depend on resolveWindows/settingsState/log; lifting them would add indirection.
+- IPC handlers are grouped by feature and flow; reordering could subtly affect initialization/timing expectations.
+- Default preset loading has intentional fallback paths; merging helpers risks altering edge-case behavior.
+- Structural edits would not reduce branching or cognitive load enough to justify change.
+
