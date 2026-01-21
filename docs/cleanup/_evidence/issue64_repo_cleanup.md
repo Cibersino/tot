@@ -876,3 +876,16 @@ Validation:
 - `rg -F "editor-state.unmaximize." electron/editor_state.js`
 - Runtime (manual): forzar un `editor_state.json` con shape inválida y abrir Editor manual; observar 1 warn (deduped). Probar maximize → unmaximize sin `reduced` persistido; observar warn (deduped).
 
+### L5 — Comments (Codex)
+
+Decision: CHANGED (comments-only)
+
+- Added an Overview block (responsibilities) in the established electron/* style.
+- Inserted section dividers matching the file’s real blocks:
+  Imports / logger, Constants / defaults, Helpers, API (public entrypoints), Exports.
+- Replaced/removed “API:” inline comments in favor of a single API section header.
+- Tweaked the fallback placement comment for clarity and ASCII consistency.
+- Added an explicit end-of-file marker (“End of electron/editor_state.js”).
+
+Risk: none (comments-only).
+Validation: visual review (no code moved; comments adjacent to blocks; ASCII-only).
