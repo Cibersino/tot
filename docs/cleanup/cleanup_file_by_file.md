@@ -304,7 +304,7 @@ Objective:
 Align logging in `<TARGET_FILE>` with the project logging policy and established style, so that:
 - Levels match recoverability (error vs warn vs info vs debug),
 - Fallbacks are never silent (per policy),
-- High-frequency best-effort failures do not spam (use warnOnce/errorOnce with explicit stable keys),
+- High-frequency repeatable events where additional occurrences add no new diagnostic value are deduplicated (use warnOnce/errorOnce),
 - Messages are short, actionable, and consistent with the repo (see `electron/main.js` patterns).
 
 Default rule (do not force changes):
@@ -342,12 +342,15 @@ What to do:
 
 4) Once-variants (OUTPUT dedupe only):
    - Use warnOnce/errorOnce ONLY for high-frequency repeatable events where additional occurrences add no new diagnostic value.
-     If you cannot justify high-frequency/noise risk, do NOT change dedupe behavior (prefer warn/error or NO CHANGE).
+     If you cannot justify that property, do NOT introduce or tighten dedupe (prefer warn/error or NO CHANGE).
+   - Priority rule (avoid “tension”):
+     - Do NOT trade away per-variant diagnostic signal merely to satisfy dedupe-key preferences.
+     - If making a key “constant” would collapse diagnostically meaningful variants (e.g., per lang/base/path/window), then do NOT dedupe: use warn/error instead, unless the event is truly high-frequency and variants add no diagnostic value.
    - warnOnce/errorOnce signature:
      - warnOnce(key, ...args): explicit stable dedupe key (constant string).
      - warnOnce(...args): auto-key derived from args (args[0] string preferred); if args vary, dedupe may not trigger reliably.
    - Do NOT embed dynamic payloads or error objects in an explicit dedupe key; keep dynamic details in the log args/message.
-   - Do NOT collapse “once per variant” behavior (e.g., per lang/base/path/window) into a single global once unless the variants are truly high-frequency noise and add no diagnostic value (justify explicitly in the report).
+   - Do NOT collapse “once per variant” behavior (e.g., per lang/base/path/window) into a single global once unless the variants are truly high-frequency AND additional occurrences across variants add no diagnostic value (justify explicitly in the report).
 
 5) Best-effort window sends (races):
    - If a send is part of an intended action that is being dropped, log warnOnce using “failed (ignored):” style with a stable key.
