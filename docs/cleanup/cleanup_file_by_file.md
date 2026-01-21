@@ -304,7 +304,7 @@ Objective:
 Align logging in `<TARGET_FILE>` with the project logging policy and established style, so that:
 - Levels match recoverability (error vs warn vs info vs debug),
 - Fallbacks are never silent (per policy),
-- High-frequency best-effort failures do not spam (use warnOnce/errorOnce with explicit stable keys),
+- High-frequency repeatable events where additional occurrences add no new diagnostic value are deduplicated (use warnOnce/errorOnce),
 - Messages are short, actionable, and consistent with the repo (see `electron/main.js` patterns).
 
 Default rule (do not force changes):
@@ -340,14 +340,22 @@ What to do:
    - Any fallback MUST emit at least a warn (or warnOnce) unless the behavior is explicitly a no-op by contract (i.e., not a fallback).
    - If the fallback is BOOTSTRAP-only (pre-init), the message OR the explicit dedupe key MUST start with `BOOTSTRAP:` and that path must become unreachable after init. If it can happen after init, it is NOT bootstrap.
 
-4) Once-variants (dedupe output only):
-   - Use warnOnce/errorOnce only for high-frequency repeatable events where repetition adds no diagnostic value.
-   - Prefer explicit stable keys: warnOnce('<namespaced.stable.key>', ...args) / errorOnce(...).
-   - Do NOT embed dynamic payloads or error objects in the dedupe key; keep dynamic details in the log args.
-   - Avoid auto-key mode unless args[0] is a stable short string.
+4) Once-variants (OUTPUT dedupe only):
+   - Use warnOnce/errorOnce ONLY for high-frequency repeatable events where additional occurrences add no new diagnostic value.
+     If you cannot justify that property, do NOT introduce or tighten dedupe (prefer warn/error or NO CHANGE).
+   - OUTPUT dedupe only: the dedupe key is not diagnostic output. Do not store important context only in the key; include it in the message/args.
+   - Explicit key rule (matches log.js headers):
+     - The explicit key defines the dedupe bucket.
+     - Allowed: a stable short event id, optionally with a CONTROLLED variant suffix when “once per variant” is desired (e.g., lang/base/window).
+     - Forbidden: per-occurrence / unbounded data in the key (ids, timestamps, error messages/stacks, arbitrary user input, content-derived strings).
+   - warnOnce/errorOnce signature:
+     - warnOnce(key, ...args): explicit dedupe key (stable short string; may include a controlled variant suffix).
+     - warnOnce(...args): auto-key derived from args (args[0] string preferred, else JSON(args)); if args vary, dedupe may not trigger reliably.
+   - Do NOT embed dynamic payloads or error objects in an explicit dedupe key; keep dynamic details in the log args/message.
 
 5) Best-effort window sends (races):
-   - If a send is part of an intended action that is being dropped, log warnOnce using “failed (ignored):” style with a stable key.
+   - If a send is part of an intended action that is being dropped, log warnOnce using “failed (ignored):” style.
+   - Use a stable key, optionally with a CONTROLLED variant suffix for the target/window (per-window buckets are allowed).
    - If a send is truly optional and contractually “do nothing if missing”, it may remain silent; do not add noise.
 
 Anti “refactor that makes it worse” rule:
