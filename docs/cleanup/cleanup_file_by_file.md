@@ -2,7 +2,7 @@
 
 ## Elección de archivo:
 
-- En proceso:
+- En proceso: `electron/editor_state.js`
 
 Archivos ya ordenados y limpiados:
 - `electron/main.js`
