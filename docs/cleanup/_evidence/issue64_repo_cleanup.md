@@ -91,6 +91,27 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Covered by L7 smoke checklist (no code changes to validate beyond baseline).
 
+**L2 decision: CHANGED**
+
+- Change: Added `isAliveWindow(win)` and replaced repeated `win && !win.isDestroyed()` checks across window guards and sends.
+  - Gain: Consistent, scan-friendly liveness checks without altering behavior.
+  - Cost: Adds a tiny helper indirection.
+  - Validation: Run L7 smoke; specifically open/close editor/presets/flotante and confirm no new errors; verify `flotante-closed` and `crono-state` still propagate.
+
+- Change: Added `toggleCrono()` and used it for both crono toggle entrypoints (`crono-toggle` and `flotante-command` toggle).
+  - Gain: Removes duplicated toggle logic and keeps semantics aligned.
+  - Cost: Minimal helper indirection.
+  - Validation: From main UI and flotante UI, toggle stopwatch and verify state changes + broadcasts.
+
+**Evidence**
+- Repeated window-liveness checks and duplicated toggle logic were present in multiple call sites in `electron/main.js`.
+
+**Risk**
+- Low. Helpers are pure wrappers around existing conditions/calls; IPC surface and sequencing unchanged.
+
+**Validation**
+- L7 smoke checklist (focus on crono toggle paths and editor-ready/main notification).
+
 ### L7 — Smoke checklist (human-run)
 - [ ] `npm start` abre la app sin errores visibles.
 - [ ] Ventana principal: carga UI y conteos básicos sin errores (texto vacío/no vacío).
