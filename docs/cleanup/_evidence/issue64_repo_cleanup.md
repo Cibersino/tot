@@ -713,5 +713,20 @@ Evidence checked (repo anchors):
 - `public/renderer.js`: caller expects `resp.error` on failure:
   - "throw new Error(resp.error || 'set-current-text failed');"
 
-Note:
-- Codex used “?” as informal separators in its phrasing; treat anchors above as the evidence.
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+- Change 1: `clipboard-read-text` refusal paths now emit `warnOnce` (deduped), eliminating silent fallbacks.
+  - Gain: Visibility for unauthorized sender and oversize clipboard rejection, aligned with no-silent-fallback policy.
+  - Cost: Two new deduped warn lines can appear on failure paths.
+  - Validation: Trigger each path; confirm logs include:
+    - key: `text_state.clipboardRead.unauthorized`
+    - key: `text_state.clipboardRead.tooLarge`
+
+- Change 2: Avoid `log.error` for the expected validation failure “payload too large” in `set-current-text` (keeps existing warnOnce path; suppresses error noise).
+  - Gain: Reduces error-level noise for an expected, recoverable validation failure.
+  - Cost: That specific failure no longer produces an error log line.
+  - Validation: Send an oversized payload; confirm no `log.error('Error in set-current-text:', ...)` is emitted for that case, while the existing warnOnce still fires.
+
+Observable contract and timing preserved; logging-only changes.

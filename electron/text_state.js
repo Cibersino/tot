@@ -193,10 +193,21 @@ function registerIpc(ipcMain, windowsResolver) {
     const { mainWin } = getWindows() || {};
     const senderWin = BrowserWindow.fromWebContents(event.sender);
     if (!mainWin || mainWin.isDestroyed() || !senderWin || senderWin !== mainWin) {
+      log.warnOnce(
+        'text_state.clipboardRead.unauthorized',
+        'clipboard-read-text unauthorized (ignored).'
+      );
       return { ok: false, error: 'unauthorized', text: '', length: 0 };
     }
     const text = String(clipboard.readText() || '');
     if (text.length > maxIpcChars) {
+      log.warnOnce(
+        'text_state.clipboardRead.tooLarge',
+        'clipboard-read-text too large; rejecting (ignored):',
+        text.length,
+        '>',
+        maxIpcChars
+      );
       return { ok: false, tooLarge: true, length: text.length, text: '' };
     }
     return { ok: true, length: text.length, text };
@@ -257,7 +268,10 @@ function registerIpc(ipcMain, windowsResolver) {
         text: currentText,
       };
     } catch (err) {
-      log.error('Error in set-current-text:', err);
+      const msg = err && typeof err.message === 'string' ? err.message : '';
+      if (msg !== 'set-current-text payload too large') {
+        log.error('Error in set-current-text:', err);
+      }
       return { ok: false, error: String(err) };
     }
   });
