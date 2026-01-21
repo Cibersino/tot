@@ -2,10 +2,11 @@
 
 ## Elección de archivo:
 
-- En proceso: `electron/settings.js`
+- En proceso: `electron/fs_storage.js`
 
 Archivos ya ordenados y limpiados:
 - `electron/main.js`
+- `electron/settings.js`
 
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
@@ -516,80 +517,25 @@ Output requirement:
 
 ---
 
-## Nivel 7: Smoke test
+## Nivel 7: Smoke test (human-run; minimal)
 
-* Cuando lo anterior esté listo: Smoke test checklist (human-run; code-informed) para verificar que los cambios realizados (desde nivel 1 a 6) no rompieron el comportamiento observable.
+**Objetivo:** verificar rápidamente que los cambios de L1–L6 no rompieron el contrato observable del archivo.
 
-### Prompt Nivel 7 para Codex:
-```
-# Target file: `<TARGET_FILE>`
+**Regla:** NO usar Codex en este nivel. El smoke es humano y se basa en flujos normales de la app. Referencia base: `docs/test_suite.md` (subset “Release smoke”), adaptando 6–15 pasos segun las responsabilidades del archivo.
 
-Level 7 — Smoke test checklist (human-run; code-informed).
+**Checklist minima (ajustar si no aplica al archivo):**
+1) Arrancar la app con logs visibles (terminal / DevTools).
+   - Esperado: sin ERROR/uncaught exceptions; sin repeticion continua del mismo warning en idle.
+2) Ejecutar 1–3 acciones UI que atraviesen el modulo tocado (p. ej. abrir ventana/accion asociada).
+3) Ejecutar 1–2 acciones que persistan o lean estado (si el modulo toca settings/persistencia).
+4) Repetir 1 accion clave una segunda vez (para detectar regresiones por estado/cache).
+5) Cerrar y reabrir la app si el modulo participa en boot o en persistencia.
 
-Objective:
-Produce a minimal, realistic smoke checklist to verify that Levels 1–6 did not break observable behavior of `<TARGET_FILE>`.
-
-Hard constraints:
-- NO code changes. Instructions only (do not propose adding logs or instrumentation).
-- You may inspect the repo, but do not propose refactors or fixes.
-- 6–15 smoke steps total (unless the file genuinely has many responsibilities).
-- Each step must be realistically triggerable via normal dev UI flows (no huge inputs, no manual JSON corruption, no “simulate rare race” steps).
-- Minimize dependencies between steps. If a step depends on prior state, state it explicitly as a precondition and keep it minimal.
-
-Scope guidance:
-- Include steps that exercise responsibilities that `<TARGET_FILE>` owns (windows, IPC, lifecycle, crono, flotante, language picker gating).
-- Do NOT add steps that belong purely to other modules unless they are required triggers to reach a main.js surface.
-
-Logs (allowed, but do not make it fragile):
-- You MAY include a “log sanity” check using logs that already exist.
-- Do NOT require “zero warnings”; warnings may be timing/platform dependent.
-- The log check must be framed as: “no unexpected ERROR/uncaught exceptions; no continuous spam from the same message/key”.
-
-Evidence requirement (mandatory per step):
-For EACH step include:
-
-1) Target anchor in `<TARGET_FILE>`:
-   - function/block name + a micro-quote (<= 15 words) that uniquely locates the relevant code.
-
-2) Trigger chain anchors outside `<TARGET_FILE>`:
-   - Provide the shortest chain that proves the step reaches the target surface:
-     UI event or lifecycle -> contextBridge method or ipcRenderer invoke/send or menu action -> ipcMain handler / window factory / send path.
-   - Provide 1–3 anchors outside `<TARGET_FILE>` (file + function/handler + micro-quote <= 15 words).
-
-Stable UI references (mandatory when UI is involved):
-- Do NOT rely on translated button labels as primary identifiers.
-- Prefer:
-  - DOM ids proven by code (anchor required, e.g., getElementById('...')),
-  - menu action ids / command ids,
-  - contextBridge method names.
-- If you reference a UI control, include its DOM id anchor (file + getElementById('...') micro-quote) or the menu action id anchor.
-
-If something is not smoke-testable:
-- Do NOT include it in the numbered steps.
-- Put it under "Not smoke-testable (optional)" with one sentence explaining why it cannot be reliably triggered from normal UI.
-
-Deliverable format:
-- Start with "Preconditions" (max 3 bullets).
-- Then list steps as a numbered list (6–15). For each step include:
-  - Action (what the human does)
-  - Expected result (observable result)
-  - Evidence:
-    - Target anchor (<`TARGET_FILE>`)
-    - Trigger chain anchors (>=1 outside `<TARGET_FILE>`)
-    - Stable UI reference (if applicable)
-- Include ONE step near the beginning named “Log sanity (existing logs)”:
-  - Action: run the app normally with logs visible (terminal/devtools console).
-  - Expected: no unexpected ERROR/uncaught exception lines; no continuous repeated spam from the same message/key during normal actions.
-  - Evidence: cite 1–2 representative log call sites or warnOnce/errorOnce keys in `<TARGET_FILE>` as anchors (micro-quotes <= 15 words).
-- Then include "Not smoke-testable (optional)" if needed.
-
-Output requirement:
-- Write the full Level 7 result to a Markdown file at: `tools_local/codex_reply.md`
-- Overwrite the file contents (do not append).
-- The file must start with: `# Level 7 result: <TARGET_FILE>`
-- Do NOT output diffs (neither in chat nor in the report).
-- In chat, output only: “WROTE: tools_local/codex_reply.md”.
-```
+**Evidencia (obligatoria, simple):**
+En `docs/cleanup/_evidence/issue64_repo_cleanup.md`, bajo `### L7`, registrar:
+- Resultado: PASS | FAIL | PENDING
+- Lista de pasos efectivamente ejecutados (6–15 bullets max).
+- Nota corta si hubo algun log anomalo (solo lo relevante).
 
 ---
 

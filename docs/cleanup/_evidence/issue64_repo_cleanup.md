@@ -11,6 +11,8 @@
 **Validation**
 - (Qué revisamos estáticamente; qué flows cubre el smoke)
 
+**Nota (L7):** desde `electron/settings.js` en adelante, el Nivel 7 se registra como **smoke humano minimo** basado en `docs/test_suite.md` (Release smoke) y flujos normales. No se usa checklist generado por Codex.
+
 ---
 
 ## electron/main.js
@@ -401,4 +403,20 @@ Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, s
 
 Observable contract/timing preserved: no hay cambios en IPC, payloads/returns, side effects u ordering; solo cambia el contenido del log en caso de fallo.
 
-### L7 — Smoke checklist (human-run; code-informed)
+### L7 — Smoke (human-run; minimal)
+
+Resultado: PASS
+
+Checklist ejecutado:
+- [x] Log sanity ~30s idle (sin ERROR/uncaught; sin repeticion continua del mismo warning en idle).
+- [x] Lectura inicial de settings en main (UI estable; estado definido).
+- [x] Cambiar idioma (persist + UI se refleja; sin errores).
+- [x] Toggle modo conteo (persist; refresh sin errores).
+- [x] Cambiar preset seleccionado (persist; WPM/controles cambian).
+- [x] Abrir Editor (estable).
+- [x] Abrir Flotante (estable).
+- [x] Con Editor+Flotante abiertos: cambiar idioma (broadcast estable).
+- [x] Reinicio de app: idioma/modo/preset persistidos.
+
+Notas:
+- No aparecio nada relevante
