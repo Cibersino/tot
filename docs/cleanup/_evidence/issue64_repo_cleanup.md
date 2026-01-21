@@ -498,3 +498,18 @@ Validation: N/A (no code changes).
 
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
+
+### L3 decision: NO CHANGE (no Level 3 justified)
+
+- Checked module contract and guardrails in `electron/fs_storage.js` (`initStorage`, `getConfigDir`, `loadJson`, `saveJson`) for instability or ambiguity.
+- Checked call site orchestration in `electron/main.js` (`initStorage(app)`, `getSettingsFile()`, `getCurrentTextFile()`, `loadJson`, `saveJson`) for timing or ordering pressure.
+- Checked settings consumer expectations in `electron/settings.js` (`init({ loadJson, saveJson, settingsFile })`, `_loadJson`/`_saveJson` usage).
+- Checked text persistence usage in `electron/text_state.js` (`loadJson = opts.loadJson`, `saveJson = opts.saveJson`, `loadJson(currentTextFile, ...)`).
+- Checked editor state usage in `electron/editor_state.js` (`loadInitialState(loadJson)`, `attachTo(..., loadJson, saveJson)`).
+- Checked presets path use in `electron/presets_main.js` (`getConfigPresetsDir`, `ensureConfigPresetsDir`).
+
+Conclusion: no direct evidence of unstable contract, duplicated responsibility, or sync/async mismatch requiring Level 3 changes.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
