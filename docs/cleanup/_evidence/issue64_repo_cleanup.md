@@ -513,3 +513,24 @@ Conclusion: no direct evidence of unstable contract, duplicated responsibility, 
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
+### L4 decision: CHANGED (logging-only)
+
+Change: Stabilized `loadJson` warnOnce dedupe keys to comply with “controlled variant” policy (no unbounded/dynamic data in keys).
+
+- What changed (structural/logging):
+  - Added `LOAD_JSON_KNOWN_FILES` (Set) and `getLoadJsonOnceKey(kind, filePath)`.
+  - Replaced warnOnce explicit keys for `loadJson` fallbacks:
+    - from: `fs_storage.loadJson:missing|empty|failed:<String(filePath)>`
+    - to: `fs_storage.loadJson.<kind>.<variant>` where:
+      - kind ∈ { `missing`, `empty`, `failed` }
+      - variant ∈ { `current_text.json`, `user_settings.json`, `editor_state.json`, `other` }
+  - Kept `filePath` (and `err` where applicable) in log args to preserve diagnostic context.
+
+Gain: Deduplication buckets are now stable/controlled and comply with logging policy while keeping fallback warnings non-silent.
+Cost: “other” bucket may hide repeated occurrences for different non-known files (only first occurrence per kind is logged).
+Validation:
+- `rg -F "getLoadJsonOnceKey" electron/fs_storage.js`
+- `rg -F "fs_storage.loadJson." electron/fs_storage.js`
+- Runtime: trigger missing/empty/invalid JSON for a known file and verify only one warnOnce per (kind, variant) while the message still prints the `filePath` (and `err` for failed).
+
+Observable contract and timing preserved: yes (logging-only; no functional changes).
