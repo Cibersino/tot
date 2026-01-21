@@ -308,7 +308,20 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
       - `'settings-updated'` payload `settings` (object) via `broadcastSettingsUpdated` (best-effort a ventanas abiertas).
     - Delegated IPC registration: none in this file.
 
-### L1 decision: 
+### L1 decision: NO CHANGE
+
+- Codex concluyó **NO CHANGE**: el archivo ya tiene un orden por bloques coherente y headers claros; los handlers IPC están agrupados; la normalización es verbosa a propósito.
+- Un reordenamiento estructural sería churn con payoff bajo y potencial riesgo de secuencia (menu rebuild / broadcast / best-effort windows) sin reducción material de complejidad.
+- No se identificó una simplificación local (early returns / deduplicación / naming) con ganancia clara que no agregue indirection o riesgo de timing.
+
+**Evidence**
+- Codex Level 1 report (Decision: NO CHANGE) en `tools_local/codex_reply.md` (2026-01-21).
+
+**Risk**
+- N/A (no code changes).
+
+**Validation**
+- N/A (no code changes; baseline unchanged).
 
 ### L2 decision: 
 
