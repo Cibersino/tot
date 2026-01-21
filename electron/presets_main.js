@@ -209,6 +209,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return settings.presets_by_language[langCode];
   }
 
+  function ensureDisabledDefaultPresets(settings, lang) {
+    settings.disabled_default_presets =
+      settings.disabled_default_presets || {};
+    if (!Array.isArray(settings.disabled_default_presets[lang])) {
+      settings.disabled_default_presets[lang] = [];
+    }
+    return settings.disabled_default_presets[lang];
+  }
+
   // Replace {placeholders} in i18n dialog strings.
   // If a key is missing, keep the placeholder unchanged (useful for debugging).
   function interpolateDialogText(template, vars = {}) {
@@ -218,6 +227,20 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const v = vars[key];
       return v === undefined || v === null ? m : String(v);
     });
+  }
+
+  function getDialogContext(settings) {
+    const lang = getEffectiveLang(settings);
+    const dialogLang = normalizeLangTag(settings.language) || lang;
+    const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
+    return { lang, dialogLang, dialogTexts };
+  }
+
+  function getYesNoLabels(dialogTexts) {
+    return {
+      yesLabel: resolveDialogText(dialogTexts, 'yes', 'Yes, continue'),
+      noLabel: resolveDialogText(dialogTexts, 'no', 'No, cancel'),
+    };
   }
 
   // Provide default presets
@@ -395,11 +418,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       // Load settings and dialog texts before any message
       let settings = settingsState.getSettings();
-      const lang = getEffectiveLang(settings);
-      const dialogLang = normalizeLangTag(settings.language) || lang;
-      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
-      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-      const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
+      const { lang, dialogTexts } = getDialogContext(settings);
+      const { yesLabel, noLabel } = getYesNoLabels(dialogTexts);
 
       // If no name provided, show information dialog and exit
       if (!name) {
@@ -453,19 +473,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const isDefault = defaultsCombined.find((p) => p.name === name);
 
       // Ensure disabled_default_presets structure
-      settings.disabled_default_presets =
-        settings.disabled_default_presets || {};
-      if (!Array.isArray(settings.disabled_default_presets[lang])) {
-        settings.disabled_default_presets[lang] = [];
-      }
+      const disabledDefaults = ensureDisabledDefaultPresets(settings, lang);
 
       if (idxUser >= 0) {
         // There is a personalized preset with that name
         if (isDefault) {
           // Remove personalized preset and mark default as ignored
           userPresets.splice(idxUser, 1);
-          if (!settings.disabled_default_presets[lang].includes(name)) {
-            settings.disabled_default_presets[lang].push(name);
+          if (!disabledDefaults.includes(name)) {
+            disabledDefaults.push(name);
           }
           settings = settingsState.saveSettings(settings);
           broadcast(settings);
@@ -483,8 +499,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         // Not personalized; could be a default preset
         if (isDefault) {
           // Mark default as ignored for this language
-          if (!settings.disabled_default_presets[lang].includes(name)) {
-            settings.disabled_default_presets[lang].push(name);
+          if (!disabledDefaults.includes(name)) {
+            disabledDefaults.push(name);
           }
           settings = settingsState.saveSettings(settings);
           broadcast(settings);
@@ -505,11 +521,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   ipcMain.handle('request-restore-defaults', async () => {
     try {
       let settings = settingsState.getSettings();
-      const lang = getEffectiveLang(settings);
-      const dialogLang = normalizeLangTag(settings.language) || lang;
-      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
-      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-      const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
+      const { lang, dialogLang, dialogTexts } = getDialogContext(settings);
+      const { yesLabel, noLabel } = getYesNoLabels(dialogTexts);
 
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
@@ -549,14 +562,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       });
 
       // Clear disabled_default_presets entries that match existing default names
-      settings.disabled_default_presets =
-        settings.disabled_default_presets || {};
-      if (!Array.isArray(settings.disabled_default_presets[lang])) {
-        settings.disabled_default_presets[lang] = [];
-      }
+      const disabledDefaults = ensureDisabledDefaultPresets(settings, lang);
 
       settings.disabled_default_presets[lang] =
-        settings.disabled_default_presets[lang].filter((n) => {
+        disabledDefaults.filter((n) => {
           const keep = !defaultNames.has(n);
           if (!keep) {
             unignored.push(n);
@@ -594,9 +603,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   ipcMain.handle('notify-no-selection-edit', async () => {
     try {
       const settings = settingsState.getSettings();
-      const lang = getEffectiveLang(settings);
-      const dialogLang = normalizeLangTag(settings.language) || lang;
-      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
+      const { dialogTexts } = getDialogContext(settings);
 
       const { mainWin } = resolveWindows();
       await dialog.showMessageBox(mainWin || null, {
@@ -644,12 +651,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       const sanitizedPreset = sanitized.preset;
       let settings = settingsState.getSettings();
-      const lang = getEffectiveLang(settings);
-      const dialogLang = normalizeLangTag(settings.language) || lang;
-      const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
+      const { lang, dialogTexts } = getDialogContext(settings);
 
-      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-      const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
+      const { yesLabel, noLabel } = getYesNoLabels(dialogTexts);
       const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
@@ -678,11 +682,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         (p) => p.name === originalName
       );
 
-      settings.disabled_default_presets =
-        settings.disabled_default_presets || {};
-      if (!Array.isArray(settings.disabled_default_presets[lang])) {
-        settings.disabled_default_presets[lang] = [];
-      }
+      const disabledDefaults = ensureDisabledDefaultPresets(settings, lang);
 
       let deletedAction = null;
 
@@ -690,9 +690,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         if (isDefault) {
           userPresets.splice(idxUser, 1);
           if (
-            !settings.disabled_default_presets[lang].includes(originalName)
+            !disabledDefaults.includes(originalName)
           ) {
-            settings.disabled_default_presets[lang].push(originalName);
+            disabledDefaults.push(originalName);
           }
           deletedAction = 'deleted_and_ignored';
         } else {
@@ -701,9 +701,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         }
       } else if (isDefault) {
         if (
-          !settings.disabled_default_presets[lang].includes(originalName)
+          !disabledDefaults.includes(originalName)
         ) {
-          settings.disabled_default_presets[lang].push(originalName);
+          disabledDefaults.push(originalName);
         }
         deletedAction = 'ignored_default';
       }
