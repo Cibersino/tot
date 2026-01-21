@@ -969,3 +969,95 @@ These are optional because they require editing `editor_state.json`, but they va
   * For `"maximized": "yes"`: one WARN line starting with `normalizeState: invalid maximized; using default (ignored).`
   * For `"reduced": 123`: one WARN line starting with `normalizeState: invalid reduced bounds; ignoring.`
 * [x] Dedupe check: reopen editor / retrigger within same session → each warning should emit at most once per session.
+
+---
+
+## electron/presets_main.js
+
+Date: `2026-01-21`
+Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
+
+### L0 — Diagnosis (no changes)
+
+Source: `tools_local/codex_reply.md` (Level 0)
+
+- Reading map:
+  - Block order (as-is):
+    - Header comment + `'use strict'`.
+    - Imports (fs/path/electron) + logger (`Log.get('presets-main')`).
+    - Constants/config (`DEFAULT_LANG`, `MAX_PRESET_STR_CHARS`, `PRESETS_SOURCE_DIR`).
+    - Helpers (top-level): `resolveDialogText`, `isPlainObject`, `sanitizePresetInput`, `loadPresetArrayFromJson`, `loadDefaultPresetsCombined`, `copyDefaultPresetsIfMissing`.
+    - Main entrypoint: `registerIpc(...)` (nested helpers + IPC handlers).
+    - Exports (`module.exports`).
+  - Where linear reading breaks:
+    - `registerIpc` concentra helpers anidados + handlers IPC:
+      - anchor: `"function registerIpc(ipcMain, { getWindows } = {})"`
+    - `broadcast` mezcla “delegated broadcast” y fallback directo a `webContents.send`:
+      - anchor: `"mainWin.webContents.send('settings-updated', settings);"`
+    - Handler `get-default-presets` mezcla scan FS + fallback a presets embebidos:
+      - anchor: `"ipcMain.handle('get-default-presets', () => {"`
+    - Handler `request-delete-preset` mezcla validación, diálogos nativos y persistencia:
+      - anchor: `"ipcMain.handle('request-delete-preset', async (_event, name) => {"`
+
+- Contract map (exports / side effects / invariants / IPC):
+  - Module exposure:
+    - Exports: `registerIpc(ipcMain, { getWindows })`, `sanitizePresetInput(raw)`.
+  - Side effects:
+    - `registerIpc` ejecuta `copyDefaultPresetsIfMissing()` y registra handlers IPC.
+    - Los handlers usan `dialog.showMessageBox(...)`, `shell.openPath(...)` y persisten settings vía `settingsState.saveSettings(...)`.
+  - Invariants and fallbacks (anchored):
+    - `ipcMain` requerido:
+      - anchor: `"if (!ipcMain) {"`
+    - Payload de preset debe ser plain object:
+      - anchor: `"if (!isPlainObject(raw)) {"`
+    - `name` requerido:
+      - anchor: `"if (!name) {"`
+    - Strings acotados por `MAX_PRESET_STR_CHARS`:
+      - anchor: `"name.length > MAX_PRESET_STR_CHARS"`
+    - `wpm` debe ser finito:
+      - anchor: `"if (!Number.isFinite(wpmNum)) {"`
+    - Idioma efectivo con fallback a `DEFAULT_LANG`:
+      - anchor: `": DEFAULT_LANG;"`
+    - `settings.presets_by_language` se normaliza a objeto + array por idioma:
+      - anchor: `"settings.presets_by_language = {};"` y `"settings.presets_by_language[langCode] = [];"`
+    - Validación de `name` en delete:
+      - anchor: `"typeof name !== 'string'"` y `"trimmed.length > MAX_PRESET_STR_CHARS"`
+  - IPC contract (only what exists in this file):
+    - `ipcMain.handle('get-default-presets')`
+      - Input: none
+      - Return: `{ general: Array, languagePresets: Object }` (catch fallback: `{ general: [], languagePresets: {} }`)
+      - Outgoing sends: none
+    - `ipcMain.handle('open-default-presets-folder')`
+      - Input: none
+      - Return: `{ ok: true }` o `{ ok: false, error: string }`
+      - Outgoing sends: none
+    - `ipcMain.handle('create-preset')`
+      - Input: `(_event, preset)`
+      - Return: `{ ok: true }` o `{ ok: false, error: string, code: string }`
+      - Outgoing sends:
+        - `settings-updated` (via `broadcast(settings)`)
+        - `preset-created` payload `sanitizedPreset`
+    - `ipcMain.handle('request-delete-preset')`
+      - Input: `(_event, name)`
+      - Return: `{ ok: boolean, code?: string, error?: string, action?: string }`
+      - Outgoing sends: `settings-updated` (via `broadcast(settings)`) cuando hay cambios persistidos
+    - `ipcMain.handle('request-restore-defaults')`
+      - Input: none
+      - Return: `{ ok: true, action: 'restored', removedCustom: string[], unignored: string[] }` o `{ ok: false, code?: string, error?: string }`
+      - Outgoing sends: `settings-updated` (via `broadcast(settings)`)
+    - `ipcMain.handle('notify-no-selection-edit')`
+      - Input: none
+      - Return: `{ ok: true }` o `{ ok: false, error: string }`
+      - Outgoing sends: none
+    - `ipcMain.handle('edit-preset')`
+      - Input: `(_event, payload)`
+      - Return: `{ ok: true, action: 'edited', deletedAction: string|null }` o `{ ok: false, code: string, error?: string }`
+      - Outgoing sends:
+        - `settings-updated` (via `broadcast(settings)`)
+        - `preset-created` payload `sanitizedPreset`
+    - `ipcRenderer.*`: none in this file.
+    - `webContents.send(...)` occurrences:
+      - `'settings-updated'` payload `settings`; anchor: `"mainWin.webContents.send('settings-updated', settings);"`
+      - `'preset-created'` payload `sanitizedPreset`; anchor: `"mainWin.webContents.send('preset-created', sanitizedPreset);"` (create-preset + edit-preset)
+  - Delegated IPC registration:
+    - None found in this file.
