@@ -112,6 +112,21 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - L7 smoke checklist (focus on crono toggle paths and editor-ready/main notification).
 
+**L3 decision: NO CHANGE (no Level 3 justified)**
+
+**Evidence checked**
+- IPC consumers in `electron/preload.js`: openEditor/getAppConfig/getAppVersion/getAppRuntimeInfo; sendCronoToggle/sendCronoReset/setCronoElapsed; openFlotanteWindow/closeFlotanteWindow/onFlotanteClosed — aligned with `ipcMain.handle`/`ipcMain.on` in `electron/main.js`.
+- Flotante IPC in `electron/flotante_preload.js`: `crono-state`, `flotante-command` — matches main send/receive paths.
+- Language selection IPC in `electron/language_preload.js`: `ipcRenderer.send('language-selected')` — matches `ipcMain.once('language-selected')`.
+- Entrypoint: `package.json` `"main": "electron/main.js"`; no alternate main entry.
+- No explicit TODO/FIXME/BUG markers in `electron/main.js` indicating architectural/contract instability.
+
+**Risk**
+- N/A (no code changes).
+
+**Validation**
+- Baseline L7 smoke checklist unchanged.
+
 ### L7 — Smoke checklist (human-run)
 - [ ] `npm start` abre la app sin errores visibles.
 - [ ] Ventana principal: carga UI y conteos básicos sin errores (texto vacío/no vacío).
