@@ -777,3 +777,47 @@ Checklist:
 
 Date: `2026-01-21`
 Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
+
+### L0 — Diagnosis (no changes)
+
+Source: `tools_local/codex_reply.md` (Level 0)
+
+- Reading map:
+  - Block order (as-is):
+    - Imports (`screen`, `fs_storage`, `Log`) + logger (`Log.get('editor-state')`).
+    - Default state (`DEFAULT_STATE`).
+    - Helpers: `isValidReduced`, `normalizeState`.
+    - API: `loadInitialState`.
+    - API: `attachTo` (listener wiring + persistence rules A/B/C/D).
+    - Exports (`module.exports`).
+  - Where linear reading breaks:
+    - `attachTo` — nested event handlers/rules inside the function:
+      - anchor: `"editorWin.on('unmaximize', () => {"`
+    - `saveReducedState` (inner function) — persistence side effects embedded in `attachTo`:
+      - anchor: `"const saveReducedState = () => {"`
+      - anchor: `"const current = loader(editorStateFile, { maximized: false, reduced: null });"`
+
+- Contract map (exports / side effects / invariants / IPC):
+  - Module exposure:
+    - Exports: `loadInitialState(customLoadJson)`, `attachTo(editorWin, customLoadJson, customSaveJson)`.
+  - Side effects:
+    - Reads/writes persisted editor window state via `loadJson`/`saveJson` to the path from `getEditorStateFile()`.
+    - Installs `BrowserWindow` listeners: `'resize'`, `'move'`, `'maximize'`, `'unmaximize'`, `'close'`.
+    - Logs errors on read/write failures (`log.error(...)`).
+  - Invariants and fallbacks (anchored):
+    - Reduced bounds must be an object with finite numbers:
+      - `isValidReduced`: `"typeof width === 'number'"` + `"Number.isFinite(width)"`
+    - Invalid/missing state falls back to defaults:
+      - `normalizeState`: `"return { ...base }"`
+      - `loadInitialState`: `"return { ...DEFAULT_STATE }"`
+    - `attachTo` is a no-op without a window:
+      - `"if (!editorWin) return;"`
+    - If `getEditorStateFile()` fails, `attachTo` aborts (no listeners registered):
+      - `"[editor_state] getEditorStateFile failed:"`
+    - Unmaximize fallback uses current display workArea or hardcoded defaults:
+      - `"display && display.workArea"`
+      - `": { x: 0, y: 0, width: 1200, height: 800 }"`
+  - IPC contract:
+    - None in this file (no `ipcMain.*`, `ipcRenderer.*`, `webContents.send(...)`).
+  - Delegated IPC registration:
+    - None found.
