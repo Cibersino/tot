@@ -365,7 +365,14 @@ Observable contract/timing preserved: mismos canales IPC, payload/return shapes,
 - Grep for: `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`, `settings-updated`.
 - Manual smoke: change language; change counting mode; select preset; verify UI updates after `settings-updated`.
 
-### L4 decision: NOT RUN (pending)
+### L4 decision: CHANGED
+
+- Change: `saveSettings` ahora usa un `errorOnce` con key estable (`settings.saveSettings.persist`) en vez de interpolar `_settingsFile` en la key.
+  - Gain: la key explícita deja de depender de valores no-controlados; el path sigue quedando en los args del log para diagnóstico.
+  - Cost: la deduplicación deja de ser “por path” (irrelevante en la práctica: un settings file por ejecución).
+  - Validation: confirmación por diff; no cambia contrato/IPC/timing.
+
+Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, side effects u ordering; solo cambia el bucket de dedupe del log en un `catch`.
 
 ### L5 decision: NOT RUN (pending)
 
