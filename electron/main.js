@@ -6,10 +6,11 @@
 // =============================================================================
 // Main process entry point (Electron).
 // Responsibilities:
-// - Ensure persistent storage is ready (config folder + JSON-backed state).
+// - Initialize persistent storage paths and JSON-backed state.
 // - Create and manage application windows (main, editor, preset modal, language picker, flotante stopwatch).
-// - Register IPC handlers used by renderer windows (the visible UI).
+// - Register main-owned IPC handlers and delegate feature IPC registration.
 // - Own the stopwatch ("crono") state and broadcast updates to any open UI windows.
+// - Orchestrate app lifecycle (ready, activate, quit).
 
 // =============================================================================
 // Imports (external + internal modules)
@@ -42,7 +43,7 @@ const log = Log.get('main');
 log.debug('Main process starting...');
 
 // =============================================================================
-// File locations (persistent user data)
+// Constants / config (paths, defaults, limits)
 // =============================================================================
 // Resolved after app readiness (requires app.getPath('userData')).
 
@@ -56,6 +57,10 @@ const FALLBACK_LANGUAGES = [
   { tag: 'en', label: 'English' },
 ];
 
+// =============================================================================
+// Helpers (logging + validation)
+// =============================================================================
+
 // Helper to avoid repeating the same warning many times (keeps logs readable).
 const warnOnce = (...args) => log.warnOnce(...args);
 
@@ -64,8 +69,9 @@ function isPlainObject(x) {
   return Object.getPrototypeOf(x) === Object.prototype;
 }
 
-// Maximum allowed characters for the current text (safety limit for memory/performance).
-// Renderer fallback lives in public/js/constants.js; main/text_state use MAX_TEXT_CHARS and injected maxTextChars.
+function isAliveWindow(win) {
+  return !!(win && !win.isDestroyed());
+}
 
 // =============================================================================
 // Global window references (singletons)
@@ -128,19 +134,19 @@ function registerDevShortcuts(mainWin) {
 
   try {
     globalShortcut.register('CommandOrControl+Shift+I', () => {
-      if (mainWin && !mainWin.isDestroyed()) {
+      if (isAliveWindow(mainWin)) {
         mainWin.webContents.toggleDevTools();
       }
     });
 
     globalShortcut.register('CommandOrControl+R', () => {
-      if (mainWin && !mainWin.isDestroyed()) {
+      if (isAliveWindow(mainWin)) {
         mainWin.webContents.reload();
       }
     });
 
     globalShortcut.register('CommandOrControl+Shift+R', () => {
-      if (mainWin && !mainWin.isDestroyed()) {
+      if (isAliveWindow(mainWin)) {
         mainWin.webContents.reloadIgnoringCache();
       }
     });
@@ -193,7 +199,7 @@ function createMainWindow() {
   // Best-effort shutdown: when the main window closes, try to close auxiliary windows too.
   mainWin.on('close', () => {
     try {
-      if (editorWin && !editorWin.isDestroyed()) {
+      if (isAliveWindow(editorWin)) {
         try {
           editorWin.close();
         } catch (err) {
@@ -201,7 +207,7 @@ function createMainWindow() {
         }
       }
 
-      if (presetWin && !presetWin.isDestroyed()) {
+      if (isAliveWindow(presetWin)) {
         try {
           presetWin.close();
         } catch (err) {
@@ -291,7 +297,7 @@ function createEditorWindow() {
 
       // Notify the main window that the editor is ready (UI may enable/refresh controls).
       try {
-        if (mainWin && !mainWin.isDestroyed()) {
+        if (isAliveWindow(mainWin)) {
           mainWin.webContents.send('editor-ready');
         }
       } catch (err) {
@@ -318,7 +324,7 @@ function createEditorWindow() {
  */
 function createPresetWindow(initialData) {
   // If already open, focus and re-send init data (so the modal can update itself).
-  if (presetWin && !presetWin.isDestroyed()) {
+  if (isAliveWindow(presetWin)) {
     try {
       presetWin.focus();
       presetWin.webContents.send('preset-init', initialData || {});
@@ -369,7 +375,7 @@ function createPresetWindow(initialData) {
  * It is not modal relative to mainWin because it can be opened before mainWin exists.
  */
 function createLanguageWindow() {
-  if (langWin && !langWin.isDestroyed()) {
+  if (isAliveWindow(langWin)) {
     try {
       langWin.focus();
     } catch (err) {
@@ -407,7 +413,7 @@ function createLanguageWindow() {
   // If the user closes the language window without choosing, persist a safe fallback and continue startup.
   langWin.on('closed', () => {
     try {
-    settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
+      settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
     } catch (err) {
       log.error('Error applying fallback language:', err);
     } finally {
@@ -478,7 +484,7 @@ function getDisplayByWindowCenter(bounds) {
  * (work area excludes taskbar/dock).
  */
 function snapWindowFullyIntoWorkArea(win) {
-  if (!win || win.isDestroyed()) return;
+  if (!isAliveWindow(win)) return;
 
   const b = win.getBounds();
   const display = getDisplayByWindowCenter(b);
@@ -522,7 +528,7 @@ function installWorkAreaGuard(win, opts = {}) {
   if (process.platform === 'win32') {
     // moved: emitted once at the end of the movement on Windows.
     win.on('moved', () => {
-      if (!userMoveArmed || snapping || win.isDestroyed()) return;
+      if (!userMoveArmed || snapping || !isAliveWindow(win)) return;
       userMoveArmed = false;
       snapping = true;
       try {
@@ -549,7 +555,7 @@ function installWorkAreaGuard(win, opts = {}) {
   }
 
   win.on('move', () => {
-    if (snapping || win.isDestroyed()) return;
+    if (snapping || !isAliveWindow(win)) return;
 
     // Linux: treat any move event as user-driven (platform behavior varies).
     if (process.platform === 'linux') userMoveArmed = true;
@@ -560,7 +566,7 @@ function installWorkAreaGuard(win, opts = {}) {
     clearTimer();
     timer = setTimeout(() => {
       if (Date.now() - lastMoveAt < endMoveMs) return;
-      if (!userMoveArmed || snapping || win.isDestroyed()) return;
+      if (!userMoveArmed || snapping || !isAliveWindow(win)) return;
 
       userMoveArmed = false;
       snapping = true;
@@ -591,7 +597,7 @@ async function createFlotanteWindow(options = {}) {
   }
 
   // If it already exists and wasn't destroyed, restore it (don't recreate it).
-  if (flotanteWin && !flotanteWin.isDestroyed()) {
+  if (isAliveWindow(flotanteWin)) {
     // Optional: apply forced position if requested.
     if (options && (typeof options.x === 'number' || typeof options.y === 'number')) {
       try {
@@ -674,7 +680,7 @@ async function createFlotanteWindow(options = {}) {
 
     // Best-effort notification: main renderer may update UI state.
     try {
-      if (mainWin && !mainWin.isDestroyed() && mainWin.webContents && !mainWin.webContents.isDestroyed()) {
+      if (isAliveWindow(mainWin) && mainWin.webContents && !mainWin.webContents.isDestroyed()) {
         mainWin.webContents.send('flotante-closed');
       }
     } catch (err) {
@@ -744,13 +750,13 @@ function broadcastCronoState() {
   const state = getCronoState();
 
   try {
-    if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('crono-state', state);
+    if (isAliveWindow(mainWin)) mainWin.webContents.send('crono-state', state);
   } catch (err) {
     warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', err);
   }
 
   try {
-    if (flotanteWin && !flotanteWin.isDestroyed()) flotanteWin.webContents.send('crono-state', state);
+    if (isAliveWindow(flotanteWin)) flotanteWin.webContents.send('crono-state', state);
   } catch (err) {
     warnOnce('send.crono-state.flotanteWin', 'send crono-state to flotanteWin failed (ignored):', err);
   }
@@ -792,6 +798,10 @@ function stopCrono() {
     broadcastCronoState();
     stopCronoIntervalIfIdle();
   }
+}
+
+function toggleCrono() {
+  if (crono.running) stopCrono(); else startCrono();
 }
 
 function resetCrono() {
@@ -883,7 +893,7 @@ ipcMain.handle('crono-get-state', () => {
 
 ipcMain.on('crono-toggle', () => {
   try {
-    if (crono.running) stopCrono(); else startCrono();
+    toggleCrono();
   } catch (err) {
     log.error('Error in crono-toggle:', err);
   }
@@ -929,7 +939,7 @@ ipcMain.handle('flotante-close', () => {
   try {
     const win = flotanteWin;
 
-    if (win && !win.isDestroyed()) {
+    if (isAliveWindow(win)) {
       // IMPORTANT: do not set flotanteWin = null here.
       // The 'closed' handler is responsible for clearing the reference.
       win.close();
@@ -950,7 +960,7 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
     }
 
     if (cmd.cmd === 'toggle') {
-      if (crono.running) stopCrono(); else startCrono();
+      toggleCrono();
       return;
     }
 
@@ -995,7 +1005,7 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 // Editor window: open (create or focus) and push current text
 ipcMain.handle('open-editor', () => {
   try {
-    if (!editorWin || editorWin.isDestroyed()) {
+    if (!isAliveWindow(editorWin)) {
       createEditorWindow();
     } else {
       editorWin.show();
@@ -1013,7 +1023,7 @@ ipcMain.handle('open-editor', () => {
 
       // Notify main UI that editor is ready (it already is, but keeps state consistent).
       try {
-        if (mainWin && !mainWin.isDestroyed()) {
+        if (isAliveWindow(mainWin)) {
           mainWin.webContents.send('editor-ready');
         }
       } catch (err) {
@@ -1198,7 +1208,7 @@ app.whenReady().then(() => {
       } finally {
         // Close the language window if it is still open.
         try {
-          if (langWin && !langWin.isDestroyed()) langWin.close();
+          if (isAliveWindow(langWin)) langWin.close();
         } catch (err) {
           warnOnce('langWin.close.after.language-selected', 'langWin.close failed after language-selected (ignored):', err);
         }
@@ -1238,5 +1248,5 @@ app.on('will-quit', () => {
   }
 });
 // =============================================================================
-// End of main.js
+// End of electron/main.js
 // =============================================================================

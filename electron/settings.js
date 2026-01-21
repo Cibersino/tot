@@ -11,7 +11,7 @@
 // - Keep language tags consistent (normalize language tag + base language).
 // - Ensure numberFormatting[langBase] exists (from i18n/<lang>/numberFormat.json or safe defaults).
 // - Provide a small state API (init/getSettings/saveSettings) backed by an in-memory cache.
-// - Register IPC handlers (get-settings, set-language, set-mode-conteo) and broadcast settings-updated.
+// - Register IPC handlers (get-settings, set-language, set-mode-conteo, set-selected-preset) and broadcast settings-updated.
 // - Apply a logged fallback language when the language modal closes without a selection.
 // =============================================================================
 
@@ -46,6 +46,16 @@ const getLangBase = (lang) => {
 
 // Canonical key for language-indexed buckets (presets, numberFormatting, etc.).
 const deriveLangKey = (langTag) => getLangBase(langTag);
+
+// =============================================================================
+// Settings defaults
+// =============================================================================
+const createDefaultSettings = (language = '') => ({
+  language,
+  presets_by_language: {},
+  selected_preset_by_language: {},
+  disabled_default_presets: {},
+});
 
 // =============================================================================
 // Injected dependencies + cache
@@ -329,12 +339,7 @@ function init({ loadJson, saveJson, settingsFile }) {
   _saveJson = saveJson;
   _settingsFile = settingsFile;
 
-  const raw = _loadJson(_settingsFile, {
-    language: '',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-  });
+  const raw = _loadJson(_settingsFile, createDefaultSettings());
 
   const normalized = normalizeSettings(raw);
   _currentSettings = normalized;
@@ -357,12 +362,7 @@ function getSettings() {
     throw new Error('[settings] getSettings called before init');
   }
 
-  const raw = _loadJson(_settingsFile, {
-    language: '',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-  });
+  const raw = _loadJson(_settingsFile, createDefaultSettings());
 
   _currentSettings = normalizeSettings(raw);
   return _currentSettings;
@@ -384,7 +384,7 @@ function saveSettings(nextSettings) {
     }
   } catch (err) {
     log.errorOnce(
-      `settings.saveSettings.persist:${String(_settingsFile)}`,
+      'settings.saveSettings.persist',
       'saveSettings failed (not persisted):',
       _settingsFile,
       err
@@ -418,6 +418,7 @@ function broadcastSettingsUpdated(settings, windows) {
       log.warnOnce(
         `settings.broadcastSettingsUpdated.${name}`,
         'settings-updated notify failed (ignored):',
+        name,
         err
       );
     }
@@ -459,6 +460,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - get-settings
  * - set-language
  * - set-mode-conteo
+ * - set-selected-preset
  */
 function registerIpc(
   ipcMain,
@@ -481,12 +483,7 @@ function registerIpc(
         'IPC get-settings failed (using safe fallback):',
         err
       );
-      return normalizeSettings({
-        language: DEFAULT_LANG,
-        presets_by_language: {},
-        selected_preset_by_language: {},
-        disabled_default_presets: {},
-      });
+      return normalizeSettings(createDefaultSettings(DEFAULT_LANG));
     }
   });
 
@@ -621,5 +618,5 @@ module.exports = {
 };
 
 // =============================================================================
-// End of settings.js
+// End of electron/settings.js
 // =============================================================================
