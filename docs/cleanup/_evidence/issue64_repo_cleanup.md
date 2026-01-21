@@ -756,7 +756,7 @@ Observable contract and timing preserved (no changes applied).
 
 ### L7 — Smoke (human-run; minimal)
 
-Result: PENDING
+Result: PASS
 
 Checklist:
 - [x] Log sanity ~30s idle (sin ERROR/uncaught; sin repeticion continua del mismo warning en idle).
@@ -773,5 +773,3 @@ Checklist:
 - [x] Cerrar completamente la app y relanzar.
       Esperado: `init` carga el ultimo texto persistido (o vacio si se vacio); sin errores en startup.
 
-Notas:
-- (pendiente)
