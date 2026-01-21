@@ -847,3 +847,14 @@ Decision: NO CHANGE
 
 Observable contract and timing were preserved.
 
+### L3 — Architecture / contract (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `electron/main.js` — `createEditorWindow`: only uses `editorState.loadInitialState` and `editorState.attachTo`.
+- `electron/editor_state.js` — `loadInitialState`: fallback/contract remains internal; anchor: `"return { ...DEFAULT_STATE }"`.
+- `electron/editor_state.js` — `attachTo`: event handlers + side effects; anchors: `'resize'`, `'move'`, `'maximize'`, `'unmaximize'`, `'close'`.
+- `electron/editor_state.js` — helpers: `normalizeState`, `isValidReduced` (invariants centralized).
+- `electron/fs_storage.js` — `getEditorStateFile` / `editor_state.json` path usage (single storage contract).
+
