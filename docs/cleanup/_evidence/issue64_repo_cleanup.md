@@ -821,3 +821,17 @@ Source: `tools_local/codex_reply.md` (Level 0)
     - None in this file (no `ipcMain.*`, `ipcRenderer.*`, `webContents.send(...)`).
   - Delegated IPC registration:
     - None found.
+
+### L1 — Structural refactor (Codex)
+
+Decision: NO CHANGE
+
+- File already follows imports → constants → helpers → main logic → exports order.
+- The main logic is a single entrypoint (`attachTo`) with event handlers that read linearly as rules.
+- Helper functions (`isValidReduced`, `normalizeState`) are already minimal and named for intent.
+- Any extraction or reordering would add indirection without reducing branches or duplication.
+- Early returns or merging branches risk altering the timing/side-effect cadence in event handlers.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
