@@ -692,3 +692,26 @@ Decision: NO CHANGE
 - Any attempts to guard non-function `loadJson`/`saveJson` or missing file paths would change current error/log behavior.
 
 The observable contract and timing are preserved (no changes applied).
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (repo anchors):
+- `electron/text_state.js`: IPC handler present:
+  - "ipcMain.handle('set-current-text', (_event, payload) =>"
+- `electron/text_state.js`: clipboard IPC present:
+  - "ipcMain.handle('clipboard-read-text', (event) =>"
+- `electron/text_state.js`: notifications centralized via `safeSend`:
+  - "safeSend(mainWin, 'current-text-updated', currentText);"
+- `electron/editor_preload.js`: consumer invokes `set-current-text` with string payload:
+  - "setCurrentText: (t) => ipcRenderer.invoke('set-current-text', t),"
+- `electron/editor_preload.js`: editor subscribes to update event:
+  - "ipcRenderer.on('editor-text-updated', (_e, text) => cb(text));"
+- `electron/preload.js`: main renderer uses same invoke channel:
+  - "setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),"
+- `public/renderer.js`: caller expects `resp.error` on failure:
+  - "throw new Error(resp.error || 'set-current-text failed');"
+
+Note:
+- Codex used “?” as informal separators in its phrasing; treat anchors above as the evidence.
