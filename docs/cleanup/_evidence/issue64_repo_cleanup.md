@@ -421,7 +421,7 @@ Checklist ejecutado:
 - [x] Reinicio de app: idioma/modo/preset persistidos.
 
 Notas:
-- No aparecio nada relevante
+- No apareció nada relevante
 
 ---
 
@@ -581,3 +581,197 @@ Optional (only if executed):
 
 Notes (only if relevant):
 - Ninguna
+
+---
+
+## electron/text_state.js
+
+Date: `2026-01-21`
+Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - Overview (responsibilities + IPC list).
+    - Imports / logger (`Log.get('text-state')`).
+    - Helpers: `isPlainObject`, `sanitizeMeta`.
+    - Shared state + injected deps (caps, `currentText`, `loadJson`/`saveJson`, paths, `appRef`, `getWindows`).
+    - Helpers: `safeSend`, `persistCurrentTextOnQuit`.
+    - Entrypoints: `init`, `registerIpc`, `getCurrentText`.
+    - Exports.
+  - Where linear reading breaks:
+    - `persistCurrentTextOnQuit` mezcla persistencia de texto con compatibilidad de settings:
+      - anchor: `// Maintain previous behavior: ensure settings file exists.`
+    - `init` mezcla normalización del input de disco (obj `{text}` vs string) con warnings + truncado/persist:
+      - anchor: `Current text file has unexpected shape; using empty string.`
+    - Comentario de `registerIpc` lista IPC incompleto (no menciona `clipboard-read-text`):
+      - anchor: `Register the IPC handlers... get-current-text...`
+    - `set-current-text` agrupa: normalización payload + cap IPC + truncado hard cap + broadcasts:
+      - anchors: `set-current-text payload too large` / `entry truncated to effective hard cap`
+    - `safeSend` agrega indirección (guard + try/catch + warnOnce) a `webContents.send`:
+      - anchor: `webContents.send('${channel}') failed (ignored):`
+
+- Contract map (exports / side effects / IPC):
+  - Module exposure:
+    - Exports: `init(options)`, `registerIpc(ipcMain, windowsResolver)`, `getCurrentText()`.
+    - Side effects: `init` carga `currentText` desde disco y registra `appRef.on('before-quit', ...)`; `registerIpc` instala handlers.
+  - Invariants and fallbacks (anchored):
+    - `sanitizeMeta` acepta solo “plain object” y rechaza meta vacía o strings > `MAX_META_STR_CHARS`:
+      - `if (!isPlainObject(raw)) return null`
+    - `maxTextChars` puede inyectarse si `opts.maxTextChars > 0`; `maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER`.
+    - `init`: shape inesperado en archivo de texto vigente → `warnOnce` + `''`:
+      - `text_state.init.unexpectedShape`
+    - `init`: si texto inicial excede hard cap → truncado + persist inmediato:
+      - `Initial text exceeds effective hard cap ... truncated and saved.`
+    - `set-current-text`: si `text.length > maxIpcChars` → rechazo (warnOnce + `{ ok:false, error:string }`):
+      - `text_state.setCurrentText.payload_too_large`
+    - `set-current-text`: si `text.length > maxTextChars` → truncado + `truncated:true`.
+    - `clipboard-read-text`: restringido a invocación desde `mainWin` (sender autorizado):
+      - `{ ok:false, error:'unauthorized', ... }`
+    - `safeSend`: no envía si la ventana no existe o está destruida:
+      - `if (!win || win.isDestroyed()) return`
+
+  - IPC contract (only what exists in this file):
+    - `ipcMain.handle('get-current-text')`
+      - args: `()`
+      - returns: `string`
+      - outbound sends: none
+    - `ipcMain.handle('clipboard-read-text')`
+      - args: `(event)`
+      - returns:
+        - `{ ok:true, length:number, text:string }`, o
+        - `{ ok:false, error:'unauthorized', text:'', length:0 }`, o
+        - `{ ok:false, tooLarge:true, length:number, text:'' }`
+      - outbound sends: none
+    - `ipcMain.handle('set-current-text')`
+      - args: `(_event, payload)` donde `payload` es `string` o `{ text, meta }`
+      - returns: `{ ok:true, truncated:boolean, length:number, text:string }` o `{ ok:false, error:string }`
+      - outbound sends (best-effort via `safeSend`):
+        - `current-text-updated` payload `string`
+        - `editor-text-updated` payload `{ text:string, meta:object }`
+    - `ipcMain.handle('force-clear-editor')`
+      - args: `()`
+      - returns: `{ ok:true }` o `{ ok:false, error:string }`
+      - outbound sends (best-effort via `safeSend`):
+        - `current-text-updated` payload `''`
+        - `editor-force-clear` payload `''`
+    - `ipcMain.on(...)`: none
+    - `ipcMain.once(...)`: none
+    - `ipcRenderer.*`: none
+    - `webContents.send(...)` strings used (via `safeSend`):
+      - `current-text-updated`, `editor-text-updated`, `editor-force-clear`
+    - Delegated IPC registration: none.
+
+### L1 — Structural refactor (Codex)
+
+Decision: NO CHANGE
+
+- Anchors (why “no change”):
+  - `init`: "Initial load from disk + truncated"
+  - `registerIpc`: "Register the IPC handlers related to currentText"
+  - `persistCurrentTextOnQuit`: "ensure settings file exists"
+  - `safeSend`: "webContents.send('...') failed (ignored)"
+  - `sanitizeMeta`: "if (!isPlainObject(raw)) return null"
+- Structure is already linear: imports → helpers → state → helpers → entrypoints → exports.
+- Further reordering would mostly shuffle comments without reducing branches or responsibilities.
+
+Considered and rejected:
+- Move `isPlainObject`/`sanitizeMeta` into the later Helpers block: only cosmetic, no clearer flow.
+- Extract each IPC handler into separate functions: adds indirection without reducing complexity.
+- Split `registerIpc` into multiple registrars: expands concepts without eliminating logic.
+
+### L2 — Clarity / robustness (Codex)
+
+Decision: NO CHANGE
+
+- Input validation and truncation logic are already explicit and localized (`sanitizeMeta`, `set-current-text`), so further helpers would add indirection.
+- Error handling is already bounded by `log.warnOnce`/`log.error` and try/catch blocks without noisy logs.
+- IPC handlers are already grouped in `registerIpc`, and splitting them would not reduce branching or duplication.
+- The persistence path and compatibility behavior are tightly coupled in `persistCurrentTextOnQuit`, and isolating them would increase cross-references.
+- Any attempts to guard non-function `loadJson`/`saveJson` or missing file paths would change current error/log behavior.
+
+The observable contract and timing are preserved (no changes applied).
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (repo anchors):
+- `electron/text_state.js`: IPC handler present:
+  - "ipcMain.handle('set-current-text', (_event, payload) =>"
+- `electron/text_state.js`: clipboard IPC present:
+  - "ipcMain.handle('clipboard-read-text', (event) =>"
+- `electron/text_state.js`: notifications centralized via `safeSend`:
+  - "safeSend(mainWin, 'current-text-updated', currentText);"
+- `electron/editor_preload.js`: consumer invokes `set-current-text` with string payload:
+  - "setCurrentText: (t) => ipcRenderer.invoke('set-current-text', t),"
+- `electron/editor_preload.js`: editor subscribes to update event:
+  - "ipcRenderer.on('editor-text-updated', (_e, text) => cb(text));"
+- `electron/preload.js`: main renderer uses same invoke channel:
+  - "setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),"
+- `public/renderer.js`: caller expects `resp.error` on failure:
+  - "throw new Error(resp.error || 'set-current-text failed');"
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+- Change 1: `clipboard-read-text` refusal paths now emit `warnOnce` (deduped), eliminating silent fallbacks.
+  - Gain: Visibility for unauthorized sender and oversize clipboard rejection, aligned with no-silent-fallback policy.
+  - Cost: Two new deduped warn lines can appear on failure paths.
+  - Validation: Trigger each path; confirm logs include:
+    - key: `text_state.clipboardRead.unauthorized`
+    - key: `text_state.clipboardRead.tooLarge`
+
+- Change 2: Avoid `log.error` for the expected validation failure “payload too large” in `set-current-text` (keeps existing warnOnce path; suppresses error noise).
+  - Gain: Reduces error-level noise for an expected, recoverable validation failure.
+  - Cost: That specific failure no longer produces an error log line.
+  - Validation: Send an oversized payload; confirm no `log.error('Error in set-current-text:', ...)` is emitted for that case, while the existing warnOnce still fires.
+
+Observable contract and timing preserved; logging-only changes.
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Updated the top Overview responsibilities to include `clipboard-read-text` and keep the compatibility note visible.
+- Added section dividers to mirror the file’s real block order (validation/normalization; best-effort send+persistence; initialization/lifecycle; IPC registration/handlers; exports).
+- Clarified the `registerIpc` docblock to enumerate all IPC channels and to note main/editor broadcasts (best-effort).
+- No functional changes; comments-only.
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Logging API usage is consistent: `safeSend` uses `warnOnce(key, ...)` with stable keys.
+- Clipboard handler refusal paths are visible and deduped: `clipboard-read-text` unauthorized/too large warns.
+- Error path keeps expected warn/error split: `set-current-text` warns on oversize and skips error for that case.
+- IPC surface matches call sites: `registerIpc` defines get/set/force/clipboard and sends editor updates.
+- Shared state and lifecycle wiring remain coherent: `init` loads, truncates, and attaches before-quit persistence.
+- Comments align with code blocks and responsibilities (Overview and section dividers).
+
+Observable contract and timing preserved (no changes applied).
+
+### L7 — Smoke (human-run; minimal)
+
+Result: PENDING
+
+Checklist:
+- [x] Log sanity ~30s idle (sin ERROR/uncaught; sin repeticion continua del mismo warning en idle).
+- [x] Clipboard overwrite (📋↺): copiar un texto corto al portapapeles, ejecutar overwrite.
+      Esperado: el texto vigente cambia y el UI (preview/conteos/tiempo) se actualiza.
+- [x] Clipboard append (📋+): copiar un texto corto, ejecutar append.
+      Esperado: se agrega en nueva linea (segun joiner), y el UI se actualiza.
+- [x] Abrir Editor manual desde main.
+      Esperado: ventana abre estable; sin errores.
+- [x] Con el Editor abierto: ejecutar 📋↺ en main.
+      Esperado: el Editor refleja el update (broadcast `editor-text-updated`), sin errores.
+- [x] Vaciar texto desde main (Clear).
+      Esperado: texto queda vacio en main y el Editor se limpia (via `force-clear-editor` / `editor-force-clear`).
+- [x] Cerrar completamente la app y relanzar.
+      Esperado: `init` carga el ultimo texto persistido (o vacio si se vacio); sin errores en startup.
+
+Notas:
+- (pendiente)
