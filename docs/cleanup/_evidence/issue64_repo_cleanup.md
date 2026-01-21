@@ -11,7 +11,9 @@
 **Validation**
 - (Qué revisamos estáticamente; qué flows cubre el smoke)
 
-**Nota (L7):** desde `electron/settings.js` en adelante, el Nivel 7 se registra como **smoke humano minimo** basado en `docs/test_suite.md` (Release smoke) y flujos normales. No se usa checklist generado por Codex.
+**Notas** 
+- **L7:** Desde `electron/settings.js` en adelante, el Nivel 7 se registra como **smoke humano minimo** basado en `docs/test_suite.md` (Release smoke) y flujos normales. No se usa checklist generado por Codex.
+- **Last commit por archivo**: generar con <git log -n 1 --format=%H -- TARGET_FILE>
 
 ---
 
@@ -420,3 +422,59 @@ Checklist ejecutado:
 
 Notas:
 - No aparecio nada relevante
+
+---
+
+## electron/fs_storage.js
+
+Date: `2026-01-21`
+Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
+
+### L0 — Minimal diagnosis (Codex, verified)
+
+#### 0.1 Reading map
+
+- Block order (as-is):
+  1) Overview + notes (explicitly “intentionally synchronous”)
+  2) Imports / logger (`fs`, `path`, `Log.get('fs-storage')`)
+  3) Config paths (`let CONFIG_DIR = null`)
+  4) Directory helpers (`initStorage`, getters, ensure*Dir)
+  5) JSON helpers (`loadJson`, `saveJson`)
+  6) Exports
+
+- Linear-reading breaks / obstacles:
+  - `loadJson()` mixes generic JSON loading with file-specific “missing file” notes keyed by basename:
+    - anchor: `if (baseName === 'current_text.json') ... else if ...`
+  - warnOnce keys embed `String(filePath)` (key cardinality scales with path variety):
+    - anchor: `` `fs_storage.loadJson:missing:${String(filePath)}` `` (similar for `:empty:` and `:failed:`)
+
+#### 0.2 Contract map
+
+- Exposes (module.exports):
+  - init: `initStorage(app)` (sets CONFIG_DIR)
+  - path getters: `getConfigDir`, `getConfigPresetsDir`, `getSettingsFile`, `getCurrentTextFile`, `getEditorStateFile`
+  - directory ensure: `ensureConfigDir`, `ensureConfigPresetsDir`
+  - JSON IO: `loadJson(filePath, fallback = {})`, `saveJson(filePath, obj)`
+
+- Side effects at load:
+  - logger instance created on require: `Log.get('fs-storage')`
+
+- Invariants / tolerated errors (anchored):
+  - `initStorage(app)` hard-requires a valid Electron app (`getPath`) and, if present, readiness:
+    - throws on invalid app: `[fs_storage] initStorage requires Electron app`
+    - throws if called before ready: `[fs_storage] initStorage called before app is ready`
+  - config root is derived from userData:
+    - `CONFIG_DIR = path.join(app.getPath('userData'), 'config')`
+  - `getConfigDir()` requires prior init:
+    - throws: `[fs_storage] CONFIG_DIR is not initialized`
+  - `ensureConfigDir()` / `ensureConfigPresetsDir()` are best-effort:
+    - they catch and log error (including `(uninitialized)` path marker).
+  - `loadJson()` is recoverable-by-design:
+    - missing file → warnOnce + returns fallback (adds “note:” depending on basename)
+    - empty/whitespace-only file → warnOnce + returns fallback
+    - invalid JSON/other read error → warnOnce + returns fallback
+    - removes UTF-8 BOM before parse
+  - `saveJson()` ensures the parent folder exists before write; write failures are logged.
+
+- IPC contract: none (no ipcMain/ipcRenderer/webContents usage).
+- Delegated IPC registration: none.
