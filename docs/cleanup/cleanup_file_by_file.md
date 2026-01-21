@@ -232,27 +232,30 @@ Ejemplos típicos:
 
 Level 3 — Architecture / contract changes (exceptional; evidence-driven).
 
-Objective: Only if there is strong evidence of real pain that cannot be addressed in Levels 1–2, propose and (if justified) implement a minimal architecture/contract change that measurably improves the situation.
+Objective:
+Only if there is strong evidence of real pain that cannot be addressed in Levels 1–2, propose and (if justified) implement a minimal architecture/contract change that measurably improves the situation.
 
-Entry criteria (must be satisfied):
+Entry criteria (must be satisfied to change code):
 - Direct evidence in code OR a reproducible bug/issue:
-  - point to the exact call sites / usage patterns in the repo, OR
-  - provide a minimal reproduction (steps) that demonstrates the pain.
+  - point to exact call sites / usage patterns in the repo, OR
+  - provide minimal repro steps that demonstrate the pain.
 - Explicit risk assessment: what could break and where.
 - Clear validation plan: how to confirm correctness after the change.
 
 Process:
-1. First, inspect the repo to identify whether `<TARGET_FILE>` has a real pain point that requires Level 3:
+1) Inspect the repo and identify whether `<TARGET_FILE>` has a real pain point that requires Level 3, e.g.:
    - duplicated responsibility across modules,
-   - unstable/ambiguous contract for IPC payloads/returns,
+   - unstable/ambiguous contract (IPC payloads/returns),
    - sync/async mismatch causing issues,
    - multiple consumers depending on inconsistent semantics,
-   - cross-module coupling (e.g., settings bootstrap inside text_state) that is causing bugs or maintenance problems.
-2. If NO strong evidence exists, do NOT change code. Instead, output a short “No Level 3 justified” note and list the evidence you checked.
-3. If evidence DOES exist, apply the smallest possible Level 3 change that resolves it:
-   - keep the change minimal (avoid broad rewrites),
-   - update all affected consumers in the repo consistently,
-   - avoid introducing unnecessary architecture.
+   - cross-module coupling causing bugs or maintenance pain.
+2) If NO strong evidence exists:
+   - Do NOT change code.
+   - Output “Decision: NO CHANGE (no Level 3 justified)” and list the evidence you checked (file + identifier anchors).
+3) If evidence DOES exist:
+   - Apply the smallest possible Level 3 change that resolves it.
+   - Update all affected consumers consistently (only if required by the change).
+   - Avoid broad rewrites and unnecessary architecture.
 
 Anti “refactor that makes it worse” rule:
 If a change:
@@ -267,6 +270,16 @@ Mandatory Gate output (for each non-trivial change you make):
 - Validation: how to verify (manual smoke path, repo grep, or a concrete runtime check).
 
 You may inspect the repo as needed. If you implement anything, ensure the repo builds/runs and the app’s IPC paths still work.
+
+Output requirement:
+- Write the full Level 3 result to `tools_local/codex_reply.md` (overwrite; do not append).
+- The file must start with: `# Level 3 result: <TARGET_FILE>`
+- The report must include:
+  - Decision: CHANGED | NO CHANGE
+  - If NO CHANGE: 3–10 bullets of evidence checked (anchors).
+  - If CHANGED: list each non-trivial change with Evidence/Risk/Validation, and explicitly confirm the observable contract/timing were preserved (or state what contract changed and why it was required).
+- Do NOT output diffs (neither in chat nor in the report).
+- In chat, output only: “WROTE: tools_local/codex_reply.md”.
 ```
 
 ---
