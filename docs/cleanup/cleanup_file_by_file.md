@@ -23,7 +23,18 @@ Archivos ya ordenados y limpiados:
 ```
 # Target file: `<TARGET_FILE>`
 
-For this response only, produce a Level 0 minimal diagnosis of the file (short, descriptive, no code changes).
+For this response only, produce a Level 0 minimal diagnosis of the file (short, descriptive, no code changes, no recommendations).
+
+Output requirement:
+- Write the full Level 0 result to a Markdown file at: `tools_local/codex_reply.md`
+- Overwrite the file contents (do not append).
+- The file must start with a header that includes the target path.
+- In chat, output only: “WROTE: tools_local/codex_reply.md”.
+
+Hard constraints:
+- Do NOT propose fixes or refactors. Diagnosis only.
+- Do NOT invent IPC channels or behaviors not explicitly present in this file.
+- If you infer an invariant, anchor it to a visible check/fallback in this file (mention the identifier and a micro-quote).
 
 ## 0.1 Reading map
 - What is the file’s actual block order today? (imports, constants/config, helpers, main logic/handlers, exports)
@@ -33,9 +44,18 @@ For this response only, produce a Level 0 minimal diagnosis of the file (short, 
 ## 0.2 Contract map
 - What does the module expose? (exports / public entrypoints / side effects)
 - What invariants does it suggest? (expected inputs, tolerated errors, fallbacks)
-- If present, describe the IPC contract:
-  - List every ipcMain.handle(<channel>) present.
-  - For each: input shape (if any), return shape, and any outgoing webContents.send(...) messages (channel + payload shape).
+- If present, describe the IPC contract (only what exists in this file):
+  A) Exhaustive IPC enumeration (mechanical; list ALL occurrences you can find in the file):
+    - List every ipcMain.handle(<channel>), ipcMain.on(<channel>), ipcMain.once(<channel>)
+    - List every ipcRenderer.invoke(<channel>), ipcRenderer.send(<channel>), ipcRenderer.on(<channel>), ipcRenderer.once(<channel>)
+    - List every webContents.send(<channel>) call
+  For each item:
+    - Channel name (string)
+    - Input shape (args) as seen at the handler/listener boundary
+    - Return shape (only for handle/invoke)
+    - Outgoing send messages emitted by that handler/listener (channel + payload shape), if any
+  B) Delegated registration (if applicable):
+    - If this file calls any helper that registers IPC (e.g., registerLinkIpc(...), *.registerIpc(...)), list the exact callee identifier(s) and note “delegates IPC registration”, but do not list the delegated channels unless they are explicitly in this file.
 ```
 
 ---
