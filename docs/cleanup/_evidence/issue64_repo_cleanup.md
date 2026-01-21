@@ -835,3 +835,15 @@ Decision: NO CHANGE
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
+### L2 — Clarity / robustness (Codex)
+
+Decision: NO CHANGE
+
+- The file is already compact and linear, with clear helper boundaries and event-handler rules.
+- Duplication is minimal and tightly coupled to event timing; extracting helpers would add indirection.
+- Error handling is present at each boundary (load/save/getEditorStateFile) with proportional logging.
+- Any consolidation of load/normalize defaults risks obscuring distinct defaults used per event.
+- Timing-sensitive event handlers are simple and readable as-is; restructuring would not add clarity.
+
+Observable contract and timing were preserved.
+
