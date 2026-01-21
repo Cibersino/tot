@@ -140,6 +140,26 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Baseline L7 smoke checklist unchanged.
 
+**L5 decision: CHANGED (comments-only)**
+
+- Updated the top Overview responsibilities:
+  - Clarified IPC ownership: main-owned handlers + delegated feature IPC registration.
+  - Clarified lifecycle ownership (ready/activate/quit).
+- Adjusted section divider naming to better match contents:
+  - Renamed "File locations" → "Constants / config (paths, defaults, limits)".
+- Added a "Helpers (logging + validation)" section divider to separate utilities from constants and improve scanability.
+- (Manual follow-up) Removed a confusing/stale comment about "Maximum allowed characters" that was not anchored to a nearby definition and risked misleading readers.
+
+**Evidence**
+- Comment structure improvements were warranted to match the file’s actual responsibilities and sectioning (entrypoint-scale file).
+
+**Risk**
+- None (comments-only).
+
+**Validation**
+- Visual review: file remains readable; section headers adjacent to the blocks they describe; no non-ASCII characters introduced.
+- Baseline L7 smoke checklist unchanged (no functional changes).
+
 ### L7 — Smoke checklist (human-run)
 - [ ] `npm start` abre la app sin errores visibles.
 - [ ] Ventana principal: carga UI y conteos básicos sin errores (texto vacío/no vacío).
