@@ -422,6 +422,7 @@ What to do:
    - Exports / module surface (if any)
 3) Review existing comments/JSDoc:
    - Remove redundant “what code already says” comments.
+   - Comment validity rule: if the comment cannot be validated from the file or a direct pointer, remove it.
    - Fix drift: comments must match actual behavior.
    - Prefer “why / constraints / edge cases” over “what”.
 4) Add (or confirm) an end-of-file marker:
