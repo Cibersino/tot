@@ -407,7 +407,7 @@ function createLanguageWindow() {
   // If the user closes the language window without choosing, persist a safe fallback and continue startup.
   langWin.on('closed', () => {
     try {
-    settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
+      settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
     } catch (err) {
       log.error('Error applying fallback language:', err);
     } finally {
