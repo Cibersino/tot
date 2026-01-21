@@ -384,7 +384,7 @@ function saveSettings(nextSettings) {
     }
   } catch (err) {
     log.errorOnce(
-      `settings.saveSettings.persist:${String(_settingsFile)}`,
+      'settings.saveSettings.persist',
       'saveSettings failed (not persisted):',
       _settingsFile,
       err
