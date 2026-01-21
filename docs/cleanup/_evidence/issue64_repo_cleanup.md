@@ -1,5 +1,18 @@
 # Issue #64 — Repo-wide cleanup execution
 
+### [template] L1–L6 — Gate notes (only if changes were made)
+
+**Evidence**
+- (Qué evidencia concreta motivó el cambio; referencias a funciones/fragmentos)
+
+**Risk**
+- (Qué podría romperse; qué invariantes se preservan)
+
+**Validation**
+- (Qué revisamos estáticamente; qué flows cubre el smoke)
+
+---
+
 ## electron/main.js
 
 Date: `2026-01-20`
@@ -65,17 +78,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
       - `updater.registerIpc(...)`
       - `registerLinkIpc(...)`
 
-### L1–L6 — Gate notes (only if changes were made)
-**Evidence**
-- (Qué evidencia concreta motivó el cambio; referencias a funciones/fragmentos)
-
-**Risk**
-- (Qué podría romperse; qué invariantes se preservan)
-
-**Validation**
-- (Qué revisamos estáticamente; qué flows cubre el smoke)
-
-**L1 decision: NO CHANGE**
+### L1 decision: NO CHANGE
 
 - El archivo ya tiene un layout por bloques claro (imports → constants → helpers → window factories → IPC → lifecycle) con encabezados de sección que facilitan navegación.
 - Reordenar bloques de creación de ventanas / wiring IPC / lifecycle en un entrypoint puede introducir cambios sutiles de secuencia (IPC readiness/startup), lo cual está fuera de alcance.
@@ -91,7 +94,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Covered by L7 smoke checklist (no code changes to validate beyond baseline).
 
-**L2 decision: CHANGED**
+### L2 decision: CHANGED
 
 - Change: Added `isAliveWindow(win)` and replaced repeated `win && !win.isDestroyed()` checks across window guards and sends.
   - Gain: Consistent, scan-friendly liveness checks without altering behavior.
@@ -112,7 +115,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - L7 smoke checklist (focus on crono toggle paths and editor-ready/main notification).
 
-**L3 decision: NO CHANGE (no Level 3 justified)**
+### L3 decision: NO CHANGE (no Level 3 justified)
 
 **Evidence checked**
 - IPC consumers in `electron/preload.js`: openEditor/getAppConfig/getAppVersion/getAppRuntimeInfo; sendCronoToggle/sendCronoReset/setCronoElapsed; openFlotanteWindow/closeFlotanteWindow/onFlotanteClosed — aligned with `ipcMain.handle`/`ipcMain.on` in `electron/main.js`.
@@ -127,7 +130,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Baseline L7 smoke checklist unchanged.
 
-**L4 decision: NO CHANGE**
+### L4 decision: NO CHANGE
 
 - Logger mechanism already correct for main process (`Log.get('main')`), with appropriate `log.error` in IPC handler failures.
 - High-frequency/best-effort paths already use `warnOnce` with stable keys (e.g., `send.crono-state.*`, `mainWin.send.flotante-closed`, `snapWindowFullyIntoWorkArea.noWorkArea`).
@@ -140,7 +143,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Baseline L7 smoke checklist unchanged.
 
-**L5 decision: CHANGED (comments-only)**
+### L5 decision: CHANGED (comments-only)
 
 - Updated the top Overview responsibilities:
   - Clarified IPC ownership: main-owned handlers + delegated feature IPC registration.
@@ -160,7 +163,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 - Visual review: file remains readable; section headers adjacent to the blocks they describe; no non-ASCII characters introduced.
 - Baseline L7 smoke checklist unchanged (no functional changes).
 
-**L6 decision: NO CHANGE**
+### L6 decision: NO CHANGE
 
 - Checked helper usage consistency (`isAliveWindow`, `warnOnce`): signatures and call sites aligned.
 - Reviewed IPC handlers (`crono-*`, `flotante-*`, `open-*`, `get-app-*`): channel names + return shapes consistent with consumers.
@@ -170,12 +173,100 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 
 Observable contract and timing preserved (no code changes).
 
-### L7 — Smoke checklist (human-run)
-- [ ] `npm start` abre la app sin errores visibles.
-- [ ] Ventana principal: carga UI y conteos básicos sin errores (texto vacío/no vacío).
-- [ ] Flujo “primera ejecución” (si es posible simularlo): se muestra selector de idioma; elegir idioma abre ventana principal y cierra selector.
-- [ ] Desde main: abrir **Editor manual**; verificar que llega texto inicial (si aplica) y que “Aplicar” impacta el texto vigente.
-- [ ] Desde main: abrir **Presets modal**; verificar inicialización (`preset-init`) y que cerrar/reabrir no rompe el flujo.
-- [ ] Abrir **Flotante**; togglear cronómetro; verificar que main y flotante reflejan estado (`crono-state`).
-- [ ] Cerrar flotante; verificar que main recibe/reacciona al cierre (`flotante-closed`) según UX esperada.
-- [ ] Verificar que acciones que dependan de `get-app-config`, `get-app-version`, `get-app-runtime-info` (si están expuestas en UI/menú) no producen errores.
+### L7 — Smoke checklist (human-run; code-informed)
+
+Preconditions
+- App runs normally with logs visible (terminal or DevTools console).
+- For the language picker step, run with a fresh profile so the language window appears on startup.
+
+1) Log sanity (existing logs)
+- Action: Launch the app, click the crono toggle once while watching logs.
+- Expected: No unexpected ERROR/uncaught exception lines; no continuous repeated spam from the same message/key.
+- Evidence:
+  - Target anchor (electron/main.js `broadcastCronoState`): "send crono-state to mainWin failed (ignored)".
+  - Trigger chain anchors: `public/js/crono.js` "tToggle.addEventListener('click'"; `electron/preload.js` "sendCronoToggle: () => ipcRenderer.send('crono-toggle')".
+  - Stable UI reference: `public/renderer.js` "getElementById('cronoToggle')".
+
+2) Crono toggle start/stop
+- Action: Click crono toggle, wait ~1s, click again.
+- Expected: Crono starts counting, then pauses.
+- Evidence:
+  - Target: `electron/main.js` "ipcMain.on('crono-toggle'".
+  - Chain: `public/js/crono.js` "tToggle.addEventListener('click'"; `electron/preload.js` "sendCronoToggle: () => ipcRenderer.send('crono-toggle')".
+  - UI: `public/renderer.js` "getElementById('cronoToggle')".
+
+3) Crono reset
+- Action: Click crono reset.
+- Expected: Crono display resets to 00:00:00.
+- Evidence:
+  - Target: `electron/main.js` "ipcMain.on('crono-reset'".
+  - Chain: `public/js/crono.js` "tReset.addEventListener('click'"; `electron/preload.js` "sendCronoReset: () => ipcRenderer.send('crono-reset')".
+  - UI: `public/renderer.js` "getElementById('cronoReset')".
+
+4) Open editor window
+- Action: Click edit to open editor window.
+- Expected: Editor opens; main remains responsive.
+- Evidence:
+  - Target: `electron/main.js` "ipcMain.handle('open-editor'".
+  - Chain: `public/renderer.js` "btnEdit.addEventListener('click'"; `electron/preload.js` "openEditor: () => ipcRenderer.invoke('open-editor')".
+  - UI: `public/renderer.js` "getElementById('btnEdit')".
+
+5) Open new preset modal
+- Action: Click new preset.
+- Expected: Preset modal opens.
+- Evidence:
+  - Target: `electron/main.js` "ipcMain.handle('open-preset-modal'".
+  - Chain: `public/renderer.js` "btnNewPreset.addEventListener('click'"; `electron/preload.js` "openPresetModal: (payload) => ipcRenderer.invoke('open-preset-modal'".
+  - UI: `public/renderer.js` "getElementById('btnNewPreset')".
+
+6) Flotante window open/close via switch
+- Action: Toggle flotante switch on, then off.
+- Expected: Flotante appears then closes; main switch reflects state.
+- Evidence:
+  - Target: `electron/main.js` "ipcMain.handle('flotante-open'" / "ipcMain.handle('flotante-close'".
+  - Chain: `public/js/crono.js` "toggleVF.addEventListener('change'"; `electron/preload.js` "openFlotanteWindow: async () =>" / "closeFlotanteWindow: async () =>".
+  - UI: `public/renderer.js` "getElementById('toggleVF')".
+
+7) Flotante controls update main crono
+- Action: In flotante window, click toggle and reset.
+- Expected: Main crono reflects same running/reset state.
+- Evidence:
+  - Target: `electron/main.js` "ipcMain.on('flotante-command'".
+  - Chain: `public/flotante.js` "sendCommand({ cmd: 'toggle' })" / "sendCommand({ cmd: 'reset' })"; `electron/flotante_preload.js` "ipcRenderer.send('flotante-command', cmd)".
+  - UI: `public/flotante.js` "getElementById('toggle')" / "getElementById('reset')".
+
+8) Language picker selection (first run only)
+- Action: In language window, click a language in the list.
+- Expected: Language window closes and main window opens.
+- Evidence:
+  - Target: `electron/main.js` "ipcMain.once('language-selected'".
+  - Chain: `public/language_window.js` "langList.addEventListener('click'"; `electron/language_preload.js` "ipcRenderer.send('language-selected', tag)".
+  - UI: `public/language_window.js` "getElementById('langList')".
+
+Not smoke-testable (optional)
+- None.
+
+**CONCLUSION**: Smoke test **PASSED**
+
+---
+
+## electron/settings.js
+
+Date: `2026-01-21`
+Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
+
+### L0 — Diagnosis (no changes)
+
+### L1 decision: 
+
+### L2 decision: 
+
+### L3 decision: 
+
+### L4 decision: 
+
+### L5 decision: 
+
+### L6 decision: 
+
+### L7 — Smoke checklist (human-run; code-informed)
