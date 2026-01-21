@@ -418,6 +418,7 @@ function broadcastSettingsUpdated(settings, windows) {
       log.warnOnce(
         `settings.broadcastSettingsUpdated.${name}`,
         'settings-updated notify failed (ignored):',
+        name,
         err
       );
     }
