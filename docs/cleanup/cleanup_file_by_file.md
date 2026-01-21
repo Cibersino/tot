@@ -372,6 +372,7 @@ Output requirement:
 - Do NOT output diffs (neither in chat nor in the report).
 - In chat, output only: “WROTE: tools_local/codex_reply.md”.
 ```
+
 ---
 
 ## Nivel 5: Comentarios
