@@ -303,7 +303,7 @@ Align logging in `<TARGET_FILE>` with the project logging policy and established
 - Levels match recoverability (error vs warn vs info vs debug),
 - Fallbacks are never silent (per policy),
 - High-frequency best-effort failures do not spam (use warnOnce/errorOnce with explicit stable keys),
-- Messages are short, actionable, and consistent with the repo (see electron/main.js patterns).
+- Messages are short, actionable, and consistent with the repo (see `electron/main.js` patterns).
 
 Default rule (do not force changes):
 - If `<TARGET_FILE>` already complies with policy and any proposed tweak would be marginal or would add noise/complexity, make NO code changes and justify “NO CHANGE”.
@@ -386,39 +386,56 @@ Output requirement:
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 5 — Comments (reader-oriented, main.js style).
+Level 5 — Comments (reader-oriented, `electron/main.js` style).
 
-Objective: Improve comments so the file is easier to understand for a new contributor with limited context, while keeping comments genuinely useful (explain intent/constraints, not obvious syntax). Follow the project’s comment style as in electron/main.js:
+Objective:
+Improve comments so the file is easier to understand for a new contributor with limited context, while keeping comments genuinely useful (intent/constraints, not obvious syntax). Follow the project’s comment style as in `electron/main.js`:
 - concise "Overview" with responsibilities,
 - visible section dividers that match the file’s real structure,
 - an explicit "End of <file>" marker at the end.
 
+Default rule (do not force changes):
+- If comments already meet the style/policy and edits would be marginal or risk drift, make NO code changes and justify “NO CHANGE”.
+
 Constraints:
 - Do NOT change runtime behavior in any way (no logic changes, no contract changes, no timing changes).
-- This level is comments-only: you may adjust whitespace around comments and move *comments- to better locations, but do not move code unless it is required to keep a section header adjacent to the block it describes.
-- All comments must be in English and use plain ASCII characters only (avoid fancy quotes, em dashes, non-ASCII bullets, etc.).
-- Do not translate or rename identifiers/IPC channel names/JSON keys; reference them exactly as they appear in code.
+- Comments-only: you may adjust whitespace around comments and move comments to better locations, but do not move code unless needed to keep a section header adjacent to the block it describes.
+- All comments must be in English and plain ASCII only (avoid fancy quotes, em dashes, non-ASCII bullets).
+- Do not translate or rename identifiers/IPC channel names/JSON keys; reference them exactly as in code.
 
 What to do:
-1. Add or rewrite the top "Overview" comment:
+1) Review/update the top "Overview" comment:
    - 3–7 bullet responsibilities max.
-   - Mention key side effects or ownership (e.g., IPC handlers, persistence timing) only at a high level.
-2. Add section dividers that match the file’s true blocks (only what exists):
+2) Section dividers (required when missing or inconsistent):
+   - Ensure the file has section divider comments that match its true blocks (only what exists).
+   - If section dividers are missing, ADD them (comments-only) following the style used in `electron/main.js`.
+   - Do not invent sections; derive them from the file’s actual block order.
+   Typical divider buckets (adapt to the file; use only applicable ones):
    - Imports / logger
-   - Shared state / injected deps
-   - Helpers
-   - Entrypoints (init, IPC registration, etc.)
-   - Exports
-3. Review existing comments and JSDoc blocks:
-   - Remove redundant “what the code already says” comments.
-   - Fix any drift: comments must match actual behavior.
+   - Constants / config (paths, defaults, limits)
+   - Shared state (window refs, module-level state)
+   - Helpers (pure helpers, validators, small utilities)
+   - Window factories / UI wiring (if any)
+   - IPC registration / handlers (if any)
+   - App lifecycle / bootstrapping (if any)
+   - Delegated registration / integration points (if any)
+   - Exports / module surface (if any)
+3) Review existing comments/JSDoc:
+   - Remove redundant “what code already says” comments.
+   - Fix drift: comments must match actual behavior.
    - Prefer “why / constraints / edge cases” over “what”.
-4. Add an end-of-file marker comment:
-   - "End of <file>" in the same style as electron/main.js.
+4) Add (or confirm) an end-of-file marker:
+   - "End of <TARGET_FILE>" in the same style as the repo.
 
-After editing (mandatory short report):
-- List the comment changes you made in 3–8 bullets (e.g., "Added Overview responsibilities", "Removed redundant inline comments", "Aligned section dividers with actual block order").
-- Confirm explicitly: "No functional changes; comments-only."
+Output requirement:
+- Apply edits only if you decided CHANGED.
+- Write the full Level 5 result to `tools_local/codex_reply.md` (overwrite; do not append).
+- The file must start with: `# Level 5 result: <TARGET_FILE>`
+- Include: `Decision: CHANGED | NO CHANGE`
+  - If CHANGED: 3–8 bullets describing comment changes + “No functional changes; comments-only.”
+  - If NO CHANGE: 3–8 bullets explaining why no meaningful comment improvements were warranted.
+- Do NOT output diffs (neither in chat nor in the report).
+- In chat, output only: “WROTE: tools_local/codex_reply.md”.
 ```
 ---
 
@@ -460,7 +477,7 @@ What to do:
    - If you find a mismatch, only fix it if it can be done locally without changing the contract; otherwise report it as Level 3 evidence (no code change).
    - If call sites look consistent, do not spend output budget enumerating them; focus on issues that require local fixes.
 3. Logging API consistency check:
-   - Verify each log call matches the actual logging API (method names + argument shapes) as defined in electron/log.js (and relevant usage patterns in electron/main.js).
+   - Verify each log call matches the actual logging API (method names + argument shapes) as defined in electron/log.js (and relevant usage patterns in `electron/main.js`).
    - If you detect signature drift (e.g., passing a dedupe key to a non-once method), correct it in the smallest way that preserves intended logging behavior and avoids spam.
 4. Comment/code alignment:
    - Ensure comments describe real behavior and constraints; remove or adjust any drift introduced during prior edits.
