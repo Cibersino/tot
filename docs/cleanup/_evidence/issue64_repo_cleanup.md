@@ -127,6 +127,19 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Baseline L7 smoke checklist unchanged.
 
+**L4 decision: NO CHANGE**
+
+- Logger mechanism already correct for main process (`Log.get('main')`), with appropriate `log.error` in IPC handler failures.
+- High-frequency/best-effort paths already use `warnOnce` with stable keys (e.g., `send.crono-state.*`, `mainWin.send.flotante-closed`, `snapWindowFullyIntoWorkArea.noWorkArea`).
+- No silent fallbacks found in this file; fallbacks (language/manifest/options/workArea) already emit warn/error at appropriate levels.
+- Further tuning would be marginal and risks either hiding actionable failures or adding indirection/noise.
+
+**Risk**
+- N/A (no code changes).
+
+**Validation**
+- Baseline L7 smoke checklist unchanged.
+
 ### L7 — Smoke checklist (human-run)
 - [ ] `npm start` abre la app sin errores visibles.
 - [ ] Ventana principal: carga UI y conteos básicos sin errores (texto vacío/no vacío).
