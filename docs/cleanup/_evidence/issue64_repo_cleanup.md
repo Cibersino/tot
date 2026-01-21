@@ -740,3 +740,38 @@ Decision: CHANGED
 - Clarified the `registerIpc` docblock to enumerate all IPC channels and to note main/editor broadcasts (best-effort).
 - No functional changes; comments-only.
 
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Logging API usage is consistent: `safeSend` uses `warnOnce(key, ...)` with stable keys.
+- Clipboard handler refusal paths are visible and deduped: `clipboard-read-text` unauthorized/too large warns.
+- Error path keeps expected warn/error split: `set-current-text` warns on oversize and skips error for that case.
+- IPC surface matches call sites: `registerIpc` defines get/set/force/clipboard and sends editor updates.
+- Shared state and lifecycle wiring remain coherent: `init` loads, truncates, and attaches before-quit persistence.
+- Comments align with code blocks and responsibilities (Overview and section dividers).
+
+Observable contract and timing preserved (no changes applied).
+
+### L7 — Smoke (human-run; minimal)
+
+Result: PENDING
+
+Checklist:
+- [x] Log sanity ~30s idle (sin ERROR/uncaught; sin repeticion continua del mismo warning en idle).
+- [x] Clipboard overwrite (📋↺): copiar un texto corto al portapapeles, ejecutar overwrite.
+      Esperado: el texto vigente cambia y el UI (preview/conteos/tiempo) se actualiza.
+- [x] Clipboard append (📋+): copiar un texto corto, ejecutar append.
+      Esperado: se agrega en nueva linea (segun joiner), y el UI se actualiza.
+- [x] Abrir Editor manual desde main.
+      Esperado: ventana abre estable; sin errores.
+- [x] Con el Editor abierto: ejecutar 📋↺ en main.
+      Esperado: el Editor refleja el update (broadcast `editor-text-updated`), sin errores.
+- [x] Vaciar texto desde main (Clear).
+      Esperado: texto queda vacio en main y el Editor se limpia (via `force-clear-editor` / `editor-force-clear`).
+- [x] Cerrar completamente la app y relanzar.
+      Esperado: `init` carga el ultimo texto persistido (o vacio si se vacio); sin errores en startup.
+
+Notas:
+- (pendiente)
