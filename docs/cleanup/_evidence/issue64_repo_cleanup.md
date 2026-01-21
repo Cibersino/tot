@@ -421,7 +421,7 @@ Checklist ejecutado:
 - [x] Reinicio de app: idioma/modo/preset persistidos.
 
 Notas:
-- No aparecio nada relevante
+- No apareció nada relevante
 
 ---
 
@@ -581,3 +581,84 @@ Optional (only if executed):
 
 Notes (only if relevant):
 - Ninguna
+
+---
+
+## electron/text_state.js
+
+Date: `2026-01-21`
+Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - Overview (responsibilities + IPC list).
+    - Imports / logger (`Log.get('text-state')`).
+    - Helpers: `isPlainObject`, `sanitizeMeta`.
+    - Shared state + injected deps (caps, `currentText`, `loadJson`/`saveJson`, paths, `appRef`, `getWindows`).
+    - Helpers: `safeSend`, `persistCurrentTextOnQuit`.
+    - Entrypoints: `init`, `registerIpc`, `getCurrentText`.
+    - Exports.
+  - Where linear reading breaks:
+    - `persistCurrentTextOnQuit` mezcla persistencia de texto con compatibilidad de settings:
+      - anchor: `// Maintain previous behavior: ensure settings file exists.`
+    - `init` mezcla normalización del input de disco (obj `{text}` vs string) con warnings + truncado/persist:
+      - anchor: `Current text file has unexpected shape; using empty string.`
+    - Comentario de `registerIpc` lista IPC incompleto (no menciona `clipboard-read-text`):
+      - anchor: `Register the IPC handlers... get-current-text...`
+    - `set-current-text` agrupa: normalización payload + cap IPC + truncado hard cap + broadcasts:
+      - anchors: `set-current-text payload too large` / `entry truncated to effective hard cap`
+    - `safeSend` agrega indirección (guard + try/catch + warnOnce) a `webContents.send`:
+      - anchor: `webContents.send('${channel}') failed (ignored):`
+
+- Contract map (exports / side effects / IPC):
+  - Module exposure:
+    - Exports: `init(options)`, `registerIpc(ipcMain, windowsResolver)`, `getCurrentText()`.
+    - Side effects: `init` carga `currentText` desde disco y registra `appRef.on('before-quit', ...)`; `registerIpc` instala handlers.
+  - Invariants and fallbacks (anchored):
+    - `sanitizeMeta` acepta solo “plain object” y rechaza meta vacía o strings > `MAX_META_STR_CHARS`:
+      - `if (!isPlainObject(raw)) return null`
+    - `maxTextChars` puede inyectarse si `opts.maxTextChars > 0`; `maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER`.
+    - `init`: shape inesperado en archivo de texto vigente → `warnOnce` + `''`:
+      - `text_state.init.unexpectedShape`
+    - `init`: si texto inicial excede hard cap → truncado + persist inmediato:
+      - `Initial text exceeds effective hard cap ... truncated and saved.`
+    - `set-current-text`: si `text.length > maxIpcChars` → rechazo (warnOnce + `{ ok:false, error:string }`):
+      - `text_state.setCurrentText.payload_too_large`
+    - `set-current-text`: si `text.length > maxTextChars` → truncado + `truncated:true`.
+    - `clipboard-read-text`: restringido a invocación desde `mainWin` (sender autorizado):
+      - `{ ok:false, error:'unauthorized', ... }`
+    - `safeSend`: no envía si la ventana no existe o está destruida:
+      - `if (!win || win.isDestroyed()) return`
+
+  - IPC contract (only what exists in this file):
+    - `ipcMain.handle('get-current-text')`
+      - args: `()`
+      - returns: `string`
+      - outbound sends: none
+    - `ipcMain.handle('clipboard-read-text')`
+      - args: `(event)`
+      - returns:
+        - `{ ok:true, length:number, text:string }`, o
+        - `{ ok:false, error:'unauthorized', text:'', length:0 }`, o
+        - `{ ok:false, tooLarge:true, length:number, text:'' }`
+      - outbound sends: none
+    - `ipcMain.handle('set-current-text')`
+      - args: `(_event, payload)` donde `payload` es `string` o `{ text, meta }`
+      - returns: `{ ok:true, truncated:boolean, length:number, text:string }` o `{ ok:false, error:string }`
+      - outbound sends (best-effort via `safeSend`):
+        - `current-text-updated` payload `string`
+        - `editor-text-updated` payload `{ text:string, meta:object }`
+    - `ipcMain.handle('force-clear-editor')`
+      - args: `()`
+      - returns: `{ ok:true }` o `{ ok:false, error:string }`
+      - outbound sends (best-effort via `safeSend`):
+        - `current-text-updated` payload `''`
+        - `editor-force-clear` payload `''`
+    - `ipcMain.on(...)`: none
+    - `ipcMain.once(...)`: none
+    - `ipcRenderer.*`: none
+    - `webContents.send(...)` strings used (via `safeSend`):
+      - `current-text-updated`, `editor-text-updated`, `editor-force-clear`
+    - Delegated IPC registration: none.

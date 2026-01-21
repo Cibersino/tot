@@ -137,7 +137,7 @@ tot-readingmeter/
 
 - `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`.
 - `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset` y difunde cambios vía `settings-updated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`).
-- `electron/text_state.js` — Estado del texto vigente (`currentText`) + límites (p. ej. `MAX_TEXT_CHARS`) + handlers IPC asociados.
+- `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/menu_builder.js` — Construcción del menú nativo (labels i18n) + router de acciones hacia renderer (`menu-click`) + textos de diálogos.
