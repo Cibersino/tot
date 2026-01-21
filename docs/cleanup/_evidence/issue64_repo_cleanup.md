@@ -374,7 +374,22 @@ Observable contract/timing preserved: mismos canales IPC, payload/return shapes,
 
 Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, side effects u ordering; solo cambia el bucket de dedupe del log en un `catch`.
 
-### L5 decision: NOT RUN (pending)
+### L5 decision: CHANGED
+
+- Updated the Overview responsibilities to include the existing `set-selected-preset` IPC handler.
+- Updated the IPC registration comment to list `set-selected-preset` alongside the other handlers.
+- No functional changes; comments-only.
+
+**Evidence**
+- Codex Level 5 report (Decision: CHANGED) in `tools_local/codex_reply.md` (2026-01-21).
+- Diff confirms comment-only changes in `electron/settings.js` (Overview + IPC list).
+
+**Risk**
+- None (comments-only).
+
+**Validation**
+- Visual review: comments match the actual IPC handlers registered in `registerIpc`:
+  `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`.
 
 ### L6 decision: NOT RUN (pending)
 
