@@ -534,3 +534,15 @@ Validation:
 - Runtime: trigger missing/empty/invalid JSON for a known file and verify only one warnOnce per (kind, variant) while the message still prints the `filePath` (and `err` for failed).
 
 Observable contract and timing preserved: yes (logging-only; no functional changes).
+
+### L5 decision: NO CHANGE (comments)
+
+- Overview already lists responsibilities and constraints (sync main process; recoverable fallbacks).
+- Section dividers match the actual block order and follow `electron/main.js` style.
+- Comments are intent/constraints-focused with no obvious drift.
+- End-of-file marker already present and correctly styled.
+- Further edits would be cosmetic and risk drift without improving clarity.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
