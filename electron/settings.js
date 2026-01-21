@@ -11,7 +11,7 @@
 // - Keep language tags consistent (normalize language tag + base language).
 // - Ensure numberFormatting[langBase] exists (from i18n/<lang>/numberFormat.json or safe defaults).
 // - Provide a small state API (init/getSettings/saveSettings) backed by an in-memory cache.
-// - Register IPC handlers (get-settings, set-language, set-mode-conteo) and broadcast settings-updated.
+// - Register IPC handlers (get-settings, set-language, set-mode-conteo, set-selected-preset) and broadcast settings-updated.
 // - Apply a logged fallback language when the language modal closes without a selection.
 // =============================================================================
 
@@ -459,6 +459,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - get-settings
  * - set-language
  * - set-mode-conteo
+ * - set-selected-preset
  */
 function registerIpc(
   ipcMain,
