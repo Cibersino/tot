@@ -257,6 +257,57 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 
 ### L0 — Diagnosis (no changes)
 
+- Reading map:
+  - Block order:
+    - Overview (responsibilities).
+    - Imports / logger (`Log.get('settings')`).
+    - Language helpers (`normalizeLangTag`, `normalizeLangBase`, `getLangBase`, `deriveLangKey`).
+    - Injected dependencies + cache (`_loadJson`, `_saveJson`, `_settingsFile`, `_currentSettings`).
+    - Number format defaults loader (`loadNumberFormatDefaults` → `i18n/<langBase>/numberFormat.json`).
+    - Number formatting normalization (`ensureNumberFormattingForBase`).
+    - Settings normalization (`normalizeSettings`).
+    - State API (`init`, `getSettings`, `saveSettings`).
+    - Broadcast (`broadcastSettingsUpdated`).
+    - Fallback language (`applyFallbackLanguageIfUnset`).
+    - IPC registration (`registerIpc`).
+    - Exports.
+  - Where linear reading breaks:
+    - `normalizeSettings` mezcla normalización de schema + buckets dependientes de idioma: `"language-dependent buckets will use fallback"`.
+    - `registerIpc` agrupa persistencia + rebuild de menú + UI de ventanas secundarias + broadcast: `"Hide the toolbar/menu in secondary windows (best-effort)."`.
+    - `set-language` contradice parcialmente su comentario (“saves language”) porque el persist es condicional: `"if (chosen) {"`.
+    - `getSettings` rompe la expectativa de cache-only porque relee de disco cada vez: `"This reflects external edits to the settings file."`.
+
+- Contract map (exports / side effects / IPC):
+  - Module exposure:
+    - Exports: `normalizeLangTag`, `normalizeLangBase`, `getLangBase`, `deriveLangKey`, `init`, `registerIpc`, `getSettings`, `saveSettings`, `applyFallbackLanguageIfUnset`, `broadcastSettingsUpdated`.
+    - Side effects: inicializa logger en load (`Log.get('settings')`); `registerIpc` instala handlers en `ipcMain`; `broadcastSettingsUpdated` emite mensajes a ventanas.
+  - Invariants and fallbacks (anchored):
+    - Base lang inválido → `DEFAULT_LANG`: `normalizeLangBase` `"return DEFAULT_LANG"`.
+    - Root inválido → `{}`: `normalizeSettings` `"Settings root is invalid; using empty object:"`.
+    - `language` inválido → `''`: `normalizeSettings` `"Invalid settings.language; forcing empty string:"`.
+    - Buckets inválidos → `{}`: `normalizeSettings` `"resetting to empty object:"` para:
+      - `presets_by_language`
+      - `selected_preset_by_language`
+      - `numberFormatting`
+      - `disabled_default_presets`
+    - `modeConteo` inválido → `'preciso'`: `normalizeSettings` `"Invalid modeConteo; forcing default:"`.
+    - number formatting default (si i18n missing/invalid): `ensureNumberFormattingForBase` `"Using default number formatting (fallback):"`.
+    - `getSettings` requiere `init`: lanza `"[settings] getSettings called before init"`.
+    - Fallback language no-silencioso: `applyFallbackLanguageIfUnset` `"Language was unset; applying fallback language:"` y persiste.
+  - IPC contract (only what exists in this file):
+    - `ipcMain.handle(...)`:
+      - `get-settings` → args `()`; returns `settings` (obj normalizado). En error, retorna `normalizeSettings({ language: DEFAULT_LANG, ... })`.
+      - `set-language` → args `(_event, lang)`; returns `{ ok: true, language: chosen }` o `{ ok: false, error }`.
+        - Side effects (best-effort): `buildAppMenu(menuLang)`, ocultar menú en ventanas secundarias, y broadcast.
+      - `set-mode-conteo` → args `(_event, mode)`; returns `{ ok: true, mode }` o `{ ok: false, error }`; broadcast.
+      - `set-selected-preset` → args `(_event, presetName)`; returns `{ ok: true, langKey, name }` o `{ ok: false, error }`; **sin** broadcast.
+    - `ipcMain.on(...)`: none in this file.
+    - `ipcMain.once(...)`: none in this file.
+    - `ipcRenderer.*`: none in this file.
+    - `webContents.send(...)` occurrences:
+      - `'settings-updated'` payload `settings` (object) via `broadcastSettingsUpdated` (best-effort a ventanas abiertas).
+    - Delegated IPC registration: none in this file.
+
 ### L1 decision: 
 
 ### L2 decision: 
