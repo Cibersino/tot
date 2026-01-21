@@ -407,7 +407,7 @@ Observable contract/timing preserved: no hay cambios en IPC, payloads/returns, s
 
 ### L7 — Smoke (human-run; minimal)
 
-Resultado: PASS
+Result: PASS
 
 Checklist ejecutado:
 - [x] Log sanity ~30s idle (sin ERROR/uncaught; sin repeticion continua del mismo warning en idle).
@@ -559,3 +559,25 @@ Observable contract and timing preserved: yes (no code changes).
 
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
+
+### L7 smoke (human-run)
+
+Result: PASS
+
+Steps executed:
+- Launch the app with logs visible (terminal / DevTools). Expected: no uncaught exceptions; no continuous warning spam in idle.
+- Clean run: fully close the app, rename/delete `%APPDATA%\tot-readingmeter\config\` (or the platform-equivalent `app.getPath('userData')/config`), then relaunch.
+- Observe logs on clean run: recoverable `loadJson missing (using fallback)` warnings are acceptable, but should appear at most once per known file (e.g., `user_settings.json`, `current_text.json`, `editor_state.json`) and should not repeat continuously while idle.
+- Reach main window (complete first-run language selection if it appears). Expected: app remains usable; no crashes.
+- Clipboard overwrite: copy the “Small text” from `docs/test_suite.md`, click `📋↺`. Expected: preview + counts + time update immediately.
+- Toggle counting mode (precise/simple) once. Expected: toggle works; results remain coherent (no NaN/blank).
+- Manual editor: open editor, modify text, apply/close. Expected: main preview/results reflect the change.
+- Presets: select an existing preset (time estimate changes), then create/edit a preset if available in UI. Expected: no errors; time recalculates.
+- Fully close the app. Relaunch (existing state). Expected: persisted state loads (last text/settings/preset as applicable); no startup errors.
+- Repeat one key action again (e.g., `📋+` append or re-select preset). Expected: behavior consistent; no new log spam.
+
+Optional (only if executed):
+- Force an “empty or invalid JSON” case for `current_text.json` (e.g., empty file) and relaunch once. Expected: a single recoverable fallback warning (`loadJson empty file (using fallback)` or `loadJson failed (using fallback)`), app still starts and uses fallback.
+
+Notes (only if relevant):
+- Ninguna

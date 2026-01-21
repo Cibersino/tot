@@ -2,11 +2,12 @@
 
 ## Elección de archivo:
 
-- En proceso: `electron/fs_storage.js`
+- En proceso: `electron/text_state.js`
 
 Archivos ya ordenados y limpiados:
 - `electron/main.js`
 - `electron/settings.js`
+- `electron/fs_storage.js`
 
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
