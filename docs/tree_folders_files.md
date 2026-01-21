@@ -136,7 +136,7 @@ tot-readingmeter/
 ### 2) Módulos del proceso principal (Electron)
 
 - `electron/fs_storage.js` — Capa de persistencia JSON: rutas de config, ensure dirs, `loadJson`/`saveJson`, utilidades de almacenamiento.
-- `electron/settings.js` — Fuente de verdad de `user_settings.json`: carga/normalización, persistencia, handlers IPC de settings y broadcast de cambios; también persiste la selección de preset por idioma (`selected_preset_by_language`, IPC `set-selected-preset`).
+- `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset` y difunde cambios vía `settings-updated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`).
 - `electron/text_state.js` — Estado del texto vigente (`currentText`) + límites (p. ej. `MAX_TEXT_CHARS`) + handlers IPC asociados.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.

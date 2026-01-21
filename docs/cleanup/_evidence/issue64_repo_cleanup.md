@@ -296,7 +296,7 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
     - Fallback language no-silencioso: `applyFallbackLanguageIfUnset` `"Language was unset; applying fallback language:"` y persiste.
   - IPC contract (only what exists in this file):
     - `ipcMain.handle(...)`:
-      - `get-settings` → args `()`; returns `settings` (obj normalizado). En error, retorna `normalizeSettings({ language: DEFAULT_LANG, ... })`.
+      - `get-settings` → args `()`; returns `settings` (obj normalizado). En error, retorna `normalizeSettings(createDefaultSettings(DEFAULT_LANG))`.
       - `set-language` → args `(_event, lang)`; returns `{ ok: true, language: chosen }` o `{ ok: false, error }`.
         - Side effects (best-effort): `buildAppMenu(menuLang)`, ocultar menú en ventanas secundarias, y broadcast.
       - `set-mode-conteo` → args `(_event, mode)`; returns `{ ok: true, mode }` o `{ ok: false, error }`; broadcast.
