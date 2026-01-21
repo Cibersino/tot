@@ -680,3 +680,15 @@ Considered and rejected:
 - Move `isPlainObject`/`sanitizeMeta` into the later Helpers block: only cosmetic, no clearer flow.
 - Extract each IPC handler into separate functions: adds indirection without reducing complexity.
 - Split `registerIpc` into multiple registrars: expands concepts without eliminating logic.
+
+### L2 — Clarity / robustness (Codex)
+
+Decision: NO CHANGE
+
+- Input validation and truncation logic are already explicit and localized (`sanitizeMeta`, `set-current-text`), so further helpers would add indirection.
+- Error handling is already bounded by `log.warnOnce`/`log.error` and try/catch blocks without noisy logs.
+- IPC handlers are already grouped in `registerIpc`, and splitting them would not reduce branching or duplication.
+- The persistence path and compatibility behavior are tightly coupled in `persistCurrentTextOnQuit`, and isolating them would increase cross-references.
+- Any attempts to guard non-function `loadJson`/`saveJson` or missing file paths would change current error/log behavior.
+
+The observable contract and timing are preserved (no changes applied).
