@@ -488,3 +488,13 @@ Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
 
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
+
+### L2 decision: NO CHANGE
+
+- `loadJson()` ya explicita y maneja como recoverable: missing/empty/invalid JSON → warnOnce + fallback (sin crash).
+- `saveJson()` ya asegura el directorio padre antes de escribir (“callers do not depend on init ordering”).
+- No hay duplicación o complejidad de ramas/anidación que justifique helpers nuevos sin añadir indirección.
+- No existe IPC ni secuenciación timing-sensitive en este módulo que requiera ajustes en L2.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
