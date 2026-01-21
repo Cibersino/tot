@@ -2,8 +2,10 @@
 
 ## Elección de archivo:
 
+- En proceso: `electron/settings.js`
+
 Archivos ya ordenados y limpiados:
-- Ninguno
+- `electron/main.js`
 
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
@@ -519,87 +521,65 @@ Objective:
 Produce a minimal, realistic smoke checklist to verify that Levels 1–6 did not break observable behavior of `<TARGET_FILE>`.
 
 Hard constraints:
-- NO code changes. Instructions only.
-- You can only inspect the repo.
-- 6–15 smoke steps (unless the file genuinely has many responsibilities).
-- Every step MUST be realistically triggerable via normal dev UI flows (no huge inputs, no manual JSON corruption, no rare races).
-- If something is not realistically triggerable, do NOT include it as a smoke step:
-  - Put it under "Not smoke-testable (optional)" with one sentence why.
+- NO code changes. Instructions only (do not propose adding logs or instrumentation).
+- You may inspect the repo, but do not propose refactors or fixes.
+- 6–15 smoke steps total (unless the file genuinely has many responsibilities).
+- Each step must be realistically triggerable via normal dev UI flows (no huge inputs, no manual JSON corruption, no “simulate rare race” steps).
+- Minimize dependencies between steps. If a step depends on prior state, state it explicitly as a precondition and keep it minimal.
 
-Step independence (mandatory):
-- Minimize step dependencies. Do NOT chain steps unless truly necessary.
-- If a step depends on prior state (e.g., "text already set"), state it explicitly as a precondition and keep it minimal.
+Scope guidance:
+- Include steps that exercise responsibilities that `<TARGET_FILE>` owns (windows, IPC, lifecycle, crono, flotante, language picker gating).
+- Do NOT add steps that belong purely to other modules unless they are required triggers to reach a main.js surface.
 
-Evidence (mandatory, per step):
-1. Target anchor (in `<TARGET_FILE>`):
-   - function/block name + micro-quote (<= 15 words).
-2. Trigger chain anchors (outside `<TARGET_FILE>`):
-   - Show the shortest chain that proves the step reaches the target:
-     UI event (or lifecycle) -> exposed API call (contextBridge / ipcRenderer.invoke / exported fn call) -> target surface.
-   - Provide 1–3 anchors (file + function/handler + micro-quote <= 15 words each).
-   - Rule: at least ONE trigger-chain anchor must be outside `<TARGET_FILE>`.
-   - If the trigger is an Electron lifecycle event (before-quit, ready, etc.), you MUST include the injection/registration call site outside `<TARGET_FILE>` as a trigger-chain anchor.
+Logs (allowed, but do not make it fragile):
+- You MAY include a “log sanity” check using logs that already exist.
+- Do NOT require “zero warnings”; warnings may be timing/platform dependent.
+- The log check must be framed as: “no unexpected ERROR/uncaught exceptions; no continuous spam from the same message/key”.
+
+Evidence requirement (mandatory per step):
+For EACH step include:
+
+1) Target anchor in `<TARGET_FILE>`:
+   - function/block name + a micro-quote (<= 15 words) that uniquely locates the relevant code.
+
+2) Trigger chain anchors outside `<TARGET_FILE>`:
+   - Provide the shortest chain that proves the step reaches the target surface:
+     UI event or lifecycle -> contextBridge method or ipcRenderer invoke/send or menu action -> ipcMain handler / window factory / send path.
+   - Provide 1–3 anchors outside `<TARGET_FILE>` (file + function/handler + micro-quote <= 15 words).
 
 Stable UI references (mandatory when UI is involved):
-- Prefer DOM ids proven by `getElementById('...')` in code (anchor required), menu action ids, or contextBridge method names.
-- Do NOT rely on translated button labels as the primary identifier.
-- If you reference a control like `btnX`, you MUST also provide the DOM id that backs it (e.g., `getElementById('btnX')`) as part of trigger-chain evidence.
+- Do NOT rely on translated button labels as primary identifiers.
+- Prefer:
+  - DOM ids proven by code (anchor required, e.g., getElementById('...')),
+  - menu action ids / command ids,
+  - contextBridge method names.
+- If you reference a UI control, include its DOM id anchor (file + getElementById('...') micro-quote) or the menu action id anchor.
 
-Boundary check (mandatory, per step):
-- Each step must include at least one observable check at the boundary owned by `<TARGET_FILE>`:
-  - an IPC return value (shape + key fields), OR
-  - a specific outbound send channel (channel + payload shape), OR
-  - a persisted file state written by `<TARGET_FILE>`.
-- UI-only expectations are allowed only as secondary, not as the only expected outcome.
+If something is not smoke-testable:
+- Do NOT include it in the numbered steps.
+- Put it under "Not smoke-testable (optional)" with one sentence explaining why it cannot be reliably triggered from normal UI.
 
-Boundary observation method (mandatory, per step; no code changes allowed):
-- For the boundary check above, include at least ONE direct, no-code-change way to observe it, using ONE of:
-  1. DevTools console one-liner that calls an already-exposed API (contextBridge) and shows the returned value/shape
-     (e.g., `await window.<api>.<method>(...)`).
-     - Rule: DevTools is an Observe method, not the primary Action, unless there is no other boundary-visible path without DevTools.
-  2. Existing listener evidence in the repo that proves the outbound message is handled or surfaced.
-     - If you claim an outbound send as the boundary check, you MUST cite the exact `ipcRenderer.on('<channel>')`
-       (or equivalent) where it is observed, with anchor. If no such listener exists, mark the boundary as "not directly observable".
-  3. File-on-disk verification for persistence steps (file path + what to look for).
-- If none of these exist for a given boundary, do NOT invent one. Instead:
-  - mark the step as "UI-only boundary visibility" and explain in one sentence why boundary cannot be directly observed without adding code.
+Deliverable format:
+- Start with "Preconditions" (max 3 bullets).
+- Then list steps as a numbered list (6–15). For each step include:
+  - Action (what the human does)
+  - Expected result (observable result)
+  - Evidence:
+    - Target anchor (<`TARGET_FILE>`)
+    - Trigger chain anchors (>=1 outside `<TARGET_FILE>`)
+    - Stable UI reference (if applicable)
+- Include ONE step near the beginning named “Log sanity (existing logs)”:
+  - Action: run the app normally with logs visible (terminal/devtools console).
+  - Expected: no unexpected ERROR/uncaught exception lines; no continuous repeated spam from the same message/key during normal actions.
+  - Evidence: cite 1–2 representative log call sites or warnOnce/errorOnce keys in `<TARGET_FILE>` as anchors (micro-quotes <= 15 words).
+- Then include "Not smoke-testable (optional)" if needed.
 
-Coverage requirement (mandatory):
-- Ensure every IPC handler / exported entrypoint / registration function in `<TARGET_FILE>` is exercised by at least one smoke step,
-  OR explicitly list it under "Not covered in smoke (and why)".
-
-Output format:
-1. Surface inventory (8–20 bullets):
-   - file type (main/preload/renderer/utility/mixed)
-   - exports/entrypoints (or equivalent surface if not a module)
-   - IPC channels handled/invoked/sent
-   - contextBridge keys (if any)
-   - persisted files touched
-   - limits/thresholds affecting behavior
-
-2. Smoke steps (6–15):
-For each step:
-- Action (what the human does; which window; stable control id if applicable)
-- Expected:
-  - Primary: boundary check (required)
-  - Secondary: UI outcome (optional)
-- Observe:
-  - include at least one direct boundary observation method (DevTools one-liner OR existing listener OR file-on-disk)
-  - plus any UI observation if useful
-- Evidence:
-  - Target anchor
-  - Trigger chain anchors (>=1 outside target; include DOM id anchor if UI control is referenced)
-- Preconditions (only if truly needed)
-
-3. Logs during smoke (3–8 items):
-- Only logs that can plausibly occur during the smoke steps above.
-- For each: trigger condition, level, once-dedupe key (with evidence).
-- Also list "should NOT happen" (spammy repeats on normal paths).
-
-4. Not smoke-testable (optional):
-- List non-smoke-testable behaviors you found (brief), each with:
-  - why not triggerable in normal UI flows
-  - target anchor evidence
+Output requirement:
+- Write the full Level 7 result to a Markdown file at: `tools_local/codex_reply.md`
+- Overwrite the file contents (do not append).
+- The file must start with: `# Level 7 result: <TARGET_FILE>`
+- Do NOT output diffs (neither in chat nor in the report).
+- In chat, output only: “WROTE: tools_local/codex_reply.md”.
 ```
 
 ---
