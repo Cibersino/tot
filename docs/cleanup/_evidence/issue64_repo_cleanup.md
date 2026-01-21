@@ -773,3 +773,7 @@ Checklist:
 - [x] Cerrar completamente la app y relanzar.
       Esperado: `init` carga el ultimo texto persistido (o vacio si se vacio); sin errores en startup.
 
+## electron/editor_state.js
+
+Date: `2026-01-21`
+Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
