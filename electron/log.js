@@ -29,8 +29,13 @@
  * - warnOnce: use for expected transient failures that can repeat frequently and where additional occurrences add no new diagnostic value. Canonical example: webContents.send() to a destroyed window during shutdown/races.
  * - errorOnce: like warnOnce but for repeated error-class events (should be rare).
  *
+ * Key rule (explicit key mode):
+ * - The explicit key defines the dedupe bucket.
+ * - Allowed: a stable event id, optionally with a CONTROLLED variant suffix when “once per variant” is desired (e.g., lang/base/window).
+ * - Forbidden: per-occurrence / unbounded data in the key (ids, timestamps, error messages/stacks, arbitrary user input, content-derived strings).
+ *
  * warnOnce/errorOnce signature:
- * - warnOnce(key, ...args): explicit stable dedupe key (constant string).
+ * - warnOnce(key, ...args): explicit dedupe key. Must be a stable short string; may include a controlled variant suffix (see Key rule).
  * - warnOnce(...args): auto-key derived from args (args[0] string preferred, else JSON(args)); if args vary, dedupe may not trigger reliably.
  *
  * Configuration source:
