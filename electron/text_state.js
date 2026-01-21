@@ -7,9 +7,10 @@
 // Responsibilities:
 // - Own in-memory current text and enforce max length.
 // - Load/save current text state on startup and before-quit.
-// - Ensure settings file exists on quit (compatibility behavior).
-// - Register IPC handlers for get-current-text, set-current-text, force-clear-editor.
+// - Provide clipboard reads to the main window via IPC with sender/size checks.
+// - Register IPC handlers for get-current-text, set-current-text, force-clear-editor, clipboard-read-text.
 // - Broadcast text updates to main and editor windows (best-effort).
+// - Ensure settings file exists on quit (compatibility behavior).
 
 // =============================================================================
 // Imports / logger
@@ -21,6 +22,9 @@ const { MAX_TEXT_CHARS, MAX_IPC_MULTIPLIER, MAX_IPC_CHARS, MAX_META_STR_CHARS } 
 
 const log = Log.get('text-state');
 
+// =============================================================================
+// Helpers (validation / normalization)
+// =============================================================================
 function isPlainObject(x) {
   if (!x || typeof x !== 'object') return false;
   return Object.getPrototypeOf(x) === Object.prototype;
@@ -63,7 +67,7 @@ let appRef = null;
 let getWindows = () => ({ mainWin: null, editorWin: null });
 
 // =============================================================================
-// Helpers
+// Helpers (best-effort send + persistence)
 // =============================================================================
 // Best-effort window send; avoids throwing during shutdown races.
 function safeSend(win, channel, payload) {
@@ -107,7 +111,7 @@ function persistCurrentTextOnQuit() {
 }
 
 // =============================================================================
-// Entrypoints
+// Initialization / lifecycle
 // =============================================================================
 /**
  * Initialize the text state:
@@ -171,12 +175,16 @@ function init(options) {
   }
 }
 
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
 /**
- * Register the IPC handlers related to currentText:
- * -get-current-text
- * -set-current-text
- * -force-clear-editor
- * and handles the broadcast to the editor.
+ * Register IPC handlers for text and clipboard:
+ * - get-current-text
+ * - set-current-text
+ * - force-clear-editor
+ * - clipboard-read-text
+ * Broadcasts updates to main/editor windows (best-effort).
  */
 function registerIpc(ipcMain, windowsResolver) {
   if (typeof windowsResolver === 'function') {
@@ -303,7 +311,7 @@ function getCurrentText() {
 }
 
 // =============================================================================
-// Exports
+// Exports / module surface
 // =============================================================================
 module.exports = {
   init,

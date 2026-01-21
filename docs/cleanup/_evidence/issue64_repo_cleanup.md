@@ -730,3 +730,13 @@ Decision: CHANGED
   - Validation: Send an oversized payload; confirm no `log.error('Error in set-current-text:', ...)` is emitted for that case, while the existing warnOnce still fires.
 
 Observable contract and timing preserved; logging-only changes.
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Updated the top Overview responsibilities to include `clipboard-read-text` and keep the compatibility note visible.
+- Added section dividers to mirror the file’s real block order (validation/normalization; best-effort send+persistence; initialization/lifecycle; IPC registration/handlers; exports).
+- Clarified the `registerIpc` docblock to enumerate all IPC channels and to note main/editor broadcasts (best-effort).
+- No functional changes; comments-only.
+
