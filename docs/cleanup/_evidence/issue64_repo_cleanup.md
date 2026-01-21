@@ -75,6 +75,22 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - (Qué revisamos estáticamente; qué flows cubre el smoke)
 
+**L1 decision: NO CHANGE**
+
+- El archivo ya tiene un layout por bloques claro (imports → constants → helpers → window factories → IPC → lifecycle) con encabezados de sección que facilitan navegación.
+- Reordenar bloques de creación de ventanas / wiring IPC / lifecycle en un entrypoint puede introducir cambios sutiles de secuencia (IPC readiness/startup), lo cual está fuera de alcance.
+- La duplicación existente es baja y localizada; extraer helpers añadiría indirection sin reducir ramas/duplicación materialmente.
+- Varias helpers están acopladas a referencias de ventanas/Electron objects; separar/regroupar aumentaría cross-references y no mejoraría lectura.
+
+**Evidence**
+- L1 review concluded no change has clear payoff without timing risk.
+
+**Risk**
+- N/A (no code changes).
+
+**Validation**
+- Covered by L7 smoke checklist (no code changes to validate beyond baseline).
+
 ### L7 — Smoke checklist (human-run)
 - [ ] `npm start` abre la app sin errores visibles.
 - [ ] Ventana principal: carga UI y conteos básicos sin errores (texto vacío/no vacío).

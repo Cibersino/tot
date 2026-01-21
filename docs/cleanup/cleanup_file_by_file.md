@@ -88,7 +88,10 @@ Se cumple “lectura más o menos lineal” + no hay cambios observables del con
 
 Level 1 — Structural refactor and cleanup.
 
-Objective: make `<TARGET_FILE>` navigable and, where it helps, more linearly readable, without changing observable behavior/contract or breaking any timing-dependent behavior.
+Objective: make `<TARGET_FILE>` navigable and, where it helps, more linearly readable, without changing observable behavior/contract or breaking any timing-dependent behavior. 
+
+Default rule:
+- If you cannot identify clear, behavior-preserving Level 1 improvements with real readability payoff, make NO code changes. Explain why. (Do not force changes.)
 
 Constraints:
 - Preserve behavior and the observable contract as-is (public API, IPC surface, payload/return shapes, side effects).
@@ -108,7 +111,18 @@ What to do (flexible, use judgment):
   - remove obvious duplication only when semantics stay identical,
   - improve local naming only when it reduces ambiguity and is behavior-preserving.
 
-You may inspect the repo as needed to understand how this module is used, but apply changes only to `<TARGET_FILE>`.
+Scope:
+- You may inspect the repo as needed to understand how this module is used, but apply changes only to `<TARGET_FILE>`.
+
+Output requirement:
+- Write a short Level 1 report to `tools_local/codex_reply.md` (overwrite; do not append).
+- The report must start with: `# Level 1 result: <TARGET_FILE>`
+- The report must include:
+  - "Decision: CHANGED" or "Decision: NO CHANGE"
+  - If CHANGED: 3–10 bullets describing what was changed (structural only), and a one-line confirmation that contract/behavior/timing were preserved.
+  - If NO CHANGE: 3–8 bullets explaining why no safe Level 1 change was worth doing.
+- Do NOT output diffs (neither in chat nor in the report).
+- In chat, output only: “WROTE: tools_local/codex_reply.md”.
 ```
 
 ---
