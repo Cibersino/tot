@@ -298,61 +298,77 @@ Output requirement:
 
 Level 4 — Logs (policy-driven tuning after flow stabilization).
 
-Objective: Align logging in `<TARGET_FILE>` with the project logging policy and established style, so that:
+Objective:
+Align logging in `<TARGET_FILE>` with the project logging policy and established style, so that:
 - Levels match recoverability (error vs warn vs info vs debug),
 - Fallbacks are never silent (per policy),
 - High-frequency best-effort failures do not spam (use warnOnce/errorOnce with explicit stable keys),
 - Messages are short, actionable, and consistent with the repo (see electron/main.js patterns).
 
-Constraints:
-- Do NOT change observable runtime behavior/contract (public API, IPC surface, payload/return shapes, side effects, timing).
-- Changes must be limited to logging (levels/messages/dedupe) + minimal local structure required to support that.
-- Avoid over-logging: no new high-volume logs on healthy paths.
+Default rule (do not force changes):
+- If `<TARGET_FILE>` already complies with policy and any proposed tweak would be marginal or would add noise/complexity, make NO code changes and justify “NO CHANGE”.
+
+Hard constraints:
+- Do NOT change observable runtime behavior/contract (public API, IPC surface, channel names, payload/return shapes, side effects, timing/ordering).
+- Changes must be limited to logging (levels/messages/dedupe) plus minimal local structure strictly required to support that (e.g., introducing a stable key constant).
+- Avoid over-logging: do not add new logs on healthy/high-frequency paths.
 
 Reference material (inspect before editing):
-- Logging policy headers: electron/log.js and public/js/log.js.
-- Style baseline: electron/main.js (best-effort webContents.send failures, ignored races, recoverable fallbacks).
-- If `<TARGET_FILE>` is a preload (sandbox:true context), do NOT introduce `require('./log')` or other imports that violate the preload constraint; keep minimal console-based logging consistent with the file’s existing pattern.
+- Logging policy headers: `electron/log.js` and `public/js/log.js`.
+- Style baseline: `electron/main.js` (best-effort failures, “failed (ignored):”, recoverable fallbacks).
+
+Preload constraint:
+- If `<TARGET_FILE>` is a preload (sandbox:true context), do NOT introduce `require('./log')` or other imports that violate preload constraints. Keep the file’s existing logging mechanism (console-based) and style.
 
 What to do:
-0) Identify the runtime context of `<TARGET_FILE>` (main vs renderer vs preload) and keep the existing logger mechanism (Log.get / window.getLogger / console). Do not introduce cross-context logging dependencies.
+0) Identify runtime context of `<TARGET_FILE>` (main vs renderer vs preload) and keep the existing logger mechanism (Log.get / window.getLogger / console). Do not introduce cross-context logging dependencies.
 
-1) Audit every logging site and every fallback / best-effort path that can fail silently:
+1) Audit every existing logging site AND every fallback / best-effort path that could be silent or misleading:
    - payload shape normalization, defaulting, suspicious input acceptance,
    - send-to-window races (missing/destroyed windows),
    - optional I/O / parse / load steps with fallback behavior.
 
-2) Classify each event and choose the correct level (include debug explicitly):
+2) Classify each event and choose the correct level:
    - error: unexpected failures that break an intended action or invariant.
-   - warn: recoverable anomalies / degraded behavior / any fallback path.
-   - info: high-level lifecycle/state transitions (low volume).
-   - debug: verbose diagnostics; may be noisy; do not add new debug logs unless they materially help diagnosis.
+   - warn: recoverable anomalies / degraded behavior / fallback paths.
+   - info: low-volume lifecycle/state transitions.
+   - debug: verbose diagnostics; do not add new debug logs unless they materially improve diagnosis.
 
-3) “No silent fallbacks” rule (policy):
+3) No silent fallbacks rule:
    - Any fallback MUST emit at least a warn (or warnOnce) unless the behavior is explicitly a no-op by contract (i.e., not a fallback).
-   - If the fallback is BOOTSTRAP-only (pre-init), the message or explicit dedupe key MUST start with `BOOTSTRAP:` and the code path must become unreachable after init. If it can occur after init, treat it as in-regime (warn/error).
+   - If the fallback is BOOTSTRAP-only (pre-init), the message OR the explicit dedupe key MUST start with `BOOTSTRAP:` and that path must become unreachable after init. If it can happen after init, it is NOT bootstrap.
 
-4) Once-variants (deduped per process/page; output-only):
+4) Once-variants (dedupe output only):
    - Use warnOnce/errorOnce only for high-frequency repeatable events where repetition adds no diagnostic value.
-   - Prefer explicit stable keys: warnOnce('<constant.namespaced.key>', ...args) / errorOnce(...).
+   - Prefer explicit stable keys: warnOnce('<namespaced.stable.key>', ...args) / errorOnce(...).
    - Do NOT embed dynamic payloads or error objects in the dedupe key; keep dynamic details in the log args.
-   - Avoid auto-key mode unless args[0] is a stable short string; otherwise dedupe may not trigger reliably.
+   - Avoid auto-key mode unless args[0] is a stable short string.
 
 5) Best-effort window sends (races):
-   - If the send is part of an intended action that is being dropped (e.g., menu action delivery), log warnOnce using the repo’s “failed (ignored):” style.
-   - If the send is a best-effort broadcast to an optional window and the contract is “do nothing if missing”, it may remain silent; do not add noise.
+   - If a send is part of an intended action that is being dropped, log warnOnce using “failed (ignored):” style with a stable key.
+   - If a send is truly optional and contractually “do nothing if missing”, it may remain silent; do not add noise.
 
 Anti “refactor that makes it worse” rule:
-If a proposed logging change increases complexity/indirection without reducing noise or ambiguity, discard or simplify it.
+- If a proposed logging change increases complexity/indirection without improving signal-to-noise or policy compliance, discard or simplify it.
 
 After editing (mandatory report):
-- List each non-trivial log change with:
+- If CHANGED: list each non-trivial logging change with:
   - Gain (1 sentence),
   - Cost (1 sentence),
   - Validation (a simple manual action and/or a grep for the stable key).
-- If no meaningful improvements meet constraints, make no changes and explain why.
+- If NO CHANGE: 3–8 bullets explaining why no meaningful policy improvement was warranted.
+- Include one explicit sentence confirming observable contract/timing were preserved.
 
-Apply changes only to `<TARGET_FILE>`.
+Scope:
+- You may inspect the repo as needed to understand context, but apply changes ONLY to `<TARGET_FILE>`.
+
+Output requirement:
+- Write the full Level 4 result to a Markdown file at: `tools_local/codex_reply.md`
+- Overwrite the file contents (do not append).
+- The file must start with: `# Level 4 result: <TARGET_FILE>`
+- The report must include: `Decision: CHANGED | NO CHANGE`
+- Do NOT output diffs (neither in chat nor in the report).
+- In chat, output only: “WROTE: tools_local/codex_reply.md”.
 ```
 ---
 
