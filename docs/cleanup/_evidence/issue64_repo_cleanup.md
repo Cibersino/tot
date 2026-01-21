@@ -391,6 +391,14 @@ Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, s
 - Visual review: comments match the actual IPC handlers registered in `registerIpc`:
   `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`.
 
-### L6 decision: NOT RUN (pending)
+### L6 decision: CHANGED
+
+- Change: `broadcastSettingsUpdated` ahora incluye el nombre de la ventana (`name`) en los args del `warnOnce` cuando falla `webContents.send('settings-updated', ...)`.
+- Gain: el output del warning identifica la ventana objetivo sin depender de la dedupe key.
+- Cost: una línea de log ligeramente más larga en caso de fallo.
+- Risk: none (log-only change).
+- Validation: `rg -n "settings-updated notify failed" electron/settings.js` y confirmar que el `warnOnce` incluye `name` como argumento.
+
+Observable contract/timing preserved: no hay cambios en IPC, payloads/returns, side effects u ordering; solo cambia el contenido del log en caso de fallo.
 
 ### L7 — Smoke checklist (human-run; code-informed)
