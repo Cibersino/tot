@@ -662,3 +662,21 @@ Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
     - `webContents.send(...)` strings used (via `safeSend`):
       - `current-text-updated`, `editor-text-updated`, `editor-force-clear`
     - Delegated IPC registration: none.
+
+### L1 — Structural refactor (Codex)
+
+Decision: NO CHANGE
+
+- Anchors (why “no change”):
+  - `init`: "Initial load from disk + truncated"
+  - `registerIpc`: "Register the IPC handlers related to currentText"
+  - `persistCurrentTextOnQuit`: "ensure settings file exists"
+  - `safeSend`: "webContents.send('...') failed (ignored)"
+  - `sanitizeMeta`: "if (!isPlainObject(raw)) return null"
+- Structure is already linear: imports → helpers → state → helpers → entrypoints → exports.
+- Further reordering would mostly shuffle comments without reducing branches or responsibilities.
+
+Considered and rejected:
+- Move `isPlainObject`/`sanitizeMeta` into the later Helpers block: only cosmetic, no clearer flow.
+- Extract each IPC handler into separate functions: adds indirection without reducing complexity.
+- Split `registerIpc` into multiple registrars: expands concepts without eliminating logic.
