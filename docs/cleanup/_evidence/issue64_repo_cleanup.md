@@ -1387,3 +1387,63 @@ Result: Pass
 
 Date: `2026-01-22`
 Last commit: `f29062b2ac374c073a462fb67710ff64114e8c91`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - Header comment + `'use strict'`.
+    - Imports: electron (`dialog`, `shell`, `app`), `https`, `./log`, `./menu_builder`, `./constants_main`.
+    - URLs: `RELEASES_API_URL`, `DOWNLOAD_URL`.
+    - Lazy refs + one-shot flag: `mainWinRef`, `currentLanguageRef`, `updateCheckDone`.
+    - Dialog helper wrapper: `resolveDialogText` → `menuBuilder.resolveDialogText(...)`.
+    - SemVer parsing/comparison: `SEMVER_RE`, `parseSemVer`, `comparePrerelease`, `compareSemVer`.
+    - Remote query: `fetchLatestReleaseTag` (https GET + JSON parse; resolves `null` on failures).
+    - Main flow: `checkForUpdates` (local version parse → remote tag fetch/parse → compare → dialogs → `shell.openExternal`).
+    - One-time auto check: `scheduleInitialCheck`.
+    - IPC wiring: `registerIpc`.
+    - `module.exports`.
+
+  - Where linear reading breaks (identifiers + micro-quotes):
+    - `checkForUpdates`: repetición de bloques de error manual (mismo texto/keys).
+      - Anchor: `"update_failed_message"` / `"await dialog.showMessageBox(mainWin"`.
+    - `fetchLatestReleaseTag`: callbacks/eventos + múltiples salidas defensivas.
+      - Anchor: `"res.on('end', () => {"` / `"return resolve(null);"`.
+    - `registerIpc`: mutación de referencias externas (state capturado por cierre).
+      - Anchor: `"mainWinRef = mainRef;"`.
+    - `scheduleInitialCheck`: latch one-shot de ciclo de vida.
+      - Anchor: `"if (updateCheckDone) return;"` / `"updateCheckDone = true;"`.
+
+- Contract map (exports / side effects / invariants / IPC):
+  - Exposes:
+    - `registerIpc(ipcMain, { mainWinRef, currentLanguageRef } = {})`
+    - `scheduleInitialCheck()`
+  - Side effects:
+    - None on import; red/diálogos ocurren solo al ejecutar `checkForUpdates` (directo o vía `scheduleInitialCheck` / IPC).
+
+  - Invariants and fallbacks (anchored):
+    - SemVer local requerido; early-return si falla.
+      - Anchor: `"const localParsed = parseSemVer(localVer);"` + `"if (!localParsed) {"`.
+    - Tag remoto puede ser `null`; se tolera (silent salvo diálogo si `manual`).
+      - Anchor: `"const remoteTag = await fetchLatestReleaseTag(...)"` + `"if (!remoteTag) {"`.
+    - Tag remoto exige prefijo `v`; early-return si falta.
+      - Anchor: `"if (!remoteTag.startsWith('v')) {"`.
+    - SemVer remoto requerido; early-return si falla.
+      - Anchor: `"const remoteParsed = parseSemVer(remoteVer);"` + `"if (!remoteParsed) {"`.
+    - Diálogos de error “manual” solo si hay ventana viva.
+      - Anchor: `"if (manual && mainWin && !mainWin.isDestroyed()) {"`.
+    - Si no hay main window viva, no muestra “Update available”.
+      - Anchor: `"if (!mainWin || mainWin.isDestroyed()) { ... return; }"`.
+    - Auto-check solo una vez por ciclo de vida.
+      - Anchor: `"if (updateCheckDone) return;"`.
+
+### IPC contract (only what exists in this file)
+
+A) Explicit IPC in this file:
+- `ipcMain.handle('check-for-updates', async () => ...)`
+  - Input shape: sin args (handler no recibe/usa parámetros).
+  - Return shape: `{ ok: true }` o `{ ok: false, error: string }`.
+  - Outgoing sends: none (no `webContents.send` en este módulo).
+
+B) Delegated registration:
+- None
