@@ -26,6 +26,10 @@ const Log = require('./log');
 const { DEFAULT_LANG } = require('./constants_main');
 const { normalizeLangTag, getLangBase } = require('./settings');
 
+// =============================================================================
+// Helpers (logging + utilities)
+// =============================================================================
+
 const log = Log.get('menu');
 
 const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
@@ -73,7 +77,7 @@ function resolveDialogText(dialogTexts, key, fallback, opts = {}) {
 // Fallback chain (in order):
 // 1) requested tag (e.g. 'es-cl')
 // 2) base tag      (e.g. 'es')
-// 3) 'es' as a final safe fallback
+// 3) DEFAULT_LANG as a final safe fallback
 //
 // For each language code we try these file candidates:
 // - If it has a region (contains '-'):
@@ -143,7 +147,9 @@ function loadBundle(langCode, requested, required) {
     }
     files.push(path.join(__dirname, '..', 'i18n', langCode, 'main.json'));
 
-    for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileVariant = files.length > 1 && i === 0 ? 'region' : 'root';
         if (!fs.existsSync(file)) continue;
 
         try {
@@ -154,7 +160,7 @@ function loadBundle(langCode, requested, required) {
 
             if (raw.trim() === '') {
                 log.warnOnce(
-                    `menu_builder.loadMainTranslations:empty:${requested || langCode}:${langCode}:${String(file)}`,
+                    `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`,
                     'main.json is empty (trying fallback):',
                     { requested, langCode, file }
                 );
@@ -164,7 +170,7 @@ function loadBundle(langCode, requested, required) {
             return JSON.parse(raw);
         } catch (err) {
             log.warnOnce(
-                `menu_builder.loadMainTranslations:failed:${requested || langCode}:${langCode}:${String(file)}`,
+                `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`,
                 'Failed to load/parse main.json (trying fallback):',
                 { requested, langCode, file },
                 err
@@ -226,16 +232,16 @@ function buildAppMenu(lang, opts = {}) {
     const sendMenuClick = (payload) => {
         if (!mainWindow) {
             log.warnOnce(
-                `menu_builder.sendMenuClick:noWindow:${String(payload)}`,
-                'menu-click dropped (no mainWindow):',
+                'menu_builder.sendMenuClick.noWindow',
+                'menu-click failed (ignored): no mainWindow',
                 payload
             );
             return;
         }
         if (mainWindow.isDestroyed()) {
             log.warnOnce(
-                `menu_builder.sendMenuClick:destroyed:${String(payload)}`,
-                'menu-click dropped (mainWindow destroyed):',
+                'menu_builder.sendMenuClick.destroyed',
+                'menu-click failed (ignored): mainWindow destroyed',
                 payload
             );
             return;
@@ -245,7 +251,7 @@ function buildAppMenu(lang, opts = {}) {
             mainWindow.webContents.send('menu-click', payload);
         } catch (err) {
             log.warnOnce(
-                `menu_builder.sendMenuClick:sendFailed:${String(payload)}`,
+                'menu_builder.sendMenuClick.sendFailed',
                 "webContents.send('menu-click') failed (ignored):",
                 payload,
                 err
@@ -413,7 +419,6 @@ function buildAppMenu(lang, opts = {}) {
         });
     }
 
-    // Apply the menu to the application.
     const appMenu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(appMenu);
 }

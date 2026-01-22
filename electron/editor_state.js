@@ -1,16 +1,38 @@
 // electron/editor_state.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Persist and restore editor window geometry and maximized state.
+// - Reads/writes editor_state.json via fs_storage.
+// - Normalizes persisted state and validates reduced bounds.
+// - Attaches window event handlers to persist changes.
+// - Restores reduced bounds or applies a fallback placement on unmaximize.
+// - Logs recoverable anomalies and fallbacks.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const { screen } = require('electron');
 const { getEditorStateFile, loadJson, saveJson } = require('./fs_storage');
 const Log = require('./log');
 
 const log = Log.get('editor-state');
 
+// =============================================================================
+// Constants / defaults
+// =============================================================================
+
 const DEFAULT_STATE = {
   maximized: true,
   reduced: null
 };
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function isValidReduced(reduced) {
   if (!reduced || typeof reduced !== 'object') return false;
@@ -30,6 +52,11 @@ function isValidReduced(reduced) {
 function normalizeState(raw) {
   const base = { ...DEFAULT_STATE };
   if (!raw || typeof raw !== 'object') {
+    log.warnOnce(
+      'editor-state.normalize.invalid-root',
+      'normalizeState: invalid state; using defaults (ignored).',
+      raw
+    );
     return { ...base };
   }
 
@@ -37,6 +64,12 @@ function normalizeState(raw) {
 
   if (typeof raw.maximized === 'boolean') {
     st.maximized = raw.maximized;
+  } else if ('maximized' in raw) {
+    log.warnOnce(
+      'editor-state.normalize.invalid-maximized',
+      'normalizeState: invalid maximized; using default (ignored).',
+      raw.maximized
+    );
   }
 
   if (raw.reduced && isValidReduced(raw.reduced)) {
@@ -47,13 +80,23 @@ function normalizeState(raw) {
       y: raw.reduced.y
     };
   } else {
+    if ('reduced' in raw && raw.reduced !== null) {
+      log.warnOnce(
+        'editor-state.normalize.invalid-reduced',
+        'normalizeState: invalid reduced bounds; ignoring.',
+        raw.reduced
+      );
+    }
     st.reduced = null;
   }
 
   return st;
 }
 
-// API: initial reading of the persisted state
+// =============================================================================
+// API (public entrypoints)
+// =============================================================================
+
 function loadInitialState(customLoadJson) {
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
   try {
@@ -66,7 +109,6 @@ function loadInitialState(customLoadJson) {
   }
 }
 
-// API: attach listeners to the editor window
 function attachTo(editorWin, customLoadJson, customSaveJson) {
   if (!editorWin) return;
 
@@ -81,7 +123,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
     return;
   }
 
-  // RULE B - save reduced state when the window is NOT maximized
+  // Save reduced bounds only when the window is not maximized.
   const saveReducedState = () => {
     try {
       if (!editorWin || editorWin.isDestroyed()) return;
@@ -111,7 +153,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   editorWin.on('resize', saveReducedState);
   editorWin.on('move', saveReducedState);
 
-  // RULE A - when maximizing, we only update flag maximized
+  // On maximize, persist the maximized flag only.
   editorWin.on('maximize', () => {
     try {
       const current = loader(editorStateFile, { maximized: true, reduced: null });
@@ -123,7 +165,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
     }
   });
 
-  // RULE D - when exiting maximized, restore reduced or apply fallback
+  // On unmaximize, restore reduced bounds or apply a fallback placement.
   editorWin.on('unmaximize', () => {
     try {
       const current = loader(editorStateFile, { maximized: false, reduced: null });
@@ -138,11 +180,22 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
           y: state.reduced.y
         });
       } else {
-        // Fallback: half of the screen glued to the upper right edge of the current monitor
+        log.warnOnce(
+          'editor-state.unmaximize.fallback-reduced',
+          'unmaximize: reduced bounds missing; using fallback placement (ignored).',
+          'note: may be normal until the editor window is first resized/moved while not maximized.'
+        );
+        // Fallback: place at upper-right half of the current monitor work area.
         const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
         const workArea = (display && display.workArea)
           ? display.workArea
           : { x: 0, y: 0, width: 1200, height: 800 };
+        if (!display || !display.workArea) {
+          log.warnOnce(
+            'editor-state.unmaximize.fallback-workarea',
+            'unmaximize: display workArea unavailable; using hardcoded bounds (ignored).'
+          );
+        }
 
         const width = Math.round(workArea.width / 2);
         const height = Math.round(workArea.height / 2);
@@ -160,7 +213,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
     }
   });
 
-  // RULE C - when closing, we persist flag maximized and keep previous reduced
+  // On close, persist maximized flag and keep last reduced bounds.
   editorWin.on('close', () => {
     try {
       const current = loader(editorStateFile, { maximized: false, reduced: null });
@@ -173,7 +226,15 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   loadInitialState,
   attachTo
 };
+
+// =============================================================================
+// End of electron/editor_state.js
+// =============================================================================

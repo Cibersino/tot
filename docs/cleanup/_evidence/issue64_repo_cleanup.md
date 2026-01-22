@@ -318,9 +318,6 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 - Un reordenamiento estructural sería churn con payoff bajo y potencial riesgo de secuencia (menu rebuild / broadcast / best-effort windows) sin reducción material de complejidad.
 - No se identificó una simplificación local (early returns / deduplicación / naming) con ganancia clara que no agregue indirection o riesgo de timing.
 
-**Evidence**
-- Codex Level 1 report (Decision: NO CHANGE) en `tools_local/codex_reply.md` (2026-01-21).
-
 **Risk**
 - N/A (no code changes).
 
@@ -343,7 +340,6 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 Observable contract/timing preserved: mismos canales IPC, payload/return shapes, side effects y ordering.
 
 **Evidence**
-- Codex Level 2 report (Decision: CHANGED) en `tools_local/codex_reply.md` (2026-01-21).
 - Diff: reemplazo de literales por `createDefaultSettings(...)` en `init`, `getSettings`, y fallback de `get-settings`.
 
 **Risk**
@@ -385,7 +381,6 @@ Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, s
 - No functional changes; comments-only.
 
 **Evidence**
-- Codex Level 5 report (Decision: CHANGED) in `tools_local/codex_reply.md` (2026-01-21).
 - Diff confirms comment-only changes in `electron/settings.js` (Overview + IPC list).
 
 **Risk**
@@ -756,7 +751,7 @@ Observable contract and timing preserved (no changes applied).
 
 ### L7 — Smoke (human-run; minimal)
 
-Result: PENDING
+Result: PASS
 
 Checklist:
 - [x] Log sanity ~30s idle (sin ERROR/uncaught; sin repeticion continua del mismo warning en idle).
@@ -773,5 +768,617 @@ Checklist:
 - [x] Cerrar completamente la app y relanzar.
       Esperado: `init` carga el ultimo texto persistido (o vacio si se vacio); sin errores en startup.
 
-Notas:
-- (pendiente)
+## electron/editor_state.js
+
+Date: `2026-01-21`
+Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order (as-is):
+    - Imports (`screen`, `fs_storage`, `Log`) + logger (`Log.get('editor-state')`).
+    - Default state (`DEFAULT_STATE`).
+    - Helpers: `isValidReduced`, `normalizeState`.
+    - API: `loadInitialState`.
+    - API: `attachTo` (listener wiring + persistence rules A/B/C/D).
+    - Exports (`module.exports`).
+  - Where linear reading breaks:
+    - `attachTo` — nested event handlers/rules inside the function:
+      - anchor: `"editorWin.on('unmaximize', () => {"`
+    - `saveReducedState` (inner function) — persistence side effects embedded in `attachTo`:
+      - anchor: `"const saveReducedState = () => {"`
+      - anchor: `"const current = loader(editorStateFile, { maximized: false, reduced: null });"`
+
+- Contract map (exports / side effects / invariants / IPC):
+  - Module exposure:
+    - Exports: `loadInitialState(customLoadJson)`, `attachTo(editorWin, customLoadJson, customSaveJson)`.
+  - Side effects:
+    - Reads/writes persisted editor window state via `loadJson`/`saveJson` to the path from `getEditorStateFile()`.
+    - Installs `BrowserWindow` listeners: `'resize'`, `'move'`, `'maximize'`, `'unmaximize'`, `'close'`.
+    - Logs errors on read/write failures (`log.error(...)`).
+  - Invariants and fallbacks (anchored):
+    - Reduced bounds must be an object with finite numbers:
+      - `isValidReduced`: `"typeof width === 'number'"` + `"Number.isFinite(width)"`
+    - Invalid/missing state falls back to defaults:
+      - `normalizeState`: `"return { ...base }"`
+      - `loadInitialState`: `"return { ...DEFAULT_STATE }"`
+    - `attachTo` is a no-op without a window:
+      - `"if (!editorWin) return;"`
+    - If `getEditorStateFile()` fails, `attachTo` aborts (no listeners registered):
+      - `"[editor_state] getEditorStateFile failed:"`
+    - Unmaximize fallback uses current display workArea or hardcoded defaults:
+      - `"display && display.workArea"`
+      - `": { x: 0, y: 0, width: 1200, height: 800 }"`
+  - IPC contract:
+    - None in this file (no `ipcMain.*`, `ipcRenderer.*`, `webContents.send(...)`).
+  - Delegated IPC registration:
+    - None found.
+
+### L1 — Structural refactor (Codex)
+
+Decision: NO CHANGE
+
+- File already follows imports → constants → helpers → main logic → exports order.
+- The main logic is a single entrypoint (`attachTo`) with event handlers that read linearly as rules.
+- Helper functions (`isValidReduced`, `normalizeState`) are already minimal and named for intent.
+- Any extraction or reordering would add indirection without reducing branches or duplication.
+- Early returns or merging branches risk altering the timing/side-effect cadence in event handlers.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+### L2 — Clarity / robustness (Codex)
+
+Decision: NO CHANGE
+
+- The file is already compact and linear, with clear helper boundaries and event-handler rules.
+- Duplication is minimal and tightly coupled to event timing; extracting helpers would add indirection.
+- Error handling is present at each boundary (load/save/getEditorStateFile) with proportional logging.
+- Any consolidation of load/normalize defaults risks obscuring distinct defaults used per event.
+- Timing-sensitive event handlers are simple and readable as-is; restructuring would not add clarity.
+
+Observable contract and timing were preserved.
+
+### L3 — Architecture / contract (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `electron/main.js` — `createEditorWindow`: only uses `editorState.loadInitialState` and `editorState.attachTo`.
+- `electron/editor_state.js` — `loadInitialState`: fallback/contract remains internal; anchor: `"return { ...DEFAULT_STATE }"`.
+- `electron/editor_state.js` — `attachTo`: event handlers + side effects; anchors: `'resize'`, `'move'`, `'maximize'`, `'unmaximize'`, `'close'`.
+- `electron/editor_state.js` — helpers: `normalizeState`, `isValidReduced` (invariants centralized).
+- `electron/fs_storage.js` — `getEditorStateFile` / `editor_state.json` path usage (single storage contract).
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+Cambios aplicados (logging-only):
+- Se agregan `log.warnOnce(...)` al normalizar estado inválido en `normalizeState` (root no-objeto / `maximized` inválido si está presente / `reduced` inválido si está presente), para que los fallbacks no sean silenciosos.
+- En `attachTo` (handler de `'unmaximize'`), se agregan `log.warnOnce(...)` cuando falta `state.reduced` y se usa el fallback de colocación, y cuando no hay `display.workArea` y se usan bounds hardcodeados.
+
+Gain: Los fallbacks dejan de ser silenciosos y se deduplican con keys explícitas/estables, alineadas con la política de logging.
+Cost: Aparecen warnings (deduped) en sesiones donde exista estado persistido malformado o el display no exponga `workArea`.
+Observable contract and timing preserved: yes (logging-only; no functional changes).
+
+Risk: Bajo (solo logs).
+Validation:
+- `rg -F "editor-state.normalize." electron/editor_state.js`
+- `rg -F "editor-state.unmaximize." electron/editor_state.js`
+- Runtime (manual): forzar un `editor_state.json` con shape inválida y abrir Editor manual; observar 1 warn (deduped). Probar maximize → unmaximize sin `reduced` persistido; observar warn (deduped).
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED (comments-only)
+
+- Added an Overview block (responsibilities) in the established electron/* style.
+- Inserted section dividers matching the file’s real blocks:
+  Imports / logger, Constants / defaults, Helpers, API (public entrypoints), Exports.
+- Replaced/removed “API:” inline comments in favor of a single API section header.
+- Tweaked the fallback placement comment for clarity and ASCII consistency.
+- Added an explicit end-of-file marker (“End of electron/editor_state.js”).
+
+Risk: none (comments-only).
+Validation: visual review (no code moved; comments adjacent to blocks; ASCII-only).
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+Checks performed (anchors):
+- Helpers/invariants: `normalizeState`, `isValidReduced` consistent with callers.
+- Logging API signatures: `log.warnOnce(...)` / `log.error(...)` argument shapes consistent.
+- Event handlers: `attachTo` (`resize`, `move`, `maximize`, `unmaximize`, `close`) keep timing/side effects intact.
+- Exports + call sites: `loadInitialState`, `attachTo` match `electron/main.js` usage.
+- Comments vs behavior: Overview + handler comments align with current logic.
+
+Observable contract and timing were preserved.
+
+### L7 — Smoke (human-run; editor_state.js)
+
+Result: PASS
+
+**Precondition**
+
+* App closed before touching config files.
+
+#### L7-01 Baseline: open Editor once (creates/loads editor_state.json)
+
+* [x] Action: Launch app → open Manual Editor (test_suite SM-08).
+* [x] Expected: Editor window opens; main remains responsive; no uncaught exceptions.
+* [x] Expected logs: on **clean run**, it is acceptable to see **one** warnOnce from `fs_storage.loadJson` about missing `editor_state.json` (created on first editor usage). No repeated spam.
+
+#### L7-02 Persist reduced geometry (move/resize -> reopen)
+
+* [x] Action: With editor **not maximized**, resize + move to a distinct position → close editor window → open editor again.
+* [x] Expected: Editor reopens roughly at the same size/position (reduced bounds restored).
+* [x] Expected: No new WARN/ERROR lines produced by normal move/resize activity (beyond any first-run fs_storage warning already seen).
+
+#### L7-03 Persist maximized flag (maximize -> reopen)
+
+* [x] Action: Maximize editor → close editor → open editor.
+* [x] Expected: Editor opens **maximized** again.
+* [x] Expected: No ERROR logs.
+
+#### L7-04 Unmaximize restores last reduced bounds (non-fallback path)
+
+* [x] Action: From maximized editor, click unmaximize (restore down).
+* [x] Expected: Window returns to last reduced bounds (the one you had before maximize), not the fallback placement.
+* [x] Expected logs: **no** “unmaximize: reduced bounds missing; …” warning in this healthy path.
+
+---
+
+### Optional L7 (covers L4 warnOnce fallbacks explicitly)
+
+These are optional because they require editing `editor_state.json`, but they validate the *new logging* and “no silent fallback” behavior.
+
+#### L7-05 Force unmaximize fallback when reduced is missing
+
+* [x] Setup: Close app. Backup `editor_state.json`. Replace contents with:
+
+  ```json
+  { "maximized": true, "reduced": null }
+  ```
+* [x] Action: Launch app → open editor → maximize (if not already) → unmaximize.
+* [x] Expected behavior: Editor uses fallback placement (upper-right half of current monitor workArea).
+* [x] Expected logs (deduped): one WARN line starting with:
+  * `unmaximize: reduced bounds missing; using fallback placement (ignored).`
+* [x] Dedupe check: repeat maximize/unmaximize multiple times in the same session → warning should not repeat.
+
+#### L7-06 Force normalizeState invalid-shape warnings (valid JSON, wrong shape)
+
+* [x] Setup: Close app. Backup `editor_state.json`. Replace contents with **one** of:
+  * `null`
+  * `{ "maximized": "yes", "reduced": 123 }`
+* [x] Action: Launch app → open editor.
+* [x] Expected behavior: App does not crash; editor opens using defaults/fallbacks.
+* [x] Expected logs (deduped):
+
+  * For `null`: one WARN line starting with `normalizeState: invalid state; using defaults (ignored).`
+  * For `"maximized": "yes"`: one WARN line starting with `normalizeState: invalid maximized; using default (ignored).`
+  * For `"reduced": 123`: one WARN line starting with `normalizeState: invalid reduced bounds; ignoring.`
+* [x] Dedupe check: reopen editor / retrigger within same session → each warning should emit at most once per session.
+
+---
+
+## electron/presets_main.js
+
+Date: `2026-01-21`
+Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order (as-is):
+    - Header comment + `'use strict'`.
+    - Imports (fs/path/electron) + logger (`Log.get('presets-main')`).
+    - Constants/config (`DEFAULT_LANG`, `MAX_PRESET_STR_CHARS`, `PRESETS_SOURCE_DIR`).
+    - Helpers (top-level): `resolveDialogText`, `isPlainObject`, `sanitizePresetInput`, `loadPresetArrayFromJson`, `loadDefaultPresetsCombined`, `copyDefaultPresetsIfMissing`.
+    - Main entrypoint: `registerIpc(...)` (nested helpers + IPC handlers).
+    - Exports (`module.exports`).
+  - Where linear reading breaks:
+    - `registerIpc` concentra helpers anidados + handlers IPC:
+      - anchor: `"function registerIpc(ipcMain, { getWindows } = {})"`
+    - `broadcast` mezcla “delegated broadcast” y fallback directo a `webContents.send`:
+      - anchor: `"mainWin.webContents.send('settings-updated', settings);"`
+    - Handler `get-default-presets` mezcla scan FS + fallback a presets embebidos:
+      - anchor: `"ipcMain.handle('get-default-presets', () => {"`
+    - Handler `request-delete-preset` mezcla validación, diálogos nativos y persistencia:
+      - anchor: `"ipcMain.handle('request-delete-preset', async (_event, name) => {"`
+
+- Contract map (exports / side effects / invariants / IPC):
+  - Module exposure:
+    - Exports: `registerIpc(ipcMain, { getWindows })`, `sanitizePresetInput(raw)`.
+  - Side effects:
+    - `registerIpc` ejecuta `copyDefaultPresetsIfMissing()` y registra handlers IPC.
+    - Los handlers usan `dialog.showMessageBox(...)`, `shell.openPath(...)` y persisten settings vía `settingsState.saveSettings(...)`.
+  - Invariants and fallbacks (anchored):
+    - `ipcMain` requerido:
+      - anchor: `"if (!ipcMain) {"`
+    - Payload de preset debe ser plain object:
+      - anchor: `"if (!isPlainObject(raw)) {"`
+    - `name` requerido:
+      - anchor: `"if (!name) {"`
+    - Strings acotados por `MAX_PRESET_STR_CHARS`:
+      - anchor: `"name.length > MAX_PRESET_STR_CHARS"`
+    - `wpm` debe ser finito:
+      - anchor: `"if (!Number.isFinite(wpmNum)) {"`
+    - Idioma efectivo con fallback a `DEFAULT_LANG`:
+      - anchor: `": DEFAULT_LANG;"`
+    - `settings.presets_by_language` se normaliza a objeto + array por idioma:
+      - anchor: `"settings.presets_by_language = {};"` y `"settings.presets_by_language[langCode] = [];"`
+    - Validación de `name` en delete:
+      - anchor: `"typeof name !== 'string'"` y `"trimmed.length > MAX_PRESET_STR_CHARS"`
+  - IPC contract (only what exists in this file):
+    - `ipcMain.handle('get-default-presets')`
+      - Input: none
+      - Return: `{ general: Array, languagePresets: Object }` (catch fallback: `{ general: [], languagePresets: {} }`)
+      - Outgoing sends: none
+    - `ipcMain.handle('open-default-presets-folder')`
+      - Input: none
+      - Return: `{ ok: true }` o `{ ok: false, error: string }`
+      - Outgoing sends: none
+    - `ipcMain.handle('create-preset')`
+      - Input: `(_event, preset)`
+      - Return: `{ ok: true }` o `{ ok: false, error: string, code: string }`
+      - Outgoing sends:
+        - `settings-updated` (via `broadcast(settings)`)
+        - `preset-created` payload `sanitizedPreset`
+    - `ipcMain.handle('request-delete-preset')`
+      - Input: `(_event, name)`
+      - Return: `{ ok: boolean, code?: string, error?: string, action?: string }`
+      - Outgoing sends: `settings-updated` (via `broadcast(settings)`) cuando hay cambios persistidos
+    - `ipcMain.handle('request-restore-defaults')`
+      - Input: none
+      - Return: `{ ok: true, action: 'restored', removedCustom: string[], unignored: string[] }` o `{ ok: false, code?: string, error?: string }`
+      - Outgoing sends: `settings-updated` (via `broadcast(settings)`)
+    - `ipcMain.handle('notify-no-selection-edit')`
+      - Input: none
+      - Return: `{ ok: true }` o `{ ok: false, error: string }`
+      - Outgoing sends: none
+    - `ipcMain.handle('edit-preset')`
+      - Input: `(_event, payload)`
+      - Return: `{ ok: true, action: 'edited', deletedAction: string|null }` o `{ ok: false, code: string, error?: string }`
+      - Outgoing sends:
+        - `settings-updated` (via `broadcast(settings)`)
+        - `preset-created` payload `sanitizedPreset`
+    - `ipcRenderer.*`: none in this file.
+    - `webContents.send(...)` occurrences:
+      - `'settings-updated'` payload `settings`; anchor: `"mainWin.webContents.send('settings-updated', settings);"`
+      - `'preset-created'` payload `sanitizedPreset`; anchor: `"mainWin.webContents.send('preset-created', sanitizedPreset);"` (create-preset + edit-preset)
+  - Delegated IPC registration:
+    - None found in this file.
+
+### L1 — Structural refactor (Codex)
+
+Decision: **NO CHANGE**
+
+- Existing block order already follows imports → config → helpers → registerIpc → exports; reordering would not improve scanning.
+- Helpers nested inside registerIpc depend on resolveWindows/settingsState/log; lifting them would add indirection.
+- IPC handlers are grouped by feature and flow; reordering could subtly affect initialization/timing expectations.
+- Default preset loading has intentional fallback paths; merging helpers risks altering edge-case behavior.
+- Structural edits would not reduce branching or cognitive load enough to justify change.
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: **CHANGED**
+
+Change 1: Extract dialog setup into local helpers (`getDialogContext`, `getYesNoLabels`).
+- Gain: Reduce duplicación del setup de idioma/textos/labels de diálogos en handlers (delete/restore/edit/notify), manteniendo call sites más legibles.
+- Cost: Agrega indirection pequeña dentro de `registerIpc`.
+- Validation: Grep de `getDialogContext(` y `getYesNoLabels(` y smoke manual de flujos que abren diálogos (delete preset, restore defaults, edit preset, notify-no-selection-edit).
+
+Change 2: Centralize `disabled_default_presets` initialization with `ensureDisabledDefaultPresets`.
+- Gain: Elimina duplicación del “shape-setup” y unifica la creación/normalización del array por idioma.
+- Cost: Indirection menor en los puntos que mutan `settings.disabled_default_presets`.
+- Validation: Grep de `ensureDisabledDefaultPresets(` y smoke manual de delete/edit/restore que ignoran/unignoran defaults.
+
+Observable contract, IPC surface, side effects, and timing preserved (per Codex report; diff shows handler order unchanged and only local helper extraction).
+
+### L3 — Architecture / contract changes (Codex, rerun with repo-wide consumer scan)
+
+Decision: **NO CHANGE (no Level 3 justified)**
+
+Evidence provided by Codex (repo-wide string scan + consumer interpretation):
+- Handlers: repo-wide occurrences + consumer return interpretation for:
+  - `get-default-presets` (consumer reads `defaults.general` / `defaults.languagePresets`)
+  - `open-default-presets-folder` (consumer checks `res.ok` then `res.error`)
+  - `create-preset` (consumer checks `res.ok` else error UI)
+  - `request-delete-preset` (consumer checks `res.ok` and `res.code` like `NO_SELECTION`/`CANCELLED`)
+  - `request-restore-defaults` (consumer checks `res.ok` and `res.code === 'CANCELLED'`)
+  - `notify-no-selection-edit` (consumer awaits call; ignores return)
+  - `edit-preset` (consumer checks `res.ok` and `res.code === 'CANCELLED'`)
+- Events:
+  - `settings-updated`: repo-wide listeners enumerated across multiple preloads.
+  - `preset-created`: emitter occurrences listed; consumption traced via preload callback + renderer handler.
+
+Reviewer assessment (sufficiency & inference quality):
+- Sufficient evidence to support NO CHANGE at Level 3: no demonstrated multi-consumer divergence in handler return semantics.
+- Remaining incompleteness: event payload semantics are not compared across renderer consumers (especially `settings-updated`), and `preset-created` evidence anchors include handler internals but not the subscription site; therefore “no conflicting payload assumptions” is under-supported.
+
+### L4 — Logs (policy-driven tuning) (Codex)
+
+Decision: **CHANGED**
+
+Changes (logging-only + minimal support):
+- Added stable key helper for JSON-related warnOnce/errorOnce bucketing (`presetJsonKey(filePath)`; suffix uses source + basename).
+- `loadPresetArrayFromJson`:
+  - Non-array JSON now logs `warnOnce` and falls back to `[]` (recoverable).
+  - Read/parse failure now logs `warnOnce` “load failed; using empty list (ignored)” and falls back to `[]`.
+- Defaults fallbacks now non-silent:
+  - General defaults missing/empty in config: `warnOnce` key `presets_main.defaults.general.fallback`.
+  - Bundled general defaults missing/empty: `errorOnce` key `presets_main.defaults.general.missingBundled`.
+  - Language defaults: `warnOnce` key `presets_main.defaults.lang.fallback:<lang>`, avoiding double-logging when config parse failed for that lang.
+- `copyDefaultPresetsIfMissing`:
+  - Missing bundled presets dir now `warnOnce` (skipped; ignored).
+  - Copy failures downgraded to `warn` (ignored), and whole-function failure downgraded to `warn` (ignored), consistent with best-effort fallback policy.
+- Best-effort sends and broadcast failures:
+  - Missing `broadcastSettingsUpdated` export now `warnOnce` then fallback to `mainWin` send.
+  - Broadcast failure now `warnOnce` “settings-updated notify failed (ignored): …”.
+  - `preset-created` send failures now `warnOnce` (create/edit variants).
+
+Reviewer assessment (sufficiency):
+- Evidence supports policy alignment (no silent fallbacks; best-effort sends deduped).
+- Validation plan is good for triggering paths, but incomplete: missing explicit “healthy path is not noisy” check and explicit justification that key suffixes are controlled variants (non-explosive).
+
+Observable contract/timing preserved (report + change scope limited to logging and helper keys).
+
+Evidence:
+- Diff: `electron/presets_main.js` (keys: `presets_main.defaults.*`, `presets_main.presetsJson.*`, `presets_main.broadcast.*`, `presets_main.send.preset-created.*`).
+
+### L5 — Comments (QA follow-up) (Codex)
+
+Decision: **CHANGED** (comments-only)
+
+Observed changes (diff-based):
+- Updated `loadDefaultPresetsCombined` doc/comment wording to match current fallback behavior (missing/empty/parse failure -> bundled).
+- Reworded startup seeding comment for `copyDefaultPresetsIfMissing` to “seed without overwriting” intent.
+- Fixed comment drift around startup seeding (best-effort language).
+- Improved intent-focused comments across IPC handlers (create/delete/restore/edit) and clarified semantics (preset name uniqueness as key; best-effort window notifications; custom-vs-default delete behavior).
+- Removed redundant comment that restated `NOT_FOUND` control flow.
+- Adjusted section divider placement so documentation blocks remain adjacent to the symbol they document (divider moved around `registerIpc` JSDoc).
+
+Evidence:
+- Diff: `electron/presets_main.js` (comments-only).
+
+### L6 — Final review (Codex)
+
+Decision: **CHANGED** (comments-only)
+
+Observed changes (diff-based):
+- Fixed JSDoc drift in `registerIpc` params: `opts.getWindows` shape now lists `flotanteWin` (was `floatingWin`), aligning documentation with actual window naming used by callers.
+
+Reviewer assessment (sufficiency & inference quality):
+- The change is justified as a documentation drift fix, and it is comments-only (so contract/timing are preserved by construction).
+
+Evidence:
+- Diff: `electron/presets_main.js` (JSDoc line in `registerIpc` opts.getWindows shape).
+
+### L7 — Smoke test (humano) — `electron/presets_main.js`
+
+Result: PASS
+
+A) Camino principal (config existente)
+- [x] SM-01 Arranque normal: UI usable, sin modal bloqueante.
+- [x] Log sanity (idle 20–30s con logs visibles): sin spam de WARN/ERROR repetidos, sin uncaught exceptions.
+- [x] SM-07 Seleccion de preset: cambia WPM y tiempo estimado coherentemente.
+
+CRUD presets (idioma actual)
+- [x] REG-PRESETS-01 Create: crear preset `l7_smoke` (WPM 300). Aparece y aplica.
+- [x] REG-PRESETS-02 Edit: editar `l7_smoke` -> WPM 275. Confirma y aplica.
+- [x] REG-PRESETS-07 Persistencia: con `l7_smoke` seleccionado, cerrar app y relanzar. Sigue presente/seleccionado/aplicado.
+
+
+Aislamiento por idioma base
+- [x] REG-PRESETS-03 Cambiar idioma base y verificar que `l7_smoke` NO aparece en el otro idioma; volver y confirmar que SI aparece.
+
+Delete + restore defaults
+- [x] REG-PRESETS-04 Delete: borrar `l7_smoke` (confirm dialog). Desaparece y queda seleccion valida (fallback seguro).
+- [x] REG-PRESETS-06 Restore defaults: restaurar defaults (R). Lista queda valida y seleccion valida (fallback seguro).
+
+Abrir carpeta de presets_defaults (IPC `open-default-presets-folder`)
+- [x] Abrir “default presets folder” desde UI/menu. Se abre el file manager en `config/presets_defaults/`.
+
+B) (Opcional) Clean run (para cubrir seeding de defaults)
+- [x] Clean first-run: renombrar/borrar `config/` y lanzar app. Arranca ok y presets defaults aparecen (sin necesidad de corrupcion manual).
+
+---
+
+## electron/menu_builder.js
+
+Date: `2026-01-21`
+Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
+
+### L0 — Diagnosis (no changes) (Codex, follow-up re-run; verified)
+
+Note: Follow-up re-run because prior L0 asserted an IPC payload shape without anchoring to a call site. This L0 keeps payload shape “unknown at this boundary” when only an identifier is visible.
+
+- Reading map (minimal)
+  - Block order: header/comments; external imports; internal imports; logger + helpers; translation loading; getDialogTexts; buildAppMenu; exports.
+  - Linear reading breaks:
+    - `buildAppMenu` -> sendMenuClick closure; micro-quote: "const sendMenuClick = (payload) => {"
+    - `buildAppMenu` -> menuTemplate literal; micro-quote: "const menuTemplate = ["
+    - `buildAppMenu` -> dev menu branch; micro-quote: "if (!app.isPackaged && showDevMenu) {"
+    - `loadBundle` -> file loop; micro-quote: "for (const file of files) {"
+
+- Contract map (minimal)
+  - Exposes: `getDialogTexts`, `buildAppMenu`, `resolveDialogText`; micro-quote: "module.exports = {"
+  - Observable side effects (anchored):
+    - Sets application menu; micro-quote: "Menu.setApplicationMenu(appMenu)"
+    - Reads translation files; micro-quote: "fs.readFileSync(file, 'utf8')"
+    - Sends renderer message; micro-quote: "webContents.send('menu-click', payload)"
+    - Toggles DevTools in dev menu; micro-quote: "mainWindow.webContents.toggleDevTools()"
+  - Suggested invariants/fallbacks (anchored):
+    - Language tag falls back to default; micro-quote: "normalizeLangTag(lang) || DEFAULT_LANG"
+    - Menu label falls back to provided fallback; micro-quote: "return fallback"
+    - Dialog text falls back to provided fallback; micro-quote: "return fallback"
+    - Empty JSON triggers fallback; micro-quote: "if (raw.trim() === '')"
+    - Dialog section falls back to empty object; micro-quote: "return tMain.dialog || {}"
+    - Menu click drops without window; micro-quote: "if (!mainWindow) {"
+
+- IPC contract
+  - A) Exhaustive IPC enumeration:
+    - `webContents.send('menu-click', payload)`
+      - Channel argument: `"menu-click"` (string literal)
+      - Handler/listener boundary args: n/a (send call)
+      - Return shape: n/a (send call)
+      - Payload argument: identifier `payload` (shape unknown at this boundary); micro-quote: "webContents.send('menu-click', payload)"
+      - Call-site micro-quote: "mainWindow.webContents.send('menu-click', payload)"
+    - No `ipcMain.*` or `ipcRenderer.*` occurrences found in this file.
+  - B) Delegated registration: none found.
+
+Reviewer assessment (L0 protocol compliance):
+- PASS (follow-up): no inferred payload/type shapes; contract statements are anchored with micro-quotes.
+- Note: the “no ipcMain/ipcRenderer occurrences” claim is a negative scan result (not independently evidenced inside this document).
+
+### L1 — Structural refactor (Codex)
+
+Decision: NO CHANGE
+
+- File already follows a clear top-to-bottom structure (imports → helpers → translation loading → public helpers → menu build → exports).
+- Existing sections are well-labeled with comments, so reordering would add churn without clarity gain.
+- Helper functions are short and cohesive; splitting or renaming would not reduce cognitive load.
+- Core logic in buildAppMenu is linear and menuTemplate readability would not improve via extraction.
+- No obvious duplication that can be removed without adding indirection.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The “NO CHANGE” decision is consistent with the file’s existing explicit sectioning and responsibilities (menu + i18n + dialog texts).
+- No unanchored IPC/contract/payload-shape assertions were introduced at Level 1.
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- Current helpers already encapsulate edge cases (missing translations, invalid/empty JSON, missing window) with deduped logging.
+- No repeated branching or error handling suitable for a new helper without adding indirection.
+- Menu template structure is inherently large; extracting it would increase jumping around without reducing complexity.
+- Translation loading flow is linear and explicit; making it more defensive risks altering fallback timing/logging.
+- No IPC registration or timing-sensitive sequencing is present to safely optimize without risk.
+
+Observable contract and timing preserved by making no changes.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE). Given zero code changes, the decision hinges on whether L2 changes would be low-risk and net-positive; the file already has warnOnce/errorOnce patterns and explicit fallback logic, so “do not touch” is defensible.
+- Minor wording issue in Codex report: while there is no IPC *registration* (`ipcMain.*` / `ipcRenderer.*`) in this module, it does perform IPC *sending* via `mainWindow.webContents.send('menu-click', payload)`. This does not affect the NO CHANGE conclusion.
+
+### L3 — Architecture / contract changes (Codex) (follow-up re-run: evidence completeness)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence (end-to-end IPC contract):
+- Sender outbound IPC in `electron/menu_builder.js` `sendMenuClick`; micro-quote: "webContents.send('menu-click', payload)".
+- Sender payload is a string literal at call sites in `electron/menu_builder.js` `menuTemplate`; micro-quote: "click: () => sendMenuClick('guia_basica')".
+- Receiver listens in `electron/preload.js` `onMenuClick`; micro-quote: "ipcRenderer.on('menu-click', wrapper)".
+- Preload forwards payload unchanged in `electron/preload.js` `onMenuClick`; micro-quote: "cb(payload)".
+
+Contract consistency (as argued by Codex):
+- Sender uses string action ids; receiver forwards unchanged; renderer consumes as action key and enforces string keys (per Codex inspection of `public/js/menu_actions.js`).
+
+Scan evidence (repo-wide):
+- Query/pattern: `rg -n "menu-click" -S .`
+- Matches: 21
+- Key matches (as reported by Codex):
+  - `electron/menu_builder.js` (channel + send call + logs)
+  - `electron/preload.js` (ipcRenderer.on/removeListener)
+  - `public/js/menu_actions.js` (menu-click received log line)
+  - Docs/evidence references (non-contractual mentions)
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE). This follow-up addresses the prior gap by providing sender + receiver anchors and a repo-wide scan for the IPC channel literal.
+- Minor evidence gap: the renderer-side micro-quotes (payload type enforcement / Map key usage) are not backed by the included `menu-click` scan excerpt (they may not contain the literal). This does not affect the Level 3 “NO CHANGE” decision.
+
+### L4 — Logs (policy-driven tuning) (Codex)
+
+Decision: CHANGED
+
+Diff evidence (what changed):
+- i18n load/parse warnOnce keys stopped embedding per-occurrence file paths:
+  - BEFORE (explicit key included `${String(file)}`):
+    - `menu_builder.loadMainTranslations:empty:...:${String(file)}`
+    - `menu_builder.loadMainTranslations:failed:...:${String(file)}`
+  - AFTER (stable keys bucketed by lang + controlled variant):
+    - `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`
+    - `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`
+  - Minimal structural support added to derive `fileVariant` (`region|root`) via indexed loop.
+
+- menu-click best-effort drops now use stable per-reason keys and “failed (ignored)” phrasing:
+  - BEFORE (keys included `${String(payload)}` and message “dropped ...”):
+    - `menu_builder.sendMenuClick:noWindow:${String(payload)}`
+    - `menu_builder.sendMenuClick:destroyed:${String(payload)}`
+    - `menu_builder.sendMenuClick:sendFailed:${String(payload)}`
+  - AFTER (stable keys by reason; payload remains in args):
+    - `menu_builder.sendMenuClick.noWindow` + `menu-click failed (ignored): no mainWindow`
+    - `menu_builder.sendMenuClick.destroyed` + `menu-click failed (ignored): mainWindow destroyed`
+    - `menu_builder.sendMenuClick.sendFailed` (catch) + `"webContents.send('menu-click') failed (ignored):"`
+
+Policy alignment (why this is justified):
+- Logging policy forbids per-occurrence/unbounded data in explicit dedupe keys (“Forbidden: per-occurrence / unbounded data in the key”).
+- warnOnce is explicitly appropriate for repeated send-to-window race conditions (“webContents.send() to a destroyed window” is canonical).
+
+Validation plan adequacy:
+- Sufficient for Level 4: grep for new stable keys; provoke empty/invalid/missing main.json to observe warnOnce; trigger menu clicks with no/destroyed window to observe the new “failed (ignored)” warnings.
+- Report limitation: does not mechanically enumerate *all* logging sites in the file to prove full compliance; however, the changes directly address concrete policy issues shown in the diff.
+
+Status: PASS (L4)
+
+### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
+
+Decision: CHANGED (comments-only)
+
+Observed changes (diff-based):
+- Added a `Helpers (logging + utilities)` section divider near the top of the file (after internal imports) to better match the real block order.
+- Fixed comment drift in the translation fallback chain: replaced the hardcoded final fallback `'es'` with `DEFAULT_LANG`.
+- Removed a redundant comment above the menu install call (reduced noise).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The diff demonstrates comments-only edits (no logic/contract/timing changes).
+- The changes are justified: they improve navigability (section divider), reduce drift (DEFAULT_LANG vs hardcoded tag), and remove low-signal commentary.
+- Minor incompleteness in Codex’s report: it does not explicitly evidence that the top Overview comment and the end-of-file marker requirement were verified (they may already exist, but this is not demonstrated in the report).
+
+Evidence:
+- Diff: `electron/menu_builder.js` (comment-only hunks: Helpers divider insertion; fallback chain comment edit; removal of “Apply the menu...” comment).
+
+### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+- Decision (Codex): NO CHANGE
+- Codex report summary:
+  - Claims logging API usage matches `log.js`; highlights `sendMenuClick` uses `log.warnOnce(...)` with explicit keys.
+  - States translation fallback comment matches code.
+  - Confirms single outbound IPC send path: `webContents.send('menu-click', payload)`.
+  - Confirms export surface unchanged: `module.exports = { getDialogTexts, buildAppMenu, resolveDialogText }`.
+  - Notes dev menu guard: `process.env.SHOW_DEV_MENU === '1'`.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE), but note: Codex evidence is not mechanically complete for a "hard-close" on its own.
+  - What Codex checked is relevant and accurate (anchors exist in-file), but it did not provide an exhaustive scan
+    (e.g., list of all logging callsites / signature checks, or an explicit leftover scan after L4/L5).
+  - Manual spot-check of the current file supports NO CHANGE:
+    - Outbound send: `mainWindow.webContents.send('menu-click', payload)` is still the single IPC emit.
+    - `sendMenuClick` warnOnce keys are stable and explicit: `menu_builder.sendMenuClick.noWindow|destroyed|sendFailed`.
+    - Translation load warnOnce keys are stable and do not embed dynamic file paths:
+      `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}` and
+      `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`.
+    - Export surface remains `getDialogTexts`, `buildAppMenu`, `resolveDialogText`.
+    - Dev menu guard is still `process.env.SHOW_DEV_MENU === '1'`.
+
+### L7 — Smoke test (humano) — `electron/menu_builder.js` (cambio-focalizado: L4 logging/dedupe + i18n load)
+
+Result: Pass
+
+- [x] (1) Arranque + idle 20–30s con logs visibles: sin ERROR/uncaught; sin spam repetitivo.
+- [x] (2) Menu actions x3 (rutas sanas): cada accion hace lo esperado (abre modal/ventana/seccion); NO aparece `menu-click failed (ignored): ...`.
+- [x] (3) Menu -> About: abre correctamente; NO aparece `menu-click failed (ignored): ...`.
+- [x] (4) Menu -> Actualizar version (si existe): aparece resultado/dialogo; sin crash.
+- [x] (5) Cambio de idioma por flujo normal: UI/menu siguen correctos; NO aparecen warnings i18n tipo “Failed to load/parse main.json…” / “main.json is empty…”.
+- [x] (6) Repetir 1 accion post-idioma: funciona (sin regresion).
+- [c] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
