@@ -1567,3 +1567,8 @@ Checklist:
 - [x] (Opcional, si durante el check aparece “Update available”):
       Elegir la accion de descarga.
       Esperado: se abre el browser (shell.openExternal) y la app sigue estable.
+
+## electron/constants_main.js
+
+Date: `2026-01-22`
+Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
