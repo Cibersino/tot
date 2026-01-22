@@ -1,6 +1,19 @@
 // electron/updater.js
-// update system: version comparison, remote query, and native update dialogs and native update dialogs.
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Update helper for the main process.
+// Responsibilities:
+// - Fetch the latest release tag and compare SemVer.
+// - Show update dialogs for manual checks.
+// - Open the download URL when the user confirms.
+// - Expose IPC registration and a one-time auto check.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const { dialog, shell, app } = require('electron');
 const https = require('https');
@@ -10,17 +23,23 @@ const log = Log.get('updater');
 const menuBuilder = require('./menu_builder');
 const { DEFAULT_LANG } = require('./constants_main');
 
-// Version/download paths and URLs
+// =============================================================================
+// Constants / config (paths, defaults)
+// =============================================================================
 const RELEASES_API_URL = 'https://api.github.com/repos/Cibersino/tot-readingmeter/releases/latest';
 const DOWNLOAD_URL = 'https://github.com/Cibersino/tot-readingmeter/releases/latest';
 
-// Lazy references to external state
+// =============================================================================
+// Shared state (window refs, lifecycle guard)
+// =============================================================================
 let mainWinRef = () => null;
 let currentLanguageRef = () => DEFAULT_LANG;
 
-// Avoid multiple checks in the same life cycle
 let updateCheckDone = false;
 
+// =============================================================================
+// Helpers (i18n, SemVer, network)
+// =============================================================================
 const resolveDialogText = (dialogTexts, key, fallback) =>
   menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
     log,
@@ -127,6 +146,9 @@ function fetchLatestReleaseTag(url) {
   });
 }
 
+// =============================================================================
+// Update flow (manual vs auto)
+// =============================================================================
 async function checkForUpdates({ lang, manual = false } = {}) {
   try {
     const effectiveLang =
@@ -251,7 +273,9 @@ async function checkForUpdates({ lang, manual = false } = {}) {
   }
 }
 
-// Automatic, one-time check
+// =============================================================================
+// App lifecycle / bootstrapping
+// =============================================================================
 function scheduleInitialCheck() {
   if (updateCheckDone) return;
   updateCheckDone = true;
@@ -261,7 +285,9 @@ function scheduleInitialCheck() {
   });
 }
 
-// IPC register and window/language references
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
 function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef } = {}) {
   if (typeof mainRef === 'function') {
     mainWinRef = mainRef;
@@ -287,7 +313,14 @@ function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef
   }
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   registerIpc,
   scheduleInitialCheck,
 };
+
+// =============================================================================
+// End of electron/updater.js
+// =============================================================================

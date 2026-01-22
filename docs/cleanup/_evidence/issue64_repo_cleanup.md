@@ -1524,3 +1524,10 @@ Validation:
 - No se justifica subir a `error`: fallos de update-check son recoverables y no rompen invariantes del runtime.
 
 Observable contract/timing preserved (no code changes).
+
+### L5 decision: CHANGED (comments-only)
+
+- Reemplazo de header obsoleto por "Overview" con responsabilidades (3–7 items).
+- Se agregan divisores de sección que calzan con el orden real del archivo: imports/logger, constants/config, shared state, helpers, update flow, lifecycle, IPC, exports.
+- Se agrega marcador explícito de fin de archivo ("End of electron/updater.js").
+- No functional changes; comments-only.
