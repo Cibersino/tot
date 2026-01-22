@@ -271,11 +271,13 @@ function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef
   }
 
   if (ipcMain && typeof ipcMain.handle === 'function') {
-    ipcMain.handle('check-for-updates', async () => {
+    ipcMain.handle('check-for-updates', async (_event, payload = {}) => {
       try {
+        const manual =
+          payload && typeof payload.manual === 'boolean' ? payload.manual : false;
         await checkForUpdates({
           lang: typeof currentLanguageRef === 'function' ? currentLanguageRef() : DEFAULT_LANG,
-          manual: true,
+          manual,
         });
         return { ok: true };
       } catch (err) {

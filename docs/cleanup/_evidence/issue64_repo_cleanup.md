@@ -1485,3 +1485,34 @@ Reviewer assessment (sufficiency & interpretation quality):
 - PASS (NO CHANGE), coherente con el estado del archivo y con el riesgo/beneficio esperado de L2.
 - Confirmado: diff vacío (sin cambios aplicados).
 - Nota menor: el reporte resume “warn por ruta de falla” de forma algo no literal, pero sin impacto práctico.
+
+### L3 decision: CHANGED (IPC contract drift fix)
+
+Evidence (problem):
+- Preload expone payload `{ manual }`:
+  - Anchor: `ipcRenderer.invoke('check-for-updates', { manual })` (electron/preload.js).
+- Handler ignoraba args y forzaba manual:
+  - Anchor: `ipcMain.handle('check-for-updates', async () =>` + `manual: true` (electron/updater.js).
+- Menú invocaba sin args:
+  - Anchor: `window.electronAPI.checkForUpdates()` (public/renderer.js).
+
+Change:
+- `electron/updater.js`: el handler IPC ahora acepta `(_event, payload)` y deriva `manual` desde `payload.manual` (boolean), pasándolo a `checkForUpdates(...)`.
+  - Anchor: `ipcMain.handle('check-for-updates', async (_event, payload = {}) => {`
+  - Anchor: `manual,` (propiedad en el objeto pasado a `checkForUpdates`).
+- `public/renderer.js`: la acción de menú `actualizar_version` ahora pasa `true` explícito para preservar el comportamiento “manual”.
+  - Anchor: `window.electronAPI.checkForUpdates(true);`
+
+Contract/timing:
+- Canal IPC y retorno se mantienen: `{ ok: true }` / `{ ok: false, error: String(err) }`.
+- Startup y auto-check no se tocan (ruta `checkForUpdates({ manual: false })` interna sigue intacta).
+
+Risk:
+- Bajo. Potencial cambio solo para callers no-evidenciados que invocaran IPC sin payload esperando “manual siempre”.
+
+Validation:
+- Menú “Actualizar versión”: debe seguir mostrando diálogos (incluyendo en error de red).
+- DevTools: `window.electronAPI.checkForUpdates(false)` en escenario up-to-date/sin red: no debe mostrar diálogo “manual failure/up-to-date”.
+- DevTools: `window.electronAPI.checkForUpdates(true)` mantiene diálogos.
+- `rg -n -F "electronAPI.checkForUpdates(true)" public/renderer.js`.
+
