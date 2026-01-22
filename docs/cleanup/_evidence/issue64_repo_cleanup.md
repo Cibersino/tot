@@ -1234,3 +1234,20 @@ Note: Follow-up re-run because prior L0 asserted an IPC payload shape without an
 Reviewer assessment (L0 protocol compliance):
 - PASS (follow-up): no inferred payload/type shapes; contract statements are anchored with micro-quotes.
 - Note: the “no ipcMain/ipcRenderer occurrences” claim is a negative scan result (not independently evidenced inside this document).
+
+### L1 — Structural refactor (Codex)
+
+Decision: NO CHANGE
+
+- File already follows a clear top-to-bottom structure (imports → helpers → translation loading → public helpers → menu build → exports).
+- Existing sections are well-labeled with comments, so reordering would add churn without clarity gain.
+- Helper functions are short and cohesive; splitting or renaming would not reduce cognitive load.
+- Core logic in buildAppMenu is linear and menuTemplate readability would not improve via extraction.
+- No obvious duplication that can be removed without adding indirection.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The “NO CHANGE” decision is consistent with the file’s existing explicit sectioning and responsibilities (menu + i18n + dialog texts).
+- No unanchored IPC/contract/payload-shape assertions were introduced at Level 1.
