@@ -114,7 +114,7 @@ function loadPresetArrayFromJson(filePath) {
 
 /**
  * Loads combined default presets (general + per language).
- * Source: userData config presets_defaults JSON (fallback to bundled JSON only if missing)
+ * Source: userData config presets_defaults JSON (fallback to bundled JSON on missing/empty/parse failure).
  */
 function loadDefaultPresetsCombined(lang) {
   ensureConfigPresetsDir();
@@ -193,7 +193,7 @@ function copyDefaultPresetsIfMissing() {
           fname
         );
 
-        // Only copy if the source JSON exists and the destination does not yet exist
+        // Seed user config without overwriting existing files.
         if (fs.existsSync(src) && !fs.existsSync(dest)) {
           try {
             const raw = fs.readFileSync(src, 'utf8');
@@ -219,6 +219,9 @@ function copyDefaultPresetsIfMissing() {
   }
 }
 
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
 /**
  * Registration of IPC handlers related to presets.
  *
@@ -226,9 +229,6 @@ function copyDefaultPresetsIfMissing() {
  * @param {Object} opts
  * @param {Function} opts.getWindows -() => ({ mainWin, editorWin, presetWin, floatingWin, langWin })
  */
-// =============================================================================
-// IPC registration / handlers
-// =============================================================================
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain) {
     throw new Error('[presets_main] registerIpc requiere ipcMain');
@@ -239,7 +239,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       ? () => getWindows() || {}
       : () => getWindows || {};
 
-  // Initial copy JS -> JSON (does not overwrite existing files)
+  // Best-effort: seed user config defaults on startup.
   copyDefaultPresetsIfMissing();
 
   function broadcast(settings) {
@@ -267,7 +267,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   }
 
-  // Local helper to obtain effective language
+  // Normalize settings language to a base tag with a safe fallback.
   function getEffectiveLang(settings) {
     const s = settings || settingsState.getSettings();
     const lang =
@@ -322,7 +322,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     };
   }
 
-  // Provide default presets
+  // IPC: return default presets (config-first, then bundled).
   ipcMain.handle('get-default-presets', () => {
     try {
       ensureConfigPresetsDir();
@@ -335,7 +335,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         ? fs.readdirSync(presetsDir)
         : [];
 
-      // Load general defaults
+      // Prefer config defaults; parse failures fall back to bundled.
       let generalParseFailed = false;
       const generalJson = entries.find(
         (n) => n.toLowerCase() === 'defaults_presets.json'
@@ -437,7 +437,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   });
 
-  // Open editable presets_defaults folder
+  // IPC: open the config presets folder in the OS file manager.
   ipcMain.handle('open-default-presets-folder', async () => {
     try {
       ensureConfigPresetsDir();
@@ -461,7 +461,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   });
 
-  // Handle preset creation request from preset modal
+  // IPC: create or overwrite a user preset and broadcast changes.
   ipcMain.handle('create-preset', (_event, preset) => {
     try {
       const sanitized = sanitizePresetInput(preset);
@@ -478,7 +478,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const lang = getEffectiveLang(settings);
       const userPresets = getUserPresets(settings, lang);
 
-      // If preset name already exists in user's presets, overwrite that one
+      // Preset names are treated as unique keys; overwrite on match.
       const idx = userPresets.findIndex((p) => p.name === sanitizedPreset.name);
       if (idx >= 0) {
         userPresets[idx] = sanitizedPreset;
@@ -489,7 +489,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       settings = settingsState.saveSettings(settings);
       broadcast(settings);
 
-      // Notify main window renderer that a preset was created/updated
+      // Best-effort notify the main window; window races are ignored.
       const { mainWin } = resolveWindows();
       try {
         if (mainWin && !mainWin.isDestroyed()) {
@@ -510,7 +510,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   });
 
-  // Request to delete a preset (handles native dialogs + persistence)
+  // IPC: confirm deletion with a native dialog, then persist changes.
   ipcMain.handle('request-delete-preset', async (_event, name) => {
     try {
       if (typeof name !== 'undefined' && name !== null && typeof name !== 'string') {
@@ -580,21 +580,20 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'CANCELLED' };
       }
 
-      // Load default presets (same sources as get-default-presets)
+      // Load default presets with the same fallback rules as get-default-presets.
       const defaultsCombined = loadDefaultPresetsCombined(lang);
 
-      // Normalize structures
+      // Ensure per-language preset buckets exist before edits.
       const userPresets = getUserPresets(settings, lang);
       const idxUser = userPresets.findIndex((p) => p.name === name);
       const isDefault = defaultsCombined.find((p) => p.name === name);
 
-      // Ensure disabled_default_presets structure
+      // Ensure disabled_default_presets bucket exists for this language.
       const disabledDefaults = ensureDisabledDefaultPresets(settings, lang);
 
       if (idxUser >= 0) {
-        // There is a personalized preset with that name
+        // Custom preset exists; if it shadows a default, also disable that default.
         if (isDefault) {
-          // Remove personalized preset and mark default as ignored
           userPresets.splice(idxUser, 1);
           if (!disabledDefaults.includes(name)) {
             disabledDefaults.push(name);
@@ -604,7 +603,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
           return { ok: true, action: 'deleted_and_ignored' };
         } else {
-          // Personalized only: delete it
+          // Custom-only entry; remove it and keep defaults intact.
           userPresets.splice(idxUser, 1);
           settings = settingsState.saveSettings(settings);
           broadcast(settings);
@@ -612,9 +611,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           return { ok: true, action: 'deleted_custom' };
         }
       } else {
-        // Not personalized; could be a default preset
+        // No custom preset; if a default exists, disable it for this language.
         if (isDefault) {
-          // Mark default as ignored for this language
           if (!disabledDefaults.includes(name)) {
             disabledDefaults.push(name);
           }
@@ -625,7 +623,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         }
       }
 
-      // Not found in user presets or default presets
       return { ok: false, code: 'NOT_FOUND' };
     } catch (err) {
       log.error('[presets_main] Error in request-delete-preset:', err);
@@ -633,7 +630,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   });
 
-  // Request to restore default presets
+  // IPC: confirm and restore defaults for the current language.
   ipcMain.handle('request-restore-defaults', async () => {
     try {
       let settings = settingsState.getSettings();
@@ -715,7 +712,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   });
 
-  // Notify for edit-no-selection (simple info dialog)
+  // IPC: show info dialog when edit is requested with no selection.
   ipcMain.handle('notify-no-selection-edit', async () => {
     try {
       const settings = settingsState.getSettings();
@@ -743,7 +740,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   });
 
-  // Edit-preset handler (confirmation + silent delete + create)
+  // IPC: confirm edit, replace preset, and broadcast.
   ipcMain.handle('edit-preset', async (_event, payload) => {
     try {
       const originalName =

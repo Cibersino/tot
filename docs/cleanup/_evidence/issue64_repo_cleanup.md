@@ -1129,3 +1129,19 @@ Observable contract/timing preserved (report + change scope limited to logging a
 
 Evidence:
 - Diff: `electron/presets_main.js` (keys: `presets_main.defaults.*`, `presets_main.presetsJson.*`, `presets_main.broadcast.*`, `presets_main.send.preset-created.*`).
+
+### L5 — Comments (QA follow-up) (Codex)
+
+Decision: **CHANGED** (comments-only)
+
+Observed changes (diff-based):
+- Updated `loadDefaultPresetsCombined` doc/comment wording to match current fallback behavior (missing/empty/parse failure -> bundled).
+- Reworded startup seeding comment for `copyDefaultPresetsIfMissing` to “seed without overwriting” intent.
+- Fixed comment drift around startup seeding (best-effort language).
+- Improved intent-focused comments across IPC handlers (create/delete/restore/edit) and clarified semantics (preset name uniqueness as key; best-effort window notifications; custom-vs-default delete behavior).
+- Removed redundant comment that restated `NOT_FOUND` control flow.
+- Adjusted section divider placement so documentation blocks remain adjacent to the symbol they document (divider moved around `registerIpc` JSDoc).
+
+Evidence:
+- Diff: `electron/presets_main.js` (comments-only).
+
