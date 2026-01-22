@@ -1296,3 +1296,38 @@ Validation: N/A (no code changes).
 Reviewer assessment (sufficiency & inference quality):
 - PASS (NO CHANGE). This follow-up addresses the prior gap by providing sender + receiver anchors and a repo-wide scan for the IPC channel literal.
 - Minor evidence gap: the renderer-side micro-quotes (payload type enforcement / Map key usage) are not backed by the included `menu-click` scan excerpt (they may not contain the literal). This does not affect the Level 3 “NO CHANGE” decision.
+
+### L4 — Logs (policy-driven tuning) (Codex)
+
+Decision: CHANGED
+
+Diff evidence (what changed):
+- i18n load/parse warnOnce keys stopped embedding per-occurrence file paths:
+  - BEFORE (explicit key included `${String(file)}`):
+    - `menu_builder.loadMainTranslations:empty:...:${String(file)}`
+    - `menu_builder.loadMainTranslations:failed:...:${String(file)}`
+  - AFTER (stable keys bucketed by lang + controlled variant):
+    - `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`
+    - `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`
+  - Minimal structural support added to derive `fileVariant` (`region|root`) via indexed loop.
+
+- menu-click best-effort drops now use stable per-reason keys and “failed (ignored)” phrasing:
+  - BEFORE (keys included `${String(payload)}` and message “dropped ...”):
+    - `menu_builder.sendMenuClick:noWindow:${String(payload)}`
+    - `menu_builder.sendMenuClick:destroyed:${String(payload)}`
+    - `menu_builder.sendMenuClick:sendFailed:${String(payload)}`
+  - AFTER (stable keys by reason; payload remains in args):
+    - `menu_builder.sendMenuClick.noWindow` + `menu-click failed (ignored): no mainWindow`
+    - `menu_builder.sendMenuClick.destroyed` + `menu-click failed (ignored): mainWindow destroyed`
+    - `menu_builder.sendMenuClick.sendFailed` (catch) + `"webContents.send('menu-click') failed (ignored):"`
+
+Policy alignment (why this is justified):
+- Logging policy forbids per-occurrence/unbounded data in explicit dedupe keys (“Forbidden: per-occurrence / unbounded data in the key”).
+- warnOnce is explicitly appropriate for repeated send-to-window race conditions (“webContents.send() to a destroyed window” is canonical).
+
+Validation plan adequacy:
+- Sufficient for Level 4: grep for new stable keys; provoke empty/invalid/missing main.json to observe warnOnce; trigger menu clicks with no/destroyed window to observe the new “failed (ignored)” warnings.
+- Report limitation: does not mechanically enumerate *all* logging sites in the file to prove full compliance; however, the changes directly address concrete policy issues shown in the diff.
+
+Status: PASS (L4)
+
