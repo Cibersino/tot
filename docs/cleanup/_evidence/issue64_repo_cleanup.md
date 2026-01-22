@@ -1370,3 +1370,15 @@ Reviewer assessment (sufficiency & inference quality):
       `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`.
     - Export surface remains `getDialogTexts`, `buildAppMenu`, `resolveDialogText`.
     - Dev menu guard is still `process.env.SHOW_DEV_MENU === '1'`.
+
+### L7 — Smoke test (humano) — `electron/menu_builder.js` (cambio-focalizado: L4 logging/dedupe + i18n load)
+
+Result: Pass
+
+- [x] (1) Arranque + idle 20–30s con logs visibles: sin ERROR/uncaught; sin spam repetitivo.
+- [x] (2) Menu actions x3 (rutas sanas): cada accion hace lo esperado (abre modal/ventana/seccion); NO aparece `menu-click failed (ignored): ...`.
+- [x] (3) Menu -> About: abre correctamente; NO aparece `menu-click failed (ignored): ...`.
+- [x] (4) Menu -> Actualizar version (si existe): aparece resultado/dialogo; sin crash.
+- [x] (5) Cambio de idioma por flujo normal: UI/menu siguen correctos; NO aparecen warnings i18n tipo “Failed to load/parse main.json…” / “main.json is empty…”.
+- [x] (6) Repetir 1 accion post-idioma: funciona (sin regresion).
+- [c] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
