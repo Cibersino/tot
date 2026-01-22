@@ -1,9 +1,26 @@
 // electron/link_openers.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Gate external URL opens to an allowlist and https only.
+// - Resolve and open app documentation files by docKey.
+// - Handle dev vs packaged doc locations and copy-to-temp cases.
+// - Register IPC handlers that return { ok, reason } results.
+
+// =============================================================================
+// Imports
+// =============================================================================
+
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+
+// =============================================================================
+// Constants / config
+// =============================================================================
 
 const ALLOWED_EXTERNAL_HOSTS = new Set([
   'github.com',
@@ -19,6 +36,10 @@ const APP_DOC_FILES = Object.freeze({
   'privacy-policy': 'PRIVACY.md',
 });
 const APP_DOC_BASKERVVILLE = 'license-baskervville';
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 async function fileExists(filePath) {
   try {
@@ -57,6 +78,10 @@ async function openPathWithLog(shell, log, rawKey, filePath) {
   }
   return { ok: true };
 }
+
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
 
 function registerLinkIpc({ ipcMain, app, shell, log }) {
   ipcMain.handle('open-external-url', async (_e, url) => {
@@ -170,4 +195,12 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = { registerLinkIpc };
+
+// =============================================================================
+// End of electron/link_openers.js
+// =============================================================================
