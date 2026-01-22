@@ -1185,3 +1185,10 @@ Abrir carpeta de presets_defaults (IPC `open-default-presets-folder`)
 
 B) (Opcional) Clean run (para cubrir seeding de defaults)
 - [x] Clean first-run: renombrar/borrar `config/` y lanzar app. Arranca ok y presets defaults aparecen (sin necesidad de corrupcion manual).
+
+---
+
+## electron/menu_builder.js
+
+Date: `2026-01-21`
+Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
