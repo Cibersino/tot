@@ -1145,3 +1145,15 @@ Observed changes (diff-based):
 Evidence:
 - Diff: `electron/presets_main.js` (comments-only).
 
+### L6 — Final review (Codex)
+
+Decision: **CHANGED** (comments-only)
+
+Observed changes (diff-based):
+- Fixed JSDoc drift in `registerIpc` params: `opts.getWindows` shape now lists `flotanteWin` (was `floatingWin`), aligning documentation with actual window naming used by callers.
+
+Reviewer assessment (sufficiency & inference quality):
+- The change is justified as a documentation drift fix, and it is comments-only (so contract/timing are preserved by construction).
+
+Evidence:
+- Diff: `electron/presets_main.js` (JSDoc line in `registerIpc` opts.getWindows shape).

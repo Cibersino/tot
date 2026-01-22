@@ -227,7 +227,7 @@ function copyDefaultPresetsIfMissing() {
  *
  * @param {Electron.IpcMain} ipcMain
  * @param {Object} opts
- * @param {Function} opts.getWindows -() => ({ mainWin, editorWin, presetWin, floatingWin, langWin })
+ * @param {Function} opts.getWindows -() => ({ mainWin, editorWin, presetWin, flotanteWin, langWin })
  */
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain) {
