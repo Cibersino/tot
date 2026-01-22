@@ -1472,3 +1472,16 @@ Observable contract/timing preserved: mismos exports, canal IPC y shapes; mismos
 - Smoke focalizado: ejecutar el flujo “Buscar actualizaciones” (manual) y verificar que:
   - en falla (sin red / respuesta inválida / tag no `v`), aparece el mismo diálogo de error;
   - no hay excepciones ni logs inesperados.
+
+### L2 decision: NO CHANGE
+
+- Rationale (Codex):
+  - L1 ya removió la duplicación principal (diálogo de falla manual) sin introducir indirection excesiva.
+  - El resto del flujo son early-returns por outcomes de SemVer/red/tag; consolidarlos arriesga ocultar puntos de decisión.
+  - Manejo de errores y logging ya es explícito y proporcional; “mejorarlo” tendería a ser ruido o cambio observable.
+  - IPC es minimalista; tocarlo puede afectar readiness/races.
+
+Reviewer assessment (sufficiency & interpretation quality):
+- PASS (NO CHANGE), coherente con el estado del archivo y con el riesgo/beneficio esperado de L2.
+- Confirmado: diff vacío (sin cambios aplicados).
+- Nota menor: el reporte resume “warn por ruta de falla” de forma algo no literal, pero sin impacto práctico.
