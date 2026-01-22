@@ -1658,3 +1658,21 @@ Last commit: `f1e3a74aa5abc2d2cf221d8b2267b8056c8bf7b1`
     - `ipcRenderer.*`: none
     - `webContents.send`: none
     - Delegated IPC registration: none
+
+### L1 — Structural refactor (Codex)
+
+Decision: NO CHANGE
+- File already follows a clean imports -> constants -> helpers -> handlers -> exports order; reordering would be redundant.
+- Handler logic is already grouped by IPC entrypoint (`open-external-url`, `open-app-doc`) and reads linearly within each block.
+- Duplication (openPath + error handling) is localized and extracting helpers would add indirection without reducing branches.
+- Branching in `open-app-doc` reflects distinct packaging/dev and doc-key cases; flattening would risk readability.
+- Naming is concise and unambiguous; renames would not reduce cognitive load.
+
+**Risk**
+- N/A (no code changes).
+
+**Validation**
+- N/A (no code changes; baseline unchanged).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The “NO CHANGE” decision is consistent with the current linear structure and the anti-indirection rule; no contract/IPC/timing claims were introduced at L1 beyond what is directly visible in-file.
