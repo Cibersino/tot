@@ -44,6 +44,15 @@ async function copyToTemp(app, srcPath, tempName) {
   return tempPath;
 }
 
+async function openPathWithLog(shell, log, rawKey, filePath) {
+  const openResult = await shell.openPath(filePath);
+  if (openResult) {
+    log.warn('open-app-doc open failed:', rawKey, openResult);
+    return { ok: false, reason: 'open_failed' };
+  }
+  return { ok: true };
+}
+
 function registerLinkIpc({ ipcMain, app, shell, log }) {
   ipcMain.handle('open-external-url', async (_e, url) => {
     try {
@@ -101,12 +110,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
 
         for (const candidate of devCandidates) {
           if (!(await fileExists(candidate))) continue;
-          const openResult = await shell.openPath(candidate);
-          if (openResult) {
-            log.warn('open-app-doc open failed:', rawKey, openResult);
-            return { ok: false, reason: 'open_failed' };
-          }
-          return { ok: true };
+          return openPathWithLog(shell, log, rawKey, candidate);
         }
 
         log.warn('open-app-doc not found (dev doc):', rawKey, fileName);
@@ -121,13 +125,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
         }
 
         const tempPath = await copyToTemp(app, srcPath, 'tot-readingmeter_LICENSE_Baskervville_OFL.txt');
-        const openResult = await shell.openPath(tempPath);
-        if (openResult) {
-          log.warn('open-app-doc open failed:', rawKey, openResult);
-          return { ok: false, reason: 'open_failed' };
-        }
-
-        return { ok: true };
+        return openPathWithLog(shell, log, rawKey, tempPath);
       }
 
       if (!Object.prototype.hasOwnProperty.call(APP_DOC_FILES, rawKey)) {
@@ -144,12 +142,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
 
       for (const candidate of candidates) {
         if (!(await fileExists(candidate))) continue;
-        const openResult = await shell.openPath(candidate);
-        if (openResult) {
-          log.warn('open-app-doc open failed:', rawKey, openResult);
-          return { ok: false, reason: 'open_failed' };
-        }
-        return { ok: true };
+        return openPathWithLog(shell, log, rawKey, candidate);
       }
 
       const fallbackPath = path.join(app.getAppPath(), fileName);
@@ -159,13 +152,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
       }
 
       const tempPath = await copyToTemp(app, fallbackPath, `tot-readingmeter_${fileName}`);
-      const openResult = await shell.openPath(tempPath);
-      if (openResult) {
-        log.warn('open-app-doc open failed:', rawKey, openResult);
-        return { ok: false, reason: 'open_failed' };
-      }
-
-      return { ok: true };
+      return openPathWithLog(shell, log, rawKey, tempPath);
     } catch (err) {
       log.error('Error processing open-app-doc:', err);
       return { ok: false, reason: 'error' };

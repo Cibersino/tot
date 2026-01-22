@@ -1676,3 +1676,22 @@ Decision: NO CHANGE
 
 Reviewer assessment (sufficiency & inference quality):
 - PASS. The “NO CHANGE” decision is consistent with the current linear structure and the anti-indirection rule; no contract/IPC/timing claims were introduced at L1 beyond what is directly visible in-file.
+
+### L2 decision: CHANGED
+
+- Change: Introduced `openPathWithLog(shell, log, rawKey, filePath)` and reused it to replace the repeated `shell.openPath` + `open_failed` handling blocks in `open-app-doc` (dev candidate open, Baskervville temp open, packaged candidate open, fallback temp open).
+  - Gain: Removes duplication and centralizes a security-relevant decision point (open failure → log + `{ ok:false, reason:'open_failed' }`) while keeping log text and return shape consistent.
+  - Cost: Adds one local helper (small indirection).
+  - Validation:
+    - Static: confirm the `'open-app-doc open failed:'` log text appears only in the helper and that all success/failure returns are unchanged.
+    - Manual smoke (targeted): trigger `open-app-doc` for (a) a known docKey that exists, (b) a known docKey missing → expect `not_found`, and (c) an “open failed” scenario (if reproducible) → expect `open_failed` and the same warn log once per attempt.
+
+**Evidence**
+- The same `openResult = await shell.openPath(...)` + `if (openResult) { log.warn(...); return { ok:false, reason:'open_failed' }; } return { ok:true };` sequence was duplicated across 4 branches in `open-app-doc` prior to this change.
+
+**Risk**
+- Low. Helper mirrors prior code paths; IPC surface and handler registration order unchanged.
+- Residual edge-case: the call sites now `return openPathWithLog(...)` (promise) rather than `await` inline; if `shell.openPath` were to reject unexpectedly, it could bypass the handler’s `catch` and change the observable failure shape. (Electron documents `openPath` as resolving with an error string on failure.) 
+
+**Validation**
+- Covered by L7 smoke (human-run) plus the targeted doc-open checks above.
