@@ -1347,3 +1347,26 @@ Reviewer assessment (sufficiency & inference quality):
 
 Evidence:
 - Diff: `electron/menu_builder.js` (comment-only hunks: Helpers divider insertion; fallback chain comment edit; removal of “Apply the menu...” comment).
+
+### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+- Decision (Codex): NO CHANGE
+- Codex report summary:
+  - Claims logging API usage matches `log.js`; highlights `sendMenuClick` uses `log.warnOnce(...)` with explicit keys.
+  - States translation fallback comment matches code.
+  - Confirms single outbound IPC send path: `webContents.send('menu-click', payload)`.
+  - Confirms export surface unchanged: `module.exports = { getDialogTexts, buildAppMenu, resolveDialogText }`.
+  - Notes dev menu guard: `process.env.SHOW_DEV_MENU === '1'`.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE), but note: Codex evidence is not mechanically complete for a "hard-close" on its own.
+  - What Codex checked is relevant and accurate (anchors exist in-file), but it did not provide an exhaustive scan
+    (e.g., list of all logging callsites / signature checks, or an explicit leftover scan after L4/L5).
+  - Manual spot-check of the current file supports NO CHANGE:
+    - Outbound send: `mainWindow.webContents.send('menu-click', payload)` is still the single IPC emit.
+    - `sendMenuClick` warnOnce keys are stable and explicit: `menu_builder.sendMenuClick.noWindow|destroyed|sendFailed`.
+    - Translation load warnOnce keys are stable and do not embed dynamic file paths:
+      `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}` and
+      `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`.
+    - Export surface remains `getDialogTexts`, `buildAppMenu`, `resolveDialogText`.
+    - Dev menu guard is still `process.env.SHOW_DEV_MENU === '1'`.
