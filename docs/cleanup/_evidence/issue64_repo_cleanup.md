@@ -1603,3 +1603,58 @@ Result: PASS
 
 Date: `2026-01-22`
 Last commit: `f1e3a74aa5abc2d2cf221d8b2267b8056c8bf7b1`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - Strict mode + header comment.
+    - Imports (`fs`, `path`, `os`).
+    - Constants/config (`ALLOWED_EXTERNAL_HOSTS`, `APP_DOC_FILES`, `APP_DOC_BASKERVVILLE`).
+    - Helpers (`fileExists`, `getTempDir`, `copyToTemp`).
+    - Main logic: `registerLinkIpc(...)` with 2 IPC handlers.
+    - Exports (`module.exports = { registerLinkIpc }`).
+  - Where linear reading breaks:
+    - `registerLinkIpc` nests two long async handlers: `"ipcMain.handle('open-external-url', async (_e, url) => {"`.
+    - `ipcMain.handle('open-app-doc', ...)` has multi-branch policy (dev vs packaged): `"if (!app.isPackaged && (rawKey === 'license-electron'"`.
+    - `APP_DOC_BASKERVVILLE` special-case path/copy: `"if (rawKey === APP_DOC_BASKERVVILLE) {"`.
+    - `devCandidates` probing loop: `"for (const candidate of devCandidates) {"`.
+    - `candidates` probing loop (packaged/resources): `"for (const candidate of candidates) {"`.
+
+- Contract map (exports / side effects / IPC):
+  - Module exposure:
+    - Export: `registerLinkIpc`.
+    - Anchor: `"module.exports = { registerLinkIpc }"`.
+  - Side effects (only when called):
+    - `registerLinkIpc(...)` registers handlers via `ipcMain.handle(...)`.
+    - Anchor: `"ipcMain.handle('open-external-url'"` and `"ipcMain.handle('open-app-doc'"`.
+  - Invariants and fallbacks (anchored):
+    - External URL must be non-empty string after trim:
+      - Anchor: `"const raw = typeof url === 'string' ? url.trim() : ''"` and `"if (!raw) {"`.
+    - External URL must parse as URL, and be `https` + allowed host:
+      - Anchor: `"parsed = new URL(raw)"` and `"parsed.protocol !== 'https:' || !ALLOWED_EXTERNAL_HOSTS.has"`.
+    - docKey must be non-empty string after trim:
+      - Anchor: `"const rawKey = typeof docKey === 'string' ? docKey.trim() : ''"` and `"if (!rawKey) {"`.
+    - Some docs are blocked in dev when `!app.isPackaged`:
+      - Anchor: `"if (!app.isPackaged && (rawKey === 'license-electron' || rawKey === 'licenses-chromium')) {"`.
+    - Doc key must exist in `APP_DOC_FILES` (except special-case Baskervville):
+      - Anchor: `"Object.prototype.hasOwnProperty.call(APP_DOC_FILES, rawKey)"`.
+    - File existence is checked before opening; temp fallback exists for temp dir:
+      - Anchor: `"if (!(await fileExists("` and `"return os.tmpdir();"`.
+    - Copy-to-temp helper used before opening some files:
+      - Anchor: `"const tempPath = await copyToTemp(app, srcPath"` and `"await fs.promises.writeFile(tempPath, data)"`.
+
+  - IPC contract (only what exists in this file):
+    - `ipcMain.handle('open-external-url', async (_e, url) => ...)`
+      - Input boundary: `(_e, url)` (string expected; trimmed defensively).
+      - Return: `{ ok: true }` or `{ ok: false, reason: 'blocked' | 'error' }`.
+      - Outgoing sends: none.
+    - `ipcMain.handle('open-app-doc', async (_e, docKey) => ...)`
+      - Input boundary: `(_e, docKey)` (string expected; trimmed defensively).
+      - Return: `{ ok: true }` or `{ ok: false, reason: 'blocked' | 'not_available_in_dev' | 'not_found' | 'open_failed' | 'error' }`.
+      - Outgoing sends: none.
+    - `ipcMain.on`: none
+    - `ipcMain.once`: none
+    - `ipcRenderer.*`: none
+    - `webContents.send`: none
+    - Delegated IPC registration: none
