@@ -75,14 +75,14 @@ tot-readingmeter/
 │ │ ├── instrucciones.en.html
 │ │ └── links_interes.html
 │ ├── js/
-│ │ ├── constants.js
 │ │ ├── count.js
-│ │ ├── format.js
-│ │ ├── i18n.js
-│ │ ├── menu_actions.js
-│ │ ├── notify.js
 │ │ ├── presets.js
 │ │ ├── crono.js
+│ │ ├── menu_actions.js
+│ │ ├── format.js
+│ │ ├── i18n.js
+│ │ ├── constants.js
+│ │ ├── notify.js
 │ │ ├── info_modal_links.js
 │ │ └── log.js
 │ ├── renderer.js
@@ -140,7 +140,7 @@ tot-readingmeter/
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
-- `electron/menu_builder.js` — Construcción del menú nativo (labels i18n) + router de acciones hacia renderer (`menu-click`) + textos de diálogos.
+- `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
 - `electron/updater.js` — Lógica de actualización (comparación de versión, diálogos y apertura de URL de descarga).
 - `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique).
 - `electron/log.js` — Logger del proceso principal (política de logs/fallbacks).
