@@ -1531,3 +1531,16 @@ Observable contract/timing preserved (no code changes).
 - Se agregan divisores de sección que calzan con el orden real del archivo: imports/logger, constants/config, shared state, helpers, update flow, lifecycle, IPC, exports.
 - Se agrega marcador explícito de fin de archivo ("End of electron/updater.js").
 - No functional changes; comments-only.
+
+### L6 — Final review (Codex)
+
+Decision: **NO CHANGE**
+
+No Level 6 changes justified.
+- Checked helper usage in `checkForUpdates` (e.g., `shouldShowManualDialog`) for leftover duplication; no safe simplification without adding indirection.
+- Checked IPC handler payload parsing (`ipcMain.handle('check-for-updates', async (_event, payload = {}) =>`) and return shapes; consistent.
+- Checked manual vs auto flow (`checkForUpdates({ manual: false })`) and dialog gating (`manual && mainWin && !mainWin.isDestroyed()`); consistent.
+- Checked logging calls (`log.warn('Latest release fetch failed with status:'`) against `electron/log.js` API; signatures match.
+- Checked comments vs code (`// Update flow (manual vs auto)` and `// App lifecycle / bootstrapping`); no drift.
+
+Observable contract and timing were preserved (no code changes).
