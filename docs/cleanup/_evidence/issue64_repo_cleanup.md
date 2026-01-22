@@ -1716,3 +1716,21 @@ Evidence checked (anchors):
 
 **Validation**
 - N/A (no code changes).
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+- Change: Made the temp-dir fallback non-silent by logging a deduplicated warning when `app.getPath('temp')` fails in `getTempDir` (used by `copyToTemp`).
+  - Gain: Satisfies “no silent fallbacks” while keeping noise low (warnOnce).
+  - Cost: Threads `log` through the temp-path helpers and updates two internal call sites.
+  - Validation:
+    - Static: search for the stable key `link_openers.tempPath.fallback`.
+    - Manual: force `app.getPath('temp')` to throw and invoke `open-app-doc`; expect a single `warnOnce` emission and unchanged IPC return shapes.
+
+**Evidence (anchors)**
+- Prior silent fallback: `catch { return os.tmpdir(); }` in `getTempDir(app)`.
+- New non-silent fallback: `catch (err) { log.warnOnce('link_openers.tempPath.fallback', 'open-app-doc temp path fallback: ... using os.tmpdir().', err); return os.tmpdir(); }`.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The change removes a silent fallback without affecting IPC/return shapes/timing and keeps logger semantics consistent (no optional-logger branching; no forced severity changes).
