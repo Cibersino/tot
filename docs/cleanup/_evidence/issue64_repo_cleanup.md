@@ -768,6 +768,8 @@ Checklist:
 - [x] Cerrar completamente la app y relanzar.
       Esperado: `init` carga el ultimo texto persistido (o vacio si se vacio); sin errores en startup.
 
+---
+
 ## electron/editor_state.js
 
 Date: `2026-01-21`
@@ -1383,6 +1385,8 @@ Result: Pass
 - [x] (6) Repetir 1 accion post-idioma: funciona (sin regresion).
 - [c] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
 
+---
+
 ## electron/updater.js
 
 Date: `2026-01-22`
@@ -1568,7 +1572,34 @@ Checklist:
       Elegir la accion de descarga.
       Esperado: se abre el browser (shell.openExternal) y la app sigue estable.
 
+---
+
 ## electron/constants_main.js
 
 Date: `2026-01-22`
 Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
+
+## electron/constants_main.js
+
+### L0 — Minimal diagnosis (Codex)
+
+- Block order: strict mode; constants/config; module.exports.
+- Linear reading breaks: none observed; single responsibility constants.
+- Exposes (CommonJS): `DEFAULT_LANG`, `MAX_TEXT_CHARS`, `MAX_IPC_MULTIPLIER`, `MAX_IPC_CHARS`, `MAX_PRESET_STR_CHARS`, `MAX_META_STR_CHARS`.
+- Invariants: `MAX_IPC_CHARS` derived from `MAX_TEXT_CHARS` (safety cap for IPC payload size).
+- IPC: none declared in this file.
+
+Result: PASS
+
+### L1–L7
+
+Decision: NO CHANGE (file is constants-only; no behavior/IPC/timing surface to refactor or smoke-test at module level).
+
+Result: PASS
+
+---
+
+## electron/link_openers.js
+
+Date: `2026-01-22`
+Last commit: `f1e3a74aa5abc2d2cf221d8b2267b8056c8bf7b1`
