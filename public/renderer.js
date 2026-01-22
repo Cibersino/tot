@@ -816,7 +816,7 @@ const loadPresets = async () => {
 
     window.menuActions.registerMenuAction('actualizar_version', async () => {
       try {
-        await window.electronAPI.checkForUpdates();
+        await window.electronAPI.checkForUpdates(true);
       } catch (err) {
         log.error('Error requesting checkForUpdates:', err);
       }
