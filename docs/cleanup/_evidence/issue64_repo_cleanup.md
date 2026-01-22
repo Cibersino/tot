@@ -1157,3 +1157,31 @@ Reviewer assessment (sufficiency & inference quality):
 
 Evidence:
 - Diff: `electron/presets_main.js` (JSDoc line in `registerIpc` opts.getWindows shape).
+
+### L7 — Smoke test (humano) — `electron/presets_main.js`
+
+Result: PASS
+
+A) Camino principal (config existente)
+- [x] SM-01 Arranque normal: UI usable, sin modal bloqueante.
+- [x] Log sanity (idle 20–30s con logs visibles): sin spam de WARN/ERROR repetidos, sin uncaught exceptions.
+- [x] SM-07 Seleccion de preset: cambia WPM y tiempo estimado coherentemente.
+
+CRUD presets (idioma actual)
+- [x] REG-PRESETS-01 Create: crear preset `l7_smoke` (WPM 300). Aparece y aplica.
+- [x] REG-PRESETS-02 Edit: editar `l7_smoke` -> WPM 275. Confirma y aplica.
+- [x] REG-PRESETS-07 Persistencia: con `l7_smoke` seleccionado, cerrar app y relanzar. Sigue presente/seleccionado/aplicado.
+
+
+Aislamiento por idioma base
+- [x] REG-PRESETS-03 Cambiar idioma base y verificar que `l7_smoke` NO aparece en el otro idioma; volver y confirmar que SI aparece.
+
+Delete + restore defaults
+- [x] REG-PRESETS-04 Delete: borrar `l7_smoke` (confirm dialog). Desaparece y queda seleccion valida (fallback seguro).
+- [x] REG-PRESETS-06 Restore defaults: restaurar defaults (R). Lista queda valida y seleccion valida (fallback seguro).
+
+Abrir carpeta de presets_defaults (IPC `open-default-presets-folder`)
+- [x] Abrir “default presets folder” desde UI/menu. Se abre el file manager en `config/presets_defaults/`.
+
+B) (Opcional) Clean run (para cubrir seeding de defaults)
+- [x] Clean first-run: renombrar/borrar `config/` y lanzar app. Arranca ok y presets defaults aparecen (sin necesidad de corrupcion manual).
