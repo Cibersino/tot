@@ -1447,3 +1447,28 @@ A) Explicit IPC in this file:
 
 B) Delegated registration:
 - None
+
+### L1 decision: CHANGED
+
+- Change: Deduplicación local dentro de `checkForUpdates` del diálogo de falla “manual” (mismo texto/keys).
+  - Added predicate `shouldShowManualDialog()` para centralizar el gating:
+    - Anchor: `"manual && mainWin && !mainWin.isDestroyed()"` (equivalente; ahora encapsulado).
+  - Added helper `showUpdateFailureDialog()` que construye `title/message/buttons` y llama `dialog.showMessageBox(...)`:
+    - Anchors: `"update_failed_title"`, `"update_failed_message"`, `"await dialog.showMessageBox(mainWin"`.
+  - Reemplazados 4 bloques repetidos por `if (shouldShowManualDialog()) await showUpdateFailureDialog();` en:
+    - `!localParsed`
+    - `!remoteTag`
+    - `!remoteTag.startsWith('v')`
+    - `!remoteParsed`
+- No se tocó IPC (`ipcMain.handle('check-for-updates', ...)`), ni keys de i18n, ni logs, ni el flujo general de actualización.
+
+Observable contract/timing preserved: mismos exports, canal IPC y shapes; mismos early-returns y side effects.
+
+**Risk**
+- Low. Refactor local (in-function) que reemplaza duplicación literal por helpers; sin cambios en inputs/outputs ni en IPC.
+
+**Validation**
+- Review diffs: confirmar que el contenido del diálogo (keys + fallbacks + botones) es idéntico a los 4 bloques previos.
+- Smoke focalizado: ejecutar el flujo “Buscar actualizaciones” (manual) y verificar que:
+  - en falla (sin red / respuesta inválida / tag no `v`), aparece el mismo diálogo de error;
+  - no hay excepciones ni logs inesperados.
