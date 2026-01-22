@@ -137,6 +137,25 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     const mainWin = typeof mainWinRef === 'function' ? mainWinRef() : null;
     const dlg = menuBuilder.getDialogTexts(effectiveLang) || {};
 
+    const shouldShowManualDialog = () =>
+      manual && mainWin && !mainWin.isDestroyed();
+
+    const showUpdateFailureDialog = async () => {
+      const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
+      const message = resolveDialogText(
+        dlg,
+        'update_failed_message',
+        'Could not check for updates. Please check your connection and try again.'
+      );
+      await dialog.showMessageBox(mainWin, {
+        type: 'none',
+        buttons: [resolveDialogText(dlg, 'ok', 'OK')],
+        defaultId: 0,
+        title,
+        message,
+      });
+    };
+
     let localVer = null;
     try {
       localVer = String(app.getVersion() || '').trim();
@@ -148,60 +167,24 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     const localParsed = parseSemVer(localVer);
     if (!localParsed) {
       log.warn('Local version is not valid SemVer:', localVer);
-      if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
-        const message = resolveDialogText(
-          dlg,
-          'update_failed_message',
-          'Could not check for updates. Please check your connection and try again.'
-        );
-        await dialog.showMessageBox(mainWin, {
-          type: 'none',
-          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
-          defaultId: 0,
-          title,
-          message,
-        });
+      if (shouldShowManualDialog()) {
+        await showUpdateFailureDialog();
       }
       return;
     }
 
     const remoteTag = await fetchLatestReleaseTag(RELEASES_API_URL);
     if (!remoteTag) {
-      if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
-        const message = resolveDialogText(
-          dlg,
-          'update_failed_message',
-          'Could not check for updates. Please check your connection and try again.'
-        );
-        await dialog.showMessageBox(mainWin, {
-          type: 'none',
-          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
-          defaultId: 0,
-          title,
-          message,
-        });
+      if (shouldShowManualDialog()) {
+        await showUpdateFailureDialog();
       }
       return;
     }
 
     if (!remoteTag.startsWith('v')) {
       log.warn('Latest release tag is missing required "v" prefix:', remoteTag);
-      if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
-        const message = resolveDialogText(
-          dlg,
-          'update_failed_message',
-          'Could not check for updates. Please check your connection and try again.'
-        );
-        await dialog.showMessageBox(mainWin, {
-          type: 'none',
-          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
-          defaultId: 0,
-          title,
-          message,
-        });
+      if (shouldShowManualDialog()) {
+        await showUpdateFailureDialog();
       }
       return;
     }
@@ -210,20 +193,8 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     const remoteParsed = parseSemVer(remoteVer);
     if (!remoteParsed) {
       log.warn('Remote version is not valid SemVer:', remoteVer);
-      if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
-        const message = resolveDialogText(
-          dlg,
-          'update_failed_message',
-          'Could not check for updates. Please check your connection and try again.'
-        );
-        await dialog.showMessageBox(mainWin, {
-          type: 'none',
-          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
-          defaultId: 0,
-          title,
-          message,
-        });
+      if (shouldShowManualDialog()) {
+        await showUpdateFailureDialog();
       }
       return;
     }
