@@ -1695,3 +1695,24 @@ Reviewer assessment (sufficiency & inference quality):
 
 **Validation**
 - Covered by L7 smoke (human-run) plus the targeted doc-open checks above.
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- IPC surface is limited to two handlers in this module:
+  - "ipcMain.handle('open-external-url'"
+  - "ipcMain.handle('open-app-doc'"
+- Consumer wrapper exists in `electron/preload.js` and invokes exactly these channels:
+  - "openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url)"
+  - "openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey)"
+- In-file contract remains explicit and closed:
+  - URL gating: "parsed.protocol !== 'https:'" and "ALLOWED_EXTERNAL_HOSTS.has"
+  - Uniform error return: "return { ok: false, reason: 'error' }"
+
+**Risk**
+- N/A (no code changes).
+
+**Validation**
+- N/A (no code changes).
