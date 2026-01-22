@@ -1078,3 +1078,25 @@ Change 2: Centralize `disabled_default_presets` initialization with `ensureDisab
 - Validation: Grep de `ensureDisabledDefaultPresets(` y smoke manual de delete/edit/restore que ignoran/unignoran defaults.
 
 Observable contract, IPC surface, side effects, and timing preserved (per Codex report; diff shows handler order unchanged and only local helper extraction).
+
+### L3 — Architecture / contract changes (Codex, rerun with repo-wide consumer scan)
+
+Decision: **NO CHANGE (no Level 3 justified)**
+
+Evidence provided by Codex (repo-wide string scan + consumer interpretation):
+- Handlers: repo-wide occurrences + consumer return interpretation for:
+  - `get-default-presets` (consumer reads `defaults.general` / `defaults.languagePresets`)
+  - `open-default-presets-folder` (consumer checks `res.ok` then `res.error`)
+  - `create-preset` (consumer checks `res.ok` else error UI)
+  - `request-delete-preset` (consumer checks `res.ok` and `res.code` like `NO_SELECTION`/`CANCELLED`)
+  - `request-restore-defaults` (consumer checks `res.ok` and `res.code === 'CANCELLED'`)
+  - `notify-no-selection-edit` (consumer awaits call; ignores return)
+  - `edit-preset` (consumer checks `res.ok` and `res.code === 'CANCELLED'`)
+- Events:
+  - `settings-updated`: repo-wide listeners enumerated across multiple preloads.
+  - `preset-created`: emitter occurrences listed; consumption traced via preload callback + renderer handler.
+
+Reviewer assessment (sufficiency & inference quality):
+- Sufficient evidence to support NO CHANGE at Level 3: no demonstrated multi-consumer divergence in handler return semantics.
+- Remaining incompleteness: event payload semantics are not compared across renderer consumers (especially `settings-updated`), and `preset-created` evidence anchors include handler internals but not the subscription site; therefore “no conflicting payload assumptions” is under-supported.
+
