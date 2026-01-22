@@ -1749,3 +1749,15 @@ Decision: CHANGED
 
 **Evidence (anchors)**
 - Overview bullet (corrected): "Register IPC handlers that return { ok: true } or { ok: false, reason }."
+
+### L6 — Final review (Codex)
+
+* **Decision: NO CHANGE**
+* “No Level 6 changes justified.”
+* Bullets (recomendado que queden anclados al código actual):
+
+  * `getTempDir(app, log)` solo se usa vía `copyToTemp(...)`; no hay drift de firma interna. 
+  * `warnOnce('link_openers.tempPath.fallback', ...)` usa key estable y respeta la firma `warnOnce(key, ...args)` de `electron/log.js`. 
+  * IPC handlers presentes: `'open-external-url'` y `'open-app-doc'`; retornan `{ ok: true }` o `{ ok: false, reason }`. 
+  * Apertura de paths centralizada en `openPathWithLog`. 
+  * Nota explícita: “Se mantiene y acepta el *residual edge-case* ya documentado (return de Promise sin await en `openPathWithLog`); no se modifica en L6.” 
