@@ -1267,3 +1267,32 @@ Observable contract and timing preserved by making no changes.
 Reviewer assessment (sufficiency & inference quality):
 - PASS (NO CHANGE). Given zero code changes, the decision hinges on whether L2 changes would be low-risk and net-positive; the file already has warnOnce/errorOnce patterns and explicit fallback logic, so “do not touch” is defensible.
 - Minor wording issue in Codex report: while there is no IPC *registration* (`ipcMain.*` / `ipcRenderer.*`) in this module, it does perform IPC *sending* via `mainWindow.webContents.send('menu-click', payload)`. This does not affect the NO CHANGE conclusion.
+
+### L3 — Architecture / contract changes (Codex) (follow-up re-run: evidence completeness)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence (end-to-end IPC contract):
+- Sender outbound IPC in `electron/menu_builder.js` `sendMenuClick`; micro-quote: "webContents.send('menu-click', payload)".
+- Sender payload is a string literal at call sites in `electron/menu_builder.js` `menuTemplate`; micro-quote: "click: () => sendMenuClick('guia_basica')".
+- Receiver listens in `electron/preload.js` `onMenuClick`; micro-quote: "ipcRenderer.on('menu-click', wrapper)".
+- Preload forwards payload unchanged in `electron/preload.js` `onMenuClick`; micro-quote: "cb(payload)".
+
+Contract consistency (as argued by Codex):
+- Sender uses string action ids; receiver forwards unchanged; renderer consumes as action key and enforces string keys (per Codex inspection of `public/js/menu_actions.js`).
+
+Scan evidence (repo-wide):
+- Query/pattern: `rg -n "menu-click" -S .`
+- Matches: 21
+- Key matches (as reported by Codex):
+  - `electron/menu_builder.js` (channel + send call + logs)
+  - `electron/preload.js` (ipcRenderer.on/removeListener)
+  - `public/js/menu_actions.js` (menu-click received log line)
+  - Docs/evidence references (non-contractual mentions)
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE). This follow-up addresses the prior gap by providing sender + receiver anchors and a repo-wide scan for the IPC channel literal.
+- Minor evidence gap: the renderer-side micro-quotes (payload type enforcement / Map key usage) are not backed by the included `menu-click` scan excerpt (they may not contain the literal). This does not affect the Level 3 “NO CHANGE” decision.
