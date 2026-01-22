@@ -1192,3 +1192,45 @@ B) (Opcional) Clean run (para cubrir seeding de defaults)
 
 Date: `2026-01-21`
 Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
+
+### L0 — Diagnosis (no changes) (Codex, follow-up re-run; verified)
+
+Note: Follow-up re-run because prior L0 asserted an IPC payload shape without anchoring to a call site. This L0 keeps payload shape “unknown at this boundary” when only an identifier is visible.
+
+- Reading map (minimal)
+  - Block order: header/comments; external imports; internal imports; logger + helpers; translation loading; getDialogTexts; buildAppMenu; exports.
+  - Linear reading breaks:
+    - `buildAppMenu` -> sendMenuClick closure; micro-quote: "const sendMenuClick = (payload) => {"
+    - `buildAppMenu` -> menuTemplate literal; micro-quote: "const menuTemplate = ["
+    - `buildAppMenu` -> dev menu branch; micro-quote: "if (!app.isPackaged && showDevMenu) {"
+    - `loadBundle` -> file loop; micro-quote: "for (const file of files) {"
+
+- Contract map (minimal)
+  - Exposes: `getDialogTexts`, `buildAppMenu`, `resolveDialogText`; micro-quote: "module.exports = {"
+  - Observable side effects (anchored):
+    - Sets application menu; micro-quote: "Menu.setApplicationMenu(appMenu)"
+    - Reads translation files; micro-quote: "fs.readFileSync(file, 'utf8')"
+    - Sends renderer message; micro-quote: "webContents.send('menu-click', payload)"
+    - Toggles DevTools in dev menu; micro-quote: "mainWindow.webContents.toggleDevTools()"
+  - Suggested invariants/fallbacks (anchored):
+    - Language tag falls back to default; micro-quote: "normalizeLangTag(lang) || DEFAULT_LANG"
+    - Menu label falls back to provided fallback; micro-quote: "return fallback"
+    - Dialog text falls back to provided fallback; micro-quote: "return fallback"
+    - Empty JSON triggers fallback; micro-quote: "if (raw.trim() === '')"
+    - Dialog section falls back to empty object; micro-quote: "return tMain.dialog || {}"
+    - Menu click drops without window; micro-quote: "if (!mainWindow) {"
+
+- IPC contract
+  - A) Exhaustive IPC enumeration:
+    - `webContents.send('menu-click', payload)`
+      - Channel argument: `"menu-click"` (string literal)
+      - Handler/listener boundary args: n/a (send call)
+      - Return shape: n/a (send call)
+      - Payload argument: identifier `payload` (shape unknown at this boundary); micro-quote: "webContents.send('menu-click', payload)"
+      - Call-site micro-quote: "mainWindow.webContents.send('menu-click', payload)"
+    - No `ipcMain.*` or `ipcRenderer.*` occurrences found in this file.
+  - B) Delegated registration: none found.
+
+Reviewer assessment (L0 protocol compliance):
+- PASS (follow-up): no inferred payload/type shapes; contract statements are anchored with micro-quotes.
+- Note: the “no ipcMain/ipcRenderer occurrences” claim is a negative scan result (not independently evidenced inside this document).
