@@ -1382,3 +1382,8 @@ Result: Pass
 - [x] (5) Cambio de idioma por flujo normal: UI/menu siguen correctos; NO aparecen warnings i18n tipo “Failed to load/parse main.json…” / “main.json is empty…”.
 - [x] (6) Repetir 1 accion post-idioma: funciona (sin regresion).
 - [c] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
+
+## electron/updater.js
+
+Date: `2026-01-22`
+Last commit: `f29062b2ac374c073a462fb67710ff64114e8c91`
