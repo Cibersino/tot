@@ -16,6 +16,16 @@ const menuBuilder = require('./menu_builder');
 
 // Default presets source folder (.js)
 const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
+const PRESETS_SOURCE_DIR_RESOLVED = path.resolve(PRESETS_SOURCE_DIR);
+
+function presetJsonKey(filePath) {
+  const resolved = path.resolve(filePath);
+  const base = path.basename(resolved);
+  const source = resolved.startsWith(PRESETS_SOURCE_DIR_RESOLVED + path.sep)
+    ? 'bundled'
+    : 'config';
+  return `${source}:${base}`;
+}
 
 const resolveDialogText = (dialogTexts, key, fallback) =>
   menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
@@ -64,9 +74,22 @@ function loadPresetArrayFromJson(filePath) {
     if (!fs.existsSync(filePath)) return [];
     const raw = fs.readFileSync(filePath, 'utf8');
     const arr = JSON.parse(raw || '[]');
-    return Array.isArray(arr) ? arr : [];
+    if (!Array.isArray(arr)) {
+      log.warnOnce(
+        `presets_main.presetsJson.invalid:${presetJsonKey(filePath)}`,
+        '[presets_main] Preset JSON is not an array; using empty list (ignored):',
+        filePath
+      );
+      return [];
+    }
+    return arr;
   } catch (err) {
-    log.error(`[presets_main] Error loading preset JSON ${filePath}:`, err);
+    log.warnOnce(
+      `presets_main.presetsJson.read:${presetJsonKey(filePath)}`,
+      '[presets_main] Preset JSON load failed; using empty list (ignored):',
+      filePath,
+      err
+    );
     return [];
   }
 }
@@ -82,23 +105,42 @@ function loadDefaultPresetsCombined(lang) {
   const combined =
     loadPresetArrayFromJson(path.join(presetsDir, 'defaults_presets.json')).slice();
   if (!combined.length) {
+    log.warnOnce(
+      'presets_main.defaults.general.fallback',
+      '[presets_main] Default presets missing/empty in config; using bundled defaults (ignored).'
+    );
     combined.push(
       ...loadPresetArrayFromJson(path.join(PRESETS_SOURCE_DIR, 'defaults_presets.json'))
     );
+    if (!combined.length) {
+      log.errorOnce(
+        'presets_main.defaults.general.missingBundled',
+        '[presets_main] Bundled default presets missing/empty; presets list will be empty.'
+      );
+    }
   }
 
   const langCode = normalizeLangBase(lang);
   if (langCode) {
+    const bundledLangPath = path.join(
+      PRESETS_SOURCE_DIR,
+      `defaults_presets_${langCode}.json`
+    );
     const langPresets =
       loadPresetArrayFromJson(
         path.join(presetsDir, `defaults_presets_${langCode}.json`)
       ).slice();
     if (!langPresets.length) {
-      langPresets.push(
-        ...loadPresetArrayFromJson(
-          path.join(PRESETS_SOURCE_DIR, `defaults_presets_${langCode}.json`)
-        )
-      );
+      if (fs.existsSync(bundledLangPath)) {
+        log.warnOnce(
+          `presets_main.defaults.lang.fallback:${langCode}`,
+          '[presets_main] Default presets missing/empty in config; using bundled defaults (ignored):',
+          langCode
+        );
+        langPresets.push(
+          ...loadPresetArrayFromJson(bundledLangPath)
+        );
+      }
     }
     if (langPresets.length) combined.push(...langPresets);
   }
@@ -114,7 +156,14 @@ function copyDefaultPresetsIfMissing() {
     ensureConfigPresetsDir();
     const presetsDir = getConfigPresetsDir();
 
-    if (!fs.existsSync(PRESETS_SOURCE_DIR)) return;
+    if (!fs.existsSync(PRESETS_SOURCE_DIR)) {
+      log.warnOnce(
+        'presets_main.defaults.source.missing',
+        '[presets_main] Presets source dir missing; defaults copy skipped (ignored):',
+        PRESETS_SOURCE_DIR
+      );
+      return;
+    }
 
     const entries = fs.readdirSync(PRESETS_SOURCE_DIR);
     entries
@@ -139,15 +188,16 @@ function copyDefaultPresetsIfMissing() {
               `[presets_main] Copied default preset: ${src} -> ${dest}`
             );
           } catch (err) {
-            log.error(
-              `[presets_main] Error copying preset ${src} a JSON:`,
+            log.warn(
+              '[presets_main] Copy default preset failed (ignored):',
+              { src, dest },
               err
             );
           }
         }
       });
   } catch (err) {
-    log.error('[presets_main] Error in copyDefaultPresetsIfMissing:', err);
+    log.warn('[presets_main] copyDefaultPresetsIfMissing failed (ignored):', err);
   }
 }
 
@@ -178,13 +228,21 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         settingsState.broadcastSettingsUpdated(settings, windows);
       } else {
         // Defensive fallback if for some reason it is not exported
+        log.warnOnce(
+          'presets_main.broadcastSettingsUpdated.missing',
+          '[presets_main] broadcastSettingsUpdated missing; using mainWin send (ignored).'
+        );
         const { mainWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('settings-updated', settings);
         }
       }
     } catch (err) {
-      log.error('[presets_main] Error in broadcast settings-updated:', err);
+      log.warnOnce(
+        'presets_main.broadcast.settings-updated',
+        '[presets_main] settings-updated notify failed (ignored):',
+        err
+      );
     }
   }
 
@@ -257,6 +315,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         : [];
 
       // Load general defaults
+      let generalParseFailed = false;
       const generalJson = entries.find(
         (n) => n.toLowerCase() === 'defaults_presets.json'
       );
@@ -266,17 +325,36 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             fs.readFileSync(path.join(presetsDir, generalJson), 'utf8')
           );
         } catch (err) {
-          log.error('[presets_main] Error parsing', generalJson, err);
+          generalParseFailed = true;
+          log.warnOnce(
+            `presets_main.defaults.parse:${generalJson}`,
+            '[presets_main] Default presets parse failed; using bundled defaults (ignored):',
+            generalJson,
+            err
+          );
           general = [];
         }
       }
       if (!Array.isArray(general) || general.length === 0) {
+        if (!generalParseFailed) {
+          log.warnOnce(
+            'presets_main.defaults.general.fallback',
+            '[presets_main] Default presets missing/empty in config; using bundled defaults (ignored).'
+          );
+        }
         general = loadPresetArrayFromJson(
           path.join(PRESETS_SOURCE_DIR, 'defaults_presets.json')
         );
+        if (!general.length) {
+          log.errorOnce(
+            'presets_main.defaults.general.missingBundled',
+            '[presets_main] Bundled default presets missing/empty; returning empty list.'
+          );
+        }
       }
 
       // Load defaults by language from JSON: defaults_presets_<lang>.json
+      const invalidLangs = new Set();
       entries
         .filter((n) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(n))
         .forEach((n) => {
@@ -289,7 +367,13 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             );
             if (Array.isArray(arr)) languagePresets[lang] = arr;
           } catch (err) {
-            log.error('[presets_main] Error parsing', n, err);
+            invalidLangs.add(lang);
+            log.warnOnce(
+              `presets_main.defaults.parse.lang:${lang}`,
+              '[presets_main] Default presets parse failed; using bundled defaults (ignored):',
+              n,
+              err
+            );
           }
         });
 
@@ -304,6 +388,13 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           if (!match || !match[1]) return;
           const lang = match[1].toLowerCase();
           if (languagePresets[lang]) return; // already loaded from config JSON
+          if (!invalidLangs.has(lang)) {
+            log.warnOnce(
+              `presets_main.defaults.lang.fallback:${lang}`,
+              '[presets_main] Default presets missing in config; using bundled defaults (ignored):',
+              lang
+            );
+          }
           try {
             const arr = loadPresetArrayFromJson(path.join(PRESETS_SOURCE_DIR, n));
             if (Array.isArray(arr)) languagePresets[lang] = arr;
@@ -384,7 +475,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           mainWin.webContents.send('preset-created', sanitizedPreset);
         }
       } catch (err) {
-        log.error('[presets_main] Error sending preset-created:', err);
+        log.warnOnce(
+          'presets_main.send.preset-created.create',
+          '[presets_main] preset-created notify failed (ignored):',
+          err
+        );
       }
 
       return { ok: true };
@@ -725,8 +820,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           mainWin.webContents.send('preset-created', sanitizedPreset);
         }
       } catch (err) {
-        log.error(
-          '[presets_main] Error sending events after edit-preset:',
+        log.warnOnce(
+          'presets_main.send.preset-created.edit',
+          '[presets_main] preset-created notify failed (ignored):',
           err
         );
       }

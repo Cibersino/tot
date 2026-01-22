@@ -1100,3 +1100,32 @@ Reviewer assessment (sufficiency & inference quality):
 - Sufficient evidence to support NO CHANGE at Level 3: no demonstrated multi-consumer divergence in handler return semantics.
 - Remaining incompleteness: event payload semantics are not compared across renderer consumers (especially `settings-updated`), and `preset-created` evidence anchors include handler internals but not the subscription site; therefore “no conflicting payload assumptions” is under-supported.
 
+### L4 — Logs (policy-driven tuning) (Codex)
+
+Decision: **CHANGED**
+
+Changes (logging-only + minimal support):
+- Added stable key helper for JSON-related warnOnce/errorOnce bucketing (`presetJsonKey(filePath)`; suffix uses source + basename).
+- `loadPresetArrayFromJson`:
+  - Non-array JSON now logs `warnOnce` and falls back to `[]` (recoverable).
+  - Read/parse failure now logs `warnOnce` “load failed; using empty list (ignored)” and falls back to `[]`.
+- Defaults fallbacks now non-silent:
+  - General defaults missing/empty in config: `warnOnce` key `presets_main.defaults.general.fallback`.
+  - Bundled general defaults missing/empty: `errorOnce` key `presets_main.defaults.general.missingBundled`.
+  - Language defaults: `warnOnce` key `presets_main.defaults.lang.fallback:<lang>`, avoiding double-logging when config parse failed for that lang.
+- `copyDefaultPresetsIfMissing`:
+  - Missing bundled presets dir now `warnOnce` (skipped; ignored).
+  - Copy failures downgraded to `warn` (ignored), and whole-function failure downgraded to `warn` (ignored), consistent with best-effort fallback policy.
+- Best-effort sends and broadcast failures:
+  - Missing `broadcastSettingsUpdated` export now `warnOnce` then fallback to `mainWin` send.
+  - Broadcast failure now `warnOnce` “settings-updated notify failed (ignored): …”.
+  - `preset-created` send failures now `warnOnce` (create/edit variants).
+
+Reviewer assessment (sufficiency):
+- Evidence supports policy alignment (no silent fallbacks; best-effort sends deduped).
+- Validation plan is good for triggering paths, but incomplete: missing explicit “healthy path is not noisy” check and explicit justification that key suffixes are controlled variants (non-explosive).
+
+Observable contract/timing preserved (report + change scope limited to logging and helper keys).
+
+Evidence:
+- Diff: `electron/presets_main.js` (keys: `presets_main.defaults.*`, `presets_main.presetsJson.*`, `presets_main.broadcast.*`, `presets_main.send.preset-created.*`).
