@@ -1,7 +1,19 @@
 // electron/presets_main.js
-// Presets logic in the main process: defaults, settings.presets_by_language, native dialogs and associated IPC handlers.
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Load bundled and user-configured preset defaults (general + per-language).
+// - Validate and sanitize preset payloads from IPC.
+// - Persist preset changes into settings and broadcast updates.
+// - Show native confirmation/notification dialogs for preset actions.
+// - Register preset-related IPC handlers and events.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 const fs = require('fs');
 const path = require('path');
 const { dialog, shell } = require('electron');
@@ -14,10 +26,16 @@ const settingsState = require('./settings');
 const { normalizeLangTag, normalizeLangBase } = settingsState;
 const menuBuilder = require('./menu_builder');
 
-// Default presets source folder (.js)
+// =============================================================================
+// Constants / config
+// =============================================================================
+// Default presets source folder (bundled JSON seeds).
 const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
 const PRESETS_SOURCE_DIR_RESOLVED = path.resolve(PRESETS_SOURCE_DIR);
 
+// =============================================================================
+// Helpers
+// =============================================================================
 function presetJsonKey(filePath) {
   const resolved = path.resolve(filePath);
   const base = path.basename(resolved);
@@ -208,6 +226,9 @@ function copyDefaultPresetsIfMissing() {
  * @param {Object} opts
  * @param {Function} opts.getWindows -() => ({ mainWin, editorWin, presetWin, floatingWin, langWin })
  */
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain) {
     throw new Error('[presets_main] registerIpc requiere ipcMain');
@@ -839,3 +860,7 @@ module.exports = {
   registerIpc,
   sanitizePresetInput,
 };
+
+// =============================================================================
+// End of electron/presets_main.js
+// =============================================================================
