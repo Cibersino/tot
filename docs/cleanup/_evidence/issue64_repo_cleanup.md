@@ -1251,3 +1251,19 @@ Validation: N/A (no code changes).
 Reviewer assessment (sufficiency & inference quality):
 - PASS. The “NO CHANGE” decision is consistent with the file’s existing explicit sectioning and responsibilities (menu + i18n + dialog texts).
 - No unanchored IPC/contract/payload-shape assertions were introduced at Level 1.
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- Current helpers already encapsulate edge cases (missing translations, invalid/empty JSON, missing window) with deduped logging.
+- No repeated branching or error handling suitable for a new helper without adding indirection.
+- Menu template structure is inherently large; extracting it would increase jumping around without reducing complexity.
+- Translation loading flow is linear and explicit; making it more defensive risks altering fallback timing/logging.
+- No IPC registration or timing-sensitive sequencing is present to safely optimize without risk.
+
+Observable contract and timing preserved by making no changes.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE). Given zero code changes, the decision hinges on whether L2 changes would be low-risk and net-positive; the file already has warnOnce/errorOnce patterns and explicit fallback logic, so “do not touch” is defensible.
+- Minor wording issue in Codex report: while there is no IPC *registration* (`ipcMain.*` / `ipcRenderer.*`) in this module, it does perform IPC *sending* via `mainWindow.webContents.send('menu-click', payload)`. This does not affect the NO CHANGE conclusion.
