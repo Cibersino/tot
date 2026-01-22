@@ -26,6 +26,10 @@ const Log = require('./log');
 const { DEFAULT_LANG } = require('./constants_main');
 const { normalizeLangTag, getLangBase } = require('./settings');
 
+// =============================================================================
+// Helpers (logging + utilities)
+// =============================================================================
+
 const log = Log.get('menu');
 
 const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
@@ -73,7 +77,7 @@ function resolveDialogText(dialogTexts, key, fallback, opts = {}) {
 // Fallback chain (in order):
 // 1) requested tag (e.g. 'es-cl')
 // 2) base tag      (e.g. 'es')
-// 3) 'es' as a final safe fallback
+// 3) DEFAULT_LANG as a final safe fallback
 //
 // For each language code we try these file candidates:
 // - If it has a region (contains '-'):
@@ -415,7 +419,6 @@ function buildAppMenu(lang, opts = {}) {
         });
     }
 
-    // Apply the menu to the application.
     const appMenu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(appMenu);
 }

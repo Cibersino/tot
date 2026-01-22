@@ -1331,3 +1331,19 @@ Validation plan adequacy:
 
 Status: PASS (L4)
 
+### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
+
+Decision: CHANGED (comments-only)
+
+Observed changes (diff-based):
+- Added a `Helpers (logging + utilities)` section divider near the top of the file (after internal imports) to better match the real block order.
+- Fixed comment drift in the translation fallback chain: replaced the hardcoded final fallback `'es'` with `DEFAULT_LANG`.
+- Removed a redundant comment above the menu install call (reduced noise).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The diff demonstrates comments-only edits (no logic/contract/timing changes).
+- The changes are justified: they improve navigability (section divider), reduce drift (DEFAULT_LANG vs hardcoded tag), and remove low-signal commentary.
+- Minor incompleteness in Codex’s report: it does not explicitly evidence that the top Overview comment and the end-of-file marker requirement were verified (they may already exist, but this is not demonstrated in the report).
+
+Evidence:
+- Diff: `electron/menu_builder.js` (comment-only hunks: Helpers divider insertion; fallback chain comment edit; removal of “Apply the menu...” comment).
