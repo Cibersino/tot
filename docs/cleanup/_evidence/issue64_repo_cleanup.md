@@ -1516,3 +1516,11 @@ Validation:
 - DevTools: `window.electronAPI.checkForUpdates(true)` mantiene diálogos.
 - `rg -n -F "electronAPI.checkForUpdates(true)" public/renderer.js`.
 
+### L4 decision: NO CHANGE
+
+- Logging mechanism: main-process logger `Log.get('updater')` (consistente con política).
+- Fallbacks/errores recoverables ya registran `warn` (fetch/status, parse JSON, red, SemVer inválido, tag sin prefijo `v`).
+- No se justifica `warnOnce/errorOnce`: no hay eventos evidentes de alta frecuencia donde dedupe mejore señal/ruido.
+- No se justifica subir a `error`: fallos de update-check son recoverables y no rompen invariantes del runtime.
+
+Observable contract/timing preserved (no code changes).
