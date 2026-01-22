@@ -1544,3 +1544,26 @@ No Level 6 changes justified.
 - Checked comments vs code (`// Update flow (manual vs auto)` and `// App lifecycle / bootstrapping`); no drift.
 
 Observable contract and timing were preserved (no code changes).
+
+### L7 — Smoke (human-run; minimal)
+
+Result: Pass
+
+Checklist:
+- [x] Log sanity ~30s idle (sin ERROR/uncaught; sin repeticion continua del mismo warning en idle).
+- [x] Menu → About: abrir y cerrar.
+      Esperado: modal abre estable; sin errores.
+- [x] Menu → “Actualizar versión” (con red normal).
+      Esperado: aparece un dialogo (up-to-date / update available / failure).
+- [x] Validar "manual vs auto" (flag `manual` + silencio esperado en auto-failure):
+      1) Cerrar completamente la app.
+      2) Desconectar red (modo avion / cable / Wi-Fi off).
+      3) Relanzar la app y esperar ~10s.
+         Esperado: NO aparece dialogo automaticamente (auto-check es no-manual y ante falla no debe molestar al usuario).
+         (Se aceptan warnings en log por fetch fallido, sin spam continuo.)
+      4) Con la app abierta y aun sin red: Menu → “Actualizar versión”.
+         Esperado: aparece dialogo de fallo (manual path nunca es silencioso).
+      5) Re-conectar red (restaurar conectividad).
+- [x] (Opcional, si durante el check aparece “Update available”):
+      Elegir la accion de descarga.
+      Esperado: se abre el browser (shell.openExternal) y la app sigue estable.
