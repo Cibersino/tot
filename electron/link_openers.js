@@ -29,16 +29,21 @@ async function fileExists(filePath) {
   }
 }
 
-function getTempDir(app) {
+function getTempDir(app, log) {
   try {
     return app.getPath('temp');
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      'link_openers.tempPath.fallback',
+      'open-app-doc temp path fallback: app.getPath("temp") failed; using os.tmpdir().',
+      err
+    );
     return os.tmpdir();
   }
 }
 
-async function copyToTemp(app, srcPath, tempName) {
-  const tempPath = path.join(getTempDir(app), tempName);
+async function copyToTemp(app, srcPath, tempName, log) {
+  const tempPath = path.join(getTempDir(app, log), tempName);
   const data = await fs.promises.readFile(srcPath);
   await fs.promises.writeFile(tempPath, data);
   return tempPath;
@@ -124,7 +129,12 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
           return { ok: false, reason: 'not_found' };
         }
 
-        const tempPath = await copyToTemp(app, srcPath, 'tot-readingmeter_LICENSE_Baskervville_OFL.txt');
+        const tempPath = await copyToTemp(
+          app,
+          srcPath,
+          'tot-readingmeter_LICENSE_Baskervville_OFL.txt',
+          log
+        );
         return openPathWithLog(shell, log, rawKey, tempPath);
       }
 
@@ -151,7 +161,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
         return { ok: false, reason: 'not_found' };
       }
 
-      const tempPath = await copyToTemp(app, fallbackPath, `tot-readingmeter_${fileName}`);
+      const tempPath = await copyToTemp(app, fallbackPath, `tot-readingmeter_${fileName}`, log);
       return openPathWithLog(shell, log, rawKey, tempPath);
     } catch (err) {
       log.error('Error processing open-app-doc:', err);
