@@ -1734,3 +1734,18 @@ Decision: CHANGED
 
 Reviewer assessment (sufficiency & inference quality):
 - PASS. The change removes a silent fallback without affecting IPC/return shapes/timing and keeps logger semantics consistent (no optional-logger branching; no forced severity changes).
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Change: Added a reader-oriented comment structure aligned with `electron/main.js`:
+  - Overview header + responsibilities.
+  - Section dividers (Imports, Constants / config, Helpers, IPC registration / handlers, Exports).
+  - End-of-file marker.
+- Follow-up: Fixed Overview return-shape wording to avoid drift:
+  - Now states: `{ ok: true }` success and `{ ok: false, reason }` failure.
+- No functional changes; comments-only.
+
+**Evidence (anchors)**
+- Overview bullet (corrected): "Register IPC handlers that return { ok: true } or { ok: false, reason }."

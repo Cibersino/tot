@@ -8,7 +8,7 @@
 // - Gate external URL opens to an allowlist and https only.
 // - Resolve and open app documentation files by docKey.
 // - Handle dev vs packaged doc locations and copy-to-temp cases.
-// - Register IPC handlers that return { ok, reason } results.
+// - Register IPC handlers that return { ok: true } or { ok: false, reason }.
 
 // =============================================================================
 // Imports
