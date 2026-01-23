@@ -1574,31 +1574,6 @@ Checklist:
 
 ---
 
-## electron/constants_main.js
-
-Date: `2026-01-22`
-Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
-
-## electron/constants_main.js
-
-### L0 — Minimal diagnosis (Codex)
-
-- Block order: strict mode; constants/config; module.exports.
-- Linear reading breaks: none observed; single responsibility constants.
-- Exposes (CommonJS): `DEFAULT_LANG`, `MAX_TEXT_CHARS`, `MAX_IPC_MULTIPLIER`, `MAX_IPC_CHARS`, `MAX_PRESET_STR_CHARS`, `MAX_META_STR_CHARS`.
-- Invariants: `MAX_IPC_CHARS` derived from `MAX_TEXT_CHARS` (safety cap for IPC payload size).
-- IPC: none declared in this file.
-
-Result: PASS
-
-### L1–L7
-
-Decision: NO CHANGE (file is constants-only; no behavior/IPC/timing surface to refactor or smoke-test at module level).
-
-Result: PASS
-
----
-
 ## electron/link_openers.js
 
 Date: `2026-01-22`
@@ -1814,3 +1789,33 @@ Checklist:
 Result: PASS / FAIL
 Notes (optional):
 - If you ever see the deduped warning key `link_openers.tempPath.fallback`, it should appear once per session (warnOnce) and not spam.
+
+---
+
+## electron/constants_main.js
+
+Date: `2026-01-22`
+Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
+
+### L0 — Minimal diagnosis (Codex)
+
+- Block order: strict mode; constants/config; module.exports.
+- Linear reading breaks: none observed; single responsibility constants.
+- Exposes (CommonJS): `DEFAULT_LANG`, `MAX_TEXT_CHARS`, `MAX_IPC_MULTIPLIER`, `MAX_IPC_CHARS`, `MAX_PRESET_STR_CHARS`, `MAX_META_STR_CHARS`.
+- Invariants: `MAX_IPC_CHARS` derived from `MAX_TEXT_CHARS` (safety cap for IPC payload size).
+- IPC: none declared in this file.
+
+Result: PASS
+
+### L1–L7
+
+Decision: NO CHANGE (file is constants-only; no behavior/IPC/timing surface to refactor or smoke-test at module level).
+
+Result: PASS
+
+---
+
+## public/renderer.js
+
+Date: `2026-01-23`
+Last commit: `f011c4d4288c5cde9caffae0e3646f894f15e980`
