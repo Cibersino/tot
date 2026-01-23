@@ -2119,3 +2119,17 @@ Decision: CHANGED
 
 Observable contract and timing preserved.
 Reviewer gate: PASS
+
+### L3 — Architecture / contract changes (Codex)
+
+  * **Decision: NO CHANGE (no Level 3 justified)**
+  
+  * **Evidence checked (anchors):**
+    * `public/editor.js` — `window.editorAPI.setCurrentText(payload)` + fallback `window.editorAPI.setCurrentText(editor.value)` (doble shape). 
+    * `public/editor.js` — echo suppression `incomingMeta.source === 'editor'`. 
+    * `electron/editor_preload.js` — `setCurrentText: ... invoke('set-current-text', t)`. 
+    * `electron/preload.js` — `setCurrentText: ... invoke('set-current-text', text)`. 
+    * `public/renderer.js` — `setCurrentText({ text: currentText, meta })` + `throw ... 'set-current-text failed'`. 
+  * **Reviewer gate: PASS**
+  * Nota corta: No se justifica Nivel 3: shapes coexistentes ya son parte del contrato; cambiarlo sería churn de riesgo.
+  
