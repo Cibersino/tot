@@ -70,9 +70,6 @@ const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
 const presetDescription = document.getElementById('presetDescription');
 
-// Visibility helper: warn only once per key (renderer scope)
-const warnOnceRenderer = (...args) => log.warnOnce(...args);
-
 let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
@@ -387,7 +384,7 @@ const loadPresets = async () => {
           try {
             await loadRendererTranslations(idiomaActual);
           } catch (err) {
-            warnOnceRenderer(
+            log.warnOnce(
               'renderer.loadRendererTranslations',
               `[renderer] loadRendererTranslations(${idiomaActual}) failed (ignored):`,
               err
@@ -473,7 +470,7 @@ const loadPresets = async () => {
         try {
           syncToggleFromSettings(settingsCache || {});
         } catch (err) {
-          warnOnceRenderer('renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+          log.warnOnce('renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
         }
       }
     } catch (err) {
@@ -567,7 +564,7 @@ const loadPresets = async () => {
     if (!versionEl) return;
 
     if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
-      warnOnceRenderer('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
+      log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
       versionEl.textContent = 'N/A';
       return;
     }
@@ -576,7 +573,7 @@ const loadPresets = async () => {
       const version = await window.electronAPI.getAppVersion();
       const cleaned = typeof version === 'string' ? version.trim() : '';
       if (!cleaned) {
-        warnOnceRenderer(
+        log.warnOnce(
           'renderer.info.acerca_de.version.empty',
           'getAppVersion returned empty; About modal shows N/A.'
         );
@@ -595,7 +592,7 @@ const loadPresets = async () => {
     if (!envEl) return;
 
     if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
-      warnOnceRenderer('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
+      log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
       envEl.textContent = 'N/A';
       return;
     }
@@ -608,7 +605,7 @@ const loadPresets = async () => {
       const osLabel = platformMap[platform] || platform;
 
       if (!osLabel || !arch) {
-        warnOnceRenderer(
+        log.warnOnce(
           'renderer.info.acerca_de.env.missing_fields',
           'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
         );
@@ -711,7 +708,7 @@ const loadPresets = async () => {
       : translateInfoHtml(tryHtml, translationKey);
     infoModalContent.innerHTML = renderedHtml;
     if (typeof bindInfoModalLinks === 'function') {
-      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI, warnOnceRenderer, log });
+      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI, warnOnceRenderer: log.warnOnce, log });
     }
     if (key === 'acerca_de') {
       await hydrateAboutVersion(infoModalContent);
@@ -1103,7 +1100,7 @@ btnEditPreset.addEventListener('click', async () => {
     try {
       log.debug('[renderer] openPresetModal payload:', payload);
     } catch (err) {
-      warnOnceRenderer('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+      log.warnOnce('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
     }
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
