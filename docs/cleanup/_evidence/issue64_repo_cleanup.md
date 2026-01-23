@@ -1898,3 +1898,58 @@ Decision: NO CHANGE (no Level 3 justified)
 Reviewer assessment:
 - PASS for L3 gate as NO CHANGE: no concrete repo-wide pain/bug/instability demonstrated that would justify a contract or architecture change here.
 - Note: last bullet is documentation-derived (redundant as “evidence checked”), but does not affect the conclusion.
+
+### L4 decision: CHANGED
+
+- Ajuste de severidad + clasificación BOOTSTRAP en fallbacks de arranque:
+  - Anclas: `BOOTSTRAP: getAppConfig failed; using defaults:`, `BOOTSTRAP: getSettings failed; using defaults:`, `BOOTSTRAP: initial translations failed; using defaults:`
+  - Cambio: se reemplazan logs `error/warn` previos por `log.warn(...)` con prefijo `BOOTSTRAP:` en paths de fallback de bootstrap (sin alterar el fallback en sí).
+
+- Cumplimiento de “call-site style” (sin wrappers/aliases locales):
+  - Ancla: eliminación de `const warnOnceRenderer = (...args) => log.warnOnce(...args);`
+  - Anclas de reemplazo: `log.warnOnce('renderer.loadRendererTranslations', ...)`, `log.warnOnce('renderer.syncToggleFromSettings', ...)`, `log.warnOnce('renderer.info.acerca_de.*', ...)`, `log.warnOnce('log.debug.openPresetModal', ...)`
+
+- About modal: fallbacks explícitos y dedupe estable (sin sobre-loggear el path sano):
+  - Anclas (keys): `renderer.info.acerca_de.version.empty`, `renderer.info.acerca_de.env.missing_fields`
+  - Anclas (mensajes): `getAppVersion failed; About modal shows N/A:`, `getAppRuntimeInfo failed; About modal shows N/A:`
+
+- Ajuste de plumbing hacia links del info modal (acompaña la limpieza de contrato en el helper):
+  - Ancla: `bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });`
+  - Nota: este cambio elimina el “log plumbing” hacia `bindInfoModalLinks` para alinearlo con el patrón del resto de módulos `public/js/*` (ver sección `public/js/info_modal_links.js`).
+
+Contract/timing: sin cambios observables; cambios limitados a logs + plumbing interno asociado al helper de links del info modal.
+
+#### public/js/info_modal_links.js
+
+- Alineación con el patrón estándar de módulos `public/js/*`:
+  - Ancla: `const log = window.getLogger('info-modal-links');`
+  - Cambio: el módulo obtiene su propio logger; deja de depender de contratos inyectados desde `public/renderer.js`.
+
+- Eliminación completa del contrato `warnOnceRenderer` y del contrato `log` inyectado:
+  - Ancla previa eliminada: `bindInfoModalLinks(container, { electronAPI, warnOnceRenderer, log } = {})`
+  - Ancla nueva: `bindInfoModalLinks(container, { electronAPI } = {})`
+  - Cambio: se elimina la excepcionalidad (inyección de logger/capacidades) y se estandariza el diseño del módulo.
+
+- Logs en call sites: directos vía `log.warnOnce(...)` / `log.error(...)` (sin `console.*` y sin wrappers/aliases):
+  - Anclas (keys existentes preservadas): `renderer.info.appdoc.*`, `renderer.info.external.*`
+  - Ancla de error: `log.error('Error handling info modal link click:', err);`
+
+- Call site actualizado en `public/renderer.js`:
+  - Ancla: `bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });`
+
+Validación mecánica sugerida (documental):
+- `warnOnceRenderer` debe ser 0 ocurrencias en `public/renderer.js` y `public/js/info_modal_links.js`.
+- No debe existir `console.warn`/`console.error` en `public/js/info_modal_links.js`.
+
+#### Meta — Actualización de política de logging (documental)
+
+Referencia de cambios: diff desde `e1dffe38d1e428234209c22b49d0d4f6fb4637dc`.
+
+- `electron/log.js` y `public/js/log.js`: se añade una regla explícita de “Call-site style”:
+  - Ancla: “Call logger methods directly … Do NOT introduce local aliases/wrappers …”
+  - Propósito: prohibir nombres/aliases tipo `warnOnceRenderer`/`warnRenderer` y estandarizar llamadas directas.
+
+- `docs/cleanup/cleanup_file_by_file.md`: el template de Level 4 se refuerza con:
+  - Regla explícita: “Call-site style (policy): use log.warn|warnOnce|error|errorOnce directly…”
+  - Paso 0.1: “Enforce call-site style: remove any local log method aliases/wrappers…”
+
