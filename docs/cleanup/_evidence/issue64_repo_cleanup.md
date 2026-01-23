@@ -2029,3 +2029,60 @@ Observable contract, side effects, and timing/order were preserved (deletions of
 
 Date: `2026-01-23`
 Last commit: `f35685b0533e33e36e1ac69f2eadcf6e32d1eedd`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - header/strict/log
+    - AppConstants guard + config/i18n async IIFE
+    - DOM lookups
+    - state + constants
+    - i18n helpers + apply
+    - settings-change listener
+    - showNotice + window export
+    - focus/selection helpers
+    - find-bar state/helpers
+    - find-bar events
+    - textarea style tweaks
+    - insertion + main-sync helpers
+    - external update handler
+    - init async IIFE
+    - editorAPI listeners
+    - paste/drop handlers
+    - input + buttons
+  - Where linear reading breaks (identifier + micro-quote):
+    - `applyExternalUpdate` — "if (metaSource === 'main-window' && metaAction === 'append_newline')"
+    - `performFind` — "let idx = forward ? haystack.indexOf"
+    - `openFindBar` / `closeFindBar` — "findBar.hidden = false" / "findBar.hidden = true"
+    - `sendCurrentTextToMain` — "const res = window.editorAPI.setCurrentText(payload)"
+
+- Contract map (exports / side effects / IPC):
+  - Exposes/entrypoints/side effects:
+    - assigns `window.showNotice`
+    - attaches DOM event listeners (editor, document, buttons)
+    - registers editorAPI callbacks
+    - runs two async IIFEs
+    - no module exports
+  - Invariants and guards (anchored):
+    - AppConstants required — "if (!AppConstants) { throw new Error"
+    - RendererI18n required — "if (!loadRendererTranslations || !tRenderer)"
+    - Find UI readiness — "if (!isFindReady()) return"
+    - Max text size enforced — "if (newText.length > maxTextChars)"
+    - Paste/drop size cap — "if (text.length > PASTE_ALLOW_LIMIT)"
+    - Find mode locks editor — "editor.readOnly = true"
+
+  - IPC contract (only what exists in this file):
+    - A) Direct IPC (ipcMain/ipcRenderer/webContents): none. No direct ipcMain/ipcRenderer/webContents usage in this file.
+    - B) Bridge usage via window.editorAPI.* (implementation elsewhere; channels not visible here):
+      - `window.editorAPI.getAppConfig`
+      - `window.editorAPI.getSettings`
+      - `window.editorAPI.onSettingsChanged`
+      - `window.editorAPI.getCurrentText`
+      - `window.editorAPI.setCurrentText`
+      - `window.editorAPI.onInitText`
+      - `window.editorAPI.onExternalUpdate`
+      - `window.editorAPI.onForceClear`
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented direct IPC; anchors/micro-quotes present; bridge wording conservative and internally consistent).
