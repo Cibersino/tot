@@ -133,22 +133,26 @@ function registerDevShortcuts(mainWin) {
   if (app.isPackaged) return;
 
   try {
+    const resolveTargetWindow = () => {
+      const focused = BrowserWindow.getFocusedWindow();
+      if (isAliveWindow(focused)) return focused;
+      if (isAliveWindow(mainWin)) return mainWin;
+      return null;
+    };
+
     globalShortcut.register('CommandOrControl+Shift+I', () => {
-      if (isAliveWindow(mainWin)) {
-        mainWin.webContents.toggleDevTools();
-      }
+      const targetWin = resolveTargetWindow();
+      if (targetWin) targetWin.webContents.toggleDevTools();
     });
 
     globalShortcut.register('CommandOrControl+R', () => {
-      if (isAliveWindow(mainWin)) {
-        mainWin.webContents.reload();
-      }
+      const targetWin = resolveTargetWindow();
+      if (targetWin) targetWin.webContents.reload();
     });
 
     globalShortcut.register('CommandOrControl+Shift+R', () => {
-      if (isAliveWindow(mainWin)) {
-        mainWin.webContents.reloadIgnoringCache();
-      }
+      const targetWin = resolveTargetWindow();
+      if (targetWin) targetWin.webContents.reloadIgnoringCache();
     });
   } catch (err) {
     log.warn('Error registering development shortcuts:', err);

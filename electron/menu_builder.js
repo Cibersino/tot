@@ -14,7 +14,7 @@
 // Imports (external modules)
 // =============================================================================
 
-const { app, Menu } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
@@ -403,9 +403,14 @@ function buildAppMenu(lang, opts = {}) {
                     label: resolveMenuLabel(m, 'toggle_devtools', 'Toggle DevTools'),
                     accelerator: 'Ctrl+Shift+I',
                     click: () => {
-                        if (!mainWindow || mainWindow.isDestroyed()) return;
+                        const focused = BrowserWindow.getFocusedWindow();
+                        const target =
+                            focused && !focused.isDestroyed()
+                                ? focused
+                                : (mainWindow && !mainWindow.isDestroyed() ? mainWindow : null);
+                        if (!target) return;
                         try {
-                            mainWindow.webContents.toggleDevTools();
+                            target.webContents.toggleDevTools();
                         } catch (err) {
                             log.warnOnce(
                                 'menu_builder.toggleDevTools',
