@@ -2,11 +2,11 @@
 
 ## Elección de archivo:
 
-- En proceso: `electron/link_openers.js`
+- En proceso: `public/renderer.js`
 
-- Archivos ya ordenados y limpiados (9): `electron/main.js`, `electron/settings.js`, `electron/fs_storage.js`, `electron/text_state.js`, `electron/editor_state.js`, `electron/presets_main.js`, `electron/menu_builder.js`, `electron/updater.js`, `electron/constants_main.js`.
+- Archivos ya ordenados y limpiados (10): `electron/main.js`, `electron/settings.js`, `electron/fs_storage.js`, `electron/text_state.js`, `electron/editor_state.js`, `electron/presets_main.js`, `electron/menu_builder.js`, `electron/updater.js`, `electron/link_openers.js`, `electron/constants_main.js`.
 
-- Faltan (19): `public/renderer.js`, `public/editor.js`, `public/preset_modal.js`, `public/flotante.js`, `public/language_window.js`, `public/js/count.js`, `public/js/presets.js`, `public/js/crono.js`, `public/js/menu_actions.js`, `public/js/format.js`, `public/js/i18n.js`, `public/js/notify.js`, `public/js/constants.js`,`public/js/info_modal_links.js`, `electron/preload.js`, `electron/editor_preload.js`, `electron/preset_preload.js`, `electron/flotante_preload.js`, `electron/language_preload.js`.
+- Faltan (18): `public/editor.js`, `public/preset_modal.js`, `public/flotante.js`, `public/language_window.js`, `public/js/count.js`, `public/js/presets.js`, `public/js/crono.js`, `public/js/menu_actions.js`, `public/js/format.js`, `public/js/i18n.js`, `public/js/notify.js`, `public/js/constants.js`,`public/js/info_modal_links.js`, `electron/preload.js`, `electron/editor_preload.js`, `electron/preset_preload.js`, `electron/flotante_preload.js`, `electron/language_preload.js`.
 
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
