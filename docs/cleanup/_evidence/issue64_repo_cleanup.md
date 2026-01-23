@@ -1866,3 +1866,19 @@ Decision: NO CHANGE
 
 Reviewer assessment:
 - PASS for L1 gate as NO CHANGE: rationale is consistent with timing-sensitive sequencing constraints.
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- `applyTranslations` — “const labelsCrono = getCronoLabels();” — Extracting or reordering translation updates would entangle label refresh with crono state timing and increase cross-dependency reading.
+- startup config/settings IIFE — “const cfg = await window.electronAPI.getAppConfig();” — Consolidating config + settings would risk changing initialization order for maxTextChars/maxIpcChars vs translations.
+- `setCurrentTextAndUpdateUI` — “if (options.applyRules)” — Centralizing text updates would blur the conditional crono rule application and risk altering when rules fire.
+- `window.electronAPI.onPresetCreated` handler — “window.electronAPI.onPresetCreated(async (preset) => {” — Refactoring selection + persistence logic into helpers would add indirection while preserving complex ordering of cache reload → selection → persistence.
+- `settingsChangeHandler` — “const settingsChangeHandler = async (newSettings) => {” — Tightening error handling or splitting branches would spread language/precise-mode updates across helpers, making flow harder to follow.
+- clipboard overwrite handler — “const res = await window.electronAPI.readClipboard();” — DRYing clipboard logic would have to parameterize distinct notifications and truncation semantics, increasing branching.
+- `showInfoModal` — “async function showInfoModal(key, opts = {})” — Extracting fetch/translate steps would require threading modal state + focus logic, risking subtle UI timing.
+- `initCronoController` — “cronoController = cronoModule.createController({” — Moving creation earlier/later would alter when controller binds to elements and electronAPI, a timing-sensitive side effect.
+
+Reviewer assessment:
+- PASS for L2 gate as NO CHANGE: now demonstrates evaluation of multiple concrete candidates (identifiers + micro-quotes) across distinct areas; rationale is consistent with timing/ordering sensitivity and avoids refactors that would add indirection/branching.
