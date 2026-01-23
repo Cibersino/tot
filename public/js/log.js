@@ -18,6 +18,11 @@
  * - info: high-level lifecycle/state transitions (low volume).
  * - debug: verbose diagnostics; may be noisy; high volume is acceptable.
  *
+ * Call-site style:
+ * - Call logger methods directly: log.warn/log.warnOnce/log.error/log.errorOnce (and debug/info as needed).
+ * - Do NOT introduce local aliases/wrappers that re-export these methods under different names (e.g., warnOnceRenderer, warnRenderer).
+ * - If a helper needs a logging capability, pass the method reference directly (e.g., { warnOnce: log.warnOnce }) or pass `log`; do not wrap.
+ *
  * Bootstrap vs in-regime fallbacks (classification):
  * - BOOTSTRAP (pre-init): logs whose message or explicit dedupe key starts with "BOOTSTRAP:" indicate a transitory default used only before this context finishes initialization (authoritative state not yet available).
  *   Constraint: a BOOTSTRAP fallback MUST become unreachable after init; if it can occur after init, it is NOT bootstrap. If observed after init, treat as a bug and log accordingly (warn/error).
