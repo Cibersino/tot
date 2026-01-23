@@ -2,6 +2,16 @@
 /* global Notify */
 'use strict';
 
+// ======================= Overview =======================
+// Responsibilities:
+// - Bootstraps the renderer UI and pulls config/settings from main.
+// - Applies i18n labels and number formatting.
+// - Maintains text preview, counts, and time estimates.
+// - Wires presets, clipboard actions, editor, and help tips.
+// - Hosts the info modal and top-bar menu actions.
+// - Integrates the stopwatch controller and floating window toggle.
+
+// ======================= Logger and constants =======================
 const log = window.getLogger('renderer');
 
 log.debug('Renderer main starting...');
@@ -20,6 +30,7 @@ const {
   PREVIEW_END_CHARS
 } = AppConstants;
 
+// ======================= DOM references =======================
 const textPreview = document.getElementById('textPreview');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
@@ -27,6 +38,7 @@ const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
 const btnHelp = document.getElementById('btnHelp');
 
+// ======================= UI keys and static lists =======================
 const HELP_TIP_KEY_LIST = Object.freeze([
   'renderer.main.tips.results_help.tip1',
   'renderer.main.tips.results_help.tip2',
@@ -62,7 +74,7 @@ const cronTitle = document.getElementById('cron-title');
 const toggleVF = document.getElementById('toggleVF');
 const editorLoader = document.getElementById('editorLoader');
 
-// References to presets elements
+// Preset DOM references
 const presetsSelect = document.getElementById('presets');
 const btnNewPreset = document.getElementById('btnNewPreset');
 const btnEditPreset = document.getElementById('btnEditPreset');
@@ -70,19 +82,18 @@ const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
 const presetDescription = document.getElementById('presetDescription');
 
-// Visibility helper: warn only once per key (renderer scope)
-const warnOnceRenderer = (...args) => log.warnOnce(...args);
-
+// ======================= Shared state and limits =======================
 let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
 let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4; // Fallback until main responds
-// --- Global cache and state for count/language ---
+// Global cache and state for count/language
 let modoConteo = 'preciso';   // Precise by default; can be `simple`
 let idiomaActual = DEFAULT_LANG; // Initializes on startup
 let settingsCache = null;     // Settings cache (number formatting, language, etc.)
 let cronoController = null;
-// --- i18n renderer translations cache ---
+
+// ======================= i18n wiring =======================
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
   throw new Error('[renderer] RendererI18n no disponible; no se puede continuar');
@@ -90,12 +101,12 @@ if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
 
 function applyTranslations() {
   if (!tRenderer) return;
-  // Text Selector buttons
+  // Text selector buttons
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
   if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear', btnEmptyMain.textContent || '');
-  // Text Selector tooltips
+  // Text selector tooltips
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
   if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
@@ -109,15 +120,15 @@ function applyTranslations() {
   if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset', btnEditPreset.title || '');
   if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset', btnDeletePreset.title || '');
   if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets', btnResetDefaultPresets.title || '');
-  // Floating Window toggle
+  // Floating window toggle
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
   if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window', vfSwitchLabel.title || '');
-  // Section Titles
+  // Section titles
   if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title', selectorTitle.textContent || '');
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
   if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title', resultsTitle.textContent || '');
   if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title', cronTitle.textContent || '');
-  // Speed Selector labels
+  // Speed selector labels
   const wpmLabel = document.querySelector('.wpm-row span');
   if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label', wpmLabel.textContent || '');
   // Results: precise mode label
@@ -130,7 +141,7 @@ function applyTranslations() {
       toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip', toggleWrapper.title || togglePrecisoLabel.title || '');
     }
   }
-  // Stopwatch: Speed label and controls aria-label
+  // Stopwatch: speed label and controls aria-label
   const realWpmLabel = document.querySelector('.realwpm');
   if (realWpmLabel && realWpmLabel.firstChild) {
     realWpmLabel.firstChild.textContent = tRenderer('renderer.main.crono.speed', realWpmLabel.firstChild.textContent || '');
@@ -150,13 +161,14 @@ function applyTranslations() {
     vfLabel.textContent = tRenderer('renderer.main.crono.flotante_short', vfLabel.textContent || vfLabel.textContent);
   }
 
-  // Help button (title)
+  // Help button title
   if (btnHelp) {
     const helpTitle = tRenderer('renderer.main.tooltips.help_button', btnHelp.getAttribute('title') || '');
     if (helpTitle) btnHelp.setAttribute('title', helpTitle);
   }
 }
 
+// ======================= Bootstrap: config and settings =======================
 (async () => {
   try {
     const cfg = await window.electronAPI.getAppConfig();
@@ -171,10 +183,10 @@ function applyTranslations() {
       maxIpcChars = maxTextChars * 4;
     }
   } catch (err) {
-    log.error('Could not get getAppConfig using defaults:', err);
+    log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
   }
 
-  // Load user settings ONCE when the renderer starts
+  // Load user settings once at renderer startup
   try {
     const settings = await window.electronAPI.getSettings();
     settingsCache = settings || {};
@@ -188,11 +200,11 @@ function applyTranslations() {
       // Refresh the initial view with the loaded translations
       updatePreviewAndResults(currentText);
     } catch (err) {
-      log.warn('Could not apply initial translations in renderer:', err);
+      log.warn('BOOTSTRAP: initial translations failed; using defaults:', err);
     }
   } catch (err) {
-    log.error('Could not get user settings at startup:', err);
-    // Current language is set to DEFAULT_LANG by default
+    log.warn('BOOTSTRAP: getSettings failed; using defaults:', err);
+    // Default language stays in place when settings are unavailable
     settingsCache = {};
   }
 })();
@@ -203,13 +215,13 @@ let currentPresetName = null;
 // Local preset cache (full list loaded once)
 let allPresetsCache = [];
 
-// ======================= Presets module =======================
-const { combinePresets, fillPresetsSelect, applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};
-if (!combinePresets || !fillPresetsSelect || !applyPresetSelection || !loadPresetsIntoDom) {
+// ======================= Presets integration =======================
+const { applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};
+if (!applyPresetSelection || !loadPresetsIntoDom) {
   log.error('[renderer] RendererPresets not available');
 }
 
-// ======================= Text Count =======================
+// ======================= Text counting =======================
 const { contarTexto: contarTextoModulo } = window.CountUtils || {};
 if (typeof contarTextoModulo !== 'function') {
   throw new Error('[renderer] CountUtils no disponible; no se puede continuar');
@@ -225,20 +237,20 @@ function normalizeText(value) {
   return String(value);
 }
 
-// Helpers to update mode/language from other parts (e.g., menu)
+// Update mode/language from other parts (e.g., menu actions)
 function setModoConteo(nuevoModo) {
   if (nuevoModo === 'simple' || nuevoModo === 'preciso') {
     modoConteo = nuevoModo;
   }
 }
 
-// ======================= HHh MMm SSs format =======================
-const { getTimeParts, formatTimeFromWords, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
-if (!getTimeParts || !formatTimeFromWords || !obtenerSeparadoresDeNumeros || !formatearNumero) {
+// ======================= Time formatting =======================
+const { getTimeParts, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
+if (!getTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
   log.error('[renderer] FormatUtils not available');
 }
 
-// ======================= Update view and results =======================
+// ======================= Preview and results =======================
 async function updatePreviewAndResults(text) {
   const normalizedText = normalizeText(text);
   const displayText = normalizedText.replace(/\r?\n/g, '   ');
@@ -284,7 +296,7 @@ function setCurrentTextAndUpdateUI(text, options = {}) {
   }
 }
 
-// Listen for stopwatch status from main (authority)
+// Listen for stopwatch status from main (authoritative state)
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
     try {
@@ -297,7 +309,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
   });
 }
 
-// ======================= Load presets (merge + shadowing) =======================
+// ======================= Preset loading (merge + shadowing) =======================
 const loadPresets = async () => {
   try {
     const res = await loadPresetsIntoDom({
@@ -327,21 +339,21 @@ const loadPresets = async () => {
   }
 };
 
-// ======================= Initialization =======================
+// ======================= Bootstrapping and subscriptions =======================
 (async () => {
   try {
     // Get current initial text (if any)
     const t = await window.electronAPI.getCurrentText();
     setCurrentTextAndUpdateUI(t || '', { applyRules: true });
 
-    // Subscription to updates from main (modal)
+    // Subscribe to updates from main (current text changes)
     if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
       window.electronAPI.onCurrentTextUpdated((text) => {
         setCurrentTextAndUpdateUI(text || '', { applyRules: true });
       });
     }
 
-    // Subscription: listen when main notifies that a preset has been created/updated
+    // Subscribe to preset create/update notifications from main
     if (window.electronAPI && typeof window.electronAPI.onPresetCreated === 'function') {
       window.electronAPI.onPresetCreated(async (preset) => {
         try {
@@ -372,11 +384,11 @@ const loadPresets = async () => {
     // Load presets and save them to the cache
     await loadPresets();
 
-    // Update the final view with the possible initial WPM
+    // Final update after presets load in case WPM changed
     updatePreviewAndResults(currentText);
 
-    // --- Listener for settings changes from main/preload (optional) ---
-    // If main/preload exposes an event, we use it to keep settingsCache and currentLanguage updated.
+    // Settings change listener from main/preload (optional)
+    // Keeps settingsCache and idiomaActual synchronized when available.
     const settingsChangeHandler = async (newSettings) => {
       try {
         settingsCache = newSettings || {};
@@ -387,7 +399,7 @@ const loadPresets = async () => {
           try {
             await loadRendererTranslations(idiomaActual);
           } catch (err) {
-            warnOnceRenderer(
+            log.warnOnce(
               'renderer.loadRendererTranslations',
               `[renderer] loadRendererTranslations(${idiomaActual}) failed (ignored):`,
               err
@@ -414,7 +426,7 @@ const loadPresets = async () => {
     if (window.electronAPI) {
       if (typeof window.electronAPI.onSettingsChanged === 'function') {
         window.electronAPI.onSettingsChanged(settingsChangeHandler);
-      } // If it doesn't exist, there's no listener available and nothing happens
+      } // If it does not exist, there is no listener available and nothing happens
 
       if (typeof window.electronAPI.onEditorReady === 'function') {
         window.electronAPI.onEditorReady(() => {
@@ -423,12 +435,10 @@ const loadPresets = async () => {
       }
     }
 
-    // ------------------------------
-    // Initialize and bind the 'Precise Mode' toggle
-    // ------------------------------
+    // ------------------------------ Precise mode toggle ------------------------------
     try {
       if (toggleModoPreciso) {
-        // Ensure initial switch state according to the memory mode (loaded at startup)
+        // Ensure initial switch state according to the in-memory mode
         toggleModoPreciso.checked = (modoConteo === 'preciso');
 
         // When the user changes the switch:
@@ -444,7 +454,7 @@ const loadPresets = async () => {
             // Immediate recount of the current text
             updatePreviewAndResults(currentText);
 
-            // Attempt to persist settings via IPC (if preload/main implemented setModeCount)
+            // Attempt to persist settings via IPC (if preload/main implemented setModeConteo)
             if (window.electronAPI && typeof window.electronAPI.setModeConteo === 'function') {
               try {
                 await window.electronAPI.setModeConteo(nuevoModo);
@@ -457,8 +467,8 @@ const loadPresets = async () => {
           }
         });
 
-        // If the settings changes from main, synchronize the switch to the new value
-        // (This complements settingsChangeHandler; repeated for local security)
+        // If settings change from main, keep the toggle in sync.
+        // This complements settingsChangeHandler for local safety.
         const syncToggleFromSettings = (s) => {
           try {
             if (!toggleModoPreciso) return;
@@ -473,7 +483,7 @@ const loadPresets = async () => {
         try {
           syncToggleFromSettings(settingsCache || {});
         } catch (err) {
-          warnOnceRenderer('renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+          log.warnOnce('renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
         }
       }
     } catch (err) {
@@ -483,7 +493,7 @@ const loadPresets = async () => {
   } catch (err) {
     log.error('Error initialazing renderer:', err);
   }
-  /* --- Info modal utility --- */
+  // ======================= Info modal =======================
   const infoModal = document.getElementById('infoModal');
   const infoModalBackdrop = document.getElementById('infoModalBackdrop');
   const infoModalClose = document.getElementById('infoModalClose');
@@ -530,9 +540,9 @@ const loadPresets = async () => {
     return { html: null, path: null };
   }
 
-  // Translate the HTML loaded in the info modal using data-i18n and renderer.info.<key>.*
+  // Translate HTML fragments using data-i18n and renderer.info.<key>.*
   function translateInfoHtml(htmlString, key) {
-    // If no translation function is available, return the unmodified HTML
+    // If no translation function is available, return the HTML unchanged.
     if (!tRenderer) return htmlString;
     try {
       const parser = new DOMParser();
@@ -567,7 +577,7 @@ const loadPresets = async () => {
     if (!versionEl) return;
 
     if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
-      warnOnceRenderer('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
+      log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
       versionEl.textContent = 'N/A';
       return;
     }
@@ -575,9 +585,17 @@ const loadPresets = async () => {
     try {
       const version = await window.electronAPI.getAppVersion();
       const cleaned = typeof version === 'string' ? version.trim() : '';
-      versionEl.textContent = cleaned || 'N/A';
+      if (!cleaned) {
+        log.warnOnce(
+          'renderer.info.acerca_de.version.empty',
+          'getAppVersion returned empty; About modal shows N/A.'
+        );
+        versionEl.textContent = 'N/A';
+        return;
+      }
+      versionEl.textContent = cleaned;
     } catch (err) {
-      log.error('Error fetching app version for About modal:', err);
+      log.warn('getAppVersion failed; About modal shows N/A:', err);
       versionEl.textContent = 'N/A';
     }
   }
@@ -587,7 +605,7 @@ const loadPresets = async () => {
     if (!envEl) return;
 
     if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
-      warnOnceRenderer('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
+      log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
       envEl.textContent = 'N/A';
       return;
     }
@@ -600,13 +618,17 @@ const loadPresets = async () => {
       const osLabel = platformMap[platform] || platform;
 
       if (!osLabel || !arch) {
+        log.warnOnce(
+          'renderer.info.acerca_de.env.missing_fields',
+          'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
+        );
         envEl.textContent = 'N/A';
         return;
       }
 
       envEl.textContent = `${osLabel} (${arch})`;
     } catch (err) {
-      log.error('Error fetching app environment for About modal:', err);
+      log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
       envEl.textContent = 'N/A';
     }
   }
@@ -651,7 +673,7 @@ const loadPresets = async () => {
     if (!infoModal || !infoModalTitle || !infoModalContent) return;
 
     // Decide which file to load based on the key.
-    // Unify basic_guide, instructions, and FAQ in the localized manual HTML.
+    // Basic guide, instructions, and FAQ are served from localized manual HTML.
     let fileToLoad = null;
     let sectionId = null;
     const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
@@ -665,12 +687,12 @@ const loadPresets = async () => {
       const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
       sectionId = mapping[key] || 'instrucciones';
     } else {
-      // Fallback: Attempt to load ./info/<key>.html (compatibility)
+      // Compatibility fallback for legacy standalone pages
       fileToLoad = `./info/${key}.html`;
     }
 
     const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
-    // Modal title: manual always uses a fixed label; other pages use i18n when available.
+    // Manual uses a fixed title; other pages use i18n when available.
     if (isManual) {
       infoModalTitle.textContent = 'Manual de uso';
     } else {
@@ -678,28 +700,28 @@ const loadPresets = async () => {
       infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
     }
 
-    // Open modal
+    // Open modal early so loading state is visible during fetch
     infoModal.setAttribute('aria-hidden', 'false');
 
-    // Load HTML
+    // Fetch HTML (manual pages use a language fallback list)
     const tryHtml = Array.isArray(fileToLoad)
       ? (await fetchTextWithFallback(fileToLoad)).html
       : await fetchText(fileToLoad);
     if (tryHtml === null) {
-      // Fallback: Indicate missing content
+      // Fallback: show a simple missing-content message
       infoModalContent.innerHTML =
         `<p>No hay contenido disponible para '${infoModalTitle.textContent}'.</p>`;
       if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
       return;
     }
 
-    // Translate non-manual info pages; manual HTML is loaded as-is.
+    // Translate non-manual pages; manual HTML is loaded as-is.
     const renderedHtml = isManual
       ? extractInfoBodyHtml(tryHtml)
       : translateInfoHtml(tryHtml, translationKey);
     infoModalContent.innerHTML = renderedHtml;
     if (typeof bindInfoModalLinks === 'function') {
-      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI, warnOnceRenderer, log });
+      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
     }
     if (key === 'acerca_de') {
       await hydrateAboutVersion(infoModalContent);
@@ -710,14 +732,14 @@ const loadPresets = async () => {
     const panel = document.querySelector('.info-modal-panel');
     if (panel) panel.scrollTop = 0;
 
-    // If a specific section was requested, scroll so it appears *above* the panel
+    // If a specific section was requested, scroll so it appears above the panel
     if (sectionId) {
-      // Wait for the next frame for the parsed DOM to be laid out
+      // Wait for the next frame so the parsed DOM is laid out
       requestAnimationFrame(() => {
         try {
           const target = infoModalContent.querySelector(`#${sectionId}`);
           if (!target) {
-            // If the ID doesn't exist, do nothing else
+            // If the ID does not exist, do nothing else
             if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
             return;
           }
@@ -725,7 +747,7 @@ const loadPresets = async () => {
           try {
             target.scrollIntoView({ behavior: 'auto', block: 'start' });
           } catch {
-            // Defensive fallback: Calculate relative top without compensating for header
+            // Defensive fallback: calculate relative top without compensating for header
             const panelRect = panel.getBoundingClientRect();
             const targetRect = target.getBoundingClientRect();
             const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
@@ -733,7 +755,7 @@ const loadPresets = async () => {
             panel.scrollTo({ top: finalTop, behavior: 'auto' });
           }
 
-          // Finally, focus on the content so the reader can use the keyboard
+          // Focus on the content so the reader can use the keyboard
           if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
         } catch (err) {
           log.error('Error moving modal to section:', err);
@@ -741,13 +763,13 @@ const loadPresets = async () => {
         }
       });
     } else {
-      // No section: only focus on the content (entire document)
+      // No section: focus the content for the whole document
       if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
     }
   }
 
-  // ======================= TOP BAR: Register actions with menuActions =======================
-  // Ensure menu_actions.js is loaded (script included before renderer.js)
+  // ======================= Top bar menu actions =======================
+  // menu_actions.js must be loaded before renderer.js
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
     window.menuActions.registerMenuAction('guia_basica', () => { showInfoModal('guia_basica') });
     window.menuActions.registerMenuAction('instrucciones_completas', () => { showInfoModal('instrucciones') });
@@ -829,7 +851,7 @@ const loadPresets = async () => {
   }
 })();
 
-// ======================= Preset selection (uses cache, doesn't reload DOM) =======================
+// ======================= Preset selection (cache-only) =======================
 presetsSelect.addEventListener('change', () => {
   const name = presetsSelect.value;
   if (!name) return;
@@ -837,7 +859,7 @@ presetsSelect.addEventListener('change', () => {
   const preset = allPresetsCache.find(p => p.name === name);
   if (preset) {
     currentPresetName = preset.name;
-    // Visually pin (in case the select doesn't mark it on some platforms)
+    // Visually pin the selection (some platforms do not auto-select)
     presetsSelect.value = preset.name;
     wpm = preset.wpm;
     wpmInput.value = wpm;
@@ -852,15 +874,15 @@ presetsSelect.addEventListener('change', () => {
   }
 });
 
-// ======================= Detect manual change in WPM speed selector =======================
+// ======================= Manual WPM edits =======================
 function resetPresetSelection() {
   currentPresetName = null;
-  // Leave the select without visual selection
+  // Leave the select without a visual selection
   presetsSelect.selectedIndex = -1;
   presetDescription.textContent = '';
 }
 
-// Slider/input WPM
+// Keep slider/input in sync and invalidate preset selection
 wpmSlider.addEventListener('input', () => {
   wpm = Number(wpmSlider.value);
   wpmInput.value = wpm;
@@ -886,7 +908,7 @@ wpmInput.addEventListener('keydown', (e) => {
   }
 });
 
-// ======================= Overwrite with clipboard button =======================
+// ======================= Overwrite current text with clipboard content =======================
 btnOverwriteClipboard.addEventListener('click', async () => {
   try {
     const res = await window.electronAPI.readClipboard();
@@ -924,7 +946,7 @@ btnOverwriteClipboard.addEventListener('click', async () => {
   }
 });
 
-// ======================= 'Paste clipboard in new line' button =======================
+// ======================= Append clipboard content to current text =======================
 btnAppendClipboard.addEventListener('click', async () => {
   try {
     const res = await window.electronAPI.readClipboard();
@@ -987,7 +1009,7 @@ btnEdit.addEventListener('click', async () => {
   }
 });
 
-// ======================= Clear Button (Main Screen) =======================
+// ======================= Clear current text =======================
 btnEmptyMain.addEventListener('click', async () => {
   try {
     const resp = await window.electronAPI.setCurrentText({
@@ -1005,7 +1027,7 @@ btnEmptyMain.addEventListener('click', async () => {
   }
 });
 
-// '?' Button (for now, it's just there; no functionality)
+// Help button: show a random tip key via Notify
 if (btnHelp) {
   btnHelp.addEventListener('click', () => {
     const tipCount = HELP_TIP_KEY_LIST.length;
@@ -1049,8 +1071,7 @@ if (btnHelp) {
   });
 }
 
-// Open modal to create preset (main creates the modal window)
-// Sends the current WPM to main so it can propagate it to the modal
+// Create preset: main owns the modal; renderer provides current WPM
 btnNewPreset.addEventListener('click', () => {
   try {
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
@@ -1064,7 +1085,7 @@ btnNewPreset.addEventListener('click', () => {
   }
 });
 
-// ======================= EDIT Button (Edit selected preset) =======================
+// ======================= Edit preset =======================
 btnEditPreset.addEventListener('click', async () => {
   try {
     const selectedName = presetsSelect.value;
@@ -1086,12 +1107,12 @@ btnEditPreset.addEventListener('click', async () => {
       return;
     }
 
-    // Open modal in edit mode. We pass an object with mode and the preset data.
+    // Open modal in edit mode and pass preset data.
     const payload = { wpm: wpm, mode: 'edit', preset: preset };
     try {
       log.debug('[renderer] openPresetModal payload:', payload);
     } catch (err) {
-      warnOnceRenderer('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
+      log.warnOnce('log.debug.openPresetModal', '[renderer] log.debug failed (ignored):', err);
     }
     if (window.electronAPI && typeof window.electronAPI.openPresetModal === 'function') {
       window.electronAPI.openPresetModal(payload);
@@ -1104,27 +1125,27 @@ btnEditPreset.addEventListener('click', async () => {
   }
 });
 
-// ======================= DELETE Button (trash can icon) =======================
+// ======================= Delete preset =======================
 btnDeletePreset.addEventListener('click', async () => {
   try {
     const name = presetsSelect.value || null;
-    // Call main to request deletion; main will show native dialogs as needed
+    // Call main to request deletion; main shows native dialogs as needed
     const res = await window.electronAPI.requestDeletePreset(name);
 
     if (res && res.ok) {
       // On success, reload presets and apply fallback selection if needed.
       await loadPresets();
       updatePreviewAndResults(currentText);
-      // No further UI dialog required - main already showed confirmation earlier.
+      // No further UI dialog required; main already showed confirmation.
       return;
     } else {
       // res.ok === false -> handle known codes
       if (res && res.code === 'NO_SELECTION') {
-        // main already showed native information dialog; nothing else to do.
+        // Main already showed a native info dialog; nothing else to do.
         return;
       }
       if (res && res.code === 'CANCELLED') {
-        // user cancelled; nothing to do
+        // User cancelled; nothing to do
         return;
       }
       // Unexpected error: log and show a simple alert
@@ -1137,10 +1158,10 @@ btnDeletePreset.addEventListener('click', async () => {
   }
 });
 
-// ======================= RESTORE Button (R) =======================
+// ======================= Restore default presets =======================
 btnResetDefaultPresets.addEventListener('click', async () => {
   try {
-    // Call main to request restore. main will show native confirmation dialog.
+    // Call main to request restore. Main will show a native confirmation dialog.
     const res = await window.electronAPI.requestRestoreDefaults();
 
     if (res && res.ok) {
@@ -1162,7 +1183,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
   }
 });
 
-// ======================= STOPWATCH =======================
+// ======================= Stopwatch =======================
 const cronoDisplay = document.getElementById('cronoDisplay');
 const tToggle = document.getElementById('cronoToggle');
 const tReset = document.getElementById('cronoReset');
@@ -1210,3 +1231,5 @@ const initCronoController = () => {
 };
 
 initCronoController();
+
+// End of public/renderer.js

@@ -157,6 +157,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/presets.js` — UX del selector y flujos de presets en UI (con IPC hacia main).
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI.
+* `public/js/info_modal_links.js` — Binding de enlaces dentro de HTML de info modals (ruteo `appdoc:` y externos); logger propio vía `window.getLogger('info-modal-links')`.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 

@@ -1574,31 +1574,6 @@ Checklist:
 
 ---
 
-## electron/constants_main.js
-
-Date: `2026-01-22`
-Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
-
-## electron/constants_main.js
-
-### L0 — Minimal diagnosis (Codex)
-
-- Block order: strict mode; constants/config; module.exports.
-- Linear reading breaks: none observed; single responsibility constants.
-- Exposes (CommonJS): `DEFAULT_LANG`, `MAX_TEXT_CHARS`, `MAX_IPC_MULTIPLIER`, `MAX_IPC_CHARS`, `MAX_PRESET_STR_CHARS`, `MAX_META_STR_CHARS`.
-- Invariants: `MAX_IPC_CHARS` derived from `MAX_TEXT_CHARS` (safety cap for IPC payload size).
-- IPC: none declared in this file.
-
-Result: PASS
-
-### L1–L7
-
-Decision: NO CHANGE (file is constants-only; no behavior/IPC/timing surface to refactor or smoke-test at module level).
-
-Result: PASS
-
----
-
 ## electron/link_openers.js
 
 Date: `2026-01-22`
@@ -1814,3 +1789,236 @@ Checklist:
 Result: PASS / FAIL
 Notes (optional):
 - If you ever see the deduped warning key `link_openers.tempPath.fallback`, it should appear once per session (warnOnce) and not spam.
+
+---
+
+## electron/constants_main.js
+
+Date: `2026-01-22`
+Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
+
+### L0 — Minimal diagnosis (Codex)
+
+- Block order: strict mode; constants/config; module.exports.
+- Linear reading breaks: none observed; single responsibility constants.
+- Exposes (CommonJS): `DEFAULT_LANG`, `MAX_TEXT_CHARS`, `MAX_IPC_MULTIPLIER`, `MAX_IPC_CHARS`, `MAX_PRESET_STR_CHARS`, `MAX_META_STR_CHARS`.
+- Invariants: `MAX_IPC_CHARS` derived from `MAX_TEXT_CHARS` (safety cap for IPC payload size).
+- IPC: none declared in this file.
+
+Result: PASS
+
+### L1–L7
+
+Decision: NO CHANGE (file is constants-only; no behavior/IPC/timing surface to refactor or smoke-test at module level).
+
+Result: PASS
+
+---
+
+## public/renderer.js
+
+Date: `2026-01-23`
+Last commit: `f011c4d4288c5cde9caffae0e3646f894f15e980`
+
+### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+#### 0.1 Reading map
+- Block order (high-level): strict/log + globals; DOM grabs; state/cache + i18n wiring; `applyTranslations`; early async init (config/settings); counting/preset/format hookups; helpers (`contarTexto`, `normalizeText`, `setModoConteo`); `updatePreviewAndResults` + `setCurrentTextAndUpdateUI`; crono state listener; `loadPresets`; main async init IIFE (current text, subscriptions, settings handler, precise toggle, info modal, menu actions); UI event listeners; stopwatch UI + loader helpers + crono controller init.
+- Linear reading obstacles (identifier + micro-quote):
+  - `applyTranslations` — “const labelsCrono = getCronoLabels();”
+  - `settingsChangeHandler` — “const settingsChangeHandler = async (newSettings) => {”
+  - `showInfoModal` — “async function showInfoModal(key, opts = {})”
+  - `window.menuActions.registerMenuAction` — “window.menuActions.registerMenuAction('guia_basica', () => {”
+
+#### 0.2 Contract map
+- Exports/public entrypoints: none (script-only; behavior via side effects).
+- Side effects (observed): reads globals (`AppConstants`, `RendererI18n`, `CountUtils`, `FormatUtils`, `RendererPresets`, `RendererCrono`, `Notify`); updates DOM; registers DOM event listeners; subscribes to `window.electronAPI` events; invokes `window.electronAPI` methods; registers `window.menuActions` actions.
+- Invariants / fallbacks (anchored):
+  - Requires `AppConstants` or throws — “throw new Error('[renderer] AppConstants no disponible;”
+  - Requires `RendererI18n` or throws — “throw new Error('[renderer] RendererI18n no disponible;”
+  - Requires `CountUtils.contarTexto` or throws — “if (typeof contarTextoModulo !== 'function')”
+  - IPC payload sizing heuristic — “maxIpcChars = maxTextChars * 4”
+  - Settings fallback on read failure — “settingsCache = {}”
+  - WPM clamp — “val = Math.min(Math.max(val, WPM_MIN), WPM_MAX);”
+  - Optional electronAPI hooks guarded — “typeof window.electronAPI.onSettingsChanged === 'function'”
+
+##### IPC contract (explicit ipcMain/ipcRenderer/webContents calls)
+- None found in this file (direct calls).
+
+##### Delegated IPC registration
+- None observed.
+
+Reviewer assessment (L0 protocol compliance):
+- PASS. Diagnosis-only; no invented direct IPC; obstacles include identifiers + micro-quotes; invariants anchored to visible checks/fallbacks.
+- Note: direct `ipcRenderer/*` absence is expected because this file uses `window.electronAPI` as IPC façade.
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- File mixes initialization, event wiring, and UI helpers in a single, timing-sensitive flow; reordering blocks risks altering when listeners register vs. initial async setup.
+- Two top-level async IIFEs interleave config/settings load with UI boot; moving them would change sequencing that affects cache and initial render.
+- Several helpers depend on state initialized earlier (e.g., AppConstants-derived limits, settingsCache, idiomaActual), so regrouping would add cross-dependencies or indirection.
+- Large, cohesive sections (info modal subsystem, menuActions registration, preset CRUD) are already contiguous; further extraction would add more named concepts than it removes.
+- Any cleanup meaningful enough to improve linearity would likely touch behavior-sensitive ordering of DOM updates and electronAPI subscriptions.
+
+Reviewer assessment:
+- PASS for L1 gate as NO CHANGE: rationale is consistent with timing-sensitive sequencing constraints.
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- `applyTranslations` — “const labelsCrono = getCronoLabels();” — Extracting or reordering translation updates would entangle label refresh with crono state timing and increase cross-dependency reading.
+- startup config/settings IIFE — “const cfg = await window.electronAPI.getAppConfig();” — Consolidating config + settings would risk changing initialization order for maxTextChars/maxIpcChars vs translations.
+- `setCurrentTextAndUpdateUI` — “if (options.applyRules)” — Centralizing text updates would blur the conditional crono rule application and risk altering when rules fire.
+- `window.electronAPI.onPresetCreated` handler — “window.electronAPI.onPresetCreated(async (preset) => {” — Refactoring selection + persistence logic into helpers would add indirection while preserving complex ordering of cache reload → selection → persistence.
+- `settingsChangeHandler` — “const settingsChangeHandler = async (newSettings) => {” — Tightening error handling or splitting branches would spread language/precise-mode updates across helpers, making flow harder to follow.
+- clipboard overwrite handler — “const res = await window.electronAPI.readClipboard();” — DRYing clipboard logic would have to parameterize distinct notifications and truncation semantics, increasing branching.
+- `showInfoModal` — “async function showInfoModal(key, opts = {})” — Extracting fetch/translate steps would require threading modal state + focus logic, risking subtle UI timing.
+- `initCronoController` — “cronoController = cronoModule.createController({” — Moving creation earlier/later would alter when controller binds to elements and electronAPI, a timing-sensitive side effect.
+
+Reviewer assessment:
+- PASS for L2 gate as NO CHANGE: now demonstrates evaluation of multiple concrete candidates (identifiers + micro-quotes) across distinct areas; rationale is consistent with timing/ordering sensitivity and avoids refactors that would add indirection/branching.
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- public/renderer.js `btnOverwriteClipboard.addEventListener('click'` + electron/preload.js `readClipboard: () => ipcRenderer.invoke('clipboard-read-text')` — contract is explicit and stable; no mismatch or multi-consumer ambiguity requiring a contract change.
+- public/renderer.js `window.electronAPI.onSettingsChanged` + electron/preload.js `onSettingsChanged: (cb) => {` — subscription API is clear and single-purpose; no evidence of unstable semantics across modules.
+- public/renderer.js `loadPresets()` + public/js/presets.js `loadPresetsIntoDom({` — renderer delegates preset loading to a shared module with a defined API, reducing duplication already.
+- public/renderer.js `initCronoController()` + public/js/crono.js `createController(options = {})` — crono wiring is centralized in a controller; no cross-module duplication demanding an architectural change.
+- public/renderer.js `window.menuActions.registerMenuAction('guia_basica'` + public/js/menu_actions.js `function registerMenuAction(payload, callback)` — menu action routing is already abstracted; no evidence of conflicting consumers or ambiguous payloads.
+- public/renderer.js `async function showInfoModal(key, opts = {})` + public/js/info_modal_links.js `function bindInfoModalLinks(container, ...)` — modal link handling is delegated; no contract instability detected.
+- docs/cleanup/_evidence/issue64_repo_cleanup.md `IPC contract: none (no ipcMain/ipcRenderer/webContents usage)` — confirms renderer.js uses the preload façade, not raw IPC; no evidence of unstable IPC contract within this file.
+
+Reviewer assessment:
+- PASS for L3 gate as NO CHANGE: no concrete repo-wide pain/bug/instability demonstrated that would justify a contract or architecture change here.
+- Note: last bullet is documentation-derived (redundant as “evidence checked”), but does not affect the conclusion.
+
+### L4 decision: CHANGED
+
+- Ajuste de severidad + clasificación BOOTSTRAP en fallbacks de arranque:
+  - Anclas: `BOOTSTRAP: getAppConfig failed; using defaults:`, `BOOTSTRAP: getSettings failed; using defaults:`, `BOOTSTRAP: initial translations failed; using defaults:`
+  - Cambio: se reemplazan logs `error/warn` previos por `log.warn(...)` con prefijo `BOOTSTRAP:` en paths de fallback de bootstrap (sin alterar el fallback en sí).
+
+- Cumplimiento de “call-site style” (sin wrappers/aliases locales):
+  - Ancla: eliminación de `const warnOnceRenderer = (...args) => log.warnOnce(...args);`
+  - Anclas de reemplazo: `log.warnOnce('renderer.loadRendererTranslations', ...)`, `log.warnOnce('renderer.syncToggleFromSettings', ...)`, `log.warnOnce('renderer.info.acerca_de.*', ...)`, `log.warnOnce('log.debug.openPresetModal', ...)`
+
+- About modal: fallbacks explícitos y dedupe estable (sin sobre-loggear el path sano):
+  - Anclas (keys): `renderer.info.acerca_de.version.empty`, `renderer.info.acerca_de.env.missing_fields`
+  - Anclas (mensajes): `getAppVersion failed; About modal shows N/A:`, `getAppRuntimeInfo failed; About modal shows N/A:`
+
+- Ajuste de plumbing hacia links del info modal (acompaña la limpieza de contrato en el helper):
+  - Ancla: `bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });`
+  - Nota: este cambio elimina el “log plumbing” hacia `bindInfoModalLinks` para alinearlo con el patrón del resto de módulos `public/js/*` (ver sección `public/js/info_modal_links.js`).
+
+Contract/timing: sin cambios observables; cambios limitados a logs + plumbing interno asociado al helper de links del info modal.
+
+#### public/js/info_modal_links.js
+
+- Alineación con el patrón estándar de módulos `public/js/*`:
+  - Ancla: `const log = window.getLogger('info-modal-links');`
+  - Cambio: el módulo obtiene su propio logger; deja de depender de contratos inyectados desde `public/renderer.js`.
+
+- Eliminación completa del contrato `warnOnceRenderer` y del contrato `log` inyectado:
+  - Ancla previa eliminada: `bindInfoModalLinks(container, { electronAPI, warnOnceRenderer, log } = {})`
+  - Ancla nueva: `bindInfoModalLinks(container, { electronAPI } = {})`
+  - Cambio: se elimina la excepcionalidad (inyección de logger/capacidades) y se estandariza el diseño del módulo.
+
+- Logs en call sites: directos vía `log.warnOnce(...)` / `log.error(...)` (sin `console.*` y sin wrappers/aliases):
+  - Anclas (keys existentes preservadas): `renderer.info.appdoc.*`, `renderer.info.external.*`
+  - Ancla de error: `log.error('Error handling info modal link click:', err);`
+
+- Call site actualizado en `public/renderer.js`:
+  - Ancla: `bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });`
+
+Validación mecánica sugerida (documental):
+- `warnOnceRenderer` debe ser 0 ocurrencias en `public/renderer.js` y `public/js/info_modal_links.js`.
+- No debe existir `console.warn`/`console.error` en `public/js/info_modal_links.js`.
+
+#### Meta — Actualización de política de logging (documental)
+
+Referencia de cambios: diff desde `e1dffe38d1e428234209c22b49d0d4f6fb4637dc`.
+
+- `electron/log.js` y `public/js/log.js`: se añade una regla explícita de “Call-site style”:
+  - Ancla: “Call logger methods directly … Do NOT introduce local aliases/wrappers …”
+  - Propósito: prohibir nombres/aliases tipo `warnOnceRenderer`/`warnRenderer` y estandarizar llamadas directas.
+
+- `docs/cleanup/cleanup_file_by_file.md`: el template de Level 4 se refuerza con:
+  - Regla explícita: “Call-site style (policy): use log.warn|warnOnce|error|errorOnce directly…”
+  - Paso 0.1: “Enforce call-site style: remove any local log method aliases/wrappers…”
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+Changes (comments-only):
+- Added a top-of-file Overview block describing renderer responsibilities.
+- Added section dividers aligned to the file's real blocks (logger/constants, DOM refs, shared state, i18n wiring, bootstrap, info modal, menu actions, presets, clipboard actions, stopwatch).
+- Reworded/trimmed inline comments to focus on intent/constraints; removed trivial or drift-prone phrasing.
+- Added explicit EOF marker: `// End of public/renderer.js`.
+
+Validation (mechanical):
+- `rg -n -F "Overview" public/renderer.js`
+- `rg -n -F "End of public/renderer.js" public/renderer.js`
+
+Notes:
+- No functional changes; comments-only.
+
+### L6 — Final review (strict leftover removal)
+
+Decision: CHANGED
+
+Leftovers removed (unused in this file; existed only in destructuring + existence-guards):
+- `combinePresets` (RendererPresets)
+- `fillPresetsSelect` (RendererPresets)
+- `formatTimeFromWords` (FormatUtils)
+
+Edits applied (all local to `public/renderer.js`):
+- Change: Removed `combinePresets` and `fillPresetsSelect` from the `RendererPresets` destructuring and from the “available” guard.
+  - Gain: eliminates dead locals and keeps the guard aligned to actual usage.
+  - Cost: no longer validates unused capabilities.
+  - Risk: low; these symbols were not referenced anywhere else in this file.
+  - Validation: grep shows no remaining references; presets still load and preset selection still works.
+
+- Change: Removed `formatTimeFromWords` from the `FormatUtils` destructuring and from the “available” guard.
+  - Gain: eliminates a dead local and keeps the guard aligned to actual usage.
+  - Cost: no longer validates an unused capability.
+  - Risk: low; this symbol was not referenced anywhere else in this file.
+  - Validation: grep shows no remaining references; counts/time formatting still render on text updates.
+
+Post-change anchors (to make the “guard matches usage” state explicit):
+- Presets integration now only requires what it actually calls:
+  - `const { applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};`
+- Time formatting now only requires what it actually calls:
+  - `const { getTimeParts, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};`
+
+Observable contract, side effects, and timing/order were preserved (deletions of unused locals + related guards only).
+
+## Checklist L7
+
+[x] **Log sanity (idle 20–30s)** con logs visibles.
+   Esperado: sin `ERROR`/uncaught; sin spam continuo del mismo warning.
+
+[x] **Clipboard overwrite (📋↺)** con texto corto.
+   Esperado: cambia texto vigente y se actualiza preview/conteos/tiempo.
+
+[x] **Clipboard append (📋+)** con texto corto.
+   Esperado: agrega en nueva línea (joiner) y UI se actualiza.
+
+[x] **Abrir Editor manual** desde main.
+   Esperado: abre estable; sin errores.
+
+[x] Con Editor abierto: **hacer overwrite (📋↺)** en main.
+   Esperado: el Editor refleja el update (broadcast correspondiente) sin errores.
+
+[x] **Vaciar texto (Clear)** desde main.
+   Esperado: main queda vacío y el Editor se limpia.
+
+[x] **Cerrar app y relanzar**.
+   Esperado: init carga último texto persistido (o vacío si se vació); sin errores en startup.
