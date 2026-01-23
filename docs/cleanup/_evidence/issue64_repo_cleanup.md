@@ -1761,3 +1761,56 @@ Decision: CHANGED
   * IPC handlers presentes: `'open-external-url'` y `'open-app-doc'`; retornan `{ ok: true }` o `{ ok: false, reason }`. 
   * Apertura de paths centralizada en `openPathWithLog`. 
   * Nota explícita: “Se mantiene y acepta el *residual edge-case* ya documentado (return de Promise sin await en `openPathWithLog`); no se modifica en L6.” 
+
+### L7 — Smoke (human-run; minimal, dev)
+
+Preconditions:
+- Run the app in dev from a terminal (so you can see main-process logs): `npm start`.
+- Keep that terminal visible.
+- Open DevTools in the main window (Console tab).
+
+Checklist:
+- [x] Startup sanity (main): after the window is visible, no uncaught exceptions / unhandled rejections in the terminal.
+
+- [x] IPC open-external-url (allowed):
+  - Action (DevTools Console):
+    - `window.electronAPI.openExternalUrl('https://github.com').then(r => console.log('openExternalUrl allowed =>', r));`
+  - Expected:
+    - Console prints `{ ok: true }`.
+    - Default browser opens `https://github.com` (or focuses an existing tab).
+    - No `Error processing open-external-url:` in terminal logs.
+
+- [x] IPC open-external-url (blocked by policy: scheme):
+  - Action:
+    - `window.electronAPI.openExternalUrl('http://github.com').then(r => console.log('openExternalUrl blocked(scheme) =>', r));`
+  - Expected:
+    - Console prints `{ ok: false, reason: 'blocked' }`.
+    - Browser does NOT open.
+    - Terminal shows a warn with prefix: `open-external-url blocked: disallowed URL:`.
+
+- [x] IPC open-app-doc (packaged-only key in dev):
+  - Action:
+    - `window.electronAPI.openAppDoc('license-electron').then(r => console.log('openAppDoc dev-only block =>', r));`
+  - Expected:
+    - Console prints `{ ok: false, reason: 'not_available_in_dev' }`.
+    - Terminal shows a warn with prefix: `open-app-doc not available in dev; requires packaged build:`.
+
+- [x] IPC open-app-doc (unknown key):
+  - Action:
+    - `window.electronAPI.openAppDoc('does-not-exist').then(r => console.log('openAppDoc unknown =>', r));`
+  - Expected:
+    - Console prints `{ ok: false, reason: 'blocked' }`.
+    - Terminal shows a warn with prefix: `open-app-doc blocked: unknown doc key:`.
+
+- [x] IPC open-app-doc (Baskervville):
+  - Action:
+    - `window.electronAPI.openAppDoc('license-baskervville').then(r => console.log('openAppDoc baskervville =>', r));`
+  - Expected (normal):
+    - Console prints `{ ok: true }`.
+    - OS opens a temp copy of `LICENSE_Baskervville_OFL.txt` (viewer/editor).
+  - Acceptable fallback (if the font license file is missing in your dev tree):
+    - `{ ok: false, reason: 'not_found' }` and a terminal warn with prefix: `open-app-doc not found:`.
+
+Result: PASS / FAIL
+Notes (optional):
+- If you ever see the deduped warning key `link_openers.tempPath.fallback`, it should appear once per session (warnOnce) and not spam.
