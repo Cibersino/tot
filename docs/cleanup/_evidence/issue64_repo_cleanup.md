@@ -1882,3 +1882,19 @@ Decision: NO CHANGE
 
 Reviewer assessment:
 - PASS for L2 gate as NO CHANGE: now demonstrates evaluation of multiple concrete candidates (identifiers + micro-quotes) across distinct areas; rationale is consistent with timing/ordering sensitivity and avoids refactors that would add indirection/branching.
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- public/renderer.js `btnOverwriteClipboard.addEventListener('click'` + electron/preload.js `readClipboard: () => ipcRenderer.invoke('clipboard-read-text')` — contract is explicit and stable; no mismatch or multi-consumer ambiguity requiring a contract change.
+- public/renderer.js `window.electronAPI.onSettingsChanged` + electron/preload.js `onSettingsChanged: (cb) => {` — subscription API is clear and single-purpose; no evidence of unstable semantics across modules.
+- public/renderer.js `loadPresets()` + public/js/presets.js `loadPresetsIntoDom({` — renderer delegates preset loading to a shared module with a defined API, reducing duplication already.
+- public/renderer.js `initCronoController()` + public/js/crono.js `createController(options = {})` — crono wiring is centralized in a controller; no cross-module duplication demanding an architectural change.
+- public/renderer.js `window.menuActions.registerMenuAction('guia_basica'` + public/js/menu_actions.js `function registerMenuAction(payload, callback)` — menu action routing is already abstracted; no evidence of conflicting consumers or ambiguous payloads.
+- public/renderer.js `async function showInfoModal(key, opts = {})` + public/js/info_modal_links.js `function bindInfoModalLinks(container, ...)` — modal link handling is delegated; no contract instability detected.
+- docs/cleanup/_evidence/issue64_repo_cleanup.md `IPC contract: none (no ipcMain/ipcRenderer/webContents usage)` — confirms renderer.js uses the preload façade, not raw IPC; no evidence of unstable IPC contract within this file.
+
+Reviewer assessment:
+- PASS for L3 gate as NO CHANGE: no concrete repo-wide pain/bug/instability demonstrated that would justify a contract or architecture change here.
+- Note: last bullet is documentation-derived (redundant as “evidence checked”), but does not affect the conclusion.
