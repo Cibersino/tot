@@ -1969,3 +1969,33 @@ Validation (mechanical):
 
 Notes:
 - No functional changes; comments-only.
+
+### L6 — Final review (strict leftover removal)
+
+Decision: CHANGED
+
+Leftovers removed (unused in this file; existed only in destructuring + existence-guards):
+- `combinePresets` (RendererPresets)
+- `fillPresetsSelect` (RendererPresets)
+- `formatTimeFromWords` (FormatUtils)
+
+Edits applied (all local to `public/renderer.js`):
+- Change: Removed `combinePresets` and `fillPresetsSelect` from the `RendererPresets` destructuring and from the “available” guard.
+  - Gain: eliminates dead locals and keeps the guard aligned to actual usage.
+  - Cost: no longer validates unused capabilities.
+  - Risk: low; these symbols were not referenced anywhere else in this file.
+  - Validation: grep shows no remaining references; presets still load and preset selection still works.
+
+- Change: Removed `formatTimeFromWords` from the `FormatUtils` destructuring and from the “available” guard.
+  - Gain: eliminates a dead local and keeps the guard aligned to actual usage.
+  - Cost: no longer validates an unused capability.
+  - Risk: low; this symbol was not referenced anywhere else in this file.
+  - Validation: grep shows no remaining references; counts/time formatting still render on text updates.
+
+Post-change anchors (to make the “guard matches usage” state explicit):
+- Presets integration now only requires what it actually calls:
+  - `const { applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};`
+- Time formatting now only requires what it actually calls:
+  - `const { getTimeParts, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};`
+
+Observable contract, side effects, and timing/order were preserved (deletions of unused locals + related guards only).
