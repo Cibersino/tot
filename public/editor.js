@@ -783,12 +783,16 @@ function sendCurrentTextToMain(action, options = {}) {
 }
 
 
+function notifyTextTruncated() {
+  Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
+}
+
 function handleTruncationResponse(resPromise) {
   try {
     if (resPromise && typeof resPromise.then === 'function') {
       resPromise.then((r) => {
         if (r && r.truncated) {
-          Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
+          notifyTextTruncated();
         }
       }).catch((err) => {
         log.error('Error handling truncated response:', err);
@@ -869,7 +873,7 @@ async function applyExternalUpdate(payload) {
 
     if (editor.value === newText) {
       if (truncated) {
-        Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
+        notifyTextTruncated()
       }
       return;
     }
@@ -919,7 +923,7 @@ async function applyExternalUpdate(payload) {
             catch (err) { warnOnceEditor('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
           }
           if (truncated) {
-            Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
+            notifyTextTruncated()
           }
           return;
         }
@@ -950,7 +954,7 @@ async function applyExternalUpdate(payload) {
           catch (err) { warnOnceEditor('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
         }
         if (truncated) {
-          Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
+          notifyTextTruncated()
         }
         return;
       } else {
@@ -967,8 +971,8 @@ async function applyExternalUpdate(payload) {
           catch (err) { warnOnceEditor('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
         }
         if (truncated) {
-            Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
-          }
+          notifyTextTruncated()
+        }
         return;
       }
     }
@@ -985,7 +989,7 @@ async function applyExternalUpdate(payload) {
       editor.style.visibility = '';
     }
     if (truncated) {
-      Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
+      notifyTextTruncated()
     }
   } catch (err) {
     log.error('applyExternalUpdate error:', err);
@@ -1186,4 +1190,3 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     // disable automatic sending; enable CALCULATE
   } else btnCalc.disabled = false;
 });
-

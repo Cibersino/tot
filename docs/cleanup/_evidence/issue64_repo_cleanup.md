@@ -2098,8 +2098,24 @@ Changes (micro, semantics-identical; no reordering/retiming):
 - EOF: removed trailing blank lines (cosmetic only).
 
 Anchors:
-- `performFind` — "if (!query) {" … "const needle = query.toLowerCase();".:contentReference[oaicite:4]{index=4}
-- `insertTextAtCursor` — "sendCurrentTextToMain('paste');".:contentReference[oaicite:5]{index=5}
-- `applyExternalUpdate` — "if (truncated) { Notify.notifyEditor('renderer.editor_alerts.text_truncated'".:contentReference[oaicite:6]{index=6}
+- `performFind` — "if (!query) {" … "const needle = query.toLowerCase();".
+- `insertTextAtCursor` — "sendCurrentTextToMain('paste');".
+- `applyExternalUpdate` — "if (truncated) { Notify.notifyEditor('renderer.editor_alerts.text_truncated'".
 
+Reviewer gate: PASS
+
+### L2 — Clarity / robustness refactor (redo)
+
+Decision: CHANGED
+
+- Change: Extracted `notifyTextTruncated()` as a pure wrapper for:
+  - `Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })`
+  and replaced identical truncation-warning call sites to call the helper instead (in `handleTruncationResponse` and `applyExternalUpdate`).
+  - Gain: Centralizes the truncation warning behavior; easier to scan/audit repeated branches.
+  - Cost: Adds one tiny helper indirection.
+  - Validation:
+    - Static: confirm `renderer.editor_alerts.text_truncated` appears only inside `notifyTextTruncated()`.
+    - Manual: trigger any truncation path (e.g., paste/insert text that exceeds max) and verify the same warning still appears.
+
+Observable contract and timing preserved.
 Reviewer gate: PASS
