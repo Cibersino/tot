@@ -216,8 +216,8 @@ let currentPresetName = null;
 let allPresetsCache = [];
 
 // ======================= Presets integration =======================
-const { combinePresets, fillPresetsSelect, applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};
-if (!combinePresets || !fillPresetsSelect || !applyPresetSelection || !loadPresetsIntoDom) {
+const { applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};
+if (!applyPresetSelection || !loadPresetsIntoDom) {
   log.error('[renderer] RendererPresets not available');
 }
 
@@ -245,8 +245,8 @@ function setModoConteo(nuevoModo) {
 }
 
 // ======================= Time formatting =======================
-const { getTimeParts, formatTimeFromWords, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
-if (!getTimeParts || !formatTimeFromWords || !obtenerSeparadoresDeNumeros || !formatearNumero) {
+const { getTimeParts, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
+if (!getTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
   log.error('[renderer] FormatUtils not available');
 }
 
