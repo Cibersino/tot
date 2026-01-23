@@ -171,7 +171,7 @@ function applyTranslations() {
       maxIpcChars = maxTextChars * 4;
     }
   } catch (err) {
-    log.error('Could not get getAppConfig using defaults:', err);
+    log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
   }
 
   // Load user settings ONCE when the renderer starts
@@ -188,10 +188,10 @@ function applyTranslations() {
       // Refresh the initial view with the loaded translations
       updatePreviewAndResults(currentText);
     } catch (err) {
-      log.warn('Could not apply initial translations in renderer:', err);
+      log.warn('BOOTSTRAP: initial translations failed; using defaults:', err);
     }
   } catch (err) {
-    log.error('Could not get user settings at startup:', err);
+    log.warn('BOOTSTRAP: getSettings failed; using defaults:', err);
     // Current language is set to DEFAULT_LANG by default
     settingsCache = {};
   }
@@ -575,9 +575,17 @@ const loadPresets = async () => {
     try {
       const version = await window.electronAPI.getAppVersion();
       const cleaned = typeof version === 'string' ? version.trim() : '';
-      versionEl.textContent = cleaned || 'N/A';
+      if (!cleaned) {
+        warnOnceRenderer(
+          'renderer.info.acerca_de.version.empty',
+          'getAppVersion returned empty; About modal shows N/A.'
+        );
+        versionEl.textContent = 'N/A';
+        return;
+      }
+      versionEl.textContent = cleaned;
     } catch (err) {
-      log.error('Error fetching app version for About modal:', err);
+      log.warn('getAppVersion failed; About modal shows N/A:', err);
       versionEl.textContent = 'N/A';
     }
   }
@@ -600,13 +608,17 @@ const loadPresets = async () => {
       const osLabel = platformMap[platform] || platform;
 
       if (!osLabel || !arch) {
+        warnOnceRenderer(
+          'renderer.info.acerca_de.env.missing_fields',
+          'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
+        );
         envEl.textContent = 'N/A';
         return;
       }
 
       envEl.textContent = `${osLabel} (${arch})`;
     } catch (err) {
-      log.error('Error fetching app environment for About modal:', err);
+      log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
       envEl.textContent = 'N/A';
     }
   }
