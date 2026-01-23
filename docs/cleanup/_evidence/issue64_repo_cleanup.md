@@ -2086,3 +2086,20 @@ Last commit: `f35685b0533e33e36e1ac69f2eadcf6e32d1eedd`
 
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented direct IPC; anchors/micro-quotes present; bridge wording conservative and internally consistent).
+
+### L1 — Structural micro-cleanup (redo)
+
+Decision: CHANGED
+
+Changes (micro, semantics-identical; no reordering/retiming):
+- `performFind`: removed redundant empty-query guard for `needle` (relies on early `if (!query)` before `const needle = query.toLowerCase()`).
+- `insertTextAtCursor`: notify main via direct `sendCurrentTextToMain('paste')`; removed passthrough wrapper.
+- `applyExternalUpdate`: collapsed duplicated `if (truncated)` (kept a single guard for the truncation notify).
+- EOF: removed trailing blank lines (cosmetic only).
+
+Anchors:
+- `performFind` — "if (!query) {" … "const needle = query.toLowerCase();".:contentReference[oaicite:4]{index=4}
+- `insertTextAtCursor` — "sendCurrentTextToMain('paste');".:contentReference[oaicite:5]{index=5}
+- `applyExternalUpdate` — "if (truncated) { Notify.notifyEditor('renderer.editor_alerts.text_truncated'".:contentReference[oaicite:6]{index=6}
+
+Reviewer gate: PASS

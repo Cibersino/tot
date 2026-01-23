@@ -598,11 +598,6 @@ function performFind(direction) {
   const haystack = findCache.lower;
   const needle = query.toLowerCase();
 
-  if (!needle) {
-    setFindStatusText(tr('renderer.editor_find.status_empty_query', 'Type to search'));
-    setFindCountText('');
-    return false;
-  }
 
   const { start, end } = getSelectionRange();
   const forward = direction !== -1;
@@ -787,9 +782,6 @@ function sendCurrentTextToMain(action, options = {}) {
   }
 }
 
-function sendCurrentTextToMainWithMeta(action = 'insert') {
-  sendCurrentTextToMain(action);
-}
 
 function handleTruncationResponse(resPromise) {
   try {
@@ -827,7 +819,7 @@ function insertTextAtCursor(rawText) {
     tryNativeInsertAtSelection(toInsert);
 
     // Notify main
-    sendCurrentTextToMainWithMeta('paste');
+    sendCurrentTextToMain('paste');
 
     if (truncated) {
       Notify.notifyEditor('renderer.editor_alerts.paste_truncated', { type: 'warn', duration: 5000 });
@@ -974,8 +966,7 @@ async function applyExternalUpdate(payload) {
           try { if (prevActive && prevActive !== editor) prevActive.focus(); }
           catch (err) { warnOnceEditor('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
         }
-        if (truncated)
-          if (truncated) {
+        if (truncated) {
             Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
           }
         return;
@@ -1195,3 +1186,4 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     // disable automatic sending; enable CALCULATE
   } else btnCalc.disabled = false;
 });
+
