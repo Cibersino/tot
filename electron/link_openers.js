@@ -1,9 +1,26 @@
 // electron/link_openers.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Gate external URL opens to an allowlist and https only.
+// - Resolve and open app documentation files by docKey.
+// - Handle dev vs packaged doc locations and copy-to-temp cases.
+// - Register IPC handlers that return { ok: true } or { ok: false, reason }.
+
+// =============================================================================
+// Imports
+// =============================================================================
+
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+
+// =============================================================================
+// Constants / config
+// =============================================================================
 
 const ALLOWED_EXTERNAL_HOSTS = new Set([
   'github.com',
@@ -20,6 +37,10 @@ const APP_DOC_FILES = Object.freeze({
 });
 const APP_DOC_BASKERVVILLE = 'license-baskervville';
 
+// =============================================================================
+// Helpers
+// =============================================================================
+
 async function fileExists(filePath) {
   try {
     await fs.promises.access(filePath, fs.constants.F_OK);
@@ -29,20 +50,38 @@ async function fileExists(filePath) {
   }
 }
 
-function getTempDir(app) {
+function getTempDir(app, log) {
   try {
     return app.getPath('temp');
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      'link_openers.tempPath.fallback',
+      'open-app-doc temp path fallback: app.getPath("temp") failed; using os.tmpdir().',
+      err
+    );
     return os.tmpdir();
   }
 }
 
-async function copyToTemp(app, srcPath, tempName) {
-  const tempPath = path.join(getTempDir(app), tempName);
+async function copyToTemp(app, srcPath, tempName, log) {
+  const tempPath = path.join(getTempDir(app, log), tempName);
   const data = await fs.promises.readFile(srcPath);
   await fs.promises.writeFile(tempPath, data);
   return tempPath;
 }
+
+async function openPathWithLog(shell, log, rawKey, filePath) {
+  const openResult = await shell.openPath(filePath);
+  if (openResult) {
+    log.warn('open-app-doc open failed:', rawKey, openResult);
+    return { ok: false, reason: 'open_failed' };
+  }
+  return { ok: true };
+}
+
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
 
 function registerLinkIpc({ ipcMain, app, shell, log }) {
   ipcMain.handle('open-external-url', async (_e, url) => {
@@ -101,12 +140,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
 
         for (const candidate of devCandidates) {
           if (!(await fileExists(candidate))) continue;
-          const openResult = await shell.openPath(candidate);
-          if (openResult) {
-            log.warn('open-app-doc open failed:', rawKey, openResult);
-            return { ok: false, reason: 'open_failed' };
-          }
-          return { ok: true };
+          return openPathWithLog(shell, log, rawKey, candidate);
         }
 
         log.warn('open-app-doc not found (dev doc):', rawKey, fileName);
@@ -120,14 +154,13 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
           return { ok: false, reason: 'not_found' };
         }
 
-        const tempPath = await copyToTemp(app, srcPath, 'tot-readingmeter_LICENSE_Baskervville_OFL.txt');
-        const openResult = await shell.openPath(tempPath);
-        if (openResult) {
-          log.warn('open-app-doc open failed:', rawKey, openResult);
-          return { ok: false, reason: 'open_failed' };
-        }
-
-        return { ok: true };
+        const tempPath = await copyToTemp(
+          app,
+          srcPath,
+          'tot-readingmeter_LICENSE_Baskervville_OFL.txt',
+          log
+        );
+        return openPathWithLog(shell, log, rawKey, tempPath);
       }
 
       if (!Object.prototype.hasOwnProperty.call(APP_DOC_FILES, rawKey)) {
@@ -144,12 +177,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
 
       for (const candidate of candidates) {
         if (!(await fileExists(candidate))) continue;
-        const openResult = await shell.openPath(candidate);
-        if (openResult) {
-          log.warn('open-app-doc open failed:', rawKey, openResult);
-          return { ok: false, reason: 'open_failed' };
-        }
-        return { ok: true };
+        return openPathWithLog(shell, log, rawKey, candidate);
       }
 
       const fallbackPath = path.join(app.getAppPath(), fileName);
@@ -158,14 +186,8 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
         return { ok: false, reason: 'not_found' };
       }
 
-      const tempPath = await copyToTemp(app, fallbackPath, `tot-readingmeter_${fileName}`);
-      const openResult = await shell.openPath(tempPath);
-      if (openResult) {
-        log.warn('open-app-doc open failed:', rawKey, openResult);
-        return { ok: false, reason: 'open_failed' };
-      }
-
-      return { ok: true };
+      const tempPath = await copyToTemp(app, fallbackPath, `tot-readingmeter_${fileName}`, log);
+      return openPathWithLog(shell, log, rawKey, tempPath);
     } catch (err) {
       log.error('Error processing open-app-doc:', err);
       return { ok: false, reason: 'error' };
@@ -173,4 +195,12 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = { registerLinkIpc };
+
+// =============================================================================
+// End of electron/link_openers.js
+// =============================================================================

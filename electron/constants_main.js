@@ -1,7 +1,7 @@
 // electron/constants_main.js
 'use strict';
 
-const DEFAULT_LANG = 'es'; // Default language for the application. It must match constants.js. This can be overridden by user settings.
+const DEFAULT_LANG = 'es'; // Default language for the app. It must match 'public/js/constants.js'. This can be overridden by user settings.
 
 const MAX_TEXT_CHARS = 10000000; // Maximum number of characters allowed in the current text. This is a hard limit to prevent performance issues and memory overflow in the main process. The renderer process can have a lower limit (see constants.js) for better user experience, but this is the absolute maximum.
 const MAX_IPC_MULTIPLIER = 4;
