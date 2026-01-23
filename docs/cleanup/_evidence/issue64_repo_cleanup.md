@@ -1999,3 +1999,26 @@ Post-change anchors (to make the “guard matches usage” state explicit):
   - `const { getTimeParts, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};`
 
 Observable contract, side effects, and timing/order were preserved (deletions of unused locals + related guards only).
+
+## Checklist L7
+
+[x] **Log sanity (idle 20–30s)** con logs visibles.
+   Esperado: sin `ERROR`/uncaught; sin spam continuo del mismo warning.
+
+[x] **Clipboard overwrite (📋↺)** con texto corto.
+   Esperado: cambia texto vigente y se actualiza preview/conteos/tiempo.
+
+[x] **Clipboard append (📋+)** con texto corto.
+   Esperado: agrega en nueva línea (joiner) y UI se actualiza.
+
+[x] **Abrir Editor manual** desde main.
+   Esperado: abre estable; sin errores.
+
+[x] Con Editor abierto: **hacer overwrite (📋↺)** en main.
+   Esperado: el Editor refleja el update (broadcast correspondiente) sin errores.
+
+[x] **Vaciar texto (Clear)** desde main.
+   Esperado: main queda vacío y el Editor se limpia.
+
+[x] **Cerrar app y relanzar**.
+   Esperado: init carga último texto persistido (o vacío si se vació); sin errores en startup.
