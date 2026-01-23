@@ -2000,7 +2000,7 @@ Post-change anchors (to make the “guard matches usage” state explicit):
 
 Observable contract, side effects, and timing/order were preserved (deletions of unused locals + related guards only).
 
-## Checklist L7
+### Checklist L7
 
 [x] **Log sanity (idle 20–30s)** con logs visibles.
    Esperado: sin `ERROR`/uncaught; sin spam continuo del mismo warning.
@@ -2022,3 +2022,10 @@ Observable contract, side effects, and timing/order were preserved (deletions of
 
 [x] **Cerrar app y relanzar**.
    Esperado: init carga último texto persistido (o vacío si se vació); sin errores en startup.
+
+---
+
+## public/editor.js
+
+Date: `2026-01-23`
+Last commit: `f35685b0533e33e36e1ac69f2eadcf6e32d1eedd`
