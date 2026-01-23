@@ -1819,3 +1819,37 @@ Result: PASS
 
 Date: `2026-01-23`
 Last commit: `f011c4d4288c5cde9caffae0e3646f894f15e980`
+
+### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+#### 0.1 Reading map
+- Block order (high-level): strict/log + globals; DOM grabs; state/cache + i18n wiring; `applyTranslations`; early async init (config/settings); counting/preset/format hookups; helpers (`contarTexto`, `normalizeText`, `setModoConteo`); `updatePreviewAndResults` + `setCurrentTextAndUpdateUI`; crono state listener; `loadPresets`; main async init IIFE (current text, subscriptions, settings handler, precise toggle, info modal, menu actions); UI event listeners; stopwatch UI + loader helpers + crono controller init.
+- Linear reading obstacles (identifier + micro-quote):
+  - `applyTranslations` — “const labelsCrono = getCronoLabels();”
+  - `settingsChangeHandler` — “const settingsChangeHandler = async (newSettings) => {”
+  - `showInfoModal` — “async function showInfoModal(key, opts = {})”
+  - `window.menuActions.registerMenuAction` — “window.menuActions.registerMenuAction('guia_basica', () => {”
+
+#### 0.2 Contract map
+- Exports/public entrypoints: none (script-only; behavior via side effects).
+- Side effects (observed): reads globals (`AppConstants`, `RendererI18n`, `CountUtils`, `FormatUtils`, `RendererPresets`, `RendererCrono`, `Notify`); updates DOM; registers DOM event listeners; subscribes to `window.electronAPI` events; invokes `window.electronAPI` methods; registers `window.menuActions` actions.
+- Invariants / fallbacks (anchored):
+  - Requires `AppConstants` or throws — “throw new Error('[renderer] AppConstants no disponible;”
+  - Requires `RendererI18n` or throws — “throw new Error('[renderer] RendererI18n no disponible;”
+  - Requires `CountUtils.contarTexto` or throws — “if (typeof contarTextoModulo !== 'function')”
+  - IPC payload sizing heuristic — “maxIpcChars = maxTextChars * 4”
+  - Settings fallback on read failure — “settingsCache = {}”
+  - WPM clamp — “val = Math.min(Math.max(val, WPM_MIN), WPM_MAX);”
+  - Optional electronAPI hooks guarded — “typeof window.electronAPI.onSettingsChanged === 'function'”
+
+##### IPC contract (explicit ipcMain/ipcRenderer/webContents calls)
+- None found in this file (direct calls).
+
+##### Delegated IPC registration
+- None observed.
+
+Reviewer assessment (L0 protocol compliance):
+- PASS. Diagnosis-only; no invented direct IPC; obstacles include identifiers + micro-quotes; invariants anchored to visible checks/fallbacks.
+- Note: direct `ipcRenderer/*` absence is expected because this file uses `window.electronAPI` as IPC façade.
