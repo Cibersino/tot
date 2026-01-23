@@ -2,13 +2,11 @@
 'use strict';
 
 (function () {
-  function bindInfoModalLinks(container, { electronAPI, warnOnceRenderer, log } = {}) {
+  function bindInfoModalLinks(container, { electronAPI, log } = {}) {
     if (!container || container.dataset.externalLinksBound === '1') return;
     container.dataset.externalLinksBound = '1';
 
     const api = electronAPI || window.electronAPI;
-    const warnOnce = typeof warnOnceRenderer === 'function' ? warnOnceRenderer : null;
-    const logger = log || console;
 
     const escapeSelector = (value) => {
       if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(value);
@@ -59,12 +57,14 @@
         if (rawHref.startsWith('appdoc:')) {
           const docKey = rawHref.slice('appdoc:'.length).trim();
           if (!api || typeof api.openAppDoc !== 'function') {
-            if (warnOnce) {
-              warnOnce(
+            if (log && typeof log.warnOnce === 'function') {
+              log.warnOnce(
                 'renderer.info.appdoc.missing',
                 'openAppDoc not available; blocked app doc:',
                 docKey
               );
+            } else if (log && typeof log.warn === 'function') {
+              log.warn('openAppDoc not available; blocked app doc:', docKey);
             }
             return;
           }
@@ -72,24 +72,28 @@
           api.openAppDoc(docKey)
             .then((result) => {
               if (!result || result.ok !== true) {
-                if (warnOnce) {
-                  warnOnce(
+                if (log && typeof log.warnOnce === 'function') {
+                  log.warnOnce(
                     'renderer.info.appdoc.blocked',
                     'App doc blocked or failed:',
                     docKey,
                     result
                   );
+                } else if (log && typeof log.warn === 'function') {
+                  log.warn('App doc blocked or failed:', docKey, result);
                 }
               }
             })
             .catch((err) => {
-              if (warnOnce) {
-                warnOnce(
+              if (log && typeof log.warnOnce === 'function') {
+                log.warnOnce(
                   'renderer.info.appdoc.error',
                   'App doc request failed:',
                   docKey,
                   err
                 );
+              } else if (log && typeof log.warn === 'function') {
+                log.warn('App doc request failed:', docKey, err);
               }
             });
           return;
@@ -97,12 +101,14 @@
 
         const resolvedHref = link.href || rawHref;
         if (!api || typeof api.openExternalUrl !== 'function') {
-          if (warnOnce) {
-            warnOnce(
+          if (log && typeof log.warnOnce === 'function') {
+            log.warnOnce(
               'renderer.info.external.missing',
               'openExternalUrl not available; blocked navigation to:',
               resolvedHref
             );
+          } else if (log && typeof log.warn === 'function') {
+            log.warn('openExternalUrl not available; blocked navigation to:', resolvedHref);
           }
           return;
         }
@@ -110,29 +116,33 @@
         api.openExternalUrl(resolvedHref)
           .then((result) => {
             if (!result || result.ok !== true) {
-              if (warnOnce) {
-                warnOnce(
+              if (log && typeof log.warnOnce === 'function') {
+                log.warnOnce(
                   'renderer.info.external.blocked',
                   'External URL blocked or failed:',
                   resolvedHref,
                   result
                 );
+              } else if (log && typeof log.warn === 'function') {
+                log.warn('External URL blocked or failed:', resolvedHref, result);
               }
             }
           })
           .catch((err) => {
-            if (warnOnce) {
-              warnOnce(
+            if (log && typeof log.warnOnce === 'function') {
+              log.warnOnce(
                 'renderer.info.external.error',
                 'External URL request failed:',
                 resolvedHref,
                 err
               );
+            } else if (log && typeof log.warn === 'function') {
+              log.warn('External URL request failed:', resolvedHref, err);
             }
           });
       } catch (err) {
-        if (logger && typeof logger.error === 'function') {
-          logger.error('Error handling info modal link click:', err);
+        if (log && typeof log.error === 'function') {
+          log.error('Error handling info modal link click:', err);
         }
       }
     });
