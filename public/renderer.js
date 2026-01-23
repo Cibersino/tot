@@ -708,7 +708,7 @@ const loadPresets = async () => {
       : translateInfoHtml(tryHtml, translationKey);
     infoModalContent.innerHTML = renderedHtml;
     if (typeof bindInfoModalLinks === 'function') {
-      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI, warnOnceRenderer: log.warnOnce, log });
+      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI, log });
     }
     if (key === 'acerca_de') {
       await hydrateAboutVersion(infoModalContent);
