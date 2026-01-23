@@ -768,6 +768,8 @@ Checklist:
 - [x] Cerrar completamente la app y relanzar.
       Esperado: `init` carga el ultimo texto persistido (o vacio si se vacio); sin errores en startup.
 
+---
+
 ## electron/editor_state.js
 
 Date: `2026-01-21`
@@ -1382,3 +1384,433 @@ Result: Pass
 - [x] (5) Cambio de idioma por flujo normal: UI/menu siguen correctos; NO aparecen warnings i18n tipo “Failed to load/parse main.json…” / “main.json is empty…”.
 - [x] (6) Repetir 1 accion post-idioma: funciona (sin regresion).
 - [c] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
+
+---
+
+## electron/updater.js
+
+Date: `2026-01-22`
+Last commit: `f29062b2ac374c073a462fb67710ff64114e8c91`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - Header comment + `'use strict'`.
+    - Imports: electron (`dialog`, `shell`, `app`), `https`, `./log`, `./menu_builder`, `./constants_main`.
+    - URLs: `RELEASES_API_URL`, `DOWNLOAD_URL`.
+    - Lazy refs + one-shot flag: `mainWinRef`, `currentLanguageRef`, `updateCheckDone`.
+    - Dialog helper wrapper: `resolveDialogText` → `menuBuilder.resolveDialogText(...)`.
+    - SemVer parsing/comparison: `SEMVER_RE`, `parseSemVer`, `comparePrerelease`, `compareSemVer`.
+    - Remote query: `fetchLatestReleaseTag` (https GET + JSON parse; resolves `null` on failures).
+    - Main flow: `checkForUpdates` (local version parse → remote tag fetch/parse → compare → dialogs → `shell.openExternal`).
+    - One-time auto check: `scheduleInitialCheck`.
+    - IPC wiring: `registerIpc`.
+    - `module.exports`.
+
+  - Where linear reading breaks (identifiers + micro-quotes):
+    - `checkForUpdates`: repetición de bloques de error manual (mismo texto/keys).
+      - Anchor: `"update_failed_message"` / `"await dialog.showMessageBox(mainWin"`.
+    - `fetchLatestReleaseTag`: callbacks/eventos + múltiples salidas defensivas.
+      - Anchor: `"res.on('end', () => {"` / `"return resolve(null);"`.
+    - `registerIpc`: mutación de referencias externas (state capturado por cierre).
+      - Anchor: `"mainWinRef = mainRef;"`.
+    - `scheduleInitialCheck`: latch one-shot de ciclo de vida.
+      - Anchor: `"if (updateCheckDone) return;"` / `"updateCheckDone = true;"`.
+
+- Contract map (exports / side effects / invariants / IPC):
+  - Exposes:
+    - `registerIpc(ipcMain, { mainWinRef, currentLanguageRef } = {})`
+    - `scheduleInitialCheck()`
+  - Side effects:
+    - None on import; red/diálogos ocurren solo al ejecutar `checkForUpdates` (directo o vía `scheduleInitialCheck` / IPC).
+
+  - Invariants and fallbacks (anchored):
+    - SemVer local requerido; early-return si falla.
+      - Anchor: `"const localParsed = parseSemVer(localVer);"` + `"if (!localParsed) {"`.
+    - Tag remoto puede ser `null`; se tolera (silent salvo diálogo si `manual`).
+      - Anchor: `"const remoteTag = await fetchLatestReleaseTag(...)"` + `"if (!remoteTag) {"`.
+    - Tag remoto exige prefijo `v`; early-return si falta.
+      - Anchor: `"if (!remoteTag.startsWith('v')) {"`.
+    - SemVer remoto requerido; early-return si falla.
+      - Anchor: `"const remoteParsed = parseSemVer(remoteVer);"` + `"if (!remoteParsed) {"`.
+    - Diálogos de error “manual” solo si hay ventana viva.
+      - Anchor: `"if (manual && mainWin && !mainWin.isDestroyed()) {"`.
+    - Si no hay main window viva, no muestra “Update available”.
+      - Anchor: `"if (!mainWin || mainWin.isDestroyed()) { ... return; }"`.
+    - Auto-check solo una vez por ciclo de vida.
+      - Anchor: `"if (updateCheckDone) return;"`.
+
+### IPC contract (only what exists in this file)
+
+A) Explicit IPC in this file:
+- `ipcMain.handle('check-for-updates', async () => ...)`
+  - Input shape: sin args (handler no recibe/usa parámetros).
+  - Return shape: `{ ok: true }` o `{ ok: false, error: string }`.
+  - Outgoing sends: none (no `webContents.send` en este módulo).
+
+B) Delegated registration:
+- None
+
+### L1 decision: CHANGED
+
+- Change: Deduplicación local dentro de `checkForUpdates` del diálogo de falla “manual” (mismo texto/keys).
+  - Added predicate `shouldShowManualDialog()` para centralizar el gating:
+    - Anchor: `"manual && mainWin && !mainWin.isDestroyed()"` (equivalente; ahora encapsulado).
+  - Added helper `showUpdateFailureDialog()` que construye `title/message/buttons` y llama `dialog.showMessageBox(...)`:
+    - Anchors: `"update_failed_title"`, `"update_failed_message"`, `"await dialog.showMessageBox(mainWin"`.
+  - Reemplazados 4 bloques repetidos por `if (shouldShowManualDialog()) await showUpdateFailureDialog();` en:
+    - `!localParsed`
+    - `!remoteTag`
+    - `!remoteTag.startsWith('v')`
+    - `!remoteParsed`
+- No se tocó IPC (`ipcMain.handle('check-for-updates', ...)`), ni keys de i18n, ni logs, ni el flujo general de actualización.
+
+Observable contract/timing preserved: mismos exports, canal IPC y shapes; mismos early-returns y side effects.
+
+**Risk**
+- Low. Refactor local (in-function) que reemplaza duplicación literal por helpers; sin cambios en inputs/outputs ni en IPC.
+
+**Validation**
+- Review diffs: confirmar que el contenido del diálogo (keys + fallbacks + botones) es idéntico a los 4 bloques previos.
+- Smoke focalizado: ejecutar el flujo “Buscar actualizaciones” (manual) y verificar que:
+  - en falla (sin red / respuesta inválida / tag no `v`), aparece el mismo diálogo de error;
+  - no hay excepciones ni logs inesperados.
+
+### L2 decision: NO CHANGE
+
+- Rationale (Codex):
+  - L1 ya removió la duplicación principal (diálogo de falla manual) sin introducir indirection excesiva.
+  - El resto del flujo son early-returns por outcomes de SemVer/red/tag; consolidarlos arriesga ocultar puntos de decisión.
+  - Manejo de errores y logging ya es explícito y proporcional; “mejorarlo” tendería a ser ruido o cambio observable.
+  - IPC es minimalista; tocarlo puede afectar readiness/races.
+
+Reviewer assessment (sufficiency & interpretation quality):
+- PASS (NO CHANGE), coherente con el estado del archivo y con el riesgo/beneficio esperado de L2.
+- Confirmado: diff vacío (sin cambios aplicados).
+- Nota menor: el reporte resume “warn por ruta de falla” de forma algo no literal, pero sin impacto práctico.
+
+### L3 decision: CHANGED (IPC contract drift fix)
+
+Evidence (problem):
+- Preload expone payload `{ manual }`:
+  - Anchor: `ipcRenderer.invoke('check-for-updates', { manual })` (electron/preload.js).
+- Handler ignoraba args y forzaba manual:
+  - Anchor: `ipcMain.handle('check-for-updates', async () =>` + `manual: true` (electron/updater.js).
+- Menú invocaba sin args:
+  - Anchor: `window.electronAPI.checkForUpdates()` (public/renderer.js).
+
+Change:
+- `electron/updater.js`: el handler IPC ahora acepta `(_event, payload)` y deriva `manual` desde `payload.manual` (boolean), pasándolo a `checkForUpdates(...)`.
+  - Anchor: `ipcMain.handle('check-for-updates', async (_event, payload = {}) => {`
+  - Anchor: `manual,` (propiedad en el objeto pasado a `checkForUpdates`).
+- `public/renderer.js`: la acción de menú `actualizar_version` ahora pasa `true` explícito para preservar el comportamiento “manual”.
+  - Anchor: `window.electronAPI.checkForUpdates(true);`
+
+Contract/timing:
+- Canal IPC y retorno se mantienen: `{ ok: true }` / `{ ok: false, error: String(err) }`.
+- Startup y auto-check no se tocan (ruta `checkForUpdates({ manual: false })` interna sigue intacta).
+
+Risk:
+- Bajo. Potencial cambio solo para callers no-evidenciados que invocaran IPC sin payload esperando “manual siempre”.
+
+Validation:
+- Menú “Actualizar versión”: debe seguir mostrando diálogos (incluyendo en error de red).
+- DevTools: `window.electronAPI.checkForUpdates(false)` en escenario up-to-date/sin red: no debe mostrar diálogo “manual failure/up-to-date”.
+- DevTools: `window.electronAPI.checkForUpdates(true)` mantiene diálogos.
+- `rg -n -F "electronAPI.checkForUpdates(true)" public/renderer.js`.
+
+### L4 decision: NO CHANGE
+
+- Logging mechanism: main-process logger `Log.get('updater')` (consistente con política).
+- Fallbacks/errores recoverables ya registran `warn` (fetch/status, parse JSON, red, SemVer inválido, tag sin prefijo `v`).
+- No se justifica `warnOnce/errorOnce`: no hay eventos evidentes de alta frecuencia donde dedupe mejore señal/ruido.
+- No se justifica subir a `error`: fallos de update-check son recoverables y no rompen invariantes del runtime.
+
+Observable contract/timing preserved (no code changes).
+
+### L5 decision: CHANGED (comments-only)
+
+- Reemplazo de header obsoleto por "Overview" con responsabilidades (3–7 items).
+- Se agregan divisores de sección que calzan con el orden real del archivo: imports/logger, constants/config, shared state, helpers, update flow, lifecycle, IPC, exports.
+- Se agrega marcador explícito de fin de archivo ("End of electron/updater.js").
+- No functional changes; comments-only.
+
+### L6 — Final review (Codex)
+
+Decision: **NO CHANGE**
+
+No Level 6 changes justified.
+- Checked helper usage in `checkForUpdates` (e.g., `shouldShowManualDialog`) for leftover duplication; no safe simplification without adding indirection.
+- Checked IPC handler payload parsing (`ipcMain.handle('check-for-updates', async (_event, payload = {}) =>`) and return shapes; consistent.
+- Checked manual vs auto flow (`checkForUpdates({ manual: false })`) and dialog gating (`manual && mainWin && !mainWin.isDestroyed()`); consistent.
+- Checked logging calls (`log.warn('Latest release fetch failed with status:'`) against `electron/log.js` API; signatures match.
+- Checked comments vs code (`// Update flow (manual vs auto)` and `// App lifecycle / bootstrapping`); no drift.
+
+Observable contract and timing were preserved (no code changes).
+
+### L7 — Smoke (human-run; minimal)
+
+Result: Pass
+
+Checklist:
+- [x] Log sanity ~30s idle (sin ERROR/uncaught; sin repeticion continua del mismo warning en idle).
+- [x] Menu → About: abrir y cerrar.
+      Esperado: modal abre estable; sin errores.
+- [x] Menu → “Actualizar versión” (con red normal).
+      Esperado: aparece un dialogo (up-to-date / update available / failure).
+- [x] Validar "manual vs auto" (flag `manual` + silencio esperado en auto-failure):
+      1) Cerrar completamente la app.
+      2) Desconectar red (modo avion / cable / Wi-Fi off).
+      3) Relanzar la app y esperar ~10s.
+         Esperado: NO aparece dialogo automaticamente (auto-check es no-manual y ante falla no debe molestar al usuario).
+         (Se aceptan warnings en log por fetch fallido, sin spam continuo.)
+      4) Con la app abierta y aun sin red: Menu → “Actualizar versión”.
+         Esperado: aparece dialogo de fallo (manual path nunca es silencioso).
+      5) Re-conectar red (restaurar conectividad).
+- [x] (Opcional, si durante el check aparece “Update available”):
+      Elegir la accion de descarga.
+      Esperado: se abre el browser (shell.openExternal) y la app sigue estable.
+
+---
+
+## electron/constants_main.js
+
+Date: `2026-01-22`
+Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
+
+## electron/constants_main.js
+
+### L0 — Minimal diagnosis (Codex)
+
+- Block order: strict mode; constants/config; module.exports.
+- Linear reading breaks: none observed; single responsibility constants.
+- Exposes (CommonJS): `DEFAULT_LANG`, `MAX_TEXT_CHARS`, `MAX_IPC_MULTIPLIER`, `MAX_IPC_CHARS`, `MAX_PRESET_STR_CHARS`, `MAX_META_STR_CHARS`.
+- Invariants: `MAX_IPC_CHARS` derived from `MAX_TEXT_CHARS` (safety cap for IPC payload size).
+- IPC: none declared in this file.
+
+Result: PASS
+
+### L1–L7
+
+Decision: NO CHANGE (file is constants-only; no behavior/IPC/timing surface to refactor or smoke-test at module level).
+
+Result: PASS
+
+---
+
+## electron/link_openers.js
+
+Date: `2026-01-22`
+Last commit: `f1e3a74aa5abc2d2cf221d8b2267b8056c8bf7b1`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - Strict mode + header comment.
+    - Imports (`fs`, `path`, `os`).
+    - Constants/config (`ALLOWED_EXTERNAL_HOSTS`, `APP_DOC_FILES`, `APP_DOC_BASKERVVILLE`).
+    - Helpers (`fileExists`, `getTempDir`, `copyToTemp`).
+    - Main logic: `registerLinkIpc(...)` with 2 IPC handlers.
+    - Exports (`module.exports = { registerLinkIpc }`).
+  - Where linear reading breaks:
+    - `registerLinkIpc` nests two long async handlers: `"ipcMain.handle('open-external-url', async (_e, url) => {"`.
+    - `ipcMain.handle('open-app-doc', ...)` has multi-branch policy (dev vs packaged): `"if (!app.isPackaged && (rawKey === 'license-electron'"`.
+    - `APP_DOC_BASKERVVILLE` special-case path/copy: `"if (rawKey === APP_DOC_BASKERVVILLE) {"`.
+    - `devCandidates` probing loop: `"for (const candidate of devCandidates) {"`.
+    - `candidates` probing loop (packaged/resources): `"for (const candidate of candidates) {"`.
+
+- Contract map (exports / side effects / IPC):
+  - Module exposure:
+    - Export: `registerLinkIpc`.
+    - Anchor: `"module.exports = { registerLinkIpc }"`.
+  - Side effects (only when called):
+    - `registerLinkIpc(...)` registers handlers via `ipcMain.handle(...)`.
+    - Anchor: `"ipcMain.handle('open-external-url'"` and `"ipcMain.handle('open-app-doc'"`.
+  - Invariants and fallbacks (anchored):
+    - External URL must be non-empty string after trim:
+      - Anchor: `"const raw = typeof url === 'string' ? url.trim() : ''"` and `"if (!raw) {"`.
+    - External URL must parse as URL, and be `https` + allowed host:
+      - Anchor: `"parsed = new URL(raw)"` and `"parsed.protocol !== 'https:' || !ALLOWED_EXTERNAL_HOSTS.has"`.
+    - docKey must be non-empty string after trim:
+      - Anchor: `"const rawKey = typeof docKey === 'string' ? docKey.trim() : ''"` and `"if (!rawKey) {"`.
+    - Some docs are blocked in dev when `!app.isPackaged`:
+      - Anchor: `"if (!app.isPackaged && (rawKey === 'license-electron' || rawKey === 'licenses-chromium')) {"`.
+    - Doc key must exist in `APP_DOC_FILES` (except special-case Baskervville):
+      - Anchor: `"Object.prototype.hasOwnProperty.call(APP_DOC_FILES, rawKey)"`.
+    - File existence is checked before opening; temp fallback exists for temp dir:
+      - Anchor: `"if (!(await fileExists("` and `"return os.tmpdir();"`.
+    - Copy-to-temp helper used before opening some files:
+      - Anchor: `"const tempPath = await copyToTemp(app, srcPath"` and `"await fs.promises.writeFile(tempPath, data)"`.
+
+  - IPC contract (only what exists in this file):
+    - `ipcMain.handle('open-external-url', async (_e, url) => ...)`
+      - Input boundary: `(_e, url)` (string expected; trimmed defensively).
+      - Return: `{ ok: true }` or `{ ok: false, reason: 'blocked' | 'error' }`.
+      - Outgoing sends: none.
+    - `ipcMain.handle('open-app-doc', async (_e, docKey) => ...)`
+      - Input boundary: `(_e, docKey)` (string expected; trimmed defensively).
+      - Return: `{ ok: true }` or `{ ok: false, reason: 'blocked' | 'not_available_in_dev' | 'not_found' | 'open_failed' | 'error' }`.
+      - Outgoing sends: none.
+    - `ipcMain.on`: none
+    - `ipcMain.once`: none
+    - `ipcRenderer.*`: none
+    - `webContents.send`: none
+    - Delegated IPC registration: none
+
+### L1 — Structural refactor (Codex)
+
+Decision: NO CHANGE
+- File already follows a clean imports -> constants -> helpers -> handlers -> exports order; reordering would be redundant.
+- Handler logic is already grouped by IPC entrypoint (`open-external-url`, `open-app-doc`) and reads linearly within each block.
+- Duplication (openPath + error handling) is localized and extracting helpers would add indirection without reducing branches.
+- Branching in `open-app-doc` reflects distinct packaging/dev and doc-key cases; flattening would risk readability.
+- Naming is concise and unambiguous; renames would not reduce cognitive load.
+
+**Risk**
+- N/A (no code changes).
+
+**Validation**
+- N/A (no code changes; baseline unchanged).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The “NO CHANGE” decision is consistent with the current linear structure and the anti-indirection rule; no contract/IPC/timing claims were introduced at L1 beyond what is directly visible in-file.
+
+### L2 decision: CHANGED
+
+- Change: Introduced `openPathWithLog(shell, log, rawKey, filePath)` and reused it to replace the repeated `shell.openPath` + `open_failed` handling blocks in `open-app-doc` (dev candidate open, Baskervville temp open, packaged candidate open, fallback temp open).
+  - Gain: Removes duplication and centralizes a security-relevant decision point (open failure → log + `{ ok:false, reason:'open_failed' }`) while keeping log text and return shape consistent.
+  - Cost: Adds one local helper (small indirection).
+  - Validation:
+    - Static: confirm the `'open-app-doc open failed:'` log text appears only in the helper and that all success/failure returns are unchanged.
+    - Manual smoke (targeted): trigger `open-app-doc` for (a) a known docKey that exists, (b) a known docKey missing → expect `not_found`, and (c) an “open failed” scenario (if reproducible) → expect `open_failed` and the same warn log once per attempt.
+
+**Evidence**
+- The same `openResult = await shell.openPath(...)` + `if (openResult) { log.warn(...); return { ok:false, reason:'open_failed' }; } return { ok:true };` sequence was duplicated across 4 branches in `open-app-doc` prior to this change.
+
+**Risk**
+- Low. Helper mirrors prior code paths; IPC surface and handler registration order unchanged.
+- Residual edge-case: the call sites now `return openPathWithLog(...)` (promise) rather than `await` inline; if `shell.openPath` were to reject unexpectedly, it could bypass the handler’s `catch` and change the observable failure shape. (Electron documents `openPath` as resolving with an error string on failure.) 
+
+**Validation**
+- Covered by L7 smoke (human-run) plus the targeted doc-open checks above.
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- IPC surface is limited to two handlers in this module:
+  - "ipcMain.handle('open-external-url'"
+  - "ipcMain.handle('open-app-doc'"
+- Consumer wrapper exists in `electron/preload.js` and invokes exactly these channels:
+  - "openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url)"
+  - "openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey)"
+- In-file contract remains explicit and closed:
+  - URL gating: "parsed.protocol !== 'https:'" and "ALLOWED_EXTERNAL_HOSTS.has"
+  - Uniform error return: "return { ok: false, reason: 'error' }"
+
+**Risk**
+- N/A (no code changes).
+
+**Validation**
+- N/A (no code changes).
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+- Change: Made the temp-dir fallback non-silent by logging a deduplicated warning when `app.getPath('temp')` fails in `getTempDir` (used by `copyToTemp`).
+  - Gain: Satisfies “no silent fallbacks” while keeping noise low (warnOnce).
+  - Cost: Threads `log` through the temp-path helpers and updates two internal call sites.
+  - Validation:
+    - Static: search for the stable key `link_openers.tempPath.fallback`.
+    - Manual: force `app.getPath('temp')` to throw and invoke `open-app-doc`; expect a single `warnOnce` emission and unchanged IPC return shapes.
+
+**Evidence (anchors)**
+- Prior silent fallback: `catch { return os.tmpdir(); }` in `getTempDir(app)`.
+- New non-silent fallback: `catch (err) { log.warnOnce('link_openers.tempPath.fallback', 'open-app-doc temp path fallback: ... using os.tmpdir().', err); return os.tmpdir(); }`.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The change removes a silent fallback without affecting IPC/return shapes/timing and keeps logger semantics consistent (no optional-logger branching; no forced severity changes).
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Change: Added a reader-oriented comment structure aligned with `electron/main.js`:
+  - Overview header + responsibilities.
+  - Section dividers (Imports, Constants / config, Helpers, IPC registration / handlers, Exports).
+  - End-of-file marker.
+- Follow-up: Fixed Overview return-shape wording to avoid drift:
+  - Now states: `{ ok: true }` success and `{ ok: false, reason }` failure.
+- No functional changes; comments-only.
+
+**Evidence (anchors)**
+- Overview bullet (corrected): "Register IPC handlers that return { ok: true } or { ok: false, reason }."
+
+### L6 — Final review (Codex)
+
+* **Decision: NO CHANGE**
+* “No Level 6 changes justified.”
+* Bullets (recomendado que queden anclados al código actual):
+
+  * `getTempDir(app, log)` solo se usa vía `copyToTemp(...)`; no hay drift de firma interna. 
+  * `warnOnce('link_openers.tempPath.fallback', ...)` usa key estable y respeta la firma `warnOnce(key, ...args)` de `electron/log.js`. 
+  * IPC handlers presentes: `'open-external-url'` y `'open-app-doc'`; retornan `{ ok: true }` o `{ ok: false, reason }`. 
+  * Apertura de paths centralizada en `openPathWithLog`. 
+  * Nota explícita: “Se mantiene y acepta el *residual edge-case* ya documentado (return de Promise sin await en `openPathWithLog`); no se modifica en L6.” 
+
+### L7 — Smoke (human-run; minimal, dev)
+
+Preconditions:
+- Run the app in dev from a terminal (so you can see main-process logs): `npm start`.
+- Keep that terminal visible.
+- Open DevTools in the main window (Console tab).
+
+Checklist:
+- [x] Startup sanity (main): after the window is visible, no uncaught exceptions / unhandled rejections in the terminal.
+
+- [x] IPC open-external-url (allowed):
+  - Action (DevTools Console):
+    - `window.electronAPI.openExternalUrl('https://github.com').then(r => console.log('openExternalUrl allowed =>', r));`
+  - Expected:
+    - Console prints `{ ok: true }`.
+    - Default browser opens `https://github.com` (or focuses an existing tab).
+    - No `Error processing open-external-url:` in terminal logs.
+
+- [x] IPC open-external-url (blocked by policy: scheme):
+  - Action:
+    - `window.electronAPI.openExternalUrl('http://github.com').then(r => console.log('openExternalUrl blocked(scheme) =>', r));`
+  - Expected:
+    - Console prints `{ ok: false, reason: 'blocked' }`.
+    - Browser does NOT open.
+    - Terminal shows a warn with prefix: `open-external-url blocked: disallowed URL:`.
+
+- [x] IPC open-app-doc (packaged-only key in dev):
+  - Action:
+    - `window.electronAPI.openAppDoc('license-electron').then(r => console.log('openAppDoc dev-only block =>', r));`
+  - Expected:
+    - Console prints `{ ok: false, reason: 'not_available_in_dev' }`.
+    - Terminal shows a warn with prefix: `open-app-doc not available in dev; requires packaged build:`.
+
+- [x] IPC open-app-doc (unknown key):
+  - Action:
+    - `window.electronAPI.openAppDoc('does-not-exist').then(r => console.log('openAppDoc unknown =>', r));`
+  - Expected:
+    - Console prints `{ ok: false, reason: 'blocked' }`.
+    - Terminal shows a warn with prefix: `open-app-doc blocked: unknown doc key:`.
+
+- [x] IPC open-app-doc (Baskervville):
+  - Action:
+    - `window.electronAPI.openAppDoc('license-baskervville').then(r => console.log('openAppDoc baskervville =>', r));`
+  - Expected (normal):
+    - Console prints `{ ok: true }`.
+    - OS opens a temp copy of `LICENSE_Baskervville_OFL.txt` (viewer/editor).
+  - Acceptable fallback (if the font license file is missing in your dev tree):
+    - `{ ok: false, reason: 'not_found' }` and a terminal warn with prefix: `open-app-doc not found:`.
+
+Result: PASS / FAIL
+Notes (optional):
+- If you ever see the deduped warning key `link_openers.tempPath.fallback`, it should appear once per session (warnOnce) and not spam.
