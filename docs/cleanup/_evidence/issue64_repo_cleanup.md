@@ -1953,3 +1953,19 @@ Referencia de cambios: diff desde `e1dffe38d1e428234209c22b49d0d4f6fb4637dc`.
   - Regla explícita: “Call-site style (policy): use log.warn|warnOnce|error|errorOnce directly…”
   - Paso 0.1: “Enforce call-site style: remove any local log method aliases/wrappers…”
 
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+Changes (comments-only):
+- Added a top-of-file Overview block describing renderer responsibilities.
+- Added section dividers aligned to the file's real blocks (logger/constants, DOM refs, shared state, i18n wiring, bootstrap, info modal, menu actions, presets, clipboard actions, stopwatch).
+- Reworded/trimmed inline comments to focus on intent/constraints; removed trivial or drift-prone phrasing.
+- Added explicit EOF marker: `// End of public/renderer.js`.
+
+Validation (mechanical):
+- `rg -n -F "Overview" public/renderer.js`
+- `rg -n -F "End of public/renderer.js" public/renderer.js`
+
+Notes:
+- No functional changes; comments-only.
