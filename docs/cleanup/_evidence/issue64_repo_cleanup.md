@@ -1853,3 +1853,16 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
 Reviewer assessment (L0 protocol compliance):
 - PASS. Diagnosis-only; no invented direct IPC; obstacles include identifiers + micro-quotes; invariants anchored to visible checks/fallbacks.
 - Note: direct `ipcRenderer/*` absence is expected because this file uses `window.electronAPI` as IPC façade.
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- File mixes initialization, event wiring, and UI helpers in a single, timing-sensitive flow; reordering blocks risks altering when listeners register vs. initial async setup.
+- Two top-level async IIFEs interleave config/settings load with UI boot; moving them would change sequencing that affects cache and initial render.
+- Several helpers depend on state initialized earlier (e.g., AppConstants-derived limits, settingsCache, idiomaActual), so regrouping would add cross-dependencies or indirection.
+- Large, cohesive sections (info modal subsystem, menuActions registration, preset CRUD) are already contiguous; further extraction would add more named concepts than it removes.
+- Any cleanup meaningful enough to improve linearity would likely touch behavior-sensitive ordering of DOM updates and electronAPI subscriptions.
+
+Reviewer assessment:
+- PASS for L1 gate as NO CHANGE: rationale is consistent with timing-sensitive sequencing constraints.
