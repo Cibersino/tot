@@ -2974,3 +2974,16 @@ Decision: NO CHANGE
 Observable contract and timing/ordering were preserved.
 
 Reviewer gate: PASS (Level 2): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
+
+### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- Checked public/js/crono.js: exported surface (`window.RendererCrono = { ... }`) is stable; no ambiguous contract.
+- Checked public/renderer.js: controller usage (`createController`, `bind`, `handleState`, `handleTextChange`) is consistent.
+- Checked electron/preload.js: IPC bridge methods (`sendCronoToggle`, `sendCronoReset`, `setCronoElapsed`, `getCronoState`) are thin and consistent with renderer expectations.
+- Checked electron/main.js: IPC handlers and crono state lifecycle (`ipcMain.handle('crono-get-state')`, `ipcMain.on('crono-*')`) centralize the contract; no duplicate responsibility in renderer.
+- Checked public/flotante.js: uses `RendererCrono.formatCrono` and mirrors state display; no conflicting semantics.
+- No repo evidence of inconsistent payloads, duplicated ownership, or sync/async mismatches requiring contract changes.
+
+Reviewer gate: PASS (Level 3): NO CHANGE justified; evidence cross-checked in consumers/bridge/main; diff empty.
