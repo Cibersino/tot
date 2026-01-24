@@ -2892,3 +2892,8 @@ Reviewer gate: PASS
 * [x] (7) Logs: sin uncaught exceptions; sin spam. En camino sano, no aparecen BOOTSTRAP warnings. (Los BOOTSTRAP warnings quedan reservados para fallback real).
 
 ---
+
+## public/language_window.js
+
+Date: `2026-01-24`
+Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
