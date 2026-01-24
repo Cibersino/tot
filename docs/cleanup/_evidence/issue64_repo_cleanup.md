@@ -2759,3 +2759,21 @@ Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
 
 - Delegated IPC registration:
   - None.
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- Already grouped by setup/state, helpers, event handlers, data load, and init IIFE with clear flow.
+- Helpers are short and single-purpose; reordering would not reduce branching or duplication.
+- The startup IIFE is straightforward; introducing a named init would add a concept without payoff.
+- Event handlers are colocated with related helpers and state, preserving locality.
+- Any structural reflow risks subtle timing/readability tradeoffs without clear benefit.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment: PASS. NO CHANGE is appropriate; the module is already small/cohesive and its current layout supports linear reading.
+Reviewer gate: PASS
+
+Observable contract/timing preserved (no changes applied).
