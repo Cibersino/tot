@@ -2987,3 +2987,17 @@ Decision: NO CHANGE (no Level 3 justified)
 - No repo evidence of inconsistent payloads, duplicated ownership, or sync/async mismatches requiring contract changes.
 
 Reviewer gate: PASS (Level 3): NO CHANGE justified; evidence cross-checked in consumers/bridge/main; diff empty.
+
+### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: NO CHANGE
+
+- Existing logs already use `log.warn|warnOnce|error` directly with stable keys where needed.
+- Fallbacks that are genuinely anomalous are already noisy (e.g., missing flotante API, getCronoState failure, setCronoElapsed failure).
+- Remaining silent branches are normal/expected user or state paths (invalid input, running state, optional electron API), so adding logs would add noise on common UI interactions.
+- No high-frequency repeated warnings without dedupe are present; only `getCronoState` is deduped appropriately.
+- Messages are short and consistent with repo patterns; no obvious level mismatches.
+
+Observable contract and timing/ordering were preserved.
+
+Reviewer gate: PASS (Level 4): NO CHANGE justified; diff empty; logging policy compliance acceptable.
