@@ -2892,3 +2892,157 @@ Reviewer gate: PASS
 * [x] (7) Logs: sin uncaught exceptions; sin spam. En camino sano, no aparecen BOOTSTRAP warnings. (Los BOOTSTRAP warnings quedan reservados para fallback real).
 
 ---
+
+## public/language_window.js
+
+Date: `2026-01-24`
+Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
+
+## public/js/crono.js
+
+Date: `2026-01-24`
+Last commit: `<PONER_HASH_DE_git_log>`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - Header comment.
+    - `'use strict'`.
+    - IIFE start.
+    - Logger: `const log = window.getLogger('crono')`.
+    - Helpers: `formatCrono`, `parseCronoInput`.
+    - Real WPM compute: `actualizarVelocidadRealFromElapsed` + wrapper `safeRecomputeRealWpm`.
+    - UI/bridge helpers: `uiResetCrono`, `openFlotante`, `closeFlotante`, `applyManualTime`.
+    - State applier: `handleCronoState`.
+    - Controller factory: `createController` (bind + handlers).
+    - Global export: `window.RendererCrono = { ... }`.
+    - IIFE end.
+  - Where linear reading breaks:
+    - `createController` — nested handler cluster mixes UI wiring, state, and electron bridge.
+      - Micro-quote: "const handleTextChange = async (previousText, nextText) =>".
+    - `applyManualTime` — inner fallback splits control flow (electron path vs local fallback).
+      - Micro-quote: "const fallbackLocal = async () =>".
+    - `openFlotante` — nested async state pull after opening the flotante window.
+      - Micro-quote: "if (typeof electronAPI.getCronoState === 'function')".
+
+- Contract map:
+  - Exposes: assigns `window.RendererCrono` with
+    `formatCrono`, `parseCronoInput`, `actualizarVelocidadRealFromElapsed`, `uiResetCrono`,
+    `openFlotante`, `closeFlotante`, `applyManualTime`, `handleCronoState`, `createController`.
+  - Side effects:
+    - Reads logger: `window.getLogger('crono')`.
+    - Creates global `window.RendererCrono`.
+  - Invariants / assumptions (anchored):
+    - Crono input format is `H+:MM:SS` with MM/SS in 00–59:
+      `parseCronoInput` uses "match(/^(\d+):([0-5]\d):([0-5]\d)$/)".
+    - Real WPM recompute only when words and elapsed seconds are positive:
+      `actualizarVelocidadRealFromElapsed` checks "if (words > 0 && secondsTotal > 0)".
+    - Manual edits ignored while running:
+      `applyManualTime` checks "if (running) { ... return null; }".
+    - electronAPI methods are optional and guarded:
+      `openFlotante` checks "typeof electronAPI.openFlotanteWindow !== 'function'".
+  - IPC contract (in this file only):
+    - None found: no `ipcMain.*`, `ipcRenderer.*`, or `webContents.send` occurrences.
+  - Delegated IPC registration:
+    - None found.
+
+Reviewer gate: PASS (Level 0 diagnosis is adequate; anchors corrected to match file).
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- File already follows a clear top-to-bottom progression from helpers to UI/electron handlers to controller to export.
+- Functions are cohesive and locally scoped; reordering would not materially reduce reading effort.
+- Large `createController` block is the core orchestrator; splitting or reshuffling would add indirection.
+- Existing early returns and guards are already minimal and directly tied to behavior and timing.
+- Structural edits available are mostly cosmetic (commenting/spacing), which risks noise without payoff.
+
+Reviewer gate: PASS (Level 1): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
+
+### L2 — Clarity / robustness refactor (controlled) (Codex)
+
+Decision: NO CHANGE
+
+- Current structure already isolates edge cases with guarded checks (electron API, input parsing, running state) and avoids noisy logging.
+- Duplication (e.g., WPM recompute calls and toggleVF aria updates) is minimal and inlined for clarity; helper extraction would add indirection.
+- Error handling is already explicit and deduped (`log.warnOnce`, guarded try/catch), and additional handling risks changing timing or visibility.
+- Parsing and formatting paths are direct and readable; making edge cases more explicit would not change decisions.
+- The core controller flow is timing-sensitive and cohesive; refactoring risks subtle behavioral shifts without clear robustness gain.
+
+Observable contract and timing/ordering were preserved.
+
+Reviewer gate: PASS (Level 2): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
+
+### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- Checked public/js/crono.js: exported surface (`window.RendererCrono = { ... }`) is stable; no ambiguous contract.
+- Checked public/renderer.js: controller usage (`createController`, `bind`, `handleState`, `handleTextChange`) is consistent.
+- Checked electron/preload.js: IPC bridge methods (`sendCronoToggle`, `sendCronoReset`, `setCronoElapsed`, `getCronoState`) are thin and consistent with renderer expectations.
+- Checked electron/main.js: IPC handlers and crono state lifecycle (`ipcMain.handle('crono-get-state')`, `ipcMain.on('crono-*')`) centralize the contract; no duplicate responsibility in renderer.
+- Checked public/flotante.js: uses `RendererCrono.formatCrono` and mirrors state display; no conflicting semantics.
+- No repo evidence of inconsistent payloads, duplicated ownership, or sync/async mismatches requiring contract changes.
+
+Reviewer gate: PASS (Level 3): NO CHANGE justified; evidence cross-checked in consumers/bridge/main; diff empty.
+
+### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: NO CHANGE
+
+- Existing logs already use `log.warn|warnOnce|error` directly with stable keys where needed.
+- Fallbacks that are genuinely anomalous are already noisy (e.g., missing flotante API, getCronoState failure, setCronoElapsed failure).
+- Remaining silent branches are normal/expected user or state paths (invalid input, running state, optional electron API), so adding logs would add noise on common UI interactions.
+- No high-frequency repeated warnings without dedupe are present; only `getCronoState` is deduped appropriately.
+- Messages are short and consistent with repo patterns; no obvious level mismatches.
+
+Observable contract and timing/ordering were preserved.
+
+Reviewer gate: PASS (Level 4): NO CHANGE justified; diff empty; logging policy compliance acceptable.
+
+### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
+
+Decision: CHANGED
+
+- Added an Overview block summarizing responsibilities in concise bullets.
+- Inserted section dividers to match actual blocks (logger, helpers, UI/bridge, state, controller, exports).
+- Kept existing inline behavior comments; only repositioned/added section headers for navigation.
+- Added an explicit end-of-file marker matching repo style.
+- No functional changes; comments-only.
+
+Reviewer gate: PASS (Level 5): Comments-only change; improves navigability; no contract/timing risk introduced.
+
+### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+- Checked logging API usage: `log.warn`, `log.warnOnce`, `log.error` call shapes match `public/js/log.js`.
+- Checked exports/contract: `window.RendererCrono` surface unchanged and matches `public/renderer.js` usage.
+- Checked comment alignment: new Overview and section dividers match actual block order; end marker present.
+- Checked helpers and controller flow: no unused locals or dead branches detected in `createController` and `handleCronoState`.
+- Checked Electron API guards: `openFlotante`/`closeFlotante` fallbacks remain noisy and consistent.
+
+Observable contract and timing/ordering were preserved.
+
+Reviewer gate: PASS (Level 6): NO CHANGE justified; post-L5 coherence verified; diff empty.
+
+### L7 — Smoke test (human-run; minimal)
+
+Resultado: PASS
+
+* [x] (1) Arranque limpio (idle 5–10s): app estable.
+* [x] (2) Cargar texto no vacío (ej: 📋↺): texto vigente queda no vacío.
+* [x] (3) Start/Pause: tiempo aumenta y luego queda fijo al pausar.
+* [x] (4) Mientras corre: no permite edición manual del campo (o no aplica cambios).
+* [x] (5) Editar tiempo válido (00:00:10) con crono pausado: queda aplicado.
+* [x] (6) Editar tiempo inválido (00:99:00 / abc): se rechaza y revierte a valor válido.
+* [x] (7) Abrir flotante: ventana aparece.
+* [x] (8) Cerrar flotante con X: UI principal refleja “cerrado”.
+* [x] (9) Texto no vacío -> otro no vacío (ej: 📋+): cronómetro NO se resetea.
+* [x] (10) Texto queda vacío (vaciar): cronómetro SI se resetea a 00:00:00.
+
+---
