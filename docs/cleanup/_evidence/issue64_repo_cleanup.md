@@ -2589,3 +2589,44 @@ Evidence checked (anchors):
 - `public/js/crono.js` — identifier: `openFlotanteWindow` guard; snippet: `if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function')`
 
 Reviewer gate: PASS (NO CHANGE justified; DOM IDs exist and bridge methods are exposed/routed consistently).
+
+### L4 decision: CHANGED
+
+- Normalización de estilo de mensajes (evita duplicar scope en el texto):
+  - DOM missing: `log.error('element #crono not found')` (antes incluía `flotante:`/`[flotante]` en el mensaje).
+  - Bridge missing/methods: se removió `"[flotante]"` del texto (ej.: `log.error('flotanteAPI missing; IPC bridge unavailable.')`).
+  - Errors genéricos: `log.error('Error loading translations:', err)` (sin sufijos de scope en el mensaje).
+
+- Logging explícito para bridge `window.flotanteAPI` y métodos:
+  - `log.error('flotanteAPI missing; IPC bridge unavailable.')`
+  - `log.warn('flotanteAPI.onState missing; state updates disabled (ignored).')`
+  - `log.warn('flotanteAPI.getSettings missing; using default language (ignored).')`
+  - `log.warn('flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).')`
+  - `log.error('flotanteAPI.sendCommand missing; controls may fail.')`
+
+- Fallback de formato de crono (alto potencial de repetición) con dedupe estable:
+  - `log.warnOnce('flotante.formatCrono.missing', 'formatCrono unavailable; using simple formatter (ignored).')`
+
+- i18n fallback explícito (sin dedupe):
+  - `log.warn('RendererI18n unavailable; skipping translations (ignored).')`
+
+- Best-effort failures con estilo “failed (ignored)” y sin dedupe (no high-frequency por contrato):
+  - `log.warn(\`loadRendererTranslations(${target}) failed (ignored):\`, err)`
+  - `log.warn('getSettings failed (ignored):', err)`
+  - `log.warn('apply settings update failed (ignored):', err)`
+
+**Evidence**
+- `public/flotante.js`:
+  - Mensajes sin prefijos redundantes: `"element #crono not found"`, `"flotanteAPI missing; IPC bridge unavailable."`.
+  - Dedupe key estable: `'flotante.formatCrono.missing'`.
+  - Best-effort phrasing: `"failed (ignored):"` y `"apply settings update failed (ignored):"`.
+
+**Risk**
+- Bajo (logging-only). El único impacto potencial es aumento de volumen en sesiones *misconfigured* o con fallos repetidos de i18n/settings, porque se removió `warnOnce` en esos paths (se mantiene `warnOnce` solo en el fallback de render-loop `formatCrono`).
+
+**Validation**
+- Static:
+  - Verificar key estable: buscar `flotante.formatCrono.missing` en `public/flotante.js`.
+  - Verificar que no quedan prefijos redundantes en mensajes (`[flotante]`, `flotante:`) dentro de llamadas `log.*` en este archivo.
+- Runtime (smoke normal):
+  - Abrir/cerrar flotante y usar toggle/reset: no debe aparecer spam nuevo en logs en ejecución sana; el flujo normal no debería producir warnings/errors de bridge/i18n.
