@@ -132,6 +132,7 @@ tot-readingmeter/
 - `public/editor.js` — Lógica del editor manual (ventana editor).
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
 - `public/flotante.js` — Lógica de la ventana flotante del cronómetro.
+- `public/language_window.js` — Lógica de la ventana de selección de idioma.
 
 ### 2) Módulos del proceso principal (Electron)
 

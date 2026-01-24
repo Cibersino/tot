@@ -2687,3 +2687,75 @@ Observable contract/timing preserved (no changes applied).
 
 Date: `2026-01-24`
 Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
+
+### L0 — Diagnosis (no changes) (Codex, verified)
+
+#### 0.1 Reading map
+
+- Block order (as-is):
+  1) Header comment + `'use strict'`
+  2) Logger selection + DOM bindings (`log`, `langFilter`, `langList`, `statusLine`)
+  3) Local fallback list (`fallbackLanguages`)
+  4) State (`languages`, `filteredLanguages`, `focusedIndex`, `isBusy`)
+  5) Helpers (`getItems`, `setStatus`, `setBusy`, `setFocusedIndex`, `renderList`, `selectLanguage`)
+  6) Event listeners (`langFilter` input/keydown; `langList` click/keydown/focusin)
+  7) Async loader (`loadLanguages`)
+  8) Startup IIFE (anonymous) that invokes `loadLanguages` on module load
+
+- Linear-reading breaks / obstacles:
+  - `renderList` mixes filtering + DOM rebuild + empty-state:
+    - anchor: `"langList.innerHTML = ''"`
+  - `selectLanguage` couples UI state + external API + window control:
+    - anchor: `"await window.languageAPI.setLanguage(lang)"`
+  - Startup IIFE (anonymous) triggers async flow on load:
+    - anchor: `"(async () => {"`
+
+#### 0.2 Contract map
+
+- Exposes:
+  - No exports; renderer-side side-effect module for the language selection window.
+
+- Side effects at load:
+  - Immediately binds DOM elements by id and registers event listeners:
+    - anchor: `"document.getElementById('langFilter')"`
+  - Immediately triggers initial async load via an anonymous IIFE:
+    - anchor: `"(async () => {"`
+
+- External dependencies (observed):
+  - Optional global logger factory:
+    - anchor: `"window.getLogger ?"`
+  - Expects `window.languageAPI` (preload-provided) with:
+    - `getAvailableLanguages()`:
+      - anchor: `"typeof window.languageAPI.getAvailableLanguages"`
+    - `setLanguage(tag)`:
+      - anchor: `"window.languageAPI.setLanguage"`
+
+- Invariants / fallbacks / assumptions (anchored):
+  - Logger falls back to console if global missing:
+    - anchor: `"window.getLogger ?"`
+  - Requires DOM elements exist (no guards before use):
+    - anchor: `"document.getElementById('langFilter')"`
+  - Busy state blocks interactions in handlers:
+    - anchor: `"if (isBusy) return"`
+  - `setStatus` tolerates empty/undefined messages:
+    - anchor: `"message || ''"`
+  - `setBusy` sets `aria-disabled` string and toggles disabled styling:
+    - anchor: `"busy ? 'true' : 'false'"`
+  - `setFocusedIndex` clamps to bounds; empty list yields `focusedIndex = -1` and returns:
+    - anchor: `"Math.max(0, Math.min"`
+  - `renderList` placeholder on zero matches:
+    - anchor: `"empty.textContent = 'No matches'"`
+  - `loadLanguages` expects `languageAPI.getAvailableLanguages` or logs error:
+    - anchor: `"getAvailableLanguages unavailable"`
+  - `loadLanguages` falls back to local list when empty/unavailable:
+    - anchor: `"languages = fallbackLanguages.slice()"`
+  - Startup IIFE catch also falls back after `loadLanguages` failure:
+    - anchor: `"Error loadLanguages:"`
+  - `selectLanguage` guards empty selection and busy state; closes window on success:
+    - anchor: `"if (!lang || isBusy) return"`
+
+- IPC contract (only what exists in this file):
+  - None (no `ipcMain.*`, `ipcRenderer.*`, `webContents.send`).
+
+- Delegated IPC registration:
+  - None.
