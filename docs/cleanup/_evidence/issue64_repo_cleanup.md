@@ -2208,3 +2208,10 @@ Checklist:
 - [x] (8) Truncation/limits: aviso `renderer.editor_alerts.text_truncated` y app estable.
 - [x] (9) Logs: sin uncaught, sin spam, sin BOOTSTRAP inesperado.
 
+---
+
+## public/preset_modal.js
+
+Date: `2026-01-23`
+Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
+
