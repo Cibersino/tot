@@ -2269,3 +2269,30 @@ Decision: NO CHANGE
 - No se identificó un cambio L1 claramente “mejor” que sea inequívocamente behavior/timing-preserving.
 
 Reviewer gate: PASS
+
+### L2 — Clarity / robustness refactor (Codex follow-up)
+
+Decision: CHANGED
+
+- Change (silent no-op removal): en el handler de Save se agregó un `else` explícito cuando falta el método esperado del bridge:
+  - Edit mode: si falta `window.presetAPI.editPreset`, ahora:
+    - notifica `renderer.preset_alerts.process_error`
+    - loguea una sola vez: `log.warnOnce('preset-modal.editPreset.missing', ...)`
+  - New mode: si falta `window.presetAPI.createPreset`, ahora:
+    - notifica `renderer.preset_alerts.process_error`
+    - loguea una sola vez: `log.warnOnce('preset-modal.createPreset.missing', ...)`
+
+Gain:
+- Elimina el no-op silencioso post-validación; el usuario recibe feedback inmediato y el log queda trazable sin spam.
+
+Cost:
+- Agrega un path visible (Notify + warnOnce) únicamente en entornos misconfigurados (bridge incompleto).
+
+Validation:
+- Forzar entorno misconfigurado (sin `presetAPI` o sin `editPreset/createPreset`) y presionar Save:
+  - Debe aparecer `renderer.preset_alerts.process_error`.
+  - Debe emitirse un único warnOnce por clave (`preset-modal.*.missing`), aunque se repita el click.
+- En entorno normal, crear/editar presets debe comportarse igual que antes.
+
+Contract/timing:
+- Se preserva el contrato observable y el timing en flujos normales; solo cambia el comportamiento del caso previamente silencioso.
