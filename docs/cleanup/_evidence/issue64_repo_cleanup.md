@@ -2478,3 +2478,8 @@ Reviewer gate: PASS
     Si aparecen, tratar como regresión del wiring/preload (no del flujo sano del modal).
 
 ---
+
+## public/flotante.js
+
+Date: `2026-01-23`
+Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
