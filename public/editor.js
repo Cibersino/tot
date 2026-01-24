@@ -6,7 +6,7 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Load editor configuration and i18n before UI wiring.
+// - Kick off config and i18n bootstrap (async, best-effort).
 // - Manage textarea editing, find UI, and focus behavior.
 // - Bridge editor text updates via window.editorAPI.
 // - Apply external updates and enforce size limits.
@@ -30,7 +30,7 @@ const { DEFAULT_LANG, PASTE_ALLOW_LIMIT, SMALL_UPDATE_THRESHOLD } = AppConstants
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
 
 // =============================================================================
-// Bootstrap: config and initial translations
+// Bootstrap: config and translations (async, best-effort)
 // =============================================================================
 (async () => {
   try {

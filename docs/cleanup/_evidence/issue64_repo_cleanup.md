@@ -2143,3 +2143,27 @@ Reviewer gate: PASS
     (esto también aterriza “no silent fallbacks” + dedupe estable). 
 * **Fallback no-silencioso en payload:** key `editor.setCurrentText.payload_failed` (`warnOnce`) cuando no hay `onPrimaryError`. 
 * **BOOTSTRAP:** logs prefijados `BOOTSTRAP:` en fallbacks de arranque (con nota explícita de la condición “debe volverse inalcanzable post-init”). 
+
+### L5 — Comments (Codex + redo)
+
+Decision: CHANGED (comments-only)
+
+- Initial L5 pass:
+  - Added a top "Overview" with scoped responsibilities.
+  - Standardized section dividers to match the file’s real block order (bootstrap, DOM refs, helpers, events, bridge listeners, paste/drop, controls).
+  - Removed/replaced drift-prone or redundant comments (e.g., placeholder init note; redundant step comments in insertion helper).
+  - Added an explicit end-of-file marker.
+
+- L5 redo (drift fix):
+  - Overview responsibility softened to avoid a strict ordering guarantee:
+    - "Kick off config and i18n bootstrap (async, best-effort)."
+  - Bootstrap header softened to reflect async, best-effort behavior:
+    - "Bootstrap: config and translations (async, best-effort)"
+
+No functional changes; comments-only.
+Reviewer gate: PASS
+
+Anchors:
+- Overview bullet — "Kick off config and i18n bootstrap (async, best-effort)."
+- Bootstrap header — "Bootstrap: config and translations (async, best-effort)"
+- EOF marker — "End of public/editor.js"
