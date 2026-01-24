@@ -1,9 +1,26 @@
 // public/js/crono.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Renderer-side stopwatch helpers and controller.
+// Responsibilities:
+// - Format and parse stopwatch time values.
+// - Compute real WPM from elapsed time and current text.
+// - Orchestrate DOM updates for the main stopwatch UI.
+// - Bridge optional Electron APIs for flotante window control and state sync.
+// - Expose a small controller API for renderer wiring.
+
 (() => {
+  // =============================================================================
+  // Logger / scope
+  // =============================================================================
   const log = window.getLogger('crono');
 
+  // =============================================================================
+  // Helpers (format/parse + WPM)
+  // =============================================================================
   function formatCrono(ms) {
     const totalSeconds = Math.floor((ms || 0) / 1000);
     const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
@@ -53,6 +70,9 @@
     }
   }
 
+  // =============================================================================
+  // UI helpers and Electron bridge (flotante)
+  // =============================================================================
   function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playLabel = '>' }) {
     if (cronoDisplay) cronoDisplay.value = '00:00:00';
     if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
@@ -221,6 +241,9 @@
     return msRounded;
   }
 
+  // =============================================================================
+  // State application (renderer view of crono)
+  // =============================================================================
   function handleCronoState({
     state,
     cronoDisplay,
@@ -291,6 +314,9 @@
     };
   }
 
+  // =============================================================================
+  // Controller factory (wires DOM, state, and Electron API)
+  // =============================================================================
   function createController(options = {}) {
     const elements = options.elements || {};
     const electronAPI = options.electronAPI || null;
@@ -536,6 +562,9 @@
     };
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.RendererCrono = {
     formatCrono,
     parseCronoInput,
@@ -548,3 +577,6 @@
     createController
   };
 })();
+// =============================================================================
+// End of public/js/crono.js
+// =============================================================================

@@ -3001,3 +3001,15 @@ Decision: NO CHANGE
 Observable contract and timing/ordering were preserved.
 
 Reviewer gate: PASS (Level 4): NO CHANGE justified; diff empty; logging policy compliance acceptable.
+
+### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
+
+Decision: CHANGED
+
+- Added an Overview block summarizing responsibilities in concise bullets.
+- Inserted section dividers to match actual blocks (logger, helpers, UI/bridge, state, controller, exports).
+- Kept existing inline behavior comments; only repositioned/added section headers for navigation.
+- Added an explicit end-of-file marker matching repo style.
+- No functional changes; comments-only.
+
+Reviewer gate: PASS (Level 5): Comments-only change; improves navigability; no contract/timing risk introduced.
