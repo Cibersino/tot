@@ -1268,6 +1268,7 @@ const initCronoController = () => {
     formatearNumero,
     getIdiomaActual: () => idiomaActual,
     getCurrentText: () => currentText,
+    getSettingsCache: () => settingsCache,
     playLabel: labels.playLabel,
     pauseLabel: labels.pauseLabel
   });
