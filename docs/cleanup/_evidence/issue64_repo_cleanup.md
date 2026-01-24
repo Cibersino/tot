@@ -2792,3 +2792,20 @@ Observable contract and timing preserved (no code changes).
 
 Reviewer assessment: PASS — “NO CHANGE” is justified; the module already has explicit busy guards and try/catch, and adding DOM-null guards would alter fail-fast behavior.
 Reviewer gate: PASS
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/language_window.js` `loadLanguages` — "typeof window.languageAPI.getAvailableLanguages === 'function'".
+- `public/language_window.js` `selectLanguage` — "await window.languageAPI.setLanguage(lang)".
+- `electron/language_preload.js` `setLanguage` — "ipcRenderer.invoke('set-language', tag)".
+- `electron/settings.js` `registerIpc` (`set-language`) — "ipcMain.handle('set-language', async (_event, lang) => {".
+- `electron/main.js` `get-available-languages` — "ipcMain.handle('get-available-languages', async () => {".
+- `electron/main.js` first-run gate — "ipcMain.once('language-selected', () => {".
+
+Reviewer assessment: PASS — No evidence of cross-module contract instability or duplicated responsibility requiring Level 3; the language window uses a single preload API that maps cleanly to existing IPC handlers and a first-run gating signal.
+Reviewer gate: PASS
+
+Observable contract/timing preserved (no code changes).
