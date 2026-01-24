@@ -26,6 +26,23 @@ if (!btnReset) {
   log.error('flotante: element #reset not found');
 }
 
+if (!window.flotanteAPI) {
+  log.warnOnce('flotante.api.missing', '[flotante] flotanteAPI missing; IPC bridge unavailable (ignored).');
+} else {
+  if (typeof window.flotanteAPI.onState !== 'function') {
+    log.warnOnce('flotante.api.onState.missing', '[flotante] flotanteAPI.onState missing; state updates disabled (ignored).');
+  }
+  if (typeof window.flotanteAPI.getSettings !== 'function') {
+    log.warnOnce('flotante.api.getSettings.missing', '[flotante] flotanteAPI.getSettings missing; using default language (ignored).');
+  }
+  if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
+    log.warnOnce('flotante.api.onSettingsChanged.missing', '[flotante] flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).');
+  }
+  if (typeof window.flotanteAPI.sendCommand !== 'function') {
+    log.error('[flotante] flotanteAPI.sendCommand missing; controls may fail.');
+  }
+}
+
 let lastState = { elapsed: 0, running: false, display: '00:00:00' };
 let playLabel = '>';
 let pauseLabel = '||';
@@ -39,15 +56,18 @@ function renderState(state) {
   if (cronoEl) {
     if (state.display) {
       cronoEl.textContent = state.display;
-    } else if (typeof state.elapsed === 'number' && window.RendererCrono && typeof window.RendererCrono.formatCrono === 'function') {
-      cronoEl.textContent = window.RendererCrono.formatCrono(state.elapsed);
     } else if (typeof state.elapsed === 'number') {
-      // simple fallback
-      const totalSeconds = Math.floor(state.elapsed / 1000);
-      const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-      const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-      const s = String(totalSeconds % 60).padStart(2, '0');
-      cronoEl.textContent = `${h}:${m}:${s}`;
+      if (window.RendererCrono && typeof window.RendererCrono.formatCrono === 'function') {
+        cronoEl.textContent = window.RendererCrono.formatCrono(state.elapsed);
+      } else {
+        log.warnOnce('flotante.formatCrono.missing', '[flotante] formatCrono unavailable; using simple formatter (ignored).');
+        // simple fallback
+        const totalSeconds = Math.floor(state.elapsed / 1000);
+        const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const s = String(totalSeconds % 60).padStart(2, '0');
+        cronoEl.textContent = `${h}:${m}:${s}`;
+      }
     }
   }
   // Button status
@@ -63,7 +83,10 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
 
 async function applyFlotanteTranslations(lang) {
   const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
-  if (!loadRendererTranslations || !tRenderer) return;
+  if (!loadRendererTranslations || !tRenderer) {
+    log.warnOnce('flotante.i18n.missing', '[flotante] RendererI18n unavailable; skipping translations (ignored).');
+    return;
+  }
 
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
   if (translationsLoadedFor !== target) {
