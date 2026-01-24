@@ -2481,5 +2481,69 @@ Reviewer gate: PASS
 
 ## public/flotante.js
 
-Date: `2026-01-23`
+Date: `2026-01-24`
 Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
+
+### L0 — Diagnosis (no changes)
+
+#### 0.1 Reading map
+- Block order (high level):
+  - strict/log startup: `const log = window.getLogger('flotante');`
+  - guard AppConstants + DEFAULT_LANG: `if (!AppConstants) { throw new Error`
+  - DOM lookups: `document.getElementById('crono'/'toggle'/'reset')`
+  - missing-element logs
+  - local state/labels (`lastState`, `playLabel`, `pauseLabel`, `translationsLoadedFor`)
+  - `renderState(state)`
+  - bridge registration: `window.flotanteAPI.onState((state) =>`
+  - i18n helper: `applyFlotanteTranslations(lang)`
+  - async bootstrap IIFE: `(async () => {`
+  - settings listener: `window.flotanteAPI.onSettingsChanged((settings) =>`
+  - UI listeners: `btnToggle.addEventListener('click'` / `btnReset.addEventListener('click'`
+  - keydown listener: `window.addEventListener('keydown', (ev) =>`
+
+- Linear reading breaks (identifier + micro-quote):
+  - `window.getLogger` — `const log = window.getLogger('flotante');`
+  - `renderState` — `lastState = Object.assign`
+  - `renderState` — `window.RendererCrono && typeof window.RendererCrono.formatCrono`
+  - `renderState` — `btnToggle.textContent = state.running ?`
+  - `window.flotanteAPI.onState` — `window.flotanteAPI.onState((state) =>`
+  - `applyFlotanteTranslations` — `await loadRendererTranslations(target);`
+  - init IIFE — `(async () => {`
+  - init IIFE — `const settings = await window.flotanteAPI.getSettings();`
+  - settings handler — `if (!nextLang || nextLang === translationsLoadedFor) return`
+  - button wiring — `btnToggle.addEventListener('click', () => {`
+  - button wiring — `btnReset.addEventListener('click', () => {`
+  - keydown — `if (ev.code === 'Space' || ev.key === ' ' || ev.key === 'Enter')`
+
+#### 0.2 Contract map
+- Exposes / side effects:
+  - no exports; runs on load
+  - registers callbacks on `window.flotanteAPI` (state + settings)
+  - attaches DOM listeners to `#toggle/#reset` and `window` keydown
+  - writes to DOM: `#crono.textContent`, `#toggle.textContent`
+  - logs via `window.getLogger('flotante')`
+
+- Observable public entrypoints used here (bridge-style/global APIs):
+  - `window.getLogger('flotante')`
+  - `window.AppConstants.DEFAULT_LANG`
+  - `window.flotanteAPI.onState(fn)`
+  - `window.flotanteAPI.getSettings()`
+  - `window.flotanteAPI.onSettingsChanged(fn)`
+  - `window.flotanteAPI.sendCommand({ cmd })`
+  - `window.RendererCrono.formatCrono(elapsed)` (optional path)
+  - `window.RendererI18n.loadRendererTranslations(lang)` (optional)
+  - `window.RendererI18n.tRenderer(key, fallback)` (optional)
+
+- Invariants / assumptions & tolerated errors (anchored):
+  - AppConstants must exist (hard-fail): `if (!AppConstants) { throw new Error`
+  - getLogger must exist (no guard): `const log = window.getLogger('flotante');`
+  - buttons must exist for wiring (unguarded addEventListener): `btnToggle.addEventListener('click'`
+  - renderState tolerates missing state: `if (!state) return;`
+  - DOM write to crono is guarded: `if (cronoEl) {`
+  - RendererCrono formatter is optional: `window.RendererCrono && typeof window.RendererCrono.formatCrono`
+  - i18n helpers are optional: `if (!loadRendererTranslations || !tRenderer) return;`
+  - translation load failure tolerated via warnOnce: `loadRendererTranslations(${target}) failed (ignored)`
+  - getSettings failure tolerated via warnOnce: `getSettings failed (ignored)`
+  - sendCommand calls are guarded by API presence: `if (window.flotanteAPI) window.flotanteAPI.sendCommand`
+
+- IPC contract (direct): none in this file (`ipcMain/ipcRenderer/webContents` not used).
