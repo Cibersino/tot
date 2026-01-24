@@ -2349,3 +2349,22 @@ Decision: CHANGED
 No functional changes; comments-only.
 
 Reviewer gate: PASS
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+- Checked logging API usage for explicit-key dedupe calls (warnOnce/errorOnce) in:
+  - presetAPI wiring (`preset-modal.onInit.missing`, `preset-modal.onSettingsChanged.missing`, `preset-modal.getSettings.missing`)
+  - save flow missing-bridge paths (`preset-modal.editPreset.missing`, `preset-modal.createPreset.missing`)
+- Checked required DOM guard and subsequent usage of guarded elements (`if (!nameEl || !wpmEl || ...) return;`).
+- Checked i18n flow consistency (`ensurePresetTranslations` -> `applyPresetTranslations`) and state (`idiomaActual`, `translationsLoadedFor`).
+- Checked presetAPI init/settings handlers for control flow and error handling (`onInit`, `onSettingsChanged`).
+- Checked input validation + save flow invariants (`buildPresetFromInputs`, `btnSave.addEventListener`).
+- Checked comments vs code structure (Overview, section dividers, end-of-file marker).
+
+Observable contract and timing are preserved (no code changes).
+
+Reviewer gate: PASS
