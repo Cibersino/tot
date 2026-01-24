@@ -2191,3 +2191,20 @@ Checks performed (anchors / micro-quotes):
 
 Observable contract/timing preserved.
 Reviewer gate: PASS
+
+### L7 — Smoke (human-run)
+
+Estado: PASS | FAIL
+Entorno: (dev/packaged), OS, commit/hash, state: existing | clean
+
+Checklist:
+- [x] (1) Editor abre con texto vigente (REG-EDITOR-01).
+- [x] (2) Edición en editor propaga a main (REG-EDITOR-02).
+- [x] (3) Overwrite/append desde main actualiza editor (main → editor).
+- [x] (4) CALCULAR respeta semántica (si aplica).
+- [x] (5) Clear en editor vacía main consistentemente.
+- [x] (6) Find modal: navegación + highlight + bloqueo edición + Esc restaura.
+- [x] (7) Undo/redo no contaminado por Find.
+- [x] (8) Truncation/limits: aviso `renderer.editor_alerts.text_truncated` y app estable.
+- [x] (9) Logs: sin uncaught, sin spam, sin BOOTSTRAP inesperado.
+
