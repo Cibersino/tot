@@ -27,16 +27,16 @@ if (!btnReset) {
 }
 
 if (!window.flotanteAPI) {
-  log.warnOnce('flotante.api.missing', '[flotante] flotanteAPI missing; IPC bridge unavailable (ignored).');
+  log.error('[flotante] flotanteAPI missing; IPC bridge unavailable.');
 } else {
   if (typeof window.flotanteAPI.onState !== 'function') {
-    log.warnOnce('flotante.api.onState.missing', '[flotante] flotanteAPI.onState missing; state updates disabled (ignored).');
+    log.warn('[flotante] flotanteAPI.onState missing; state updates disabled (ignored).');
   }
   if (typeof window.flotanteAPI.getSettings !== 'function') {
-    log.warnOnce('flotante.api.getSettings.missing', '[flotante] flotanteAPI.getSettings missing; using default language (ignored).');
+    log.warn('[flotante] flotanteAPI.getSettings missing; using default language (ignored).');
   }
   if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
-    log.warnOnce('flotante.api.onSettingsChanged.missing', '[flotante] flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).');
+    log.warn('[flotante] flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).');
   }
   if (typeof window.flotanteAPI.sendCommand !== 'function') {
     log.error('[flotante] flotanteAPI.sendCommand missing; controls may fail.');
@@ -84,7 +84,7 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
 async function applyFlotanteTranslations(lang) {
   const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
   if (!loadRendererTranslations || !tRenderer) {
-    log.warnOnce('flotante.i18n.missing', '[flotante] RendererI18n unavailable; skipping translations (ignored).');
+    log.warn('[flotante] RendererI18n unavailable; skipping translations (ignored).');
     return;
   }
 
