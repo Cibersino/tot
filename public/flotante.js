@@ -17,29 +17,29 @@ const btnReset = document.getElementById('reset');
 
 // defensive: if any element does not exist, we exit silently (avoids crashes)
 if (!cronoEl) {
-  log.error('flotante: element #crono not found');
+  log.error('element #crono not found');
 }
 if (!btnToggle) {
-  log.error('flotante: element #toggle not found');
+  log.error('element #toggle not found');
 }
 if (!btnReset) {
-  log.error('flotante: element #reset not found');
+  log.error('element #reset not found');
 }
 
 if (!window.flotanteAPI) {
-  log.error('[flotante] flotanteAPI missing; IPC bridge unavailable.');
+  log.error('flotanteAPI missing; IPC bridge unavailable.');
 } else {
   if (typeof window.flotanteAPI.onState !== 'function') {
-    log.warn('[flotante] flotanteAPI.onState missing; state updates disabled (ignored).');
+    log.warn('flotanteAPI.onState missing; state updates disabled (ignored).');
   }
   if (typeof window.flotanteAPI.getSettings !== 'function') {
-    log.warn('[flotante] flotanteAPI.getSettings missing; using default language (ignored).');
+    log.warn('flotanteAPI.getSettings missing; using default language (ignored).');
   }
   if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
-    log.warn('[flotante] flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).');
+    log.warn('flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).');
   }
   if (typeof window.flotanteAPI.sendCommand !== 'function') {
-    log.error('[flotante] flotanteAPI.sendCommand missing; controls may fail.');
+    log.error('flotanteAPI.sendCommand missing; controls may fail.');
   }
 }
 
@@ -60,7 +60,7 @@ function renderState(state) {
       if (window.RendererCrono && typeof window.RendererCrono.formatCrono === 'function') {
         cronoEl.textContent = window.RendererCrono.formatCrono(state.elapsed);
       } else {
-        log.warnOnce('flotante.formatCrono.missing', '[flotante] formatCrono unavailable; using simple formatter (ignored).');
+        log.warnOnce('flotante.formatCrono.missing', 'formatCrono unavailable; using simple formatter (ignored).');
         // simple fallback
         const totalSeconds = Math.floor(state.elapsed / 1000);
         const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
@@ -84,7 +84,7 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
 async function applyFlotanteTranslations(lang) {
   const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
   if (!loadRendererTranslations || !tRenderer) {
-    log.warn('[flotante] RendererI18n unavailable; skipping translations (ignored).');
+    log.warn('RendererI18n unavailable; skipping translations (ignored).');
     return;
   }
 
@@ -94,9 +94,8 @@ async function applyFlotanteTranslations(lang) {
       await loadRendererTranslations(target);
       translationsLoadedFor = target;
     } catch (err) {
-      log.warnOnce(
-        'flotante.loadRendererTranslations',
-        `[flotante] loadRendererTranslations(${target}) failed (ignored):`,
+      log.warn(
+        `loadRendererTranslations(${target}) failed (ignored):`,
         err
       );
       return;
@@ -117,13 +116,13 @@ async function applyFlotanteTranslations(lang) {
         const settings = await window.flotanteAPI.getSettings();
         if (settings && settings.language) lang = settings.language;
       } catch (err) {
-        log.warnOnce('flotante.getSettings', '[flotante] getSettings failed (ignored):', err);
+        log.warn('getSettings failed (ignored):', err);
       }
     }
 
     await applyFlotanteTranslations(lang);
   } catch (err) {
-    log.error('Error loading translations in flotante:', err);
+    log.error('Error loading translations:', err);
   }
 })();
 
@@ -132,7 +131,7 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onSettingsChanged === 'funct
     const nextLang = settings && settings.language ? settings.language : '';
     if (!nextLang || nextLang === translationsLoadedFor) return;
     applyFlotanteTranslations(nextLang).catch((err) => {
-      log.warn('flotante: failed to apply settings update:', err);
+      log.warn('apply settings update failed (ignored):', err);
     });
   });
 }
