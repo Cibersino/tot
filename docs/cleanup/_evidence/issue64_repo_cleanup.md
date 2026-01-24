@@ -2960,3 +2960,17 @@ Decision: NO CHANGE
 - Structural edits available are mostly cosmetic (commenting/spacing), which risks noise without payoff.
 
 Reviewer gate: PASS (Level 1): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
+
+### L2 — Clarity / robustness refactor (controlled) (Codex)
+
+Decision: NO CHANGE
+
+- Current structure already isolates edge cases with guarded checks (electron API, input parsing, running state) and avoids noisy logging.
+- Duplication (e.g., WPM recompute calls and toggleVF aria updates) is minimal and inlined for clarity; helper extraction would add indirection.
+- Error handling is already explicit and deduped (`log.warnOnce`, guarded try/catch), and additional handling risks changing timing or visibility.
+- Parsing and formatting paths are direct and readable; making edge cases more explicit would not change decisions.
+- The core controller flow is timing-sensitive and cohesive; refactoring risks subtle behavioral shifts without clear robustness gain.
+
+Observable contract and timing/ordering were preserved.
+
+Reviewer gate: PASS (Level 2): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
