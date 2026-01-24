@@ -2571,3 +2571,21 @@ Decision: NO CHANGE
 Observable contract and timing preserved by making no changes.
 
 Reviewer gate: PASS (NO CHANGE is justified; no code changes).
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/flotante.html` — identifier: `id="crono"`; snippet: `<div id="crono" class="crono">00:00:00</div> ...`
+- `public/flotante.html` — identifier: `id="toggle"` / `id="reset"`; snippet: `<button id="toggle" ...>...</button> <button id="reset" ...>...</button>`
+- `electron/flotante_preload.js` — identifier: `exposeInMainWorld('flotanteAPI'`; snippet: `contextBridge.exposeInMainWorld('flotanteAPI', { onState: (cb) => {`
+- `electron/flotante_preload.js` — identifier: `onState`; snippet: `ipcRenderer.on('crono-state', wrapper); ... removeListener('crono-state'`
+- `electron/flotante_preload.js` — identifier: `sendCommand`; snippet: `ipcRenderer.send('flotante-command', cmd);`
+- `electron/flotante_preload.js` — identifier: `getSettings/onSettingsChanged`; snippet: `invoke('get-settings') ... ipcRenderer.on('settings-updated', listener)`
+- `electron/main.js` — identifier: `ipcMain.on('flotante-command'`; snippet: `ipcMain.on('flotante-command', (_ev, cmd) => {`
+- `public/flotante.js` — identifier: `btnToggle.addEventListener`; snippet: `btnToggle.addEventListener('click', () => { if (window.flotanteAPI) ...`
+- `public/flotante.js` — identifier: `onState` guard; snippet: `if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function')`
+- `public/js/crono.js` — identifier: `openFlotanteWindow` guard; snippet: `if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function')`
+
+Reviewer gate: PASS (NO CHANGE justified; DOM IDs exist and bridge methods are exposed/routed consistently).
