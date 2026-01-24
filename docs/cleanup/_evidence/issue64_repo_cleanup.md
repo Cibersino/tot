@@ -3140,3 +3140,16 @@ Decision: CHANGED
 Observable contract/timing preserved: solo cambió el output de logs en un branch de fallback.
 Reviewer assessment: PASS (log-only; key estable; severidad coherente).
 Reviewer gate: PASS
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Change: Added reader-oriented comment scaffolding aligned with repo style:
+  - "Overview" + responsibilities (English, ASCII).
+  - Section dividers (`// =============================================================================`) matching the real block order (logger/globals, time helpers, number helpers, exports).
+  - Explicit end-of-file marker ("End of public/js/format.js").
+- No functional changes; comments-only.
+
+Reviewer assessment: PASS (comments-only; improves scanability; section headers match actual structure; ASCII-only constraint satisfied).
+Reviewer gate: PASS
