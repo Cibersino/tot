@@ -2000,7 +2000,7 @@ Post-change anchors (to make the “guard matches usage” state explicit):
 
 Observable contract, side effects, and timing/order were preserved (deletions of unused locals + related guards only).
 
-## Checklist L7
+### Checklist L7
 
 [x] **Log sanity (idle 20–30s)** con logs visibles.
    Esperado: sin `ERROR`/uncaught; sin spam continuo del mismo warning.
@@ -2022,3 +2022,873 @@ Observable contract, side effects, and timing/order were preserved (deletions of
 
 [x] **Cerrar app y relanzar**.
    Esperado: init carga último texto persistido (o vacío si se vació); sin errores en startup.
+
+---
+
+## public/editor.js
+
+Date: `2026-01-23`
+Last commit: `f35685b0533e33e36e1ac69f2eadcf6e32d1eedd`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - header/strict/log
+    - AppConstants guard + config/i18n async IIFE
+    - DOM lookups
+    - state + constants
+    - i18n helpers + apply
+    - settings-change listener
+    - showNotice + window export
+    - focus/selection helpers
+    - find-bar state/helpers
+    - find-bar events
+    - textarea style tweaks
+    - insertion + main-sync helpers
+    - external update handler
+    - init async IIFE
+    - editorAPI listeners
+    - paste/drop handlers
+    - input + buttons
+  - Where linear reading breaks (identifier + micro-quote):
+    - `applyExternalUpdate` — "if (metaSource === 'main-window' && metaAction === 'append_newline')"
+    - `performFind` — "let idx = forward ? haystack.indexOf"
+    - `openFindBar` / `closeFindBar` — "findBar.hidden = false" / "findBar.hidden = true"
+    - `sendCurrentTextToMain` — "const res = window.editorAPI.setCurrentText(payload)"
+
+- Contract map (exports / side effects / IPC):
+  - Exposes/entrypoints/side effects:
+    - assigns `window.showNotice`
+    - attaches DOM event listeners (editor, document, buttons)
+    - registers editorAPI callbacks
+    - runs two async IIFEs
+    - no module exports
+  - Invariants and guards (anchored):
+    - AppConstants required — "if (!AppConstants) { throw new Error"
+    - RendererI18n required — "if (!loadRendererTranslations || !tRenderer)"
+    - Find UI readiness — "if (!isFindReady()) return"
+    - Max text size enforced — "if (newText.length > maxTextChars)"
+    - Paste/drop size cap — "if (text.length > PASTE_ALLOW_LIMIT)"
+    - Find mode locks editor — "editor.readOnly = true"
+
+  - IPC contract (only what exists in this file):
+    - A) Direct IPC (ipcMain/ipcRenderer/webContents): none. No direct ipcMain/ipcRenderer/webContents usage in this file.
+    - B) Bridge usage via window.editorAPI.* (implementation elsewhere; channels not visible here):
+      - `window.editorAPI.getAppConfig`
+      - `window.editorAPI.getSettings`
+      - `window.editorAPI.onSettingsChanged`
+      - `window.editorAPI.getCurrentText`
+      - `window.editorAPI.setCurrentText`
+      - `window.editorAPI.onInitText`
+      - `window.editorAPI.onExternalUpdate`
+      - `window.editorAPI.onForceClear`
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented direct IPC; anchors/micro-quotes present; bridge wording conservative and internally consistent).
+
+### L1 — Structural micro-cleanup (redo)
+
+Decision: CHANGED
+
+Changes (micro, semantics-identical; no reordering/retiming):
+- `performFind`: removed redundant empty-query guard for `needle` (relies on early `if (!query)` before `const needle = query.toLowerCase()`).
+- `insertTextAtCursor`: notify main via direct `sendCurrentTextToMain('paste')`; removed passthrough wrapper.
+- `applyExternalUpdate`: collapsed duplicated `if (truncated)` (kept a single guard for the truncation notify).
+- EOF: removed trailing blank lines (cosmetic only).
+
+Anchors:
+- `performFind` — "if (!query) {" … "const needle = query.toLowerCase();".
+- `insertTextAtCursor` — "sendCurrentTextToMain('paste');".
+- `applyExternalUpdate` — "if (truncated) { Notify.notifyEditor('renderer.editor_alerts.text_truncated'".
+
+Reviewer gate: PASS
+
+### L2 — Clarity / robustness refactor (redo)
+
+Decision: CHANGED
+
+- Change: Extracted `notifyTextTruncated()` as a pure wrapper for:
+  - `Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })`
+  and replaced identical truncation-warning call sites to call the helper instead (in `handleTruncationResponse` and `applyExternalUpdate`).
+  - Gain: Centralizes the truncation warning behavior; easier to scan/audit repeated branches.
+  - Cost: Adds one tiny helper indirection.
+  - Validation:
+    - Static: confirm `renderer.editor_alerts.text_truncated` appears only inside `notifyTextTruncated()`.
+    - Manual: trigger any truncation path (e.g., paste/insert text that exceeds max) and verify the same warning still appears.
+
+Observable contract and timing preserved.
+Reviewer gate: PASS
+
+### L3 — Architecture / contract changes (Codex)
+
+  * **Decision: NO CHANGE (no Level 3 justified)**
+
+  * **Evidence checked (anchors):**
+    * `public/editor.js` — `window.editorAPI.setCurrentText(payload)` + fallback `window.editorAPI.setCurrentText(editor.value)` (doble shape). 
+    * `public/editor.js` — echo suppression `incomingMeta.source === 'editor'`. 
+    * `electron/editor_preload.js` — `setCurrentText: ... invoke('set-current-text', t)`. 
+    * `electron/preload.js` — `setCurrentText: ... invoke('set-current-text', text)`. 
+    * `public/renderer.js` — `setCurrentText({ text: currentText, meta })` + `throw ... 'set-current-text failed'`. 
+  * **Reviewer gate: PASS**
+  * Nota corta: No se justifica Nivel 3: shapes coexistentes ya son parte del contrato; cambiarlo sería churn de riesgo.
+
+### L4 — Logs
+
+* **Call-site style (sin wrappers):** eliminación de `warnOnceEditor` y reemplazo por `log.warnOnce(...)` en call sites (anclas: `editor.select`, `focus.prevActive.*`, `setCurrentText.*`). Basado en política. 
+* **showNotice:**
+
+  * key `editor.showNotice.toastEditorText.missing` como `warnOnce` (fallback recuperable)
+  * key `editor.showNotice.notifyMain.missing` como `errorOnce` (notice dropeado)
+    (esto también aterriza “no silent fallbacks” + dedupe estable). 
+* **Fallback no-silencioso en payload:** key `editor.setCurrentText.payload_failed` (`warnOnce`) cuando no hay `onPrimaryError`. 
+* **BOOTSTRAP:** logs prefijados `BOOTSTRAP:` en fallbacks de arranque (con nota explícita de la condición “debe volverse inalcanzable post-init”). 
+
+### L5 — Comments (Codex + redo)
+
+Decision: CHANGED (comments-only)
+
+- Initial L5 pass:
+  - Added a top "Overview" with scoped responsibilities.
+  - Standardized section dividers to match the file’s real block order (bootstrap, DOM refs, helpers, events, bridge listeners, paste/drop, controls).
+  - Removed/replaced drift-prone or redundant comments (e.g., placeholder init note; redundant step comments in insertion helper).
+  - Added an explicit end-of-file marker.
+
+- L5 redo (drift fix):
+  - Overview responsibility softened to avoid a strict ordering guarantee:
+    - "Kick off config and i18n bootstrap (async, best-effort)."
+  - Bootstrap header softened to reflect async, best-effort behavior:
+    - "Bootstrap: config and translations (async, best-effort)"
+
+No functional changes; comments-only.
+Reviewer gate: PASS
+
+Anchors:
+- Overview bullet — "Kick off config and i18n bootstrap (async, best-effort)."
+- Bootstrap header — "Bootstrap: config and translations (async, best-effort)"
+- EOF marker — "End of public/editor.js"
+
+### L6 — Final review (coherence + leftover cleanup after refactors)
+
+Decision: NO CHANGE
+No Level 6 changes justified.
+
+Checks performed (anchors / micro-quotes):
+- Logging API signatures: showNotice uses once-variants with explicit keys:
+  - "editor.showNotice.toastEditorText.missing"
+  - "editor.showNotice.notifyMain.missing"
+- Logging fallback coverage: sendCurrentTextToMain warns once on payload failure:
+  - "setCurrentText payload failed (ignored)"
+  and preserves call-site fallback logging via onFallbackError.
+- Contract consistency: sendCurrentTextToMain still calls:
+  - "setCurrentText(payload)" with fallback "setCurrentText(text)".
+- Update handling: applyExternalUpdate still tolerates object vs string inputs:
+  - "payload && typeof payload === 'object'" (normalization path).
+- Comment alignment: Overview / Bootstrap headers describe async best-effort:
+  - "Bootstrap: config and translations (async, best-effort)".
+- No leftover aliases: warnOnceEditor removed; call sites use log.warnOnce directly:
+  - "use log.warnOnce directly".
+
+Observable contract/timing preserved.
+Reviewer gate: PASS
+
+### L7 — Smoke (human-run)
+
+Estado: PASS | FAIL
+Entorno: (dev/packaged), OS, commit/hash, state: existing | clean
+
+Checklist:
+- [x] (1) Editor abre con texto vigente (REG-EDITOR-01).
+- [x] (2) Edición en editor propaga a main (REG-EDITOR-02).
+- [x] (3) Overwrite/append desde main actualiza editor (main → editor).
+- [x] (4) CALCULAR respeta semántica (si aplica).
+- [x] (5) Clear en editor vacía main consistentemente.
+- [x] (6) Find modal: navegación + highlight + bloqueo edición + Esc restaura.
+- [x] (7) Undo/redo no contaminado por Find.
+- [x] (8) Truncation/limits: aviso `renderer.editor_alerts.text_truncated` y app estable.
+- [x] (9) Logs: sin uncaught, sin spam, sin BOOTSTRAP inesperado.
+
+---
+
+## public/preset_modal.js
+
+Date: `2026-01-23`
+Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - IIFE wrapper + logger (`window.getLogger('preset-modal')`).
+    - Entrypoint `DOMContentLoaded`; queries DOM + guard de elementos: `"missing DOM elements"`.
+    - Pull de `AppConstants` + configuración de límites (`WPM_MIN/WPM_MAX`, maxLength name/desc).
+    - Estado local: `mode`, `originalName`, `idiomaActual`, `translationsLoadedFor`.
+    - Wiring i18n: destructure `window.RendererI18n` + helpers `tr` / `mr`.
+    - i18n apply: `ensurePresetTranslations` + `applyPresetTranslations` (incluye rewrite de labels).
+    - Bridge preload: `window.presetAPI.onInit(...)` (bootstrap modal) + `window.presetAPI.onSettingsChanged(...)` (cambio de idioma).
+    - Builder: `buildPresetFromInputs()` (validaciones mínimas; retorna `{name,wpm,description}` o `null`).
+    - UI listeners: contador caracteres desc, truncado name, save (edit/create), cancel, auto-fill name desde WPM.
+    - Init char counter IIFE: `initCharCount()`.
+
+  - Where linear reading breaks:
+    - `window.presetAPI.onInit` anida múltiples `try/catch` y side effects: `"onInit(async (payload) =>"`.
+    - `applyPresetTranslations` mezcla carga i18n + rewrite heurístico de labels: `"labels.forEach((lbl) =>"`.
+    - Save handler bifurca edit/new + llamadas a presetAPI: `"if (mode === 'edit')"`.
+
+- Contract map (exports / side effects / IPC):
+  - Module exposure:
+    - No exports; script de renderer con side effects: listeners DOM + listeners del bridge `window.presetAPI`.
+    - Dependencias globales/bridge (observables en el archivo): `window.getLogger`, `window.AppConstants`, `window.RendererI18n`, `window.presetAPI`, `Notify`.
+
+  - Invariants and fallbacks (anchored):
+    - Guard DOM esencial (abort): `"missing DOM elements"`.
+    - `AppConstants` requerido (hard-fail): `"AppConstants no disponible"`.
+    - `RendererI18n` requerido (hard-fail): `"RendererI18n no disponible"`.
+    - `Notify` asumido para algunas rutas (contract implícito): `/* global Notify */` y `"Notify.notifyMain('renderer.preset_alerts.wpm_invalid')"`.
+    - Nombre requerido (fallback notify/alert): `"renderer.preset_alerts.name_empty"`.
+    - WPM debe ser finito y en rango (fallback notify): `"renderer.preset_alerts.wpm_invalid"`.
+    - `presetAPI.getSettings` es best-effort: `log.warnOnce('preset-modal.getSettings', ...)`.
+
+  - IPC contract (only what exists in this file):
+    - No `ipcMain/ipcRenderer/webContents` directo en este archivo.
+    - Contrato vía preload (`window.presetAPI`), inferido por uso (sin canales):
+      - `onInit(fn(payload))` usa `payload.mode`, `payload.preset.{name,description,wpm}`, `payload.wpm`.
+      - `getSettings()` solo se usa por `settings.language`.
+      - `onSettingsChanged(fn(settings))` usa `settings.language`.
+      - `editPreset(originalName, preset)` / `createPreset(preset)` esperan respuesta con `res.ok` y en edit se observa `res.code === 'CANCELLED'`.
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- El archivo ya sigue un flujo lineal dentro de `DOMContentLoaded` (setup → i18n helpers → `window.presetAPI` wiring → builder → listeners → init IIFE).
+- Reordenar/extractar a nivel estructural entrega ganancia marginal y puede alterar el orden relativo entre:
+  - wiring de callbacks (`window.presetAPI.onInit`, `onSettingsChanged`)
+  - inicialización de UI (p.ej. `initCharCount()` y traducciones iniciales)
+- La duplicación más visible (actualización de contador de caracteres) ocurre en call sites con semántica no idéntica (input vs init/replay), por lo que extraerla agrega indirection sin reducir complejidad material.
+- No se identificó un cambio L1 claramente “mejor” que sea inequívocamente behavior/timing-preserving.
+
+Reviewer gate: PASS
+
+### L2 — Clarity / robustness refactor (Codex follow-up)
+
+Decision: CHANGED
+
+- Change (silent no-op removal): en el handler de Save se agregó un `else` explícito cuando falta el método esperado del bridge:
+  - Edit mode: si falta `window.presetAPI.editPreset`, ahora:
+    - notifica `renderer.preset_alerts.process_error`
+    - loguea una sola vez: `log.warnOnce('preset-modal.editPreset.missing', ...)`
+  - New mode: si falta `window.presetAPI.createPreset`, ahora:
+    - notifica `renderer.preset_alerts.process_error`
+    - loguea una sola vez: `log.warnOnce('preset-modal.createPreset.missing', ...)`
+
+Gain:
+- Elimina el no-op silencioso post-validación; el usuario recibe feedback inmediato y el log queda trazable sin spam.
+
+Cost:
+- Agrega un path visible (Notify + warnOnce) únicamente en entornos misconfigurados (bridge incompleto).
+
+Validation:
+- Forzar entorno misconfigurado (sin `presetAPI` o sin `editPreset/createPreset`) y presionar Save:
+  - Debe aparecer `renderer.preset_alerts.process_error`.
+  - Debe emitirse un único warnOnce por clave (`preset-modal.*.missing`), aunque se repita el click.
+- En entorno normal, crear/editar presets debe comportarse igual que antes.
+
+Contract/timing:
+- Se preserva el contrato observable y el timing en flujos normales; solo cambia el comportamiento del caso previamente silencioso.
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- Checked `public/preset_modal.js` save handler (`if (mode === 'edit')`) and result handling (`res.ok`, edit observes `res.code === 'CANCELLED'`); no evidence of inconsistent semantics across consumers.
+- Checked `electron/preset_preload.js` bridge: `contextBridge.exposeInMainWorld('presetAPI', { ... })` defines a single, stable surface (`createPreset`, `editPreset`, reliable `onInit`, plus settings hooks).
+- Checked `electron/main.js` preset window init path: `function createPresetWindow(initialData)` and `presetWin.webContents.send('preset-init', initialData || {})`, including re-send when window is already open and on `ready-to-show`.
+- Cross-check: no repo-wide evidence (call sites / consumers) indicating duplicated responsibility or an unstable/ambiguous contract requiring Level 3.
+
+Reviewer gate: PASS
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+Cambios (solo logging; sin cambios de contrato/timing en flujos sanos):
+
+- Bridge init hooks ausentes ahora dejan rastro explícito (evita degradación silenciosa del modal):
+  - `log.warnOnce('preset-modal.onInit.missing', ...)`
+  - `log.warnOnce('preset-modal.onSettingsChanged.missing', ...)`
+
+- Fallback “usar idioma por defecto” por falta de settings API queda visible:
+  - `log.warnOnce('preset-modal.getSettings.missing', ...)`
+
+- Fallback `alert(...)` por ausencia de Notify queda visible:
+  - `log.warnOnce('preset-modal.notify.missing', ...)`
+
+- Ajuste de severidad al fallar Save por ausencia del método del bridge (acción del usuario no ejecutable):
+  - `preset-modal.editPreset.missing`: `log.warnOnce(...)` → `log.errorOnce(...)`
+  - `preset-modal.createPreset.missing`: `log.warnOnce(...)` → `log.errorOnce(...)`
+
+Validación (manual):
+- Abrir modal en entorno misconfigurado (sin preload/bridge completo) y verificar que:
+  - Los warns/error aparecen una sola vez por clave.
+  - El flujo sano (create/edit con bridge completo) se mantiene idéntico.
+
+Observable contract/timing: preservados; cambios limitados a logging en paths degradados/misconfigurados.
+
+Reviewer gate: PASS
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Se agregó un bloque "Overview" (responsabilidades) para orientar al lector.
+- Se añadieron separadores de sección que reflejan el flujo real del archivo (logger/bootstrap, DOM guards, constants/limits, state, i18n, presetAPI wiring, builder/validation, listeners, initial sync).
+- Se removieron/ajustaron comentarios de bajo valor (restatements) y se reubicaron para que el “intent” viva en headers de sección.
+- Se agregó marcador explícito de fin de archivo: "End of public/preset_modal.js".
+
+No functional changes; comments-only.
+
+Reviewer gate: PASS
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+- Checked logging API usage for explicit-key dedupe calls (warnOnce/errorOnce) in:
+  - presetAPI wiring (`preset-modal.onInit.missing`, `preset-modal.onSettingsChanged.missing`, `preset-modal.getSettings.missing`)
+  - save flow missing-bridge paths (`preset-modal.editPreset.missing`, `preset-modal.createPreset.missing`)
+- Checked required DOM guard and subsequent usage of guarded elements (`if (!nameEl || !wpmEl || ...) return;`).
+- Checked i18n flow consistency (`ensurePresetTranslations` -> `applyPresetTranslations`) and state (`idiomaActual`, `translationsLoadedFor`).
+- Checked presetAPI init/settings handlers for control flow and error handling (`onInit`, `onSettingsChanged`).
+- Checked input validation + save flow invariants (`buildPresetFromInputs`, `btnSave.addEventListener`).
+- Checked comments vs code structure (Overview, section dividers, end-of-file marker).
+
+Observable contract and timing are preserved (no code changes).
+
+Reviewer gate: PASS
+
+### L7 — Smoke test checklist (human-run; code-informed) — `public/preset_modal.js`
+
+**Preconditions**
+
+* App ejecutándose con logs visibles (DevTools Console o salida de terminal).
+* Existe al menos un preset en el selector de la ventana principal.
+* Identifica en la ventana principal los botones **Nuevo preset** y **Editar preset** (en `public/renderer.js` son `btnNewPreset` / `btnEditPreset`).
+
+[x] 1) Open modal (new)
+
+**Action:** En ventana principal, clic **Nuevo preset**.
+**Expected:**
+
+* Se abre el modal sin errores.
+* WPM se inicializa con el WPM actual (redondeado).
+* Si el nombre estaba vacío, se auto-rellena como `"<wpm>wpm"`.
+  **Anchors (preset_modal.js):**
+* `window.presetAPI.onInit(async (payload) =>`
+* `if (typeof payload.wpm === 'number')`
+* `nameEl.value = \`${Math.round(payload.wpm)}wpm``
+
+[x] 2) Description length + counter stays responsive
+
+**Action:** Pegar en “Description” un texto largo (más que el límite).
+**Expected:**
+
+* El campo queda truncado al máximo permitido (no crece indefinidamente).
+* El contador se actualiza (aunque pueda quedar negativo por el orden “contador antes de truncar”, el UI no se rompe).
+  **Anchors:**
+* `descEl.addEventListener('input', () =>`
+* `charCountEl.textContent = mr(... { remaining } ...)`
+* `descEl.value = descEl.value.substring(0, descMaxLength)`
+
+[x] 3) Name required (validation)
+
+**Action:** Vaciar “Name” y presionar **Save**.
+**Expected:**
+
+* El modal NO se cierra.
+* Se emite una notificación/alerta de “name empty”.
+  **Anchors:**
+* `if (!name) {`
+* `window.Notify.notifyMain('renderer.preset_alerts.name_empty')`
+* Fallback log (si Notify faltara): `preset-modal.notify.missing`
+
+[x] 4) WPM bounds (validation)
+
+**Action:** Poner un WPM fuera de rango (p. ej., 0 o > max) y presionar **Save**.
+**Expected:**
+
+* El modal NO se cierra.
+* Se emite notificación `renderer.preset_alerts.wpm_invalid`.
+  **Anchors:**
+* `if (!Number.isFinite(wpm) || wpm < WPM_MIN || wpm > WPM_MAX)`
+* `Notify.notifyMain('renderer.preset_alerts.wpm_invalid')`
+
+[x] 5) Save new preset (happy path)
+
+**Action:** En modo “new”, ingresar un nombre válido (único), WPM válido y presionar **Save**.
+**Expected:**
+
+* En éxito, el modal se cierra.
+* En la ventana principal, el preset nuevo aparece (idealmente seleccionado) y la UI refleja el cambio (WPM/descripcion).
+  **Anchors:**
+* `window.presetAPI.createPreset(preset)`
+* `if (res && res.ok) { window.close(); }`
+* Error path: `renderer.preset_alerts.create_error`
+
+[x] 6) Open modal (edit) + prefill + save
+
+**Action:** En la ventana principal, seleccionar un preset existente y clic **Editar preset**.
+**Expected:**
+
+* El modal se abre con campos pre-rellenados (Name/Description/WPM).
+* Editar la descripción y presionar **Save** cierra el modal en éxito.
+* En la ventana principal se observa la actualización del preset.
+  **Anchors:**
+* `const incomingMode = (payload.mode === 'edit') ? 'edit' : 'new'`
+* `originalName = payload.preset.name`
+* `window.presetAPI.editPreset(originalName, preset)`
+* `if (res && res.ok) { window.close(); }`
+* Cancel path: `if (res && res.code === 'CANCELLED') return;`
+
+[x] 7) Cancel closes without side effects
+
+**Action:** Abrir el modal (new o edit) y presionar **Cancel**.
+**Expected:**
+
+* El modal se cierra.
+* No se crea/edita nada.
+  **Anchors:**
+* `btnCancel.addEventListener('click', () => { window.close(); })`
+
+[x] 8) Log sanity (normal environment)
+
+**Action:** Repetir abrir/cerrar modal y realizar un save exitoso (new y edit).
+**Expected (normal, con preload/bridge correcto):**
+
+* No deben aparecer logs “missing” del bridge/Notify:
+
+  * `preset-modal.onInit.missing`
+  * `preset-modal.onSettingsChanged.missing`
+  * `preset-modal.getSettings.missing`
+  * `preset-modal.editPreset.missing`
+  * `preset-modal.createPreset.missing`
+  * `preset-modal.notify.missing`
+    Si aparecen, tratar como regresión del wiring/preload (no del flujo sano del modal).
+
+---
+
+## public/flotante.js
+
+Date: `2026-01-24`
+Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
+
+### L0 — Diagnosis (no changes)
+
+#### 0.1 Reading map
+- Block order (high level):
+  - strict/log startup: `const log = window.getLogger('flotante');`
+  - guard AppConstants + DEFAULT_LANG: `if (!AppConstants) { throw new Error`
+  - DOM lookups: `document.getElementById('crono'/'toggle'/'reset')`
+  - missing-element logs
+  - local state/labels (`lastState`, `playLabel`, `pauseLabel`, `translationsLoadedFor`)
+  - `renderState(state)`
+  - bridge registration: `window.flotanteAPI.onState((state) =>`
+  - i18n helper: `applyFlotanteTranslations(lang)`
+  - async bootstrap IIFE: `(async () => {`
+  - settings listener: `window.flotanteAPI.onSettingsChanged((settings) =>`
+  - UI listeners: `btnToggle.addEventListener('click'` / `btnReset.addEventListener('click'`
+  - keydown listener: `window.addEventListener('keydown', (ev) =>`
+
+- Linear reading breaks (identifier + micro-quote):
+  - `window.getLogger` — `const log = window.getLogger('flotante');`
+  - `renderState` — `lastState = Object.assign`
+  - `renderState` — `window.RendererCrono && typeof window.RendererCrono.formatCrono`
+  - `renderState` — `btnToggle.textContent = state.running ?`
+  - `window.flotanteAPI.onState` — `window.flotanteAPI.onState((state) =>`
+  - `applyFlotanteTranslations` — `await loadRendererTranslations(target);`
+  - init IIFE — `(async () => {`
+  - init IIFE — `const settings = await window.flotanteAPI.getSettings();`
+  - settings handler — `if (!nextLang || nextLang === translationsLoadedFor) return`
+  - button wiring — `btnToggle.addEventListener('click', () => {`
+  - button wiring — `btnReset.addEventListener('click', () => {`
+  - keydown — `if (ev.code === 'Space' || ev.key === ' ' || ev.key === 'Enter')`
+
+#### 0.2 Contract map
+- Exposes / side effects:
+  - no exports; runs on load
+  - registers callbacks on `window.flotanteAPI` (state + settings)
+  - attaches DOM listeners to `#toggle/#reset` and `window` keydown
+  - writes to DOM: `#crono.textContent`, `#toggle.textContent`
+  - logs via `window.getLogger('flotante')`
+
+- Observable public entrypoints used here (bridge-style/global APIs):
+  - `window.getLogger('flotante')`
+  - `window.AppConstants.DEFAULT_LANG`
+  - `window.flotanteAPI.onState(fn)`
+  - `window.flotanteAPI.getSettings()`
+  - `window.flotanteAPI.onSettingsChanged(fn)`
+  - `window.flotanteAPI.sendCommand({ cmd })`
+  - `window.RendererCrono.formatCrono(elapsed)` (optional path)
+  - `window.RendererI18n.loadRendererTranslations(lang)` (optional)
+  - `window.RendererI18n.tRenderer(key, fallback)` (optional)
+
+- Invariants / assumptions & tolerated errors (anchored):
+  - AppConstants must exist (hard-fail): `if (!AppConstants) { throw new Error`
+  - getLogger must exist (no guard): `const log = window.getLogger('flotante');`
+  - buttons must exist for wiring (unguarded addEventListener): `btnToggle.addEventListener('click'`
+  - renderState tolerates missing state: `if (!state) return;`
+  - DOM write to crono is guarded: `if (cronoEl) {`
+  - RendererCrono formatter is optional: `window.RendererCrono && typeof window.RendererCrono.formatCrono`
+  - i18n helpers are optional: `if (!loadRendererTranslations || !tRenderer) return;`
+  - translation load failure tolerated via warnOnce: `loadRendererTranslations(${target}) failed (ignored)`
+  - getSettings failure tolerated via warnOnce: `getSettings failed (ignored)`
+  - sendCommand calls are guarded by API presence: `if (window.flotanteAPI) window.flotanteAPI.sendCommand`
+
+- IPC contract (direct): none in this file (`ipcMain/ipcRenderer/webContents` not used).
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+- File is already short and ordered by initialization flow; reordering would not improve linear readability.
+- Main complexity stems from async translation load and event wiring; moving these blocks would obscure timing intent.
+- No safe local simplifications without behavior change (e.g., guarding unguarded addEventListener would alter error behavior).
+- No obvious duplication or ambiguous naming that can be reduced without adding extra indirection.
+- Introducing new structure (sections/helpers) would add concepts without removing branches.
+
+Reviewer gate: PASS (NO CHANGE is justified; no code changes).
+
+### L2 — Clarity / robustness refactor (controlled) (Codex)
+
+Decision: NO CHANGE
+- The only clear robustness gap (unguarded addEventListener on possibly-null buttons) is behaviorally visible; guarding would change error behavior.
+- Existing logging is already proportionate and deduped via warnOnce; adding more would risk noise.
+- Repeated sendCommand calls are minimal; adding helpers would add indirection without real branching reduction.
+- Async translation flow and settings fetch are already explicit; further refactoring would add concepts without clarity payoff.
+- No safe edge-case distinctions to surface without altering timing or observable side effects.
+
+Observable contract and timing preserved by making no changes.
+
+Reviewer gate: PASS (NO CHANGE is justified; no code changes).
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/flotante.html` — identifier: `id="crono"`; snippet: `<div id="crono" class="crono">00:00:00</div> ...`
+- `public/flotante.html` — identifier: `id="toggle"` / `id="reset"`; snippet: `<button id="toggle" ...>...</button> <button id="reset" ...>...</button>`
+- `electron/flotante_preload.js` — identifier: `exposeInMainWorld('flotanteAPI'`; snippet: `contextBridge.exposeInMainWorld('flotanteAPI', { onState: (cb) => {`
+- `electron/flotante_preload.js` — identifier: `onState`; snippet: `ipcRenderer.on('crono-state', wrapper); ... removeListener('crono-state'`
+- `electron/flotante_preload.js` — identifier: `sendCommand`; snippet: `ipcRenderer.send('flotante-command', cmd);`
+- `electron/flotante_preload.js` — identifier: `getSettings/onSettingsChanged`; snippet: `invoke('get-settings') ... ipcRenderer.on('settings-updated', listener)`
+- `electron/main.js` — identifier: `ipcMain.on('flotante-command'`; snippet: `ipcMain.on('flotante-command', (_ev, cmd) => {`
+- `public/flotante.js` — identifier: `btnToggle.addEventListener`; snippet: `btnToggle.addEventListener('click', () => { if (window.flotanteAPI) ...`
+- `public/flotante.js` — identifier: `onState` guard; snippet: `if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function')`
+- `public/js/crono.js` — identifier: `openFlotanteWindow` guard; snippet: `if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function')`
+
+Reviewer gate: PASS (NO CHANGE justified; DOM IDs exist and bridge methods are exposed/routed consistently).
+
+### L4 decision: CHANGED
+
+- Normalización de estilo de mensajes (evita duplicar scope en el texto):
+  - DOM missing: `log.error('element #crono not found')` (antes incluía `flotante:`/`[flotante]` en el mensaje).
+  - Bridge missing/methods: se removió `"[flotante]"` del texto (ej.: `log.error('flotanteAPI missing; IPC bridge unavailable.')`).
+  - Errors genéricos: `log.error('Error loading translations:', err)` (sin sufijos de scope en el mensaje).
+
+- Logging explícito para bridge `window.flotanteAPI` y métodos:
+  - `log.error('flotanteAPI missing; IPC bridge unavailable.')`
+  - `log.warn('flotanteAPI.onState missing; state updates disabled (ignored).')`
+  - `log.warn('flotanteAPI.getSettings missing; using default language (ignored).')`
+  - `log.warn('flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).')`
+  - `log.error('flotanteAPI.sendCommand missing; controls may fail.')`
+
+- Fallback de formato de crono (alto potencial de repetición) con dedupe estable:
+  - `log.warnOnce('flotante.formatCrono.missing', 'formatCrono unavailable; using simple formatter (ignored).')`
+
+- i18n fallback explícito (sin dedupe):
+  - `log.warn('RendererI18n unavailable; skipping translations (ignored).')`
+
+- Best-effort failures con estilo “failed (ignored)” y sin dedupe (no high-frequency por contrato):
+  - `log.warn(\`loadRendererTranslations(${target}) failed (ignored):\`, err)`
+  - `log.warn('getSettings failed (ignored):', err)`
+  - `log.warn('apply settings update failed (ignored):', err)`
+
+**Evidence**
+- `public/flotante.js`:
+  - Mensajes sin prefijos redundantes: `"element #crono not found"`, `"flotanteAPI missing; IPC bridge unavailable."`.
+  - Dedupe key estable: `'flotante.formatCrono.missing'`.
+  - Best-effort phrasing: `"failed (ignored):"` y `"apply settings update failed (ignored):"`.
+
+**Risk**
+- Bajo (logging-only). El único impacto potencial es aumento de volumen en sesiones *misconfigured* o con fallos repetidos de i18n/settings, porque se removió `warnOnce` en esos paths (se mantiene `warnOnce` solo en el fallback de render-loop `formatCrono`).
+
+**Validation**
+- Static:
+  - Verificar key estable: buscar `flotante.formatCrono.missing` en `public/flotante.js`.
+  - Verificar que no quedan prefijos redundantes en mensajes (`[flotante]`, `flotante:`) dentro de llamadas `log.*` en este archivo.
+- Runtime (smoke normal):
+  - Abrir/cerrar flotante y usar toggle/reset: no debe aparecer spam nuevo en logs en ejecución sana; el flujo normal no debería producir warnings/errors de bridge/i18n.
+
+### L5 — Comments (Codex + manual follow-up)
+
+Decision: CHANGED
+
+- Se agregó un bloque "Overview" al inicio (responsabilidades), en inglés y ASCII, siguiendo el estilo de encabezados tipo `electron/main.js`.
+- Se agregaron separadores de sección `// =============================================================================` alineados a la estructura real del archivo:
+  - Overview
+  - Logger / globals
+  - Constants / config
+  - DOM wiring
+  - Shared state
+  - Helpers
+  - Bridge integration (flotanteAPI)
+  - Bootstrapping
+  - UI events
+- Se corrigió el comentario de DOM wiring para reflejar comportamiento real y expectativa del layout:
+  - `// Missing elements are logged; execution continues (assumes flotante.html provides these IDs).`
+- Se agregó marcador explícito de fin de archivo:
+  - `// End of public/flotante.js`
+
+Notas:
+- Hubo un follow-up manual para evitar drift/ruido en el comentario de DOM wiring (se evitó el tono “alarmista” del último diff de Codex).
+- No hay cambios de lógica/flujo: el nivel se limitó a comentarios (y ajustes manuales de texto adyacente, sin impacto en timing/ordering).
+
+Reviewer gate: PASS
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+No Level 6 changes justified.
+
+- Logging API: se revisaron llamadas `warnOnce`/`warn`/`error` y rutas best-effort (sin drift de firma).
+- Coherencia: wiring DOM, bridge (`flotanteAPI`), renderState y flujo i18n sin leftovers evidentes ni comentarios desfasados.
+- Contrato: comandos `sendCommand({ cmd: 'toggle'|'reset' })` y callbacks de estado/settings sin cambios.
+
+Observable contract/timing preserved (no changes applied).
+
+### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Checklist ejecutado:**
+
+* [x] (1) VF abre y muestra controles (REG-CRONO-03).
+* [x] (2) Sync main↔flotante: toggle y reset desde flotante (REG-CRONO-03).
+* [x] (3) Unfocused: Alt-Tab y control desde flotante mantiene consistencia (REG-CRONO-03).
+* [x] (4) Teclado en flotante: Space/Enter toggle; `r` reset.
+* [x] (5) i18n cross-window: cambio de idioma refleja en flotante sin crash (REG-I18N-02).
+* [x] (6) Logs: sin uncaught; sin spam; sin `flotante.formatCrono.missing` en camino sano.
+
+---
+
+## public/language_window.js
+
+Date: `2026-01-24`
+Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
+
+### L0 — Diagnosis (no changes) (Codex, verified)
+
+#### 0.1 Reading map
+
+- Block order (as-is):
+  1) Header comment + `'use strict'`
+  2) Logger selection + DOM bindings (`log`, `langFilter`, `langList`, `statusLine`)
+  3) Local fallback list (`fallbackLanguages`)
+  4) State (`languages`, `filteredLanguages`, `focusedIndex`, `isBusy`)
+  5) Helpers (`getItems`, `setStatus`, `setBusy`, `setFocusedIndex`, `renderList`, `selectLanguage`)
+  6) Event listeners (`langFilter` input/keydown; `langList` click/keydown/focusin)
+  7) Async loader (`loadLanguages`)
+  8) Startup IIFE (anonymous) that invokes `loadLanguages` on module load
+
+- Linear-reading breaks / obstacles:
+  - `renderList` mixes filtering + DOM rebuild + empty-state:
+    - anchor: `"langList.innerHTML = ''"`
+  - `selectLanguage` couples UI state + external API + window control:
+    - anchor: `"await window.languageAPI.setLanguage(lang)"`
+  - Startup IIFE (anonymous) triggers async flow on load:
+    - anchor: `"(async () => {"`
+
+#### 0.2 Contract map
+
+- Exposes:
+  - No exports; renderer-side side-effect module for the language selection window.
+
+- Side effects at load:
+  - Immediately binds DOM elements by id and registers event listeners:
+    - anchor: `"document.getElementById('langFilter')"`
+  - Immediately triggers initial async load via an anonymous IIFE:
+    - anchor: `"(async () => {"`
+
+- External dependencies (observed):
+  - Optional global logger factory:
+    - anchor: `"window.getLogger ?"`
+  - Expects `window.languageAPI` (preload-provided) with:
+    - `getAvailableLanguages()`:
+      - anchor: `"typeof window.languageAPI.getAvailableLanguages"`
+    - `setLanguage(tag)`:
+      - anchor: `"window.languageAPI.setLanguage"`
+
+- Invariants / fallbacks / assumptions (anchored):
+  - Logger falls back to console if global missing:
+    - anchor: `"window.getLogger ?"`
+  - Requires DOM elements exist (no guards before use):
+    - anchor: `"document.getElementById('langFilter')"`
+  - Busy state blocks interactions in handlers:
+    - anchor: `"if (isBusy) return"`
+  - `setStatus` tolerates empty/undefined messages:
+    - anchor: `"message || ''"`
+  - `setBusy` sets `aria-disabled` string and toggles disabled styling:
+    - anchor: `"busy ? 'true' : 'false'"`
+  - `setFocusedIndex` clamps to bounds; empty list yields `focusedIndex = -1` and returns:
+    - anchor: `"Math.max(0, Math.min"`
+  - `renderList` placeholder on zero matches:
+    - anchor: `"empty.textContent = 'No matches'"`
+  - `loadLanguages` expects `languageAPI.getAvailableLanguages` or logs error:
+    - anchor: `"getAvailableLanguages unavailable"`
+  - `loadLanguages` falls back to local list when empty/unavailable:
+    - anchor: `"languages = fallbackLanguages.slice()"`
+  - Startup IIFE catch also falls back after `loadLanguages` failure:
+    - anchor: `"Error loadLanguages:"`
+  - `selectLanguage` guards empty selection and busy state; closes window on success:
+    - anchor: `"if (!lang || isBusy) return"`
+
+- IPC contract (only what exists in this file):
+  - None (no `ipcMain.*`, `ipcRenderer.*`, `webContents.send`).
+
+- Delegated IPC registration:
+  - None.
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- Already grouped by setup/state, helpers, event handlers, data load, and init IIFE with clear flow.
+- Helpers are short and single-purpose; reordering would not reduce branching or duplication.
+- The startup IIFE is straightforward; introducing a named init would add a concept without payoff.
+- Event handlers are colocated with related helpers and state, preserving locality.
+- Any structural reflow risks subtle timing/readability tradeoffs without clear benefit.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment: PASS. NO CHANGE is appropriate; the module is already small/cohesive and its current layout supports linear reading.
+Reviewer gate: PASS
+
+Observable contract/timing preserved (no changes applied).
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- File is already small, linear, and readable; no duplication that a helper would reduce.
+- Error handling is explicit and proportionate around the only async calls; adding more would be noise.
+- Guarding missing DOM nodes would change failure mode (currently throws), altering observable behavior.
+- Reordering or extracting startup IIFE would add indirection without reducing branches.
+- Busy/selection guards and fallbacks are already explicit and localized.
+
+Observable contract and timing preserved (no code changes).
+
+Reviewer assessment: PASS — “NO CHANGE” is justified; the module already has explicit busy guards and try/catch, and adding DOM-null guards would alter fail-fast behavior.
+Reviewer gate: PASS
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/language_window.js` `loadLanguages` — "typeof window.languageAPI.getAvailableLanguages === 'function'".
+- `public/language_window.js` `selectLanguage` — "await window.languageAPI.setLanguage(lang)".
+- `electron/language_preload.js` `setLanguage` — "ipcRenderer.invoke('set-language', tag)".
+- `electron/settings.js` `registerIpc` (`set-language`) — "ipcMain.handle('set-language', async (_event, lang) => {".
+- `electron/main.js` `get-available-languages` — "ipcMain.handle('get-available-languages', async () => {".
+- `electron/main.js` first-run gate — "ipcMain.once('language-selected', () => {".
+
+Reviewer assessment: PASS — No evidence of cross-module contract instability or duplicated responsibility requiring Level 3; the language window uses a single preload API that maps cleanly to existing IPC handlers and a first-run gating signal.
+Reviewer gate: PASS
+
+Observable contract/timing preserved (no code changes).
+
+### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+
+Changes (logging-only):
+- `loadLanguages`: when `getAvailableLanguages` throws/unavailable:
+  - was: `log.error('Error getAvailableLanguages:', e)`
+  - now: `log.warn('BOOTSTRAP: getAvailableLanguages failed; falling back to local list:', e)`
+  - Rationale: recoverable fallback → warn (BOOTSTRAP), not error.
+- `loadLanguages`: when `getAvailableLanguages` returns empty/invalid (previously silent fallback):
+  - now logs once-per-call-path: `log.warn('BOOTSTRAP: getAvailableLanguages returned empty/invalid; falling back to local list.')`
+  - Rationale: no silent fallbacks; this is a degraded bootstrap path.
+- Startup IIFE catch:
+  - was: `log.error('Error loadLanguages:', e)`
+  - now: `log.error('BOOTSTRAP: loadLanguages failed; falling back to local list:', e)`
+  - Rationale: explicit BOOTSTRAP safety-net fallback.
+
+Implementation note:
+- Added per-invocation flag `fallbackLogged` inside `loadLanguages` to avoid duplicate warnings when an exception leads to an empty/invalid `available`.
+
+Contract/timing:
+- Preserved. Only log levels/messages were changed; data flow and ordering remain the same.
+
+Validation (manual / grep):
+- Grep: `BOOTSTRAP: getAvailableLanguages` and `BOOTSTRAP: loadLanguages failed`.
+- Manual smoke: open the language window with `window.languageAPI.getAvailableLanguages` unavailable/throwing (or returning `[]`) and confirm:
+  - fallback list renders,
+  - exactly one BOOTSTRAP warn for the fallback path,
+  - no new logs on the healthy path.
+
+Reviewer assessment: PASS — fixes a previously silent fallback; uses BOOTSTRAP prefix and appropriate severity.
+Reviewer gate: PASS
+
+### L5 — Comments (Codex, retry)
+
+Decision: CHANGED (comments-only)
+
+- Se agregó un bloque "Overview" (3–7 bullets, English, ASCII) describiendo responsabilidades reales de la ventana de idioma.
+- Se agregaron separadores de sección usando el formato del repo `// =============================================================================` (alineado a `public/renderer.js`).
+- Se mantuvo la nota existente sobre el comportamiento al cerrar sin selección, y se agregó el marcador de fin:
+  - `// End of public/language_window.js`
+- No hay cambios funcionales; comments-only.
+
+Validation (static):
+- Grep: `End of public/language_window.js` y `Overview`.
+
+Reviewer assessment:
+- PASS. Ahora sí respeta el formato establecido (sin “dashed rulers”) y mejora legibilidad sin riesgo de drift/timing.
+
+Reviewer gate: PASS
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+No Level 6 changes justified.
+
+- Logging API: reviewed `log.error('Error setLanguage:', e)` and `log.warn('BOOTSTRAP: ...', e)` call shapes (no signature drift).
+- Bootstrap flow: `loadLanguages()` + startup IIFE (`await loadLanguages()`) remains coherent; fallback assignment stays local.
+- Helpers/guards: `setBusy` and event handlers consistently gate via `isBusy`; aria/class toggles remain aligned.
+- Comments alignment: Overview and end-marker match the observed behavior (no drift).
+
+Observable contract/timing preserved (no code changes).
+
+Reviewer gate: PASS
+
+### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Checklist ejecutado:**
+
+* [x] (1) Abrir la ventana de idioma (primer run o vía menú) y confirmar que la lista renderiza (no queda en blanco). (First-run: click en lista cierra la ventana y permite continuar).
+* [x] (2) Filtro: escribir en `langFilter` reduce resultados; limpiar restaura. Caso 0 matches muestra placeholder **“No matches”**.
+* [x] (3) Teclado:
+  * desde `langFilter`, `ArrowDown` enfoca el primer item (sin crash).
+  * en la lista, `ArrowUp/ArrowDown` navega y `Enter` aplica selección del item enfocado.
+* [x] (4) Selección (click o Enter): se ejecuta `setLanguage(tag)` y la ventana se cierra en success; la app queda operativa (sin cuelgue).
+* [x] (5) i18n sanity: tras cambiar idioma, la UI (al menos labels visibles) refleja el nuevo idioma según el flujo de i18n esperado. (REG-I18N-01).
+* [x] (6) Cierre sin selección: cerrar la ventana sin elegir no debe crashear ni dejar la app en estado inválido (nota del propio archivo sobre fallback condicionado a `settings.language` vacío).
+* [x] (7) Logs: sin uncaught exceptions; sin spam. En camino sano, no aparecen BOOTSTRAP warnings. (Los BOOTSTRAP warnings quedan reservados para fallback real).
+
+---

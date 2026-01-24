@@ -2,10 +2,26 @@
 /* global Notify */
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Kick off config and i18n bootstrap (async, best-effort).
+// - Manage textarea editing, find UI, and focus behavior.
+// - Bridge editor text updates via window.editorAPI.
+// - Apply external updates and enforce size limits.
+// - Surface recoverable issues to the user.
+
+// =============================================================================
+// Logger
+// =============================================================================
 const log = window.getLogger('editor');
 
 log.debug('Manual editor starting...');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
 const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[editor] AppConstants no disponible; verifica la carga de constants.js');
@@ -13,6 +29,9 @@ if (!AppConstants) {
 const { DEFAULT_LANG, PASTE_ALLOW_LIMIT, SMALL_UPDATE_THRESHOLD } = AppConstants;
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
 
+// =============================================================================
+// Bootstrap: config and translations (async, best-effort)
+// =============================================================================
 (async () => {
   try {
     const cfg = await window.editorAPI.getAppConfig();
@@ -22,7 +41,7 @@ let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text si
       maxTextChars = Number(cfg.maxTextChars) || maxTextChars;
     }
   } catch (err) {
-    log.error('editor: failed to get getAppConfig, using defaults:', err);
+    log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
   }
   try {
     if (window.editorAPI && typeof window.editorAPI.getSettings === 'function') {
@@ -33,11 +52,13 @@ let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text si
     }
     await applyEditorTranslations();
   } catch (err) {
-    log.warn('editor: failed to apply initial translations:', err);
+    log.warn('BOOTSTRAP: failed to apply initial translations:', err);
   }
-  // rest of init (getCurrentText etc.) -you already have an existing init, integrate with yours
 })();
 
+// =============================================================================
+// DOM references
+// =============================================================================
 const editor = document.getElementById('editorArea');
 const btnTrash = document.getElementById('btnTrash');
 const calcWhileTyping = document.getElementById('calcWhileTyping');
@@ -54,6 +75,9 @@ const findStatus = document.getElementById('findStatus');
 const findHighlightOverlay = document.getElementById('findHighlightOverlay');
 const findHighlightLayer = document.getElementById('findHighlightLayer');
 
+// =============================================================================
+// Module state and limits
+// =============================================================================
 let debounceTimer = null;
 const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
@@ -69,10 +93,11 @@ const FIND_COUNT_THRESHOLD = 200000;
 const FIND_COUNT_LIMIT = 2000;
 const FIND_COUNT_DEBOUNCE_MS = 150;
 
-// Visibility helper: warn only once per key (editor scope)
-const warnOnceEditor = (...args) => log.warnOnce(...args);
+// warnOnce keys are editor-scoped; use log.warnOnce directly.
 
-// --- i18n loader for editor (uses RendererI18n global) ---
+// =============================================================================
+// i18n (RendererI18n)
+// =============================================================================
 let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
 
@@ -134,6 +159,9 @@ async function applyEditorTranslations() {
   }
 }
 
+// =============================================================================
+// Settings integration
+// =============================================================================
 if (window.editorAPI && typeof window.editorAPI.onSettingsChanged === 'function') {
   window.editorAPI.onSettingsChanged(async (settings) => {
     try {
@@ -147,7 +175,9 @@ if (window.editorAPI && typeof window.editorAPI.onSettingsChanged === 'function'
   });
 }
 
-// ---------- Notices ---------- //
+// =============================================================================
+// Notices
+// =============================================================================
 function showNotice(msg, opts = {}) {
   const text = (typeof msg === 'string') ? msg : String(msg);
   let type = 'info';
@@ -169,19 +199,28 @@ function showNotice(msg, opts = {}) {
       Notify.toastEditorText(text, { type, duration });
       return;
     }
-    log.error('showNotice unavailable: Notify.toastEditorText missing.');
+    log.warnOnce(
+      'editor.showNotice.toastEditorText.missing',
+      'showNotice: Notify.toastEditorText missing; falling back to Notify.notifyMain.'
+    );
     if (typeof Notify?.notifyMain === 'function') {
       Notify.notifyMain(text);
     } else {
-      log.error('showNotice fallback unavailable: Notify.notifyMain missing.');
+      log.errorOnce(
+        'editor.showNotice.notifyMain.missing',
+        'showNotice fallback unavailable: Notify.notifyMain missing; notice dropped.'
+      );
     }
   } catch (err) {
-    log.error('showNotice failed:', err);
+    log.warn('showNotice failed; attempting fallback:', err);
     try {
       if (typeof Notify?.notifyMain === 'function') {
         Notify.notifyMain(text);
       } else {
-        log.error('showNotice fallback unavailable: Notify.notifyMain missing.');
+        log.errorOnce(
+          'editor.showNotice.notifyMain.missing',
+          'showNotice fallback unavailable: Notify.notifyMain missing; notice dropped.'
+        );
       }
     } catch (fallbackErr) {
       log.error('showNotice fallback failed:', fallbackErr);
@@ -192,7 +231,9 @@ function showNotice(msg, opts = {}) {
 // Expose for cross-script notifications (used by public/js/notify.js)
 window.showNotice = showNotice;
 
-// ---------- focus helpers ---------- //
+// =============================================================================
+// Focus and selection helpers
+// =============================================================================
 function restoreFocusToEditor(pos = null) {
   try {
     setTimeout(() => {
@@ -228,13 +269,15 @@ function setCaretSafe(pos) {
 function selectAllEditor() {
   if (typeof editor.select === 'function') {
     try { editor.select(); }
-    catch (err) { warnOnceEditor('editor.select', 'editor.select() failed (ignored):', err); }
+    catch (err) { log.warnOnce('editor.select', 'editor.select() failed (ignored):', err); }
     return;
   }
   setSelectionSafe(0, editor.value.length);
 }
 
-// ---------- Find bar (manual search on textarea.value) ---------- //
+// =============================================================================
+// Find bar (manual search on textarea.value)
+// =============================================================================
 const findCache = { text: '', lower: '' };
 
 function isFindReady() {
@@ -598,11 +641,6 @@ function performFind(direction) {
   const haystack = findCache.lower;
   const needle = query.toLowerCase();
 
-  if (!needle) {
-    setFindStatusText(tr('renderer.editor_find.status_empty_query', 'Type to search'));
-    setFindCountText('');
-    return false;
-  }
 
   const { start, end } = getSelectionRange();
   const forward = direction !== -1;
@@ -651,6 +689,9 @@ function performFind(direction) {
   return true;
 }
 
+// =============================================================================
+// Find bar events
+// =============================================================================
 if (isFindReady()) {
   findInput.addEventListener('input', () => {
     updateFindIdleStatus();
@@ -716,7 +757,9 @@ if (isFindReady()) {
   }, true);
 }
 
-// styles //
+// =============================================================================
+// Editor textarea defaults
+// =============================================================================
 try {
   if (editor) {
     editor.wrap = 'soft';
@@ -725,12 +768,13 @@ try {
   }
 } catch (err) { log.warnOnce('editor:wrapStyles:apply_failed', 'editor wrap styles failed (ignored):', err); }
 
-// ---------- Local insertion (best preserving undo) ---------- //
+// =============================================================================
+// Local insertion (best preserving undo)
+// =============================================================================
 function tryNativeInsertAtSelection(text) {
   try {
     const { start, end } = getSelectionRange();
 
-    // try execCommand
     try {
       const ok = document.execCommand && document.execCommand('insertText', false, text);
       if (ok) return true;
@@ -738,7 +782,6 @@ function tryNativeInsertAtSelection(text) {
       // follow fallback
     }
 
-    // fallback: setRangeText
     if (typeof editor.setRangeText === 'function') {
       editor.setRangeText(text, start, end, 'end');
       const newCaret = start + text.length;
@@ -746,7 +789,6 @@ function tryNativeInsertAtSelection(text) {
       return true;
     }
 
-    // last option: direct assignment
     const before = editor.value.slice(0, start);
     const after = editor.value.slice(end);
     editor.value = before + text + after;
@@ -759,6 +801,9 @@ function tryNativeInsertAtSelection(text) {
   }
 }
 
+// =============================================================================
+// Main-process sync helpers
+// =============================================================================
 function sendCurrentTextToMain(action, options = {}) {
   const hasText = Object.prototype.hasOwnProperty.call(options, 'text');
   const text = hasText ? options.text : editor.value;
@@ -771,7 +816,15 @@ function sendCurrentTextToMain(action, options = {}) {
     handleTruncationResponse(res);
     return true;
   } catch (err) {
-    if (onPrimaryError) onPrimaryError(err);
+    if (onPrimaryError) {
+      onPrimaryError(err);
+    } else {
+      log.warnOnce(
+        'editor.setCurrentText.payload_failed',
+        'setCurrentText payload failed (ignored); using fallback:',
+        err
+      );
+    }
     try {
       const resFallback = window.editorAPI.setCurrentText(text);
       handleTruncationResponse(resFallback);
@@ -787,16 +840,22 @@ function sendCurrentTextToMain(action, options = {}) {
   }
 }
 
-function sendCurrentTextToMainWithMeta(action = 'insert') {
-  sendCurrentTextToMain(action);
+// =============================================================================
+// Truncation notifications
+// =============================================================================
+function notifyTextTruncated() {
+  Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
 }
 
+// =============================================================================
+// Truncation response handling
+// =============================================================================
 function handleTruncationResponse(resPromise) {
   try {
     if (resPromise && typeof resPromise.then === 'function') {
       resPromise.then((r) => {
         if (r && r.truncated) {
-          Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
+          notifyTextTruncated();
         }
       }).catch((err) => {
         log.error('Error handling truncated response:', err);
@@ -827,7 +886,7 @@ function insertTextAtCursor(rawText) {
     tryNativeInsertAtSelection(toInsert);
 
     // Notify main
-    sendCurrentTextToMainWithMeta('paste');
+    sendCurrentTextToMain('paste');
 
     if (truncated) {
       Notify.notifyEditor('renderer.editor_alerts.paste_truncated', { type: 'warn', duration: 5000 });
@@ -841,7 +900,9 @@ function insertTextAtCursor(rawText) {
   }
 }
 
-// ---------- dispatch native input when doing direct assignment ---------- //
+// =============================================================================
+// dispatch native input when doing direct assignment
+// =============================================================================
 function dispatchNativeInputEvent() {
   try {
     const ev = new Event('input', { bubbles: true });
@@ -851,7 +912,9 @@ function dispatchNativeInputEvent() {
   }
 }
 
-// ---------- receive external updates (main -> editor) ---------- //
+// =============================================================================
+// Receive external updates (main -> editor)
+// =============================================================================
 async function applyExternalUpdate(payload) {
   try {
     let incomingMeta = null;
@@ -877,7 +940,7 @@ async function applyExternalUpdate(payload) {
 
     if (editor.value === newText) {
       if (truncated) {
-        Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
+        notifyTextTruncated()
       }
       return;
     }
@@ -910,7 +973,7 @@ async function applyExternalUpdate(payload) {
             dispatchNativeInputEvent();
           } finally {
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { warnOnceEditor('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
+            catch (err) { log.warnOnce('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
           }
           return;
         } else {
@@ -924,10 +987,10 @@ async function applyExternalUpdate(payload) {
           } finally {
             editor.style.visibility = '';
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { warnOnceEditor('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
+            catch (err) { log.warnOnce('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
           }
           if (truncated) {
-            Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
+            notifyTextTruncated()
           }
           return;
         }
@@ -955,10 +1018,10 @@ async function applyExternalUpdate(payload) {
           dispatchNativeInputEvent();
         } finally {
           try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (err) { warnOnceEditor('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
+          catch (err) { log.warnOnce('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
         }
         if (truncated) {
-          Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
+          notifyTextTruncated()
         }
         return;
       } else {
@@ -972,12 +1035,11 @@ async function applyExternalUpdate(payload) {
         } finally {
           editor.style.visibility = '';
           try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (err) { warnOnceEditor('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
+          catch (err) { log.warnOnce('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
         }
-        if (truncated)
-          if (truncated) {
-            Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
-          }
+        if (truncated) {
+          notifyTextTruncated()
+        }
         return;
       }
     }
@@ -994,14 +1056,16 @@ async function applyExternalUpdate(payload) {
       editor.style.visibility = '';
     }
     if (truncated) {
-      Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 })
+      notifyTextTruncated()
     }
   } catch (err) {
     log.error('applyExternalUpdate error:', err);
   }
 }
 
-// ---------- initialization ---------- //
+// =============================================================================
+// Initialization
+// =============================================================================
 (async () => {
   try {
     const t = await window.editorAPI.getCurrentText();
@@ -1013,7 +1077,9 @@ async function applyExternalUpdate(payload) {
   }
 })();
 
-// ---------- IPC listeners ---------- //
+// =============================================================================
+// IPC bridge listeners
+// =============================================================================
 window.editorAPI.onInitText((p) => { applyExternalUpdate(p); });
 window.editorAPI.onExternalUpdate((p) => { applyExternalUpdate(p); });
 // If main forces clear editor (explicit), always clear regardless of focus
@@ -1031,7 +1097,9 @@ window.editorAPI.onForceClear(() => {
   }
 });
 
-// ---------- paste / drop handlers ---------- //
+// =============================================================================
+// Paste / drop handlers
+// =============================================================================
 if (editor) {
   editor.addEventListener('paste', (ev) => {
     try {
@@ -1100,7 +1168,7 @@ if (editor) {
           }
           // Notifying the main-mark coming from the editor to avoid eco-back.
           sendCurrentTextToMain('drop', {
-            onFallbackError: (err) => warnOnceEditor(
+            onFallbackError: (err) => log.warnOnce(
               'setCurrentText.drop.fallback',
               'editorAPI.setCurrentText fallback failed (ignored):',
               err
@@ -1119,7 +1187,9 @@ if (editor) {
   });
 }
 
-// ---------- local input (typing) ---------- //
+// =============================================================================
+// Local input (typing)
+// =============================================================================
 editor.addEventListener('input', () => {
   if (suppressLocalUpdate || findOpen || editor.readOnly) return;
 
@@ -1128,7 +1198,7 @@ editor.addEventListener('input', () => {
     Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
     sendCurrentTextToMain('truncated', {
       onPrimaryError: (err) => log.error('editor: error sending set-current-text after truncate:', err),
-      onFallbackError: (err) => warnOnceEditor(
+      onFallbackError: (err) => log.warnOnce(
         'setCurrentText.truncate.fallback',
         'editorAPI.setCurrentText fallback failed (ignored):',
         err
@@ -1150,13 +1220,16 @@ editor.addEventListener('input', () => {
   }
 });
 
+// =============================================================================
+// Buttons and toggles
+// =============================================================================
 // Trash button empties textarea and updates main
 btnTrash.addEventListener('click', () => {
   editor.value = '';
   // immediately update main
   sendCurrentTextToMain('clear', {
     text: '',
-    onFallbackError: (err) => warnOnceEditor(
+    onFallbackError: (err) => log.warnOnce(
       'setCurrentText.trash.clear.fallback',
       'editorAPI.setCurrentText fallback failed (ignored):',
       err
@@ -1186,7 +1259,7 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     // Also send current content once to keep sync
     sendCurrentTextToMain('typing_toggle_on', {
       text: editor.value || '',
-      onFallbackError: (err) => warnOnceEditor(
+      onFallbackError: (err) => log.warnOnce(
         'setCurrentText.typing_toggle_on.fallback',
         'editorAPI.setCurrentText fallback failed (typing toggle on ignored):',
         err
@@ -1195,3 +1268,7 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     // disable automatic sending; enable CALCULATE
   } else btnCalc.disabled = false;
 });
+
+// =============================================================================
+// End of public/editor.js
+// =============================================================================

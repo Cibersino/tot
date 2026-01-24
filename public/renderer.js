@@ -2,7 +2,9 @@
 /* global Notify */
 'use strict';
 
-// ======================= Overview =======================
+// =============================================================================
+// Overview
+// =============================================================================
 // Responsibilities:
 // - Bootstraps the renderer UI and pulls config/settings from main.
 // - Applies i18n labels and number formatting.
@@ -10,8 +12,9 @@
 // - Wires presets, clipboard actions, editor, and help tips.
 // - Hosts the info modal and top-bar menu actions.
 // - Integrates the stopwatch controller and floating window toggle.
-
-// ======================= Logger and constants =======================
+// =============================================================================
+// Logger and constants
+// =============================================================================
 const log = window.getLogger('renderer');
 
 log.debug('Renderer main starting...');
@@ -30,7 +33,9 @@ const {
   PREVIEW_END_CHARS
 } = AppConstants;
 
-// ======================= DOM references =======================
+// =============================================================================
+// DOM references
+// =============================================================================
 const textPreview = document.getElementById('textPreview');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
@@ -38,7 +43,9 @@ const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
 const btnHelp = document.getElementById('btnHelp');
 
-// ======================= UI keys and static lists =======================
+// =============================================================================
+// UI keys and static lists
+// =============================================================================
 const HELP_TIP_KEY_LIST = Object.freeze([
   'renderer.main.tips.results_help.tip1',
   'renderer.main.tips.results_help.tip2',
@@ -82,7 +89,9 @@ const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
 const presetDescription = document.getElementById('presetDescription');
 
-// ======================= Shared state and limits =======================
+// =============================================================================
+// Shared state and limits
+// =============================================================================
 let currentText = '';
 // Local limit in renderer to prevent concatenations that create excessively large strings
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Default value until main responds
@@ -93,7 +102,9 @@ let idiomaActual = DEFAULT_LANG; // Initializes on startup
 let settingsCache = null;     // Settings cache (number formatting, language, etc.)
 let cronoController = null;
 
-// ======================= i18n wiring =======================
+// =============================================================================
+// i18n wiring
+// =============================================================================
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
   throw new Error('[renderer] RendererI18n no disponible; no se puede continuar');
@@ -168,7 +179,9 @@ function applyTranslations() {
   }
 }
 
-// ======================= Bootstrap: config and settings =======================
+// =============================================================================
+// Bootstrap: config and settings
+// =============================================================================
 (async () => {
   try {
     const cfg = await window.electronAPI.getAppConfig();
@@ -215,13 +228,17 @@ let currentPresetName = null;
 // Local preset cache (full list loaded once)
 let allPresetsCache = [];
 
-// ======================= Presets integration =======================
+// =============================================================================
+// Presets integration
+// =============================================================================
 const { applyPresetSelection, loadPresetsIntoDom } = window.RendererPresets || {};
 if (!applyPresetSelection || !loadPresetsIntoDom) {
   log.error('[renderer] RendererPresets not available');
 }
 
-// ======================= Text counting =======================
+// =============================================================================
+// Text counting
+// =============================================================================
 const { contarTexto: contarTextoModulo } = window.CountUtils || {};
 if (typeof contarTextoModulo !== 'function') {
   throw new Error('[renderer] CountUtils no disponible; no se puede continuar');
@@ -244,13 +261,17 @@ function setModoConteo(nuevoModo) {
   }
 }
 
-// ======================= Time formatting =======================
+// =============================================================================
+// Time formatting
+// =============================================================================
 const { getTimeParts, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
 if (!getTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
   log.error('[renderer] FormatUtils not available');
 }
 
-// ======================= Preview and results =======================
+// =============================================================================
+// Preview and results
+// =============================================================================
 async function updatePreviewAndResults(text) {
   const normalizedText = normalizeText(text);
   const displayText = normalizedText.replace(/\r?\n/g, '   ');
@@ -309,7 +330,9 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
   });
 }
 
-// ======================= Preset loading (merge + shadowing) =======================
+// =============================================================================
+// Preset loading (merge + shadowing)
+// =============================================================================
 const loadPresets = async () => {
   try {
     const res = await loadPresetsIntoDom({
@@ -339,7 +362,9 @@ const loadPresets = async () => {
   }
 };
 
-// ======================= Bootstrapping and subscriptions =======================
+// =============================================================================
+// Bootstrapping and subscriptions
+// =============================================================================
 (async () => {
   try {
     // Get current initial text (if any)
@@ -435,7 +460,9 @@ const loadPresets = async () => {
       }
     }
 
-    // ------------------------------ Precise mode toggle ------------------------------
+    // =============================================================================
+    // Precise mode toggle
+    // =============================================================================
     try {
       if (toggleModoPreciso) {
         // Ensure initial switch state according to the in-memory mode
@@ -493,7 +520,9 @@ const loadPresets = async () => {
   } catch (err) {
     log.error('Error initialazing renderer:', err);
   }
-  // ======================= Info modal =======================
+  // =============================================================================
+  // Info modal
+  // =============================================================================
   const infoModal = document.getElementById('infoModal');
   const infoModalBackdrop = document.getElementById('infoModalBackdrop');
   const infoModalClose = document.getElementById('infoModalClose');
@@ -768,7 +797,9 @@ const loadPresets = async () => {
     }
   }
 
-  // ======================= Top bar menu actions =======================
+  // =============================================================================
+  // Top bar menu actions
+  // =============================================================================
   // menu_actions.js must be loaded before renderer.js
   if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
     window.menuActions.registerMenuAction('guia_basica', () => { showInfoModal('guia_basica') });
@@ -851,7 +882,9 @@ const loadPresets = async () => {
   }
 })();
 
-// ======================= Preset selection (cache-only) =======================
+// =============================================================================
+// Preset selection (cache-only)
+// =============================================================================
 presetsSelect.addEventListener('change', () => {
   const name = presetsSelect.value;
   if (!name) return;
@@ -874,7 +907,9 @@ presetsSelect.addEventListener('change', () => {
   }
 });
 
-// ======================= Manual WPM edits =======================
+// =============================================================================
+// Manual WPM edits
+// =============================================================================
 function resetPresetSelection() {
   currentPresetName = null;
   // Leave the select without a visual selection
@@ -908,7 +943,9 @@ wpmInput.addEventListener('keydown', (e) => {
   }
 });
 
-// ======================= Overwrite current text with clipboard content =======================
+// =============================================================================
+// Overwrite current text with clipboard content
+// =============================================================================
 btnOverwriteClipboard.addEventListener('click', async () => {
   try {
     const res = await window.electronAPI.readClipboard();
@@ -946,7 +983,9 @@ btnOverwriteClipboard.addEventListener('click', async () => {
   }
 });
 
-// ======================= Append clipboard content to current text =======================
+// =============================================================================
+// Append clipboard content to current text
+// =============================================================================
 btnAppendClipboard.addEventListener('click', async () => {
   try {
     const res = await window.electronAPI.readClipboard();
@@ -1009,7 +1048,9 @@ btnEdit.addEventListener('click', async () => {
   }
 });
 
-// ======================= Clear current text =======================
+// =============================================================================
+// Clear current text
+// =============================================================================
 btnEmptyMain.addEventListener('click', async () => {
   try {
     const resp = await window.electronAPI.setCurrentText({
@@ -1085,7 +1126,9 @@ btnNewPreset.addEventListener('click', () => {
   }
 });
 
-// ======================= Edit preset =======================
+// =============================================================================
+// Edit preset
+// =============================================================================
 btnEditPreset.addEventListener('click', async () => {
   try {
     const selectedName = presetsSelect.value;
@@ -1125,7 +1168,9 @@ btnEditPreset.addEventListener('click', async () => {
   }
 });
 
-// ======================= Delete preset =======================
+// =============================================================================
+// Delete preset
+// =============================================================================
 btnDeletePreset.addEventListener('click', async () => {
   try {
     const name = presetsSelect.value || null;
@@ -1158,7 +1203,9 @@ btnDeletePreset.addEventListener('click', async () => {
   }
 });
 
-// ======================= Restore default presets =======================
+// =============================================================================
+// Restore default presets
+// =============================================================================
 btnResetDefaultPresets.addEventListener('click', async () => {
   try {
     // Call main to request restore. Main will show a native confirmation dialog.
@@ -1183,7 +1230,9 @@ btnResetDefaultPresets.addEventListener('click', async () => {
   }
 });
 
-// ======================= Stopwatch =======================
+// =============================================================================
+// Stopwatch
+// =============================================================================
 const cronoDisplay = document.getElementById('cronoDisplay');
 const tToggle = document.getElementById('cronoToggle');
 const tReset = document.getElementById('cronoReset');
@@ -1232,4 +1281,6 @@ const initCronoController = () => {
 
 initCronoController();
 
+// =============================================================================
 // End of public/renderer.js
+// =============================================================================
