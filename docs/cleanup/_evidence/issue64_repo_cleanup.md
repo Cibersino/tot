@@ -2307,3 +2307,32 @@ Decision: NO CHANGE (no Level 3 justified)
 - Cross-check: no repo-wide evidence (call sites / consumers) indicating duplicated responsibility or an unstable/ambiguous contract requiring Level 3.
 
 Reviewer gate: PASS
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+Cambios (solo logging; sin cambios de contrato/timing en flujos sanos):
+
+- Bridge init hooks ausentes ahora dejan rastro explícito (evita degradación silenciosa del modal):
+  - `log.warnOnce('preset-modal.onInit.missing', ...)`
+  - `log.warnOnce('preset-modal.onSettingsChanged.missing', ...)`
+
+- Fallback “usar idioma por defecto” por falta de settings API queda visible:
+  - `log.warnOnce('preset-modal.getSettings.missing', ...)`
+
+- Fallback `alert(...)` por ausencia de Notify queda visible:
+  - `log.warnOnce('preset-modal.notify.missing', ...)`
+
+- Ajuste de severidad al fallar Save por ausencia del método del bridge (acción del usuario no ejecutable):
+  - `preset-modal.editPreset.missing`: `log.warnOnce(...)` → `log.errorOnce(...)`
+  - `preset-modal.createPreset.missing`: `log.warnOnce(...)` → `log.errorOnce(...)`
+
+Validación (manual):
+- Abrir modal en entorno misconfigurado (sin preload/bridge completo) y verificar que:
+  - Los warns/error aparecen una sola vez por clave.
+  - El flujo sano (create/edit con bridge completo) se mantiene idéntico.
+
+Observable contract/timing: preservados; cambios limitados a logging en paths degradados/misconfigurados.
+
+Reviewer gate: PASS

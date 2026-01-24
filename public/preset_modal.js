@@ -92,6 +92,11 @@
               if (window.presetAPI && typeof window.presetAPI.getSettings === 'function') {
                 const settings = await window.presetAPI.getSettings();
                 if (settings && settings.language) idiomaActual = settings.language || idiomaActual;
+              } else {
+                log.warnOnce(
+                  'preset-modal.getSettings.missing',
+                  '[preset_modal] presetAPI.getSettings missing; using default language'
+                );
               }
             } catch (err) {
               log.warnOnce(
@@ -128,6 +133,11 @@
       } catch (err) {
         log.error('Error setting up presetAPI.onInit listener:', err);
       }
+    } else {
+      log.warnOnce(
+        'preset-modal.onInit.missing',
+        '[preset_modal] presetAPI.onInit missing; modal will not receive init data'
+      );
     }
 
     if (window.presetAPI && typeof window.presetAPI.onSettingsChanged === 'function') {
@@ -141,6 +151,11 @@
           log.warn('preset_modal: failed to apply settings update:', err);
         }
       });
+    } else {
+      log.warnOnce(
+        'preset-modal.onSettingsChanged.missing',
+        '[preset_modal] presetAPI.onSettingsChanged missing; language updates disabled'
+      );
     }
 
     // helper function to build preset from inputs (minimum validations)
@@ -153,6 +168,10 @@
         if (window.Notify && typeof window.Notify.notifyMain === 'function') {
           window.Notify.notifyMain('renderer.preset_alerts.name_empty');
         } else {
+          log.warnOnce(
+            'preset-modal.notify.missing',
+            '[preset_modal] Notify.notifyMain missing; using alert fallback'
+          );
           alert(tr('renderer.preset_alerts.name_empty'));
         }
         return null;
@@ -199,7 +218,7 @@
             }
           } else {
             Notify.notifyMain('renderer.preset_alerts.process_error');
-            log.warnOnce('preset-modal.editPreset.missing', '[preset_modal] presetAPI.editPreset missing');
+            log.errorOnce('preset-modal.editPreset.missing', '[preset_modal] presetAPI.editPreset missing');
           }
         } else {
           if (window.presetAPI && typeof window.presetAPI.createPreset === 'function') {
@@ -212,7 +231,7 @@
             }
           } else {
             Notify.notifyMain('renderer.preset_alerts.process_error');
-            log.warnOnce('preset-modal.createPreset.missing', '[preset_modal] presetAPI.createPreset missing');
+            log.errorOnce('preset-modal.createPreset.missing', '[preset_modal] presetAPI.createPreset missing');
           }
         }
       } catch (err) {
