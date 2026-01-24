@@ -2215,3 +2215,44 @@ Checklist:
 Date: `2026-01-23`
 Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
 
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - IIFE wrapper + logger (`window.getLogger('preset-modal')`).
+    - Entrypoint `DOMContentLoaded`; queries DOM + guard de elementos: `"missing DOM elements"`.
+    - Pull de `AppConstants` + configuración de límites (`WPM_MIN/WPM_MAX`, maxLength name/desc).
+    - Estado local: `mode`, `originalName`, `idiomaActual`, `translationsLoadedFor`.
+    - Wiring i18n: destructure `window.RendererI18n` + helpers `tr` / `mr`.
+    - i18n apply: `ensurePresetTranslations` + `applyPresetTranslations` (incluye rewrite de labels).
+    - Bridge preload: `window.presetAPI.onInit(...)` (bootstrap modal) + `window.presetAPI.onSettingsChanged(...)` (cambio de idioma).
+    - Builder: `buildPresetFromInputs()` (validaciones mínimas; retorna `{name,wpm,description}` o `null`).
+    - UI listeners: contador caracteres desc, truncado name, save (edit/create), cancel, auto-fill name desde WPM.
+    - Init char counter IIFE: `initCharCount()`.
+
+  - Where linear reading breaks:
+    - `window.presetAPI.onInit` anida múltiples `try/catch` y side effects: `"onInit(async (payload) =>"`.
+    - `applyPresetTranslations` mezcla carga i18n + rewrite heurístico de labels: `"labels.forEach((lbl) =>"`.
+    - Save handler bifurca edit/new + llamadas a presetAPI: `"if (mode === 'edit')"`.
+
+- Contract map (exports / side effects / IPC):
+  - Module exposure:
+    - No exports; script de renderer con side effects: listeners DOM + listeners del bridge `window.presetAPI`.
+    - Dependencias globales/bridge (observables en el archivo): `window.getLogger`, `window.AppConstants`, `window.RendererI18n`, `window.presetAPI`, `Notify`.
+
+  - Invariants and fallbacks (anchored):
+    - Guard DOM esencial (abort): `"missing DOM elements"`.
+    - `AppConstants` requerido (hard-fail): `"AppConstants no disponible"`.
+    - `RendererI18n` requerido (hard-fail): `"RendererI18n no disponible"`.
+    - `Notify` asumido para algunas rutas (contract implícito): `/* global Notify */` y `"Notify.notifyMain('renderer.preset_alerts.wpm_invalid')"`.
+    - Nombre requerido (fallback notify/alert): `"renderer.preset_alerts.name_empty"`.
+    - WPM debe ser finito y en rango (fallback notify): `"renderer.preset_alerts.wpm_invalid"`.
+    - `presetAPI.getSettings` es best-effort: `log.warnOnce('preset-modal.getSettings', ...)`.
+
+  - IPC contract (only what exists in this file):
+    - No `ipcMain/ipcRenderer/webContents` directo en este archivo.
+    - Contrato vía preload (`window.presetAPI`), inferido por uso (sin canales):
+      - `onInit(fn(payload))` usa `payload.mode`, `payload.preset.{name,description,wpm}`, `payload.wpm`.
+      - `getSettings()` solo se usa por `settings.language`.
+      - `onSettingsChanged(fn(settings))` usa `settings.language`.
+      - `editPreset(originalName, preset)` / `createPreset(preset)` esperan respuesta con `res.ok` y en edit se observa `res.code === 'CANCELLED'`.
