@@ -2860,3 +2860,35 @@ Reviewer assessment:
 - PASS. Ahora sí respeta el formato establecido (sin “dashed rulers”) y mejora legibilidad sin riesgo de drift/timing.
 
 Reviewer gate: PASS
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+No Level 6 changes justified.
+
+- Logging API: reviewed `log.error('Error setLanguage:', e)` and `log.warn('BOOTSTRAP: ...', e)` call shapes (no signature drift).
+- Bootstrap flow: `loadLanguages()` + startup IIFE (`await loadLanguages()`) remains coherent; fallback assignment stays local.
+- Helpers/guards: `setBusy` and event handlers consistently gate via `isBusy`; aria/class toggles remain aligned.
+- Comments alignment: Overview and end-marker match the observed behavior (no drift).
+
+Observable contract/timing preserved (no code changes).
+
+Reviewer gate: PASS
+
+### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Checklist ejecutado:**
+
+* [x] (1) Abrir la ventana de idioma (primer run o vía menú) y confirmar que la lista renderiza (no queda en blanco). (First-run: click en lista cierra la ventana y permite continuar).
+* [x] (2) Filtro: escribir en `langFilter` reduce resultados; limpiar restaura. Caso 0 matches muestra placeholder **“No matches”**.
+* [x] (3) Teclado:
+  * desde `langFilter`, `ArrowDown` enfoca el primer item (sin crash).
+  * en la lista, `ArrowUp/ArrowDown` navega y `Enter` aplica selección del item enfocado.
+* [x] (4) Selección (click o Enter): se ejecuta `setLanguage(tag)` y la ventana se cierra en success; la app queda operativa (sin cuelgue).
+* [x] (5) i18n sanity: tras cambiar idioma, la UI (al menos labels visibles) refleja el nuevo idioma según el flujo de i18n esperado. (REG-I18N-01).
+* [x] (6) Cierre sin selección: cerrar la ventana sin elegir no debe crashear ni dejar la app en estado inválido (nota del propio archivo sobre fallback condicionado a `settings.language` vacío).
+* [x] (7) Logs: sin uncaught exceptions; sin spam. En camino sano, no aparecen BOOTSTRAP warnings. (Los BOOTSTRAP warnings quedan reservados para fallback real).
+
+---
