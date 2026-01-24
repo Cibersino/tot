@@ -38,7 +38,7 @@ const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
 
-// Missing elements are logged; execution continues to avoid hard crashes.
+// Missing elements are logged; execution continues (assumes flotante.html provides these IDs).
 if (!cronoEl) {
   log.error('element #crono not found');
 }
