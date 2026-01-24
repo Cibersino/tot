@@ -3013,3 +3013,36 @@ Decision: CHANGED
 - No functional changes; comments-only.
 
 Reviewer gate: PASS (Level 5): Comments-only change; improves navigability; no contract/timing risk introduced.
+
+### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+- Checked logging API usage: `log.warn`, `log.warnOnce`, `log.error` call shapes match `public/js/log.js`.
+- Checked exports/contract: `window.RendererCrono` surface unchanged and matches `public/renderer.js` usage.
+- Checked comment alignment: new Overview and section dividers match actual block order; end marker present.
+- Checked helpers and controller flow: no unused locals or dead branches detected in `createController` and `handleCronoState`.
+- Checked Electron API guards: `openFlotante`/`closeFlotante` fallbacks remain noisy and consistent.
+
+Observable contract and timing/ordering were preserved.
+
+Reviewer gate: PASS (Level 6): NO CHANGE justified; post-L5 coherence verified; diff empty.
+
+### L7 — Smoke test (human-run; minimal)
+
+Resultado: PASS
+
+* [x] (1) Arranque limpio (idle 5–10s): app estable.
+* [x] (2) Cargar texto no vacío (ej: 📋↺): texto vigente queda no vacío.
+* [x] (3) Start/Pause: tiempo aumenta y luego queda fijo al pausar.
+* [x] (4) Mientras corre: no permite edición manual del campo (o no aplica cambios).
+* [x] (5) Editar tiempo válido (00:00:10) con crono pausado: queda aplicado.
+* [x] (6) Editar tiempo inválido (00:99:00 / abc): se rechaza y revierte a valor válido.
+* [x] (7) Abrir flotante: ventana aparece.
+* [x] (8) Cerrar flotante con X: UI principal refleja “cerrado”.
+* [x] (9) Texto no vacío -> otro no vacío (ej: 📋+): cronómetro NO se resetea.
+* [x] (10) Texto queda vacío (vaciar): cronómetro SI se resetea a 00:00:00.
+
+---
