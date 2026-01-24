@@ -2948,3 +2948,15 @@ Last commit: `<PONER_HASH_DE_git_log>`
     - None found.
 
 Reviewer gate: PASS (Level 0 diagnosis is adequate; anchors corrected to match file).
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- File already follows a clear top-to-bottom progression from helpers to UI/electron handlers to controller to export.
+- Functions are cohesive and locally scoped; reordering would not materially reduce reading effort.
+- Large `createController` block is the core orchestrator; splitting or reshuffling would add indirection.
+- Existing early returns and guards are already minimal and directly tied to behavior and timing.
+- Structural edits available are mostly cosmetic (commenting/spacing), which risks noise without payoff.
+
+Reviewer gate: PASS (Level 1): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
