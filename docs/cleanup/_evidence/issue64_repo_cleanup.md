@@ -3169,3 +3169,66 @@ Reviewer assessment:
 - PASS for L6: NO CHANGE es consistente con el estado del archivo.
 - Nota: el reporte NO CHANGE no incluyó anchors; y “all return shapes” es una sobre-afirmación (depende de `settingsCache.numberFormatting`).
 Reviewer gate: PASS
+
+### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; open DevTools Console to observe renderer logs.
+* Use any non-trivial sample text (enough to exceed 1,000 words once) to make thousands separators visible.
+* Ensure main window (renderer) is the active UI.
+
+* [x] **(1) Startup sanity: FormatUtils present**
+
+  * **Action:** Launch the app and wait for the main window to fully render.
+  * **Expected result:** No renderer error indicating `FormatUtils` is missing; UI remains usable.
+  * **Evidence:** `public/renderer.js` destructures from `window.FormatUtils || {}` and has an explicit “missing functions” log guard. 
+
+* [x] **(2) Results formatting: thousands separators on counts**
+
+  * **Action:** Paste/append a large text so word count is > 1000. Observe the “chars / chars w/o space / words” fields.
+  * **Expected result:** Counts render with a thousands separator (e.g., `1.234` under a `.` thousands convention); no “NaN”, no blank results.
+  * **Evidence:** renderer formats `stats.*` via `formatearNumero(...)` after fetching separators via `await obtenerSeparadoresDeNumeros(idioma, settingsCache)`. 
+
+* [x] **(3) Reading time consistency: WPM changes update time**
+
+  * **Action:** Change WPM (slider/input in UI) and observe the “time” result update.
+  * **Expected result:** Time updates deterministically; never shows NaN/undefined; if WPM is 0/invalid, time falls back to `0h 0m 0s`.
+  * **Evidence:** time path uses `getTimeParts(stats.palabras, wpm)`; `getTimeParts` explicitly guards `!wpm || wpm <= 0`. 
+
+* [x] **(4) Language switching: number formatting still works**
+
+  * **Action:** Switch UI language (via your normal language selector flow). Re-check counts and time.
+  * **Expected result:** Counts/time still render; no breakage. If your `settingsCache.numberFormatting` lacks the selected `langKey`, you may see a single warnOnce about fallback-to-default; otherwise, no warning is required on the healthy path.
+  * **Evidence:** fallback warnOnce bucket: `format.numberFormatting.fallback:${langKey}` and default selection logic. 
+
+* [x] **(5) Controlled fallback visibility: `settingsCache === null` warns once (console)**
+
+  * **Action:** In DevTools Console, run:
+
+    * `await window.FormatUtils.obtenerSeparadoresDeNumeros('es', null)`
+    * Run it **twice**.
+  * **Expected result:** First call logs **one** warning about `settingsCache null; using hardcoded defaults.`; second call does **not** repeat (dedupe). Return value is `{ separadorMiles: '.', separadorDecimal: ',' }`.
+  * **Evidence:** `log.warnOnce('format.numberFormatting.settingsCacheNull', ...)` + hardcoded defaults. 
+
+* [x] **(6) Stopwatch integration: real WPM renders and uses formatted number**
+
+  * **Action:** Start the stopwatch, let it run briefly, then pause. Ensure there is non-empty text in the app so WPM can be computed.
+  * **Expected result:** `realWpmDisplay` shows a formatted integer + “WPM” (or blank if words/time are zero); no exceptions.
+  * **Evidence:** `actualizarVelocidadRealFromElapsed` computes `realWpm`, fetches separators, then `formatearNumero(realWpm, ...)` and writes `${velocidadFormateada} WPM`. 
+
+* [x] **(7) Stopwatch manual edit path: recompute WPM after blur**
+
+  * **Action:** With the stopwatch **not running**, focus the crono display field, type a valid time (e.g., `00:02:00`), press Enter (or blur).
+  * **Expected result:** Time is accepted; real WPM recomputes and updates; invalid input restores baseline without crashing.
+  * **Evidence:** `applyManualTime` routes through `safeRecomputeRealWpm(...)` on blur/fallbackLocal; controller binds blur to `applyManualTime`. 
+
+* [x] **(8) Log sanity: no spam**
+
+  * **Action:** Repeat steps (2)–(7) quickly (paste text, change WPM, pause/unpause once).
+  * **Expected result:** No uncaught exceptions; no repeated spam. Any warnOnce-based fallbacks appear at most once per dedupe bucket.
+  * **Evidence:** warnOnce keys in `obtenerSeparadoresDeNumeros` are stable (`settingsCacheNull`, `fallback:<langKey>`, `missing`). 
+
+---
