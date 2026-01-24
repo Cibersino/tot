@@ -45,6 +45,7 @@
     obtenerSeparadoresDeNumeros,
     formatearNumero,
     idiomaActual,
+    settingsCache,
     realWpmDisplay
   }) {
     const secondsTotal = (ms || 0) / 1000;
@@ -52,7 +53,10 @@
     const words = stats?.palabras || 0;
     if (words > 0 && secondsTotal > 0) {
       const realWpm = (words / secondsTotal) * 60;
-      const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idiomaActual);
+      const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
+        idiomaActual,
+        settingsCache
+      );
       const velocidadFormateada = formatearNumero(realWpm, separadorMiles, separadorDecimal);
       if (realWpmDisplay) realWpmDisplay.textContent = `${velocidadFormateada} WPM`;
       return realWpm;
@@ -151,6 +155,7 @@
     obtenerSeparadoresDeNumeros,
     formatearNumero,
     idiomaActual,
+    settingsCache,
     realWpmDisplay,
     setElapsed,
     setLastComputedElapsed,
@@ -210,6 +215,7 @@
         obtenerSeparadoresDeNumeros,
         formatearNumero,
         idiomaActual,
+        settingsCache,
         realWpmDisplay
       });
       if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
@@ -226,6 +232,7 @@
           obtenerSeparadoresDeNumeros,
           formatearNumero,
           idiomaActual,
+          settingsCache,
           realWpmDisplay
         });
         if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
@@ -255,6 +262,7 @@
     obtenerSeparadoresDeNumeros,
     formatearNumero,
     idiomaActual,
+    settingsCache,
     prevRunning = false,
     lastComputedElapsedForWpm = null,
     playLabel = '>',
@@ -283,6 +291,7 @@
         obtenerSeparadoresDeNumeros,
         formatearNumero,
         idiomaActual,
+        settingsCache,
         realWpmDisplay
       });
       updatedLast = newElapsed;
@@ -295,6 +304,7 @@
           obtenerSeparadoresDeNumeros,
           formatearNumero,
           idiomaActual,
+          settingsCache,
           realWpmDisplay
         });
         updatedLast = newElapsed;
@@ -327,6 +337,7 @@
       formatearNumero: options.formatearNumero,
       getIdiomaActual: typeof options.getIdiomaActual === 'function' ? options.getIdiomaActual : () => null,
       getCurrentText: typeof options.getCurrentText === 'function' ? options.getCurrentText : () => '',
+      getSettingsCache: typeof options.getSettingsCache === 'function' ? options.getSettingsCache : () => null,
     };
 
     let playLabel = (typeof options.playLabel === 'string') ? options.playLabel : '>';
@@ -343,6 +354,7 @@
 
     const getIdiomaActual = () => deps.getIdiomaActual();
     const getCurrentText = () => deps.getCurrentText();
+    const getSettingsCache = () => deps.getSettingsCache();
 
     const resetLocalState = () => {
       elapsed = 0;
@@ -369,6 +381,7 @@
       if (next.formatearNumero) deps.formatearNumero = next.formatearNumero;
       if (typeof next.getIdiomaActual === 'function') deps.getIdiomaActual = next.getIdiomaActual;
       if (typeof next.getCurrentText === 'function') deps.getCurrentText = next.getCurrentText;
+      if (typeof next.getSettingsCache === 'function') deps.getSettingsCache = next.getSettingsCache;
     };
 
     const handleState = (state) => {
@@ -383,6 +396,7 @@
         obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
         formatearNumero: deps.formatearNumero,
         idiomaActual: getIdiomaActual(),
+        settingsCache: getSettingsCache(),
         prevRunning,
         lastComputedElapsedForWpm,
         playLabel,
@@ -425,6 +439,7 @@
           obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
           formatearNumero: deps.formatearNumero,
           idiomaActual: getIdiomaActual(),
+          settingsCache: getSettingsCache(),
           realWpmDisplay: elements.realWpmDisplay
         });
         lastComputedElapsedForWpm = elapsed;
@@ -519,6 +534,7 @@
             obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
             formatearNumero: deps.formatearNumero,
             idiomaActual: getIdiomaActual(),
+            settingsCache: getSettingsCache(),
             realWpmDisplay: elements.realWpmDisplay,
             setElapsed: (msVal) => {
               if (typeof msVal === 'number') {
