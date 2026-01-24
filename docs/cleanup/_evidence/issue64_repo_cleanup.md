@@ -2167,3 +2167,27 @@ Anchors:
 - Overview bullet — "Kick off config and i18n bootstrap (async, best-effort)."
 - Bootstrap header — "Bootstrap: config and translations (async, best-effort)"
 - EOF marker — "End of public/editor.js"
+
+### L6 — Final review (coherence + leftover cleanup after refactors)
+
+Decision: NO CHANGE
+No Level 6 changes justified.
+
+Checks performed (anchors / micro-quotes):
+- Logging API signatures: showNotice uses once-variants with explicit keys:
+  - "editor.showNotice.toastEditorText.missing"
+  - "editor.showNotice.notifyMain.missing"
+- Logging fallback coverage: sendCurrentTextToMain warns once on payload failure:
+  - "setCurrentText payload failed (ignored)"
+  and preserves call-site fallback logging via onFallbackError.
+- Contract consistency: sendCurrentTextToMain still calls:
+  - "setCurrentText(payload)" with fallback "setCurrentText(text)".
+- Update handling: applyExternalUpdate still tolerates object vs string inputs:
+  - "payload && typeof payload === 'object'" (normalization path).
+- Comment alignment: Overview / Bootstrap headers describe async best-effort:
+  - "Bootstrap: config and translations (async, best-effort)".
+- No leftover aliases: warnOnceEditor removed; call sites use log.warnOnce directly:
+  - "use log.warnOnce directly".
+
+Observable contract/timing preserved.
+Reviewer gate: PASS
