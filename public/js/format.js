@@ -23,6 +23,10 @@
 
   const obtenerSeparadoresDeNumeros = async (idioma, settingsCache) => {
     if (settingsCache === null) {
+      log.warnOnce(
+        'format.numberFormatting.settingsCacheNull',
+        'settingsCache null; using hardcoded defaults.'
+      );
       return { separadorMiles: '.', separadorDecimal: ',' };
     }
     const tag = normalizeLangTag(idioma) || DEFAULT_LANG;

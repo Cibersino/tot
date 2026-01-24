@@ -3125,3 +3125,18 @@ Reviewer assessment:
 - PASS: Consumers (`renderer.js`, `crono.js`) consistently use the current surface; no repro pain or instability observed that would justify Level 3 changes.
 
 Reviewer gate: PASS
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+- Change: `obtenerSeparadoresDeNumeros` ahora emite un `log.warnOnce(...)` cuando `settingsCache === null`, antes de usar separadores hardcodeados.
+  - Gain: elimina un fallback silencioso; cumple “no silent fallbacks” sin sobre-loggear (dedupe por key estable).
+  - Cost: +1 sitio de log y +1 key estable a mantener.
+  - Validation:
+    - Grep: `format.numberFormatting.settingsCacheNull`
+    - Manual: forzar/ejecutar una llamada con `settingsCache === null` y verificar que el warning aparece una sola vez por sesión.
+
+Observable contract/timing preserved: solo cambió el output de logs en un branch de fallback.
+Reviewer assessment: PASS (log-only; key estable; severidad coherente).
+Reviewer gate: PASS
