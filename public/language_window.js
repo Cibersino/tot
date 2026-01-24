@@ -1,11 +1,27 @@
 // public/language_window.js
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Render a language list with search and keyboard navigation.
+// - Fetch available languages via the preload-exposed API.
+// - Apply a selected language and close the window on success.
+// - Maintain busy/disabled UI state during async actions.
+// - Fall back to a local list when IPC data is unavailable.
+// =============================================================================
 'use strict';
 
+// =============================================================================
+// Logger and DOM references
+// =============================================================================
 const log = window.getLogger ? window.getLogger('language') : console;
 const langFilter = document.getElementById('langFilter');
 const langList = document.getElementById('langList');
 const statusLine = document.getElementById('statusLine');
 
+// =============================================================================
+// Constants and shared state
+// =============================================================================
 // Local fallback duplicates the manifest list in case IPC fails.
 const fallbackLanguages = [
   { tag: 'es', label: 'Español' },
@@ -17,6 +33,9 @@ let filteredLanguages = [];
 let focusedIndex = -1;
 let isBusy = false;
 
+// =============================================================================
+// Helpers
+// =============================================================================
 const getItems = () => Array.from(langList.querySelectorAll('.lang-item'));
 
 const setStatus = (message, isError = false) => {
@@ -107,6 +126,9 @@ const selectLanguage = async (lang) => {
   }
 };
 
+// =============================================================================
+// Event wiring
+// =============================================================================
 langFilter.addEventListener('input', () => {
   if (isBusy) return;
   setStatus('');
@@ -164,6 +186,9 @@ langList.addEventListener('focusin', (event) => {
   }
 });
 
+// =============================================================================
+// Data loading and bootstrap
+// =============================================================================
 const loadLanguages = async () => {
   let available = [];
   let fallbackLogged = false;
@@ -203,3 +228,6 @@ const loadLanguages = async () => {
   }
 })();
 // Note: If the user closes the window without selecting anything, main applies fallback only if settings.language is empty.
+// =============================================================================
+// End of public/language_window.js
+// =============================================================================

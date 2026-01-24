@@ -2842,3 +2842,21 @@ Validation (manual / grep):
 
 Reviewer assessment: PASS — fixes a previously silent fallback; uses BOOTSTRAP prefix and appropriate severity.
 Reviewer gate: PASS
+
+### L5 — Comments (Codex, retry)
+
+Decision: CHANGED (comments-only)
+
+- Se agregó un bloque "Overview" (3–7 bullets, English, ASCII) describiendo responsabilidades reales de la ventana de idioma.
+- Se agregaron separadores de sección usando el formato del repo `// =============================================================================` (alineado a `public/renderer.js`).
+- Se mantuvo la nota existente sobre el comportamiento al cerrar sin selección, y se agregó el marcador de fin:
+  - `// End of public/language_window.js`
+- No hay cambios funcionales; comments-only.
+
+Validation (static):
+- Grep: `End of public/language_window.js` y `Overview`.
+
+Reviewer assessment:
+- PASS. Ahora sí respeta el formato establecido (sin “dashed rulers”) y mejora legibilidad sin riesgo de drift/timing.
+
+Reviewer gate: PASS
