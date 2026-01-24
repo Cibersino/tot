@@ -2,14 +2,30 @@
 /* global Notify */
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Renderer script for the preset modal.
+// Responsibilities:
+// - Bind DOM elements and enforce input limits.
+// - Load and apply renderer translations for this modal.
+// - React to preset-init and settings updates from presetAPI.
+// - Validate inputs and trigger create/edit actions.
+// - Keep UI hints and counters in sync.
+
 (function () {
 
+  // =============================================================================
+  // Logger + bootstrap
+  // =============================================================================
   const log = window.getLogger('preset-modal');
 
   log.debug('Preset modal starting...');
 
   document.addEventListener('DOMContentLoaded', function () {
-    // Selecting DOM elements
+    // =============================================================================
+    // DOM references + required guards
+    // =============================================================================
     const h3El = document.querySelector('h3');
     const nameEl = document.getElementById('presetName');
     const wpmEl = document.getElementById('presetWpm');
@@ -19,19 +35,20 @@
     const charCountEl = document.getElementById('charCount');
     const hintEl = document.querySelector('.hint');
 
-    // If elements are missing, we abort and leave a warning via the log.
     if (!nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
       log.warn('preset_modal: missing DOM elements, modal script was not initialized.');
       return;
     }
 
+    // =============================================================================
+    // Constants / limits
+    // =============================================================================
     const { AppConstants } = window;
     if (!AppConstants) {
       throw new Error('[preset_modal] AppConstants no disponible; verifica la carga de constants.js');
     }
     const { DEFAULT_LANG, PRESET_DESC_MAX, PRESET_NAME_MAX, WPM_MIN, WPM_MAX } = AppConstants;
 
-    // Initial configuration
     const descMaxLength = PRESET_DESC_MAX;
     const nameMaxLength = PRESET_NAME_MAX;
     if (wpmEl) {
@@ -41,11 +58,17 @@
     if (nameEl) nameEl.maxLength = nameMaxLength;
     if (descEl) descEl.maxLength = descMaxLength;
 
+    // =============================================================================
+    // Local state
+    // =============================================================================
     let mode = 'new';
     let originalName = null;
     let idiomaActual = DEFAULT_LANG;
     let translationsLoadedFor = null;
 
+    // =============================================================================
+    // i18n helpers
+    // =============================================================================
     const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
     if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
       throw new Error('[preset_modal] RendererI18n no disponible; no se puede continuar');
@@ -82,7 +105,9 @@
       if (btnCancel) btnCancel.textContent = tr('renderer.modal_preset.cancel', btnCancel.textContent || '');
     }
 
-    // Listens to init sent from main (preset-init)
+    // =============================================================================
+    // presetAPI wiring (init + settings)
+    // =============================================================================
     if (window.presetAPI && typeof window.presetAPI.onInit === 'function') {
       try {
         window.presetAPI.onInit(async (payload) => {
@@ -158,7 +183,9 @@
       );
     }
 
-    // helper function to build preset from inputs (minimum validations)
+    // =============================================================================
+    // Input validation / preset builder
+    // =============================================================================
     function buildPresetFromInputs() {
       const name = (nameEl.value || '').trim();
       const wpm = Number(wpmEl.value);
@@ -185,7 +212,9 @@
       return { name, wpm: Math.round(wpm), description: desc };
     }
 
-    // Listeners
+    // =============================================================================
+    // UI event listeners
+    // =============================================================================
     descEl.addEventListener('input', () => {
       const currentLength = descEl.value.length;
       const remaining = descMaxLength - currentLength;
@@ -253,7 +282,9 @@
       }
     });
 
-    // Initial: update character counter if text was already present
+    // =============================================================================
+    // Initial UI sync
+    // =============================================================================
     (async function initCharCount() {
       const currLen = descEl.value ? descEl.value.length : 0;
       charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) }, `${Math.max(0, descMaxLength - currLen)} caracteres restantes`);
@@ -261,3 +292,7 @@
 
   }); // DOMContentLoaded
 })();
+
+// =============================================================================
+// End of public/preset_modal.js
+// =============================================================================

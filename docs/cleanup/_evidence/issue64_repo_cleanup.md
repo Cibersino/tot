@@ -2336,3 +2336,16 @@ Validación (manual):
 Observable contract/timing: preservados; cambios limitados a logging en paths degradados/misconfigurados.
 
 Reviewer gate: PASS
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Se agregó un bloque "Overview" (responsabilidades) para orientar al lector.
+- Se añadieron separadores de sección que reflejan el flujo real del archivo (logger/bootstrap, DOM guards, constants/limits, state, i18n, presetAPI wiring, builder/validation, listeners, initial sync).
+- Se removieron/ajustaron comentarios de bajo valor (restatements) y se reubicaron para que el “intent” viva en headers de sección.
+- Se agregó marcador explícito de fin de archivo: "End of public/preset_modal.js".
+
+No functional changes; comments-only.
+
+Reviewer gate: PASS
