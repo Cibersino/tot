@@ -2897,3 +2897,54 @@ Reviewer gate: PASS
 
 Date: `2026-01-24`
 Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
+
+## public/js/crono.js
+
+Date: `2026-01-24`
+Last commit: `<PONER_HASH_DE_git_log>`
+
+### L0 — Diagnosis (no changes)
+
+- Reading map:
+  - Block order:
+    - Header comment.
+    - `'use strict'`.
+    - IIFE start.
+    - Logger: `const log = window.getLogger('crono')`.
+    - Helpers: `formatCrono`, `parseCronoInput`.
+    - Real WPM compute: `actualizarVelocidadRealFromElapsed` + wrapper `safeRecomputeRealWpm`.
+    - UI/bridge helpers: `uiResetCrono`, `openFlotante`, `closeFlotante`, `applyManualTime`.
+    - State applier: `handleCronoState`.
+    - Controller factory: `createController` (bind + handlers).
+    - Global export: `window.RendererCrono = { ... }`.
+    - IIFE end.
+  - Where linear reading breaks:
+    - `createController` — nested handler cluster mixes UI wiring, state, and electron bridge.
+      - Micro-quote: "const handleTextChange = async (previousText, nextText) =>".
+    - `applyManualTime` — inner fallback splits control flow (electron path vs local fallback).
+      - Micro-quote: "const fallbackLocal = async () =>".
+    - `openFlotante` — nested async state pull after opening the flotante window.
+      - Micro-quote: "if (typeof electronAPI.getCronoState === 'function')".
+
+- Contract map:
+  - Exposes: assigns `window.RendererCrono` with
+    `formatCrono`, `parseCronoInput`, `actualizarVelocidadRealFromElapsed`, `uiResetCrono`,
+    `openFlotante`, `closeFlotante`, `applyManualTime`, `handleCronoState`, `createController`.
+  - Side effects:
+    - Reads logger: `window.getLogger('crono')`.
+    - Creates global `window.RendererCrono`.
+  - Invariants / assumptions (anchored):
+    - Crono input format is `H+:MM:SS` with MM/SS in 00–59:
+      `parseCronoInput` uses "match(/^(\d+):([0-5]\d):([0-5]\d)$/)".
+    - Real WPM recompute only when words and elapsed seconds are positive:
+      `actualizarVelocidadRealFromElapsed` checks "if (words > 0 && secondsTotal > 0)".
+    - Manual edits ignored while running:
+      `applyManualTime` checks "if (running) { ... return null; }".
+    - electronAPI methods are optional and guarded:
+      `openFlotante` checks "typeof electronAPI.openFlotanteWindow !== 'function'".
+  - IPC contract (in this file only):
+    - None found: no `ipcMain.*`, `ipcRenderer.*`, or `webContents.send` occurrences.
+  - Delegated IPC registration:
+    - None found.
+
+Reviewer gate: PASS (Level 0 diagnosis is adequate; anchors corrected to match file).
