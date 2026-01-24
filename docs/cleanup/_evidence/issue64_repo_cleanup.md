@@ -3046,3 +3046,28 @@ Resultado: PASS
 
 Date: `2026-01-24`
 Last commit: `87a315f074f8d89a237583286f42f18c4f66b19a`
+
+### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+#### 0.1 Reading map
+- Block order: file comment, `'use strict'`, IIFE wrapper, constants (`log`, `DEFAULT_LANG`, `normalizeLangTag`, `getLangBase`), helper functions (`getTimeParts`, `formatTimeFromWords`, `obtenerSeparadoresDeNumeros`, `formatearNumero`), global export (`window.FormatUtils`).
+- Linear breaks: none observed; helpers are declared sequentially inside a single IIFE scope.
+
+#### 0.2 Contract map
+- Exposes: assigns `window.FormatUtils` with four functions (`getTimeParts`, `formatTimeFromWords`, `obtenerSeparadoresDeNumeros`, `formatearNumero`).
+- Side effects: reads from `window` globals and logs via `log.warnOnce` on fallback paths.
+- Invariants / fallbacks (anchored to checks in this file):
+  - `getTimeParts` treats non-positive WPM as zero time (`if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };`).
+  - `obtenerSeparadoresDeNumeros` returns hardcoded defaults when no settings cache (`if (settingsCache === null) { return { separadorMiles: '.', separadorDecimal: ',' }; }`).
+  - `obtenerSeparadoresDeNumeros` falls back to default language when lang key missing (`if (nf && nf[defaultKey]) { ... return nf[defaultKey]; }`).
+  - `obtenerSeparadoresDeNumeros` falls back to hardcoded defaults if formatting missing (`'numberFormatting missing; using hardcoded defaults.'`).
+- IPC contract: none found in this file.
+  - ipcMain.handle/on/once: none
+  - ipcRenderer.invoke/send/on/once: none
+  - webContents.send: none
+- Delegated IPC registration: none found.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
