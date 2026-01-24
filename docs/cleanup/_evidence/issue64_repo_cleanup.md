@@ -2123,7 +2123,7 @@ Reviewer gate: PASS
 ### L3 — Architecture / contract changes (Codex)
 
   * **Decision: NO CHANGE (no Level 3 justified)**
-  
+
   * **Evidence checked (anchors):**
     * `public/editor.js` — `window.editorAPI.setCurrentText(payload)` + fallback `window.editorAPI.setCurrentText(editor.value)` (doble shape). 
     * `public/editor.js` — echo suppression `incomingMeta.source === 'editor'`. 
@@ -2132,4 +2132,14 @@ Reviewer gate: PASS
     * `public/renderer.js` — `setCurrentText({ text: currentText, meta })` + `throw ... 'set-current-text failed'`. 
   * **Reviewer gate: PASS**
   * Nota corta: No se justifica Nivel 3: shapes coexistentes ya son parte del contrato; cambiarlo sería churn de riesgo.
-  
+
+### L4 — Logs
+
+* **Call-site style (sin wrappers):** eliminación de `warnOnceEditor` y reemplazo por `log.warnOnce(...)` en call sites (anclas: `editor.select`, `focus.prevActive.*`, `setCurrentText.*`). Basado en política. 
+* **showNotice:**
+
+  * key `editor.showNotice.toastEditorText.missing` como `warnOnce` (fallback recuperable)
+  * key `editor.showNotice.notifyMain.missing` como `errorOnce` (notice dropeado)
+    (esto también aterriza “no silent fallbacks” + dedupe estable). 
+* **Fallback no-silencioso en payload:** key `editor.setCurrentText.payload_failed` (`warnOnce`) cuando no hay `onPrimaryError`. 
+* **BOOTSTRAP:** logs prefijados `BOOTSTRAP:` en fallbacks de arranque (con nota explícita de la condición “debe volverse inalcanzable post-init”). 

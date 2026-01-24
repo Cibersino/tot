@@ -22,7 +22,7 @@ let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text si
       maxTextChars = Number(cfg.maxTextChars) || maxTextChars;
     }
   } catch (err) {
-    log.error('editor: failed to get getAppConfig, using defaults:', err);
+    log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
   }
   try {
     if (window.editorAPI && typeof window.editorAPI.getSettings === 'function') {
@@ -33,7 +33,7 @@ let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text si
     }
     await applyEditorTranslations();
   } catch (err) {
-    log.warn('editor: failed to apply initial translations:', err);
+    log.warn('BOOTSTRAP: failed to apply initial translations:', err);
   }
   // rest of init (getCurrentText etc.) -you already have an existing init, integrate with yours
 })();
@@ -69,8 +69,7 @@ const FIND_COUNT_THRESHOLD = 200000;
 const FIND_COUNT_LIMIT = 2000;
 const FIND_COUNT_DEBOUNCE_MS = 150;
 
-// Visibility helper: warn only once per key (editor scope)
-const warnOnceEditor = (...args) => log.warnOnce(...args);
+// warnOnce keys are editor-scoped; use log.warnOnce directly.
 
 // --- i18n loader for editor (uses RendererI18n global) ---
 let idiomaActual = DEFAULT_LANG;
@@ -169,19 +168,28 @@ function showNotice(msg, opts = {}) {
       Notify.toastEditorText(text, { type, duration });
       return;
     }
-    log.error('showNotice unavailable: Notify.toastEditorText missing.');
+    log.warnOnce(
+      'editor.showNotice.toastEditorText.missing',
+      'showNotice: Notify.toastEditorText missing; falling back to Notify.notifyMain.'
+    );
     if (typeof Notify?.notifyMain === 'function') {
       Notify.notifyMain(text);
     } else {
-      log.error('showNotice fallback unavailable: Notify.notifyMain missing.');
+      log.errorOnce(
+        'editor.showNotice.notifyMain.missing',
+        'showNotice fallback unavailable: Notify.notifyMain missing; notice dropped.'
+      );
     }
   } catch (err) {
-    log.error('showNotice failed:', err);
+    log.warn('showNotice failed; attempting fallback:', err);
     try {
       if (typeof Notify?.notifyMain === 'function') {
         Notify.notifyMain(text);
       } else {
-        log.error('showNotice fallback unavailable: Notify.notifyMain missing.');
+        log.errorOnce(
+          'editor.showNotice.notifyMain.missing',
+          'showNotice fallback unavailable: Notify.notifyMain missing; notice dropped.'
+        );
       }
     } catch (fallbackErr) {
       log.error('showNotice fallback failed:', fallbackErr);
@@ -228,7 +236,7 @@ function setCaretSafe(pos) {
 function selectAllEditor() {
   if (typeof editor.select === 'function') {
     try { editor.select(); }
-    catch (err) { warnOnceEditor('editor.select', 'editor.select() failed (ignored):', err); }
+    catch (err) { log.warnOnce('editor.select', 'editor.select() failed (ignored):', err); }
     return;
   }
   setSelectionSafe(0, editor.value.length);
@@ -766,7 +774,15 @@ function sendCurrentTextToMain(action, options = {}) {
     handleTruncationResponse(res);
     return true;
   } catch (err) {
-    if (onPrimaryError) onPrimaryError(err);
+    if (onPrimaryError) {
+      onPrimaryError(err);
+    } else {
+      log.warnOnce(
+        'editor.setCurrentText.payload_failed',
+        'setCurrentText payload failed (ignored); using fallback:',
+        err
+      );
+    }
     try {
       const resFallback = window.editorAPI.setCurrentText(text);
       handleTruncationResponse(resFallback);
@@ -906,7 +922,7 @@ async function applyExternalUpdate(payload) {
             dispatchNativeInputEvent();
           } finally {
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { warnOnceEditor('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
+            catch (err) { log.warnOnce('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
           }
           return;
         } else {
@@ -920,7 +936,7 @@ async function applyExternalUpdate(payload) {
           } finally {
             editor.style.visibility = '';
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { warnOnceEditor('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
+            catch (err) { log.warnOnce('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
           }
           if (truncated) {
             notifyTextTruncated()
@@ -951,7 +967,7 @@ async function applyExternalUpdate(payload) {
           dispatchNativeInputEvent();
         } finally {
           try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (err) { warnOnceEditor('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
+          catch (err) { log.warnOnce('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
         }
         if (truncated) {
           notifyTextTruncated()
@@ -968,7 +984,7 @@ async function applyExternalUpdate(payload) {
         } finally {
           editor.style.visibility = '';
           try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (err) { warnOnceEditor('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
+          catch (err) { log.warnOnce('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
         }
         if (truncated) {
           notifyTextTruncated()
@@ -1095,7 +1111,7 @@ if (editor) {
           }
           // Notifying the main-mark coming from the editor to avoid eco-back.
           sendCurrentTextToMain('drop', {
-            onFallbackError: (err) => warnOnceEditor(
+            onFallbackError: (err) => log.warnOnce(
               'setCurrentText.drop.fallback',
               'editorAPI.setCurrentText fallback failed (ignored):',
               err
@@ -1123,7 +1139,7 @@ editor.addEventListener('input', () => {
     Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
     sendCurrentTextToMain('truncated', {
       onPrimaryError: (err) => log.error('editor: error sending set-current-text after truncate:', err),
-      onFallbackError: (err) => warnOnceEditor(
+      onFallbackError: (err) => log.warnOnce(
         'setCurrentText.truncate.fallback',
         'editorAPI.setCurrentText fallback failed (ignored):',
         err
@@ -1151,7 +1167,7 @@ btnTrash.addEventListener('click', () => {
   // immediately update main
   sendCurrentTextToMain('clear', {
     text: '',
-    onFallbackError: (err) => warnOnceEditor(
+    onFallbackError: (err) => log.warnOnce(
       'setCurrentText.trash.clear.fallback',
       'editorAPI.setCurrentText fallback failed (ignored):',
       err
@@ -1181,7 +1197,7 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     // Also send current content once to keep sync
     sendCurrentTextToMain('typing_toggle_on', {
       text: editor.value || '',
-      onFallbackError: (err) => warnOnceEditor(
+      onFallbackError: (err) => log.warnOnce(
         'setCurrentText.typing_toggle_on.fallback',
         'editorAPI.setCurrentText fallback failed (typing toggle on ignored):',
         err
