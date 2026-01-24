@@ -2809,3 +2809,36 @@ Reviewer assessment: PASS — No evidence of cross-module contract instability o
 Reviewer gate: PASS
 
 Observable contract/timing preserved (no code changes).
+
+### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+
+Changes (logging-only):
+- `loadLanguages`: when `getAvailableLanguages` throws/unavailable:
+  - was: `log.error('Error getAvailableLanguages:', e)`
+  - now: `log.warn('BOOTSTRAP: getAvailableLanguages failed; falling back to local list:', e)`
+  - Rationale: recoverable fallback → warn (BOOTSTRAP), not error.
+- `loadLanguages`: when `getAvailableLanguages` returns empty/invalid (previously silent fallback):
+  - now logs once-per-call-path: `log.warn('BOOTSTRAP: getAvailableLanguages returned empty/invalid; falling back to local list.')`
+  - Rationale: no silent fallbacks; this is a degraded bootstrap path.
+- Startup IIFE catch:
+  - was: `log.error('Error loadLanguages:', e)`
+  - now: `log.error('BOOTSTRAP: loadLanguages failed; falling back to local list:', e)`
+  - Rationale: explicit BOOTSTRAP safety-net fallback.
+
+Implementation note:
+- Added per-invocation flag `fallbackLogged` inside `loadLanguages` to avoid duplicate warnings when an exception leads to an empty/invalid `available`.
+
+Contract/timing:
+- Preserved. Only log levels/messages were changed; data flow and ordering remain the same.
+
+Validation (manual / grep):
+- Grep: `BOOTSTRAP: getAvailableLanguages` and `BOOTSTRAP: loadLanguages failed`.
+- Manual smoke: open the language window with `window.languageAPI.getAvailableLanguages` unavailable/throwing (or returning `[]`) and confirm:
+  - fallback list renders,
+  - exactly one BOOTSTRAP warn for the fallback path,
+  - no new logs on the healthy path.
+
+Reviewer assessment: PASS — fixes a previously silent fallback; uses BOOTSTRAP prefix and appropriate severity.
+Reviewer gate: PASS
