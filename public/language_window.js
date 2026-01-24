@@ -166,6 +166,7 @@ langList.addEventListener('focusin', (event) => {
 
 const loadLanguages = async () => {
   let available = [];
+  let fallbackLogged = false;
 
   try {
     if (window.languageAPI && typeof window.languageAPI.getAvailableLanguages === 'function') {
@@ -174,12 +175,16 @@ const loadLanguages = async () => {
       throw new Error('getAvailableLanguages unavailable');
     }
   } catch (e) {
-    log.error('Error getAvailableLanguages:', e);
+    fallbackLogged = true;
+    log.warn('BOOTSTRAP: getAvailableLanguages failed; falling back to local list:', e);
   }
 
   if (Array.isArray(available) && available.length) {
     languages = available;
   } else {
+    if (!fallbackLogged) {
+      log.warn('BOOTSTRAP: getAvailableLanguages returned empty/invalid; falling back to local list.');
+    }
     languages = fallbackLanguages.slice();
   }
 
@@ -191,7 +196,7 @@ const loadLanguages = async () => {
   try {
     await loadLanguages();
   } catch (e) {
-    log.error('Error loadLanguages:', e);
+    log.error('BOOTSTRAP: loadLanguages failed; falling back to local list:', e);
     languages = fallbackLanguages.slice();
     filteredLanguages = languages.slice();
     renderList();
