@@ -35,7 +35,6 @@ let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text si
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
   }
-  // rest of init (getCurrentText etc.) -you already have an existing init, integrate with yours
 })();
 
 const editor = document.getElementById('editorArea');
