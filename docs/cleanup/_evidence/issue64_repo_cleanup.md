@@ -2368,3 +2368,113 @@ No Level 6 changes justified.
 Observable contract and timing are preserved (no code changes).
 
 Reviewer gate: PASS
+
+### L7 — Smoke test checklist (human-run; code-informed) — `public/preset_modal.js`
+
+**Preconditions**
+
+* App ejecutándose con logs visibles (DevTools Console o salida de terminal).
+* Existe al menos un preset en el selector de la ventana principal.
+* Identifica en la ventana principal los botones **Nuevo preset** y **Editar preset** (en `public/renderer.js` son `btnNewPreset` / `btnEditPreset`).
+
+[x] 1) Open modal (new)
+
+**Action:** En ventana principal, clic **Nuevo preset**.
+**Expected:**
+
+* Se abre el modal sin errores.
+* WPM se inicializa con el WPM actual (redondeado).
+* Si el nombre estaba vacío, se auto-rellena como `"<wpm>wpm"`.
+  **Anchors (preset_modal.js):**
+* `window.presetAPI.onInit(async (payload) =>`
+* `if (typeof payload.wpm === 'number')`
+* `nameEl.value = \`${Math.round(payload.wpm)}wpm``
+
+[x] 2) Description length + counter stays responsive
+
+**Action:** Pegar en “Description” un texto largo (más que el límite).
+**Expected:**
+
+* El campo queda truncado al máximo permitido (no crece indefinidamente).
+* El contador se actualiza (aunque pueda quedar negativo por el orden “contador antes de truncar”, el UI no se rompe).
+  **Anchors:**
+* `descEl.addEventListener('input', () =>`
+* `charCountEl.textContent = mr(... { remaining } ...)`
+* `descEl.value = descEl.value.substring(0, descMaxLength)`
+
+[x] 3) Name required (validation)
+
+**Action:** Vaciar “Name” y presionar **Save**.
+**Expected:**
+
+* El modal NO se cierra.
+* Se emite una notificación/alerta de “name empty”.
+  **Anchors:**
+* `if (!name) {`
+* `window.Notify.notifyMain('renderer.preset_alerts.name_empty')`
+* Fallback log (si Notify faltara): `preset-modal.notify.missing`
+
+[x] 4) WPM bounds (validation)
+
+**Action:** Poner un WPM fuera de rango (p. ej., 0 o > max) y presionar **Save**.
+**Expected:**
+
+* El modal NO se cierra.
+* Se emite notificación `renderer.preset_alerts.wpm_invalid`.
+  **Anchors:**
+* `if (!Number.isFinite(wpm) || wpm < WPM_MIN || wpm > WPM_MAX)`
+* `Notify.notifyMain('renderer.preset_alerts.wpm_invalid')`
+
+[x] 5) Save new preset (happy path)
+
+**Action:** En modo “new”, ingresar un nombre válido (único), WPM válido y presionar **Save**.
+**Expected:**
+
+* En éxito, el modal se cierra.
+* En la ventana principal, el preset nuevo aparece (idealmente seleccionado) y la UI refleja el cambio (WPM/descripcion).
+  **Anchors:**
+* `window.presetAPI.createPreset(preset)`
+* `if (res && res.ok) { window.close(); }`
+* Error path: `renderer.preset_alerts.create_error`
+
+[x] 6) Open modal (edit) + prefill + save
+
+**Action:** En la ventana principal, seleccionar un preset existente y clic **Editar preset**.
+**Expected:**
+
+* El modal se abre con campos pre-rellenados (Name/Description/WPM).
+* Editar la descripción y presionar **Save** cierra el modal en éxito.
+* En la ventana principal se observa la actualización del preset.
+  **Anchors:**
+* `const incomingMode = (payload.mode === 'edit') ? 'edit' : 'new'`
+* `originalName = payload.preset.name`
+* `window.presetAPI.editPreset(originalName, preset)`
+* `if (res && res.ok) { window.close(); }`
+* Cancel path: `if (res && res.code === 'CANCELLED') return;`
+
+[x] 7) Cancel closes without side effects
+
+**Action:** Abrir el modal (new o edit) y presionar **Cancel**.
+**Expected:**
+
+* El modal se cierra.
+* No se crea/edita nada.
+  **Anchors:**
+* `btnCancel.addEventListener('click', () => { window.close(); })`
+
+[x] 8) Log sanity (normal environment)
+
+**Action:** Repetir abrir/cerrar modal y realizar un save exitoso (new y edit).
+**Expected (normal, con preload/bridge correcto):**
+
+* No deben aparecer logs “missing” del bridge/Notify:
+
+  * `preset-modal.onInit.missing`
+  * `preset-modal.onSettingsChanged.missing`
+  * `preset-modal.getSettings.missing`
+  * `preset-modal.editPreset.missing`
+  * `preset-modal.createPreset.missing`
+  * `preset-modal.notify.missing`
+    Si aparecen, tratar como regresión del wiring/preload (no del flujo sano del modal).
+
+---
