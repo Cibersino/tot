@@ -3086,3 +3086,22 @@ Reviewer assessment:
 - PASS for L1 gate as NO CHANGE: rationale matches the current file structure (IIFE + 4 exported helpers, no IPC, minimal branching); no contract/behavior/timing surface changed.
 
 Reviewer gate: PASS
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- Module is small and already readable; additional helpers or restructuring would add indirection without reducing complexity.
+- The current fallback paths in `obtenerSeparadoresDeNumeros` are already explicit and minimal, with deduped logging via `log.warnOnce`:
+  - `format.numberFormatting.fallback:${langKey}`
+  - `format.numberFormatting.missing`
+- Edge cases are already handled with early returns and hardcoded defaults:
+  - `getTimeParts`: `if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };`
+  - `settingsCache === null` returns `{ separadorMiles: '.', separadorDecimal: ',' }`.
+- There is no IPC or startup sequencing in this file, so no safe L2 timing/ordering improvements apply.
+- Potential robustness changes (numeric coercion / rounding behavior) would risk observable behavior drift.
+
+Reviewer assessment:
+- PASS for L2 gate as NO CHANGE: rationale matches the current implementation (IIFE + `window.FormatUtils`, explicit fallbacks, `warnOnce` keys). No invented IPC/contracts; no behavior/timing surface changed.
+
+Reviewer gate: PASS
