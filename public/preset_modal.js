@@ -197,6 +197,9 @@
               Notify.notifyMain('renderer.preset_alerts.edit_error');
               log.error('Error editing preset (response):', res);
             }
+          } else {
+            Notify.notifyMain('renderer.preset_alerts.process_error');
+            log.warnOnce('preset-modal.editPreset.missing', '[preset_modal] presetAPI.editPreset missing');
           }
         } else {
           if (window.presetAPI && typeof window.presetAPI.createPreset === 'function') {
@@ -207,6 +210,9 @@
               Notify.notifyMain('renderer.preset_alerts.create_error');
               log.error('Error creating preset (response):', res);
             }
+          } else {
+            Notify.notifyMain('renderer.preset_alerts.process_error');
+            log.warnOnce('preset-modal.createPreset.missing', '[preset_modal] presetAPI.createPreset missing');
           }
         }
       } catch (err) {
