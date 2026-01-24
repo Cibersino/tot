@@ -2656,3 +2656,14 @@ Notas:
 - No hay cambios de lógica/flujo: el nivel se limitó a comentarios (y ajustes manuales de texto adyacente, sin impacto en timing/ordering).
 
 Reviewer gate: PASS
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+No Level 6 changes justified.
+
+- Logging API: se revisaron llamadas `warnOnce`/`warn`/`error` y rutas best-effort (sin drift de firma).
+- Coherencia: wiring DOM, bridge (`flotanteAPI`), renderState y flujo i18n sin leftovers evidentes ni comentarios desfasados.
+- Contrato: comandos `sendCommand({ cmd: 'toggle'|'reset' })` y callbacks de estado/settings sin cambios.
+
+Observable contract/timing preserved (no changes applied).
