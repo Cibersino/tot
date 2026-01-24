@@ -2667,3 +2667,18 @@ No Level 6 changes justified.
 - Contrato: comandos `sendCommand({ cmd: 'toggle'|'reset' })` y callbacks de estado/settings sin cambios.
 
 Observable contract/timing preserved (no changes applied).
+
+### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Checklist ejecutado:**
+
+* [x] (1) VF abre y muestra controles (REG-CRONO-03).
+* [x] (2) Sync main↔flotante: toggle y reset desde flotante (REG-CRONO-03).
+* [x] (3) Unfocused: Alt-Tab y control desde flotante mantiene consistencia (REG-CRONO-03).
+* [x] (4) Teclado en flotante: Space/Enter toggle; `r` reset.
+* [x] (5) i18n cross-window: cambio de idioma refleja en flotante sin crash (REG-I18N-02).
+* [x] (6) Logs: sin uncaught; sin spam; sin `flotante.formatCrono.missing` en camino sano.
+
+---
