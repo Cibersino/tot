@@ -2296,3 +2296,14 @@ Validation:
 
 Contract/timing:
 - Se preserva el contrato observable y el timing en flujos normales; solo cambia el comportamiento del caso previamente silencioso.
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- Checked `public/preset_modal.js` save handler (`if (mode === 'edit')`) and result handling (`res.ok`, edit observes `res.code === 'CANCELLED'`); no evidence of inconsistent semantics across consumers.
+- Checked `electron/preset_preload.js` bridge: `contextBridge.exposeInMainWorld('presetAPI', { ... })` defines a single, stable surface (`createPreset`, `editPreset`, reliable `onInit`, plus settings hooks).
+- Checked `electron/main.js` preset window init path: `function createPresetWindow(initialData)` and `presetWin.webContents.send('preset-init', initialData || {})`, including re-send when window is already open and on `ready-to-show`.
+- Cross-check: no repo-wide evidence (call sites / consumers) indicating duplicated responsibility or an unstable/ambiguous contract requiring Level 3.
+
+Reviewer gate: PASS
