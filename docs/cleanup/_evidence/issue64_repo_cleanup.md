@@ -2547,3 +2547,14 @@ Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
   - sendCommand calls are guarded by API presence: `if (window.flotanteAPI) window.flotanteAPI.sendCommand`
 
 - IPC contract (direct): none in this file (`ipcMain/ipcRenderer/webContents` not used).
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+- File is already short and ordered by initialization flow; reordering would not improve linear readability.
+- Main complexity stems from async translation load and event wiring; moving these blocks would obscure timing intent.
+- No safe local simplifications without behavior change (e.g., guarding unguarded addEventListener would alter error behavior).
+- No obvious duplication or ambiguous naming that can be reduced without adding extra indirection.
+- Introducing new structure (sections/helpers) would add concepts without removing branches.
+
+Reviewer gate: PASS (NO CHANGE is justified; no code changes).
