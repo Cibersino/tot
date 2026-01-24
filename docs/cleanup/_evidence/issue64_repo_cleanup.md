@@ -2630,3 +2630,29 @@ Reviewer gate: PASS (NO CHANGE justified; DOM IDs exist and bridge methods are e
   - Verificar que no quedan prefijos redundantes en mensajes (`[flotante]`, `flotante:`) dentro de llamadas `log.*` en este archivo.
 - Runtime (smoke normal):
   - Abrir/cerrar flotante y usar toggle/reset: no debe aparecer spam nuevo en logs en ejecución sana; el flujo normal no debería producir warnings/errors de bridge/i18n.
+
+### L5 — Comments (Codex + manual follow-up)
+
+Decision: CHANGED
+
+- Se agregó un bloque "Overview" al inicio (responsabilidades), en inglés y ASCII, siguiendo el estilo de encabezados tipo `electron/main.js`.
+- Se agregaron separadores de sección `// =============================================================================` alineados a la estructura real del archivo:
+  - Overview
+  - Logger / globals
+  - Constants / config
+  - DOM wiring
+  - Shared state
+  - Helpers
+  - Bridge integration (flotanteAPI)
+  - Bootstrapping
+  - UI events
+- Se corrigió el comentario de DOM wiring para reflejar comportamiento real y expectativa del layout:
+  - `// Missing elements are logged; execution continues (assumes flotante.html provides these IDs).`
+- Se agregó marcador explícito de fin de archivo:
+  - `// End of public/flotante.js`
+
+Notas:
+- Hubo un follow-up manual para evitar drift/ruido en el comentario de DOM wiring (se evitó el tono “alarmista” del último diff de Codex).
+- No hay cambios de lógica/flujo: el nivel se limitó a comentarios (y ajustes manuales de texto adyacente, sin impacto en timing/ordering).
+
+Reviewer gate: PASS
