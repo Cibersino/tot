@@ -1,21 +1,44 @@
 // public/flotante.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Renderer logic for the flotante window.
+// Responsibilities:
+// - Acquire DOM elements for timer + controls and report missing elements.
+// - Render stopwatch state and format display with a fallback formatter.
+// - Apply i18n labels and react to settings changes.
+// - Wire flotanteAPI callbacks and send control commands.
+// - Handle local input (buttons and keyboard) for toggle/reset.
+
+// =============================================================================
+// Logger / globals
+// =============================================================================
+
 const log = window.getLogger('flotante');
 
 log.debug('Flotante starting...');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const { AppConstants } = window;
 if (!AppConstants) {
-  throw new Error('[flotante] AppConstants no disponible; verifica la carga de constants.js');
+  throw new Error('AppConstants not available; check constants.js loading.');
 }
 const { DEFAULT_LANG } = AppConstants;
+
+// =============================================================================
+// DOM wiring
+// =============================================================================
 
 const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
 
-// defensive: if any element does not exist, we exit silently (avoids crashes)
+// Missing elements are logged; execution continues to avoid hard crashes.
 if (!cronoEl) {
   log.error('element #crono not found');
 }
@@ -43,10 +66,18 @@ if (!window.flotanteAPI) {
   }
 }
 
+// =============================================================================
+// Shared state
+// =============================================================================
+
 let lastState = { elapsed: 0, running: false, display: '00:00:00' };
 let playLabel = '>';
 let pauseLabel = '||';
 let translationsLoadedFor = null;
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 // Refresh view (expected to receive { elapsed, running, display })
 function renderState(state) {
@@ -73,6 +104,10 @@ function renderState(state) {
   // Button status
   if (btnToggle) btnToggle.textContent = state.running ? pauseLabel : playLabel;
 }
+
+// =============================================================================
+// Bridge integration (flotanteAPI)
+// =============================================================================
 
 if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
   // onState now listens to 'crono-state' (main)
@@ -107,6 +142,10 @@ async function applyFlotanteTranslations(lang) {
   if (btnToggle) btnToggle.textContent = lastState.running ? pauseLabel : playLabel;
 }
 
+// =============================================================================
+// Bootstrapping
+// =============================================================================
+
 // Try to load translations for play/pause symbols (use renderer.i18n)
 (async () => {
   try {
@@ -136,6 +175,10 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onSettingsChanged === 'funct
   });
 }
 
+// =============================================================================
+// UI events
+// =============================================================================
+
 // Buttons: send commands to main
 btnToggle.addEventListener('click', () => {
   if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'toggle' });
@@ -154,3 +197,7 @@ window.addEventListener('keydown', (ev) => {
     if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'reset' });
   }
 });
+
+// =============================================================================
+// End of public/flotante.js
+// =============================================================================
