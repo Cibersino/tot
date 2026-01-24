@@ -3153,3 +3153,19 @@ Decision: CHANGED
 
 Reviewer assessment: PASS (comments-only; improves scanability; section headers match actual structure; ASCII-only constraint satisfied).
 Reviewer gate: PASS
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+No Level 6 changes justified.
+- Checked helpers for unused locals/params and duplicated checks; none found.
+- Checked exports surface `window.FormatUtils` against current helper names; consistent.
+- Checked logging API usage (`log.warnOnce` signature) against `public/js/log.js`; correct.
+- Checked fallback paths for return shapes and invariants; all return `{ separadorMiles, separadorDecimal }`.
+- Checked comments vs code sections; labels match actual blocks and behavior.
+Observable contract and timing were preserved.
+
+Reviewer assessment:
+- PASS for L6: NO CHANGE es consistente con el estado del archivo.
+- Nota: el reporte NO CHANGE no incluyó anchors; y “all return shapes” es una sobre-afirmación (depende de `settingsCache.numberFormatting`).
+Reviewer gate: PASS
