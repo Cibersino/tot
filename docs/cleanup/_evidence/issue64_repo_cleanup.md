@@ -2777,3 +2777,18 @@ Reviewer assessment: PASS. NO CHANGE is appropriate; the module is already small
 Reviewer gate: PASS
 
 Observable contract/timing preserved (no changes applied).
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- File is already small, linear, and readable; no duplication that a helper would reduce.
+- Error handling is explicit and proportionate around the only async calls; adding more would be noise.
+- Guarding missing DOM nodes would change failure mode (currently throws), altering observable behavior.
+- Reordering or extracting startup IIFE would add indirection without reducing branches.
+- Busy/selection guards and fallbacks are already explicit and localized.
+
+Observable contract and timing preserved (no code changes).
+
+Reviewer assessment: PASS — “NO CHANGE” is justified; the module already has explicit busy guards and try/catch, and adding DOM-null guards would alter fail-fast behavior.
+Reviewer gate: PASS
