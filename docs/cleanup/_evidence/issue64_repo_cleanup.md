@@ -2558,3 +2558,16 @@ Decision: NO CHANGE
 - Introducing new structure (sections/helpers) would add concepts without removing branches.
 
 Reviewer gate: PASS (NO CHANGE is justified; no code changes).
+
+### L2 — Clarity / robustness refactor (controlled) (Codex)
+
+Decision: NO CHANGE
+- The only clear robustness gap (unguarded addEventListener on possibly-null buttons) is behaviorally visible; guarding would change error behavior.
+- Existing logging is already proportionate and deduped via warnOnce; adding more would risk noise.
+- Repeated sendCommand calls are minimal; adding helpers would add indirection without real branching reduction.
+- Async translation flow and settings fetch are already explicit; further refactoring would add concepts without clarity payoff.
+- No safe edge-case distinctions to surface without altering timing or observable side effects.
+
+Observable contract and timing preserved by making no changes.
+
+Reviewer gate: PASS (NO CHANGE is justified; no code changes).
