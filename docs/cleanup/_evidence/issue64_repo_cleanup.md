@@ -2893,15 +2893,10 @@ Reviewer gate: PASS
 
 ---
 
-## public/language_window.js
-
-Date: `2026-01-24`
-Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
-
 ## public/js/crono.js
 
 Date: `2026-01-24`
-Last commit: `<PONER_HASH_DE_git_log>`
+Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
 
 ### L0 — Diagnosis (no changes)
 
@@ -3046,3 +3041,8 @@ Resultado: PASS
 * [x] (10) Texto queda vacío (vaciar): cronómetro SI se resetea a 00:00:00.
 
 ---
+
+## public/js/format.js
+
+Date: `2026-01-24`
+Last commit: `87a315f074f8d89a237583286f42f18c4f66b19a`
