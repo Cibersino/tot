@@ -2256,3 +2256,16 @@ Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
       - `getSettings()` solo se usa por `settings.language`.
       - `onSettingsChanged(fn(settings))` usa `settings.language`.
       - `editPreset(originalName, preset)` / `createPreset(preset)` esperan respuesta con `res.ok` y en edit se observa `res.code === 'CANCELLED'`.
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- El archivo ya sigue un flujo lineal dentro de `DOMContentLoaded` (setup → i18n helpers → `window.presetAPI` wiring → builder → listeners → init IIFE).
+- Reordenar/extractar a nivel estructural entrega ganancia marginal y puede alterar el orden relativo entre:
+  - wiring de callbacks (`window.presetAPI.onInit`, `onSettingsChanged`)
+  - inicialización de UI (p.ej. `initCharCount()` y traducciones iniciales)
+- La duplicación más visible (actualización de contador de caracteres) ocurre en call sites con semántica no idéntica (input vs init/replay), por lo que extraerla agrega indirection sin reducir complejidad material.
+- No se identificó un cambio L1 claramente “mejor” que sea inequívocamente behavior/timing-preserving.
+
+Reviewer gate: PASS
