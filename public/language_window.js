@@ -1,3 +1,6 @@
+// public/language_window.js
+'use strict';
+
 const log = window.getLogger ? window.getLogger('language') : console;
     const langFilter = document.getElementById('langFilter');
     const langList = document.getElementById('langList');

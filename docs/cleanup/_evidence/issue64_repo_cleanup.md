@@ -2682,3 +2682,8 @@ Observable contract/timing preserved (no changes applied).
 * [x] (6) Logs: sin uncaught; sin spam; sin `flotante.formatCrono.missing` en camino sano.
 
 ---
+
+## public/language_window.js
+
+Date: `2026-01-24`
+Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
