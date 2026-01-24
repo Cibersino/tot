@@ -3071,3 +3071,18 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
 
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- File is already short, linear, and scoped inside a single IIFE with helpers declared sequentially.
+- Existing block order (constants → helpers → export) is coherent; reshuffling would be churn-only.
+- No safe renames/extractions reduce cognitive load; any new abstraction would add indirection.
+- The fallback logic in `obtenerSeparadoresDeNumeros` is already flat with early returns and minimal nesting.
+- Touching this utility would risk accidental behavior drift without readability payoff.
+
+Reviewer assessment:
+- PASS for L1 gate as NO CHANGE: rationale matches the current file structure (IIFE + 4 exported helpers, no IPC, minimal branching); no contract/behavior/timing surface changed.
+
+Reviewer gate: PASS
