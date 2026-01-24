@@ -3105,3 +3105,23 @@ Reviewer assessment:
 - PASS for L2 gate as NO CHANGE: rationale matches the current implementation (IIFE + `window.FormatUtils`, explicit fallbacks, `warnOnce` keys). No invented IPC/contracts; no behavior/timing surface changed.
 
 Reviewer gate: PASS
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/renderer.js`: destructure guard `window.FormatUtils || {}` and missing-functions log.
+- `public/renderer.js`: call sites rely on current API:
+  - `await obtenerSeparadoresDeNumeros(idioma, settingsCache)`
+  - `formatearNumero(...)`
+  - `getTimeParts(...)`
+- `public/js/crono.js`: dependency injection in `createController` (`deps.obtenerSeparadoresDeNumeros`, `deps.formatearNumero`).
+- `public/js/crono.js`: downstream usage via `safeRecomputeRealWpm({ ..., obtenerSeparadoresDeNumeros, formatearNumero, ... })`.
+- `public/js/format.js`: export surface `window.FormatUtils = { getTimeParts, formatTimeFromWords, obtenerSeparadoresDeNumeros, formatearNumero }`.
+- No evidence of inconsistent semantics, IPC contract, or cross-module instability requiring a contract change.
+
+Reviewer assessment:
+- PASS: Consumers (`renderer.js`, `crono.js`) consistently use the current surface; no repro pain or instability observed that would justify Level 3 changes.
+
+Reviewer gate: PASS
