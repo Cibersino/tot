@@ -1,4 +1,4 @@
-// public/js/fomat.js
+// public/js/format.js
 'use strict';
 
 (() => {
