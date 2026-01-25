@@ -6,33 +6,6 @@
   // It is used when no explicit language is provided by the caller.
   const { DEFAULT_LANG } = window.AppConstants;
 
-  /**
-   * Simple counting strategy (fast, coarse):
-   * - Characters "with spaces" is just the JS string length (UTF-16 code units).
-   * - Characters "without spaces" removes whitespace and measures the resulting string length.
-   * - Words are split on whitespace.
-   *
-   * Notes:
-   * - This method is not Unicode-grapheme aware; emojis and some composed characters
-   *   may count as more than 1 "character" depending on UTF-16 representation.
-   * - Works reasonably for languages that separate words with spaces, but is weak for
-   *   scripts that do not (e.g., Thai, Chinese, Japanese).
-   */
-  function contarTextoSimple(texto) {
-    const conEspacios = texto.length;
-    const sinEspacios = texto.replace(/\s+/g, '').length;
-    const palabras = texto.trim() === '' ? 0 : texto.trim().split(/\s+/).length;
-    return { conEspacios, sinEspacios, palabras };
-  }
-
-  /**
-   * Feature detection for Intl.Segmenter.
-   * In modern Electron/Chromium this should be available, but we keep a fallback for safety.
-   */
-  function hasIntlSegmenter() {
-    return typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function';
-  }
-
   // Hyphen joiners we accept for "alnum join" in Precise word counting.
   // This supports common hyphenated compounds and numeric ranges without spaces (e.g., "e-mail", "3–4").
   const HYPHEN_JOINERS = new Set([
@@ -53,12 +26,39 @@
     RE_ALNUM_ONLY = /^[A-Za-z0-9]+$/;
   }
 
+  /**
+   * Feature detection for Intl.Segmenter.
+   * In modern Electron/Chromium this should be available, but we keep a fallback for safety.
+   */
+  function hasIntlSegmenter() {
+    return typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function';
+  }
+
   function isHyphenJoinerSegment(s) {
     return typeof s === 'string' && s.length === 1 && HYPHEN_JOINERS.has(s);
   }
 
   function isAlnumOnlySegment(s) {
     return typeof s === 'string' && s.length > 0 && RE_ALNUM_ONLY.test(s);
+  }
+
+  /**
+   * Simple counting strategy (fast, coarse):
+   * - Characters "with spaces" is just the JS string length (UTF-16 code units).
+   * - Characters "without spaces" removes whitespace and measures the resulting string length.
+   * - Words are split on whitespace.
+   *
+   * Notes:
+   * - This method is not Unicode-grapheme aware; emojis and some composed characters
+   *   may count as more than 1 "character" depending on UTF-16 representation.
+   * - Works reasonably for languages that separate words with spaces, but is weak for
+   *   scripts that do not (e.g., Thai, Chinese, Japanese).
+   */
+  function contarTextoSimple(texto) {
+    const conEspacios = texto.length;
+    const sinEspacios = texto.replace(/\s+/g, '').length;
+    const palabras = texto.trim() === '' ? 0 : texto.trim().split(/\s+/).length;
+    return { conEspacios, sinEspacios, palabras };
   }
 
   /**

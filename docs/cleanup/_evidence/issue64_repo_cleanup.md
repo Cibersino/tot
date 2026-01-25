@@ -3266,3 +3266,24 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
 
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: CHANGED
+
+- Reordered top-level blocks into a clearer “constants → predicate helpers → counting strategies → main entry → export” reading flow.
+- Moved `hasIntlSegmenter()` below the regex capability setup to keep feature-detection close to other capability definitions.
+  - Anchor: `function hasIntlSegmenter()` (moved) + `RE_ALNUM_ONLY = /^[\p{L}\p{N}]+$/u;`
+- Grouped predicate helpers immediately after the shared constants.
+  - Anchors: `function isHyphenJoinerSegment(s)` / `function isAlnumOnlySegment(s)`
+- Positioned the counting strategies more linearly by moving `contarTextoSimple(texto)` below the predicate helpers.
+  - Anchor: `function contarTextoSimple(texto)`
+- Kept the public API assignment as the explicit end-of-file side-effect boundary.
+  - Anchor: `window.CountUtils = {`
+
+Contract/behavior/timing preserved as-is (structural move only; function bodies unchanged per diff).
+
+Reviewer assessment:
+- PASS: Changes are pure reordering of function declarations within a single IIFE; `window.CountUtils` surface remains the same.
+
+Reviewer gate: PASS
