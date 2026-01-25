@@ -5,6 +5,9 @@
   // DEFAULT_LANG is the app's fallback language tag (e.g., "en", "es", "pt-BR").
   // It is used when no explicit language is provided by the caller.
   const { DEFAULT_LANG } = window.AppConstants;
+  const log = (window.getLogger && typeof window.getLogger === 'function')
+    ? window.getLogger('count')
+    : null;
 
   // Hyphen joiners we accept for "alnum join" in Precise word counting.
   // This supports common hyphenated compounds and numeric ranges without spaces (e.g., "e-mail", "3–4").
@@ -24,6 +27,9 @@
   } catch {
     // Defensive fallback (older JS engines): ASCII only.
     RE_ALNUM_ONLY = /^[A-Za-z0-9]+$/;
+    if (log && typeof log.warn === 'function') {
+      log.warn('Unicode property escapes unsupported; using ASCII alnum fallback.');
+    }
   }
 
   /**
@@ -103,6 +109,11 @@
   function contarTextoPreciso(texto, language) {
     // If Intl.Segmenter is missing, fall back to a best-effort approximation.
     if (!hasIntlSegmenter()) {
+      if (log && typeof log.warnOnce === 'function') {
+        log.warnOnce('count.intl-segmenter-missing', 'Intl.Segmenter unavailable; using fallback segmentation.');
+      } else if (log && typeof log.warn === 'function') {
+        log.warn('Intl.Segmenter unavailable; using fallback segmentation.');
+      }
       return contarTextoPrecisoFallback(texto);
     }
 
