@@ -2893,15 +2893,10 @@ Reviewer gate: PASS
 
 ---
 
-## public/language_window.js
-
-Date: `2026-01-24`
-Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
-
 ## public/js/crono.js
 
 Date: `2026-01-24`
-Last commit: `<PONER_HASH_DE_git_log>`
+Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
 
 ### L0 — Diagnosis (no changes)
 
@@ -3046,3 +3041,409 @@ Resultado: PASS
 * [x] (10) Texto queda vacío (vaciar): cronómetro SI se resetea a 00:00:00.
 
 ---
+
+## public/js/format.js
+
+Date: `2026-01-24`
+Last commit: `87a315f074f8d89a237583286f42f18c4f66b19a`
+
+### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+#### 0.1 Reading map
+- Block order: file comment, `'use strict'`, IIFE wrapper, constants (`log`, `DEFAULT_LANG`, `normalizeLangTag`, `getLangBase`), helper functions (`getTimeParts`, `formatTimeFromWords`, `obtenerSeparadoresDeNumeros`, `formatearNumero`), global export (`window.FormatUtils`).
+- Linear breaks: none observed; helpers are declared sequentially inside a single IIFE scope.
+
+#### 0.2 Contract map
+- Exposes: assigns `window.FormatUtils` with four functions (`getTimeParts`, `formatTimeFromWords`, `obtenerSeparadoresDeNumeros`, `formatearNumero`).
+- Side effects: reads from `window` globals and logs via `log.warnOnce` on fallback paths.
+- Invariants / fallbacks (anchored to checks in this file):
+  - `getTimeParts` treats non-positive WPM as zero time (`if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };`).
+  - `obtenerSeparadoresDeNumeros` returns hardcoded defaults when no settings cache (`if (settingsCache === null) { return { separadorMiles: '.', separadorDecimal: ',' }; }`).
+  - `obtenerSeparadoresDeNumeros` falls back to default language when lang key missing (`if (nf && nf[defaultKey]) { ... return nf[defaultKey]; }`).
+  - `obtenerSeparadoresDeNumeros` falls back to hardcoded defaults if formatting missing (`'numberFormatting missing; using hardcoded defaults.'`).
+- IPC contract: none found in this file.
+  - ipcMain.handle/on/once: none
+  - ipcRenderer.invoke/send/on/once: none
+  - webContents.send: none
+- Delegated IPC registration: none found.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- File is already short, linear, and scoped inside a single IIFE with helpers declared sequentially.
+- Existing block order (constants → helpers → export) is coherent; reshuffling would be churn-only.
+- No safe renames/extractions reduce cognitive load; any new abstraction would add indirection.
+- The fallback logic in `obtenerSeparadoresDeNumeros` is already flat with early returns and minimal nesting.
+- Touching this utility would risk accidental behavior drift without readability payoff.
+
+Reviewer assessment:
+- PASS for L1 gate as NO CHANGE: rationale matches the current file structure (IIFE + 4 exported helpers, no IPC, minimal branching); no contract/behavior/timing surface changed.
+
+Reviewer gate: PASS
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- Module is small and already readable; additional helpers or restructuring would add indirection without reducing complexity.
+- The current fallback paths in `obtenerSeparadoresDeNumeros` are already explicit and minimal, with deduped logging via `log.warnOnce`:
+  - `format.numberFormatting.fallback:${langKey}`
+  - `format.numberFormatting.missing`
+- Edge cases are already handled with early returns and hardcoded defaults:
+  - `getTimeParts`: `if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };`
+  - `settingsCache === null` returns `{ separadorMiles: '.', separadorDecimal: ',' }`.
+- There is no IPC or startup sequencing in this file, so no safe L2 timing/ordering improvements apply.
+- Potential robustness changes (numeric coercion / rounding behavior) would risk observable behavior drift.
+
+Reviewer assessment:
+- PASS for L2 gate as NO CHANGE: rationale matches the current implementation (IIFE + `window.FormatUtils`, explicit fallbacks, `warnOnce` keys). No invented IPC/contracts; no behavior/timing surface changed.
+
+Reviewer gate: PASS
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/renderer.js`: destructure guard `window.FormatUtils || {}` and missing-functions log.
+- `public/renderer.js`: call sites rely on current API:
+  - `await obtenerSeparadoresDeNumeros(idioma, settingsCache)`
+  - `formatearNumero(...)`
+  - `getTimeParts(...)`
+- `public/js/crono.js`: dependency injection in `createController` (`deps.obtenerSeparadoresDeNumeros`, `deps.formatearNumero`).
+- `public/js/crono.js`: downstream usage via `safeRecomputeRealWpm({ ..., obtenerSeparadoresDeNumeros, formatearNumero, ... })`.
+- `public/js/format.js`: export surface `window.FormatUtils = { getTimeParts, formatTimeFromWords, obtenerSeparadoresDeNumeros, formatearNumero }`.
+- No evidence of inconsistent semantics, IPC contract, or cross-module instability requiring a contract change.
+
+Reviewer assessment:
+- PASS: Consumers (`renderer.js`, `crono.js`) consistently use the current surface; no repro pain or instability observed that would justify Level 3 changes.
+
+Reviewer gate: PASS
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+- Change: `obtenerSeparadoresDeNumeros` ahora emite un `log.warnOnce(...)` cuando `settingsCache === null`, antes de usar separadores hardcodeados.
+  - Gain: elimina un fallback silencioso; cumple “no silent fallbacks” sin sobre-loggear (dedupe por key estable).
+  - Cost: +1 sitio de log y +1 key estable a mantener.
+  - Validation:
+    - Grep: `format.numberFormatting.settingsCacheNull`
+    - Manual: forzar/ejecutar una llamada con `settingsCache === null` y verificar que el warning aparece una sola vez por sesión.
+
+Observable contract/timing preserved: solo cambió el output de logs en un branch de fallback.
+Reviewer assessment: PASS (log-only; key estable; severidad coherente).
+Reviewer gate: PASS
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Change: Added reader-oriented comment scaffolding aligned with repo style:
+  - "Overview" + responsibilities (English, ASCII).
+  - Section dividers (`// =============================================================================`) matching the real block order (logger/globals, time helpers, number helpers, exports).
+  - Explicit end-of-file marker ("End of public/js/format.js").
+- No functional changes; comments-only.
+
+Reviewer assessment: PASS (comments-only; improves scanability; section headers match actual structure; ASCII-only constraint satisfied).
+Reviewer gate: PASS
+
+### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+No Level 6 changes justified.
+- Checked helpers for unused locals/params and duplicated checks; none found.
+- Checked exports surface `window.FormatUtils` against current helper names; consistent.
+- Checked logging API usage (`log.warnOnce` signature) against `public/js/log.js`; correct.
+- Checked fallback paths for return shapes and invariants; all return `{ separadorMiles, separadorDecimal }`.
+- Checked comments vs code sections; labels match actual blocks and behavior.
+Observable contract and timing were preserved.
+
+Reviewer assessment:
+- PASS for L6: NO CHANGE es consistente con el estado del archivo.
+- Nota: el reporte NO CHANGE no incluyó anchors; y “all return shapes” es una sobre-afirmación (depende de `settingsCache.numberFormatting`).
+Reviewer gate: PASS
+
+### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; open DevTools Console to observe renderer logs.
+* Use any non-trivial sample text (enough to exceed 1,000 words once) to make thousands separators visible.
+* Ensure main window (renderer) is the active UI.
+
+* [x] **(1) Startup sanity: FormatUtils present**
+
+  * **Action:** Launch the app and wait for the main window to fully render.
+  * **Expected result:** No renderer error indicating `FormatUtils` is missing; UI remains usable.
+  * **Evidence:** `public/renderer.js` destructures from `window.FormatUtils || {}` and has an explicit “missing functions” log guard. 
+
+* [x] **(2) Results formatting: thousands separators on counts**
+
+  * **Action:** Paste/append a large text so word count is > 1000. Observe the “chars / chars w/o space / words” fields.
+  * **Expected result:** Counts render with a thousands separator (e.g., `1.234` under a `.` thousands convention); no “NaN”, no blank results.
+  * **Evidence:** renderer formats `stats.*` via `formatearNumero(...)` after fetching separators via `await obtenerSeparadoresDeNumeros(idioma, settingsCache)`. 
+
+* [x] **(3) Reading time consistency: WPM changes update time**
+
+  * **Action:** Change WPM (slider/input in UI) and observe the “time” result update.
+  * **Expected result:** Time updates deterministically; never shows NaN/undefined; if WPM is 0/invalid, time falls back to `0h 0m 0s`.
+  * **Evidence:** time path uses `getTimeParts(stats.palabras, wpm)`; `getTimeParts` explicitly guards `!wpm || wpm <= 0`. 
+
+* [x] **(4) Language switching: number formatting still works**
+
+  * **Action:** Switch UI language (via your normal language selector flow). Re-check counts and time.
+  * **Expected result:** Counts/time still render; no breakage. If your `settingsCache.numberFormatting` lacks the selected `langKey`, you may see a single warnOnce about fallback-to-default; otherwise, no warning is required on the healthy path.
+  * **Evidence:** fallback warnOnce bucket: `format.numberFormatting.fallback:${langKey}` and default selection logic. 
+
+* [x] **(5) Controlled fallback visibility: `settingsCache === null` warns once (console)**
+
+  * **Action:** In DevTools Console, run:
+
+    * `await window.FormatUtils.obtenerSeparadoresDeNumeros('es', null)`
+    * Run it **twice**.
+  * **Expected result:** First call logs **one** warning about `settingsCache null; using hardcoded defaults.`; second call does **not** repeat (dedupe). Return value is `{ separadorMiles: '.', separadorDecimal: ',' }`.
+  * **Evidence:** `log.warnOnce('format.numberFormatting.settingsCacheNull', ...)` + hardcoded defaults. 
+
+* [x] **(6) Stopwatch integration: real WPM renders and uses formatted number**
+
+  * **Action:** Start the stopwatch, let it run briefly, then pause. Ensure there is non-empty text in the app so WPM can be computed.
+  * **Expected result:** `realWpmDisplay` shows a formatted integer + “WPM” (or blank if words/time are zero); no exceptions.
+  * **Evidence:** `actualizarVelocidadRealFromElapsed` computes `realWpm`, fetches separators, then `formatearNumero(realWpm, ...)` and writes `${velocidadFormateada} WPM`. 
+
+* [x] **(7) Stopwatch manual edit path: recompute WPM after blur**
+
+  * **Action:** With the stopwatch **not running**, focus the crono display field, type a valid time (e.g., `00:02:00`), press Enter (or blur).
+  * **Expected result:** Time is accepted; real WPM recomputes and updates; invalid input restores baseline without crashing.
+  * **Evidence:** `applyManualTime` routes through `safeRecomputeRealWpm(...)` on blur/fallbackLocal; controller binds blur to `applyManualTime`. 
+
+* [x] **(8) Log sanity: no spam**
+
+  * **Action:** Repeat steps (2)–(7) quickly (paste text, change WPM, pause/unpause once).
+  * **Expected result:** No uncaught exceptions; no repeated spam. Any warnOnce-based fallbacks appear at most once per dedupe bucket.
+  * **Evidence:** warnOnce keys in `obtenerSeparadoresDeNumeros` are stable (`settingsCacheNull`, `fallback:<langKey>`, `missing`). 
+
+---
+
+## public/js/count.js
+
+Date: `2026-01-24`
+Last commit: `c040f4a4b0270312bd58e56e3e41d2f317d0d04e`
+
+### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+#### 0.1 Reading map
+- Block order: IIFE wrapper; constants/config (`DEFAULT_LANG`, `HYPHEN_JOINERS`, `RE_ALNUM_ONLY`); helpers (`contarTextoSimple`, `hasIntlSegmenter`, `isHyphenJoinerSegment`, `isAlnumOnlySegment`, `contarTextoPrecisoFallback`, `contarTextoPreciso`); main entry (`contarTexto`); export/side effect (`window.CountUtils` assignment).
+- Linear reading breaks:
+  - `RE_ALNUM_ONLY` feature detection split by try/catch: `try { RE_ALNUM_ONLY = /^[\p{L}\p{N}]+$/u; }`
+  - `contarTextoPreciso` stateful loop for hyphen-join logic: `let prevWasJoinableWord = false`
+  - `contarTextoPreciso` conditional increment path: `if (!(pendingHyphenJoin && joinable)) { palabras += 1; }`
+  - `contarTexto` mode normalization gate: `opts.modoConteo === 'simple' ? 'simple' : 'preciso'`
+
+#### 0.2 Contract map
+- Exposed API / side effects:
+  - Exposes `window.CountUtils` with `{ contarTextoSimple, contarTextoPrecisoFallback, contarTextoPreciso, contarTexto, hasIntlSegmenter }`.
+  - Side effect: attaches `CountUtils` on `window` inside an IIFE.
+- Invariants and fallbacks (anchored to checks):
+  - Mode defaults to `"preciso"` unless exactly `"simple"`: `opts.modoConteo === 'simple' ? 'simple' : 'preciso'`.
+  - Language defaults to `DEFAULT_LANG` when falsy: `const idioma = opts.idioma || DEFAULT_LANG`.
+  - Precise counting falls back when `Intl.Segmenter` missing: `if (!hasIntlSegmenter()) { return contarTextoPrecisoFallback(texto); }`.
+  - Words are 0 for empty/whitespace-only input in simple/fallback: `texto.trim() === '' ? 0`.
+  - Hyphen joining only applies when previous segment is joinable and a joiner: `isHyphenJoinerSegment(seg.segment) && prevWasJoinableWord`.
+- IPC contract:
+  - No `ipcMain` / `ipcRenderer` / `webContents` usage found in this file.
+  - No delegated IPC registration helpers called in this file.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+
+### L1 — Structural refactor and cleanup (Codex)
+
+Decision: CHANGED
+
+- Reordered top-level blocks into a clearer “constants → predicate helpers → counting strategies → main entry → export” reading flow.
+- Moved `hasIntlSegmenter()` below the regex capability setup to keep feature-detection close to other capability definitions.
+  - Anchor: `function hasIntlSegmenter()` (moved) + `RE_ALNUM_ONLY = /^[\p{L}\p{N}]+$/u;`
+- Grouped predicate helpers immediately after the shared constants.
+  - Anchors: `function isHyphenJoinerSegment(s)` / `function isAlnumOnlySegment(s)`
+- Positioned the counting strategies more linearly by moving `contarTextoSimple(texto)` below the predicate helpers.
+  - Anchor: `function contarTextoSimple(texto)`
+- Kept the public API assignment as the explicit end-of-file side-effect boundary.
+  - Anchor: `window.CountUtils = {`
+
+Contract/behavior/timing preserved as-is (structural move only; function bodies unchanged per diff).
+
+Reviewer assessment:
+- PASS: Changes are pure reordering of function declarations within a single IIFE; `window.CountUtils` surface remains the same.
+
+Reviewer gate: PASS
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+Rationale (Codex):
+- File already follows a clear constants → helpers → strategies → entrypoint → export flow with minimal nesting.
+- Remaining duplication is small/local; extracting helpers would add indirection without meaningful clarity payoff.
+- Edge cases and fallbacks are already explicit (Intl.Segmenter absence; whitespace-only input).
+- Logic is straightforward and heavily commented; Level 2 edits risk adding noise without benefits.
+- Adding guards/coercion for non-string inputs could alter observable behavior for callers.
+
+Reviewer assessment:
+- PASS: NO CHANGE is appropriate; the module already has explicit fallbacks and a stable `window.CountUtils` surface.
+
+Reviewer gate: PASS
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/renderer.js` requires CountUtils: `const { contarTexto: contarTextoModulo } = window.CountUtils || {};`
+- `public/renderer.js` hard-fails if missing: `throw new Error('[renderer] CountUtils no disponible; no se puede continuar');`
+- `public/renderer.js` call shape (module boundary): `return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });`
+- `public/renderer.js` return-shape use: `formatearNumero(stats.palabras, separadorMiles, separadorDecimal)`
+- `public/js/crono.js` DI consumer (`actualizarVelocidadRealFromElapsed`): `const stats = contarTexto(currentText);`
+- `public/js/crono.js` return-shape dependency: `const words = stats?.palabras || 0;`
+- `public/js/count.js` export surface: `window.CountUtils = {`
+
+Reviewer notes:
+- `public/js/crono.js` consumes `contarTexto` via dependency injection (parameter), not via `window.CountUtils`.
+
+No observable contract/timing changes were made.
+
+Reviewer assessment:
+- PASS: No strong evidence of cross-module contract pain or ambiguity requiring Level 3.
+
+Reviewer gate: PASS
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+- Added renderer logger handle for this module (uses `window.getLogger('count')`) to emit policy-compliant warnings from fallback paths.
+  - Anchor: `window.getLogger('count')`.
+  - Validation: ensure `public/index.html` loads `./js/log.js` before `./js/count.js`.
+
+- Made Unicode-regex capability fallback non-silent (warn) when `\p{L}/\p{N}` property escapes are unavailable.
+  - Anchor: "Unicode property escapes unsupported; using ASCII alnum fallback."
+
+- Made Intl.Segmenter fallback non-silent and deduplicated (warnOnce) to avoid spamming on repeated count calls.
+  - Anchor: `warnOnce('count.intl-segmenter-missing', ...)`.
+
+Observable contract and timing preserved (logging-only change).
+
+Reviewer assessment:
+- PASS. Change is log-only and uses `warnOnce(key, ...)` consistent with renderer logger API. Note: if `count.js` were ever loaded without `log.js`, the warnings could be silent (because `log` may be null), but `public/index.html` loads `log.js` earlier in the main window.
+
+Reviewer gate: PASS
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Added an "Overview" block describing the module responsibilities (renderer-side counting utilities exposed via `window.CountUtils`).
+- Inserted section dividers matching the real file structure:
+  - Logger and constants/config
+  - Helpers (feature detection + predicates)
+  - Counting strategies
+  - Public entry point
+  - Exports / module surface
+- Added an explicit end-of-file marker: `End of public/js/count.js`.
+- ASCII-only note: One deliberate exception kept for the hyphen-join example (`3–4`), accepted as an explicit project-local exception for this file.
+
+No functional changes; comments-only. Observable contract/timing preserved.
+
+Reviewer assessment:
+- PASS: Comments improve navigability and align with the repo’s section-divider style; no behavior changes.
+
+Reviewer gate: PASS
+
+### L6 — Final review (manual)
+
+Decision: NO CHANGE
+
+Findings:
+- Rejected the proposed L6 change from Codex that prefixed a capability-degradation warning with `BOOTSTRAP:`:
+  - Change proposed: `log.warn('BOOTSTRAP: Unicode property escapes unsupported; using ASCII alnum fallback.');`
+  - Reason: This is not a transient pre-init fallback; it reflects a permanent engine capability limitation for the session. Using `BOOTSTRAP:` would be semantically incorrect per logging policy.
+- No other Level 6 cleanup warranted (no dead code, no stale patterns introduced by Levels 1–5, and logging API usage remains consistent).
+
+Observable contract/timing preserved (no code changes applied).
+
+Reviewer gate: PASS
+
+### L7 — Smoke (human-run; minimal, dev)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; main window fully rendered.
+* DevTools Console visible (renderer).
+* Use the console for direct calls to `window.CountUtils` (this file’s surface).
+
+* [x] **(1) Startup sanity: CountUtils present**
+
+  * **Action:** Launch the app and wait for idle (5–10s).
+  * **Expected result:** No renderer hard-fail about CountUtils missing; UI remains usable.
+  * **Evidence:** `public/renderer.js` requires `window.CountUtils` and throws if absent.
+
+* [x] **(2) Contract sanity: return shape + defaults**
+
+  * **Action (DevTools Console):**
+    * `window.CountUtils.contarTexto('one two three', { modoConteo: 'preciso', idioma: 'en' })`
+    * `window.CountUtils.contarTexto('one two three', { modoConteo: 'simple', idioma: 'en' })`
+  * **Expected result:** Both calls return an object with numeric `{ conEspacios, sinEspacios, palabras }` and `palabras === 3`.
+  * **Evidence (count.js):** `contarTexto(...)` returns `{ conEspacios, sinEspacios, palabras }` and normalizes `modoConteo` / defaults `idioma`.
+
+* [x] **(3) Hyphen join behavior (precise mode)**
+
+  * **Action (DevTools Console):**
+    * `window.CountUtils.contarTexto('test e-mail 3–4', { modoConteo: 'preciso', idioma: 'en' })`
+  * **Expected result:** `palabras === 3` (treats `e-mail` as 1 and `3–4` as 1).
+  * **Evidence (count.js):** hyphen joiners (`HYPHEN_JOINERS`) + join logic in `contarTextoPreciso(...)`.
+
+* [x] **(4) Intl.Segmenter fallback warning is deduped (warnOnce)**
+
+  * **Action (DevTools Console):**
+    * Try to simulate missing Segmenter:
+      - `const __oldSeg = Intl.Segmenter;`
+      - `Intl.Segmenter = undefined;`
+      - `window.CountUtils.contarTextoPreciso('one two', 'en');`
+      - `window.CountUtils.contarTextoPreciso('one two', 'en');`
+      - `Intl.Segmenter = __oldSeg;`
+  * **Expected result:**
+    * Both calls return a valid `{ conEspacios, sinEspacios, palabras }`.
+    * Exactly one warning is emitted for the fallback (deduped) with key `count.intl-segmenter-missing`.
+  * **Notes:** If `Intl.Segmenter` is read-only in your runtime, skip the simulation and only verify the key exists via in-file search.
+  * **Evidence (count.js):** `log.warnOnce('count.intl-segmenter-missing', ...)` inside the `!hasIntlSegmenter()` branch.
+
+* [x] **(5) Crono integration: real WPM path depends on `.palabras`**
+
+  * **Action:** Ensure current text is non-empty (preferably > 20 words). Start the stopwatch, let it run ~10 seconds, then pause.
+  * **Expected result:** “Real WPM” renders a numeric value (not blank), and no console errors occur during recompute.
+  * **Evidence (public/js/crono.js):** `actualizarVelocidadRealFromElapsed` computes `const words = stats?.palabras || 0;`.
+
+* [x] **(6) No noisy logging on healthy paths**
+
+  * **Action:** Update/append text several times in normal operation (with Intl.Segmenter available).
+  * **Expected result:** No repeated warnings from count.js on each update; count.js remains quiet on healthy paths (warnings only on genuine fallback/degradation).
+  * **Evidence:** count.js logs only on fallback branches (Unicode-regex fallback; Intl.Segmenter missing via warnOnce).
+
+---
+
+## public/js/presets.js
+
+Date: `2026-01-24`
+Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`

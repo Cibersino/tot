@@ -1,11 +1,26 @@
-// public/js/fomat.js
+// public/js/format.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Renderer-side formatting helpers.
+// Responsibilities:
+// - Convert word counts to time parts and formatted duration strings.
+// - Resolve number-format separators from settings and language fallbacks.
+// - Format numeric values for display using provided separators.
+
 (() => {
+  // =============================================================================
+  // Logger and dependencies
+  // =============================================================================
   const log = window.getLogger('format');
   const { DEFAULT_LANG } = window.AppConstants;
   const { normalizeLangTag, getLangBase } = window.RendererI18n;
 
+  // =============================================================================
+  // Helpers (time formatting)
+  // =============================================================================
   function getTimeParts(words, wpm) {
     if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };
     const totalSeconds = Math.round((words / wpm) * 60);
@@ -21,8 +36,15 @@
     return `${hours}h ${minutes}m ${seconds}s`;
   }
 
+  // =============================================================================
+  // Helpers (number formatting)
+  // =============================================================================
   const obtenerSeparadoresDeNumeros = async (idioma, settingsCache) => {
     if (settingsCache === null) {
+      log.warnOnce(
+        'format.numberFormatting.settingsCacheNull',
+        'settingsCache null; using hardcoded defaults.'
+      );
       return { separadorMiles: '.', separadorDecimal: ',' };
     }
     const tag = normalizeLangTag(idioma) || DEFAULT_LANG;
@@ -53,6 +75,9 @@
     return decimal ? `${entero}${separadorDecimal}${decimal}` : entero;
   };
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.FormatUtils = {
     getTimeParts,
     formatTimeFromWords,
@@ -60,3 +85,7 @@
     formatearNumero
   };
 })();
+
+// =============================================================================
+// End of public/js/format.js
+// =============================================================================
