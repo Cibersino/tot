@@ -153,7 +153,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `public/js/constants.js` — Constantes compartidas del renderer.
 - `public/js/count.js` — Cálculos de conteo (palabras/caracteres; modo simple/preciso).
-- `public/js/format.js` — Formateo numérico/tiempos (incluye dependencias de `numberFormat`).
+- `public/js/format.js` — Helpers de formateo (tiempo y numeros); expone `window.FormatUtils`.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
 - `public/js/presets.js` — UX del selector y flujos de presets en UI (con IPC hacia main).
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
