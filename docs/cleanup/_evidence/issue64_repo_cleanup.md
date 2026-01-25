@@ -3368,3 +3368,82 @@ Reviewer assessment:
 - PASS: Comments improve navigability and align with the repo’s section-divider style; no behavior changes.
 
 Reviewer gate: PASS
+
+### L6 — Final review (manual)
+
+Decision: NO CHANGE
+
+Findings:
+- Rejected the proposed L6 change from Codex that prefixed a capability-degradation warning with `BOOTSTRAP:`:
+  - Change proposed: `log.warn('BOOTSTRAP: Unicode property escapes unsupported; using ASCII alnum fallback.');`
+  - Reason: This is not a transient pre-init fallback; it reflects a permanent engine capability limitation for the session. Using `BOOTSTRAP:` would be semantically incorrect per logging policy.
+- No other Level 6 cleanup warranted (no dead code, no stale patterns introduced by Levels 1–5, and logging API usage remains consistent).
+
+Observable contract/timing preserved (no code changes applied).
+
+Reviewer gate: PASS
+
+### L7 — Smoke (human-run; minimal, dev)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; main window fully rendered.
+* DevTools Console visible (renderer).
+* Use the console for direct calls to `window.CountUtils` (this file’s surface).
+
+* [x] **(1) Startup sanity: CountUtils present**
+
+  * **Action:** Launch the app and wait for idle (5–10s).
+  * **Expected result:** No renderer hard-fail about CountUtils missing; UI remains usable.
+  * **Evidence:** `public/renderer.js` requires `window.CountUtils` and throws if absent.
+
+* [x] **(2) Contract sanity: return shape + defaults**
+
+  * **Action (DevTools Console):**
+    * `window.CountUtils.contarTexto('one two three', { modoConteo: 'preciso', idioma: 'en' })`
+    * `window.CountUtils.contarTexto('one two three', { modoConteo: 'simple', idioma: 'en' })`
+  * **Expected result:** Both calls return an object with numeric `{ conEspacios, sinEspacios, palabras }` and `palabras === 3`.
+  * **Evidence (count.js):** `contarTexto(...)` returns `{ conEspacios, sinEspacios, palabras }` and normalizes `modoConteo` / defaults `idioma`.
+
+* [x] **(3) Hyphen join behavior (precise mode)**
+
+  * **Action (DevTools Console):**
+    * `window.CountUtils.contarTexto('test e-mail 3–4', { modoConteo: 'preciso', idioma: 'en' })`
+  * **Expected result:** `palabras === 3` (treats `e-mail` as 1 and `3–4` as 1).
+  * **Evidence (count.js):** hyphen joiners (`HYPHEN_JOINERS`) + join logic in `contarTextoPreciso(...)`.
+
+* [x] **(4) Intl.Segmenter fallback warning is deduped (warnOnce)**
+
+  * **Action (DevTools Console):**
+    * Try to simulate missing Segmenter:
+      - `const __oldSeg = Intl.Segmenter;`
+      - `Intl.Segmenter = undefined;`
+      - `window.CountUtils.contarTextoPreciso('one two', 'en');`
+      - `window.CountUtils.contarTextoPreciso('one two', 'en');`
+      - `Intl.Segmenter = __oldSeg;`
+  * **Expected result:**
+    * Both calls return a valid `{ conEspacios, sinEspacios, palabras }`.
+    * Exactly one warning is emitted for the fallback (deduped) with key `count.intl-segmenter-missing`.
+  * **Notes:** If `Intl.Segmenter` is read-only in your runtime, skip the simulation and only verify the key exists via in-file search.
+  * **Evidence (count.js):** `log.warnOnce('count.intl-segmenter-missing', ...)` inside the `!hasIntlSegmenter()` branch.
+
+* [x] **(5) Crono integration: real WPM path depends on `.palabras`**
+
+  * **Action:** Ensure current text is non-empty (preferably > 20 words). Start the stopwatch, let it run ~10 seconds, then pause.
+  * **Expected result:** “Real WPM” renders a numeric value (not blank), and no console errors occur during recompute.
+  * **Evidence (public/js/crono.js):** `actualizarVelocidadRealFromElapsed` computes `const words = stats?.palabras || 0;`.
+
+* [x] **(6) No noisy logging on healthy paths**
+
+  * **Action:** Update/append text several times in normal operation (with Intl.Segmenter available).
+  * **Expected result:** No repeated warnings from count.js on each update; count.js remains quiet on healthy paths (warnings only on genuine fallback/degradation).
+  * **Evidence:** count.js logs only on fallback branches (Unicode-regex fallback; Intl.Segmenter missing via warnOnce).
+
+---
+
+## public/js/presets.js
+
+Date: `2026-01-24`
+Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
