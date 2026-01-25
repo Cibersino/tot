@@ -3232,3 +3232,8 @@ Reviewer gate: PASS
   * **Evidence:** warnOnce keys in `obtenerSeparadoresDeNumeros` are stable (`settingsCacheNull`, `fallback:<langKey>`, `missing`). 
 
 ---
+
+## public/js/count.js
+
+Date: `2026-01-24`
+Last commit: `c040f4a4b0270312bd58e56e3e41d2f317d0d04e`
