@@ -3326,3 +3326,24 @@ Reviewer assessment:
 - PASS: No strong evidence of cross-module contract pain or ambiguity requiring Level 3.
 
 Reviewer gate: PASS
+
+### L4 — Logs (Codex)
+
+Decision: CHANGED
+
+- Added renderer logger handle for this module (uses `window.getLogger('count')`) to emit policy-compliant warnings from fallback paths.
+  - Anchor: `window.getLogger('count')`.
+  - Validation: ensure `public/index.html` loads `./js/log.js` before `./js/count.js`.
+
+- Made Unicode-regex capability fallback non-silent (warn) when `\p{L}/\p{N}` property escapes are unavailable.
+  - Anchor: "Unicode property escapes unsupported; using ASCII alnum fallback."
+
+- Made Intl.Segmenter fallback non-silent and deduplicated (warnOnce) to avoid spamming on repeated count calls.
+  - Anchor: `warnOnce('count.intl-segmenter-missing', ...)`.
+
+Observable contract and timing preserved (logging-only change).
+
+Reviewer assessment:
+- PASS. Change is log-only and uses `warnOnce(key, ...)` consistent with renderer logger API. Note: if `count.js` were ever loaded without `log.js`, the warnings could be silent (because `log` may be null), but `public/index.html` loads `log.js` earlier in the main window.
+
+Reviewer gate: PASS
