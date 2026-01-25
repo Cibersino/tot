@@ -3303,3 +3303,26 @@ Reviewer assessment:
 - PASS: NO CHANGE is appropriate; the module already has explicit fallbacks and a stable `window.CountUtils` surface.
 
 Reviewer gate: PASS
+
+### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/renderer.js` requires CountUtils: `const { contarTexto: contarTextoModulo } = window.CountUtils || {};`
+- `public/renderer.js` hard-fails if missing: `throw new Error('[renderer] CountUtils no disponible; no se puede continuar');`
+- `public/renderer.js` call shape (module boundary): `return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });`
+- `public/renderer.js` return-shape use: `formatearNumero(stats.palabras, separadorMiles, separadorDecimal)`
+- `public/js/crono.js` DI consumer (`actualizarVelocidadRealFromElapsed`): `const stats = contarTexto(currentText);`
+- `public/js/crono.js` return-shape dependency: `const words = stats?.palabras || 0;`
+- `public/js/count.js` export surface: `window.CountUtils = {`
+
+Reviewer notes:
+- `public/js/crono.js` consumes `contarTexto` via dependency injection (parameter), not via `window.CountUtils`.
+
+No observable contract/timing changes were made.
+
+Reviewer assessment:
+- PASS: No strong evidence of cross-module contract pain or ambiguity requiring Level 3.
+
+Reviewer gate: PASS
