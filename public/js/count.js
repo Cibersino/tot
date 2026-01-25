@@ -1,7 +1,20 @@
 // public/js/count.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Renderer-side counting utilities exposed via window.CountUtils.
+// Responsibilities:
+// - Provide simple and precise counting strategies for characters and words.
+// - Apply hyphen-join rules for word segmentation in precise mode.
+// - Provide Intl.Segmenter feature detection and fallbacks.
+// - Expose a stable module surface for the renderer.
+
 (() => {
+  // =============================================================================
+  // Logger and constants / config
+  // =============================================================================
   // DEFAULT_LANG is the app's fallback language tag (e.g., "en", "es", "pt-BR").
   // It is used when no explicit language is provided by the caller.
   const { DEFAULT_LANG } = window.AppConstants;
@@ -32,6 +45,9 @@
     }
   }
 
+  // =============================================================================
+  // Helpers (feature detection + predicates)
+  // =============================================================================
   /**
    * Feature detection for Intl.Segmenter.
    * In modern Electron/Chromium this should be available, but we keep a fallback for safety.
@@ -48,6 +64,9 @@
     return typeof s === 'string' && s.length > 0 && RE_ALNUM_ONLY.test(s);
   }
 
+  // =============================================================================
+  // Counting strategies
+  // =============================================================================
   /**
    * Simple counting strategy (fast, coarse):
    * - Characters "with spaces" is just the JS string length (UTF-16 code units).
@@ -156,6 +175,9 @@
     return { conEspacios, sinEspacios, palabras };
   }
 
+  // =============================================================================
+  // Public entry point
+  // =============================================================================
   /**
    * Main entry point for counting.
    *
@@ -175,6 +197,9 @@
       : contarTextoPreciso(texto, idioma);
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   // Public API exposed to the renderer via window.CountUtils.
   window.CountUtils = {
     contarTextoSimple,
@@ -184,3 +209,7 @@
     hasIntlSegmenter
   };
 })();
+
+// =============================================================================
+// End of public/js/count.js
+// =============================================================================

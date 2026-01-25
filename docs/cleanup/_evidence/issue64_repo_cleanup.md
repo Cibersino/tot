@@ -3347,3 +3347,24 @@ Reviewer assessment:
 - PASS. Change is log-only and uses `warnOnce(key, ...)` consistent with renderer logger API. Note: if `count.js` were ever loaded without `log.js`, the warnings could be silent (because `log` may be null), but `public/index.html` loads `log.js` earlier in the main window.
 
 Reviewer gate: PASS
+
+### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Added an "Overview" block describing the module responsibilities (renderer-side counting utilities exposed via `window.CountUtils`).
+- Inserted section dividers matching the real file structure:
+  - Logger and constants/config
+  - Helpers (feature detection + predicates)
+  - Counting strategies
+  - Public entry point
+  - Exports / module surface
+- Added an explicit end-of-file marker: `End of public/js/count.js`.
+- ASCII-only note: One deliberate exception kept for the hyphen-join example (`3–4`), accepted as an explicit project-local exception for this file.
+
+No functional changes; comments-only. Observable contract/timing preserved.
+
+Reviewer assessment:
+- PASS: Comments improve navigability and align with the repo’s section-divider style; no behavior changes.
+
+Reviewer gate: PASS
