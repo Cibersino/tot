@@ -3237,3 +3237,32 @@ Reviewer gate: PASS
 
 Date: `2026-01-24`
 Last commit: `c040f4a4b0270312bd58e56e3e41d2f317d0d04e`
+
+### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+#### 0.1 Reading map
+- Block order: IIFE wrapper; constants/config (`DEFAULT_LANG`, `HYPHEN_JOINERS`, `RE_ALNUM_ONLY`); helpers (`contarTextoSimple`, `hasIntlSegmenter`, `isHyphenJoinerSegment`, `isAlnumOnlySegment`, `contarTextoPrecisoFallback`, `contarTextoPreciso`); main entry (`contarTexto`); export/side effect (`window.CountUtils` assignment).
+- Linear reading breaks:
+  - `RE_ALNUM_ONLY` feature detection split by try/catch: `try { RE_ALNUM_ONLY = /^[\p{L}\p{N}]+$/u; }`
+  - `contarTextoPreciso` stateful loop for hyphen-join logic: `let prevWasJoinableWord = false`
+  - `contarTextoPreciso` conditional increment path: `if (!(pendingHyphenJoin && joinable)) { palabras += 1; }`
+  - `contarTexto` mode normalization gate: `opts.modoConteo === 'simple' ? 'simple' : 'preciso'`
+
+#### 0.2 Contract map
+- Exposed API / side effects:
+  - Exposes `window.CountUtils` with `{ contarTextoSimple, contarTextoPrecisoFallback, contarTextoPreciso, contarTexto, hasIntlSegmenter }`.
+  - Side effect: attaches `CountUtils` on `window` inside an IIFE.
+- Invariants and fallbacks (anchored to checks):
+  - Mode defaults to `"preciso"` unless exactly `"simple"`: `opts.modoConteo === 'simple' ? 'simple' : 'preciso'`.
+  - Language defaults to `DEFAULT_LANG` when falsy: `const idioma = opts.idioma || DEFAULT_LANG`.
+  - Precise counting falls back when `Intl.Segmenter` missing: `if (!hasIntlSegmenter()) { return contarTextoPrecisoFallback(texto); }`.
+  - Words are 0 for empty/whitespace-only input in simple/fallback: `texto.trim() === '' ? 0`.
+  - Hyphen joining only applies when previous segment is joinable and a joiner: `isHyphenJoinerSegment(seg.segment) && prevWasJoinableWord`.
+- IPC contract:
+  - No `ipcMain` / `ipcRenderer` / `webContents` usage found in this file.
+  - No delegated IPC registration helpers called in this file.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
