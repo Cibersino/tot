@@ -3287,3 +3287,19 @@ Reviewer assessment:
 - PASS: Changes are pure reordering of function declarations within a single IIFE; `window.CountUtils` surface remains the same.
 
 Reviewer gate: PASS
+
+### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+Rationale (Codex):
+- File already follows a clear constants → helpers → strategies → entrypoint → export flow with minimal nesting.
+- Remaining duplication is small/local; extracting helpers would add indirection without meaningful clarity payoff.
+- Edge cases and fallbacks are already explicit (Intl.Segmenter absence; whitespace-only input).
+- Logic is straightforward and heavily commented; Level 2 edits risk adding noise without benefits.
+- Adding guards/coercion for non-string inputs could alter observable behavior for callers.
+
+Reviewer assessment:
+- PASS: NO CHANGE is appropriate; the module already has explicit fallbacks and a stable `window.CountUtils` surface.
+
+Reviewer gate: PASS
