@@ -120,7 +120,7 @@ body {
 }
 
 #appLogo {
-  width: 100%;
+  width: auto;
   height: 100%;
   object-fit: contain;
   display: block;
@@ -128,7 +128,7 @@ body {
 }
 
 #devLogo {
-  width: 100%;
+  width: auto;
   height: 100%;
   object-fit: contain;
   display: block;
