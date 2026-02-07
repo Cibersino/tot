@@ -54,6 +54,7 @@
 
   async function loadPresetsIntoDom({
     electronAPI,
+    settings = null,
     language = DEFAULT_LANG,
     currentPresetName = null,
     selectEl,
@@ -63,8 +64,11 @@
   }) {
     if (!electronAPI) throw new Error('electronAPI requerido para cargar presets');
 
-    const settings = (await electronAPI.getSettings()) || { language, presets_by_language: {} };
-    const lang = getLangBase(settings.language || language) || DEFAULT_LANG;
+    const settingsSnapshot =
+      (settings && typeof settings === 'object')
+        ? settings
+        : { language, presets_by_language: {} };
+    const lang = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
 
     let defaults = { general: [], languagePresets: {} };
     try {
@@ -73,15 +77,31 @@
       log.error('Error getting default presets from main:', err);
     }
 
-    const finalList = combinePresets({ settings, defaults });
+    const finalList = combinePresets({ settings: settingsSnapshot, defaults });
     fillPresetsSelect(finalList, selectEl);
+    return { list: finalList, language: lang };
+  }
+
+  async function resolvePresetSelection({
+    list = [],
+    settings = {},
+    language = DEFAULT_LANG,
+    currentPresetName = null,
+    selectEl,
+    wpmInput,
+    wpmSlider,
+    presetDescription,
+    electronAPI
+  }) {
+    const settingsSnapshot = (settings && typeof settings === 'object') ? settings : {};
+    const lang = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
 
     let selected = null;
     const persisted =
-      settings &&
-      settings.selected_preset_by_language &&
-      typeof settings.selected_preset_by_language[lang] === 'string'
-        ? settings.selected_preset_by_language[lang].trim()
+      settingsSnapshot &&
+      settingsSnapshot.selected_preset_by_language &&
+      typeof settingsSnapshot.selected_preset_by_language[lang] === 'string'
+        ? settingsSnapshot.selected_preset_by_language[lang].trim()
         : '';
     const hasCurrent = typeof currentPresetName === 'string' && currentPresetName.trim();
     const selectedName = persisted || (hasCurrent ? currentPresetName.trim() : '');
@@ -93,7 +113,7 @@
       );
     }
     if (selectedName) {
-      selected = finalList.find(p => p.name === selectedName) || null;
+      selected = list.find(p => p.name === selectedName) || null;
       if (!selected) {
         log.warnOnce(
           `presets.selectedPreset.missing:${lang}`,
@@ -103,7 +123,7 @@
       }
     }
     if (!selected) {
-      selected = finalList.find(p => p.name === 'default') || finalList[0] || null;
+      selected = list.find(p => p.name === 'default') || list[0] || null;
     }
 
     if (selected) {
@@ -122,13 +142,14 @@
       if (presetDescription) presetDescription.textContent = '';
     }
 
-    return { list: finalList, selected, language: lang };
+    return selected;
   }
 
   window.RendererPresets = {
     combinePresets,
     fillPresetsSelect,
     applyPresetSelection,
-    loadPresetsIntoDom
+    loadPresetsIntoDom,
+    resolvePresetSelection
   };
 })();

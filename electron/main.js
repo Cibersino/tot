@@ -73,6 +73,24 @@ function isAliveWindow(win) {
   return !!(win && !win.isDestroyed());
 }
 
+function isMainInteractive() {
+  return mainReadyState === 'READY' && menuEnabled;
+}
+
+function guardMainUserAction(actionId, message) {
+  if (isMainInteractive()) return true;
+  warnOnce(
+    `main.preReady.${actionId}`,
+    message || 'Main action ignored (pre-READY):',
+    actionId
+  );
+  return false;
+}
+
+function resolveMainWindow() {
+  return isAliveWindow(mainWin) ? mainWin : null;
+}
+
 // =============================================================================
 // Global window references (singletons)
 // =============================================================================
@@ -83,6 +101,20 @@ let editorWin = null;   // Editor window (editor.html) - user edits current text
 let presetWin = null;   // Preset modal (preset_modal.html) - create/edit preset
 let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating stopwatch window (flotante.html)
+
+// =============================================================================
+// Startup readiness gates + handshake state
+// =============================================================================
+let mainReadyState = 'PRE_READY';
+let menuEnabled = false;
+let mainInvariantsReady = false;
+let rendererCoreReady = false;
+let startupReadySent = false;
+let splashRemoved = false;
+let languageResolved = false;
+let menuInstalled = false;
+let mainWindowCreated = false;
+let languageSelectionHandler = null;
 
 // =============================================================================
 // Menu + development utilities
@@ -120,16 +152,18 @@ function buildAppMenu(lang) {
   }
   const effectiveLang = candidate || getSelectedLanguage();
   menuBuilder.buildAppMenu(effectiveLang, {
-    mainWindow: mainWin,
+    resolveMainWindow,
     onOpenLanguage: () => createLanguageWindow(),
+    isMenuEnabled: () => (menuEnabled && mainReadyState === 'READY'),
   });
+  menuInstalled = true;
 }
 
 /**
  * Developer-only global shortcuts (disabled in packaged builds).
  * Used for quick inspection and reload during development.
  */
-function registerDevShortcuts(mainWin) {
+function registerDevShortcuts() {
   if (app.isPackaged) return;
 
   try {
@@ -141,16 +175,19 @@ function registerDevShortcuts(mainWin) {
     };
 
     globalShortcut.register('CommandOrControl+Shift+I', () => {
+      if (!guardMainUserAction('shortcut.devtools', 'DevTools shortcut ignored (pre-READY).')) return;
       const targetWin = resolveTargetWindow();
       if (targetWin) targetWin.webContents.toggleDevTools();
     });
 
     globalShortcut.register('CommandOrControl+R', () => {
+      if (!guardMainUserAction('shortcut.reload', 'Reload shortcut ignored (pre-READY).')) return;
       const targetWin = resolveTargetWindow();
       if (targetWin) targetWin.webContents.reload();
     });
 
     globalShortcut.register('CommandOrControl+Shift+R', () => {
+      if (!guardMainUserAction('shortcut.forceReload', 'Force reload shortcut ignored (pre-READY).')) return;
       const targetWin = resolveTargetWindow();
       if (targetWin) targetWin.webContents.reloadIgnoringCache();
     });
@@ -194,11 +231,19 @@ function createMainWindow() {
 
   mainWin.loadFile(path.join(__dirname, '../public/index.html'));
 
-  // Build top menu using translations.
-  buildAppMenu();
-
   // Dev-only shortcuts for inspection/reload.
-  registerDevShortcuts(mainWin);
+  registerDevShortcuts();
+
+  if (!menuInstalled) {
+    try {
+      buildAppMenu();
+    } catch (err) {
+      log.error('Error building app menu during main window creation:', err);
+    }
+  }
+
+  mainWindowCreated = true;
+  maybeMarkMainInvariantsReady();
 
   // Best-effort shutdown: when the main window closes, try to close auxiliary windows too.
   mainWin.on('close', () => {
@@ -226,6 +271,7 @@ function createMainWindow() {
   // Release reference and quit the app once the main window is gone.
   mainWin.on('closed', () => {
     mainWin = null;
+    mainWindowCreated = false;
 
     // Force an orderly application exit.
     // (If something goes wrong here, we still want to see it as an error.)
@@ -417,20 +463,96 @@ function createLanguageWindow() {
   // If the user closes the language window without choosing, persist a safe fallback and continue startup.
   langWin.on('closed', () => {
     try {
-      settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
+      if (!languageResolved) {
+        settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
+        if (languageSelectionHandler) {
+          try {
+            ipcMain.removeListener('language-selected', languageSelectionHandler);
+          } catch (err) {
+            log.warn('Error removing language-selected handler after fallback:', err);
+          }
+          languageSelectionHandler = null;
+        }
+        resolveLanguage('fallback');
+      }
     } catch (err) {
       log.error('Error applying fallback language:', err);
     } finally {
       langWin = null;
-
-      // Ensure the app can proceed even if the user dismissed the window.
-      try {
-        if (!mainWin) createMainWindow();
-      } catch (err) {
-        log.error('Error creating mainWin after closing language modal:', err);
-      }
     }
   });
+}
+
+function maybeMarkMainInvariantsReady() {
+  if (mainInvariantsReady) return;
+  if (!languageResolved || !menuInstalled || !mainWindowCreated) return;
+  mainInvariantsReady = true;
+  maybeAuthorizeStartupReady();
+}
+
+function maybeAuthorizeStartupReady() {
+  if (startupReadySent) return;
+  if (!mainInvariantsReady || !rendererCoreReady) return;
+
+  startupReadySent = true;
+  mainReadyState = 'READY';
+
+  const targetWin = resolveMainWindow();
+  if (!targetWin) {
+    log.error('startup:ready emit failed: main window unavailable.');
+    return;
+  }
+
+  try {
+    targetWin.webContents.send('startup:ready');
+  } catch (err) {
+    log.error('Error emitting startup:ready to renderer:', err);
+  }
+}
+
+function handleSplashRemoved() {
+  if (splashRemoved) {
+    warnOnce('startup.splashRemoved.duplicate', 'startup:splash-removed already handled (ignored).');
+    return;
+  }
+  splashRemoved = true;
+  menuEnabled = true;
+
+  try {
+    updater.scheduleInitialCheck();
+  } catch (err) {
+    log.error('Error scheduling updater initial check post-READY:', err);
+  }
+}
+
+function resolveLanguage(reason) {
+  if (languageResolved) {
+    warnOnce(`startup.languageResolved.${reason}`, 'Language already resolved (ignored):', reason);
+    return;
+  }
+  languageResolved = true;
+
+  if (reason === 'fallback') {
+    log.warn('Startup language resolved via fallback.');
+  } else if (reason === 'selected') {
+    log.info('Startup language resolved via user selection.');
+  } else if (reason === 'present') {
+    log.info('Startup language already set; continuing.');
+  }
+
+  try {
+    buildAppMenu();
+  } catch (err) {
+    log.error('Error building menu after language resolution:', err);
+  }
+
+  try {
+    if (!mainWin) createMainWindow();
+  } catch (err) {
+    log.error('Error creating mainWin after language resolution:', err);
+  }
+
+  maybeMarkMainInvariantsReady();
 }
 
 // =============================================================================
@@ -896,6 +1018,7 @@ ipcMain.handle('crono-get-state', () => {
 });
 
 ipcMain.on('crono-toggle', () => {
+  if (!guardMainUserAction('crono-toggle', 'crono-toggle ignored (pre-READY).')) return;
   try {
     toggleCrono();
   } catch (err) {
@@ -904,6 +1027,7 @@ ipcMain.on('crono-toggle', () => {
 });
 
 ipcMain.on('crono-reset', () => {
+  if (!guardMainUserAction('crono-reset', 'crono-reset ignored (pre-READY).')) return;
   try {
     resetCrono();
   } catch (err) {
@@ -912,6 +1036,7 @@ ipcMain.on('crono-reset', () => {
 });
 
 ipcMain.on('crono-set-elapsed', (_ev, ms) => {
+  if (!guardMainUserAction('crono-set-elapsed', 'crono-set-elapsed ignored (pre-READY).')) return;
   try {
     setCronoElapsed(ms);
   } catch (err) {
@@ -921,6 +1046,9 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
 
 // Floating window: open/close + commands from the flotante UI
 ipcMain.handle('flotante-open', async () => {
+  if (!guardMainUserAction('flotante-open', 'flotante-open ignored (pre-READY).')) {
+    return { ok: false, error: 'not ready' };
+  }
   try {
     await createFlotanteWindow();
 
@@ -940,6 +1068,9 @@ ipcMain.handle('flotante-open', async () => {
 });
 
 ipcMain.handle('flotante-close', () => {
+  if (!guardMainUserAction('flotante-close', 'flotante-close ignored (pre-READY).')) {
+    return { ok: false, error: 'not ready' };
+  }
   try {
     const win = flotanteWin;
 
@@ -957,6 +1088,7 @@ ipcMain.handle('flotante-close', () => {
 });
 
 ipcMain.on('flotante-command', (_ev, cmd) => {
+  if (!guardMainUserAction('flotante-command', 'flotante-command ignored (pre-READY).')) return;
   try {
     if (!cmd || !cmd.cmd) {
       warnOnce('flotante-command.invalid', 'flotante-command ignored: payload missing cmd (ignored).');
@@ -1008,6 +1140,9 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
 // Editor window: open (create or focus) and push current text
 ipcMain.handle('open-editor', () => {
+  if (!guardMainUserAction('open-editor', 'open-editor ignored (pre-READY).')) {
+    return { ok: false, error: 'not ready' };
+  }
   try {
     if (!isAliveWindow(editorWin)) {
       createEditorWindow();
@@ -1044,6 +1179,9 @@ ipcMain.handle('open-editor', () => {
 
 // Preset modal: open (with payload normalization)
 ipcMain.handle('open-preset-modal', (event, payload) => {
+  if (!guardMainUserAction('open-preset-modal', 'open-preset-modal ignored (pre-READY).')) {
+    return { ok: false, error: 'not ready' };
+  }
   try {
     if (!mainWin) {
       warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
@@ -1129,7 +1267,20 @@ ipcMain.handle('get-app-runtime-info', () => {
   }
 });
 
+ipcMain.on('startup:renderer-core-ready', () => {
+  if (rendererCoreReady) {
+    warnOnce('startup.rendererCoreReady.duplicate', 'startup:renderer-core-ready already handled (ignored).');
+    return;
+  }
+  rendererCoreReady = true;
+  maybeAuthorizeStartupReady();
+});
+
 registerLinkIpc({ ipcMain, app, shell, log });
+
+ipcMain.on('startup:splash-removed', () => {
+  handleSplashRemoved();
+});
 
 // =============================================================================
 // App lifecycle (startup, activate, quit)
@@ -1204,12 +1355,13 @@ app.whenReady().then(() => {
     createLanguageWindow();
 
     // The language window notifies the main process via IPC once the user picks a language.
-    ipcMain.once('language-selected', () => {
+    languageSelectionHandler = () => {
       try {
-        if (!mainWin) createMainWindow();
+        resolveLanguage('selected');
       } catch (err) {
-        log.error('Error creating mainWin after selecting language:', err);
+        log.error('Error resolving language selection:', err);
       } finally {
+        languageSelectionHandler = null;
         // Close the language window if it is still open.
         try {
           if (isAliveWindow(langWin)) langWin.close();
@@ -1217,13 +1369,11 @@ app.whenReady().then(() => {
           warnOnce('langWin.close.after.language-selected', 'langWin.close failed after language-selected (ignored):', err);
         }
       }
-
-      updater.scheduleInitialCheck();
-    });
+    };
+    ipcMain.once('language-selected', languageSelectionHandler);
   } else {
     // Language already defined: go directly to the main window.
-    createMainWindow();
-    updater.scheduleInitialCheck();
+    resolveLanguage('present');
   }
 
   // macOS behavior: recreate a window when clicking the dock icon and none are open.
