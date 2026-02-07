@@ -53,15 +53,99 @@ Reglas:
 
 ### Resumen de cambios
 
+- Arranque (Issue #102): rediseño a un modelo con **splash bloqueante** y un **único punto de habilitación de interactividad**, eliminando estados visibles “a medio inicializar” y reduciendo carreras de timing.
+- Arranque (Issue #102): el renderer no queda utilizable hasta que:
+  - el renderer completa prerrequisitos internos,
+  - el main **autoriza** el desbloqueo, y
+  - el renderer **confirma** el retiro del splash (handshake explícito).
+- Arranque (Issue #102): se consolidó el bootstrap del renderer en **un solo orquestador** (config → settings → idioma/traducciones → texto vigente → presets) y se removieron arranques duplicados.
 - Dev-only (Issue #94): atajos de desarrollo ahora operan sobre la ventana enfocada (fallback: ventana principal):
   - `Ctrl+Shift+I` → abre/cierra DevTools de la ventana enfocada.
   - `Ctrl+R` / `Ctrl+Shift+R` → recarga la ventana enfocada (normal / ignorando caché).
 - Dev-only (Issue #94): menú **Development → Toggle DevTools** ahora aplica a la ventana enfocada (fallback: ventana principal), facilitando inspección de logs por ventana/renderer.
 - Docs (Issue #94): README incorpora nota para desarrolladores sobre niveles de log del renderer y cómo habilitar el menú de desarrollo (`SHOW_DEV_MENU=1`) en corridas de desarrollo; además aclara que en builds empaquetados DevTools no es accionable (sin menú/atajos dev).
 
+### Agregado
+
+- Arranque (Issue #102):
+  - Splash overlay bloqueante en `public/index.html` + `public/style.css` (visible al primer paint; captura interacción).
+  - Señales de handshake de arranque (IPC, nombres exactos):
+    - `startup:renderer-core-ready` (renderer → main)
+    - `startup:ready` (main → renderer)
+    - `startup:splash-removed` (renderer → main)
+  - Preload: helpers en `window.electronAPI` para emitir/escuchar señales de arranque (`sendStartupRendererCoreReady`, `onStartupReady`, `sendStartupSplashRemoved`).
+
+### Cambiado
+
+- Renderer (Issue #102): bootstrap en un único orquestador con secuencia explícita, eliminando:
+  - inicializaciones duplicadas,
+  - recomputes/refresh de arranque repetidos,
+  - dependencias implícitas entre “bloques” paralelos.
+- Renderer (Issue #102): **pre-READY effectless**:
+  - se registran temprano listeners/suscripciones (para no perder señales/eventos),
+  - pero se **gatean solo** efectos visibles y side-effects user-facing antes del desbloqueo,
+  - y se permite instalación de estado/cachés necesarias para cerrar el arranque (sin UI effects).
+- Main (Issue #102): se introduce un gate explícito para rutas user-triggered (IPC/atajos/ventanas auxiliares):
+  - pre-READY: acciones ignoradas con logs deduplicados (sin efectos visibles),
+  - post-READY: ejecución normal.
+- Menú y atajos (Issue #102):
+  - dispatch **late-bound** (resuelve ventana/webContents al momento de invocar; evita capturas tempranas),
+  - permanece **inerte** hasta confirmación post-desbloqueo del renderer.
+- Flujo de idioma (Issue #102, primera ejecución):
+  - resolución determinística (selección o fallback explícito),
+  - se evita creación redundante de la ventana principal desde handlers laterales del flujo de idioma.
+- Updater (Issue #102): el chequeo inicial se difiere a **post-desbloqueo**, evitando efectos antes de que la app sea realmente utilizable.
+- Presets (Issue #102):
+  - carga y selección se alinean a “snapshot único” de settings de arranque,
+  - resolución de preset seleccionado se vuelve determinística (persistido → currentPresetName → fallback).
+
 ### Arreglado
 
 - Cronómetro: el formateo numérico de la velocidad real (WPM) ahora usa `settingsCache.numberFormatting` (mismos separadores que “Resultados del conteo”), evitando defaults hardcodeados y eliminando el warning `format.numberFormatting.missing` (`[WARN][format] numberFormatting missing; using hardcoded defaults.`).
+
+### Removido
+
+- Arranque (Issue #102):
+  - Renderer: bootstrap duplicado (doble IIFE) reemplazado por un orquestador único.
+  - Renderer: llamadas duplicadas de arranque a `updatePreviewAndResults(...)` (un solo kickoff inicial).
+  - Renderer: llamada bootstrap a `setCurrentTextAndUpdateUI(...)` para la carga inicial del texto (ahora: instalación de estado pre-READY + UI effects solo post-READY).
+  - Main: scheduling del updater antes del desbloqueo (ahora strictly post-desbloqueo).
+  - Main: creación de main window desde el cierre de la ventana de idioma (ahora centralizado en resolución determinística).
+  - Presets: lectura duplicada de settings dentro del loader (ahora se consume snapshot de settings ya leído en el orquestador).
+
+### Contratos tocados
+
+- IPC (nuevos canales):
+  - `startup:renderer-core-ready` (renderer → main). Payload: ninguno.
+  - `startup:ready` (main → renderer). Payload: ninguno.
+  - `startup:splash-removed` (renderer → main). Payload: ninguno.
+- Preload API (`window.electronAPI`, agregado):
+  - `sendStartupRendererCoreReady(): void`
+  - `onStartupReady(cb: () => void): () => void` (retorna función de unsubscribe)
+  - `sendStartupSplashRemoved(): void`
+- `electron/menu_builder.js`:
+  - `buildAppMenu(lang, opts)` acepta opcionalmente:
+    - `resolveMainWindow(): BrowserWindow|null` (late-binding del target)
+    - `isMenuEnabled(): boolean` (gate de dispatch)
+- `public/js/presets.js` (`window.RendererPresets`):
+  - `loadPresetsIntoDom({... , settings?})`: acepta snapshot de settings; ya no lee settings internamente para el arranque.
+  - `resolvePresetSelection({...})`: helper explícito para resolver/aplicar/persistir la selección (persistido → fallback).
+
+### Archivos
+
+- electron/main.js
+- electron/menu_builder.js
+- electron/preload.js
+- public/renderer.js
+- public/js/presets.js
+- public/index.html
+- public/style.css
+
+### Notas
+
+- La interactividad se define por el retiro del splash (**un solo umbral**).
+- Menú/atajos se habilitan tras confirmación `startup:splash-removed` (micro-gap intencional y aceptado).
+- La previsualización/resultados del texto vigente pueden poblarse inmediatamente después del desbloqueo; el estado del texto y prerrequisitos ya quedaron instalados durante el arranque.
 
 ---
 
