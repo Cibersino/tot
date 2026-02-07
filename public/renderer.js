@@ -398,11 +398,7 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
       electronAPI: window.electronAPI,
       settings: snapshot,
       language: idiomaActual,
-      currentPresetName,
-      selectEl: presetsSelect,
-      wpmInput,
-      wpmSlider,
-      presetDescription
+      selectEl: presetsSelect
     });
     allPresetsCache = res && res.list ? res.list.slice() : [];
     const selected = await resolvePresetSelection({

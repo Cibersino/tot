@@ -56,11 +56,7 @@
     electronAPI,
     settings = null,
     language = DEFAULT_LANG,
-    currentPresetName = null,
-    selectEl,
-    wpmInput,
-    wpmSlider,
-    presetDescription
+    selectEl
   }) {
     if (!electronAPI) throw new Error('electronAPI requerido para cargar presets');
 
@@ -68,8 +64,6 @@
       (settings && typeof settings === 'object')
         ? settings
         : { language, presets_by_language: {} };
-    const lang = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
-
     let defaults = { general: [], languagePresets: {} };
     try {
       defaults = await electronAPI.getDefaultPresets();
@@ -79,7 +73,7 @@
 
     const finalList = combinePresets({ settings: settingsSnapshot, defaults });
     fillPresetsSelect(finalList, selectEl);
-    return { list: finalList, language: lang };
+    return { list: finalList };
   }
 
   async function resolvePresetSelection({
