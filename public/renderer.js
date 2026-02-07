@@ -476,15 +476,15 @@ function armIpcSubscriptions() {
   if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
     window.electronAPI.onCurrentTextUpdated((text) => {
       try {
-        const nextText = installCurrentTextState(text || '');
         if (!isRendererReady()) {
+          installCurrentTextState(text || '');
           log.warnOnce(
             'renderer.preReady.currentTextUpdated',
             'current-text-updated received pre-READY; state updated only.'
           );
           return;
         }
-        setCurrentTextAndUpdateUI(nextText, { applyRules: true });
+        setCurrentTextAndUpdateUI(text || '', { applyRules: true });
       } catch (err) {
         log.error('Error handling current-text-updated:', err);
       }
