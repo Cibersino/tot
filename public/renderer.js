@@ -388,7 +388,7 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
 // =============================================================================
 // Preset loading (merge + shadowing)
 // =============================================================================
-const loadPresets = async ({ settingsSnapshot } = {}) => {
+const reloadPresetsList = async ({ settingsSnapshot } = {}) => {
   try {
     const snapshot =
       (settingsSnapshot && typeof settingsSnapshot === 'object')
@@ -401,6 +401,24 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
       selectEl: presetsSelect
     });
     allPresetsCache = res && res.list ? res.list.slice() : [];
+    return allPresetsCache;
+  } catch (err) {
+    log.error('Error loading presets:', err);
+    if (presetsSelect) presetsSelect.innerHTML = '';
+    if (presetDescription) presetDescription.textContent = '';
+    allPresetsCache = [];
+    currentPresetName = null;
+    return allPresetsCache;
+  }
+};
+
+const loadPresets = async ({ settingsSnapshot } = {}) => {
+  try {
+    const snapshot =
+      (settingsSnapshot && typeof settingsSnapshot === 'object')
+        ? settingsSnapshot
+        : (settingsCache || {});
+    await reloadPresetsList({ settingsSnapshot: snapshot });
     const selected = await resolvePresetSelection({
       list: allPresetsCache,
       settings: snapshot,
@@ -503,21 +521,29 @@ function armIpcSubscriptions() {
       }
       try {
         // Reload presets from settings (applies shadowing) and select the created one
-        const updated = await loadPresets({ settingsSnapshot: settingsCache });
+        const updated = await reloadPresetsList({ settingsSnapshot: settingsCache });
         if (preset && preset.name) {
           const found = updated.find(p => p.name === preset.name);
           if (found) {
-            currentPresetName = found.name;
-            applyPresetSelection(found, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
-            wpm = found.wpm;
-            if (window.electronAPI && typeof window.electronAPI.setSelectedPreset === 'function') {
-              try {
-                await window.electronAPI.setSelectedPreset(found.name);
-              } catch (err) {
-                log.error('Error persisting preset-created selection:', err);
-              }
+            const neutralSettings = Object.assign({}, settingsCache || {}, {
+              selected_preset_by_language: {}
+            });
+            const selected = await resolvePresetSelection({
+              list: updated,
+              settings: neutralSettings,
+              language: idiomaActual,
+              currentPresetName: preset.name,
+              selectEl: presetsSelect,
+              wpmInput,
+              wpmSlider,
+              presetDescription,
+              electronAPI: window.electronAPI
+            });
+            if (selected) {
+              currentPresetName = selected.name;
+              wpm = selected.wpm;
+              updatePreviewAndResults(currentText);
             }
-            updatePreviewAndResults(currentText);
           }
         }
       } catch (err) {
