@@ -1381,7 +1381,7 @@ btnDeletePreset.addEventListener('click', async () => {
 
     if (res && res.ok) {
       // On success, reload presets and apply fallback selection if needed.
-      await loadPresets();
+      await loadPresets({ settingsSnapshot: settingsCache || {} });
       updatePreviewAndResults(currentText);
       // No further UI dialog required; main already showed confirmation.
       return;
@@ -1416,7 +1416,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
 
     if (res && res.ok) {
       // Reload presets to reflect restored defaults
-      await loadPresets();
+      await loadPresets({ settingsSnapshot: settingsCache || {} });
       updatePreviewAndResults(currentText);
       return;
     } else {

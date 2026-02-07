@@ -63,7 +63,7 @@
     const settingsSnapshot =
       (settings && typeof settings === 'object')
         ? settings
-        : { language, presets_by_language: {} };
+        : { language, presets_by_language: {}, selected_preset_by_language: {} };
     let defaults = { general: [], languagePresets: {} };
     try {
       defaults = await electronAPI.getDefaultPresets();
@@ -87,7 +87,10 @@
     presetDescription,
     electronAPI
   }) {
-    const settingsSnapshot = (settings && typeof settings === 'object') ? settings : {};
+    const settingsSnapshot =
+      (settings && typeof settings === 'object')
+        ? settings
+        : { language, presets_by_language: {}, selected_preset_by_language: {} };
     const lang = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
 
     let selected = null;
