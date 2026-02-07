@@ -221,7 +221,25 @@ function buildAppMenu(lang, opts = {}) {
     const tMain = tr.main || {};
     const m = tMain.menu || {};
 
-    const mainWindow = opts.mainWindow || null;
+    const resolveMainWindow =
+        typeof opts.resolveMainWindow === 'function'
+            ? opts.resolveMainWindow
+            : () => (opts.mainWindow || null);
+
+    const isMenuEnabled =
+        typeof opts.isMenuEnabled === 'function'
+            ? opts.isMenuEnabled
+            : () => true;
+
+    const canDispatchMenuAction = (actionId) => {
+        if (isMenuEnabled()) return true;
+        log.warnOnce(
+            `menu_builder.inert:${actionId}`,
+            'Menu action ignored (pre-READY):',
+            actionId
+        );
+        return false;
+    };
 
     // Optional hook: the menu can trigger the language picker window.
     const onOpenLanguage =
@@ -230,6 +248,9 @@ function buildAppMenu(lang, opts = {}) {
     // Send a menu action to the renderer.
     // If the window is missing/closing, we drop the action and log once (best-effort IPC).
     const sendMenuClick = (payload) => {
+        if (!canDispatchMenuAction(payload)) return;
+
+        const mainWindow = resolveMainWindow();
         if (!mainWindow) {
             log.warnOnce(
                 'menu_builder.sendMenuClick.noWindow',
@@ -304,6 +325,7 @@ function buildAppMenu(lang, opts = {}) {
                     label: resolveMenuLabel(m, 'idioma', 'Language'),
                     // The window lifecycle is handled by main.js; this module only calls the hook.
                     click: () => {
+                        if (!canDispatchMenuAction('menu.language')) return;
                         if (onOpenLanguage) {
                             try {
                                 onOpenLanguage();
@@ -397,17 +419,63 @@ function buildAppMenu(lang, opts = {}) {
         menuTemplate.push({
             label: resolveMenuLabel(m, 'desarrollo', 'Development'),
             submenu: [
-                { role: 'reload', label: resolveMenuLabel(m, 'recargar', 'Reload') },
-                { role: 'forcereload', label: resolveMenuLabel(m, 'forcereload', 'Force reload') },
+                {
+                    label: resolveMenuLabel(m, 'recargar', 'Reload'),
+                    accelerator: 'CommandOrControl+R',
+                    click: () => {
+                        if (!canDispatchMenuAction('dev.reload')) return;
+                        const focused = BrowserWindow.getFocusedWindow();
+                        const resolvedMain = resolveMainWindow();
+                        const target =
+                            focused && !focused.isDestroyed()
+                                ? focused
+                                : (resolvedMain && !resolvedMain.isDestroyed() ? resolvedMain : null);
+                        if (!target) return;
+                        try {
+                            target.webContents.reload();
+                        } catch (err) {
+                            log.warnOnce(
+                                'menu_builder.devReload',
+                                'dev reload failed (ignored):',
+                                err
+                            );
+                        }
+                    },
+                },
+                {
+                    label: resolveMenuLabel(m, 'forcereload', 'Force reload'),
+                    accelerator: 'CommandOrControl+Shift+R',
+                    click: () => {
+                        if (!canDispatchMenuAction('dev.forceReload')) return;
+                        const focused = BrowserWindow.getFocusedWindow();
+                        const resolvedMain = resolveMainWindow();
+                        const target =
+                            focused && !focused.isDestroyed()
+                                ? focused
+                                : (resolvedMain && !resolvedMain.isDestroyed() ? resolvedMain : null);
+                        if (!target) return;
+                        try {
+                            target.webContents.reloadIgnoringCache();
+                        } catch (err) {
+                            log.warnOnce(
+                                'menu_builder.devForceReload',
+                                'dev force reload failed (ignored):',
+                                err
+                            );
+                        }
+                    },
+                },
                 {
                     label: resolveMenuLabel(m, 'toggle_devtools', 'Toggle DevTools'),
                     accelerator: 'Ctrl+Shift+I',
                     click: () => {
+                        if (!canDispatchMenuAction('dev.toggleDevTools')) return;
                         const focused = BrowserWindow.getFocusedWindow();
+                        const resolvedMain = resolveMainWindow();
                         const target =
                             focused && !focused.isDestroyed()
                                 ? focused
-                                : (mainWindow && !mainWindow.isDestroyed() ? mainWindow : null);
+                                : (resolvedMain && !resolvedMain.isDestroyed() ? resolvedMain : null);
                         if (!target) return;
                         try {
                             target.webContents.toggleDevTools();

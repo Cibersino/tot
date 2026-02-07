@@ -108,7 +108,16 @@ const api = {
         const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
         ipcRenderer.on('editor-ready', listener);
         return () => { try { ipcRenderer.removeListener('editor-ready', listener); } catch (err) { console.error('removeListener error (editor-ready):', err); } };
-    }
+    },
+
+    // Startup handshake (renderer <-> main)
+    sendStartupRendererCoreReady: () => ipcRenderer.send('startup:renderer-core-ready'),
+    onStartupReady: (cb) => {
+        const listener = () => { try { cb(); } catch (err) { console.error('startup:ready callback error:', err); } };
+        ipcRenderer.on('startup:ready', listener);
+        return () => { try { ipcRenderer.removeListener('startup:ready', listener); } catch (err) { console.error('removeListener error (startup:ready):', err); } };
+    },
+    sendStartupSplashRemoved: () => ipcRenderer.send('startup:splash-removed')
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

@@ -57,6 +57,27 @@ body {
   padding: calc(var(--logo-height) + 8px) 8px 8px 8px;
 }
 
+/* Startup splash overlay (blocks interaction until READY) */
+.startup-splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-color);
+  z-index: 50;
+  pointer-events: all;
+}
+
+.startup-splash__spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-top-color: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  animation: editor-spin 0.9s linear infinite;
+}
+
 /* Common style for Sections */
 .app-container>section,
 .app-container>aside {
@@ -120,7 +141,7 @@ body {
 }
 
 #appLogo {
-  width: 100%;
+  width: auto;
   height: 100%;
   object-fit: contain;
   display: block;
@@ -128,7 +149,7 @@ body {
 }
 
 #devLogo {
-  width: 100%;
+  width: auto;
   height: 100%;
   object-fit: contain;
   display: block;
