@@ -1101,26 +1101,36 @@ setupToggleModoPreciso();
 // =============================================================================
 // Preset selection (cache-only)
 // =============================================================================
-presetsSelect.addEventListener('change', () => {
+presetsSelect.addEventListener('change', async () => {
   if (!guardUserAction('preset-change')) return;
   const name = presetsSelect.value;
   if (!name) return;
 
   const preset = allPresetsCache.find(p => p.name === name);
   if (preset) {
-    currentPresetName = preset.name;
-    // Visually pin the selection (some platforms do not auto-select)
-    presetsSelect.value = preset.name;
-    wpm = preset.wpm;
-    wpmInput.value = wpm;
-    wpmSlider.value = wpm;
-    presetDescription.textContent = preset.description || '';
-    if (window.electronAPI && typeof window.electronAPI.setSelectedPreset === 'function') {
-      window.electronAPI.setSelectedPreset(preset.name).catch((err) => {
-        log.error('Error persisting selected preset:', err);
+    const settingsOverride = Object.assign({}, settingsCache || {}, {
+      selected_preset_by_language: {}
+    });
+    try {
+      const selected = await resolvePresetSelection({
+        list: allPresetsCache,
+        settings: settingsOverride,
+        language: idiomaActual,
+        currentPresetName: preset.name,
+        selectEl: presetsSelect,
+        wpmInput,
+        wpmSlider,
+        presetDescription,
+        electronAPI: window.electronAPI
       });
+      if (selected) {
+        currentPresetName = selected.name;
+        wpm = selected.wpm;
+        updatePreviewAndResults(currentText);
+      }
+    } catch (err) {
+      log.error('Error resolving preset selection:', err);
     }
-    updatePreviewAndResults(currentText);
   }
 });
 
