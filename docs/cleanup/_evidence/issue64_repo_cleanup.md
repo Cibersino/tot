@@ -4028,4 +4028,20 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: NO CHANGE
+
+- Uses renderer logger via `window.getLogger('presets')`; no local log aliases/wrappers.
+- Fallback logs exist on selection degradation paths via `log.warnOnce` with explicit stable keys and controlled `:${lang}` variant suffix.
+- Caught-exception fallbacks are logged with `log.error` (getDefaultPresets failure; selected preset persistence failure), while preserving best-effort behavior.
+- No window-send races (`webContents.send`) or direct IPC sites exist in this file, so “failed (ignored)” style is not applicable.
+- Additional logs for frequent normalization/defaulting (e.g., `normalizeSettings`) would add noise on healthy paths and are treated as contract-tolerated inputs.
+
+Observable contract/timing preserved (no code changes).
+
+Reviewer assessment:
+- PASS: Logging sites follow call-site style; warnOnce keys are explicit and controlled; no clear policy breach that warrants L4 changes.
+Reviewer gate: PASS
+
 ---
