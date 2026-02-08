@@ -4060,4 +4060,40 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+- Checked `public/js/presets.js` `normalizeSettings` usage for duplicated guards or unused locals; both call sites use it consistently.
+- Checked `public/js/presets.js` `combinePresets` and return shape (`return { list: finalList };`) against `public/renderer.js` call sites (`loadPresets`, `reloadPresetsList`).
+- Checked logging calls in `resolvePresetSelection` for `warnOnce` signature compliance and stable keys (`presets.selectedPreset.none:${lang}`, `presets.selectedPreset.missing:${lang}`).
+- Checked error logging in `loadPresetsIntoDom` / `resolvePresetSelection` for policy-aligned usage (`log.error(...)` in caught failures; best-effort behavior preserved).
+- Checked comments added in Level 5 against actual code blocks and behavior; no drift found.
+
+Observable contract and timing were preserved (no code changes).
+
+Reviewer assessment:
+- PASS: L6 checks are consistent with the current file; no leftover refactor artifacts detected; logging signatures/keys match `public/js/log.js` policy.
+
+Reviewer gate: PASS
+
+#### L7 — Smoke test (humano)
+
+Result: PASS
+
+Checklist (source: `docs/test_suite.md`, REG-PRESETS):
+- [x] REG-PRESETS-01 Create preset: selecting it updates WPM + time estimate.
+- [x] REG-PRESETS-02 Edit preset: updated WPM is applied when selected.
+- [x] REG-PRESETS-03 Change language: preset list reflects language base (user preset from other language not shown).
+- [x] REG-PRESETS-04 Delete preset: selection falls back safely (e.g., `default` or first available) and UI remains consistent.
+- [x] REG-PRESETS-06 Restore defaults: list repopulates; selection remains valid or falls back safely.
+- [x] REG-PRESETS-07 Persistence across sessions: selected preset persists per language base and is reapplied on relaunch.
+
 ---
+
+### public/js/menu_actions.js
+
+Date: `2026-02-08`
+Last commit: `ae1d04c5b86007f50afb41459f38454565b6c64f`
