@@ -241,6 +241,14 @@ function buildAppMenu(lang, opts = {}) {
         return false;
     };
 
+    const resolveDevTarget = () => {
+        const focused = BrowserWindow.getFocusedWindow();
+        const resolvedMain = resolveMainWindow();
+        if (focused && !focused.isDestroyed()) return focused;
+        if (resolvedMain && !resolvedMain.isDestroyed()) return resolvedMain;
+        return null;
+    };
+
     // Optional hook: the menu can trigger the language picker window.
     const onOpenLanguage =
         typeof opts.onOpenLanguage === 'function' ? opts.onOpenLanguage : null;
@@ -424,12 +432,7 @@ function buildAppMenu(lang, opts = {}) {
                     accelerator: 'CommandOrControl+R',
                     click: () => {
                         if (!canDispatchMenuAction('dev.reload')) return;
-                        const focused = BrowserWindow.getFocusedWindow();
-                        const resolvedMain = resolveMainWindow();
-                        const target =
-                            focused && !focused.isDestroyed()
-                                ? focused
-                                : (resolvedMain && !resolvedMain.isDestroyed() ? resolvedMain : null);
+                        const target = resolveDevTarget();
                         if (!target) return;
                         try {
                             target.webContents.reload();
@@ -447,12 +450,7 @@ function buildAppMenu(lang, opts = {}) {
                     accelerator: 'CommandOrControl+Shift+R',
                     click: () => {
                         if (!canDispatchMenuAction('dev.forceReload')) return;
-                        const focused = BrowserWindow.getFocusedWindow();
-                        const resolvedMain = resolveMainWindow();
-                        const target =
-                            focused && !focused.isDestroyed()
-                                ? focused
-                                : (resolvedMain && !resolvedMain.isDestroyed() ? resolvedMain : null);
+                        const target = resolveDevTarget();
                         if (!target) return;
                         try {
                             target.webContents.reloadIgnoringCache();
@@ -470,12 +468,7 @@ function buildAppMenu(lang, opts = {}) {
                     accelerator: 'Ctrl+Shift+I',
                     click: () => {
                         if (!canDispatchMenuAction('dev.toggleDevTools')) return;
-                        const focused = BrowserWindow.getFocusedWindow();
-                        const resolvedMain = resolveMainWindow();
-                        const target =
-                            focused && !focused.isDestroyed()
-                                ? focused
-                                : (resolvedMain && !resolvedMain.isDestroyed() ? resolvedMain : null);
+                        const target = resolveDevTarget();
                         if (!target) return;
                         try {
                             target.webContents.toggleDevTools();

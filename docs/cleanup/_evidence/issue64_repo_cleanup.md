@@ -3640,6 +3640,22 @@ Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
 - No `ipcMain.*` or `ipcRenderer.*` occurrences.
 - Delegated IPC registration: none found.
 
+#### L1 — Structural refactor and cleanup
+
+**Estado:** PASS (CHANGED)
+
+**Cambios realizados (estructurales; sin cambio de contrato):**
+- Se agregó helper local `resolveDevTarget()` dentro de `buildAppMenu` para centralizar selección “focused-or-main”.
+- Se reemplazaron 3 bloques duplicados de selección de target en el menú dev (`dev.reload`, `dev.forceReload`, `dev.toggleDevTools`) por `const target = resolveDevTarget();`.
+- Se mantuvieron intactos guards, logging y `try/catch` de cada acción.
+
+**Anclas (micro-quotes):**
+- Nuevo helper: `const resolveDevTarget = () => {`
+- Uso en acciones dev: `const target = resolveDevTarget();`
+- Guard preservado: `if (!canDispatchMenuAction('dev.reload')) return;` (análogos para las otras acciones)
+
+**Confirmación:** contrato/behavior/timing preservados (mismas llamadas y side effects; sin cambios de exports ni IPC surface).
+
 ---
 
 ### public/renderer.js (post-startup change)
