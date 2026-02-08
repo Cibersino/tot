@@ -3697,6 +3697,31 @@ Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
 - La evidencia revisada es consistente con un único canal “menu-click” (send → preload wrapper → router UI).
 - Sin señales de responsabilidades duplicadas ni semánticas divergentes entre consumidores.
 
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+
+Non-trivial changes (keys explícitas warnOnce/errorOnce):
+- `menu_builder.loadMainTranslations.overlayMissing:${requested}` -> `menu_builder.loadMainTranslations.overlayMissing`
+- `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}` -> `menu_builder.loadMainTranslations.empty:${fileVariant}`
+- `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}` -> `menu_builder.loadMainTranslations.failed:${fileVariant}`
+- `menu_builder.loadMainTranslations.requiredMissing:${langCode}` -> `menu_builder.loadMainTranslations.requiredMissing`
+
+Gain:
+- Cumple “Key rule” (keys estables; sin datos per-occurrence/arbitrary en el bucket de dedupe).
+Cost:
+- Dedupe más grueso: estos eventos ya no se diferencian por idioma; se dedupean por proceso (y en empty/failed, solo por `fileVariant`).
+Validation:
+- Forzar un idioma sin overlay y confirmar 1 solo warning del tipo overlayMissing en la sesión.
+- Introducir `main.json` vacío/JSON inválido y confirmar un warning por `fileVariant` (region/root).
+- Verificar por grep que ya no existen keys con `:${requested}` / `:${langCode}:` en esos eventos.
+
+Contract/behavior/timing:
+- Preservado: cambios solo en strings de dedupe key; no cambia flujo de fallback ni side effects.
+
+Reviewer gate: PASS
+- Cambio acotado, alineado a política, sin drift observable fuera de dedupe.
+
 ---
 
 ### public/renderer.js (post-startup change)
