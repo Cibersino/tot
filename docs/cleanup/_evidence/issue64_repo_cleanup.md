@@ -3443,7 +3443,30 @@ Reviewer gate: PASS
 
 ---
 
-## public/js/presets.js
+# Post-startup architecture change
 
-Date: `2026-01-24`
-Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
+Files touched:
+
+`electron/main.js`
+`electron/menu_builder.js`
+`public/renderer.js`
+
+---
+
+## electron/main.js (post-startup change)
+
+(TODO)
+
+---
+
+## electron/menu_builder.js (post-startup change)
+
+(TODO)
+
+---
+
+## public/renderer.js (post-startup change)
+
+(TODO)
+
+---
