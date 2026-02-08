@@ -2266,6 +2266,22 @@ Reviewer assessment:
 Notes:
 - No functional changes; comments-only.
 
+##### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+Evidence checked (anchors):
+- Helper usage: `resolveSettingsSnapshot`, `resetPresetsState`, `readClipboardText`.
+- Startup/READY gating: `maybeUnblockReady` guard and READY flags (`rendererInvariantsReady`, `startupReadyReceived`).
+- IPC subscription robustness: `renderer.ipc.*.unavailable` warnOnce paths; missing `onStartupReady` escalated to `errorOnce('renderer.startup.ready.unavailable', ...)`; duplicate READY guarded by `renderer.startup.ready.duplicate`.
+- Logging API signature consistency: `warnOnce(key, ...args)` / `errorOnce(key, ...args)` call sites remain in explicit-key mode; no wrapper/alias reintroduced.
+- Comment/code alignment: `Clipboard helpers (shared by overwrite/append)` divider and adjacent overwrite/append handlers show no drift.
+
+Reviewer assessment:
+- PASS (L6). NO CHANGE is justified: no dead code, no stale patterns, and logging signatures/keys remain consistent with `public/js/log.js`. Observable contract/timing preserved.
+
 ---
 
 ### public/renderer.js
