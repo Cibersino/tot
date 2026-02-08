@@ -408,12 +408,23 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
 // =============================================================================
 // Preset loading (merge + shadowing)
 // =============================================================================
+function resolveSettingsSnapshot(settingsSnapshot) {
+  return (settingsSnapshot && typeof settingsSnapshot === 'object')
+    ? settingsSnapshot
+    : (settingsCache || {});
+}
+
+function resetPresetsState() {
+  if (presetsSelect) presetsSelect.innerHTML = '';
+  if (presetDescription) presetDescription.textContent = '';
+  allPresetsCache = [];
+  currentPresetName = null;
+  return allPresetsCache;
+}
+
 const reloadPresetsList = async ({ settingsSnapshot } = {}) => {
   try {
-    const snapshot =
-      (settingsSnapshot && typeof settingsSnapshot === 'object')
-        ? settingsSnapshot
-        : (settingsCache || {});
+    const snapshot = resolveSettingsSnapshot(settingsSnapshot);
     const res = await loadPresetsIntoDom({
       electronAPI: window.electronAPI,
       settings: snapshot,
@@ -424,20 +435,13 @@ const reloadPresetsList = async ({ settingsSnapshot } = {}) => {
     return allPresetsCache;
   } catch (err) {
     log.error('Error loading presets:', err);
-    if (presetsSelect) presetsSelect.innerHTML = '';
-    if (presetDescription) presetDescription.textContent = '';
-    allPresetsCache = [];
-    currentPresetName = null;
-    return allPresetsCache;
+    return resetPresetsState();
   }
 };
 
 const loadPresets = async ({ settingsSnapshot } = {}) => {
   try {
-    const snapshot =
-      (settingsSnapshot && typeof settingsSnapshot === 'object')
-        ? settingsSnapshot
-        : (settingsCache || {});
+    const snapshot = resolveSettingsSnapshot(settingsSnapshot);
     await reloadPresetsList({ settingsSnapshot: snapshot });
     const selected = await resolvePresetSelection({
       list: allPresetsCache,
@@ -459,11 +463,7 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
     return allPresetsCache;
   } catch (err) {
     log.error('Error loading presets:', err);
-    if (presetsSelect) presetsSelect.innerHTML = '';
-    if (presetDescription) presetDescription.textContent = '';
-    allPresetsCache = [];
-    currentPresetName = null;
-    return allPresetsCache;
+    return resetPresetsState();
   }
 };
 
@@ -1196,18 +1196,25 @@ wpmInput.addEventListener('keydown', (e) => {
 // =============================================================================
 // Overwrite current text with clipboard content
 // =============================================================================
+async function readClipboardText({ tooLargeKey }) {
+  const res = await window.electronAPI.readClipboard();
+  if (res && res.ok === false) {
+    if (res.tooLarge === true) {
+      Notify.notifyMain(tooLargeKey);
+      return { ok: false, tooLarge: true };
+    }
+    throw new Error(res.error || 'clipboard read failed');
+  }
+  const text = (res && typeof res === 'object') ? (res.text || '') : (res || '');
+  return { ok: true, text };
+}
+
 btnOverwriteClipboard.addEventListener('click', async () => {
   if (!guardUserAction('clipboard-overwrite')) return;
   try {
-    const res = await window.electronAPI.readClipboard();
-    if (res && res.ok === false) {
-      if (res.tooLarge === true) {
-        Notify.notifyMain('renderer.alerts.clipboard_too_large');
-        return;
-      }
-      throw new Error(res.error || 'clipboard read failed');
-    }
-    let clip = (res && typeof res === 'object') ? (res.text || '') : (res || '');
+    const read = await readClipboardText({ tooLargeKey: 'renderer.alerts.clipboard_too_large' });
+    if (!read.ok) return;
+    const clip = read.text;
 
     if (clip.length > maxIpcChars) {
       Notify.notifyMain('renderer.alerts.clipboard_too_large');
@@ -1240,15 +1247,9 @@ btnOverwriteClipboard.addEventListener('click', async () => {
 btnAppendClipboard.addEventListener('click', async () => {
   if (!guardUserAction('clipboard-append')) return;
   try {
-    const res = await window.electronAPI.readClipboard();
-    if (res && res.ok === false) {
-      if (res.tooLarge === true) {
-        Notify.notifyMain('renderer.alerts.append_too_large');
-        return;
-      }
-      throw new Error(res.error || 'clipboard read failed');
-    }
-    const clip = (res && typeof res === 'object') ? (res.text || '') : (res || '');
+    const read = await readClipboardText({ tooLargeKey: 'renderer.alerts.append_too_large' });
+    if (!read.ok) return;
+    const clip = read.text;
     const current = await window.electronAPI.getCurrentText() || '';
 
     let joiner = '';

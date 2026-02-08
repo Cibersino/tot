@@ -2209,6 +2209,19 @@ Reviewer assessment:
 - PASS (L1). Changes are structural-only (helper relocation). No IPC surface, payload shapes, or side-effect ordering changes.
 - `getCronoLabels` is a `const` arrow used by `applyTranslations` (“const labelsCrono = getCronoLabels();”); moving it earlier reduces latent ordering hazards without changing runtime behavior.
 
+##### L2 — Clarity / robustness refactor (Codex)
+
+Decision: CHANGED
+
+- Presets: se introduce `resolveSettingsSnapshot(settingsSnapshot)` para centralizar la resolución `settingsSnapshot` vs `settingsCache || {}` usada por `reloadPresetsList` y `loadPresets`, evitando duplicación.
+- Presets: se introduce `resetPresetsState()` para consolidar el reset de UI/estado en los `catch` (vaciar select/description; `allPresetsCache = []`; `currentPresetName = null`) y mantener el mismo return (array).
+- Clipboard: se introduce `readClipboardText({ tooLargeKey })` para centralizar el patrón `readClipboard()` + rama `res.ok === false` + `tooLarge`, preservando las notificaciones específicas por handler y manteniendo los límites/truncación existentes.
+
+Reviewer assessment:
+- PASS (L2): La duplicación existe en el pre-patch tanto en presets (snapshot + reset) como en clipboard (`readClipboard` + `tooLarge`). La factorización propuesta es local, de baja indirection, y no altera el orden de handlers ni la superficie IPC. (Anclas: presets `settingsCache || {}` y reset `presetsSelect.innerHTML = ''`; clipboard `res.ok === false` + `Notify.notifyMain(...)`.):contentReference[oaicite:7]{index=7}:contentReference[oaicite:8]{index=8}
+- Validación recomendada (ampliación): probar clipboard overwrite/append en 3 casos: (1) texto normal, (2) `tooLarge`, (3) fallo no-tooLarge (debe caer en `catch` y notificar error como antes). Para presets: forzar error de carga y confirmar que UI queda reseteada igual que antes (select vacío, description vacía, caches limpias).:contentReference[oaicite:9]{index=9}
+- Nota de coherencia histórica: en la auditoría anterior se evitó DRY de clipboard por costo/ramificación; aquí el costo es mínimo (un helper + `tooLargeKey`) y la duplicación era literal, por lo que el tradeoff sí da.
+
 ---
 
 ### public/renderer.js
