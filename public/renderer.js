@@ -100,7 +100,7 @@ function isRendererReady() {
 function guardUserAction(actionId) {
   if (isRendererReady()) return true;
   log.warnOnce(
-    `renderer.preReady.${actionId}`,
+    `BOOTSTRAP:renderer.preReady.${actionId}`,
     'Renderer action ignored (pre-READY):',
     actionId
   );
@@ -118,7 +118,7 @@ function sendRendererCoreReady() {
     }
   } else {
     log.warnOnce(
-      'renderer.startup.coreReady.unavailable',
+      'BOOTSTRAP:renderer.startup.coreReady.unavailable',
       'startup:renderer-core-ready unavailable; renderer/core ready signal not sent.'
     );
   }
@@ -135,7 +135,7 @@ function sendSplashRemoved() {
     }
   } else {
     log.warnOnce(
-      'renderer.startup.splashRemoved.unavailable',
+      'BOOTSTRAP:renderer.startup.splashRemoved.unavailable',
       'startup:splash-removed unavailable; post-READY confirmation not sent.'
     );
   }
@@ -150,7 +150,7 @@ function maybeUnblockReady() {
     startupSplash.remove();
   } else {
     log.warnOnce(
-      'renderer.startup.splash.missing',
+      'BOOTSTRAP:renderer.startup.splash.missing',
       'Startup splash element missing; proceeding to READY.'
     );
   }
@@ -162,7 +162,7 @@ function markRendererInvariantsReady() {
   if (rendererInvariantsReady) return;
   if (!ipcSubscriptionsArmed || !uiListenersArmed) {
     log.warnOnce(
-      'renderer.startup.invariants.incomplete',
+      'BOOTSTRAP:renderer.startup.invariants.incomplete',
       'Renderer invariants marked ready before all listeners/subscriptions were armed.',
       { ipcSubscriptionsArmed, uiListenersArmed }
     );
@@ -403,6 +403,11 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       log.error('Error handling crono-state in renderer:', err);
     }
   });
+} else if (window.electronAPI) {
+  log.warnOnce(
+    'renderer.ipc.onCronoState.unavailable',
+    'onCronoState unavailable; crono state will not sync.'
+  );
 }
 
 // =============================================================================
@@ -517,7 +522,7 @@ function armIpcSubscriptions() {
         if (!isRendererReady()) {
           installCurrentTextState(text || '');
           log.warnOnce(
-            'renderer.preReady.currentTextUpdated',
+            'BOOTSTRAP:renderer.preReady.currentTextUpdated',
             'current-text-updated received pre-READY; state updated only.'
           );
           return;
@@ -527,6 +532,11 @@ function armIpcSubscriptions() {
         log.error('Error handling current-text-updated:', err);
       }
     });
+  } else if (window.electronAPI) {
+    log.warnOnce(
+      'renderer.ipc.onCurrentTextUpdated.unavailable',
+      'onCurrentTextUpdated unavailable; current text updates will not sync.'
+    );
   }
 
   // Subscribe to preset create/update notifications from main
@@ -534,7 +544,7 @@ function armIpcSubscriptions() {
     window.electronAPI.onPresetCreated(async (preset) => {
       if (!isRendererReady()) {
         log.warnOnce(
-          'renderer.preReady.presetCreated',
+          'BOOTSTRAP:renderer.preReady.presetCreated',
           'preset-created received pre-READY; ignored.'
         );
         return;
@@ -570,6 +580,11 @@ function armIpcSubscriptions() {
         log.error('Error handling preset-created event:', err);
       }
     });
+  } else if (window.electronAPI) {
+    log.warnOnce(
+      'renderer.ipc.onPresetCreated.unavailable',
+      'onPresetCreated unavailable; preset updates will not sync.'
+    );
   }
 
   if (window.electronAPI) {
@@ -586,28 +601,43 @@ function armIpcSubscriptions() {
         maybeUnblockReady();
       });
     } else {
-      log.warnOnce(
+      log.errorOnce(
         'renderer.startup.ready.unavailable',
-        'startup:ready listener unavailable; READY unblock may stall.'
+        'startup:ready listener unavailable; renderer may remain pre-READY.'
       );
     }
 
     if (typeof window.electronAPI.onSettingsChanged === 'function') {
       window.electronAPI.onSettingsChanged(settingsChangeHandler);
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onSettingsChanged.unavailable',
+        'onSettingsChanged unavailable; settings updates will not sync.'
+      );
     }
 
     if (typeof window.electronAPI.onEditorReady === 'function') {
       window.electronAPI.onEditorReady(() => {
         if (!isRendererReady()) {
           log.warnOnce(
-            'renderer.preReady.editorReady',
+            'BOOTSTRAP:renderer.preReady.editorReady',
             'editor-ready received pre-READY; ignored.'
           );
           return;
         }
         hideeditorLoader();
       });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onEditorReady.unavailable',
+        'onEditorReady unavailable; editor loader may not clear.'
+      );
     }
+  } else {
+    log.warnOnce(
+      'renderer.ipc.electronAPI.unavailable',
+      'electronAPI unavailable; IPC subscriptions not armed.'
+    );
   }
 
   ipcSubscriptionsArmed = true;
@@ -666,7 +696,7 @@ function setupToggleModoPreciso() {
     try {
       syncToggleFromSettings(settingsCache || {});
     } catch (err) {
-      log.warnOnce('renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+      log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
     }
   } catch (err) {
     log.error('Error initialazing toggleModoPreciso:', err);
@@ -733,7 +763,7 @@ async function runStartupOrchestrator() {
       try {
         syncToggleFromSettings(settingsSnapshot || {});
       } catch (err) {
-        log.warnOnce('renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+        log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
       }
     }
 

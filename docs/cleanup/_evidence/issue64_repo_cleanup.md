@@ -2235,6 +2235,22 @@ Reviewer assessment:
 - PASS (L3). Entry criteria for contract/architecture change not met; NO CHANGE is appropriate.
 - Minor: Codex did not demonstrate cross-file contract inspection (preload/main). Acceptable for NO CHANGE; require explicit cross-check if L3 is revisited.
 
+##### L4 — Logs (policy-driven tuning) (Codex re-pass)
+
+Decision: CHANGED
+
+- BOOTSTRAP keys: se prefixa `BOOTSTRAP:` solo en eventos realmente pre-READY/startup-only (pre-READY action gating, pre-READY ignores, handshake/splash/invariants, bootstrap-only syncToggleFromSettings), para cumplir la regla BOOTSTRAP (key o mensaje parte con `BOOTSTRAP:`).
+- Persistent mismatch warnings: se eliminan prefixes `BOOTSTRAP:` en ausencia de `electronAPI` y ausencia de hooks de suscripción; quedan como keys estables no-bootstrap (`renderer.ipc.*.unavailable`) para reflejar que el problema no “desaparece tras init”.
+- Readiness stall: ausencia de `onStartupReady` se promueve a `errorOnce` con key `renderer.startup.ready.unavailable`, porque puede dejar al renderer permanentemente pre-READY (gate `if (!rendererInvariantsReady || !startupReadyReceived) return`).
+
+Reviewer assessment:
+- PASS (L4). Política BOOTSTRAP corregida; fallbacks no silenciosos; dedupe estable; severidad ajustada en stall de READY.
+- Nota: cambio de buckets (keys) implica re-emisión 1 vez por sesión tras el update.
+
+Validation:
+- grep keys: `BOOTSTRAP:renderer.preReady.` y `renderer.ipc.*.unavailable` y `renderer.startup.ready.unavailable`.
+- Runtime: disparar una acción pre-READY (1 warnOnce), simular hook ausente (1 warnOnce), simular falta `onStartupReady` (1 errorOnce).
+
 ---
 
 ### public/renderer.js
