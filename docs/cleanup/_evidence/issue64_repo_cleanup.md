@@ -2196,6 +2196,19 @@ Last commit: `858c6626806343e4198d4bff1c250568184ce261`
 Reviewer assessment:
 - PASS (L0). Diagnosis-only; no invented direct IPC; invariants anchored; identifiers + micro-quotes locate obstacles.
 
+##### L1 — Structural refactor and cleanup (Codex)
+
+Decision: CHANGED
+- Moved `getCronoLabels` into the i18n wiring block before `applyTranslations` to eliminate a forward reference.
+- Relocated `showeditorLoader`/`hideeditorLoader` directly above the editor click handler to keep helpers adjacent to first use.
+- The stopwatch section now focuses on DOM refs and controller init, with label helper extracted earlier for linear reading.
+
+Contract/behavior/timing preserved.
+
+Reviewer assessment:
+- PASS (L1). Changes are structural-only (helper relocation). No IPC surface, payload shapes, or side-effect ordering changes.
+- `getCronoLabels` is a `const` arrow used by `applyTranslations` (“const labelsCrono = getCronoLabels();”); moving it earlier reduces latent ordering hazards without changing runtime behavior.
+
 ---
 
 ### public/renderer.js
