@@ -1224,7 +1224,7 @@ wpmInput.addEventListener('keydown', (e) => {
 });
 
 // =============================================================================
-// Overwrite current text with clipboard content
+// Clipboard helpers (shared by overwrite/append)
 // =============================================================================
 async function readClipboardText({ tooLargeKey }) {
   const res = await window.electronAPI.readClipboard();
@@ -1239,6 +1239,9 @@ async function readClipboardText({ tooLargeKey }) {
   return { ok: true, text };
 }
 
+// =============================================================================
+// Overwrite current text with clipboard content
+// =============================================================================
 btnOverwriteClipboard.addEventListener('click', async () => {
   if (!guardUserAction('clipboard-overwrite')) return;
   try {
@@ -1431,7 +1434,7 @@ btnEditPreset.addEventListener('click', async () => {
   try {
     const selectedName = presetsSelect.value;
     if (!selectedName) {
-      // Ask main to show native info dialog 'No hay ningun preset seleccionado para editar'
+      // Ask main to show the native info dialog when no preset is selected.
       if (window.electronAPI && typeof window.electronAPI.notifyNoSelectionEdit === 'function') {
         await window.electronAPI.notifyNoSelectionEdit();
         return;
