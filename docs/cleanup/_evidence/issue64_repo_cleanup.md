@@ -3971,4 +3971,16 @@ Reviewer gate:
 Reviewer assessment (sufficiency & inference quality):
 - PASS (correct block order + contract; anchors valid; note: “main interaction” is via injected `electronAPI`, not direct IPC in this file).
 
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- The file already follows a clear, linear structure (deps → helpers → async flows → export) with minimal jumps.
+- The only visible duplication is the `settingsSnapshot` initialization in two functions; extracting a helper would add indirection without reducing branches or improving readability.
+- Control flow is already flat with early returns where appropriate; further restructuring risks obscuring the timing and persistence paths.
+- The existing grouping keeps DOM updates and persistence side effects adjacent to selection logic, which aids reasoning about behavior.
+
+Reviewer assessment:
+- PASS for L1 gate as NO CHANGE: rationale aligns with the observed linear structure and minimal duplication; “timing risk” is somewhat generic here (module is mainly function declarations + a global export), but NO CHANGE remains a reasonable Level 1 outcome.
+
 ---
