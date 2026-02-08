@@ -61,9 +61,6 @@ const FALLBACK_LANGUAGES = [
 // Helpers (logging + validation)
 // =============================================================================
 
-// Helper to avoid repeating the same warning many times (keeps logs readable).
-const warnOnce = (...args) => log.warnOnce(...args);
-
 function isPlainObject(x) {
   if (!x || typeof x !== 'object') return false;
   return Object.getPrototypeOf(x) === Object.prototype;
@@ -79,8 +76,8 @@ function isMainInteractive() {
 
 function guardMainUserAction(actionId, message) {
   if (isMainInteractive()) return true;
-  warnOnce(
-    `main.preReady.${actionId}`,
+  log.warnOnce(
+    `BOOTSTRAP:main.preReady.${actionId}`,
     message || 'Main action ignored (pre-READY):',
     actionId
   );
@@ -125,7 +122,7 @@ function getSelectedLanguage() {
     const settings = settingsState.getSettings();
     const lang = settings && typeof settings.language === 'string' ? settings.language.trim() : '';
     if (!lang) {
-      warnOnce(
+      log.warnOnce(
         'main.menu.language.empty',
         `Settings language is empty; falling back to "${DEFAULT_LANG}" for menu.`
       );
@@ -145,7 +142,7 @@ function getSelectedLanguage() {
 function buildAppMenu(lang) {
   const candidate = typeof lang === 'string' ? lang.trim() : '';
   if (lang && !candidate) {
-    warnOnce(
+    log.warnOnce(
       'main.menu.language.invalid',
       'Invalid menu language override; using settings language instead.'
     );
@@ -429,7 +426,7 @@ function createLanguageWindow() {
     try {
       langWin.focus();
     } catch (err) {
-      warnOnce('langWin.focus', 'langWin.focus failed (ignored):', err);
+      log.warnOnce('langWin.focus', 'langWin.focus failed (ignored):', err);
     }
     return;
   }
@@ -512,7 +509,7 @@ function maybeAuthorizeStartupReady() {
 
 function handleSplashRemoved() {
   if (splashRemoved) {
-    warnOnce('startup.splashRemoved.duplicate', 'startup:splash-removed already handled (ignored).');
+    log.warnOnce('startup.splashRemoved.duplicate', 'startup:splash-removed already handled (ignored).');
     return;
   }
   splashRemoved = true;
@@ -527,7 +524,7 @@ function handleSplashRemoved() {
 
 function resolveLanguage(reason) {
   if (languageResolved) {
-    warnOnce(`startup.languageResolved.${reason}`, 'Language already resolved (ignored):', reason);
+    log.warnOnce(`startup.languageResolved.${reason}`, 'Language already resolved (ignored):', reason);
     return;
   }
   languageResolved = true;
@@ -617,7 +614,7 @@ function snapWindowFullyIntoWorkArea(win) {
   const wa = display && display.workArea ? display.workArea : null;
 
   if (!wa) {
-    warnOnce(
+    log.warnOnce(
       'snapWindowFullyIntoWorkArea.noWorkArea',
       'snapWindowFullyIntoWorkArea: display.workArea unavailable; snap skipped (ignored).'
     );
@@ -715,7 +712,7 @@ function installWorkAreaGuard(win, opts = {}) {
 async function createFlotanteWindow(options = {}) {
   // Normalize options to avoid TypeError when callers pass null (or other non-object values).
   if (!options || typeof options !== 'object') {
-    warnOnce(
+    log.warnOnce(
       'flotante.options.invalid',
       'createFlotanteWindow: invalid options; using defaults (ignored).'
     );
@@ -732,7 +729,7 @@ async function createFlotanteWindow(options = {}) {
         const ny = (typeof options.y === 'number') ? options.y : b.y;
         flotanteWin.setBounds({ x: nx, y: ny });
       } catch (err) {
-        warnOnce('flotanteWin.setBounds', 'flotanteWin.setBounds failed (ignored):', err);
+        log.warnOnce('flotanteWin.setBounds', 'flotanteWin.setBounds failed (ignored):', err);
       }
     }
     return flotanteWin;
@@ -767,7 +764,7 @@ async function createFlotanteWindow(options = {}) {
     const wa = display && display.workArea ? display.workArea : null;
 
     if (!wa) {
-      warnOnce(
+      log.warnOnce(
         'flotante.position.noWorkArea',
         'Flotante position: primary display workArea unavailable; using OS default position (ignored).'
       );
@@ -810,7 +807,7 @@ async function createFlotanteWindow(options = {}) {
         mainWin.webContents.send('flotante-closed');
       }
     } catch (err) {
-      warnOnce('mainWin.send.flotante-closed', "mainWin send('flotante-closed') failed (ignored):", err);
+      log.warnOnce('mainWin.send.flotante-closed', "mainWin send('flotante-closed') failed (ignored):", err);
     }
   });
 
@@ -827,7 +824,7 @@ async function createFlotanteWindow(options = {}) {
   try {
     snapWindowFullyIntoWorkArea(win);
   } catch (err) {
-    warnOnce('snapWindowFullyIntoWorkArea', 'snapWindowFullyIntoWorkArea failed (ignored):', err);
+    log.warnOnce('snapWindowFullyIntoWorkArea', 'snapWindowFullyIntoWorkArea failed (ignored):', err);
   }
 
   return win;
@@ -878,13 +875,13 @@ function broadcastCronoState() {
   try {
     if (isAliveWindow(mainWin)) mainWin.webContents.send('crono-state', state);
   } catch (err) {
-    warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', err);
+    log.warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', err);
   }
 
   try {
     if (isAliveWindow(flotanteWin)) flotanteWin.webContents.send('crono-state', state);
   } catch (err) {
-    warnOnce('send.crono-state.flotanteWin', 'send crono-state to flotanteWin failed (ignored):', err);
+    log.warnOnce('send.crono-state.flotanteWin', 'send crono-state to flotanteWin failed (ignored):', err);
   }
 }
 
@@ -944,7 +941,7 @@ function resetCrono() {
  */
 function setCronoElapsed(ms) {
   if (crono.running) {
-    warnOnce(
+    log.warnOnce(
       'crono.setElapsed.whileRunning',
       'crono-set-elapsed ignored: crono is running (ignored).'
     );
@@ -953,7 +950,7 @@ function setCronoElapsed(ms) {
 
   const n = Number(ms);
   if (!Number.isFinite(n)) {
-    warnOnce(
+    log.warnOnce(
       'crono.setElapsed.invalidNumber',
       'crono-set-elapsed ignored: invalid elapsed value (ignored).'
     );
@@ -1056,7 +1053,7 @@ ipcMain.handle('flotante-open', async () => {
     try {
       broadcastCronoState();
     } catch (err) {
-      warnOnce('broadcastCronoState.after.flotante-open', 'broadcastCronoState failed after flotante-open (ignored):', err);
+      log.warnOnce('broadcastCronoState.after.flotante-open', 'broadcastCronoState failed after flotante-open (ignored):', err);
     }
 
     if (crono.running) ensureCronoInterval();
@@ -1091,7 +1088,7 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
   if (!guardMainUserAction('flotante-command', 'flotante-command ignored (pre-READY).')) return;
   try {
     if (!cmd || !cmd.cmd) {
-      warnOnce('flotante-command.invalid', 'flotante-command ignored: payload missing cmd (ignored).');
+      log.warnOnce('flotante-command.invalid', 'flotante-command ignored: payload missing cmd (ignored).');
       return;
     }
 
@@ -1107,7 +1104,7 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
     if (cmd.cmd === 'set') {
       if (typeof cmd.value === 'undefined') {
-        warnOnce(
+        log.warnOnce(
           'flotante-command.set.missingValue',
           'flotante-command set ignored: payload missing value (ignored).'
         );
@@ -1116,7 +1113,7 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
       const n = Number(cmd.value);
       if (!Number.isFinite(n)) {
-        warnOnce(
+        log.warnOnce(
           'flotante-command.set.invalidNumber',
           'flotante-command set: invalid value; coerced to 0 (ignored).'
         );
@@ -1128,7 +1125,7 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
       return;
     }
 
-    warnOnce(
+    log.warnOnce(
       'flotante-command.unknown',
       'flotante-command ignored: unknown cmd (ignored):',
       String(cmd.cmd)
@@ -1184,13 +1181,13 @@ ipcMain.handle('open-preset-modal', (event, payload) => {
   }
   try {
     if (!mainWin) {
-      warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
+      log.warnOnce('open-preset-modal.noMainWin', 'open-preset-modal ignored: main window not ready (ignored).');
       return { ok: false, error: 'main window not ready' };
     }
 
     const senderWin = BrowserWindow.fromWebContents(event.sender);
     if (!senderWin || senderWin !== mainWin) {
-      warnOnce('open-preset-modal.unauthorized', 'open-preset-modal unauthorized (ignored).');
+      log.warnOnce('open-preset-modal.unauthorized', 'open-preset-modal unauthorized (ignored).');
       return { ok: false, error: 'unauthorized' };
     }
 
@@ -1215,14 +1212,14 @@ ipcMain.handle('open-preset-modal', (event, payload) => {
         if (sanitized.ok) {
           initialData.preset = sanitized.preset;
         } else {
-          warnOnce(
+          log.warnOnce(
             'open-preset-modal.invalidPreset',
             'open-preset-modal: invalid preset payload (ignored).'
           );
         }
       }
     } else if (typeof payload !== 'undefined') {
-      warnOnce(
+      log.warnOnce(
         'open-preset-modal.invalidPayload',
         'open-preset-modal: invalid payload; using defaults (ignored).'
       );
@@ -1269,7 +1266,7 @@ ipcMain.handle('get-app-runtime-info', () => {
 
 ipcMain.on('startup:renderer-core-ready', () => {
   if (rendererCoreReady) {
-    warnOnce('startup.rendererCoreReady.duplicate', 'startup:renderer-core-ready already handled (ignored).');
+    log.warnOnce('startup.rendererCoreReady.duplicate', 'startup:renderer-core-ready already handled (ignored).');
     return;
   }
   rendererCoreReady = true;
@@ -1366,7 +1363,7 @@ app.whenReady().then(() => {
         try {
           if (isAliveWindow(langWin)) langWin.close();
         } catch (err) {
-          warnOnce('langWin.close.after.language-selected', 'langWin.close failed after language-selected (ignored):', err);
+          log.warnOnce('langWin.close.after.language-selected', 'langWin.close failed after language-selected (ignored):', err);
         }
       }
     };

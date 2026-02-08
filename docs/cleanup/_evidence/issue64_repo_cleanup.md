@@ -3537,6 +3537,21 @@ Reviewer gate: PASS
 
 Observable contract/timing preserved (no code changes).
 
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+
+- Removed local `warnOnce` wrapper alias and updated all call sites to `log.warnOnce` (policy: no local wrappers/aliases).
+- Prefixed the pre-interactive guard dedupe key with `BOOTSTRAP:` in `guardMainUserAction` (from `main.preReady.<actionId>` to `BOOTSTRAP:main.preReady.<actionId>`).
+
+Reviewer assessment: PASS
+- Logging-only change; IPC surface, payloads, ordering, and timing are untouched.
+- `BOOTSTRAP:` prefix is coherent with `menuEnabled` being `false` until `startup:splash-removed` sets it `true`, after which the guard becomes unreachable in normal operation.
+
+Validation (manual/grep):
+- `rg -n -F "const warnOnce" electron/main.js` → no hits
+- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` → at least 1 hit
+
 ---
 
 ### electron/menu_builder.js (post-startup change)
