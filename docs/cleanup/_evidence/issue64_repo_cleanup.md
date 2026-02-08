@@ -2222,6 +2222,19 @@ Reviewer assessment:
 - Validación recomendada (ampliación): probar clipboard overwrite/append en 3 casos: (1) texto normal, (2) `tooLarge`, (3) fallo no-tooLarge (debe caer en `catch` y notificar error como antes). Para presets: forzar error de carga y confirmar que UI queda reseteada igual que antes (select vacío, description vacía, caches limpias).:contentReference[oaicite:9]{index=9}
 - Nota de coherencia histórica: en la auditoría anterior se evitó DRY de clipboard por costo/ramificación; aquí el costo es mínimo (un helper + `tooLargeKey`) y la duplicación era literal, por lo que el tradeoff sí da.
 
+##### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (in `public/renderer.js`):
+- Startup gating + handshake is consistent: `guardUserAction` blocks pre-READY actions and `maybeUnblockReady` gates READY on two flags. (anchors: "Renderer action ignored (pre-READY):" and `if (!rendererInvariantsReady || !startupReadyReceived) return`). 
+- Subscriptions are centralized in `armIpcSubscriptions()` via `window.electronAPI.*` with guards/dedupe (e.g., `onStartupReady` duplicate warnOnce; `onEditorReady` ignores pre-READY).
+- Clipboard path keeps explicit payload semantics (`setCurrentText({ text, meta:{ source, action } })`) and centralized normalization via `readClipboardText({ tooLargeKey })`.
+
+Reviewer assessment:
+- PASS (L3). Entry criteria for contract/architecture change not met; NO CHANGE is appropriate.
+- Minor: Codex did not demonstrate cross-file contract inspection (preload/main). Acceptable for NO CHANGE; require explicit cross-check if L3 is revisited.
+
 ---
 
 ### public/renderer.js
