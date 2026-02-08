@@ -3937,4 +3937,38 @@ Reviewer gate: PASS
 Date: `2026-02-08`
 Last commit: `cfc9580868fc95914119e9d1ef1fcc8d9f49be33`
 
+#### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+##### 0.1 Reading map
+- Block order: IIFE wrapper → top-level deps (`log`, `DEFAULT_LANG`, `getLangBase`) → helpers (`combinePresets`, `fillPresetsSelect`, `applyPresetSelection`) → async loaders (`loadPresetsIntoDom`, `resolvePresetSelection`) → global export (`window.RendererPresets`).
+- Linear breaks / obstacles (anchors/micro-quotes):
+  - `loadPresetsIntoDom` — settings snapshot fallback: `settings && typeof settings === 'object'`
+  - `resolvePresetSelection` — duplicated snapshot pattern: `settings && typeof settings === 'object'`
+  - `resolvePresetSelection` — persistence side effect interleaved: `electronAPI.setSelectedPreset(selected.name)`
+
+##### 0.2 Contract map
+- Exposed API / side effects:
+  - Exposes `window.RendererPresets` with `{ combinePresets, fillPresetsSelect, applyPresetSelection, loadPresetsIntoDom, resolvePresetSelection }`.
+  - Side effects: creates `log` via `window.getLogger('presets')`, reads `window.AppConstants` and `window.RendererI18n`, assigns `window.RendererPresets`.
+- Invariants and fallbacks (anchored to checks in this file):
+  - `loadPresetsIntoDom` requires `electronAPI` (throws): `throw new Error('electronAPI requerido`
+  - Language base falls back to default: `getLangBase(...) || DEFAULT_LANG`
+  - Missing preset arrays tolerated: `: []` (e.g., `presets_by_language`, `disabled_default_presets`)
+  - Selection fallback when missing: `p.name === 'default') || list[0]`
+  - Description fallback: `preset.description || ''`
+  - Empty selection clears UI: `selectEl.selectedIndex = -1`
+- IPC contract: none found in this file.
+  - ipcMain.handle/on/once: none
+  - ipcRenderer.invoke/send/on/once: none
+  - webContents.send: none
+- Delegated IPC registration: none found.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (correct block order + contract; anchors valid; note: “main interaction” is via injected `electronAPI`, not direct IPC in this file).
+
 ---
