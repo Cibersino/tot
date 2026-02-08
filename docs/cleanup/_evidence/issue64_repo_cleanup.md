@@ -3983,4 +3983,28 @@ Decision: NO CHANGE
 Reviewer assessment:
 - PASS for L1 gate as NO CHANGE: rationale aligns with the observed linear structure and minimal duplication; “timing risk” is somewhat generic here (module is mainly function declarations + a global export), but NO CHANGE remains a reasonable Level 1 outcome.
 
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: CHANGED
+
+- Change 1: Extract `normalizeSettings(settings, language)` and reuse it to replace the duplicated settings snapshot fallback in:
+  - `loadPresetsIntoDom` — `settings && typeof settings === 'object'`
+  - `resolvePresetSelection` — `settings && typeof settings === 'object'`
+  - Gain: centralizes a repeated edge-case fallback; reduces duplication in two async entrypoints.
+  - Cost: adds one small helper indirection.
+  - Validation:
+    - Static: confirm both previous fallback blocks are replaced by the helper and that the fallback literal preserves `{ language, presets_by_language: {}, selected_preset_by_language: {} }`.
+    - Manual: open app → change preset → confirm presets list loads and selection persists as before.
+
+- Change 2: Make current preset name trimming single-pass (`trimmedCurrent`) and make `hasCurrent` an explicit boolean.
+  - Gain: clearer selection path; avoids repeated `.trim()` and implicit string-truthiness.
+  - Cost: adds 1–2 local variables.
+  - Validation:
+    - Static: confirm `selectedName` remains `persisted || (hasCurrent ? trimmedCurrent : '')` and the “no selection” warnOnce branch is unchanged in behavior.
+
+Observable contract, side effects, and timing/ordering are preserved.
+
+Reviewer assessment:
+- PASS for L2 gate: Change 1 removes a literal duplication that exists twice in-file, without altering fallback shape; Change 2 is truthiness-equivalent to the current `hasCurrent`/`selectedName` logic and does not alter side effects (selection + persistence remain in the same ordering).
+
 ---

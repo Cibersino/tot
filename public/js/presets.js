@@ -6,6 +6,12 @@
   const { DEFAULT_LANG } = window.AppConstants;
   const { getLangBase } = window.RendererI18n;
 
+  function normalizeSettings(settings, language) {
+    return (settings && typeof settings === 'object')
+      ? settings
+      : { language, presets_by_language: {}, selected_preset_by_language: {} };
+  }
+
   function combinePresets({ settings = {}, defaults = {} }) {
     const langBase = getLangBase(settings.language) || DEFAULT_LANG;
     const userPresets = (settings.presets_by_language && Array.isArray(settings.presets_by_language[langBase]))
@@ -60,10 +66,7 @@
   }) {
     if (!electronAPI) throw new Error('electronAPI requerido para cargar presets');
 
-    const settingsSnapshot =
-      (settings && typeof settings === 'object')
-        ? settings
-        : { language, presets_by_language: {}, selected_preset_by_language: {} };
+    const settingsSnapshot = normalizeSettings(settings, language);
     let defaults = { general: [], languagePresets: {} };
     try {
       defaults = await electronAPI.getDefaultPresets();
@@ -87,10 +90,7 @@
     presetDescription,
     electronAPI
   }) {
-    const settingsSnapshot =
-      (settings && typeof settings === 'object')
-        ? settings
-        : { language, presets_by_language: {}, selected_preset_by_language: {} };
+    const settingsSnapshot = normalizeSettings(settings, language);
     const lang = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
 
     let selected = null;
@@ -100,8 +100,9 @@
       typeof settingsSnapshot.selected_preset_by_language[lang] === 'string'
         ? settingsSnapshot.selected_preset_by_language[lang].trim()
         : '';
-    const hasCurrent = typeof currentPresetName === 'string' && currentPresetName.trim();
-    const selectedName = persisted || (hasCurrent ? currentPresetName.trim() : '');
+    const trimmedCurrent = typeof currentPresetName === 'string' ? currentPresetName.trim() : '';
+    const hasCurrent = trimmedCurrent.length > 0;
+    const selectedName = persisted || (hasCurrent ? trimmedCurrent : '');
     if (!selectedName && !persisted && !hasCurrent) {
       log.warnOnce(
         `presets.selectedPreset.none:${lang}`,
