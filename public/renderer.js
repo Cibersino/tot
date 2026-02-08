@@ -202,6 +202,11 @@ if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
   throw new Error('[renderer] RendererI18n no disponible; no se puede continuar');
 }
 
+const getCronoLabels = () => ({
+  playLabel: tRenderer ? tRenderer('renderer.main.crono.play_symbol', '>') : '>',
+  pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
+});
+
 function applyTranslations() {
   if (!tRenderer) return;
   // Text selector buttons
@@ -1285,6 +1290,16 @@ btnAppendClipboard.addEventListener('click', async () => {
   }
 });
 
+function showeditorLoader() {
+  if (editorLoader) editorLoader.classList.add('visible');
+  if (btnEdit) btnEdit.disabled = true;
+}
+
+function hideeditorLoader() {
+  if (editorLoader) editorLoader.classList.remove('visible');
+  if (btnEdit) btnEdit.disabled = false;
+}
+
 btnEdit.addEventListener('click', async () => {
   if (!guardUserAction('open-editor')) return;
   showeditorLoader();
@@ -1491,22 +1506,7 @@ const cronoDisplay = document.getElementById('cronoDisplay');
 const tToggle = document.getElementById('cronoToggle');
 const tReset = document.getElementById('cronoReset');
 
-function showeditorLoader() {
-  if (editorLoader) editorLoader.classList.add('visible');
-  if (btnEdit) btnEdit.disabled = true;
-}
-
-function hideeditorLoader() {
-  if (editorLoader) editorLoader.classList.remove('visible');
-  if (btnEdit) btnEdit.disabled = false;
-}
-
 const cronoModule = (typeof window !== 'undefined') ? window.RendererCrono : null;
-
-const getCronoLabels = () => ({
-  playLabel: tRenderer ? tRenderer('renderer.main.crono.play_symbol', '>') : '>',
-  pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
-});
 
 const initCronoController = () => {
   if (!cronoModule || typeof cronoModule.createController !== 'function') {
