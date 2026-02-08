@@ -4143,3 +4143,19 @@ Reviewer assessment (sufficiency & inference quality):
 - Minor wording mismatch in Codex summary: “section headers/grouping” is mostly limited to small inline comments in the diff shown.
 
 Reviewer gate: PASS
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- File is already short and linear; additional L2 refactors would be mostly cosmetic rather than a net clarity/robustness gain.
+- Validation and error handling are already explicit at the two main risk points (`registerMenuAction` input checks + `setupListener` try/catch + warnOnce fallback).
+- Centralizing logging or “no-unsubscribe” handling into a helper would add indirection without reducing branches.
+- Tweaking `handleMenuClick` guard paths would likely change observable logging semantics (warn/error), so it is avoided.
+- The DOMContentLoaded retry path is plausibly timing-sensitive; changes there carry risk for minimal benefit.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. “NO CHANGE” is defensible given explicit guards, deduped warnings, and timing-sensitive init/retry behavior already being clear in-file.
