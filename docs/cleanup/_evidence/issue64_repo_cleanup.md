@@ -17,6 +17,159 @@
 
 ---
 
+### electron/main.js (re-audit post-startup change)
+
+Date: `2026-02-08`
+Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+- Codex complied with Level 0 constraints:
+  - Diagnosis only (no changes, no recommendations).
+  - No invented IPC channels/behaviors beyond what is present in `electron/main.js`.
+
+- 0.1 Reading map (validated against file):
+  - Block order (high level): overview → imports → constants (language picker + fallbacks) → helpers (validation + READY gating) → window refs + readiness flags → menu/dev utilities → window factories (main/editor/preset/lang) → readiness helpers (`maybeAuthorizeStartupReady`, `resolveLanguage`) → delegated IPC comment → flotante placement helpers → `createFlotanteWindow` → crono state/helpers → IPC handlers → app lifecycle.
+  - Linear breaks (anchors/micro-quotes):
+    - `createEditorWindow` — `editorWin.once('ready-to-show'`
+    - `createPresetWindow` — `presetWin.webContents.send('preset-init'`
+    - `createFlotanteWindow` — `installWorkAreaGuard(win`
+    - `app.whenReady().then` — `textState.registerIpc(ipcMain`
+
+- 0.2 Contract map (validated against file):
+  - Exports: none (side-effect entrypoint).
+  - Anchored invariants/fallbacks (examples):
+    - READY/menu gating: `mainReadyState === 'READY' && menuEnabled`
+    - Language fallback: `Settings language is empty; falling back to`
+    - Preset modal sender restriction: `open-preset-modal unauthorized (ignored).`
+    - Crono elapsed guard: `crono-set-elapsed ignored: crono is running`
+
+- IPC contract (mechanical; present in file):
+  - `ipcMain.handle`: `get-available-languages`, `crono-get-state`, `flotante-open`, `flotante-close`, `open-editor`, `open-preset-modal`, `get-app-config`, `get-app-version`, `get-app-runtime-info`
+  - `ipcMain.on`: `crono-toggle`, `crono-reset`, `crono-set-elapsed`, `flotante-command`, `startup:renderer-core-ready`, `startup:splash-removed`
+  - `ipcMain.once`: `language-selected`
+  - `ipcRenderer.*`: none in this file.
+  - `webContents.send` call sites (10): `editor-init-text`, `editor-ready`, `preset-init` (x2), `startup:ready`, `flotante-closed`, `crono-state` (main+flotante), plus re-sends on existing editor path.
+
+- Delegated IPC registration (present as calls, channels live elsewhere):
+  - `registerLinkIpc(...)`
+  - `textState.registerIpc(...)`
+  - `settingsState.registerIpc(...)`
+  - `presetsMain.registerIpc(...)`
+  - `updater.registerIpc(...)`
+
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- The file already has a coherent block structure with section headers (imports → constants → helpers → window factories → IPC → lifecycle), so reordering would be churn without clear readability gain.
+- Several side-effect registrations are intentionally sequenced (IPC handlers, `app.whenReady`, `app.on` hooks), and moving these for structure risks subtle timing/ordering regressions.
+- Many helpers are tightly coupled to shared state flags (`mainReadyState`, `menuEnabled`, `languageResolved`), and relocating them would not reduce cognitive load.
+- Duplications (e.g., repeated `editor-init-text`/`editor-ready` sends) are short, locally readable, and extracting them would add indirection without reducing branching.
+- The current layout already groups related responsibilities (window creation, readiness gating, flotante placement, crono), so a structural pass is unlikely to improve linear readability.
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- The file’s critical ordering (IPC registration + `app.whenReady` sequence) is timing-sensitive, and any structural changes there risk subtle race behavior.
+- Most duplicated send/try-catch blocks carry distinct log messages for context, so centralizing them would reduce diagnostic clarity or add parameterized indirection.
+- Existing guard/fallback paths already make edge cases explicit (`guardMainUserAction`, fallback language list, payload validation), leaving little robustness to gain without altering behavior.
+- Adding helpers would increase cross-jumping in a long file and violate the “more concepts than removed” rule for only modest readability payoff.
+- Any further robustness tweaks would likely change logging frequency or error surfacing, which counts as observable behavior.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (meets Level 2 output constraints; rationale is generic but does not invent IPC/behavior).
+- Note: analysis would be stronger if it named 2–3 concrete candidate edits (with anchors) and explicitly rejected them as timing/contract risks.
+
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `electron/preload.js` IPC surface:
+  - `openEditor` → `ipcRenderer.invoke('open-editor')`
+  - `openPresetModal` → `ipcRenderer.invoke('open-preset-modal', payload)`
+  - `getAppConfig/getAppVersion/getAppRuntimeInfo` → `ipcRenderer.invoke(...)`
+  - startup signals/listeners: `sendRendererCoreReady` → `startup:renderer-core-ready`; `sendStartupSplashRemoved` → `startup:splash-removed`; `onStartupReady` listener for `startup:ready`; `onCronoState` listener for `crono-state`.
+- `public/renderer.js` consumes `startup:ready` via `window.electronAPI.onStartupReady(...)` and emits `startup:renderer-core-ready` via `window.electronAPI.sendRendererCoreReady()`; retains pre-READY gating paths.
+- `electron/language_preload.js` emits first-run gate signal `ipcRenderer.send('language-selected', tag)` (payload is the normalized language tag).
+- `electron/main.js` has explicit `ipcMain.once('language-selected', ...)` first-run gate, and `ipcMain.on('startup:renderer-core-ready', ...)` feeding `maybeAuthorizeStartupReady()`.
+
+Reviewer assessment: PASS — Evidence reviewed shows a single, coherent IPC contract across preload/renderer/main for startup readiness + language selection; no duplicated responsibility or ambiguous contract found that would justify a Level 3 change without a repro/bug report.
+Reviewer gate: PASS
+
+Observable contract/timing preserved (no code changes).
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+
+- Removed local `warnOnce` wrapper alias and updated all call sites to `log.warnOnce` (policy: no local wrappers/aliases).
+- Prefixed the pre-interactive guard dedupe key with `BOOTSTRAP:` in `guardMainUserAction` (from `main.preReady.<actionId>` to `BOOTSTRAP:main.preReady.<actionId>`).
+
+Reviewer assessment: PASS
+- Logging-only change; IPC surface, payloads, ordering, and timing are untouched.
+- `BOOTSTRAP:` prefix is coherent with `menuEnabled` being `false` until `startup:splash-removed` sets it `true`, after which the guard becomes unreachable in normal operation.
+
+Validation (manual/grep):
+- `rg -n -F "const warnOnce" electron/main.js` → no hits
+- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` → at least 1 hit
+
+#### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Fixed drift in the "Constants / config" section note:
+  - Old (drifted): `Resolved after app readiness (requires app.getPath('userData')).`
+  - New: `Static file paths and fallback data used across startup.`
+- No functional changes; comments-only.
+
+Reviewer assessment: PASS
+- The old note was misleading: `electron/main.js` does not call `app.getPath('userData')`; this claim existed only in that comment.
+- Anchor: the comment directly above `const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');`.
+
+Validation (static):
+- Search for `app.getPath('userData')` in `electron/main.js` (should be absent after the change).
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Checked logging API usage: all sites call `log.warn|warnOnce|error|info|debug` directly; no leftover aliases/wrappers after L4.
+- Verified readiness gating log keys: `guardMainUserAction` uses `BOOTSTRAP:main.preReady.*` and only emits when the main UI is not interactive.
+- Confirmed IPC surface consistency within the file: key handlers/listeners remain present (`open-editor`, `open-preset-modal`, `crono-*`, `flotante-command`, `startup:renderer-core-ready`).
+- Confirmed delegated IPC registration remains present (`registerLinkIpc`, `textState.registerIpc`, `settingsState.registerIpc`, `presetsMain.registerIpc`, `updater.registerIpc`).
+- Comment/code alignment spot-check: L5 constants note remains accurate; end-of-file marker still present.
+
+Reviewer assessment: PASS
+- The reported checks target the only plausible leftover risks after L4 (logging API/style + dedupe keys) and L5 (comment drift), without inventing IPC/contract behavior.
+Reviewer gate: PASS
+
+Observable contract and timing were preserved (no code changes).
+
+Validation (manual/grep):
+- `rg -n -F "const warnOnce" electron/main.js` -> no hits
+- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` -> at least 1 hit
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Checklist ejecutado:**
+
+* [x] (1) Arranque sano: iniciar la app desde terminal (para ver logs de main). Confirmar que no hay *uncaught exceptions* / *unhandled rejections* durante el arranque y que la app llega a estado operativo (ventana principal visible e interactiva).
+* [x] (2) READY/interactividad: esperar a que se remueva el splash (o se habilite la interactividad) y verificar que las acciones normales no generan warnings de “ignored (pre-READY)” en el camino sano.
+* [x] (3) Guard pre-READY (stress): relanzar e intentar disparar 5–10 veces una accion mientras aun no hay interactividad (por ejemplo: abrir editor, abrir preset modal, abrir flotante, o acciones del crono). Esperado: no crash; si aparece un warning “... ignored (pre-READY)”, debe ser **deduplicado** (no spam) para la misma accion.
+* [x] (4) Crono sanity: en la ventana principal, toggle start/stop + reset; confirmar que el estado se refleja en UI y que no aparecen errores en logs.
+* [x] (5) Flotante sanity: abrir flotante, confirmar que recibe actualizaciones de `crono-state` (por ejemplo, iniciar el crono y ver que flotante se actualiza). Cerrar flotante y confirmar que la ventana principal sigue operativa.
+* [x] (6) Editor sanity: abrir editor (`open-editor`), confirmar que abre y recibe el texto inicial; cerrar y reabrir (ruta “already open”) sin errores.
+* [x] (7) Preset modal sanity: abrir preset modal (`open-preset-modal`) desde el flujo normal de UI; confirmar que abre y se inicializa (sin warnings de “unauthorized” en el camino sano). Cerrar y reabrir.
+* [x] (8) Logs: revisar que no hay spam nuevo de warnings tipo “failed (ignored):” durante uso normal; cualquier warning repetible debe estar razonablemente deduplicado (una sola vez por evento repetido sin nueva informacion).
+
+---
+
 ### electron/main.js
 
 Date: `2026-01-20`
@@ -251,159 +404,6 @@ Not smoke-testable (optional)
 - None.
 
 **CONCLUSION**: Smoke test **PASSED**
-
----
-
-### electron/main.js (post-startup change)
-
-Date: `2026-02-08`
-Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
-
-#### L0 — Minimal diagnosis (Codex, verified)
-
-- Codex complied with Level 0 constraints:
-  - Diagnosis only (no changes, no recommendations).
-  - No invented IPC channels/behaviors beyond what is present in `electron/main.js`.
-
-- 0.1 Reading map (validated against file):
-  - Block order (high level): overview → imports → constants (language picker + fallbacks) → helpers (validation + READY gating) → window refs + readiness flags → menu/dev utilities → window factories (main/editor/preset/lang) → readiness helpers (`maybeAuthorizeStartupReady`, `resolveLanguage`) → delegated IPC comment → flotante placement helpers → `createFlotanteWindow` → crono state/helpers → IPC handlers → app lifecycle.
-  - Linear breaks (anchors/micro-quotes):
-    - `createEditorWindow` — `editorWin.once('ready-to-show'`
-    - `createPresetWindow` — `presetWin.webContents.send('preset-init'`
-    - `createFlotanteWindow` — `installWorkAreaGuard(win`
-    - `app.whenReady().then` — `textState.registerIpc(ipcMain`
-
-- 0.2 Contract map (validated against file):
-  - Exports: none (side-effect entrypoint).
-  - Anchored invariants/fallbacks (examples):
-    - READY/menu gating: `mainReadyState === 'READY' && menuEnabled`
-    - Language fallback: `Settings language is empty; falling back to`
-    - Preset modal sender restriction: `open-preset-modal unauthorized (ignored).`
-    - Crono elapsed guard: `crono-set-elapsed ignored: crono is running`
-
-- IPC contract (mechanical; present in file):
-  - `ipcMain.handle`: `get-available-languages`, `crono-get-state`, `flotante-open`, `flotante-close`, `open-editor`, `open-preset-modal`, `get-app-config`, `get-app-version`, `get-app-runtime-info`
-  - `ipcMain.on`: `crono-toggle`, `crono-reset`, `crono-set-elapsed`, `flotante-command`, `startup:renderer-core-ready`, `startup:splash-removed`
-  - `ipcMain.once`: `language-selected`
-  - `ipcRenderer.*`: none in this file.
-  - `webContents.send` call sites (10): `editor-init-text`, `editor-ready`, `preset-init` (x2), `startup:ready`, `flotante-closed`, `crono-state` (main+flotante), plus re-sends on existing editor path.
-
-- Delegated IPC registration (present as calls, channels live elsewhere):
-  - `registerLinkIpc(...)`
-  - `textState.registerIpc(...)`
-  - `settingsState.registerIpc(...)`
-  - `presetsMain.registerIpc(...)`
-  - `updater.registerIpc(...)`
-
-#### L1 — Structural refactor and cleanup (Codex)
-
-Decision: NO CHANGE
-
-- The file already has a coherent block structure with section headers (imports → constants → helpers → window factories → IPC → lifecycle), so reordering would be churn without clear readability gain.
-- Several side-effect registrations are intentionally sequenced (IPC handlers, `app.whenReady`, `app.on` hooks), and moving these for structure risks subtle timing/ordering regressions.
-- Many helpers are tightly coupled to shared state flags (`mainReadyState`, `menuEnabled`, `languageResolved`), and relocating them would not reduce cognitive load.
-- Duplications (e.g., repeated `editor-init-text`/`editor-ready` sends) are short, locally readable, and extracting them would add indirection without reducing branching.
-- The current layout already groups related responsibilities (window creation, readiness gating, flotante placement, crono), so a structural pass is unlikely to improve linear readability.
-
-#### L2 — Clarity / robustness refactor (Codex)
-
-Decision: NO CHANGE
-
-- The file’s critical ordering (IPC registration + `app.whenReady` sequence) is timing-sensitive, and any structural changes there risk subtle race behavior.
-- Most duplicated send/try-catch blocks carry distinct log messages for context, so centralizing them would reduce diagnostic clarity or add parameterized indirection.
-- Existing guard/fallback paths already make edge cases explicit (`guardMainUserAction`, fallback language list, payload validation), leaving little robustness to gain without altering behavior.
-- Adding helpers would increase cross-jumping in a long file and violate the “more concepts than removed” rule for only modest readability payoff.
-- Any further robustness tweaks would likely change logging frequency or error surfacing, which counts as observable behavior.
-
-Reviewer assessment (sufficiency & inference quality):
-- PASS (meets Level 2 output constraints; rationale is generic but does not invent IPC/behavior).
-- Note: analysis would be stronger if it named 2–3 concrete candidate edits (with anchors) and explicitly rejected them as timing/contract risks.
-
-#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
-
-Decision: NO CHANGE (no Level 3 justified)
-
-Evidence checked (anchors):
-- `electron/preload.js` IPC surface:
-  - `openEditor` → `ipcRenderer.invoke('open-editor')`
-  - `openPresetModal` → `ipcRenderer.invoke('open-preset-modal', payload)`
-  - `getAppConfig/getAppVersion/getAppRuntimeInfo` → `ipcRenderer.invoke(...)`
-  - startup signals/listeners: `sendRendererCoreReady` → `startup:renderer-core-ready`; `sendStartupSplashRemoved` → `startup:splash-removed`; `onStartupReady` listener for `startup:ready`; `onCronoState` listener for `crono-state`.
-- `public/renderer.js` consumes `startup:ready` via `window.electronAPI.onStartupReady(...)` and emits `startup:renderer-core-ready` via `window.electronAPI.sendRendererCoreReady()`; retains pre-READY gating paths.
-- `electron/language_preload.js` emits first-run gate signal `ipcRenderer.send('language-selected', tag)` (payload is the normalized language tag).
-- `electron/main.js` has explicit `ipcMain.once('language-selected', ...)` first-run gate, and `ipcMain.on('startup:renderer-core-ready', ...)` feeding `maybeAuthorizeStartupReady()`.
-
-Reviewer assessment: PASS — Evidence reviewed shows a single, coherent IPC contract across preload/renderer/main for startup readiness + language selection; no duplicated responsibility or ambiguous contract found that would justify a Level 3 change without a repro/bug report.
-Reviewer gate: PASS
-
-Observable contract/timing preserved (no code changes).
-
-#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
-
-Decision: CHANGED
-
-- Removed local `warnOnce` wrapper alias and updated all call sites to `log.warnOnce` (policy: no local wrappers/aliases).
-- Prefixed the pre-interactive guard dedupe key with `BOOTSTRAP:` in `guardMainUserAction` (from `main.preReady.<actionId>` to `BOOTSTRAP:main.preReady.<actionId>`).
-
-Reviewer assessment: PASS
-- Logging-only change; IPC surface, payloads, ordering, and timing are untouched.
-- `BOOTSTRAP:` prefix is coherent with `menuEnabled` being `false` until `startup:splash-removed` sets it `true`, after which the guard becomes unreachable in normal operation.
-
-Validation (manual/grep):
-- `rg -n -F "const warnOnce" electron/main.js` → no hits
-- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` → at least 1 hit
-
-#### L5 — Comments (Codex)
-
-Decision: CHANGED
-
-- Fixed drift in the "Constants / config" section note:
-  - Old (drifted): `Resolved after app readiness (requires app.getPath('userData')).`
-  - New: `Static file paths and fallback data used across startup.`
-- No functional changes; comments-only.
-
-Reviewer assessment: PASS
-- The old note was misleading: `electron/main.js` does not call `app.getPath('userData')`; this claim existed only in that comment.
-- Anchor: the comment directly above `const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');`.
-
-Validation (static):
-- Search for `app.getPath('userData')` in `electron/main.js` (should be absent after the change).
-
-#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
-
-Decision: NO CHANGE
-
-No Level 6 changes justified.
-- Checked logging API usage: all sites call `log.warn|warnOnce|error|info|debug` directly; no leftover aliases/wrappers after L4.
-- Verified readiness gating log keys: `guardMainUserAction` uses `BOOTSTRAP:main.preReady.*` and only emits when the main UI is not interactive.
-- Confirmed IPC surface consistency within the file: key handlers/listeners remain present (`open-editor`, `open-preset-modal`, `crono-*`, `flotante-command`, `startup:renderer-core-ready`).
-- Confirmed delegated IPC registration remains present (`registerLinkIpc`, `textState.registerIpc`, `settingsState.registerIpc`, `presetsMain.registerIpc`, `updater.registerIpc`).
-- Comment/code alignment spot-check: L5 constants note remains accurate; end-of-file marker still present.
-
-Reviewer assessment: PASS
-- The reported checks target the only plausible leftover risks after L4 (logging API/style + dedupe keys) and L5 (comment drift), without inventing IPC/contract behavior.
-Reviewer gate: PASS
-
-Observable contract and timing were preserved (no code changes).
-
-Validation (manual/grep):
-- `rg -n -F "const warnOnce" electron/main.js` -> no hits
-- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` -> at least 1 hit
-
-#### L7 — Smoke (human-run; minimal)
-
-**Estado:** PASS
-
-**Checklist ejecutado:**
-
-* [x] (1) Arranque sano: iniciar la app desde terminal (para ver logs de main). Confirmar que no hay *uncaught exceptions* / *unhandled rejections* durante el arranque y que la app llega a estado operativo (ventana principal visible e interactiva).
-* [x] (2) READY/interactividad: esperar a que se remueva el splash (o se habilite la interactividad) y verificar que las acciones normales no generan warnings de “ignored (pre-READY)” en el camino sano.
-* [x] (3) Guard pre-READY (stress): relanzar e intentar disparar 5–10 veces una accion mientras aun no hay interactividad (por ejemplo: abrir editor, abrir preset modal, abrir flotante, o acciones del crono). Esperado: no crash; si aparece un warning “... ignored (pre-READY)”, debe ser **deduplicado** (no spam) para la misma accion.
-* [x] (4) Crono sanity: en la ventana principal, toggle start/stop + reset; confirmar que el estado se refleja en UI y que no aparecen errores en logs.
-* [x] (5) Flotante sanity: abrir flotante, confirmar que recibe actualizaciones de `crono-state` (por ejemplo, iniciar el crono y ver que flotante se actualiza). Cerrar flotante y confirmar que la ventana principal sigue operativa.
-* [x] (6) Editor sanity: abrir editor (`open-editor`), confirmar que abre y recibe el texto inicial; cerrar y reabrir (ruta “already open”) sin errores.
-* [x] (7) Preset modal sanity: abrir preset modal (`open-preset-modal`) desde el flujo normal de UI; confirmar que abre y se inicializa (sin warnings de “unauthorized” en el camino sano). Cerrar y reabrir.
-* [x] (8) Logs: revisar que no hay spam nuevo de warnings tipo “failed (ignored):” durante uso normal; cualquier warning repetible debe estar razonablemente deduplicado (una sola vez por evento repetido sin nueva informacion).
 
 ---
 
@@ -1343,204 +1343,7 @@ B) (Opcional) Clean run (para cubrir seeding de defaults)
 
 ---
 
-### electron/menu_builder.js
-
-Date: `2026-01-21`
-Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
-
-#### L0 — Diagnosis (no changes) (Codex, follow-up re-run; verified)
-
-Note: Follow-up re-run because prior L0 asserted an IPC payload shape without anchoring to a call site. This L0 keeps payload shape “unknown at this boundary” when only an identifier is visible.
-
-- Reading map (minimal)
-  - Block order: header/comments; external imports; internal imports; logger + helpers; translation loading; getDialogTexts; buildAppMenu; exports.
-  - Linear reading breaks:
-    - `buildAppMenu` -> sendMenuClick closure; micro-quote: "const sendMenuClick = (payload) => {"
-    - `buildAppMenu` -> menuTemplate literal; micro-quote: "const menuTemplate = ["
-    - `buildAppMenu` -> dev menu branch; micro-quote: "if (!app.isPackaged && showDevMenu) {"
-    - `loadBundle` -> file loop; micro-quote: "for (const file of files) {"
-
-- Contract map (minimal)
-  - Exposes: `getDialogTexts`, `buildAppMenu`, `resolveDialogText`; micro-quote: "module.exports = {"
-  - Observable side effects (anchored):
-    - Sets application menu; micro-quote: "Menu.setApplicationMenu(appMenu)"
-    - Reads translation files; micro-quote: "fs.readFileSync(file, 'utf8')"
-    - Sends renderer message; micro-quote: "webContents.send('menu-click', payload)"
-    - Toggles DevTools in dev menu; micro-quote: "mainWindow.webContents.toggleDevTools()"
-  - Suggested invariants/fallbacks (anchored):
-    - Language tag falls back to default; micro-quote: "normalizeLangTag(lang) || DEFAULT_LANG"
-    - Menu label falls back to provided fallback; micro-quote: "return fallback"
-    - Dialog text falls back to provided fallback; micro-quote: "return fallback"
-    - Empty JSON triggers fallback; micro-quote: "if (raw.trim() === '')"
-    - Dialog section falls back to empty object; micro-quote: "return tMain.dialog || {}"
-    - Menu click drops without window; micro-quote: "if (!mainWindow) {"
-
-- IPC contract
-  - A) Exhaustive IPC enumeration:
-    - `webContents.send('menu-click', payload)`
-      - Channel argument: `"menu-click"` (string literal)
-      - Handler/listener boundary args: n/a (send call)
-      - Return shape: n/a (send call)
-      - Payload argument: identifier `payload` (shape unknown at this boundary); micro-quote: "webContents.send('menu-click', payload)"
-      - Call-site micro-quote: "mainWindow.webContents.send('menu-click', payload)"
-    - No `ipcMain.*` or `ipcRenderer.*` occurrences found in this file.
-  - B) Delegated registration: none found.
-
-Reviewer assessment (L0 protocol compliance):
-- PASS (follow-up): no inferred payload/type shapes; contract statements are anchored with micro-quotes.
-- Note: the “no ipcMain/ipcRenderer occurrences” claim is a negative scan result (not independently evidenced inside this document).
-
-#### L1 — Structural refactor (Codex)
-
-Decision: NO CHANGE
-
-- File already follows a clear top-to-bottom structure (imports → helpers → translation loading → public helpers → menu build → exports).
-- Existing sections are well-labeled with comments, so reordering would add churn without clarity gain.
-- Helper functions are short and cohesive; splitting or renaming would not reduce cognitive load.
-- Core logic in buildAppMenu is linear and menuTemplate readability would not improve via extraction.
-- No obvious duplication that can be removed without adding indirection.
-
-Risk: N/A (no code changes).
-Validation: N/A (no code changes).
-
-Reviewer assessment (sufficiency & inference quality):
-- PASS. The “NO CHANGE” decision is consistent with the file’s existing explicit sectioning and responsibilities (menu + i18n + dialog texts).
-- No unanchored IPC/contract/payload-shape assertions were introduced at Level 1.
-
-#### L2 — Clarity / robustness refactor (Codex)
-
-Decision: NO CHANGE
-
-- Current helpers already encapsulate edge cases (missing translations, invalid/empty JSON, missing window) with deduped logging.
-- No repeated branching or error handling suitable for a new helper without adding indirection.
-- Menu template structure is inherently large; extracting it would increase jumping around without reducing complexity.
-- Translation loading flow is linear and explicit; making it more defensive risks altering fallback timing/logging.
-- No IPC registration or timing-sensitive sequencing is present to safely optimize without risk.
-
-Observable contract and timing preserved by making no changes.
-
-Reviewer assessment (sufficiency & inference quality):
-- PASS (NO CHANGE). Given zero code changes, the decision hinges on whether L2 changes would be low-risk and net-positive; the file already has warnOnce/errorOnce patterns and explicit fallback logic, so “do not touch” is defensible.
-- Minor wording issue in Codex report: while there is no IPC *registration* (`ipcMain.*` / `ipcRenderer.*`) in this module, it does perform IPC *sending* via `mainWindow.webContents.send('menu-click', payload)`. This does not affect the NO CHANGE conclusion.
-
-#### L3 — Architecture / contract changes (Codex) (follow-up re-run: evidence completeness)
-
-Decision: NO CHANGE (no Level 3 justified)
-
-Evidence (end-to-end IPC contract):
-- Sender outbound IPC in `electron/menu_builder.js` `sendMenuClick`; micro-quote: "webContents.send('menu-click', payload)".
-- Sender payload is a string literal at call sites in `electron/menu_builder.js` `menuTemplate`; micro-quote: "click: () => sendMenuClick('guia_basica')".
-- Receiver listens in `electron/preload.js` `onMenuClick`; micro-quote: "ipcRenderer.on('menu-click', wrapper)".
-- Preload forwards payload unchanged in `electron/preload.js` `onMenuClick`; micro-quote: "cb(payload)".
-
-Contract consistency (as argued by Codex):
-- Sender uses string action ids; receiver forwards unchanged; renderer consumes as action key and enforces string keys (per Codex inspection of `public/js/menu_actions.js`).
-
-Scan evidence (repo-wide):
-- Query/pattern: `rg -n "menu-click" -S .`
-- Matches: 21
-- Key matches (as reported by Codex):
-  - `electron/menu_builder.js` (channel + send call + logs)
-  - `electron/preload.js` (ipcRenderer.on/removeListener)
-  - `public/js/menu_actions.js` (menu-click received log line)
-  - Docs/evidence references (non-contractual mentions)
-
-Risk: N/A (no code changes).
-Validation: N/A (no code changes).
-
-Reviewer assessment (sufficiency & inference quality):
-- PASS (NO CHANGE). This follow-up addresses the prior gap by providing sender + receiver anchors and a repo-wide scan for the IPC channel literal.
-- Minor evidence gap: the renderer-side micro-quotes (payload type enforcement / Map key usage) are not backed by the included `menu-click` scan excerpt (they may not contain the literal). This does not affect the Level 3 “NO CHANGE” decision.
-
-#### L4 — Logs (policy-driven tuning) (Codex)
-
-Decision: CHANGED
-
-Diff evidence (what changed):
-- i18n load/parse warnOnce keys stopped embedding per-occurrence file paths:
-  - BEFORE (explicit key included `${String(file)}`):
-    - `menu_builder.loadMainTranslations:empty:...:${String(file)}`
-    - `menu_builder.loadMainTranslations:failed:...:${String(file)}`
-  - AFTER (stable keys bucketed by lang + controlled variant):
-    - `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`
-    - `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`
-  - Minimal structural support added to derive `fileVariant` (`region|root`) via indexed loop.
-
-- menu-click best-effort drops now use stable per-reason keys and “failed (ignored)” phrasing:
-  - BEFORE (keys included `${String(payload)}` and message “dropped ...”):
-    - `menu_builder.sendMenuClick:noWindow:${String(payload)}`
-    - `menu_builder.sendMenuClick:destroyed:${String(payload)}`
-    - `menu_builder.sendMenuClick:sendFailed:${String(payload)}`
-  - AFTER (stable keys by reason; payload remains in args):
-    - `menu_builder.sendMenuClick.noWindow` + `menu-click failed (ignored): no mainWindow`
-    - `menu_builder.sendMenuClick.destroyed` + `menu-click failed (ignored): mainWindow destroyed`
-    - `menu_builder.sendMenuClick.sendFailed` (catch) + `"webContents.send('menu-click') failed (ignored):"`
-
-Policy alignment (why this is justified):
-- Logging policy forbids per-occurrence/unbounded data in explicit dedupe keys (“Forbidden: per-occurrence / unbounded data in the key”).
-- warnOnce is explicitly appropriate for repeated send-to-window race conditions (“webContents.send() to a destroyed window” is canonical).
-
-Validation plan adequacy:
-- Sufficient for Level 4: grep for new stable keys; provoke empty/invalid/missing main.json to observe warnOnce; trigger menu clicks with no/destroyed window to observe the new “failed (ignored)” warnings.
-- Report limitation: does not mechanically enumerate *all* logging sites in the file to prove full compliance; however, the changes directly address concrete policy issues shown in the diff.
-
-Status: PASS (L4)
-
-#### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
-
-Decision: CHANGED (comments-only)
-
-Observed changes (diff-based):
-- Added a `Helpers (logging + utilities)` section divider near the top of the file (after internal imports) to better match the real block order.
-- Fixed comment drift in the translation fallback chain: replaced the hardcoded final fallback `'es'` with `DEFAULT_LANG`.
-- Removed a redundant comment above the menu install call (reduced noise).
-
-Reviewer assessment (sufficiency & inference quality):
-- PASS. The diff demonstrates comments-only edits (no logic/contract/timing changes).
-- The changes are justified: they improve navigability (section divider), reduce drift (DEFAULT_LANG vs hardcoded tag), and remove low-signal commentary.
-- Minor incompleteness in Codex’s report: it does not explicitly evidence that the top Overview comment and the end-of-file marker requirement were verified (they may already exist, but this is not demonstrated in the report).
-
-Evidence:
-- Diff: `electron/menu_builder.js` (comment-only hunks: Helpers divider insertion; fallback chain comment edit; removal of “Apply the menu...” comment).
-
-#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
-
-- Decision (Codex): NO CHANGE
-- Codex report summary:
-  - Claims logging API usage matches `log.js`; highlights `sendMenuClick` uses `log.warnOnce(...)` with explicit keys.
-  - States translation fallback comment matches code.
-  - Confirms single outbound IPC send path: `webContents.send('menu-click', payload)`.
-  - Confirms export surface unchanged: `module.exports = { getDialogTexts, buildAppMenu, resolveDialogText }`.
-  - Notes dev menu guard: `process.env.SHOW_DEV_MENU === '1'`.
-
-Reviewer assessment (sufficiency & inference quality):
-- PASS (NO CHANGE), but note: Codex evidence is not mechanically complete for a "hard-close" on its own.
-  - What Codex checked is relevant and accurate (anchors exist in-file), but it did not provide an exhaustive scan
-    (e.g., list of all logging callsites / signature checks, or an explicit leftover scan after L4/L5).
-  - Manual spot-check of the current file supports NO CHANGE:
-    - Outbound send: `mainWindow.webContents.send('menu-click', payload)` is still the single IPC emit.
-    - `sendMenuClick` warnOnce keys are stable and explicit: `menu_builder.sendMenuClick.noWindow|destroyed|sendFailed`.
-    - Translation load warnOnce keys are stable and do not embed dynamic file paths:
-      `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}` and
-      `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`.
-    - Export surface remains `getDialogTexts`, `buildAppMenu`, `resolveDialogText`.
-    - Dev menu guard is still `process.env.SHOW_DEV_MENU === '1'`.
-
-#### L7 — Smoke test (humano) — `electron/menu_builder.js` (cambio-focalizado: L4 logging/dedupe + i18n load)
-
-Result: Pass
-
-- [x] (1) Arranque + idle 20–30s con logs visibles: sin ERROR/uncaught; sin spam repetitivo.
-- [x] (2) Menu actions x3 (rutas sanas): cada accion hace lo esperado (abre modal/ventana/seccion); NO aparece `menu-click failed (ignored): ...`.
-- [x] (3) Menu -> About: abre correctamente; NO aparece `menu-click failed (ignored): ...`.
-- [x] (4) Menu -> Actualizar version (si existe): aparece resultado/dialogo; sin crash.
-- [x] (5) Cambio de idioma por flujo normal: UI/menu siguen correctos; NO aparecen warnings i18n tipo “Failed to load/parse main.json…” / “main.json is empty…”.
-- [x] (6) Repetir 1 accion post-idioma: funciona (sin regresion).
-- [x] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
-
----
-
-### electron/menu_builder.js (post-startup change)
+### electron/menu_builder.js (re-audit post-startup change)
 
 Date: `2026-02-08`
 Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
@@ -1735,6 +1538,203 @@ Reviewer assessment: PASS
   * **Action:** Relanzar y hacer click muy temprano en 1 acción de menú repetidas veces antes de que la UI esté plenamente lista.
   * **Expected result:** A lo sumo 1 warning deduplicado “Menu action ignored (pre-READY)” para ese `actionId`; sin spam.
   * **Evidence:** `canDispatchMenuAction(actionId)` emite `log.warnOnce(\`menu_builder.inert:${actionId}`, 'Menu action ignored (pre-READY):', actionId)`. 
+
+---
+
+### electron/menu_builder.js
+
+Date: `2026-01-21`
+Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
+
+#### L0 — Diagnosis (no changes) (Codex, follow-up re-run; verified)
+
+Note: Follow-up re-run because prior L0 asserted an IPC payload shape without anchoring to a call site. This L0 keeps payload shape “unknown at this boundary” when only an identifier is visible.
+
+- Reading map (minimal)
+  - Block order: header/comments; external imports; internal imports; logger + helpers; translation loading; getDialogTexts; buildAppMenu; exports.
+  - Linear reading breaks:
+    - `buildAppMenu` -> sendMenuClick closure; micro-quote: "const sendMenuClick = (payload) => {"
+    - `buildAppMenu` -> menuTemplate literal; micro-quote: "const menuTemplate = ["
+    - `buildAppMenu` -> dev menu branch; micro-quote: "if (!app.isPackaged && showDevMenu) {"
+    - `loadBundle` -> file loop; micro-quote: "for (const file of files) {"
+
+- Contract map (minimal)
+  - Exposes: `getDialogTexts`, `buildAppMenu`, `resolveDialogText`; micro-quote: "module.exports = {"
+  - Observable side effects (anchored):
+    - Sets application menu; micro-quote: "Menu.setApplicationMenu(appMenu)"
+    - Reads translation files; micro-quote: "fs.readFileSync(file, 'utf8')"
+    - Sends renderer message; micro-quote: "webContents.send('menu-click', payload)"
+    - Toggles DevTools in dev menu; micro-quote: "mainWindow.webContents.toggleDevTools()"
+  - Suggested invariants/fallbacks (anchored):
+    - Language tag falls back to default; micro-quote: "normalizeLangTag(lang) || DEFAULT_LANG"
+    - Menu label falls back to provided fallback; micro-quote: "return fallback"
+    - Dialog text falls back to provided fallback; micro-quote: "return fallback"
+    - Empty JSON triggers fallback; micro-quote: "if (raw.trim() === '')"
+    - Dialog section falls back to empty object; micro-quote: "return tMain.dialog || {}"
+    - Menu click drops without window; micro-quote: "if (!mainWindow) {"
+
+- IPC contract
+  - A) Exhaustive IPC enumeration:
+    - `webContents.send('menu-click', payload)`
+      - Channel argument: `"menu-click"` (string literal)
+      - Handler/listener boundary args: n/a (send call)
+      - Return shape: n/a (send call)
+      - Payload argument: identifier `payload` (shape unknown at this boundary); micro-quote: "webContents.send('menu-click', payload)"
+      - Call-site micro-quote: "mainWindow.webContents.send('menu-click', payload)"
+    - No `ipcMain.*` or `ipcRenderer.*` occurrences found in this file.
+  - B) Delegated registration: none found.
+
+Reviewer assessment (L0 protocol compliance):
+- PASS (follow-up): no inferred payload/type shapes; contract statements are anchored with micro-quotes.
+- Note: the “no ipcMain/ipcRenderer occurrences” claim is a negative scan result (not independently evidenced inside this document).
+
+#### L1 — Structural refactor (Codex)
+
+Decision: NO CHANGE
+
+- File already follows a clear top-to-bottom structure (imports → helpers → translation loading → public helpers → menu build → exports).
+- Existing sections are well-labeled with comments, so reordering would add churn without clarity gain.
+- Helper functions are short and cohesive; splitting or renaming would not reduce cognitive load.
+- Core logic in buildAppMenu is linear and menuTemplate readability would not improve via extraction.
+- No obvious duplication that can be removed without adding indirection.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The “NO CHANGE” decision is consistent with the file’s existing explicit sectioning and responsibilities (menu + i18n + dialog texts).
+- No unanchored IPC/contract/payload-shape assertions were introduced at Level 1.
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- Current helpers already encapsulate edge cases (missing translations, invalid/empty JSON, missing window) with deduped logging.
+- No repeated branching or error handling suitable for a new helper without adding indirection.
+- Menu template structure is inherently large; extracting it would increase jumping around without reducing complexity.
+- Translation loading flow is linear and explicit; making it more defensive risks altering fallback timing/logging.
+- No IPC registration or timing-sensitive sequencing is present to safely optimize without risk.
+
+Observable contract and timing preserved by making no changes.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE). Given zero code changes, the decision hinges on whether L2 changes would be low-risk and net-positive; the file already has warnOnce/errorOnce patterns and explicit fallback logic, so “do not touch” is defensible.
+- Minor wording issue in Codex report: while there is no IPC *registration* (`ipcMain.*` / `ipcRenderer.*`) in this module, it does perform IPC *sending* via `mainWindow.webContents.send('menu-click', payload)`. This does not affect the NO CHANGE conclusion.
+
+#### L3 — Architecture / contract changes (Codex) (follow-up re-run: evidence completeness)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence (end-to-end IPC contract):
+- Sender outbound IPC in `electron/menu_builder.js` `sendMenuClick`; micro-quote: "webContents.send('menu-click', payload)".
+- Sender payload is a string literal at call sites in `electron/menu_builder.js` `menuTemplate`; micro-quote: "click: () => sendMenuClick('guia_basica')".
+- Receiver listens in `electron/preload.js` `onMenuClick`; micro-quote: "ipcRenderer.on('menu-click', wrapper)".
+- Preload forwards payload unchanged in `electron/preload.js` `onMenuClick`; micro-quote: "cb(payload)".
+
+Contract consistency (as argued by Codex):
+- Sender uses string action ids; receiver forwards unchanged; renderer consumes as action key and enforces string keys (per Codex inspection of `public/js/menu_actions.js`).
+
+Scan evidence (repo-wide):
+- Query/pattern: `rg -n "menu-click" -S .`
+- Matches: 21
+- Key matches (as reported by Codex):
+  - `electron/menu_builder.js` (channel + send call + logs)
+  - `electron/preload.js` (ipcRenderer.on/removeListener)
+  - `public/js/menu_actions.js` (menu-click received log line)
+  - Docs/evidence references (non-contractual mentions)
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE). This follow-up addresses the prior gap by providing sender + receiver anchors and a repo-wide scan for the IPC channel literal.
+- Minor evidence gap: the renderer-side micro-quotes (payload type enforcement / Map key usage) are not backed by the included `menu-click` scan excerpt (they may not contain the literal). This does not affect the Level 3 “NO CHANGE” decision.
+
+#### L4 — Logs (policy-driven tuning) (Codex)
+
+Decision: CHANGED
+
+Diff evidence (what changed):
+- i18n load/parse warnOnce keys stopped embedding per-occurrence file paths:
+  - BEFORE (explicit key included `${String(file)}`):
+    - `menu_builder.loadMainTranslations:empty:...:${String(file)}`
+    - `menu_builder.loadMainTranslations:failed:...:${String(file)}`
+  - AFTER (stable keys bucketed by lang + controlled variant):
+    - `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`
+    - `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`
+  - Minimal structural support added to derive `fileVariant` (`region|root`) via indexed loop.
+
+- menu-click best-effort drops now use stable per-reason keys and “failed (ignored)” phrasing:
+  - BEFORE (keys included `${String(payload)}` and message “dropped ...”):
+    - `menu_builder.sendMenuClick:noWindow:${String(payload)}`
+    - `menu_builder.sendMenuClick:destroyed:${String(payload)}`
+    - `menu_builder.sendMenuClick:sendFailed:${String(payload)}`
+  - AFTER (stable keys by reason; payload remains in args):
+    - `menu_builder.sendMenuClick.noWindow` + `menu-click failed (ignored): no mainWindow`
+    - `menu_builder.sendMenuClick.destroyed` + `menu-click failed (ignored): mainWindow destroyed`
+    - `menu_builder.sendMenuClick.sendFailed` (catch) + `"webContents.send('menu-click') failed (ignored):"`
+
+Policy alignment (why this is justified):
+- Logging policy forbids per-occurrence/unbounded data in explicit dedupe keys (“Forbidden: per-occurrence / unbounded data in the key”).
+- warnOnce is explicitly appropriate for repeated send-to-window race conditions (“webContents.send() to a destroyed window” is canonical).
+
+Validation plan adequacy:
+- Sufficient for Level 4: grep for new stable keys; provoke empty/invalid/missing main.json to observe warnOnce; trigger menu clicks with no/destroyed window to observe the new “failed (ignored)” warnings.
+- Report limitation: does not mechanically enumerate *all* logging sites in the file to prove full compliance; however, the changes directly address concrete policy issues shown in the diff.
+
+Status: PASS (L4)
+
+#### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
+
+Decision: CHANGED (comments-only)
+
+Observed changes (diff-based):
+- Added a `Helpers (logging + utilities)` section divider near the top of the file (after internal imports) to better match the real block order.
+- Fixed comment drift in the translation fallback chain: replaced the hardcoded final fallback `'es'` with `DEFAULT_LANG`.
+- Removed a redundant comment above the menu install call (reduced noise).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. The diff demonstrates comments-only edits (no logic/contract/timing changes).
+- The changes are justified: they improve navigability (section divider), reduce drift (DEFAULT_LANG vs hardcoded tag), and remove low-signal commentary.
+- Minor incompleteness in Codex’s report: it does not explicitly evidence that the top Overview comment and the end-of-file marker requirement were verified (they may already exist, but this is not demonstrated in the report).
+
+Evidence:
+- Diff: `electron/menu_builder.js` (comment-only hunks: Helpers divider insertion; fallback chain comment edit; removal of “Apply the menu...” comment).
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+- Decision (Codex): NO CHANGE
+- Codex report summary:
+  - Claims logging API usage matches `log.js`; highlights `sendMenuClick` uses `log.warnOnce(...)` with explicit keys.
+  - States translation fallback comment matches code.
+  - Confirms single outbound IPC send path: `webContents.send('menu-click', payload)`.
+  - Confirms export surface unchanged: `module.exports = { getDialogTexts, buildAppMenu, resolveDialogText }`.
+  - Notes dev menu guard: `process.env.SHOW_DEV_MENU === '1'`.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE), but note: Codex evidence is not mechanically complete for a "hard-close" on its own.
+  - What Codex checked is relevant and accurate (anchors exist in-file), but it did not provide an exhaustive scan
+    (e.g., list of all logging callsites / signature checks, or an explicit leftover scan after L4/L5).
+  - Manual spot-check of the current file supports NO CHANGE:
+    - Outbound send: `mainWindow.webContents.send('menu-click', payload)` is still the single IPC emit.
+    - `sendMenuClick` warnOnce keys are stable and explicit: `menu_builder.sendMenuClick.noWindow|destroyed|sendFailed`.
+    - Translation load warnOnce keys are stable and do not embed dynamic file paths:
+      `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}` and
+      `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`.
+    - Export surface remains `getDialogTexts`, `buildAppMenu`, `resolveDialogText`.
+    - Dev menu guard is still `process.env.SHOW_DEV_MENU === '1'`.
+
+#### L7 — Smoke test (humano) — `electron/menu_builder.js` (cambio-focalizado: L4 logging/dedupe + i18n load)
+
+Result: Pass
+
+- [x] (1) Arranque + idle 20–30s con logs visibles: sin ERROR/uncaught; sin spam repetitivo.
+- [x] (2) Menu actions x3 (rutas sanas): cada accion hace lo esperado (abre modal/ventana/seccion); NO aparece `menu-click failed (ignored): ...`.
+- [x] (3) Menu -> About: abre correctamente; NO aparece `menu-click failed (ignored): ...`.
+- [x] (4) Menu -> Actualizar version (si existe): aparece resultado/dialogo; sin crash.
+- [x] (5) Cambio de idioma por flujo normal: UI/menu siguen correctos; NO aparecen warnings i18n tipo “Failed to load/parse main.json…” / “main.json is empty…”.
+- [x] (6) Repetir 1 accion post-idioma: funciona (sin regresion).
+- [x] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
 
 ---
 
@@ -2166,6 +2166,38 @@ Result: PASS
 
 ---
 
+### public/renderer.js (re-audit post-startup change)
+
+Date: `2026-02-08`
+Last commit: `858c6626806343e4198d4bff1c250568184ce261`
+
+##### L0 — Minimal diagnosis (Codex, verified)
+
+**0.1 Reading map**
+- Block order (high-level): header/overview comment; logger + `AppConstants` check/destructure; DOM references; UI key lists; startup gating helpers; shared state; i18n wiring + `applyTranslations`; WPM/preset state + presets integration; CountUtils + text helpers; FormatUtils; preview/results logic; crono state subscription; preset loading helpers; bootstrapping + IPC subscriptions + mode toggle setup + startup orchestrator; info modal utilities; top-bar menu action registration; UI event handlers; stopwatch DOM + controller init; final startup calls.
+- Linear breaks (identifier + micro-quote):
+  - `applyTranslations` — "Text selector buttons".
+  - `armIpcSubscriptions` — "Subscribe to updates from main".
+  - `runStartupOrchestrator` — "BOOTSTRAP: getSettings failed; using defaults".
+  - `showInfoModal` — "Fetch HTML (manual pages use a language fallback list)".
+  - `registerMenuActionGuarded` — "menu_actions.js must be loaded before renderer.js".
+
+**0.2 Contract map**
+- Exposure: no exports. Side effects include DOM reads/writes, event listener registration, and calls into `window.electronAPI`, `window.menuActions`, and other window-provided modules.
+- Invariants (anchored):
+  - `AppConstants` required — "AppConstants no disponible".
+  - `RendererI18n` required — "RendererI18n no disponible".
+  - `CountUtils.contarTexto` required — "CountUtils no disponible".
+  - User actions gated by readiness — "Renderer action ignored (pre-READY)" in `guardUserAction`.
+  - READY gate depends on two flags — "if (!rendererInvariantsReady || !startupReadyReceived) return" in `maybeUnblockReady`.
+- IPC contract A (direct ipcMain/ipcRenderer/webContents occurrences in this file): none found.
+- IPC contract B (delegated registration helpers): none detected.
+
+Reviewer assessment:
+- PASS (L0). Diagnosis-only; no invented direct IPC; invariants anchored; identifiers + micro-quotes locate obstacles.
+
+---
+
 ### public/renderer.js
 
 Date: `2026-01-23`
@@ -2373,11 +2405,6 @@ Observable contract, side effects, and timing/order were preserved (deletions of
 
 [x] **Cerrar app y relanzar**.
    Esperado: init carga último texto persistido (o vacío si se vació); sin errores en startup.
-
-### public/renderer.js (post-startup change)
-
-Date: `2026-02-08`
-Last commit: `858c6626806343e4198d4bff1c250568184ce261`
 
 ---
 
