@@ -115,7 +115,7 @@ function loadMainTranslations(lang) {
         overlay = loadOverlay(requested, base);
         if (!overlay) {
             log.warnOnce(
-                `menu_builder.loadMainTranslations.overlayMissing:${requested}`,
+                'menu_builder.loadMainTranslations.overlayMissing',
                 'No overlay main.json found (using default only):',
                 { requested, base }
             );
@@ -160,7 +160,7 @@ function loadBundle(langCode, requested, required) {
 
             if (raw.trim() === '') {
                 log.warnOnce(
-                    `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`,
+                    `menu_builder.loadMainTranslations.empty:${fileVariant}`,
                     'main.json is empty (trying fallback):',
                     { requested, langCode, file }
                 );
@@ -170,7 +170,7 @@ function loadBundle(langCode, requested, required) {
             return JSON.parse(raw);
         } catch (err) {
             log.warnOnce(
-                `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`,
+                `menu_builder.loadMainTranslations.failed:${fileVariant}`,
                 'Failed to load/parse main.json (trying fallback):',
                 { requested, langCode, file },
                 err
@@ -180,7 +180,7 @@ function loadBundle(langCode, requested, required) {
 
     if (required) {
         log.errorOnce(
-            `menu_builder.loadMainTranslations.requiredMissing:${langCode}`,
+            'menu_builder.loadMainTranslations.requiredMissing',
             'Required main.json missing/invalid:',
             { langCode, files }
         );
