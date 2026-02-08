@@ -155,7 +155,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/count.js` — Cálculos de conteo (palabras/caracteres; modo simple/preciso).
 - `public/js/format.js` — Helpers de formateo (tiempo y numeros); expone `window.FormatUtils`.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
-- `public/js/presets.js` — UX del selector y flujos de presets en UI (con IPC hacia main).
+- `public/js/presets.js` — UX del selector y flujos de presets en UI (sin IPC directo; usa `electronAPI.getDefaultPresets` / `electronAPI.setSelectedPreset`).
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI.
 * `public/js/info_modal_links.js` — Binding de enlaces dentro de HTML de info modals (ruteo `appdoc:` y externos); logger propio vía `window.getLogger('info-modal-links')`.

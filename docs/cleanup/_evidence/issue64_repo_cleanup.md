@@ -4007,4 +4007,25 @@ Observable contract, side effects, and timing/ordering are preserved.
 Reviewer assessment:
 - PASS for L2 gate: Change 1 removes a literal duplication that exists twice in-file, without altering fallback shape; Change 2 is truthiness-equivalent to the current `hasCurrent`/`selectedName` logic and does not alter side effects (selection + persistence remain in the same ordering).
 
+#### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/js/presets.js` no IPC directo; dependencia por bridge: `if (!electronAPI) throw new Error('electronAPI requerido`
+- `public/js/presets.js` llamada a main para defaults: `defaults = await electronAPI.getDefaultPresets()`
+- `public/js/presets.js` persistencia de selección: `await electronAPI.setSelectedPreset(selected.name)`
+- `public/js/presets.js` return shape del loader: `return { list: finalList };`
+- `public/renderer.js` consumo de `RendererPresets`: `const { applyPresetSelection, loadPresetsIntoDom, resolvePresetSelection } = window.RendererPresets || {};`
+- `public/renderer.js` call sites: `await loadPresetsIntoDom({ ... })` y `await resolvePresetSelection({ ... })`
+- `electron/preload.js` bridge: `getDefaultPresets: () => ipcRenderer.invoke('get-default-presets')`
+- `electron/presets_main.js` handler: `ipcMain.handle('get-default-presets', () => {`
+
+No observable contract/timing changes were made.
+
+Reviewer assessment:
+- PASS: No evidence of cross-module contract ambiguity or consumer mismatch requiring Level 3.
+
+Reviewer gate: PASS
+
 ---
