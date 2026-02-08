@@ -2171,7 +2171,7 @@ Result: PASS
 Date: `2026-02-08`
 Last commit: `858c6626806343e4198d4bff1c250568184ce261`
 
-##### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
 **0.1 Reading map**
 - Block order (high-level): header/overview comment; logger + `AppConstants` check/destructure; DOM references; UI key lists; startup gating helpers; shared state; i18n wiring + `applyTranslations`; WPM/preset state + presets integration; CountUtils + text helpers; FormatUtils; preview/results logic; crono state subscription; preset loading helpers; bootstrapping + IPC subscriptions + mode toggle setup + startup orchestrator; info modal utilities; top-bar menu action registration; UI event handlers; stopwatch DOM + controller init; final startup calls.
@@ -2196,7 +2196,7 @@ Last commit: `858c6626806343e4198d4bff1c250568184ce261`
 Reviewer assessment:
 - PASS (L0). Diagnosis-only; no invented direct IPC; invariants anchored; identifiers + micro-quotes locate obstacles.
 
-##### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: CHANGED
 - Moved `getCronoLabels` into the i18n wiring block before `applyTranslations` to eliminate a forward reference.
@@ -2209,7 +2209,7 @@ Reviewer assessment:
 - PASS (L1). Changes are structural-only (helper relocation). No IPC surface, payload shapes, or side-effect ordering changes.
 - `getCronoLabels` is a `const` arrow used by `applyTranslations` (“const labelsCrono = getCronoLabels();”); moving it earlier reduces latent ordering hazards without changing runtime behavior.
 
-##### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: CHANGED
 
@@ -2222,7 +2222,7 @@ Reviewer assessment:
 - Validación recomendada (ampliación): probar clipboard overwrite/append en 3 casos: (1) texto normal, (2) `tooLarge`, (3) fallo no-tooLarge (debe caer en `catch` y notificar error como antes). Para presets: forzar error de carga y confirmar que UI queda reseteada igual que antes (select vacío, description vacía, caches limpias).:contentReference[oaicite:9]{index=9}
 - Nota de coherencia histórica: en la auditoría anterior se evitó DRY de clipboard por costo/ramificación; aquí el costo es mínimo (un helper + `tooLargeKey`) y la duplicación era literal, por lo que el tradeoff sí da.
 
-##### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -2235,7 +2235,7 @@ Reviewer assessment:
 - PASS (L3). Entry criteria for contract/architecture change not met; NO CHANGE is appropriate.
 - Minor: Codex did not demonstrate cross-file contract inspection (preload/main). Acceptable for NO CHANGE; require explicit cross-check if L3 is revisited.
 
-##### L4 — Logs (policy-driven tuning) (Codex re-pass)
+#### L4 — Logs (policy-driven tuning) (Codex re-pass)
 
 Decision: CHANGED
 
@@ -2251,7 +2251,7 @@ Validation:
 - grep keys: `BOOTSTRAP:renderer.preReady.` y `renderer.ipc.*.unavailable` y `renderer.startup.ready.unavailable`.
 - Runtime: disparar una acción pre-READY (1 warnOnce), simular hook ausente (1 warnOnce), simular falta `onStartupReady` (1 errorOnce).
 
-##### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -2266,7 +2266,7 @@ Reviewer assessment:
 Notes:
 - No functional changes; comments-only.
 
-##### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 
@@ -2281,6 +2281,26 @@ Evidence checked (anchors):
 
 Reviewer assessment:
 - PASS (L6). NO CHANGE is justified: no dead code, no stale patterns, and logging signatures/keys remain consistent with `public/js/log.js`. Observable contract/timing preserved.
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Checklist ejecutado:**
+
+* [x] (1) Arranque sano: iniciar la app con logs visibles (terminal + DevTools Console). Esperado: sin *uncaught exceptions* / *unhandled rejections*; la ventana principal aparece y queda operativa.
+* [x] (2) Invariantes duras (no deben disparar): confirmar que **no** aparecen errores tipo “AppConstants no disponible”, “RendererI18n no disponible”, “CountUtils no disponible” (si aparecen, el renderer debe abortar y esto es FAIL).
+* [x] (3) READY/interactividad (camino sano): esperar a que el renderer llegue a READY (splash removido/flujo normal). Luego ejecutar 2–3 acciones normales (p.ej. overwrite clipboard, abrir editor, togglear crono). Esperado: **no** aparece “Renderer action ignored (pre-READY)” en el camino sano.
+* [x] (4) Guard pre-READY (stress + dedupe): relanzar y, apenas aparezca la ventana, intentar disparar 5–10 veces una o dos acciones **antes** de READY (p.ej. `open-editor`, `clipboard-overwrite`). Esperado: no crash; si aparece warning pre-READY debe ser **warnOnce** con key `BOOTSTRAP:renderer.preReady.<actionId>` (no spam para el mismo `actionId`).
+* [x] (5) Presets sanity: verificar que el select de presets carga (no queda vacío en camino sano). Cambiar selección y confirmar que actualiza WPM/preview/resultados de forma normal (sin “Error loading presets:” en logs).
+* [x] (6) Clipboard overwrite: copiar texto corto al portapapeles y hacer **overwrite**. Esperado: el texto principal cambia, se recalculan preview/resultados; sin “clipboard error:” en logs.
+* [x] (7) Clipboard append: copiar texto corto y hacer **append**. Esperado: el texto se concatena (con el joiner correspondiente), se recalculan preview/resultados; sin “append_error/clipboard error” en camino sano.
+* [x] (8) Editor + loader: click en **Editar**. Esperado: loader visible + botón deshabilitado; al abrir editor y volver a READY, el loader se oculta y el botón se re-habilita (no queda “pegado”).
+* [x] (9) Crono sanity: usar toggle start/stop + reset. Esperado: display/estado se actualiza; en logs no aparecen `renderer.ipc.onCronoState.unavailable` ni errores del handler de crono.
+* [x] (10) Logs de mismatch (no deben aparecer en camino sano): confirmar ausencia de:
+  * `renderer.startup.ready.unavailable` (sería stall de READY),
+  * `renderer.ipc.*.unavailable` (hooks faltantes),
+  * y cualquier spam repetible (si hay repetición, debe estar deduplicada con warnOnce/errorOnce).
 
 ---
 
@@ -3912,4 +3932,9 @@ Reviewer gate: PASS
 
 ---
 
+### public/js/presets.js
 
+Date: `2026-02-08`
+Last commit: `cfc9580868fc95914119e9d1ef1fcc8d9f49be33`
+
+---
