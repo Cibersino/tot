@@ -254,6 +254,159 @@ Not smoke-testable (optional)
 
 ---
 
+### electron/main.js (post-startup change)
+
+Date: `2026-02-08`
+Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+- Codex complied with Level 0 constraints:
+  - Diagnosis only (no changes, no recommendations).
+  - No invented IPC channels/behaviors beyond what is present in `electron/main.js`.
+
+- 0.1 Reading map (validated against file):
+  - Block order (high level): overview → imports → constants (language picker + fallbacks) → helpers (validation + READY gating) → window refs + readiness flags → menu/dev utilities → window factories (main/editor/preset/lang) → readiness helpers (`maybeAuthorizeStartupReady`, `resolveLanguage`) → delegated IPC comment → flotante placement helpers → `createFlotanteWindow` → crono state/helpers → IPC handlers → app lifecycle.
+  - Linear breaks (anchors/micro-quotes):
+    - `createEditorWindow` — `editorWin.once('ready-to-show'`
+    - `createPresetWindow` — `presetWin.webContents.send('preset-init'`
+    - `createFlotanteWindow` — `installWorkAreaGuard(win`
+    - `app.whenReady().then` — `textState.registerIpc(ipcMain`
+
+- 0.2 Contract map (validated against file):
+  - Exports: none (side-effect entrypoint).
+  - Anchored invariants/fallbacks (examples):
+    - READY/menu gating: `mainReadyState === 'READY' && menuEnabled`
+    - Language fallback: `Settings language is empty; falling back to`
+    - Preset modal sender restriction: `open-preset-modal unauthorized (ignored).`
+    - Crono elapsed guard: `crono-set-elapsed ignored: crono is running`
+
+- IPC contract (mechanical; present in file):
+  - `ipcMain.handle`: `get-available-languages`, `crono-get-state`, `flotante-open`, `flotante-close`, `open-editor`, `open-preset-modal`, `get-app-config`, `get-app-version`, `get-app-runtime-info`
+  - `ipcMain.on`: `crono-toggle`, `crono-reset`, `crono-set-elapsed`, `flotante-command`, `startup:renderer-core-ready`, `startup:splash-removed`
+  - `ipcMain.once`: `language-selected`
+  - `ipcRenderer.*`: none in this file.
+  - `webContents.send` call sites (10): `editor-init-text`, `editor-ready`, `preset-init` (x2), `startup:ready`, `flotante-closed`, `crono-state` (main+flotante), plus re-sends on existing editor path.
+
+- Delegated IPC registration (present as calls, channels live elsewhere):
+  - `registerLinkIpc(...)`
+  - `textState.registerIpc(...)`
+  - `settingsState.registerIpc(...)`
+  - `presetsMain.registerIpc(...)`
+  - `updater.registerIpc(...)`
+
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- The file already has a coherent block structure with section headers (imports → constants → helpers → window factories → IPC → lifecycle), so reordering would be churn without clear readability gain.
+- Several side-effect registrations are intentionally sequenced (IPC handlers, `app.whenReady`, `app.on` hooks), and moving these for structure risks subtle timing/ordering regressions.
+- Many helpers are tightly coupled to shared state flags (`mainReadyState`, `menuEnabled`, `languageResolved`), and relocating them would not reduce cognitive load.
+- Duplications (e.g., repeated `editor-init-text`/`editor-ready` sends) are short, locally readable, and extracting them would add indirection without reducing branching.
+- The current layout already groups related responsibilities (window creation, readiness gating, flotante placement, crono), so a structural pass is unlikely to improve linear readability.
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- The file’s critical ordering (IPC registration + `app.whenReady` sequence) is timing-sensitive, and any structural changes there risk subtle race behavior.
+- Most duplicated send/try-catch blocks carry distinct log messages for context, so centralizing them would reduce diagnostic clarity or add parameterized indirection.
+- Existing guard/fallback paths already make edge cases explicit (`guardMainUserAction`, fallback language list, payload validation), leaving little robustness to gain without altering behavior.
+- Adding helpers would increase cross-jumping in a long file and violate the “more concepts than removed” rule for only modest readability payoff.
+- Any further robustness tweaks would likely change logging frequency or error surfacing, which counts as observable behavior.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (meets Level 2 output constraints; rationale is generic but does not invent IPC/behavior).
+- Note: analysis would be stronger if it named 2–3 concrete candidate edits (with anchors) and explicitly rejected them as timing/contract risks.
+
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `electron/preload.js` IPC surface:
+  - `openEditor` → `ipcRenderer.invoke('open-editor')`
+  - `openPresetModal` → `ipcRenderer.invoke('open-preset-modal', payload)`
+  - `getAppConfig/getAppVersion/getAppRuntimeInfo` → `ipcRenderer.invoke(...)`
+  - startup signals/listeners: `sendRendererCoreReady` → `startup:renderer-core-ready`; `sendStartupSplashRemoved` → `startup:splash-removed`; `onStartupReady` listener for `startup:ready`; `onCronoState` listener for `crono-state`.
+- `public/renderer.js` consumes `startup:ready` via `window.electronAPI.onStartupReady(...)` and emits `startup:renderer-core-ready` via `window.electronAPI.sendRendererCoreReady()`; retains pre-READY gating paths.
+- `electron/language_preload.js` emits first-run gate signal `ipcRenderer.send('language-selected', tag)` (payload is the normalized language tag).
+- `electron/main.js` has explicit `ipcMain.once('language-selected', ...)` first-run gate, and `ipcMain.on('startup:renderer-core-ready', ...)` feeding `maybeAuthorizeStartupReady()`.
+
+Reviewer assessment: PASS — Evidence reviewed shows a single, coherent IPC contract across preload/renderer/main for startup readiness + language selection; no duplicated responsibility or ambiguous contract found that would justify a Level 3 change without a repro/bug report.
+Reviewer gate: PASS
+
+Observable contract/timing preserved (no code changes).
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+
+- Removed local `warnOnce` wrapper alias and updated all call sites to `log.warnOnce` (policy: no local wrappers/aliases).
+- Prefixed the pre-interactive guard dedupe key with `BOOTSTRAP:` in `guardMainUserAction` (from `main.preReady.<actionId>` to `BOOTSTRAP:main.preReady.<actionId>`).
+
+Reviewer assessment: PASS
+- Logging-only change; IPC surface, payloads, ordering, and timing are untouched.
+- `BOOTSTRAP:` prefix is coherent with `menuEnabled` being `false` until `startup:splash-removed` sets it `true`, after which the guard becomes unreachable in normal operation.
+
+Validation (manual/grep):
+- `rg -n -F "const warnOnce" electron/main.js` → no hits
+- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` → at least 1 hit
+
+#### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Fixed drift in the "Constants / config" section note:
+  - Old (drifted): `Resolved after app readiness (requires app.getPath('userData')).`
+  - New: `Static file paths and fallback data used across startup.`
+- No functional changes; comments-only.
+
+Reviewer assessment: PASS
+- The old note was misleading: `electron/main.js` does not call `app.getPath('userData')`; this claim existed only in that comment.
+- Anchor: the comment directly above `const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');`.
+
+Validation (static):
+- Search for `app.getPath('userData')` in `electron/main.js` (should be absent after the change).
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Checked logging API usage: all sites call `log.warn|warnOnce|error|info|debug` directly; no leftover aliases/wrappers after L4.
+- Verified readiness gating log keys: `guardMainUserAction` uses `BOOTSTRAP:main.preReady.*` and only emits when the main UI is not interactive.
+- Confirmed IPC surface consistency within the file: key handlers/listeners remain present (`open-editor`, `open-preset-modal`, `crono-*`, `flotante-command`, `startup:renderer-core-ready`).
+- Confirmed delegated IPC registration remains present (`registerLinkIpc`, `textState.registerIpc`, `settingsState.registerIpc`, `presetsMain.registerIpc`, `updater.registerIpc`).
+- Comment/code alignment spot-check: L5 constants note remains accurate; end-of-file marker still present.
+
+Reviewer assessment: PASS
+- The reported checks target the only plausible leftover risks after L4 (logging API/style + dedupe keys) and L5 (comment drift), without inventing IPC/contract behavior.
+Reviewer gate: PASS
+
+Observable contract and timing were preserved (no code changes).
+
+Validation (manual/grep):
+- `rg -n -F "const warnOnce" electron/main.js` -> no hits
+- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` -> at least 1 hit
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Checklist ejecutado:**
+
+* [x] (1) Arranque sano: iniciar la app desde terminal (para ver logs de main). Confirmar que no hay *uncaught exceptions* / *unhandled rejections* durante el arranque y que la app llega a estado operativo (ventana principal visible e interactiva).
+* [x] (2) READY/interactividad: esperar a que se remueva el splash (o se habilite la interactividad) y verificar que las acciones normales no generan warnings de “ignored (pre-READY)” en el camino sano.
+* [x] (3) Guard pre-READY (stress): relanzar e intentar disparar 5–10 veces una accion mientras aun no hay interactividad (por ejemplo: abrir editor, abrir preset modal, abrir flotante, o acciones del crono). Esperado: no crash; si aparece un warning “... ignored (pre-READY)”, debe ser **deduplicado** (no spam) para la misma accion.
+* [x] (4) Crono sanity: en la ventana principal, toggle start/stop + reset; confirmar que el estado se refleja en UI y que no aparecen errores en logs.
+* [x] (5) Flotante sanity: abrir flotante, confirmar que recibe actualizaciones de `crono-state` (por ejemplo, iniciar el crono y ver que flotante se actualiza). Cerrar flotante y confirmar que la ventana principal sigue operativa.
+* [x] (6) Editor sanity: abrir editor (`open-editor`), confirmar que abre y recibe el texto inicial; cerrar y reabrir (ruta “already open”) sin errores.
+* [x] (7) Preset modal sanity: abrir preset modal (`open-preset-modal`) desde el flujo normal de UI; confirmar que abre y se inicializa (sin warnings de “unauthorized” en el camino sano). Cerrar y reabrir.
+* [x] (8) Logs: revisar que no hay spam nuevo de warnings tipo “failed (ignored):” durante uso normal; cualquier warning repetible debe estar razonablemente deduplicado (una sola vez por evento repetido sin nueva informacion).
+
+---
+
 ### electron/settings.js
 
 Date: `2026-01-21`
@@ -3447,162 +3600,9 @@ Reviewer gate: PASS
 
 Files touched:
 
-`electron/main.js`
+`electron/main.js` (LISTO)
 `electron/menu_builder.js`
 `public/renderer.js`
-
----
-
-### electron/main.js (post-startup change)
-
-Date: `2026-02-08`
-Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
-
-#### L0 — Minimal diagnosis (Codex, verified)
-
-- Codex complied with Level 0 constraints:
-  - Diagnosis only (no changes, no recommendations).
-  - No invented IPC channels/behaviors beyond what is present in `electron/main.js`.
-
-- 0.1 Reading map (validated against file):
-  - Block order (high level): overview → imports → constants (language picker + fallbacks) → helpers (validation + READY gating) → window refs + readiness flags → menu/dev utilities → window factories (main/editor/preset/lang) → readiness helpers (`maybeAuthorizeStartupReady`, `resolveLanguage`) → delegated IPC comment → flotante placement helpers → `createFlotanteWindow` → crono state/helpers → IPC handlers → app lifecycle.
-  - Linear breaks (anchors/micro-quotes):
-    - `createEditorWindow` — `editorWin.once('ready-to-show'`
-    - `createPresetWindow` — `presetWin.webContents.send('preset-init'`
-    - `createFlotanteWindow` — `installWorkAreaGuard(win`
-    - `app.whenReady().then` — `textState.registerIpc(ipcMain`
-
-- 0.2 Contract map (validated against file):
-  - Exports: none (side-effect entrypoint).
-  - Anchored invariants/fallbacks (examples):
-    - READY/menu gating: `mainReadyState === 'READY' && menuEnabled`
-    - Language fallback: `Settings language is empty; falling back to`
-    - Preset modal sender restriction: `open-preset-modal unauthorized (ignored).`
-    - Crono elapsed guard: `crono-set-elapsed ignored: crono is running`
-
-- IPC contract (mechanical; present in file):
-  - `ipcMain.handle`: `get-available-languages`, `crono-get-state`, `flotante-open`, `flotante-close`, `open-editor`, `open-preset-modal`, `get-app-config`, `get-app-version`, `get-app-runtime-info`
-  - `ipcMain.on`: `crono-toggle`, `crono-reset`, `crono-set-elapsed`, `flotante-command`, `startup:renderer-core-ready`, `startup:splash-removed`
-  - `ipcMain.once`: `language-selected`
-  - `ipcRenderer.*`: none in this file.
-  - `webContents.send` call sites (10): `editor-init-text`, `editor-ready`, `preset-init` (x2), `startup:ready`, `flotante-closed`, `crono-state` (main+flotante), plus re-sends on existing editor path.
-
-- Delegated IPC registration (present as calls, channels live elsewhere):
-  - `registerLinkIpc(...)`
-  - `textState.registerIpc(...)`
-  - `settingsState.registerIpc(...)`
-  - `presetsMain.registerIpc(...)`
-  - `updater.registerIpc(...)`
-
-#### L1 — Structural refactor and cleanup (Codex)
-
-Decision: NO CHANGE
-
-- The file already has a coherent block structure with section headers (imports → constants → helpers → window factories → IPC → lifecycle), so reordering would be churn without clear readability gain.
-- Several side-effect registrations are intentionally sequenced (IPC handlers, `app.whenReady`, `app.on` hooks), and moving these for structure risks subtle timing/ordering regressions.
-- Many helpers are tightly coupled to shared state flags (`mainReadyState`, `menuEnabled`, `languageResolved`), and relocating them would not reduce cognitive load.
-- Duplications (e.g., repeated `editor-init-text`/`editor-ready` sends) are short, locally readable, and extracting them would add indirection without reducing branching.
-- The current layout already groups related responsibilities (window creation, readiness gating, flotante placement, crono), so a structural pass is unlikely to improve linear readability.
-
-#### L2 — Clarity / robustness refactor (Codex)
-
-Decision: NO CHANGE
-
-- The file’s critical ordering (IPC registration + `app.whenReady` sequence) is timing-sensitive, and any structural changes there risk subtle race behavior.
-- Most duplicated send/try-catch blocks carry distinct log messages for context, so centralizing them would reduce diagnostic clarity or add parameterized indirection.
-- Existing guard/fallback paths already make edge cases explicit (`guardMainUserAction`, fallback language list, payload validation), leaving little robustness to gain without altering behavior.
-- Adding helpers would increase cross-jumping in a long file and violate the “more concepts than removed” rule for only modest readability payoff.
-- Any further robustness tweaks would likely change logging frequency or error surfacing, which counts as observable behavior.
-
-Reviewer assessment (sufficiency & inference quality):
-- PASS (meets Level 2 output constraints; rationale is generic but does not invent IPC/behavior).
-- Note: analysis would be stronger if it named 2–3 concrete candidate edits (with anchors) and explicitly rejected them as timing/contract risks.
-
-#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
-
-Decision: NO CHANGE (no Level 3 justified)
-
-Evidence checked (anchors):
-- `electron/preload.js` IPC surface:
-  - `openEditor` → `ipcRenderer.invoke('open-editor')`
-  - `openPresetModal` → `ipcRenderer.invoke('open-preset-modal', payload)`
-  - `getAppConfig/getAppVersion/getAppRuntimeInfo` → `ipcRenderer.invoke(...)`
-  - startup signals/listeners: `sendRendererCoreReady` → `startup:renderer-core-ready`; `sendStartupSplashRemoved` → `startup:splash-removed`; `onStartupReady` listener for `startup:ready`; `onCronoState` listener for `crono-state`.
-- `public/renderer.js` consumes `startup:ready` via `window.electronAPI.onStartupReady(...)` and emits `startup:renderer-core-ready` via `window.electronAPI.sendRendererCoreReady()`; retains pre-READY gating paths.
-- `electron/language_preload.js` emits first-run gate signal `ipcRenderer.send('language-selected', tag)` (payload is the normalized language tag).
-- `electron/main.js` has explicit `ipcMain.once('language-selected', ...)` first-run gate, and `ipcMain.on('startup:renderer-core-ready', ...)` feeding `maybeAuthorizeStartupReady()`.
-
-Reviewer assessment: PASS — Evidence reviewed shows a single, coherent IPC contract across preload/renderer/main for startup readiness + language selection; no duplicated responsibility or ambiguous contract found that would justify a Level 3 change without a repro/bug report.
-Reviewer gate: PASS
-
-Observable contract/timing preserved (no code changes).
-
-#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
-
-Decision: CHANGED
-
-- Removed local `warnOnce` wrapper alias and updated all call sites to `log.warnOnce` (policy: no local wrappers/aliases).
-- Prefixed the pre-interactive guard dedupe key with `BOOTSTRAP:` in `guardMainUserAction` (from `main.preReady.<actionId>` to `BOOTSTRAP:main.preReady.<actionId>`).
-
-Reviewer assessment: PASS
-- Logging-only change; IPC surface, payloads, ordering, and timing are untouched.
-- `BOOTSTRAP:` prefix is coherent with `menuEnabled` being `false` until `startup:splash-removed` sets it `true`, after which the guard becomes unreachable in normal operation.
-
-Validation (manual/grep):
-- `rg -n -F "const warnOnce" electron/main.js` → no hits
-- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` → at least 1 hit
-
-#### L5 — Comments (Codex)
-
-Decision: CHANGED
-
-- Fixed drift in the "Constants / config" section note:
-  - Old (drifted): `Resolved after app readiness (requires app.getPath('userData')).`
-  - New: `Static file paths and fallback data used across startup.`
-- No functional changes; comments-only.
-
-Reviewer assessment: PASS
-- The old note was misleading: `electron/main.js` does not call `app.getPath('userData')`; this claim existed only in that comment.
-- Anchor: the comment directly above `const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');`.
-
-Validation (static):
-- Search for `app.getPath('userData')` in `electron/main.js` (should be absent after the change).
-
-#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
-
-Decision: NO CHANGE
-
-No Level 6 changes justified.
-- Checked logging API usage: all sites call `log.warn|warnOnce|error|info|debug` directly; no leftover aliases/wrappers after L4.
-- Verified readiness gating log keys: `guardMainUserAction` uses `BOOTSTRAP:main.preReady.*` and only emits when the main UI is not interactive.
-- Confirmed IPC surface consistency within the file: key handlers/listeners remain present (`open-editor`, `open-preset-modal`, `crono-*`, `flotante-command`, `startup:renderer-core-ready`).
-- Confirmed delegated IPC registration remains present (`registerLinkIpc`, `textState.registerIpc`, `settingsState.registerIpc`, `presetsMain.registerIpc`, `updater.registerIpc`).
-- Comment/code alignment spot-check: L5 constants note remains accurate; end-of-file marker still present.
-
-Reviewer assessment: PASS
-- The reported checks target the only plausible leftover risks after L4 (logging API/style + dedupe keys) and L5 (comment drift), without inventing IPC/contract behavior.
-Reviewer gate: PASS
-
-Observable contract and timing were preserved (no code changes).
-
-Validation (manual/grep):
-- `rg -n -F "const warnOnce" electron/main.js` -> no hits
-- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` -> at least 1 hit
-
-#### L7 — Smoke (human-run; minimal)
-
-**Estado:** PASS
-
-**Checklist ejecutado:**
-
-* [x] (1) Arranque sano: iniciar la app desde terminal (para ver logs de main). Confirmar que no hay *uncaught exceptions* / *unhandled rejections* durante el arranque y que la app llega a estado operativo (ventana principal visible e interactiva).
-* [x] (2) READY/interactividad: esperar a que se remueva el splash (o se habilite la interactividad) y verificar que las acciones normales no generan warnings de “ignored (pre-READY)” en el camino sano.
-* [x] (3) Guard pre-READY (stress): relanzar e intentar disparar 5–10 veces una accion mientras aun no hay interactividad (por ejemplo: abrir editor, abrir preset modal, abrir flotante, o acciones del crono). Esperado: no crash; si aparece un warning “... ignored (pre-READY)”, debe ser **deduplicado** (no spam) para la misma accion.
-* [x] (4) Crono sanity: en la ventana principal, toggle start/stop + reset; confirmar que el estado se refleja en UI y que no aparecen errores en logs.
-* [x] (5) Flotante sanity: abrir flotante, confirmar que recibe actualizaciones de `crono-state` (por ejemplo, iniciar el crono y ver que flotante se actualiza). Cerrar flotante y confirmar que la ventana principal sigue operativa.
-* [x] (6) Editor sanity: abrir editor (`open-editor`), confirmar que abre y recibe el texto inicial; cerrar y reabrir (ruta “already open”) sin errores.
-* [x] (7) Preset modal sanity: abrir preset modal (`open-preset-modal`) desde el flujo normal de UI; confirmar que abre y se inicializa (sin warnings de “unauthorized” en el camino sano). Cerrar y reabrir.
-* [x] (8) Logs: revisar que no hay spam nuevo de warnings tipo “failed (ignored):” durante uso normal; cualquier warning repetible debe estar razonablemente deduplicado (una sola vez por evento repetido sin nueva informacion).
 
 ---
 
@@ -3722,7 +3722,7 @@ Contract/behavior/timing:
 Reviewer gate: PASS
 - Cambio acotado, alineado a política, sin drift observable fuera de dedupe.
 
-#### L5 — Comments (JSDoc drift fix) (Codex) — REJECTED
+#### L5 — Comments (JSDoc drift fix) (Codex)
 
 Decision reported by Codex: CHANGED (JSDoc expanded for opts.resolveMainWindow / opts.isMenuEnabled)
 
@@ -3736,6 +3736,21 @@ Reviewer check (against current file):
 
 Conclusion:
 - Codex report does not match the updated file; L5 redo must be re-run and actually applied (comments-only).
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Checked `buildAppMenu` options vs JSDoc and usage (`resolveMainWindow`, `isMenuEnabled`, `onOpenLanguage`) and found alignment.
+- Verified logging API usage for `warnOnce`/`errorOnce` sites in translation loading and menu dispatch; no signature drift.
+- Confirmed IPC surface remains a single outbound `webContents.send('menu-click', payload)`; no handlers added in this module.
+- Scanned for leftover/unused locals introduced by prior levels (e.g., `resolveDevTarget`) and found them referenced.
+
+Observable contract and timing were preserved.
+
+Reviewer assessment: PASS
+- The checks target the actual plausible leftover risks after L1/L4/L5 (leftovers + logging signature + comment drift) without proposing contract changes.
 
 ---
 
