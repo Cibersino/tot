@@ -3568,6 +3568,27 @@ Reviewer assessment: PASS
 Validation (static):
 - Search for `app.getPath('userData')` in `electron/main.js` (should be absent after the change).
 
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Checked logging API usage: all sites call `log.warn|warnOnce|error|info|debug` directly; no leftover aliases/wrappers after L4.
+- Verified readiness gating log keys: `guardMainUserAction` uses `BOOTSTRAP:main.preReady.*` and only emits when the main UI is not interactive.
+- Confirmed IPC surface consistency within the file: key handlers/listeners remain present (`open-editor`, `open-preset-modal`, `crono-*`, `flotante-command`, `startup:renderer-core-ready`).
+- Confirmed delegated IPC registration remains present (`registerLinkIpc`, `textState.registerIpc`, `settingsState.registerIpc`, `presetsMain.registerIpc`, `updater.registerIpc`).
+- Comment/code alignment spot-check: L5 constants note remains accurate; end-of-file marker still present.
+
+Reviewer assessment: PASS
+- The reported checks target the only plausible leftover risks after L4 (logging API/style + dedupe keys) and L5 (comment drift), without inventing IPC/contract behavior.
+Reviewer gate: PASS
+
+Observable contract and timing were preserved (no code changes).
+
+Validation (manual/grep):
+- `rg -n -F "const warnOnce" electron/main.js` -> no hits
+- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` -> at least 1 hit
+
 ---
 
 ### electron/menu_builder.js (post-startup change)
