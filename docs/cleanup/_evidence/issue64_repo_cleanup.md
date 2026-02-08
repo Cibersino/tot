@@ -3455,7 +3455,44 @@ Files touched:
 
 ## electron/main.js (post-startup change)
 
-(TODO)
+Date: `2026-02-08`
+Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
+
+### L0 — Minimal diagnosis (Codex, verified)
+
+- Codex complied with Level 0 constraints:
+  - Diagnosis only (no changes, no recommendations).
+  - No invented IPC channels/behaviors beyond what is present in `electron/main.js`.
+
+- 0.1 Reading map (validated against file):
+  - Block order (high level): overview → imports → constants (language picker + fallbacks) → helpers (validation + READY gating) → window refs + readiness flags → menu/dev utilities → window factories (main/editor/preset/lang) → readiness helpers (`maybeAuthorizeStartupReady`, `resolveLanguage`) → delegated IPC comment → flotante placement helpers → `createFlotanteWindow` → crono state/helpers → IPC handlers → app lifecycle.
+  - Linear breaks (anchors/micro-quotes):
+    - `createEditorWindow` — `editorWin.once('ready-to-show'`
+    - `createPresetWindow` — `presetWin.webContents.send('preset-init'`
+    - `createFlotanteWindow` — `installWorkAreaGuard(win`
+    - `app.whenReady().then` — `textState.registerIpc(ipcMain`
+
+- 0.2 Contract map (validated against file):
+  - Exports: none (side-effect entrypoint).
+  - Anchored invariants/fallbacks (examples):
+    - READY/menu gating: `mainReadyState === 'READY' && menuEnabled`
+    - Language fallback: `Settings language is empty; falling back to`
+    - Preset modal sender restriction: `open-preset-modal unauthorized (ignored).`
+    - Crono elapsed guard: `crono-set-elapsed ignored: crono is running`
+
+- IPC contract (mechanical; present in file):
+  - `ipcMain.handle`: `get-available-languages`, `crono-get-state`, `flotante-open`, `flotante-close`, `open-editor`, `open-preset-modal`, `get-app-config`, `get-app-version`, `get-app-runtime-info`
+  - `ipcMain.on`: `crono-toggle`, `crono-reset`, `crono-set-elapsed`, `flotante-command`, `startup:renderer-core-ready`, `startup:splash-removed`
+  - `ipcMain.once`: `language-selected`
+  - `ipcRenderer.*`: none in this file.
+  - `webContents.send` call sites (10): `editor-init-text`, `editor-ready`, `preset-init` (x2), `startup:ready`, `flotante-closed`, `crono-state` (main+flotante), plus re-sends on existing editor path.
+
+- Delegated IPC registration (present as calls, channels live elsewhere):
+  - `registerLinkIpc(...)`
+  - `textState.registerIpc(...)`
+  - `settingsState.registerIpc(...)`
+  - `presetsMain.registerIpc(...)`
+  - `updater.registerIpc(...)`
 
 ---
 
