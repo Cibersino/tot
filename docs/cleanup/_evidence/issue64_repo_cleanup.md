@@ -3678,6 +3678,25 @@ Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
 - La decisión “NO CHANGE” es defendible dado que el archivo ya tiene estructura por secciones, fallbacks explícitos y dedupe (`warnOnce`/`errorOnce`), y los puntos “grandes” (menuTemplate) son inherentes.
 - Nota de wording: aunque no hay IPC *registration* en este módulo, sí hay IPC *sending* vía `webContents.send('menu-click', ...)`.
 
+#### L3 — Architecture / contract changes (Codex)
+
+**Estado:** PASS (NO CHANGE; no Level 3 justified)
+
+**Evidencia revisada (anchors):**
+- Outbound IPC único desde este módulo: `mainWindow.webContents.send('menu-click', payload)` (best-effort + guards).
+- Receiver path único (preload): `ipcRenderer.on('menu-click', wrapper)` expuesto como `onMenuClick`.
+- Consumo UI (router): `window.electronAPI.onMenuClick((actionId) => { ... })` y dispatch por `handleMenuClick(actionId)`.
+- Rebuild del menú ante cambio de idioma (settings): `buildAppMenu(menuLang);` (misma entrypoint).
+- Helpers de textos/diálogos consumidos como helpers (no contrato IPC): `getDialogTexts(...)` / `resolveDialogText(...)` (consumidores: presets_main / updater).
+
+**Conclusión:** no se encontró dolor real reproducible, ambigüedad de contrato ni conflicto entre consumidores que justifique un cambio Level 3.
+
+**Confirmación:** contrato/behavior/timing preservados (NO CHANGE).
+
+**Reviewer assessment:** PASS
+- La evidencia revisada es consistente con un único canal “menu-click” (send → preload wrapper → router UI).
+- Sin señales de responsabilidades duplicadas ni semánticas divergentes entre consumidores.
+
 ---
 
 ### public/renderer.js (post-startup change)
