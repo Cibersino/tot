@@ -3722,6 +3722,21 @@ Contract/behavior/timing:
 Reviewer gate: PASS
 - Cambio acotado, alineado a política, sin drift observable fuera de dedupe.
 
+#### L5 — Comments (JSDoc drift fix) (Codex) — REJECTED
+
+Decision reported by Codex: CHANGED (JSDoc expanded for opts.resolveMainWindow / opts.isMenuEnabled)
+
+Reviewer check (against current file):
+- JSDoc for `buildAppMenu` still documents only:
+  - `@param {Electron.BrowserWindow|null} [opts.mainWindow] ...`
+  - `@param {Function} [opts.onOpenLanguage] ...`
+- Implementation still reads and defaults:
+  - `opts.resolveMainWindow`
+  - `opts.isMenuEnabled`
+
+Conclusion:
+- Codex report does not match the updated file; L5 redo must be re-run and actually applied (comments-only).
+
 ---
 
 ### public/renderer.js (post-startup change)
