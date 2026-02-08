@@ -3656,6 +3656,28 @@ Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
 
 **Confirmación:** contrato/behavior/timing preservados (mismas llamadas y side effects; sin cambios de exports ni IPC surface).
 
+#### L2 — Clarity / robustness refactor (Codex)
+
+**Estado:** PASS (NO CHANGE)
+
+**Razones (Codex):**
+- El archivo ya está seccionado y con fallbacks explícitos; reordenar no mejora materialmente.
+- `loadBundle` ya cubre faltantes/invalid/empty con fallbacks; factorizar agrega indirection sin bajar ramas.
+- `menuTemplate` es data larga por naturaleza; extraer builders aumentaría “saltos” y empeora lectura lineal.
+- El envío `menu-click` y el logging best-effort ya son explícitos; más guards/logs arriesgan alterar superficie observable o volumen.
+- No hay registro IPC (`ipcMain.*`/`ipcRenderer.*`) ni `app.whenReady` en este archivo.
+
+**Anclas (micro-quotes):**
+- Secciones explícitas: `// =============================================================================`
+- Robustez i18n: `if (!fs.existsSync(file)) continue;` / `if (raw.trim() === '')` / `return JSON.parse(raw);`
+- IPC outbound (send): `mainWindow.webContents.send('menu-click', payload)`
+
+**Confirmación:** contrato/behavior/timing preservados (NO CHANGE).
+
+**Reviewer assessment:** PASS
+- La decisión “NO CHANGE” es defendible dado que el archivo ya tiene estructura por secciones, fallbacks explícitos y dedupe (`warnOnce`/`errorOnce`), y los puntos “grandes” (menuTemplate) son inherentes.
+- Nota de wording: aunque no hay IPC *registration* en este módulo, sí hay IPC *sending* vía `webContents.send('menu-click', ...)`.
+
 ---
 
 ### public/renderer.js (post-startup change)
