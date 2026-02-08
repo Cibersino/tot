@@ -3552,6 +3552,22 @@ Validation (manual/grep):
 - `rg -n -F "const warnOnce" electron/main.js` → no hits
 - `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` → at least 1 hit
 
+#### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Fixed drift in the "Constants / config" section note:
+  - Old (drifted): `Resolved after app readiness (requires app.getPath('userData')).`
+  - New: `Static file paths and fallback data used across startup.`
+- No functional changes; comments-only.
+
+Reviewer assessment: PASS
+- The old note was misleading: `electron/main.js` does not call `app.getPath('userData')`; this claim existed only in that comment.
+- Anchor: the comment directly above `const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');`.
+
+Validation (static):
+- Search for `app.getPath('userData')` in `electron/main.js` (should be absent after the change).
+
 ---
 
 ### electron/menu_builder.js (post-startup change)
