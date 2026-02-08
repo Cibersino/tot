@@ -4097,3 +4097,31 @@ Checklist (source: `docs/test_suite.md`, REG-PRESETS):
 
 Date: `2026-02-08`
 Last commit: `ae1d04c5b86007f50afb41459f38454565b6c64f`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+##### 0.1 Reading map
+- Block order: file comment, `'use strict'`, IIFE wrapper, logger + state (`log`, `registry`, `_unsubscribeMenuClick`), public helpers (`registerMenuAction`, `unregisterMenuAction`, `listMenuActions`), dispatcher (`handleMenuClick`), listener bootstrap (`setupListener` + conditional `DOMContentLoaded` retry), global API exposure (`window.menuActions`).
+- Where linear reading breaks:
+  - `setupListener`: changes from registry concerns to environment probing / error handling and early returns. Micro-quote: “`if (_unsubscribeMenuClick) {`”.
+  - `window.menuActions.stopListening`: lifecycle control defined inside the exported object, separate from setup flow. Micro-quote: “`stopListening() {`”.
+
+##### 0.2 Contract map
+- Exposed module surface / side effects:
+  - Side effects: calls `setupListener()` immediately; if it fails, registers a `DOMContentLoaded` retry (`if (!setupListener()) { ... }`); assigns `window.menuActions = { ... }`.
+  - Public API on `window.menuActions`: `registerMenuAction`, `unregisterMenuAction`, `listMenuActions`, `stopListening`, `_internal._getUnsubscribeRef`.
+- Invariants / fallbacks (anchored to checks/fallbacks in this file):
+  - `registerMenuAction` requires `payload` to be a non-empty string. Anchor: “`typeof payload !== 'string' || !payload.trim()`”.
+  - `registerMenuAction` requires `callback` to be a function. Anchor: “`typeof callback !== 'function'`”.
+  - Listener bootstrap is idempotent only when an unsubscribe handle exists. Anchor: “`if (_unsubscribeMenuClick) {`”.
+  - Missing unsubscribe is tolerated with a deduped warning. Anchor: “`onMenuClick did not return unsubscribe`”.
+  - `stopListening` calls unsubscribe only when it is a function. Anchor: “`typeof _unsubscribeMenuClick === 'function'`”.
+- IPC contract (only what exists in this file):
+  - No explicit `ipcMain.*`, `ipcRenderer.*`, or `webContents.send` calls in this file.
+- Delegated registration:
+  - `window.electronAPI.onMenuClick(handleMenuClick)` delegates listener registration to the preload API (channels not present in this file).
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
