@@ -3589,6 +3589,21 @@ Validation (manual/grep):
 - `rg -n -F "const warnOnce" electron/main.js` -> no hits
 - `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` -> at least 1 hit
 
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** TODO
+
+**Checklist ejecutado:**
+
+* [x] (1) Arranque sano: iniciar la app desde terminal (para ver logs de main). Confirmar que no hay *uncaught exceptions* / *unhandled rejections* durante el arranque y que la app llega a estado operativo (ventana principal visible e interactiva).
+* [x] (2) READY/interactividad: esperar a que se remueva el splash (o se habilite la interactividad) y verificar que las acciones normales no generan warnings de “ignored (pre-READY)” en el camino sano.
+* [x] (3) Guard pre-READY (stress): relanzar e intentar disparar 5–10 veces una accion mientras aun no hay interactividad (por ejemplo: abrir editor, abrir preset modal, abrir flotante, o acciones del crono). Esperado: no crash; si aparece un warning “... ignored (pre-READY)”, debe ser **deduplicado** (no spam) para la misma accion.
+* [x] (4) Crono sanity: en la ventana principal, toggle start/stop + reset; confirmar que el estado se refleja en UI y que no aparecen errores en logs.
+* [x] (5) Flotante sanity: abrir flotante, confirmar que recibe actualizaciones de `crono-state` (por ejemplo, iniciar el crono y ver que flotante se actualiza). Cerrar flotante y confirmar que la ventana principal sigue operativa.
+* [x] (6) Editor sanity: abrir editor (`open-editor`), confirmar que abre y recibe el texto inicial; cerrar y reabrir (ruta “already open”) sin errores.
+* [x] (7) Preset modal sanity: abrir preset modal (`open-preset-modal`) desde el flujo normal de UI; confirmar que abre y se inicializa (sin warnings de “unauthorized” en el camino sano). Cerrar y reabrir.
+* [x] (8) Logs: revisar que no hay spam nuevo de warnings tipo “failed (ignored):” durante uso normal; cualquier warning repetible debe estar razonablemente deduplicado (una sola vez por evento repetido sin nueva informacion).
+
 ---
 
 ### electron/menu_builder.js (post-startup change)
