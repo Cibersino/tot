@@ -1536,7 +1536,205 @@ Result: Pass
 - [x] (4) Menu -> Actualizar version (si existe): aparece resultado/dialogo; sin crash.
 - [x] (5) Cambio de idioma por flujo normal: UI/menu siguen correctos; NO aparecen warnings i18n tipo “Failed to load/parse main.json…” / “main.json is empty…”.
 - [x] (6) Repetir 1 accion post-idioma: funciona (sin regresion).
-- [c] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
+- [x] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
+
+---
+
+### electron/menu_builder.js (post-startup change)
+
+Date: `2026-02-08`
+Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
+
+#### L0 — Diagnosis (re-audit)
+
+**0.1 Reading Map**
+- Block order: overview header → external imports → internal imports → helpers (logging/utilities) → translation loading → `getDialogTexts` → `buildAppMenu` (nested helpers + menu templates + dev menu) → exports.
+- Linear reading breaks / obstacles (identifier + micro-quote):
+  - `buildAppMenu` — `const menuTemplate = [`
+  - `sendMenuClick` (nested in `buildAppMenu`) — `mainWindow.webContents.send('menu-click', payload)`
+  - `loadBundle` — `for (let i = 0; i < files.length; i++)`
+
+**0.2 Contract Map**
+- Exposes: `getDialogTexts(lang)`, `buildAppMenu(lang, opts)`, `resolveDialogText(dialogTexts, key, fallback, opts)`.
+- Side effects (anchored):
+  - `Menu.buildFromTemplate`, `Menu.setApplicationMenu`
+  - Filesystem reads: `fs.existsSync`, `fs.readFileSync`
+  - Dev menu flag: `process.env.SHOW_DEV_MENU`
+  - Focused window usage: `BrowserWindow.getFocusedWindow`
+- Invariants (anchored):
+  - Menu dispatch gated: `if (isMenuEnabled()) return true` and `if (!canDispatchMenuAction(payload)) return;`
+  - Best-effort drop if no window: `if (!mainWindow)` / `if (mainWindow.isDestroyed())`
+  - Translation merge fallback: `return deepMerge(defaultBundle || {}, overlay || {})`
+
+**IPC contract (only what exists in this file)**
+- `webContents.send('menu-click', payload)`
+  - Channel: `'menu-click'`
+  - Input: `payload` (at send boundary)
+  - Return: n/a
+- No `ipcMain.*` or `ipcRenderer.*` occurrences.
+- Delegated IPC registration: none found.
+
+#### L1 — Structural refactor and cleanup
+
+**Estado:** PASS (CHANGED)
+
+**Cambios realizados (estructurales; sin cambio de contrato):**
+- Se agregó helper local `resolveDevTarget()` dentro de `buildAppMenu` para centralizar selección “focused-or-main”.
+- Se reemplazaron 3 bloques duplicados de selección de target en el menú dev (`dev.reload`, `dev.forceReload`, `dev.toggleDevTools`) por `const target = resolveDevTarget();`.
+- Se mantuvieron intactos guards, logging y `try/catch` de cada acción.
+
+**Anclas (micro-quotes):**
+- Nuevo helper: `const resolveDevTarget = () => {`
+- Uso en acciones dev: `const target = resolveDevTarget();`
+- Guard preservado: `if (!canDispatchMenuAction('dev.reload')) return;` (análogos para las otras acciones)
+
+**Confirmación:** contrato/behavior/timing preservados (mismas llamadas y side effects; sin cambios de exports ni IPC surface).
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+**Estado:** PASS (NO CHANGE)
+
+**Razones (Codex):**
+- El archivo ya está seccionado y con fallbacks explícitos; reordenar no mejora materialmente.
+- `loadBundle` ya cubre faltantes/invalid/empty con fallbacks; factorizar agrega indirection sin bajar ramas.
+- `menuTemplate` es data larga por naturaleza; extraer builders aumentaría “saltos” y empeora lectura lineal.
+- El envío `menu-click` y el logging best-effort ya son explícitos; más guards/logs arriesgan alterar superficie observable o volumen.
+- No hay registro IPC (`ipcMain.*`/`ipcRenderer.*`) ni `app.whenReady` en este archivo.
+
+**Anclas (micro-quotes):**
+- Secciones explícitas: `// =============================================================================`
+- Robustez i18n: `if (!fs.existsSync(file)) continue;` / `if (raw.trim() === '')` / `return JSON.parse(raw);`
+- IPC outbound (send): `mainWindow.webContents.send('menu-click', payload)`
+
+**Confirmación:** contrato/behavior/timing preservados (NO CHANGE).
+
+**Reviewer assessment:** PASS
+- La decisión “NO CHANGE” es defendible dado que el archivo ya tiene estructura por secciones, fallbacks explícitos y dedupe (`warnOnce`/`errorOnce`), y los puntos “grandes” (menuTemplate) son inherentes.
+- Nota de wording: aunque no hay IPC *registration* en este módulo, sí hay IPC *sending* vía `webContents.send('menu-click', ...)`.
+
+#### L3 — Architecture / contract changes (Codex)
+
+**Estado:** PASS (NO CHANGE; no Level 3 justified)
+
+**Evidencia revisada (anchors):**
+- Outbound IPC único desde este módulo: `mainWindow.webContents.send('menu-click', payload)` (best-effort + guards).
+- Receiver path único (preload): `ipcRenderer.on('menu-click', wrapper)` expuesto como `onMenuClick`.
+- Consumo UI (router): `window.electronAPI.onMenuClick((actionId) => { ... })` y dispatch por `handleMenuClick(actionId)`.
+- Rebuild del menú ante cambio de idioma (settings): `buildAppMenu(menuLang);` (misma entrypoint).
+- Helpers de textos/diálogos consumidos como helpers (no contrato IPC): `getDialogTexts(...)` / `resolveDialogText(...)` (consumidores: presets_main / updater).
+
+**Conclusión:** no se encontró dolor real reproducible, ambigüedad de contrato ni conflicto entre consumidores que justifique un cambio Level 3.
+
+**Confirmación:** contrato/behavior/timing preservados (NO CHANGE).
+
+**Reviewer assessment:** PASS
+- La evidencia revisada es consistente con un único canal “menu-click” (send → preload wrapper → router UI).
+- Sin señales de responsabilidades duplicadas ni semánticas divergentes entre consumidores.
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+
+Non-trivial changes (keys explícitas warnOnce/errorOnce):
+- `menu_builder.loadMainTranslations.overlayMissing:${requested}` -> `menu_builder.loadMainTranslations.overlayMissing`
+- `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}` -> `menu_builder.loadMainTranslations.empty:${fileVariant}`
+- `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}` -> `menu_builder.loadMainTranslations.failed:${fileVariant}`
+- `menu_builder.loadMainTranslations.requiredMissing:${langCode}` -> `menu_builder.loadMainTranslations.requiredMissing`
+
+Gain:
+- Cumple “Key rule” (keys estables; sin datos per-occurrence/arbitrary en el bucket de dedupe).
+Cost:
+- Dedupe más grueso: estos eventos ya no se diferencian por idioma; se dedupean por proceso (y en empty/failed, solo por `fileVariant`).
+Validation:
+- Forzar un idioma sin overlay y confirmar 1 solo warning del tipo overlayMissing en la sesión.
+- Introducir `main.json` vacío/JSON inválido y confirmar un warning por `fileVariant` (region/root).
+- Verificar por grep que ya no existen keys con `:${requested}` / `:${langCode}:` en esos eventos.
+
+Contract/behavior/timing:
+- Preservado: cambios solo en strings de dedupe key; no cambia flujo de fallback ni side effects.
+
+Reviewer gate: PASS
+- Cambio acotado, alineado a política, sin drift observable fuera de dedupe.
+
+#### L5 — Comments (JSDoc drift fix) (Codex)
+
+Decision reported by Codex: CHANGED (JSDoc expanded for opts.resolveMainWindow / opts.isMenuEnabled)
+
+Reviewer check (against current file):
+- JSDoc for `buildAppMenu` still documents only:
+  - `@param {Electron.BrowserWindow|null} [opts.mainWindow] ...`
+  - `@param {Function} [opts.onOpenLanguage] ...`
+- Implementation still reads and defaults:
+  - `opts.resolveMainWindow`
+  - `opts.isMenuEnabled`
+
+Conclusion:
+- Codex report does not match the updated file; L5 redo must be re-run and actually applied (comments-only).
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Checked `buildAppMenu` options vs JSDoc and usage (`resolveMainWindow`, `isMenuEnabled`, `onOpenLanguage`) and found alignment.
+- Verified logging API usage for `warnOnce`/`errorOnce` sites in translation loading and menu dispatch; no signature drift.
+- Confirmed IPC surface remains a single outbound `webContents.send('menu-click', payload)`; no handlers added in this module.
+- Scanned for leftover/unused locals introduced by prior levels (e.g., `resolveDevTarget`) and found them referenced.
+
+Observable contract and timing were preserved.
+
+Reviewer assessment: PASS
+- The checks target the actual plausible leftover risks after L1/L4/L5 (leftovers + logging signature + comment drift) without proposing contract changes.
+
+#### L7 — Smoke (human-run; minimal, dev)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* Ejecutar en dev desde terminal (para ver logs del main process): `npm start`.
+
+* Ventana principal visible y operativa.
+
+* Abrir DevTools en la ventana principal (Console) para observar efectos de acciones de menú si aplica.
+
+* Para probar el **Dev menu**: correr unpackaged (`app.isPackaged === false`) y setear `SHOW_DEV_MENU=1`. 
+
+* [x] **(1) Startup sanity: menú se construye y no hay hard-fails**
+
+  * **Action:** Lanzar la app y esperar idle (5–10s).
+  * **Expected result:** Menú visible; sin uncaught exceptions/unhandled rejections en terminal. No aparece `menu_builder.loadMainTranslations.requiredMissing` en camino sano.
+  * **Evidence:** `loadMainTranslations()` carga bundle requerido y, si falta/está inválido, emite `log.errorOnce('menu_builder.loadMainTranslations.requiredMissing', ...)`. 
+
+* [x] **(2) Dispatch sanity: acciones “Help” llegan al renderer sin warnings del main**
+
+  * **Action:** Con la app ya lista, usar **Help** y gatillar 2–3 items distintos (por ejemplo: `FAQ`, `About`, alguna guía).
+  * **Expected result:** Se ejecuta el comportamiento esperado en UI (modales/ventanas/acción equivalente), sin warnings tipo “menu-click dropped / failed (ignored)” desde main.
+  * **Evidence:** `sendMenuClick(payload)` hace `webContents.send('menu-click', payload)` y solo warnOnce en anomalías (`noWindow`, `destroyed`, `failed`). 
+
+* [x] **(3) Hook de Language: abre selector sin fallback warning**
+
+  * **Action:** Menú **Window > Language**.
+  * **Expected result:** Se abre la ventana/flujo de selector de idioma; no aparece warning `menu_builder.onOpenLanguage.missing` en el camino configurado.
+  * **Evidence:** si el hook no existe, cae en `log.warnOnce('menu_builder.onOpenLanguage.missing', ...)` (degradación explícita). 
+
+* [x] **(4) Acciones no-“Help”: crono y always-on-top no rompen dispatch**
+
+  * **Action:** Menú **View > Toggle crono** y **Window > Always on top**.
+  * **Expected result:** El renderer refleja el cambio (o el efecto esperado del toggle); sin warnings `sendMenuClick.*` en camino sano.
+  * **Evidence:** ambos ítems usan `sendMenuClick('<actionId>')` (misma ruta `menu-click`). 
+
+* [x] **(5) Dev menu (si aplica): target resolution funciona (focused-or-main)**
+
+  * **Action:** Con `SHOW_DEV_MENU=1`, usar **Development > Reload**, **Force reload**, **Toggle DevTools**.
+  * **Expected result:** Opera sobre la ventana objetivo (focused o main); sin crash. (Si no hay target válido, debe ser no-op silencioso.)
+  * **Evidence:** el dev menu está condicionado por `if (!app.isPackaged && showDevMenu)` y resuelve target con foco/main antes de `reload()/reloadIgnoringCache()/toggleDevTools()`. 
+
+* [x] **(6) (Opcional, timing) Pre-READY guard: dedupe de “ignored (pre-READY)”**
+
+  * **Action:** Relanzar y hacer click muy temprano en 1 acción de menú repetidas veces antes de que la UI esté plenamente lista.
+  * **Expected result:** A lo sumo 1 warning deduplicado “Menu action ignored (pre-READY)” para ese `actionId`; sin spam.
+  * **Evidence:** `canDispatchMenuAction(actionId)` emite `log.warnOnce(\`menu_builder.inert:${actionId}`, 'Menu action ignored (pre-READY):', actionId)`. 
 
 ---
 
@@ -2175,6 +2373,11 @@ Observable contract, side effects, and timing/order were preserved (deletions of
 
 [x] **Cerrar app y relanzar**.
    Esperado: init carga último texto persistido (o vacío si se vació); sin errores en startup.
+
+### public/renderer.js (post-startup change)
+
+Date: `2026-02-08`
+Last commit: `858c6626806343e4198d4bff1c250568184ce261`
 
 ---
 
@@ -3596,166 +3799,4 @@ Reviewer gate: PASS
 
 ---
 
-## Post-startup architecture change
 
-Files touched:
-
-`electron/main.js` (LISTO)
-`electron/menu_builder.js`
-`public/renderer.js`
-
----
-
-### electron/menu_builder.js (post-startup change)
-
-Date: `2026-02-08`
-Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
-
-#### L0 — Diagnosis (re-audit)
-
-**0.1 Reading Map**
-- Block order: overview header → external imports → internal imports → helpers (logging/utilities) → translation loading → `getDialogTexts` → `buildAppMenu` (nested helpers + menu templates + dev menu) → exports.
-- Linear reading breaks / obstacles (identifier + micro-quote):
-  - `buildAppMenu` — `const menuTemplate = [`
-  - `sendMenuClick` (nested in `buildAppMenu`) — `mainWindow.webContents.send('menu-click', payload)`
-  - `loadBundle` — `for (let i = 0; i < files.length; i++)`
-
-**0.2 Contract Map**
-- Exposes: `getDialogTexts(lang)`, `buildAppMenu(lang, opts)`, `resolveDialogText(dialogTexts, key, fallback, opts)`.
-- Side effects (anchored):
-  - `Menu.buildFromTemplate`, `Menu.setApplicationMenu`
-  - Filesystem reads: `fs.existsSync`, `fs.readFileSync`
-  - Dev menu flag: `process.env.SHOW_DEV_MENU`
-  - Focused window usage: `BrowserWindow.getFocusedWindow`
-- Invariants (anchored):
-  - Menu dispatch gated: `if (isMenuEnabled()) return true` and `if (!canDispatchMenuAction(payload)) return;`
-  - Best-effort drop if no window: `if (!mainWindow)` / `if (mainWindow.isDestroyed())`
-  - Translation merge fallback: `return deepMerge(defaultBundle || {}, overlay || {})`
-
-**IPC contract (only what exists in this file)**
-- `webContents.send('menu-click', payload)`
-  - Channel: `'menu-click'`
-  - Input: `payload` (at send boundary)
-  - Return: n/a
-- No `ipcMain.*` or `ipcRenderer.*` occurrences.
-- Delegated IPC registration: none found.
-
-#### L1 — Structural refactor and cleanup
-
-**Estado:** PASS (CHANGED)
-
-**Cambios realizados (estructurales; sin cambio de contrato):**
-- Se agregó helper local `resolveDevTarget()` dentro de `buildAppMenu` para centralizar selección “focused-or-main”.
-- Se reemplazaron 3 bloques duplicados de selección de target en el menú dev (`dev.reload`, `dev.forceReload`, `dev.toggleDevTools`) por `const target = resolveDevTarget();`.
-- Se mantuvieron intactos guards, logging y `try/catch` de cada acción.
-
-**Anclas (micro-quotes):**
-- Nuevo helper: `const resolveDevTarget = () => {`
-- Uso en acciones dev: `const target = resolveDevTarget();`
-- Guard preservado: `if (!canDispatchMenuAction('dev.reload')) return;` (análogos para las otras acciones)
-
-**Confirmación:** contrato/behavior/timing preservados (mismas llamadas y side effects; sin cambios de exports ni IPC surface).
-
-#### L2 — Clarity / robustness refactor (Codex)
-
-**Estado:** PASS (NO CHANGE)
-
-**Razones (Codex):**
-- El archivo ya está seccionado y con fallbacks explícitos; reordenar no mejora materialmente.
-- `loadBundle` ya cubre faltantes/invalid/empty con fallbacks; factorizar agrega indirection sin bajar ramas.
-- `menuTemplate` es data larga por naturaleza; extraer builders aumentaría “saltos” y empeora lectura lineal.
-- El envío `menu-click` y el logging best-effort ya son explícitos; más guards/logs arriesgan alterar superficie observable o volumen.
-- No hay registro IPC (`ipcMain.*`/`ipcRenderer.*`) ni `app.whenReady` en este archivo.
-
-**Anclas (micro-quotes):**
-- Secciones explícitas: `// =============================================================================`
-- Robustez i18n: `if (!fs.existsSync(file)) continue;` / `if (raw.trim() === '')` / `return JSON.parse(raw);`
-- IPC outbound (send): `mainWindow.webContents.send('menu-click', payload)`
-
-**Confirmación:** contrato/behavior/timing preservados (NO CHANGE).
-
-**Reviewer assessment:** PASS
-- La decisión “NO CHANGE” es defendible dado que el archivo ya tiene estructura por secciones, fallbacks explícitos y dedupe (`warnOnce`/`errorOnce`), y los puntos “grandes” (menuTemplate) son inherentes.
-- Nota de wording: aunque no hay IPC *registration* en este módulo, sí hay IPC *sending* vía `webContents.send('menu-click', ...)`.
-
-#### L3 — Architecture / contract changes (Codex)
-
-**Estado:** PASS (NO CHANGE; no Level 3 justified)
-
-**Evidencia revisada (anchors):**
-- Outbound IPC único desde este módulo: `mainWindow.webContents.send('menu-click', payload)` (best-effort + guards).
-- Receiver path único (preload): `ipcRenderer.on('menu-click', wrapper)` expuesto como `onMenuClick`.
-- Consumo UI (router): `window.electronAPI.onMenuClick((actionId) => { ... })` y dispatch por `handleMenuClick(actionId)`.
-- Rebuild del menú ante cambio de idioma (settings): `buildAppMenu(menuLang);` (misma entrypoint).
-- Helpers de textos/diálogos consumidos como helpers (no contrato IPC): `getDialogTexts(...)` / `resolveDialogText(...)` (consumidores: presets_main / updater).
-
-**Conclusión:** no se encontró dolor real reproducible, ambigüedad de contrato ni conflicto entre consumidores que justifique un cambio Level 3.
-
-**Confirmación:** contrato/behavior/timing preservados (NO CHANGE).
-
-**Reviewer assessment:** PASS
-- La evidencia revisada es consistente con un único canal “menu-click” (send → preload wrapper → router UI).
-- Sin señales de responsabilidades duplicadas ni semánticas divergentes entre consumidores.
-
-#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
-
-Decision: CHANGED
-
-Non-trivial changes (keys explícitas warnOnce/errorOnce):
-- `menu_builder.loadMainTranslations.overlayMissing:${requested}` -> `menu_builder.loadMainTranslations.overlayMissing`
-- `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}` -> `menu_builder.loadMainTranslations.empty:${fileVariant}`
-- `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}` -> `menu_builder.loadMainTranslations.failed:${fileVariant}`
-- `menu_builder.loadMainTranslations.requiredMissing:${langCode}` -> `menu_builder.loadMainTranslations.requiredMissing`
-
-Gain:
-- Cumple “Key rule” (keys estables; sin datos per-occurrence/arbitrary en el bucket de dedupe).
-Cost:
-- Dedupe más grueso: estos eventos ya no se diferencian por idioma; se dedupean por proceso (y en empty/failed, solo por `fileVariant`).
-Validation:
-- Forzar un idioma sin overlay y confirmar 1 solo warning del tipo overlayMissing en la sesión.
-- Introducir `main.json` vacío/JSON inválido y confirmar un warning por `fileVariant` (region/root).
-- Verificar por grep que ya no existen keys con `:${requested}` / `:${langCode}:` en esos eventos.
-
-Contract/behavior/timing:
-- Preservado: cambios solo en strings de dedupe key; no cambia flujo de fallback ni side effects.
-
-Reviewer gate: PASS
-- Cambio acotado, alineado a política, sin drift observable fuera de dedupe.
-
-#### L5 — Comments (JSDoc drift fix) (Codex)
-
-Decision reported by Codex: CHANGED (JSDoc expanded for opts.resolveMainWindow / opts.isMenuEnabled)
-
-Reviewer check (against current file):
-- JSDoc for `buildAppMenu` still documents only:
-  - `@param {Electron.BrowserWindow|null} [opts.mainWindow] ...`
-  - `@param {Function} [opts.onOpenLanguage] ...`
-- Implementation still reads and defaults:
-  - `opts.resolveMainWindow`
-  - `opts.isMenuEnabled`
-
-Conclusion:
-- Codex report does not match the updated file; L5 redo must be re-run and actually applied (comments-only).
-
-#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
-
-Decision: NO CHANGE
-
-No Level 6 changes justified.
-- Checked `buildAppMenu` options vs JSDoc and usage (`resolveMainWindow`, `isMenuEnabled`, `onOpenLanguage`) and found alignment.
-- Verified logging API usage for `warnOnce`/`errorOnce` sites in translation loading and menu dispatch; no signature drift.
-- Confirmed IPC surface remains a single outbound `webContents.send('menu-click', payload)`; no handlers added in this module.
-- Scanned for leftover/unused locals introduced by prior levels (e.g., `resolveDevTarget`) and found them referenced.
-
-Observable contract and timing were preserved.
-
-Reviewer assessment: PASS
-- The checks target the actual plausible leftover risks after L1/L4/L5 (leftovers + logging signature + comment drift) without proposing contract changes.
-
----
-
-### public/renderer.js (post-startup change)
-
-(TODO)
-
----
