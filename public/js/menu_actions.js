@@ -9,6 +9,7 @@
     // private reference for the unsubscribe function returned by preload
     let _unsubscribeMenuClick = null;
 
+    // Public API helpers
     function registerMenuAction(payload, callback) {
         if (typeof payload !== 'string' || !payload.trim()) {
             throw new Error('registerMenuAction: payload debe ser string no vacio');
@@ -28,6 +29,7 @@
         return Array.from(registry.keys());
     }
 
+    // Internal handler invoked by the preload listener
     function handleMenuClick(payload) {
         log.debug('menu-click received (menu_actions.js):', payload);
         const action = registry.get(payload);
@@ -50,31 +52,34 @@
             return true;
         }
 
-        if (window.electronAPI && typeof window.electronAPI.onMenuClick === 'function') {
-            try {
-                const maybeUnsubscribe = window.electronAPI.onMenuClick(handleMenuClick);
-
-                // Save the unsubscribe function if it was returned
-                if (typeof maybeUnsubscribe === 'function') {
-                    _unsubscribeMenuClick = maybeUnsubscribe;
-                    log.debug('menuActions: listener registered in electronAPI.onMenuClick (with unsubscribe)');
-                } else {
-                    // Not all preload implementations return unsubscribe. We accept that.
-                    _unsubscribeMenuClick = null;
-                    log.warnOnce(
-                        'menu_actions:onMenuClick:no_unsubscribe',
-                        'menuActions: onMenuClick did not return unsubscribe; listener cannot be removed'
-                    );
-                }
-                return true;
-            } catch (err) {
-                log.error('menuActions: error registering listener in electronAPI.onMenuClick:', err);
-                return false;
-            }
+        const api = window.electronAPI;
+        if (!api || typeof api.onMenuClick !== 'function') {
+            return false;
         }
-        return false;
+
+        try {
+            const maybeUnsubscribe = api.onMenuClick(handleMenuClick);
+
+            // Save the unsubscribe function if it was returned
+            if (typeof maybeUnsubscribe === 'function') {
+                _unsubscribeMenuClick = maybeUnsubscribe;
+                log.debug('menuActions: listener registered in electronAPI.onMenuClick (with unsubscribe)');
+            } else {
+                // Not all preload implementations return unsubscribe. We accept that.
+                _unsubscribeMenuClick = null;
+                log.warnOnce(
+                    'menu_actions:onMenuClick:no_unsubscribe',
+                    'menuActions: onMenuClick did not return unsubscribe; listener cannot be removed'
+                );
+            }
+            return true;
+        } catch (err) {
+            log.error('menuActions: error registering listener in electronAPI.onMenuClick:', err);
+            return false;
+        }
     }
 
+    // Initial registration with a DOM-ready retry
     if (!setupListener()) {
         // Try again when the DOM is ready (and other APIs have been injected)
         document.addEventListener('DOMContentLoaded', () => { setupListener(); });

@@ -4125,3 +4125,21 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
 
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+
+#### L1 — Structural refactor (Codex)
+
+Decision: CHANGED
+
+- Added small section comments to label major blocks (public API helpers / internal handler / init retry) without touching logic.
+- Flattened `setupListener` by hoisting `const api = window.electronAPI` and returning early when `api.onMenuClick` is unavailable (reduced nesting; same success/failure outcomes).
+- Preserved existing early-exit when `_unsubscribeMenuClick` is already set (keeps “idempotent only when unsubscribe exists” behavior).
+- Preserved try/catch scope and the warnOnce path when `onMenuClick` does not return an unsubscribe function.
+
+Risk: Very low. `electronAPI` is exposed as a stable object (`contextBridge.exposeInMainWorld('electronAPI', api)`), and `onMenuClick` returns an unsubscribe function in the preload implementation.
+Validation: N/A (structural-only; contract/timing preserved).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. Changes are local, behavior-preserving, and do not introduce or assume any IPC surface beyond the existing preload delegate.
+- Minor wording mismatch in Codex summary: “section headers/grouping” is mostly limited to small inline comments in the diff shown.
+
+Reviewer gate: PASS
