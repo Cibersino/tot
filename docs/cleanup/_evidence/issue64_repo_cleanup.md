@@ -4044,4 +4044,20 @@ Reviewer assessment:
 - PASS: Logging sites follow call-site style; warnOnce keys are explicit and controlled; no clear policy breach that warrants L4 changes.
 Reviewer gate: PASS
 
+#### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
+
+Decision: CHANGED (comments-only)
+
+- Added an Overview block with a concise responsibilities list.
+- Inserted section dividers aligned to the real block order (deps/logger, helpers, async flows, exports).
+- Added an explicit end-of-file marker ("End of public/js/presets.js").
+- English + ASCII-only comments.
+
+No functional changes; comments-only.
+
+Reviewer assessment:
+- PASS: Comments-only change; improves navigability without changing semantics/contract/timing.
+
+Reviewer gate: PASS
+
 ---

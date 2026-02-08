@@ -1,11 +1,28 @@
 // public/js/presets.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Renderer presets utilities (browser context).
+// Responsibilities:
+// - Merge default presets with user presets per language.
+// - Populate the presets select element.
+// - Apply a preset to WPM inputs and description.
+// - Load defaults from main via electronAPI and build the final list.
+// - Resolve and persist the active preset selection.
+
 (() => {
+  // =============================================================================
+  // Logger / renderer dependencies
+  // =============================================================================
   const log = window.getLogger('presets');
   const { DEFAULT_LANG } = window.AppConstants;
   const { getLangBase } = window.RendererI18n;
 
+  // =============================================================================
+  // Helpers (merge + DOM utilities)
+  // =============================================================================
   function normalizeSettings(settings, language) {
     return (settings && typeof settings === 'object')
       ? settings
@@ -58,6 +75,9 @@
     if (presetDescription) presetDescription.textContent = preset.description || '';
   }
 
+  // =============================================================================
+  // Async flows (load + selection resolution)
+  // =============================================================================
   async function loadPresetsIntoDom({
     electronAPI,
     settings = null,
@@ -143,6 +163,9 @@
     return selected;
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.RendererPresets = {
     combinePresets,
     fillPresetsSelect,
@@ -151,3 +174,7 @@
     resolvePresetSelection
   };
 })();
+
+// =============================================================================
+// End of public/js/presets.js
+// =============================================================================
