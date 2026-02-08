@@ -3518,6 +3518,25 @@ Reviewer assessment (sufficiency & inference quality):
 - PASS (meets Level 2 output constraints; rationale is generic but does not invent IPC/behavior).
 - Note: analysis would be stronger if it named 2–3 concrete candidate edits (with anchors) and explicitly rejected them as timing/contract risks.
 
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `electron/preload.js` IPC surface:
+  - `openEditor` → `ipcRenderer.invoke('open-editor')`
+  - `openPresetModal` → `ipcRenderer.invoke('open-preset-modal', payload)`
+  - `getAppConfig/getAppVersion/getAppRuntimeInfo` → `ipcRenderer.invoke(...)`
+  - startup signals/listeners: `sendRendererCoreReady` → `startup:renderer-core-ready`; `sendStartupSplashRemoved` → `startup:splash-removed`; `onStartupReady` listener for `startup:ready`; `onCronoState` listener for `crono-state`.
+- `public/renderer.js` consumes `startup:ready` via `window.electronAPI.onStartupReady(...)` and emits `startup:renderer-core-ready` via `window.electronAPI.sendRendererCoreReady()`; retains pre-READY gating paths.
+- `electron/language_preload.js` emits first-run gate signal `ipcRenderer.send('language-selected', tag)` (payload is the normalized language tag).
+- `electron/main.js` has explicit `ipcMain.once('language-selected', ...)` first-run gate, and `ipcMain.on('startup:renderer-core-ready', ...)` feeding `maybeAuthorizeStartupReady()`.
+
+Reviewer assessment: PASS — Evidence reviewed shows a single, coherent IPC contract across preload/renderer/main for startup readiness + language selection; no duplicated responsibility or ambiguous contract found that would justify a Level 3 change without a repro/bug report.
+Reviewer gate: PASS
+
+Observable contract/timing preserved (no code changes).
+
 ---
 
 ### electron/menu_builder.js (post-startup change)
