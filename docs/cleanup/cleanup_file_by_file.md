@@ -2,11 +2,11 @@
 
 ## Elección de archivo:
 
-- En proceso: `public/js/presets.js`
+- En proceso: `electron/main.js`
 
-- Archivos ya ordenados y limpiados (18): `electron/main.js`, `electron/settings.js`, `electron/fs_storage.js`, `electron/text_state.js`, `electron/editor_state.js`, `electron/presets_main.js`, `electron/menu_builder.js`, `electron/updater.js`, `electron/link_openers.js`, `electron/constants_main.js`, `public/renderer.js`, `public/editor.js`, `public/preset_modal.js`, `public/flotante.js`, `public/language_window.js`, `public/js/crono.js`, `public/js/format.js`, `public/js/count.js`.
+- Archivos ya ordenados y limpiados (15): `electron/settings.js`, `electron/fs_storage.js`, `electron/text_state.js`, `electron/editor_state.js`, `electron/presets_main.js`, `electron/updater.js`, `electron/link_openers.js`, `electron/constants_main.js`, `public/editor.js`, `public/preset_modal.js`, `public/flotante.js`, `public/language_window.js`, `public/js/crono.js`, `public/js/format.js`, `public/js/count.js`.
 
-- Faltan (10): `public/js/menu_actions.js`, `public/js/i18n.js`, `public/js/notify.js`,`public/js/info_modal_links.js`, `public/js/constants.js`, `electron/preload.js`, `electron/editor_preload.js`, `electron/preset_preload.js`, `electron/flotante_preload.js`, `electron/language_preload.js`.
+- Faltan (14): `electron/menu_builder.js`, `public/renderer.js`, `public/js/presets.js`, `public/js/menu_actions.js`, `public/js/i18n.js`, `public/js/notify.js`,`public/js/info_modal_links.js`, `public/js/constants.js`, `electron/preload.js`, `electron/editor_preload.js`, `electron/preset_preload.js`, `electron/flotante_preload.js`, `electron/language_preload.js`.
 
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
@@ -27,12 +27,6 @@
 # Target file: `<TARGET_FILE>`
 
 For this response only, produce a Level 0 minimal diagnosis of the file (short, descriptive, no code changes, no recommendations).
-
-Output requirement:
-- Write the full Level 0 result to a Markdown file at: `tools_local/codex_reply.md`
-- Overwrite the file contents (do not append).
-- The file must start with a header that includes the target path.
-- In chat, output only: “WROTE: tools_local/codex_reply.md”.
 
 Hard constraints:
 - Do NOT propose fixes or refactors. Diagnosis only.
@@ -118,14 +112,11 @@ Scope:
 - You may inspect the repo as needed to understand how this module is used, but apply changes only to `<TARGET_FILE>`.
 
 Output requirement:
-- Write a short Level 1 report to `tools_local/codex_reply.md` (overwrite; do not append).
-- The report must start with: `# Level 1 result: <TARGET_FILE>`
 - The report must include:
   - "Decision: CHANGED" or "Decision: NO CHANGE"
   - If CHANGED: 3–10 bullets describing what was changed (structural only), and a one-line confirmation that contract/behavior/timing were preserved.
   - If NO CHANGE: 3–8 bullets explaining why no safe Level 1 change was worth doing.
-- Do NOT output diffs (neither in chat nor in the report).
-- In chat, output only: “WROTE: tools_local/codex_reply.md”.
+- Do NOT output diffs.
 ```
 
 ---
@@ -194,10 +185,6 @@ Scope:
 
 Output requirement:
 - Apply changes directly to `<TARGET_FILE>` only if you decided CHANGED.
-- Write the full Level 2 result to a Markdown file at: `tools_local/codex_reply.md`
-- Overwrite the file contents (do not append).
-- The file must start with a header that includes the target path, e.g.:
-  `# Level 2 result: <TARGET_FILE>`
 - The report must include:
   - Decision: CHANGED | NO CHANGE
   - If NO CHANGE: 3–8 bullets stating why no safe Level 2 change was worth doing.
@@ -206,8 +193,7 @@ Output requirement:
     - Cost: one sentence.
     - Validation: how to verify (manual check / smoke path / simple repo grep).
   - One explicit sentence confirming the observable contract/timing were preserved.
-- Do NOT output diffs (neither in chat nor in the report).
-- In chat, output only: “WROTE: tools_local/codex_reply.md”.
+- Do NOT output diffs.
 ```
 
 ---
@@ -275,14 +261,11 @@ Mandatory Gate output (for each non-trivial change you make):
 You may inspect the repo as needed. If you implement anything, ensure the repo builds/runs and the app’s IPC paths still work.
 
 Output requirement:
-- Write the full Level 3 result to `tools_local/codex_reply.md` (overwrite; do not append).
-- The file must start with: `# Level 3 result: <TARGET_FILE>`
 - The report must include:
   - Decision: CHANGED | NO CHANGE
   - If NO CHANGE: 3–10 bullets of evidence checked (anchors).
   - If CHANGED: list each non-trivial change with Evidence/Risk/Validation, and explicitly confirm the observable contract/timing were preserved (or state what contract changed and why it was required).
-- Do NOT output diffs (neither in chat nor in the report).
-- In chat, output only: “WROTE: tools_local/codex_reply.md”.
+- Do NOT output diffs.
 ```
 
 ---
@@ -377,12 +360,8 @@ Scope:
 - You may inspect the repo as needed to understand context, but apply changes ONLY to `<TARGET_FILE>`.
 
 Output requirement:
-- Write the full Level 4 result to a Markdown file at: `tools_local/codex_reply.md`
-- Overwrite the file contents (do not append).
-- The file must start with: `# Level 4 result: <TARGET_FILE>`
 - The report must include: `Decision: CHANGED | NO CHANGE`
-- Do NOT output diffs (neither in chat nor in the report).
-- In chat, output only: “WROTE: tools_local/codex_reply.md”.
+- Do NOT output diffs.
 ```
 
 ---
@@ -445,13 +424,10 @@ What to do:
 
 Output requirement:
 - Apply edits only if you decided CHANGED.
-- Write the full Level 5 result to `tools_local/codex_reply.md` (overwrite; do not append).
-- The file must start with: `# Level 5 result: <TARGET_FILE>`
 - Include: `Decision: CHANGED | NO CHANGE`
   - If CHANGED: 3–8 bullets describing comment changes + “No functional changes; comments-only.”
   - If NO CHANGE: 3–8 bullets explaining why no meaningful comment improvements were warranted.
-- Do NOT output diffs (neither in chat nor in the report).
-- In chat, output only: “WROTE: tools_local/codex_reply.md”.
+- Do NOT output diffs.
 ```
 ---
 
@@ -508,14 +484,11 @@ Mandatory gate output (for each non-trivial change you apply):
 - Validation: how to verify (manual smoke path and/or a simple repo grep).
 
 Output requirement:
-- Write the full Level 6 result to `tools_local/codex_reply.md` (overwrite; do not append).
-- The file must start with: `# Level 6 result: <TARGET_FILE>`
 - Include: `Decision: CHANGED | NO CHANGE`
   - If CHANGED: list each non-trivial change with Change/Gain/Cost/Risk/Validation.
   - If NO CHANGE: “No Level 6 changes justified” + 3–8 bullets of what you checked (anchors).
 - Include one explicit sentence confirming the observable contract/timing were preserved.
-- Do NOT output diffs (neither in chat nor in the report).
-- In chat, output only: “WROTE: tools_local/codex_reply.md”.
+- Do NOT output diffs.
 ```
 
 ---
