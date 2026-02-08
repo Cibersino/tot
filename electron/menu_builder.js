@@ -213,6 +213,8 @@ function getDialogTexts(lang) {
  * @param {string} lang - Language code (e.g. 'es', 'en').
  * @param {object} [opts]
  * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Target window for 'menu-click'.
+ * @param {Function} [opts.resolveMainWindow] - Resolver for the target window.
+ * @param {Function} [opts.isMenuEnabled] - Returns whether menu actions should dispatch.
  * @param {Function} [opts.onOpenLanguage] - Callback that opens the language selection window.
  */
 function buildAppMenu(lang, opts = {}) {
