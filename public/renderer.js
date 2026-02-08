@@ -321,6 +321,8 @@ if (!getTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
 // =============================================================================
 // Preview and results
 // =============================================================================
+let currentTextStats = null;
+
 async function updatePreviewAndResults(text) {
   const normalizedText = normalizeText(text);
   const displayText = normalizedText.replace(/\r?\n/g, '   ');
@@ -338,6 +340,7 @@ async function updatePreviewAndResults(text) {
   }
 
   const stats = contarTexto(normalizedText);
+  currentTextStats = stats;
   const idioma = idiomaActual; // Cached on startup and updated by listener if applicable
   const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
 
@@ -351,6 +354,18 @@ async function updatePreviewAndResults(text) {
   resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
 
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
+  resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
+}
+
+function updateTimeOnlyFromStats() {
+  if (!currentTextStats) {
+    log.warnOnce(
+      'renderer.timeOnly.noStats',
+      'WPM-only update requested without text stats; time not updated.'
+    );
+    return;
+  }
+  const { hours, minutes, seconds } = getTimeParts(currentTextStats.palabras, wpm);
   resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
 }
 
@@ -1126,7 +1141,7 @@ presetsSelect.addEventListener('change', async () => {
       if (selected) {
         currentPresetName = selected.name;
         wpm = selected.wpm;
-        updatePreviewAndResults(currentText);
+        updateTimeOnlyFromStats();
       }
     } catch (err) {
       log.error('Error resolving preset selection:', err);
@@ -1150,7 +1165,7 @@ wpmSlider.addEventListener('input', () => {
   wpm = Number(wpmSlider.value);
   wpmInput.value = wpm;
   resetPresetSelection();
-  updatePreviewAndResults(currentText);
+  updateTimeOnlyFromStats();
 });
 
 wpmInput.addEventListener('blur', () => {
@@ -1162,7 +1177,7 @@ wpmInput.addEventListener('blur', () => {
   wpmInput.value = wpm;
   wpmSlider.value = wpm;
   resetPresetSelection();
-  updatePreviewAndResults(currentText);
+  updateTimeOnlyFromStats();
 });
 
 wpmInput.addEventListener('keydown', (e) => {
