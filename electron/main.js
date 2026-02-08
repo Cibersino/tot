@@ -45,7 +45,7 @@ log.debug('Main process starting...');
 // =============================================================================
 // Constants / config (paths, defaults, limits)
 // =============================================================================
-// Resolved after app readiness (requires app.getPath('userData')).
+// Static file paths and fallback data used across startup.
 
 // Language selection modal (first launch) assets
 const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');
