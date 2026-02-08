@@ -3504,6 +3504,20 @@ Decision: NO CHANGE
 - Duplications (e.g., repeated `editor-init-text`/`editor-ready` sends) are short, locally readable, and extracting them would add indirection without reducing branching.
 - The current layout already groups related responsibilities (window creation, readiness gating, flotante placement, crono), so a structural pass is unlikely to improve linear readability.
 
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- The file’s critical ordering (IPC registration + `app.whenReady` sequence) is timing-sensitive, and any structural changes there risk subtle race behavior.
+- Most duplicated send/try-catch blocks carry distinct log messages for context, so centralizing them would reduce diagnostic clarity or add parameterized indirection.
+- Existing guard/fallback paths already make edge cases explicit (`guardMainUserAction`, fallback language list, payload validation), leaving little robustness to gain without altering behavior.
+- Adding helpers would increase cross-jumping in a long file and violate the “more concepts than removed” rule for only modest readability payoff.
+- Any further robustness tweaks would likely change logging frequency or error surfacing, which counts as observable behavior.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (meets Level 2 output constraints; rationale is generic but does not invent IPC/behavior).
+- Note: analysis would be stronger if it named 2–3 concrete candidate edits (with anchors) and explicitly rejected them as timing/contract risks.
+
 ---
 
 ### electron/menu_builder.js (post-startup change)
