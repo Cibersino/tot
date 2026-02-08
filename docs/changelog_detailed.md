@@ -102,6 +102,13 @@ Reglas:
 ### Arreglado
 
 - Cronómetro: el formateo numérico de la velocidad real (WPM) ahora usa `settingsCache.numberFormatting` (mismos separadores que “Resultados del conteo”), evitando defaults hardcodeados y eliminando el warning `format.numberFormatting.missing` (`[WARN][format] numberFormatting missing; using hardcoded defaults.`).
+- Split explícito de responsabilidades para un conteo más ágil:
+  - `updatePreviewAndResults(text)`: queda como **único pipeline text-dependiente**. Recalcula preview + conteo (`contarTexto(...)`) + separadores/formato numérico y actualiza chars/palabras/tiempo. En este mismo paso **cachea** los stats en `currentTextStats`.
+  - `updateTimeOnlyFromStats()`: updater **WPM-only**. Recalcula **solo** el tiempo (`getTimeParts(currentTextStats.palabras, wpm)`) y actualiza `resTime`, sin preview, sin `contarTexto`, sin formateo/actualización de chars/palabras.
+- Entry points WPM-only migrados a `updateTimeOnlyFromStats()`:
+  - cambio de preset vía `<select>` (después de `resolvePresetSelection(...)`, manteniendo apply+persist en presets.js)
+  - `wpmSlider` (`input`)
+  - `wpmInput` (`blur`)
 
 ### Removido
 
