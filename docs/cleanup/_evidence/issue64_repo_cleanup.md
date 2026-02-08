@@ -4159,3 +4159,19 @@ Validation: N/A (no code changes).
 
 Reviewer assessment (sufficiency & inference quality):
 - PASS. “NO CHANGE” is defensible given explicit guards, deduped warnings, and timing-sensitive init/retry behavior already being clear in-file.
+
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+- Decision (Codex): NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `electron/menu_builder.js`: sender de la acción vía `mainWindow.webContents.send('menu-click', payload)`.
+- `preload.js`: puente preload que registra `ipcRenderer.on('menu-click', handler)` y retorna unsubscribe que remueve el listener.
+- `public/renderer.js`: consumidor que registra acciones usando `registerMenuActionGuarded` → `window.menuActions.registerMenuAction(...)`.
+- `public/js/menu_actions.js`: contrato local estable (registro/listado de handlers + dispatch por `handleMenuClick`), y consumo delegado de `api.onMenuClick(handleMenuClick)` (sin IPC directo).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE). El reporte satisface el gate: buscó evidencia repo-wide de “dolor real”/contrato inestable y lo que afirma es consistente con los callsites observables.
+- No hay base para cambio de arquitectura/contrato: la ruta `menu-click` es única y el módulo `menu_actions.js` mantiene una API mínima y consistente.
+
+Reviewer gate: PASS.
