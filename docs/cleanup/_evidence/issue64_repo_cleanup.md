@@ -3591,7 +3591,7 @@ Validation (manual/grep):
 
 #### L7 — Smoke (human-run; minimal)
 
-**Estado:** TODO
+**Estado:** PASS
 
 **Checklist ejecutado:**
 
@@ -3608,7 +3608,37 @@ Validation (manual/grep):
 
 ### electron/menu_builder.js (post-startup change)
 
-(TODO)
+Date: `2026-02-08`
+Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
+
+#### L0 — Diagnosis (re-audit)
+
+**0.1 Reading Map**
+- Block order: overview header → external imports → internal imports → helpers (logging/utilities) → translation loading → `getDialogTexts` → `buildAppMenu` (nested helpers + menu templates + dev menu) → exports.
+- Linear reading breaks / obstacles (identifier + micro-quote):
+  - `buildAppMenu` — `const menuTemplate = [`
+  - `sendMenuClick` (nested in `buildAppMenu`) — `mainWindow.webContents.send('menu-click', payload)`
+  - `loadBundle` — `for (let i = 0; i < files.length; i++)`
+
+**0.2 Contract Map**
+- Exposes: `getDialogTexts(lang)`, `buildAppMenu(lang, opts)`, `resolveDialogText(dialogTexts, key, fallback, opts)`.
+- Side effects (anchored):
+  - `Menu.buildFromTemplate`, `Menu.setApplicationMenu`
+  - Filesystem reads: `fs.existsSync`, `fs.readFileSync`
+  - Dev menu flag: `process.env.SHOW_DEV_MENU`
+  - Focused window usage: `BrowserWindow.getFocusedWindow`
+- Invariants (anchored):
+  - Menu dispatch gated: `if (isMenuEnabled()) return true` and `if (!canDispatchMenuAction(payload)) return;`
+  - Best-effort drop if no window: `if (!mainWindow)` / `if (mainWindow.isDestroyed())`
+  - Translation merge fallback: `return deepMerge(defaultBundle || {}, overlay || {})`
+
+**IPC contract (only what exists in this file)**
+- `webContents.send('menu-click', payload)`
+  - Channel: `'menu-click'`
+  - Input: `payload` (at send boundary)
+  - Return: n/a
+- No `ipcMain.*` or `ipcRenderer.*` occurrences.
+- Delegated IPC registration: none found.
 
 ---
 
