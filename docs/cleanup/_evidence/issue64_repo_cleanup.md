@@ -2251,6 +2251,21 @@ Validation:
 - grep keys: `BOOTSTRAP:renderer.preReady.` y `renderer.ipc.*.unavailable` y `renderer.startup.ready.unavailable`.
 - Runtime: disparar una acción pre-READY (1 warnOnce), simular hook ausente (1 warnOnce), simular falta `onStartupReady` (1 errorOnce).
 
+##### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+Changes (comments-only):
+- Added a dedicated divider `Clipboard helpers (shared by overwrite/append)` above `readClipboardText(...)` to document it as a reusable helper block.
+- Re-positioned the `Overwrite current text with clipboard content` divider to sit directly above `btnOverwriteClipboard.addEventListener('click', ...)` for correct section adjacency.
+- Rewrote the preset edit no-selection inline comment in English (ASCII) to satisfy the file comment language constraint.
+
+Reviewer assessment:
+- PASS (L5). Comments-only; improves reader guidance and removes the only visible non-English comment case without touching behavior/contract/timing.
+
+Notes:
+- No functional changes; comments-only.
+
 ---
 
 ### public/renderer.js
