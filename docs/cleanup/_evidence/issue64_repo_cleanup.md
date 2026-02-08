@@ -17,12 +17,12 @@
 
 ---
 
-## electron/main.js
+### electron/main.js
 
 Date: `2026-01-20`
 Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -82,7 +82,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
       - `updater.registerIpc(...)`
       - `registerLinkIpc(...)`
 
-### L1 decision: NO CHANGE
+#### L1 decision: NO CHANGE
 
 - El archivo ya tiene un layout por bloques claro (imports → constants → helpers → window factories → IPC → lifecycle) con encabezados de sección que facilitan navegación.
 - Reordenar bloques de creación de ventanas / wiring IPC / lifecycle en un entrypoint puede introducir cambios sutiles de secuencia (IPC readiness/startup), lo cual está fuera de alcance.
@@ -98,7 +98,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Covered by L7 smoke checklist (no code changes to validate beyond baseline).
 
-### L2 decision: CHANGED
+#### L2 decision: CHANGED
 
 - Change: Added `isAliveWindow(win)` and replaced repeated `win && !win.isDestroyed()` checks across window guards and sends.
   - Gain: Consistent, scan-friendly liveness checks without altering behavior.
@@ -119,7 +119,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - L7 smoke checklist (focus on crono toggle paths and editor-ready/main notification).
 
-### L3 decision: NO CHANGE (no Level 3 justified)
+#### L3 decision: NO CHANGE (no Level 3 justified)
 
 **Evidence checked**
 - IPC consumers in `electron/preload.js`: openEditor/getAppConfig/getAppVersion/getAppRuntimeInfo; sendCronoToggle/sendCronoReset/setCronoElapsed; openFlotanteWindow/closeFlotanteWindow/onFlotanteClosed — aligned with `ipcMain.handle`/`ipcMain.on` in `electron/main.js`.
@@ -134,7 +134,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Baseline L7 smoke checklist unchanged.
 
-### L4 decision: NO CHANGE
+#### L4 decision: NO CHANGE
 
 - Logger mechanism already correct for main process (`Log.get('main')`), with appropriate `log.error` in IPC handler failures.
 - High-frequency/best-effort paths already use `warnOnce` with stable keys (e.g., `send.crono-state.*`, `mainWin.send.flotante-closed`, `snapWindowFullyIntoWorkArea.noWorkArea`).
@@ -147,7 +147,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Baseline L7 smoke checklist unchanged.
 
-### L5 decision: CHANGED (comments-only)
+#### L5 decision: CHANGED (comments-only)
 
 - Updated the top Overview responsibilities:
   - Clarified IPC ownership: main-owned handlers + delegated feature IPC registration.
@@ -167,7 +167,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 - Visual review: file remains readable; section headers adjacent to the blocks they describe; no non-ASCII characters introduced.
 - Baseline L7 smoke checklist unchanged (no functional changes).
 
-### L6 decision: NO CHANGE
+#### L6 decision: NO CHANGE
 
 - Checked helper usage consistency (`isAliveWindow`, `warnOnce`): signatures and call sites aligned.
 - Reviewed IPC handlers (`crono-*`, `flotante-*`, `open-*`, `get-app-*`): channel names + return shapes consistent with consumers.
@@ -177,7 +177,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 
 Observable contract and timing preserved (no code changes).
 
-### L7 — Smoke checklist (human-run; code-informed)
+#### L7 — Smoke checklist (human-run; code-informed)
 
 Preconditions
 - App runs normally with logs visible (terminal or DevTools console).
@@ -254,12 +254,12 @@ Not smoke-testable (optional)
 
 ---
 
-## electron/settings.js
+### electron/settings.js
 
 Date: `2026-01-21`
 Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -312,7 +312,7 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
       - `'settings-updated'` payload `settings` (object) via `broadcastSettingsUpdated` (best-effort a ventanas abiertas).
     - Delegated IPC registration: none in this file.
 
-### L1 decision: NO CHANGE
+#### L1 decision: NO CHANGE
 
 - Codex concluyó **NO CHANGE**: el archivo ya tiene un orden por bloques coherente y headers claros; los handlers IPC están agrupados; la normalización es verbosa a propósito.
 - Un reordenamiento estructural sería churn con payoff bajo y potencial riesgo de secuencia (menu rebuild / broadcast / best-effort windows) sin reducción material de complejidad.
@@ -324,7 +324,7 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 **Validation**
 - N/A (no code changes; baseline unchanged).
 
-### L2 decision: CHANGED
+#### L2 decision: CHANGED
 
 - Change: Se centraliza el “default settings shape” introduciendo `createDefaultSettings(language = '')` y usándolo en:
   - `init()` (default para `_loadJson`)
@@ -348,7 +348,7 @@ Observable contract/timing preserved: mismos canales IPC, payload/return shapes,
 **Validation**
 - Grep + smoke mínimo (arriba).
 
-### L3 decision: NO CHANGE (no Level 3 justified)
+#### L3 decision: NO CHANGE (no Level 3 justified)
 
 **Evidence checked (anchors)**
 - `electron/settings.js`: IPC surface already explicit and stable:
@@ -365,7 +365,7 @@ Observable contract/timing preserved: mismos canales IPC, payload/return shapes,
 - Grep for: `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`, `settings-updated`.
 - Manual smoke: change language; change counting mode; select preset; verify UI updates after `settings-updated`.
 
-### L4 decision: CHANGED
+#### L4 decision: CHANGED
 
 - Change: `saveSettings` ahora usa un `errorOnce` con key estable (`settings.saveSettings.persist`) en vez de interpolar `_settingsFile` en la key.
   - Gain: la key explícita deja de depender de valores no-controlados; el path sigue quedando en los args del log para diagnóstico.
@@ -374,7 +374,7 @@ Observable contract/timing preserved: mismos canales IPC, payload/return shapes,
 
 Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, side effects u ordering; solo cambia el bucket de dedupe del log en un `catch`.
 
-### L5 decision: CHANGED
+#### L5 decision: CHANGED
 
 - Updated the Overview responsibilities to include the existing `set-selected-preset` IPC handler.
 - Updated the IPC registration comment to list `set-selected-preset` alongside the other handlers.
@@ -390,7 +390,7 @@ Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, s
 - Visual review: comments match the actual IPC handlers registered in `registerIpc`:
   `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`.
 
-### L6 decision: CHANGED
+#### L6 decision: CHANGED
 
 - Change: `broadcastSettingsUpdated` ahora incluye el nombre de la ventana (`name`) en los args del `warnOnce` cuando falla `webContents.send('settings-updated', ...)`.
 - Gain: el output del warning identifica la ventana objetivo sin depender de la dedupe key.
@@ -400,7 +400,7 @@ Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, s
 
 Observable contract/timing preserved: no hay cambios en IPC, payloads/returns, side effects u ordering; solo cambia el contenido del log en caso de fallo.
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 Result: PASS
 
@@ -420,14 +420,14 @@ Notas:
 
 ---
 
-## electron/fs_storage.js
+### electron/fs_storage.js
 
 Date: `2026-01-21`
 Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
 
-### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 
 - Block order (as-is):
   1) Overview + notes (explicitly “intentionally synchronous”)
@@ -443,7 +443,7 @@ Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
   - warnOnce keys embed `String(filePath)` (key cardinality scales with path variety):
     - anchor: `` `fs_storage.loadJson:missing:${String(filePath)}` `` (similar for `:empty:` and `:failed:`)
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 
 - Exposes (module.exports):
   - init: `initStorage(app)` (sets CONFIG_DIR)
@@ -474,7 +474,7 @@ Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
 - IPC contract: none (no ipcMain/ipcRenderer/webContents usage).
 - Delegated IPC registration: none.
 
-### L1 decision: NO CHANGE
+#### L1 decision: NO CHANGE
 
 - El archivo ya está ordenado en bloques coherentes con separadores claros (overview → imports/logger → config state → helpers → exports).
 - El flujo es simple y con baja anidación; aplicar early-returns / reordenamiento no mejora lectura sin introducir churn.
@@ -484,7 +484,7 @@ Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L2 decision: NO CHANGE
+#### L2 decision: NO CHANGE
 
 - `loadJson()` ya explicita y maneja como recoverable: missing/empty/invalid JSON → warnOnce + fallback (sin crash).
 - `saveJson()` ya asegura el directorio padre antes de escribir (“callers do not depend on init ordering”).
@@ -494,7 +494,7 @@ Validation: N/A (no code changes).
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L3 decision: NO CHANGE (no Level 3 justified)
+#### L3 decision: NO CHANGE (no Level 3 justified)
 
 - Checked module contract and guardrails in `electron/fs_storage.js` (`initStorage`, `getConfigDir`, `loadJson`, `saveJson`) for instability or ambiguity.
 - Checked call site orchestration in `electron/main.js` (`initStorage(app)`, `getSettingsFile()`, `getCurrentTextFile()`, `loadJson`, `saveJson`) for timing or ordering pressure.
@@ -508,7 +508,7 @@ Conclusion: no direct evidence of unstable contract, duplicated responsibility, 
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L4 decision: CHANGED (logging-only)
+#### L4 decision: CHANGED (logging-only)
 
 Change: Stabilized `loadJson` warnOnce dedupe keys to comply with “controlled variant” policy (no unbounded/dynamic data in keys).
 
@@ -530,7 +530,7 @@ Validation:
 
 Observable contract and timing preserved: yes (logging-only; no functional changes).
 
-### L5 decision: NO CHANGE (comments)
+#### L5 decision: NO CHANGE (comments)
 
 - Overview already lists responsibilities and constraints (sync main process; recoverable fallbacks).
 - Section dividers match the actual block order and follow `electron/main.js` style.
@@ -541,7 +541,7 @@ Observable contract and timing preserved: yes (logging-only; no functional chang
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L6 decision: NO CHANGE (final review)
+#### L6 decision: NO CHANGE (final review)
 
 No Level 6 changes justified.
 - Checked helper usage consistency (`LOAD_JSON_KNOWN_FILES`, `getLoadJsonOnceKey`, `loadJson`).
@@ -555,7 +555,7 @@ Observable contract and timing preserved: yes (no code changes).
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L7 smoke (human-run)
+#### L7 smoke (human-run)
 
 Result: PASS
 
@@ -579,12 +579,12 @@ Notes (only if relevant):
 
 ---
 
-## electron/text_state.js
+### electron/text_state.js
 
 Date: `2026-01-21`
 Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -658,7 +658,7 @@ Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
       - `current-text-updated`, `editor-text-updated`, `editor-force-clear`
     - Delegated IPC registration: none.
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -676,7 +676,7 @@ Considered and rejected:
 - Extract each IPC handler into separate functions: adds indirection without reducing complexity.
 - Split `registerIpc` into multiple registrars: expands concepts without eliminating logic.
 
-### L2 — Clarity / robustness (Codex)
+#### L2 — Clarity / robustness (Codex)
 
 Decision: NO CHANGE
 
@@ -688,7 +688,7 @@ Decision: NO CHANGE
 
 The observable contract and timing are preserved (no changes applied).
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -708,7 +708,7 @@ Evidence checked (repo anchors):
 - `public/renderer.js`: caller expects `resp.error` on failure:
   - "throw new Error(resp.error || 'set-current-text failed');"
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -726,7 +726,7 @@ Decision: CHANGED
 
 Observable contract and timing preserved; logging-only changes.
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -735,7 +735,7 @@ Decision: CHANGED
 - Clarified the `registerIpc` docblock to enumerate all IPC channels and to note main/editor broadcasts (best-effort).
 - No functional changes; comments-only.
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 
@@ -749,7 +749,7 @@ No Level 6 changes justified.
 
 Observable contract and timing preserved (no changes applied).
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 Result: PASS
 
@@ -770,12 +770,12 @@ Checklist:
 
 ---
 
-## electron/editor_state.js
+### electron/editor_state.js
 
 Date: `2026-01-21`
 Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order (as-is):
@@ -817,7 +817,7 @@ Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
   - Delegated IPC registration:
     - None found.
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -830,7 +830,7 @@ Decision: NO CHANGE
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L2 — Clarity / robustness (Codex)
+#### L2 — Clarity / robustness (Codex)
 
 Decision: NO CHANGE
 
@@ -842,7 +842,7 @@ Decision: NO CHANGE
 
 Observable contract and timing were preserved.
 
-### L3 — Architecture / contract (Codex)
+#### L3 — Architecture / contract (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -853,7 +853,7 @@ Evidence checked (anchors):
 - `electron/editor_state.js` — helpers: `normalizeState`, `isValidReduced` (invariants centralized).
 - `electron/fs_storage.js` — `getEditorStateFile` / `editor_state.json` path usage (single storage contract).
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -871,7 +871,7 @@ Validation:
 - `rg -F "editor-state.unmaximize." electron/editor_state.js`
 - Runtime (manual): forzar un `editor_state.json` con shape inválida y abrir Editor manual; observar 1 warn (deduped). Probar maximize → unmaximize sin `reduced` persistido; observar warn (deduped).
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED (comments-only)
 
@@ -885,7 +885,7 @@ Decision: CHANGED (comments-only)
 Risk: none (comments-only).
 Validation: visual review (no code moved; comments adjacent to blocks; ASCII-only).
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 
@@ -900,7 +900,7 @@ Checks performed (anchors):
 
 Observable contract and timing were preserved.
 
-### L7 — Smoke (human-run; editor_state.js)
+#### L7 — Smoke (human-run; editor_state.js)
 
 Result: PASS
 
@@ -908,25 +908,25 @@ Result: PASS
 
 * App closed before touching config files.
 
-#### L7-01 Baseline: open Editor once (creates/loads editor_state.json)
+##### L7-01 Baseline: open Editor once (creates/loads editor_state.json)
 
 * [x] Action: Launch app → open Manual Editor (test_suite SM-08).
 * [x] Expected: Editor window opens; main remains responsive; no uncaught exceptions.
 * [x] Expected logs: on **clean run**, it is acceptable to see **one** warnOnce from `fs_storage.loadJson` about missing `editor_state.json` (created on first editor usage). No repeated spam.
 
-#### L7-02 Persist reduced geometry (move/resize -> reopen)
+##### L7-02 Persist reduced geometry (move/resize -> reopen)
 
 * [x] Action: With editor **not maximized**, resize + move to a distinct position → close editor window → open editor again.
 * [x] Expected: Editor reopens roughly at the same size/position (reduced bounds restored).
 * [x] Expected: No new WARN/ERROR lines produced by normal move/resize activity (beyond any first-run fs_storage warning already seen).
 
-#### L7-03 Persist maximized flag (maximize -> reopen)
+##### L7-03 Persist maximized flag (maximize -> reopen)
 
 * [x] Action: Maximize editor → close editor → open editor.
 * [x] Expected: Editor opens **maximized** again.
 * [x] Expected: No ERROR logs.
 
-#### L7-04 Unmaximize restores last reduced bounds (non-fallback path)
+##### L7-04 Unmaximize restores last reduced bounds (non-fallback path)
 
 * [x] Action: From maximized editor, click unmaximize (restore down).
 * [x] Expected: Window returns to last reduced bounds (the one you had before maximize), not the fallback placement.
@@ -934,11 +934,11 @@ Result: PASS
 
 ---
 
-### Optional L7 (covers L4 warnOnce fallbacks explicitly)
+#### Optional L7 (covers L4 warnOnce fallbacks explicitly)
 
 These are optional because they require editing `editor_state.json`, but they validate the *new logging* and “no silent fallback” behavior.
 
-#### L7-05 Force unmaximize fallback when reduced is missing
+##### L7-05 Force unmaximize fallback when reduced is missing
 
 * [x] Setup: Close app. Backup `editor_state.json`. Replace contents with:
 
@@ -951,7 +951,7 @@ These are optional because they require editing `editor_state.json`, but they va
   * `unmaximize: reduced bounds missing; using fallback placement (ignored).`
 * [x] Dedupe check: repeat maximize/unmaximize multiple times in the same session → warning should not repeat.
 
-#### L7-06 Force normalizeState invalid-shape warnings (valid JSON, wrong shape)
+##### L7-06 Force normalizeState invalid-shape warnings (valid JSON, wrong shape)
 
 * [x] Setup: Close app. Backup `editor_state.json`. Replace contents with **one** of:
   * `null`
@@ -967,12 +967,12 @@ These are optional because they require editing `editor_state.json`, but they va
 
 ---
 
-## electron/presets_main.js
+### electron/presets_main.js
 
 Date: `2026-01-21`
 Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order (as-is):
@@ -1055,7 +1055,7 @@ Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
   - Delegated IPC registration:
     - None found in this file.
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: **NO CHANGE**
 
@@ -1065,7 +1065,7 @@ Decision: **NO CHANGE**
 - Default preset loading has intentional fallback paths; merging helpers risks altering edge-case behavior.
 - Structural edits would not reduce branching or cognitive load enough to justify change.
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: **CHANGED**
 
@@ -1081,7 +1081,7 @@ Change 2: Centralize `disabled_default_presets` initialization with `ensureDisab
 
 Observable contract, IPC surface, side effects, and timing preserved (per Codex report; diff shows handler order unchanged and only local helper extraction).
 
-### L3 — Architecture / contract changes (Codex, rerun with repo-wide consumer scan)
+#### L3 — Architecture / contract changes (Codex, rerun with repo-wide consumer scan)
 
 Decision: **NO CHANGE (no Level 3 justified)**
 
@@ -1102,7 +1102,7 @@ Reviewer assessment (sufficiency & inference quality):
 - Sufficient evidence to support NO CHANGE at Level 3: no demonstrated multi-consumer divergence in handler return semantics.
 - Remaining incompleteness: event payload semantics are not compared across renderer consumers (especially `settings-updated`), and `preset-created` evidence anchors include handler internals but not the subscription site; therefore “no conflicting payload assumptions” is under-supported.
 
-### L4 — Logs (policy-driven tuning) (Codex)
+#### L4 — Logs (policy-driven tuning) (Codex)
 
 Decision: **CHANGED**
 
@@ -1132,7 +1132,7 @@ Observable contract/timing preserved (report + change scope limited to logging a
 Evidence:
 - Diff: `electron/presets_main.js` (keys: `presets_main.defaults.*`, `presets_main.presetsJson.*`, `presets_main.broadcast.*`, `presets_main.send.preset-created.*`).
 
-### L5 — Comments (QA follow-up) (Codex)
+#### L5 — Comments (QA follow-up) (Codex)
 
 Decision: **CHANGED** (comments-only)
 
@@ -1147,7 +1147,7 @@ Observed changes (diff-based):
 Evidence:
 - Diff: `electron/presets_main.js` (comments-only).
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: **CHANGED** (comments-only)
 
@@ -1160,7 +1160,7 @@ Reviewer assessment (sufficiency & inference quality):
 Evidence:
 - Diff: `electron/presets_main.js` (JSDoc line in `registerIpc` opts.getWindows shape).
 
-### L7 — Smoke test (humano) — `electron/presets_main.js`
+#### L7 — Smoke test (humano) — `electron/presets_main.js`
 
 Result: PASS
 
@@ -1190,12 +1190,12 @@ B) (Opcional) Clean run (para cubrir seeding de defaults)
 
 ---
 
-## electron/menu_builder.js
+### electron/menu_builder.js
 
 Date: `2026-01-21`
 Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
 
-### L0 — Diagnosis (no changes) (Codex, follow-up re-run; verified)
+#### L0 — Diagnosis (no changes) (Codex, follow-up re-run; verified)
 
 Note: Follow-up re-run because prior L0 asserted an IPC payload shape without anchoring to a call site. This L0 keeps payload shape “unknown at this boundary” when only an identifier is visible.
 
@@ -1237,7 +1237,7 @@ Reviewer assessment (L0 protocol compliance):
 - PASS (follow-up): no inferred payload/type shapes; contract statements are anchored with micro-quotes.
 - Note: the “no ipcMain/ipcRenderer occurrences” claim is a negative scan result (not independently evidenced inside this document).
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -1254,7 +1254,7 @@ Reviewer assessment (sufficiency & inference quality):
 - PASS. The “NO CHANGE” decision is consistent with the file’s existing explicit sectioning and responsibilities (menu + i18n + dialog texts).
 - No unanchored IPC/contract/payload-shape assertions were introduced at Level 1.
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -1270,7 +1270,7 @@ Reviewer assessment (sufficiency & inference quality):
 - PASS (NO CHANGE). Given zero code changes, the decision hinges on whether L2 changes would be low-risk and net-positive; the file already has warnOnce/errorOnce patterns and explicit fallback logic, so “do not touch” is defensible.
 - Minor wording issue in Codex report: while there is no IPC *registration* (`ipcMain.*` / `ipcRenderer.*`) in this module, it does perform IPC *sending* via `mainWindow.webContents.send('menu-click', payload)`. This does not affect the NO CHANGE conclusion.
 
-### L3 — Architecture / contract changes (Codex) (follow-up re-run: evidence completeness)
+#### L3 — Architecture / contract changes (Codex) (follow-up re-run: evidence completeness)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -1299,7 +1299,7 @@ Reviewer assessment (sufficiency & inference quality):
 - PASS (NO CHANGE). This follow-up addresses the prior gap by providing sender + receiver anchors and a repo-wide scan for the IPC channel literal.
 - Minor evidence gap: the renderer-side micro-quotes (payload type enforcement / Map key usage) are not backed by the included `menu-click` scan excerpt (they may not contain the literal). This does not affect the Level 3 “NO CHANGE” decision.
 
-### L4 — Logs (policy-driven tuning) (Codex)
+#### L4 — Logs (policy-driven tuning) (Codex)
 
 Decision: CHANGED
 
@@ -1333,7 +1333,7 @@ Validation plan adequacy:
 
 Status: PASS (L4)
 
-### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
+#### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
 
 Decision: CHANGED (comments-only)
 
@@ -1350,7 +1350,7 @@ Reviewer assessment (sufficiency & inference quality):
 Evidence:
 - Diff: `electron/menu_builder.js` (comment-only hunks: Helpers divider insertion; fallback chain comment edit; removal of “Apply the menu...” comment).
 
-### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
 
 - Decision (Codex): NO CHANGE
 - Codex report summary:
@@ -1373,7 +1373,7 @@ Reviewer assessment (sufficiency & inference quality):
     - Export surface remains `getDialogTexts`, `buildAppMenu`, `resolveDialogText`.
     - Dev menu guard is still `process.env.SHOW_DEV_MENU === '1'`.
 
-### L7 — Smoke test (humano) — `electron/menu_builder.js` (cambio-focalizado: L4 logging/dedupe + i18n load)
+#### L7 — Smoke test (humano) — `electron/menu_builder.js` (cambio-focalizado: L4 logging/dedupe + i18n load)
 
 Result: Pass
 
@@ -1387,12 +1387,12 @@ Result: Pass
 
 ---
 
-## electron/updater.js
+### electron/updater.js
 
 Date: `2026-01-22`
 Last commit: `f29062b2ac374c073a462fb67710ff64114e8c91`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -1441,7 +1441,7 @@ Last commit: `f29062b2ac374c073a462fb67710ff64114e8c91`
     - Auto-check solo una vez por ciclo de vida.
       - Anchor: `"if (updateCheckDone) return;"`.
 
-### IPC contract (only what exists in this file)
+#### IPC contract (only what exists in this file)
 
 A) Explicit IPC in this file:
 - `ipcMain.handle('check-for-updates', async () => ...)`
@@ -1452,7 +1452,7 @@ A) Explicit IPC in this file:
 B) Delegated registration:
 - None
 
-### L1 decision: CHANGED
+#### L1 decision: CHANGED
 
 - Change: Deduplicación local dentro de `checkForUpdates` del diálogo de falla “manual” (mismo texto/keys).
   - Added predicate `shouldShowManualDialog()` para centralizar el gating:
@@ -1477,7 +1477,7 @@ Observable contract/timing preserved: mismos exports, canal IPC y shapes; mismos
   - en falla (sin red / respuesta inválida / tag no `v`), aparece el mismo diálogo de error;
   - no hay excepciones ni logs inesperados.
 
-### L2 decision: NO CHANGE
+#### L2 decision: NO CHANGE
 
 - Rationale (Codex):
   - L1 ya removió la duplicación principal (diálogo de falla manual) sin introducir indirection excesiva.
@@ -1490,7 +1490,7 @@ Reviewer assessment (sufficiency & interpretation quality):
 - Confirmado: diff vacío (sin cambios aplicados).
 - Nota menor: el reporte resume “warn por ruta de falla” de forma algo no literal, pero sin impacto práctico.
 
-### L3 decision: CHANGED (IPC contract drift fix)
+#### L3 decision: CHANGED (IPC contract drift fix)
 
 Evidence (problem):
 - Preload expone payload `{ manual }`:
@@ -1520,7 +1520,7 @@ Validation:
 - DevTools: `window.electronAPI.checkForUpdates(true)` mantiene diálogos.
 - `rg -n -F "electronAPI.checkForUpdates(true)" public/renderer.js`.
 
-### L4 decision: NO CHANGE
+#### L4 decision: NO CHANGE
 
 - Logging mechanism: main-process logger `Log.get('updater')` (consistente con política).
 - Fallbacks/errores recoverables ya registran `warn` (fetch/status, parse JSON, red, SemVer inválido, tag sin prefijo `v`).
@@ -1529,14 +1529,14 @@ Validation:
 
 Observable contract/timing preserved (no code changes).
 
-### L5 decision: CHANGED (comments-only)
+#### L5 decision: CHANGED (comments-only)
 
 - Reemplazo de header obsoleto por "Overview" con responsabilidades (3–7 items).
 - Se agregan divisores de sección que calzan con el orden real del archivo: imports/logger, constants/config, shared state, helpers, update flow, lifecycle, IPC, exports.
 - Se agrega marcador explícito de fin de archivo ("End of electron/updater.js").
 - No functional changes; comments-only.
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: **NO CHANGE**
 
@@ -1549,7 +1549,7 @@ No Level 6 changes justified.
 
 Observable contract and timing were preserved (no code changes).
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 Result: Pass
 
@@ -1574,12 +1574,12 @@ Checklist:
 
 ---
 
-## electron/link_openers.js
+### electron/link_openers.js
 
 Date: `2026-01-22`
 Last commit: `f1e3a74aa5abc2d2cf221d8b2267b8056c8bf7b1`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -1634,7 +1634,7 @@ Last commit: `f1e3a74aa5abc2d2cf221d8b2267b8056c8bf7b1`
     - `webContents.send`: none
     - Delegated IPC registration: none
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: NO CHANGE
 - File already follows a clean imports -> constants -> helpers -> handlers -> exports order; reordering would be redundant.
@@ -1652,7 +1652,7 @@ Decision: NO CHANGE
 Reviewer assessment (sufficiency & inference quality):
 - PASS. The “NO CHANGE” decision is consistent with the current linear structure and the anti-indirection rule; no contract/IPC/timing claims were introduced at L1 beyond what is directly visible in-file.
 
-### L2 decision: CHANGED
+#### L2 decision: CHANGED
 
 - Change: Introduced `openPathWithLog(shell, log, rawKey, filePath)` and reused it to replace the repeated `shell.openPath` + `open_failed` handling blocks in `open-app-doc` (dev candidate open, Baskervville temp open, packaged candidate open, fallback temp open).
   - Gain: Removes duplication and centralizes a security-relevant decision point (open failure → log + `{ ok:false, reason:'open_failed' }`) while keeping log text and return shape consistent.
@@ -1671,7 +1671,7 @@ Reviewer assessment (sufficiency & inference quality):
 **Validation**
 - Covered by L7 smoke (human-run) plus the targeted doc-open checks above.
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -1692,7 +1692,7 @@ Evidence checked (anchors):
 **Validation**
 - N/A (no code changes).
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -1710,7 +1710,7 @@ Decision: CHANGED
 Reviewer assessment (sufficiency & inference quality):
 - PASS. The change removes a silent fallback without affecting IPC/return shapes/timing and keeps logger semantics consistent (no optional-logger branching; no forced severity changes).
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -1725,7 +1725,7 @@ Decision: CHANGED
 **Evidence (anchors)**
 - Overview bullet (corrected): "Register IPC handlers that return { ok: true } or { ok: false, reason }."
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 * **Decision: NO CHANGE**
 * “No Level 6 changes justified.”
@@ -1737,7 +1737,7 @@ Decision: CHANGED
   * Apertura de paths centralizada en `openPathWithLog`. 
   * Nota explícita: “Se mantiene y acepta el *residual edge-case* ya documentado (return de Promise sin await en `openPathWithLog`); no se modifica en L6.” 
 
-### L7 — Smoke (human-run; minimal, dev)
+#### L7 — Smoke (human-run; minimal, dev)
 
 Preconditions:
 - Run the app in dev from a terminal (so you can see main-process logs): `npm start`.
@@ -1792,12 +1792,12 @@ Notes (optional):
 
 ---
 
-## electron/constants_main.js
+### electron/constants_main.js
 
 Date: `2026-01-22`
 Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
 
-### L0 — Minimal diagnosis (Codex)
+#### L0 — Minimal diagnosis (Codex)
 
 - Block order: strict mode; constants/config; module.exports.
 - Linear reading breaks: none observed; single responsibility constants.
@@ -1807,7 +1807,7 @@ Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
 
 Result: PASS
 
-### L1–L7
+#### L1–L7
 
 Decision: NO CHANGE (file is constants-only; no behavior/IPC/timing surface to refactor or smoke-test at module level).
 
@@ -1815,16 +1815,16 @@ Result: PASS
 
 ---
 
-## public/renderer.js
+### public/renderer.js
 
 Date: `2026-01-23`
 Last commit: `f011c4d4288c5cde9caffae0e3646f894f15e980`
 
-### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
 Source: `tools_local/codex_reply.md` (local only; do not commit)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 - Block order (high-level): strict/log + globals; DOM grabs; state/cache + i18n wiring; `applyTranslations`; early async init (config/settings); counting/preset/format hookups; helpers (`contarTexto`, `normalizeText`, `setModoConteo`); `updatePreviewAndResults` + `setCurrentTextAndUpdateUI`; crono state listener; `loadPresets`; main async init IIFE (current text, subscriptions, settings handler, precise toggle, info modal, menu actions); UI event listeners; stopwatch UI + loader helpers + crono controller init.
 - Linear reading obstacles (identifier + micro-quote):
   - `applyTranslations` — “const labelsCrono = getCronoLabels();”
@@ -1832,7 +1832,7 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
   - `showInfoModal` — “async function showInfoModal(key, opts = {})”
   - `window.menuActions.registerMenuAction` — “window.menuActions.registerMenuAction('guia_basica', () => {”
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 - Exports/public entrypoints: none (script-only; behavior via side effects).
 - Side effects (observed): reads globals (`AppConstants`, `RendererI18n`, `CountUtils`, `FormatUtils`, `RendererPresets`, `RendererCrono`, `Notify`); updates DOM; registers DOM event listeners; subscribes to `window.electronAPI` events; invokes `window.electronAPI` methods; registers `window.menuActions` actions.
 - Invariants / fallbacks (anchored):
@@ -1844,17 +1844,17 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
   - WPM clamp — “val = Math.min(Math.max(val, WPM_MIN), WPM_MAX);”
   - Optional electronAPI hooks guarded — “typeof window.electronAPI.onSettingsChanged === 'function'”
 
-##### IPC contract (explicit ipcMain/ipcRenderer/webContents calls)
+###### IPC contract (explicit ipcMain/ipcRenderer/webContents calls)
 - None found in this file (direct calls).
 
-##### Delegated IPC registration
+###### Delegated IPC registration
 - None observed.
 
 Reviewer assessment (L0 protocol compliance):
 - PASS. Diagnosis-only; no invented direct IPC; obstacles include identifiers + micro-quotes; invariants anchored to visible checks/fallbacks.
 - Note: direct `ipcRenderer/*` absence is expected because this file uses `window.electronAPI` as IPC façade.
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -1867,7 +1867,7 @@ Decision: NO CHANGE
 Reviewer assessment:
 - PASS for L1 gate as NO CHANGE: rationale is consistent with timing-sensitive sequencing constraints.
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -1883,7 +1883,7 @@ Decision: NO CHANGE
 Reviewer assessment:
 - PASS for L2 gate as NO CHANGE: now demonstrates evaluation of multiple concrete candidates (identifiers + micro-quotes) across distinct areas; rationale is consistent with timing/ordering sensitivity and avoids refactors that would add indirection/branching.
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -1899,7 +1899,7 @@ Reviewer assessment:
 - PASS for L3 gate as NO CHANGE: no concrete repo-wide pain/bug/instability demonstrated that would justify a contract or architecture change here.
 - Note: last bullet is documentation-derived (redundant as “evidence checked”), but does not affect the conclusion.
 
-### L4 decision: CHANGED
+#### L4 decision: CHANGED
 
 - Ajuste de severidad + clasificación BOOTSTRAP en fallbacks de arranque:
   - Anclas: `BOOTSTRAP: getAppConfig failed; using defaults:`, `BOOTSTRAP: getSettings failed; using defaults:`, `BOOTSTRAP: initial translations failed; using defaults:`
@@ -1919,7 +1919,7 @@ Reviewer assessment:
 
 Contract/timing: sin cambios observables; cambios limitados a logs + plumbing interno asociado al helper de links del info modal.
 
-#### public/js/info_modal_links.js
+##### public/js/info_modal_links.js
 
 - Alineación con el patrón estándar de módulos `public/js/*`:
   - Ancla: `const log = window.getLogger('info-modal-links');`
@@ -1941,7 +1941,7 @@ Validación mecánica sugerida (documental):
 - `warnOnceRenderer` debe ser 0 ocurrencias en `public/renderer.js` y `public/js/info_modal_links.js`.
 - No debe existir `console.warn`/`console.error` en `public/js/info_modal_links.js`.
 
-#### Meta — Actualización de política de logging (documental)
+##### Meta — Actualización de política de logging (documental)
 
 Referencia de cambios: diff desde `e1dffe38d1e428234209c22b49d0d4f6fb4637dc`.
 
@@ -1953,7 +1953,7 @@ Referencia de cambios: diff desde `e1dffe38d1e428234209c22b49d0d4f6fb4637dc`.
   - Regla explícita: “Call-site style (policy): use log.warn|warnOnce|error|errorOnce directly…”
   - Paso 0.1: “Enforce call-site style: remove any local log method aliases/wrappers…”
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -1970,7 +1970,7 @@ Validation (mechanical):
 Notes:
 - No functional changes; comments-only.
 
-### L6 — Final review (strict leftover removal)
+#### L6 — Final review (strict leftover removal)
 
 Decision: CHANGED
 
@@ -2000,7 +2000,7 @@ Post-change anchors (to make the “guard matches usage” state explicit):
 
 Observable contract, side effects, and timing/order were preserved (deletions of unused locals + related guards only).
 
-### Checklist L7
+#### Checklist L7
 
 [x] **Log sanity (idle 20–30s)** con logs visibles.
    Esperado: sin `ERROR`/uncaught; sin spam continuo del mismo warning.
@@ -2025,12 +2025,12 @@ Observable contract, side effects, and timing/order were preserved (deletions of
 
 ---
 
-## public/editor.js
+### public/editor.js
 
 Date: `2026-01-23`
 Last commit: `f35685b0533e33e36e1ac69f2eadcf6e32d1eedd`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -2087,7 +2087,7 @@ Last commit: `f35685b0533e33e36e1ac69f2eadcf6e32d1eedd`
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented direct IPC; anchors/micro-quotes present; bridge wording conservative and internally consistent).
 
-### L1 — Structural micro-cleanup (redo)
+#### L1 — Structural micro-cleanup (redo)
 
 Decision: CHANGED
 
@@ -2104,7 +2104,7 @@ Anchors:
 
 Reviewer gate: PASS
 
-### L2 — Clarity / robustness refactor (redo)
+#### L2 — Clarity / robustness refactor (redo)
 
 Decision: CHANGED
 
@@ -2120,7 +2120,7 @@ Decision: CHANGED
 Observable contract and timing preserved.
 Reviewer gate: PASS
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
   * **Decision: NO CHANGE (no Level 3 justified)**
 
@@ -2133,7 +2133,7 @@ Reviewer gate: PASS
   * **Reviewer gate: PASS**
   * Nota corta: No se justifica Nivel 3: shapes coexistentes ya son parte del contrato; cambiarlo sería churn de riesgo.
 
-### L4 — Logs
+#### L4 — Logs
 
 * **Call-site style (sin wrappers):** eliminación de `warnOnceEditor` y reemplazo por `log.warnOnce(...)` en call sites (anclas: `editor.select`, `focus.prevActive.*`, `setCurrentText.*`). Basado en política. 
 * **showNotice:**
@@ -2144,7 +2144,7 @@ Reviewer gate: PASS
 * **Fallback no-silencioso en payload:** key `editor.setCurrentText.payload_failed` (`warnOnce`) cuando no hay `onPrimaryError`. 
 * **BOOTSTRAP:** logs prefijados `BOOTSTRAP:` en fallbacks de arranque (con nota explícita de la condición “debe volverse inalcanzable post-init”). 
 
-### L5 — Comments (Codex + redo)
+#### L5 — Comments (Codex + redo)
 
 Decision: CHANGED (comments-only)
 
@@ -2168,7 +2168,7 @@ Anchors:
 - Bootstrap header — "Bootstrap: config and translations (async, best-effort)"
 - EOF marker — "End of public/editor.js"
 
-### L6 — Final review (coherence + leftover cleanup after refactors)
+#### L6 — Final review (coherence + leftover cleanup after refactors)
 
 Decision: NO CHANGE
 No Level 6 changes justified.
@@ -2192,7 +2192,7 @@ Checks performed (anchors / micro-quotes):
 Observable contract/timing preserved.
 Reviewer gate: PASS
 
-### L7 — Smoke (human-run)
+#### L7 — Smoke (human-run)
 
 Estado: PASS | FAIL
 Entorno: (dev/packaged), OS, commit/hash, state: existing | clean
@@ -2210,12 +2210,12 @@ Checklist:
 
 ---
 
-## public/preset_modal.js
+### public/preset_modal.js
 
 Date: `2026-01-23`
 Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -2257,7 +2257,7 @@ Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
       - `onSettingsChanged(fn(settings))` usa `settings.language`.
       - `editPreset(originalName, preset)` / `createPreset(preset)` esperan respuesta con `res.ok` y en edit se observa `res.code === 'CANCELLED'`.
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -2270,7 +2270,7 @@ Decision: NO CHANGE
 
 Reviewer gate: PASS
 
-### L2 — Clarity / robustness refactor (Codex follow-up)
+#### L2 — Clarity / robustness refactor (Codex follow-up)
 
 Decision: CHANGED
 
@@ -2297,7 +2297,7 @@ Validation:
 Contract/timing:
 - Se preserva el contrato observable y el timing en flujos normales; solo cambia el comportamiento del caso previamente silencioso.
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -2308,7 +2308,7 @@ Decision: NO CHANGE (no Level 3 justified)
 
 Reviewer gate: PASS
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -2337,7 +2337,7 @@ Observable contract/timing: preservados; cambios limitados a logging en paths de
 
 Reviewer gate: PASS
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -2350,7 +2350,7 @@ No functional changes; comments-only.
 
 Reviewer gate: PASS
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 
@@ -2369,7 +2369,7 @@ Observable contract and timing are preserved (no code changes).
 
 Reviewer gate: PASS
 
-### L7 — Smoke test checklist (human-run; code-informed) — `public/preset_modal.js`
+#### L7 — Smoke test checklist (human-run; code-informed) — `public/preset_modal.js`
 
 **Preconditions**
 
@@ -2479,14 +2479,14 @@ Reviewer gate: PASS
 
 ---
 
-## public/flotante.js
+### public/flotante.js
 
 Date: `2026-01-24`
 Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 - Block order (high level):
   - strict/log startup: `const log = window.getLogger('flotante');`
   - guard AppConstants + DEFAULT_LANG: `if (!AppConstants) { throw new Error`
@@ -2515,7 +2515,7 @@ Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
   - button wiring — `btnReset.addEventListener('click', () => {`
   - keydown — `if (ev.code === 'Space' || ev.key === ' ' || ev.key === 'Enter')`
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 - Exposes / side effects:
   - no exports; runs on load
   - registers callbacks on `window.flotanteAPI` (state + settings)
@@ -2548,7 +2548,7 @@ Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
 
 - IPC contract (direct): none in this file (`ipcMain/ipcRenderer/webContents` not used).
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 - File is already short and ordered by initialization flow; reordering would not improve linear readability.
@@ -2559,7 +2559,7 @@ Decision: NO CHANGE
 
 Reviewer gate: PASS (NO CHANGE is justified; no code changes).
 
-### L2 — Clarity / robustness refactor (controlled) (Codex)
+#### L2 — Clarity / robustness refactor (controlled) (Codex)
 
 Decision: NO CHANGE
 - The only clear robustness gap (unguarded addEventListener on possibly-null buttons) is behaviorally visible; guarding would change error behavior.
@@ -2572,7 +2572,7 @@ Observable contract and timing preserved by making no changes.
 
 Reviewer gate: PASS (NO CHANGE is justified; no code changes).
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -2590,7 +2590,7 @@ Evidence checked (anchors):
 
 Reviewer gate: PASS (NO CHANGE justified; DOM IDs exist and bridge methods are exposed/routed consistently).
 
-### L4 decision: CHANGED
+#### L4 decision: CHANGED
 
 - Normalización de estilo de mensajes (evita duplicar scope en el texto):
   - DOM missing: `log.error('element #crono not found')` (antes incluía `flotante:`/`[flotante]` en el mensaje).
@@ -2631,7 +2631,7 @@ Reviewer gate: PASS (NO CHANGE justified; DOM IDs exist and bridge methods are e
 - Runtime (smoke normal):
   - Abrir/cerrar flotante y usar toggle/reset: no debe aparecer spam nuevo en logs en ejecución sana; el flujo normal no debería producir warnings/errors de bridge/i18n.
 
-### L5 — Comments (Codex + manual follow-up)
+#### L5 — Comments (Codex + manual follow-up)
 
 Decision: CHANGED
 
@@ -2657,7 +2657,7 @@ Notas:
 
 Reviewer gate: PASS
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 No Level 6 changes justified.
@@ -2668,7 +2668,7 @@ No Level 6 changes justified.
 
 Observable contract/timing preserved (no changes applied).
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 **Estado:** PASS
 
@@ -2683,14 +2683,14 @@ Observable contract/timing preserved (no changes applied).
 
 ---
 
-## public/language_window.js
+### public/language_window.js
 
 Date: `2026-01-24`
 Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
 
-### L0 — Diagnosis (no changes) (Codex, verified)
+#### L0 — Diagnosis (no changes) (Codex, verified)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 
 - Block order (as-is):
   1) Header comment + `'use strict'`
@@ -2710,7 +2710,7 @@ Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
   - Startup IIFE (anonymous) triggers async flow on load:
     - anchor: `"(async () => {"`
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 
 - Exposes:
   - No exports; renderer-side side-effect module for the language selection window.
@@ -2760,7 +2760,7 @@ Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
 - Delegated IPC registration:
   - None.
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -2778,7 +2778,7 @@ Reviewer gate: PASS
 
 Observable contract/timing preserved (no changes applied).
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -2793,7 +2793,7 @@ Observable contract and timing preserved (no code changes).
 Reviewer assessment: PASS — “NO CHANGE” is justified; the module already has explicit busy guards and try/catch, and adding DOM-null guards would alter fail-fast behavior.
 Reviewer gate: PASS
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -2810,7 +2810,7 @@ Reviewer gate: PASS
 
 Observable contract/timing preserved (no code changes).
 
-### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
 
 Decision: CHANGED
 
@@ -2843,7 +2843,7 @@ Validation (manual / grep):
 Reviewer assessment: PASS — fixes a previously silent fallback; uses BOOTSTRAP prefix and appropriate severity.
 Reviewer gate: PASS
 
-### L5 — Comments (Codex, retry)
+#### L5 — Comments (Codex, retry)
 
 Decision: CHANGED (comments-only)
 
@@ -2861,7 +2861,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 No Level 6 changes justified.
@@ -2875,7 +2875,7 @@ Observable contract/timing preserved (no code changes).
 
 Reviewer gate: PASS
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 **Estado:** PASS
 
@@ -2893,12 +2893,12 @@ Reviewer gate: PASS
 
 ---
 
-## public/js/crono.js
+### public/js/crono.js
 
 Date: `2026-01-24`
 Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -2944,7 +2944,7 @@ Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
 
 Reviewer gate: PASS (Level 0 diagnosis is adequate; anchors corrected to match file).
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -2956,7 +2956,7 @@ Decision: NO CHANGE
 
 Reviewer gate: PASS (Level 1): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
 
-### L2 — Clarity / robustness refactor (controlled) (Codex)
+#### L2 — Clarity / robustness refactor (controlled) (Codex)
 
 Decision: NO CHANGE
 
@@ -2970,7 +2970,7 @@ Observable contract and timing/ordering were preserved.
 
 Reviewer gate: PASS (Level 2): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
 
-### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -2983,7 +2983,7 @@ Decision: NO CHANGE (no Level 3 justified)
 
 Reviewer gate: PASS (Level 3): NO CHANGE justified; evidence cross-checked in consumers/bridge/main; diff empty.
 
-### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
 
 Decision: NO CHANGE
 
@@ -2997,7 +2997,7 @@ Observable contract and timing/ordering were preserved.
 
 Reviewer gate: PASS (Level 4): NO CHANGE justified; diff empty; logging policy compliance acceptable.
 
-### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
+#### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
 
 Decision: CHANGED
 
@@ -3009,7 +3009,7 @@ Decision: CHANGED
 
 Reviewer gate: PASS (Level 5): Comments-only change; improves navigability; no contract/timing risk introduced.
 
-### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
 
 Decision: NO CHANGE
 
@@ -3025,7 +3025,7 @@ Observable contract and timing/ordering were preserved.
 
 Reviewer gate: PASS (Level 6): NO CHANGE justified; post-L5 coherence verified; diff empty.
 
-### L7 — Smoke test (human-run; minimal)
+#### L7 — Smoke test (human-run; minimal)
 
 Resultado: PASS
 
@@ -3042,20 +3042,20 @@ Resultado: PASS
 
 ---
 
-## public/js/format.js
+### public/js/format.js
 
 Date: `2026-01-24`
 Last commit: `87a315f074f8d89a237583286f42f18c4f66b19a`
 
-### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
 Source: `tools_local/codex_reply.md` (local only; do not commit)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 - Block order: file comment, `'use strict'`, IIFE wrapper, constants (`log`, `DEFAULT_LANG`, `normalizeLangTag`, `getLangBase`), helper functions (`getTimeParts`, `formatTimeFromWords`, `obtenerSeparadoresDeNumeros`, `formatearNumero`), global export (`window.FormatUtils`).
 - Linear breaks: none observed; helpers are declared sequentially inside a single IIFE scope.
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 - Exposes: assigns `window.FormatUtils` with four functions (`getTimeParts`, `formatTimeFromWords`, `obtenerSeparadoresDeNumeros`, `formatearNumero`).
 - Side effects: reads from `window` globals and logs via `log.warnOnce` on fallback paths.
 - Invariants / fallbacks (anchored to checks in this file):
@@ -3072,7 +3072,7 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -3087,7 +3087,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -3106,7 +3106,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -3126,7 +3126,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -3141,7 +3141,7 @@ Observable contract/timing preserved: solo cambió el output de logs en un branc
 Reviewer assessment: PASS (log-only; key estable; severidad coherente).
 Reviewer gate: PASS
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -3154,7 +3154,7 @@ Decision: CHANGED
 Reviewer assessment: PASS (comments-only; improves scanability; section headers match actual structure; ASCII-only constraint satisfied).
 Reviewer gate: PASS
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 No Level 6 changes justified.
@@ -3170,7 +3170,7 @@ Reviewer assessment:
 - Nota: el reporte NO CHANGE no incluyó anchors; y “all return shapes” es una sobre-afirmación (depende de `settingsCache.numberFormatting`).
 Reviewer gate: PASS
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 **Estado:** PASS
 
@@ -3233,16 +3233,16 @@ Reviewer gate: PASS
 
 ---
 
-## public/js/count.js
+### public/js/count.js
 
 Date: `2026-01-24`
 Last commit: `c040f4a4b0270312bd58e56e3e41d2f317d0d04e`
 
-### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
 Source: `tools_local/codex_reply.md` (local only; do not commit)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 - Block order: IIFE wrapper; constants/config (`DEFAULT_LANG`, `HYPHEN_JOINERS`, `RE_ALNUM_ONLY`); helpers (`contarTextoSimple`, `hasIntlSegmenter`, `isHyphenJoinerSegment`, `isAlnumOnlySegment`, `contarTextoPrecisoFallback`, `contarTextoPreciso`); main entry (`contarTexto`); export/side effect (`window.CountUtils` assignment).
 - Linear reading breaks:
   - `RE_ALNUM_ONLY` feature detection split by try/catch: `try { RE_ALNUM_ONLY = /^[\p{L}\p{N}]+$/u; }`
@@ -3250,7 +3250,7 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
   - `contarTextoPreciso` conditional increment path: `if (!(pendingHyphenJoin && joinable)) { palabras += 1; }`
   - `contarTexto` mode normalization gate: `opts.modoConteo === 'simple' ? 'simple' : 'preciso'`
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 - Exposed API / side effects:
   - Exposes `window.CountUtils` with `{ contarTextoSimple, contarTextoPrecisoFallback, contarTextoPreciso, contarTexto, hasIntlSegmenter }`.
   - Side effect: attaches `CountUtils` on `window` inside an IIFE.
@@ -3267,7 +3267,7 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: CHANGED
 
@@ -3288,7 +3288,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -3304,7 +3304,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -3327,7 +3327,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -3348,7 +3348,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -3369,7 +3369,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L6 — Final review (manual)
+#### L6 — Final review (manual)
 
 Decision: NO CHANGE
 
@@ -3383,7 +3383,7 @@ Observable contract/timing preserved (no code changes applied).
 
 Reviewer gate: PASS
 
-### L7 — Smoke (human-run; minimal, dev)
+#### L7 — Smoke (human-run; minimal, dev)
 
 **Estado:** PASS
 
@@ -3443,7 +3443,7 @@ Reviewer gate: PASS
 
 ---
 
-# Post-startup architecture change
+## Post-startup architecture change
 
 Files touched:
 
@@ -3453,12 +3453,12 @@ Files touched:
 
 ---
 
-## electron/main.js (post-startup change)
+### electron/main.js (post-startup change)
 
 Date: `2026-02-08`
 Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
 
-### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
 - Codex complied with Level 0 constraints:
   - Diagnosis only (no changes, no recommendations).
@@ -3494,15 +3494,25 @@ Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
   - `presetsMain.registerIpc(...)`
   - `updater.registerIpc(...)`
 
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- The file already has a coherent block structure with section headers (imports → constants → helpers → window factories → IPC → lifecycle), so reordering would be churn without clear readability gain.
+- Several side-effect registrations are intentionally sequenced (IPC handlers, `app.whenReady`, `app.on` hooks), and moving these for structure risks subtle timing/ordering regressions.
+- Many helpers are tightly coupled to shared state flags (`mainReadyState`, `menuEnabled`, `languageResolved`), and relocating them would not reduce cognitive load.
+- Duplications (e.g., repeated `editor-init-text`/`editor-ready` sends) are short, locally readable, and extracting them would add indirection without reducing branching.
+- The current layout already groups related responsibilities (window creation, readiness gating, flotante placement, crono), so a structural pass is unlikely to improve linear readability.
+
 ---
 
-## electron/menu_builder.js (post-startup change)
+### electron/menu_builder.js (post-startup change)
 
 (TODO)
 
 ---
 
-## public/renderer.js (post-startup change)
+### public/renderer.js (post-startup change)
 
 (TODO)
 
