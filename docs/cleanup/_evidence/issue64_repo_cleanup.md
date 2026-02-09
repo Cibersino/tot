@@ -4559,3 +4559,17 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- Checked `public/js/notify.js` public contract surface (`window.Notify = { notifyMain, notifyEditor, toastMain, toastEditorText }`) and saw a stable, narrow API with no IPC surface to re-architect.
+- Checked `public/editor.js` usage of `Notify.toastEditorText(...)` and `Notify.notifyMain(...)` (via `showNotice(...)`), plus `Notify.notifyEditor(...)` for editor alerts; no conflicting semantics observed.
+- Checked `public/renderer.js` usage of `Notify.notifyMain(...)` and `Notify.toastMain(...)` (help tip + alert paths); call sites pass string keys and rely on current alert/toast timing.
+- Checked `public/preset_modal.js` usage of `Notify.notifyMain(...)` with a warnOnce-based alert fallback when missing (`preset-modal.notify.missing`); no evidence of contract mismatch or race issues.
+- Confirmed no IPC usage exists in `public/js/notify.js` (no `ipcMain.*`, `ipcRenderer.*`, or `webContents.send`) and no delegated IPC registration.
+
+Reviewer assessment:
+- PASS: No evidence-backed pain point requiring an architecture/contract change. The module remains a narrow in-window Notify helper with stable call sites and no IPC surface.
+
+Reviewer gate: PASS
