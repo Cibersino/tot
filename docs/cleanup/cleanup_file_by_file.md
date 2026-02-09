@@ -521,10 +521,6 @@ En `docs/cleanup/_evidence/issue64_repo_cleanup.md`, bajo `### L7`, registrar:
 
 ---
 
-Aquí va una **metodología uniforme para preloads en solo 4 niveles** (L0–L3), integrada con **prompts de Codex** y con **smoke incluido** dentro del último nivel. Está escrita para que la pegues tal cual en tu documento de metodología o como encabezado “Preloads track” en la evidencia.
-
----
-
 ## Metodología uniforme para auditar preloads (4 niveles: L0–L3)
 
 ### Regla base (aplica a todos los niveles)
@@ -552,8 +548,7 @@ En preloads, la **superficie observable** es:
 * Invariantes/fallbacks anclados (cb validation, try/catch, buffering, guards).
 
 **Prompt Codex (L0):**
-
-```md
+```
 # Target file: `<TARGET_FILE>`
 
 For this response only, produce a Level 0 minimal diagnosis of the file (short, descriptive, no code changes, no recommendations).
@@ -605,8 +600,7 @@ Delegated registration:
 **Regla NO FORCE:** si el preload ya es corto/lineal o el riesgo supera el beneficio → **NO CHANGE**.
 
 **Prompt Codex (L1 unificado):**
-
-```md
+```
 # Target file: `<TARGET_FILE>`
 
 Level 1 (unified) — Structure + controlled robustness + explicit contract gate (preload).
@@ -671,8 +665,7 @@ Output requirement:
 * Dedupe solo si es realmente spameable y no aporta más (con mecanismo local estable; sin keys dinámicas basadas en input).
 
 **Prompt Codex (L2 logs):**
-
-```md
+```
 # Target file: `<TARGET_FILE>`
 
 Level 2 — Logs (preload policy).
@@ -707,8 +700,7 @@ Este nivel cierra el preload.
 **Objetivo:** buscar leftovers, drift, incoherencias después de L1–L2.
 
 **Prompt Codex (L3A final review):**
-
-```md
+```
 # Target file: `<TARGET_FILE>`
 
 Level 3A — Final review (preload; coherence).
