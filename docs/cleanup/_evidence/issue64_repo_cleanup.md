@@ -4175,3 +4175,37 @@ Reviewer assessment (sufficiency & inference quality):
 - No hay base para cambio de arquitectura/contrato: la ruta `menu-click` es única y el módulo `menu_actions.js` mantiene una API mínima y consistente.
 
 Reviewer gate: PASS.
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex re-pass)
+
+Decision: CHANGED
+
+Changes (logging-only):
+- BOOTSTRAP fallback is no longer silent: when the initial `setupListener()` fails, emit:
+  - `log.warn('BOOTSTRAP: menuActions: onMenuClick not available yet; retrying at DOMContentLoaded')`
+- DOMContentLoaded retry fallback is no longer silent: if the retry still fails, emit:
+  - `log.warn('menuActions: onMenuClick unavailable after DOMContentLoaded; menu clicks will not be handled')`
+- Removed once-variants where high-frequency repeatability is not justified under the L4 rule:
+  - `log.warnOnce('menu_actions:onMenuClick:no_unsubscribe', ...)` → `log.warn(...)` (key removed)
+  - `log.warnOnce('menu_actions:stopListening:no_unsubscribe', ...)` → `log.warn(...)` (key removed)
+- Fixed debug typo: `unscribed` → `unsubscribed`.
+
+Risk:
+- Logging-only. Potential increase in warning volume if `stopListening()` (or no-unsubscribe) repeats; accepted per strict “once-variants ONLY when high-frequency repeatable” rule.
+
+Validation (manual/grep):
+- Grep keys removed (should be 0 hits after apply):
+  - `rg -n -F "menu_actions:onMenuClick:no_unsubscribe" public/js/menu_actions.js`
+  - `rg -n -F "menu_actions:stopListening:no_unsubscribe" public/js/menu_actions.js`
+- Grep BOOTSTRAP marker (should be 1 hit after apply):
+  - `rg -n -F "BOOTSTRAP: menuActions: onMenuClick not available yet" public/js/menu_actions.js`
+- Grep typo fix:
+  - `rg -n -F "listener unsubscribed correctly" public/js/menu_actions.js`
+- Runtime smoke:
+  - Simulate missing `window.electronAPI` at first pass to see BOOTSTRAP warn, then keep it missing through DOMContentLoaded to see the second warn.
+
+Reviewer assessment: PASS
+- Addresses the only real L4 gap (silent fallback on retry) and adds BOOTSTRAP labeling without adding noise on healthy paths.
+- Dedupe removal is consistent with the strict “once-variants ONLY when high-frequency repeatable” interpretation used for this file.
+
+Reviewer gate: PASS
