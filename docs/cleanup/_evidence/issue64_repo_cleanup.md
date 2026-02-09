@@ -4849,3 +4849,60 @@ Reviewer assessment:
 - PASS (L6). No dead code, signature drift, or comment/code mismatch detected after L1/L4/L5; further edits would be marginal risk.
 
 Reviewer gate: PASS
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; open DevTools Console to observe renderer logs.
+* Ensure you can open the Info modal via a normal UI path (menu actions such as About / Manual / FAQ, etc.).
+* Keep the main renderer window active (where the Info modal lives).
+
+* [x] **(1) Startup sanity: InfoModalLinks surface is present**
+  * **Action:** Launch the app and open DevTools Console. In Console, evaluate:
+    * `typeof window.InfoModalLinks?.bindInfoModalLinks`
+  * **Expected result:** It is `"function"`. No startup errors related to info modal link wiring.
+  * **Evidence:** `public/js/info_modal_links.js` assigns `window.InfoModalLinks = { bindInfoModalLinks }` (lines 135–137 in the current file copy).
+
+* [x] **(2) Open/close modal baseline (no errors, no idle spam)**
+  * **Action:** Open the Info modal from the UI (About/Manual/FAQ/etc.), wait for content to render, then close it (close button/backdrop/Escape).
+  * **Expected result:** No uncaught exceptions; no repeating warnings while idle after closing.
+  * **Evidence:** `public/renderer.js` hydrates `#infoModalContent` then calls `bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI })` (lines 1013–1015 in the current file copy).
+
+* [x] **(3) External link routing (normal path)**
+  * **Action:** In the Info modal content, click an external link (any `<a href="https://...">` present in the modal). Repeat once.
+  * **Expected result:** The modal stays open (no in-modal navigation). The external open is delegated via Electron (browser opens or the request is blocked). If blocked/failed, you may see per-click warnings, but no errors/crash.
+  * **Evidence:** `info_modal_links.js` prevents default and calls `api.openExternalUrl(resolvedHref)` (lines 85–128), with a missing-API guard `renderer.info.external.missing` (lines 111–117).
+
+* [x] **(4) Hash link routing (in-modal scroll)**
+  * **Action:** Click a hash link inside the Info modal (any `<a href="#...">` present). If there is a “back to top” hash (`href="#"`), click it too.
+  * **Expected result:** Scrolls within the modal panel (or no-ops if the target id is missing). No exceptions.
+  * **Evidence:** Hash branch: `rawHref.startsWith('#')` (line 51), finds target via `container.querySelector(#id)` (line 64), calls `scrollIntoView` with a logged fallback path (lines 67–81).
+
+* [x] **(5) appdoc: routing (if present in content)**
+  * **Action:** If the Info modal contains any `appdoc:` link (e.g., `<a href="appdoc:...">`), click it once; then click it again.
+  * **Expected result:** The app-doc open is delegated via Electron. If the request fails/blocked you get per-click warnings; if the API is missing you get a warnOnce about missing `openAppDoc` (and repeats should not re-log the warnOnce bucket).
+  * **Evidence:** appdoc branch: `rawHref.startsWith('appdoc:')` (line 87), missing-API warnOnce key `renderer.info.appdoc.missing` (lines 89–96), per-click warnings on result/error (lines 98–106).
+
+* [x] **(6) Bind-once guard (no duplicate click handlers)**
+  * **Action:** Open the same Info modal content twice (close → reopen), then click the same external/appdoc link once.
+  * **Expected result:** Each click triggers at most one delegated action (no “double open” symptom). No evidence of multiple handler stacking.
+  * **Evidence:** One-time bind guard: `container.dataset.externalLinksBound === '1'` plus `container.dataset.externalLinksBound = '1'` (lines 36–37).
+
+* [x] **(7) Optional: validate the two new warnOnce buckets (only if easy in your environment)**
+  * **Action:** (Optional) Force the hash path to exercise the two warnOnce buckets:
+    * `renderer.info.css-escape.missing` (requires `CSS.escape` to be unavailable, then click a `#...` hash link).
+    * `renderer.info.scrollIntoView.failed` (requires `scrollIntoView` to throw, then click a `#...` hash link).
+  * **Expected result:** Each bucket logs at most once per session; normal/healthy paths remain quiet.
+  * **Evidence:** warnOnce keys live in `escapeSelector` (lines 23–30) and the `scrollIntoView` catch (lines 69–74).
+
+---
+
+### public/js/constants.js
+
+Date: `2026-02-09`
+Last commit: `e0a90380d852d89449c13b9c3726d566b82c4fc0`
+
+(TODO)
