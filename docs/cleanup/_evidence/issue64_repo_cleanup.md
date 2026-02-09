@@ -4374,3 +4374,20 @@ Accepted changes (comments-only; per diff):
 - Added an explicit EOF marker: "End of public/js/i18n.js".
 
 No functional changes; comments-only.
+
+#### L6 — Final review (Codex)
+
+Decision (Codex): NO CHANGE  
+Reviewer gate: PASS
+
+No Level 6 changes justified.
+
+Checked (anchors):
+- Logging call signatures match `public/js/log.js`: `warnOnce(key, ...args)` / `errorOnce(key, ...args)` used as intended in `loadBundle` and `loadRendererTranslations`.
+- Dedupe key buckets are stable where applied in `loadBundle`: `i18n.renderer.bundle.{empty|parse|fetch}:${langCode||'unknown'}:${variant}`.
+- `requiredMissing` uses `errorOnce` with key bucket `i18n.loadRendererTranslations.requiredMissing:${langCode}`.
+- Missing translation key path in `tRenderer` logs a plain `warn(...)` with `{ path, lang: rendererTranslationsLang }` and returns fallback.
+- Helpers and naming remain consistent (`normalizeLangTag`, `getLangBase`, `deepMerge`, `getPath`).
+- Comments still match code structure (Overview + section dividers + EOF marker).
+
+Observable contract and timing preserved.
