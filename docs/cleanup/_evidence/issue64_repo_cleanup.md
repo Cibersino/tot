@@ -4774,3 +4774,18 @@ Reviewer assessment:
 - PASS (L2). NO CHANGE está justificado: el módulo ya tiene guards explícitos y `warnOnce` en paths de bloqueo/error; no hay una mejora clara de robustez/claridad que no introduzca indirection o riesgo de drift observable.
 
 Reviewer gate: PASS
+
+#### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- Checked `public/js/info_modal_links.js` `bindInfoModalLinks` and the click handler route split (`#` / `appdoc:` / external); no ambiguous contract or competing responsibilities found.
+- Checked `public/renderer.js` call site `bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });` — single visible consumer and stable call signature in the current snapshot.
+- Snapshot scan shows no additional consumers of `bindInfoModalLinks` beyond `renderer.js` + the module definition.
+- No direct IPC surface in this module (no `ipcMain.*`, `ipcRenderer.*`, `webContents.send`); it relies on `electronAPI` / `window.electronAPI`.
+
+Reviewer assessment:
+- PASS (L3). No evidence of repo-wide pain (multi-consumer instability, mismatched semantics, or reproducible bug) that would justify a contract/architecture change here.
+- Note: Codex mentioned checking `docs/changelog_detailed.md` / `public/info/acerca_de.html`; those files are not present in the current `mnt/data` snapshot, so they are not used as reviewer evidence here.
+
+Reviewer gate: PASS
