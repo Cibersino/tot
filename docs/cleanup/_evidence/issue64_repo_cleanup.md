@@ -4708,4 +4708,38 @@ No corresponde actualizar `docs/tree_folders_files.md` solo por L7 (no hay info 
 Date: `2026-02-09`
 Last commit: `b0aed051f81ed786831f27449e3ad2f943f7ce42`
 
-(TODO)
+#### L0 — Minimal diagnosis (Codex, verified)
+
+Source: Codex response pasted in chat (2026-02-09).
+
+##### 0.1 Reading map
+- Block order: header comment → `'use strict'` → IIFE wrapper → `log` init (`window.getLogger('info-modal-links')`) → `bindInfoModalLinks` → inner helper `escapeSelector` → `container.addEventListener('click', ...)` handler → global export `window.InfoModalLinks = { bindInfoModalLinks }`.
+- Linear breaks / obstacles (anchors/micro-quotes):
+  - `bindInfoModalLinks` mezcla guard de “bind once”, selección de API y wiring DOM. Anchor: `container.dataset.externalLinksBound === '1'`
+  - Helper definido *dentro* del binder (salto local de abstracción). Anchor: `const escapeSelector = (value) => {`
+  - Handler con múltiples rutas y returns tempranos (`#`/`appdoc:`/externo). Anchor: `container.addEventListener('click', (ev) => {`
+
+##### 0.2 Contract map
+- Exposed API / side effects:
+  - Exposes `window.InfoModalLinks.bindInfoModalLinks(container, { electronAPI } = {})`.
+  - Side effects: setea `container.dataset.externalLinksBound = '1'` y registra un listener `'click'` sobre `container`.
+- Invariants and fallbacks (anchored to checks in this file):
+  - Bind idempotente por dataset flag: `container.dataset.externalLinksBound === '1'`
+  - Requiere `href` no vacío tras trim: `if (!rawHref) return;`
+  - Ruta hash (`#...`):
+    - `hash` vacío → scroll top (panel o container): `if (!hash) {`
+    - Elemento destino puede no existir (se ignora): `if (!targetEl) return;`
+    - Fallback de scroll manual solo si hay panel: `catch {` + `if (!panel) return;`
+  - Ruta `appdoc:` requiere `api.openAppDoc` o bloquea con warnOnce: `typeof api.openAppDoc !== 'function'`
+  - Ruta externa requiere `api.openExternalUrl` o bloquea con warnOnce: `typeof api.openExternalUrl !== 'function'`
+  - Resolución de URL prioriza `link.href` (absoluta) y cae a raw: `const resolvedHref = link.href || rawHref;`
+- IPC contract: none found in this file.
+  - ipcMain.handle/on/once: none
+  - ipcRenderer.invoke/send/on/once: none
+  - webContents.send: none
+- Delegated IPC registration: none found.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+- Note: corrected one Codex micro-quote to be verbatim (removed ellipsis).
+
