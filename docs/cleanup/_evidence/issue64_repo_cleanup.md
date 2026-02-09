@@ -4597,3 +4597,18 @@ Reviewer assessment:
 - Nota/riesgo controlado: `window.getLogger` debe existir antes de cargar `notify.js` (orden de scripts debe garantizarlo).
 
 Reviewer gate: PASS
+
+#### L5 — Comments (Codex)
+
+Decision: CHANGED
+Reviewer gate: PASS
+
+Accepted changes (comments-only; per diff):
+- Added a top-level "Overview" section (responsibilities) for new contributors.
+- Added section dividers (`// =============================================================================`) matching the real block order:
+  - Logger
+  - Helpers (i18n + toast rendering)
+  - Entry points (public API)
+- Added an explicit EOF marker: "End of public/js/notify.js".
+
+No functional changes; comments-only.
