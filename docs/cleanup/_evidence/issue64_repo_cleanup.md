@@ -4757,3 +4757,20 @@ Reviewer assessment:
 - PASS (L1). Cambio puramente estructural (relocación de helper sin estado); no hay drift de contrato observable (`window.InfoModalLinks.bindInfoModalLinks(...)`), ni IPC en este módulo.
 
 Reviewer gate: PASS
+
+#### L2 — Clarity / robustness refactor (controlled) (Codex)
+
+Decision: NO CHANGE
+
+- El click handler ya es relativamente lineal (guards + returns); extraer helpers añadiría indirection sin reducir ramas.
+- Las rutas `appdoc:` y externo son pocas y directas; un helper compartido metería parámetros y “saltos” de lectura sin payoff claro.
+- Los casos límite relevantes ya están explicitados por guards (href vacío, target inexistente, API faltante), sin dejar comportamiento inseguro implícito.
+- La política de logs ya evita spam en paths repetidos mediante `warnOnce`; endurecer más puede inducir sobre-logging o drift de superficie observable.
+- Reordenar/reestructurar por “robustez” arriesga cambios sutiles de timing (flag dataset + listener) sin una ganancia concreta.
+
+Observable contract and timing are preserved (no changes applied).
+
+Reviewer assessment:
+- PASS (L2). NO CHANGE está justificado: el módulo ya tiene guards explícitos y `warnOnce` en paths de bloqueo/error; no hay una mejora clara de robustez/claridad que no introduzca indirection o riesgo de drift observable.
+
+Reviewer gate: PASS
