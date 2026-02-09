@@ -1,9 +1,25 @@
 // public/js/info_modal_links.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Bind a single click handler for info modal link containers.
+// - Route hash links to in-modal scroll with a manual fallback.
+// - Route appdoc: links via electronAPI.openAppDoc.
+// - Route external links via electronAPI.openExternalUrl.
+// - Log recoverable failures and fallbacks.
+
 (function () {
+  // =============================================================================
+  // Logger
+  // =============================================================================
   const log = window.getLogger('info-modal-links');
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   const escapeSelector = (value) => {
     if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(value);
     log.warnOnce(
@@ -13,6 +29,9 @@
     return String(value).replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
   };
 
+  // =============================================================================
+  // Main handler
+  // =============================================================================
   function bindInfoModalLinks(container, { electronAPI } = {}) {
     if (!container || container.dataset.externalLinksBound === '1') return;
     container.dataset.externalLinksBound = '1';
@@ -117,3 +136,7 @@
     bindInfoModalLinks
   };
 })();
+
+// =============================================================================
+// End of public/js/info_modal_links.js
+// =============================================================================

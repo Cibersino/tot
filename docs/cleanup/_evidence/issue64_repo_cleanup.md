@@ -4817,3 +4817,18 @@ Reviewer assessment:
 - Riesgo controlado: mayor volumen de warnings en fallas repetidas user-driven (appdoc/external), aceptable para no perder diagnósticos distintos.
 
 Reviewer gate: PASS
+
+#### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
+
+Decision: CHANGED (comments-only)
+
+Observed changes (diff-based):
+- Added a top-level Overview block with concise responsibilities (5 bullets) to orient first-time readers.
+- Added section divider comments matching the real file blocks: Logger, Helpers, Main handler.
+- Added an explicit end-of-file marker in the repo divider style: "End of public/js/info_modal_links.js".
+
+Reviewer assessment:
+- PASS (L5). The patch is comments-only, English + ASCII, and follows the established `// =============================================================================` section divider style used in `electron/main.js`.
+- No functional changes and no code movement beyond adding comment headers adjacent to existing blocks; contract/timing remain unchanged.
+
+Reviewer gate: PASS
