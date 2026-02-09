@@ -4239,3 +4239,26 @@ No Level 6 changes justified.
 Observable contract and timing/ordering were preserved (no changes made).
 
 Reviewer gate: PASS (Level 6): NO CHANGE justified; post-L5 coherence verified; diff empty.
+
+#### L7 — Smoke test (humano) — `public/js/menu_actions.js` (menu-click routing)
+
+Result: PASS
+
+Checklist (source: `docs/test_suite.md`, REG-MENU + file-specific sanity):
+- [x] (1) Startup sanity: `window.menuActions` existe y expone funciones esperadas (DevTools):
+      - `typeof window.menuActions.registerMenuAction === 'function'`
+      - `Array.isArray(window.menuActions.listMenuActions()) === true`
+- [x] (2) Menu routing sanity (happy path): Menu -> Guia basica (`guia_basica`) abre el modal de info y muestra contenido (REG-MENU-01).
+- [x] (3) Menu routing sanity (happy path): Menu -> Instrucciones (`instrucciones_completas`) y luego FAQ (`faq`) abren el modal y navegan a la seccion correcta (REG-MENU-01).
+- [x] (4) About: Menu -> Acerca de (`acerca_de`) abre modal; version/entorno hidratan o muestran N/A sin crash (REG-MENU-02).
+- [x] (5) Logs sanity (DevTools Console): sin uncaught; y en uso normal NO aparece:
+      - `BOOTSTRAP: menuActions: onMenuClick not available yet; ...`
+      - `menuActions: onMenuClick unavailable after DOMContentLoaded; ...`
+      - `menuActions: payload without registered action -> ...`
+
+---
+
+### public/js/i18n.js
+
+Date: `2026-02-08`
+Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
