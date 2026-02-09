@@ -4338,3 +4338,21 @@ Evidence checked (anchors):
 
 Conclusion:
 - No concrete repo-wide pain (bug/repro), contract mismatch, or duplicated responsibility that would justify a Level 3 architecture/contract change in `public/js/i18n.js`.
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+Reviewer gate: PASS
+
+Accepted changes (logging-only; verified in diff):
+- `loadBundle`: warnOnce keys for empty/parse/fetch were made policy-compliant (stable buckets):
+  - from keys embedding `requested` + `path`
+  - to `i18n.renderer.bundle.{empty|parse|fetch}:${langCode||'unknown'}:${variant}`
+  - dynamic details stay in args: `{ requested, langCode, path: p }` (+ `err` where applicable)
+- `tRenderer`: missing translation key logging no longer uses warnOnce (signal preserved):
+  - from `warnOnce(key includes lang+path)` to `warn(...)` with `{ path, lang: rendererTranslationsLang }`
+
+Validation (manual/grep):
+- Grep: `i18n.renderer.bundle.` in `public/js/i18n.js`.
+- Force empty/invalid renderer.json for a lang and confirm warnOnce triggers once per `{lang,variant}` bucket.
+- Call `tRenderer` with multiple missing keys and confirm each occurrence logs a warn (no dedupe).

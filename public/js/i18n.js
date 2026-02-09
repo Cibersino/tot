@@ -55,7 +55,9 @@
     }
     paths.push(`../i18n/${langCode}/renderer.json`);
 
-    for (const p of paths) {
+    for (let idx = 0; idx < paths.length; idx += 1) {
+      const p = paths[idx];
+      const variant = (idx === 0 && langCode.includes('-')) ? 'full' : 'base';
       try {
         const resp = await fetch(p);
         if (!resp || !resp.ok) continue;
@@ -63,7 +65,7 @@
         const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
         if (!cleaned.trim()) {
           log.warnOnce(
-            `i18n.loadRendererTranslations.empty:${requested || langCode}:${langCode}:${p}`,
+            `i18n.renderer.bundle.empty:${langCode || 'unknown'}:${variant}`,
             'renderer.json is empty (trying fallback):',
             { requested, langCode, path: p }
           );
@@ -73,7 +75,7 @@
           return JSON.parse(cleaned || '{}');
         } catch (err) {
           log.warnOnce(
-            `i18n.loadRendererTranslations.parse:${requested || langCode}:${langCode}:${p}`,
+            `i18n.renderer.bundle.parse:${langCode || 'unknown'}:${variant}`,
             'Failed to parse renderer.json (trying fallback):',
             { requested, langCode, path: p },
             err
@@ -81,7 +83,7 @@
         }
       } catch (err) {
         log.warnOnce(
-          `i18n.loadRendererTranslations.fetch:${requested || langCode}:${langCode}:${p}`,
+          `i18n.renderer.bundle.fetch:${langCode || 'unknown'}:${variant}`,
           'Failed to fetch renderer.json (trying fallback):',
           { requested, langCode, path: p },
           err
@@ -159,8 +161,7 @@
     if (!rendererTranslations) return fallback;
     const value = getPath(rendererTranslations, path);
     if (typeof value === 'string') return value;
-    log.warnOnce(
-      `i18n.missingKey:${rendererTranslationsLang || 'unknown'}:${path}`,
+    log.warn(
       'Missing translation key (using fallback):',
       { path, lang: rendererTranslationsLang }
     );
