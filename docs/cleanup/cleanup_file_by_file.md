@@ -521,161 +521,230 @@ En `docs/cleanup/_evidence/issue64_repo_cleanup.md`, bajo `### L7`, registrar:
 
 ---
 
-De acuerdo: **auditar todos los preloads con un mismo marco** tiene sentido, siempre que el marco esté diseñado para **preloads** (frontera de contrato + sandbox + IPC), no para “módulos renderer normales”.
-
-A continuación una **metodología única** para aplicar **a cada preload** (`preload.js`, `preset_preload.js`, `editor_preload.js`, `flotante_preload.js`, `language_preload.js`) usando los mismos niveles L0–L7, pero con checklist preload-centrado.
+Aquí va una **metodología uniforme para preloads en solo 4 niveles** (L0–L3), integrada con **prompts de Codex** y con **smoke incluido** dentro del último nivel. Está escrita para que la pegues tal cual en tu documento de metodología o como encabezado “Preloads track” en la evidencia.
 
 ---
 
-## Metodología uniforme para auditar preloads (L0–L7)
+## Metodología uniforme para auditar preloads (4 niveles: L0–L3)
 
-### Regla base
+### Regla base (aplica a todos los niveles)
 
-En preloads, la “superficie observable” es principalmente:
+En preloads, la **superficie observable** es:
 
-1. **`contextBridge.exposeInMainWorld(name, shape)`** (API pública del renderer).
-2. **IPC** (`ipcRenderer.invoke/send/on/removeListener`).
-3. **Semántica de listeners**: si devuelve unsubscribe, si aísla errores del callback, si hay replay/buffer, y su timing.
+1. **Surface API**: `contextBridge.exposeInMainWorld(name, shape)` (o `exposeInIsolatedWorld`).
+2. **IPC wiring**: `ipcRenderer.invoke/send/on/removeListener/removeAllListeners`.
+3. **Semántica de listeners**: subscribe/unsubscribe, replay/buffer, timing (sync/async), aislamiento de errores.
 
-Todo cambio que altere **keys expuestas**, **semántica de listeners**, o **canales/payloads** es, en la práctica, **cambio de contrato** (Level 3).
+**Cualquier cambio** que altere **nombre/keys expuestas**, **semántica de listeners**, o **canales/payloads/returns** es **cambio de contrato** (normalmente prohibido salvo evidencia fuerte).
 
----
-
-## L0 — Minimal diagnosis (preload variant, pero mismo output L0)
-
-Además de tu L0 estándar, exigir explícitamente 3 inventarios (mecánicos):
-
-**A) Surface inventory (contextBridge)**
-
-* `exposeInMainWorld('<NAME>', { ... })`:
-  * `<NAME>` literal.
-  * Lista de keys expuestas (ordenadas).
-  * Para cada key: tipo (`invoke wrapper`, `send wrapper`, `on-listener`, `pure helper`).
-  * Si es listener: ¿devuelve unsubscribe? ¿valida cb? ¿try/catch?
-
-**B) IPC inventory (canales)**
-
-* `ipcRenderer.invoke('<ch>', ...)` (canal + shape args + return shape si inferible).
-* `ipcRenderer.send('<ch>', ...)` (canal + shape args).
-* `ipcRenderer.on('<ch>', ...)` (canal + payload shape).
-* *Registrar también* `removeListener` asociado si existe (para ver contract “unsubscribe”).
-
-**C) Invariants/fallbacks**
-Solo si están **anclados** a checks visibles:
-
-* guard de cb no-función, replay/buffer, try/catch, etc.
-
-**PASS L0** si: no inventa canales ni consumidores, y ancla invariantes.
+**Logging en preloads:** mantener **console-based** (no `window.getLogger`, no `require('./log')`, no dependencias nuevas).
 
 ---
 
-## L1 — Structural refactor (solo legibilidad real)
+### L0 — Diagnosis + Inventarios (Codex)
 
-Objetivo: que todos los preloads sigan un orden **uniforme**, sin alterar contrato/timing:
+**Objetivo:** mapear el contrato real del preload sin tocar código.
 
-Orden recomendado (si aplica):
+**Entregables en evidencia (obligatorios):**
 
-1. header + `'use strict'`
-2. imports `electron`
-3. module state (si existe, p. ej. buffer/replay)
-4. helpers (pure)
-5. API object literal
-6. `contextBridge.exposeInMainWorld(...)`
+* Surface inventory: `name` expuesto + keys + tipo de cada key (invoke/send/on/helper/constant) + semántica de listener (unsubscribe, removeListener, replay/buffer).
+* IPC inventory: lista completa de canales y forma de args/returns/payload.
+* Invariantes/fallbacks anclados (cb validation, try/catch, buffering, guards).
 
-**Regla NO FORCE**: si el archivo ya es corto/lineal, **NO CHANGE**.
+**Prompt Codex (L0):**
 
-**PASS L1** si: no cambia keys expuestas ni orden relativo de listeners que afecte replay/timing.
+```md
+# Target file: `<TARGET_FILE>`
 
----
+For this response only, produce a Level 0 minimal diagnosis of the file (short, descriptive, no code changes, no recommendations).
 
-## L2 — Clarity/robustness (controlado)
+Hard constraints:
+- Do NOT propose fixes or refactors. Diagnosis only.
+- Do NOT invent IPC channels or consumers not explicitly present in this file.
+- If you infer an invariant, anchor it to a visible check/fallback in this file (mention the identifier and a micro-quote <= 15 words).
 
-Checklist uniforme (no todo aplica; si no aplica, justificar NO CHANGE):
+#### 0.1 Reading map
+- What is the file’s actual block order today?
+- Where does linear reading break?
+  - For each obstacle: identifier + micro-quote (<= 15 words).
 
-1. **Callbacks**
+#### 0.2 Preload surface contract map (mandatory)
+A) List every `contextBridge.exposeInMainWorld(<name>, <api>)` and/or `contextBridge.exposeInIsolatedWorld(...)`:
+  - Exposed name string.
+  - List ALL keys on the exposed API object.
+  - For each key: categorize (invoke wrapper | send wrapper | on-listener | pure helper | constant).
+  - For listener keys: state whether it returns an unsubscribe function and how it removes listeners (if present).
+  - If there is replay/buffer behavior, describe it and anchor to code.
 
-* Validar `cb` es función en cada `onX(cb)`.
-* Aislar errores del callback con `try/catch` (para no romper el listener chain).
-* Decidir por archivo si el contrato incluye unsubscribe; si ya existe, mantenerlo; si no existe, *no introducirlo salvo evidencia* (eso sería L3).
+B) Note any direct global exports (e.g., `window.X = ...`) if present.
 
-2. **Listener lifecycle**
+#### 0.3 IPC contract (mechanical; list ALL occurrences in this file)
+- List every `ipcRenderer.invoke/send/on/once/removeListener/removeAllListeners`.
+- List every `ipcMain.*` or `webContents.send` if any (usually none).
+For each item:
+- Channel name (string literal).
+- Input shape (args).
+- Return shape (invoke only).
+- For listeners: forwarded payload shape to the callback.
 
-* Si hay unsubscribe: debe ser idempotente / safe (try/catch alrededor de `removeListener`).
-* Si hay replay/buffer: confirmar que no ejecuta el callback sincrónicamente durante registro (ej. `setTimeout(...,0)` como semántica de evento).
+#### 0.4 Invariants / fallbacks (anchored)
+- Expected inputs, tolerated errors, fallbacks (cb validation, try/catch, buffering/replay), each anchored with a micro-quote.
 
-3. **Normalización de inputs**
+Delegated registration:
+- If this file calls any helper that registers IPC, list the callee identifier and note “delegates IPC registration”.
+```
 
-* Si el preload normaliza inputs (ej. language tag), documentar el invariant.
-
-**PASS L2** si: robustez mejora sin tocar contrato observable ni generar logs ruidosos.
-
----
-
-## L3 — Contract/architecture changes (excepcional)
-
-Entrada **solo** con evidencia reproducible:
-* mismatch entre consumer y preload,
-* múltiples consumers con expectativas distintas,
-* bug reproducible (timing, replay, unsubscribe faltante causando leak, etc.).
-
-**Obligatorio**: Evidence + Risk + Validation.
-Si no hay evidencia fuerte: **NO CHANGE (no Level 3 justified)**.
-
----
-
-## L4 — Logs (preload policy, uniforme)
-
-En preloads, por regla del repo: **console-based**, sin dependencias nuevas.
-
-Checklist uniforme:
-
-1. No introducir `window.getLogger` ni imports nuevos.
-2. Logs solo en:
-   * cb inválido,
-   * excepción en callback,
-   * falla de `removeListener`,
-   * fallback/replay path que oculte degradación real.
-3. Dedupe:
-   * solo si es *repetible y de alto volumen* (p. ej. “cb no-función” spameable).
-   * si se dedupea, usar un mecanismo local estable (por ejemplo `const once = new Set()` + claves cortas), sin keys dinámicas.
-
-**PASS L4** si: no añade ruido en paths sanos y no deja fallbacks silenciosos relevantes.
+**PASS L0** si: inventarios completos + sin IPC inventado + invariantes anclados.
 
 ---
 
-## L5 — Comments (uniforme estilo main.js)
+### L1 — Unified pass (estructura + robustez + gate de contrato) (Codex)
 
-Para cada preload:
+**Objetivo:** permitir mejoras reales de lectura/robustez **sin tocar contrato**, y solo permitir cambio de contrato si pasa un gate explícito.
 
-* Overview (3–7 bullets) que incluya:
-  * nombre expuesto (`electronAPI`, `presetAPI`, etc.),
-  * qué ventanas/consumidores típicos (si está visible en repo),
-  * “listener semantics” (unsubscribe, replay).
+**Regla NO FORCE:** si el preload ya es corto/lineal o el riesgo supera el beneficio → **NO CHANGE**.
+
+**Prompt Codex (L1 unificado):**
+
+```md
+# Target file: `<TARGET_FILE>`
+
+Level 1 (unified) — Structure + controlled robustness + explicit contract gate (preload).
+
+Objective:
+Improve readability and internal robustness only where it is clearly behavior-preserving,
+while preserving observable contract/timing:
+- exposed API name + keys,
+- listener semantics (subscribe/unsubscribe/replay/buffer timing),
+- IPC channel names and payload/return shapes,
+- side effects and ordering.
+
+Hard constraints (always):
+- Do NOT add/remove/rename any exposed keys in `contextBridge.exposeInMainWorld(...)`.
+- Do NOT change listener semantics (including whether it returns unsubscribe, replay/buffer behavior, sync vs async timing).
+- Do NOT change IPC channel strings or payload/return shapes.
+- Do NOT introduce new imports or cross-context deps.
+
+Allowed changes (only with clear payoff):
+A) Structural:
+- Reorder into coherent blocks if it materially improves readability:
+  1) header + 'use strict'
+  2) electron imports
+  3) module state (buffers/sets)
+  4) helpers
+  5) API object
+  6) exposeInMainWorld(...)
+- Rename locals only for clarity (no contract impact).
+
+B) Robustness (still contract-preserving):
+- Callback validation ONLY if current behavior already effectively no-ops on invalid input.
+- try/catch around callback invocation ONLY if it does not change externally observable behavior/timing.
+- Unsubscribe safety ONLY if semantics remain identical.
+
+Contract gate (exceptional):
+- If you propose ANY change that could affect consumers (exposed keys, listener semantics, IPC payload/shape, timing),
+  you MUST include:
+  - Evidence: exact repo anchors (file + identifier + micro-quote) OR minimal repro steps.
+  - Risk: what could break and where.
+  - Validation: concrete manual check and/or repo grep.
+- If you cannot satisfy the gate, DO NOT change contract.
+
+Output requirement:
+- Decision: NO CHANGE | CHANGED (contract unchanged) | CHANGED (contract changed; gate satisfied)
+- If CHANGED: for each non-trivial change include Change/Gain/Cost/Risk/Validation.
+- One explicit sentence confirming whether observable contract/timing changed.
+- Do NOT output diffs.
+```
+
+**PASS L1** si: cambios (si los hay) son claramente contract-preserving, o si propone contract change lo hace con Evidence/Risk/Validation sólidos.
 
 ---
 
-## L6 — Final review (coherencia)
+### L2 — Logs (preload policy) (Codex)
 
-Checklist uniforme:
+**Objetivo:** ajustar logging sin ruido y sin romper restricciones de preload.
 
-* No hay keys expuestas “muertas” (no usadas) **solo si se puede demostrar sin riesgo**; si no, NO CHANGE.
-* Canales IPC consistentes (string literals, payload shapes).
-* No hay “signature drift” en logs (si existe dedupe local, no mezclar keys dinámicas).
-* Comentarios no mienten sobre semántica (replay/unsubscribe).
+**Reglas duras:**
+
+* Solo `console.*` (o el mecanismo console-based que ya exista en el archivo).
+* No agregar logs en paths sanos/de alta frecuencia.
+* Dedupe solo si es realmente spameable y no aporta más (con mecanismo local estable; sin keys dinámicas basadas en input).
+
+**Prompt Codex (L2 logs):**
+
+```md
+# Target file: `<TARGET_FILE>`
+
+Level 2 — Logs (preload policy).
+
+Objective:
+Align logging with preload constraints and repo style:
+- Console-based only (no `window.getLogger`, no `require('./log')`, no new deps).
+- Fallbacks should not be silently problematic, but avoid noise on healthy/high-frequency paths.
+- Deduplicate only when repeated occurrences add no diagnostic value; use a stable local mechanism (e.g., Set) with stable keys (no user input in keys).
+
+Hard constraints:
+- Do NOT change contract/timing (exposed keys/semantics and IPC).
+- Logging-only changes + minimal local structure strictly required to support that.
+
+Output:
+- Decision: CHANGED | NO CHANGE
+- If CHANGED: list each non-trivial logging change with Gain/Cost/Validation.
+- Confirm contract/timing preserved.
+- Do NOT output diffs.
+```
+
+**PASS L2** si: no introduce dependencia nueva, no mete ruido, y no deja fallbacks “problemáticos” silenciosos.
 
 ---
 
-## L7 — Smoke (uniforme, pero con pasos parametrizados)
+### L3 — Final review + Smoke (Codex + humano)
 
-Para *cada preload*:
+Este nivel cierra el preload.
 
-1. Abrir la ventana correspondiente (main/editor/flotante/language/preset modal).
-2. En DevTools Console:
-   * `typeof window.<API_NAME>` debe ser `"object"`.
-   * `Object.keys(window.<API_NAME>)` coincide con el inventario L0.
-3. Ejecutar 1 “canary” por tipo:
-   * un `invoke` barato (ej. `getSettings` si existe en ese preload),
-   * registrar un listener y, si devuelve unsubscribe, ejecutarlo sin throw.
+#### Parte A: Final review (Codex)
 
-Registrar en evidencia **qué ventana**, **qué comando**, **qué resultado**.
+**Objetivo:** buscar leftovers, drift, incoherencias después de L1–L2.
 
+**Prompt Codex (L3A final review):**
+
+```md
+# Target file: `<TARGET_FILE>`
+
+Level 3A — Final review (preload; coherence).
+
+Objective:
+Ensure end-to-end coherence after L1–L2 while preserving contract/timing:
+- no dead code / unused locals introduced by refactors,
+- surface contract unchanged (exposed name + keys; listener semantics unchanged),
+- IPC list stable (channel strings and payload shapes consistent),
+- logging still console-based and not noisy,
+- comments (if any) do not misdescribe behavior (fix/remove misleading comments only; do not add section dividers).
+
+Output:
+- Decision: CHANGED | NO CHANGE
+- If NO CHANGE: “No Level 3A changes justified” + 3–8 bullets of what you checked (anchors).
+- If CHANGED: Change/Gain/Cost/Risk/Validation per non-trivial change.
+- Confirm observable contract/timing preserved.
+- Do NOT output diffs.
+```
+
+#### Parte B: Smoke (humano; registrar en evidencia)
+
+**Objetivo:** verificar que la API expuesta existe y que al menos 1 camino real funciona sin throw.
+
+**Checklist mínimo (por preload):**
+
+1. Abrir la ventana correspondiente (main/editor/flotante/language/presets).
+2. DevTools Console:
+
+   * `typeof window.<API_NAME>` es `"object"`.
+   * `Object.keys(window.<API_NAME>)` coincide con el inventario L0 (mismo set de keys).
+3. Canary:
+
+   * ejecutar 1 método `invoke` “barato” si existe (ej. `getSettings`, `getCurrentText`, etc. según el preload),
+   * si existe un listener: suscribirse y luego desuscribirse (si retorna unsubscribe), confirmando “no throw”.
+
+**PASS L3** si: smoke OK y no hay drift reportado por Codex.
+
+---
