@@ -4789,3 +4789,31 @@ Reviewer assessment:
 - Note: Codex mentioned checking `docs/changelog_detailed.md` / `public/info/acerca_de.html`; those files are not present in the current `mnt/data` snapshot, so they are not used as reviewer evidence here.
 
 Reviewer gate: PASS
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision (Codex): CHANGED
+
+Changes (Codex):
+- Add `log.warnOnce('renderer.info.css-escape.missing', ...)` when `CSS.escape` is unavailable inside `escapeSelector`.
+  - Gain: elimina fallback silencioso (policy: “no silent fallbacks”) y lo deja deduplicado.
+  - Cost: 1 warning por sesión si el entorno no tiene `CSS.escape`.
+  - Validation: `rg -n -F "renderer.info.css-escape.missing" public/js/info_modal_links.js`.
+- Add `log.warnOnce('renderer.info.scrollIntoView.failed', ...)` when `scrollIntoView(...)` throws and the code uses manual scroll fallback.
+  - Gain: hace visible un fallback UI antes silencioso; dedupe evita spam.
+  - Cost: 1 warning la primera vez que se toma esa ruta; incluye `err` como arg.
+  - Validation: `rg -n -F "renderer.info.scrollIntoView.failed" public/js/info_modal_links.js`.
+- Change appdoc blocked/error logs from `warnOnce(key, ...)` to `warn(...)`.
+  - Gain: evita dedupe “demasiado amplia” que podía ocultar fallas con distintos `docKey/result/err`.
+  - Cost: más logs si el usuario repite clicks sobre un `appdoc:` fallido.
+  - Validation: click repetido sobre un `appdoc:` que falla → se ven warnings por ocurrencia; además `rg -n -F "renderer.info.appdoc.blocked" public/js/info_modal_links.js` debería quedar sin hits si se aplica el parche.
+- Change external blocked/error logs from `warnOnce(key, ...)` to `warn(...)`.
+  - Gain: evita colapsar distintos `resolvedHref/result/err` en un solo warning.
+  - Cost: más logs si el usuario repite clicks sobre un externo fallido.
+  - Validation: click repetido sobre un link externo bloqueado → warnings por ocurrencia; `rg -n -F "renderer.info.external.blocked" public/js/info_modal_links.js` debería quedar sin hits si se aplica el parche.
+
+Reviewer assessment:
+- PASS (L4). Cambios “logging-only” + soporte mínimo (`catch (err)`), alineados con policy (fallos/fallbacks no silenciosos, keys estables, dedupe solo donde repetición no aporta).
+- Riesgo controlado: mayor volumen de warnings en fallas repetidas user-driven (appdoc/external), aceptable para no perder diagnósticos distintos.
+
+Reviewer gate: PASS

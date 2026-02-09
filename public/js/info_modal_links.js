@@ -6,6 +6,10 @@
 
   const escapeSelector = (value) => {
     if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(value);
+    log.warnOnce(
+      'renderer.info.css-escape.missing',
+      'CSS.escape unavailable; using fallback selector escaping.'
+    );
     return String(value).replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
   };
 
@@ -43,7 +47,12 @@
 
           try {
             targetEl.scrollIntoView({ behavior: 'auto', block: 'start' });
-          } catch {
+          } catch (err) {
+            log.warnOnce(
+              'renderer.info.scrollIntoView.failed',
+              'scrollIntoView failed; using manual scroll fallback:',
+              err
+            );
             if (!panel) return;
             const panelRect = panel.getBoundingClientRect();
             const targetRect = targetEl.getBoundingClientRect();
@@ -70,21 +79,11 @@
           api.openAppDoc(docKey)
             .then((result) => {
               if (!result || result.ok !== true) {
-                log.warnOnce(
-                  'renderer.info.appdoc.blocked',
-                  'App doc blocked or failed:',
-                  docKey,
-                  result
-                );
+                log.warn('App doc blocked or failed:', docKey, result);
               }
             })
             .catch((err) => {
-              log.warnOnce(
-                'renderer.info.appdoc.error',
-                'App doc request failed:',
-                docKey,
-                err
-              );
+              log.warn('App doc request failed:', docKey, err);
             });
           return;
         }
@@ -102,21 +101,11 @@
         api.openExternalUrl(resolvedHref)
           .then((result) => {
             if (!result || result.ok !== true) {
-              log.warnOnce(
-                'renderer.info.external.blocked',
-                'External URL blocked or failed:',
-                resolvedHref,
-                result
-              );
+              log.warn('External URL blocked or failed:', resolvedHref, result);
             }
           })
           .catch((err) => {
-            log.warnOnce(
-              'renderer.info.external.error',
-              'External URL request failed:',
-              resolvedHref,
-              err
-            );
+            log.warn('External URL request failed:', resolvedHref, err);
           });
       } catch (err) {
         log.error('Error handling info modal link click:', err);
