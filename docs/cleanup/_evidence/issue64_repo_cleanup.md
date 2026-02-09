@@ -4544,3 +4544,18 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
+#### L2 — Clarity / robustness refactor (controlled) (Codex)
+
+Decision: NO CHANGE
+
+- The file is already short and linear; adding helpers would introduce extra concepts without reducing branching or reading effort.
+- The nested try/catch fallback patterns are the observable behavior (including log prefixes/order); deduping them risks changing those surfaces.
+- Hardening `window`/`document` access (e.g., `typeof` guards) would change error behavior in non-DOM contexts, which is observable.
+- The timing flow (RAF vs `setTimeout`, duration handling, removal delay) is already minimal; refactoring risks timing changes without clarity payoff.
+- Extracting constants for durations/styles would be largely cosmetic and does not materially improve clarity or robustness.
+
+Reviewer assessment:
+- PASS: A NO CHANGE decision is justified at Level 2 because the current code’s nested error/fallback paths and log surfaces are part of the observable behavior, and the toast timing path (RAF vs setTimeout + delayed removal) is timing-sensitive.
+
+Reviewer gate: PASS
+
