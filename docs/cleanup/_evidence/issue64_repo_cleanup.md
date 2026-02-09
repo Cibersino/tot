@@ -4612,3 +4612,24 @@ Accepted changes (comments-only; per diff):
 - Added an explicit EOF marker: "End of public/js/notify.js".
 
 No functional changes; comments-only.
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+Checks (Codex):
+- Checked logging API usage in `resolveText` (`log.warnOnce`) and `toastEditorText` (`log.errorOnce`) against `public/js/log.js` signature; no drift.
+- Checked fallback logs in `toastMain`, `toastEditorText`, and `notifyEditor` for recoverable severity (`log.warn`) and failure severity (`log.error`); consistent and non-noisy.
+- Checked helper flow for duplication/leftovers: `applyToastPosition`, `ensureToastContainer`, `toastText` are used once each and consistent.
+- Checked public surface `window.Notify = { notifyMain, notifyEditor, toastMain, toastEditorText }`; matches call sites and prior contract.
+- Checked comment/code alignment around Overview and section dividers; matches current block order and responsibilities.
+- Checked DOM guard behavior in `toastText` and string coercion paths; no redundant checks introduced.
+
+Observable contract and timing were preserved.
+
+Reviewer assessment:
+- PASS (L6): NO CHANGE is justified; no evidence of leftover drift after L1–L5, and logging usage remains consistent with the logger API and policy.
+
+Reviewer gate: PASS
