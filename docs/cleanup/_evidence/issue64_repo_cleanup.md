@@ -4223,3 +4223,19 @@ Decision: CHANGED
 No functional changes; comments-only.
 
 Reviewer gate: PASS
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+- Checked logging API usage: only `log.debug|warn|error` are used; no key is passed to non-once methods (see BOOTSTRAP warn and other warn sites).
+- Checked bootstrap classification: `BOOTSTRAP:` appears only on the pre-DOM retry path; post-DOM retry failure is a normal warn.
+- Checked listener registration flow: `setupListener()` guard (`if (_unsubscribeMenuClick)`) + early return when `electronAPI.onMenuClick` is unavailable + try/catch remain consistent.
+- Checked module surface: `window.menuActions` still exposes `registerMenuAction`, `unregisterMenuAction`, `listMenuActions`, `stopListening`, and `_internal._getUnsubscribeRef` with the same shapes.
+- Checked comment alignment: Overview, section dividers, and end-of-file marker match actual block order and behavior.
+
+Observable contract and timing/ordering were preserved (no changes made).
+
+Reviewer gate: PASS (Level 6): NO CHANGE justified; post-L5 coherence verified; diff empty.
