@@ -12,9 +12,40 @@
     return txt || key;
   }
 
-  function notifyMain(key) {
-    const msg = resolveText(key);
-    alert(msg);
+  function applyToastPosition(container, position) {
+    const pos = position || 'top-right';
+    const positions = {
+      'top-right': { top: '16px', right: '16px', bottom: 'auto', left: 'auto', align: 'flex-end' },
+      'bottom-right': { top: 'auto', right: '16px', bottom: '16px', left: 'auto', align: 'flex-end' },
+      'top-left': { top: '16px', right: 'auto', bottom: 'auto', left: '16px', align: 'flex-start' },
+      'bottom-left': { top: 'auto', right: 'auto', bottom: '16px', left: '16px', align: 'flex-start' }
+    };
+    const cfg = positions[pos] || positions['top-right'];
+    container.style.top = cfg.top;
+    container.style.right = cfg.right;
+    container.style.bottom = cfg.bottom;
+    container.style.left = cfg.left;
+    container.style.alignItems = cfg.align;
+  }
+
+  function ensureToastContainer(containerId, position) {
+    let container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      Object.assign(container.style, {
+        position: 'fixed',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        maxWidth: 'calc(100% - 32px)',
+        pointerEvents: 'none',
+        zIndex: '9999'
+      });
+      document.body.appendChild(container);
+    }
+    applyToastPosition(container, position);
+    return container;
   }
 
   function toastText(text, { containerId = 'totToastContainer', position = 'top-right', duration = 4500, type = 'info' } = {}) {
@@ -73,40 +104,9 @@
     }
   }
 
-  function ensureToastContainer(containerId, position) {
-    let container = document.getElementById(containerId);
-    if (!container) {
-      container = document.createElement('div');
-      container.id = containerId;
-      Object.assign(container.style, {
-        position: 'fixed',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        maxWidth: 'calc(100% - 32px)',
-        pointerEvents: 'none',
-        zIndex: '9999'
-      });
-      document.body.appendChild(container);
-    }
-    applyToastPosition(container, position);
-    return container;
-  }
-
-  function applyToastPosition(container, position) {
-    const pos = position || 'top-right';
-    const positions = {
-      'top-right': { top: '16px', right: '16px', bottom: 'auto', left: 'auto', align: 'flex-end' },
-      'bottom-right': { top: 'auto', right: '16px', bottom: '16px', left: 'auto', align: 'flex-end' },
-      'top-left': { top: '16px', right: 'auto', bottom: 'auto', left: '16px', align: 'flex-start' },
-      'bottom-left': { top: 'auto', right: 'auto', bottom: '16px', left: '16px', align: 'flex-start' }
-    };
-    const cfg = positions[pos] || positions['top-right'];
-    container.style.top = cfg.top;
-    container.style.right = cfg.right;
-    container.style.bottom = cfg.bottom;
-    container.style.left = cfg.left;
-    container.style.alignItems = cfg.align;
+  function notifyMain(key) {
+    const msg = resolveText(key);
+    alert(msg);
   }
 
   function toastMain(key, { type = 'info', duration = 9000 } = {}) {

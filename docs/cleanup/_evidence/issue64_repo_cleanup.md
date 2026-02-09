@@ -4530,3 +4530,17 @@ IPC contract:
 Reviewer gate:
 - PASS (Level 0: diagnosis-only; anchors presentes; sin IPC inventado).
 
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: CHANGED
+
+- Reordered helper definitions so positioning and container setup (`applyToastPosition`, `ensureToastContainer`) appear before `toastText` uses them.
+- Moved `toastText` to sit directly after its container/position helpers to make the toast flow linear.
+- Moved `notifyMain` down to group the public-facing entrypoints together with `toastMain`, `toastEditorText`, and `notifyEditor`.
+- No logic changes inside any function bodies; only rearranged function order for readability.
+
+Reviewer assessment:
+- PASS: Level 1 scope respected (structural-only reorder). Readability payoff is concrete because `toastText` currently calls `ensureToastContainer(...)` before its definition appears later in-file (jump in linear reading). Contract/behavior/timing preserved: only function declaration order changes within the same IIFE.
+
+Reviewer gate: PASS
+
