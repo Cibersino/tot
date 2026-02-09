@@ -4743,3 +4743,17 @@ Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
 - Note: corrected one Codex micro-quote to be verbatim (removed ellipsis).
 
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: CHANGED
+
+- Extrajo `escapeSelector` desde el interior de `bindInfoModalLinks` a un helper top-level dentro del IIFE (reduce nesting local).
+- Eliminó la definición inline del helper dentro del binder, mejorando lectura lineal (guard → api → event listener).
+- No cambia rutas del click handler (`#` / `appdoc:` / externo), ni el guard idempotente por `dataset`, ni el export global.
+
+Contract/behavior/timing preserved.
+
+Reviewer assessment:
+- PASS (L1). Cambio puramente estructural (relocación de helper sin estado); no hay drift de contrato observable (`window.InfoModalLinks.bindInfoModalLinks(...)`), ni IPC en este módulo.
+
+Reviewer gate: PASS
