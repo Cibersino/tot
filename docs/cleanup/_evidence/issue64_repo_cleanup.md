@@ -4786,7 +4786,6 @@ Decision: NO CHANGE (no Level 3 justified)
 
 Reviewer assessment:
 - PASS (L3). No evidence of repo-wide pain (multi-consumer instability, mismatched semantics, or reproducible bug) that would justify a contract/architecture change here.
-- Note: Codex mentioned checking `docs/changelog_detailed.md` / `public/info/acerca_de.html`; those files are not present in the current `mnt/data` snapshot, so they are not used as reviewer evidence here.
 
 Reviewer gate: PASS
 
@@ -4830,5 +4829,23 @@ Observed changes (diff-based):
 Reviewer assessment:
 - PASS (L5). The patch is comments-only, English + ASCII, and follows the established `// =============================================================================` section divider style used in `electron/main.js`.
 - No functional changes and no code movement beyond adding comment headers adjacent to existing blocks; contract/timing remain unchanged.
+
+Reviewer gate: PASS
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Checked logger usage in `public/js/info_modal_links.js`: `warnOnce('renderer.info.css-escape.missing', ...)` and `warnOnce('renderer.info.scrollIntoView.failed', ...)` use stable explicit keys; `warn(...)` is used for per-occurrence user-driven failures (appdoc/external).
+- Checked helper usage: `escapeSelector` is the only selector escaping path and is used by the hash route.
+- Checked handler flow: hash/appdoc/external branches return early; no leftover branches introduced by prior edits.
+- Checked exports: `window.InfoModalLinks = { bindInfoModalLinks }` remains the module surface and matches the `renderer.js` call site.
+- Checked comments vs code: Overview/section dividers/EOF marker match the actual structure.
+
+Observable contract and timing preserved (no changes applied).
+
+Reviewer assessment:
+- PASS (L6). No dead code, signature drift, or comment/code mismatch detected after L1/L4/L5; further edits would be marginal risk.
 
 Reviewer gate: PASS
