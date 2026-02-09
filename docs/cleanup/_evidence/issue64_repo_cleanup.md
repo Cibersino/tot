@@ -4945,3 +4945,41 @@ Date: `2026-02-09`
 Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
 
 (TODO)
+
+---
+
+### electron/editor_preload.js
+
+Date: `2026-02-09`
+Last commit: `2d6f8a853009f51fe2ee0041e01f5fab26b69a2d`
+
+(TODO)
+
+---
+
+### electron/preset_preload.js
+
+Date: `2026-02-09`
+Last commit: `2d6f8a853009f51fe2ee0041e01f5fab26b69a2d`
+
+(TODO)
+
+---
+
+### electron/flotante_preload.js
+
+Date: `2026-02-09`
+Last commit: `2d6f8a853009f51fe2ee0041e01f5fab26b69a2d`
+
+(TODO)
+
+---
+
+### electron/language_preload.js
+
+Date: `2026-02-09`
+Last commit: `6900361ede77e07dbda5e2b5130975b8f2aa3863`
+
+(TODO)
+
+---
