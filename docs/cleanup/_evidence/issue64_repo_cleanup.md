@@ -4262,3 +4262,40 @@ Checklist (source: `docs/test_suite.md`, REG-MENU + file-specific sanity):
 
 Date: `2026-02-08`
 Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
+
+#### L0 — Minimal diagnosis (Codex)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+##### 0.1 Reading map
+- Block order (as written):
+  1. IIFE wrapper and logger state (`(() => {`, `const log = window.getLogger('i18n');`)
+  2. Module state and constants (`rendererTranslations*`, `AppConstants`, `DEFAULT_LANG`)
+  3. Helpers (normalization, base extraction, object checks, merge, path lookup)
+  4. Async load pipeline (`loadRendererTranslations`, `loadOverlay`, `loadBundle`)
+  5. Translation accessors (`tRenderer`, `msgRenderer`)
+  6. Public export on `window.RendererI18n`
+- Where linear reading breaks (jumps/obstacles):
+  - `loadRendererTranslations` relies on later-defined helper `loadBundle` (micro-quote: `const paths = [];`).
+  - `loadOverlay` relies on later-defined helper `loadBundle` (micro-quote: `const paths = [];`).
+
+##### 0.2 Contract map
+- Module exposure / public entrypoints / side effects:
+  - Side effect: immediately executes an IIFE and attaches `window.RendererI18n`.
+  - Public API: `loadRendererTranslations`, `tRenderer`, `msgRenderer`, `normalizeLangTag`, `getLangBase`.
+- Invariants / fallbacks (anchored to checks in this file):
+  - Normalization: `normalizeLangTag` lowercases (micro-quote: `(lang || '').trim().toLowerCase()`).
+  - Default bundle required: `loadBundle(DEFAULT_LANG, DEFAULT_LANG, true)`.
+  - Defaults fallback to empty: `rendererDefaultTranslations = defaults || {};`.
+  - Overlay optional merge: `deepMerge(rendererDefaultTranslations || {}, overlay || {})`.
+  - Missing key fallback: `return fallback;`.
+  - If translations not loaded: `if (!rendererTranslations) return fallback;`.
+- IPC contract: none found in this file.
+  - ipcMain.handle/on/once: none
+  - ipcRenderer.invoke/send/on/once: none
+  - webContents.send: none
+- Delegated IPC registration: none detected.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no fix proposals; no invented IPC).
+- Note: linear-break anchors are weak (`const paths = [];` is not very locating); acceptable for L0 but could be sharper.
