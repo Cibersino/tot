@@ -4905,4 +4905,43 @@ Reviewer gate: PASS
 Date: `2026-02-09`
 Last commit: `e0a90380d852d89449c13b9c3726d566b82c4fc0`
 
+#### L0 — Minimal diagnosis (Codex, verified)
+
+**0.1 Reading map**
+- Block order: file header + `'use strict'` → IIFE wrapper `(() => {` → `DEFAULTS` object → `AppConstants` object (spreads defaults + `applyConfig`) → environment guard (`typeof window`) → global export (`window.AppConstants = AppConstants`).
+- Linear reading breaks (identifier + micro-quote):
+  - IIFE wrapper hides globals / encloses module scope: `(() => {`
+  - `applyConfig` embeds logic inside the constants surface: `applyConfig(cfg = {}) {`
+  - Runtime environment guard is inside module body: `typeof window === 'undefined'`
+
+**0.2 Contract map**
+- Exposes / side effects:
+  - Global export: assigns `window.AppConstants = AppConstants;`
+  - Throws if `window` is missing: `throw new Error('AppConstants requiere window; ...')`
+- Suggested invariants / fallbacks (anchored):
+  - Browser/renderer context required: `if (typeof window === 'undefined') { throw ... }`
+  - `applyConfig` accepts `cfg` (defaults to `{}`), reads `cfg.maxTextChars`, and returns it only if it is finite and > 0; otherwise falls back: `return this.MAX_TEXT_CHARS;`
+  - `DEFAULT_LANG` has an explicit cross-file invariant in comment: `DEFAULT_LANG: 'es', // ... must match 'electron/constants_main.js'.`
+
+IPC contract:
+- None found. No `ipcMain.*`, `ipcRenderer.*`, or `webContents.send` calls.
+
+Delegated IPC registration:
+- None found.
+
+Result: PASS
+
+#### L1–L7
+
+Decision: NO CHANGE (file is small/linear; no IPC surface; only global export + trivial config helper; further levels would be churn with low payoff).
+
+Result: PASS
+
+---
+
+### electron/preload.js
+
+Date: `2026-02-09`
+Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
+
 (TODO)
