@@ -4322,3 +4322,19 @@ Rationale (Codex):
 - `msgRenderer` regex replacement behavior is observable; “robust” changes would alter semantics.
 - Logging is already deduped (`warnOnce`/`errorOnce`); more explicit edge cases risk extra logs/timing changes.
 - No IPC or startup sequencing exists here; no safe L2 rework with material payoff.
+
+#### L3 — Architecture / contract changes (Codex)
+
+Decision (Codex): NO CHANGE (no Level 3 justified)  
+Reviewer gate: PASS
+
+Evidence checked (anchors):
+- public/renderer.js: destructures `window.RendererI18n || {}` and hard-fails if missing.
+- public/editor.js: same pattern (hard-fail on missing RendererI18n).
+- public/preset_modal.js: same pattern (hard-fail on missing RendererI18n).
+- public/flotante.js: optional i18n usage; logs warning and returns if unavailable.
+- public/js/notify.js: optional path; returns if `RendererI18n.msgRenderer` is not a function.
+- public/js/format.js: consumes helper utilities from `window.RendererI18n || {}`.
+
+Conclusion:
+- No concrete repo-wide pain (bug/repro), contract mismatch, or duplicated responsibility that would justify a Level 3 architecture/contract change in `public/js/i18n.js`.
