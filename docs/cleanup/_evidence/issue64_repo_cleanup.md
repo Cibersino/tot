@@ -4391,3 +4391,94 @@ Checked (anchors):
 - Comments still match code structure (Overview + section dividers + EOF marker).
 
 Observable contract and timing preserved.
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; open DevTools Console to observe renderer logs.
+
+* Use main window first (renderer). Optionally repeat in Editor and Presets modal windows (each window is its own renderer context).
+
+* [x] **(1) Startup sanity: no uncaught errors; `RendererI18n` present**
+  * **Action:** Launch the app and wait for the main window to fully render.
+  * **Expected result:** No uncaught exceptions; UI usable; `window.RendererI18n` is present.
+  * **Evidence:** `public/js/i18n.js` attaches `window.RendererI18n = { ... }`; `public/renderer.js` hard-fails if missing.
+
+* [x] **(2) Surface check: expected methods exist**
+
+  * **Action (DevTools):**
+    * `typeof window.RendererI18n?.loadRendererTranslations`
+    * `typeof window.RendererI18n?.tRenderer`
+    * `typeof window.RendererI18n?.msgRenderer`
+    * `typeof window.RendererI18n?.normalizeLangTag`
+    * `typeof window.RendererI18n?.getLangBase`
+  * **Expected result:** All are `"function"`.
+
+* [x] **(3) Constants dependency: `AppConstants.DEFAULT_LANG` is usable**
+
+  * **Action (DevTools):**
+    * `window.AppConstants?.DEFAULT_LANG`
+  * **Expected result:** A non-empty string (the default language tag used by i18n loader).
+
+* [x] **(4) Load default bundle: resolves to an object; no fatal logs**
+
+  * **Action (DevTools):**
+    * `const dl = window.AppConstants.DEFAULT_LANG;`
+    * `const a = await window.RendererI18n.loadRendererTranslations(dl);`
+  * **Expected result:** `a` is a plain object; no errors; app remains usable.
+  * **Evidence:** `loadRendererTranslations` always sets `rendererDefaultTranslations = defaults || {}` and merges overlay best-effort.
+
+* [x] **(5) Cache behavior: second call returns cached object**
+
+  * **Action (DevTools):**
+    * `const dl = window.AppConstants.DEFAULT_LANG;`
+    * `const a1 = await window.RendererI18n.loadRendererTranslations(dl);`
+    * `const a2 = await window.RendererI18n.loadRendererTranslations(dl);`
+    * `a1 === a2`
+  * **Expected result:** `true` (same reference); no new warnings required on the healthy path.
+  * **Evidence:** early return guard: `if (rendererTranslations && rendererTranslationsLang === selected) return rendererTranslations;`.
+
+* [x] **(6) Helpers correctness: normalize + base derivation**
+
+  * **Action (DevTools):**
+    * `window.RendererI18n.normalizeLangTag('ES_CL')`
+    * `window.RendererI18n.getLangBase('es-cl')`
+  * **Expected result:** first returns `'es-cl'`; second returns `'es'`.
+
+* [x] **(7) Missing-key fallback: returns fallback + emits warn (signal)**
+
+  * **Action (DevTools):**
+    * `window.RendererI18n.tRenderer('__missing.key', 'FALLBACK_OK')`
+  * **Expected result:** returns `'FALLBACK_OK'`; emits one `warn` log: `"Missing translation key (using fallback):"` with `{ path, lang }`.
+  * **Evidence:** `tRenderer` uses `log.warn(...)` (not `warnOnce`) then `return fallback;`.
+
+* [x] **(8) `msgRenderer` substitution works even on fallback**
+
+  * **Action (DevTools):**
+    * `window.RendererI18n.msgRenderer('__missing.key', { name: 'X' }, 'Hello {name}')`
+  * **Expected result:** returns `'Hello X'` (placeholder replaced). A warn is acceptable here because the key is intentionally missing.
+
+* [x] **(9) UI integration: language switch does not break and does not spam logs**
+
+  * **Action:** Switch UI language via your normal language selector flow (pick any non-default shipped language), then switch back.
+  * **Expected result:** No crashes; UI remains usable. If an overlay is missing for the chosen language, you may see at most one `warnOnce` for `i18n.loadRendererTranslations.overlayMissing:<lang>`; no continuous repeats while idle.
+
+* [x] **(10) Multi-window integration: Editor + Presets modal still open (RendererI18n present in those contexts)**
+
+  * **Action:** Open the Editor window, then open the Presets modal (and optionally the Flotante window).
+  * **Expected result:** Windows open normally; no hard-fail errors about missing `RendererI18n`. No repeated log spam in idle.
+
+**Notes (only if needed)**
+
+* If you see repeated `"Missing translation key (using fallback)"` during *normal* UI usage (not DevTools tests), that indicates a real missing-key problem in the UI call sites or bundles (not a logging issue).
+
+---
+
+### public/js/notify.js
+
+Date: `2026-02-09`
+Last commit: `fd615a53318bf259a3094233be4261e7f88d2ebd`
+
