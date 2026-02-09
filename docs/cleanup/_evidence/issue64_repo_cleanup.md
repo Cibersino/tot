@@ -4573,3 +4573,27 @@ Reviewer assessment:
 - PASS: No evidence-backed pain point requiring an architecture/contract change. The module remains a narrow in-window Notify helper with stable call sites and no IPC surface.
 
 Reviewer gate: PASS
+
+#### L4 — Logs (Codex)
+
+Decision (Codex): CHANGED
+
+Changes (Codex):
+- Introduce `const log = window.getLogger('notify')` y reemplaza `console.error(...)` en rutas de fallback por `log.warn(...)` (recuperable) y `log.error(...)` (fallback failed).
+  - Gain: niveles alineados a recuperabilidad; mensajes más consistentes con policy.
+  - Cost: si el log level está en `error`, los `warn` se suprimen (degradación silenciosa solo bajo configuración).
+  - Validation: buscar strings tipo `failed; falling back` y verificar que las rutas siguen intentando `notifyMain(...)` igual que antes.
+- Agrega `log.warnOnce('notify.resolveText.i18n.missing', ...)` cuando falta `RendererI18n.msgRenderer`.
+  - Gain: elimina fallback silencioso; dedupe evita spam.
+  - Cost: puede emitir 1 warning si Notify se usa antes de init i18n.
+  - Validation: grep de key `notify.resolveText.i18n.missing`.
+- Agrega `log.errorOnce('notify.toastEditorText.notifyMain.missing', ...)` cuando no existe `notifyMain` para fallback en `toastEditorText`.
+  - Gain: señal deduplicada y accionable ante misconfig persistente; conserva el flujo best-effort.
+  - Cost: ocurrencias posteriores suprimidas (por diseño once).
+  - Validation: grep de key `notify.toastEditorText.notifyMain.missing`.
+
+Reviewer assessment:
+- PASS (L4): cambios limitados a logging + soporte mínimo; keys estables; niveles coherentes; no introduce IPC.
+- Nota/riesgo controlado: `window.getLogger` debe existir antes de cargar `notify.js` (orden de scripts debe garantizarlo).
+
+Reviewer gate: PASS

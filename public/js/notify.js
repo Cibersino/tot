@@ -2,10 +2,16 @@
 'use strict';
 
 (() => {
+  const log = window.getLogger('notify');
+
   function resolveText(key) {
     const { RendererI18n } = window || {};
     // If it fails, we return the key itself. No fallback.
     if (!RendererI18n || typeof RendererI18n.msgRenderer !== 'function') {
+      log.warnOnce(
+        'notify.resolveText.i18n.missing',
+        'RendererI18n.msgRenderer missing; using key fallback.'
+      );
       return key;
     }
     const txt = RendererI18n.msgRenderer(key, {}, key);
@@ -114,11 +120,11 @@
     try {
       toastText(msg, { containerId: 'totMainToastContainer', position: 'top-right', type, duration });
     } catch (err) {
-      console.error('[notify] toastMain failed:', err);
+      log.warn('toastMain failed; falling back to notifyMain:', err);
       try {
         notifyMain(key);
       } catch (fallbackErr) {
-        console.error('[notify] toastMain fallback failed:', fallbackErr);
+        log.error('toastMain fallback failed:', fallbackErr);
       }
     }
   }
@@ -127,15 +133,18 @@
     try {
       toastText(text, { containerId: 'totEditorToastContainer', position: 'top-right', type, duration });
     } catch (err) {
-      console.error('[notify] toastEditorText failed:', err);
+      log.warn('toastEditorText failed; falling back to notifyMain:', err);
       try {
         if (typeof notifyMain === 'function') {
           notifyMain(text);
         } else {
-          console.error('[notify] toastEditorText fallback unavailable: notifyMain missing.');
+          log.errorOnce(
+            'notify.toastEditorText.notifyMain.missing',
+            'toastEditorText fallback unavailable: notifyMain missing; notice dropped.'
+          );
         }
       } catch (fallbackErr) {
-        console.error('[notify] toastEditorText fallback failed:', fallbackErr);
+        log.error('toastEditorText fallback failed:', fallbackErr);
       }
     }
   }
@@ -145,11 +154,11 @@
     try {
       toastEditorText(msg, { type, duration });
     } catch (err) {
-      console.error('[notify] notifyEditor failed:', err);
+      log.warn('notifyEditor failed; falling back to notifyMain:', err);
       try {
         notifyMain(key);
       } catch (fallbackErr) {
-        console.error('[notify] notifyEditor fallback failed:', fallbackErr);
+        log.error('notifyEditor fallback failed:', fallbackErr);
       }
     }
   }
