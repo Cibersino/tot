@@ -4209,3 +4209,17 @@ Reviewer assessment: PASS
 - Dedupe removal is consistent with the strict “once-variants ONLY when high-frequency repeatable” interpretation used for this file.
 
 Reviewer gate: PASS
+
+#### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
+
+Decision: CHANGED
+
+- Added a concise ASCII-only "Overview" block at top with 3–7 responsibility bullets (new-reader oriented).
+- Added visible section dividers aligned to the file’s real blocks (Logger/shared state, Public API helpers, handler/registration, Bootstrapping, Exports).
+- Replaced/trimmed redundant inline comments in favor of intent/constraints (unsubscribe semantics, teardown purpose).
+- Clarified `_internal` as debug-only exposure (constraint note to reduce misuse).
+- Added an explicit end-of-file marker: "End of public/js/menu_actions.js".
+
+No functional changes; comments-only.
+
+Reviewer gate: PASS
