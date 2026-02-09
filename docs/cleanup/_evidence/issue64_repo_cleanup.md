@@ -4633,3 +4633,79 @@ Reviewer assessment:
 - PASS (L6): NO CHANGE is justified; no evidence of leftover drift after L1–L5, and logging usage remains consistent with the logger API and policy.
 
 Reviewer gate: PASS
+`
+According to a document from **2026-02-09**, el siguiente bloque es el **Checklist L7** para agregar en `docs/cleanup/_evidence/issue64_repo_cleanup.md`, **dentro de la sección** `### public/js/notify.js`, **inmediatamente después de** `Reviewer gate: PASS` de L6. 
+
+No corresponde actualizar `docs/tree_folders_files.md` solo por L7 (no hay info nueva de estructura/archivos). 
+
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; open DevTools Console to observe renderer logs.
+
+* Run in **Main window** first. Then repeat in **Editor window** (separate renderer context).
+
+* [x] **(1) Startup sanity: no uncaught errors; logger + Notify surface present**
+  * **Action:** Launch the app and wait for the main window to fully render.
+  * **Expected result:** No uncaught exceptions; UI usable; `typeof window.getLogger === "function"`; `window.Notify` is present.
+  * **Evidence:** module reads `const log = window.getLogger('notify')` and attaches `window.Notify = { ... }`.
+
+* [x] **(2) Surface check: expected methods exist**
+  * **Action (DevTools):**
+    * `typeof window.Notify?.notifyMain`
+    * `typeof window.Notify?.toastMain`
+    * `typeof window.Notify?.toastEditorText`
+    * `typeof window.Notify?.notifyEditor`
+  * **Expected result:** All are `"function"`.
+  * **Evidence:** `window.Notify = { notifyMain, notifyEditor, toastMain, toastEditorText }`.
+
+* [x] **(3) Main toast path works (DOM toast)**
+  * **Action (DevTools, main window):** `Notify.toastMain('SMOKE:toastMain')`
+  * **Expected result:** A toast appears top-right and disappears after ~9s; container exists:
+    * `document.getElementById('totMainToastContainer')` is non-null after the call.
+  * **Evidence:** `toastMain(... { containerId: 'totMainToastContainer', ... duration = 9000 })`.
+
+* [x] **(4) Main alert path works (blocking)**
+  * **Action (DevTools, main window):** `Notify.notifyMain('SMOKE:notifyMain')`
+  * **Expected result:** A blocking `alert(...)` appears with either translated text or the key itself.
+  * **Evidence:** `notifyMain -> alert(resolveText(key))`.
+
+* [x] **(5) i18n fallback warning is visible and deduped (warnOnce)**
+  * **Action (DevTools, main window):**
+    1. `const saved = window.RendererI18n; window.RendererI18n = null;`
+    2. `Notify.toastMain('SMOKE:i18nMissing')`
+    3. Repeat once: `Notify.toastMain('SMOKE:i18nMissing2')`
+    4. Restore: `window.RendererI18n = saved;`
+  * **Expected result:**
+    * First call emits a **single** warning (deduped by key) about missing `RendererI18n.msgRenderer`, and the toast still shows using key fallback.
+    * Second call does **not** repeat the warnOnce output.
+  * **Evidence:** `log.warnOnce('notify.resolveText.i18n.missing', ...)` + `return key;` on missing `msgRenderer`.
+
+* [x] **(6) Editor toast path works (text toast)**
+  * **Action:** Open the **Editor** window, open its DevTools Console, run:
+    * `Notify.toastEditorText('SMOKE:editorToast')`
+  * **Expected result:** A toast appears top-right and disappears after ~4.5s; container exists:
+    * `document.getElementById('totEditorToastContainer')` is non-null after the call.
+  * **Evidence:** `toastEditorText(... { containerId: 'totEditorToastContainer', ... duration = 4500 })`.
+
+* [x] **(7) Editor key-based notify path works**
+  * **Action (DevTools, editor window):** `Notify.notifyEditor('SMOKE:notifyEditor')`
+  * **Expected result:** A toast appears (translated or key fallback). No uncaught exceptions.
+  * **Evidence:** `notifyEditor -> resolveText(key) -> toastEditorText(msg, ...)` with fallback to `notifyMain` on errors.
+
+* [x] **(8) Log sanity: no spam on healthy paths**
+  * **Action:** Repeat (3), (6), (7) several times.
+  * **Expected result:** No continuous/repeating warnings/errors on healthy paths; only the intentional warnOnce in (5) when i18n is forced missing.
+
+---
+
+### public/js/info_modal_links.js
+
+Date: `2026-02-09`
+Last commit: `b0aed051f81ed786831f27449e3ad2f943f7ce42`
+
+(TODO)
