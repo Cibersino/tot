@@ -4,16 +4,16 @@
 (function () {
   const log = window.getLogger('info-modal-links');
 
+  const escapeSelector = (value) => {
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(value);
+    return String(value).replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
+  };
+
   function bindInfoModalLinks(container, { electronAPI } = {}) {
     if (!container || container.dataset.externalLinksBound === '1') return;
     container.dataset.externalLinksBound = '1';
 
     const api = electronAPI || window.electronAPI;
-
-    const escapeSelector = (value) => {
-      if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(value);
-      return String(value).replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
-    };
 
     container.addEventListener('click', (ev) => {
       try {
