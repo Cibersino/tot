@@ -1,15 +1,35 @@
 // public/js/i18n.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Renderer i18n helper for UI bundles.
+// Responsibilities:
+// - Normalize language tags and derive base tags.
+// - Load renderer.json bundles with a fallback chain.
+// - Merge default bundle with optional overlay data.
+// - Resolve translation keys and parameterized messages.
+// - Expose the RendererI18n API on window.
+
 (() => {
+  // =============================================================================
+  // Logger / constants
+  // =============================================================================
   const log = window.getLogger('i18n');
   const { AppConstants } = window;
   const { DEFAULT_LANG } = AppConstants;
 
+  // =============================================================================
+  // Shared state
+  // =============================================================================
   let rendererTranslations = null;
   let rendererTranslationsLang = null;
   let rendererDefaultTranslations = null;
 
+  // =============================================================================
+  // Helpers (pure utilities)
+  // =============================================================================
   const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
   const getLangBase = (lang) => {
     const tag = normalizeLangTag(lang);
@@ -47,6 +67,9 @@
     return cur;
   };
 
+  // =============================================================================
+  // Bundle loading (renderer.json)
+  // =============================================================================
   async function loadBundle(langCode, requested, required) {
     const targetBase = getLangBase(langCode) || langCode;
     const paths = [];
@@ -157,6 +180,9 @@
     return rendererTranslations;
   }
 
+  // =============================================================================
+  // Translation helpers
+  // =============================================================================
   function tRenderer(path, fallback) {
     if (!rendererTranslations) return fallback;
     const value = getPath(rendererTranslations, path);
@@ -178,6 +204,9 @@
     return str;
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.RendererI18n = {
     loadRendererTranslations,
     tRenderer,
@@ -186,3 +215,7 @@
     getLangBase
   };
 })();
+
+// =============================================================================
+// End of public/js/i18n.js
+// =============================================================================

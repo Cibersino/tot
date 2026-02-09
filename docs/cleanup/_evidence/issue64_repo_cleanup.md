@@ -4356,3 +4356,21 @@ Validation (manual/grep):
 - Grep: `i18n.renderer.bundle.` in `public/js/i18n.js`.
 - Force empty/invalid renderer.json for a lang and confirm warnOnce triggers once per `{lang,variant}` bucket.
 - Call `tRenderer` with multiple missing keys and confirm each occurrence logs a warn (no dedupe).
+
+#### L5 — Comments (Codex)
+
+Decision: CHANGED
+Reviewer gate: PASS
+
+Accepted changes (comments-only; per diff):
+- Added an "Overview" block (responsibilities) for new contributors.
+- Added section dividers matching the file’s real blocks:
+  - Logger / constants
+  - Shared state
+  - Helpers (pure utilities)
+  - Bundle loading (renderer.json)
+  - Translation helpers
+  - Exports / module surface
+- Added an explicit EOF marker: "End of public/js/i18n.js".
+
+No functional changes; comments-only.
