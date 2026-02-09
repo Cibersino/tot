@@ -4299,3 +4299,14 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no fix proposals; no invented IPC).
 - Note: linear-break anchors are weak (`const paths = [];` is not very locating); acceptable for L0 but could be sharper.
+
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision (Codex): CHANGED  
+Reviewer gate: PASS (after manual revert of unintended `RegExp` edit; structural-only diff accepted)
+
+Accepted changes (verified in diff):
+- Hoisted constants closer to the top: `AppConstants` / `DEFAULT_LANG` moved above mutable module state.
+- Reordered loader function declarations to read low-level → high-level: `loadBundle` now appears before `loadOverlay` and `loadRendererTranslations`.
+- No IPC surface changes; no public API shape changes; IIFE + `window.RendererI18n` attachment preserved.
+- No behavior/contract/timing changes detected in the remaining diff (pure reordering).

@@ -3,13 +3,12 @@
 
 (() => {
   const log = window.getLogger('i18n');
+  const { AppConstants } = window;
+  const { DEFAULT_LANG } = AppConstants;
 
   let rendererTranslations = null;
   let rendererTranslationsLang = null;
   let rendererDefaultTranslations = null;
-
-  const { AppConstants } = window;
-  const { DEFAULT_LANG } = AppConstants;
 
   const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
   const getLangBase = (lang) => {
@@ -47,61 +46,6 @@
     }
     return cur;
   };
-
-  async function loadRendererTranslations(lang) {
-    const requested = normalizeLangTag(lang);
-    if (!requested) {
-      log.warnOnce(
-        'i18n.loadRendererTranslations.emptyLang',
-        'Invalid language tag; using default bundle only.'
-      );
-    }
-
-    const selected = requested || DEFAULT_LANG;
-    if (rendererTranslations && rendererTranslationsLang === selected) return rendererTranslations;
-
-    if (!rendererDefaultTranslations) {
-      const defaults = await loadBundle(DEFAULT_LANG, DEFAULT_LANG, true);
-      if (!defaults) {
-        log.errorOnce(
-          `i18n.loadRendererTranslations.defaultMissing:${DEFAULT_LANG}`,
-          'Default renderer.json missing or invalid (using empty defaults):',
-          DEFAULT_LANG
-        );
-      }
-      rendererDefaultTranslations = defaults || {};
-    }
-
-    let overlay = null;
-    if (selected && selected !== DEFAULT_LANG) {
-      overlay = await loadOverlay(selected, getLangBase(selected));
-      if (!overlay) {
-        log.warnOnce(
-          `i18n.loadRendererTranslations.overlayMissing:${selected}`,
-          'No overlay renderer.json found (using default only):',
-          { selected }
-        );
-      }
-    }
-
-    rendererTranslations = deepMerge(rendererDefaultTranslations || {}, overlay || {});
-    rendererTranslationsLang = selected;
-    return rendererTranslations;
-  }
-
-  async function loadOverlay(requested, base) {
-    const candidates = [];
-    if (requested) candidates.push(requested);
-    if (base && base !== requested) candidates.push(base);
-
-    for (const target of candidates) {
-      if (target === DEFAULT_LANG) continue;
-      const data = await loadBundle(target, requested, false);
-      if (data) return data;
-    }
-
-    return null;
-  }
 
   async function loadBundle(langCode, requested, required) {
     const targetBase = getLangBase(langCode) || langCode;
@@ -154,6 +98,61 @@
     }
 
     return null;
+  }
+
+  async function loadOverlay(requested, base) {
+    const candidates = [];
+    if (requested) candidates.push(requested);
+    if (base && base !== requested) candidates.push(base);
+
+    for (const target of candidates) {
+      if (target === DEFAULT_LANG) continue;
+      const data = await loadBundle(target, requested, false);
+      if (data) return data;
+    }
+
+    return null;
+  }
+
+  async function loadRendererTranslations(lang) {
+    const requested = normalizeLangTag(lang);
+    if (!requested) {
+      log.warnOnce(
+        'i18n.loadRendererTranslations.emptyLang',
+        'Invalid language tag; using default bundle only.'
+      );
+    }
+
+    const selected = requested || DEFAULT_LANG;
+    if (rendererTranslations && rendererTranslationsLang === selected) return rendererTranslations;
+
+    if (!rendererDefaultTranslations) {
+      const defaults = await loadBundle(DEFAULT_LANG, DEFAULT_LANG, true);
+      if (!defaults) {
+        log.errorOnce(
+          `i18n.loadRendererTranslations.defaultMissing:${DEFAULT_LANG}`,
+          'Default renderer.json missing or invalid (using empty defaults):',
+          DEFAULT_LANG
+        );
+      }
+      rendererDefaultTranslations = defaults || {};
+    }
+
+    let overlay = null;
+    if (selected && selected !== DEFAULT_LANG) {
+      overlay = await loadOverlay(selected, getLangBase(selected));
+      if (!overlay) {
+        log.warnOnce(
+          `i18n.loadRendererTranslations.overlayMissing:${selected}`,
+          'No overlay renderer.json found (using default only):',
+          { selected }
+        );
+      }
+    }
+
+    rendererTranslations = deepMerge(rendererDefaultTranslations || {}, overlay || {});
+    rendererTranslationsLang = selected;
+    return rendererTranslations;
   }
 
   function tRenderer(path, fallback) {
