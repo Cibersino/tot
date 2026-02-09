@@ -520,3 +520,162 @@ En `docs/cleanup/_evidence/issue64_repo_cleanup.md`, bajo `### L7`, registrar:
 * Solo si falla un paso del Nivel 7: triage guiado por evidencia para aislar causa raíz y proponer la siguiente acción (sin modificar código en este nivel).
 
 ---
+
+De acuerdo: **auditar todos los preloads con un mismo marco** tiene sentido, siempre que el marco esté diseñado para **preloads** (frontera de contrato + sandbox + IPC), no para “módulos renderer normales”.
+
+A continuación una **metodología única** para aplicar **a cada preload** (`preload.js`, `preset_preload.js`, `editor_preload.js`, `flotante_preload.js`, `language_preload.js`) usando los mismos niveles L0–L7, pero con checklist preload-centrado.
+
+---
+
+## Metodología uniforme para auditar preloads (L0–L7)
+
+### Regla base
+
+En preloads, la “superficie observable” es principalmente:
+
+1. **`contextBridge.exposeInMainWorld(name, shape)`** (API pública del renderer).
+2. **IPC** (`ipcRenderer.invoke/send/on/removeListener`).
+3. **Semántica de listeners**: si devuelve unsubscribe, si aísla errores del callback, si hay replay/buffer, y su timing.
+
+Todo cambio que altere **keys expuestas**, **semántica de listeners**, o **canales/payloads** es, en la práctica, **cambio de contrato** (Level 3).
+
+---
+
+## L0 — Minimal diagnosis (preload variant, pero mismo output L0)
+
+Además de tu L0 estándar, exigir explícitamente 3 inventarios (mecánicos):
+
+**A) Surface inventory (contextBridge)**
+
+* `exposeInMainWorld('<NAME>', { ... })`:
+  * `<NAME>` literal.
+  * Lista de keys expuestas (ordenadas).
+  * Para cada key: tipo (`invoke wrapper`, `send wrapper`, `on-listener`, `pure helper`).
+  * Si es listener: ¿devuelve unsubscribe? ¿valida cb? ¿try/catch?
+
+**B) IPC inventory (canales)**
+
+* `ipcRenderer.invoke('<ch>', ...)` (canal + shape args + return shape si inferible).
+* `ipcRenderer.send('<ch>', ...)` (canal + shape args).
+* `ipcRenderer.on('<ch>', ...)` (canal + payload shape).
+* *Registrar también* `removeListener` asociado si existe (para ver contract “unsubscribe”).
+
+**C) Invariants/fallbacks**
+Solo si están **anclados** a checks visibles:
+
+* guard de cb no-función, replay/buffer, try/catch, etc.
+
+**PASS L0** si: no inventa canales ni consumidores, y ancla invariantes.
+
+---
+
+## L1 — Structural refactor (solo legibilidad real)
+
+Objetivo: que todos los preloads sigan un orden **uniforme**, sin alterar contrato/timing:
+
+Orden recomendado (si aplica):
+
+1. header + `'use strict'`
+2. imports `electron`
+3. module state (si existe, p. ej. buffer/replay)
+4. helpers (pure)
+5. API object literal
+6. `contextBridge.exposeInMainWorld(...)`
+
+**Regla NO FORCE**: si el archivo ya es corto/lineal, **NO CHANGE**.
+
+**PASS L1** si: no cambia keys expuestas ni orden relativo de listeners que afecte replay/timing.
+
+---
+
+## L2 — Clarity/robustness (controlado)
+
+Checklist uniforme (no todo aplica; si no aplica, justificar NO CHANGE):
+
+1. **Callbacks**
+
+* Validar `cb` es función en cada `onX(cb)`.
+* Aislar errores del callback con `try/catch` (para no romper el listener chain).
+* Decidir por archivo si el contrato incluye unsubscribe; si ya existe, mantenerlo; si no existe, *no introducirlo salvo evidencia* (eso sería L3).
+
+2. **Listener lifecycle**
+
+* Si hay unsubscribe: debe ser idempotente / safe (try/catch alrededor de `removeListener`).
+* Si hay replay/buffer: confirmar que no ejecuta el callback sincrónicamente durante registro (ej. `setTimeout(...,0)` como semántica de evento).
+
+3. **Normalización de inputs**
+
+* Si el preload normaliza inputs (ej. language tag), documentar el invariant.
+
+**PASS L2** si: robustez mejora sin tocar contrato observable ni generar logs ruidosos.
+
+---
+
+## L3 — Contract/architecture changes (excepcional)
+
+Entrada **solo** con evidencia reproducible:
+* mismatch entre consumer y preload,
+* múltiples consumers con expectativas distintas,
+* bug reproducible (timing, replay, unsubscribe faltante causando leak, etc.).
+
+**Obligatorio**: Evidence + Risk + Validation.
+Si no hay evidencia fuerte: **NO CHANGE (no Level 3 justified)**.
+
+---
+
+## L4 — Logs (preload policy, uniforme)
+
+En preloads, por regla del repo: **console-based**, sin dependencias nuevas.
+
+Checklist uniforme:
+
+1. No introducir `window.getLogger` ni imports nuevos.
+2. Logs solo en:
+   * cb inválido,
+   * excepción en callback,
+   * falla de `removeListener`,
+   * fallback/replay path que oculte degradación real.
+3. Dedupe:
+   * solo si es *repetible y de alto volumen* (p. ej. “cb no-función” spameable).
+   * si se dedupea, usar un mecanismo local estable (por ejemplo `const once = new Set()` + claves cortas), sin keys dinámicas.
+
+**PASS L4** si: no añade ruido en paths sanos y no deja fallbacks silenciosos relevantes.
+
+---
+
+## L5 — Comments (uniforme estilo main.js)
+
+Para cada preload:
+
+* Overview (3–7 bullets) que incluya:
+  * nombre expuesto (`electronAPI`, `presetAPI`, etc.),
+  * qué ventanas/consumidores típicos (si está visible en repo),
+  * “listener semantics” (unsubscribe, replay).
+
+---
+
+## L6 — Final review (coherencia)
+
+Checklist uniforme:
+
+* No hay keys expuestas “muertas” (no usadas) **solo si se puede demostrar sin riesgo**; si no, NO CHANGE.
+* Canales IPC consistentes (string literals, payload shapes).
+* No hay “signature drift” en logs (si existe dedupe local, no mezclar keys dinámicas).
+* Comentarios no mienten sobre semántica (replay/unsubscribe).
+
+---
+
+## L7 — Smoke (uniforme, pero con pasos parametrizados)
+
+Para *cada preload*:
+
+1. Abrir la ventana correspondiente (main/editor/flotante/language/preset modal).
+2. En DevTools Console:
+   * `typeof window.<API_NAME>` debe ser `"object"`.
+   * `Object.keys(window.<API_NAME>)` coincide con el inventario L0.
+3. Ejecutar 1 “canary” por tipo:
+   * un `invoke` barato (ej. `getSettings` si existe en ese preload),
+   * registrar un listener y, si devuelve unsubscribe, ejecutarlo sin throw.
+
+Registrar en evidencia **qué ventana**, **qué comando**, **qué resultado**.
+
