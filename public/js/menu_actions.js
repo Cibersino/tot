@@ -67,10 +67,7 @@
             } else {
                 // Not all preload implementations return unsubscribe. We accept that.
                 _unsubscribeMenuClick = null;
-                log.warnOnce(
-                    'menu_actions:onMenuClick:no_unsubscribe',
-                    'menuActions: onMenuClick did not return unsubscribe; listener cannot be removed'
-                );
+                log.warn('menuActions: onMenuClick did not return unsubscribe; listener cannot be removed');
             }
             return true;
         } catch (err) {
@@ -81,8 +78,13 @@
 
     // Initial registration with a DOM-ready retry
     if (!setupListener()) {
+        log.warn('BOOTSTRAP: menuActions: onMenuClick not available yet; retrying at DOMContentLoaded');
         // Try again when the DOM is ready (and other APIs have been injected)
-        document.addEventListener('DOMContentLoaded', () => { setupListener(); });
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!setupListener()) {
+                log.warn('menuActions: onMenuClick unavailable after DOMContentLoaded; menu clicks will not be handled');
+            }
+        });
     }
 
     // Minimum globally available public API
@@ -96,16 +98,13 @@
             if (typeof _unsubscribeMenuClick === 'function') {
                 try {
                     _unsubscribeMenuClick();
-                    log.debug('menuActions: listener unscribed correctly');
+                    log.debug('menuActions: listener unsubscribed correctly');
                 } catch (err) {
                     log.error('menuActions: error unsubscribing listener:', err);
                 }
                 _unsubscribeMenuClick = null;
             } else {
-                log.warnOnce(
-                    'menu_actions:stopListening:no_unsubscribe',
-                    'menuActions: stopListening cannot unsubscribe; no unsubscribe handle available'
-                );
+                log.warn('menuActions: stopListening cannot unsubscribe; no unsubscribe handle available');
             }
         },
 
