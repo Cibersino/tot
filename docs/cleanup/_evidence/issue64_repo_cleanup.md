@@ -4310,3 +4310,15 @@ Accepted changes (verified in diff):
 - Reordered loader function declarations to read low-level → high-level: `loadBundle` now appears before `loadOverlay` and `loadRendererTranslations`.
 - No IPC surface changes; no public API shape changes; IIFE + `window.RendererI18n` attachment preserved.
 - No behavior/contract/timing changes detected in the remaining diff (pure reordering).
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision (Codex): NO CHANGE  
+Reviewer gate: PASS
+
+Rationale (Codex):
+- File already in a clean, linear layout; further reordering would be cosmetic.
+- `loadBundle` warning/error paths are coupled to fallback behavior; consolidation would add indirection.
+- `msgRenderer` regex replacement behavior is observable; “robust” changes would alter semantics.
+- Logging is already deduped (`warnOnce`/`errorOnce`); more explicit edge cases risk extra logs/timing changes.
+- No IPC or startup sequencing exists here; no safe L2 rework with material payoff.
