@@ -4482,3 +4482,51 @@ Observable contract and timing preserved.
 Date: `2026-02-09`
 Last commit: `fd615a53318bf259a3094233be4261e7f88d2ebd`
 
+#### L0 — Minimal diagnosis (Codex, verified)
+
+##### 0.1 Reading map
+
+Block order (actual):
+1. Header + strict + IIFE (`// public/js/notify.js`, `'use strict';`, `(() => { ... })();`)
+2. Helpers:
+   - `resolveText`
+   - `notifyMain`
+   - `toastText`
+   - `ensureToastContainer`
+   - `applyToastPosition`
+   - `toastMain`
+   - `toastEditorText`
+   - `notifyEditor`
+3. Public attachment:
+   - `window.Notify = { notifyMain, notifyEditor, toastMain, toastEditorText }`
+
+Where linear reading breaks (jumps, mixed responsibilities, duplication, nesting):
+- `toastText`: mezcla guard de DOM, creación DOM, styling, animación, timing y removal. Micro-quote: `if (!document || !document.body)`.
+- `ensureToastContainer`: crea DOM + aplica estilos, luego delega posicionamiento. Micro-quote: `container = document.createElement('div');`.
+- `toastMain`: try/catch anidado con fallback a `notifyMain`. Micro-quote: `toastText(msg, { containerId:`.
+- `toastEditorText`: try/catch anidado con fallback condicional a `notifyMain`. Micro-quote: `if (typeof notifyMain === 'function')`.
+- `notifyEditor`: try/catch anidado con fallback a `notifyMain`. Micro-quote: `console.error('[notify] notifyEditor failed:'`.
+
+##### 0.2 Contract map
+
+Module exposure (exports / public entrypoints / side effects):
+- Side effect: adjunta `window.Notify` con 4 entrypoints: `notifyMain`, `notifyEditor`, `toastMain`, `toastEditorText`.
+- Side effects de uso: DOM mutation (containers/toasts), `alert`, `console.error`, `setTimeout` / `requestAnimationFrame`.
+
+Invariants suggested (expected inputs, tolerated errors, fallbacks):
+- `resolveText`: requiere `window.RendererI18n.msgRenderer` como función; si falta, retorna la key. Anchor: `typeof RendererI18n.msgRenderer !== 'function'`.
+- `toastText`: requiere `document` y `document.body`; si falta, hace throw. Anchor: `toastText unavailable: document/body not ready`.
+- `toastText`: fuerza texto a string. Anchor: `String(text)`.
+- Duración: sanitiza a número finito ≥ 0; default 4500. Anchor: `Number.isFinite(duration) ? Math.max(0, duration) : 4500`.
+- Fallbacks:
+  - `toastMain`: on error → `notifyMain(key)`.
+  - `toastEditorText`: on error → `notifyMain(text)` si existe; si no, log de fallback ausente.
+  - `notifyEditor`: on error → `notifyMain(key)`.
+
+IPC contract:
+- No IPC usage in this file (no `ipcMain.*`, `ipcRenderer.*`, ni `webContents.send`).
+- Delegated registration: none.
+
+Reviewer gate:
+- PASS (Level 0: diagnosis-only; anchors presentes; sin IPC inventado).
+
