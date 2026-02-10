@@ -123,7 +123,7 @@ tot-readingmeter/
 - `electron/main.js` — Punto de entrada del proceso principal: ciclo de vida de la app, creación de ventanas, wiring de IPC, orquestación general.
 - `electron/preload.js` — Preload de la ventana principal: expone la API IPC segura hacia `public/renderer.js`.
 - `electron/editor_preload.js` — Preload del editor manual: expone IPC específico del editor hacia `public/editor.js`.
-- `electron/preset_preload.js` — Preload del modal de presets: expone IPC hacia `public/preset_modal.js`.
+- `electron/preset_preload.js` — Preload del modal de presets: expone `window.presetAPI` y maneja `preset-init` (buffer/replay) y `settings-updated` hacia `public/preset_modal.js`.
 - `electron/language_preload.js` — Preload de la ventana de idioma (primer arranque / selección).
 - `electron/flotante_preload.js` — Preload de la ventana flotante del cronómetro.
 

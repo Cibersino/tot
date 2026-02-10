@@ -5545,7 +5545,107 @@ Resultado: PASS
 Date: `2026-02-09`
 Last commit: `2d6f8a853009f51fe2ee0041e01f5fab26b69a2d`
 
-(TODO)
+#### LP0 — Diagnosis + Inventarios (Codex, verified)
+
+Codex gate: PASS (LP0)
+- Diagnosis only; no changes, no recommendations.
+- No invented IPC channels/consumers beyond `electron/preset_preload.js`.
+- Inventories complete (surface keys + IPC calls + listener semantics).
+- Anchors/micro-quotes validated against file.
+
+##### 0.1 Reading map (validated)
+
+Block order (actual):
+1) Header comment: `// electron/preset_preload.js`
+2) `'use strict'`
+3) `require('electron')` destructuring: `const { contextBridge, ipcRenderer } = require('electron');`
+4) Module state: `lastInitData`, `initCallbacks`
+5) Always-on listener (buffer + fanout): `ipcRenderer.on('preset-init', (_e, data) => {`
+6) Helper/listener registration: `function onInit(cb) {` (guard → add → async replay → unsubscribe)
+7) `contextBridge.exposeInMainWorld('presetAPI', { ... })`
+
+Linear reading breaks (obstacles; anchors):
+- Always-on init listener + fanout loop — `ipcRenderer.on('preset-init', (_e, data) => {`
+- Async replay branch — `setTimeout(() => {`
+- Surface exposure block — `contextBridge.exposeInMainWorld('presetAPI', {`
+
+##### 0.2 Preload surface contract map (validated)
+
+A) `contextBridge.exposeInMainWorld(...)`
+- Exposed name: `presetAPI`
+- Anchor: `contextBridge.exposeInMainWorld('presetAPI', {`
+
+Keys by category (full inventory; set is contractual):
+- Invoke wrappers:
+  - `createPreset` → invoke `'create-preset'` (arg: `preset`)
+  - `editPreset` → invoke `'edit-preset'` (args: `originalName`, `newPreset` → payload `{ originalName, newPreset }`)
+  - `getSettings` → invoke `'get-settings'` (no args)
+
+- On-listeners (listener-like keys):
+  - `onInit` — returns unsubscribe (removes from local Set; isolates)
+  - `onSettingsChanged` — returns unsubscribe (removeListener; isolates)
+
+Replay/buffer behavior:
+- Buffer state: `let lastInitData = null;` updated on `'preset-init'`.
+- Fanout to all registered callbacks on `'preset-init'`.
+- Replay on late registration: `if (lastInitData !== null) { setTimeout(() => { ... cb(lastInitData); }, 0); }`
+- Replay cancellation guard: `if (!initCallbacks.has(cb)) return;`
+
+B) Direct global exports:
+- None (no `window.X = ...` assignments in this file).
+
+##### 0.3 IPC contract inventory (mechanical; validated)
+
+ipcRenderer.invoke:
+- `'create-preset'` args: `preset` → return: unspecified (opaque to preload)
+- `'edit-preset'` args: `{ originalName, newPreset }` → return: unspecified
+- `'get-settings'` args: none → return: unspecified
+
+ipcRenderer.on:
+- `'preset-init'` listener args: `(_e, data)` → forwards `cb(data)` to each registered callback
+- `'settings-updated'` listener args: `(_e, settings)` → forwards `cb(settings)` (wrapped)
+
+ipcRenderer.removeListener:
+- `'settings-updated'` remove: `('settings-updated', listener)` (only via unsubscribe)
+
+ipcMain / webContents:
+- None in this file.
+
+##### 0.4 Invariants / fallbacks (anchored; validated)
+
+Listener table (one row per listener-like key; no blanket claims):
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| `onInit` | `preset-init` | `cb(data);` | ISOLATES | Y | `initCallbacks.delete(cb);` | ISOLATES |
+| `onSettingsChanged` | `settings-updated` | `cb(settings);` | ISOLATES | Y | `ipcRenderer.removeListener('settings-updated', listener);` | ISOLATES |
+
+cb-error log anchors (only where present):
+- `onInit` (live): `console.error('preset-init callback error:', err);`
+- `onInit` (replay): `console.error('preset-init replay callback error:', err);`
+- `onSettingsChanged`: `console.error('settings callback error:', err);`
+
+unsub-error log anchors (only where present):
+- `onInit`: `console.error('preset-init unsubscribe error:', err);`
+- `onSettingsChanged`: `console.error('removeListener error (settings-updated):', err);`
+
+Other non-callback invariants/fallbacks (anchored):
+- Non-function cb guard + noop return: `if (typeof cb !== 'function') { ... return () => {}; }`
+- Init replay guard: `if (lastInitData !== null) {`
+- Replay cancellation: `if (!initCallbacks.has(cb)) return;`
+
+##### 0.5 Key-order dependency scan (repo; validated)
+
+API_NAME: `presetAPI`
+
+Enumeration families:
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Key order: NOT depended upon (safe to reorder)
 
 ---
 
