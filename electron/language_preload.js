@@ -3,8 +3,7 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-
-contextBridge.exposeInMainWorld('languageAPI', {
+const api = {
   setLanguage: async (lang) => {
     const tag = String(lang || '').trim().toLowerCase().replace(/_/g, '-');
     // Persist language via main handler
@@ -14,4 +13,6 @@ contextBridge.exposeInMainWorld('languageAPI', {
     return res;
   },
   getAvailableLanguages: () => ipcRenderer.invoke('get-available-languages'),
-});
+};
+
+contextBridge.exposeInMainWorld('languageAPI', api);
