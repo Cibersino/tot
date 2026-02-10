@@ -58,7 +58,7 @@ const FALLBACK_LANGUAGES = [
 ];
 
 // =============================================================================
-// Helpers (logging + validation)
+// Helpers (guards + validation)
 // =============================================================================
 
 function isPlainObject(x) {
@@ -662,7 +662,6 @@ function installWorkAreaGuard(win, opts = {}) {
       }
     });
 
-    // Keep a no-op handler for symmetry; could host future cleanup.
     win.on('closed', () => { });
     return;
   }
@@ -973,7 +972,7 @@ function setCronoElapsed(ms) {
 }
 
 // =============================================================================
-// IPC (main-owned handlers that directly manipulate windows or crono)
+// IPC (main-owned handlers + config endpoints)
 // =============================================================================
 
 // Language manifest loader for the language selection window.
@@ -1316,12 +1315,8 @@ app.whenReady().then(() => {
     settingsFile: SETTINGS_FILE,
   });
 
-  // =============================================================================
-  // IPC registration (delegated modules)
-  // =============================================================================
-  // main.js owns windows. Feature modules own their IPC contract and internal logic.
-  // We provide window references and callbacks so modules can notify the UI.
-  // Registration happens after app readiness in app.whenReady().
+  // Delegated IPC registration (feature modules).
+  // main.js owns windows; feature modules own their IPC contract and internal logic.
   textState.registerIpc(ipcMain, () => ({
     mainWin,
     editorWin,
