@@ -5468,6 +5468,22 @@ Reviewer gate: PASS (LP2)
 - Evidence gathered (call sites + search terms) and policy table completed.
 - Decision is conservative under Contract Gate (no behavior change without explicit consumer-compatibility proof).
 
+#### LP3 — Logs (Codex)
+
+Decision: NO CHANGE
+
+- Logging ya cumple política de preload:
+  - Console-only.
+  - Solo en error-path (sin logs en healthy/high-frequency paths).
+  - No requiere dedup (sin evidencia de spam; logs existentes solo bajo excepción).
+- Anchors:
+  - cb error-path: `console.error('settings callback error:', err)`
+  - unsubscribe error-path: `console.error('removeListener error (settings-updated):', err)`
+
+Contract/timing: preserved (no changes applied).
+
+Reviewer assessment: PASS (LP3)
+
 ---
 
 ### electron/preset_preload.js
