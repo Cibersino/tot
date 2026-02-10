@@ -124,7 +124,7 @@ tot-readingmeter/
 - `electron/preload.js` — Preload de la ventana principal: expone la API IPC segura hacia `public/renderer.js`.
 - `electron/editor_preload.js` — Preload del editor manual: expone IPC específico del editor hacia `public/editor.js`.
 - `electron/preset_preload.js` — Preload del modal de presets: expone `window.presetAPI` y maneja `preset-init` (buffer/replay) y `settings-updated` hacia `public/preset_modal.js`.
-- `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` (`setLanguage`, `getAvailableLanguages`) para persistir/seleccionar idioma.
+- `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` (`setLanguage`, `getAvailableLanguages`) para persistir/seleccionar idioma; `setLanguage` invoca `set-language` y luego emite `language-selected` para destrabar el startup.
 - `electron/flotante_preload.js` — Preload de la ventana flotante del cronómetro.
 
 **Renderer (UI / ventanas):**
