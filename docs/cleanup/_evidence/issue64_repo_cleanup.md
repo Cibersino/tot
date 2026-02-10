@@ -2791,7 +2791,7 @@ Contract/timing:
 Decision: NO CHANGE (no Level 3 justified)
 
 - Checked `public/preset_modal.js` save handler (`if (mode === 'edit')`) and result handling (`res.ok`, edit observes `res.code === 'CANCELLED'`); no evidence of inconsistent semantics across consumers.
-- Checked `electron/preset_preload.js` bridge: `contextBridge.exposeInMainWorld('presetAPI', { ... })` defines a single, stable surface (`createPreset`, `editPreset`, reliable `onInit`, plus settings hooks).
+- Checked `electron/preset_preload.js` bridge: `contextBridge.exposeInMainWorld('presetAPI', api)` defines a single, stable surface (`createPreset`, `editPreset`, reliable `onInit`, plus settings hooks).`
 - Checked `electron/main.js` preset window init path: `function createPresetWindow(initialData)` and `presetWin.webContents.send('preset-init', initialData || {})`, including re-send when window is already open and on `ready-to-show`.
 - Cross-check: no repo-wide evidence (call sites / consumers) indicating duplicated responsibility or an unstable/ambiguous contract requiring Level 3.
 
@@ -5690,7 +5690,23 @@ Observable contract/timing did not change.
 Reviewer assessment: PASS (LP2)
 - Output followed P2 template (Step 1 inventory + Step 2 decision table) and correctly avoided contract-affecting changes without Contract Gate evidence.
 
-TODO: avanzar a LP3 (Logs).
+#### LP3 — Logs (Codex)
+
+Decision: NO CHANGE
+
+- Logging ya cumple política de preload:
+  - Console-only.
+  - Solo en error-path (sin logs en healthy/high-frequency paths).
+  - No requiere dedup (sin evidencia de spam; logs existentes solo bajo excepción).
+- Anchors:
+  - cb error-path (preset-init): `console.error('preset-init callback error:', err);`
+  - cb error-path (preset-init replay): `console.error('preset-init replay callback error:', err);`
+  - cb error-path (settings): `console.error('settings callback error:', err);`
+  - unsubscribe error-path: `console.error('removeListener error (settings-updated):', err);`
+
+Contract/timing: preserved (no changes applied).
+
+Reviewer assessment: PASS (LP3)
 
 ---
 
