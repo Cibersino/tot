@@ -5871,6 +5871,26 @@ Reviewer assessment: PASS (LP2)
 - Output siguió la plantilla P2 (Step 1 inventario + Step 2 decision table) y mantuvo NO CHANGE sin gatillar Contract Gate.
 - La decisión STREAM/RECURRENT es consistente con la semántica de los canales (`crono-state`, `settings-updated`) y el comentario “Receive status updates…”.
 
+#### LP3 — Logs (Codex)
+
+Decision: NO CHANGE
+
+- Logging ya cumple política de preload:
+  - Console-only.
+  - Solo en error-path (sin logs en healthy/high-frequency paths).
+  - No requiere dedup (sin evidencia de spam; logs existentes solo bajo excepción).
+- Anchors:
+  - cb error-path (onState): `console.error(err)`
+  - cb error-path (onSettingsChanged): `console.error('settings callback error:', err)`
+  - unsubscribe error-path: `console.error('removeListener error (crono-state):', err)`
+  - unsubscribe error-path: `console.error('removeListener error (settings-updated):', err)`
+
+Contract/timing: preserved (no changes applied).
+
+Reviewer assessment: PASS (LP3)
+- P3 permite NO CHANGE si el logging ya cumple: console-only, sin ruido en path sano, sin deps nuevas.
+- Dedupe no se justifica sin evidencia de spam (los logs actuales están condicionados a error).
+
 ---
 
 ### electron/language_preload.js
