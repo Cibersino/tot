@@ -4,7 +4,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 
-contextBridge.exposeInMainWorld('flotanteAPI', {
+const api = {
   // Receive status updates from main (channel is now 'crono-state')
   onState: (cb) => {
     const wrapper = (_e, state) => {
@@ -28,4 +28,6 @@ contextBridge.exposeInMainWorld('flotanteAPI', {
     ipcRenderer.on('settings-updated', listener);
     return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error (settings-updated):', err); } };
   }
-});
+};
+
+contextBridge.exposeInMainWorld('flotanteAPI', api);

@@ -5830,6 +5830,23 @@ Key order: NOT depended upon (safe to reorder)
 Reviewer assessment: PASS (LP0)
 - Output is diagnosis-only, enumerates the entire exposed preload surface + all IPC occurrences, and anchors invariants to visible try/catch fallbacks (no invented channels/consumers).
 
+#### LP1 — Unified pass (estructura + robustez; contract-preserving)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Extraer el objeto inline expuesto a `const api = { ... }` y luego ejecutar `contextBridge.exposeInMainWorld('flotanteAPI', api)`.
+- Gain: La “surface” queda separada y más escaneable (API object explícito + llamada de exposición al final).
+- Cost: 1 constante adicional.
+- Risk: Bajo. No cambia keys expuestas, ni semántica subscribe/unsubscribe, ni strings de canales IPC.
+- Validation: Revisión del archivo confirma:
+  - mismo nombre expuesto: `flotanteAPI`
+  - mismas keys: `onState`, `sendCommand`, `getSettings`, `onSettingsChanged`
+  - mismos literales de canal: `crono-state`, `flotante-command`, `get-settings`, `settings-updated`
+
+Observable contract/timing: unchanged.
+Reviewer assessment: PASS (LP1)
+
 ---
 
 ### electron/language_preload.js
