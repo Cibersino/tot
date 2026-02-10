@@ -33,7 +33,7 @@
         "title": "RISULTATI DELLA CONTATORE",
         "time": "⏱ Tempo stimato di lettura: {h}h {m}m {s}s",
         "words": "Parole: {n}",
-        "chars_no_space": "Chars w/o space: {n}",
+        "chars_no_space": "Caratteri (senza spazi): {n}",
         "chars": "Caratteri: {n}",
         "precise_mode": "Modalità precisa",
         "precise_tooltip": "Basato su Intl.Segmenter"
