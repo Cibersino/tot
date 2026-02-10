@@ -5847,6 +5847,30 @@ Change 1
 Observable contract/timing: unchanged.
 Reviewer assessment: PASS (LP1)
 
+#### LP2 — Callback/listener semantics review (Codex)
+
+Decision: NO CHANGE
+
+Step 1) Listener-like API keys (current behavior; post-LP1)
+- `onState`: `ipcRenderer.on('crono-state')`; try/catch: Y; cb validation: N; returns unsubscribe: Y; removal: `ipcRenderer.removeListener('crono-state', wrapper)` (try/catch).
+- `onSettingsChanged`: `ipcRenderer.on('settings-updated')`; try/catch: Y; cb validation: N; returns unsubscribe: Y; removal: `ipcRenderer.removeListener('settings-updated', listener)` (try/catch).
+
+Step 2) Policy baseline table (decision table)
+
+| API key | Classification (justification) | Target policy (justification) | Unsubscribe | cb validation |
+|---|---|---|---|---|
+| `onState` | STREAM/RECURRENT — “state updates” (`crono-state`) | ISOLATE — stream updates should not crash listener loop (already isolated) | KEEP | KEEP |
+| `onSettingsChanged` | STREAM/RECURRENT — settings updates (`settings-updated`) | ISOLATE — repeated updates should not crash listener loop (already isolated) | KEEP | KEEP |
+
+Step 3) Changes
+- No changes proposed. Current behavior matches policy and does not warrant contract-affecting changes.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP2)
+- Output siguió la plantilla P2 (Step 1 inventario + Step 2 decision table) y mantuvo NO CHANGE sin gatillar Contract Gate.
+- La decisión STREAM/RECURRENT es consistente con la semántica de los canales (`crono-state`, `settings-updated`) y el comentario “Receive status updates…”.
+
 ---
 
 ### electron/language_preload.js
