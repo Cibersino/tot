@@ -5891,6 +5891,47 @@ Reviewer assessment: PASS (LP3)
 - P3 permite NO CHANGE si el logging ya cumple: console-only, sin ruido en path sano, sin deps nuevas.
 - Dedupe no se justifica sin evidencia de spam (los logs actuales están condicionados a error).
 
+#### LP4 — Final review + Smoke (Codex + humano)
+
+##### LP4.A — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const api = { ... }` is used by `contextBridge.exposeInMainWorld('flotanteAPI', api)`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('flotanteAPI', api)`.
+- Listener semantics unchanged: `onState` still returns unsubscribe via `removeListener('crono-state', wrapper)`.
+- IPC channel strings stable: `crono-state`, `flotante-command`, `get-settings`, `settings-updated`.
+- Logging console-only and error-path only: `console.error(err)` and `console.error('settings callback error:', err)`.
+- Comment accurate: `// Receive status updates from main (channel is now 'crono-state')`.
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+
+##### LP4.B — Smoke checklist (humano; test_suite subset)
+
+Resultado: PASS
+
+##### LP4.B-01 Floating window opens + mirrors stopwatch state (test_suite SM-09)
+* [x] Precondición: main con texto no vacío (SM-03). Action: ▶ start stopwatch, esperar ~2–3s, pausar; abrir **FW** (floating window). Expected: flotante muestra el mismo tiempo/estado; sin uncaught exceptions.
+
+##### LP4.B-02 Commands from floating window affect main (test_suite SM-09)
+* [x] Action: desde flotante, usar el control equivalente a start/pause (toggle) y luego reset. Expected: main refleja los cambios (running/paused/reset) y no hay error spam.
+
+##### LP4.B-03 Surface present (DevTools Console; cheap contract probe)
+* [x] Command (flotante window): `typeof window.flotanteAPI`. Expected: `"object"`
+
+##### LP4.B-04 Surface keys sanity (set match; order non-contractual per LP0 scan)
+* [x] Command: `Object.keys(window.flotanteAPI).sort()`. Expected: incluye exactamente: `getSettings`, `onSettingsChanged`, `onState`, `sendCommand`
+
+##### LP4.B-05 Canary invoke + listener subscribe/unsubscribe (no throw)
+* [x] Command: `await window.flotanteAPI.getSettings()`. Expected: resuelve (shape no se valida aquí), sin throw.
+* [x] Command: `const u1 = window.flotanteAPI.onState(() => {}); u1();`. Expected: subscribe+unsubscribe sin throw.
+* [x] Command: `const u2 = window.flotanteAPI.onSettingsChanged(() => {}); u2();`. Expected: subscribe+unsubscribe sin throw.
+
 ---
 
 ### electron/language_preload.js
