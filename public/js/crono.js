@@ -412,6 +412,8 @@
 
     const handleTextChange = async (previousText, nextText) => {
       try {
+        // NOTE: previousText is currently only used for the strict equality guard below.
+        // Callers may pass a non-string sentinel to force policy application without copying text.
         if (previousText === nextText) return;
 
         if (!nextText) {

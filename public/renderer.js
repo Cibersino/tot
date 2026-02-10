@@ -392,6 +392,16 @@ function setCurrentTextAndUpdateUI(text, options = {}) {
   }
 }
 
+function applyTextChangePolicyForModeChange() {
+  if (!cronoController || typeof cronoController.handleTextChange !== 'function') return;
+  try {
+    // Use a non-string sentinel to avoid copying large text while guaranteeing inequality.
+    cronoController.handleTextChange(null, currentText);
+  } catch (err) {
+    log.error('Error applying crono rules for mode change:', err);
+  }
+}
+
 // Listen for stopwatch status from main (authoritative state)
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
@@ -498,7 +508,8 @@ const settingsChangeHandler = async (newSettings) => {
         log.error('Error loading presets after language change:', err);
       }
     }
-    if (settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo) {
+    const modeChanged = !!(settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo);
+    if (modeChanged) {
       modoConteo = settingsCache.modeConteo;
       if (typeof syncToggleFromSettings === 'function') {
         syncToggleFromSettings(settingsCache || {});
@@ -508,6 +519,9 @@ const settingsChangeHandler = async (newSettings) => {
     }
     if (isRendererReady()) {
       updatePreviewAndResults(currentText);
+      if (modeChanged) {
+        applyTextChangePolicyForModeChange();
+      }
     }
   } catch (err) {
     log.error('Error handling settings change:', err);
@@ -666,6 +680,7 @@ function setupToggleModoPreciso() {
 
         // Immediate recount of the current text
         updatePreviewAndResults(currentText);
+        applyTextChangePolicyForModeChange();
 
         // Attempt to persist settings via IPC (if preload/main implemented setModeConteo)
         if (window.electronAPI && typeof window.electronAPI.setModeConteo === 'function') {
