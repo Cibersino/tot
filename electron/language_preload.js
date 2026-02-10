@@ -3,6 +3,7 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
+
 contextBridge.exposeInMainWorld('languageAPI', {
   setLanguage: async (lang) => {
     const tag = String(lang || '').trim().toLowerCase().replace(/_/g, '-');
