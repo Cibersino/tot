@@ -649,24 +649,7 @@ function installWorkAreaGuard(win, opts = {}) {
     if (!snapping) userMoveArmed = true;
   });
 
-  if (process.platform === 'win32') {
-    // moved: emitted once at the end of the movement on Windows.
-    win.on('moved', () => {
-      if (!userMoveArmed || snapping || !isAliveWindow(win)) return;
-      userMoveArmed = false;
-      snapping = true;
-      try {
-        snapWindowFullyIntoWorkArea(win);
-      } finally {
-        setImmediate(() => { snapping = false; });
-      }
-    });
-
-    win.on('closed', () => { });
-    return;
-  }
-
-  // macOS + Linux: approximate "end of move" with a short timer after the last move event.
+  // Debounce "end of move" with a short timer after the last move signal.
   const endMoveMs = typeof opts.endMoveMs === 'number' ? opts.endMoveMs : 80;
 
   let lastMoveAt = 0;
@@ -677,7 +660,7 @@ function installWorkAreaGuard(win, opts = {}) {
     timer = null;
   }
 
-  win.on('move', () => {
+  function noteMoveSignal() {
     if (snapping || !isAliveWindow(win)) return;
 
     // Linux: treat any move event as user-driven (platform behavior varies).
@@ -699,7 +682,10 @@ function installWorkAreaGuard(win, opts = {}) {
         setImmediate(() => { snapping = false; });
       }
     }, endMoveMs);
-  });
+  }
+
+  win.on('move', noteMoveSignal);
+  win.on('moved', noteMoveSignal);
 
   win.on('closed', () => clearTimer());
 }
