@@ -5125,6 +5125,27 @@ Conclusion:
 Reviewer assessment: PASS (LP0)
 - Sufficient for moving to LP1 with contract gate based on the scan result above.
 
+#### LP1 — Structure + controlled robustness + explicit contract gate (Codex)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Introduce helper `subscribeWithUnsub(channel, listener, removeErrorMessage)` that does:
+  - subscribe: `ipcRenderer.on(channel, listener)`
+  - returns unsubscribe: `try { ipcRenderer.removeListener(channel, listener); } catch (err) { console.error(removeErrorMessage, err); }`
+- Gain: Removes repeated subscribe/unsubscribe boilerplate across multiple listener-like API keys while keeping the same IPC channels, callback wrappers, and error strings.
+- Cost: One local helper + slight indirection.
+- Risk: Low. Only plausible regression would be passing a different `removeErrorMessage` literal or removing listeners with a different function reference; diff keeps the same listener variables (`wrapper` / `listener`) and passes the same error-message literals.
+- Validation (manual, post-apply):
+  - Verify exposed API name and keys are unchanged: `contextBridge.exposeInMainWorld('electronAPI', api)` and the `api = { ... }` key set.
+  - Verify channel strings unchanged: `'menu-click'`, `'settings-updated'`, `'crono-state'`, `'flotante-closed'`, `'editor-ready'`, `'startup:ready'`.
+  - Verify callback wrapper try/catch + cb-error log strings remain verbatim (e.g., `console.error('menuAPI callback error:', err);`).
+  - Verify listeners without unsubscribe remain unchanged: `onCurrentTextUpdated`, `onPresetCreated`.
+  - Verify unsubscribe error-message literals passed to helper match prior literals.
+
+Reviewer assessment: PASS (LP1)
+- Structural/robustness change is localized and behavior-preserving; contract/timing remains unchanged (no new async boundaries, no replay/buffer, no key changes).
+
 ---
 
 ### electron/editor_preload.js
