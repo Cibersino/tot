@@ -180,12 +180,20 @@ function registerDevShortcuts() {
     globalShortcut.register('CommandOrControl+R', () => {
       if (!guardMainUserAction('shortcut.reload', 'Reload shortcut ignored (pre-READY).')) return;
       const targetWin = resolveTargetWindow();
+      if (targetWin && targetWin === mainWin) {
+        rendererCoreReady = false;
+        startupReadySent = false;
+      }
       if (targetWin) targetWin.webContents.reload();
     });
 
     globalShortcut.register('CommandOrControl+Shift+R', () => {
       if (!guardMainUserAction('shortcut.forceReload', 'Force reload shortcut ignored (pre-READY).')) return;
       const targetWin = resolveTargetWindow();
+      if (targetWin && targetWin === mainWin) {
+        rendererCoreReady = false;
+        startupReadySent = false;
+      }
       if (targetWin) targetWin.webContents.reloadIgnoringCache();
     });
   } catch (err) {
