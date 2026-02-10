@@ -123,8 +123,8 @@ tot-readingmeter/
 - `electron/main.js` — Punto de entrada del proceso principal: ciclo de vida de la app, creación de ventanas, wiring de IPC, orquestación general.
 - `electron/preload.js` — Preload de la ventana principal: expone la API IPC segura hacia `public/renderer.js`.
 - `electron/editor_preload.js` — Preload del editor manual: expone IPC específico del editor hacia `public/editor.js`.
-- `electron/preset_preload.js` — Preload del modal de presets: expone IPC hacia `public/preset_modal.js`.
-- `electron/language_preload.js` — Preload de la ventana de idioma (primer arranque / selección).
+- `electron/preset_preload.js` — Preload del modal de presets: expone `window.presetAPI` y maneja `preset-init` (buffer/replay) y `settings-updated` hacia `public/preset_modal.js`.
+- `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` (`setLanguage`, `getAvailableLanguages`) para persistir/seleccionar idioma; `setLanguage` invoca `set-language` y luego emite `language-selected` para destrabar el startup.
 - `electron/flotante_preload.js` — Preload de la ventana flotante del cronómetro.
 
 **Renderer (UI / ventanas):**
@@ -155,10 +155,10 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/count.js` — Cálculos de conteo (palabras/caracteres; modo simple/preciso).
 - `public/js/format.js` — Helpers de formateo (tiempo y numeros); expone `window.FormatUtils`.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
-- `public/js/presets.js` — UX del selector y flujos de presets en UI (con IPC hacia main).
+- `public/js/presets.js` — UX del selector y flujos de presets en UI (sin IPC directo; usa `electronAPI.getDefaultPresets` / `electronAPI.setSelectedPreset`).
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
-- `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI.
-* `public/js/info_modal_links.js` — Binding de enlaces dentro de HTML de info modals (ruteo `appdoc:` y externos); logger propio vía `window.getLogger('info-modal-links')`.
+- `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
+* `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 

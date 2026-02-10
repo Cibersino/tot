@@ -17,12 +17,165 @@
 
 ---
 
-## electron/main.js
+### electron/main.js (re-audit post-startup change)
+
+Date: `2026-02-08`
+Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+- Codex complied with Level 0 constraints:
+  - Diagnosis only (no changes, no recommendations).
+  - No invented IPC channels/behaviors beyond what is present in `electron/main.js`.
+
+- 0.1 Reading map (validated against file):
+  - Block order (high level): overview → imports → constants (language picker + fallbacks) → helpers (validation + READY gating) → window refs + readiness flags → menu/dev utilities → window factories (main/editor/preset/lang) → readiness helpers (`maybeAuthorizeStartupReady`, `resolveLanguage`) → delegated IPC comment → flotante placement helpers → `createFlotanteWindow` → crono state/helpers → IPC handlers → app lifecycle.
+  - Linear breaks (anchors/micro-quotes):
+    - `createEditorWindow` — `editorWin.once('ready-to-show'`
+    - `createPresetWindow` — `presetWin.webContents.send('preset-init'`
+    - `createFlotanteWindow` — `installWorkAreaGuard(win`
+    - `app.whenReady().then` — `textState.registerIpc(ipcMain`
+
+- 0.2 Contract map (validated against file):
+  - Exports: none (side-effect entrypoint).
+  - Anchored invariants/fallbacks (examples):
+    - READY/menu gating: `mainReadyState === 'READY' && menuEnabled`
+    - Language fallback: `Settings language is empty; falling back to`
+    - Preset modal sender restriction: `open-preset-modal unauthorized (ignored).`
+    - Crono elapsed guard: `crono-set-elapsed ignored: crono is running`
+
+- IPC contract (mechanical; present in file):
+  - `ipcMain.handle`: `get-available-languages`, `crono-get-state`, `flotante-open`, `flotante-close`, `open-editor`, `open-preset-modal`, `get-app-config`, `get-app-version`, `get-app-runtime-info`
+  - `ipcMain.on`: `crono-toggle`, `crono-reset`, `crono-set-elapsed`, `flotante-command`, `startup:renderer-core-ready`, `startup:splash-removed`
+  - `ipcMain.once`: `language-selected`
+  - `ipcRenderer.*`: none in this file.
+  - `webContents.send` call sites (10): `editor-init-text`, `editor-ready`, `preset-init` (x2), `startup:ready`, `flotante-closed`, `crono-state` (main+flotante), plus re-sends on existing editor path.
+
+- Delegated IPC registration (present as calls, channels live elsewhere):
+  - `registerLinkIpc(...)`
+  - `textState.registerIpc(...)`
+  - `settingsState.registerIpc(...)`
+  - `presetsMain.registerIpc(...)`
+  - `updater.registerIpc(...)`
+
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- The file already has a coherent block structure with section headers (imports → constants → helpers → window factories → IPC → lifecycle), so reordering would be churn without clear readability gain.
+- Several side-effect registrations are intentionally sequenced (IPC handlers, `app.whenReady`, `app.on` hooks), and moving these for structure risks subtle timing/ordering regressions.
+- Many helpers are tightly coupled to shared state flags (`mainReadyState`, `menuEnabled`, `languageResolved`), and relocating them would not reduce cognitive load.
+- Duplications (e.g., repeated `editor-init-text`/`editor-ready` sends) are short, locally readable, and extracting them would add indirection without reducing branching.
+- The current layout already groups related responsibilities (window creation, readiness gating, flotante placement, crono), so a structural pass is unlikely to improve linear readability.
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- The file’s critical ordering (IPC registration + `app.whenReady` sequence) is timing-sensitive, and any structural changes there risk subtle race behavior.
+- Most duplicated send/try-catch blocks carry distinct log messages for context, so centralizing them would reduce diagnostic clarity or add parameterized indirection.
+- Existing guard/fallback paths already make edge cases explicit (`guardMainUserAction`, fallback language list, payload validation), leaving little robustness to gain without altering behavior.
+- Adding helpers would increase cross-jumping in a long file and violate the “more concepts than removed” rule for only modest readability payoff.
+- Any further robustness tweaks would likely change logging frequency or error surfacing, which counts as observable behavior.
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (meets Level 2 output constraints; rationale is generic but does not invent IPC/behavior).
+- Note: analysis would be stronger if it named 2–3 concrete candidate edits (with anchors) and explicitly rejected them as timing/contract risks.
+
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `electron/preload.js` IPC surface:
+  - `openEditor` → `ipcRenderer.invoke('open-editor')`
+  - `openPresetModal` → `ipcRenderer.invoke('open-preset-modal', payload)`
+  - `getAppConfig/getAppVersion/getAppRuntimeInfo` → `ipcRenderer.invoke(...)`
+  - startup signals/listeners: `sendRendererCoreReady` → `startup:renderer-core-ready`; `sendStartupSplashRemoved` → `startup:splash-removed`; `onStartupReady` listener for `startup:ready`; `onCronoState` listener for `crono-state`.
+- `public/renderer.js` consumes `startup:ready` via `window.electronAPI.onStartupReady(...)` and emits `startup:renderer-core-ready` via `window.electronAPI.sendRendererCoreReady()`; retains pre-READY gating paths.
+- `electron/language_preload.js` emits first-run gate signal `ipcRenderer.send('language-selected', tag)` (payload is the normalized language tag).
+- `electron/main.js` has explicit `ipcMain.once('language-selected', ...)` first-run gate, and `ipcMain.on('startup:renderer-core-ready', ...)` feeding `maybeAuthorizeStartupReady()`.
+
+Reviewer assessment: PASS — Evidence reviewed shows a single, coherent IPC contract across preload/renderer/main for startup readiness + language selection; no duplicated responsibility or ambiguous contract found that would justify a Level 3 change without a repro/bug report.
+Reviewer gate: PASS
+
+Observable contract/timing preserved (no code changes).
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+
+- Removed local `warnOnce` wrapper alias and updated all call sites to `log.warnOnce` (policy: no local wrappers/aliases).
+- Prefixed the pre-interactive guard dedupe key with `BOOTSTRAP:` in `guardMainUserAction` (from `main.preReady.<actionId>` to `BOOTSTRAP:main.preReady.<actionId>`).
+
+Reviewer assessment: PASS
+- Logging-only change; IPC surface, payloads, ordering, and timing are untouched.
+- `BOOTSTRAP:` prefix is coherent with `menuEnabled` being `false` until `startup:splash-removed` sets it `true`, after which the guard becomes unreachable in normal operation.
+
+Validation (manual/grep):
+- `rg -n -F "const warnOnce" electron/main.js` → no hits
+- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` → at least 1 hit
+
+#### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+- Fixed drift in the "Constants / config" section note:
+  - Old (drifted): `Resolved after app readiness (requires app.getPath('userData')).`
+  - New: `Static file paths and fallback data used across startup.`
+- No functional changes; comments-only.
+
+Reviewer assessment: PASS
+- The old note was misleading: `electron/main.js` does not call `app.getPath('userData')`; this claim existed only in that comment.
+- Anchor: the comment directly above `const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');`.
+
+Validation (static):
+- Search for `app.getPath('userData')` in `electron/main.js` (should be absent after the change).
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Checked logging API usage: all sites call `log.warn|warnOnce|error|info|debug` directly; no leftover aliases/wrappers after L4.
+- Verified readiness gating log keys: `guardMainUserAction` uses `BOOTSTRAP:main.preReady.*` and only emits when the main UI is not interactive.
+- Confirmed IPC surface consistency within the file: key handlers/listeners remain present (`open-editor`, `open-preset-modal`, `crono-*`, `flotante-command`, `startup:renderer-core-ready`).
+- Confirmed delegated IPC registration remains present (`registerLinkIpc`, `textState.registerIpc`, `settingsState.registerIpc`, `presetsMain.registerIpc`, `updater.registerIpc`).
+- Comment/code alignment spot-check: L5 constants note remains accurate; end-of-file marker still present.
+
+Reviewer assessment: PASS
+- The reported checks target the only plausible leftover risks after L4 (logging API/style + dedupe keys) and L5 (comment drift), without inventing IPC/contract behavior.
+Reviewer gate: PASS
+
+Observable contract and timing were preserved (no code changes).
+
+Validation (manual/grep):
+- `rg -n -F "const warnOnce" electron/main.js` -> no hits
+- `rg -n -F "BOOTSTRAP:main.preReady." electron/main.js` -> at least 1 hit
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Checklist ejecutado:**
+
+* [x] (1) Arranque sano: iniciar la app desde terminal (para ver logs de main). Confirmar que no hay *uncaught exceptions* / *unhandled rejections* durante el arranque y que la app llega a estado operativo (ventana principal visible e interactiva).
+* [x] (2) READY/interactividad: esperar a que se remueva el splash (o se habilite la interactividad) y verificar que las acciones normales no generan warnings de “ignored (pre-READY)” en el camino sano.
+* [x] (3) Guard pre-READY (stress): relanzar e intentar disparar 5–10 veces una accion mientras aun no hay interactividad (por ejemplo: abrir editor, abrir preset modal, abrir flotante, o acciones del crono). Esperado: no crash; si aparece un warning “... ignored (pre-READY)”, debe ser **deduplicado** (no spam) para la misma accion.
+* [x] (4) Crono sanity: en la ventana principal, toggle start/stop + reset; confirmar que el estado se refleja en UI y que no aparecen errores en logs.
+* [x] (5) Flotante sanity: abrir flotante, confirmar que recibe actualizaciones de `crono-state` (por ejemplo, iniciar el crono y ver que flotante se actualiza). Cerrar flotante y confirmar que la ventana principal sigue operativa.
+* [x] (6) Editor sanity: abrir editor (`open-editor`), confirmar que abre y recibe el texto inicial; cerrar y reabrir (ruta “already open”) sin errores.
+* [x] (7) Preset modal sanity: abrir preset modal (`open-preset-modal`) desde el flujo normal de UI; confirmar que abre y se inicializa (sin warnings de “unauthorized” en el camino sano). Cerrar y reabrir.
+* [x] (8) Logs: revisar que no hay spam nuevo de warnings tipo “failed (ignored):” durante uso normal; cualquier warning repetible debe estar razonablemente deduplicado (una sola vez por evento repetido sin nueva informacion).
+
+---
+
+### electron/main.js
 
 Date: `2026-01-20`
 Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -82,7 +235,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
       - `updater.registerIpc(...)`
       - `registerLinkIpc(...)`
 
-### L1 decision: NO CHANGE
+#### L1 decision: NO CHANGE
 
 - El archivo ya tiene un layout por bloques claro (imports → constants → helpers → window factories → IPC → lifecycle) con encabezados de sección que facilitan navegación.
 - Reordenar bloques de creación de ventanas / wiring IPC / lifecycle en un entrypoint puede introducir cambios sutiles de secuencia (IPC readiness/startup), lo cual está fuera de alcance.
@@ -98,7 +251,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Covered by L7 smoke checklist (no code changes to validate beyond baseline).
 
-### L2 decision: CHANGED
+#### L2 decision: CHANGED
 
 - Change: Added `isAliveWindow(win)` and replaced repeated `win && !win.isDestroyed()` checks across window guards and sends.
   - Gain: Consistent, scan-friendly liveness checks without altering behavior.
@@ -119,7 +272,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - L7 smoke checklist (focus on crono toggle paths and editor-ready/main notification).
 
-### L3 decision: NO CHANGE (no Level 3 justified)
+#### L3 decision: NO CHANGE (no Level 3 justified)
 
 **Evidence checked**
 - IPC consumers in `electron/preload.js`: openEditor/getAppConfig/getAppVersion/getAppRuntimeInfo; sendCronoToggle/sendCronoReset/setCronoElapsed; openFlotanteWindow/closeFlotanteWindow/onFlotanteClosed — aligned with `ipcMain.handle`/`ipcMain.on` in `electron/main.js`.
@@ -134,7 +287,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Baseline L7 smoke checklist unchanged.
 
-### L4 decision: NO CHANGE
+#### L4 decision: NO CHANGE
 
 - Logger mechanism already correct for main process (`Log.get('main')`), with appropriate `log.error` in IPC handler failures.
 - High-frequency/best-effort paths already use `warnOnce` with stable keys (e.g., `send.crono-state.*`, `mainWin.send.flotante-closed`, `snapWindowFullyIntoWorkArea.noWorkArea`).
@@ -147,7 +300,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 **Validation**
 - Baseline L7 smoke checklist unchanged.
 
-### L5 decision: CHANGED (comments-only)
+#### L5 decision: CHANGED (comments-only)
 
 - Updated the top Overview responsibilities:
   - Clarified IPC ownership: main-owned handlers + delegated feature IPC registration.
@@ -167,7 +320,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 - Visual review: file remains readable; section headers adjacent to the blocks they describe; no non-ASCII characters introduced.
 - Baseline L7 smoke checklist unchanged (no functional changes).
 
-### L6 decision: NO CHANGE
+#### L6 decision: NO CHANGE
 
 - Checked helper usage consistency (`isAliveWindow`, `warnOnce`): signatures and call sites aligned.
 - Reviewed IPC handlers (`crono-*`, `flotante-*`, `open-*`, `get-app-*`): channel names + return shapes consistent with consumers.
@@ -177,7 +330,7 @@ Last commit: `78731dade08caa8c0a6f749ad22ff5074ccdc97e`
 
 Observable contract and timing preserved (no code changes).
 
-### L7 — Smoke checklist (human-run; code-informed)
+#### L7 — Smoke checklist (human-run; code-informed)
 
 Preconditions
 - App runs normally with logs visible (terminal or DevTools console).
@@ -254,12 +407,12 @@ Not smoke-testable (optional)
 
 ---
 
-## electron/settings.js
+### electron/settings.js
 
 Date: `2026-01-21`
 Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -312,7 +465,7 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
       - `'settings-updated'` payload `settings` (object) via `broadcastSettingsUpdated` (best-effort a ventanas abiertas).
     - Delegated IPC registration: none in this file.
 
-### L1 decision: NO CHANGE
+#### L1 decision: NO CHANGE
 
 - Codex concluyó **NO CHANGE**: el archivo ya tiene un orden por bloques coherente y headers claros; los handlers IPC están agrupados; la normalización es verbosa a propósito.
 - Un reordenamiento estructural sería churn con payoff bajo y potencial riesgo de secuencia (menu rebuild / broadcast / best-effort windows) sin reducción material de complejidad.
@@ -324,7 +477,7 @@ Last commit: `ce268a09c6a269e6a7c93b982d166a79d0434660`
 **Validation**
 - N/A (no code changes; baseline unchanged).
 
-### L2 decision: CHANGED
+#### L2 decision: CHANGED
 
 - Change: Se centraliza el “default settings shape” introduciendo `createDefaultSettings(language = '')` y usándolo en:
   - `init()` (default para `_loadJson`)
@@ -348,7 +501,7 @@ Observable contract/timing preserved: mismos canales IPC, payload/return shapes,
 **Validation**
 - Grep + smoke mínimo (arriba).
 
-### L3 decision: NO CHANGE (no Level 3 justified)
+#### L3 decision: NO CHANGE (no Level 3 justified)
 
 **Evidence checked (anchors)**
 - `electron/settings.js`: IPC surface already explicit and stable:
@@ -365,7 +518,7 @@ Observable contract/timing preserved: mismos canales IPC, payload/return shapes,
 - Grep for: `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`, `settings-updated`.
 - Manual smoke: change language; change counting mode; select preset; verify UI updates after `settings-updated`.
 
-### L4 decision: CHANGED
+#### L4 decision: CHANGED
 
 - Change: `saveSettings` ahora usa un `errorOnce` con key estable (`settings.saveSettings.persist`) en vez de interpolar `_settingsFile` en la key.
   - Gain: la key explícita deja de depender de valores no-controlados; el path sigue quedando en los args del log para diagnóstico.
@@ -374,7 +527,7 @@ Observable contract/timing preserved: mismos canales IPC, payload/return shapes,
 
 Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, side effects u ordering; solo cambia el bucket de dedupe del log en un `catch`.
 
-### L5 decision: CHANGED
+#### L5 decision: CHANGED
 
 - Updated the Overview responsibilities to include the existing `set-selected-preset` IPC handler.
 - Updated the IPC registration comment to list `set-selected-preset` alongside the other handlers.
@@ -390,7 +543,7 @@ Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, s
 - Visual review: comments match the actual IPC handlers registered in `registerIpc`:
   `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`.
 
-### L6 decision: CHANGED
+#### L6 decision: CHANGED
 
 - Change: `broadcastSettingsUpdated` ahora incluye el nombre de la ventana (`name`) en los args del `warnOnce` cuando falla `webContents.send('settings-updated', ...)`.
 - Gain: el output del warning identifica la ventana objetivo sin depender de la dedupe key.
@@ -400,7 +553,7 @@ Observable contract/timing preserved: no hay cambios de IPC, payloads/returns, s
 
 Observable contract/timing preserved: no hay cambios en IPC, payloads/returns, side effects u ordering; solo cambia el contenido del log en caso de fallo.
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 Result: PASS
 
@@ -420,14 +573,14 @@ Notas:
 
 ---
 
-## electron/fs_storage.js
+### electron/fs_storage.js
 
 Date: `2026-01-21`
 Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
 
-### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 
 - Block order (as-is):
   1) Overview + notes (explicitly “intentionally synchronous”)
@@ -443,7 +596,7 @@ Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
   - warnOnce keys embed `String(filePath)` (key cardinality scales with path variety):
     - anchor: `` `fs_storage.loadJson:missing:${String(filePath)}` `` (similar for `:empty:` and `:failed:`)
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 
 - Exposes (module.exports):
   - init: `initStorage(app)` (sets CONFIG_DIR)
@@ -474,7 +627,7 @@ Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
 - IPC contract: none (no ipcMain/ipcRenderer/webContents usage).
 - Delegated IPC registration: none.
 
-### L1 decision: NO CHANGE
+#### L1 decision: NO CHANGE
 
 - El archivo ya está ordenado en bloques coherentes con separadores claros (overview → imports/logger → config state → helpers → exports).
 - El flujo es simple y con baja anidación; aplicar early-returns / reordenamiento no mejora lectura sin introducir churn.
@@ -484,7 +637,7 @@ Last commit: `dc666337e39e54416215e97d23bded5a7d27689`
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L2 decision: NO CHANGE
+#### L2 decision: NO CHANGE
 
 - `loadJson()` ya explicita y maneja como recoverable: missing/empty/invalid JSON → warnOnce + fallback (sin crash).
 - `saveJson()` ya asegura el directorio padre antes de escribir (“callers do not depend on init ordering”).
@@ -494,7 +647,7 @@ Validation: N/A (no code changes).
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L3 decision: NO CHANGE (no Level 3 justified)
+#### L3 decision: NO CHANGE (no Level 3 justified)
 
 - Checked module contract and guardrails in `electron/fs_storage.js` (`initStorage`, `getConfigDir`, `loadJson`, `saveJson`) for instability or ambiguity.
 - Checked call site orchestration in `electron/main.js` (`initStorage(app)`, `getSettingsFile()`, `getCurrentTextFile()`, `loadJson`, `saveJson`) for timing or ordering pressure.
@@ -508,7 +661,7 @@ Conclusion: no direct evidence of unstable contract, duplicated responsibility, 
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L4 decision: CHANGED (logging-only)
+#### L4 decision: CHANGED (logging-only)
 
 Change: Stabilized `loadJson` warnOnce dedupe keys to comply with “controlled variant” policy (no unbounded/dynamic data in keys).
 
@@ -530,7 +683,7 @@ Validation:
 
 Observable contract and timing preserved: yes (logging-only; no functional changes).
 
-### L5 decision: NO CHANGE (comments)
+#### L5 decision: NO CHANGE (comments)
 
 - Overview already lists responsibilities and constraints (sync main process; recoverable fallbacks).
 - Section dividers match the actual block order and follow `electron/main.js` style.
@@ -541,7 +694,7 @@ Observable contract and timing preserved: yes (logging-only; no functional chang
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L6 decision: NO CHANGE (final review)
+#### L6 decision: NO CHANGE (final review)
 
 No Level 6 changes justified.
 - Checked helper usage consistency (`LOAD_JSON_KNOWN_FILES`, `getLoadJsonOnceKey`, `loadJson`).
@@ -555,7 +708,7 @@ Observable contract and timing preserved: yes (no code changes).
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L7 smoke (human-run)
+#### L7 smoke (human-run)
 
 Result: PASS
 
@@ -579,12 +732,12 @@ Notes (only if relevant):
 
 ---
 
-## electron/text_state.js
+### electron/text_state.js
 
 Date: `2026-01-21`
 Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -658,7 +811,7 @@ Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
       - `current-text-updated`, `editor-text-updated`, `editor-force-clear`
     - Delegated IPC registration: none.
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -676,7 +829,7 @@ Considered and rejected:
 - Extract each IPC handler into separate functions: adds indirection without reducing complexity.
 - Split `registerIpc` into multiple registrars: expands concepts without eliminating logic.
 
-### L2 — Clarity / robustness (Codex)
+#### L2 — Clarity / robustness (Codex)
 
 Decision: NO CHANGE
 
@@ -688,7 +841,7 @@ Decision: NO CHANGE
 
 The observable contract and timing are preserved (no changes applied).
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -708,7 +861,7 @@ Evidence checked (repo anchors):
 - `public/renderer.js`: caller expects `resp.error` on failure:
   - "throw new Error(resp.error || 'set-current-text failed');"
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -726,7 +879,7 @@ Decision: CHANGED
 
 Observable contract and timing preserved; logging-only changes.
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -735,7 +888,7 @@ Decision: CHANGED
 - Clarified the `registerIpc` docblock to enumerate all IPC channels and to note main/editor broadcasts (best-effort).
 - No functional changes; comments-only.
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 
@@ -749,7 +902,7 @@ No Level 6 changes justified.
 
 Observable contract and timing preserved (no changes applied).
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 Result: PASS
 
@@ -770,12 +923,12 @@ Checklist:
 
 ---
 
-## electron/editor_state.js
+### electron/editor_state.js
 
 Date: `2026-01-21`
 Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order (as-is):
@@ -817,7 +970,7 @@ Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
   - Delegated IPC registration:
     - None found.
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -830,7 +983,7 @@ Decision: NO CHANGE
 Risk: N/A (no code changes).
 Validation: N/A (no code changes).
 
-### L2 — Clarity / robustness (Codex)
+#### L2 — Clarity / robustness (Codex)
 
 Decision: NO CHANGE
 
@@ -842,7 +995,7 @@ Decision: NO CHANGE
 
 Observable contract and timing were preserved.
 
-### L3 — Architecture / contract (Codex)
+#### L3 — Architecture / contract (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -853,7 +1006,7 @@ Evidence checked (anchors):
 - `electron/editor_state.js` — helpers: `normalizeState`, `isValidReduced` (invariants centralized).
 - `electron/fs_storage.js` — `getEditorStateFile` / `editor_state.json` path usage (single storage contract).
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -871,7 +1024,7 @@ Validation:
 - `rg -F "editor-state.unmaximize." electron/editor_state.js`
 - Runtime (manual): forzar un `editor_state.json` con shape inválida y abrir Editor manual; observar 1 warn (deduped). Probar maximize → unmaximize sin `reduced` persistido; observar warn (deduped).
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED (comments-only)
 
@@ -885,7 +1038,7 @@ Decision: CHANGED (comments-only)
 Risk: none (comments-only).
 Validation: visual review (no code moved; comments adjacent to blocks; ASCII-only).
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 
@@ -900,7 +1053,7 @@ Checks performed (anchors):
 
 Observable contract and timing were preserved.
 
-### L7 — Smoke (human-run; editor_state.js)
+#### L7 — Smoke (human-run; editor_state.js)
 
 Result: PASS
 
@@ -908,25 +1061,25 @@ Result: PASS
 
 * App closed before touching config files.
 
-#### L7-01 Baseline: open Editor once (creates/loads editor_state.json)
+##### L7-01 Baseline: open Editor once (creates/loads editor_state.json)
 
 * [x] Action: Launch app → open Manual Editor (test_suite SM-08).
 * [x] Expected: Editor window opens; main remains responsive; no uncaught exceptions.
 * [x] Expected logs: on **clean run**, it is acceptable to see **one** warnOnce from `fs_storage.loadJson` about missing `editor_state.json` (created on first editor usage). No repeated spam.
 
-#### L7-02 Persist reduced geometry (move/resize -> reopen)
+##### L7-02 Persist reduced geometry (move/resize -> reopen)
 
 * [x] Action: With editor **not maximized**, resize + move to a distinct position → close editor window → open editor again.
 * [x] Expected: Editor reopens roughly at the same size/position (reduced bounds restored).
 * [x] Expected: No new WARN/ERROR lines produced by normal move/resize activity (beyond any first-run fs_storage warning already seen).
 
-#### L7-03 Persist maximized flag (maximize -> reopen)
+##### L7-03 Persist maximized flag (maximize -> reopen)
 
 * [x] Action: Maximize editor → close editor → open editor.
 * [x] Expected: Editor opens **maximized** again.
 * [x] Expected: No ERROR logs.
 
-#### L7-04 Unmaximize restores last reduced bounds (non-fallback path)
+##### L7-04 Unmaximize restores last reduced bounds (non-fallback path)
 
 * [x] Action: From maximized editor, click unmaximize (restore down).
 * [x] Expected: Window returns to last reduced bounds (the one you had before maximize), not the fallback placement.
@@ -934,11 +1087,11 @@ Result: PASS
 
 ---
 
-### Optional L7 (covers L4 warnOnce fallbacks explicitly)
+#### Optional L7 (covers L4 warnOnce fallbacks explicitly)
 
 These are optional because they require editing `editor_state.json`, but they validate the *new logging* and “no silent fallback” behavior.
 
-#### L7-05 Force unmaximize fallback when reduced is missing
+##### L7-05 Force unmaximize fallback when reduced is missing
 
 * [x] Setup: Close app. Backup `editor_state.json`. Replace contents with:
 
@@ -951,7 +1104,7 @@ These are optional because they require editing `editor_state.json`, but they va
   * `unmaximize: reduced bounds missing; using fallback placement (ignored).`
 * [x] Dedupe check: repeat maximize/unmaximize multiple times in the same session → warning should not repeat.
 
-#### L7-06 Force normalizeState invalid-shape warnings (valid JSON, wrong shape)
+##### L7-06 Force normalizeState invalid-shape warnings (valid JSON, wrong shape)
 
 * [x] Setup: Close app. Backup `editor_state.json`. Replace contents with **one** of:
   * `null`
@@ -967,12 +1120,12 @@ These are optional because they require editing `editor_state.json`, but they va
 
 ---
 
-## electron/presets_main.js
+### electron/presets_main.js
 
 Date: `2026-01-21`
 Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order (as-is):
@@ -1055,7 +1208,7 @@ Last commit: `3dc666337e39e54416215e97d23bded5a7d27689`
   - Delegated IPC registration:
     - None found in this file.
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: **NO CHANGE**
 
@@ -1065,7 +1218,7 @@ Decision: **NO CHANGE**
 - Default preset loading has intentional fallback paths; merging helpers risks altering edge-case behavior.
 - Structural edits would not reduce branching or cognitive load enough to justify change.
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: **CHANGED**
 
@@ -1081,7 +1234,7 @@ Change 2: Centralize `disabled_default_presets` initialization with `ensureDisab
 
 Observable contract, IPC surface, side effects, and timing preserved (per Codex report; diff shows handler order unchanged and only local helper extraction).
 
-### L3 — Architecture / contract changes (Codex, rerun with repo-wide consumer scan)
+#### L3 — Architecture / contract changes (Codex, rerun with repo-wide consumer scan)
 
 Decision: **NO CHANGE (no Level 3 justified)**
 
@@ -1102,7 +1255,7 @@ Reviewer assessment (sufficiency & inference quality):
 - Sufficient evidence to support NO CHANGE at Level 3: no demonstrated multi-consumer divergence in handler return semantics.
 - Remaining incompleteness: event payload semantics are not compared across renderer consumers (especially `settings-updated`), and `preset-created` evidence anchors include handler internals but not the subscription site; therefore “no conflicting payload assumptions” is under-supported.
 
-### L4 — Logs (policy-driven tuning) (Codex)
+#### L4 — Logs (policy-driven tuning) (Codex)
 
 Decision: **CHANGED**
 
@@ -1132,7 +1285,7 @@ Observable contract/timing preserved (report + change scope limited to logging a
 Evidence:
 - Diff: `electron/presets_main.js` (keys: `presets_main.defaults.*`, `presets_main.presetsJson.*`, `presets_main.broadcast.*`, `presets_main.send.preset-created.*`).
 
-### L5 — Comments (QA follow-up) (Codex)
+#### L5 — Comments (QA follow-up) (Codex)
 
 Decision: **CHANGED** (comments-only)
 
@@ -1147,7 +1300,7 @@ Observed changes (diff-based):
 Evidence:
 - Diff: `electron/presets_main.js` (comments-only).
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: **CHANGED** (comments-only)
 
@@ -1160,7 +1313,7 @@ Reviewer assessment (sufficiency & inference quality):
 Evidence:
 - Diff: `electron/presets_main.js` (JSDoc line in `registerIpc` opts.getWindows shape).
 
-### L7 — Smoke test (humano) — `electron/presets_main.js`
+#### L7 — Smoke test (humano) — `electron/presets_main.js`
 
 Result: PASS
 
@@ -1190,12 +1343,210 @@ B) (Opcional) Clean run (para cubrir seeding de defaults)
 
 ---
 
-## electron/menu_builder.js
+### electron/menu_builder.js (re-audit post-startup change)
+
+Date: `2026-02-08`
+Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
+
+#### L0 — Diagnosis (re-audit)
+
+**0.1 Reading Map**
+- Block order: overview header → external imports → internal imports → helpers (logging/utilities) → translation loading → `getDialogTexts` → `buildAppMenu` (nested helpers + menu templates + dev menu) → exports.
+- Linear reading breaks / obstacles (identifier + micro-quote):
+  - `buildAppMenu` — `const menuTemplate = [`
+  - `sendMenuClick` (nested in `buildAppMenu`) — `mainWindow.webContents.send('menu-click', payload)`
+  - `loadBundle` — `for (let i = 0; i < files.length; i++)`
+
+**0.2 Contract Map**
+- Exposes: `getDialogTexts(lang)`, `buildAppMenu(lang, opts)`, `resolveDialogText(dialogTexts, key, fallback, opts)`.
+- Side effects (anchored):
+  - `Menu.buildFromTemplate`, `Menu.setApplicationMenu`
+  - Filesystem reads: `fs.existsSync`, `fs.readFileSync`
+  - Dev menu flag: `process.env.SHOW_DEV_MENU`
+  - Focused window usage: `BrowserWindow.getFocusedWindow`
+- Invariants (anchored):
+  - Menu dispatch gated: `if (isMenuEnabled()) return true` and `if (!canDispatchMenuAction(payload)) return;`
+  - Best-effort drop if no window: `if (!mainWindow)` / `if (mainWindow.isDestroyed())`
+  - Translation merge fallback: `return deepMerge(defaultBundle || {}, overlay || {})`
+
+**IPC contract (only what exists in this file)**
+- `webContents.send('menu-click', payload)`
+  - Channel: `'menu-click'`
+  - Input: `payload` (at send boundary)
+  - Return: n/a
+- No `ipcMain.*` or `ipcRenderer.*` occurrences.
+- Delegated IPC registration: none found.
+
+#### L1 — Structural refactor and cleanup
+
+**Estado:** PASS (CHANGED)
+
+**Cambios realizados (estructurales; sin cambio de contrato):**
+- Se agregó helper local `resolveDevTarget()` dentro de `buildAppMenu` para centralizar selección “focused-or-main”.
+- Se reemplazaron 3 bloques duplicados de selección de target en el menú dev (`dev.reload`, `dev.forceReload`, `dev.toggleDevTools`) por `const target = resolveDevTarget();`.
+- Se mantuvieron intactos guards, logging y `try/catch` de cada acción.
+
+**Anclas (micro-quotes):**
+- Nuevo helper: `const resolveDevTarget = () => {`
+- Uso en acciones dev: `const target = resolveDevTarget();`
+- Guard preservado: `if (!canDispatchMenuAction('dev.reload')) return;` (análogos para las otras acciones)
+
+**Confirmación:** contrato/behavior/timing preservados (mismas llamadas y side effects; sin cambios de exports ni IPC surface).
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+**Estado:** PASS (NO CHANGE)
+
+**Razones (Codex):**
+- El archivo ya está seccionado y con fallbacks explícitos; reordenar no mejora materialmente.
+- `loadBundle` ya cubre faltantes/invalid/empty con fallbacks; factorizar agrega indirection sin bajar ramas.
+- `menuTemplate` es data larga por naturaleza; extraer builders aumentaría “saltos” y empeora lectura lineal.
+- El envío `menu-click` y el logging best-effort ya son explícitos; más guards/logs arriesgan alterar superficie observable o volumen.
+- No hay registro IPC (`ipcMain.*`/`ipcRenderer.*`) ni `app.whenReady` en este archivo.
+
+**Anclas (micro-quotes):**
+- Secciones explícitas: `// =============================================================================`
+- Robustez i18n: `if (!fs.existsSync(file)) continue;` / `if (raw.trim() === '')` / `return JSON.parse(raw);`
+- IPC outbound (send): `mainWindow.webContents.send('menu-click', payload)`
+
+**Confirmación:** contrato/behavior/timing preservados (NO CHANGE).
+
+**Reviewer assessment:** PASS
+- La decisión “NO CHANGE” es defendible dado que el archivo ya tiene estructura por secciones, fallbacks explícitos y dedupe (`warnOnce`/`errorOnce`), y los puntos “grandes” (menuTemplate) son inherentes.
+- Nota de wording: aunque no hay IPC *registration* en este módulo, sí hay IPC *sending* vía `webContents.send('menu-click', ...)`.
+
+#### L3 — Architecture / contract changes (Codex)
+
+**Estado:** PASS (NO CHANGE; no Level 3 justified)
+
+**Evidencia revisada (anchors):**
+- Outbound IPC único desde este módulo: `mainWindow.webContents.send('menu-click', payload)` (best-effort + guards).
+- Receiver path único (preload): `ipcRenderer.on('menu-click', wrapper)` expuesto como `onMenuClick`.
+- Consumo UI (router): `window.electronAPI.onMenuClick((actionId) => { ... })` y dispatch por `handleMenuClick(actionId)`.
+- Rebuild del menú ante cambio de idioma (settings): `buildAppMenu(menuLang);` (misma entrypoint).
+- Helpers de textos/diálogos consumidos como helpers (no contrato IPC): `getDialogTexts(...)` / `resolveDialogText(...)` (consumidores: presets_main / updater).
+
+**Conclusión:** no se encontró dolor real reproducible, ambigüedad de contrato ni conflicto entre consumidores que justifique un cambio Level 3.
+
+**Confirmación:** contrato/behavior/timing preservados (NO CHANGE).
+
+**Reviewer assessment:** PASS
+- La evidencia revisada es consistente con un único canal “menu-click” (send → preload wrapper → router UI).
+- Sin señales de responsabilidades duplicadas ni semánticas divergentes entre consumidores.
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+
+Non-trivial changes (keys explícitas warnOnce/errorOnce):
+- `menu_builder.loadMainTranslations.overlayMissing:${requested}` -> `menu_builder.loadMainTranslations.overlayMissing`
+- `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}` -> `menu_builder.loadMainTranslations.empty:${fileVariant}`
+- `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}` -> `menu_builder.loadMainTranslations.failed:${fileVariant}`
+- `menu_builder.loadMainTranslations.requiredMissing:${langCode}` -> `menu_builder.loadMainTranslations.requiredMissing`
+
+Gain:
+- Cumple “Key rule” (keys estables; sin datos per-occurrence/arbitrary en el bucket de dedupe).
+Cost:
+- Dedupe más grueso: estos eventos ya no se diferencian por idioma; se dedupean por proceso (y en empty/failed, solo por `fileVariant`).
+Validation:
+- Forzar un idioma sin overlay y confirmar 1 solo warning del tipo overlayMissing en la sesión.
+- Introducir `main.json` vacío/JSON inválido y confirmar un warning por `fileVariant` (region/root).
+- Verificar por grep que ya no existen keys con `:${requested}` / `:${langCode}:` en esos eventos.
+
+Contract/behavior/timing:
+- Preservado: cambios solo en strings de dedupe key; no cambia flujo de fallback ni side effects.
+
+Reviewer gate: PASS
+- Cambio acotado, alineado a política, sin drift observable fuera de dedupe.
+
+#### L5 — Comments (JSDoc drift fix) (Codex)
+
+Decision reported by Codex: CHANGED (JSDoc expanded for opts.resolveMainWindow / opts.isMenuEnabled)
+
+Reviewer check (against current file):
+- JSDoc for `buildAppMenu` still documents only:
+  - `@param {Electron.BrowserWindow|null} [opts.mainWindow] ...`
+  - `@param {Function} [opts.onOpenLanguage] ...`
+- Implementation still reads and defaults:
+  - `opts.resolveMainWindow`
+  - `opts.isMenuEnabled`
+
+Conclusion:
+- Codex report does not match the updated file; L5 redo must be re-run and actually applied (comments-only).
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Checked `buildAppMenu` options vs JSDoc and usage (`resolveMainWindow`, `isMenuEnabled`, `onOpenLanguage`) and found alignment.
+- Verified logging API usage for `warnOnce`/`errorOnce` sites in translation loading and menu dispatch; no signature drift.
+- Confirmed IPC surface remains a single outbound `webContents.send('menu-click', payload)`; no handlers added in this module.
+- Scanned for leftover/unused locals introduced by prior levels (e.g., `resolveDevTarget`) and found them referenced.
+
+Observable contract and timing were preserved.
+
+Reviewer assessment: PASS
+- The checks target the actual plausible leftover risks after L1/L4/L5 (leftovers + logging signature + comment drift) without proposing contract changes.
+
+#### L7 — Smoke (human-run; minimal, dev)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* Ejecutar en dev desde terminal (para ver logs del main process): `npm start`.
+
+* Ventana principal visible y operativa.
+
+* Abrir DevTools en la ventana principal (Console) para observar efectos de acciones de menú si aplica.
+
+* Para probar el **Dev menu**: correr unpackaged (`app.isPackaged === false`) y setear `SHOW_DEV_MENU=1`. 
+
+* [x] **(1) Startup sanity: menú se construye y no hay hard-fails**
+
+  * **Action:** Lanzar la app y esperar idle (5–10s).
+  * **Expected result:** Menú visible; sin uncaught exceptions/unhandled rejections en terminal. No aparece `menu_builder.loadMainTranslations.requiredMissing` en camino sano.
+  * **Evidence:** `loadMainTranslations()` carga bundle requerido y, si falta/está inválido, emite `log.errorOnce('menu_builder.loadMainTranslations.requiredMissing', ...)`. 
+
+* [x] **(2) Dispatch sanity: acciones “Help” llegan al renderer sin warnings del main**
+
+  * **Action:** Con la app ya lista, usar **Help** y gatillar 2–3 items distintos (por ejemplo: `FAQ`, `About`, alguna guía).
+  * **Expected result:** Se ejecuta el comportamiento esperado en UI (modales/ventanas/acción equivalente), sin warnings tipo “menu-click dropped / failed (ignored)” desde main.
+  * **Evidence:** `sendMenuClick(payload)` hace `webContents.send('menu-click', payload)` y solo warnOnce en anomalías (`noWindow`, `destroyed`, `failed`). 
+
+* [x] **(3) Hook de Language: abre selector sin fallback warning**
+
+  * **Action:** Menú **Window > Language**.
+  * **Expected result:** Se abre la ventana/flujo de selector de idioma; no aparece warning `menu_builder.onOpenLanguage.missing` en el camino configurado.
+  * **Evidence:** si el hook no existe, cae en `log.warnOnce('menu_builder.onOpenLanguage.missing', ...)` (degradación explícita). 
+
+* [x] **(4) Acciones no-“Help”: crono y always-on-top no rompen dispatch**
+
+  * **Action:** Menú **View > Toggle crono** y **Window > Always on top**.
+  * **Expected result:** El renderer refleja el cambio (o el efecto esperado del toggle); sin warnings `sendMenuClick.*` en camino sano.
+  * **Evidence:** ambos ítems usan `sendMenuClick('<actionId>')` (misma ruta `menu-click`). 
+
+* [x] **(5) Dev menu (si aplica): target resolution funciona (focused-or-main)**
+
+  * **Action:** Con `SHOW_DEV_MENU=1`, usar **Development > Reload**, **Force reload**, **Toggle DevTools**.
+  * **Expected result:** Opera sobre la ventana objetivo (focused o main); sin crash. (Si no hay target válido, debe ser no-op silencioso.)
+  * **Evidence:** el dev menu está condicionado por `if (!app.isPackaged && showDevMenu)` y resuelve target con foco/main antes de `reload()/reloadIgnoringCache()/toggleDevTools()`. 
+
+* [x] **(6) (Opcional, timing) Pre-READY guard: dedupe de “ignored (pre-READY)”**
+
+  * **Action:** Relanzar y hacer click muy temprano en 1 acción de menú repetidas veces antes de que la UI esté plenamente lista.
+  * **Expected result:** A lo sumo 1 warning deduplicado “Menu action ignored (pre-READY)” para ese `actionId`; sin spam.
+  * **Evidence:** `canDispatchMenuAction(actionId)` emite `log.warnOnce(\`menu_builder.inert:${actionId}`, 'Menu action ignored (pre-READY):', actionId)`. 
+
+---
+
+### electron/menu_builder.js
 
 Date: `2026-01-21`
 Last commit: `12ba2bc6346aedee364aea3080a6ade0e502ea55`
 
-### L0 — Diagnosis (no changes) (Codex, follow-up re-run; verified)
+#### L0 — Diagnosis (no changes) (Codex, follow-up re-run; verified)
 
 Note: Follow-up re-run because prior L0 asserted an IPC payload shape without anchoring to a call site. This L0 keeps payload shape “unknown at this boundary” when only an identifier is visible.
 
@@ -1237,7 +1588,7 @@ Reviewer assessment (L0 protocol compliance):
 - PASS (follow-up): no inferred payload/type shapes; contract statements are anchored with micro-quotes.
 - Note: the “no ipcMain/ipcRenderer occurrences” claim is a negative scan result (not independently evidenced inside this document).
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -1254,7 +1605,7 @@ Reviewer assessment (sufficiency & inference quality):
 - PASS. The “NO CHANGE” decision is consistent with the file’s existing explicit sectioning and responsibilities (menu + i18n + dialog texts).
 - No unanchored IPC/contract/payload-shape assertions were introduced at Level 1.
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -1270,7 +1621,7 @@ Reviewer assessment (sufficiency & inference quality):
 - PASS (NO CHANGE). Given zero code changes, the decision hinges on whether L2 changes would be low-risk and net-positive; the file already has warnOnce/errorOnce patterns and explicit fallback logic, so “do not touch” is defensible.
 - Minor wording issue in Codex report: while there is no IPC *registration* (`ipcMain.*` / `ipcRenderer.*`) in this module, it does perform IPC *sending* via `mainWindow.webContents.send('menu-click', payload)`. This does not affect the NO CHANGE conclusion.
 
-### L3 — Architecture / contract changes (Codex) (follow-up re-run: evidence completeness)
+#### L3 — Architecture / contract changes (Codex) (follow-up re-run: evidence completeness)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -1299,7 +1650,7 @@ Reviewer assessment (sufficiency & inference quality):
 - PASS (NO CHANGE). This follow-up addresses the prior gap by providing sender + receiver anchors and a repo-wide scan for the IPC channel literal.
 - Minor evidence gap: the renderer-side micro-quotes (payload type enforcement / Map key usage) are not backed by the included `menu-click` scan excerpt (they may not contain the literal). This does not affect the Level 3 “NO CHANGE” decision.
 
-### L4 — Logs (policy-driven tuning) (Codex)
+#### L4 — Logs (policy-driven tuning) (Codex)
 
 Decision: CHANGED
 
@@ -1333,7 +1684,7 @@ Validation plan adequacy:
 
 Status: PASS (L4)
 
-### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
+#### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
 
 Decision: CHANGED (comments-only)
 
@@ -1350,7 +1701,7 @@ Reviewer assessment (sufficiency & inference quality):
 Evidence:
 - Diff: `electron/menu_builder.js` (comment-only hunks: Helpers divider insertion; fallback chain comment edit; removal of “Apply the menu...” comment).
 
-### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
 
 - Decision (Codex): NO CHANGE
 - Codex report summary:
@@ -1373,7 +1724,7 @@ Reviewer assessment (sufficiency & inference quality):
     - Export surface remains `getDialogTexts`, `buildAppMenu`, `resolveDialogText`.
     - Dev menu guard is still `process.env.SHOW_DEV_MENU === '1'`.
 
-### L7 — Smoke test (humano) — `electron/menu_builder.js` (cambio-focalizado: L4 logging/dedupe + i18n load)
+#### L7 — Smoke test (humano) — `electron/menu_builder.js` (cambio-focalizado: L4 logging/dedupe + i18n load)
 
 Result: Pass
 
@@ -1383,16 +1734,16 @@ Result: Pass
 - [x] (4) Menu -> Actualizar version (si existe): aparece resultado/dialogo; sin crash.
 - [x] (5) Cambio de idioma por flujo normal: UI/menu siguen correctos; NO aparecen warnings i18n tipo “Failed to load/parse main.json…” / “main.json is empty…”.
 - [x] (6) Repetir 1 accion post-idioma: funciona (sin regresion).
-- [c] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
+- [x] (7) Cerrar y relanzar: menu sigue operativo; idioma persiste si aplica; repetir About o 1 accion OK.
 
 ---
 
-## electron/updater.js
+### electron/updater.js
 
 Date: `2026-01-22`
 Last commit: `f29062b2ac374c073a462fb67710ff64114e8c91`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -1441,7 +1792,7 @@ Last commit: `f29062b2ac374c073a462fb67710ff64114e8c91`
     - Auto-check solo una vez por ciclo de vida.
       - Anchor: `"if (updateCheckDone) return;"`.
 
-### IPC contract (only what exists in this file)
+#### IPC contract (only what exists in this file)
 
 A) Explicit IPC in this file:
 - `ipcMain.handle('check-for-updates', async () => ...)`
@@ -1452,7 +1803,7 @@ A) Explicit IPC in this file:
 B) Delegated registration:
 - None
 
-### L1 decision: CHANGED
+#### L1 decision: CHANGED
 
 - Change: Deduplicación local dentro de `checkForUpdates` del diálogo de falla “manual” (mismo texto/keys).
   - Added predicate `shouldShowManualDialog()` para centralizar el gating:
@@ -1477,7 +1828,7 @@ Observable contract/timing preserved: mismos exports, canal IPC y shapes; mismos
   - en falla (sin red / respuesta inválida / tag no `v`), aparece el mismo diálogo de error;
   - no hay excepciones ni logs inesperados.
 
-### L2 decision: NO CHANGE
+#### L2 decision: NO CHANGE
 
 - Rationale (Codex):
   - L1 ya removió la duplicación principal (diálogo de falla manual) sin introducir indirection excesiva.
@@ -1490,7 +1841,7 @@ Reviewer assessment (sufficiency & interpretation quality):
 - Confirmado: diff vacío (sin cambios aplicados).
 - Nota menor: el reporte resume “warn por ruta de falla” de forma algo no literal, pero sin impacto práctico.
 
-### L3 decision: CHANGED (IPC contract drift fix)
+#### L3 decision: CHANGED (IPC contract drift fix)
 
 Evidence (problem):
 - Preload expone payload `{ manual }`:
@@ -1520,7 +1871,7 @@ Validation:
 - DevTools: `window.electronAPI.checkForUpdates(true)` mantiene diálogos.
 - `rg -n -F "electronAPI.checkForUpdates(true)" public/renderer.js`.
 
-### L4 decision: NO CHANGE
+#### L4 decision: NO CHANGE
 
 - Logging mechanism: main-process logger `Log.get('updater')` (consistente con política).
 - Fallbacks/errores recoverables ya registran `warn` (fetch/status, parse JSON, red, SemVer inválido, tag sin prefijo `v`).
@@ -1529,14 +1880,14 @@ Validation:
 
 Observable contract/timing preserved (no code changes).
 
-### L5 decision: CHANGED (comments-only)
+#### L5 decision: CHANGED (comments-only)
 
 - Reemplazo de header obsoleto por "Overview" con responsabilidades (3–7 items).
 - Se agregan divisores de sección que calzan con el orden real del archivo: imports/logger, constants/config, shared state, helpers, update flow, lifecycle, IPC, exports.
 - Se agrega marcador explícito de fin de archivo ("End of electron/updater.js").
 - No functional changes; comments-only.
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: **NO CHANGE**
 
@@ -1549,7 +1900,7 @@ No Level 6 changes justified.
 
 Observable contract and timing were preserved (no code changes).
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 Result: Pass
 
@@ -1574,12 +1925,12 @@ Checklist:
 
 ---
 
-## electron/link_openers.js
+### electron/link_openers.js
 
 Date: `2026-01-22`
 Last commit: `f1e3a74aa5abc2d2cf221d8b2267b8056c8bf7b1`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -1634,7 +1985,7 @@ Last commit: `f1e3a74aa5abc2d2cf221d8b2267b8056c8bf7b1`
     - `webContents.send`: none
     - Delegated IPC registration: none
 
-### L1 — Structural refactor (Codex)
+#### L1 — Structural refactor (Codex)
 
 Decision: NO CHANGE
 - File already follows a clean imports -> constants -> helpers -> handlers -> exports order; reordering would be redundant.
@@ -1652,7 +2003,7 @@ Decision: NO CHANGE
 Reviewer assessment (sufficiency & inference quality):
 - PASS. The “NO CHANGE” decision is consistent with the current linear structure and the anti-indirection rule; no contract/IPC/timing claims were introduced at L1 beyond what is directly visible in-file.
 
-### L2 decision: CHANGED
+#### L2 decision: CHANGED
 
 - Change: Introduced `openPathWithLog(shell, log, rawKey, filePath)` and reused it to replace the repeated `shell.openPath` + `open_failed` handling blocks in `open-app-doc` (dev candidate open, Baskervville temp open, packaged candidate open, fallback temp open).
   - Gain: Removes duplication and centralizes a security-relevant decision point (open failure → log + `{ ok:false, reason:'open_failed' }`) while keeping log text and return shape consistent.
@@ -1671,7 +2022,7 @@ Reviewer assessment (sufficiency & inference quality):
 **Validation**
 - Covered by L7 smoke (human-run) plus the targeted doc-open checks above.
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -1692,7 +2043,7 @@ Evidence checked (anchors):
 **Validation**
 - N/A (no code changes).
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -1710,7 +2061,7 @@ Decision: CHANGED
 Reviewer assessment (sufficiency & inference quality):
 - PASS. The change removes a silent fallback without affecting IPC/return shapes/timing and keeps logger semantics consistent (no optional-logger branching; no forced severity changes).
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -1725,7 +2076,7 @@ Decision: CHANGED
 **Evidence (anchors)**
 - Overview bullet (corrected): "Register IPC handlers that return { ok: true } or { ok: false, reason }."
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 * **Decision: NO CHANGE**
 * “No Level 6 changes justified.”
@@ -1737,7 +2088,7 @@ Decision: CHANGED
   * Apertura de paths centralizada en `openPathWithLog`. 
   * Nota explícita: “Se mantiene y acepta el *residual edge-case* ya documentado (return de Promise sin await en `openPathWithLog`); no se modifica en L6.” 
 
-### L7 — Smoke (human-run; minimal, dev)
+#### L7 — Smoke (human-run; minimal, dev)
 
 Preconditions:
 - Run the app in dev from a terminal (so you can see main-process logs): `npm start`.
@@ -1792,12 +2143,12 @@ Notes (optional):
 
 ---
 
-## electron/constants_main.js
+### electron/constants_main.js
 
 Date: `2026-01-22`
 Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
 
-### L0 — Minimal diagnosis (Codex)
+#### L0 — Minimal diagnosis (Codex)
 
 - Block order: strict mode; constants/config; module.exports.
 - Linear reading breaks: none observed; single responsibility constants.
@@ -1807,7 +2158,7 @@ Last commit: `92046dea3482a910ece96c7d10b0ddb5ce61a7f4`
 
 Result: PASS
 
-### L1–L7
+#### L1–L7
 
 Decision: NO CHANGE (file is constants-only; no behavior/IPC/timing surface to refactor or smoke-test at module level).
 
@@ -1815,16 +2166,154 @@ Result: PASS
 
 ---
 
-## public/renderer.js
+### public/renderer.js (re-audit post-startup change)
+
+Date: `2026-02-08`
+Last commit: `858c6626806343e4198d4bff1c250568184ce261`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+**0.1 Reading map**
+- Block order (high-level): header/overview comment; logger + `AppConstants` check/destructure; DOM references; UI key lists; startup gating helpers; shared state; i18n wiring + `applyTranslations`; WPM/preset state + presets integration; CountUtils + text helpers; FormatUtils; preview/results logic; crono state subscription; preset loading helpers; bootstrapping + IPC subscriptions + mode toggle setup + startup orchestrator; info modal utilities; top-bar menu action registration; UI event handlers; stopwatch DOM + controller init; final startup calls.
+- Linear breaks (identifier + micro-quote):
+  - `applyTranslations` — "Text selector buttons".
+  - `armIpcSubscriptions` — "Subscribe to updates from main".
+  - `runStartupOrchestrator` — "BOOTSTRAP: getSettings failed; using defaults".
+  - `showInfoModal` — "Fetch HTML (manual pages use a language fallback list)".
+  - `registerMenuActionGuarded` — "menu_actions.js must be loaded before renderer.js".
+
+**0.2 Contract map**
+- Exposure: no exports. Side effects include DOM reads/writes, event listener registration, and calls into `window.electronAPI`, `window.menuActions`, and other window-provided modules.
+- Invariants (anchored):
+  - `AppConstants` required — "AppConstants no disponible".
+  - `RendererI18n` required — "RendererI18n no disponible".
+  - `CountUtils.contarTexto` required — "CountUtils no disponible".
+  - User actions gated by readiness — "Renderer action ignored (pre-READY)" in `guardUserAction`.
+  - READY gate depends on two flags — "if (!rendererInvariantsReady || !startupReadyReceived) return" in `maybeUnblockReady`.
+- IPC contract A (direct ipcMain/ipcRenderer/webContents occurrences in this file): none found.
+- IPC contract B (delegated registration helpers): none detected.
+
+Reviewer assessment:
+- PASS (L0). Diagnosis-only; no invented direct IPC; invariants anchored; identifiers + micro-quotes locate obstacles.
+
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: CHANGED
+- Moved `getCronoLabels` into the i18n wiring block before `applyTranslations` to eliminate a forward reference.
+- Relocated `showeditorLoader`/`hideeditorLoader` directly above the editor click handler to keep helpers adjacent to first use.
+- The stopwatch section now focuses on DOM refs and controller init, with label helper extracted earlier for linear reading.
+
+Contract/behavior/timing preserved.
+
+Reviewer assessment:
+- PASS (L1). Changes are structural-only (helper relocation). No IPC surface, payload shapes, or side-effect ordering changes.
+- `getCronoLabels` is a `const` arrow used by `applyTranslations` (“const labelsCrono = getCronoLabels();”); moving it earlier reduces latent ordering hazards without changing runtime behavior.
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: CHANGED
+
+- Presets: se introduce `resolveSettingsSnapshot(settingsSnapshot)` para centralizar la resolución `settingsSnapshot` vs `settingsCache || {}` usada por `reloadPresetsList` y `loadPresets`, evitando duplicación.
+- Presets: se introduce `resetPresetsState()` para consolidar el reset de UI/estado en los `catch` (vaciar select/description; `allPresetsCache = []`; `currentPresetName = null`) y mantener el mismo return (array).
+- Clipboard: se introduce `readClipboardText({ tooLargeKey })` para centralizar el patrón `readClipboard()` + rama `res.ok === false` + `tooLarge`, preservando las notificaciones específicas por handler y manteniendo los límites/truncación existentes.
+
+Reviewer assessment:
+- PASS (L2): La duplicación existe en el pre-patch tanto en presets (snapshot + reset) como en clipboard (`readClipboard` + `tooLarge`). La factorización propuesta es local, de baja indirection, y no altera el orden de handlers ni la superficie IPC. (Anclas: presets `settingsCache || {}` y reset `presetsSelect.innerHTML = ''`; clipboard `res.ok === false` + `Notify.notifyMain(...)`.):contentReference[oaicite:7]{index=7}:contentReference[oaicite:8]{index=8}
+- Validación recomendada (ampliación): probar clipboard overwrite/append en 3 casos: (1) texto normal, (2) `tooLarge`, (3) fallo no-tooLarge (debe caer en `catch` y notificar error como antes). Para presets: forzar error de carga y confirmar que UI queda reseteada igual que antes (select vacío, description vacía, caches limpias).:contentReference[oaicite:9]{index=9}
+- Nota de coherencia histórica: en la auditoría anterior se evitó DRY de clipboard por costo/ramificación; aquí el costo es mínimo (un helper + `tooLargeKey`) y la duplicación era literal, por lo que el tradeoff sí da.
+
+#### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (in `public/renderer.js`):
+- Startup gating + handshake is consistent: `guardUserAction` blocks pre-READY actions and `maybeUnblockReady` gates READY on two flags. (anchors: "Renderer action ignored (pre-READY):" and `if (!rendererInvariantsReady || !startupReadyReceived) return`). 
+- Subscriptions are centralized in `armIpcSubscriptions()` via `window.electronAPI.*` with guards/dedupe (e.g., `onStartupReady` duplicate warnOnce; `onEditorReady` ignores pre-READY).
+- Clipboard path keeps explicit payload semantics (`setCurrentText({ text, meta:{ source, action } })`) and centralized normalization via `readClipboardText({ tooLargeKey })`.
+
+Reviewer assessment:
+- PASS (L3). Entry criteria for contract/architecture change not met; NO CHANGE is appropriate.
+- Minor: Codex did not demonstrate cross-file contract inspection (preload/main). Acceptable for NO CHANGE; require explicit cross-check if L3 is revisited.
+
+#### L4 — Logs (policy-driven tuning) (Codex re-pass)
+
+Decision: CHANGED
+
+- BOOTSTRAP keys: se prefixa `BOOTSTRAP:` solo en eventos realmente pre-READY/startup-only (pre-READY action gating, pre-READY ignores, handshake/splash/invariants, bootstrap-only syncToggleFromSettings), para cumplir la regla BOOTSTRAP (key o mensaje parte con `BOOTSTRAP:`).
+- Persistent mismatch warnings: se eliminan prefixes `BOOTSTRAP:` en ausencia de `electronAPI` y ausencia de hooks de suscripción; quedan como keys estables no-bootstrap (`renderer.ipc.*.unavailable`) para reflejar que el problema no “desaparece tras init”.
+- Readiness stall: ausencia de `onStartupReady` se promueve a `errorOnce` con key `renderer.startup.ready.unavailable`, porque puede dejar al renderer permanentemente pre-READY (gate `if (!rendererInvariantsReady || !startupReadyReceived) return`).
+
+Reviewer assessment:
+- PASS (L4). Política BOOTSTRAP corregida; fallbacks no silenciosos; dedupe estable; severidad ajustada en stall de READY.
+- Nota: cambio de buckets (keys) implica re-emisión 1 vez por sesión tras el update.
+
+Validation:
+- grep keys: `BOOTSTRAP:renderer.preReady.` y `renderer.ipc.*.unavailable` y `renderer.startup.ready.unavailable`.
+- Runtime: disparar una acción pre-READY (1 warnOnce), simular hook ausente (1 warnOnce), simular falta `onStartupReady` (1 errorOnce).
+
+#### L5 — Comments (Codex)
+
+Decision: CHANGED
+
+Changes (comments-only):
+- Added a dedicated divider `Clipboard helpers (shared by overwrite/append)` above `readClipboardText(...)` to document it as a reusable helper block.
+- Re-positioned the `Overwrite current text with clipboard content` divider to sit directly above `btnOverwriteClipboard.addEventListener('click', ...)` for correct section adjacency.
+- Rewrote the preset edit no-selection inline comment in English (ASCII) to satisfy the file comment language constraint.
+
+Reviewer assessment:
+- PASS (L5). Comments-only; improves reader guidance and removes the only visible non-English comment case without touching behavior/contract/timing.
+
+Notes:
+- No functional changes; comments-only.
+
+#### L6 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+Evidence checked (anchors):
+- Helper usage: `resolveSettingsSnapshot`, `resetPresetsState`, `readClipboardText`.
+- Startup/READY gating: `maybeUnblockReady` guard and READY flags (`rendererInvariantsReady`, `startupReadyReceived`).
+- IPC subscription robustness: `renderer.ipc.*.unavailable` warnOnce paths; missing `onStartupReady` escalated to `errorOnce('renderer.startup.ready.unavailable', ...)`; duplicate READY guarded by `renderer.startup.ready.duplicate`.
+- Logging API signature consistency: `warnOnce(key, ...args)` / `errorOnce(key, ...args)` call sites remain in explicit-key mode; no wrapper/alias reintroduced.
+- Comment/code alignment: `Clipboard helpers (shared by overwrite/append)` divider and adjacent overwrite/append handlers show no drift.
+
+Reviewer assessment:
+- PASS (L6). NO CHANGE is justified: no dead code, no stale patterns, and logging signatures/keys remain consistent with `public/js/log.js`. Observable contract/timing preserved.
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Checklist ejecutado:**
+
+* [x] (1) Arranque sano: iniciar la app con logs visibles (terminal + DevTools Console). Esperado: sin *uncaught exceptions* / *unhandled rejections*; la ventana principal aparece y queda operativa.
+* [x] (2) Invariantes duras (no deben disparar): confirmar que **no** aparecen errores tipo “AppConstants no disponible”, “RendererI18n no disponible”, “CountUtils no disponible” (si aparecen, el renderer debe abortar y esto es FAIL).
+* [x] (3) READY/interactividad (camino sano): esperar a que el renderer llegue a READY (splash removido/flujo normal). Luego ejecutar 2–3 acciones normales (p.ej. overwrite clipboard, abrir editor, togglear crono). Esperado: **no** aparece “Renderer action ignored (pre-READY)” en el camino sano.
+* [x] (4) Guard pre-READY (stress + dedupe): relanzar y, apenas aparezca la ventana, intentar disparar 5–10 veces una o dos acciones **antes** de READY (p.ej. `open-editor`, `clipboard-overwrite`). Esperado: no crash; si aparece warning pre-READY debe ser **warnOnce** con key `BOOTSTRAP:renderer.preReady.<actionId>` (no spam para el mismo `actionId`).
+* [x] (5) Presets sanity: verificar que el select de presets carga (no queda vacío en camino sano). Cambiar selección y confirmar que actualiza WPM/preview/resultados de forma normal (sin “Error loading presets:” en logs).
+* [x] (6) Clipboard overwrite: copiar texto corto al portapapeles y hacer **overwrite**. Esperado: el texto principal cambia, se recalculan preview/resultados; sin “clipboard error:” en logs.
+* [x] (7) Clipboard append: copiar texto corto y hacer **append**. Esperado: el texto se concatena (con el joiner correspondiente), se recalculan preview/resultados; sin “append_error/clipboard error” en camino sano.
+* [x] (8) Editor + loader: click en **Editar**. Esperado: loader visible + botón deshabilitado; al abrir editor y volver a READY, el loader se oculta y el botón se re-habilita (no queda “pegado”).
+* [x] (9) Crono sanity: usar toggle start/stop + reset. Esperado: display/estado se actualiza; en logs no aparecen `renderer.ipc.onCronoState.unavailable` ni errores del handler de crono.
+* [x] (10) Logs de mismatch (no deben aparecer en camino sano): confirmar ausencia de:
+  * `renderer.startup.ready.unavailable` (sería stall de READY),
+  * `renderer.ipc.*.unavailable` (hooks faltantes),
+  * y cualquier spam repetible (si hay repetición, debe estar deduplicada con warnOnce/errorOnce).
+
+---
+
+### public/renderer.js
 
 Date: `2026-01-23`
 Last commit: `f011c4d4288c5cde9caffae0e3646f894f15e980`
 
-### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
 Source: `tools_local/codex_reply.md` (local only; do not commit)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 - Block order (high-level): strict/log + globals; DOM grabs; state/cache + i18n wiring; `applyTranslations`; early async init (config/settings); counting/preset/format hookups; helpers (`contarTexto`, `normalizeText`, `setModoConteo`); `updatePreviewAndResults` + `setCurrentTextAndUpdateUI`; crono state listener; `loadPresets`; main async init IIFE (current text, subscriptions, settings handler, precise toggle, info modal, menu actions); UI event listeners; stopwatch UI + loader helpers + crono controller init.
 - Linear reading obstacles (identifier + micro-quote):
   - `applyTranslations` — “const labelsCrono = getCronoLabels();”
@@ -1832,7 +2321,7 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
   - `showInfoModal` — “async function showInfoModal(key, opts = {})”
   - `window.menuActions.registerMenuAction` — “window.menuActions.registerMenuAction('guia_basica', () => {”
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 - Exports/public entrypoints: none (script-only; behavior via side effects).
 - Side effects (observed): reads globals (`AppConstants`, `RendererI18n`, `CountUtils`, `FormatUtils`, `RendererPresets`, `RendererCrono`, `Notify`); updates DOM; registers DOM event listeners; subscribes to `window.electronAPI` events; invokes `window.electronAPI` methods; registers `window.menuActions` actions.
 - Invariants / fallbacks (anchored):
@@ -1844,17 +2333,17 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
   - WPM clamp — “val = Math.min(Math.max(val, WPM_MIN), WPM_MAX);”
   - Optional electronAPI hooks guarded — “typeof window.electronAPI.onSettingsChanged === 'function'”
 
-##### IPC contract (explicit ipcMain/ipcRenderer/webContents calls)
+###### IPC contract (explicit ipcMain/ipcRenderer/webContents calls)
 - None found in this file (direct calls).
 
-##### Delegated IPC registration
+###### Delegated IPC registration
 - None observed.
 
 Reviewer assessment (L0 protocol compliance):
 - PASS. Diagnosis-only; no invented direct IPC; obstacles include identifiers + micro-quotes; invariants anchored to visible checks/fallbacks.
 - Note: direct `ipcRenderer/*` absence is expected because this file uses `window.electronAPI` as IPC façade.
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -1867,7 +2356,7 @@ Decision: NO CHANGE
 Reviewer assessment:
 - PASS for L1 gate as NO CHANGE: rationale is consistent with timing-sensitive sequencing constraints.
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -1883,7 +2372,7 @@ Decision: NO CHANGE
 Reviewer assessment:
 - PASS for L2 gate as NO CHANGE: now demonstrates evaluation of multiple concrete candidates (identifiers + micro-quotes) across distinct areas; rationale is consistent with timing/ordering sensitivity and avoids refactors that would add indirection/branching.
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -1899,7 +2388,7 @@ Reviewer assessment:
 - PASS for L3 gate as NO CHANGE: no concrete repo-wide pain/bug/instability demonstrated that would justify a contract or architecture change here.
 - Note: last bullet is documentation-derived (redundant as “evidence checked”), but does not affect the conclusion.
 
-### L4 decision: CHANGED
+#### L4 decision: CHANGED
 
 - Ajuste de severidad + clasificación BOOTSTRAP en fallbacks de arranque:
   - Anclas: `BOOTSTRAP: getAppConfig failed; using defaults:`, `BOOTSTRAP: getSettings failed; using defaults:`, `BOOTSTRAP: initial translations failed; using defaults:`
@@ -1919,7 +2408,7 @@ Reviewer assessment:
 
 Contract/timing: sin cambios observables; cambios limitados a logs + plumbing interno asociado al helper de links del info modal.
 
-#### public/js/info_modal_links.js
+##### public/js/info_modal_links.js
 
 - Alineación con el patrón estándar de módulos `public/js/*`:
   - Ancla: `const log = window.getLogger('info-modal-links');`
@@ -1941,7 +2430,7 @@ Validación mecánica sugerida (documental):
 - `warnOnceRenderer` debe ser 0 ocurrencias en `public/renderer.js` y `public/js/info_modal_links.js`.
 - No debe existir `console.warn`/`console.error` en `public/js/info_modal_links.js`.
 
-#### Meta — Actualización de política de logging (documental)
+##### Meta — Actualización de política de logging (documental)
 
 Referencia de cambios: diff desde `e1dffe38d1e428234209c22b49d0d4f6fb4637dc`.
 
@@ -1953,7 +2442,7 @@ Referencia de cambios: diff desde `e1dffe38d1e428234209c22b49d0d4f6fb4637dc`.
   - Regla explícita: “Call-site style (policy): use log.warn|warnOnce|error|errorOnce directly…”
   - Paso 0.1: “Enforce call-site style: remove any local log method aliases/wrappers…”
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -1970,7 +2459,7 @@ Validation (mechanical):
 Notes:
 - No functional changes; comments-only.
 
-### L6 — Final review (strict leftover removal)
+#### L6 — Final review (strict leftover removal)
 
 Decision: CHANGED
 
@@ -2000,7 +2489,7 @@ Post-change anchors (to make the “guard matches usage” state explicit):
 
 Observable contract, side effects, and timing/order were preserved (deletions of unused locals + related guards only).
 
-### Checklist L7
+#### Checklist L7
 
 [x] **Log sanity (idle 20–30s)** con logs visibles.
    Esperado: sin `ERROR`/uncaught; sin spam continuo del mismo warning.
@@ -2025,12 +2514,12 @@ Observable contract, side effects, and timing/order were preserved (deletions of
 
 ---
 
-## public/editor.js
+### public/editor.js
 
 Date: `2026-01-23`
 Last commit: `f35685b0533e33e36e1ac69f2eadcf6e32d1eedd`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -2087,7 +2576,7 @@ Last commit: `f35685b0533e33e36e1ac69f2eadcf6e32d1eedd`
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented direct IPC; anchors/micro-quotes present; bridge wording conservative and internally consistent).
 
-### L1 — Structural micro-cleanup (redo)
+#### L1 — Structural micro-cleanup (redo)
 
 Decision: CHANGED
 
@@ -2104,7 +2593,7 @@ Anchors:
 
 Reviewer gate: PASS
 
-### L2 — Clarity / robustness refactor (redo)
+#### L2 — Clarity / robustness refactor (redo)
 
 Decision: CHANGED
 
@@ -2120,7 +2609,7 @@ Decision: CHANGED
 Observable contract and timing preserved.
 Reviewer gate: PASS
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
   * **Decision: NO CHANGE (no Level 3 justified)**
 
@@ -2133,7 +2622,7 @@ Reviewer gate: PASS
   * **Reviewer gate: PASS**
   * Nota corta: No se justifica Nivel 3: shapes coexistentes ya son parte del contrato; cambiarlo sería churn de riesgo.
 
-### L4 — Logs
+#### L4 — Logs
 
 * **Call-site style (sin wrappers):** eliminación de `warnOnceEditor` y reemplazo por `log.warnOnce(...)` en call sites (anclas: `editor.select`, `focus.prevActive.*`, `setCurrentText.*`). Basado en política. 
 * **showNotice:**
@@ -2144,7 +2633,7 @@ Reviewer gate: PASS
 * **Fallback no-silencioso en payload:** key `editor.setCurrentText.payload_failed` (`warnOnce`) cuando no hay `onPrimaryError`. 
 * **BOOTSTRAP:** logs prefijados `BOOTSTRAP:` en fallbacks de arranque (con nota explícita de la condición “debe volverse inalcanzable post-init”). 
 
-### L5 — Comments (Codex + redo)
+#### L5 — Comments (Codex + redo)
 
 Decision: CHANGED (comments-only)
 
@@ -2168,7 +2657,7 @@ Anchors:
 - Bootstrap header — "Bootstrap: config and translations (async, best-effort)"
 - EOF marker — "End of public/editor.js"
 
-### L6 — Final review (coherence + leftover cleanup after refactors)
+#### L6 — Final review (coherence + leftover cleanup after refactors)
 
 Decision: NO CHANGE
 No Level 6 changes justified.
@@ -2192,7 +2681,7 @@ Checks performed (anchors / micro-quotes):
 Observable contract/timing preserved.
 Reviewer gate: PASS
 
-### L7 — Smoke (human-run)
+#### L7 — Smoke (human-run)
 
 Estado: PASS | FAIL
 Entorno: (dev/packaged), OS, commit/hash, state: existing | clean
@@ -2210,12 +2699,12 @@ Checklist:
 
 ---
 
-## public/preset_modal.js
+### public/preset_modal.js
 
 Date: `2026-01-23`
 Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -2257,7 +2746,7 @@ Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
       - `onSettingsChanged(fn(settings))` usa `settings.language`.
       - `editPreset(originalName, preset)` / `createPreset(preset)` esperan respuesta con `res.ok` y en edit se observa `res.code === 'CANCELLED'`.
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -2270,7 +2759,7 @@ Decision: NO CHANGE
 
 Reviewer gate: PASS
 
-### L2 — Clarity / robustness refactor (Codex follow-up)
+#### L2 — Clarity / robustness refactor (Codex follow-up)
 
 Decision: CHANGED
 
@@ -2297,18 +2786,18 @@ Validation:
 Contract/timing:
 - Se preserva el contrato observable y el timing en flujos normales; solo cambia el comportamiento del caso previamente silencioso.
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
 - Checked `public/preset_modal.js` save handler (`if (mode === 'edit')`) and result handling (`res.ok`, edit observes `res.code === 'CANCELLED'`); no evidence of inconsistent semantics across consumers.
-- Checked `electron/preset_preload.js` bridge: `contextBridge.exposeInMainWorld('presetAPI', { ... })` defines a single, stable surface (`createPreset`, `editPreset`, reliable `onInit`, plus settings hooks).
+- Checked `electron/preset_preload.js` bridge: `contextBridge.exposeInMainWorld('presetAPI', api)` defines a single, stable surface (`createPreset`, `editPreset`, reliable `onInit`, plus settings hooks).`
 - Checked `electron/main.js` preset window init path: `function createPresetWindow(initialData)` and `presetWin.webContents.send('preset-init', initialData || {})`, including re-send when window is already open and on `ready-to-show`.
 - Cross-check: no repo-wide evidence (call sites / consumers) indicating duplicated responsibility or an unstable/ambiguous contract requiring Level 3.
 
 Reviewer gate: PASS
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -2337,7 +2826,7 @@ Observable contract/timing: preservados; cambios limitados a logging en paths de
 
 Reviewer gate: PASS
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -2350,7 +2839,7 @@ No functional changes; comments-only.
 
 Reviewer gate: PASS
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 
@@ -2369,7 +2858,7 @@ Observable contract and timing are preserved (no code changes).
 
 Reviewer gate: PASS
 
-### L7 — Smoke test checklist (human-run; code-informed) — `public/preset_modal.js`
+#### L7 — Smoke test checklist (human-run; code-informed) — `public/preset_modal.js`
 
 **Preconditions**
 
@@ -2479,14 +2968,14 @@ Reviewer gate: PASS
 
 ---
 
-## public/flotante.js
+### public/flotante.js
 
 Date: `2026-01-24`
 Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 - Block order (high level):
   - strict/log startup: `const log = window.getLogger('flotante');`
   - guard AppConstants + DEFAULT_LANG: `if (!AppConstants) { throw new Error`
@@ -2515,7 +3004,7 @@ Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
   - button wiring — `btnReset.addEventListener('click', () => {`
   - keydown — `if (ev.code === 'Space' || ev.key === ' ' || ev.key === 'Enter')`
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 - Exposes / side effects:
   - no exports; runs on load
   - registers callbacks on `window.flotanteAPI` (state + settings)
@@ -2548,7 +3037,7 @@ Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
 
 - IPC contract (direct): none in this file (`ipcMain/ipcRenderer/webContents` not used).
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 - File is already short and ordered by initialization flow; reordering would not improve linear readability.
@@ -2559,7 +3048,7 @@ Decision: NO CHANGE
 
 Reviewer gate: PASS (NO CHANGE is justified; no code changes).
 
-### L2 — Clarity / robustness refactor (controlled) (Codex)
+#### L2 — Clarity / robustness refactor (controlled) (Codex)
 
 Decision: NO CHANGE
 - The only clear robustness gap (unguarded addEventListener on possibly-null buttons) is behaviorally visible; guarding would change error behavior.
@@ -2572,7 +3061,7 @@ Observable contract and timing preserved by making no changes.
 
 Reviewer gate: PASS (NO CHANGE is justified; no code changes).
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -2590,7 +3079,7 @@ Evidence checked (anchors):
 
 Reviewer gate: PASS (NO CHANGE justified; DOM IDs exist and bridge methods are exposed/routed consistently).
 
-### L4 decision: CHANGED
+#### L4 decision: CHANGED
 
 - Normalización de estilo de mensajes (evita duplicar scope en el texto):
   - DOM missing: `log.error('element #crono not found')` (antes incluía `flotante:`/`[flotante]` en el mensaje).
@@ -2631,7 +3120,7 @@ Reviewer gate: PASS (NO CHANGE justified; DOM IDs exist and bridge methods are e
 - Runtime (smoke normal):
   - Abrir/cerrar flotante y usar toggle/reset: no debe aparecer spam nuevo en logs en ejecución sana; el flujo normal no debería producir warnings/errors de bridge/i18n.
 
-### L5 — Comments (Codex + manual follow-up)
+#### L5 — Comments (Codex + manual follow-up)
 
 Decision: CHANGED
 
@@ -2657,7 +3146,7 @@ Notas:
 
 Reviewer gate: PASS
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 No Level 6 changes justified.
@@ -2668,7 +3157,7 @@ No Level 6 changes justified.
 
 Observable contract/timing preserved (no changes applied).
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 **Estado:** PASS
 
@@ -2683,14 +3172,14 @@ Observable contract/timing preserved (no changes applied).
 
 ---
 
-## public/language_window.js
+### public/language_window.js
 
 Date: `2026-01-24`
 Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
 
-### L0 — Diagnosis (no changes) (Codex, verified)
+#### L0 — Diagnosis (no changes) (Codex, verified)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 
 - Block order (as-is):
   1) Header comment + `'use strict'`
@@ -2710,7 +3199,7 @@ Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
   - Startup IIFE (anonymous) triggers async flow on load:
     - anchor: `"(async () => {"`
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 
 - Exposes:
   - No exports; renderer-side side-effect module for the language selection window.
@@ -2760,7 +3249,7 @@ Last commit: `93cfc1aea95f187168410b596f99fd724cf797c4`
 - Delegated IPC registration:
   - None.
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -2778,7 +3267,7 @@ Reviewer gate: PASS
 
 Observable contract/timing preserved (no changes applied).
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -2793,7 +3282,7 @@ Observable contract and timing preserved (no code changes).
 Reviewer assessment: PASS — “NO CHANGE” is justified; the module already has explicit busy guards and try/catch, and adding DOM-null guards would alter fail-fast behavior.
 Reviewer gate: PASS
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -2810,7 +3299,7 @@ Reviewer gate: PASS
 
 Observable contract/timing preserved (no code changes).
 
-### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
 
 Decision: CHANGED
 
@@ -2843,7 +3332,7 @@ Validation (manual / grep):
 Reviewer assessment: PASS — fixes a previously silent fallback; uses BOOTSTRAP prefix and appropriate severity.
 Reviewer gate: PASS
 
-### L5 — Comments (Codex, retry)
+#### L5 — Comments (Codex, retry)
 
 Decision: CHANGED (comments-only)
 
@@ -2861,7 +3350,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 No Level 6 changes justified.
@@ -2875,7 +3364,7 @@ Observable contract/timing preserved (no code changes).
 
 Reviewer gate: PASS
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 **Estado:** PASS
 
@@ -2893,12 +3382,12 @@ Reviewer gate: PASS
 
 ---
 
-## public/js/crono.js
+### public/js/crono.js
 
 Date: `2026-01-24`
 Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
 
-### L0 — Diagnosis (no changes)
+#### L0 — Diagnosis (no changes)
 
 - Reading map:
   - Block order:
@@ -2944,7 +3433,7 @@ Last commit: `60d3a79e7f62d1c53d2578fbe6bbc2f905c24a5d`
 
 Reviewer gate: PASS (Level 0 diagnosis is adequate; anchors corrected to match file).
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -2956,7 +3445,7 @@ Decision: NO CHANGE
 
 Reviewer gate: PASS (Level 1): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
 
-### L2 — Clarity / robustness refactor (controlled) (Codex)
+#### L2 — Clarity / robustness refactor (controlled) (Codex)
 
 Decision: NO CHANGE
 
@@ -2970,7 +3459,7 @@ Observable contract and timing/ordering were preserved.
 
 Reviewer gate: PASS (Level 2): NO CHANGE is justified; diff empty; no contract/timing risk introduced.
 
-### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -2983,7 +3472,7 @@ Decision: NO CHANGE (no Level 3 justified)
 
 Reviewer gate: PASS (Level 3): NO CHANGE justified; evidence cross-checked in consumers/bridge/main; diff empty.
 
-### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
 
 Decision: NO CHANGE
 
@@ -2997,7 +3486,7 @@ Observable contract and timing/ordering were preserved.
 
 Reviewer gate: PASS (Level 4): NO CHANGE justified; diff empty; logging policy compliance acceptable.
 
-### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
+#### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
 
 Decision: CHANGED
 
@@ -3009,7 +3498,7 @@ Decision: CHANGED
 
 Reviewer gate: PASS (Level 5): Comments-only change; improves navigability; no contract/timing risk introduced.
 
-### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
 
 Decision: NO CHANGE
 
@@ -3025,7 +3514,7 @@ Observable contract and timing/ordering were preserved.
 
 Reviewer gate: PASS (Level 6): NO CHANGE justified; post-L5 coherence verified; diff empty.
 
-### L7 — Smoke test (human-run; minimal)
+#### L7 — Smoke test (human-run; minimal)
 
 Resultado: PASS
 
@@ -3042,20 +3531,20 @@ Resultado: PASS
 
 ---
 
-## public/js/format.js
+### public/js/format.js
 
 Date: `2026-01-24`
 Last commit: `87a315f074f8d89a237583286f42f18c4f66b19a`
 
-### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
 Source: `tools_local/codex_reply.md` (local only; do not commit)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 - Block order: file comment, `'use strict'`, IIFE wrapper, constants (`log`, `DEFAULT_LANG`, `normalizeLangTag`, `getLangBase`), helper functions (`getTimeParts`, `formatTimeFromWords`, `obtenerSeparadoresDeNumeros`, `formatearNumero`), global export (`window.FormatUtils`).
 - Linear breaks: none observed; helpers are declared sequentially inside a single IIFE scope.
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 - Exposes: assigns `window.FormatUtils` with four functions (`getTimeParts`, `formatTimeFromWords`, `obtenerSeparadoresDeNumeros`, `formatearNumero`).
 - Side effects: reads from `window` globals and logs via `log.warnOnce` on fallback paths.
 - Invariants / fallbacks (anchored to checks in this file):
@@ -3072,7 +3561,7 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: NO CHANGE
 
@@ -3087,7 +3576,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -3106,7 +3595,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -3126,7 +3615,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -3141,7 +3630,7 @@ Observable contract/timing preserved: solo cambió el output de logs en un branc
 Reviewer assessment: PASS (log-only; key estable; severidad coherente).
 Reviewer gate: PASS
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -3154,7 +3643,7 @@ Decision: CHANGED
 Reviewer assessment: PASS (comments-only; improves scanability; section headers match actual structure; ASCII-only constraint satisfied).
 Reviewer gate: PASS
 
-### L6 — Final review (Codex)
+#### L6 — Final review (Codex)
 
 Decision: NO CHANGE
 No Level 6 changes justified.
@@ -3170,7 +3659,7 @@ Reviewer assessment:
 - Nota: el reporte NO CHANGE no incluyó anchors; y “all return shapes” es una sobre-afirmación (depende de `settingsCache.numberFormatting`).
 Reviewer gate: PASS
 
-### L7 — Smoke (human-run; minimal)
+#### L7 — Smoke (human-run; minimal)
 
 **Estado:** PASS
 
@@ -3233,16 +3722,16 @@ Reviewer gate: PASS
 
 ---
 
-## public/js/count.js
+### public/js/count.js
 
 Date: `2026-01-24`
 Last commit: `c040f4a4b0270312bd58e56e3e41d2f317d0d04e`
 
-### L0 — Minimal diagnosis (Codex, verified)
+#### L0 — Minimal diagnosis (Codex, verified)
 
 Source: `tools_local/codex_reply.md` (local only; do not commit)
 
-#### 0.1 Reading map
+##### 0.1 Reading map
 - Block order: IIFE wrapper; constants/config (`DEFAULT_LANG`, `HYPHEN_JOINERS`, `RE_ALNUM_ONLY`); helpers (`contarTextoSimple`, `hasIntlSegmenter`, `isHyphenJoinerSegment`, `isAlnumOnlySegment`, `contarTextoPrecisoFallback`, `contarTextoPreciso`); main entry (`contarTexto`); export/side effect (`window.CountUtils` assignment).
 - Linear reading breaks:
   - `RE_ALNUM_ONLY` feature detection split by try/catch: `try { RE_ALNUM_ONLY = /^[\p{L}\p{N}]+$/u; }`
@@ -3250,7 +3739,7 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
   - `contarTextoPreciso` conditional increment path: `if (!(pendingHyphenJoin && joinable)) { palabras += 1; }`
   - `contarTexto` mode normalization gate: `opts.modoConteo === 'simple' ? 'simple' : 'preciso'`
 
-#### 0.2 Contract map
+##### 0.2 Contract map
 - Exposed API / side effects:
   - Exposes `window.CountUtils` with `{ contarTextoSimple, contarTextoPrecisoFallback, contarTextoPreciso, contarTexto, hasIntlSegmenter }`.
   - Side effect: attaches `CountUtils` on `window` inside an IIFE.
@@ -3267,7 +3756,7 @@ Source: `tools_local/codex_reply.md` (local only; do not commit)
 Reviewer gate:
 - L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
 
-### L1 — Structural refactor and cleanup (Codex)
+#### L1 — Structural refactor and cleanup (Codex)
 
 Decision: CHANGED
 
@@ -3288,7 +3777,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L2 — Clarity / robustness refactor (Codex)
+#### L2 — Clarity / robustness refactor (Codex)
 
 Decision: NO CHANGE
 
@@ -3304,7 +3793,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L3 — Architecture / contract changes (Codex)
+#### L3 — Architecture / contract changes (Codex)
 
 Decision: NO CHANGE (no Level 3 justified)
 
@@ -3327,7 +3816,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L4 — Logs (Codex)
+#### L4 — Logs (Codex)
 
 Decision: CHANGED
 
@@ -3348,7 +3837,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L5 — Comments (Codex)
+#### L5 — Comments (Codex)
 
 Decision: CHANGED
 
@@ -3369,7 +3858,7 @@ Reviewer assessment:
 
 Reviewer gate: PASS
 
-### L6 — Final review (manual)
+#### L6 — Final review (manual)
 
 Decision: NO CHANGE
 
@@ -3383,7 +3872,7 @@ Observable contract/timing preserved (no code changes applied).
 
 Reviewer gate: PASS
 
-### L7 — Smoke (human-run; minimal, dev)
+#### L7 — Smoke (human-run; minimal, dev)
 
 **Estado:** PASS
 
@@ -3443,7 +3932,2193 @@ Reviewer gate: PASS
 
 ---
 
-## public/js/presets.js
+### public/js/presets.js
 
-Date: `2026-01-24`
+Date: `2026-02-08`
+Last commit: `cfc9580868fc95914119e9d1ef1fcc8d9f49be33`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+##### 0.1 Reading map
+- Block order: IIFE wrapper → top-level deps (`log`, `DEFAULT_LANG`, `getLangBase`) → helpers (`combinePresets`, `fillPresetsSelect`, `applyPresetSelection`) → async loaders (`loadPresetsIntoDom`, `resolvePresetSelection`) → global export (`window.RendererPresets`).
+- Linear breaks / obstacles (anchors/micro-quotes):
+  - `loadPresetsIntoDom` — settings snapshot fallback: `settings && typeof settings === 'object'`
+  - `resolvePresetSelection` — duplicated snapshot pattern: `settings && typeof settings === 'object'`
+  - `resolvePresetSelection` — persistence side effect interleaved: `electronAPI.setSelectedPreset(selected.name)`
+
+##### 0.2 Contract map
+- Exposed API / side effects:
+  - Exposes `window.RendererPresets` with `{ combinePresets, fillPresetsSelect, applyPresetSelection, loadPresetsIntoDom, resolvePresetSelection }`.
+  - Side effects: creates `log` via `window.getLogger('presets')`, reads `window.AppConstants` and `window.RendererI18n`, assigns `window.RendererPresets`.
+- Invariants and fallbacks (anchored to checks in this file):
+  - `loadPresetsIntoDom` requires `electronAPI` (throws): `throw new Error('electronAPI requerido`
+  - Language base falls back to default: `getLangBase(...) || DEFAULT_LANG`
+  - Missing preset arrays tolerated: `: []` (e.g., `presets_by_language`, `disabled_default_presets`)
+  - Selection fallback when missing: `p.name === 'default') || list[0]`
+  - Description fallback: `preset.description || ''`
+  - Empty selection clears UI: `selectEl.selectedIndex = -1`
+- IPC contract: none found in this file.
+  - ipcMain.handle/on/once: none
+  - ipcRenderer.invoke/send/on/once: none
+  - webContents.send: none
+- Delegated IPC registration: none found.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (correct block order + contract; anchors valid; note: “main interaction” is via injected `electronAPI`, not direct IPC in this file).
+
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: NO CHANGE
+
+- The file already follows a clear, linear structure (deps → helpers → async flows → export) with minimal jumps.
+- The only visible duplication is the `settingsSnapshot` initialization in two functions; extracting a helper would add indirection without reducing branches or improving readability.
+- Control flow is already flat with early returns where appropriate; further restructuring risks obscuring the timing and persistence paths.
+- The existing grouping keeps DOM updates and persistence side effects adjacent to selection logic, which aids reasoning about behavior.
+
+Reviewer assessment:
+- PASS for L1 gate as NO CHANGE: rationale aligns with the observed linear structure and minimal duplication; “timing risk” is somewhat generic here (module is mainly function declarations + a global export), but NO CHANGE remains a reasonable Level 1 outcome.
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: CHANGED
+
+- Change 1: Extract `normalizeSettings(settings, language)` and reuse it to replace the duplicated settings snapshot fallback in:
+  - `loadPresetsIntoDom` — `settings && typeof settings === 'object'`
+  - `resolvePresetSelection` — `settings && typeof settings === 'object'`
+  - Gain: centralizes a repeated edge-case fallback; reduces duplication in two async entrypoints.
+  - Cost: adds one small helper indirection.
+  - Validation:
+    - Static: confirm both previous fallback blocks are replaced by the helper and that the fallback literal preserves `{ language, presets_by_language: {}, selected_preset_by_language: {} }`.
+    - Manual: open app → change preset → confirm presets list loads and selection persists as before.
+
+- Change 2: Make current preset name trimming single-pass (`trimmedCurrent`) and make `hasCurrent` an explicit boolean.
+  - Gain: clearer selection path; avoids repeated `.trim()` and implicit string-truthiness.
+  - Cost: adds 1–2 local variables.
+  - Validation:
+    - Static: confirm `selectedName` remains `persisted || (hasCurrent ? trimmedCurrent : '')` and the “no selection” warnOnce branch is unchanged in behavior.
+
+Observable contract, side effects, and timing/ordering are preserved.
+
+Reviewer assessment:
+- PASS for L2 gate: Change 1 removes a literal duplication that exists twice in-file, without altering fallback shape; Change 2 is truthiness-equivalent to the current `hasCurrent`/`selectedName` logic and does not alter side effects (selection + persistence remain in the same ordering).
+
+#### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `public/js/presets.js` no IPC directo; dependencia por bridge: `if (!electronAPI) throw new Error('electronAPI requerido`
+- `public/js/presets.js` llamada a main para defaults: `defaults = await electronAPI.getDefaultPresets()`
+- `public/js/presets.js` persistencia de selección: `await electronAPI.setSelectedPreset(selected.name)`
+- `public/js/presets.js` return shape del loader: `return { list: finalList };`
+- `public/renderer.js` consumo de `RendererPresets`: `const { applyPresetSelection, loadPresetsIntoDom, resolvePresetSelection } = window.RendererPresets || {};`
+- `public/renderer.js` call sites: `await loadPresetsIntoDom({ ... })` y `await resolvePresetSelection({ ... })`
+- `electron/preload.js` bridge: `getDefaultPresets: () => ipcRenderer.invoke('get-default-presets')`
+- `electron/presets_main.js` handler: `ipcMain.handle('get-default-presets', () => {`
+
+No observable contract/timing changes were made.
+
+Reviewer assessment:
+- PASS: No evidence of cross-module contract ambiguity or consumer mismatch requiring Level 3.
+
+Reviewer gate: PASS
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: NO CHANGE
+
+- Uses renderer logger via `window.getLogger('presets')`; no local log aliases/wrappers.
+- Fallback logs exist on selection degradation paths via `log.warnOnce` with explicit stable keys and controlled `:${lang}` variant suffix.
+- Caught-exception fallbacks are logged with `log.error` (getDefaultPresets failure; selected preset persistence failure), while preserving best-effort behavior.
+- No window-send races (`webContents.send`) or direct IPC sites exist in this file, so “failed (ignored)” style is not applicable.
+- Additional logs for frequent normalization/defaulting (e.g., `normalizeSettings`) would add noise on healthy paths and are treated as contract-tolerated inputs.
+
+Observable contract/timing preserved (no code changes).
+
+Reviewer assessment:
+- PASS: Logging sites follow call-site style; warnOnce keys are explicit and controlled; no clear policy breach that warrants L4 changes.
+Reviewer gate: PASS
+
+#### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
+
+Decision: CHANGED (comments-only)
+
+- Added an Overview block with a concise responsibilities list.
+- Inserted section dividers aligned to the real block order (deps/logger, helpers, async flows, exports).
+- Added an explicit end-of-file marker ("End of public/js/presets.js").
+- English + ASCII-only comments.
+
+No functional changes; comments-only.
+
+Reviewer assessment:
+- PASS: Comments-only change; improves navigability without changing semantics/contract/timing.
+
+Reviewer gate: PASS
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+- Checked `public/js/presets.js` `normalizeSettings` usage for duplicated guards or unused locals; both call sites use it consistently.
+- Checked `public/js/presets.js` `combinePresets` and return shape (`return { list: finalList };`) against `public/renderer.js` call sites (`loadPresets`, `reloadPresetsList`).
+- Checked logging calls in `resolvePresetSelection` for `warnOnce` signature compliance and stable keys (`presets.selectedPreset.none:${lang}`, `presets.selectedPreset.missing:${lang}`).
+- Checked error logging in `loadPresetsIntoDom` / `resolvePresetSelection` for policy-aligned usage (`log.error(...)` in caught failures; best-effort behavior preserved).
+- Checked comments added in Level 5 against actual code blocks and behavior; no drift found.
+
+Observable contract and timing were preserved (no code changes).
+
+Reviewer assessment:
+- PASS: L6 checks are consistent with the current file; no leftover refactor artifacts detected; logging signatures/keys match `public/js/log.js` policy.
+
+Reviewer gate: PASS
+
+#### L7 — Smoke test (humano)
+
+Result: PASS
+
+Checklist (source: `docs/test_suite.md`, REG-PRESETS):
+- [x] REG-PRESETS-01 Create preset: selecting it updates WPM + time estimate.
+- [x] REG-PRESETS-02 Edit preset: updated WPM is applied when selected.
+- [x] REG-PRESETS-03 Change language: preset list reflects language base (user preset from other language not shown).
+- [x] REG-PRESETS-04 Delete preset: selection falls back safely (e.g., `default` or first available) and UI remains consistent.
+- [x] REG-PRESETS-06 Restore defaults: list repopulates; selection remains valid or falls back safely.
+- [x] REG-PRESETS-07 Persistence across sessions: selected preset persists per language base and is reapplied on relaunch.
+
+---
+
+### public/js/menu_actions.js
+
+Date: `2026-02-08`
+Last commit: `ae1d04c5b86007f50afb41459f38454565b6c64f`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+##### 0.1 Reading map
+- Block order: file comment, `'use strict'`, IIFE wrapper, logger + state (`log`, `registry`, `_unsubscribeMenuClick`), public helpers (`registerMenuAction`, `unregisterMenuAction`, `listMenuActions`), dispatcher (`handleMenuClick`), listener bootstrap (`setupListener` + conditional `DOMContentLoaded` retry), global API exposure (`window.menuActions`).
+- Where linear reading breaks:
+  - `setupListener`: changes from registry concerns to environment probing / error handling and early returns. Micro-quote: “`if (_unsubscribeMenuClick) {`”.
+  - `window.menuActions.stopListening`: lifecycle control defined inside the exported object, separate from setup flow. Micro-quote: “`stopListening() {`”.
+
+##### 0.2 Contract map
+- Exposed module surface / side effects:
+  - Side effects: calls `setupListener()` immediately; if it fails, registers a `DOMContentLoaded` retry (`if (!setupListener()) { ... }`); assigns `window.menuActions = { ... }`.
+  - Public API on `window.menuActions`: `registerMenuAction`, `unregisterMenuAction`, `listMenuActions`, `stopListening`, `_internal._getUnsubscribeRef`.
+- Invariants / fallbacks (anchored to checks/fallbacks in this file):
+  - `registerMenuAction` requires `payload` to be a non-empty string. Anchor: “`typeof payload !== 'string' || !payload.trim()`”.
+  - `registerMenuAction` requires `callback` to be a function. Anchor: “`typeof callback !== 'function'`”.
+  - Listener bootstrap is idempotent only when an unsubscribe handle exists. Anchor: “`if (_unsubscribeMenuClick) {`”.
+  - Missing unsubscribe is tolerated with a deduped warning. Anchor: “`onMenuClick did not return unsubscribe`”.
+  - `stopListening` calls unsubscribe only when it is a function. Anchor: “`typeof _unsubscribeMenuClick === 'function'`”.
+- IPC contract (only what exists in this file):
+  - No explicit `ipcMain.*`, `ipcRenderer.*`, or `webContents.send` calls in this file.
+- Delegated registration:
+  - `window.electronAPI.onMenuClick(handleMenuClick)` delegates listener registration to the preload API (channels not present in this file).
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+
+#### L1 — Structural refactor (Codex)
+
+Decision: CHANGED
+
+- Added small section comments to label major blocks (public API helpers / internal handler / init retry) without touching logic.
+- Flattened `setupListener` by hoisting `const api = window.electronAPI` and returning early when `api.onMenuClick` is unavailable (reduced nesting; same success/failure outcomes).
+- Preserved existing early-exit when `_unsubscribeMenuClick` is already set (keeps “idempotent only when unsubscribe exists” behavior).
+- Preserved try/catch scope and the warnOnce path when `onMenuClick` does not return an unsubscribe function.
+
+Risk: Very low. `electronAPI` is exposed as a stable object (`contextBridge.exposeInMainWorld('electronAPI', api)`), and `onMenuClick` returns an unsubscribe function in the preload implementation.
+Validation: N/A (structural-only; contract/timing preserved).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. Changes are local, behavior-preserving, and do not introduce or assume any IPC surface beyond the existing preload delegate.
+- Minor wording mismatch in Codex summary: “section headers/grouping” is mostly limited to small inline comments in the diff shown.
+
+Reviewer gate: PASS
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision: NO CHANGE
+
+- File is already short and linear; additional L2 refactors would be mostly cosmetic rather than a net clarity/robustness gain.
+- Validation and error handling are already explicit at the two main risk points (`registerMenuAction` input checks + `setupListener` try/catch + warnOnce fallback).
+- Centralizing logging or “no-unsubscribe” handling into a helper would add indirection without reducing branches.
+- Tweaking `handleMenuClick` guard paths would likely change observable logging semantics (warn/error), so it is avoided.
+- The DOMContentLoaded retry path is plausibly timing-sensitive; changes there carry risk for minimal benefit.
+
+Risk: N/A (no code changes).
+Validation: N/A (no code changes).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS. “NO CHANGE” is defensible given explicit guards, deduped warnings, and timing-sensitive init/retry behavior already being clear in-file.
+
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+- Decision (Codex): NO CHANGE (no Level 3 justified)
+
+Evidence checked (anchors):
+- `electron/menu_builder.js`: sender de la acción vía `mainWindow.webContents.send('menu-click', payload)`.
+- `preload.js`: puente preload que registra `ipcRenderer.on('menu-click', handler)` y retorna unsubscribe que remueve el listener.
+- `public/renderer.js`: consumidor que registra acciones usando `registerMenuActionGuarded` → `window.menuActions.registerMenuAction(...)`.
+- `public/js/menu_actions.js`: contrato local estable (registro/listado de handlers + dispatch por `handleMenuClick`), y consumo delegado de `api.onMenuClick(handleMenuClick)` (sin IPC directo).
+
+Reviewer assessment (sufficiency & inference quality):
+- PASS (NO CHANGE). El reporte satisface el gate: buscó evidencia repo-wide de “dolor real”/contrato inestable y lo que afirma es consistente con los callsites observables.
+- No hay base para cambio de arquitectura/contrato: la ruta `menu-click` es única y el módulo `menu_actions.js` mantiene una API mínima y consistente.
+
+Reviewer gate: PASS.
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex re-pass)
+
+Decision: CHANGED
+
+Changes (logging-only):
+- BOOTSTRAP fallback is no longer silent: when the initial `setupListener()` fails, emit:
+  - `log.warn('BOOTSTRAP: menuActions: onMenuClick not available yet; retrying at DOMContentLoaded')`
+- DOMContentLoaded retry fallback is no longer silent: if the retry still fails, emit:
+  - `log.warn('menuActions: onMenuClick unavailable after DOMContentLoaded; menu clicks will not be handled')`
+- Removed once-variants where high-frequency repeatability is not justified under the L4 rule:
+  - `log.warnOnce('menu_actions:onMenuClick:no_unsubscribe', ...)` → `log.warn(...)` (key removed)
+  - `log.warnOnce('menu_actions:stopListening:no_unsubscribe', ...)` → `log.warn(...)` (key removed)
+- Fixed debug typo: `unscribed` → `unsubscribed`.
+
+Risk:
+- Logging-only. Potential increase in warning volume if `stopListening()` (or no-unsubscribe) repeats; accepted per strict “once-variants ONLY when high-frequency repeatable” rule.
+
+Validation (manual/grep):
+- Grep keys removed (should be 0 hits after apply):
+  - `rg -n -F "menu_actions:onMenuClick:no_unsubscribe" public/js/menu_actions.js`
+  - `rg -n -F "menu_actions:stopListening:no_unsubscribe" public/js/menu_actions.js`
+- Grep BOOTSTRAP marker (should be 1 hit after apply):
+  - `rg -n -F "BOOTSTRAP: menuActions: onMenuClick not available yet" public/js/menu_actions.js`
+- Grep typo fix:
+  - `rg -n -F "listener unsubscribed correctly" public/js/menu_actions.js`
+- Runtime smoke:
+  - Simulate missing `window.electronAPI` at first pass to see BOOTSTRAP warn, then keep it missing through DOMContentLoaded to see the second warn.
+
+Reviewer assessment: PASS
+- Addresses the only real L4 gap (silent fallback on retry) and adds BOOTSTRAP labeling without adding noise on healthy paths.
+- Dedupe removal is consistent with the strict “once-variants ONLY when high-frequency repeatable” interpretation used for this file.
+
+Reviewer gate: PASS
+
+#### L5 — Comments (reader-oriented, electron/main.js style) (Codex)
+
+Decision: CHANGED
+
+- Added a concise ASCII-only "Overview" block at top with 3–7 responsibility bullets (new-reader oriented).
+- Added visible section dividers aligned to the file’s real blocks (Logger/shared state, Public API helpers, handler/registration, Bootstrapping, Exports).
+- Replaced/trimmed redundant inline comments in favor of intent/constraints (unsubscribe semantics, teardown purpose).
+- Clarified `_internal` as debug-only exposure (constraint note to reduce misuse).
+- Added an explicit end-of-file marker: "End of public/js/menu_actions.js".
+
+No functional changes; comments-only.
+
+Reviewer gate: PASS
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+- Checked logging API usage: only `log.debug|warn|error` are used; no key is passed to non-once methods (see BOOTSTRAP warn and other warn sites).
+- Checked bootstrap classification: `BOOTSTRAP:` appears only on the pre-DOM retry path; post-DOM retry failure is a normal warn.
+- Checked listener registration flow: `setupListener()` guard (`if (_unsubscribeMenuClick)`) + early return when `electronAPI.onMenuClick` is unavailable + try/catch remain consistent.
+- Checked module surface: `window.menuActions` still exposes `registerMenuAction`, `unregisterMenuAction`, `listMenuActions`, `stopListening`, and `_internal._getUnsubscribeRef` with the same shapes.
+- Checked comment alignment: Overview, section dividers, and end-of-file marker match actual block order and behavior.
+
+Observable contract and timing/ordering were preserved (no changes made).
+
+Reviewer gate: PASS (Level 6): NO CHANGE justified; post-L5 coherence verified; diff empty.
+
+#### L7 — Smoke test (humano) — `public/js/menu_actions.js` (menu-click routing)
+
+Result: PASS
+
+Checklist (source: `docs/test_suite.md`, REG-MENU + file-specific sanity):
+- [x] (1) Startup sanity: `window.menuActions` existe y expone funciones esperadas (DevTools):
+      - `typeof window.menuActions.registerMenuAction === 'function'`
+      - `Array.isArray(window.menuActions.listMenuActions()) === true`
+- [x] (2) Menu routing sanity (happy path): Menu -> Guia basica (`guia_basica`) abre el modal de info y muestra contenido (REG-MENU-01).
+- [x] (3) Menu routing sanity (happy path): Menu -> Instrucciones (`instrucciones_completas`) y luego FAQ (`faq`) abren el modal y navegan a la seccion correcta (REG-MENU-01).
+- [x] (4) About: Menu -> Acerca de (`acerca_de`) abre modal; version/entorno hidratan o muestran N/A sin crash (REG-MENU-02).
+- [x] (5) Logs sanity (DevTools Console): sin uncaught; y en uso normal NO aparece:
+      - `BOOTSTRAP: menuActions: onMenuClick not available yet; ...`
+      - `menuActions: onMenuClick unavailable after DOMContentLoaded; ...`
+      - `menuActions: payload without registered action -> ...`
+
+---
+
+### public/js/i18n.js
+
+Date: `2026-02-08`
 Last commit: `c224a636c5956cf2616bf6a1bad287438324b204`
+
+#### L0 — Minimal diagnosis (Codex)
+
+Source: `tools_local/codex_reply.md` (local only; do not commit)
+
+##### 0.1 Reading map
+- Block order (as written):
+  1. IIFE wrapper and logger state (`(() => {`, `const log = window.getLogger('i18n');`)
+  2. Module state and constants (`rendererTranslations*`, `AppConstants`, `DEFAULT_LANG`)
+  3. Helpers (normalization, base extraction, object checks, merge, path lookup)
+  4. Async load pipeline (`loadRendererTranslations`, `loadOverlay`, `loadBundle`)
+  5. Translation accessors (`tRenderer`, `msgRenderer`)
+  6. Public export on `window.RendererI18n`
+- Where linear reading breaks (jumps/obstacles):
+  - `loadRendererTranslations` relies on later-defined helper `loadBundle` (micro-quote: `const paths = [];`).
+  - `loadOverlay` relies on later-defined helper `loadBundle` (micro-quote: `const paths = [];`).
+
+##### 0.2 Contract map
+- Module exposure / public entrypoints / side effects:
+  - Side effect: immediately executes an IIFE and attaches `window.RendererI18n`.
+  - Public API: `loadRendererTranslations`, `tRenderer`, `msgRenderer`, `normalizeLangTag`, `getLangBase`.
+- Invariants / fallbacks (anchored to checks in this file):
+  - Normalization: `normalizeLangTag` lowercases (micro-quote: `(lang || '').trim().toLowerCase()`).
+  - Default bundle required: `loadBundle(DEFAULT_LANG, DEFAULT_LANG, true)`.
+  - Defaults fallback to empty: `rendererDefaultTranslations = defaults || {};`.
+  - Overlay optional merge: `deepMerge(rendererDefaultTranslations || {}, overlay || {})`.
+  - Missing key fallback: `return fallback;`.
+  - If translations not loaded: `if (!rendererTranslations) return fallback;`.
+- IPC contract: none found in this file.
+  - ipcMain.handle/on/once: none
+  - ipcRenderer.invoke/send/on/once: none
+  - webContents.send: none
+- Delegated IPC registration: none detected.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no fix proposals; no invented IPC).
+- Note: linear-break anchors are weak (`const paths = [];` is not very locating); acceptable for L0 but could be sharper.
+
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision (Codex): CHANGED  
+Reviewer gate: PASS (after manual revert of unintended `RegExp` edit; structural-only diff accepted)
+
+Accepted changes (verified in diff):
+- Hoisted constants closer to the top: `AppConstants` / `DEFAULT_LANG` moved above mutable module state.
+- Reordered loader function declarations to read low-level → high-level: `loadBundle` now appears before `loadOverlay` and `loadRendererTranslations`.
+- No IPC surface changes; no public API shape changes; IIFE + `window.RendererI18n` attachment preserved.
+- No behavior/contract/timing changes detected in the remaining diff (pure reordering).
+
+#### L2 — Clarity / robustness refactor (Codex)
+
+Decision (Codex): NO CHANGE  
+Reviewer gate: PASS
+
+Rationale (Codex):
+- File already in a clean, linear layout; further reordering would be cosmetic.
+- `loadBundle` warning/error paths are coupled to fallback behavior; consolidation would add indirection.
+- `msgRenderer` regex replacement behavior is observable; “robust” changes would alter semantics.
+- Logging is already deduped (`warnOnce`/`errorOnce`); more explicit edge cases risk extra logs/timing changes.
+- No IPC or startup sequencing exists here; no safe L2 rework with material payoff.
+
+#### L3 — Architecture / contract changes (Codex)
+
+Decision (Codex): NO CHANGE (no Level 3 justified)  
+Reviewer gate: PASS
+
+Evidence checked (anchors):
+- public/renderer.js: destructures `window.RendererI18n || {}` and hard-fails if missing.
+- public/editor.js: same pattern (hard-fail on missing RendererI18n).
+- public/preset_modal.js: same pattern (hard-fail on missing RendererI18n).
+- public/flotante.js: optional i18n usage; logs warning and returns if unavailable.
+- public/js/notify.js: optional path; returns if `RendererI18n.msgRenderer` is not a function.
+- public/js/format.js: consumes helper utilities from `window.RendererI18n || {}`.
+
+Conclusion:
+- No concrete repo-wide pain (bug/repro), contract mismatch, or duplicated responsibility that would justify a Level 3 architecture/contract change in `public/js/i18n.js`.
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision: CHANGED
+Reviewer gate: PASS
+
+Accepted changes (logging-only; verified in diff):
+- `loadBundle`: warnOnce keys for empty/parse/fetch were made policy-compliant (stable buckets):
+  - from keys embedding `requested` + `path`
+  - to `i18n.renderer.bundle.{empty|parse|fetch}:${langCode||'unknown'}:${variant}`
+  - dynamic details stay in args: `{ requested, langCode, path: p }` (+ `err` where applicable)
+- `tRenderer`: missing translation key logging no longer uses warnOnce (signal preserved):
+  - from `warnOnce(key includes lang+path)` to `warn(...)` with `{ path, lang: rendererTranslationsLang }`
+
+Validation (manual/grep):
+- Grep: `i18n.renderer.bundle.` in `public/js/i18n.js`.
+- Force empty/invalid renderer.json for a lang and confirm warnOnce triggers once per `{lang,variant}` bucket.
+- Call `tRenderer` with multiple missing keys and confirm each occurrence logs a warn (no dedupe).
+
+#### L5 — Comments (Codex)
+
+Decision: CHANGED
+Reviewer gate: PASS
+
+Accepted changes (comments-only; per diff):
+- Added an "Overview" block (responsibilities) for new contributors.
+- Added section dividers matching the file’s real blocks:
+  - Logger / constants
+  - Shared state
+  - Helpers (pure utilities)
+  - Bundle loading (renderer.json)
+  - Translation helpers
+  - Exports / module surface
+- Added an explicit EOF marker: "End of public/js/i18n.js".
+
+No functional changes; comments-only.
+
+#### L6 — Final review (Codex)
+
+Decision (Codex): NO CHANGE  
+Reviewer gate: PASS
+
+No Level 6 changes justified.
+
+Checked (anchors):
+- Logging call signatures match `public/js/log.js`: `warnOnce(key, ...args)` / `errorOnce(key, ...args)` used as intended in `loadBundle` and `loadRendererTranslations`.
+- Dedupe key buckets are stable where applied in `loadBundle`: `i18n.renderer.bundle.{empty|parse|fetch}:${langCode||'unknown'}:${variant}`.
+- `requiredMissing` uses `errorOnce` with key bucket `i18n.loadRendererTranslations.requiredMissing:${langCode}`.
+- Missing translation key path in `tRenderer` logs a plain `warn(...)` with `{ path, lang: rendererTranslationsLang }` and returns fallback.
+- Helpers and naming remain consistent (`normalizeLangTag`, `getLangBase`, `deepMerge`, `getPath`).
+- Comments still match code structure (Overview + section dividers + EOF marker).
+
+Observable contract and timing preserved.
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; open DevTools Console to observe renderer logs.
+
+* Use main window first (renderer). Optionally repeat in Editor and Presets modal windows (each window is its own renderer context).
+
+* [x] **(1) Startup sanity: no uncaught errors; `RendererI18n` present**
+  * **Action:** Launch the app and wait for the main window to fully render.
+  * **Expected result:** No uncaught exceptions; UI usable; `window.RendererI18n` is present.
+  * **Evidence:** `public/js/i18n.js` attaches `window.RendererI18n = { ... }`; `public/renderer.js` hard-fails if missing.
+
+* [x] **(2) Surface check: expected methods exist**
+
+  * **Action (DevTools):**
+    * `typeof window.RendererI18n?.loadRendererTranslations`
+    * `typeof window.RendererI18n?.tRenderer`
+    * `typeof window.RendererI18n?.msgRenderer`
+    * `typeof window.RendererI18n?.normalizeLangTag`
+    * `typeof window.RendererI18n?.getLangBase`
+  * **Expected result:** All are `"function"`.
+
+* [x] **(3) Constants dependency: `AppConstants.DEFAULT_LANG` is usable**
+
+  * **Action (DevTools):**
+    * `window.AppConstants?.DEFAULT_LANG`
+  * **Expected result:** A non-empty string (the default language tag used by i18n loader).
+
+* [x] **(4) Load default bundle: resolves to an object; no fatal logs**
+
+  * **Action (DevTools):**
+    * `const dl = window.AppConstants.DEFAULT_LANG;`
+    * `const a = await window.RendererI18n.loadRendererTranslations(dl);`
+  * **Expected result:** `a` is a plain object; no errors; app remains usable.
+  * **Evidence:** `loadRendererTranslations` always sets `rendererDefaultTranslations = defaults || {}` and merges overlay best-effort.
+
+* [x] **(5) Cache behavior: second call returns cached object**
+
+  * **Action (DevTools):**
+    * `const dl = window.AppConstants.DEFAULT_LANG;`
+    * `const a1 = await window.RendererI18n.loadRendererTranslations(dl);`
+    * `const a2 = await window.RendererI18n.loadRendererTranslations(dl);`
+    * `a1 === a2`
+  * **Expected result:** `true` (same reference); no new warnings required on the healthy path.
+  * **Evidence:** early return guard: `if (rendererTranslations && rendererTranslationsLang === selected) return rendererTranslations;`.
+
+* [x] **(6) Helpers correctness: normalize + base derivation**
+
+  * **Action (DevTools):**
+    * `window.RendererI18n.normalizeLangTag('ES_CL')`
+    * `window.RendererI18n.getLangBase('es-cl')`
+  * **Expected result:** first returns `'es-cl'`; second returns `'es'`.
+
+* [x] **(7) Missing-key fallback: returns fallback + emits warn (signal)**
+
+  * **Action (DevTools):**
+    * `window.RendererI18n.tRenderer('__missing.key', 'FALLBACK_OK')`
+  * **Expected result:** returns `'FALLBACK_OK'`; emits one `warn` log: `"Missing translation key (using fallback):"` with `{ path, lang }`.
+  * **Evidence:** `tRenderer` uses `log.warn(...)` (not `warnOnce`) then `return fallback;`.
+
+* [x] **(8) `msgRenderer` substitution works even on fallback**
+
+  * **Action (DevTools):**
+    * `window.RendererI18n.msgRenderer('__missing.key', { name: 'X' }, 'Hello {name}')`
+  * **Expected result:** returns `'Hello X'` (placeholder replaced). A warn is acceptable here because the key is intentionally missing.
+
+* [x] **(9) UI integration: language switch does not break and does not spam logs**
+
+  * **Action:** Switch UI language via your normal language selector flow (pick any non-default shipped language), then switch back.
+  * **Expected result:** No crashes; UI remains usable. If an overlay is missing for the chosen language, you may see at most one `warnOnce` for `i18n.loadRendererTranslations.overlayMissing:<lang>`; no continuous repeats while idle.
+
+* [x] **(10) Multi-window integration: Editor + Presets modal still open (RendererI18n present in those contexts)**
+
+  * **Action:** Open the Editor window, then open the Presets modal (and optionally the Flotante window).
+  * **Expected result:** Windows open normally; no hard-fail errors about missing `RendererI18n`. No repeated log spam in idle.
+
+**Notes (only if needed)**
+
+* If you see repeated `"Missing translation key (using fallback)"` during *normal* UI usage (not DevTools tests), that indicates a real missing-key problem in the UI call sites or bundles (not a logging issue).
+
+---
+
+### public/js/notify.js
+
+Date: `2026-02-09`
+Last commit: `fd615a53318bf259a3094233be4261e7f88d2ebd`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+##### 0.1 Reading map
+
+Block order (actual):
+1. Header + strict + IIFE (`// public/js/notify.js`, `'use strict';`, `(() => { ... })();`)
+2. Helpers:
+   - `resolveText`
+   - `notifyMain`
+   - `toastText`
+   - `ensureToastContainer`
+   - `applyToastPosition`
+   - `toastMain`
+   - `toastEditorText`
+   - `notifyEditor`
+3. Public attachment:
+   - `window.Notify = { notifyMain, notifyEditor, toastMain, toastEditorText }`
+
+Where linear reading breaks (jumps, mixed responsibilities, duplication, nesting):
+- `toastText`: mezcla guard de DOM, creación DOM, styling, animación, timing y removal. Micro-quote: `if (!document || !document.body)`.
+- `ensureToastContainer`: crea DOM + aplica estilos, luego delega posicionamiento. Micro-quote: `container = document.createElement('div');`.
+- `toastMain`: try/catch anidado con fallback a `notifyMain`. Micro-quote: `toastText(msg, { containerId:`.
+- `toastEditorText`: try/catch anidado con fallback condicional a `notifyMain`. Micro-quote: `if (typeof notifyMain === 'function')`.
+- `notifyEditor`: try/catch anidado con fallback a `notifyMain`. Micro-quote: `console.error('[notify] notifyEditor failed:'`.
+
+##### 0.2 Contract map
+
+Module exposure (exports / public entrypoints / side effects):
+- Side effect: adjunta `window.Notify` con 4 entrypoints: `notifyMain`, `notifyEditor`, `toastMain`, `toastEditorText`.
+- Side effects de uso: DOM mutation (containers/toasts), `alert`, `console.error`, `setTimeout` / `requestAnimationFrame`.
+
+Invariants suggested (expected inputs, tolerated errors, fallbacks):
+- `resolveText`: requiere `window.RendererI18n.msgRenderer` como función; si falta, retorna la key. Anchor: `typeof RendererI18n.msgRenderer !== 'function'`.
+- `toastText`: requiere `document` y `document.body`; si falta, hace throw. Anchor: `toastText unavailable: document/body not ready`.
+- `toastText`: fuerza texto a string. Anchor: `String(text)`.
+- Duración: sanitiza a número finito ≥ 0; default 4500. Anchor: `Number.isFinite(duration) ? Math.max(0, duration) : 4500`.
+- Fallbacks:
+  - `toastMain`: on error → `notifyMain(key)`.
+  - `toastEditorText`: on error → `notifyMain(text)` si existe; si no, log de fallback ausente.
+  - `notifyEditor`: on error → `notifyMain(key)`.
+
+IPC contract:
+- No IPC usage in this file (no `ipcMain.*`, `ipcRenderer.*`, ni `webContents.send`).
+- Delegated registration: none.
+
+Reviewer gate:
+- PASS (Level 0: diagnosis-only; anchors presentes; sin IPC inventado).
+
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: CHANGED
+
+- Reordered helper definitions so positioning and container setup (`applyToastPosition`, `ensureToastContainer`) appear before `toastText` uses them.
+- Moved `toastText` to sit directly after its container/position helpers to make the toast flow linear.
+- Moved `notifyMain` down to group the public-facing entrypoints together with `toastMain`, `toastEditorText`, and `notifyEditor`.
+- No logic changes inside any function bodies; only rearranged function order for readability.
+
+Reviewer assessment:
+- PASS: Level 1 scope respected (structural-only reorder). Readability payoff is concrete because `toastText` currently calls `ensureToastContainer(...)` before its definition appears later in-file (jump in linear reading). Contract/behavior/timing preserved: only function declaration order changes within the same IIFE.
+
+Reviewer gate: PASS
+
+#### L2 — Clarity / robustness refactor (controlled) (Codex)
+
+Decision: NO CHANGE
+
+- The file is already short and linear; adding helpers would introduce extra concepts without reducing branching or reading effort.
+- The nested try/catch fallback patterns are the observable behavior (including log prefixes/order); deduping them risks changing those surfaces.
+- Hardening `window`/`document` access (e.g., `typeof` guards) would change error behavior in non-DOM contexts, which is observable.
+- The timing flow (RAF vs `setTimeout`, duration handling, removal delay) is already minimal; refactoring risks timing changes without clarity payoff.
+- Extracting constants for durations/styles would be largely cosmetic and does not materially improve clarity or robustness.
+
+Reviewer assessment:
+- PASS: A NO CHANGE decision is justified at Level 2 because the current code’s nested error/fallback paths and log surfaces are part of the observable behavior, and the toast timing path (RAF vs setTimeout + delayed removal) is timing-sensitive.
+
+Reviewer gate: PASS
+
+#### L3 — Architecture / contract changes (exceptional; evidence-driven) (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- Checked `public/js/notify.js` public contract surface (`window.Notify = { notifyMain, notifyEditor, toastMain, toastEditorText }`) and saw a stable, narrow API with no IPC surface to re-architect.
+- Checked `public/editor.js` usage of `Notify.toastEditorText(...)` and `Notify.notifyMain(...)` (via `showNotice(...)`), plus `Notify.notifyEditor(...)` for editor alerts; no conflicting semantics observed.
+- Checked `public/renderer.js` usage of `Notify.notifyMain(...)` and `Notify.toastMain(...)` (help tip + alert paths); call sites pass string keys and rely on current alert/toast timing.
+- Checked `public/preset_modal.js` usage of `Notify.notifyMain(...)` with a warnOnce-based alert fallback when missing (`preset-modal.notify.missing`); no evidence of contract mismatch or race issues.
+- Confirmed no IPC usage exists in `public/js/notify.js` (no `ipcMain.*`, `ipcRenderer.*`, or `webContents.send`) and no delegated IPC registration.
+
+Reviewer assessment:
+- PASS: No evidence-backed pain point requiring an architecture/contract change. The module remains a narrow in-window Notify helper with stable call sites and no IPC surface.
+
+Reviewer gate: PASS
+
+#### L4 — Logs (Codex)
+
+Decision (Codex): CHANGED
+
+Changes (Codex):
+- Introduce `const log = window.getLogger('notify')` y reemplaza `console.error(...)` en rutas de fallback por `log.warn(...)` (recuperable) y `log.error(...)` (fallback failed).
+  - Gain: niveles alineados a recuperabilidad; mensajes más consistentes con policy.
+  - Cost: si el log level está en `error`, los `warn` se suprimen (degradación silenciosa solo bajo configuración).
+  - Validation: buscar strings tipo `failed; falling back` y verificar que las rutas siguen intentando `notifyMain(...)` igual que antes.
+- Agrega `log.warnOnce('notify.resolveText.i18n.missing', ...)` cuando falta `RendererI18n.msgRenderer`.
+  - Gain: elimina fallback silencioso; dedupe evita spam.
+  - Cost: puede emitir 1 warning si Notify se usa antes de init i18n.
+  - Validation: grep de key `notify.resolveText.i18n.missing`.
+- Agrega `log.errorOnce('notify.toastEditorText.notifyMain.missing', ...)` cuando no existe `notifyMain` para fallback en `toastEditorText`.
+  - Gain: señal deduplicada y accionable ante misconfig persistente; conserva el flujo best-effort.
+  - Cost: ocurrencias posteriores suprimidas (por diseño once).
+  - Validation: grep de key `notify.toastEditorText.notifyMain.missing`.
+
+Reviewer assessment:
+- PASS (L4): cambios limitados a logging + soporte mínimo; keys estables; niveles coherentes; no introduce IPC.
+- Nota/riesgo controlado: `window.getLogger` debe existir antes de cargar `notify.js` (orden de scripts debe garantizarlo).
+
+Reviewer gate: PASS
+
+#### L5 — Comments (Codex)
+
+Decision: CHANGED
+Reviewer gate: PASS
+
+Accepted changes (comments-only; per diff):
+- Added a top-level "Overview" section (responsibilities) for new contributors.
+- Added section dividers (`// =============================================================================`) matching the real block order:
+  - Logger
+  - Helpers (i18n + toast rendering)
+  - Entry points (public API)
+- Added an explicit EOF marker: "End of public/js/notify.js".
+
+No functional changes; comments-only.
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+
+Checks (Codex):
+- Checked logging API usage in `resolveText` (`log.warnOnce`) and `toastEditorText` (`log.errorOnce`) against `public/js/log.js` signature; no drift.
+- Checked fallback logs in `toastMain`, `toastEditorText`, and `notifyEditor` for recoverable severity (`log.warn`) and failure severity (`log.error`); consistent and non-noisy.
+- Checked helper flow for duplication/leftovers: `applyToastPosition`, `ensureToastContainer`, `toastText` are used once each and consistent.
+- Checked public surface `window.Notify = { notifyMain, notifyEditor, toastMain, toastEditorText }`; matches call sites and prior contract.
+- Checked comment/code alignment around Overview and section dividers; matches current block order and responsibilities.
+- Checked DOM guard behavior in `toastText` and string coercion paths; no redundant checks introduced.
+
+Observable contract and timing were preserved.
+
+Reviewer assessment:
+- PASS (L6): NO CHANGE is justified; no evidence of leftover drift after L1–L5, and logging usage remains consistent with the logger API and policy.
+
+Reviewer gate: PASS
+`
+According to a document from **2026-02-09**, el siguiente bloque es el **Checklist L7** para agregar en `docs/cleanup/_evidence/issue64_repo_cleanup.md`, **dentro de la sección** `### public/js/notify.js`, **inmediatamente después de** `Reviewer gate: PASS` de L6. 
+
+No corresponde actualizar `docs/tree_folders_files.md` solo por L7 (no hay info nueva de estructura/archivos). 
+
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; open DevTools Console to observe renderer logs.
+
+* Run in **Main window** first. Then repeat in **Editor window** (separate renderer context).
+
+* [x] **(1) Startup sanity: no uncaught errors; logger + Notify surface present**
+  * **Action:** Launch the app and wait for the main window to fully render.
+  * **Expected result:** No uncaught exceptions; UI usable; `typeof window.getLogger === "function"`; `window.Notify` is present.
+  * **Evidence:** module reads `const log = window.getLogger('notify')` and attaches `window.Notify = { ... }`.
+
+* [x] **(2) Surface check: expected methods exist**
+  * **Action (DevTools):**
+    * `typeof window.Notify?.notifyMain`
+    * `typeof window.Notify?.toastMain`
+    * `typeof window.Notify?.toastEditorText`
+    * `typeof window.Notify?.notifyEditor`
+  * **Expected result:** All are `"function"`.
+  * **Evidence:** `window.Notify = { notifyMain, notifyEditor, toastMain, toastEditorText }`.
+
+* [x] **(3) Main toast path works (DOM toast)**
+  * **Action (DevTools, main window):** `Notify.toastMain('SMOKE:toastMain')`
+  * **Expected result:** A toast appears top-right and disappears after ~9s; container exists:
+    * `document.getElementById('totMainToastContainer')` is non-null after the call.
+  * **Evidence:** `toastMain(... { containerId: 'totMainToastContainer', ... duration = 9000 })`.
+
+* [x] **(4) Main alert path works (blocking)**
+  * **Action (DevTools, main window):** `Notify.notifyMain('SMOKE:notifyMain')`
+  * **Expected result:** A blocking `alert(...)` appears with either translated text or the key itself.
+  * **Evidence:** `notifyMain -> alert(resolveText(key))`.
+
+* [x] **(5) i18n fallback warning is visible and deduped (warnOnce)**
+  * **Action (DevTools, main window):**
+    1. `const saved = window.RendererI18n; window.RendererI18n = null;`
+    2. `Notify.toastMain('SMOKE:i18nMissing')`
+    3. Repeat once: `Notify.toastMain('SMOKE:i18nMissing2')`
+    4. Restore: `window.RendererI18n = saved;`
+  * **Expected result:**
+    * First call emits a **single** warning (deduped by key) about missing `RendererI18n.msgRenderer`, and the toast still shows using key fallback.
+    * Second call does **not** repeat the warnOnce output.
+  * **Evidence:** `log.warnOnce('notify.resolveText.i18n.missing', ...)` + `return key;` on missing `msgRenderer`.
+
+* [x] **(6) Editor toast path works (text toast)**
+  * **Action:** Open the **Editor** window, open its DevTools Console, run:
+    * `Notify.toastEditorText('SMOKE:editorToast')`
+  * **Expected result:** A toast appears top-right and disappears after ~4.5s; container exists:
+    * `document.getElementById('totEditorToastContainer')` is non-null after the call.
+  * **Evidence:** `toastEditorText(... { containerId: 'totEditorToastContainer', ... duration = 4500 })`.
+
+* [x] **(7) Editor key-based notify path works**
+  * **Action (DevTools, editor window):** `Notify.notifyEditor('SMOKE:notifyEditor')`
+  * **Expected result:** A toast appears (translated or key fallback). No uncaught exceptions.
+  * **Evidence:** `notifyEditor -> resolveText(key) -> toastEditorText(msg, ...)` with fallback to `notifyMain` on errors.
+
+* [x] **(8) Log sanity: no spam on healthy paths**
+  * **Action:** Repeat (3), (6), (7) several times.
+  * **Expected result:** No continuous/repeating warnings/errors on healthy paths; only the intentional warnOnce in (5) when i18n is forced missing.
+
+---
+
+### public/js/info_modal_links.js
+
+Date: `2026-02-09`
+Last commit: `b0aed051f81ed786831f27449e3ad2f943f7ce42`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+Source: Codex response pasted in chat (2026-02-09).
+
+##### 0.1 Reading map
+- Block order: header comment → `'use strict'` → IIFE wrapper → `log` init (`window.getLogger('info-modal-links')`) → `bindInfoModalLinks` → inner helper `escapeSelector` → `container.addEventListener('click', ...)` handler → global export `window.InfoModalLinks = { bindInfoModalLinks }`.
+- Linear breaks / obstacles (anchors/micro-quotes):
+  - `bindInfoModalLinks` mezcla guard de “bind once”, selección de API y wiring DOM. Anchor: `container.dataset.externalLinksBound === '1'`
+  - Helper definido *dentro* del binder (salto local de abstracción). Anchor: `const escapeSelector = (value) => {`
+  - Handler con múltiples rutas y returns tempranos (`#`/`appdoc:`/externo). Anchor: `container.addEventListener('click', (ev) => {`
+
+##### 0.2 Contract map
+- Exposed API / side effects:
+  - Exposes `window.InfoModalLinks.bindInfoModalLinks(container, { electronAPI } = {})`.
+  - Side effects: setea `container.dataset.externalLinksBound = '1'` y registra un listener `'click'` sobre `container`.
+- Invariants and fallbacks (anchored to checks in this file):
+  - Bind idempotente por dataset flag: `container.dataset.externalLinksBound === '1'`
+  - Requiere `href` no vacío tras trim: `if (!rawHref) return;`
+  - Ruta hash (`#...`):
+    - `hash` vacío → scroll top (panel o container): `if (!hash) {`
+    - Elemento destino puede no existir (se ignora): `if (!targetEl) return;`
+    - Fallback de scroll manual solo si hay panel: `catch {` + `if (!panel) return;`
+  - Ruta `appdoc:` requiere `api.openAppDoc` o bloquea con warnOnce: `typeof api.openAppDoc !== 'function'`
+  - Ruta externa requiere `api.openExternalUrl` o bloquea con warnOnce: `typeof api.openExternalUrl !== 'function'`
+  - Resolución de URL prioriza `link.href` (absoluta) y cae a raw: `const resolvedHref = link.href || rawHref;`
+- IPC contract: none found in this file.
+  - ipcMain.handle/on/once: none
+  - ipcRenderer.invoke/send/on/once: none
+  - webContents.send: none
+- Delegated IPC registration: none found.
+
+Reviewer gate:
+- L0 protocol: PASS (diagnosis-only; no invented IPC; invariants anchored to visible checks/fallbacks).
+- Note: corrected one Codex micro-quote to be verbatim (removed ellipsis).
+
+#### L1 — Structural refactor and cleanup (Codex)
+
+Decision: CHANGED
+
+- Extrajo `escapeSelector` desde el interior de `bindInfoModalLinks` a un helper top-level dentro del IIFE (reduce nesting local).
+- Eliminó la definición inline del helper dentro del binder, mejorando lectura lineal (guard → api → event listener).
+- No cambia rutas del click handler (`#` / `appdoc:` / externo), ni el guard idempotente por `dataset`, ni el export global.
+
+Contract/behavior/timing preserved.
+
+Reviewer assessment:
+- PASS (L1). Cambio puramente estructural (relocación de helper sin estado); no hay drift de contrato observable (`window.InfoModalLinks.bindInfoModalLinks(...)`), ni IPC en este módulo.
+
+Reviewer gate: PASS
+
+#### L2 — Clarity / robustness refactor (controlled) (Codex)
+
+Decision: NO CHANGE
+
+- El click handler ya es relativamente lineal (guards + returns); extraer helpers añadiría indirection sin reducir ramas.
+- Las rutas `appdoc:` y externo son pocas y directas; un helper compartido metería parámetros y “saltos” de lectura sin payoff claro.
+- Los casos límite relevantes ya están explicitados por guards (href vacío, target inexistente, API faltante), sin dejar comportamiento inseguro implícito.
+- La política de logs ya evita spam en paths repetidos mediante `warnOnce`; endurecer más puede inducir sobre-logging o drift de superficie observable.
+- Reordenar/reestructurar por “robustez” arriesga cambios sutiles de timing (flag dataset + listener) sin una ganancia concreta.
+
+Observable contract and timing are preserved (no changes applied).
+
+Reviewer assessment:
+- PASS (L2). NO CHANGE está justificado: el módulo ya tiene guards explícitos y `warnOnce` en paths de bloqueo/error; no hay una mejora clara de robustez/claridad que no introduzca indirection o riesgo de drift observable.
+
+Reviewer gate: PASS
+
+#### L3 — Architecture / contract changes (Codex)
+
+Decision: NO CHANGE (no Level 3 justified)
+
+- Checked `public/js/info_modal_links.js` `bindInfoModalLinks` and the click handler route split (`#` / `appdoc:` / external); no ambiguous contract or competing responsibilities found.
+- Checked `public/renderer.js` call site `bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });` — single visible consumer and stable call signature in the current snapshot.
+- Snapshot scan shows no additional consumers of `bindInfoModalLinks` beyond `renderer.js` + the module definition.
+- No direct IPC surface in this module (no `ipcMain.*`, `ipcRenderer.*`, `webContents.send`); it relies on `electronAPI` / `window.electronAPI`.
+
+Reviewer assessment:
+- PASS (L3). No evidence of repo-wide pain (multi-consumer instability, mismatched semantics, or reproducible bug) that would justify a contract/architecture change here.
+
+Reviewer gate: PASS
+
+#### L4 — Logs (policy-driven tuning after flow stabilization) (Codex)
+
+Decision (Codex): CHANGED
+
+Changes (Codex):
+- Add `log.warnOnce('renderer.info.css-escape.missing', ...)` when `CSS.escape` is unavailable inside `escapeSelector`.
+  - Gain: elimina fallback silencioso (policy: “no silent fallbacks”) y lo deja deduplicado.
+  - Cost: 1 warning por sesión si el entorno no tiene `CSS.escape`.
+  - Validation: `rg -n -F "renderer.info.css-escape.missing" public/js/info_modal_links.js`.
+- Add `log.warnOnce('renderer.info.scrollIntoView.failed', ...)` when `scrollIntoView(...)` throws and the code uses manual scroll fallback.
+  - Gain: hace visible un fallback UI antes silencioso; dedupe evita spam.
+  - Cost: 1 warning la primera vez que se toma esa ruta; incluye `err` como arg.
+  - Validation: `rg -n -F "renderer.info.scrollIntoView.failed" public/js/info_modal_links.js`.
+- Change appdoc blocked/error logs from `warnOnce(key, ...)` to `warn(...)`.
+  - Gain: evita dedupe “demasiado amplia” que podía ocultar fallas con distintos `docKey/result/err`.
+  - Cost: más logs si el usuario repite clicks sobre un `appdoc:` fallido.
+  - Validation: click repetido sobre un `appdoc:` que falla → se ven warnings por ocurrencia; además `rg -n -F "renderer.info.appdoc.blocked" public/js/info_modal_links.js` debería quedar sin hits si se aplica el parche.
+- Change external blocked/error logs from `warnOnce(key, ...)` to `warn(...)`.
+  - Gain: evita colapsar distintos `resolvedHref/result/err` en un solo warning.
+  - Cost: más logs si el usuario repite clicks sobre un externo fallido.
+  - Validation: click repetido sobre un link externo bloqueado → warnings por ocurrencia; `rg -n -F "renderer.info.external.blocked" public/js/info_modal_links.js` debería quedar sin hits si se aplica el parche.
+
+Reviewer assessment:
+- PASS (L4). Cambios “logging-only” + soporte mínimo (`catch (err)`), alineados con policy (fallos/fallbacks no silenciosos, keys estables, dedupe solo donde repetición no aporta).
+- Riesgo controlado: mayor volumen de warnings en fallas repetidas user-driven (appdoc/external), aceptable para no perder diagnósticos distintos.
+
+Reviewer gate: PASS
+
+#### L5 — Comments (reader-oriented, `electron/main.js` style) (Codex)
+
+Decision: CHANGED (comments-only)
+
+Observed changes (diff-based):
+- Added a top-level Overview block with concise responsibilities (5 bullets) to orient first-time readers.
+- Added section divider comments matching the real file blocks: Logger, Helpers, Main handler.
+- Added an explicit end-of-file marker in the repo divider style: "End of public/js/info_modal_links.js".
+
+Reviewer assessment:
+- PASS (L5). The patch is comments-only, English + ASCII, and follows the established `// =============================================================================` section divider style used in `electron/main.js`.
+- No functional changes and no code movement beyond adding comment headers adjacent to existing blocks; contract/timing remain unchanged.
+
+Reviewer gate: PASS
+
+#### L6 — Final review (coherence + leftover cleanup after refactors) (Codex)
+
+Decision: NO CHANGE
+
+No Level 6 changes justified.
+- Checked logger usage in `public/js/info_modal_links.js`: `warnOnce('renderer.info.css-escape.missing', ...)` and `warnOnce('renderer.info.scrollIntoView.failed', ...)` use stable explicit keys; `warn(...)` is used for per-occurrence user-driven failures (appdoc/external).
+- Checked helper usage: `escapeSelector` is the only selector escaping path and is used by the hash route.
+- Checked handler flow: hash/appdoc/external branches return early; no leftover branches introduced by prior edits.
+- Checked exports: `window.InfoModalLinks = { bindInfoModalLinks }` remains the module surface and matches the `renderer.js` call site.
+- Checked comments vs code: Overview/section dividers/EOF marker match the actual structure.
+
+Observable contract and timing preserved (no changes applied).
+
+Reviewer assessment:
+- PASS (L6). No dead code, signature drift, or comment/code mismatch detected after L1/L4/L5; further edits would be marginal risk.
+
+Reviewer gate: PASS
+
+#### L7 — Smoke (human-run; minimal)
+
+**Estado:** PASS
+
+**Preconditions**
+
+* App launches normally; open DevTools Console to observe renderer logs.
+* Ensure you can open the Info modal via a normal UI path (menu actions such as About / Manual / FAQ, etc.).
+* Keep the main renderer window active (where the Info modal lives).
+
+* [x] **(1) Startup sanity: InfoModalLinks surface is present**
+  * **Action:** Launch the app and open DevTools Console. In Console, evaluate:
+    * `typeof window.InfoModalLinks?.bindInfoModalLinks`
+  * **Expected result:** It is `"function"`. No startup errors related to info modal link wiring.
+  * **Evidence:** `public/js/info_modal_links.js` assigns `window.InfoModalLinks = { bindInfoModalLinks }` (lines 135–137 in the current file copy).
+
+* [x] **(2) Open/close modal baseline (no errors, no idle spam)**
+  * **Action:** Open the Info modal from the UI (About/Manual/FAQ/etc.), wait for content to render, then close it (close button/backdrop/Escape).
+  * **Expected result:** No uncaught exceptions; no repeating warnings while idle after closing.
+  * **Evidence:** `public/renderer.js` hydrates `#infoModalContent` then calls `bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI })` (lines 1013–1015 in the current file copy).
+
+* [x] **(3) External link routing (normal path)**
+  * **Action:** In the Info modal content, click an external link (any `<a href="https://...">` present in the modal). Repeat once.
+  * **Expected result:** The modal stays open (no in-modal navigation). The external open is delegated via Electron (browser opens or the request is blocked). If blocked/failed, you may see per-click warnings, but no errors/crash.
+  * **Evidence:** `info_modal_links.js` prevents default and calls `api.openExternalUrl(resolvedHref)` (lines 85–128), with a missing-API guard `renderer.info.external.missing` (lines 111–117).
+
+* [x] **(4) Hash link routing (in-modal scroll)**
+  * **Action:** Click a hash link inside the Info modal (any `<a href="#...">` present). If there is a “back to top” hash (`href="#"`), click it too.
+  * **Expected result:** Scrolls within the modal panel (or no-ops if the target id is missing). No exceptions.
+  * **Evidence:** Hash branch: `rawHref.startsWith('#')` (line 51), finds target via `container.querySelector(#id)` (line 64), calls `scrollIntoView` with a logged fallback path (lines 67–81).
+
+* [x] **(5) appdoc: routing (if present in content)**
+  * **Action:** If the Info modal contains any `appdoc:` link (e.g., `<a href="appdoc:...">`), click it once; then click it again.
+  * **Expected result:** The app-doc open is delegated via Electron. If the request fails/blocked you get per-click warnings; if the API is missing you get a warnOnce about missing `openAppDoc` (and repeats should not re-log the warnOnce bucket).
+  * **Evidence:** appdoc branch: `rawHref.startsWith('appdoc:')` (line 87), missing-API warnOnce key `renderer.info.appdoc.missing` (lines 89–96), per-click warnings on result/error (lines 98–106).
+
+* [x] **(6) Bind-once guard (no duplicate click handlers)**
+  * **Action:** Open the same Info modal content twice (close → reopen), then click the same external/appdoc link once.
+  * **Expected result:** Each click triggers at most one delegated action (no “double open” symptom). No evidence of multiple handler stacking.
+  * **Evidence:** One-time bind guard: `container.dataset.externalLinksBound === '1'` plus `container.dataset.externalLinksBound = '1'` (lines 36–37).
+
+* [x] **(7) Optional: validate the two new warnOnce buckets (only if easy in your environment)**
+  * **Action:** (Optional) Force the hash path to exercise the two warnOnce buckets:
+    * `renderer.info.css-escape.missing` (requires `CSS.escape` to be unavailable, then click a `#...` hash link).
+    * `renderer.info.scrollIntoView.failed` (requires `scrollIntoView` to throw, then click a `#...` hash link).
+  * **Expected result:** Each bucket logs at most once per session; normal/healthy paths remain quiet.
+  * **Evidence:** warnOnce keys live in `escapeSelector` (lines 23–30) and the `scrollIntoView` catch (lines 69–74).
+
+---
+
+### public/js/constants.js
+
+Date: `2026-02-09`
+Last commit: `e0a90380d852d89449c13b9c3726d566b82c4fc0`
+
+#### L0 — Minimal diagnosis (Codex, verified)
+
+**0.1 Reading map**
+- Block order: file header + `'use strict'` → IIFE wrapper `(() => {` → `DEFAULTS` object → `AppConstants` object (spreads defaults + `applyConfig`) → environment guard (`typeof window`) → global export (`window.AppConstants = AppConstants`).
+- Linear reading breaks (identifier + micro-quote):
+  - IIFE wrapper hides globals / encloses module scope: `(() => {`
+  - `applyConfig` embeds logic inside the constants surface: `applyConfig(cfg = {}) {`
+  - Runtime environment guard is inside module body: `typeof window === 'undefined'`
+
+**0.2 Contract map**
+- Exposes / side effects:
+  - Global export: assigns `window.AppConstants = AppConstants;`
+  - Throws if `window` is missing: `throw new Error('AppConstants requiere window; ...')`
+- Suggested invariants / fallbacks (anchored):
+  - Browser/renderer context required: `if (typeof window === 'undefined') { throw ... }`
+  - `applyConfig` accepts `cfg` (defaults to `{}`), reads `cfg.maxTextChars`, and returns it only if it is finite and > 0; otherwise falls back: `return this.MAX_TEXT_CHARS;`
+  - `DEFAULT_LANG` has an explicit cross-file invariant in comment: `DEFAULT_LANG: 'es', // ... must match 'electron/constants_main.js'.`
+
+IPC contract:
+- None found. No `ipcMain.*`, `ipcRenderer.*`, or `webContents.send` calls.
+
+Delegated IPC registration:
+- None found.
+
+Result: PASS
+
+#### L1–L7
+
+Decision: NO CHANGE (file is small/linear; no IPC surface; only global export + trivial config helper; further levels would be churn with low payoff).
+
+Result: PASS
+
+---
+
+### electron/preload.js
+
+Date: `2026-02-09`
+Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
+
+#### LP0 — Diagnosis + Inventarios (Codex, verified)
+
+Codex gate: PASS (LP0)
+- Diagnosis only; no changes, no recommendations.
+- No invented IPC channels/consumers beyond `electron/preload.js`.
+- Inventories complete (surface keys + IPC calls + listener semantics).
+- Anchors/micro-quotes validated against file.
+
+##### 0.1 Reading map (validated)
+Block order (actual):
+1) `'use strict'`
+2) `require('electron')` destructuring: `const { contextBridge, ipcRenderer } = require('electron');`
+3) `const api = { ... }` (API surface, incl. invoke/send/on wrappers)
+4) `contextBridge.exposeInMainWorld('electronAPI', api);`
+
+Linear reading breaks (obstacles; anchors):
+- `api` — `const api = {`
+- `onMenuClick` — `const wrapper = (_e, payload) => {`
+- `onSettingsChanged` — `return () => { try { ipcRenderer.removeListener`
+
+##### 0.2 Preload surface contract map (validated)
+
+A) `contextBridge.exposeInMainWorld(...)`
+- Exposed name: `electronAPI`
+- Anchor: `contextBridge.exposeInMainWorld('electronAPI', api);`
+
+Keys by category (full inventory; set is contractual):
+- Invoke wrappers:
+  - `readClipboard` → invoke `'clipboard-read-text'`
+  - `openEditor` → invoke `'open-editor'`
+  - `checkForUpdates` → invoke `'check-for-updates'` with `{ manual }`
+  - `openPresetModal` → invoke `'open-preset-modal'` (payload)
+  - `openDefaultPresetsFolder` → invoke `'open-default-presets-folder'`
+  - `getCurrentText` → invoke `'get-current-text'`
+  - `setCurrentText` → invoke `'set-current-text'` (text)
+  - `getAppConfig` → invoke `'get-app-config'`
+  - `getAppVersion` → invoke `'get-app-version'`
+  - `getAppRuntimeInfo` → invoke `'get-app-runtime-info'`
+  - `openExternalUrl` → invoke `'open-external-url'` (url)
+  - `openAppDoc` → invoke `'open-app-doc'` (docKey)
+  - `getSettings` → invoke `'get-settings'`
+  - `getDefaultPresets` → invoke `'get-default-presets'`
+  - `setSelectedPreset` → invoke `'set-selected-preset'` (name)
+  - `requestDeletePreset` → invoke `'request-delete-preset'` (name)
+  - `requestRestoreDefaults` → invoke `'request-restore-defaults'`
+  - `notifyNoSelectionEdit` → invoke `'notify-no-selection-edit'`
+  - `forceClearEditor` → invoke `'force-clear-editor'`
+  - `setModeConteo` → invoke `'set-mode-conteo'` (mode)
+  - `getCronoState` → invoke `'crono-get-state'`
+  - `openFlotanteWindow` → invoke `'flotante-open'`
+  - `closeFlotanteWindow` → invoke `'flotante-close'`
+
+- Send wrappers:
+  - `sendCronoToggle` → send `'crono-toggle'`
+  - `sendCronoReset` → send `'crono-reset'`
+  - `setCronoElapsed` → send `'crono-set-elapsed'` (ms)
+  - `sendStartupRendererCoreReady` → send `'startup:renderer-core-ready'`
+  - `sendStartupSplashRemoved` → send `'startup:splash-removed'`
+
+- On-listeners (listener-like keys):
+  - `onCurrentTextUpdated` — no unsubscribe
+  - `onPresetCreated` — no unsubscribe
+  - `onMenuClick` — returns unsubscribe (removeListener; try/catch)
+  - `onSettingsChanged` — returns unsubscribe (removeListener; try/catch)
+  - `onCronoState` — returns unsubscribe (removeListener; try/catch)
+  - `onFlotanteClosed` — returns unsubscribe (removeListener; try/catch)
+  - `onEditorReady` — returns unsubscribe (removeListener; try/catch)
+  - `onStartupReady` — returns unsubscribe (removeListener; try/catch)
+
+Replay/buffer behavior:
+- None visible in this file (no buffering state; direct `ipcRenderer.on(...)` registration only).
+
+B) Direct global exports:
+- None (no `window.X = ...` assignments in this file).
+
+##### 0.3 IPC contract inventory (mechanical; validated)
+
+ipcRenderer.invoke:
+- `'clipboard-read-text'` args: none → return: unspecified (opaque to preload)
+- `'open-editor'` args: none → return: unspecified
+- `'check-for-updates'` args: `{ manual }` → return: unspecified
+- `'open-preset-modal'` args: `payload` → return: unspecified
+- `'open-default-presets-folder'` args: none → return: unspecified
+- `'get-current-text'` args: none → return: unspecified
+- `'set-current-text'` args: `text` → return: unspecified
+- `'get-app-config'` args: none → return: unspecified
+- `'get-app-version'` args: none → return: unspecified
+- `'get-app-runtime-info'` args: none → return: unspecified
+- `'open-external-url'` args: `url` → return: unspecified
+- `'open-app-doc'` args: `docKey` → return: unspecified
+- `'get-settings'` args: none → return: unspecified
+- `'get-default-presets'` args: none → return: unspecified
+- `'set-selected-preset'` args: `name` → return: unspecified
+- `'request-delete-preset'` args: `name` → return: unspecified
+- `'request-restore-defaults'` args: none → return: unspecified
+- `'notify-no-selection-edit'` args: none → return: unspecified
+- `'force-clear-editor'` args: none → return: unspecified
+- `'set-mode-conteo'` args: `mode` → return: unspecified
+- `'crono-get-state'` args: none → return: unspecified
+- `'flotante-open'` args: none → return: unspecified
+- `'flotante-close'` args: none → return: unspecified
+
+ipcRenderer.send:
+- `'crono-toggle'` args: none
+- `'crono-reset'` args: none
+- `'crono-set-elapsed'` args: `ms`
+- `'startup:renderer-core-ready'` args: none
+- `'startup:splash-removed'` args: none
+
+ipcRenderer.on (forwarded payload to cb):
+- `'current-text-updated'` listener: `(_e, text)` → forwards `cb(text)`
+- `'preset-created'` listener: `(_e, preset)` → forwards `cb(preset)`
+- `'menu-click'` listener: `(_e, payload)` → forwards `cb(payload)` (wrapped in try/catch)
+- `'settings-updated'` listener: `(ev, newSettings)` → forwards `cb(newSettings)` (wrapped in try/catch)
+- `'crono-state'` listener: `(_e, state)` → forwards `cb(state)` (wrapped in try/catch)
+- `'flotante-closed'` listener: `()` → forwards `cb()` (wrapped in try/catch)
+- `'editor-ready'` listener: `()` → forwards `cb()` (wrapped in try/catch)
+- `'startup:ready'` listener: `()` → forwards `cb()` (wrapped in try/catch)
+
+ipcRenderer.removeListener:
+- `'menu-click'` with `wrapper`
+- `'settings-updated'` with `listener`
+- `'crono-state'` with `wrapper`
+- `'flotante-closed'` with `listener`
+- `'editor-ready'` with `listener`
+- `'startup:ready'` with `listener`
+
+ipcMain.* / webContents.send:
+- None in this file.
+
+##### 0.4 Invariants / fallbacks (anchored; validated)
+
+Listener-like keys table (mandatory):
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| `onCurrentTextUpdated` | `current-text-updated` | `(_e, text) => cb(text)` | PROPAGATES | N | N-A | N-A |
+| `onPresetCreated` | `preset-created` | `(_e, preset) => cb(preset)` | PROPAGATES | N | N-A | N-A |
+| `onMenuClick` | `menu-click` | `try { cb(payload); }` | ISOLATES | Y | `ipcRenderer.removeListener('menu-click', wrapper)` | ISOLATES |
+| `onSettingsChanged` | `settings-updated` | `try { cb(newSettings); }` | ISOLATES | Y | `ipcRenderer.removeListener('settings-updated', listener)` | ISOLATES |
+| `onCronoState` | `crono-state` | `try { cb(state); }` | ISOLATES | Y | `ipcRenderer.removeListener('crono-state', wrapper)` | ISOLATES |
+| `onFlotanteClosed` | `flotante-closed` | `try { cb(); }` | ISOLATES | Y | `ipcRenderer.removeListener('flotante-closed', listener)` | ISOLATES |
+| `onEditorReady` | `editor-ready` | `try { cb(); }` | ISOLATES | Y | `ipcRenderer.removeListener('editor-ready', listener)` | ISOLATES |
+| `onStartupReady` | `startup:ready` | `try { cb(); }` | ISOLATES | Y | `ipcRenderer.removeListener('startup:ready', listener)` | ISOLATES |
+
+cb-error log anchors (only where present):
+- `onMenuClick`: `console.error('menuAPI callback error:', err);`
+- `onSettingsChanged`: `console.error('settings callback error:', err);`
+- `onCronoState`: `console.error('onCronoState callback error:', err);`
+- `onFlotanteClosed`: `console.error('flotante closed callback error:', err);`
+- `onEditorReady`: `console.error('editor-ready callback error:', err);`
+- `onStartupReady`: `console.error('startup:ready callback error:', err);`
+
+unsub-error log anchors (only where present):
+- `onMenuClick`: `console.error('Error removing menu listener:', err);`
+- `onSettingsChanged`: `console.error('removeListener error:', err);`
+- `onCronoState`: `console.error('removeListener error (crono-state):', err);`
+- `onFlotanteClosed`: `console.error('removeListener error:', err);`
+- `onEditorReady`: `console.error('removeListener error (editor-ready):', err);`
+- `onStartupReady`: `console.error('removeListener error (startup:ready):', err);`
+
+Other non-callback invariants/fallbacks:
+- Default param fallback: `checkForUpdates: (manual = false) => ...`
+
+##### 0.5 Key-order dependency scan (repo)
+
+API_NAME: `electronAPI`
+
+Enumeration families:
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Conclusion:
+- Key order: NOT depended upon (safe to reorder)
+
+Reviewer assessment: PASS (LP0)
+- Sufficient for moving to LP1 with contract gate based on the scan result above.
+
+#### LP1 — Structure + controlled robustness + explicit contract gate (Codex)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Introduce helper `subscribeWithUnsub(channel, listener, removeErrorMessage)` that does:
+  - subscribe: `ipcRenderer.on(channel, listener)`
+  - returns unsubscribe: `try { ipcRenderer.removeListener(channel, listener); } catch (err) { console.error(removeErrorMessage, err); }`
+- Gain: Removes repeated subscribe/unsubscribe boilerplate across multiple listener-like API keys while keeping the same IPC channels, callback wrappers, and error strings.
+- Cost: One local helper + slight indirection.
+- Risk: Low. Only plausible regression would be passing a different `removeErrorMessage` literal or removing listeners with a different function reference; diff keeps the same listener variables (`wrapper` / `listener`) and passes the same error-message literals.
+- Validation (manual, post-apply):
+  - Verify exposed API name and keys are unchanged: `contextBridge.exposeInMainWorld('electronAPI', api)` and the `api = { ... }` key set.
+  - Verify channel strings unchanged: `'menu-click'`, `'settings-updated'`, `'crono-state'`, `'flotante-closed'`, `'editor-ready'`, `'startup:ready'`.
+  - Verify callback wrapper try/catch + cb-error log strings remain verbatim (e.g., `console.error('menuAPI callback error:', err);`).
+  - Verify listeners without unsubscribe remain unchanged: `onCurrentTextUpdated`, `onPresetCreated`.
+  - Verify unsubscribe error-message literals passed to helper match prior literals.
+
+Reviewer assessment: PASS (LP1)
+- Structural/robustness change is localized and behavior-preserving; contract/timing remains unchanged (no new async boundaries, no replay/buffer, no key changes).
+
+#### LP2 — Callback/listener semantics review (Codex)
+
+Decision: NO CHANGE
+
+Step 1) Listener-like API keys (current behavior; post-LP1)
+- `onCurrentTextUpdated`: `ipcRenderer.on('current-text-updated')`; try/catch: no; cb validation: no; returns unsubscribe: no.
+- `onPresetCreated`: `ipcRenderer.on('preset-created')`; try/catch: no; cb validation: no; returns unsubscribe: no.
+- `onMenuClick`: try/catch around `cb(payload)`; returns unsubscribe via `subscribeWithUnsub('menu-click', wrapper, 'Error removing menu listener:')`.
+- `onSettingsChanged`: try/catch around `cb(newSettings)`; returns unsubscribe via `subscribeWithUnsub('settings-updated', listener, 'removeListener error:')`.
+- `onCronoState`: try/catch around `cb(state)`; returns unsubscribe via `subscribeWithUnsub('crono-state', wrapper, 'removeListener error (crono-state):')`.
+- `onFlotanteClosed`: try/catch around `cb()`; returns unsubscribe via `subscribeWithUnsub('flotante-closed', listener, 'removeListener error:')`.
+- `onEditorReady`: try/catch around `cb()`; returns unsubscribe via `subscribeWithUnsub('editor-ready', listener, 'removeListener error (editor-ready):')`.
+- `onStartupReady`: try/catch around `cb()`; returns unsubscribe via `subscribeWithUnsub('startup:ready', listener, 'removeListener error (startup:ready):')`.
+
+Step 2) Policy baseline table (decision table)
+
+| API key | Classification | Target policy | Unsubscribe | cb validation |
+|---|---|---|---|---|
+| `onCurrentTextUpdated` | STREAM/RECURRENT | ISOLATE (preferred) | KEEP | KEEP |
+| `onPresetCreated` | STREAM/RECURRENT | ISOLATE (preferred) | KEEP | KEEP |
+| `onMenuClick` | STREAM/RECURRENT | ISOLATE (already) | KEEP | KEEP |
+| `onSettingsChanged` | STREAM/RECURRENT | ISOLATE (already) | KEEP | KEEP |
+| `onCronoState` | STREAM/RECURRENT | ISOLATE (already) | KEEP | KEEP |
+| `onFlotanteClosed` | RARE/CONTROL | ISOLATE (file isolates by design) | KEEP | KEEP |
+| `onEditorReady` | RARE/CONTROL | ISOLATE (file isolates by design) | KEEP | KEEP |
+| `onStartupReady` | RARE/CONTROL | ISOLATE (file isolates by design) | KEEP | KEEP |
+
+Step 3) Rationale (why NO CHANGE)
+- Two wrappers (`onCurrentTextUpdated`, `onPresetCreated`) are STREAM/RECURRENT but currently PROPAGATE errors (`cb(...)` not wrapped). Switching them to ISOLATE would change error surfacing expectations and thus requires Contract Gate evidence; not established here.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP2)
+- Output followed P2 template (Step 1 inventory + Step 2 decision table) and correctly avoided contract-affecting changes without Contract Gate evidence.
+
+#### LP3 — Logs (Codex)
+
+Decision: NO CHANGE
+
+- Logging es console-based y sólo en paths de error:
+  - Unsubscribe removal error (helper): `console.error(removeErrorMessage, err);`
+  - Callback error examples: `console.error('menuAPI callback error:', err);`, etc.
+- No se introduce logging en paths sanos/alta frecuencia.
+- No se agregan deps (se mantiene “console-only” para preload).
+
+Contract/timing: preservado (sin cambios aplicados).
+
+Reviewer assessment: PASS (LP3)
+- P3 permite NO CHANGE si el logging ya cumple: console-only, sin ruido en path sano, sin deps nuevas.
+- Dedupe no se justifica sin evidencia de spam (los logs actuales están condicionados a error).
+
+#### LP4 — Final review + Smoke (Codex + humano)
+
+##### Parte A: Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {` is referenced by multiple on-listeners via `return subscribeWithUnsub(...);`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('electronAPI', api);`.
+- Listener semantics unchanged: e.g., `onMenuClick` still returns unsubscribe; `onCurrentTextUpdated` still returns no unsubscribe.
+- IPC channels stable: unchanged literals like `'menu-click'`, `'settings-updated'`, `'crono-state'`, `'flotante-closed'`, `'editor-ready'`, `'startup:ready'`.
+- Logging remains console-only and error-path only (e.g., `console.error('menuAPI callback error:', err)`; unsubscribe catch logs).
+- Comments remain accurate (e.g., `// return function to remove listener if used by caller` matches returned unsubscribe).
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+- Coherence checks are consistent with the post-LP1 file state; no dead code or drift observed.
+
+##### Parte B: Smoke checklist (humano; estilo L7) — `electron/preload.js`
+
+Result: PASS
+
+**Precondition**
+* App launched with logs visible (terminal + DevTools Console).
+* Start from a normal “existing state” run (no need to wipe config unless you explicitly want first-run coverage).
+* During the run: watch for **uncaught exceptions** and **repeated spam** in idle.
+
+##### LP4.B-01 Startup + main usable (test_suite SM-01)
+* [X] Action: Launch app.
+* [X] Expected: Main UI usable (preview/results/stopwatch present). No blocking error.
+* [X] Expected logs: no uncaught exceptions; no continuous WARN/ERROR spam in idle.
+
+##### LP4.B-02 Clipboard overwrite updates results (test_suite SM-03)
+* [x] Action: Copy test text → click **📋↺**.
+* [x] Expected: preview + counts/time update immediately; no errors.
+
+##### LP4.B-03 Append clipboard updates results (test_suite SM-04)
+* [x] Action: Copy test text → click **📋+**.
+* [x] Expected: text grows; counts/time increase coherently; no errors.
+
+##### LP4.B-04 Empty current text (test_suite SM-05)
+* [x] Action: Click Trash (🗑).
+* [x] Expected: empty-state visible; counts/time go to zero; stopwatch resets due to text change; no errors.
+
+##### LP4.B-05 Counting mode toggle (test_suite SM-06)
+* [x] Action: With non-empty text, toggle “Modo preciso” ON/OFF.
+* [x] Expected: results change coherently (no NaN/blank), toggle persists during session; no errors.
+
+##### LP4.B-06 Presets select changes WPM/time (test_suite SM-07)
+* [x] Action: Select an existing preset in selector.
+* [x] Expected: WPM input/slider updates; time estimate recalculates; no errors.
+
+##### LP4.B-07 Editor open + edit sync + close (test_suite SM-08)
+* [x] Action: Open manual editor (⌨) → modify text → confirm main preview/results update → close editor.
+* [x] Expected: main reflects editor changes; no stuck “editor loader”; no errors.
+* [x] Repeat: open+close editor a 2nd time to catch listener duplication/regressions.
+
+##### LP4.B-08 Stopwatch + floating window basic loop (test_suite SM-09)
+* [x] Action: Start stopwatch ▶ → wait 2–3s → pause → open floating window (FW).
+* [x] Expected: FW shows consistent time/state; start/pause from FW affects main.
+* [x] Action: Close FW via window “X”.
+* [x] Expected: main reflects FW closed state (no stale “FW open” indicator); no errors.
+
+##### LP4.B-09 Menu About + updater reachable (test_suite SM-10)
+* [x] Action: Menu → About (open/close) → open again.
+* [x] Expected: modal opens once per click (no double-fire); content readable; no errors.
+* [x] Action: Menu → “Actualizar versión” (manual check).
+* [x] Expected: dialog appears (up-to-date / update available / failure). No uncaught exceptions.
+
+##### Optional LP4.B-10 Surface sanity (DevTools Console; cheap contract probe)
+* [x] Command: `typeof window.electronAPI`
+* [x] Expected: `"object"`
+* [x] Command: `Object.keys(window.electronAPI).length`
+* [x] Expected: stable count (no missing keys). (Order is non-contractual per LP0 scan.)
+
+---
+
+### electron/editor_preload.js
+
+Date: `2026-02-09`
+Last commit: `2d6f8a853009f51fe2ee0041e01f5fab26b69a2d`
+
+#### LP0 — Diagnosis + Inventarios (Codex, verified)
+
+Codex gate: PASS (LP0)
+- Diagnosis only; no changes, no recommendations.
+- No invented IPC channels/consumers beyond `electron/editor_preload.js`.
+- Inventories complete (surface keys + IPC calls + listener semantics).
+- Anchors/micro-quotes validated against file.
+
+##### 0.1 Reading map (validated)
+Block order (actual):
+1) `'use strict'`
+2) `require('electron')` destructuring: `const { contextBridge, ipcRenderer } = require('electron');`
+3) `contextBridge.exposeInMainWorld('editorAPI', { ... })` with inline API object
+
+Linear reading breaks (obstacles; anchors):
+- `exposeInMainWorld` — `contextBridge.exposeInMainWorld('editorAPI', {`
+- `onSettingsChanged` — `const listener = (_e, settings) => {`
+
+##### 0.2 Preload surface contract map (validated)
+
+A) `contextBridge.exposeInMainWorld(...)`
+- Exposed name: `editorAPI`
+- Anchor: `contextBridge.exposeInMainWorld('editorAPI', {`
+
+Keys by category (full inventory; set is contractual):
+- Invoke wrappers:
+  - `getCurrentText` → invoke `'get-current-text'` (no args)
+  - `setCurrentText` → invoke `'set-current-text'` (arg: `t`)
+  - `getAppConfig` → invoke `'get-app-config'` (no args)
+  - `getSettings` → invoke `'get-settings'` (no args)
+
+- On-listeners (listener-like keys):
+  - `onInitText` — no unsubscribe (direct `ipcRenderer.on`)
+  - `onExternalUpdate` — no unsubscribe (direct `ipcRenderer.on`)
+  - `onSettingsChanged` — returns unsubscribe (removeListener; try/catch)
+  - `onForceClear` — no unsubscribe (direct `ipcRenderer.on`)
+
+Replay/buffer behavior:
+- None visible in this file (no buffering state; direct `ipcRenderer.on(...)` registration only).
+
+B) Direct global exports:
+- None (no `window.X = ...` assignments in this file).
+
+##### 0.3 IPC contract inventory (mechanical; validated)
+
+ipcRenderer.invoke:
+- `'get-current-text'` args: none → return: unspecified (opaque to preload)
+- `'set-current-text'` args: `t` → return: unspecified
+- `'get-app-config'` args: none → return: unspecified
+- `'get-settings'` args: none → return: unspecified
+
+ipcRenderer.on:
+- `'editor-init-text'` listener args: `(_e, text)` → forwards `cb(text)`
+- `'editor-text-updated'` listener args: `(_e, text)` → forwards `cb(text)`
+- `'settings-updated'` listener args: `(_e, settings)` → forwards `cb(settings)` (wrapped)
+- `'editor-force-clear'` listener args: `(_e, _payload)` → forwards `cb(_payload)`
+
+ipcRenderer.removeListener:
+- `'settings-updated'` remove: `('settings-updated', listener)` (only via unsubscribe)
+
+ipcMain / webContents:
+- None in this file.
+
+##### 0.4 Invariants / fallbacks (anchored; validated)
+
+Listener table (one row per listener-like key; no blanket claims):
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| `onInitText` | `editor-init-text` | `cb(text)` | PROPAGATES | N | N-A | N-A |
+| `onExternalUpdate` | `editor-text-updated` | `cb(text)` | PROPAGATES | N | N-A | N-A |
+| `onSettingsChanged` | `settings-updated` | `cb(settings)` | ISOLATES | Y | `ipcRenderer.removeListener('settings-updated', listener)` | ISOLATES |
+| `onForceClear` | `editor-force-clear` | `cb(_payload)` | PROPAGATES | N | N-A | N-A |
+
+cb-error log anchors (only where present):
+- `onSettingsChanged`: `console.error('settings callback error:', err)`
+
+unsub-error log anchors (only where present):
+- `onSettingsChanged`: `console.error('removeListener error (settings-updated):', err)`
+
+Other non-callback invariants/fallbacks (anchored):
+- Settings listener isolates callback errors: `try { cb(settings); } catch (err)`
+- Unsubscribe isolates removal errors: `try { ipcRenderer.removeListener('settings-updated', listener); } catch (err)`
+
+##### 0.5 Key-order dependency scan (repo; validated)
+
+API_NAME: `editorAPI`
+
+Enumeration families:
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Key order: NOT depended upon (safe to reorder)
+
+#### LP1 — Structure + controlled robustness + explicit contract gate (Codex)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Extract inline API object into `const api = { ... }` and call `contextBridge.exposeInMainWorld('editorAPI', api)` after it.
+- Gain: Clearer structure; easier scan (API surface separated from exposure).
+- Cost: One extra const + minimal indirection.
+- Risk: Low; no changes to exposed keys, listener semantics, or IPC channels/payloads.
+- Validation (manual, post-apply): verify `editorAPI` keys unchanged; verify all IPC channel string literals unchanged.
+
+Change 2
+- Change: Rename locals only: `setCurrentText` param `t` → `text`, and `onForceClear` payload `_payload` → `payload`.
+- Gain: Clearer intent with no behavior change.
+- Cost: None.
+- Risk: None (local identifiers only).
+- Validation: confirm only local parameter names changed.
+
+Reviewer assessment: PASS (LP1)
+- Changes are localized and contract-preserving; observable contract/timing unchanged (no new async boundaries, no replay/buffer, no key changes).
+
+#### LP2 — Callback/listener semantics review (redo; evidence-driven) (Codex)
+
+Decision: NO CHANGE
+
+Step 0) Snapshot (local, anchored)
+- Exposed API name anchor: `contextBridge.exposeInMainWorld('editorAPI', api);`
+- Keys (all): `getCurrentText`, `setCurrentText`, `getAppConfig`, `getSettings`, `onInitText`, `onExternalUpdate`, `onSettingsChanged`, `onForceClear`.
+- Listener-like keys: `onInitText`, `onExternalUpdate`, `onSettingsChanged`, `onForceClear`.
+
+Step 1) Repo evidence (all call sites per key)
+
+`onInitText`
+- Hit: `public/editor.js` (section: “IPC bridge listeners”)
+  - Micro-quote: `window.editorAPI.onInitText((p) => { applyExternalUpdate(p); });`
+  - Consumer callback try/catch: no (callback body is a direct call)
+  - Return value used (unsubscribe): no
+- Completeness: 1 hit; treated as complete for current repo scan.
+
+`onExternalUpdate`
+- Hit: `public/editor.js` (section: “IPC bridge listeners”)
+  - Micro-quote: `window.editorAPI.onExternalUpdate((p) => { applyExternalUpdate(p); });`
+  - Consumer callback try/catch: no (callback body is a direct call)
+  - Return value used (unsubscribe): no
+- Completeness: 1 hit; treated as complete for current repo scan.
+
+`onSettingsChanged`
+- Hit: `public/editor.js` (section: “Settings integration”)
+  - Micro-quote: `window.editorAPI.onSettingsChanged(async (settings) => {`
+  - Consumer callback try/catch: yes
+    - Micro-quote: `try {`
+  - Return value used (unsubscribe): no
+- Completeness: 1 hit; treated as complete for current repo scan.
+
+`onForceClear`
+- Hit: `public/editor.js` (section: “IPC bridge listeners”)
+  - Micro-quote: `window.editorAPI.onForceClear(() => {`
+  - Consumer callback try/catch: yes
+    - Micro-quote: `try {`
+  - Return value used (unsubscribe): no
+- Completeness: 1 hit; treated as complete for current repo scan.
+
+Searches performed (exact terms)
+- `window\.editorAPI\.onInitText\(|editorAPI\.onInitText\(|window\['editorAPI'\]\s*.\s*onInitText\(` → 1 hit (`public/editor.js`)
+- `window\.editorAPI\.onExternalUpdate\(|editorAPI\.onExternalUpdate\(|window\['editorAPI'\]\s*.\s*onExternalUpdate\(` → 1 hit (`public/editor.js`)
+- `window\.editorAPI\.onSettingsChanged\(|editorAPI\.onSettingsChanged\(|window\['editorAPI'\]\s*.\s*onSettingsChanged\(` → 1 hit (`public/editor.js`)
+- `window\.editorAPI\.onForceClear\(|editorAPI\.onForceClear\(|window\['editorAPI'\]\s*.\s*onForceClear\(` → 1 hit (`public/editor.js`)
+- `window\['editorAPI'\]|globalThis\.editorAPI|self\.editorAPI` → 0 hits
+- `const\s*\{[^}]*editorAPI[^}]*\}` → 0 hits
+
+Step 2) Decision table (policy baseline)
+
+| API key | Classification + evidence | Target error policy + justification | Unsubscribe | cb validation |
+|---|---|---|---|---|
+| `onInitText` | RARE/CONTROL — init text set once; `public/editor.js` “IPC bridge listeners” | PROPAGATE — control/init path; no isolation in preload | KEEP | KEEP |
+| `onExternalUpdate` | STREAM/RECURRENT — repeated updates via `applyExternalUpdate` | ISOLATE — stream updates should not crash listener chain | KEEP | KEEP |
+| `onSettingsChanged` | STREAM/RECURRENT — settings integration in `public/editor.js` | ISOLATE — already isolated in preload | KEEP | KEEP |
+| `onForceClear` | RARE/CONTROL — explicit clear command | PROPAGATE — control path; no isolation in preload | KEEP | KEEP |
+
+Step 3) Changes (only if justified)
+- No changes proposed.
+- Rationale: `onExternalUpdate` is STREAM/RECURRENT and currently PROPAGATES. Changing to ISOLATE would alter error surfacing (consumer-visible behavior). The only observed call site does not wrap the callback body in try/catch; without a Contract Gate case showing consumers expect isolation, change is blocked.
+
+Observable contract/timing did not change.
+
+Reviewer gate: PASS (LP2)
+- Evidence gathered (call sites + search terms) and policy table completed.
+- Decision is conservative under Contract Gate (no behavior change without explicit consumer-compatibility proof).
+
+#### LP3 — Logs (Codex)
+
+Decision: NO CHANGE
+
+- Logging ya cumple política de preload:
+  - Console-only.
+  - Solo en error-path (sin logs en healthy/high-frequency paths).
+  - No requiere dedup (sin evidencia de spam; logs existentes solo bajo excepción).
+- Anchors:
+  - cb error-path: `console.error('settings callback error:', err)`
+  - unsubscribe error-path: `console.error('removeListener error (settings-updated):', err)`
+
+Contract/timing: preserved (no changes applied).
+
+Reviewer assessment: PASS (LP3)
+
+#### LP4 — Final review + Smoke (Codex + humano)
+
+##### LP4.A — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const api = { ... }` is used by `contextBridge.exposeInMainWorld('editorAPI', api)`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('editorAPI', api)`.
+- Listener semantics unchanged: `onSettingsChanged` still returns unsubscribe via `ipcRenderer.removeListener('settings-updated', listener)`.
+- IPC channel strings stable: `editor-init-text`, `editor-text-updated`, `settings-updated`, `editor-force-clear`.
+- Logging console-only and error-path only: `console.error('settings callback error:', err)` and `console.error('removeListener error (settings-updated):', err)`.
+- Comment accurate: `// Listener to force clear content (main will send 'editor-force-clear')`.
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+
+##### LP4.B — Smoke checklist (humano; test_suite subset)
+
+Resultado: PASS
+
+##### LP4.B-01 Editor window opens + initial text present (test_suite SM-08)
+* [x] Action: Ensure main has non-empty text (SM-03), click manual editor (⌨).
+* [x] Expected: Editor opens; text is populated (may be truncated per editor limits); no uncaught exceptions (main/editor DevTools).
+
+##### LP4.B-02 Editor edits propagate to main (test_suite SM-08)
+* [x] Action: In editor, modify text (add a short suffix) and trigger the normal “apply/calc” behavior you use.
+* [x] Expected: Main window preview/results update to match; no error spam.
+
+##### LP4.B-03 Main overwrite/append propagates to editor (test_suite SM-03 / SM-04)
+* [x] Action: With editor open, do clipboard overwrite (📋↺) then append (📋+).
+* [x] Expected: Editor content updates accordingly (applyExternalUpdate path); no stuck UI; no exceptions.
+
+##### LP4.B-04 Main clear forces editor clear (test_suite SM-05)
+* [x] Action: With editor open, click Trash (🗑) in main.
+* [x] Expected: Editor clears via force-clear path; no feedback loop; main remains empty.
+
+##### LP4.B-05 Settings update reaches editor (language) (test_suite SM-02)
+* [x] Action: Change language via the supported path (first-run or menu Preferences → Language).
+* [x] Expected: Editor UI translations update (no crash); no repeated warnings on idle.
+
+##### LP4.B-06 Re-open editor (listener duplication sanity)
+* [x] Action: Close editor window → open it again.
+* [x] Expected: Init/update behavior still works; no duplicated reactions to a single main update.
+
+##### Optional LP4.B-07 Surface sanity (DevTools Console; cheap contract probe)
+* [x] Command (editor window): `typeof window.editorAPI`
+* [x] Expected: `"object"`
+* [x] Command: `Object.keys(window.editorAPI).length`
+* [x] Expected: stable count (no missing keys). (Order is non-contractual per LP0 scan.)
+
+---
+
+### electron/preset_preload.js
+
+Date: `2026-02-09`
+Last commit: `2d6f8a853009f51fe2ee0041e01f5fab26b69a2d`
+
+#### LP0 — Diagnosis + Inventarios (Codex, verified)
+
+Codex gate: PASS (LP0)
+- Diagnosis only; no changes, no recommendations.
+- No invented IPC channels/consumers beyond `electron/preset_preload.js`.
+- Inventories complete (surface keys + IPC calls + listener semantics).
+- Anchors/micro-quotes validated against file.
+
+##### 0.1 Reading map (validated)
+
+Block order (actual):
+1) Header comment: `// electron/preset_preload.js`
+2) `'use strict'`
+3) `require('electron')` destructuring: `const { contextBridge, ipcRenderer } = require('electron');`
+4) Module state: `lastInitData`, `initCallbacks`
+5) Always-on listener (buffer + fanout): `ipcRenderer.on('preset-init', (_e, data) => {`
+6) Helper/listener registration: `function onInit(cb) {` (guard → add → async replay → unsubscribe)
+7) `contextBridge.exposeInMainWorld('presetAPI', { ... })`
+
+Linear reading breaks (obstacles; anchors):
+- Always-on init listener + fanout loop — `ipcRenderer.on('preset-init', (_e, data) => {`
+- Async replay branch — `setTimeout(() => {`
+- Surface exposure block — `contextBridge.exposeInMainWorld('presetAPI', {`
+
+##### 0.2 Preload surface contract map (validated)
+
+A) `contextBridge.exposeInMainWorld(...)`
+- Exposed name: `presetAPI`
+- Anchor: `contextBridge.exposeInMainWorld('presetAPI', {`
+
+Keys by category (full inventory; set is contractual):
+- Invoke wrappers:
+  - `createPreset` → invoke `'create-preset'` (arg: `preset`)
+  - `editPreset` → invoke `'edit-preset'` (args: `originalName`, `newPreset` → payload `{ originalName, newPreset }`)
+  - `getSettings` → invoke `'get-settings'` (no args)
+
+- On-listeners (listener-like keys):
+  - `onInit` — returns unsubscribe (removes from local Set; isolates)
+  - `onSettingsChanged` — returns unsubscribe (removeListener; isolates)
+
+Replay/buffer behavior:
+- Buffer state: `let lastInitData = null;` updated on `'preset-init'`.
+- Fanout to all registered callbacks on `'preset-init'`.
+- Replay on late registration: `if (lastInitData !== null) { setTimeout(() => { ... cb(lastInitData); }, 0); }`
+- Replay cancellation guard: `if (!initCallbacks.has(cb)) return;`
+
+B) Direct global exports:
+- None (no `window.X = ...` assignments in this file).
+
+##### 0.3 IPC contract inventory (mechanical; validated)
+
+ipcRenderer.invoke:
+- `'create-preset'` args: `preset` → return: unspecified (opaque to preload)
+- `'edit-preset'` args: `{ originalName, newPreset }` → return: unspecified
+- `'get-settings'` args: none → return: unspecified
+
+ipcRenderer.on:
+- `'preset-init'` listener args: `(_e, data)` → forwards `cb(data)` to each registered callback
+- `'settings-updated'` listener args: `(_e, settings)` → forwards `cb(settings)` (wrapped)
+
+ipcRenderer.removeListener:
+- `'settings-updated'` remove: `('settings-updated', listener)` (only via unsubscribe)
+
+ipcMain / webContents:
+- None in this file.
+
+##### 0.4 Invariants / fallbacks (anchored; validated)
+
+Listener table (one row per listener-like key; no blanket claims):
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| `onInit` | `preset-init` | `cb(data);` | ISOLATES | Y | `initCallbacks.delete(cb);` | ISOLATES |
+| `onSettingsChanged` | `settings-updated` | `cb(settings);` | ISOLATES | Y | `ipcRenderer.removeListener('settings-updated', listener);` | ISOLATES |
+
+cb-error log anchors (only where present):
+- `onInit` (live): `console.error('preset-init callback error:', err);`
+- `onInit` (replay): `console.error('preset-init replay callback error:', err);`
+- `onSettingsChanged`: `console.error('settings callback error:', err);`
+
+unsub-error log anchors (only where present):
+- `onInit`: `console.error('preset-init unsubscribe error:', err);`
+- `onSettingsChanged`: `console.error('removeListener error (settings-updated):', err);`
+
+Other non-callback invariants/fallbacks (anchored):
+- Non-function cb guard + noop return: `if (typeof cb !== 'function') { ... return () => {}; }`
+- Init replay guard: `if (lastInitData !== null) {`
+- Replay cancellation: `if (!initCallbacks.has(cb)) return;`
+
+##### 0.5 Key-order dependency scan (repo; validated)
+
+API_NAME: `presetAPI`
+
+Enumeration families:
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Key order: NOT depended upon (safe to reorder)
+
+#### LP1 — Structure + controlled robustness + explicit contract gate (Codex)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Extracted inline API object to `const api = { ... }` and used `contextBridge.exposeInMainWorld('presetAPI', api)` after it.
+- Gain: Estructura más escaneable; separa “definición de surface” del “expose” (consistencia con otros preloads).
+- Cost: Un `const` adicional.
+- Risk: Bajo; no cambia keys expuestas, strings de canal IPC ni semántica/timing de listeners (incl. replay/buffer).
+- Validation (estática):
+  - Confirmar que `presetAPI` expone exactamente las mismas keys: `createPreset`, `onInit`, `editPreset`, `getSettings`, `onSettingsChanged`.
+  - Confirmar que permanecen idénticos los literales de canal: `create-preset`, `edit-preset`, `get-settings`, `preset-init`, `settings-updated`.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP1)
+- Cambio puramente estructural y contract-preserving; aceptable.
+- No requiere re-iteración de LP1; avanzar a LP2.
+
+#### LP2 — Callback/listener semantics review (Codex)
+
+Decision: NO CHANGE
+
+Step 1) Listener-like API keys (current behavior; post-LP1)
+- `onInit`: `ipcRenderer.on('preset-init')`; try/catch around cb: Y (live + replay); cb validation: Y (`typeof cb !== 'function'` guard); returns unsubscribe: Y; removal: `initCallbacks.delete(cb)` (try/catch).
+- `onSettingsChanged`: `ipcRenderer.on('settings-updated')`; try/catch around cb: Y; cb validation: N; returns unsubscribe: Y; removal: `ipcRenderer.removeListener('settings-updated', listener)` (try/catch).
+
+Step 2) Policy baseline table (decision table)
+
+| API key | Classification (justification) | Target policy (justification) | Unsubscribe | cb validation |
+|---|---|---|---|---|
+| `onInit` | RARE/CONTROL — init bootstrap + buffered replay | PROPAGATE preferred by policy, but file isolates by design (buffer + try/catch) | KEEP | KEEP |
+| `onSettingsChanged` | STREAM/RECURRENT — settings updates | ISOLATE preferred by policy; already isolated in preload | KEEP | KEEP |
+
+Step 3) Rationale (why NO CHANGE)
+- `onInit` is RARE/CONTROL but isolation is part of the existing buffer/replay design; changing error surfacing would be contract-affecting without a Contract Gate case.
+- `onSettingsChanged` already matches STREAM/RECURRENT isolate policy.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP2)
+- Output followed P2 template (Step 1 inventory + Step 2 decision table) and correctly avoided contract-affecting changes without Contract Gate evidence.
+
+#### LP3 — Logs (Codex)
+
+Decision: NO CHANGE
+
+- Logging ya cumple política de preload:
+  - Console-only.
+  - Solo en error-path (sin logs en healthy/high-frequency paths).
+  - No requiere dedup (sin evidencia de spam; logs existentes solo bajo excepción).
+- Anchors:
+  - cb error-path (preset-init): `console.error('preset-init callback error:', err);`
+  - cb error-path (preset-init replay): `console.error('preset-init replay callback error:', err);`
+  - cb error-path (settings): `console.error('settings callback error:', err);`
+  - unsubscribe error-path: `console.error('removeListener error (settings-updated):', err);`
+
+Contract/timing: preserved (no changes applied).
+
+Reviewer assessment: PASS (LP3)
+
+#### LP4 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const api = { ... }` is used by `contextBridge.exposeInMainWorld('presetAPI', api);`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('presetAPI', api);`.
+- Listener semantics unchanged: `onInit` still buffers/replays via `setTimeout(() => { ... })`.
+- IPC channel strings stable: `preset-init`, `create-preset`, `edit-preset`, `get-settings`, `settings-updated`.
+- Logging console-only and error-path only: `console.error('preset-init callback error:', err)` and `console.error('removeListener error (settings-updated):', err)`.
+- Comments accurate: `// Always-on listener: main may send 'preset-init' before renderer registers onInit.`
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+- Output cumple la plantilla LP4 (NO CHANGE + bullets con anchors + confirmación explícita de contract/timing).
+- No hay drift evidente entre comentario/semántica y el comportamiento observado en el archivo.
+
+##### Parte B: Smoke checklist (humano; estilo L7) — `electron/preset_preload.js`
+
+Result: PASS
+
+**Precondition**
+* App launched with logs visible (terminal + DevTools Console).
+* Abrir DevTools del **modal de presets** (ventana que carga este preload).
+* Durante las pruebas: observar **uncaught exceptions** y **spam repetitivo** en idle.
+
+##### LP4.B-01 Presets modal opens + preload surface present
+* [x] Action: Abrir el modal de presets. Expected: UI usable; sin errores en consola al abrir.
+* [x] DevTools (modal): `typeof window.presetAPI`. Expected: `"object"`.
+
+##### LP4.B-02 Surface keys sanity (cheap contract probe)
+* [x] DevTools (modal): `Object.keys(window.presetAPI).sort()`. Expected: incluye exactamente estas keys:
+  - `createPreset`, `editPreset`, `getSettings`, `onInit`, `onSettingsChanged`
+  (el orden NO es contractual según LP0 key-order scan).
+
+##### LP4.B-03 `onInit` replay/buffer remains async + cancellable
+* [x] DevTools (modal): registrar una primera vez:
+  - `let seen = 0; const u1 = window.presetAPI.onInit((data) => { seen++; console.log('onInit#', seen, data); });`. Expected: se imprime `onInit# 1 ...` cuando llegue init o en replay (sin excepciones).
+* [x] **Solo después** de haber visto al menos un `onInit` (para asegurar `lastInitData !== null`): probar cancelación del replay:
+  - `const u2 = window.presetAPI.onInit(() => console.log('SHOULD_NOT_FIRE')); u2();`. Expected: **no** aparece `SHOULD_NOT_FIRE` (cubre guard de cancelación antes del `setTimeout`).
+
+##### LP4.B-04 No listener duplication across reopen
+* [x] Action: Cerrar modal de presets → reabrir → repetir LP4.B-03. Expected: por cada update, el callback se ejecuta **una sola vez** (no “double fire” por listeners acumulados).
+
+---
+
+### electron/flotante_preload.js
+
+Date: `2026-02-09`
+Last commit: `2d6f8a853009f51fe2ee0041e01f5fab26b69a2d`
+
+#### LP0 — Minimal diagnosis (Codex, verified)
+
+Decision: NO CHANGE
+
+##### 0.1 Reading map
+Block order today:
+1) File header + `'use strict'`
+2) Imports: `const { contextBridge, ipcRenderer } = require('electron');`
+3) Single preload surface: `contextBridge.exposeInMainWorld('flotanteAPI', { ... })` (inline API object)
+
+Where linear reading breaks (obstacles):
+- `contextBridge.exposeInMainWorld('flotanteAPI', {`
+- `const wrapper = (_e, state) => {`
+- `const listener = (_e, settings) => {`
+
+##### 0.2 Preload surface contract map (mandatory)
+A) `contextBridge.exposeInMainWorld`:
+- Exposed name: `flotanteAPI`
+- Keys on exposed API object:
+  - `onState` — on-listener (returns unsubscribe)
+  - `sendCommand` — send wrapper
+  - `getSettings` — invoke wrapper
+  - `onSettingsChanged` — on-listener (returns unsubscribe)
+- Replay/buffer behavior: none visible
+B) Direct global exports (`window.X = ...`): none visible
+
+##### 0.3 IPC contract (mechanical; all occurrences in this file)
+- `ipcRenderer.on('crono-state', wrapper)` — forwarded payload: `state`
+- `ipcRenderer.send('flotante-command', cmd)` — input: `cmd`
+- `ipcRenderer.invoke('get-settings')` — args: none; return: not specified in this file
+- `ipcRenderer.on('settings-updated', listener)` — forwarded payload: `settings`
+- `ipcRenderer.removeListener('crono-state', wrapper)` — used by unsubscribe
+- `ipcRenderer.removeListener('settings-updated', listener)` — used by unsubscribe
+- `ipcMain.*` / `webContents.send`: none in this file
+
+##### 0.4 Invariants / fallbacks (anchored)
+Listener table:
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| `onState` | `crono-state` | `cb(state)` | ISOLATES | Y | `removeListener('crono-state', wrapper)` | ISOLATES |
+| `onSettingsChanged` | `settings-updated` | `cb(settings)` | ISOLATES | Y | `removeListener('settings-updated', listener)` | ISOLATES |
+
+cb-error log anchors:
+- `onState`: `console.error(err)`
+- `onSettingsChanged`: `console.error('settings callback error:', err)`
+
+unsub-error log anchors:
+- `onState`: `console.error('removeListener error (crono-state):', err)`
+- `onSettingsChanged`: `console.error('removeListener error (settings-updated):', err)`
+
+Other non-callback invariants/fallbacks:
+- None beyond try/catch isolation on callbacks + removals.
+
+##### 0.5 Key-order dependency scan (repo; mandatory)
+API_NAME = `flotanteAPI`
+
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Key order: NOT depended upon (safe to reorder)
+
+Reviewer assessment: PASS (LP0)
+- Output is diagnosis-only, enumerates the entire exposed preload surface + all IPC occurrences, and anchors invariants to visible try/catch fallbacks (no invented channels/consumers).
+
+#### LP1 — Unified pass (estructura + robustez; contract-preserving)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Extraer el objeto inline expuesto a `const api = { ... }` y luego ejecutar `contextBridge.exposeInMainWorld('flotanteAPI', api)`.
+- Gain: La “surface” queda separada y más escaneable (API object explícito + llamada de exposición al final).
+- Cost: 1 constante adicional.
+- Risk: Bajo. No cambia keys expuestas, ni semántica subscribe/unsubscribe, ni strings de canales IPC.
+- Validation: Revisión del archivo confirma:
+  - mismo nombre expuesto: `flotanteAPI`
+  - mismas keys: `onState`, `sendCommand`, `getSettings`, `onSettingsChanged`
+  - mismos literales de canal: `crono-state`, `flotante-command`, `get-settings`, `settings-updated`
+
+Observable contract/timing: unchanged.
+Reviewer assessment: PASS (LP1)
+
+#### LP2 — Callback/listener semantics review (Codex)
+
+Decision: NO CHANGE
+
+Step 1) Listener-like API keys (current behavior; post-LP1)
+- `onState`: `ipcRenderer.on('crono-state')`; try/catch: Y; cb validation: N; returns unsubscribe: Y; removal: `ipcRenderer.removeListener('crono-state', wrapper)` (try/catch).
+- `onSettingsChanged`: `ipcRenderer.on('settings-updated')`; try/catch: Y; cb validation: N; returns unsubscribe: Y; removal: `ipcRenderer.removeListener('settings-updated', listener)` (try/catch).
+
+Step 2) Policy baseline table (decision table)
+
+| API key | Classification (justification) | Target policy (justification) | Unsubscribe | cb validation |
+|---|---|---|---|---|
+| `onState` | STREAM/RECURRENT — “state updates” (`crono-state`) | ISOLATE — stream updates should not crash listener loop (already isolated) | KEEP | KEEP |
+| `onSettingsChanged` | STREAM/RECURRENT — settings updates (`settings-updated`) | ISOLATE — repeated updates should not crash listener loop (already isolated) | KEEP | KEEP |
+
+Step 3) Changes
+- No changes proposed. Current behavior matches policy and does not warrant contract-affecting changes.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP2)
+- Output siguió la plantilla P2 (Step 1 inventario + Step 2 decision table) y mantuvo NO CHANGE sin gatillar Contract Gate.
+- La decisión STREAM/RECURRENT es consistente con la semántica de los canales (`crono-state`, `settings-updated`) y el comentario “Receive status updates…”.
+
+#### LP3 — Logs (Codex)
+
+Decision: NO CHANGE
+
+- Logging ya cumple política de preload:
+  - Console-only.
+  - Solo en error-path (sin logs en healthy/high-frequency paths).
+  - No requiere dedup (sin evidencia de spam; logs existentes solo bajo excepción).
+- Anchors:
+  - cb error-path (onState): `console.error(err)`
+  - cb error-path (onSettingsChanged): `console.error('settings callback error:', err)`
+  - unsubscribe error-path: `console.error('removeListener error (crono-state):', err)`
+  - unsubscribe error-path: `console.error('removeListener error (settings-updated):', err)`
+
+Contract/timing: preserved (no changes applied).
+
+Reviewer assessment: PASS (LP3)
+- P3 permite NO CHANGE si el logging ya cumple: console-only, sin ruido en path sano, sin deps nuevas.
+- Dedupe no se justifica sin evidencia de spam (los logs actuales están condicionados a error).
+
+#### LP4 — Final review + Smoke (Codex + humano)
+
+##### LP4.A — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const api = { ... }` is used by `contextBridge.exposeInMainWorld('flotanteAPI', api)`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('flotanteAPI', api)`.
+- Listener semantics unchanged: `onState` still returns unsubscribe via `removeListener('crono-state', wrapper)`.
+- IPC channel strings stable: `crono-state`, `flotante-command`, `get-settings`, `settings-updated`.
+- Logging console-only and error-path only: `console.error(err)` and `console.error('settings callback error:', err)`.
+- Comment accurate: `// Receive status updates from main (channel is now 'crono-state')`.
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+
+##### LP4.B — Smoke checklist (humano; test_suite subset)
+
+Resultado: PASS
+
+##### LP4.B-01 Floating window opens + mirrors stopwatch state (test_suite SM-09)
+* [x] Precondición: main con texto no vacío (SM-03). Action: ▶ start stopwatch, esperar ~2–3s, pausar; abrir **FW** (floating window). Expected: flotante muestra el mismo tiempo/estado; sin uncaught exceptions.
+
+##### LP4.B-02 Commands from floating window affect main (test_suite SM-09)
+* [x] Action: desde flotante, usar el control equivalente a start/pause (toggle) y luego reset. Expected: main refleja los cambios (running/paused/reset) y no hay error spam.
+
+##### LP4.B-03 Surface present (DevTools Console; cheap contract probe)
+* [x] Command (flotante window): `typeof window.flotanteAPI`. Expected: `"object"`
+
+##### LP4.B-04 Surface keys sanity (set match; order non-contractual per LP0 scan)
+* [x] Command: `Object.keys(window.flotanteAPI).sort()`. Expected: incluye exactamente: `getSettings`, `onSettingsChanged`, `onState`, `sendCommand`
+
+##### LP4.B-05 Canary invoke + listener subscribe/unsubscribe (no throw)
+* [x] Command: `await window.flotanteAPI.getSettings()`. Expected: resuelve (shape no se valida aquí), sin throw.
+* [x] Command: `const u1 = window.flotanteAPI.onState(() => {}); u1();`. Expected: subscribe+unsubscribe sin throw.
+* [x] Command: `const u2 = window.flotanteAPI.onSettingsChanged(() => {}); u2();`. Expected: subscribe+unsubscribe sin throw.
+
+---
+
+### electron/language_preload.js
+
+Date: `2026-02-09`
+Last commit: `6900361ede77e07dbda5e2b5130975b8f2aa3863`
+
+#### LP0 — Diagnosis + Inventarios (Codex, verified)
+
+Codex gate: PASS (LP0)
+- Diagnosis only; no code changes, no recommendations.
+- No invented IPC channels/consumers beyond `electron/language_preload.js`.
+- Surface + IPC inventories complete; no listener-like keys in this preload.
+- Anchors/micro-quotes validated against file.
+
+##### 0.1 Reading map (validated)
+
+Block order (actual):
+1) File header + `'use strict'`
+2) Imports: `const { contextBridge, ipcRenderer } = require('electron');`
+3) Single preload surface: `contextBridge.exposeInMainWorld('languageAPI', { ... })` (inline API object)
+
+Linear reading breaks (obstacles; anchors):
+- `exposeInMainWorld` — `contextBridge.exposeInMainWorld('languageAPI', {`
+- `setLanguage` — `setLanguage: async (lang) => {`
+
+##### 0.2 Preload surface contract map (validated)
+
+A) `contextBridge.exposeInMainWorld(...)`
+- Exposed name: `languageAPI`
+- Anchor: `contextBridge.exposeInMainWorld('languageAPI', {`
+
+Keys by category (full inventory; set is contractual):
+- Invoke wrappers:
+  - `getAvailableLanguages` → invoke `'get-available-languages'` (no args)
+  - `setLanguage` → invoke `'set-language'` (arg: `tag`) + side-effect send `'language-selected'` (arg: `tag`)
+
+Replay/buffer behavior:
+- None visible (no buffering state; no `ipcRenderer.on(...)` registrations).
+
+B) Direct global exports:
+- None (no `window.X = ...` assignments).
+
+##### 0.3 IPC contract inventory (mechanical; validated)
+
+ipcRenderer.invoke:
+- `'set-language'` args: `tag` → return: `res` (opaque to preload)
+- `'get-available-languages'` args: none → return: unspecified (opaque)
+
+ipcRenderer.send:
+- `'language-selected'` args: `tag`
+
+ipcRenderer.on / once / removeListener / removeAllListeners:
+- None in this file.
+
+ipcMain / webContents:
+- None in this file.
+
+##### 0.4 Invariants / fallbacks (anchored; validated)
+
+Listener table (no listener-like keys; empty by construction):
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| (none) | | | | | | |
+
+Other non-callback invariants/fallbacks (anchored):
+- Language tag normalization/guard: `String(lang || '').trim().toLowerCase().replace(/_/g, '-')`
+- Ordering invariant (observable): invoke completes before signal send:
+  - `const res = await ipcRenderer.invoke('set-language', tag);`
+  - `ipcRenderer.send('language-selected', tag);`
+
+##### 0.5 Key-order dependency scan (repo; Codex-reported)
+
+API_NAME: `languageAPI`
+
+Enumeration families:
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Key order: NOT depended upon (safe to reorder)
+
+Reviewer assessment: PASS (LP0)
+- Diagnosis-only; inventories match the file; invariants are anchored; no listeners exist in this preload.
+
+#### LP1 — Unified pass (estructura + robustez; contract-preserving)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Extraer el objeto inline expuesto a `const api = { ... }` y luego ejecutar `contextBridge.exposeInMainWorld('languageAPI', api)`.
+- Gain: La “surface” queda separada y más escaneable (API object explícito + llamada de exposición al final).
+- Cost: 1 constante adicional.
+- Risk: Bajo. No cambia keys expuestas, ni strings de canales IPC, ni ordering observable dentro de `setLanguage`.
+- Validation: Revisión del diff confirma:
+  - mismo nombre expuesto: `languageAPI`
+  - mismas keys: `setLanguage`, `getAvailableLanguages`
+  - mismos literales de canal: `set-language`, `language-selected`, `get-available-languages`
+  - misma secuencia observable en `setLanguage`: invoke (await) → send
+
+Observable contract/timing: unchanged.
+Reviewer assessment: PASS (LP1)
+
+#### LP2 — Callback/listener semantics review (Codex)
+
+Decision: NO CHANGE
+
+Step 1) Listener-like API keys (current behavior; post-LP1)
+- None. `languageAPI` exposes only `setLanguage` and `getAvailableLanguages` (no callback/listener wrappers; no `ipcRenderer.on/once`).
+
+Step 2) Policy baseline table (decision table)
+- N/A (no listener wrappers to classify).
+
+Step 3) Changes
+- No changes proposed.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP2)
+- NO CHANGE is correct because the preload exposes no callback/listener wrappers.
+- Output did not attempt any contract-affecting changes (no Contract Gate needed).
+
+#### LP3 — Logs (preload policy)
+
+Decision: NO CHANGE
+
+- No logging present in `electron/language_preload.js`; nothing to align to console-only policy.
+- No dedupe mechanism justified (no repeated logs / no error-path logs exist in this preload).
+
+Contract/timing: preserved (no changes applied).
+
+Reviewer assessment: PASS (LP3)
+
+#### LP4 — Final review (Codex; verified)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const api = { ... }` is used by `contextBridge.exposeInMainWorld('languageAPI', api)`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('languageAPI', api)`.
+- IPC channel strings stable: `set-language`, `language-selected`, `get-available-languages`.
+- Logging: none present (still console-only constraint satisfied).
+- Comments accurate: `// Persist language via main handler` and `// Signal selection so main can continue startup`.
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+- Coherence check matches the post-LP1 file state; no dead code or drift observed.
+
+##### Parte B: Smoke checklist (humano; estilo L7) — `electron/language_preload.js`
+
+Resultado: PASS
+
+**Precondition**
+* App launched with logs visible (terminal + DevTools Console).
+* Start from a normal “existing state” run (no need to wipe config unless you explicitly want first-run coverage).
+* During the run: watch for uncaught exceptions and repeated WARN/ERROR spam in idle.
+
+##### LP4.B-01 Language window opens (test_suite REG-I18N-01)
+* [x] Action: Open language picker via the supported path (e.g., Preferences → Language).
+* [x] Expected: Language window opens; list renders; no uncaught exceptions.
+
+##### LP4.B-02 Filter + select language (test_suite REG-I18N-01 / REG-I18N-02)
+* [x] Action: Type in filter/search; select a language.
+* [x] Expected: Selection persists and the app transitions/updates language without crashes.
+
+##### LP4.B-03 Cross-window translation sanity (test_suite REG-I18N-02)
+* [x] Action: Open main + (optionally) editor/presets/floating window; verify UI strings reflect the chosen language.
+* [x] Expected: No mixed-language glitches beyond known limitations; no error spam.
+
+##### Optional LP4.B-04 First-run coverage (test_suite REG-FR-01)
+* [x] Action: Wipe config → launch app → language picker appears → filter + select language.
+* [x] Expected: App continues normal startup; no uncaught exceptions.
+
+##### Optional LP4.B-05 Surface sanity (DevTools Console; cheap contract probe)
+* [x] Command (language window): `typeof window.languageAPI`
+* [x] Expected: `"object"`
+* [x] Command: `Object.keys(window.languageAPI).sort()`
+* [x] Expected: includes `getAvailableLanguages`, `setLanguage` (order non-contractual).
+
+---
+
+FIN
+
+---

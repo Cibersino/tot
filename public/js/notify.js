@@ -1,20 +1,73 @@
 // public/js/notify.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Resolve renderer i18n keys to displayable text.
+// - Show blocking alerts for main-window notices.
+// - Show toast notifications for main and editor contexts.
+// - Provide a small, stable window.Notify surface for callers.
+// =============================================================================
+
 (() => {
+  // =============================================================================
+  // Logger
+  // =============================================================================
+  const log = window.getLogger('notify');
+
+  // =============================================================================
+  // Helpers (i18n + toast rendering)
+  // =============================================================================
   function resolveText(key) {
     const { RendererI18n } = window || {};
     // If it fails, we return the key itself. No fallback.
     if (!RendererI18n || typeof RendererI18n.msgRenderer !== 'function') {
+      log.warnOnce(
+        'notify.resolveText.i18n.missing',
+        'RendererI18n.msgRenderer missing; using key fallback.'
+      );
       return key;
     }
     const txt = RendererI18n.msgRenderer(key, {}, key);
     return txt || key;
   }
 
-  function notifyMain(key) {
-    const msg = resolveText(key);
-    alert(msg);
+  function applyToastPosition(container, position) {
+    const pos = position || 'top-right';
+    const positions = {
+      'top-right': { top: '16px', right: '16px', bottom: 'auto', left: 'auto', align: 'flex-end' },
+      'bottom-right': { top: 'auto', right: '16px', bottom: '16px', left: 'auto', align: 'flex-end' },
+      'top-left': { top: '16px', right: 'auto', bottom: 'auto', left: '16px', align: 'flex-start' },
+      'bottom-left': { top: 'auto', right: 'auto', bottom: '16px', left: '16px', align: 'flex-start' }
+    };
+    const cfg = positions[pos] || positions['top-right'];
+    container.style.top = cfg.top;
+    container.style.right = cfg.right;
+    container.style.bottom = cfg.bottom;
+    container.style.left = cfg.left;
+    container.style.alignItems = cfg.align;
+  }
+
+  function ensureToastContainer(containerId, position) {
+    let container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      Object.assign(container.style, {
+        position: 'fixed',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        maxWidth: 'calc(100% - 32px)',
+        pointerEvents: 'none',
+        zIndex: '9999'
+      });
+      document.body.appendChild(container);
+    }
+    applyToastPosition(container, position);
+    return container;
   }
 
   function toastText(text, { containerId = 'totToastContainer', position = 'top-right', duration = 4500, type = 'info' } = {}) {
@@ -73,40 +126,12 @@
     }
   }
 
-  function ensureToastContainer(containerId, position) {
-    let container = document.getElementById(containerId);
-    if (!container) {
-      container = document.createElement('div');
-      container.id = containerId;
-      Object.assign(container.style, {
-        position: 'fixed',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        maxWidth: 'calc(100% - 32px)',
-        pointerEvents: 'none',
-        zIndex: '9999'
-      });
-      document.body.appendChild(container);
-    }
-    applyToastPosition(container, position);
-    return container;
-  }
-
-  function applyToastPosition(container, position) {
-    const pos = position || 'top-right';
-    const positions = {
-      'top-right': { top: '16px', right: '16px', bottom: 'auto', left: 'auto', align: 'flex-end' },
-      'bottom-right': { top: 'auto', right: '16px', bottom: '16px', left: 'auto', align: 'flex-end' },
-      'top-left': { top: '16px', right: 'auto', bottom: 'auto', left: '16px', align: 'flex-start' },
-      'bottom-left': { top: 'auto', right: 'auto', bottom: '16px', left: '16px', align: 'flex-start' }
-    };
-    const cfg = positions[pos] || positions['top-right'];
-    container.style.top = cfg.top;
-    container.style.right = cfg.right;
-    container.style.bottom = cfg.bottom;
-    container.style.left = cfg.left;
-    container.style.alignItems = cfg.align;
+  // =============================================================================
+  // Entry points (public API)
+  // =============================================================================
+  function notifyMain(key) {
+    const msg = resolveText(key);
+    alert(msg);
   }
 
   function toastMain(key, { type = 'info', duration = 9000 } = {}) {
@@ -114,11 +139,11 @@
     try {
       toastText(msg, { containerId: 'totMainToastContainer', position: 'top-right', type, duration });
     } catch (err) {
-      console.error('[notify] toastMain failed:', err);
+      log.warn('toastMain failed; falling back to notifyMain:', err);
       try {
         notifyMain(key);
       } catch (fallbackErr) {
-        console.error('[notify] toastMain fallback failed:', fallbackErr);
+        log.error('toastMain fallback failed:', fallbackErr);
       }
     }
   }
@@ -127,15 +152,18 @@
     try {
       toastText(text, { containerId: 'totEditorToastContainer', position: 'top-right', type, duration });
     } catch (err) {
-      console.error('[notify] toastEditorText failed:', err);
+      log.warn('toastEditorText failed; falling back to notifyMain:', err);
       try {
         if (typeof notifyMain === 'function') {
           notifyMain(text);
         } else {
-          console.error('[notify] toastEditorText fallback unavailable: notifyMain missing.');
+          log.errorOnce(
+            'notify.toastEditorText.notifyMain.missing',
+            'toastEditorText fallback unavailable: notifyMain missing; notice dropped.'
+          );
         }
       } catch (fallbackErr) {
-        console.error('[notify] toastEditorText fallback failed:', fallbackErr);
+        log.error('toastEditorText fallback failed:', fallbackErr);
       }
     }
   }
@@ -145,15 +173,18 @@
     try {
       toastEditorText(msg, { type, duration });
     } catch (err) {
-      console.error('[notify] notifyEditor failed:', err);
+      log.warn('notifyEditor failed; falling back to notifyMain:', err);
       try {
         notifyMain(key);
       } catch (fallbackErr) {
-        console.error('[notify] notifyEditor fallback failed:', fallbackErr);
+        log.error('notifyEditor fallback failed:', fallbackErr);
       }
     }
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.Notify = {
     notifyMain,
     notifyEditor,
@@ -161,3 +192,7 @@
     toastEditorText
   };
 })();
+
+// =============================================================================
+// End of public/js/notify.js
+// =============================================================================

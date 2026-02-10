@@ -100,7 +100,7 @@ function isRendererReady() {
 function guardUserAction(actionId) {
   if (isRendererReady()) return true;
   log.warnOnce(
-    `renderer.preReady.${actionId}`,
+    `BOOTSTRAP:renderer.preReady.${actionId}`,
     'Renderer action ignored (pre-READY):',
     actionId
   );
@@ -118,7 +118,7 @@ function sendRendererCoreReady() {
     }
   } else {
     log.warnOnce(
-      'renderer.startup.coreReady.unavailable',
+      'BOOTSTRAP:renderer.startup.coreReady.unavailable',
       'startup:renderer-core-ready unavailable; renderer/core ready signal not sent.'
     );
   }
@@ -135,7 +135,7 @@ function sendSplashRemoved() {
     }
   } else {
     log.warnOnce(
-      'renderer.startup.splashRemoved.unavailable',
+      'BOOTSTRAP:renderer.startup.splashRemoved.unavailable',
       'startup:splash-removed unavailable; post-READY confirmation not sent.'
     );
   }
@@ -150,7 +150,7 @@ function maybeUnblockReady() {
     startupSplash.remove();
   } else {
     log.warnOnce(
-      'renderer.startup.splash.missing',
+      'BOOTSTRAP:renderer.startup.splash.missing',
       'Startup splash element missing; proceeding to READY.'
     );
   }
@@ -162,7 +162,7 @@ function markRendererInvariantsReady() {
   if (rendererInvariantsReady) return;
   if (!ipcSubscriptionsArmed || !uiListenersArmed) {
     log.warnOnce(
-      'renderer.startup.invariants.incomplete',
+      'BOOTSTRAP:renderer.startup.invariants.incomplete',
       'Renderer invariants marked ready before all listeners/subscriptions were armed.',
       { ipcSubscriptionsArmed, uiListenersArmed }
     );
@@ -201,6 +201,11 @@ const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
   throw new Error('[renderer] RendererI18n no disponible; no se puede continuar');
 }
+
+const getCronoLabels = () => ({
+  playLabel: tRenderer ? tRenderer('renderer.main.crono.play_symbol', '>') : '>',
+  pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
+});
 
 function applyTranslations() {
   if (!tRenderer) return;
@@ -321,6 +326,8 @@ if (!getTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
 // =============================================================================
 // Preview and results
 // =============================================================================
+let currentTextStats = null;
+
 async function updatePreviewAndResults(text) {
   const normalizedText = normalizeText(text);
   const displayText = normalizedText.replace(/\r?\n/g, '   ');
@@ -338,6 +345,7 @@ async function updatePreviewAndResults(text) {
   }
 
   const stats = contarTexto(normalizedText);
+  currentTextStats = stats;
   const idioma = idiomaActual; // Cached on startup and updated by listener if applicable
   const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(idioma, settingsCache);
 
@@ -351,6 +359,18 @@ async function updatePreviewAndResults(text) {
   resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
 
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
+  resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
+}
+
+function updateTimeOnlyFromStats() {
+  if (!currentTextStats) {
+    log.warnOnce(
+      'renderer.timeOnly.noStats',
+      'WPM-only update requested without text stats; time not updated.'
+    );
+    return;
+  }
+  const { hours, minutes, seconds } = getTimeParts(currentTextStats.palabras, wpm);
   resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
 }
 
@@ -383,17 +403,33 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       log.error('Error handling crono-state in renderer:', err);
     }
   });
+} else if (window.electronAPI) {
+  log.warnOnce(
+    'renderer.ipc.onCronoState.unavailable',
+    'onCronoState unavailable; crono state will not sync.'
+  );
 }
 
 // =============================================================================
 // Preset loading (merge + shadowing)
 // =============================================================================
-const loadPresets = async ({ settingsSnapshot } = {}) => {
+function resolveSettingsSnapshot(settingsSnapshot) {
+  return (settingsSnapshot && typeof settingsSnapshot === 'object')
+    ? settingsSnapshot
+    : (settingsCache || {});
+}
+
+function resetPresetsState() {
+  if (presetsSelect) presetsSelect.innerHTML = '';
+  if (presetDescription) presetDescription.textContent = '';
+  allPresetsCache = [];
+  currentPresetName = null;
+  return allPresetsCache;
+}
+
+const reloadPresetsList = async ({ settingsSnapshot } = {}) => {
   try {
-    const snapshot =
-      (settingsSnapshot && typeof settingsSnapshot === 'object')
-        ? settingsSnapshot
-        : (settingsCache || {});
+    const snapshot = resolveSettingsSnapshot(settingsSnapshot);
     const res = await loadPresetsIntoDom({
       electronAPI: window.electronAPI,
       settings: snapshot,
@@ -401,6 +437,17 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
       selectEl: presetsSelect
     });
     allPresetsCache = res && res.list ? res.list.slice() : [];
+    return allPresetsCache;
+  } catch (err) {
+    log.error('Error loading presets:', err);
+    return resetPresetsState();
+  }
+};
+
+const loadPresets = async ({ settingsSnapshot } = {}) => {
+  try {
+    const snapshot = resolveSettingsSnapshot(settingsSnapshot);
+    await reloadPresetsList({ settingsSnapshot: snapshot });
     const selected = await resolvePresetSelection({
       list: allPresetsCache,
       settings: snapshot,
@@ -421,11 +468,7 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
     return allPresetsCache;
   } catch (err) {
     log.error('Error loading presets:', err);
-    if (presetsSelect) presetsSelect.innerHTML = '';
-    if (presetDescription) presetDescription.textContent = '';
-    allPresetsCache = [];
-    currentPresetName = null;
-    return allPresetsCache;
+    return resetPresetsState();
   }
 };
 
@@ -479,7 +522,7 @@ function armIpcSubscriptions() {
         if (!isRendererReady()) {
           installCurrentTextState(text || '');
           log.warnOnce(
-            'renderer.preReady.currentTextUpdated',
+            'BOOTSTRAP:renderer.preReady.currentTextUpdated',
             'current-text-updated received pre-READY; state updated only.'
           );
           return;
@@ -489,6 +532,11 @@ function armIpcSubscriptions() {
         log.error('Error handling current-text-updated:', err);
       }
     });
+  } else if (window.electronAPI) {
+    log.warnOnce(
+      'renderer.ipc.onCurrentTextUpdated.unavailable',
+      'onCurrentTextUpdated unavailable; current text updates will not sync.'
+    );
   }
 
   // Subscribe to preset create/update notifications from main
@@ -496,34 +544,47 @@ function armIpcSubscriptions() {
     window.electronAPI.onPresetCreated(async (preset) => {
       if (!isRendererReady()) {
         log.warnOnce(
-          'renderer.preReady.presetCreated',
+          'BOOTSTRAP:renderer.preReady.presetCreated',
           'preset-created received pre-READY; ignored.'
         );
         return;
       }
       try {
         // Reload presets from settings (applies shadowing) and select the created one
-        const updated = await loadPresets({ settingsSnapshot: settingsCache });
+        const updated = await reloadPresetsList({ settingsSnapshot: settingsCache });
         if (preset && preset.name) {
           const found = updated.find(p => p.name === preset.name);
           if (found) {
-            currentPresetName = found.name;
-            applyPresetSelection(found, { selectEl: presetsSelect, wpmInput, wpmSlider, presetDescription });
-            wpm = found.wpm;
-            if (window.electronAPI && typeof window.electronAPI.setSelectedPreset === 'function') {
-              try {
-                await window.electronAPI.setSelectedPreset(found.name);
-              } catch (err) {
-                log.error('Error persisting preset-created selection:', err);
-              }
+            const neutralSettings = Object.assign({}, settingsCache || {}, {
+              selected_preset_by_language: {}
+            });
+            const selected = await resolvePresetSelection({
+              list: updated,
+              settings: neutralSettings,
+              language: idiomaActual,
+              currentPresetName: preset.name,
+              selectEl: presetsSelect,
+              wpmInput,
+              wpmSlider,
+              presetDescription,
+              electronAPI: window.electronAPI
+            });
+            if (selected) {
+              currentPresetName = selected.name;
+              wpm = selected.wpm;
+              updatePreviewAndResults(currentText);
             }
-            updatePreviewAndResults(currentText);
           }
         }
       } catch (err) {
         log.error('Error handling preset-created event:', err);
       }
     });
+  } else if (window.electronAPI) {
+    log.warnOnce(
+      'renderer.ipc.onPresetCreated.unavailable',
+      'onPresetCreated unavailable; preset updates will not sync.'
+    );
   }
 
   if (window.electronAPI) {
@@ -540,28 +601,43 @@ function armIpcSubscriptions() {
         maybeUnblockReady();
       });
     } else {
-      log.warnOnce(
+      log.errorOnce(
         'renderer.startup.ready.unavailable',
-        'startup:ready listener unavailable; READY unblock may stall.'
+        'startup:ready listener unavailable; renderer may remain pre-READY.'
       );
     }
 
     if (typeof window.electronAPI.onSettingsChanged === 'function') {
       window.electronAPI.onSettingsChanged(settingsChangeHandler);
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onSettingsChanged.unavailable',
+        'onSettingsChanged unavailable; settings updates will not sync.'
+      );
     }
 
     if (typeof window.electronAPI.onEditorReady === 'function') {
       window.electronAPI.onEditorReady(() => {
         if (!isRendererReady()) {
           log.warnOnce(
-            'renderer.preReady.editorReady',
+            'BOOTSTRAP:renderer.preReady.editorReady',
             'editor-ready received pre-READY; ignored.'
           );
           return;
         }
         hideeditorLoader();
       });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onEditorReady.unavailable',
+        'onEditorReady unavailable; editor loader may not clear.'
+      );
     }
+  } else {
+    log.warnOnce(
+      'renderer.ipc.electronAPI.unavailable',
+      'electronAPI unavailable; IPC subscriptions not armed.'
+    );
   }
 
   ipcSubscriptionsArmed = true;
@@ -620,7 +696,7 @@ function setupToggleModoPreciso() {
     try {
       syncToggleFromSettings(settingsCache || {});
     } catch (err) {
-      log.warnOnce('renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+      log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
     }
   } catch (err) {
     log.error('Error initialazing toggleModoPreciso:', err);
@@ -687,7 +763,7 @@ async function runStartupOrchestrator() {
       try {
         syncToggleFromSettings(settingsSnapshot || {});
       } catch (err) {
-        log.warnOnce('renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
+        log.warnOnce('BOOTSTRAP:renderer.syncToggleFromSettings', '[renderer] syncToggleFromSettings failed (ignored):', err);
       }
     }
 
@@ -1075,26 +1151,36 @@ setupToggleModoPreciso();
 // =============================================================================
 // Preset selection (cache-only)
 // =============================================================================
-presetsSelect.addEventListener('change', () => {
+presetsSelect.addEventListener('change', async () => {
   if (!guardUserAction('preset-change')) return;
   const name = presetsSelect.value;
   if (!name) return;
 
   const preset = allPresetsCache.find(p => p.name === name);
   if (preset) {
-    currentPresetName = preset.name;
-    // Visually pin the selection (some platforms do not auto-select)
-    presetsSelect.value = preset.name;
-    wpm = preset.wpm;
-    wpmInput.value = wpm;
-    wpmSlider.value = wpm;
-    presetDescription.textContent = preset.description || '';
-    if (window.electronAPI && typeof window.electronAPI.setSelectedPreset === 'function') {
-      window.electronAPI.setSelectedPreset(preset.name).catch((err) => {
-        log.error('Error persisting selected preset:', err);
+    const settingsOverride = Object.assign({}, settingsCache || {}, {
+      selected_preset_by_language: {}
+    });
+    try {
+      const selected = await resolvePresetSelection({
+        list: allPresetsCache,
+        settings: settingsOverride,
+        language: idiomaActual,
+        currentPresetName: preset.name,
+        selectEl: presetsSelect,
+        wpmInput,
+        wpmSlider,
+        presetDescription,
+        electronAPI: window.electronAPI
       });
+      if (selected) {
+        currentPresetName = selected.name;
+        wpm = selected.wpm;
+        updateTimeOnlyFromStats();
+      }
+    } catch (err) {
+      log.error('Error resolving preset selection:', err);
     }
-    updatePreviewAndResults(currentText);
   }
 });
 
@@ -1114,7 +1200,7 @@ wpmSlider.addEventListener('input', () => {
   wpm = Number(wpmSlider.value);
   wpmInput.value = wpm;
   resetPresetSelection();
-  updatePreviewAndResults(currentText);
+  updateTimeOnlyFromStats();
 });
 
 wpmInput.addEventListener('blur', () => {
@@ -1126,7 +1212,7 @@ wpmInput.addEventListener('blur', () => {
   wpmInput.value = wpm;
   wpmSlider.value = wpm;
   resetPresetSelection();
-  updatePreviewAndResults(currentText);
+  updateTimeOnlyFromStats();
 });
 
 wpmInput.addEventListener('keydown', (e) => {
@@ -1138,20 +1224,30 @@ wpmInput.addEventListener('keydown', (e) => {
 });
 
 // =============================================================================
+// Clipboard helpers (shared by overwrite/append)
+// =============================================================================
+async function readClipboardText({ tooLargeKey }) {
+  const res = await window.electronAPI.readClipboard();
+  if (res && res.ok === false) {
+    if (res.tooLarge === true) {
+      Notify.notifyMain(tooLargeKey);
+      return { ok: false, tooLarge: true };
+    }
+    throw new Error(res.error || 'clipboard read failed');
+  }
+  const text = (res && typeof res === 'object') ? (res.text || '') : (res || '');
+  return { ok: true, text };
+}
+
+// =============================================================================
 // Overwrite current text with clipboard content
 // =============================================================================
 btnOverwriteClipboard.addEventListener('click', async () => {
   if (!guardUserAction('clipboard-overwrite')) return;
   try {
-    const res = await window.electronAPI.readClipboard();
-    if (res && res.ok === false) {
-      if (res.tooLarge === true) {
-        Notify.notifyMain('renderer.alerts.clipboard_too_large');
-        return;
-      }
-      throw new Error(res.error || 'clipboard read failed');
-    }
-    let clip = (res && typeof res === 'object') ? (res.text || '') : (res || '');
+    const read = await readClipboardText({ tooLargeKey: 'renderer.alerts.clipboard_too_large' });
+    if (!read.ok) return;
+    const clip = read.text;
 
     if (clip.length > maxIpcChars) {
       Notify.notifyMain('renderer.alerts.clipboard_too_large');
@@ -1184,15 +1280,9 @@ btnOverwriteClipboard.addEventListener('click', async () => {
 btnAppendClipboard.addEventListener('click', async () => {
   if (!guardUserAction('clipboard-append')) return;
   try {
-    const res = await window.electronAPI.readClipboard();
-    if (res && res.ok === false) {
-      if (res.tooLarge === true) {
-        Notify.notifyMain('renderer.alerts.append_too_large');
-        return;
-      }
-      throw new Error(res.error || 'clipboard read failed');
-    }
-    const clip = (res && typeof res === 'object') ? (res.text || '') : (res || '');
+    const read = await readClipboardText({ tooLargeKey: 'renderer.alerts.append_too_large' });
+    if (!read.ok) return;
+    const clip = read.text;
     const current = await window.electronAPI.getCurrentText() || '';
 
     let joiner = '';
@@ -1233,6 +1323,16 @@ btnAppendClipboard.addEventListener('click', async () => {
     Notify.notifyMain('renderer.alerts.append_error');
   }
 });
+
+function showeditorLoader() {
+  if (editorLoader) editorLoader.classList.add('visible');
+  if (btnEdit) btnEdit.disabled = true;
+}
+
+function hideeditorLoader() {
+  if (editorLoader) editorLoader.classList.remove('visible');
+  if (btnEdit) btnEdit.disabled = false;
+}
 
 btnEdit.addEventListener('click', async () => {
   if (!guardUserAction('open-editor')) return;
@@ -1334,7 +1434,7 @@ btnEditPreset.addEventListener('click', async () => {
   try {
     const selectedName = presetsSelect.value;
     if (!selectedName) {
-      // Ask main to show native info dialog 'No hay ningun preset seleccionado para editar'
+      // Ask main to show the native info dialog when no preset is selected.
       if (window.electronAPI && typeof window.electronAPI.notifyNoSelectionEdit === 'function') {
         await window.electronAPI.notifyNoSelectionEdit();
         return;
@@ -1381,7 +1481,7 @@ btnDeletePreset.addEventListener('click', async () => {
 
     if (res && res.ok) {
       // On success, reload presets and apply fallback selection if needed.
-      await loadPresets();
+      await loadPresets({ settingsSnapshot: settingsCache || {} });
       updatePreviewAndResults(currentText);
       // No further UI dialog required; main already showed confirmation.
       return;
@@ -1416,7 +1516,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
 
     if (res && res.ok) {
       // Reload presets to reflect restored defaults
-      await loadPresets();
+      await loadPresets({ settingsSnapshot: settingsCache || {} });
       updatePreviewAndResults(currentText);
       return;
     } else {
@@ -1440,22 +1540,7 @@ const cronoDisplay = document.getElementById('cronoDisplay');
 const tToggle = document.getElementById('cronoToggle');
 const tReset = document.getElementById('cronoReset');
 
-function showeditorLoader() {
-  if (editorLoader) editorLoader.classList.add('visible');
-  if (btnEdit) btnEdit.disabled = true;
-}
-
-function hideeditorLoader() {
-  if (editorLoader) editorLoader.classList.remove('visible');
-  if (btnEdit) btnEdit.disabled = false;
-}
-
 const cronoModule = (typeof window !== 'undefined') ? window.RendererCrono : null;
-
-const getCronoLabels = () => ({
-  playLabel: tRenderer ? tRenderer('renderer.main.crono.play_symbol', '>') : '>',
-  pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
-});
 
 const initCronoController = () => {
   if (!cronoModule || typeof cronoModule.createController !== 'function') {

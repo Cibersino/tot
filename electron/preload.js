@@ -4,6 +4,17 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 
+const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {
+    ipcRenderer.on(channel, listener);
+    return () => {
+        try {
+            ipcRenderer.removeListener(channel, listener);
+        } catch (err) {
+            console.error(removeErrorMessage, err);
+        }
+    };
+};
+
 const api = {
     // Clipboard / editor / presets / settings (we preserve all existing settings)
     readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
@@ -54,16 +65,8 @@ const api = {
         const wrapper = (_e, payload) => {
             try { cb(payload); } catch (err) { console.error('menuAPI callback error:', err); }
         };
-        ipcRenderer.on('menu-click', wrapper);
-
         // return an unsubscribe function
-        return () => {
-            try {
-                ipcRenderer.removeListener('menu-click', wrapper);
-            } catch (err) {
-                console.error('Error removing menu listener:', err);
-            }
-        };
+        return subscribeWithUnsub('menu-click', wrapper, 'Error removing menu listener:');
     },
 
     setModeConteo: (mode) => ipcRenderer.invoke('set-mode-conteo', mode),
@@ -72,9 +75,8 @@ const api = {
         const listener = (ev, newSettings) => {
             try { cb(newSettings); } catch (err) { console.error('settings callback error:', err); }
         };
-        ipcRenderer.on('settings-updated', listener);
         // return function to remove listener if used by caller
-        return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error:', err); } };
+        return subscribeWithUnsub('settings-updated', listener, 'removeListener error:');
     },
 
     // Central Crono API (renderer <-> main)
@@ -84,8 +86,7 @@ const api = {
     getCronoState: () => ipcRenderer.invoke('crono-get-state'),
     onCronoState: (cb) => {
         const wrapper = (_e, state) => { try { cb(state); } catch (err) { console.error('onCronoState callback error:', err); } };
-        ipcRenderer.on('crono-state', wrapper);
-        return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (err) { console.error('removeListener error (crono-state):', err); } };
+        return subscribeWithUnsub('crono-state', wrapper, 'removeListener error (crono-state):');
     },
 
     // ------------------ APIs for the floating window (updated) ------------------
@@ -99,23 +100,20 @@ const api = {
     // Hold listener to notify that the flotante was closed (main emits 'flotante-closed')
     onFlotanteClosed: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('flotante closed callback error:', err); } };
-        ipcRenderer.on('flotante-closed', listener);
-        return () => { try { ipcRenderer.removeListener('flotante-closed', listener); } catch (err) { console.error('removeListener error:', err); } };
+        return subscribeWithUnsub('flotante-closed', listener, 'removeListener error:');
     },
 
     // editor ready (to hide loader in main window)
     onEditorReady: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
-        ipcRenderer.on('editor-ready', listener);
-        return () => { try { ipcRenderer.removeListener('editor-ready', listener); } catch (err) { console.error('removeListener error (editor-ready):', err); } };
+        return subscribeWithUnsub('editor-ready', listener, 'removeListener error (editor-ready):');
     },
 
     // Startup handshake (renderer <-> main)
     sendStartupRendererCoreReady: () => ipcRenderer.send('startup:renderer-core-ready'),
     onStartupReady: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('startup:ready callback error:', err); } };
-        ipcRenderer.on('startup:ready', listener);
-        return () => { try { ipcRenderer.removeListener('startup:ready', listener); } catch (err) { console.error('removeListener error (startup:ready):', err); } };
+        return subscribeWithUnsub('startup:ready', listener, 'removeListener error (startup:ready):');
     },
     sendStartupSplashRemoved: () => ipcRenderer.send('startup:splash-removed')
 };

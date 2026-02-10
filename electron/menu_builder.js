@@ -115,7 +115,7 @@ function loadMainTranslations(lang) {
         overlay = loadOverlay(requested, base);
         if (!overlay) {
             log.warnOnce(
-                `menu_builder.loadMainTranslations.overlayMissing:${requested}`,
+                'menu_builder.loadMainTranslations.overlayMissing',
                 'No overlay main.json found (using default only):',
                 { requested, base }
             );
@@ -160,7 +160,7 @@ function loadBundle(langCode, requested, required) {
 
             if (raw.trim() === '') {
                 log.warnOnce(
-                    `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`,
+                    `menu_builder.loadMainTranslations.empty:${fileVariant}`,
                     'main.json is empty (trying fallback):',
                     { requested, langCode, file }
                 );
@@ -170,7 +170,7 @@ function loadBundle(langCode, requested, required) {
             return JSON.parse(raw);
         } catch (err) {
             log.warnOnce(
-                `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`,
+                `menu_builder.loadMainTranslations.failed:${fileVariant}`,
                 'Failed to load/parse main.json (trying fallback):',
                 { requested, langCode, file },
                 err
@@ -180,7 +180,7 @@ function loadBundle(langCode, requested, required) {
 
     if (required) {
         log.errorOnce(
-            `menu_builder.loadMainTranslations.requiredMissing:${langCode}`,
+            'menu_builder.loadMainTranslations.requiredMissing',
             'Required main.json missing/invalid:',
             { langCode, files }
         );
@@ -213,6 +213,8 @@ function getDialogTexts(lang) {
  * @param {string} lang - Language code (e.g. 'es', 'en').
  * @param {object} [opts]
  * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Target window for 'menu-click'.
+ * @param {Function} [opts.resolveMainWindow] - Resolver for the target window.
+ * @param {Function} [opts.isMenuEnabled] - Returns whether menu actions should dispatch.
  * @param {Function} [opts.onOpenLanguage] - Callback that opens the language selection window.
  */
 function buildAppMenu(lang, opts = {}) {
@@ -239,6 +241,14 @@ function buildAppMenu(lang, opts = {}) {
             actionId
         );
         return false;
+    };
+
+    const resolveDevTarget = () => {
+        const focused = BrowserWindow.getFocusedWindow();
+        const resolvedMain = resolveMainWindow();
+        if (focused && !focused.isDestroyed()) return focused;
+        if (resolvedMain && !resolvedMain.isDestroyed()) return resolvedMain;
+        return null;
     };
 
     // Optional hook: the menu can trigger the language picker window.
@@ -424,12 +434,7 @@ function buildAppMenu(lang, opts = {}) {
                     accelerator: 'CommandOrControl+R',
                     click: () => {
                         if (!canDispatchMenuAction('dev.reload')) return;
-                        const focused = BrowserWindow.getFocusedWindow();
-                        const resolvedMain = resolveMainWindow();
-                        const target =
-                            focused && !focused.isDestroyed()
-                                ? focused
-                                : (resolvedMain && !resolvedMain.isDestroyed() ? resolvedMain : null);
+                        const target = resolveDevTarget();
                         if (!target) return;
                         try {
                             target.webContents.reload();
@@ -447,12 +452,7 @@ function buildAppMenu(lang, opts = {}) {
                     accelerator: 'CommandOrControl+Shift+R',
                     click: () => {
                         if (!canDispatchMenuAction('dev.forceReload')) return;
-                        const focused = BrowserWindow.getFocusedWindow();
-                        const resolvedMain = resolveMainWindow();
-                        const target =
-                            focused && !focused.isDestroyed()
-                                ? focused
-                                : (resolvedMain && !resolvedMain.isDestroyed() ? resolvedMain : null);
+                        const target = resolveDevTarget();
                         if (!target) return;
                         try {
                             target.webContents.reloadIgnoringCache();
@@ -470,12 +470,7 @@ function buildAppMenu(lang, opts = {}) {
                     accelerator: 'Ctrl+Shift+I',
                     click: () => {
                         if (!canDispatchMenuAction('dev.toggleDevTools')) return;
-                        const focused = BrowserWindow.getFocusedWindow();
-                        const resolvedMain = resolveMainWindow();
-                        const target =
-                            focused && !focused.isDestroyed()
-                                ? focused
-                                : (resolvedMain && !resolvedMain.isDestroyed() ? resolvedMain : null);
+                        const target = resolveDevTarget();
                         if (!target) return;
                         try {
                             target.webContents.toggleDevTools();
