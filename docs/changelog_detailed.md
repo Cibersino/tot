@@ -53,6 +53,9 @@ Reglas:
 
 ### Resumen de cambios
 
+- Repo-wide cleanup execution (Issue #64): ejecución del protocolo `docs/cleanup/cleanup_file_by_file.md` a lo largo del repo (`/electron`, `/public` y preloads):
+  - mejoras de estructura/logging/comentarios/coherencia sin cambios de contrato/timing observables;
+  - evidencia consolidada por archivo en `docs/cleanup/_evidence/issue64_repo_cleanup.md` (incluye checklists L7).
 - Arranque (Issue #102): rediseño a un modelo con **splash bloqueante** y un **único punto de habilitación de interactividad**, eliminando estados visibles “a medio inicializar” y reduciendo carreras de timing.
 - Arranque (Issue #102): el renderer no queda utilizable hasta que:
   - el renderer completa prerrequisitos internos,
