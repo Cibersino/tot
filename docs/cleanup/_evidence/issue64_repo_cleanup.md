@@ -5146,6 +5146,41 @@ Change 1
 Reviewer assessment: PASS (LP1)
 - Structural/robustness change is localized and behavior-preserving; contract/timing remains unchanged (no new async boundaries, no replay/buffer, no key changes).
 
+#### LP2 — Callback/listener semantics review (Codex)
+
+Decision: NO CHANGE
+
+Step 1) Listener-like API keys (current behavior; post-LP1)
+- `onCurrentTextUpdated`: `ipcRenderer.on('current-text-updated')`; try/catch: no; cb validation: no; returns unsubscribe: no.
+- `onPresetCreated`: `ipcRenderer.on('preset-created')`; try/catch: no; cb validation: no; returns unsubscribe: no.
+- `onMenuClick`: try/catch around `cb(payload)`; returns unsubscribe via `subscribeWithUnsub('menu-click', wrapper, 'Error removing menu listener:')`.
+- `onSettingsChanged`: try/catch around `cb(newSettings)`; returns unsubscribe via `subscribeWithUnsub('settings-updated', listener, 'removeListener error:')`.
+- `onCronoState`: try/catch around `cb(state)`; returns unsubscribe via `subscribeWithUnsub('crono-state', wrapper, 'removeListener error (crono-state):')`.
+- `onFlotanteClosed`: try/catch around `cb()`; returns unsubscribe via `subscribeWithUnsub('flotante-closed', listener, 'removeListener error:')`.
+- `onEditorReady`: try/catch around `cb()`; returns unsubscribe via `subscribeWithUnsub('editor-ready', listener, 'removeListener error (editor-ready):')`.
+- `onStartupReady`: try/catch around `cb()`; returns unsubscribe via `subscribeWithUnsub('startup:ready', listener, 'removeListener error (startup:ready):')`.
+
+Step 2) Policy baseline table (decision table)
+
+| API key | Classification | Target policy | Unsubscribe | cb validation |
+|---|---|---|---|---|
+| `onCurrentTextUpdated` | STREAM/RECURRENT | ISOLATE (preferred) | KEEP | KEEP |
+| `onPresetCreated` | STREAM/RECURRENT | ISOLATE (preferred) | KEEP | KEEP |
+| `onMenuClick` | STREAM/RECURRENT | ISOLATE (already) | KEEP | KEEP |
+| `onSettingsChanged` | STREAM/RECURRENT | ISOLATE (already) | KEEP | KEEP |
+| `onCronoState` | STREAM/RECURRENT | ISOLATE (already) | KEEP | KEEP |
+| `onFlotanteClosed` | RARE/CONTROL | ISOLATE (file isolates by design) | KEEP | KEEP |
+| `onEditorReady` | RARE/CONTROL | ISOLATE (file isolates by design) | KEEP | KEEP |
+| `onStartupReady` | RARE/CONTROL | ISOLATE (file isolates by design) | KEEP | KEEP |
+
+Step 3) Rationale (why NO CHANGE)
+- Two wrappers (`onCurrentTextUpdated`, `onPresetCreated`) are STREAM/RECURRENT but currently PROPAGATE errors (`cb(...)` not wrapped). Switching them to ISOLATE would change error surfacing expectations and thus requires Contract Gate evidence; not established here.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP2)
+- Output followed P2 template (Step 1 inventory + Step 2 decision table) and correctly avoided contract-affecting changes without Contract Gate evidence.
+
 ---
 
 ### electron/editor_preload.js
