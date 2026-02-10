@@ -112,6 +112,9 @@ Reglas:
   - cambio de preset vía `<select>` (después de `resolvePresetSelection(...)`, manteniendo apply+persist en presets.js)
   - `wpmSlider` (`input`)
   - `wpmInput` (`blur`)
+- Flotante (Issue #107): al soltar en el borde entre monitores (Windows 11, 2 pantallas), el clamp del `workArea` ya no desplaza la ventana hacia el centro ni rompe el drag:
+  - se removió el path `win32` que hacía snap inmediato en `moved`;
+  - el snap se ejecuta solo tras debounce (`endMoveMs`) luego de la última señal `move/moved`, armado por `will-move` (Windows/macOS) y con Linux tratado como user-driven.
 
 ### Removido
 
