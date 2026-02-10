@@ -5708,6 +5708,53 @@ Contract/timing: preserved (no changes applied).
 
 Reviewer assessment: PASS (LP3)
 
+#### LP4 — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const api = { ... }` is used by `contextBridge.exposeInMainWorld('presetAPI', api);`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('presetAPI', api);`.
+- Listener semantics unchanged: `onInit` still buffers/replays via `setTimeout(() => { ... })`.
+- IPC channel strings stable: `preset-init`, `create-preset`, `edit-preset`, `get-settings`, `settings-updated`.
+- Logging console-only and error-path only: `console.error('preset-init callback error:', err)` and `console.error('removeListener error (settings-updated):', err)`.
+- Comments accurate: `// Always-on listener: main may send 'preset-init' before renderer registers onInit.`
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+- Output cumple la plantilla LP4 (NO CHANGE + bullets con anchors + confirmación explícita de contract/timing).
+- No hay drift evidente entre comentario/semántica y el comportamiento observado en el archivo.
+
+##### Parte B: Smoke checklist (humano; estilo L7) — `electron/preset_preload.js`
+
+Result: PASS
+
+**Precondition**
+* App launched with logs visible (terminal + DevTools Console).
+* Abrir DevTools del **modal de presets** (ventana que carga este preload).
+* Durante las pruebas: observar **uncaught exceptions** y **spam repetitivo** en idle.
+
+##### LP4.B-01 Presets modal opens + preload surface present
+* [x] Action: Abrir el modal de presets. Expected: UI usable; sin errores en consola al abrir.
+* [x] DevTools (modal): `typeof window.presetAPI`. Expected: `"object"`.
+
+##### LP4.B-02 Surface keys sanity (cheap contract probe)
+* [x] DevTools (modal): `Object.keys(window.presetAPI).sort()`. Expected: incluye exactamente estas keys:
+  - `createPreset`, `editPreset`, `getSettings`, `onInit`, `onSettingsChanged`
+  (el orden NO es contractual según LP0 key-order scan).
+
+##### LP4.B-03 `onInit` replay/buffer remains async + cancellable
+* [x] DevTools (modal): registrar una primera vez:
+  - `let seen = 0; const u1 = window.presetAPI.onInit((data) => { seen++; console.log('onInit#', seen, data); });`. Expected: se imprime `onInit# 1 ...` cuando llegue init o en replay (sin excepciones).
+* [x] **Solo después** de haber visto al menos un `onInit` (para asegurar `lastInitData !== null`): probar cancelación del replay:
+  - `const u2 = window.presetAPI.onInit(() => console.log('SHOULD_NOT_FIRE')); u2();`. Expected: **no** aparece `SHOULD_NOT_FIRE` (cubre guard de cancelación antes del `setTimeout`).
+
+##### LP4.B-04 No listener duplication across reopen
+* [x] Action: Cerrar modal de presets → reabrir → repetir LP4.B-03. Expected: por cada update, el callback se ejecuta **una sola vez** (no “double fire” por listeners acumulados).
+
 ---
 
 ### electron/flotante_preload.js
