@@ -6038,4 +6038,23 @@ Change 1
 Observable contract/timing: unchanged.
 Reviewer assessment: PASS (LP1)
 
+#### LP2 — Callback/listener semantics review (Codex)
+
+Decision: NO CHANGE
+
+Step 1) Listener-like API keys (current behavior; post-LP1)
+- None. `languageAPI` exposes only `setLanguage` and `getAvailableLanguages` (no callback/listener wrappers; no `ipcRenderer.on/once`).
+
+Step 2) Policy baseline table (decision table)
+- N/A (no listener wrappers to classify).
+
+Step 3) Changes
+- No changes proposed.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP2)
+- NO CHANGE is correct because the preload exposes no callback/listener wrappers.
+- Output did not attempt any contract-affecting changes (no Contract Gate needed).
+
 ---
