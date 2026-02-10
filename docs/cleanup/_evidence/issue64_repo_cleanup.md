@@ -5666,6 +5666,32 @@ Reviewer assessment: PASS (LP1)
 - Cambio puramente estructural y contract-preserving; aceptable.
 - No requiere re-iteración de LP1; avanzar a LP2.
 
+#### LP2 — Callback/listener semantics review (Codex)
+
+Decision: NO CHANGE
+
+Step 1) Listener-like API keys (current behavior; post-LP1)
+- `onInit`: `ipcRenderer.on('preset-init')`; try/catch around cb: Y (live + replay); cb validation: Y (`typeof cb !== 'function'` guard); returns unsubscribe: Y; removal: `initCallbacks.delete(cb)` (try/catch).
+- `onSettingsChanged`: `ipcRenderer.on('settings-updated')`; try/catch around cb: Y; cb validation: N; returns unsubscribe: Y; removal: `ipcRenderer.removeListener('settings-updated', listener)` (try/catch).
+
+Step 2) Policy baseline table (decision table)
+
+| API key | Classification (justification) | Target policy (justification) | Unsubscribe | cb validation |
+|---|---|---|---|---|
+| `onInit` | RARE/CONTROL — init bootstrap + buffered replay | PROPAGATE preferred by policy, but file isolates by design (buffer + try/catch) | KEEP | KEEP |
+| `onSettingsChanged` | STREAM/RECURRENT — settings updates | ISOLATE preferred by policy; already isolated in preload | KEEP | KEEP |
+
+Step 3) Rationale (why NO CHANGE)
+- `onInit` is RARE/CONTROL but isolation is part of the existing buffer/replay design; changing error surfacing would be contract-affecting without a Contract Gate case.
+- `onSettingsChanged` already matches STREAM/RECURRENT isolate policy.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP2)
+- Output followed P2 template (Step 1 inventory + Step 2 decision table) and correctly avoided contract-affecting changes without Contract Gate evidence.
+
+TODO: avanzar a LP3 (Logs).
+
 ---
 
 ### electron/flotante_preload.js
