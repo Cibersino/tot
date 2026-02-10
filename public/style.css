@@ -275,6 +275,7 @@ select#presets {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 6px;
+  position: relative;
 }
 
 /* Results list */
@@ -290,11 +291,14 @@ select#presets {
 
 /* Right-aligned toggle wrapper */
 .toggle-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin-left: 8px;
-  flex: 0 0 auto;
+  margin-left: 0;
 }
 
 /* Semantic tuning of the toggle label */
