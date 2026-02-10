@@ -24,8 +24,8 @@
       "speed": {
         "title": "READING SPEED",
         "wpm_label": "words per minute (WPM)",
-        "new": "New",
-        "edit": "Edit",
+        "new": "N",
+        "edit": "E",
         "delete": "🗑",
         "reset_defaults": "R"
       },

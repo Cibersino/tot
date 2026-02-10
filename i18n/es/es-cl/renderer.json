@@ -24,8 +24,8 @@
       "speed": {
         "title": "QUÉ TAN RÁPIDO LEÍS",
         "wpm_label": "palabras por minuto (WPM)",
-        "new": "Nuevo",
-        "edit": "Editar",
+        "new": "N",
+        "edit": "E",
         "delete": "🗑",
         "reset_defaults": "R"
       },

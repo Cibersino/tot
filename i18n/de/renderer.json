@@ -24,8 +24,8 @@
       "speed": {
         "title": "LESEGESCHWINDIGKEIT",
         "wpm_label": "Wörter pro Minute (WPM)",
-        "new": "Neu",
-        "edit": "Bearbeiten",
+        "new": "N",
+        "edit": "B",
         "delete": "🗑",
         "reset_defaults": "R"
       },
