@@ -5400,6 +5400,74 @@ Change 2
 Reviewer assessment: PASS (LP1)
 - Changes are localized and contract-preserving; observable contract/timing unchanged (no new async boundaries, no replay/buffer, no key changes).
 
+#### LP2 — Callback/listener semantics review (redo; evidence-driven) (Codex)
+
+Decision: NO CHANGE
+
+Step 0) Snapshot (local, anchored)
+- Exposed API name anchor: `contextBridge.exposeInMainWorld('editorAPI', api);`
+- Keys (all): `getCurrentText`, `setCurrentText`, `getAppConfig`, `getSettings`, `onInitText`, `onExternalUpdate`, `onSettingsChanged`, `onForceClear`.
+- Listener-like keys: `onInitText`, `onExternalUpdate`, `onSettingsChanged`, `onForceClear`.
+
+Step 1) Repo evidence (all call sites per key)
+
+`onInitText`
+- Hit: `public/editor.js` (section: “IPC bridge listeners”)
+  - Micro-quote: `window.editorAPI.onInitText((p) => { applyExternalUpdate(p); });`
+  - Consumer callback try/catch: no (callback body is a direct call)
+  - Return value used (unsubscribe): no
+- Completeness: 1 hit; treated as complete for current repo scan.
+
+`onExternalUpdate`
+- Hit: `public/editor.js` (section: “IPC bridge listeners”)
+  - Micro-quote: `window.editorAPI.onExternalUpdate((p) => { applyExternalUpdate(p); });`
+  - Consumer callback try/catch: no (callback body is a direct call)
+  - Return value used (unsubscribe): no
+- Completeness: 1 hit; treated as complete for current repo scan.
+
+`onSettingsChanged`
+- Hit: `public/editor.js` (section: “Settings integration”)
+  - Micro-quote: `window.editorAPI.onSettingsChanged(async (settings) => {`
+  - Consumer callback try/catch: yes
+    - Micro-quote: `try {`
+  - Return value used (unsubscribe): no
+- Completeness: 1 hit; treated as complete for current repo scan.
+
+`onForceClear`
+- Hit: `public/editor.js` (section: “IPC bridge listeners”)
+  - Micro-quote: `window.editorAPI.onForceClear(() => {`
+  - Consumer callback try/catch: yes
+    - Micro-quote: `try {`
+  - Return value used (unsubscribe): no
+- Completeness: 1 hit; treated as complete for current repo scan.
+
+Searches performed (exact terms)
+- `window\.editorAPI\.onInitText\(|editorAPI\.onInitText\(|window\['editorAPI'\]\s*.\s*onInitText\(` → 1 hit (`public/editor.js`)
+- `window\.editorAPI\.onExternalUpdate\(|editorAPI\.onExternalUpdate\(|window\['editorAPI'\]\s*.\s*onExternalUpdate\(` → 1 hit (`public/editor.js`)
+- `window\.editorAPI\.onSettingsChanged\(|editorAPI\.onSettingsChanged\(|window\['editorAPI'\]\s*.\s*onSettingsChanged\(` → 1 hit (`public/editor.js`)
+- `window\.editorAPI\.onForceClear\(|editorAPI\.onForceClear\(|window\['editorAPI'\]\s*.\s*onForceClear\(` → 1 hit (`public/editor.js`)
+- `window\['editorAPI'\]|globalThis\.editorAPI|self\.editorAPI` → 0 hits
+- `const\s*\{[^}]*editorAPI[^}]*\}` → 0 hits
+
+Step 2) Decision table (policy baseline)
+
+| API key | Classification + evidence | Target error policy + justification | Unsubscribe | cb validation |
+|---|---|---|---|---|
+| `onInitText` | RARE/CONTROL — init text set once; `public/editor.js` “IPC bridge listeners” | PROPAGATE — control/init path; no isolation in preload | KEEP | KEEP |
+| `onExternalUpdate` | STREAM/RECURRENT — repeated updates via `applyExternalUpdate` | ISOLATE — stream updates should not crash listener chain | KEEP | KEEP |
+| `onSettingsChanged` | STREAM/RECURRENT — settings integration in `public/editor.js` | ISOLATE — already isolated in preload | KEEP | KEEP |
+| `onForceClear` | RARE/CONTROL — explicit clear command | PROPAGATE — control path; no isolation in preload | KEEP | KEEP |
+
+Step 3) Changes (only if justified)
+- No changes proposed.
+- Rationale: `onExternalUpdate` is STREAM/RECURRENT and currently PROPAGATES. Changing to ISOLATE would alter error surfacing (consumer-visible behavior). The only observed call site does not wrap the callback body in try/catch; without a Contract Gate case showing consumers expect isolation, change is blocked.
+
+Observable contract/timing did not change.
+
+Reviewer gate: PASS (LP2)
+- Evidence gathered (call sites + search terms) and policy table completed.
+- Decision is conservative under Contract Gate (no behavior change without explicit consumer-compatibility proof).
+
 ---
 
 ### electron/preset_preload.js
