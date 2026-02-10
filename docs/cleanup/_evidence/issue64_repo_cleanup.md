@@ -5282,7 +5282,102 @@ Result: PASS
 Date: `2026-02-09`
 Last commit: `2d6f8a853009f51fe2ee0041e01f5fab26b69a2d`
 
-(TODO)
+#### LP0 — Diagnosis + Inventarios (Codex, verified)
+
+Codex gate: PASS (LP0)
+- Diagnosis only; no changes, no recommendations.
+- No invented IPC channels/consumers beyond `electron/editor_preload.js`.
+- Inventories complete (surface keys + IPC calls + listener semantics).
+- Anchors/micro-quotes validated against file.
+
+##### 0.1 Reading map (validated)
+Block order (actual):
+1) `'use strict'`
+2) `require('electron')` destructuring: `const { contextBridge, ipcRenderer } = require('electron');`
+3) `contextBridge.exposeInMainWorld('editorAPI', { ... })` with inline API object
+
+Linear reading breaks (obstacles; anchors):
+- `exposeInMainWorld` — `contextBridge.exposeInMainWorld('editorAPI', {`
+- `onSettingsChanged` — `const listener = (_e, settings) => {`
+
+##### 0.2 Preload surface contract map (validated)
+
+A) `contextBridge.exposeInMainWorld(...)`
+- Exposed name: `editorAPI`
+- Anchor: `contextBridge.exposeInMainWorld('editorAPI', {`
+
+Keys by category (full inventory; set is contractual):
+- Invoke wrappers:
+  - `getCurrentText` → invoke `'get-current-text'` (no args)
+  - `setCurrentText` → invoke `'set-current-text'` (arg: `t`)
+  - `getAppConfig` → invoke `'get-app-config'` (no args)
+  - `getSettings` → invoke `'get-settings'` (no args)
+
+- On-listeners (listener-like keys):
+  - `onInitText` — no unsubscribe (direct `ipcRenderer.on`)
+  - `onExternalUpdate` — no unsubscribe (direct `ipcRenderer.on`)
+  - `onSettingsChanged` — returns unsubscribe (removeListener; try/catch)
+  - `onForceClear` — no unsubscribe (direct `ipcRenderer.on`)
+
+Replay/buffer behavior:
+- None visible in this file (no buffering state; direct `ipcRenderer.on(...)` registration only).
+
+B) Direct global exports:
+- None (no `window.X = ...` assignments in this file).
+
+##### 0.3 IPC contract inventory (mechanical; validated)
+
+ipcRenderer.invoke:
+- `'get-current-text'` args: none → return: unspecified (opaque to preload)
+- `'set-current-text'` args: `t` → return: unspecified
+- `'get-app-config'` args: none → return: unspecified
+- `'get-settings'` args: none → return: unspecified
+
+ipcRenderer.on:
+- `'editor-init-text'` listener args: `(_e, text)` → forwards `cb(text)`
+- `'editor-text-updated'` listener args: `(_e, text)` → forwards `cb(text)`
+- `'settings-updated'` listener args: `(_e, settings)` → forwards `cb(settings)` (wrapped)
+- `'editor-force-clear'` listener args: `(_e, _payload)` → forwards `cb(_payload)`
+
+ipcRenderer.removeListener:
+- `'settings-updated'` remove: `('settings-updated', listener)` (only via unsubscribe)
+
+ipcMain / webContents:
+- None in this file.
+
+##### 0.4 Invariants / fallbacks (anchored; validated)
+
+Listener table (one row per listener-like key; no blanket claims):
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| `onInitText` | `editor-init-text` | `cb(text)` | PROPAGATES | N | N-A | N-A |
+| `onExternalUpdate` | `editor-text-updated` | `cb(text)` | PROPAGATES | N | N-A | N-A |
+| `onSettingsChanged` | `settings-updated` | `cb(settings)` | ISOLATES | Y | `ipcRenderer.removeListener('settings-updated', listener)` | ISOLATES |
+| `onForceClear` | `editor-force-clear` | `cb(_payload)` | PROPAGATES | N | N-A | N-A |
+
+cb-error log anchors (only where present):
+- `onSettingsChanged`: `console.error('settings callback error:', err)`
+
+unsub-error log anchors (only where present):
+- `onSettingsChanged`: `console.error('removeListener error (settings-updated):', err)`
+
+Other non-callback invariants/fallbacks (anchored):
+- Settings listener isolates callback errors: `try { cb(settings); } catch (err)`
+- Unsubscribe isolates removal errors: `try { ipcRenderer.removeListener('settings-updated', listener); } catch (err)`
+
+##### 0.5 Key-order dependency scan (repo; validated)
+
+API_NAME: `editorAPI`
+
+Enumeration families:
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Key order: NOT depended upon (safe to reorder)
 
 ---
 
