@@ -5181,6 +5181,22 @@ Observable contract/timing did not change.
 Reviewer assessment: PASS (LP2)
 - Output followed P2 template (Step 1 inventory + Step 2 decision table) and correctly avoided contract-affecting changes without Contract Gate evidence.
 
+#### LP3 — Logs (Codex)
+
+Decision: NO CHANGE
+
+- Logging es console-based y sólo en paths de error:
+  - Unsubscribe removal error (helper): `console.error(removeErrorMessage, err);`
+  - Callback error examples: `console.error('menuAPI callback error:', err);`, etc.
+- No se introduce logging en paths sanos/alta frecuencia.
+- No se agregan deps (se mantiene “console-only” para preload).
+
+Contract/timing: preservado (sin cambios aplicados).
+
+Reviewer assessment: PASS (LP3)
+- P3 permite NO CHANGE si el logging ya cumple: console-only, sin ruido en path sano, sin deps nuevas.
+- Dedupe no se justifica sin evidencia de spam (los logs actuales están condicionados a error).
+
 ---
 
 ### electron/editor_preload.js
