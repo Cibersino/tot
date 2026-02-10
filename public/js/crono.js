@@ -412,6 +412,7 @@
 
     const handleTextChange = async (previousText, nextText) => {
       try {
+        // NOTE: previousText is currently only used for the strict equality guard below.
         if (previousText === nextText) return;
 
         if (!nextText) {

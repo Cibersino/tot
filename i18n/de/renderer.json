@@ -24,8 +24,8 @@
       "speed": {
         "title": "LESEGESCHWINDIGKEIT",
         "wpm_label": "Wörter pro Minute (WPM)",
-        "new": "Neu",
-        "edit": "Bearbeiten",
+        "new": "N",
+        "edit": "B",
         "delete": "🗑",
         "reset_defaults": "R"
       },
@@ -33,7 +33,7 @@
         "title": "ERGEBNISSE ZÄHLEN",
         "time": "⏱ Geschätzte Lesezeit: {h}h {m}m {s}s",
         "words": "Wörter: {n}",
-        "chars_no_space": "Chars w/o space: {n}",
+        "chars_no_space": "Zeichen (ohne Leerzeichen): {n}",
         "chars": "Zeichen: {n}",
         "precise_mode": "Präziser Modus",
         "precise_tooltip": "Basierend auf Intl.Segmenter"
