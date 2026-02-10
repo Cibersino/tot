@@ -5939,6 +5939,85 @@ Resultado: PASS
 Date: `2026-02-09`
 Last commit: `6900361ede77e07dbda5e2b5130975b8f2aa3863`
 
-(TODO)
+#### LP0 — Diagnosis + Inventarios (Codex, verified)
+
+Codex gate: PASS (LP0)
+- Diagnosis only; no code changes, no recommendations.
+- No invented IPC channels/consumers beyond `electron/language_preload.js`.
+- Surface + IPC inventories complete; no listener-like keys in this preload.
+- Anchors/micro-quotes validated against file.
+
+##### 0.1 Reading map (validated)
+
+Block order (actual):
+1) File header + `'use strict'`
+2) Imports: `const { contextBridge, ipcRenderer } = require('electron');`
+3) Single preload surface: `contextBridge.exposeInMainWorld('languageAPI', { ... })` (inline API object)
+
+Linear reading breaks (obstacles; anchors):
+- `exposeInMainWorld` — `contextBridge.exposeInMainWorld('languageAPI', {`
+- `setLanguage` — `setLanguage: async (lang) => {`
+
+##### 0.2 Preload surface contract map (validated)
+
+A) `contextBridge.exposeInMainWorld(...)`
+- Exposed name: `languageAPI`
+- Anchor: `contextBridge.exposeInMainWorld('languageAPI', {`
+
+Keys by category (full inventory; set is contractual):
+- Invoke wrappers:
+  - `getAvailableLanguages` → invoke `'get-available-languages'` (no args)
+  - `setLanguage` → invoke `'set-language'` (arg: `tag`) + side-effect send `'language-selected'` (arg: `tag`)
+
+Replay/buffer behavior:
+- None visible (no buffering state; no `ipcRenderer.on(...)` registrations).
+
+B) Direct global exports:
+- None (no `window.X = ...` assignments).
+
+##### 0.3 IPC contract inventory (mechanical; validated)
+
+ipcRenderer.invoke:
+- `'set-language'` args: `tag` → return: `res` (opaque to preload)
+- `'get-available-languages'` args: none → return: unspecified (opaque)
+
+ipcRenderer.send:
+- `'language-selected'` args: `tag`
+
+ipcRenderer.on / once / removeListener / removeAllListeners:
+- None in this file.
+
+ipcMain / webContents:
+- None in this file.
+
+##### 0.4 Invariants / fallbacks (anchored; validated)
+
+Listener table (no listener-like keys; empty by construction):
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| (none) | | | | | | |
+
+Other non-callback invariants/fallbacks (anchored):
+- Language tag normalization/guard: `String(lang || '').trim().toLowerCase().replace(/_/g, '-')`
+- Ordering invariant (observable): invoke completes before signal send:
+  - `const res = await ipcRenderer.invoke('set-language', tag);`
+  - `ipcRenderer.send('language-selected', tag);`
+
+##### 0.5 Key-order dependency scan (repo; Codex-reported)
+
+API_NAME: `languageAPI`
+
+Enumeration families:
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Key order: NOT depended upon (safe to reorder)
+
+Reviewer assessment: PASS (LP0)
+- Diagnosis-only; inventories match the file; invariants are anchored; no listeners exist in this preload.
 
 ---
