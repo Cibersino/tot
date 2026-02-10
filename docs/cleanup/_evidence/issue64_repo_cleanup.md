@@ -6057,4 +6057,15 @@ Reviewer assessment: PASS (LP2)
 - NO CHANGE is correct because the preload exposes no callback/listener wrappers.
 - Output did not attempt any contract-affecting changes (no Contract Gate needed).
 
+#### LP3 — Logs (preload policy)
+
+Decision: NO CHANGE
+
+- No logging present in `electron/language_preload.js`; nothing to align to console-only policy.
+- No dedupe mechanism justified (no repeated logs / no error-path logs exist in this preload).
+
+Contract/timing: preserved (no changes applied).
+
+Reviewer assessment: PASS (LP3)
+
 ---
