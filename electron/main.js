@@ -561,13 +561,6 @@ function resolveLanguage(reason) {
 }
 
 // =============================================================================
-// IPC registration (delegated modules)
-// =============================================================================
-// main.js owns windows. Feature modules own their IPC contract and internal logic.
-// We provide window references and callbacks so modules can notify the UI.
-// Registration happens after app readiness in app.whenReady().
-
-// =============================================================================
 // Floating window - window placement safety
 // =============================================================================
 // The flotante window is a small always-on-top stopwatch UI.
@@ -1323,7 +1316,12 @@ app.whenReady().then(() => {
     settingsFile: SETTINGS_FILE,
   });
 
-  // IPC registration (delegated modules).
+  // =============================================================================
+  // IPC registration (delegated modules)
+  // =============================================================================
+  // main.js owns windows. Feature modules own their IPC contract and internal logic.
+  // We provide window references and callbacks so modules can notify the UI.
+  // Registration happens after app readiness in app.whenReady().
   textState.registerIpc(ipcMain, () => ({
     mainWin,
     editorWin,
