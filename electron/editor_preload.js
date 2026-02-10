@@ -3,10 +3,9 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-
-contextBridge.exposeInMainWorld('editorAPI', {
+const api = {
   getCurrentText: () => ipcRenderer.invoke('get-current-text'),
-  setCurrentText: (t) => ipcRenderer.invoke('set-current-text', t),
+  setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
   getAppConfig: () => ipcRenderer.invoke('get-app-config'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   onInitText: (cb) => {
@@ -24,6 +23,8 @@ contextBridge.exposeInMainWorld('editorAPI', {
   },
   // Listener to force clear content (main will send 'editor-force-clear')
   onForceClear: (cb) => {
-    ipcRenderer.on('editor-force-clear', (_e, _payload) => cb(_payload));
+    ipcRenderer.on('editor-force-clear', (_e, payload) => cb(payload));
   }
-});
+};
+
+contextBridge.exposeInMainWorld('editorAPI', api);

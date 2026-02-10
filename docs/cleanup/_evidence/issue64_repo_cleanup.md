@@ -5379,6 +5379,27 @@ Enumeration families:
 
 Key order: NOT depended upon (safe to reorder)
 
+#### LP1 — Structure + controlled robustness + explicit contract gate (Codex)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Extract inline API object into `const api = { ... }` and call `contextBridge.exposeInMainWorld('editorAPI', api)` after it.
+- Gain: Clearer structure; easier scan (API surface separated from exposure).
+- Cost: One extra const + minimal indirection.
+- Risk: Low; no changes to exposed keys, listener semantics, or IPC channels/payloads.
+- Validation (manual, post-apply): verify `editorAPI` keys unchanged; verify all IPC channel string literals unchanged.
+
+Change 2
+- Change: Rename locals only: `setCurrentText` param `t` → `text`, and `onForceClear` payload `_payload` → `payload`.
+- Gain: Clearer intent with no behavior change.
+- Cost: None.
+- Risk: None (local identifiers only).
+- Validation: confirm only local parameter names changed.
+
+Reviewer assessment: PASS (LP1)
+- Changes are localized and contract-preserving; observable contract/timing unchanged (no new async boundaries, no replay/buffer, no key changes).
+
 ---
 
 ### electron/preset_preload.js
