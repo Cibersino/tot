@@ -5197,6 +5197,84 @@ Reviewer assessment: PASS (LP3)
 - P3 permite NO CHANGE si el logging ya cumple: console-only, sin ruido en path sano, sin deps nuevas.
 - Dedupe no se justifica sin evidencia de spam (los logs actuales están condicionados a error).
 
+#### LP4 — Final review + Smoke (Codex + humano)
+
+##### Parte A: Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {` is referenced by multiple on-listeners via `return subscribeWithUnsub(...);`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('electronAPI', api);`.
+- Listener semantics unchanged: e.g., `onMenuClick` still returns unsubscribe; `onCurrentTextUpdated` still returns no unsubscribe.
+- IPC channels stable: unchanged literals like `'menu-click'`, `'settings-updated'`, `'crono-state'`, `'flotante-closed'`, `'editor-ready'`, `'startup:ready'`.
+- Logging remains console-only and error-path only (e.g., `console.error('menuAPI callback error:', err)`; unsubscribe catch logs).
+- Comments remain accurate (e.g., `// return function to remove listener if used by caller` matches returned unsubscribe).
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+- Coherence checks are consistent with the post-LP1 file state; no dead code or drift observed.
+
+##### Parte B: Smoke checklist (humano; estilo L7) — `electron/preload.js`
+
+Result: PASS
+
+**Precondition**
+* App launched with logs visible (terminal + DevTools Console).
+* Start from a normal “existing state” run (no need to wipe config unless you explicitly want first-run coverage).
+* During the run: watch for **uncaught exceptions** and **repeated spam** in idle.
+
+##### LP4.B-01 Startup + main usable (test_suite SM-01)
+* [X] Action: Launch app.
+* [X] Expected: Main UI usable (preview/results/stopwatch present). No blocking error.
+* [X] Expected logs: no uncaught exceptions; no continuous WARN/ERROR spam in idle.
+
+##### LP4.B-02 Clipboard overwrite updates results (test_suite SM-03)
+* [x] Action: Copy test text → click **📋↺**.
+* [x] Expected: preview + counts/time update immediately; no errors.
+
+##### LP4.B-03 Append clipboard updates results (test_suite SM-04)
+* [x] Action: Copy test text → click **📋+**.
+* [x] Expected: text grows; counts/time increase coherently; no errors.
+
+##### LP4.B-04 Empty current text (test_suite SM-05)
+* [x] Action: Click Trash (🗑).
+* [x] Expected: empty-state visible; counts/time go to zero; stopwatch resets due to text change; no errors.
+
+##### LP4.B-05 Counting mode toggle (test_suite SM-06)
+* [x] Action: With non-empty text, toggle “Modo preciso” ON/OFF.
+* [x] Expected: results change coherently (no NaN/blank), toggle persists during session; no errors.
+
+##### LP4.B-06 Presets select changes WPM/time (test_suite SM-07)
+* [x] Action: Select an existing preset in selector.
+* [x] Expected: WPM input/slider updates; time estimate recalculates; no errors.
+
+##### LP4.B-07 Editor open + edit sync + close (test_suite SM-08)
+* [x] Action: Open manual editor (⌨) → modify text → confirm main preview/results update → close editor.
+* [x] Expected: main reflects editor changes; no stuck “editor loader”; no errors.
+* [x] Repeat: open+close editor a 2nd time to catch listener duplication/regressions.
+
+##### LP4.B-08 Stopwatch + floating window basic loop (test_suite SM-09)
+* [x] Action: Start stopwatch ▶ → wait 2–3s → pause → open floating window (FW).
+* [x] Expected: FW shows consistent time/state; start/pause from FW affects main.
+* [x] Action: Close FW via window “X”.
+* [x] Expected: main reflects FW closed state (no stale “FW open” indicator); no errors.
+
+##### LP4.B-09 Menu About + updater reachable (test_suite SM-10)
+* [x] Action: Menu → About (open/close) → open again.
+* [x] Expected: modal opens once per click (no double-fire); content readable; no errors.
+* [x] Action: Menu → “Actualizar versión” (manual check).
+* [x] Expected: dialog appears (up-to-date / update available / failure). No uncaught exceptions.
+
+##### Optional LP4.B-10 Surface sanity (DevTools Console; cheap contract probe)
+* [x] Command: `typeof window.electronAPI`
+* [x] Expected: `"object"`
+* [x] Command: `Object.keys(window.electronAPI).length`
+* [x] Expected: stable count (no missing keys). (Order is non-contractual per LP0 scan.)
+
 ---
 
 ### electron/editor_preload.js
