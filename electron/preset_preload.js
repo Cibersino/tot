@@ -52,7 +52,7 @@ function onInit(cb) {
   };
 }
 
-contextBridge.exposeInMainWorld('presetAPI', {
+const api = {
   createPreset: (preset) => ipcRenderer.invoke('create-preset', preset),
 
   // Reliable init hook
@@ -70,4 +70,6 @@ contextBridge.exposeInMainWorld('presetAPI', {
     ipcRenderer.on('settings-updated', listener);
     return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error (settings-updated):', err); } };
   },
-});
+};
+
+contextBridge.exposeInMainWorld('presetAPI', api);

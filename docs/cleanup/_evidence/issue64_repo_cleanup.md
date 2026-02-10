@@ -5647,6 +5647,25 @@ Enumeration families:
 
 Key order: NOT depended upon (safe to reorder)
 
+#### LP1 — Structure + controlled robustness + explicit contract gate (Codex)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Extracted inline API object to `const api = { ... }` and used `contextBridge.exposeInMainWorld('presetAPI', api)` after it.
+- Gain: Estructura más escaneable; separa “definición de surface” del “expose” (consistencia con otros preloads).
+- Cost: Un `const` adicional.
+- Risk: Bajo; no cambia keys expuestas, strings de canal IPC ni semántica/timing de listeners (incl. replay/buffer).
+- Validation (estática):
+  - Confirmar que `presetAPI` expone exactamente las mismas keys: `createPreset`, `onInit`, `editPreset`, `getSettings`, `onSettingsChanged`.
+  - Confirmar que permanecen idénticos los literales de canal: `create-preset`, `edit-preset`, `get-settings`, `preset-init`, `settings-updated`.
+
+Observable contract/timing did not change.
+
+Reviewer assessment: PASS (LP1)
+- Cambio puramente estructural y contract-preserving; aceptable.
+- No requiere re-iteración de LP1; avanzar a LP2.
+
 ---
 
 ### electron/flotante_preload.js
