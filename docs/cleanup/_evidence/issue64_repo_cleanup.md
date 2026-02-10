@@ -5484,6 +5484,60 @@ Contract/timing: preserved (no changes applied).
 
 Reviewer assessment: PASS (LP3)
 
+#### LP4 — Final review + Smoke (Codex + humano)
+
+##### LP4.A — Final review (Codex)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const api = { ... }` is used by `contextBridge.exposeInMainWorld('editorAPI', api)`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('editorAPI', api)`.
+- Listener semantics unchanged: `onSettingsChanged` still returns unsubscribe via `ipcRenderer.removeListener('settings-updated', listener)`.
+- IPC channel strings stable: `editor-init-text`, `editor-text-updated`, `settings-updated`, `editor-force-clear`.
+- Logging console-only and error-path only: `console.error('settings callback error:', err)` and `console.error('removeListener error (settings-updated):', err)`.
+- Comment accurate: `// Listener to force clear content (main will send 'editor-force-clear')`.
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+
+##### LP4.B — Smoke checklist (humano; test_suite subset)
+
+Resultado: PASS
+
+##### LP4.B-01 Editor window opens + initial text present (test_suite SM-08)
+* [x] Action: Ensure main has non-empty text (SM-03), click manual editor (⌨).
+* [x] Expected: Editor opens; text is populated (may be truncated per editor limits); no uncaught exceptions (main/editor DevTools).
+
+##### LP4.B-02 Editor edits propagate to main (test_suite SM-08)
+* [x] Action: In editor, modify text (add a short suffix) and trigger the normal “apply/calc” behavior you use.
+* [x] Expected: Main window preview/results update to match; no error spam.
+
+##### LP4.B-03 Main overwrite/append propagates to editor (test_suite SM-03 / SM-04)
+* [x] Action: With editor open, do clipboard overwrite (📋↺) then append (📋+).
+* [x] Expected: Editor content updates accordingly (applyExternalUpdate path); no stuck UI; no exceptions.
+
+##### LP4.B-04 Main clear forces editor clear (test_suite SM-05)
+* [x] Action: With editor open, click Trash (🗑) in main.
+* [x] Expected: Editor clears via force-clear path; no feedback loop; main remains empty.
+
+##### LP4.B-05 Settings update reaches editor (language) (test_suite SM-02)
+* [x] Action: Change language via the supported path (first-run or menu Preferences → Language).
+* [x] Expected: Editor UI translations update (no crash); no repeated warnings on idle.
+
+##### LP4.B-06 Re-open editor (listener duplication sanity)
+* [x] Action: Close editor window → open it again.
+* [x] Expected: Init/update behavior still works; no duplicated reactions to a single main update.
+
+##### Optional LP4.B-07 Surface sanity (DevTools Console; cheap contract probe)
+* [x] Command (editor window): `typeof window.editorAPI`
+* [x] Expected: `"object"`
+* [x] Command: `Object.keys(window.editorAPI).length`
+* [x] Expected: stable count (no missing keys). (Order is non-contractual per LP0 scan.)
+
 ---
 
 ### electron/preset_preload.js
