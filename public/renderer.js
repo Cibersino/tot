@@ -498,7 +498,8 @@ const settingsChangeHandler = async (newSettings) => {
         log.error('Error loading presets after language change:', err);
       }
     }
-    if (settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo) {
+    const modeChanged = !!(settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo);
+    if (modeChanged) {
       modoConteo = settingsCache.modeConteo;
       if (typeof syncToggleFromSettings === 'function') {
         syncToggleFromSettings(settingsCache || {});
@@ -508,6 +509,9 @@ const settingsChangeHandler = async (newSettings) => {
     }
     if (isRendererReady()) {
       updatePreviewAndResults(currentText);
+      if (modeChanged && cronoController && typeof cronoController.handleTextChange === 'function') {
+        cronoController.handleTextChange(null, currentText);
+      }
     }
   } catch (err) {
     log.error('Error handling settings change:', err);
@@ -666,6 +670,9 @@ function setupToggleModoPreciso() {
 
         // Immediate recount of the current text
         updatePreviewAndResults(currentText);
+        if (cronoController && typeof cronoController.handleTextChange === 'function') {
+          cronoController.handleTextChange(null, currentText);
+        }
 
         // Attempt to persist settings via IPC (if preload/main implemented setModeConteo)
         if (window.electronAPI && typeof window.electronAPI.setModeConteo === 'function') {
