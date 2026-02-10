@@ -6068,4 +6068,57 @@ Contract/timing: preserved (no changes applied).
 
 Reviewer assessment: PASS (LP3)
 
+#### LP4 — Final review (Codex; verified)
+
+Decision: NO CHANGE
+
+No Level P4 changes justified.
+
+Checked (anchors):
+- No unused locals: `const api = { ... }` is used by `contextBridge.exposeInMainWorld('languageAPI', api)`.
+- Exposed surface unchanged: `contextBridge.exposeInMainWorld('languageAPI', api)`.
+- IPC channel strings stable: `set-language`, `language-selected`, `get-available-languages`.
+- Logging: none present (still console-only constraint satisfied).
+- Comments accurate: `// Persist language via main handler` and `// Signal selection so main can continue startup`.
+
+Observable contract/timing preserved.
+
+Reviewer assessment: PASS (LP4.A)
+- Coherence check matches the post-LP1 file state; no dead code or drift observed.
+
+##### Parte B: Smoke checklist (humano; estilo L7) — `electron/language_preload.js`
+
+Resultado: PASS
+
+**Precondition**
+* App launched with logs visible (terminal + DevTools Console).
+* Start from a normal “existing state” run (no need to wipe config unless you explicitly want first-run coverage).
+* During the run: watch for uncaught exceptions and repeated WARN/ERROR spam in idle.
+
+##### LP4.B-01 Language window opens (test_suite REG-I18N-01)
+* [x] Action: Open language picker via the supported path (e.g., Preferences → Language).
+* [x] Expected: Language window opens; list renders; no uncaught exceptions.
+
+##### LP4.B-02 Filter + select language (test_suite REG-I18N-01 / REG-I18N-02)
+* [x] Action: Type in filter/search; select a language.
+* [x] Expected: Selection persists and the app transitions/updates language without crashes.
+
+##### LP4.B-03 Cross-window translation sanity (test_suite REG-I18N-02)
+* [x] Action: Open main + (optionally) editor/presets/floating window; verify UI strings reflect the chosen language.
+* [x] Expected: No mixed-language glitches beyond known limitations; no error spam.
+
+##### Optional LP4.B-04 First-run coverage (test_suite REG-FR-01)
+* [x] Action: Wipe config → launch app → language picker appears → filter + select language.
+* [x] Expected: App continues normal startup; no uncaught exceptions.
+
+##### Optional LP4.B-05 Surface sanity (DevTools Console; cheap contract probe)
+* [x] Command (language window): `typeof window.languageAPI`
+* [x] Expected: `"object"`
+* [x] Command: `Object.keys(window.languageAPI).sort()`
+* [x] Expected: includes `getAvailableLanguages`, `setLanguage` (order non-contractual).
+
+---
+
+FIN
+
 ---
