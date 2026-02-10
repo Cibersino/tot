@@ -6020,4 +6020,22 @@ Key order: NOT depended upon (safe to reorder)
 Reviewer assessment: PASS (LP0)
 - Diagnosis-only; inventories match the file; invariants are anchored; no listeners exist in this preload.
 
+#### LP1 — Unified pass (estructura + robustez; contract-preserving)
+
+Decision: CHANGED (contract unchanged)
+
+Change 1
+- Change: Extraer el objeto inline expuesto a `const api = { ... }` y luego ejecutar `contextBridge.exposeInMainWorld('languageAPI', api)`.
+- Gain: La “surface” queda separada y más escaneable (API object explícito + llamada de exposición al final).
+- Cost: 1 constante adicional.
+- Risk: Bajo. No cambia keys expuestas, ni strings de canales IPC, ni ordering observable dentro de `setLanguage`.
+- Validation: Revisión del diff confirma:
+  - mismo nombre expuesto: `languageAPI`
+  - mismas keys: `setLanguage`, `getAvailableLanguages`
+  - mismos literales de canal: `set-language`, `language-selected`, `get-available-languages`
+  - misma secuencia observable en `setLanguage`: invoke (await) → send
+
+Observable contract/timing: unchanged.
+Reviewer assessment: PASS (LP1)
+
 ---
