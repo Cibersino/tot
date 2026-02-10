@@ -3,7 +3,6 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-
 const api = {
     // Clipboard / editor / presets / settings (we preserve all existing settings)
     readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
