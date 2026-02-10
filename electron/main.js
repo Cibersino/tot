@@ -58,7 +58,7 @@ const FALLBACK_LANGUAGES = [
 ];
 
 // =============================================================================
-// Helpers (logging + validation)
+// Helpers (guards + validation)
 // =============================================================================
 
 function isPlainObject(x) {
@@ -180,12 +180,20 @@ function registerDevShortcuts() {
     globalShortcut.register('CommandOrControl+R', () => {
       if (!guardMainUserAction('shortcut.reload', 'Reload shortcut ignored (pre-READY).')) return;
       const targetWin = resolveTargetWindow();
+      if (targetWin && targetWin === mainWin) {
+        rendererCoreReady = false;
+        startupReadySent = false;
+      }
       if (targetWin) targetWin.webContents.reload();
     });
 
     globalShortcut.register('CommandOrControl+Shift+R', () => {
       if (!guardMainUserAction('shortcut.forceReload', 'Force reload shortcut ignored (pre-READY).')) return;
       const targetWin = resolveTargetWindow();
+      if (targetWin && targetWin === mainWin) {
+        rendererCoreReady = false;
+        startupReadySent = false;
+      }
       if (targetWin) targetWin.webContents.reloadIgnoringCache();
     });
   } catch (err) {
@@ -553,13 +561,6 @@ function resolveLanguage(reason) {
 }
 
 // =============================================================================
-// IPC registration (delegated modules)
-// =============================================================================
-// main.js owns windows. Feature modules own their IPC contract and internal logic.
-// We provide window references and callbacks so modules can notify the UI.
-// Registration happens after app readiness in app.whenReady().
-
-// =============================================================================
 // Floating window - window placement safety
 // =============================================================================
 // The flotante window is a small always-on-top stopwatch UI.
@@ -648,25 +649,7 @@ function installWorkAreaGuard(win, opts = {}) {
     if (!snapping) userMoveArmed = true;
   });
 
-  if (process.platform === 'win32') {
-    // moved: emitted once at the end of the movement on Windows.
-    win.on('moved', () => {
-      if (!userMoveArmed || snapping || !isAliveWindow(win)) return;
-      userMoveArmed = false;
-      snapping = true;
-      try {
-        snapWindowFullyIntoWorkArea(win);
-      } finally {
-        setImmediate(() => { snapping = false; });
-      }
-    });
-
-    // Keep a no-op handler for symmetry; could host future cleanup.
-    win.on('closed', () => { });
-    return;
-  }
-
-  // macOS + Linux: approximate "end of move" with a short timer after the last move event.
+  // Debounce "end of move" with a short timer after the last move signal.
   const endMoveMs = typeof opts.endMoveMs === 'number' ? opts.endMoveMs : 80;
 
   let lastMoveAt = 0;
@@ -677,7 +660,7 @@ function installWorkAreaGuard(win, opts = {}) {
     timer = null;
   }
 
-  win.on('move', () => {
+  function noteMoveSignal() {
     if (snapping || !isAliveWindow(win)) return;
 
     // Linux: treat any move event as user-driven (platform behavior varies).
@@ -699,7 +682,10 @@ function installWorkAreaGuard(win, opts = {}) {
         setImmediate(() => { snapping = false; });
       }
     }, endMoveMs);
-  });
+  }
+
+  win.on('move', noteMoveSignal);
+  win.on('moved', noteMoveSignal);
 
   win.on('closed', () => clearTimer());
 }
@@ -972,7 +958,7 @@ function setCronoElapsed(ms) {
 }
 
 // =============================================================================
-// IPC (main-owned handlers that directly manipulate windows or crono)
+// IPC (main-owned handlers + config endpoints)
 // =============================================================================
 
 // Language manifest loader for the language selection window.
@@ -1315,7 +1301,8 @@ app.whenReady().then(() => {
     settingsFile: SETTINGS_FILE,
   });
 
-  // IPC registration (delegated modules).
+  // Delegated IPC registration (feature modules).
+  // main.js owns windows; feature modules own their IPC contract and internal logic.
   textState.registerIpc(ipcMain, () => ({
     mainWin,
     editorWin,

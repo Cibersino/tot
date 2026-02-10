@@ -24,8 +24,8 @@
       "speed": {
         "title": "QUÉ TAN RÁPIDO LEÍS",
         "wpm_label": "palabras por minuto (WPM)",
-        "new": "Nuevo",
-        "edit": "Editar",
+        "new": "N",
+        "edit": "E",
         "delete": "🗑",
         "reset_defaults": "R"
       },
@@ -33,7 +33,7 @@
         "title": "EL CONTEO DE LA CUSTIÓN",
         "time": "⏱ Si leís como decís: {h}h {m}m {s}s",
         "words": "Palabras: {n}",
-        "chars_no_space": "Letras sin espacio: {n}",
+        "chars_no_space": "Letras (sin spaces): {n}",
         "chars": "Letras totales: {n}",
         "precise_mode": "Modo fino",
         "precise_tooltip": "Contar de forma pulenta y elegante"

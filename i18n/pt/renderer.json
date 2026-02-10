@@ -24,8 +24,8 @@
       "speed": {
         "title": "VELOCIDADE DE LEITURA",
         "wpm_label": "palavras por minuto (WPM)",
-        "new": "Novo",
-        "edit": "Editar",
+        "new": "N",
+        "edit": "E",
         "delete": "🗑",
         "reset_defaults": "R"
       },
@@ -33,7 +33,7 @@
         "title": "RESULTADOS DA CONTAGEM",
         "time": "⏱ Tempo estimado de leitura: {h}h {m}m {s}s",
         "words": "Palavras: {n}",
-        "chars_no_space": "Chars w/o space: {n}",
+        "chars_no_space": "Caracteres (sem espaços): {n}",
         "chars": "Caracteres: {n}",
         "precise_mode": "Modo preciso",
         "precise_tooltip": "Baseado em Intl.Segmenter"

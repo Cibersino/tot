@@ -105,6 +105,11 @@ Reglas:
 ### Arreglado
 
 - Cronómetro: el formateo numérico de la velocidad real (WPM) ahora usa `settingsCache.numberFormatting` (mismos separadores que “Resultados del conteo”), evitando defaults hardcodeados y eliminando el warning `format.numberFormatting.missing` (`[WARN][format] numberFormatting missing; using hardcoded defaults.`).
+- Cronómetro (Issue #106): al cambiar el modo de conteo (simple/preciso) se aplica la misma política canónica que en cambio de texto (`cronoController.handleTextChange(...)`), evitando `realWpm` stale tras alternar modo:
+  - PAUSED (`elapsed > 0`): recálculo inmediato de `realWpm` con el modo vigente.
+  - RUNNING: sin pausa ni recálculo (idéntico al cambio de texto vigente).
+  - ZERO/RESET (`elapsed == 0`): no se inventa WPM; texto vacío respeta la regla fuerte de reset.
+  - Se gatilla por toggle UI y por updates de settings (`settingsChangeHandler`), usando `previousText=null` como sentinel (sin copiar texto).
 - Split explícito de responsabilidades para un conteo más ágil:
   - `updatePreviewAndResults(text)`: queda como **único pipeline text-dependiente**. Recalcula preview + conteo (`contarTexto(...)`) + separadores/formato numérico y actualiza chars/palabras/tiempo. En este mismo paso **cachea** los stats en `currentTextStats`.
   - `updateTimeOnlyFromStats()`: updater **WPM-only**. Recalcula **solo** el tiempo (`getTimeParts(currentTextStats.palabras, wpm)`) y actualiza `resTime`, sin preview, sin `contarTexto`, sin formateo/actualización de chars/palabras.
@@ -112,6 +117,9 @@ Reglas:
   - cambio de preset vía `<select>` (después de `resolvePresetSelection(...)`, manteniendo apply+persist en presets.js)
   - `wpmSlider` (`input`)
   - `wpmInput` (`blur`)
+- Flotante (Issue #107): al soltar en el borde entre monitores (Windows 11, 2 pantallas), el clamp del `workArea` ya no desplaza la ventana hacia el centro ni rompe el drag:
+  - se removió el path `win32` que hacía snap inmediato en `moved`;
+  - el snap se ejecuta solo tras debounce (`endMoveMs`) luego de la última señal `move/moved`, armado por `will-move` (Windows/macOS) y con Linux tratado como user-driven.
 
 ### Removido
 
@@ -148,6 +156,7 @@ Reglas:
 - electron/preload.js
 - public/renderer.js
 - public/js/presets.js
+- public/js/crono.js
 - public/index.html
 - public/style.css
 

@@ -24,8 +24,8 @@
       "speed": {
         "title": "READING SPEED",
         "wpm_label": "words per minute (WPM)",
-        "new": "New",
-        "edit": "Edit",
+        "new": "N",
+        "edit": "E",
         "delete": "🗑",
         "reset_defaults": "R"
       },
@@ -33,7 +33,7 @@
         "title": "COUNT RESULTS",
         "time": "⏱ Estimated reading time: {h}h {m}m {s}s",
         "words": "Words: {n}",
-        "chars_no_space": "Chars w/o space: {n}",
+        "chars_no_space": "Characters (no spaces): {n}",
         "chars": "Characters: {n}",
         "precise_mode": "Precise mode",
         "precise_tooltip": "Based on Intl.Segmenter"
