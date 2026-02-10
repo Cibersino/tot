@@ -5762,7 +5762,73 @@ Result: PASS
 Date: `2026-02-09`
 Last commit: `2d6f8a853009f51fe2ee0041e01f5fab26b69a2d`
 
-(TODO)
+#### LP0 — Minimal diagnosis (Codex, verified)
+
+Decision: NO CHANGE
+
+##### 0.1 Reading map
+Block order today:
+1) File header + `'use strict'`
+2) Imports: `const { contextBridge, ipcRenderer } = require('electron');`
+3) Single preload surface: `contextBridge.exposeInMainWorld('flotanteAPI', { ... })` (inline API object)
+
+Where linear reading breaks (obstacles):
+- `contextBridge.exposeInMainWorld('flotanteAPI', {`
+- `const wrapper = (_e, state) => {`
+- `const listener = (_e, settings) => {`
+
+##### 0.2 Preload surface contract map (mandatory)
+A) `contextBridge.exposeInMainWorld`:
+- Exposed name: `flotanteAPI`
+- Keys on exposed API object:
+  - `onState` — on-listener (returns unsubscribe)
+  - `sendCommand` — send wrapper
+  - `getSettings` — invoke wrapper
+  - `onSettingsChanged` — on-listener (returns unsubscribe)
+- Replay/buffer behavior: none visible
+B) Direct global exports (`window.X = ...`): none visible
+
+##### 0.3 IPC contract (mechanical; all occurrences in this file)
+- `ipcRenderer.on('crono-state', wrapper)` — forwarded payload: `state`
+- `ipcRenderer.send('flotante-command', cmd)` — input: `cmd`
+- `ipcRenderer.invoke('get-settings')` — args: none; return: not specified in this file
+- `ipcRenderer.on('settings-updated', listener)` — forwarded payload: `settings`
+- `ipcRenderer.removeListener('crono-state', wrapper)` — used by unsubscribe
+- `ipcRenderer.removeListener('settings-updated', listener)` — used by unsubscribe
+- `ipcMain.*` / `webContents.send`: none in this file
+
+##### 0.4 Invariants / fallbacks (anchored)
+Listener table:
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| `onState` | `crono-state` | `cb(state)` | ISOLATES | Y | `removeListener('crono-state', wrapper)` | ISOLATES |
+| `onSettingsChanged` | `settings-updated` | `cb(settings)` | ISOLATES | Y | `removeListener('settings-updated', listener)` | ISOLATES |
+
+cb-error log anchors:
+- `onState`: `console.error(err)`
+- `onSettingsChanged`: `console.error('settings callback error:', err)`
+
+unsub-error log anchors:
+- `onState`: `console.error('removeListener error (crono-state):', err)`
+- `onSettingsChanged`: `console.error('removeListener error (settings-updated):', err)`
+
+Other non-callback invariants/fallbacks:
+- None beyond try/catch isolation on callbacks + removals.
+
+##### 0.5 Key-order dependency scan (repo; mandatory)
+API_NAME = `flotanteAPI`
+
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Key order: NOT depended upon (safe to reorder)
+
+Reviewer assessment: PASS (LP0)
+- Output is diagnosis-only, enumerates the entire exposed preload surface + all IPC occurrences, and anchors invariants to visible try/catch fallbacks (no invented channels/consumers).
 
 ---
 
