@@ -598,17 +598,46 @@ For each item:
 - For listeners: forwarded payload shape to the callback.
 
 #### 0.4 Invariants / fallbacks (anchored)
-- Expected inputs, tolerated errors, fallbacks (cb validation, try/catch, buffering/replay), each anchored with a micro-quote.
 
-Delegated registration:
-- If this file calls any helper that registers IPC, list the callee identifier and note “delegates IPC registration”.
+For EVERY exposed listener-like key (any API key that accepts a callback, e.g. `onX(cb)`):
+- Classify cb error policy: ISOLATES (try/catch) vs PROPAGATES (direct `cb(...)`).
+- Anchor with a micro-quote (<=15w) containing the `cb(` call.
+- If it logs on cb error, add a second micro-quote (<=15w) for the log call.
+
+If the wrapper returns unsubscribe:
+- State whether removal is protected by try/catch (ISOLATES vs PROPAGATES).
+- Anchor with a micro-quote (<=15w) containing `removeListener(` (or equivalent).
+- If it logs on removal error, add a micro-quote for the log call.
+
+Output (mandatory): one table row per listener-like key:
+API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy
+
+After the table: list other non-callback invariants/fallbacks with micro-quotes.
+Prohibition: no blanket “all listeners …” claims unless table proves it.
 
 #### 0.5 Key-order dependency scan (repo; mandatory)
-Search the repo for any enumeration of the exposed API object that could make key order observable/relied upon.
-- Look for: `Object.keys(window.<API_NAME>)`, `Object.entries(...)`, `Object.values(...)`, `Reflect.ownKeys(...)`, `for (const k in window.<API_NAME>)`.
-- Flag as "order-dependent" only if you find index/position usage (e.g., `[0]`, `.at(0)`) or UI/logic that assumes a specific ordering.
-Output:
-- List hits (file + identifier + micro-quote) or explicitly state "0 hits" for each pattern group.
+
+Let API_NAME be the exposed name string from 0.2(A) (e.g., `electronAPI`).
+
+Search the repo for enumeration of the API object using ANY of these expressions:
+- `API_NAME` (e.g., `electronAPI`)
+- `window.API_NAME` and `window['API_NAME']`
+- `globalThis.API_NAME` / `self.API_NAME` (if present in repo style)
+
+For each enumeration family below, report hits (file + identifier + micro-quote <= 15 words) OR “0 hits”:
+- `Object.keys(<expr>)`
+- `Object.entries(<expr>)`
+- `Object.values(<expr>)`
+- `Reflect.ownKeys(<expr>)`
+- `for (... in <expr>)`
+
+Flag “order-dependent” ONLY if you find positional use or ordering assumptions, e.g.:
+- indexing: `[0]`, `.at(0)`, destructuring `const [a] = ...`
+- “first/last key” logic, UI assumptions, or comments implying fixed order
+
+Conclude with one line:
+- `Key order: NOT depended upon (safe to reorder)` OR
+- `Key order: DEPENDED upon (treat as contractual; do not reorder)`
 ```
 
 **PASS LP0** si: inventarios completos + sin IPC inventado + invariantes anclados.

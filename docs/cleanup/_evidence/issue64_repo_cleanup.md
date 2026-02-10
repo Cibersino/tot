@@ -4944,6 +4944,187 @@ Result: PASS
 Date: `2026-02-09`
 Last commit: `d68850f7f4436e43ed38ced4bedfc068ae8673ea`
 
+#### LP0 — Diagnosis + Inventarios (Codex, verified)
+
+Codex gate: PASS (LP0)
+- Diagnosis only; no changes, no recommendations.
+- No invented IPC channels/consumers beyond `electron/preload.js`.
+- Inventories complete (surface keys + IPC calls + listener semantics).
+- Anchors/micro-quotes validated against file.
+
+##### 0.1 Reading map (validated)
+Block order (actual):
+1) `'use strict'`
+2) `require('electron')` destructuring: `const { contextBridge, ipcRenderer } = require('electron');`
+3) `const api = { ... }` (API surface, incl. invoke/send/on wrappers)
+4) `contextBridge.exposeInMainWorld('electronAPI', api);`
+
+Linear reading breaks (obstacles; anchors):
+- `api` — `const api = {`
+- `onMenuClick` — `const wrapper = (_e, payload) => {`
+- `onSettingsChanged` — `return () => { try { ipcRenderer.removeListener`
+
+##### 0.2 Preload surface contract map (validated)
+
+A) `contextBridge.exposeInMainWorld(...)`
+- Exposed name: `electronAPI`
+- Anchor: `contextBridge.exposeInMainWorld('electronAPI', api);`
+
+Keys by category (full inventory; set is contractual):
+- Invoke wrappers:
+  - `readClipboard` → invoke `'clipboard-read-text'`
+  - `openEditor` → invoke `'open-editor'`
+  - `checkForUpdates` → invoke `'check-for-updates'` with `{ manual }`
+  - `openPresetModal` → invoke `'open-preset-modal'` (payload)
+  - `openDefaultPresetsFolder` → invoke `'open-default-presets-folder'`
+  - `getCurrentText` → invoke `'get-current-text'`
+  - `setCurrentText` → invoke `'set-current-text'` (text)
+  - `getAppConfig` → invoke `'get-app-config'`
+  - `getAppVersion` → invoke `'get-app-version'`
+  - `getAppRuntimeInfo` → invoke `'get-app-runtime-info'`
+  - `openExternalUrl` → invoke `'open-external-url'` (url)
+  - `openAppDoc` → invoke `'open-app-doc'` (docKey)
+  - `getSettings` → invoke `'get-settings'`
+  - `getDefaultPresets` → invoke `'get-default-presets'`
+  - `setSelectedPreset` → invoke `'set-selected-preset'` (name)
+  - `requestDeletePreset` → invoke `'request-delete-preset'` (name)
+  - `requestRestoreDefaults` → invoke `'request-restore-defaults'`
+  - `notifyNoSelectionEdit` → invoke `'notify-no-selection-edit'`
+  - `forceClearEditor` → invoke `'force-clear-editor'`
+  - `setModeConteo` → invoke `'set-mode-conteo'` (mode)
+  - `getCronoState` → invoke `'crono-get-state'`
+  - `openFlotanteWindow` → invoke `'flotante-open'`
+  - `closeFlotanteWindow` → invoke `'flotante-close'`
+
+- Send wrappers:
+  - `sendCronoToggle` → send `'crono-toggle'`
+  - `sendCronoReset` → send `'crono-reset'`
+  - `setCronoElapsed` → send `'crono-set-elapsed'` (ms)
+  - `sendStartupRendererCoreReady` → send `'startup:renderer-core-ready'`
+  - `sendStartupSplashRemoved` → send `'startup:splash-removed'`
+
+- On-listeners (listener-like keys):
+  - `onCurrentTextUpdated` — no unsubscribe
+  - `onPresetCreated` — no unsubscribe
+  - `onMenuClick` — returns unsubscribe (removeListener; try/catch)
+  - `onSettingsChanged` — returns unsubscribe (removeListener; try/catch)
+  - `onCronoState` — returns unsubscribe (removeListener; try/catch)
+  - `onFlotanteClosed` — returns unsubscribe (removeListener; try/catch)
+  - `onEditorReady` — returns unsubscribe (removeListener; try/catch)
+  - `onStartupReady` — returns unsubscribe (removeListener; try/catch)
+
+Replay/buffer behavior:
+- None visible in this file (no buffering state; direct `ipcRenderer.on(...)` registration only).
+
+B) Direct global exports:
+- None (no `window.X = ...` assignments in this file).
+
+##### 0.3 IPC contract inventory (mechanical; validated)
+
+ipcRenderer.invoke:
+- `'clipboard-read-text'` args: none → return: unspecified (opaque to preload)
+- `'open-editor'` args: none → return: unspecified
+- `'check-for-updates'` args: `{ manual }` → return: unspecified
+- `'open-preset-modal'` args: `payload` → return: unspecified
+- `'open-default-presets-folder'` args: none → return: unspecified
+- `'get-current-text'` args: none → return: unspecified
+- `'set-current-text'` args: `text` → return: unspecified
+- `'get-app-config'` args: none → return: unspecified
+- `'get-app-version'` args: none → return: unspecified
+- `'get-app-runtime-info'` args: none → return: unspecified
+- `'open-external-url'` args: `url` → return: unspecified
+- `'open-app-doc'` args: `docKey` → return: unspecified
+- `'get-settings'` args: none → return: unspecified
+- `'get-default-presets'` args: none → return: unspecified
+- `'set-selected-preset'` args: `name` → return: unspecified
+- `'request-delete-preset'` args: `name` → return: unspecified
+- `'request-restore-defaults'` args: none → return: unspecified
+- `'notify-no-selection-edit'` args: none → return: unspecified
+- `'force-clear-editor'` args: none → return: unspecified
+- `'set-mode-conteo'` args: `mode` → return: unspecified
+- `'crono-get-state'` args: none → return: unspecified
+- `'flotante-open'` args: none → return: unspecified
+- `'flotante-close'` args: none → return: unspecified
+
+ipcRenderer.send:
+- `'crono-toggle'` args: none
+- `'crono-reset'` args: none
+- `'crono-set-elapsed'` args: `ms`
+- `'startup:renderer-core-ready'` args: none
+- `'startup:splash-removed'` args: none
+
+ipcRenderer.on (forwarded payload to cb):
+- `'current-text-updated'` listener: `(_e, text)` → forwards `cb(text)`
+- `'preset-created'` listener: `(_e, preset)` → forwards `cb(preset)`
+- `'menu-click'` listener: `(_e, payload)` → forwards `cb(payload)` (wrapped in try/catch)
+- `'settings-updated'` listener: `(ev, newSettings)` → forwards `cb(newSettings)` (wrapped in try/catch)
+- `'crono-state'` listener: `(_e, state)` → forwards `cb(state)` (wrapped in try/catch)
+- `'flotante-closed'` listener: `()` → forwards `cb()` (wrapped in try/catch)
+- `'editor-ready'` listener: `()` → forwards `cb()` (wrapped in try/catch)
+- `'startup:ready'` listener: `()` → forwards `cb()` (wrapped in try/catch)
+
+ipcRenderer.removeListener:
+- `'menu-click'` with `wrapper`
+- `'settings-updated'` with `listener`
+- `'crono-state'` with `wrapper`
+- `'flotante-closed'` with `listener`
+- `'editor-ready'` with `listener`
+- `'startup:ready'` with `listener`
+
+ipcMain.* / webContents.send:
+- None in this file.
+
+##### 0.4 Invariants / fallbacks (anchored; validated)
+
+Listener-like keys table (mandatory):
+
+| API key | IPC channel | cb-quote | cb policy | unsub (Y/N) | remove-quote/N-A | unsub policy |
+|---|---|---|---|---|---|---|
+| `onCurrentTextUpdated` | `current-text-updated` | `(_e, text) => cb(text)` | PROPAGATES | N | N-A | N-A |
+| `onPresetCreated` | `preset-created` | `(_e, preset) => cb(preset)` | PROPAGATES | N | N-A | N-A |
+| `onMenuClick` | `menu-click` | `try { cb(payload); }` | ISOLATES | Y | `ipcRenderer.removeListener('menu-click', wrapper)` | ISOLATES |
+| `onSettingsChanged` | `settings-updated` | `try { cb(newSettings); }` | ISOLATES | Y | `ipcRenderer.removeListener('settings-updated', listener)` | ISOLATES |
+| `onCronoState` | `crono-state` | `try { cb(state); }` | ISOLATES | Y | `ipcRenderer.removeListener('crono-state', wrapper)` | ISOLATES |
+| `onFlotanteClosed` | `flotante-closed` | `try { cb(); }` | ISOLATES | Y | `ipcRenderer.removeListener('flotante-closed', listener)` | ISOLATES |
+| `onEditorReady` | `editor-ready` | `try { cb(); }` | ISOLATES | Y | `ipcRenderer.removeListener('editor-ready', listener)` | ISOLATES |
+| `onStartupReady` | `startup:ready` | `try { cb(); }` | ISOLATES | Y | `ipcRenderer.removeListener('startup:ready', listener)` | ISOLATES |
+
+cb-error log anchors (only where present):
+- `onMenuClick`: `console.error('menuAPI callback error:', err);`
+- `onSettingsChanged`: `console.error('settings callback error:', err);`
+- `onCronoState`: `console.error('onCronoState callback error:', err);`
+- `onFlotanteClosed`: `console.error('flotante closed callback error:', err);`
+- `onEditorReady`: `console.error('editor-ready callback error:', err);`
+- `onStartupReady`: `console.error('startup:ready callback error:', err);`
+
+unsub-error log anchors (only where present):
+- `onMenuClick`: `console.error('Error removing menu listener:', err);`
+- `onSettingsChanged`: `console.error('removeListener error:', err);`
+- `onCronoState`: `console.error('removeListener error (crono-state):', err);`
+- `onFlotanteClosed`: `console.error('removeListener error:', err);`
+- `onEditorReady`: `console.error('removeListener error (editor-ready):', err);`
+- `onStartupReady`: `console.error('removeListener error (startup:ready):', err);`
+
+Other non-callback invariants/fallbacks:
+- Default param fallback: `checkForUpdates: (manual = false) => ...`
+
+##### 0.5 Key-order dependency scan (repo)
+
+API_NAME: `electronAPI`
+
+Enumeration families:
+- `Object.keys(<expr>)`: 0 hits
+- `Object.entries(<expr>)`: 0 hits
+- `Object.values(<expr>)`: 0 hits
+- `Reflect.ownKeys(<expr>)`: 0 hits
+- `for (... in <expr>)`: 0 hits
+
+Conclusion:
+- Key order: NOT depended upon (safe to reorder)
+
+Reviewer assessment: PASS (LP0)
+- Sufficient for moving to LP1 with contract gate based on the scan result above.
+
 ---
 
 ### electron/editor_preload.js
