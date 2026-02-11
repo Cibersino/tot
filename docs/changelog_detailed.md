@@ -51,6 +51,15 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [0.1.3] toT - nueva columna vertebral
+
+### Fecha release y último commit
+
+- Fecha: `2026-02-11`
+- Último commit: `20e671f68a2878277acd720e1308b932bc3ba8f8`
+
 ### Resumen de cambios
 
 - Repo-wide cleanup execution (Issue #64): ejecución del protocolo `docs/cleanup/cleanup_file_by_file.md` a lo largo del repo (`/electron`, `/public` y preloads):
