@@ -61,7 +61,7 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - plus `presets_defaults/` (runtime defaults copies)
 
 **Windows example (typical):**
-`%APPDATA%\tot-readingmeter\config\...`
+`%APPDATA%\@cibersino\tot\config\...`
 
 ### 2.2 How to force Clean first-run
 

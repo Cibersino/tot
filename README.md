@@ -5,7 +5,7 @@
 
 <a id="es"></a>
 
-# toT — Reading Meter
+# toT — de Texto a Tiempo
 
 ¿No te atreves a empezar ciertas lecturas debido a no saber cuánto trabajo realmente te tomará?
 ¿Te cuesta terminar las lecturas y las abandonas en la mitad?
@@ -143,7 +143,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 <a id="en"></a>
 
-# toT — Reading Meter
+# toT — from Text to Time
 
 Are you hesitant to start certain readings because you don't know how much work it will really take?
 Do you find it hard to finish reading and abandon them in the middle?
