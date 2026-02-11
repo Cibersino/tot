@@ -544,7 +544,7 @@ select#presets {
 
 .info-section {
   background-color: var(--bg-color);
-  text-align: justify
+  text-align: left
 }
 
 .info-section div {

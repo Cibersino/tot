@@ -68,12 +68,12 @@ Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar
 
 ---
 
-<!-- ## Capturas de pantalla
+## Capturas de pantalla
 
-TODO
+![Ventana principal completa](public/assets/instrucciones/ventana-principal-completa.png)
 
 ---
--->
+
 ## Ejecutar desde el código fuente (desarrollo)
 
 ```bash
@@ -209,12 +209,12 @@ Usage instructions are included in the app menu (“How to use?”).
 
 ---
 
-<!-- ## Screenshots
+## Screenshots
 
-TODO
+![Ventana principal completa](public/assets/instrucciones/ventana-principal-completa.en.png)
 
 ---
--->
+
 ## Run from source (development)
 
 ```bash
