@@ -8,7 +8,7 @@ No es un inventario exhaustivo de cada archivo.
 ## Árbol
 
 ```ASCII
-tot-readingmeter/
+tot/
 ├── .vscode/                       # {carpeta ignorada por git}
 │ ├── settings.json
 │ └── tasks.json

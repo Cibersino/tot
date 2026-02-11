@@ -26,8 +26,8 @@ const { DEFAULT_LANG } = require('./constants_main');
 // =============================================================================
 // Constants / config (paths, defaults)
 // =============================================================================
-const RELEASES_API_URL = 'https://api.github.com/repos/Cibersino/tot-readingmeter/releases/latest';
-const DOWNLOAD_URL = 'https://github.com/Cibersino/tot-readingmeter/releases/latest';
+const RELEASES_API_URL = 'https://api.github.com/repos/Cibersino/tot/releases/latest';
+const DOWNLOAD_URL = 'https://github.com/Cibersino/tot/releases/latest';
 
 // =============================================================================
 // Shared state (window refs, lifecycle guard)
@@ -110,7 +110,7 @@ function fetchLatestReleaseTag(url) {
     try {
       https.get(url, {
         headers: {
-          'User-Agent': 'tot-readingmeter',
+          'User-Agent': 'tot-updater',
           'Accept': 'application/vnd.github+json',
         }
       }, (res) => {
