@@ -52,7 +52,7 @@ Esta app está pensada para:
 
 ## Instalación / Cómo ejecutar
 
-1. Ir a [GitHub Releases](https://github.com/Cibersino/tot-readingmeter/releases) y descargar el último **`.zip` portable para Windows**.
+1. Ir a [GitHub Releases](https://github.com/Cibersino/tot/releases) y descargar el último **`.zip` portable para Windows**.
 2. Extraer el `.zip` en cualquier carpeta.
 3. Ejecutar el `.exe` dentro de la carpeta extraída.
 
@@ -77,8 +77,8 @@ TODO
 ## Ejecutar desde el código fuente (desarrollo)
 
 ```bash
-git clone https://github.com/Cibersino/tot-readingmeter.git
-cd tot-readingmeter
+git clone https://github.com/Cibersino/tot.git
+cd tot
 npm install
 npm start
 ```
@@ -192,7 +192,7 @@ This app is designed for:
 
 ## Installation / How to run
 
-1. Go to [GitHub Releases](https://github.com/Cibersino/tot-readingmeter/releases) and download the latest **Windows portable `.zip`**.
+1. Go to [GitHub Releases](https://github.com/Cibersino/tot/releases) and download the latest **Windows portable `.zip`**.
 2. Extract the `.zip` to any folder.
 3. Run the `.exe` inside the extracted folder.
 
@@ -218,8 +218,8 @@ TODO
 ## Run from source (development)
 
 ```bash
-git clone https://github.com/Cibersino/tot-readingmeter.git
-cd tot-readingmeter
+git clone https://github.com/Cibersino/tot.git
+cd tot
 npm install
 npm start
 ```

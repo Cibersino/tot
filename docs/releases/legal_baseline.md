@@ -45,9 +45,9 @@ Checklist:
 * [PENDING] Lista efectiva de servicios/endpoints usados por el build:
 
   * Updater check:
-    * `https://api.github.com/repos/Cibersino/tot-readingmeter/releases/latest`
+    * `https://api.github.com/repos/Cibersino/tot/releases/latest`
   * Download (abre navegador):
-    * `https://github.com/Cibersino/tot-readingmeter/releases/latest`
+    * `https://github.com/Cibersino/tot/releases/latest`
 
   * Otros servicios/endpoints (si existen):
     * `<TBD>`

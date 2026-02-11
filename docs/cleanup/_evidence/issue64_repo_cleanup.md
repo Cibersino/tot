@@ -714,7 +714,7 @@ Result: PASS
 
 Steps executed:
 - Launch the app with logs visible (terminal / DevTools). Expected: no uncaught exceptions; no continuous warning spam in idle.
-- Clean run: fully close the app, rename/delete `%APPDATA%\tot-readingmeter\config\` (or the platform-equivalent `app.getPath('userData')/config`), then relaunch.
+- Clean run: fully close the app, rename/delete `%APPDATA%\@cibersino\tot\config\` (or the platform-equivalent `app.getPath('userData')/config`), then relaunch.
 - Observe logs on clean run: recoverable `loadJson missing (using fallback)` warnings are acceptable, but should appear at most once per known file (e.g., `user_settings.json`, `current_text.json`, `editor_state.json`) and should not repeat continuously while idle.
 - Reach main window (complete first-run language selection if it appears). Expected: app remains usable; no crashes.
 - Clipboard overwrite: copy the “Small text” from `docs/test_suite.md`, click `📋↺`. Expected: preview + counts + time update immediately.
