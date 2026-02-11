@@ -4,11 +4,11 @@ Este documento es un checklist/inventario para decidir si un artefacto empaqueta
 **legalmente redistribuible**. No guarda “deltas”; el resultado y evidencia se guardan
 fuera del repo (snapshot externo).
 
-Fecha: `<YYYY-MM-DD>`
-Tag objetivo (GitHub): `v<MAJOR.MINOR.PATCH>`
-Commit freeze (Git): `<SHA_COMMIT>`
-Artefacto inspeccionado: `<ZIP/INSTALLER>`
-SHA256(artefacto): `<SHA256>`
+Fecha: `2026-02-11`
+Tag objetivo (GitHub): `0.1.3`
+Commit freeze (Git): `c6e554c18b9bc235c56d1e659ce1ad33caef32bd`
+Artefacto inspeccionado: `toT-0.1.3-win-x64.zip`
+SHA256(artefacto): `69F7FB7B083376C20E022C09A357CDBEEB2890925C543F8FF9EBFDB142D5BA98`
 
 Estados:
 * **PASS**: OK publicar el artefacto inspeccionado.
@@ -19,12 +19,12 @@ Estados:
 
 ## 1) Veredicto
 
-Ship Gate (repo/inventario): `<PASS | PENDING | BLOCKER>`  
-Post-packaging Gate (artefacto): `<PASS | PENDING | BLOCKER>`  
-Veredicto final: `<PASS | PENDING | BLOCKER>`
+Ship Gate (repo/inventario): `PASS`  
+Post-packaging Gate (artefacto): `PASS`  
+Veredicto final: `PASS`
 
 Notas (solo si afectan decisión):
-* `<TBD>`
+* `none`
 
 ---
 
@@ -42,27 +42,28 @@ necesarios existan en el repo antes de generar el artefacto final.
 Completar con la lista real de este release. Si aparece algo nuevo: marcar **PENDING** y agregarlo a la lista.
 
 Checklist:
-* [PENDING] Lista efectiva de servicios/endpoints usados por el build:
+* [PASS] Lista efectiva de servicios/endpoints usados por el build:
 
   * Updater check:
-    * `https://api.github.com/repos/Cibersino/tot-readingmeter/releases/latest`
+    * `https://api.github.com/repos/Cibersino/tot/releases/latest`
   * Download (abre navegador):
-    * `https://github.com/Cibersino/tot-readingmeter/releases/latest`
+    * `https://github.com/Cibersino/tot/releases/latest`
 
   * Otros servicios/endpoints (si existen):
-    * `<TBD>`
+    * `none`
 
-* [PENDING] Confirmar: no hay credenciales embebidas (tokens/keys/BasicAuth/URLs con user:pass).
+* [PASS] Confirmar: no hay credenciales embebidas (tokens/keys/BasicAuth/URLs con user:pass).
 
-* [PENDING] Host allowlist efectiva (si existe mecanismo de allowlist en main):
+* [PASS] Host allowlist efectiva (si existe mecanismo de allowlist en main, `electron\link_openers.js`):
   * `github.com`
   * `www.github.com`
   * `api.github.com`
   * `raw.githubusercontent.com`
+  * `doi.org`
   * Otros (si existen):
-    * `<TBD>`
+    * `none`
 
-Resultado Ship Gate (servicios): `<PASS | PENDING | BLOCKER>`
+Resultado Ship Gate (servicios): `PASS`
 
 ---
 
@@ -72,35 +73,34 @@ Completar con lo que efectivamente va dentro del build (fuentes, assets, runtime
 
 ### 3.1 Fonts redistribuidas (lista efectiva)
 Checklist:
-* [PENDING] Fonts redistribuidas y su archivo de licencia/notice incluido en repo:
-
+* [PASS] Fonts redistribuidas y su archivo de licencia/notice incluido en repo:
   * `Baskervville` — `public/fonts/LICENSE_Baskervville_OFL.txt`
   * Otras (si existen):
-    * `<FontName> — <ruta a licencia/notice>`
+    * `none`
 
-Resultado Ship Gate (fonts): `<PASS | PENDING | BLOCKER>`
+Resultado Ship Gate (fonts): `PASS`
 
 ### 3.2 Assets redistribuidos (lista efectiva)
 Checklist:
-* [PENDING] Assets redistribuidos que NO sean 100% propios (si es todo propio, declararlo explícitamente):
+* [PASS] Assets redistribuidos que NO sean 100% propios (si es todo propio, declararlo explícitamente):
 
   * `public/assets/**` — estado:
-    * `[ ] Todo propio (sin obligaciones adicionales)`
+    * `[x] Todo propio (sin obligaciones adicionales)`
     * `[ ] Incluye terceros (listar abajo)`
 
   * Terceros (si existen):
-    * `<asset> — origen — licencia/notice — ubicación del notice en repo>`
+    * `none`
 
-Resultado Ship Gate (assets): `<PASS | PENDING | BLOCKER>`
+Resultado Ship Gate (assets): `PASS`
 
 ### 3.3 Runtime notices (lista efectiva)
 Checklist:
-* [PENDING] Runtime notices que deben distribuirse con el artefacto:
+* [PASS] Runtime notices que deben distribuirse con el artefacto:
 
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
 
-Resultado Ship Gate (runtime notices): `<PASS | PENDING | BLOCKER>`
+Resultado Ship Gate (runtime notices): `PASS`
 
 ---
 
@@ -109,15 +109,14 @@ Resultado Ship Gate (runtime notices): `<PASS | PENDING | BLOCKER>`
 Este punto no asume “no hay deps”. Se verifica y se registra.
 
 Checklist:
-* [PENDING] Modelo esperado para este release (marcar uno):
-  * [ ] “No hay node_modules runtime (solo runtime Electron + app.asar)”
+* [PASS] Modelo esperado para este release (marcar uno):
+  * [x] “No hay node_modules runtime (solo runtime Electron + app.asar)”
   * [ ] “Sí hay node_modules runtime” (listar abajo)
 
-* [PENDING] Si hay node_modules runtime: listar top-level (nombre + versión + licencia/notice en repo):
-  * `<dep>@<ver> — <licencia> — <ruta notice/licencia si aplica>`
-  * `<TBD>`
+* [PASS] Si hay node_modules runtime: listar top-level (nombre + versión + licencia/notice en repo):
+  * `none`
 
-Resultado Ship Gate (deps runtime): `<PASS | PENDING | BLOCKER>`
+Resultado Ship Gate (deps runtime): `PASS`
 
 ---
 
@@ -127,7 +126,7 @@ Aquí se define el set de docs que el artefacto debe incluir. Si aparece un terc
 se agrega a esta lista (eso es **PENDING**, no BLOCKER por sí mismo).
 
 Checklist:
-* [PENDING] Lista efectiva de documentos a incluir en el artefacto:
+* [PASS] Lista efectiva de documentos a incluir en el artefacto:
 
   * `LICENSE`
   * `PRIVACY.md`
@@ -136,18 +135,18 @@ Checklist:
   * Licencias/notices de fonts redistribuidas:
     * `public/fonts/LICENSE_Baskervville_OFL.txt` (si Baskervville va incluida)
     * Otras (si existen):
-      * `<TBD>`
+      * `none`
   * Notices adicionales (si se incorporaron terceros que lo requieran):
-    * `<TBD: THIRD_PARTY_NOTICES.md u otros>`
+    * `none`
 
-* [PENDING] `public/info/acerca_de.html` (o equivalente visible en UI): confirmar que **menciona** a los documentos anteriores (licencias/privacidad/notices) de forma consistente con el inventario.
+* [PASS] `public/info/acerca_de.html` (o equivalente visible en UI): confirmar que **menciona** a los documentos anteriores (licencias/privacidad/notices) de forma consistente con el inventario.
   * Nota: En la app no empaquetada la UI no dirige todos los links a su sitio correcto.
   
-Resultado Ship Gate (docs): `<PASS | PENDING | BLOCKER>`
+Resultado Ship Gate (docs): `PASS`
 
 ---
 
-**Resultado final Ship Gate:** `<PASS | PENDING | BLOCKER>`
+**Resultado final Ship Gate:** `PASS`
 
 ---
 
@@ -158,51 +157,51 @@ Objetivo: validar el artefacto real y cerrar la pregunta legal de redistribució
 ## 6) Inspección del artefacto (contenido)
 
 Checklist:
-* [PENDING] Confirmar ausencia de material no distribuible:
+* [PASS] Confirmar ausencia de material no distribuible:
   * `tools_local/` o equivalentes
   * backups, evidence folders, dumps
   * `.env`, tokens, logs de dev, llaves
-* [PENDING] Registrar evidencia mínima (snapshot externo): listado/árbol de `resources/` y raíz del zip/installer.
+* [PASS] Registrar evidencia mínima (snapshot externo): listado/árbol de `resources/` y raíz del zip/installer.
 
-Resultado Post-packaging (contenido): `<PASS | PENDING | BLOCKER>`
+Resultado Post-packaging (contenido): `PASS`
 
 ---
 
 ## 7) Verificación de dependencias runtime efectivas (en artefacto)
 
 Checklist:
-* [PENDING] Verificar y registrar (snapshot externo) si existe alguno:
+* [PASS] Verificar y registrar (snapshot externo) si existe alguno:
   * `resources/app.asar/node_modules/**`
   * `resources/app.asar.unpacked/**`
   * `resources/app/node_modules/**`
 
-* [PENDING] Si existen deps runtime: listar top-level real y verificar que está cubierto por §4 y §5.
+* [PASS] Si existen deps runtime: listar top-level real y verificar que está cubierto por §4 y §5.
 
-Resultado Post-packaging (deps efectivas): `<PASS | PENDING | BLOCKER>`
+Resultado Post-packaging (deps efectivas): `PASS`
 
 ---
 
 ## 8) Verificación de documentos legales (contra §5)
 
 Checklist:
-* [PENDING] Cada documento listado en §5 está presente en el artefacto final.
-* [PENDING] Verificar accesibilidad práctica: el usuario **puede abrirlos** (por UI o por ubicación clara en el zip).
+* [PASS] Cada documento listado en §5 está presente en el artefacto final.
+* [PASS] Verificar accesibilidad práctica: el usuario **puede abrirlos** (por UI o por ubicación clara en el zip).
 
-Resultado Post-packaging (docs presentes): `<PASS | PENDING | BLOCKER>`
+Resultado Post-packaging (docs presentes): `PASS`
 
 ---
 
 ## 9) Servicios externos (sanity en artefacto)
 
 Checklist:
-* [PENDING] Confirmar que los endpoints/hosts usados en el build empaquetado coinciden con el inventario de §2.
-* [PENDING] Si aparece conectividad nueva: volver a §2 (estado pasa a PENDING hasta inventariar y cubrir obligaciones).
+* [PASS] Confirmar que los endpoints/hosts usados en el build empaquetado coinciden con el inventario de §2.
+* [PASS] Si aparece conectividad nueva: volver a §2 (estado pasa a PENDING hasta inventariar y cubrir obligaciones).
 
-Resultado Post-packaging (servicios): `<PASS | PENDING | BLOCKER>`
+Resultado Post-packaging (servicios): `PASS`
 
 ---
 
-**Resultado final Post-packaging Gate:** `<PASS | PENDING | BLOCKER>`
+**Resultado final Post-packaging Gate:** `PASS`
 
 ---
 
@@ -222,6 +221,6 @@ Resultado Post-packaging (servicios): `<PASS | PENDING | BLOCKER>`
 * Aparece algo nuevo (servicio/asset/font/dep) y todavía no está inventariado y cubierto en §2–§5.
 * No se ejecutaron los checks del Post-packaging Gate.
 
-Veredicto final: `<PASS | PENDING | BLOCKER>`
+Veredicto final: `PASS`
 
 ---
