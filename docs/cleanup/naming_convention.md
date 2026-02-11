@@ -1,6 +1,6 @@
 # Naming Convention: UPPER_SNAKE_CASE vs camelCase
 
-**Project:** toT – Reading Meter
+**Project:** toT
 **Status:** Draft (v0.1)
 **Scope:** JavaScript in `electron/**` and `public/**` (including preload scripts).
 **Motivation:** reduce semantic ambiguity, prevent drift between “defaults” and “effective config”, and make invariants visually obvious.

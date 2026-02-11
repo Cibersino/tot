@@ -157,7 +157,7 @@
         "error": "Error opening document"
       },
       "acerca_de": {
-        "app_name": "toT — Reading Meter",
+        "app_name": "toT",
         "title": "About",
         "version": {
           "unavailable": "Unavailable"
@@ -167,7 +167,7 @@
         }
       },
       "links_interes": {
-        "app_name": "toT — Reading Meter",
+        "app_name": "toT",
         "title": "Useful Links",
         "section_biblio_label": "Bibliographics References"
       }
