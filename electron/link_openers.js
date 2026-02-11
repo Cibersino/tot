@@ -157,7 +157,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
         const tempPath = await copyToTemp(
           app,
           srcPath,
-          'tot-readingmeter_LICENSE_Baskervville_OFL.txt',
+          'tot_LICENSE_Baskervville_OFL.txt',
           log
         );
         return openPathWithLog(shell, log, rawKey, tempPath);
@@ -186,7 +186,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
         return { ok: false, reason: 'not_found' };
       }
 
-      const tempPath = await copyToTemp(app, fallbackPath, `tot-readingmeter_${fileName}`, log);
+      const tempPath = await copyToTemp(app, fallbackPath, `tot_${fileName}`, log);
       return openPathWithLog(shell, log, rawKey, tempPath);
     } catch (err) {
       log.error('Error processing open-app-doc:', err);

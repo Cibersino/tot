@@ -1,5 +1,5 @@
 {
-  "name": "tot-readingmeter",
+  "name": "@cibersino/tot",
   "version": "0.1.2",
   "description": "Estimador de tiempo de lectura",
   "main": "electron/main.js",
@@ -23,8 +23,8 @@
     "madge": "^8.0.0"
   },
   "build": {
-    "appId": "com.cibersino.tot-readingmeter",
-    "productName": "toT — Reading Meter",
+    "appId": "com.cibersino.tot",
+    "productName": "toT",
     "asar": true,
     "directories": {
       "output": "build-output",
@@ -49,6 +49,6 @@
         }
       ]
     },
-    "artifactName": "toT-ReadingMeter-${version}-win-${arch}.${ext}"
+    "artifactName": "toT-${version}-win-${arch}.${ext}"
   }
 }

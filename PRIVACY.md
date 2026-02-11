@@ -1,4 +1,4 @@
-# Política de privacidad — toT — Reading Meter
+# Política de privacidad — toT
 
 Fecha de vigencia: `2026-01-12`  
 Versión app: `0.1.0`
