@@ -40,7 +40,7 @@ const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const updater = require('./updater');
 const { registerLinkIpc } = require('./link_openers');
-const currentTextSnapshots = require('./current_text_snapshots');
+const currentTextSnapshots = require('./current_text_snapshots_main');
 
 const log = Log.get('main');
 log.debug('Main process starting...');

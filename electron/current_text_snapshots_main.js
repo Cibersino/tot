@@ -1,4 +1,4 @@
-// electron/current_text_snapshots.js
+// electron/current_text_snapshots_main.js
 'use strict';
 
 // =============================================================================
