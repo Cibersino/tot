@@ -15,7 +15,7 @@
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
         "append_clipboard": "Pegar portapapeles al final del texto actual (nueva línea)",
         "edit": "Abrir ventana del texto actual completo",
-        "clear": "Vaciar texto vigente",
+        "clear": "Vaciar texto actual",
         "snapshot_load": "Cargar captura",
         "snapshot_save": "Guardar captura",
         "new_preset": "Crear un nuevo preset",
