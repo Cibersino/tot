@@ -31,6 +31,8 @@
       "ok": "OK",
       "yes": "Ja, fortfahren",
       "no": "Nein, abbrechen",
+      "snapshot_overwrite_save": "Vorhandenes Snapshot überschreiben?",
+      "snapshot_overwrite_load": "Aktuellen Text durch ausgewähltes Snapshot \"{name}\" ersetzen?",
       "delete_preset_confirm": "Preset \"{name}\" löschen?",
       "delete_preset_none": "Kein Preset zum Löschen ausgewählt.",
       "restore_defaults_confirm": "Standard-Presets (allgemein und Sprache \"{lang}\") auf Original zurücksetzen? Dies wird alle Änderungen und Löschungen der Standard-Presets für die aktive Sprache rückgängig machen.",
