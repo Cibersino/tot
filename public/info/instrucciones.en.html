@@ -261,6 +261,22 @@
         <p><strong>Note:</strong> You can completely empty the current text quickly with the <strong>🗑</strong> button
           in the main window or in the manual editor.</p>
 
+        <h4>Route 1D — Save / Load snapshots</h4>
+
+        <p>If you frequently reuse texts, you can <strong>save and load snapshots</strong> of the current text using the
+          <strong>💾</strong> and <strong>📂</strong> buttons.</p>
+
+        <ul>
+          <li><strong>💾</strong>: opens a native “save file” dialog rooted at <code>config/saved_current_texts/</code>.
+            You can save into <strong>subfolders</strong> (and create folders) as long as you stay inside that snapshots
+            tree. The snapshot is saved as JSON (<code>{ "text": "..." }</code>).</li>
+          <li><strong>📂</strong>: opens a native “open file” dialog and lets you pick any snapshot file inside
+            <code>config/saved_current_texts/</code> (including subfolders). The app will ask for confirmation because
+            it will overwrite the current text.</li>
+          <li>A loaded snapshot becomes the new <strong>current text</strong> (same semantics as other overwrite
+            actions) and the preview/results update immediately.</li>
+        </ul>
+
         <hr />
 
         <h3>Step 2 — Verify the current text (checkpoint)</h3>
@@ -482,6 +498,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p>The app saves data locally to maintain your settings between sessions. In general it includes:</p>
         <ul>
           <li><strong>Current text</strong> (text status).</li>
+          <li><strong>Saved text snapshots</strong> (optional library under <code>config/saved_current_texts/</code>).
+          </li>
           <li><strong>Configuration</strong> (e.g. language, current WPM, counting mode).</li>
           <li><strong>Presets</strong> (custom and default preset status).</li>
           <li><strong>Status of windows</strong> (e.g. size/position of the editor).</li>
@@ -490,6 +508,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p><strong>Implication:</strong></p>
         <ul>
           <li>If you work with sensitive text, use <strong>🗑</strong> at the end and consider total cleanup.</li>
+          <li>If you used <strong>💾</strong>, remember snapshots are files on disk; delete them if needed (or perform
+            total cleanup).</li>
         </ul>
 
         <h4>7.2 Total cleanup (clean reinstallation) — with paths per system</h4>

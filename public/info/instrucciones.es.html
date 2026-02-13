@@ -36,7 +36,7 @@
             loading="lazy" decoding="async" />
         </figure>
 
-        <p><strong>Objetivo:</strong> en menos de 1 minuto, tener un <strong>texto vigente</strong> listo, un
+        <p><strong>Objetivo:</strong> en menos de 1 minuto, tener un <strong>texto actual</strong> listo, un
           <strong>WPM</strong> razonable y una <strong>estimación</strong> útil.
         </p>
 
@@ -90,7 +90,7 @@
           <li>
             <p><strong>Mide tu WPM real (opcional, pero recomendado)</strong></p>
             <ul>
-              <li>Con el texto vigente ya final, inicia el <strong>Cronómetro</strong> (▶) al empezar a leer, y pausa
+              <li>Con el texto actual ya final, inicia el <strong>Cronómetro</strong> (▶) al empezar a leer, y pausa
                 (⏸) al terminar.</li>
               <li>Usa el WPM real como calibración para ajustar tus presets.</li>
             </ul>
@@ -159,7 +159,7 @@
         <h3>Paso 1 — Selecciona y arma el texto a medir</h3>
 
         <p>Tu primera decisión es <strong>cómo construir el texto que deseas estimar</strong>. De aquí en adelante lo
-          llamaremos <strong>texto vigente</strong>.</p>
+          llamaremos <strong>texto actual</strong>.</p>
 
         <h4>Ruta 1A — Usar portapapeles (desde web/PDF/cualquier fuente)</h4>
 
@@ -195,8 +195,8 @@
           <li>
             <p>En la ventana principal de la app, elige una de estas acciones:</p>
             <ul>
-              <li><strong>📋↺</strong>: reemplaza completamente el texto vigente por el portapapeles.</li>
-              <li><strong>📋+</strong>: añade el portapapeles al final del texto vigente.</li>
+              <li><strong>📋↺</strong>: reemplaza completamente el texto actual por el portapapeles.</li>
+              <li><strong>📋+</strong>: añade el portapapeles al final del texto actual.</li>
             </ul>
           </li>
         </ol>
@@ -230,7 +230,7 @@
           <li>También puedes realizar búsquedas: Ctrl+F (Windows/Linux); Cmd+F (Mac).</li>
         </ol>
 
-        <p><strong>Nota:</strong> El Editor manual, además de actualizar y guardar el texto vigente inmediatamente, por
+        <p><strong>Nota:</strong> El Editor manual, además de actualizar y guardar el texto actual inmediatamente, por
           defecto recalcula el conteo y genera la estimación automáticamente. Si quieres que esto último sea manual,
           puedes quitar el check de “calcular mientras escribe” en la ventana del editor y usar el botón CALCULAR.</p>
 
@@ -261,13 +261,30 @@
           </li>
         </ol>
 
-        <p><strong>Nota:</strong> Puedes vaciar completamente el texto vigente rápidamente con el botón
+        <p><strong>Nota:</strong> Puedes vaciar completamente el texto actual rápidamente con el botón
           <strong>🗑</strong> de la ventana principal o del editor manual.
         </p>
 
+        <h4>Ruta 1D — Guardar / Cargar snapshots</h4>
+
+        <p>Si reutiliza textos con frecuencia, puede <strong>guardar y cargar instantáneas</strong> del texto actual
+          utilizando los botones <strong>💾</strong> y <strong>📂</strong>.</p>
+
+        <ul>
+          <li><strong>💾</strong>: abre un cuadro de diálogo nativo de “guardar archivo” ubicado en
+            <code>config/saved_current_texts/</code>. Puedes guardar en <strong>subcarpetas</strong> (y crear carpetas)
+            siempre que permanezcas dentro del árbol de instantáneas. La instantánea se guarda como
+            JSON.(<code>{ "text": "..." }</code>).</li>
+          <li><strong>📂</strong>: abre un cuadro de diálogo nativo para “abrir archivo” y te permite seleccionar
+            cualquier archivo de instantánea dentro de <code>config/saved_current_texts/</code> (incluidas las
+            subcarpetas). La app solicitará confirmación porque sobrescribirá el texto actual.</li>
+          <li>Una instantánea cargada se convierte en el nuevo <strong>texto actual</strong> (la misma semántica que
+            otras acciones de sobrescritura) y la vista previa/los resultados se actualizan inmediatamente.</li>
+        </ul>
+
         <hr />
 
-        <h3>Paso 2 — Verifica el texto vigente (checkpoint)</h3>
+        <h3>Paso 2 — Verifica el texto actual (checkpoint)</h3>
 
         <p>Antes de calcular o medir, haz una verificación mínima:</p>
         <ul>
@@ -381,7 +398,7 @@
 
         <h4>4.3 Ejemplo práctico (texto + qué observar)</h4>
 
-        <p>Pega este texto como “texto vigente” y alterna entre <strong>simple</strong> y <strong>preciso</strong>:</p>
+        <p>Pega este texto como “texto actual” y alterna entre <strong>simple</strong> y <strong>preciso</strong>:</p>
 
         <pre><code>alpha / beta / gamma
 我喜欢读书因为它很有趣
@@ -410,7 +427,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             loading="lazy" decoding="async" />
         </figure>
 
-        <p>Con texto vigente + WPM + modo de conteo:</p>
+        <p>Con texto actual + WPM + modo de conteo:</p>
         <ul>
           <li>Revisa <strong>palabras</strong>, <strong>caracteres con/sin espacios</strong>.</li>
           <li>Revisa <strong>tiempo estimado</strong>.</li>
@@ -436,9 +453,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <h4>6.1 Preparación (lo que suele fallar)</h4>
         <ul>
-          <li>Asegúrate de que el texto vigente es exactamente lo que leerás.</li>
+          <li>Asegúrate de que el texto actual es exactamente lo que leerás.</li>
           <li>No edites el texto durante la medición.</li>
-          <li>Decide si leerás completo o solo una parte (y ajusta el texto vigente a esa parte).</li>
+          <li>Decide si leerás completo o solo una parte (y ajusta el texto actual a esa parte).</li>
         </ul>
 
         <h4>6.2 Medición</h4>
@@ -482,7 +499,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p>La app guarda datos localmente para mantener tu configuración entre sesiones. En general incluye:</p>
         <ul>
-          <li><strong>Texto vigente</strong> (estado del texto).</li>
+          <li><strong>Texto actual</strong> (estado del texto).</li>
+          <li><strong>Instantáneas de texto guardadas</strong> (biblioteca opcional en
+            <code>config/saved_current_texts/</code>).</li>
           <li><strong>Configuración</strong> (por ejemplo: idioma, WPM actual, modo de conteo).</li>
           <li><strong>Presets</strong> (personalizados y estado de presets por defecto).</li>
           <li><strong>Estado de ventanas</strong> (por ejemplo: tamaño/posición del editor).</li>
@@ -491,6 +510,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p><strong>Implicación:</strong></p>
         <ul>
           <li>Si trabajas con texto sensible, usa <strong>🗑</strong> al terminar y considera limpieza total.</li>
+          <li>Si usaste <strong>💾</strong>, recuerda que las instantáneas son archivos en disco; elimínalos si es
+            necesario (o realiza una limpieza total).</li>
         </ul>
 
         <h4>7.2 Limpieza total (reinstalación limpia) — con rutas por sistema</h4>
@@ -521,7 +542,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <h3>Paso 8 — Límites y textos muy largos</h3>
 
         <ul>
-          <li>Por seguridad y rendimiento, la app impone un límite duro de tamaño para el texto vigente, de 10 millones
+          <li>Por seguridad y rendimiento, la app impone un límite duro de tamaño para el texto actual, de 10 millones
             de caracteres. Si intentas excederlo, la app <em>trunca</em> el texto y muestra un aviso.</li>
           <li>Con textos extremadamente largos (o con combinaciones complejas de caracteres) puede haber demoras al
             contar y mayor uso de memoria.</li>
@@ -549,7 +570,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Apps de lectura/anotación</strong>: métricas, progreso, conteo o marcadores.</li>
         </ul>
         <p>Lo distintivo de <em>toT</em> es que funciona como herramienta <strong>operacional</strong>: construir un
-          <strong>texto vigente</strong> (portapapeles y/o editor), fijar <strong>WPM/presets</strong>, comparar
+          <strong>texto actual</strong> (portapapeles y/o editor), fijar <strong>WPM/presets</strong>, comparar
           <strong>Simple vs Preciso</strong>, y <strong>medir WPM real</strong> con cronómetro (incluida la ventana
           flotante).
         </p>
@@ -632,7 +653,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             correspondientes.</li>
         </ul>
         <p>Recomendación operativa: antes de traducir masivamente, define un glosario mínimo (por ejemplo: “texto
-          vigente”, “modo preciso/simple”, “ventana flotante”, “presets”, “WPM real”).</p>
+          actual”, “modo preciso/simple”, “ventana flotante”, “presets”, “WPM real”).</p>
 
         <hr />
 
@@ -655,7 +676,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <hr />
 
         <h3>“¿Qué pasa si ingreso un texto muy largo?”</h3>
-        <p>La app tiene un <strong>límite duro</strong> para el tamaño del texto vigente (por rendimiento y seguridad):
+        <p>La app tiene un <strong>límite duro</strong> para el tamaño del texto actual (por rendimiento y seguridad):
           10 millones de caracteres. Si lo excedes, el texto se <strong>trunca</strong> y se muestra un aviso.</p>
         <p>Para que te hagas una idea: 10 millones de caracteres equivale más o menos a los 7 volúmenes del famoso “En
           busca del tiempo perdido” de <em>Marcel Proust</em>. Esto equivale a alrededor de 100 horas de lectura de un
