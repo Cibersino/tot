@@ -19,7 +19,7 @@ const fs = require('fs');
 const path = require('path');
 const { dialog } = require('electron');
 const Log = require('./log');
-const { DEFAULT_LANG, MAX_TEXT_CHARS } = require('./constants_main');
+const { DEFAULT_LANG } = require('./constants_main');
 const {
   getCurrentTextSnapshotsDir,
   ensureCurrentTextSnapshotsDir,
@@ -195,11 +195,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
       }
 
-      if (fs.existsSync(candidateResolved)) {
-        const confirmed = await confirmOverwrite('save', resolveMainWin());
-        if (!confirmed) {
-          return { ok: false, code: 'CONFIRM_DENIED' };
-        }
+      if (!fs.existsSync(parentDir)) {
+        fs.mkdirSync(parentDir, { recursive: true });
       }
 
       const text = textState.getCurrentText() || '';
@@ -260,9 +257,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const stats = fs.statSync(selectedReal);
-      if (stats.size > MAX_TEXT_CHARS * 4) {
-        return { ok: false, code: 'READ_FAILED', message: 'snapshot too large' };
-      }
 
       const confirmed = await confirmOverwrite('load', resolveMainWin());
       if (!confirmed) {

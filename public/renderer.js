@@ -301,16 +301,6 @@ if (!applyPresetSelection || !loadPresetsIntoDom || !resolvePresetSelection) {
 // =============================================================================
 const { saveSnapshot, loadSnapshot } = window.CurrentTextSnapshots || {};
 
-function notifySnapshotUnavailable() {
-  if (typeof Notify?.toastMain === 'function') {
-    Notify.toastMain('renderer.alerts.snapshot_unavailable', { type: 'error' });
-    return;
-  }
-  if (typeof Notify?.notifyMain === 'function') {
-    Notify.notifyMain('renderer.alerts.snapshot_unavailable');
-  }
-}
-
 // =============================================================================
 // Text counting
 // =============================================================================
@@ -1394,47 +1384,15 @@ btnEmptyMain.addEventListener('click', async () => {
   }
 });
 
-if (btnLoadSnapshot) {
-  btnLoadSnapshot.addEventListener('click', async () => {
-    if (!guardUserAction('snapshot-load')) return;
-    if (typeof loadSnapshot !== 'function') {
-      log.warn('loadSnapshot helper unavailable.');
-      notifySnapshotUnavailable();
-      return;
-    }
-    try {
-      await loadSnapshot();
-    } catch (err) {
-      log.error('snapshot load error:', err);
-      if (typeof Notify?.toastMain === 'function') {
-        Notify.toastMain('renderer.alerts.snapshot_load_error', { type: 'error' });
-      } else if (typeof Notify?.notifyMain === 'function') {
-        Notify.notifyMain('renderer.alerts.snapshot_load_error');
-      }
-    }
-  });
-}
+btnLoadSnapshot.addEventListener('click', async () => {
+  if (!guardUserAction('snapshot-load')) return;
+  await loadSnapshot();
+});
 
-if (btnSaveSnapshot) {
-  btnSaveSnapshot.addEventListener('click', async () => {
-    if (!guardUserAction('snapshot-save')) return;
-    if (typeof saveSnapshot !== 'function') {
-      log.warn('saveSnapshot helper unavailable.');
-      notifySnapshotUnavailable();
-      return;
-    }
-    try {
-      await saveSnapshot();
-    } catch (err) {
-      log.error('snapshot save error:', err);
-      if (typeof Notify?.toastMain === 'function') {
-        Notify.toastMain('renderer.alerts.snapshot_save_error', { type: 'error' });
-      } else if (typeof Notify?.notifyMain === 'function') {
-        Notify.notifyMain('renderer.alerts.snapshot_save_error');
-      }
-    }
-  });
-}
+btnSaveSnapshot.addEventListener('click', async () => {
+  if (!guardUserAction('snapshot-save')) return;
+  await saveSnapshot();
+});
 
 // Help button: show a random tip key via Notify
 if (btnHelp) {
