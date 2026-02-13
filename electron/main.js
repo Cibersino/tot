@@ -36,6 +36,7 @@ const textState = require('./text_state');
 const editorState = require('./editor_state');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
+const snapshotsMain = require('./current_text_snapshots_main');
 const updater = require('./updater');
 const { registerLinkIpc } = require('./link_openers');
 
@@ -1326,6 +1327,12 @@ app.whenReady().then(() => {
       presetWin,
       langWin,
       flotanteWin,
+    }),
+  });
+
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
     }),
   });
 
