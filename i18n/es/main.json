@@ -39,6 +39,8 @@
       "ok": "Aceptar",
       "yes": "Sí, continuar",
       "no": "No, cancelar",
+      "snapshot_overwrite_save": "¿Sobrescribir el snapshot existente?",
+      "snapshot_overwrite_load": "¿Reemplazar el texto actual con el snapshot seleccionado \"{name}\"?",
       "delete_preset_confirm": "¿Eliminar el preset \"{name}\"?",
       "delete_preset_none": "No hay ningún preset seleccionado para borrar.",
       "restore_defaults_confirm": "¿Restaurar presets por defecto (generales y para el idioma \"{lang}\") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.",

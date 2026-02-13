@@ -51,6 +51,53 @@ Reglas:
 
 ## Unreleased
 
+### Resumen de cambios
+
+- Snapshots del texto vigente (Issue #50): controles **Cargar/Guardar** con diálogos nativos para guardar el texto vigente como snapshot y cargar uno sobrescribiendo el texto vigente (con confirmación).
+
+### Agregado
+
+- Selector de texto (Issue #50): botones `Cargar` y `Guardar` junto a `🗑` en los controles del preview del texto vigente.
+- Persistencia (Issue #50): snapshots JSON `{ "text": "<string>" }` bajo `config/saved_current_texts/` (se permiten subcarpetas).
+- Main (Issue #50): `electron/current_text_snapshots_main.js`:
+  - `showSaveDialog` / `showOpenDialog`;
+  - confirmación al **cargar** (reemplazar texto vigente);
+  - nombre por defecto `current_text_<N>.json`;
+  - saneamiento de nombre: espacios → `_`, y base name restringido a `[A-Za-z0-9_-]` (fuerza `.json`);
+  - chequeo de contención bajo `config/saved_current_texts/` usando `realpath` + `relative` (defensa contra escapes).
+- Renderer (Issue #50): helper `public/js/current_text_snapshots.js` expone `saveSnapshot()` / `loadSnapshot()` y mapea `{ ok, code }` a `Notify` (sin wiring DOM).
+
+### Cambiado
+
+- `electron/text_state.js`: se extrae `applyCurrentText(...)`; `set-current-text` lo reutiliza; el load de snapshot aplica el texto por el mismo pipeline (normalización/truncado + broadcasts).
+- `electron/fs_storage.js`: helpers `getCurrentTextSnapshotsDir()` / `ensureCurrentTextSnapshotsDir()`.
+
+### Contratos tocados
+
+- IPC (renderer → main, `invoke`):
+  - `current-text-snapshot-save`. Payload: ninguno.
+    - OK: `{ ok:true, path, filename, bytes, mtime, length }`
+    - Error: `{ ok:false, code:'CANCELLED'|'PATH_OUTSIDE_SNAPSHOTS'|'WRITE_FAILED', message? }`
+  - `current-text-snapshot-load`. Payload: ninguno.
+    - OK: `{ ok:true, path, filename, bytes, mtime, truncated, length }`
+    - Error: `{ ok:false, code:'CANCELLED'|'CONFIRM_DENIED'|'PATH_OUTSIDE_SNAPSHOTS'|'READ_FAILED'|'INVALID_JSON'|'INVALID_SCHEMA', message? }`
+- Preload API (`window.electronAPI`, agregado):
+  - `saveCurrentTextSnapshot(): Promise<...>`
+  - `loadCurrentTextSnapshot(): Promise<...>`
+- Storage (nuevo):
+  - `config/saved_current_texts/**/*.json`: schema `{ "text": "<string>" }`
+
+### Archivos
+
+- `public/index.html`
+- `public/renderer.js`
+- `public/js/current_text_snapshots.js`
+- `electron/current_text_snapshots_main.js`
+- `electron/preload.js`
+- `electron/text_state.js`
+- `electron/fs_storage.js`
+- i18n: `i18n/en/renderer.json`, `i18n/es/renderer.json`, `i18n/en/main.json`, `i18n/es/main.json`
+
 ---
 
 ## [0.1.3] toT - nueva columna vertebral
