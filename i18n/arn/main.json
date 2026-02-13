@@ -31,6 +31,7 @@
       "ok": "Llowün",
       "yes": "May, amulepe",
       "no": "No, katrüntun",
+      "load_current_text_snapshot_confirm": "¿Ñamümual tachi wirin \"{name}\" snapshot?",
       "delete_preset_confirm": "¿Ñamümual tachi preset \"{name}\"?",
       "delete_preset_none": "Ngelay preset düllilu ñamümual.",
       "restore_defaults_confirm": "¿Wiño elual presets chumgechi müyey (kom ka tachi kezungun mu \"{lang}\")? Kom tachi ñamümün ka weyulkan wiñotuy.",

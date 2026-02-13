@@ -267,18 +267,18 @@
 
         <h4>Ruta 1D — Guardar / Cargar snapshots</h4>
 
-        <p>Si reutiliza textos con frecuencia, puede <strong>guardar y cargar instantáneas</strong> del texto actual
+        <p>Si reutiliza textos con frecuencia, puede <strong>guardar y cargar snapshots</strong> del texto actual
           utilizando los botones <strong>💾</strong> y <strong>📂</strong>.</p>
 
         <ul>
           <li><strong>💾</strong>: abre un cuadro de diálogo nativo de “guardar archivo” ubicado en
             <code>config/saved_current_texts/</code>. Puedes guardar en <strong>subcarpetas</strong> (y crear carpetas)
-            siempre que permanezcas dentro del árbol de instantáneas. La instantánea se guarda como
+            siempre que permanezcas dentro del árbol de snapshots. El snapshot se guarda como
             JSON.(<code>{ "text": "..." }</code>).</li>
           <li><strong>📂</strong>: abre un cuadro de diálogo nativo para “abrir archivo” y te permite seleccionar
-            cualquier archivo de instantánea dentro de <code>config/saved_current_texts/</code> (incluidas las
+            cualquier archivo de snapshot dentro de <code>config/saved_current_texts/</code> (incluidas las
             subcarpetas). La app solicitará confirmación porque sobrescribirá el texto actual.</li>
-          <li>Una instantánea cargada se convierte en el nuevo <strong>texto actual</strong> (la misma semántica que
+          <li>Un snapshot cargado se convierte en el nuevo <strong>texto actual</strong> (la misma semántica que
             otras acciones de sobrescritura) y la vista previa/los resultados se actualizan inmediatamente.</li>
         </ul>
 
@@ -500,7 +500,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p>La app guarda datos localmente para mantener tu configuración entre sesiones. En general incluye:</p>
         <ul>
           <li><strong>Texto actual</strong> (estado del texto).</li>
-          <li><strong>Instantáneas de texto guardadas</strong> (biblioteca opcional en
+          <li><strong>snapshots de texto guardadas</strong> (biblioteca opcional en
             <code>config/saved_current_texts/</code>).</li>
           <li><strong>Configuración</strong> (por ejemplo: idioma, WPM actual, modo de conteo).</li>
           <li><strong>Presets</strong> (personalizados y estado de presets por defecto).</li>
@@ -510,7 +510,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p><strong>Implicación:</strong></p>
         <ul>
           <li>Si trabajas con texto sensible, usa <strong>🗑</strong> al terminar y considera limpieza total.</li>
-          <li>Si usaste <strong>💾</strong>, recuerda que las instantáneas son archivos en disco; elimínalos si es
+          <li>Si usaste <strong>💾</strong>, recuerda que los snapshots son archivos en disco; elimínalos si es
             necesario (o realiza una limpieza total).</li>
         </ul>
 

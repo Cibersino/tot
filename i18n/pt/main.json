@@ -31,6 +31,7 @@
       "ok": "OK",
       "yes": "Sim, continuar",
       "no": "Não, cancelar",
+      "load_current_text_snapshot_confirm": "Substituir o texto atual pelo snapshot \"{name}\"?",
       "delete_preset_confirm": "Tem certeza que deseja excluir o preset \"{name}\"?",
       "delete_preset_none": "Nenhum preset selecionado para excluir.",
       "restore_defaults_confirm": "Tem certeza que deseja restaurar os presets padrão (gerais e para o idioma \"{lang}\")? Isso cancelará todas as modificações e exclusões de presets padrão para o idioma ativo.",

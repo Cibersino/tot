@@ -35,6 +35,7 @@
       "ok": "Ya era",
       "yes": "Voh dale",
       "no": "No, sorri hno",
+      "load_current_text_snapshot_confirm": "¿Querís cambiar el texto vigente con este otro \"{name}\"?",
       "delete_preset_confirm": "¿Querís pitiarte el preset \"{name}\"?",
       "delete_preset_none": "No habís marcao niuna custión pa' borrar, pajarón",
       "restore_defaults_confirm": "¿Querí dejar todo como estaba al principio? Se va a borrar toda la mano que le metiste a los presets del \"{lang}\".",
