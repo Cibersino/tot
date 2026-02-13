@@ -48,6 +48,7 @@ tot/
 │ ├── fs_storage.js
 │ ├── settings.js
 │ ├── text_state.js
+│ ├── current_text_snapshots_main.js
 │ ├── editor_state.js
 │ ├── presets_main.js
 │ ├── menu_builder.js
@@ -79,6 +80,7 @@ tot/
 │ │ ├── presets.js
 │ │ ├── crono.js
 │ │ ├── menu_actions.js
+│ │ ├── current_text_snapshots.js
 │ │ ├── format.js
 │ │ ├── i18n.js
 │ │ ├── constants.js
@@ -138,7 +140,8 @@ tot/
 
 - `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`.
 - `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset` y difunde cambios vía `settings-updated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`).
-- `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
+- `electron/text_state.js` — Estado del texto actual: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
+- `electron/current_text_snapshots_main.js` — Snapshots del texto actual (save/load): diálogos nativos, lectura/escritura JSON `{ "text": "<string>" }` bajo `config/saved_current_texts/` (incluye subcarpetas), confirmación de overwrite y chequeo de contención (realpath/relative) para evitar escapes fuera del árbol.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
@@ -158,7 +161,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/presets.js` — UX del selector y flujos de presets en UI (sin IPC directo; usa `electronAPI.getDefaultPresets` / `electronAPI.setSelectedPreset`).
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
-* `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
+- `public/js/current_text_snapshots.js` — Wiring UI de “Cargar/Guardar” snapshots (ventana principal): bind de botones, invoca `electronAPI.saveCurrentTextSnapshotViaDialog` / `electronAPI.loadCurrentTextSnapshotViaDialog`, y emite notificaciones i18n de éxito/error.
+- `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 
@@ -174,8 +178,9 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 **Nota:** `config/` se crea y usa en runtime. Estos archivos representan **estado local del usuario** y se ignoran por git para no commitear estado de ejecución.
 
 - `config/user_settings.json` — Preferencias del usuario (idioma, modo de conteo, presets personalizados, etc.).
-- `config/current_text.json` — Texto vigente persistido.
+- `config/current_text.json` — Texto actual persistido.
 - `config/editor_state.json` — Estado persistido del editor (geometría/maximizado, etc.).
+- `config/saved_current_texts/` — Carpeta runtime con snapshots del texto actual (archivos JSON `{ "text": ... }`; puede contener subcarpetas).
 
 #### 5.1) Presets por defecto (dos capas)
 

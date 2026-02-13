@@ -51,6 +51,51 @@ Reglas:
 
 ## Unreleased
 
+### Resumen de cambios
+
+- Snapshots del texto vigente (Issue #50): se incorporan controles **Cargar/Guardar** (diálogos nativos) para guardar textos como snapshots y cargar uno sobrescribiendo el texto vigente con confirmación.
+
+### Agregado
+
+- Selector de texto (Issue #50): botones `Cargar` y `Guardar` junto a `🗑` en los controles del preview del texto vigente.
+- Persistencia (Issue #50): snapshots JSON `{ "text": "<string>" }` bajo `config/saved_current_texts/` (se permiten subcarpetas).
+- Main (Issue #50): módulo `electron/current_text_snapshots_main.js`:
+  - `showSaveDialog` / `showOpenDialog`, confirmación de overwrite;
+  - saneamiento de nombre (`[A-Za-z0-9._-]`, espacios → `_`, fuerza `.json`) y nombre por defecto `current_text_<N>.json`;
+  - verificación de contención del árbol (realpath/relative), incluyendo defensa contra escapes por symlink/junction.
+- Renderer (Issue #50): módulo `public/js/current_text_snapshots.js` para wiring de botones y notificaciones.
+
+### Cambiado
+
+- `electron/text_state.js`: se extrae `applyCurrentText(...)` y `set-current-text` lo reutiliza; el load de snapshot aplica el texto en main por el mismo pipeline (normalización/truncado + broadcasts).
+- `electron/fs_storage.js`: helpers de snapshots (`getSavedCurrentTextsDir()` y `ensureSavedCurrentTextsDir()`).
+
+### Contratos tocados
+
+- IPC (nuevos canales; renderer → main, `invoke`):
+  - `current-text-snapshot-save-via-dialog`. Payload: ninguno.
+    - OK: `{ ok:true, code:'SAVED', filename, bytes, mtimeMs, length }`
+    - Error: `{ ok:false, code:'CANCELLED'|'INVALID_PATH'|'OUTSIDE_SNAPSHOTS_DIR'|'WRITE_FAILED'|'UNAUTHORIZED', message? }`
+  - `current-text-snapshot-load-via-dialog`. Payload: ninguno.
+    - OK: `{ ok:true, code:'LOADED', filename, bytes, mtimeMs, truncated, length }`
+    - Error: `{ ok:false, code:'CANCELLED'|'NOT_FOUND'|'OUTSIDE_SNAPSHOTS_DIR'|'INVALID_JSON'|'INVALID_SCHEMA'|'APPLY_FAILED'|'READ_FAILED'|'UNAUTHORIZED', message? }`
+- Preload API (`window.electronAPI`, agregado):
+  - `saveCurrentTextSnapshotViaDialog(): Promise<...>`
+  - `loadCurrentTextSnapshotViaDialog(): Promise<...>`
+- Storage (nuevo):
+  - `config/saved_current_texts/**/*.json`: schema `{ "text": "<string>" }`
+
+### Archivos
+
+- `public/index.html`
+- `public/renderer.js`
+- `public/js/current_text_snapshots.js`
+- `electron/current_text_snapshots_main.js`
+- `electron/preload.js`
+- `electron/text_state.js`
+- `electron/fs_storage.js`
+- i18n: `i18n/*/main.json`, `i18n/*/renderer.json`
+
 ---
 
 ## [0.1.3] toT - nueva columna vertebral
