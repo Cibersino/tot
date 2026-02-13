@@ -35,6 +35,8 @@
       "ok": "Ya era",
       "yes": "Voh dale",
       "no": "No, sorri hno",
+      "snapshot_overwrite_save": "¿Querís aplastar el coso?",
+      "snapshot_overwrite_load": "¿Querís cambiar el texto actual con \"{name}\"?",
       "delete_preset_confirm": "¿Querís pitiarte el preset \"{name}\"?",
       "delete_preset_none": "No habís marcao niuna custión pa' borrar, pajarón",
       "restore_defaults_confirm": "¿Querí dejar todo como estaba al principio? Se va a borrar toda la mano que le metiste a los presets del \"{lang}\".",
