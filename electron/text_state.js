@@ -110,6 +110,41 @@ function persistCurrentTextOnQuit() {
   }
 }
 
+function applyCurrentText(rawText, rawMeta) {
+  let text = String(rawText || '');
+  let truncated = false;
+
+  if (text.length > maxTextChars) {
+    text = text.slice(0, maxTextChars);
+    truncated = true;
+    log.warn(
+      'text_state.applyCurrentText.truncated',
+      'applyCurrentText: entry truncated to effective hard cap of ' + maxTextChars + ' chars.'
+    );
+  }
+
+  currentText = text;
+
+  const { mainWin, editorWin } = getWindows() || {};
+
+  // Notify main window (for renderer to update preview/results)
+  safeSend(mainWin, 'current-text-updated', currentText);
+
+  // Notify editor with object { text, meta }
+  const incomingMeta = sanitizeMeta(rawMeta);
+  safeSend(editorWin, 'editor-text-updated', {
+    text: currentText,
+    meta: incomingMeta || { source: 'main', action: 'set' },
+  });
+
+  return {
+    ok: true,
+    truncated,
+    length: currentText.length,
+    text: currentText,
+  };
+}
+
 // =============================================================================
 // Initialization / lifecycle
 // =============================================================================
@@ -235,7 +270,6 @@ function registerIpc(ipcMain, windowsResolver) {
           'set-current-text payload missing text; using String(payload).'
         );
       }
-      const incomingMeta = hasTextProp ? sanitizeMeta(payload.meta) : null;
       let text = hasTextProp ? String(payload.text || '') : String(payload || '');
 
       if (text.length > maxIpcChars) {
@@ -246,35 +280,7 @@ function registerIpc(ipcMain, windowsResolver) {
         throw new Error('set-current-text payload too large');
       }
 
-      let truncated = false;
-      if (text.length > maxTextChars) {
-        text = text.slice(0, maxTextChars);
-        truncated = true;
-        log.warn(
-          'text_state.setCurrentText.truncated',
-          'set-current-text: entry truncated to effective hard cap of ' + maxTextChars + ' chars.'
-        );
-      }
-
-      currentText = text;
-
-      const { mainWin, editorWin } = getWindows() || {};
-
-      // Notify main window (for renderer to update preview/results)
-      safeSend(mainWin, 'current-text-updated', currentText);
-
-      // Notify editor with object { text, meta }
-      safeSend(editorWin, 'editor-text-updated', {
-        text: currentText,
-        meta: incomingMeta || { source: 'main', action: 'set' },
-      });
-
-      return {
-        ok: true,
-        truncated,
-        length: currentText.length,
-        text: currentText,
-      };
+      return applyCurrentText(text, hasTextProp ? payload.meta : null);
     } catch (err) {
       const msg = err && typeof err.message === 'string' ? err.message : '';
       if (msg !== 'set-current-text payload too large') {
@@ -317,6 +323,7 @@ module.exports = {
   init,
   registerIpc,
   getCurrentText,
+  applyCurrentText,
 };
 
 // =============================================================================
