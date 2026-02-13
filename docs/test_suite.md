@@ -103,7 +103,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - No blocking modal/errors.
-- Main controls exist (Overwrite/Append, Editor, Trash, Precise toggle, Presets controls, Stopwatch controls).
+- Main controls exist (Overwrite/Append, Editor, Trash, Load/Save snapshots, Precise toggle, Presets controls, Stopwatch controls).
 
 ### SM-02 First-run language selection reachable (clean run only)
 **Goal:** first-run language path is reachable and applies.
@@ -195,6 +195,18 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - About modal opens and content is readable; version/environment fields hydrate when available.
 - Updater shows a dialog (up-to-date / update available / failure).
 
+### SM-11 Current text snapshots (Save/Load)
+**Goal:** save and load a snapshot via native dialogs.
+1. Set non-empty text (SM-03).
+2. Click **💾** and save as `smoke_snapshot.json` under `config/saved_current_texts/`.
+3. Change current text (SM-04 or edit in editor).
+4. Click **📂**, select `smoke_snapshot.json`, and confirm overwrite.
+
+**Expected:**
+- Snapshot file is created.
+- Current text is overwritten; preview/results update.
+- Stopwatch resets due to text change.
+
 ---
 
 ## 5) Full Regression Suite (30–60 minutes)
@@ -246,6 +258,18 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Text clears.
+
+#### REG-MAIN-04 Snapshots: overwrite + cancel semantics
+**Goal:** load behaves like an overwrite flow; cancels are no-ops.
+1. Set a known text `T1` (SM-03).
+2. Click **💾** → `reg_T1.json` under `config/saved_current_texts/`.
+3. Change current text to `T2`.
+4. Click **📂** → select `reg_T1.json` → **cancel** overwrite confirmation.
+5. Click **📂** again → select `reg_T1.json` → **confirm** overwrite.
+
+**Expected:**
+- After cancel: current text remains `T2`.
+- After confirm: current text becomes `T1` and UI updates.
 
 ---
 
@@ -496,6 +520,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - State matches prior session (unless intentionally cleared).
 
+#### REG-PERSIST-03 Snapshots folder + subfolder load (relaunch)
+**Goal:** snapshots work under `config/saved_current_texts/` (including subfolders) across relaunch.
+1. Set a known text `TP1`.
+2. Click **💾** and save as `sub/persist_TP1.json` under `config/saved_current_texts/` (create `sub/` if needed).
+3. Close app and relaunch.
+4. Click **📂**, select `sub/persist_TP1.json`, confirm overwrite.
+
+**Expected:**
+- Snapshot remains on disk after relaunch.
+- Loading from a descendant subfolder works and overwrites current text.
+
 ---
 
 ### REG-I18N — Language switching and number formatting
@@ -559,6 +594,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - App logs warning and uses fallback values; remains usable.
+
+### EDGE-04 Snapshot load: invalid file + outside snapshots tree
+**Goal:** invalid/outside selections do not crash and do not change current text.
+1. Set a known current text `TE1`.
+2. Create `config/saved_current_texts/invalid.json` with invalid JSON (e.g., `{`).
+3. Click **📂** and select `invalid.json`.
+4. Click **📂** again and select a JSON file outside `config/saved_current_texts/` (navigate via dialog).
+5. (Advanced) Repeat step 4 via a symlink/junction escape if applicable.
+
+**Expected:**
+- Invalid snapshot shows failure notice; current text remains `TE1`.
+- Outside-tree selection is rejected with “outside snapshots tree” notice; current text remains `TE1`.
+- No crash/hang.
 
 ---
 

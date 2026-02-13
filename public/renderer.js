@@ -41,6 +41,8 @@ const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
+const btnLoadSnapshot = document.getElementById('btnLoadSnapshot');
+const btnSaveSnapshot = document.getElementById('btnSaveSnapshot');
 const btnHelp = document.getElementById('btnHelp');
 
 // =============================================================================
@@ -214,11 +216,15 @@ function applyTranslations() {
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
   if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear', btnEmptyMain.textContent || '');
+  if (btnLoadSnapshot) btnLoadSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_load', btnLoadSnapshot.textContent || '');
+  if (btnSaveSnapshot) btnSaveSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_save', btnSaveSnapshot.textContent || '');
   // Text selector tooltips
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
   if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
   if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
+  if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load', btnLoadSnapshot.title || '');
+  if (btnSaveSnapshot) btnSaveSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_save', btnSaveSnapshot.title || '');
   // Presets
   if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new', btnNewPreset.textContent || '');
   if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit', btnEditPreset.textContent || '');
@@ -289,6 +295,11 @@ const { applyPresetSelection, loadPresetsIntoDom, resolvePresetSelection } = win
 if (!applyPresetSelection || !loadPresetsIntoDom || !resolvePresetSelection) {
   log.error('[renderer] RendererPresets not available');
 }
+
+// =============================================================================
+// Snapshot helpers
+// =============================================================================
+const { saveSnapshot, loadSnapshot } = window.CurrentTextSnapshots || {};
 
 // =============================================================================
 // Text counting
@@ -1371,6 +1382,16 @@ btnEmptyMain.addEventListener('click', async () => {
     log.error('Error clearing text from main window:', err);
     Notify.notifyMain('renderer.alerts.clear_error');
   }
+});
+
+btnLoadSnapshot.addEventListener('click', async () => {
+  if (!guardUserAction('snapshot-load')) return;
+  await loadSnapshot();
+});
+
+btnSaveSnapshot.addEventListener('click', async () => {
+  if (!guardUserAction('snapshot-save')) return;
+  await saveSnapshot();
 });
 
 // Help button: show a random tip key via Notify
