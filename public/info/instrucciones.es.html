@@ -265,6 +265,16 @@
           <strong>🗑</strong> de la ventana principal o del editor manual.
         </p>
 
+        <h4>Ruta 1D — Guardar / Cargar snapshots</h4>
+
+        <p>Si reutiliza textos con frecuencia, puede guardar y cargar <strong>snapshots</strong> del texto actual utilizando los botones <strong>💾</strong> y <strong>📂</strong>.</p>
+
+        <ul>
+          <li><strong>💾</strong>: abre un cuadro de diálogo nativo para “guardar archivo”, ubicado en <code>config/saved_current_texts/</code>. Puedes guardar en <strong>subcarpetas</strong> (y crear carpetas) siempre que permanezcas dentro del árbol de snapshots. El snapshot se guarda como JSON.</li>
+          <li><strong>📂</strong>: abre un cuadro de diálogo nativo para “abrir archivo” y te permite seleccionar cualquier archivo de snapshot dentro de <code>config/saved_current_texts/</code> (incluidas las subcarpetas). La app solicitará confirmación porque sobrescribirá el texto actual.</li>
+          <li>Un snapshot cargado se convierte en el nuevo <strong>texto actual</strong> (la misma semántica que otras acciones de sobrescritura) y la vista previa y resultados se actualizan inmediatamente.</li>
+        </ul>
+        
         <hr />
 
         <h3>Paso 2 — Verifica el texto actual (checkpoint)</h3>
@@ -483,6 +493,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p>La app guarda datos localmente para mantener tu configuración entre sesiones. En general incluye:</p>
         <ul>
           <li><strong>Texto actual</strong> (estado del texto).</li>
+          <li><strong>Snapshots guardados</strong> (librería opcional en <code>config/saved_current_texts/</code>).</li>
           <li><strong>Configuración</strong> (por ejemplo: idioma, WPM actual, modo de conteo).</li>
           <li><strong>Presets</strong> (personalizados y estado de presets por defecto).</li>
           <li><strong>Estado de ventanas</strong> (por ejemplo: tamaño/posición del editor).</li>
@@ -491,6 +502,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p><strong>Implicación:</strong></p>
         <ul>
           <li>Si trabajas con texto sensible, usa <strong>🗑</strong> al terminar y considera limpieza total.</li>
+          <li>Si usaste <strong>💾</strong>, recuerda que los snapshots son archivos en el disco; elimínalos si es necesario (o realiza una limpieza total).</li>
         </ul>
 
         <h4>7.2 Limpieza total (reinstalación limpia) — con rutas por sistema</h4>
