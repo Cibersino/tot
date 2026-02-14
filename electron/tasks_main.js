@@ -31,6 +31,7 @@ const {
 } = require('./fs_storage');
 
 const log = Log.get('tasks-main');
+log.debug('Tasks main starting...');
 
 // =============================================================================
 // Constants / config

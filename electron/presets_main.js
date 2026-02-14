@@ -20,6 +20,7 @@ const { dialog, shell } = require('electron');
 const Log = require('./log');
 
 const log = Log.get('presets-main');
+log.debug('Presets main starting...');
 const { DEFAULT_LANG, MAX_PRESET_STR_CHARS } = require('./constants_main');
 const { getConfigPresetsDir, ensureConfigPresetsDir } = require('./fs_storage');
 const settingsState = require('./settings');

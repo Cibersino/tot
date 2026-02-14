@@ -23,6 +23,7 @@ const path = require('path');
 const Log = require('./log');
 
 const log = Log.get('fs-storage');
+log.debug('FS storage starting...');
 
 // =============================================================================
 // Config paths

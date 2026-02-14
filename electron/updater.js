@@ -20,6 +20,7 @@ const https = require('https');
 const Log = require('./log');
 
 const log = Log.get('updater');
+log.debug('Updater starting...');
 const menuBuilder = require('./menu_builder');
 const { DEFAULT_LANG } = require('./constants_main');
 

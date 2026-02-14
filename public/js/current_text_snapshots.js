@@ -13,6 +13,7 @@
 
 (() => {
   const log = window.getLogger('current-text-snapshots');
+  log.debug('Current text snapshots starting...');
 
   const TOAST_KEYS = Object.freeze({
     saveSuccess: 'renderer.alerts.snapshot_save_success',

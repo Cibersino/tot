@@ -30,6 +30,7 @@ const settingsState = require('./settings');
 const menuBuilder = require('./menu_builder');
 
 const log = Log.get('current-text-snapshots');
+log.debug('Current text snapshots main starting...');
 
 // =============================================================================
 // Constants / config

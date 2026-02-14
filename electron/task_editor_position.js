@@ -17,6 +17,7 @@ const { getTaskEditorPositionFile, loadJson, saveJson } = require('./fs_storage'
 const Log = require('./log');
 
 const log = Log.get('task-editor-position');
+log.debug('Task editor position starting...');
 
 // =============================================================================
 // Constants / defaults

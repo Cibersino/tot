@@ -24,6 +24,7 @@ const Log = require('./log');
 const { DEFAULT_LANG } = require('./constants_main');
 
 const log = Log.get('settings');
+log.debug('Settings starting...');
 
 // =============================================================================
 // Language helpers

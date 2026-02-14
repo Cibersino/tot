@@ -21,6 +21,9 @@
   const log = (window.getLogger && typeof window.getLogger === 'function')
     ? window.getLogger('count')
     : null;
+  if (log && typeof log.debug === 'function') {
+    log.debug('Count utilities starting...');
+  }
 
   // Hyphen joiners we accept for "alnum join" in Precise word counting.
   // This supports common hyphenated compounds and numeric ranges without spaces (e.g., "e-mail", "3–4").

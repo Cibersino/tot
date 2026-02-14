@@ -16,6 +16,7 @@
     // Logger / shared state
     // =============================================================================
     const log = window.getLogger('menu-actions');
+    log.debug('Menu actions starting...');
 
     // actionId -> handler
     const registry = new Map();
