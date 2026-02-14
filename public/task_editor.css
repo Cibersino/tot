@@ -146,6 +146,10 @@ body {
   font-size: 13px;
 }
 
+.task-table.resizable {
+  table-layout: fixed;
+}
+
 .task-table th,
 .task-table td {
   border-bottom: 1px solid var(--border);
@@ -185,6 +189,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 1;
+  position: sticky;
 }
 
 .task-table input[type="text"],
@@ -343,6 +348,25 @@ body {
   background: var(--btn-active-bg);
   border-color: var(--btn-active-border);
   transform: translateY(1px);
+}
+
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+}
+
+.col-resizer:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.is-resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .library-item {

@@ -34,7 +34,17 @@
         <button id="btnTaskLoadLibrary" class="btn-standard">Cargar biblioteca</button>
       </div>
       <div class="task-table-wrap">
-        <table id="taskTable" class="task-table">
+        <table id="taskTable" class="task-table resizable">
+          <colgroup id="taskColGroup">
+            <col data-col="texto" data-default="500" />
+            <col data-col="tiempo" data-default="100" />
+            <col data-col="percent" data-default="70" />
+            <col data-col="falta" data-default="60" />
+            <col data-col="tipo" data-default="120" />
+            <col data-col="enlace" data-default="200" />
+            <col data-col="comentario" data-default="60" />
+            <col data-col="acciones" data-default="160" />
+          </colgroup>
           <thead>
             <tr>
               <th id="thTexto">Texto</th>

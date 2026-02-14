@@ -26,6 +26,7 @@ const {
   getTasksListsDir,
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
+  getTasksColumnWidthsFile,
   saveJson,
 } = require('./fs_storage');
 
@@ -262,6 +263,18 @@ function saveAllowedHosts(set) {
   const file = getTasksAllowedHostsFile();
   const arr = Array.from(set);
   saveJson(file, arr);
+}
+
+function sanitizeColumnWidths(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const out = {};
+  Object.keys(raw).forEach((key) => {
+    const n = Number(raw[key]);
+    if (Number.isFinite(n) && n > 0) {
+      out[key] = Math.round(n);
+    }
+  });
+  return Object.keys(out).length ? out : null;
 }
 
 // =============================================================================
@@ -614,6 +627,51 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       return { ok: true };
     } catch (err) {
       log.error('task-library-delete failed:', err);
+      return { ok: false, code: 'WRITE_FAILED', message: String(err) };
+    }
+  });
+
+  ipcMain.handle('task-columns-load', async (event) => {
+    try {
+      const taskEditorWin = resolveTaskEditorWin();
+      const senderWin = BrowserWindow.fromWebContents(event.sender);
+      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
+        log.warnOnce('tasks_main.columns.load.unauthorized', 'task-columns-load unauthorized (ignored).');
+        return { ok: false, code: 'UNAUTHORIZED' };
+      }
+
+      ensureTasksDirs();
+      const file = getTasksColumnWidthsFile();
+      const res = readJsonFile(file);
+      if (!res.ok) {
+        if (res.code === 'NOT_FOUND') return { ok: true, widths: null };
+        return { ok: false, code: res.code };
+      }
+      const widths = sanitizeColumnWidths(res.data);
+      return { ok: true, widths };
+    } catch (err) {
+      log.error('task-columns-load failed:', err);
+      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    }
+  });
+
+  ipcMain.handle('task-columns-save', async (event, payload) => {
+    try {
+      const taskEditorWin = resolveTaskEditorWin();
+      const senderWin = BrowserWindow.fromWebContents(event.sender);
+      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
+        log.warnOnce('tasks_main.columns.save.unauthorized', 'task-columns-save unauthorized (ignored).');
+        return { ok: false, code: 'UNAUTHORIZED' };
+      }
+
+      ensureTasksDirs();
+      const widths = sanitizeColumnWidths(payload && payload.widths ? payload.widths : null);
+      if (!widths) return { ok: false, code: 'INVALID_SCHEMA' };
+      const file = getTasksColumnWidthsFile();
+      saveJson(file, widths);
+      return { ok: true };
+    } catch (err) {
+      log.error('task-columns-save failed:', err);
       return { ok: false, code: 'WRITE_FAILED', message: String(err) };
     }
   });

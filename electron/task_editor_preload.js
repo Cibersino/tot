@@ -54,6 +54,8 @@ const api = {
   saveLibraryRow: (row, includeComment) => ipcRenderer.invoke('task-library-save', { row, includeComment }),
   deleteLibraryEntry: (texto) => ipcRenderer.invoke('task-library-delete', { texto }),
   openTaskLink: (raw) => ipcRenderer.invoke('task-open-link', { raw }),
+  getColumnWidths: () => ipcRenderer.invoke('task-columns-load'),
+  saveColumnWidths: (widths) => ipcRenderer.invoke('task-columns-save', { widths }),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   onSettingsChanged: (cb) => {
     const listener = (_e, settings) => {

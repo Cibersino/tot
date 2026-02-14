@@ -61,6 +61,8 @@ const thTipo = document.getElementById('thTipo');
 const thEnlace = document.getElementById('thEnlace');
 const thComentario = document.getElementById('thComentario');
 const thAcciones = document.getElementById('thAcciones');
+const taskTable = document.getElementById('taskTable');
+const taskColGroup = document.getElementById('taskColGroup');
 
 // Modals
 const commentModal = document.getElementById('commentModal');
@@ -101,6 +103,21 @@ let rowIdCounter = 1;
 let pendingCommentRowId = null;
 let pendingLibraryRowId = null;
 let libraryItemsCache = [];
+let columnWidths = {};
+let activeResize = null;
+
+const COLUMN_KEYS = [
+  { key: 'texto', th: thTexto },
+  { key: 'tiempo', th: thTiempo },
+  { key: 'percent', th: thPercent },
+  { key: 'falta', th: thFalta },
+  { key: 'tipo', th: thTipo },
+  { key: 'enlace', th: thEnlace },
+  { key: 'comentario', th: thComentario },
+  { key: 'acciones', th: thAcciones },
+];
+
+const MIN_COL_WIDTH = 10;
 
 // =============================================================================
 // Utility functions
@@ -406,6 +423,111 @@ function renderTable() {
     tableBody.appendChild(renderRow(row));
   });
   updateTotal();
+}
+
+function collectDefaultColumnWidths() {
+  const out = {};
+  if (!taskColGroup) return out;
+  const cols = taskColGroup.querySelectorAll('col');
+  cols.forEach((col) => {
+    const key = col.dataset.col;
+    const def = Number(col.dataset.default);
+    if (key && Number.isFinite(def) && def > 0) {
+      out[key] = def;
+    }
+  });
+  return out;
+}
+
+function applyColumnWidths(widths) {
+  if (!taskColGroup) return;
+  const cols = taskColGroup.querySelectorAll('col');
+  let sum = 0;
+  cols.forEach((col) => {
+    const key = col.dataset.col;
+    const w = key && widths && Number.isFinite(widths[key]) ? widths[key] : null;
+    if (w && w > 0) {
+      col.style.width = `${w}px`;
+      sum += w;
+    }
+  });
+  if (taskTable && sum > 0) {
+    taskTable.style.width = `${sum}px`;
+  }
+}
+
+async function loadColumnWidths() {
+  const defaults = collectDefaultColumnWidths();
+  if (!window.taskEditorAPI || typeof window.taskEditorAPI.getColumnWidths !== 'function') {
+    columnWidths = { ...defaults };
+    applyColumnWidths(columnWidths);
+    return;
+  }
+  const res = await window.taskEditorAPI.getColumnWidths();
+  if (!res || res.ok === false || !res.widths) {
+    columnWidths = { ...defaults };
+    applyColumnWidths(columnWidths);
+    return;
+  }
+  columnWidths = { ...defaults, ...res.widths };
+  applyColumnWidths(columnWidths);
+}
+
+async function saveColumnWidths() {
+  if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveColumnWidths !== 'function') return;
+  try {
+    await window.taskEditorAPI.saveColumnWidths(columnWidths);
+  } catch (err) {
+    log.warn('saveColumnWidths failed:', err);
+  }
+}
+
+function setupColumnResizers() {
+  if (!taskColGroup) return;
+  const cols = taskColGroup.querySelectorAll('col');
+  const colMap = {};
+  cols.forEach((col) => {
+    const key = col.dataset.col;
+    if (key) colMap[key] = col;
+  });
+
+  COLUMN_KEYS.forEach(({ key, th }) => {
+    if (!th || !key) return;
+    const handle = document.createElement('div');
+    handle.className = 'col-resizer';
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const col = colMap[key];
+      const startWidth = col
+        ? col.getBoundingClientRect().width
+        : th.getBoundingClientRect().width;
+      activeResize = {
+        key,
+        startX: e.clientX,
+        startWidth,
+      };
+      document.body.classList.add('is-resizing');
+    });
+    th.appendChild(handle);
+  });
+
+  const onMouseMove = (e) => {
+    if (!activeResize) return;
+    const delta = e.clientX - activeResize.startX;
+    const nextWidth = Math.max(MIN_COL_WIDTH, activeResize.startWidth + delta);
+    columnWidths[activeResize.key] = Math.round(nextWidth);
+    applyColumnWidths(columnWidths);
+  };
+
+  const onMouseUp = () => {
+    if (!activeResize) return;
+    activeResize = null;
+    document.body.classList.remove('is-resizing');
+    saveColumnWidths();
+  };
+
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
 }
 
 // =============================================================================
@@ -796,6 +918,8 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'func
       }
     }
     await applyTaskEditorTranslations();
+    await loadColumnWidths();
+    setupColumnResizers();
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
   }
