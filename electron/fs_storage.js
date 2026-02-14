@@ -88,6 +88,10 @@ function getTasksAllowedHostsFile() {
   return path.join(getTasksDir(), 'allowed_hosts.json');
 }
 
+function getTasksColumnWidthsFile() {
+  return path.join(getTasksDir(), 'column_widths.json');
+}
+
 function getTaskEditorPositionFile() {
   return path.join(getTasksDir(), 'task_editor_position.json');
 }
@@ -235,6 +239,7 @@ module.exports = {
   getTasksListsDir,
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
+  getTasksColumnWidthsFile,
   getTaskEditorPositionFile,
   ensureConfigDir,
   ensureConfigPresetsDir,
