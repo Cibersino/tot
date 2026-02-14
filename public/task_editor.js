@@ -208,6 +208,7 @@ function showEditorNotice(key, opts = {}) {
       Notify.notifyEditor(key, opts);
       return;
     }
+    log.warnOnce('task_editor.notify.missing', 'Notify.notifyEditor unavailable (ignored).');
   } catch (err) {
     log.warn('Notify.notifyEditor failed:', err);
   }
@@ -216,6 +217,7 @@ function showEditorNotice(key, opts = {}) {
 function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.task_unavailable') {
   const api = window.taskEditorAPI;
   if (!api || typeof api[methodName] !== 'function') {
+    log.warnOnce(`task_editor.api.missing.${methodName}`, 'taskEditorAPI missing method (ignored):', methodName);
     if (missingNoticeKey) showEditorNotice(missingNoticeKey);
     return null;
   }
@@ -472,17 +474,21 @@ function applyColumnWidths(widths) {
 }
 
 async function saveColumnWidths() {
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveColumnWidths !== 'function') return;
+  if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveColumnWidths !== 'function') {
+    log.warnOnce('task_editor.columnWidths.save.missingApi', 'task column widths save unavailable (ignored).');
+    return;
+  }
   try {
     await window.taskEditorAPI.saveColumnWidths(columnWidths);
   } catch (err) {
-    log.warn('saveColumnWidths failed:', err);
+    log.warnOnce('task_editor.columnWidths.save', 'saveColumnWidths failed (ignored):', err);
   }
 }
 
 async function loadColumnWidths() {
   const defaults = collectDefaultColumnWidths();
   if (!window.taskEditorAPI || typeof window.taskEditorAPI.getColumnWidths !== 'function') {
+    log.warnOnce('BOOTSTRAP:task_editor.columnWidths.missingApi', 'task column widths unavailable; using defaults.');
     columnWidths = { ...defaults };
     applyColumnWidths(columnWidths);
     await saveColumnWidths();
@@ -490,6 +496,7 @@ async function loadColumnWidths() {
   }
   const res = await window.taskEditorAPI.getColumnWidths();
   if (!res || res.ok === false || !res.widths) {
+    log.warnOnce('BOOTSTRAP:task_editor.columnWidths.load', 'task column widths load failed; using defaults.', res);
     columnWidths = { ...defaults };
     applyColumnWidths(columnWidths);
     await saveColumnWidths();
@@ -582,7 +589,7 @@ function moveRow(id, delta) {
 function applyTaskPayload(payload) {
   const task = payload && payload.task ? payload.task : null;
   if (!task || !task.meta || !Array.isArray(task.rows)) {
-    log.warn('task-editor-init payload invalid:', payload);
+    log.warn('task-editor-init payload invalid (ignored):', payload);
     return;
   }
   meta = {
@@ -896,6 +903,8 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
     }
     applyTaskPayload(payload);
   });
+} else {
+  log.warnOnce('BOOTSTRAP:task_editor.onInit.missing', 'taskEditorAPI.onInit unavailable; editor init disabled.');
 }
 
 if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
@@ -909,6 +918,8 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'func
       window.taskEditorAPI.confirmClose();
     }
   });
+} else {
+  log.warnOnce('BOOTSTRAP:task_editor.onRequestClose.missing', 'taskEditorAPI.onRequestClose unavailable; close confirmation disabled.');
 }
 
 // =============================================================================
@@ -921,6 +932,8 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'func
       if (settings && settings.language) {
         idiomaActual = settings.language || DEFAULT_LANG;
       }
+    } else {
+      log.warnOnce('BOOTSTRAP:task_editor.getSettings.missing', 'taskEditorAPI.getSettings unavailable; using default language.');
     }
     await applyTaskEditorTranslations();
     await loadColumnWidths();
@@ -938,9 +951,11 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'f
       idiomaActual = nextLang;
       await applyTaskEditorTranslations();
     } catch (err) {
-      log.warn('task-editor: failed to apply settings update:', err);
+      log.warn('task-editor: settings update failed (ignored):', err);
     }
   });
+} else {
+  log.warnOnce('BOOTSTRAP:task_editor.onSettingsChanged.missing', 'taskEditorAPI.onSettingsChanged unavailable; language updates disabled.');
 }
 
 // =============================================================================
