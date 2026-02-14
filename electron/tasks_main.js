@@ -652,6 +652,48 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const raw = payload && typeof payload.raw === 'string' ? payload.raw.trim() : '';
       if (!raw) return { ok: false, code: 'LINK_BLOCKED' };
 
+      const isWindowsPath = /^[a-zA-Z]:[\\/]/.test(raw) || raw.startsWith('\\\\');
+      const isPosixPath = path.posix.isAbsolute(raw);
+      const looksLikePath = isWindowsPath || isPosixPath;
+
+      if (looksLikePath) {
+        if (!fs.existsSync(raw)) {
+          return { ok: false, code: 'LINK_MISSING' };
+        }
+        const stats = fs.statSync(raw);
+        if (!stats.isFile()) {
+          return { ok: false, code: 'LINK_BLOCKED' };
+        }
+
+        const dialogTexts = getDialogTexts();
+        const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
+        const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
+        let message = resolveDialogText(
+          dialogTexts,
+          'task_path_confirm',
+          'Open this local file?'
+        );
+        message = message.replace('{path}', raw);
+
+        const resp = await dialog.showMessageBox(taskEditorWin || null, {
+          type: 'none',
+          buttons: [yesLabel, noLabel],
+          defaultId: 1,
+          cancelId: 1,
+          message,
+        });
+        if (!resp || resp.response !== 0) {
+          return { ok: false, code: 'CONFIRM_DENIED' };
+        }
+
+        const openRes = await shell.openPath(raw);
+        if (openRes) {
+          log.warn('task-open-link openPath failed:', openRes);
+          return { ok: false, code: 'OPEN_FAILED' };
+        }
+        return { ok: true };
+      }
+
       // Try URL parse first
       let parsed = null;
       try {
@@ -711,45 +753,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         }
       }
 
-      // Local path flow
-      if (!path.isAbsolute(raw)) {
-        return { ok: false, code: 'LINK_BLOCKED' };
-      }
-      if (!fs.existsSync(raw)) {
-        return { ok: false, code: 'LINK_MISSING' };
-      }
-      const stats = fs.statSync(raw);
-      if (!stats.isFile()) {
-        return { ok: false, code: 'LINK_BLOCKED' };
-      }
-
-      const dialogTexts = getDialogTexts();
-      const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-      const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-      let message = resolveDialogText(
-        dialogTexts,
-        'task_path_confirm',
-        'Open this local file?'
-      );
-      message = message.replace('{path}', raw);
-
-      const resp = await dialog.showMessageBox(taskEditorWin || null, {
-        type: 'none',
-        buttons: [yesLabel, noLabel],
-        defaultId: 1,
-        cancelId: 1,
-        message,
-      });
-      if (!resp || resp.response !== 0) {
-        return { ok: false, code: 'CONFIRM_DENIED' };
-      }
-
-      const openRes = await shell.openPath(raw);
-      if (openRes) {
-        log.warn('task-open-link openPath failed:', openRes);
-        return { ok: false, code: 'OPEN_FAILED' };
-      }
-      return { ok: true };
+      return { ok: false, code: 'LINK_BLOCKED' };
     } catch (err) {
       log.error('task-open-link failed:', err);
       return { ok: false, code: 'ERROR', message: String(err) };
