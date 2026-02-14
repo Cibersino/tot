@@ -43,12 +43,15 @@ tot/
 │ ├── preload.js
 │ ├── language_preload.js
 │ ├── editor_preload.js
+│ ├── task_editor_preload.js
 │ ├── preset_preload.js
 │ ├── flotante_preload.js
 │ ├── fs_storage.js
 │ ├── settings.js
 │ ├── text_state.js
 │ ├── current_text_snapshots_main.js
+│ ├── tasks_main.js
+│ ├── task_editor_position.js
 │ ├── editor_state.js
 │ ├── presets_main.js
 │ ├── menu_builder.js
@@ -90,14 +93,17 @@ tot/
 │ ├── renderer.js
 │ ├── language_window.js
 │ ├── editor.js
+│ ├── task_editor.js
 │ ├── preset_modal.js
 │ ├── flotante.js
 │ ├── index.html
 │ ├── language_window.html
 │ ├── editor.html
+│ ├── task_editor.html
 │ ├── preset_modal.html
 │ ├── flotante.html
 │ ├── editor.css
+│ ├── task_editor.css
 │ ├── flotante.css
 │ └── style.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
