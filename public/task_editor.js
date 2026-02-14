@@ -196,6 +196,12 @@ function closeModal(modalEl) {
   modalEl.setAttribute('aria-hidden', 'true');
 }
 
+function wireModalClose(modalEl, closeBtn, backdrop, cancelBtn) {
+  if (closeBtn) closeBtn.addEventListener('click', () => closeModal(modalEl));
+  if (backdrop) backdrop.addEventListener('click', () => closeModal(modalEl));
+  if (cancelBtn) cancelBtn.addEventListener('click', () => closeModal(modalEl));
+}
+
 function showEditorNotice(key, opts = {}) {
   try {
     if (typeof Notify?.notifyEditor === 'function') {
@@ -243,6 +249,7 @@ function buildActionButton(labelKey, fallbackLabel, titleKey, onClick) {
 function renderRow(row) {
   const trEl = document.createElement('tr');
   trEl.dataset.rowId = String(row.id);
+  const tdFaltaValue = document.createElement('span');
 
   // Texto
   const tdTexto = document.createElement('td');
@@ -310,7 +317,6 @@ function renderRow(row) {
 
   // Falta
   const tdFalta = document.createElement('td');
-  const tdFaltaValue = document.createElement('span');
   tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
   tdFalta.appendChild(tdFaltaValue);
 
@@ -458,6 +464,15 @@ function applyColumnWidths(widths) {
   }
 }
 
+async function saveColumnWidths() {
+  if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveColumnWidths !== 'function') return;
+  try {
+    await window.taskEditorAPI.saveColumnWidths(columnWidths);
+  } catch (err) {
+    log.warn('saveColumnWidths failed:', err);
+  }
+}
+
 async function loadColumnWidths() {
   const defaults = collectDefaultColumnWidths();
   if (!window.taskEditorAPI || typeof window.taskEditorAPI.getColumnWidths !== 'function') {
@@ -475,15 +490,6 @@ async function loadColumnWidths() {
   }
   columnWidths = { ...defaults, ...res.widths };
   applyColumnWidths(columnWidths);
-}
-
-async function saveColumnWidths() {
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveColumnWidths !== 'function') return;
-  try {
-    await window.taskEditorAPI.saveColumnWidths(columnWidths);
-  } catch (err) {
-    log.warn('saveColumnWidths failed:', err);
-  }
 }
 
 function setupColumnResizers() {
@@ -856,9 +862,7 @@ if (btnTaskLoadLibrary) {
   });
 }
 
-if (commentClose) commentClose.addEventListener('click', () => closeModal(commentModal));
-if (commentBackdrop) commentBackdrop.addEventListener('click', () => closeModal(commentModal));
-if (commentCancel) commentCancel.addEventListener('click', () => closeModal(commentModal));
+wireModalClose(commentModal, commentClose, commentBackdrop, commentCancel);
 if (commentSave) {
   commentSave.addEventListener('click', () => {
     const row = rows.find((r) => r.id === pendingCommentRowId);
@@ -871,16 +875,12 @@ if (commentSave) {
   });
 }
 
-if (libraryClose) libraryClose.addEventListener('click', () => closeModal(libraryModal));
-if (libraryBackdrop) libraryBackdrop.addEventListener('click', () => closeModal(libraryModal));
-if (libraryCancel) libraryCancel.addEventListener('click', () => closeModal(libraryModal));
+wireModalClose(libraryModal, libraryClose, libraryBackdrop, libraryCancel);
 if (librarySearchInput) {
   librarySearchInput.addEventListener('input', () => filterLibraryItems());
 }
 
-if (includeCommentClose) includeCommentClose.addEventListener('click', () => closeModal(includeCommentModal));
-if (includeCommentBackdrop) includeCommentBackdrop.addEventListener('click', () => closeModal(includeCommentModal));
-if (includeCommentCancel) includeCommentCancel.addEventListener('click', () => closeModal(includeCommentModal));
+wireModalClose(includeCommentModal, includeCommentClose, includeCommentBackdrop, includeCommentCancel);
 if (includeCommentYes) includeCommentYes.addEventListener('click', () => saveRowToLibrary(true));
 if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowToLibrary(false));
 
