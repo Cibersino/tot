@@ -10,7 +10,6 @@
   --btn-active-border: #d99b9b;
   --text: #222;
   --muted: #666;
-  --accent: #b24a4a;
   --gap: 10px;
 }
 
@@ -158,15 +157,6 @@ body {
   vertical-align: middle;
 }
 
-#thTexto { width: 580px; }
-#thTiempo { width: 45px; }
-#thPercent { width: 25px; }
-#thFalta { width: 10px; }
-#thTipo { width: 100px; }
-#thEnlace { width: 100px; }
-#thComentario { width: 40px; }
-#thAcciones { width: 120px; }
-
 #thFalta,
 .task-table td:nth-child(4) {
   white-space: nowrap;
@@ -189,7 +179,6 @@ body {
   position: sticky;
   top: 0;
   z-index: 1;
-  position: sticky;
 }
 
 .task-table input[type="text"],
@@ -298,15 +287,6 @@ body {
   padding: 10px 12px;
   border-top: 1px solid var(--border);
   background: var(--panel);
-}
-
-#commentInput {
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid #cfcfcf;
-  border-radius: 6px;
-  padding: 6px;
-  font-size: 13px;
 }
 
 .library-list {
