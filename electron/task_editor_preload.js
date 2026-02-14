@@ -3,6 +3,7 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
+
 let lastInitData = null;
 const initCallbacks = new Set();
 
