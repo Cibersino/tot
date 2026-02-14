@@ -6,12 +6,14 @@
 // Overview
 // =============================================================================
 // Task editor renderer.
-// - Render/edit task rows.
-// - Persist via IPC (taskEditorAPI).
-// - Handle library, comments, link opening, and dirty state.
+// - Render and edit task rows.
+// - Compute per-row and total durations.
+// - Persist task lists and column widths via taskEditorAPI.
+// - Manage library load/save/delete and link opening.
+// - Track dirty state, close confirmations, and translations/settings updates.
 
 // =============================================================================
-// Logger and constants
+// Logger / constants
 // =============================================================================
 const log = window.getLogger('task-editor');
 log.debug('Task editor starting...');
@@ -54,7 +56,7 @@ const btnTaskAddRow = document.getElementById('btnTaskAddRow');
 const btnTaskLoadLibrary = document.getElementById('btnTaskLoadLibrary');
 const tableBody = document.getElementById('taskTableBody');
 
-// Column headers
+// Table columns
 const thTexto = document.getElementById('thTexto');
 const thTiempo = document.getElementById('thTiempo');
 const thPercent = document.getElementById('thPercent');
@@ -95,7 +97,7 @@ const includeCommentTitle = document.getElementById('includeCommentTitle');
 const includeCommentText = document.getElementById('includeCommentText');
 
 // =============================================================================
-// State
+// Shared state
 // =============================================================================
 let rows = [];
 let meta = { name: '', createdAt: '', updatedAt: '' };
@@ -122,7 +124,7 @@ const COLUMN_KEYS = [
 const MIN_COL_WIDTH = 10;
 
 // =============================================================================
-// Utility functions
+// Helpers
 // =============================================================================
 function markDirty() {
   dirty = true;
@@ -225,7 +227,7 @@ function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.
 }
 
 // =============================================================================
-// Rendering
+// Rendering / table
 // =============================================================================
 function makeRowId() {
   const id = rowIdCounter;
@@ -262,7 +264,7 @@ function renderRow(row) {
   trEl.dataset.rowId = String(row.id);
   const tdFaltaValue = document.createElement('span');
 
-  // Texto
+  // Text
   const tdTexto = document.createElement('td');
   const textoInput = document.createElement('input');
   textoInput.type = 'text';
@@ -276,7 +278,7 @@ function renderRow(row) {
   });
   tdTexto.appendChild(textoInput);
 
-  // Tiempo
+  // Duration
   const tdTiempo = document.createElement('td');
   const tiempoInput = document.createElement('input');
   tiempoInput.type = 'text';
@@ -301,7 +303,7 @@ function renderRow(row) {
   });
   tdTiempo.appendChild(tiempoInput);
 
-  // %C
+  // Percent complete
   const tdPercent = document.createElement('td');
   const percentInput = document.createElement('input');
   percentInput.type = 'text';
@@ -326,12 +328,12 @@ function renderRow(row) {
   });
   tdPercent.appendChild(percentInput);
 
-  // Falta
+  // Remaining
   const tdFalta = document.createElement('td');
   tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
   tdFalta.appendChild(tdFaltaValue);
 
-  // Tipo
+  // Type
   const tdTipo = document.createElement('td');
   const tipoInput = document.createElement('input');
   tipoInput.type = 'text';
@@ -345,7 +347,7 @@ function renderRow(row) {
   });
   tdTipo.appendChild(tipoInput);
 
-  // Enlace
+  // Link
   const tdEnlace = document.createElement('td');
   const enlaceWrap = document.createElement('div');
   enlaceWrap.className = 'link-cell';
@@ -388,7 +390,7 @@ function renderRow(row) {
   enlaceWrap.appendChild(enlaceBtn);
   tdEnlace.appendChild(enlaceWrap);
 
-  // Comentario
+  // Comment
   const tdComentario = document.createElement('td');
   const commentBtn = document.createElement('button');
   commentBtn.type = 'button';
@@ -584,7 +586,7 @@ function moveRow(id, delta) {
 }
 
 // =============================================================================
-// Task lifecycle
+// Task lifecycle (load/save/delete)
 // =============================================================================
 function applyTaskPayload(payload) {
   const task = payload && payload.task ? payload.task : null;
@@ -681,7 +683,7 @@ async function deleteTask() {
 }
 
 // =============================================================================
-// Library flow
+// Library flow (load/save/delete)
 // =============================================================================
 function renderLibraryItems(items) {
   if (!libraryList) return;
@@ -787,7 +789,7 @@ async function saveRowToLibrary(includeComment) {
 }
 
 // =============================================================================
-// Translations
+// Translations apply
 // =============================================================================
 async function applyTaskEditorTranslations() {
   await ensureTaskEditorTranslations(idiomaActual);
@@ -923,7 +925,7 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'func
 }
 
 // =============================================================================
-// Bootstrap: settings + translations
+// Bootstrap: settings, translations, column widths
 // =============================================================================
 (async () => {
   try {
