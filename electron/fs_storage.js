@@ -171,6 +171,8 @@ function loadJson(filePath, fallback = {}) {
         note = ' (note: may be normal on first run; file is created during startup)';
       } else if (baseName === 'editor_state.json') {
         note = ' (note: may be normal on first run; file is created when editor window is opened for the first time)';
+      } else if (baseName === 'task_editor_position.json') {
+        note = ' (note: may be normal on first run; file is created after the task editor window is opened and position is saved)';
       }
 
       log.warnOnce(
