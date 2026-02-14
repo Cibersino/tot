@@ -213,6 +213,15 @@ function showEditorNotice(key, opts = {}) {
   }
 }
 
+function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.task_unavailable') {
+  const api = window.taskEditorAPI;
+  if (!api || typeof api[methodName] !== 'function') {
+    if (missingNoticeKey) showEditorNotice(missingNoticeKey);
+    return null;
+  }
+  return api;
+}
+
 // =============================================================================
 // Rendering
 // =============================================================================
@@ -355,11 +364,9 @@ function renderRow(row) {
   enlaceBtn.title = tr('renderer.tasks.tooltips.link_open', enlaceBtn.textContent);
   enlaceBtn.addEventListener('click', async () => {
     const raw = enlaceInput.value;
-    if (!window.taskEditorAPI || typeof window.taskEditorAPI.openTaskLink !== 'function') {
-      showEditorNotice('renderer.tasks.alerts.task_unavailable');
-      return;
-    }
-    const res = await window.taskEditorAPI.openTaskLink(raw);
+    const api = getTaskEditorApi('openTaskLink');
+    if (!api) return;
+    const res = await api.openTaskLink(raw);
     if (!res || res.ok === false) {
       const code = res && res.code ? res.code : 'ERROR';
       if (code === 'CONFIRM_DENIED') return;
@@ -602,10 +609,8 @@ function validateBeforeSave() {
 }
 
 async function saveTask() {
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveTaskList !== 'function') {
-    showEditorNotice('renderer.tasks.alerts.task_unavailable');
-    return;
-  }
+  const api = getTaskEditorApi('saveTaskList');
+  if (!api) return;
   const name = validateBeforeSave();
   if (name === null) return;
 
@@ -623,7 +628,7 @@ async function saveTask() {
     sourcePath,
   };
 
-  const res = await window.taskEditorAPI.saveTaskList(payload);
+  const res = await api.saveTaskList(payload);
   if (!res || res.ok === false) {
     const code = res && res.code ? res.code : 'WRITE_FAILED';
     if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
@@ -650,11 +655,9 @@ async function deleteTask() {
     showEditorNotice('renderer.tasks.alerts.task_delete_unavailable');
     return;
   }
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.deleteTaskList !== 'function') {
-    showEditorNotice('renderer.tasks.alerts.task_unavailable');
-    return;
-  }
-  const res = await window.taskEditorAPI.deleteTaskList(sourcePath);
+  const api = getTaskEditorApi('deleteTaskList');
+  if (!api) return;
+  const res = await api.deleteTaskList(sourcePath);
   if (!res || res.ok === false) {
     const code = res && res.code ? res.code : 'WRITE_FAILED';
     if (code === 'CONFIRM_DENIED') return;
@@ -705,7 +708,9 @@ function renderLibraryItems(items) {
       closeModal(libraryModal);
     });
     const btnDelete = buildActionButton('renderer.tasks.buttons.library_delete', 'Del', 'renderer.tasks.tooltips.library_delete', async () => {
-      const delRes = await window.taskEditorAPI.deleteLibraryEntry(entry.texto);
+      const api = getTaskEditorApi('deleteLibraryEntry');
+      if (!api) return;
+      const delRes = await api.deleteLibraryEntry(entry.texto);
       if (!delRes || delRes.ok === false) {
         const code = delRes && delRes.code ? delRes.code : 'WRITE_FAILED';
         if (code === 'CONFIRM_DENIED') return;
@@ -742,11 +747,9 @@ async function refreshLibraryList() {
   libraryList.innerHTML = '';
   libraryEmpty.hidden = true;
 
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.listLibrary !== 'function') {
-    showEditorNotice('renderer.tasks.alerts.task_unavailable');
-    return;
-  }
-  const res = await window.taskEditorAPI.listLibrary();
+  const api = getTaskEditorApi('listLibrary');
+  if (!api) return;
+  const res = await api.listLibrary();
   if (!res || res.ok === false) {
     showEditorNotice('renderer.tasks.alerts.library_load_error');
     return;
@@ -764,11 +767,9 @@ async function saveRowToLibrary(includeComment) {
     showEditorNotice('renderer.tasks.alerts.row_text_required');
     return;
   }
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveLibraryRow !== 'function') {
-    showEditorNotice('renderer.tasks.alerts.task_unavailable');
-    return;
-  }
-  const res = await window.taskEditorAPI.saveLibraryRow(row, includeComment);
+  const api = getTaskEditorApi('saveLibraryRow');
+  if (!api) return;
+  const res = await api.saveLibraryRow(row, includeComment);
   if (!res || res.ok === false) {
     const code = res && res.code ? res.code : 'WRITE_FAILED';
     if (code === 'CONFIRM_DENIED') return;
