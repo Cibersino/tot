@@ -26,7 +26,6 @@ const {
   getTasksListsDir,
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
-  loadJson,
   saveJson,
 } = require('./fs_storage');
 
