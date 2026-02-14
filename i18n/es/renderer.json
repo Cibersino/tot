@@ -10,8 +10,8 @@
         "clear": "🗑",
         "snapshot_load": "📂",
         "snapshot_save": "💾",
-        "task_new": "T+",
-        "task_load": "T📂"
+        "task_new": "📝",
+        "task_load": "🗃️"
       },
       "tooltips": {
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
