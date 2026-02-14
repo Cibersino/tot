@@ -18,6 +18,12 @@ tot/
 │ │ ├── defaults_presets.json   
 │ │ ├── defaults_presets_en.json
 │ │ └── defaults_presets_es.json
+│ ├── tasks/
+│ │ ├── lists/
+│ │ ├── library.json
+│ │ ├── allowed_hosts.json
+│ │ ├── column_widths.json
+│ │ └── task_editor_position.json
 │ ├── current_text.json
 │ ├── editor_state.json
 │ └── user_settings.json
@@ -132,6 +138,7 @@ tot/
 - `electron/preload.js` — Preload de la ventana principal: expone la API IPC segura hacia `public/renderer.js`.
 - `electron/editor_preload.js` — Preload del editor manual: expone IPC específico del editor hacia `public/editor.js`.
 - `electron/preset_preload.js` — Preload del modal de presets: expone `window.presetAPI` y maneja `preset-init` (buffer/replay) y `settings-updated` hacia `public/preset_modal.js`.
+- `electron/task_editor_preload.js` — Preload del editor de tareas (expone `window.taskEditorAPI` y callbacks como `onInit` / `onRequestClose`).
 - `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` (`setLanguage`, `getAvailableLanguages`) para persistir/seleccionar idioma; `setLanguage` invoca `set-language` y luego emite `language-selected` para destrabar el startup.
 - `electron/flotante_preload.js` — Preload de la ventana flotante del cronómetro.
 
@@ -139,6 +146,7 @@ tot/
 - `public/renderer.js` — Lógica principal de UI (ventana principal).
 - `public/editor.js` — Lógica del editor manual (ventana editor).
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
+- `public/task_editor.js` — Renderer del editor de tareas (UI + tabla + biblioteca + anchos de columnas).
 - `public/flotante.js` — Lógica de la ventana flotante del cronómetro.
 - `public/language_window.js` — Lógica de la ventana de selección de idioma.
 
@@ -150,6 +158,8 @@ tot/
 - `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): diálogos nativos, lectura/escritura JSON `{ "text": "<string>" }` bajo `config/saved_current_texts/` (incluye subcarpetas), confirmación de overwrite y chequeo de contención (realpath/relative) para evitar escapes fuera del árbol.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
+- `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
+- `electron/task_editor_position.js` — Persistencia de posición (x/y) de la ventana del editor de tareas.
 - `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
 - `electron/updater.js` — Lógica de actualización (comparación de versión, diálogos y apertura de URL de descarga).
 - `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
@@ -187,6 +197,11 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/current_text.json` — Texto vigente persistido.
 - `config/editor_state.json` — Estado persistido del editor (geometría/maximizado, etc.).
 - `config/saved_current_texts/` — Carpeta runtime con snapshots del texto vigente (archivos JSON `{ "text": ... }`; puede contener subcarpetas).
+- `config/tasks/lists/*.json` — Listas de tareas guardadas por el usuario.
+- `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).
+- `config/tasks/allowed_hosts.json` — Allowlist de hosts confiables para enlaces remotos.
+- `config/tasks/column_widths.json` — Persistencia de anchos de columnas del editor de tareas.
+- `config/tasks/task_editor_position.json` — Última posición (x/y) de la ventana del editor de tareas.
 
 #### 5.1) Presets por defecto (dos capas)
 
