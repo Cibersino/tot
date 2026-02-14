@@ -1,3 +1,4 @@
+// public/task_editor.js
 /* global Notify */
 'use strict';
 
@@ -937,3 +938,7 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'f
     }
   });
 }
+
+// =============================================================================
+// End of public/task_editor.js
+// =============================================================================
