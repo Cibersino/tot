@@ -44,7 +44,7 @@ async function ensureTaskEditorTranslations(lang) {
 }
 
 // =============================================================================
-// DOM references
+// DOM references (task_editor.html ids)
 // =============================================================================
 const taskNameLabel = document.getElementById('taskNameLabel');
 const taskNameInput = document.getElementById('taskNameInput');
@@ -99,6 +99,7 @@ const includeCommentText = document.getElementById('includeCommentText');
 // =============================================================================
 // Shared state
 // =============================================================================
+// Mutable editor session state; reset on load/delete.
 let rows = [];
 let meta = { name: '', createdAt: '', updatedAt: '' };
 let sourcePath = null;
@@ -198,6 +199,7 @@ function closeModal(modalEl) {
   modalEl.setAttribute('aria-hidden', 'true');
 }
 
+// Centralized modal close wiring for consistent behavior across dialogs.
 function wireModalClose(modalEl, closeBtn, backdrop, cancelBtn) {
   if (closeBtn) closeBtn.addEventListener('click', () => closeModal(modalEl));
   if (backdrop) backdrop.addEventListener('click', () => closeModal(modalEl));
@@ -216,6 +218,7 @@ function showEditorNotice(key, opts = {}) {
   }
 }
 
+// Shared guard for taskEditorAPI methods; emits a user notice and warnOnce on missing APIs.
 function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.task_unavailable') {
   const api = window.taskEditorAPI;
   if (!api || typeof api[methodName] !== 'function') {
