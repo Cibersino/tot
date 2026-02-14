@@ -1346,7 +1346,7 @@ ipcMain.on('startup:renderer-core-ready', () => {
   maybeAuthorizeStartupReady();
 });
 
-registerLinkIpc({ ipcMain, app, shell, log });
+registerLinkIpc({ ipcMain, app, shell });
 
 ipcMain.on('startup:splash-removed', () => {
   handleSplashRemoved();

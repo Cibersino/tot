@@ -17,6 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const Log = require('./log');
 
 // =============================================================================
 // Constants / config
@@ -37,6 +38,9 @@ const APP_DOC_FILES = Object.freeze({
 });
 const APP_DOC_BASKERVVILLE = 'license-baskervville';
 
+const log = Log.get('link-openers');
+log.debug('Link openers starting...');
+
 // =============================================================================
 // Helpers
 // =============================================================================
@@ -50,7 +54,7 @@ async function fileExists(filePath) {
   }
 }
 
-function getTempDir(app, log) {
+function getTempDir(app) {
   try {
     return app.getPath('temp');
   } catch (err) {
@@ -63,14 +67,14 @@ function getTempDir(app, log) {
   }
 }
 
-async function copyToTemp(app, srcPath, tempName, log) {
-  const tempPath = path.join(getTempDir(app, log), tempName);
+async function copyToTemp(app, srcPath, tempName) {
+  const tempPath = path.join(getTempDir(app), tempName);
   const data = await fs.promises.readFile(srcPath);
   await fs.promises.writeFile(tempPath, data);
   return tempPath;
 }
 
-async function openPathWithLog(shell, log, rawKey, filePath) {
+async function openPathWithLog(shell, rawKey, filePath) {
   const openResult = await shell.openPath(filePath);
   if (openResult) {
     log.warn('open-app-doc open failed:', rawKey, openResult);
@@ -83,7 +87,7 @@ async function openPathWithLog(shell, log, rawKey, filePath) {
 // IPC registration / handlers
 // =============================================================================
 
-function registerLinkIpc({ ipcMain, app, shell, log }) {
+function registerLinkIpc({ ipcMain, app, shell }) {
   ipcMain.handle('open-external-url', async (_e, url) => {
     try {
       const raw = typeof url === 'string' ? url.trim() : '';
@@ -140,7 +144,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
 
         for (const candidate of devCandidates) {
           if (!(await fileExists(candidate))) continue;
-          return openPathWithLog(shell, log, rawKey, candidate);
+          return openPathWithLog(shell, rawKey, candidate);
         }
 
         log.warn('open-app-doc not found (dev doc):', rawKey, fileName);
@@ -154,13 +158,8 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
           return { ok: false, reason: 'not_found' };
         }
 
-        const tempPath = await copyToTemp(
-          app,
-          srcPath,
-          'tot_LICENSE_Baskervville_OFL.txt',
-          log
-        );
-        return openPathWithLog(shell, log, rawKey, tempPath);
+        const tempPath = await copyToTemp(app, srcPath, 'tot_LICENSE_Baskervville_OFL.txt');
+        return openPathWithLog(shell, rawKey, tempPath);
       }
 
       if (!Object.prototype.hasOwnProperty.call(APP_DOC_FILES, rawKey)) {
@@ -177,7 +176,7 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
 
       for (const candidate of candidates) {
         if (!(await fileExists(candidate))) continue;
-        return openPathWithLog(shell, log, rawKey, candidate);
+        return openPathWithLog(shell, rawKey, candidate);
       }
 
       const fallbackPath = path.join(app.getAppPath(), fileName);
@@ -186,8 +185,8 @@ function registerLinkIpc({ ipcMain, app, shell, log }) {
         return { ok: false, reason: 'not_found' };
       }
 
-      const tempPath = await copyToTemp(app, fallbackPath, `tot_${fileName}`, log);
-      return openPathWithLog(shell, log, rawKey, tempPath);
+      const tempPath = await copyToTemp(app, fallbackPath, `tot_${fileName}`);
+      return openPathWithLog(shell, rawKey, tempPath);
     } catch (err) {
       log.error('Error processing open-app-doc:', err);
       return { ok: false, reason: 'error' };
