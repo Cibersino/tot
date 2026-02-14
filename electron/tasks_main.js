@@ -55,7 +55,11 @@ function ensureTasksRoot() {
     log.error('ensureTasksRoot failed:', err);
   }
   const root = getTasksListsDir();
-  return fs.existsSync(root) ? root : null;
+  if (!fs.existsSync(root)) {
+    log.warnOnce('tasks_main.tasks_root_missing', 'tasks root missing (using null).');
+    return null;
+  }
+  return root;
 }
 
 function isPathInsideRoot(rootReal, candidatePath) {
@@ -229,7 +233,10 @@ function loadLibraryData() {
   const file = getTasksLibraryFile();
   const res = readJsonFile(file);
   if (!res.ok) {
-    if (res.code === 'NOT_FOUND') return { ok: true, items: [] };
+    if (res.code === 'NOT_FOUND') {
+      log.warnOnce('tasks_main.library.missing', 'task library missing (using empty list).');
+      return { ok: true, items: [] };
+    }
     return { ok: false, code: res.code };
   }
   if (!Array.isArray(res.data)) return { ok: false, code: 'INVALID_SCHEMA' };
@@ -246,7 +253,9 @@ function loadAllowedHosts() {
   const file = getTasksAllowedHostsFile();
   const res = readJsonFile(file);
   if (!res.ok) {
-    if (res.code !== 'NOT_FOUND') {
+    if (res.code === 'NOT_FOUND') {
+      log.warnOnce('tasks_main.allowedHosts.missing', 'allowed_hosts.json missing (using empty set).');
+    } else {
       log.warnOnce('tasks_main.allowedHosts.invalid', 'allowed_hosts.json invalid; using empty set.');
     }
     return new Set();
@@ -326,6 +335,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
             task: { meta: { name: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, rows: [] },
             sourcePath: null,
           });
+        } else {
+          log.warnOnce(
+            'send.task-editor-init.new',
+            "taskEditorWin send('task-editor-init') failed (ignored): window missing."
+          );
         }
         return { ok: true };
       }
@@ -376,6 +390,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
           task: normalized.task,
           sourcePath: selectedReal,
         });
+      } else {
+        log.warnOnce(
+          'send.task-editor-init.load',
+          "taskEditorWin send('task-editor-init') failed (ignored): window missing."
+        );
       }
       return { ok: true };
     } catch (err) {
@@ -674,7 +693,10 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const file = getTasksColumnWidthsFile();
       const res = readJsonFile(file);
       if (!res.ok) {
-        if (res.code === 'NOT_FOUND') return { ok: true, widths: null };
+        if (res.code === 'NOT_FOUND') {
+          log.warnOnce('tasks_main.columns.missing', 'task column widths missing (returning null).');
+          return { ok: true, widths: null };
+        }
         return { ok: false, code: res.code };
       }
       const widths = sanitizeColumnWidths(res.data);
