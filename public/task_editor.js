@@ -463,12 +463,14 @@ async function loadColumnWidths() {
   if (!window.taskEditorAPI || typeof window.taskEditorAPI.getColumnWidths !== 'function') {
     columnWidths = { ...defaults };
     applyColumnWidths(columnWidths);
+    await saveColumnWidths();
     return;
   }
   const res = await window.taskEditorAPI.getColumnWidths();
   if (!res || res.ok === false || !res.widths) {
     columnWidths = { ...defaults };
     applyColumnWidths(columnWidths);
+    await saveColumnWidths();
     return;
   }
   columnWidths = { ...defaults, ...res.widths };
