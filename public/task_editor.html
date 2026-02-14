@@ -10,21 +10,23 @@
 </head>
 <body>
   <div class="task-editor">
-    <header class="task-header">
-      <div class="task-name">
-        <label id="taskNameLabel" for="taskNameInput">Nombre</label>
-        <input id="taskNameInput" type="text" />
-      </div>
-      <div class="task-actions">
-        <button id="btnTaskSave" class="btn-standard">Guardar</button>
-        <button id="btnTaskDelete" class="btn-standard">Eliminar</button>
-      </div>
-    </header>
+    <div class="task-top-row">
+      <section class="task-summary" aria-live="polite">
+        <div id="taskTotalLabel" class="task-summary__label">Tiempo total</div>
+        <div id="taskTotalValue" class="task-summary__value">0:00:00</div>
+      </section>
 
-    <section class="task-summary" aria-live="polite">
-      <div id="taskTotalLabel" class="task-summary__label">Tiempo total</div>
-      <div id="taskTotalValue" class="task-summary__value">0:00:00</div>
-    </section>
+      <header class="task-header">
+        <div class="task-name">
+          <label id="taskNameLabel" for="taskNameInput">Nombre</label>
+          <input id="taskNameInput" type="text" />
+        </div>
+        <div class="task-actions">
+          <button id="btnTaskSave" class="btn-standard">Guardar</button>
+          <button id="btnTaskDelete" class="btn-standard">Eliminar</button>
+        </div>
+      </header>
+    </div>
 
     <section class="task-table-section">
       <div class="task-toolbar">

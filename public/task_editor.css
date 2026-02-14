@@ -33,15 +33,25 @@ body {
   box-sizing: border-box;
 }
 
+.task-top-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--gap);
+}
+
 .task-header {
   display: flex;
   align-items: center;
+  max-width: 680px;
+  width: 100%;
   justify-content: space-between;
   gap: var(--gap);
   padding: 8px 10px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .task-name {
@@ -99,6 +109,9 @@ body {
   border: 1px solid var(--border);
   background: var(--panel);
   border-radius: 8px;
+  width: 150px;
+  flex: 0 0 150px;
+  margin: 0;
 }
 
 .task-summary__label {
