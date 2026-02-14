@@ -409,6 +409,7 @@ function broadcastSettingsUpdated(settings, windows) {
     { win: windows.editorWin, name: 'editorWin' },
     { win: windows.presetWin, name: 'presetWin' },
     { win: windows.flotanteWin, name: 'flotanteWin' },
+    { win: windows.taskEditorWin, name: 'taskEditorWin' },
   ];
 
   targets.forEach(({ win, name }) => {
@@ -521,7 +522,7 @@ function registerIpc(
 
       // Hide the toolbar/menu in secondary windows (best-effort).
       try {
-        const { editorWin, presetWin, langWin } = windows;
+        const { editorWin, presetWin, langWin, taskEditorWin } = windows;
 
         if (editorWin && !editorWin.isDestroyed()) {
           editorWin.setMenu(null);
@@ -536,6 +537,11 @@ function registerIpc(
         if (langWin && !langWin.isDestroyed()) {
           langWin.setMenu(null);
           langWin.setMenuBarVisibility(false);
+        }
+
+        if (taskEditorWin && !taskEditorWin.isDestroyed()) {
+          taskEditorWin.setMenu(null);
+          taskEditorWin.setMenuBarVisibility(false);
         }
       } catch (err) {
         log.warn('hide menu in secondary windows failed (ignored):', err);
