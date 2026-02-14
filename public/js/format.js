@@ -15,6 +15,7 @@
   // Logger and dependencies
   // =============================================================================
   const log = window.getLogger('format');
+  log.debug('Format utilities starting...');
   const { DEFAULT_LANG } = window.AppConstants;
   const { normalizeLangTag, getLangBase } = window.RendererI18n;
 

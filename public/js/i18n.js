@@ -17,6 +17,7 @@
   // Logger / constants
   // =============================================================================
   const log = window.getLogger('i18n');
+  log.debug('Renderer i18n starting...');
   const { AppConstants } = window;
   const { DEFAULT_LANG } = AppConstants;
 

@@ -14,6 +14,7 @@
 // Logger and constants
 // =============================================================================
 const log = window.getLogger('task-editor');
+log.debug('Task editor starting...');
 const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[task-editor] AppConstants no disponible; verifica la carga de constants.js');
