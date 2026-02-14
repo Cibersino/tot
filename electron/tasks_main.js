@@ -277,6 +277,15 @@ function sanitizeColumnWidths(raw) {
   return Object.keys(out).length ? out : null;
 }
 
+function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
+  const senderWin = BrowserWindow.fromWebContents(event.sender);
+  if (expectedWin && senderWin && senderWin !== expectedWin) {
+    log.warnOnce(logKey, logMessage);
+    return false;
+  }
+  return true;
+}
+
 // =============================================================================
 // IPC registration
 // =============================================================================
@@ -291,12 +300,15 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
 
   ipcMain.handle('open-task-editor', async (event, payload) => {
     try {
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
       const mainWin = resolveMainWin();
-      if (mainWin && senderWin && senderWin !== mainWin) {
-        log.warnOnce('tasks_main.open.unauthorized', 'open-task-editor unauthorized (ignored).');
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
+      if (
+        !isAuthorizedSender(
+          event,
+          mainWin,
+          'tasks_main.open.unauthorized',
+          'open-task-editor unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
 
       if (typeof ensureTaskEditorWindow !== 'function') {
         log.warnOnce('tasks_main.open.noEnsure', 'open-task-editor unavailable: ensureTaskEditorWindow missing.');
@@ -375,11 +387,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   ipcMain.handle('task-list-save', async (event, payload) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
-      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
-        log.warnOnce('tasks_main.save.unauthorized', 'task-list-save unauthorized (ignored).');
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
+      if (
+        !isAuthorizedSender(
+          event,
+          taskEditorWin,
+          'tasks_main.save.unauthorized',
+          'task-list-save unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
 
       const root = ensureTasksRoot();
       if (!root) return { ok: false, code: 'WRITE_FAILED', message: 'tasks root unavailable' };
@@ -447,11 +462,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   ipcMain.handle('task-list-delete', async (event, payload) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
-      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
-        log.warnOnce('tasks_main.delete.unauthorized', 'task-list-delete unauthorized (ignored).');
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
+      if (
+        !isAuthorizedSender(
+          event,
+          taskEditorWin,
+          'tasks_main.delete.unauthorized',
+          'task-list-delete unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
 
       const target = payload && payload.path ? String(payload.path) : '';
       if (!target) return { ok: false, code: 'INVALID_REQUEST' };
@@ -496,11 +514,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   ipcMain.handle('task-library-list', async (event) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
-      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
-        log.warnOnce('tasks_main.library.list.unauthorized', 'task-library-list unauthorized (ignored).');
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
+      if (
+        !isAuthorizedSender(
+          event,
+          taskEditorWin,
+          'tasks_main.library.list.unauthorized',
+          'task-library-list unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       const res = loadLibraryData();
@@ -529,11 +550,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   ipcMain.handle('task-library-save', async (event, payload) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
-      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
-        log.warnOnce('tasks_main.library.save.unauthorized', 'task-library-save unauthorized (ignored).');
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
+      if (
+        !isAuthorizedSender(
+          event,
+          taskEditorWin,
+          'tasks_main.library.save.unauthorized',
+          'task-library-save unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       const includeComment = !!(payload && payload.includeComment);
@@ -584,11 +608,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   ipcMain.handle('task-library-delete', async (event, payload) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
-      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
-        log.warnOnce('tasks_main.library.delete.unauthorized', 'task-library-delete unauthorized (ignored).');
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
+      if (
+        !isAuthorizedSender(
+          event,
+          taskEditorWin,
+          'tasks_main.library.delete.unauthorized',
+          'task-library-delete unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       const texto = payload && typeof payload.texto === 'string' ? payload.texto.trim() : '';
@@ -634,11 +661,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   ipcMain.handle('task-columns-load', async (event) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
-      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
-        log.warnOnce('tasks_main.columns.load.unauthorized', 'task-columns-load unauthorized (ignored).');
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
+      if (
+        !isAuthorizedSender(
+          event,
+          taskEditorWin,
+          'tasks_main.columns.load.unauthorized',
+          'task-columns-load unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       const file = getTasksColumnWidthsFile();
@@ -658,11 +688,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   ipcMain.handle('task-columns-save', async (event, payload) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
-      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
-        log.warnOnce('tasks_main.columns.save.unauthorized', 'task-columns-save unauthorized (ignored).');
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
+      if (
+        !isAuthorizedSender(
+          event,
+          taskEditorWin,
+          'tasks_main.columns.save.unauthorized',
+          'task-columns-save unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       const widths = sanitizeColumnWidths(payload && payload.widths ? payload.widths : null);
@@ -679,11 +712,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   ipcMain.handle('task-open-link', async (event, payload) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
-      if (taskEditorWin && senderWin && senderWin !== taskEditorWin) {
-        log.warnOnce('tasks_main.link.unauthorized', 'task-open-link unauthorized (ignored).');
-        return { ok: false, code: 'UNAUTHORIZED' };
-      }
+      if (
+        !isAuthorizedSender(
+          event,
+          taskEditorWin,
+          'tasks_main.link.unauthorized',
+          'task-open-link unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
 
       const raw = payload && typeof payload.raw === 'string' ? payload.raw.trim() : '';
       if (!raw) return { ok: false, code: 'LINK_BLOCKED' };
