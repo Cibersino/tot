@@ -410,27 +410,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
       }
 
-      if (fs.existsSync(candidateResolved)) {
-        const dialogTexts = getDialogTexts();
-        const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-        const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-        let message = resolveDialogText(
-          dialogTexts,
-          'task_overwrite_save',
-          'Overwrite existing task list file?'
-        );
-        const res = await dialog.showMessageBox(taskEditorWin || null, {
-          type: 'none',
-          buttons: [yesLabel, noLabel],
-          defaultId: 1,
-          cancelId: 1,
-          message,
-        });
-        if (!res || res.response !== 0) {
-          return { ok: false, code: 'CONFIRM_DENIED' };
-        }
-      }
-
       if (!fs.existsSync(parentDir)) {
         fs.mkdirSync(parentDir, { recursive: true });
       }
