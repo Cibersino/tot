@@ -383,8 +383,8 @@ function renderRow(row) {
 
   actionsWrap.appendChild(btnUp);
   actionsWrap.appendChild(btnDown);
-  actionsWrap.appendChild(btnDelete);
   actionsWrap.appendChild(btnSaveLib);
+  actionsWrap.appendChild(btnDelete);
   tdActions.appendChild(actionsWrap);
 
   trEl.appendChild(tdTexto);
