@@ -221,6 +221,7 @@ body {
   border: 1px solid var(--border);
   width: 520px;
   max-width: calc(100% - 24px);
+  max-height: calc(100vh - 32px);
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -246,6 +247,8 @@ body {
 
 .modal-body {
   padding: 12px;
+  overflow: auto;
+  flex: 1 1 auto;
 }
 
 .modal-actions {
@@ -273,6 +276,27 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.library-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.library-search label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.library-search input {
+  flex: 1 1 auto;
+  height: 28px;
+  padding: 4px 6px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  font-size: 13px;
 }
 
 .library-item {

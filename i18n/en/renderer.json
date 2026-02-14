@@ -71,7 +71,9 @@
       "labels": {
         "name": "Name",
         "total": "Total time",
-        "empty": "(empty)"
+        "empty": "(empty)",
+        "search": "Search",
+        "search_placeholder": "Search library..."
       },
       "columns": {
         "texto": "Text",

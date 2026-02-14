@@ -78,8 +78,12 @@
         <button id="libraryClose" class="btn-standard" aria-label="Cerrar">X</button>
       </header>
       <main class="modal-body">
+        <div class="library-search">
+          <label id="librarySearchLabel" for="librarySearchInput">Search</label>
+          <input id="librarySearchInput" type="search" />
+        </div>
         <ul id="libraryList" class="library-list"></ul>
-      <div id="libraryEmpty" class="library-empty" hidden>(empty)</div>
+        <div id="libraryEmpty" class="library-empty" hidden>(empty)</div>
       </main>
       <footer class="modal-actions">
         <button id="libraryCancel" class="btn-standard">Cerrar</button>
