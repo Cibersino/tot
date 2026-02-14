@@ -72,6 +72,26 @@ function getEditorStateFile() {
   return path.join(getConfigDir(), 'editor_state.json');
 }
 
+function getTasksDir() {
+  return path.join(getConfigDir(), 'tasks');
+}
+
+function getTasksListsDir() {
+  return path.join(getTasksDir(), 'lists');
+}
+
+function getTasksLibraryFile() {
+  return path.join(getTasksDir(), 'library.json');
+}
+
+function getTasksAllowedHostsFile() {
+  return path.join(getTasksDir(), 'allowed_hosts.json');
+}
+
+function getTaskEditorPositionFile() {
+  return path.join(getTasksDir(), 'task_editor_position.json');
+}
+
 function ensureConfigDir() {
   try {
     const dir = getConfigDir();
@@ -105,6 +125,19 @@ function ensureCurrentTextSnapshotsDir() {
   }
 }
 
+function ensureTasksDirs() {
+  let tasksDir = null;
+  let listsDir = null;
+  try {
+    tasksDir = getTasksDir();
+    listsDir = getTasksListsDir();
+    if (!fs.existsSync(tasksDir)) fs.mkdirSync(tasksDir, { recursive: true });
+    if (!fs.existsSync(listsDir)) fs.mkdirSync(listsDir, { recursive: true });
+  } catch (err) {
+    log.error('ensureTasksDirs failed:', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', err);
+  }
+}
+
 // =============================================================================
 // JSON helpers
 // =============================================================================
@@ -113,6 +146,7 @@ const LOAD_JSON_KNOWN_FILES = new Set([
   'current_text.json',
   'user_settings.json',
   'editor_state.json',
+  'task_editor_position.json',
 ]);
 
 function getLoadJsonOnceKey(kind, filePath) {
@@ -197,9 +231,15 @@ module.exports = {
   getSettingsFile,
   getCurrentTextFile,
   getEditorStateFile,
+  getTasksDir,
+  getTasksListsDir,
+  getTasksLibraryFile,
+  getTasksAllowedHostsFile,
+  getTaskEditorPositionFile,
   ensureConfigDir,
   ensureConfigPresetsDir,
   ensureCurrentTextSnapshotsDir,
+  ensureTasksDirs,
   loadJson,
   saveJson,
 };

@@ -32,6 +32,7 @@ const api = {
     getAppRuntimeInfo: () => ipcRenderer.invoke('get-app-runtime-info'),
     openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url),
     openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey),
+    openTaskEditor: (mode) => ipcRenderer.invoke('open-task-editor', { mode }),
     onCurrentTextUpdated: (cb) => {
         ipcRenderer.on('current-text-updated', (_e, text) => cb(text));
     },

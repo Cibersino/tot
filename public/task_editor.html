@@ -1,0 +1,115 @@
+<!-- public/task_editor.html -->
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
+  <title>Task Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="task_editor.css" />
+</head>
+<body>
+  <div class="task-editor">
+    <header class="task-header">
+      <div class="task-name">
+        <label id="taskNameLabel" for="taskNameInput">Nombre</label>
+        <input id="taskNameInput" type="text" />
+      </div>
+      <div class="task-actions">
+        <button id="btnTaskSave" class="btn-standard">Guardar</button>
+        <button id="btnTaskDelete" class="btn-standard">Eliminar</button>
+      </div>
+    </header>
+
+    <section class="task-summary" aria-live="polite">
+      <div id="taskTotalLabel" class="task-summary__label">Tiempo total</div>
+      <div id="taskTotalValue" class="task-summary__value">0:00:00</div>
+    </section>
+
+    <section class="task-table-section">
+      <div class="task-toolbar">
+        <button id="btnTaskAddRow" class="btn-standard">Agregar fila</button>
+        <button id="btnTaskLoadLibrary" class="btn-standard">Cargar biblioteca</button>
+      </div>
+      <div class="task-table-wrap">
+        <table id="taskTable" class="task-table">
+          <thead>
+            <tr>
+              <th id="thTexto">Texto</th>
+              <th id="thTiempo">Tiempo</th>
+              <th id="thPercent">%C</th>
+              <th id="thFalta">Falta</th>
+              <th id="thTipo">Tipo</th>
+              <th id="thEnlace">Enlace</th>
+              <th id="thComentario">Comentario</th>
+              <th id="thAcciones">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="taskTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- Comentario modal -->
+  <div id="commentModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="commentBackdrop"></div>
+    <div class="modal-panel">
+      <header class="modal-header">
+        <h2 id="commentTitle">Comentario</h2>
+        <button id="commentClose" class="btn-standard" aria-label="Cerrar">X</button>
+      </header>
+      <main class="modal-body">
+        <textarea id="commentInput" rows="6"></textarea>
+      </main>
+      <footer class="modal-actions">
+        <button id="commentCancel" class="btn-standard">Cancelar</button>
+        <button id="commentSave" class="btn-standard">Guardar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Library modal -->
+  <div id="libraryModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="libraryBackdrop"></div>
+    <div class="modal-panel modal-panel--wide">
+      <header class="modal-header">
+        <h2 id="libraryTitle">Biblioteca</h2>
+        <button id="libraryClose" class="btn-standard" aria-label="Cerrar">X</button>
+      </header>
+      <main class="modal-body">
+        <ul id="libraryList" class="library-list"></ul>
+      <div id="libraryEmpty" class="library-empty" hidden>(empty)</div>
+      </main>
+      <footer class="modal-actions">
+        <button id="libraryCancel" class="btn-standard">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Include comment modal -->
+  <div id="includeCommentModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="includeCommentBackdrop"></div>
+    <div class="modal-panel">
+      <header class="modal-header">
+        <h2 id="includeCommentTitle">Guardar en biblioteca</h2>
+        <button id="includeCommentClose" class="btn-standard" aria-label="Cerrar">X</button>
+      </header>
+      <main class="modal-body">
+        <p id="includeCommentText">Include comment?</p>
+      </main>
+      <footer class="modal-actions">
+        <button id="includeCommentYes" class="btn-standard">Sí</button>
+        <button id="includeCommentNo" class="btn-standard">No</button>
+        <button id="includeCommentCancel" class="btn-standard">Cancelar</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="js/log.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="task_editor.js"></script>
+</body>
+</html>

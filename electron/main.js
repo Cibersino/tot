@@ -39,6 +39,8 @@ const presetsMain = require('./presets_main');
 const snapshotsMain = require('./current_text_snapshots_main');
 const updater = require('./updater');
 const { registerLinkIpc } = require('./link_openers');
+const tasksMain = require('./tasks_main');
+const taskEditorPosition = require('./task_editor_position');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -99,6 +101,8 @@ let editorWin = null;   // Editor window (editor.html) - user edits current text
 let presetWin = null;   // Preset modal (preset_modal.html) - create/edit preset
 let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating stopwatch window (flotante.html)
+let taskEditorWin = null; // Task editor window (task_editor.html)
+let taskEditorForceClose = false;
 
 // =============================================================================
 // Startup readiness gates + handshake state
@@ -269,6 +273,15 @@ function createMainWindow() {
           log.error('Error closing presetWin from mainWin.close:', err);
         }
       }
+
+      if (isAliveWindow(taskEditorWin)) {
+        try {
+          taskEditorForceClose = true;
+          taskEditorWin.close();
+        } catch (err) {
+          log.error('Error closing taskEditorWin from mainWin.close:', err);
+        }
+      }
     } catch (err) {
       log.error('Error in mainWin.close handler:', err);
     }
@@ -370,6 +383,68 @@ function createEditorWindow() {
   // Drop reference on close so the window can be recreated later.
   editorWin.on('closed', () => {
     editorWin = null;
+  });
+}
+
+/**
+ * Create the task editor window (public/task_editor.html).
+ * Fixed size; persists only last position (x, y).
+ */
+function createTaskEditorWindow() {
+  taskEditorForceClose = false;
+  const pos = taskEditorPosition.loadInitialPosition(loadJson);
+  taskEditorWin = new BrowserWindow({
+    width: 1200,
+    height: 720,
+    x: pos ? pos.x : undefined,
+    y: pos ? pos.y : undefined,
+    resizable: false,
+    minimizable: true,
+    maximizable: false,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'task_editor_preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  taskEditorWin.setMenu(null);
+  taskEditorWin.setMenuBarVisibility(false);
+  taskEditorWin.loadFile(path.join(__dirname, '../public/task_editor.html'));
+
+  taskEditorWin.once('ready-to-show', () => {
+    try {
+      taskEditorWin.show();
+    } catch (err) {
+      log.error('Error showing task editor window:', err);
+    }
+  });
+
+  // Persist position only.
+  taskEditorPosition.attachTo(taskEditorWin, loadJson, saveJson);
+
+  // Close guard: delegate to renderer for unsaved-changes confirmation.
+  taskEditorWin.on('close', (event) => {
+    if (taskEditorForceClose) return;
+    event.preventDefault();
+    try {
+      taskEditorWin.webContents.send('task-editor-request-close');
+    } catch (err) {
+      log.warnOnce('taskEditor.close.requestFailed', 'task editor close request failed; forcing close.', err);
+      taskEditorForceClose = true;
+      try {
+        taskEditorWin.close();
+      } catch (closeErr) {
+        log.error('Error forcing task editor close:', closeErr);
+      }
+    }
+  });
+
+  taskEditorWin.on('closed', () => {
+    taskEditorWin = null;
+    taskEditorForceClose = false;
   });
 }
 
@@ -1161,6 +1236,17 @@ ipcMain.handle('open-editor', () => {
   }
 });
 
+ipcMain.on('task-editor-confirm-close', (event) => {
+  try {
+    const senderWin = BrowserWindow.fromWebContents(event.sender);
+    if (!taskEditorWin || senderWin !== taskEditorWin) return;
+    taskEditorForceClose = true;
+    taskEditorWin.close();
+  } catch (err) {
+    log.error('Error processing task-editor-confirm-close:', err);
+  }
+});
+
 // Preset modal: open (with payload normalization)
 ipcMain.handle('open-preset-modal', (event, payload) => {
   if (!guardMainUserAction('open-preset-modal', 'open-preset-modal ignored (pre-READY).')) {
@@ -1316,6 +1402,7 @@ app.whenReady().then(() => {
       presetWin,
       langWin,
       flotanteWin,
+      taskEditorWin,
     }),
     buildAppMenu,
   });
@@ -1327,6 +1414,7 @@ app.whenReady().then(() => {
       presetWin,
       langWin,
       flotanteWin,
+      taskEditorWin,
     }),
   });
 
@@ -1334,6 +1422,20 @@ app.whenReady().then(() => {
     getWindows: () => ({
       mainWin,
     }),
+  });
+
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+      taskEditorWin,
+    }),
+    ensureTaskEditorWindow: () => {
+      if (!isAliveWindow(taskEditorWin)) {
+        createTaskEditorWindow();
+      } else {
+        taskEditorWin.show();
+      }
+    },
   });
 
   updater.registerIpc(ipcMain, {
