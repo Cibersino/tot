@@ -78,6 +78,8 @@ const libraryCancel = document.getElementById('libraryCancel');
 const libraryList = document.getElementById('libraryList');
 const libraryEmpty = document.getElementById('libraryEmpty');
 const libraryTitle = document.getElementById('libraryTitle');
+const librarySearchLabel = document.getElementById('librarySearchLabel');
+const librarySearchInput = document.getElementById('librarySearchInput');
 
 const includeCommentModal = document.getElementById('includeCommentModal');
 const includeCommentBackdrop = document.getElementById('includeCommentBackdrop');
@@ -98,6 +100,7 @@ let dirty = false;
 let rowIdCounter = 1;
 let pendingCommentRowId = null;
 let pendingLibraryRowId = null;
+let libraryItemsCache = [];
 
 // =============================================================================
 // Utility functions
@@ -538,22 +541,11 @@ async function deleteTask() {
 // =============================================================================
 // Library flow
 // =============================================================================
-async function refreshLibraryList() {
+function renderLibraryItems(items) {
   if (!libraryList) return;
   libraryList.innerHTML = '';
   libraryEmpty.hidden = true;
 
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.listLibrary !== 'function') {
-    showEditorNotice('renderer.tasks.alerts.task_unavailable');
-    return;
-  }
-  const res = await window.taskEditorAPI.listLibrary();
-  if (!res || res.ok === false) {
-    showEditorNotice('renderer.tasks.alerts.library_load_error');
-    return;
-  }
-
-  const items = Array.isArray(res.items) ? res.items : [];
   if (!items.length) {
     libraryEmpty.hidden = false;
     return;
@@ -599,6 +591,38 @@ async function refreshLibraryList() {
   });
 }
 
+function filterLibraryItems() {
+  const term = librarySearchInput ? librarySearchInput.value.trim().toLowerCase() : '';
+  if (!term) {
+    renderLibraryItems(libraryItemsCache);
+    return;
+  }
+  const filtered = libraryItemsCache.filter((entry) => {
+    const texto = String(entry.texto || '').toLowerCase();
+    const tipo = String(entry.tipo || '').toLowerCase();
+    return texto.includes(term) || tipo.includes(term);
+  });
+  renderLibraryItems(filtered);
+}
+
+async function refreshLibraryList() {
+  if (!libraryList) return;
+  libraryList.innerHTML = '';
+  libraryEmpty.hidden = true;
+
+  if (!window.taskEditorAPI || typeof window.taskEditorAPI.listLibrary !== 'function') {
+    showEditorNotice('renderer.tasks.alerts.task_unavailable');
+    return;
+  }
+  const res = await window.taskEditorAPI.listLibrary();
+  if (!res || res.ok === false) {
+    showEditorNotice('renderer.tasks.alerts.library_load_error');
+    return;
+  }
+
+  libraryItemsCache = Array.isArray(res.items) ? res.items : [];
+  filterLibraryItems();
+}
 async function saveRowToLibrary(includeComment) {
   const row = rows.find((r) => r.id === pendingLibraryRowId);
   pendingLibraryRowId = null;
@@ -650,6 +674,13 @@ async function applyTaskEditorTranslations() {
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title', libraryTitle.textContent || '');
   if (libraryCancel) libraryCancel.textContent = tr('renderer.tasks.buttons.close', libraryCancel.textContent || '');
+  if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.labels.search', librarySearchLabel.textContent || '');
+  if (librarySearchInput) {
+    librarySearchInput.setAttribute(
+      'placeholder',
+      tr('renderer.tasks.labels.search_placeholder', librarySearchInput.getAttribute('placeholder') || '')
+    );
+  }
 
   if (includeCommentTitle) includeCommentTitle.textContent = tr('renderer.tasks.modals.library_save_title', includeCommentTitle.textContent || '');
   if (includeCommentText) includeCommentText.textContent = tr('renderer.tasks.modals.library_save_question', includeCommentText.textContent || '');
@@ -693,6 +724,7 @@ if (btnTaskDelete) {
 
 if (btnTaskLoadLibrary) {
   btnTaskLoadLibrary.addEventListener('click', () => {
+    if (librarySearchInput) librarySearchInput.value = '';
     refreshLibraryList().catch((err) => log.error('refreshLibraryList failed:', err));
     openModal(libraryModal);
   });
@@ -716,6 +748,9 @@ if (commentSave) {
 if (libraryClose) libraryClose.addEventListener('click', () => closeModal(libraryModal));
 if (libraryBackdrop) libraryBackdrop.addEventListener('click', () => closeModal(libraryModal));
 if (libraryCancel) libraryCancel.addEventListener('click', () => closeModal(libraryModal));
+if (librarySearchInput) {
+  librarySearchInput.addEventListener('input', () => filterLibraryItems());
+}
 
 if (includeCommentClose) includeCommentClose.addEventListener('click', () => closeModal(includeCommentModal));
 if (includeCommentBackdrop) includeCommentBackdrop.addEventListener('click', () => closeModal(includeCommentModal));

@@ -71,7 +71,9 @@
       "labels": {
         "name": "Nombre",
         "total": "Tiempo total",
-        "empty": "(vacío)"
+        "empty": "(vacío)",
+        "search": "Buscar",
+        "search_placeholder": "Buscar en biblioteca..."
       },
       "columns": {
         "texto": "Texto",
