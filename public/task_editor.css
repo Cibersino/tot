@@ -2,6 +2,12 @@
   --bg: #fff;
   --panel: #f6f6f6;
   --border: #e6e6e6;
+  --input-border: #cfcfcf;
+  --btn-bg: #f4f4f4;
+  --btn-hover-bg: #fff5f5;
+  --btn-hover-border: #e6bebe;
+  --btn-active-bg: #ffe0e0;
+  --btn-active-border: #d99b9b;
   --text: #222;
   --muted: #666;
   --accent: #b24a4a;
@@ -70,7 +76,7 @@ body {
   flex: 1 1 auto;
   height: 30px;
   padding: 4px 8px;
-  border: 1px solid #cfcfcf;
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   font-size: 14px;
   outline: none;
@@ -83,22 +89,11 @@ body {
 
 .btn-standard {
   padding: 6px 10px;
-  border: 1px solid #cfcfcf;
+  border: 1px solid var(--input-border);
   border-radius: 6px;
-  background: #f4f4f4;
+  background: var(--btn-bg);
   cursor: pointer;
   font-size: 13px;
-}
-
-.btn-standard:hover {
-  background: #fff5f5;
-  border-color: #e6bebe;
-}
-
-.btn-standard:active {
-  background: #ffe0e0;
-  border-color: #d99b9b;
-  transform: translateY(1px);
 }
 
 .task-summary {
@@ -183,13 +178,19 @@ body {
 }
 
 .task-table input[type="text"],
+.task-table input[type="number"],
+#commentInput,
+.library-search input {
+  border: 1px solid var(--input-border);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.task-table input[type="text"],
 .task-table input[type="number"] {
   width: 100%;
   padding: 4px 6px;
-  border: 1px solid #cfcfcf;
   border-radius: 4px;
-  font-size: 13px;
-  box-sizing: border-box;
 }
 
 .task-table .cell-actions {
@@ -206,15 +207,10 @@ body {
   font-size: 12px;
 }
 
-.task-table .icon-btn:hover {
-  background: #fff5f5;
-  border-color: #e6bebe;
-}
-
-.task-table .icon-btn:active {
-  background: #ffe0e0;
-  border-color: #d99b9b;
-  transform: translateY(1px);
+#commentInput {
+  width: 100%;
+  border-radius: 6px;
+  padding: 6px;
 }
 
 .link-cell {
@@ -323,9 +319,20 @@ body {
   flex: 1 1 auto;
   height: 28px;
   padding: 4px 6px;
-  border: 1px solid #cfcfcf;
   border-radius: 6px;
-  font-size: 13px;
+}
+
+.btn-standard:hover,
+.task-table .icon-btn:hover {
+  background: var(--btn-hover-bg);
+  border-color: var(--btn-hover-border);
+}
+
+.btn-standard:active,
+.task-table .icon-btn:active {
+  background: var(--btn-active-bg);
+  border-color: var(--btn-active-border);
+  transform: translateY(1px);
 }
 
 .library-item {
