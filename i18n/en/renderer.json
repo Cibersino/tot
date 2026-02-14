@@ -78,11 +78,11 @@
       "columns": {
         "texto": "Text",
         "tiempo": "Time",
-        "percent": "%C",
-        "falta": "Remaining",
+        "percent": "%",
+        "falta": "R",
         "tipo": "Type",
         "enlace": "Link",
-        "comentario": "Comment",
+        "comentario": "",
         "acciones": "Actions"
       },
       "buttons": {
