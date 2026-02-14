@@ -170,6 +170,17 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.task-table td:nth-child(2),
+.task-table td:nth-child(3),
+.task-table td:nth-child(4) {
+  text-align: right;
+}
+
+.task-table td:nth-child(2) input,
+.task-table td:nth-child(3) input {
+  text-align: right;
+}
+
 .task-table th {
   background: #fafafa;
   position: sticky;
