@@ -154,7 +154,7 @@ body {
   vertical-align: middle;
 }
 
-#thTexto { width: 100px; }
+#thTexto { width: 580px; }
 #thTiempo { width: 45px; }
 #thPercent { width: 25px; }
 #thFalta { width: 10px; }
@@ -165,7 +165,6 @@ body {
 
 #thFalta,
 .task-table td:nth-child(4) {
-  min-width: 60px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
