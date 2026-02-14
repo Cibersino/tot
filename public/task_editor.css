@@ -159,6 +159,22 @@ body {
   vertical-align: middle;
 }
 
+#thTexto { width: 500px; }
+#thTiempo { width: 100px; }
+#thPercent { width: 70px; }
+#thFalta { width: 60px; }
+#thTipo { width: 120px; }
+#thEnlace { width: 200px; }
+#thComentario { width: 120px; }
+#thAcciones { width: 160px; }
+
+#thFalta,
+.task-table td:nth-child(4) {
+  min-width: 60px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .task-table th {
   background: #fafafa;
   position: sticky;
