@@ -10,6 +10,8 @@
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
 - Manual editor window (open/edit/apply semantics)
+- Text snapshot feature (save, load, persistence)
+- Task editor window (task lists, library, links, column widths, window position).
 - Stopwatch (velocity) + floating window behavior (unfocused app)
 - Menu actions: Guide/Instructions/FAQ/About (+ link routing)
 - Persistence sanity (settings/current_text/editor_state)
@@ -58,7 +60,14 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - `user_settings.json`
 - `current_text.json`
 - `editor_state.json`
-- plus `presets_defaults/` (runtime defaults copies)
+- `presets_defaults/*.json` (runtime defaults copies)
+- `saved_current_texts/*.json` (saved text snapshots)
+- `tasks/` (created on first use of the task editor)
+  - `tasks/lists/*.json` (saved task lists)
+  - `tasks/library.json` (task row library)
+  - `tasks/allowed_hosts.json` (allowlist for https link opening)
+  - `tasks/column_widths.json` (task editor column widths)
+  - `tasks/task_editor_position.json` (task editor last position; x/y only)
 
 **Windows example (typical):**
 `%APPDATA%\@cibersino\tot\config\...`
@@ -206,6 +215,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Snapshot file is created.
 - Current text is overwritten; preview/results update.
 - Stopwatch resets due to text change.
+
+### SM-12 Task editor: open + basic save
+**Goal:** save and load tasks.
+1. From the main window, click **📝** (new task) to open the task editor.
+2. Add one row with required text (and any numeric fields as desired).
+3. Save the task list (accept the save dialog; choose a name).
+4. Close the task editor, click **🗃️** (load task), and verify the saved data is present.
+
+**Expected:** 
+- task editor opens
+- save/load round-trip works
 
 ---
 
@@ -437,6 +457,90 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ---
 
+### REG-TASKS — Task editor (lists, library, links)
+
+#### REG-TASKS-01 Open new task editor + close guard
+**Goal:** Task editor window open/close correctly.
+1. From the main window, click new task (**📝**).
+2. Verify the task editor window opens and is interactive (you can add/edit rows).
+3. Attempt to close with unsaved changes:
+   - Cancel keeps the window open.
+   - Confirm closes the window.
+
+**Expected:**
+- Window opens.
+- Close confirmation behaves correctly.
+
+#### REG-TASKS-02 Save + load task list
+**Goal:** saved list can be reopened.
+1. Open Tasks editor (📝).
+2. Add 2 rows with distinct values.
+3. Save as a new list (name: e.g., "demo").
+4. Close editor.
+5. Click **🗃️** to load a Task in the saved folder.
+6. Click Save again and choose the same filename (overwrite).
+
+**Expected:**
+- Loaded list shows the same rows + meta name.
+- Overwrite confirmation: at most one confirmation (OS dialog); no additional in-app overwrite prompt.
+
+#### REG-TASKS-03 Delete task list
+**Goal:** Delete a task is working.
+1. Load a previously saved list so a source path is present.
+2. Trigger delete; accept the confirmation.
+3. Try loading the same list again.
+
+**Expected:**
+- Delete removes the file.
+- Subsequent load fails with a user-facing message.
+
+#### REG-TASKS-04 Library save/load/delete
+**Goal:** Save and load a text row to general library.
+1. Save a row to the library (once without comment, once with comment if supported).
+2. Open the library modal and verify the saved entry appears.
+3. Insert/apply the library entry into the current task list.
+4. Delete the library entry and verify it disappears.
+
+**Expected:**
+- Library list/save/delete works.
+- Confirmation deny is a no-op.
+
+#### REG-TASKS-05 Column widths persistence
+**Goal:** Resize columns widths.
+1. Resize at least two task editor columns.
+2. Close and reopen the task editor.
+3. Verify the widths persisted.
+
+**Expected:**
+- Column widths restore on open.
+
+#### REG-TASKS-06 Link opening
+**Goal:** link opening respects https + allowlist rules.
+1. Open Tasks editor and add a row with Link populated.
+2. Test cases:
+   a) https://example.com (first time): confirm dialog; can "trust host"; opens.
+   b) https://example.com (after trusting): opens without confirm.
+   c) http://example.com: blocked; show "Link blocked."
+   d) Local absolute path (e.g., C:\Users\...\file.pdf):
+      - With an existing file: confirm dialog; opens if accepted.
+      - With a missing file: show "File not found."
+
+**Expected:**
+- Confirm prompt appears for (a) and (d) and not for (b).
+- (c) is blocked with user-visible notice.
+- Local path opens only if the file exists and the user confirms.
+
+#### REG-TASKS-07 Task editor window position persistence
+**Goal:** Task editor position keep the same position after close.
+1. Open the task editor and move it to a noticeable position.
+2. Close and reopen the task editor.
+3. Verify the position is restored (size may remain fixed).
+
+**Expected:**
+- Position (x/y) is restored.
+
+---
+
 ### REG-CRONO — Stopwatch + floating window
 
 #### REG-CRONO-01 Start/pause/reset in main
@@ -531,6 +635,32 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Snapshot remains on disk after relaunch.
 - Loading from a descendant subfolder works and overwrites current text.
 
+#### REG-PERSIST-04 Tasks: config/tasks persistence (lists, library, allowlist, widths, window position)
+**Goal:** task feature state persists under config/tasks and reloads correctly after restart.
+1. Click **📝** to open Tasks editor.
+2. Resize at least two columns to non-default widths.
+3. Add a row with a distinctive Text + Time and an optional Comment.
+4. Save the list (name: e.g., "persist_demo").
+5. Save the same row into Library (choose Include comment = Yes).
+6. Open an https link to a new host and choose "Trust this host from now on".
+7. Move the Tasks editor window to a distinctive position; close the editor; quit the app.
+8. Inspect `config/tasks/` on disk:
+   - `lists/persist_demo.json` exists
+   - `library.json` exists
+   - `allowed_hosts.json` exists
+   - `column_widths.json` exists
+   - `task_editor_position.json` exists
+9. Relaunch the app.
+10. Open Tasks editor and verify:
+    - Window position restored (x/y) and fully visible.
+    - Column widths restored.
+    - Library entry still present.
+    - Opening a link to the trusted host does not prompt again.
+
+**Expected:**
+- All files above exist and are valid JSON.
+- Tasks state (position, column widths, library, allowed hosts) persists across restart.
+
 ---
 
 ### REG-I18N — Language switching and number formatting
@@ -548,7 +678,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-I18N-02 Cross-window i18n consistency
 **Goal:** editor/preset/flotante reflect language updates.
 1. Change language.
-2. Open editor, preset modal, floating window.
+2. Open editor, preset modal, floating window, task editor.
 
 **Expected:**
 - Each window applies translations without crash.
