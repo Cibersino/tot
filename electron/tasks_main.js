@@ -5,11 +5,12 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Provide save/load flows for task lists via native dialogs.
-// - Manage row library (list/save/delete).
-// - Enforce path containment under config/tasks/.
-// - Open task links with confirmation + allowlist.
-// - Register IPC handlers for task-related actions.
+// - Open/load the task editor and send task-editor-init payloads.
+// - Save/delete task lists via native dialogs with path containment under config/tasks/lists.
+// - Manage task library entries (list/save/delete) under config/tasks.
+// - Persist task column widths under config/tasks.
+// - Open task links with confirmation and allowlist rules.
+// - Register IPC handlers for task editor actions.
 // =============================================================================
 
 // =============================================================================
@@ -39,7 +40,7 @@ log.debug('Tasks main starting...');
 const TASK_EXT = '.json';
 
 // =============================================================================
-// Helpers (paths + dialogs)
+// Helpers (paths, dialogs, file IO)
 // =============================================================================
 function safeRealpath(targetPath) {
   try {
@@ -314,6 +315,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   const resolveMainWin = () => resolveWins().mainWin || null;
   const resolveTaskEditorWin = () => resolveWins().taskEditorWin || null;
 
+  // =============================================================================
+  // IPC: open task editor (new/load)
+  // =============================================================================
   ipcMain.handle('open-task-editor', async (event, payload) => {
     try {
       const mainWin = resolveMainWin();
@@ -410,6 +414,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
     }
   });
 
+  // =============================================================================
+  // IPC: task list save/delete
+  // =============================================================================
   ipcMain.handle('task-list-save', async (event, payload) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
@@ -537,6 +544,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
     }
   });
 
+  // =============================================================================
+  // IPC: task library list/save/delete
+  // =============================================================================
   ipcMain.handle('task-library-list', async (event) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
@@ -684,6 +694,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
     }
   });
 
+  // =============================================================================
+  // IPC: task column widths load/save
+  // =============================================================================
   ipcMain.handle('task-columns-load', async (event) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
@@ -741,6 +754,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
     }
   });
 
+  // =============================================================================
+  // IPC: open task link (path or https)
+  // =============================================================================
   ipcMain.handle('task-open-link', async (event, payload) => {
     try {
       const taskEditorWin = resolveTaskEditorWin();
