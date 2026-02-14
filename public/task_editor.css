@@ -154,14 +154,14 @@ body {
   vertical-align: middle;
 }
 
-#thTexto { width: 500px; }
-#thTiempo { width: 100px; }
-#thPercent { width: 70px; }
-#thFalta { width: 60px; }
-#thTipo { width: 120px; }
-#thEnlace { width: 200px; }
-#thComentario { width: 60px; }
-#thAcciones { width: 160px; }
+#thTexto { width: 100px; }
+#thTiempo { width: 45px; }
+#thPercent { width: 25px; }
+#thFalta { width: 10px; }
+#thTipo { width: 100px; }
+#thEnlace { width: 100px; }
+#thComentario { width: 40px; }
+#thAcciones { width: 120px; }
 
 #thFalta,
 .task-table td:nth-child(4) {
