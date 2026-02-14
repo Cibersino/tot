@@ -234,7 +234,10 @@ function loadLibraryData() {
   const res = readJsonFile(file);
   if (!res.ok) {
     if (res.code === 'NOT_FOUND') {
-      log.warnOnce('tasks_main.library.missing', 'task library missing (using empty list).');
+      log.warnOnce(
+        'tasks_main.library.missing',
+        'task library missing (using empty list; may be normal on first run).'
+      );
       return { ok: true, items: [] };
     }
     return { ok: false, code: res.code };
@@ -254,7 +257,10 @@ function loadAllowedHosts() {
   const res = readJsonFile(file);
   if (!res.ok) {
     if (res.code === 'NOT_FOUND') {
-      log.warnOnce('tasks_main.allowedHosts.missing', 'allowed_hosts.json missing (using empty set).');
+      log.warnOnce(
+        'tasks_main.allowedHosts.missing',
+        'allowed_hosts.json missing (using empty set; may be normal on first run).'
+      );
     } else {
       log.warnOnce('tasks_main.allowedHosts.invalid', 'allowed_hosts.json invalid; using empty set.');
     }
@@ -694,7 +700,10 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const res = readJsonFile(file);
       if (!res.ok) {
         if (res.code === 'NOT_FOUND') {
-          log.warnOnce('tasks_main.columns.missing', 'task column widths missing (returning null).');
+          log.warnOnce(
+            'tasks_main.columns.missing',
+            'task column widths missing (returning null; may be normal on first run).'
+          );
           return { ok: true, widths: null };
         }
         return { ok: false, code: res.code };
