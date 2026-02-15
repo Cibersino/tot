@@ -264,7 +264,8 @@
         <h4>Route 1D — Save / Load snapshots</h4>
 
         <p>If you frequently reuse texts, you can save and load <strong>snapshots</strong> of the current text using the
-          <strong>💾</strong> and <strong>📂</strong> buttons.</p>
+          <strong>💾</strong> and <strong>📂</strong> buttons.
+        </p>
 
         <ul>
           <li><strong>💾</strong>: opens a native “save file” dialog rooted at <code>config/saved_current_texts/</code>.
@@ -272,7 +273,8 @@
             tree. The snapshot is saved as JSON.</li>
           <li><strong>📂</strong>: opens a native “open file” dialog and lets you pick any snapshot file inside
             <code>config/saved_current_texts/</code> (including subfolders). The app will ask for confirmation because
-            it will overwrite the current text.</li>
+            it will overwrite the current text.
+          </li>
           <li>A loaded snapshot becomes the new <strong>current text</strong> (same semantics as other overwrite
             actions) and the preview/results update immediately.</li>
         </ul>
@@ -438,7 +440,95 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Step 6 — Measure your real WPM with the Stopwatch</h3>
+        <h3>Step 6 — Tasks (optional): plan and track readings</h3>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/editor_tareas.png" alt="Screenshot: task editor window" loading="lazy"
+            decoding="async" />
+        </figure>
+
+        <p>
+          The <strong>Tasks</strong> feature is optional. It helps you manage reading plans as lists of texts with
+          estimated time, progress, and links.
+        </p>
+
+        <h4>6.1 Open the Task Editor</h4>
+        <ul>
+          <li>From the main window, open the Task Editor using the Tasks controls: <strong>📝</strong> (new task) or
+            <strong>🗃️</strong> (load task).</li>
+          <li><strong>📝</strong> opens an empty task list.</li>
+          <li><strong>🗃️</strong> lets you pick an existing saved task list.</li>
+        </ul>
+
+        <h4>6.2 Add and edit items (rows)</h4>
+        <p>
+          Open de task editor with <strong>📝</strong>. Yo can add rows clicking <strong>“Add row”</strong>. Each row
+          represents one reading item with these columns: <strong>Text</strong>, <strong>Time</strong>,
+          <strong>%</strong> (percent complete), <strong>R</strong> (remaining time), <strong>Type</strong>,
+          <strong>Link</strong>, <strong>Comment</strong>, and <strong>Actions</strong>.
+        </p>
+        <ul>
+          <li>Enter the item title/description in <strong>Text</strong> (e.g. “Las mil noches y una noche”).</li>
+          <li>Set an estimate in <strong>Time</strong> (for example, paste the estimate you got in Step 5).</li>
+          <li>Update <strong>%</strong> with your approximately percentage completed to track progress; the remaining
+            time in <strong>R</strong> updates accordingly.</li>
+          <li>Use <strong>Type</strong> to categorize items (e.g. “book”, “article”, “paper”, “video”).</li>
+          <li>Use <strong>Link</strong> to store a local path or an HTTPS URL for the item.</li>
+          <li>Use <strong>Comment</strong> for any notes you want to add about the item.</li>
+        </ul>
+
+        <h4>6.3 Links</h4>
+        <p>
+          The <strong>Link</strong> column can be used to store a local path or an HTTPS URL for the item.
+        </p>
+        <ul>
+          <li>For local paths, paste the absolute path of the file (e.g. C:\Users\user\Documents\mybook.txt).</li>
+          <li>For URLs, make sure to include the protocol (e.g. https://).</li>
+          <li>Clicking the link will attempt to open it with the default application (e.g. a PDF will open in the
+            default PDF viewer, a URL will open in the default web browser).</li>
+          <li>When you click on a URL link, the app may ask for confirmation (and may remember trusted hosts) before
+            opening it in the default browser.</li>>
+        </ul>
+
+        <p><strong>Note:</strong> The trusted hosts are remembered in a list that is persisted in the user configuration
+          folder.</p>
+
+        <h4>6.4 Save, load and delete tasks</h4>
+        <ul>
+          <li>To save a task list choose a name for your task and click <strong>“Save”</strong> in the Task editor
+            window. It will open the save folder, where you must choose a file name (a JSON file) and click "Save".</li>
+          <li>For your safety, there is no auto-save. If you want to update a saved task, you must save it again. You
+            can overwrite the file in the folder if you don't want to create another task.</li>
+          <li>To load a previously saved task list, click the <strong>🗃️</strong> (load) button in the Main window.
+          </li>
+          <li>To delete a task, load it and click the <strong>“Delete”</strong> in the Task Editor.</li>
+        </ul>
+
+        <p><strong>Note:</strong> Saved tasks are stored in the user configuration folder under
+          <code>config/tasks/lists/</code>. You can manage them directly from the file system if needed.
+
+        <h4>6.5 Library (reusable rows)</h4>
+        <p>
+          In the Tasks editor window you can save a row into a reusable <strong>Library</strong>. This is useful for
+          items you read frequently or use in different tasks. To save a row to the Library, click the
+          <strong>💾</strong> (save to library) action in that row. The saved entry will be available in the list of the
+          Library, clicking <strong>Load library</strong> in the Task Editor. From there you can load in your task any
+          row you saved.
+        </p>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/editor_tareas_library.png" alt="Screenshot: task editor with library"
+            loading="lazy" decoding="async" />
+        </figure>
+
+        <h4>6.6 Column widths</h4>
+        <p>
+          You can resize table columns; widths are persisted for the Task Editor.
+        </p>
+
+        <hr />
+
+        <h3>Step 7 — Measure your real WPM with the Stopwatch</h3>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/cronometro.png" alt="Screenshot: stopwatch and real WPM" loading="lazy"
@@ -447,7 +537,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p>This step is for calibration or actual measurement.</p>
 
-        <h4>6.1 Preparation (what usually fails)</h4>
+        <h4>7.1 Preparation (what usually fails)</h4>
         <ul>
           <li>Make sure that the current text is exactly what you will read.</li>
           <li>Do not edit the text during the measurement.</li>
@@ -455,7 +545,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             part).</li>
         </ul>
 
-        <h4>6.2 Measurement</h4>
+        <h4>7.2 Measurement</h4>
         <ol>
           <li>Start (▶) the Stopwatch as you begin reading.</li>
           <li>Pause (⏸) at the end. Attention: do not press Stop (⏹) unless you want to reset the Stopwatch and return
@@ -480,7 +570,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           </li>
         </ul>
 
-        <h4>6.3 Floating Window (if you read in another app)</h4>
+        <h4>7.3 Floating Window (if you read in another app)</h4>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/ventana-flotante.png" alt="Screenshot: Floating Window and stopwatch control"
@@ -491,9 +581,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Step 7 — Local saving, cleaning and “clean” reinstallation</h3>
+        <h3>Step 8 — Local saving, cleaning and “clean” reinstallation</h3>
 
-        <h4>7.1 What is stored locally</h4>
+        <h4>8.1 What is stored locally</h4>
 
         <p>The app saves data locally to maintain your settings between sessions. In general it includes:</p>
         <ul>
@@ -503,16 +593,16 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Configuration</strong> (e.g. language, current WPM, counting mode).</li>
           <li><strong>Presets</strong> (custom and default preset status).</li>
           <li><strong>Status of windows</strong> (e.g. size/position of the editor).</li>
+          <li><strong>Tasks</strong>: task lists, task library, link allowlist, and Task Editor UI state (position and
+            column widths).</li>
         </ul>
 
         <p><strong>Implication:</strong></p>
         <ul>
           <li>If you work with sensitive text, use <strong>🗑</strong> at the end and consider total cleanup.</li>
-          <li>If you used <strong>💾</strong>, remember snapshots are files on disk; delete them if needed (or perform
-            total cleanup).</li>
         </ul>
 
-        <h4>7.2 Total cleanup (clean reinstallation) — with paths per system</h4>
+        <h4>8.2 Total cleanup (clean reinstallation) — with paths per system</h4>
 
         <p>To return to “first run” status:</p>
         <ol>
@@ -537,7 +627,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Step 8 — Limits and very long texts</h3>
+        <h3>Step 9 — Limits and very long texts</h3>
 
         <ul>
           <li>For security and performance, the app imposes a hard limit on the current text size of 10 million
@@ -628,17 +718,26 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           machine to count/estimate.</p>
         <p><strong>Things to distinguish:</strong></p>
         <ul>
-          <li><strong>Text and configuration:</strong> are saved locally (for persistence between sessions).</li>
+          <li><strong>Local storage:</strong> the app saves data locally (for persistence between sessions). This
+            includes:
+            <ul>
+              <li><strong>Current text</strong> and general configuration (language, WPM, counting mode, presets).</li>
+              <li><strong>Saved text snapshots</strong> (optional library under
+                <code>config/saved_current_texts/</code>).</li>
+              <li><strong>Saved tasks</strong> (task lists, task library and link allowlist).</li>
+            </ul>
+          </li>
           <li><strong>Internet:</strong> the app may require connection <strong>only</strong> when you execute actions
             that open external resources, such as:
             <ul>
-              <li>open external links clicked by the user,</li>
+              <li>open external links clicked by the user (including links opened from Tasks),</li>
               <li>check/open update information (e.g. on GitHub).</li>
             </ul>
           </li>
         </ul>
         <p>Practical implication: although <em>toT</em> does not “upload your text", any action that opens an external
-          site exposes to that service your IP address and normal connection metadata (as in any browser).</p>
+          site exposes to that service your IP address and normal connection metadata (as in any browser). If you want
+          to remove all locally stored data, see Step 9 (“Total cleanup”).</p>
 
         <hr />
 
