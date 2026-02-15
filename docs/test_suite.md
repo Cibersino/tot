@@ -152,7 +152,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Preview shows empty-state label.
 - Words/chars/time go to zero.
-- Stopwatch is reset due to text change.
+- Stopwatch is reset because current text becomes empty.
 
 ### SM-06 Counting mode toggle (precise/simple)
 **Goal:** toggle works and results remain coherent.
@@ -250,6 +250,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - No unexpected resets of presets/text unless intentionally cleared.
+
+#### REG-FR-03 First-run fallback when closing language window
+**Goal:** startup remains unblocked if language window closes without explicit selection.
+1. Remove config (2.2).
+2. Launch app to show the language window.
+3. Close the language window using the window close button (without selecting language).
+
+**Expected:**
+- App continues startup and main window opens.
+- A safe fallback language is applied/persisted.
+- No startup deadlock or blank state.
 
 ---
 
@@ -356,11 +367,15 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - App selects a safe fallback preset (e.g., “default” or first available).
 
 #### REG-PRESETS-05 Repeat REG-01 to REG-04 with default presets
-- Repeat previous steps with a default preset
-- Repeat previous steps with a language default preset.
+1. Repeat edit/delete flows with a **general default** preset (e.g., `default`).
+2. Repeat edit/delete flows with a **language default** preset (if present in current language).
+3. After deleting a default preset in current language, switch to another language and verify it is not globally removed.
+4. Run **Restore defaults (R)** and verify removed defaults reappear for current language.
 
 **Expected:**
-- Same results.
+- Default preset edit/delete flows complete without corruption/crash.
+- Deletion of defaults respects language scoping (no unintended cross-language removal).
+- Restore defaults recovers removed defaults for the active language.
 
 #### REG-PRESETS-06 Restore defaults
 **Goal:** restoring defaults yields a sane list and selection.
@@ -494,7 +509,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Delete removes the file.
-- Subsequent load fails with a user-facing message.
+- Deleted list is no longer available in the open dialog (or, if force-selected by path, load fails safely with user-facing notice).
 
 #### REG-TASKS-04 Library save/load/delete
 **Goal:** Save and load a text row to general library.
@@ -598,10 +613,11 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Goal:** external links are restricted; app docs open properly (packaged preferred).
 1. From About (or other UI link points), attempt to open:
    - GitHub release/docs links (allowed host)
+   - DOI links from “Links de interés” (allowed host)
 2. (Packaged build) open bundled docs (LICENSE, PRIVACY, etc.) if wired in UI.
 
 **Expected:**
-- Only HTTPS + allowed GitHub hosts are opened externally.
+- Only HTTPS + allowlisted hosts are opened externally (GitHub/DOI set).
 - App docs open via OS viewer; missing docs yield safe failure.
 
 ---
@@ -707,12 +723,14 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### EDGE-01 Large paste / truncation behavior
 **Goal:** app handles oversized text safely.
-1. Attempt to paste or insert very large text in editor.
-2. Observe truncation warnings / safe behavior.
+1. Attempt to paste/drop very large text in editor (well above paste/drop threshold).
+2. Attempt to exceed max text size by typing/concatenating until near hard limit.
+3. Observe notices and resulting text size.
 
 **Expected:**
-- Text is truncated to max limits; UI remains responsive.
-- Warning/notice may appear for truncation.
+- Oversized paste/drop is rejected or limited safely (no freeze/crash).
+- Hard-cap overflow paths truncate safely when applicable.
+- UI remains responsive and user receives notice on limit/truncation scenarios.
 
 ### EDGE-02 Offline updater
 **Goal:** updater fails gracefully without hanging.
