@@ -267,14 +267,20 @@
 
         <h4>Ruta 1D — Guardar / Cargar snapshots</h4>
 
-        <p>Si reutiliza textos con frecuencia, puede guardar y cargar <strong>snapshots</strong> del texto actual utilizando los botones <strong>💾</strong> y <strong>📂</strong>.</p>
+        <p>Si reutiliza textos con frecuencia, puede guardar y cargar <strong>snapshots</strong> del texto actual
+          utilizando los botones <strong>💾</strong> y <strong>📂</strong>.</p>
 
         <ul>
-          <li><strong>💾</strong>: abre un cuadro de diálogo nativo para “guardar archivo”, ubicado en <code>config/saved_current_texts/</code>. Puedes guardar en <strong>subcarpetas</strong> (y crear carpetas) siempre que permanezcas dentro del árbol de snapshots. El snapshot se guarda como JSON.</li>
-          <li><strong>📂</strong>: abre un cuadro de diálogo nativo para “abrir archivo” y te permite seleccionar cualquier archivo de snapshot dentro de <code>config/saved_current_texts/</code> (incluidas las subcarpetas). La app solicitará confirmación porque sobrescribirá el texto actual.</li>
-          <li>Un snapshot cargado se convierte en el nuevo <strong>texto actual</strong> (la misma semántica que otras acciones de sobrescritura) y la vista previa y resultados se actualizan inmediatamente.</li>
+          <li><strong>💾</strong>: abre un cuadro de diálogo nativo para “guardar archivo”, ubicado en
+            <code>config/saved_current_texts/</code>. Puedes guardar en <strong>subcarpetas</strong> (y crear carpetas)
+            siempre que permanezcas dentro del árbol de snapshots. El snapshot se guarda como JSON.</li>
+          <li><strong>📂</strong>: abre un cuadro de diálogo nativo para “abrir archivo” y te permite seleccionar
+            cualquier archivo de snapshot dentro de <code>config/saved_current_texts/</code> (incluidas las
+            subcarpetas). La app solicitará confirmación porque sobrescribirá el texto actual.</li>
+          <li>Un snapshot cargado se convierte en el nuevo <strong>texto actual</strong> (la misma semántica que otras
+            acciones de sobrescritura) y la vista previa y resultados se actualizan inmediatamente.</li>
         </ul>
-        
+
         <hr />
 
         <h3>Paso 2 — Verifica el texto actual (checkpoint)</h3>
@@ -435,7 +441,101 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Paso 6 — Mide tu WPM real con el cronómetro</h3>
+        <h3>Paso 6 — Gestión de tareas (opcional)</h3>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/editor_tareas.png" alt="Captura: ventana del editor de tareas" loading="lazy"
+            decoding="async" />
+        </figure>
+
+        <p>
+          La función <strong>Tareas</strong> es opcional. Te ayuda a gestionar planes de lectura como listas de textos
+          con tiempo estimado, progreso y enlaces.
+        </p>
+
+        <h4>6.1 Abrir el editor de tareas</h4>
+        <ul>
+          <li>Desde la ventana principal, abre el editor de tareas usando los controles de Tareas: <strong>📝</strong>
+            (nueva tarea) o <strong>🗃️</strong> (cargar tarea).</li>
+          <li><strong>📝</strong> abre una lista de tareas vacía.</li>
+          <li><strong>🗃️</strong> te permite elegir una lista de tareas guardada existente.</li>
+        </ul>
+
+        <h4>6.2 Agregar y editar elementos (filas)</h4>
+        <p>
+          Abre el editor de tareas con <strong>📝</strong>. Puedes agregar filas haciendo clic en <strong>“Add
+            row”</strong>. Cada fila representa un elemento de lectura con estas columnas: <strong>Texto</strong>,
+          <strong>Tiempo</strong>, <strong>%</strong> (porcentaje completado), <strong>R</strong> (tiempo restante),
+          <strong>Tipo</strong>, <strong>Enlace</strong>, <strong>Comentario</strong>, y <strong>Acciones</strong>.
+        </p>
+        <ul>
+          <li>Ingresa el título/descripción del elemento en la columna <strong>Texto</strong> (por ejemplo, “Las mil
+            noches y una noche”).</li>
+          <li>Pon una estimación en <strong>Tiempo</strong> (por ejemplo, pega el tiempo estimado que obtuviste en el
+            Paso 5) </li>
+          <li>Actualiza <strong>%</strong> con tu porcentaje aproximado completado para rastrear el progreso; el tiempo
+            restante en <strong>R</strong> se actualiza en consecuencia.</li>
+          <li>Use <strong>Tipo</strong> para categorizar elementos (ej. “libro”, “artículo”, “paper”, “video”).</li>
+          <li>Use <strong>Enlace</strong> para almacenar una ruta local o una URL HTTPS para el elemento.</li>
+          <li>Use <strong>Comentario</strong> para cualquier nota que quieras agregar sobre el elemento.</li>
+        </ul>
+
+        <h4>6.3 Links</h4>
+        <p>
+          La columna de <strong>Enlace</strong> puede usarse para almacenar una ruta local o una URL HTTPS para el
+          elemento.
+        </p>
+        <ul>
+          <li>Para rutas locales, pega las rutas absolutas de cada archivo (por ejemplo,
+            C:\Users\user\Documents\mybook.txt).</li>
+          <li>Para URLs, asegúrate de incluir el protoclo (por ejemplo, https://).</li>
+          <li>Al hacer clic en el enlace, se intentará abrirlo con la aplicación predeterminada (por ejemplo, un PDF se
+            abrirá en el visor de PDF predeterminado, una URL se abrirá en el navegador web predeterminado).</li>
+          <li>Cuando hace clic en un enlace URL, la aplicación puede solicitar confirmación (y puede recordar hosts
+            confiables) antes de abrirla en el navegador predeterminado.</li>>
+        </ul>
+
+        <p><strong>Nota:</strong> Los hosts confiables se recuerdan en una lista que se conserva en la carpeta de
+          configuración del usuario.</p>
+
+        <h4>6.4 Guardar, cargar y eliminar tareas</h4>
+        <ul>
+          <li>Para guardar una lista de tareas, elige un nombre para tu tarea y haz clic en <strong>“Guardar”</strong>
+            en la ventana del editor de tareas. Se abrirá la carpeta de guardado, donde deberás elegir un nombre de
+            archivo (un archivo JSON) y hacer clic en "Guardar".</li>
+          <li>Por tu seguridad, no hay auto-guardado. Si quieres actualizar una tarea guardada, debes guardarla
+            nuevamente. Puedes sobrescribir el archivo en la carpeta si no quieres crear otra tarea.</li>
+          <li>Para cargar una lista de tareas previamente guardada, haz clic en el botón <strong>🗃️</strong> (cargar)
+            en la ventana principal.</li>
+          <li>Para eliminar una tarea, cárgala y haz clic en <strong>“Eliminar”</strong> en el editor de tareas.</li>
+        </ul>
+
+        <p><strong>Nota:</strong> Las tareas guardadas se almacenan en la carpeta de configuración del usuario bajo
+          <code>config/tasks/lists/</code>. Puedes administrarlas directamente desde el sistema de archivos si es
+          necesario.
+
+        <h4>6.5 Biblioteca (filas reutilizables)</h4>
+        <p>
+          En la ventana del editor de Tareas, puedes guardar una fila en una <strong>Biblioteca</strong> reutilizable.
+          Esto es útil para elementos que leas con frecuencia o utilizas en diferentes tareas. Para guardar una fila en
+          la biblioteca, has clic en la acción <strong>💾</strong> (guardar en la biblioteca) en esa fila. La entrada
+          guardada estará disponible en la lista de la Biblioteca, haciendo clic en <strong>Cargar biblioteca</strong>
+          en el Editor de tareas. Desde allí puedes cargar en tu tarea cualquier fila que hayas guardado.
+        </p>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/editor_tareas_library.png" alt="Captura: editor de tareas con biblioteca"
+            loading="lazy" decoding="async" />
+        </figure>
+
+        <h4>6.6 Anchos de columnas</h4>
+        <p>
+          Puedes redimensionar las columnas de la tabla; los anchos se guardan para el Editor de Tareas.
+        </p>
+
+        <hr />
+
+        <h3>Paso 7 — Mide tu WPM real con el cronómetro</h3>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/cronometro.png" alt="Captura: cronómetro y WPM real" loading="lazy"
@@ -444,14 +544,14 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p>Este paso es para calibración o medición real.</p>
 
-        <h4>6.1 Preparación (lo que suele fallar)</h4>
+        <h4>7.1 Preparación (lo que suele fallar)</h4>
         <ul>
           <li>Asegúrate de que el texto actual es exactamente lo que leerás.</li>
           <li>No edites el texto durante la medición.</li>
           <li>Decide si leerás completo o solo una parte (y ajusta el texto actual a esa parte).</li>
         </ul>
 
-        <h4>6.2 Medición</h4>
+        <h4>7.2 Medición</h4>
         <ol>
           <li>Inicia (▶) el cronómetro justo al comenzar a leer.</li>
           <li>Pausa (⏸) al terminar. Ojo: no pulses Stop (⏹) a menos que quieras resetear el cronómetro y volver al
@@ -475,7 +575,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             fracciones de segundo no visualizadas en la estimación y/o el cronómetro, y/o a los redondeos.</li>
         </ul>
 
-        <h4>6.3 Ventana flotante (si lees en otra app)</h4>
+        <h4>7.3 Ventana flotante (si lees en otra app)</h4>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/ventana-flotante.png"
@@ -486,9 +586,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Paso 7 — Guardado local, limpieza y reinstalación “limpia”</h3>
+        <h3>Paso 8 — Guardado local, limpieza y reinstalación “limpia”</h3>
 
-        <h4>7.1 Qué queda guardado localmente</h4>
+        <h4>8.1 Qué queda guardado localmente</h4>
 
         <p>La app guarda datos localmente para mantener tu configuración entre sesiones. En general incluye:</p>
         <ul>
@@ -497,15 +597,16 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Configuración</strong> (por ejemplo: idioma, WPM actual, modo de conteo).</li>
           <li><strong>Presets</strong> (personalizados y estado de presets por defecto).</li>
           <li><strong>Estado de ventanas</strong> (por ejemplo: tamaño/posición del editor).</li>
+          <li><strong>Tareas</strong>: listas de tareas, biblioteca de tareas, lista de enlaces permitidos y estado de
+            la interfaz de usuario del Editor de tareas (posición y ancho de columna).</li>
         </ul>
 
         <p><strong>Implicación:</strong></p>
         <ul>
           <li>Si trabajas con texto sensible, usa <strong>🗑</strong> al terminar y considera limpieza total.</li>
-          <li>Si usaste <strong>💾</strong>, recuerda que los snapshots son archivos en el disco; elimínalos si es necesario (o realiza una limpieza total).</li>
         </ul>
 
-        <h4>7.2 Limpieza total (reinstalación limpia) — con rutas por sistema</h4>
+        <h4>8.2 Limpieza total (reinstalación limpia) — con rutas por sistema</h4>
 
         <p>Para volver a estado “primera ejecución”:</p>
         <ol>
@@ -530,7 +631,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Paso 8 — Límites y textos muy largos</h3>
+        <h3>Paso 9 — Límites y textos muy largos</h3>
 
         <ul>
           <li>Por seguridad y rendimiento, la app impone un límite duro de tamaño para el texto actual, de 10 millones
@@ -616,21 +717,32 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <hr />
 
         <h3>“¿La app protege mi privacidad?”</h3>
-        <p>En lo esencial, <em>toT</em> opera de forma <strong>local</strong>. El texto que pegas o escribes se procesa
-          en tu máquina para contar/estimar.</p>
-        <p><strong>Cosas a distinguir:</strong></p>
+        <p>Esencialmente, <em>toT</em> opera <strong>localmente</strong>. El texto que pegas o escribes se procesa en tu
+          equipo para contarlo/estimarlo.</p>
+        <p><strong>Things to distinguish:</strong></p>
         <ul>
-          <li><strong>Texto y configuración:</strong> se guardan localmente (para persistencia entre sesiones).</li>
+          <li><strong>Almacenamiento local:</strong> la aplicación guarda datos localmente (para persistencia entre
+            sesiones). Esto incluye:
+            <ul>
+              <li><strong>Texto actual</strong> y configuración general (idioma, WPM, modo de conteo, presets).</li>
+              <li><strong>Snapshots de texto guardados</strong> (biblioteca opcional bajo
+                <code>config/saved_current_texts/</code>).</li>
+              <li><strong>Tareas guardadas</strong> (listas de tareas, biblioteca de tareas y lista de enlaces
+                permitidos).</li>
+            </ul>
+          </li>
           <li><strong>Internet:</strong> la app puede requerir conexión <strong>solo</strong> cuando tú ejecutas
             acciones que abren recursos externos, como:
             <ul>
-              <li>abrir enlaces externos cliqueados por el usuario,</li>
-              <li>comprobar/abrir información de actualizaciones (por ejemplo, en GitHub).</li>
+              <li>abrir enlaces externos en los que el usuario hizo clic (incluidos los enlaces abiertos desde Tareas),
+              </li>
+              <li>comprobar/abrir información de actualización (por ejemplo, en GitHub).</li>
             </ul>
           </li>
         </ul>
         <p>Implicación práctica: aunque <em>toT</em> no “sube tu texto”, cualquier acción que abra un sitio externo
-          expone a ese servicio tu dirección IP y metadatos normales de conexión (como en cualquier navegador).</p>
+          expone a ese servicio tu dirección IP y metadatos normales de conexión (como en cualquier navegador). Si
+          quieres eliminar todos los datos almacenados localmente, ve al paso 9 (“Limpieza total”).</p>
 
         <hr />
 
