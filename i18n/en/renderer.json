@@ -89,15 +89,15 @@
         "save": "Save",
         "delete": "Delete",
         "add_row": "Add row",
-        "load_library": "Load library",
+        "open_library": "Open library",
         "comment": "💬",
         "link_open": "↗️",
         "move_up": "↑",
         "move_down": "↓",
         "delete_row": "🗑",
-        "save_library": "💾",
-        "library_load": "Load",
-        "library_delete": "Delete",
+        "library_row_save": "💾",
+        "library_row_load": "Load",
+        "library_row_delete": "Delete",
         "close": "Close",
         "cancel": "Cancel",
         "yes": "Yes",
@@ -107,9 +107,9 @@
         "move_up": "Move up",
         "move_down": "Move down",
         "delete_row": "Delete row",
-        "save_library": "Save to library",
-        "library_load": "Load row",
-        "library_delete": "Delete from library",
+        "library_row_save": "Save to library",
+        "library_row_load": "Load row",
+        "library_row_delete": "Delete from library",
         "link_open": "Open link",
         "comment": "Add/edit comment"
       },
@@ -268,3 +268,4 @@
     }
   }
 }
+

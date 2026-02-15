@@ -1,4 +1,4 @@
-﻿{
+{
   "main": {
     "menu": {
       "como_usar": "¿Cómo es la custión?",
@@ -39,8 +39,8 @@
       "snapshot_overwrite_load": "¿Querís cambiar el texto actual con \"{name}\"?",
       "task_overwrite_save": "¿Querís aplastar la misión?",
       "task_delete_confirm": "¿Querís pitiarte la misión \"{name}\"?",
-      "task_library_overwrite": "¿Querís sobreescribir el elemento \"{name}\" de la bibli?",
-      "task_library_delete": "¿Querís borrar el elemento \"{name}\" de la biblio?",
+      "task_library_row_save_overwrite": "¿Querís sobreescribir el elemento \"{name}\" de la bibli?",
+      "task_library_row_delete": "¿Querís borrar el elemento \"{name}\" de la biblio?",
       "task_link_confirm": "¿Querís abrir ese link trucho?",
       "task_link_trust_host": "¿Le creís a este host?",
       "task_path_confirm": "¿Querís abrir esa cochinada?",
@@ -60,3 +60,4 @@
     }
   }
 }
+

@@ -78,15 +78,15 @@
         "save": "Speichern",
         "delete": "Löschen",
         "add_row": "Zeile hinzufügen",
-        "load_library": "Bibliothek laden",
+        "open_library": "Bibliothek öffnen",
         "comment": "💬",
         "link_open": "↗️",
         "move_up": "↑",
         "move_down": "↓",
         "delete_row": "🗑",
-        "save_library": "💾",
-        "library_load": "Laden",
-        "library_delete": "Löschen",
+        "library_row_save": "💾",
+        "library_row_load": "Laden",
+        "library_row_delete": "Löschen",
         "close": "Schließen",
         "cancel": "Abbrechen",
         "yes": "Ja",
@@ -96,9 +96,9 @@
         "move_up": "Nach oben verschieben",
         "move_down": "Nach unten verschieben",
         "delete_row": "Diese Zeile löschen",
-        "save_library": "In Bibliothek speichern",
-        "library_load": "Zeile Laden",
-        "library_delete": "Aus Bibliothek löschen",
+        "library_row_save": "In Bibliothek speichern",
+        "library_row_load": "Zeile Laden",
+        "library_row_delete": "Aus Bibliothek löschen",
         "link_open": "Link öffnen",
         "comment": "Kommentar hinzufügen/bearbeiten"
       },
@@ -241,3 +241,4 @@
     }
   }
 }
+

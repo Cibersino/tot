@@ -1,4 +1,4 @@
-﻿{
+{
   "main": {
     "menu": {
       "como_usar": "How to use",
@@ -43,8 +43,8 @@
       "snapshot_overwrite_load": "Replace current text with the selected snapshot \"{name}\"?",
       "task_overwrite_save": "Overwrite existing task list file?",
       "task_delete_confirm": "Delete the task list \"{name}\"?",
-      "task_library_overwrite": "An entry named \"{name}\" already exists in the library. Overwrite?",
-      "task_library_delete": "Delete \"{name}\" from the library?",
+      "task_library_row_save_overwrite": "An entry named \"{name}\" already exists in the library. Overwrite?",
+      "task_library_row_delete": "Delete \"{name}\" from the library?",
       "task_link_confirm": "Open this link?",
       "task_link_trust_host": "Trust this host from now on",
       "task_path_confirm": "Open this local file?",
@@ -64,3 +64,4 @@
     }
   }
 }
+

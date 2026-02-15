@@ -415,7 +415,7 @@ function renderRow(row) {
   const btnUp = buildActionButton('renderer.tasks.buttons.move_up', 'Up', 'renderer.tasks.tooltips.move_up', () => moveRow(row.id, -1));
   const btnDown = buildActionButton('renderer.tasks.buttons.move_down', 'Down', 'renderer.tasks.tooltips.move_down', () => moveRow(row.id, 1));
   const btnDelete = buildActionButton('renderer.tasks.buttons.delete_row', 'Del', 'renderer.tasks.tooltips.delete_row', () => deleteRow(row.id));
-  const btnSaveLib = buildActionButton('renderer.tasks.buttons.save_library', 'Save', 'renderer.tasks.tooltips.save_library', () => {
+  const btnSaveLib = buildActionButton('renderer.tasks.buttons.library_row_save', 'Save', 'renderer.tasks.tooltips.library_row_save', () => {
     pendingLibraryRowId = row.id;
     openModal(includeCommentModal);
   });
@@ -708,7 +708,7 @@ function renderLibraryItems(items) {
     const actions = document.createElement('div');
     actions.className = 'cell-actions';
 
-    const btnLoad = buildActionButton('renderer.tasks.buttons.library_load', 'Load', 'renderer.tasks.tooltips.library_load', () => {
+    const btnLoad = buildActionButton('renderer.tasks.buttons.library_row_load', 'Load', 'renderer.tasks.tooltips.library_row_load', () => {
       addRow({
         texto: entry.texto,
         tiempoSeconds: Number(entry.tiempoSeconds) || 0,
@@ -719,7 +719,7 @@ function renderLibraryItems(items) {
       });
       closeModal(libraryModal);
     });
-    const btnDelete = buildActionButton('renderer.tasks.buttons.library_delete', 'Del', 'renderer.tasks.tooltips.library_delete', async () => {
+    const btnDelete = buildActionButton('renderer.tasks.buttons.library_row_delete', 'Del', 'renderer.tasks.tooltips.library_row_delete', async () => {
       const api = getTaskEditorApi('deleteLibraryEntry');
       if (!api) return;
       const delRes = await api.deleteLibraryEntry(entry.texto);
@@ -802,7 +802,7 @@ async function applyTaskEditorTranslations() {
   if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.buttons.save', btnTaskSave.textContent || '');
   if (btnTaskDelete) btnTaskDelete.textContent = tr('renderer.tasks.buttons.delete', btnTaskDelete.textContent || '');
   if (btnTaskAddRow) btnTaskAddRow.textContent = tr('renderer.tasks.buttons.add_row', btnTaskAddRow.textContent || '');
-  if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.buttons.load_library', btnTaskLoadLibrary.textContent || '');
+  if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.buttons.open_library', btnTaskLoadLibrary.textContent || '');
 
   if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto', thTexto.textContent || '');
   if (thTiempo) thTiempo.textContent = tr('renderer.tasks.columns.tiempo', thTiempo.textContent || '');
