@@ -9,7 +9,9 @@
         "edit": "⌨",
         "clear": "🗑",
         "snapshot_load": "📂",
-        "snapshot_save": "💾"
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
       },
       "tooltips": {
         "overwrite_clipboard": "Aktuellen Text mit der Zwischenablage ersetzen",
@@ -18,6 +20,8 @@
         "clear": "Aktuellen Text löschen",
         "snapshot_load": "Laden Sie einen Text-Snapshot",
         "snapshot_save": "Speichern Sie den aktuellen Text in einem Snapshot",
+        "task_new": "Neue Aufgabe",
+        "task_load": "Aufgabe laden",
         "new_preset": "Erstellen Sie ein neues Preset",
         "edit_preset": "Bearbeiten Sie das ausgewählte Preset",
         "delete_preset": "Löschen Sie das ausgewählte Preset",
@@ -49,6 +53,85 @@
         "flotante_short": "SF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      }
+    },
+    "tasks": {
+      "title": "Editor — Aufgaben",
+      "labels": {
+        "name": "Name",
+        "total": "GESAMTZEIT",
+        "empty": "(leer)",
+        "search": "Suchen",
+        "search_placeholder": "In der Bibliothek suchen..."
+      },
+      "columns": {
+        "texto": "Text",
+        "tiempo": "Zeit",
+        "percent": "%",
+        "falta": "F",
+        "tipo": "Typ",
+        "enlace": "Link",
+        "comentario": "",
+        "acciones": "Aktionen"
+      },
+      "buttons": {
+        "save": "Speichern",
+        "delete": "Löschen",
+        "add_row": "Zeile hinzufügen",
+        "load_library": "Bibliothek laden",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "save_library": "💾",
+        "library_load": "Laden",
+        "library_delete": "Löschen",
+        "close": "Schließen",
+        "cancel": "Abbrechen",
+        "yes": "Ja",
+        "no": "Nein"
+      },
+      "tooltips": {
+        "move_up": "Nach oben verschieben",
+        "move_down": "Nach unten verschieben",
+        "delete_row": "Diese Zeile löschen",
+        "save_library": "In Bibliothek speichern",
+        "library_load": "Zeile Laden",
+        "library_delete": "Aus Bibliothek löschen",
+        "link_open": "Link öffnen",
+        "comment": "Kommentar hinzufügen/bearbeiten"
+      },
+      "modals": {
+        "comment_title": "Kommentar",
+        "library_title": "Bibliothek",
+        "library_save_title": "In Bibliothek speichern",
+        "library_save_question": "Kommentar einbeziehen?"
+      },
+      "alerts": {
+        "task_unavailable": "Aufgabenfunktionalität ist nicht verfügbar.",
+        "task_open_error": "Konnte den Aufgabeneditor nicht öffnen.",
+        "task_load_error": "Konnte die Aufgabe nicht laden.",
+        "task_save_error": "Konnte die Aufgabe nicht speichern.",
+        "task_save_success": "Aufgabe gespeichert.",
+        "task_delete_error": "Konnte die Aufgabe nicht löschen.",
+        "task_delete_unavailable": "Keine gespeicherte Aufgabe zum Löschen.",
+        "task_invalid_file": "Ungültige Aufgabendatei.",
+        "task_invalid_rows": "Es gibt ungültige Zeilen in der Aufgabe.",
+        "task_path_outside": "Die Datei muss sich im Aufgabenordner befinden.",
+        "name_required": "Aufgabenname ist erforderlich.",
+        "row_text_required": "Zeilentext darf nicht leer sein.",
+        "library_load_error": "Konnte die Bibliothek nicht laden.",
+        "library_save_error": "Konnte nicht in die Bibliothek speichern.",
+        "library_save_success": "Zeile in die Bibliothek gespeichert.",
+        "library_delete_error": "Konnte nicht aus der Bibliothek löschen.",
+        "link_blocked": "Link blockiert.",
+        "link_missing": "Datei nicht gefunden.",
+        "link_error": "Fehler beim Öffnen des Links."
+      },
+      "confirm": {
+        "discard_changes": "Es gibt ungespeicherte Änderungen. Diese verwerfen?",
+        "close_unsaved": "Es gibt ungespeicherte Änderungen. Ohne Speichern schließen?"
       }
     },
     "modal_preset": {

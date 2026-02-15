@@ -20,8 +20,8 @@
         "clear": "Vaciar texto actual",
         "snapshot_load": "Cargar snapshot de texto",
         "snapshot_save": "Guardar el texto actual en un snapshot",
-        "task_new": "Nueva lista de tareas",
-        "task_load": "Cargar lista de tareas",
+        "task_new": "Nueva tarea",
+        "task_load": "Cargar tarea",
         "new_preset": "Crear un nuevo preset",
         "edit_preset": "Editar preset seleccionado",
         "delete_preset": "Eliminar preset seleccionado",
@@ -70,7 +70,7 @@
       "title": "Editor — Tareas",
       "labels": {
         "name": "Nombre",
-        "total": "Tiempo total",
+        "total": "TIEMPO TOTAL",
         "empty": "(vacío)",
         "search": "Buscar",
         "search_placeholder": "Buscar en biblioteca..."
@@ -111,7 +111,7 @@
         "library_load": "Cargar fila",
         "library_delete": "Eliminar de biblioteca",
         "link_open": "Abrir enlace",
-        "comment": "Editar comentario"
+        "comment": "Agregar/editar comentario"
       },
       "modals": {
         "comment_title": "Comentario",
@@ -122,13 +122,13 @@
       "alerts": {
         "task_unavailable": "Funcionalidad de tareas no disponible.",
         "task_open_error": "No se pudo abrir el editor de tareas.",
-        "task_load_error": "No se pudo cargar la lista de tareas.",
-        "task_save_error": "No se pudo guardar la lista de tareas.",
-        "task_save_success": "Lista de tareas guardada.",
-        "task_delete_error": "No se pudo eliminar la lista de tareas.",
-        "task_delete_unavailable": "No hay una lista guardada para eliminar.",
+        "task_load_error": "No se pudo cargar la tarea.",
+        "task_save_error": "No se pudo guardar la tarea.",
+        "task_save_success": "Tarea guardada.",
+        "task_delete_error": "No se pudo eliminar la tarea.",
+        "task_delete_unavailable": "No hay una tarea guardada para eliminar.",
         "task_invalid_file": "Archivo de tareas inválido.",
-        "task_invalid_rows": "Hay filas inválidas en la lista.",
+        "task_invalid_rows": "Hay filas inválidas en la tarea.",
         "task_path_outside": "El archivo debe estar dentro de la carpeta de tareas.",
         "name_required": "El nombre de la tarea es obligatorio.",
         "row_text_required": "El texto de la fila no puede estar vacío.",

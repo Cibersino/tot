@@ -41,6 +41,13 @@
       "no": "No, cancelar",
       "snapshot_overwrite_save": "¿Sobrescribir el snapshot existente?",
       "snapshot_overwrite_load": "¿Reemplazar el texto actual con el snapshot seleccionado \"{name}\"?",
+      "task_overwrite_save": "¿Sobrescribir la lista de tareas existente?",
+      "task_delete_confirm": "¿Eliminar la lista de tareas \"{name}\"?",
+      "task_library_overwrite": "Ya existe \"{name}\" en la biblioteca. ¿Sobrescribir?",
+      "task_library_delete": "¿Eliminar \"{name}\" de la biblioteca?",
+      "task_link_confirm": "¿Abrir este enlace?",
+      "task_link_trust_host": "Confiar en este host en adelante",
+      "task_path_confirm": "¿Abrir este archivo local?",
       "delete_preset_confirm": "¿Eliminar el preset \"{name}\"?",
       "delete_preset_none": "No hay ningún preset seleccionado para borrar.",
       "restore_defaults_confirm": "¿Restaurar presets por defecto (generales y para el idioma \"{lang}\") a su versión original? Esto revertirá las eliminaciones y los cambios realizados sobre presets por defecto del idioma activo.",
@@ -53,14 +60,7 @@
       "update_up_to_date_title": "Estás al día.",
       "update_up_to_date_message": "Ya tienes la última versión ({local}).",
       "update_failed_title": "La comprobación de actualizaciones falló.",
-      "update_failed_message": "Revisa tu conexión y vuelve a intentar.",
-      "task_overwrite_save": "¿Sobrescribir la lista de tareas existente?",
-      "task_delete_confirm": "¿Eliminar la lista de tareas \"{name}\"?",
-      "task_library_overwrite": "Ya existe \"{name}\" en la biblioteca. ¿Sobrescribir?",
-      "task_library_delete": "¿Eliminar \"{name}\" de la biblioteca?",
-      "task_link_confirm": "¿Abrir este enlace?",
-      "task_link_trust_host": "Confiar en este host en adelante",
-      "task_path_confirm": "¿Abrir este archivo local?"
+      "update_failed_message": "Revisa tu conexión y vuelve a intentar."
     }
   }
 }

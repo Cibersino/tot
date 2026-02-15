@@ -9,7 +9,9 @@
         "edit": "⌨",
         "clear": "🗑",
         "snapshot_load": "📂",
-        "snapshot_save": "💾"
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
       },
       "tooltips": {
         "overwrite_clipboard": "Remplacer le texte actuel par le presse-papier",
@@ -18,6 +20,8 @@
         "clear": "Vider le texte actuel",
         "snapshot_load": "Charger un snapshot de texte",
         "snapshot_save": "Sauvegarder le texte actuel dans un snapshot",
+        "task_new": "Créer une nouvelle tâche",
+        "task_load": "Charger une tâche",
         "new_preset": "Créer un nouveau preset",
         "edit_preset": "Modifier le preset sélectionné",
         "delete_preset": "Supprimer le preset sélectionné",
@@ -49,6 +53,85 @@
         "flotante_short": "FF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      }
+    },
+    "tasks": {
+      "title": "Éditeur — Tâches",
+      "labels": {
+        "name": "Nom",
+        "total": "TEMPS TOTAL",
+        "empty": "(vide)",
+        "search": "Rechercher",
+        "search_placeholder": "Rechercher dans la bibliothèque..."
+      },
+      "columns": {
+        "texto": "Texto",
+        "tiempo": "Temps",
+        "percent": "%",
+        "falta": "R",
+        "tipo": "Type",
+        "enlace": "Lien",
+        "comentario": "",
+        "acciones": "Actions"
+      },
+      "buttons": {
+        "save": "Sauvegarder",
+        "delete": "Supprimer",
+        "add_row": "Ajouter une ligne",
+        "load_library": "Charger depuis la bibliothèque",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "save_library": "💾",
+        "library_load": "Charger",
+        "library_delete": "Supprimer",
+        "close": "Fermer",
+        "cancel": "Annuler",
+        "yes": "Oui",
+        "no": "Non"
+      },
+      "tooltips": {
+        "move_up": "Déplacer la ligne vers le haut",
+        "move_down": "Déplacer la ligne vers le bas",
+        "delete_row": "Supprimer la ligne",
+        "save_library": "Sauvegarder dans la bibliothèque",
+        "library_load": "Charger la ligne",
+        "library_delete": "Supprimer la ligne de la bibliothèque",
+        "link_open": "Ouvrir le lien",
+        "comment": "Ajouter/modifier un commentaire"
+      },
+      "modals": {
+        "comment_title": "Commentaire",
+        "library_title": "Bibliothèque",
+        "library_save_title": "Sauvegarder dans la bibliothèque",
+        "library_save_question": "Inclure le commentaire ?"
+      },
+      "alerts": {
+        "task_unavailable": "Fonctionnalité de tâches non disponible.",
+        "task_open_error": "Impossible d'ouvrir l'éditeur de tâches.",
+        "task_load_error": "Impossible de charger la tâche.",
+        "task_save_error": "Impossible de sauvegarder la tâche.",
+        "task_save_success": "Tâche sauvegardée.",
+        "task_delete_error": "Impossible de supprimer la tâche.",
+        "task_delete_unavailable": "Il n'y a pas de tâche à supprimer.",
+        "task_invalid_file": "Fichier de tâche invalide.",
+        "task_invalid_rows": "Il y a des lignes invalides dans la tâche.",
+        "task_path_outside": "Le fichier doit être situé dans le dossier des tâches.",
+        "name_required": "Le nom de la tâche est obligatoire.",
+        "row_text_required": "Le texte de la ligne ne peut pas être vide.",
+        "library_load_error": "Impossible de charger la bibliothèque.",
+        "library_save_error": "Impossible de sauvegarder dans la bibliothèque.",
+        "library_save_success": "Ligne sauvegardée dans la bibliothèque.",
+        "library_delete_error": "Impossible de supprimer la ligne de la bibliothèque.",
+        "link_blocked": "Lien bloqué.",
+        "link_missing": "Fichier introuvable.",
+        "link_error": "Erreur lors de l'ouverture du lien."
+      },
+      "confirm": {
+        "discard_changes": "Des modifications non sauvegardées existent. Voulez-vous les ignorer ?",
+        "close_unsaved": "Des modifications non sauvegardées existent. Voulez-vous fermer sans sauvegarder ?"
       }
     },
     "modal_preset": {

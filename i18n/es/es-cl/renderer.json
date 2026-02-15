@@ -9,7 +9,9 @@
         "edit": "⌨",
         "clear": "🗑",
         "snapshot_load": "📂",
-        "snapshot_save": "💾"
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
       },
       "tooltips": {
         "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
@@ -18,6 +20,8 @@
         "clear": "Limpieza es viveza",
         "snapshot_load": "Cargar un coso de texto",
         "snapshot_save": "Salvar el texto vigente en un coso",
+        "task_new": "Armar nueva misión",
+        "task_load": "Cargar misión",
         "new_preset": "Armar nuevo preset",
         "edit_preset": "Arreglar el preset",
         "delete_preset": "Pitiarse el preset",
@@ -49,6 +53,85 @@
         "flotante_short": "VF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      }
+    },
+    "tasks": {
+      "title": "Editor — Misiones",
+      "labels": {
+        "name": "Mote",
+        "total": "VIDA ÚTIL",
+        "empty": "(pelao)",
+        "search": "Rastrear",
+        "search_placeholder": "Rastrear en la biblio..."
+      },
+      "columns": {
+        "texto": "Texto",
+        "tiempo": "Ritmo",
+        "percent": "%",
+        "falta": "F",
+        "tipo": "Clase",
+        "enlace": "Ruta",
+        "comentario": "Opinión",
+        "acciones": "Acciones"
+      },
+      "buttons": {
+        "save": "Salvar",
+        "delete": "Pitiarse",
+        "add_row": "Añadir fila",
+        "load_library": "Cargar biblio",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "save_library": "💾",
+        "library_load": "Cargar",
+        "library_delete": "Pitiarse",
+        "close": "Cerrar",
+        "cancel": "Cancelar",
+        "yes": "Sí",
+        "no": "No"
+      },
+      "tooltips": {
+        "move_up": "Subir fila",
+        "move_down": "Bajar fila",
+        "delete_row": "Pitiarse la fila",
+        "save_library": "Guardar en biblio",
+        "library_load": "Cargar fila",
+        "library_delete": "Pitiarsela de la biblio",
+        "link_open": "Abrir ruta",
+        "comment": "Añadir/editar opinión"
+      },
+      "modals": {
+        "comment_title": "Opinión",
+        "library_title": "Biblio",
+        "library_save_title": "Salvar en biblio",
+        "library_save_question": "¿Incluir opinión?"
+      },
+      "alerts": {
+        "task_unavailable": "Operacionalidad de misiones no disponible.",
+        "task_open_error": "No se pudo abrir el editor de misiones.",
+        "task_load_error": "No se pudo cargar la misión.",
+        "task_save_error": "No se pudo salvar la misión.",
+        "task_save_success": "Misión salvada con éxito.",
+        "task_delete_error": "No se pudo pitiarse la misión.",
+        "task_delete_unavailable": "No se puede pitiarse esta misión.",
+        "task_invalid_file": "Archivo de misión inválido.",
+        "task_invalid_rows": "Hay filas inválidas en la misión.",
+        "task_path_outside": "El archivo debe estar aentro de la carpeta de misiones.",
+        "name_required": "El mote de misión es obligatorio.",
+        "row_text_required": "El texto de fila no puede estar vacío.",
+        "library_load_error": "No se pudo cargar la fila de la biblio.",
+        "library_save_error": "No se pudo salvar la fila de la biblio.",
+        "library_save_success": "Fila de biblio salvada con éxito.",
+        "library_delete_error": "No se pudo pitiarse la fila de la biblio.",
+        "link_blocked": "Ruta bloqueada.",
+        "link_missing": "Ruta extraviada.",
+        "link_error": "Error al abrir la ruta."
+      },
+      "confirm": {
+        "discard_changes": "Hay modificaciones sin salvar. ¿Querís descartarlos?",
+        "close_unsaved": "Hay modificaciones sin salvar. ¿Querís cerrar igual?"
       }
     },
     "modal_preset": {
