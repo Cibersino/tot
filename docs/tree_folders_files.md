@@ -1,6 +1,6 @@
 # Árbol de carpetas y archivos
 
-**Versión de la app:** ver [`VERSION`](../VERSION)
+**Versión de la app:** ver campo `version` en [`package.json`](../package.json)
 
 Este documento describe la **estructura** del repo y los **archivos clave** (entry points y módulos).
 No es un inventario exhaustivo de cada archivo.
@@ -65,10 +65,11 @@ tot/
 │ ├── link_openers.js
 │ ├── constants_main.js
 │ └── log.js
-├── i18n/                          # {varias subcarpetas de idioma}
+├── i18n/                          # {subcarpetas por idioma y variantes regionales}
 │ └── languages.json
 ├── public/
 │ ├── assets/
+│ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
 │ │ ├── logo-cibersino.ico
 │ │ ├── logo-cibersino.png
 │ │ ├── logo-cibersino.svg
@@ -188,6 +189,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `i18n/<lang>/main.json` — Textos del proceso principal / menú / diálogos nativos.
 - `i18n/<lang>/renderer.json` — Textos de la UI (ventana principal y modales renderizados).
 - `i18n/<lang>/numberFormat.json` — Configuración de formato numérico por idioma (defaults; puede haber override vía settings).
+- `i18n/<lang>/<variant>/*.json` — Variantes regionales cuando aplica (p.ej. `i18n/es/es-cl/`).
 
 ### 5) Persistencia runtime (carpeta `config/`)
 
@@ -217,7 +219,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 6) Documentación y operación del repo
 
-- `docs/release_checklist.md` — Checklist mecánico de release (fuentes de verdad, changelog, consistencia).
+- `docs/releases/release_checklist.md` — Checklist mecánico de release (fuentes de verdad, changelog, consistencia).
+- `docs/releases/<version>/` — Baselines y checklists versionados por release.
 - `docs/changelog_detailed.md` — Changelog detallado (técnico/narrativo; post-0.0.930 con formato mecánico).
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
