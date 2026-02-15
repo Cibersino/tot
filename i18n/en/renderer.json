@@ -20,8 +20,8 @@
         "clear": "Clear current text",
         "snapshot_load": "Load text snapshot",
         "snapshot_save": "Save current text to a snapshot",
-        "task_new": "New task list",
-        "task_load": "Load task list",
+        "task_new": "New task",
+        "task_load": "Load task",
         "new_preset": "Create a new preset",
         "edit_preset": "Edit selected preset",
         "delete_preset": "Delete selected preset",
@@ -70,7 +70,7 @@
       "title": "Editor — Tasks",
       "labels": {
         "name": "Name",
-        "total": "Total time",
+        "total": "TOTAL TIME",
         "empty": "(empty)",
         "search": "Search",
         "search_placeholder": "Search library..."
@@ -111,7 +111,7 @@
         "library_load": "Load row",
         "library_delete": "Delete from library",
         "link_open": "Open link",
-        "comment": "Edit comment"
+        "comment": "Add/edit comment"
       },
       "modals": {
         "comment_title": "Comment",
@@ -122,13 +122,13 @@
       "alerts": {
         "task_unavailable": "Task functionality is unavailable.",
         "task_open_error": "Could not open the task editor.",
-        "task_load_error": "Could not load the task list.",
-        "task_save_error": "Could not save the task list.",
-        "task_save_success": "Task list saved.",
-        "task_delete_error": "Could not delete the task list.",
-        "task_delete_unavailable": "No saved task list to delete.",
+        "task_load_error": "Could not load the task.",
+        "task_save_error": "Could not save the task.",
+        "task_save_success": "Task saved.",
+        "task_delete_error": "Could not delete the task.",
+        "task_delete_unavailable": "No saved task to delete.",
         "task_invalid_file": "Invalid task file.",
-        "task_invalid_rows": "There are invalid rows in the list.",
+        "task_invalid_rows": "There are invalid rows in the task.",
         "task_path_outside": "The file must be inside the tasks folder.",
         "name_required": "Task name is required.",
         "row_text_required": "Row text cannot be empty.",

@@ -9,7 +9,9 @@
         "edit": "⌨",
         "clear": "🗑",
         "snapshot_load": "📂",
-        "snapshot_save": "💾"
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
       },
       "tooltips": {
         "overwrite_clipboard": "Sostituire il testo corrente con gli appunti",
@@ -18,6 +20,8 @@
         "clear": "Svuota il testo corrente",
         "snapshot_load": "Carica un snapshot di testo",
         "snapshot_save": "Salva il testo corrente in uno snapshot",
+        "task_new": "Crea una nuova attività",
+        "task_load": "Carica un'attività",
         "new_preset": "Crea un nuovo preset",
         "edit_preset": "Modifica il preset selezionato",
         "delete_preset": "Elimina il preset selezionato",
@@ -49,6 +53,85 @@
         "flotante_short": "FF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      }
+    },
+    "tasks": {
+      "title": "Editor — Attività",
+      "labels": {
+        "name": "Nome",
+        "total": "TEMPO TOTALE",
+        "empty": "(vuoto)",
+        "search": "Cerca",
+        "search_placeholder": "Cerca nella biblioteca..."
+      },
+      "columns": {
+        "texto": "Testo",
+        "tiempo": "Tempo",
+        "percent": "%",
+        "falta": "R",
+        "tipo": "Tipo",
+        "enlace": "Link",
+        "comentario": "",
+        "acciones": "Azioni"
+      },
+      "buttons": {
+        "save": "Salva",
+        "delete": "Elimina",
+        "add_row": "Aggiungi riga",
+        "load_library": "Carica biblioteca",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "save_library": "💾",
+        "library_load": "Carica",
+        "library_delete": "Elimina",
+        "close": "Chiudi",
+        "cancel": "Annulla",
+        "yes": "Sì",
+        "no": "No"
+      },
+      "tooltips": {
+        "move_up": "Sposta la riga su",
+        "move_down": "Sposta la riga giù",
+        "delete_row": "Elimina questa riga",
+        "save_library": "Salva nella biblioteca",
+        "library_load": "Carica la riga",
+        "library_delete": "Elimina dalla biblioteca",
+        "link_open": "Apri link",
+        "comment": "Aggiungi/modifica commento"
+      },
+      "modals": {
+        "comment_title": "Commento",
+        "library_title": "Biblioteca",
+        "library_save_title": "Salva nella biblioteca",
+        "library_save_question": "Includere il commento?"
+      },
+      "alerts": {
+        "task_unavailable": "Funzionalità di attività non disponibile.",
+        "task_open_error": "Impossibile aprire l'editor delle attività.",
+        "task_load_error": "Impossibile caricare l'attività.",
+        "task_save_error": "Impossibile salvare l'attività.",
+        "task_save_success": "Attività salvata correttamente.",
+        "task_delete_error": "Impossibile eliminare l'attività.",
+        "task_delete_unavailable": "Nessuna attività salvata da eliminare.",
+        "task_invalid_file": "File di attività non valido.",
+        "task_invalid_rows": "Ci sono righe non valide nell'attività.",
+        "task_path_outside": "Il file deve essere all'interno della cartella delle attività.",
+        "name_required": "Il nome dell'attività è obbligatorio.",
+        "row_text_required": "Il testo della riga non può essere vuoto.",
+        "library_load_error": "Impossibile caricare la biblioteca.",
+        "library_save_error": "Impossibile salvare nella biblioteca.",
+        "library_save_success": "Riga salvata nella biblioteca.",
+        "library_delete_error": "Impossibile eliminare dalla biblioteca.",
+        "link_blocked": "Link bloccato.",
+        "link_missing": "File non trovato.",
+        "link_error": "Errore durante l'apertura del link."
+      },
+      "confirm": {
+        "discard_changes": "Ci sono modifiche non salvate. Vuoi annullarle?",
+        "close_unsaved": "Ci sono modifiche non salvate. Chiudere comunque?"
       }
     },
     "modal_preset": {
