@@ -164,6 +164,9 @@ MIT — ver [`LICENSE`](LICENSE).
 
 # toT — from Text to Time
 
+**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines configurable WPM presets, precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings with less guesswork.
+
+Do any of these sound familiar?
 Are you hesitant to start certain readings because you don't know how much work it will really take?
 Do you find it hard to finish reading and abandon them in the middle?
 Do you want to overcome your difficulties and develop your reading skills using scientific measurement and organization tools?
@@ -175,14 +178,6 @@ Is the pile of books on your bedside table growing mercilessly?
 Do you want to do experimental studies related to reading time?
 
 *This app is for you.*
-
-**toT** estimates reading time from a text and a speed set in WPM (words per minute). The app also includes customizable presets, current-text snapshots, a task editor for reading plans, and a stopwatch to measure real speed.
-
-This app is designed for:
-* Quickly estimate the reading time of any text you enter or compose.
-* Measure and adjust your real speed in different scenarios.
-* Configure customized WPM presets according to the type of reader, reading mode, text complexity, language or any desired parameter.
-* Organize reading plans with task lists (total/remaining time, links, comments, and reusable library rows).
 
 ## Features
 
