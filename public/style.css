@@ -127,6 +127,24 @@ body {
   cursor: not-allowed;
 }
 
+/* Text selector controls */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.controls-sep {
+  width: 1px;
+  height: 18px;
+  background: #d9d2c2;
+  margin: 0 4px;
+  flex: 0 0 auto;
+  align-self: center;
+  pointer-events: none;
+}
+
 /* Logo (fixed) */
 .logo-container {
   position: fixed;

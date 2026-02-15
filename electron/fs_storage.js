@@ -23,6 +23,7 @@ const path = require('path');
 const Log = require('./log');
 
 const log = Log.get('fs-storage');
+log.debug('FS storage starting...');
 
 // =============================================================================
 // Config paths
@@ -72,6 +73,30 @@ function getEditorStateFile() {
   return path.join(getConfigDir(), 'editor_state.json');
 }
 
+function getTasksDir() {
+  return path.join(getConfigDir(), 'tasks');
+}
+
+function getTasksListsDir() {
+  return path.join(getTasksDir(), 'lists');
+}
+
+function getTasksLibraryFile() {
+  return path.join(getTasksDir(), 'library.json');
+}
+
+function getTasksAllowedHostsFile() {
+  return path.join(getTasksDir(), 'allowed_hosts.json');
+}
+
+function getTasksColumnWidthsFile() {
+  return path.join(getTasksDir(), 'column_widths.json');
+}
+
+function getTaskEditorPositionFile() {
+  return path.join(getTasksDir(), 'task_editor_position.json');
+}
+
 function ensureConfigDir() {
   try {
     const dir = getConfigDir();
@@ -105,6 +130,19 @@ function ensureCurrentTextSnapshotsDir() {
   }
 }
 
+function ensureTasksDirs() {
+  let tasksDir = null;
+  let listsDir = null;
+  try {
+    tasksDir = getTasksDir();
+    listsDir = getTasksListsDir();
+    if (!fs.existsSync(tasksDir)) fs.mkdirSync(tasksDir, { recursive: true });
+    if (!fs.existsSync(listsDir)) fs.mkdirSync(listsDir, { recursive: true });
+  } catch (err) {
+    log.error('ensureTasksDirs failed:', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', err);
+  }
+}
+
 // =============================================================================
 // JSON helpers
 // =============================================================================
@@ -113,6 +151,7 @@ const LOAD_JSON_KNOWN_FILES = new Set([
   'current_text.json',
   'user_settings.json',
   'editor_state.json',
+  'task_editor_position.json',
 ]);
 
 function getLoadJsonOnceKey(kind, filePath) {
@@ -133,6 +172,8 @@ function loadJson(filePath, fallback = {}) {
         note = ' (note: may be normal on first run; file is created during startup)';
       } else if (baseName === 'editor_state.json') {
         note = ' (note: may be normal on first run; file is created when editor window is opened for the first time)';
+      } else if (baseName === 'task_editor_position.json') {
+        note = ' (note: may be normal on first run; file is created after the task editor window is opened and position is saved)';
       }
 
       log.warnOnce(
@@ -197,9 +238,16 @@ module.exports = {
   getSettingsFile,
   getCurrentTextFile,
   getEditorStateFile,
+  getTasksDir,
+  getTasksListsDir,
+  getTasksLibraryFile,
+  getTasksAllowedHostsFile,
+  getTasksColumnWidthsFile,
+  getTaskEditorPositionFile,
   ensureConfigDir,
   ensureConfigPresetsDir,
   ensureCurrentTextSnapshotsDir,
+  ensureTasksDirs,
   loadJson,
   saveJson,
 };

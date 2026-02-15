@@ -17,6 +17,7 @@
   // Logger / renderer dependencies
   // =============================================================================
   const log = window.getLogger('presets');
+  log.debug('Presets starting...');
   const { DEFAULT_LANG } = window.AppConstants;
   const { getLangBase } = window.RendererI18n;
 

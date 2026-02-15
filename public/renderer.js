@@ -43,6 +43,8 @@ const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
 const btnLoadSnapshot = document.getElementById('btnLoadSnapshot');
 const btnSaveSnapshot = document.getElementById('btnSaveSnapshot');
+const btnNewTask = document.getElementById('btnNewTask');
+const btnLoadTask = document.getElementById('btnLoadTask');
 const btnHelp = document.getElementById('btnHelp');
 
 // =============================================================================
@@ -218,6 +220,8 @@ function applyTranslations() {
   if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear', btnEmptyMain.textContent || '');
   if (btnLoadSnapshot) btnLoadSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_load', btnLoadSnapshot.textContent || '');
   if (btnSaveSnapshot) btnSaveSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_save', btnSaveSnapshot.textContent || '');
+  if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new', btnNewTask.textContent || '');
+  if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load', btnLoadTask.textContent || '');
   // Text selector tooltips
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
@@ -225,6 +229,8 @@ function applyTranslations() {
   if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
   if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load', btnLoadSnapshot.title || '');
   if (btnSaveSnapshot) btnSaveSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_save', btnSaveSnapshot.title || '');
+  if (btnNewTask) btnNewTask.title = tRenderer('renderer.main.tooltips.task_new', btnNewTask.title || '');
+  if (btnLoadTask) btnLoadTask.title = tRenderer('renderer.main.tooltips.task_load', btnLoadTask.title || '');
   // Presets
   if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new', btnNewPreset.textContent || '');
   if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit', btnEditPreset.textContent || '');
@@ -1393,6 +1399,62 @@ btnSaveSnapshot.addEventListener('click', async () => {
   if (!guardUserAction('snapshot-save')) return;
   await saveSnapshot();
 });
+
+// =============================================================================
+// Task selector (open task editor)
+// =============================================================================
+function handleTaskOpenResult(res, { mode } = {}) {
+  if (!res || res.ok === false) {
+    const code = res && res.code ? res.code : 'READ_FAILED';
+    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+    if (code === 'PATH_OUTSIDE_TASKS') {
+      Notify.notifyMain('renderer.tasks.alerts.task_path_outside');
+      return;
+    }
+    if (code === 'INVALID_JSON' || code === 'INVALID_SCHEMA') {
+      Notify.notifyMain('renderer.tasks.alerts.task_invalid_file');
+      return;
+    }
+    Notify.notifyMain(mode === 'load'
+      ? 'renderer.tasks.alerts.task_load_error'
+      : 'renderer.tasks.alerts.task_open_error');
+    return;
+  }
+}
+
+if (btnNewTask) {
+  btnNewTask.addEventListener('click', async () => {
+    if (!guardUserAction('task-new')) return;
+    try {
+      if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
+        Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+        return;
+      }
+      const res = await window.electronAPI.openTaskEditor('new');
+      handleTaskOpenResult(res, { mode: 'new' });
+    } catch (err) {
+      log.error('Error opening task editor (new):', err);
+      Notify.notifyMain('renderer.tasks.alerts.task_open_error');
+    }
+  });
+}
+
+if (btnLoadTask) {
+  btnLoadTask.addEventListener('click', async () => {
+    if (!guardUserAction('task-load')) return;
+    try {
+      if (!window.electronAPI || typeof window.electronAPI.openTaskEditor !== 'function') {
+        Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+        return;
+      }
+      const res = await window.electronAPI.openTaskEditor('load');
+      handleTaskOpenResult(res, { mode: 'load' });
+    } catch (err) {
+      log.error('Error opening task editor (load):', err);
+      Notify.notifyMain('renderer.tasks.alerts.task_load_error');
+    }
+  });
+}
 
 // Help button: show a random tip key via Notify
 if (btnHelp) {

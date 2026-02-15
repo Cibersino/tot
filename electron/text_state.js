@@ -21,6 +21,7 @@ const Log = require('./log');
 const { MAX_TEXT_CHARS, MAX_IPC_MULTIPLIER, MAX_IPC_CHARS, MAX_META_STR_CHARS } = require('./constants_main');
 
 const log = Log.get('text-state');
+log.debug('Text state starting...');
 
 // =============================================================================
 // Helpers (validation / normalization)

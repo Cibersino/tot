@@ -54,6 +54,7 @@ Reglas:
 ### Resumen de cambios
 
 - Snapshots del texto vigente (Issue #50): controles **Cargar/Guardar** con diálogos nativos para guardar el texto vigente como snapshot y cargar uno sobrescribiendo el texto vigente (con confirmación).
+- Tareas (Issue #50): nueva ventana para gestionar listas de lectura (tiempo estimado, % completado, tiempo restante, enlaces y comentarios), con controles **Nueva/Cargar** en la ventana principal y persistencia bajo `config/tasks/`.
 
 ### Agregado
 
@@ -66,11 +67,31 @@ Reglas:
   - saneamiento de nombre: espacios → `_`, y base name restringido a `[A-Za-z0-9_-]` (fuerza `.json`);
   - chequeo de contención bajo `config/saved_current_texts/` usando `realpath` + `relative` (defensa contra escapes).
 - Renderer (Issue #50): helper `public/js/current_text_snapshots.js` expone `saveSnapshot()` / `loadSnapshot()` y mapea `{ ok, code }` a `Notify` (sin wiring DOM).
+- Selector de texto (Tareas): botones `📝` (nueva tarea) y `🗃️` (cargar tareas) en los controles del preview del texto vigente.
+- Ventana (Tareas): nueva ventana **Editor de Tareas** (`public/task_editor.html` + `public/task_editor.js`) con tabla editable:
+  - columnas: `Texto`, `Tiempo`, `%`, `R` (restante), `Tipo`, `Enlace`, `Comentario`, `Acciones`;
+  - cálculo de **restante** por fila y **total** (sumatoria de restantes);
+  - modales de **comentario** y **biblioteca** (cargar filas reutilizables).
+- Persistencia (Tareas):
+  - listas de tareas bajo `config/tasks/lists/**/*.json`;
+  - biblioteca reutilizable bajo `config/tasks/library.json`;
+  - allowlist de hosts para enlaces HTTPS bajo `config/tasks/allowed_hosts.json`;
+  - anchos de columna del editor bajo `config/tasks/column_widths.json`;
+  - posición del Task Editor (solo `x`,`y`) bajo `config/tasks/task_editor_position.json`.
+- Main (Tareas): `electron/tasks_main.js` registra IPC para abrir/guardar/cargar/borrar tareas, biblioteca, anchos de columnas y apertura de enlaces (con confirmación y reglas de allowlist).
+- Main (Tareas): `electron/task_editor_position.js` persiste/restaura posición (`x`,`y`) del Task Editor y valida contra work areas disponibles (multi-display).
+- Preload (Tareas): `electron/task_editor_preload.js` expone `window.taskEditorAPI` (Task Editor) y maneja replay de `task-editor-init` si llega antes de registrar callbacks.
 
 ### Cambiado
 
 - `electron/text_state.js`: se extrae `applyCurrentText(...)`; `set-current-text` lo reutiliza; el load de snapshot aplica el texto por el mismo pipeline (normalización/truncado + broadcasts).
 - `electron/fs_storage.js`: helpers `getCurrentTextSnapshotsDir()` / `ensureCurrentTextSnapshotsDir()`.
+- `electron/main.js`: se incorpora `taskEditorWin` (ventana fija 1200×720, no redimensionable/maximizables) y wiring para abrirla/mostrarla desde IPC; al cerrar `mainWin`, se fuerza el cierre del Task Editor si está vivo.
+- `electron/settings.js`: `broadcastSettingsUpdated(...)` incluye `taskEditorWin`; el “hide menu in secondary windows” considera Task Editor.
+- `electron/fs_storage.js`: se agregan helpers/paths y `ensureTasksDirs()` para `config/tasks/`; `loadJson()` reconoce `task_editor_position.json` como archivo “known” (nota de primer uso).
+- `electron/link_openers.js`: internaliza logger (ya no recibe `log` desde `main`) y simplifica firmas de helpers (`getTempDir`, `copyToTemp`, `openPathWithLog`, `registerLinkIpc`).
+- Manual (`public/info/instrucciones.es.html`, `public/info/instrucciones.en.html`): se agrega sección/paso de **Tareas** (Task Editor) y se actualizan notas de persistencia local (incluye tareas).
+- Logging/diagnóstico: se agregan mensajes `log.debug('<module> starting...')` al inicio de múltiples módulos main/renderer para trazabilidad de arranque.
 
 ### Contratos tocados
 
@@ -81,11 +102,57 @@ Reglas:
   - `current-text-snapshot-load`. Payload: ninguno.
     - OK: `{ ok:true, path, filename, bytes, mtime, truncated, length }`
     - Error: `{ ok:false, code:'CANCELLED'|'CONFIRM_DENIED'|'PATH_OUTSIDE_SNAPSHOTS'|'READ_FAILED'|'INVALID_JSON'|'INVALID_SCHEMA', message? }`
+  - `open-task-editor`. Payload: `{ mode:'new'|'load' }`
+    - OK: `{ ok:true }`
+    - Error: `{ ok:false, code:'UNAUTHORIZED'|'UNAVAILABLE'|'CANCELLED'|'PATH_OUTSIDE_TASKS'|'READ_FAILED'|'INVALID_JSON'|'INVALID_SCHEMA', message? }`
+- IPC (task editor → main, `invoke`):
+  - `task-list-save`. Payload: `{ meta, rows }`
+    - OK: `{ ok:true, path, meta }`
+    - Error: `{ ok:false, code:'UNAUTHORIZED'|'CANCELLED'|'PATH_OUTSIDE_TASKS'|'INVALID_SCHEMA'|'WRITE_FAILED', message? }`
+  - `task-list-delete`. Payload: `{ path }`
+    - OK: `{ ok:true }`
+    - Error: `{ ok:false, code:'UNAUTHORIZED'|'INVALID_REQUEST'|'CONFIRM_DENIED'|'PATH_OUTSIDE_TASKS'|'WRITE_FAILED', message? }`
+  - `task-library-list`. Payload: ninguno.
+    - OK: `{ ok:true, items }`
+    - Error: `{ ok:false, code:'UNAUTHORIZED'|'READ_FAILED', message? }`
+  - `task-library-save`. Payload: `{ row, includeComment }`
+    - OK: `{ ok:true }`
+    - Error: `{ ok:false, code:'UNAUTHORIZED'|'CONFIRM_DENIED'|'INVALID_SCHEMA'|'READ_FAILED'|'WRITE_FAILED', message? }`
+  - `task-library-delete`. Payload: `{ texto }`
+    - OK: `{ ok:true }`
+    - Error: `{ ok:false, code:'UNAUTHORIZED'|'INVALID_REQUEST'|'NOT_FOUND'|'CONFIRM_DENIED'|'READ_FAILED'|'WRITE_FAILED', message? }`
+  - `task-columns-load`. Payload: ninguno.
+    - OK: `{ ok:true, widths }` (widths puede ser `null` en primer uso)
+    - Error: `{ ok:false, code:'UNAUTHORIZED'|'READ_FAILED', message? }`
+  - `task-columns-save`. Payload: `{ widths }`
+    - OK: `{ ok:true }`
+    - Error: `{ ok:false, code:'UNAUTHORIZED'|'INVALID_SCHEMA'|'WRITE_FAILED', message? }`
+  - `task-open-link`. Payload: `{ raw }`
+    - OK: `{ ok:true }`
+    - Error: `{ ok:false, code:'UNAUTHORIZED'|'CONFIRM_DENIED'|'LINK_MISSING'|'LINK_BLOCKED'|'OPEN_FAILED'|'ERROR', message? }`
+- IPC (eventos, `send`):
+  - main → task editor: `task-editor-init` (envía `{ mode, task, sourcePath }`).
+  - main → task editor: `task-editor-request-close` (handshake de cierre por cambios sin guardar).
+  - task editor → main: `task-editor-confirm-close`.
 - Preload API (`window.electronAPI`, agregado):
   - `saveCurrentTextSnapshot(): Promise<...>`
   - `loadCurrentTextSnapshot(): Promise<...>`
+  - `openTaskEditor(mode: 'new'|'load'): Promise<...>`
+- Preload API (`window.taskEditorAPI`, nuevo; disponible en `task_editor.html`):
+  - `onInit(cb): unsubscribe`
+  - `saveTaskList(payload)`, `deleteTaskList(path)`
+  - `listLibrary()`, `saveLibraryRow(row, includeComment)`, `deleteLibraryEntry(texto)`
+  - `openTaskLink(raw)`
+  - `getColumnWidths()`, `saveColumnWidths(widths)`
+  - `getSettings()`, `onSettingsChanged(cb): unsubscribe`
+  - `onRequestClose(cb): unsubscribe`, `confirmClose()`
 - Storage (nuevo):
   - `config/saved_current_texts/**/*.json`: schema `{ "text": "<string>" }`
+  - `config/tasks/lists/**/*.json`: schema `{ meta:{ name, createdAt, updatedAt }, rows:[{ texto, tiempoSeconds, percentComplete, tipo, enlace, comentario }] }`
+  - `config/tasks/library.json`: schema `[{ texto, tiempoSeconds, tipo, enlace, comentario? }]`
+  - `config/tasks/allowed_hosts.json`: schema `["example.com", ...]`
+  - `config/tasks/column_widths.json`: schema `{ "<colKey>": <pxInt>, ... }`
+  - `config/tasks/task_editor_position.json`: schema `{ "x": <number>, "y": <number> }`
 
 ### Archivos
 
@@ -97,6 +164,29 @@ Reglas:
 - `electron/text_state.js`
 - `electron/fs_storage.js`
 - i18n: `i18n/en/renderer.json`, `i18n/es/renderer.json`, `i18n/en/main.json`, `i18n/es/main.json`
+- `electron/main.js`
+- `electron/tasks_main.js`
+- `electron/task_editor_preload.js`
+- `electron/task_editor_position.js`
+- `electron/settings.js`
+- `electron/link_openers.js`
+- `electron/menu_builder.js`
+- `electron/editor_state.js`
+- `electron/presets_main.js`
+- `electron/updater.js`
+- `public/task_editor.html`
+- `public/task_editor.js`
+- `public/info/instrucciones.es.html`
+- `public/info/instrucciones.en.html`
+- `public/js/count.js`
+- `public/js/crono.js`
+- `public/js/format.js`
+- `public/js/i18n.js`
+- `public/js/info_modal_links.js`
+- `public/js/menu_actions.js`
+- `public/js/notify.js`
+- `public/js/presets.js`
+- `public/language_window.js`
 
 ---
 

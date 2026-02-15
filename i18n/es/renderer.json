@@ -9,7 +9,9 @@
         "edit": "⌨",
         "clear": "🗑",
         "snapshot_load": "📂",
-        "snapshot_save": "💾"
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
       },
       "tooltips": {
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
@@ -18,6 +20,8 @@
         "clear": "Vaciar texto actual",
         "snapshot_load": "Cargar snapshot de texto",
         "snapshot_save": "Guardar el texto actual en un snapshot",
+        "task_new": "Nueva tarea",
+        "task_load": "Cargar tarea",
         "new_preset": "Crear un nuevo preset",
         "edit_preset": "Editar preset seleccionado",
         "delete_preset": "Eliminar preset seleccionado",
@@ -60,6 +64,85 @@
         "flotante_short": "VF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      }
+    },
+    "tasks": {
+      "title": "Editor — Tareas",
+      "labels": {
+        "name": "Nombre",
+        "total": "TIEMPO TOTAL",
+        "empty": "(vacío)",
+        "search": "Buscar",
+        "search_placeholder": "Buscar en biblioteca..."
+      },
+      "columns": {
+        "texto": "Texto",
+        "tiempo": "Tiempo",
+        "percent": "%",
+        "falta": "F",
+        "tipo": "Tipo",
+        "enlace": "Enlace",
+        "comentario": "",
+        "acciones": "Acciones"
+      },
+      "buttons": {
+        "save": "Guardar",
+        "delete": "Eliminar",
+        "add_row": "Agregar fila",
+        "open_library": "Abrir biblioteca",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "Cargar",
+        "library_row_delete": "Eliminar",
+        "close": "Cerrar",
+        "cancel": "Cancelar",
+        "yes": "Sí",
+        "no": "No"
+      },
+      "tooltips": {
+        "move_up": "Subir fila",
+        "move_down": "Bajar fila",
+        "delete_row": "Eliminar fila",
+        "library_row_save": "Guardar en biblioteca",
+        "library_row_load": "Cargar fila",
+        "library_row_delete": "Eliminar de biblioteca",
+        "link_open": "Abrir enlace",
+        "comment": "Agregar/editar comentario"
+      },
+      "modals": {
+        "comment_title": "Comentario",
+        "library_title": "Biblioteca",
+        "library_save_title": "Guardar en biblioteca",
+        "library_save_question": "¿Incluir comentario?"
+      },
+      "alerts": {
+        "task_unavailable": "Funcionalidad de tareas no disponible.",
+        "task_open_error": "No se pudo abrir el editor de tareas.",
+        "task_load_error": "No se pudo cargar la tarea.",
+        "task_save_error": "No se pudo guardar la tarea.",
+        "task_save_success": "Tarea guardada.",
+        "task_delete_error": "No se pudo eliminar la tarea.",
+        "task_delete_unavailable": "No hay una tarea guardada para eliminar.",
+        "task_invalid_file": "Archivo de tareas inválido.",
+        "task_invalid_rows": "Hay filas inválidas en la tarea.",
+        "task_path_outside": "El archivo debe estar dentro de la carpeta de tareas.",
+        "name_required": "El nombre de la tarea es obligatorio.",
+        "row_text_required": "El texto de la fila no puede estar vacío.",
+        "library_load_error": "No se pudo cargar la biblioteca.",
+        "library_save_error": "No se pudo guardar en la biblioteca.",
+        "library_save_success": "Fila guardada en la biblioteca.",
+        "library_delete_error": "No se pudo eliminar de la biblioteca.",
+        "link_blocked": "Enlace bloqueado.",
+        "link_missing": "Archivo no encontrado.",
+        "link_error": "Error al abrir enlace."
+      },
+      "confirm": {
+        "discard_changes": "Hay cambios sin guardar. ¿Desea descartarlos?",
+        "close_unsaved": "Hay cambios sin guardar. ¿Cerrar sin guardar?"
       }
     },
     "modal_preset": {
@@ -185,3 +268,4 @@
     }
   }
 }
+

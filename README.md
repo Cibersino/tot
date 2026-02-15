@@ -7,34 +7,30 @@
 
 # toT — de Texto a Tiempo
 
-¿No te atreves a empezar ciertas lecturas debido a no saber cuánto trabajo realmente te tomará?
-¿Te cuesta terminar las lecturas y las abandonas en la mitad?
-¿Quieres superar tus dificultades y desarrollar tu capacidad de lectura apoyándote en herramientas de medición y organización científicas?
-¿Tu navegador acumula un montón de pestañas y marcadores con noticias y artículos de interés, que no sabes si vas a poder leer?
-¿Tienes que dar una clase este semestre y debes entregar a tus estudiantes una bibliografía realista?
-¿Debes preparar para mañana un escrito para exponer ante un auditorio durante una hora?
-¿Necesitas hacer un guión para una cápsula audiovisual con un tiempo preciso?
-¿La ruma de libros en tu velador crece sin compasión?
-¿Quieres hacer estudios experimentales relacionados con el tiempo de lectura?
+**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas y cronómetro para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
 
-*Esta app es para ti.*
-
-**toT** estima tiempo de lectura a partir de un texto y una velocidad configurada en WPM (palabras por minuto). La app también cuenta con presets de velocidad personalizables y puede medir tu velocidad real con un cronómetro.
-
-Esta app está pensada para:
-* Estimar rápidamente el tiempo de lectura de cualquier texto que introduzcas o compongas.
-* Medir y ajustar tu velocidad real en distintos escenarios.
-* *Configurar presets de WPM personalizados de acuerdo el tipo de lector, la modalidad de lectura, la complejidad de los textos, el idioma o cualquier parámetro que se desee.
+*¿No te atreves a empezar ciertas lecturas debido a no saber cuánto trabajo realmente te tomará?*
+*¿Te cuesta terminar las lecturas y las abandonas en la mitad?*
+*¿Quieres superar tus dificultades y desarrollar tu capacidad de lectura apoyándote en herramientas de medición y organización científicas?*
+*¿Tu navegador acumula un montón de pestañas y marcadores con noticias y artículos de interés, que no sabes si vas a poder leer?*
+*¿Tienes que dar una clase este semestre y debes entregar a tus estudiantes una bibliografía realista?*
+*¿Debes preparar para mañana un escrito para exponer ante un auditorio durante una hora?*
+*¿Necesitas hacer un guión para una cápsula audiovisual con un tiempo preciso?*
+*¿La ruma de libros en tu velador crece sin compasión?*
+*¿Quieres hacer estudios experimentales relacionados con el tiempo de lectura?*
 
 ## Funcionalidades
 
 * El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.
+* Editor de texto completo con búsqueda.
 * Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.
 * Conteo de palabras y caracteres (con/sin espacios).
 * Segmentación “precisa” de palabras usando `Intl.Segmenter`.
 * Presets de WPM: crear/editar/eliminar + restaurar valores por defecto.
 * Cronómetro con cálculo de WPM real + ventana flotante.
-* Interfaz multi-idioma.
+* Snapshots de textos: guardar/cargar los textos actuales.
+* Editor de tareas: organizador de listas de textos para planificar lecturas.
+* Interfaz multi-idioma: `es`, `es-cl`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
 
 ---
 
@@ -58,13 +54,19 @@ Esta app está pensada para:
 
 Notas:
 * Este es un **build portable** (sin instalador).
-* El estado/configuración del usuario se almacena localmente en tu máquina.
+* El estado/configuración se almacena localmente en `app.getPath('userData')/config` (sin dependencia de servicios en la nube).
 
 ---
 
 ## Uso
 
 Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar la app?”).
+
+Accesos rápidos visibles en la ventana principal:
+* `📋↺` / `📋+`: reemplazar o agregar texto desde portapapeles.
+* `⌨`: abrir editor de texto completo.
+* `💾` / `📂`: guardar/cargar snapshot del texto actual.
+* `📝` / `🗃️`: nueva tarea o cargar tarea.
 
 ---
 
@@ -82,6 +84,14 @@ cd tot
 npm install
 npm start
 ```
+
+## Generar build portable (Windows x64)
+
+```bash
+npm run dist:win
+```
+
+El artefacto se genera en `build-output/`.
 
 ### Notas para desarrolladores (DevTools, logs y menú Development)
 
@@ -116,7 +126,8 @@ Esto es solo para desarrollo: en builds empaquetados no se muestra el menú “D
 
 ## Documentación
 
-* Checklist del proceso de release: [`docs/release_checklist.md`](docs/release_checklist.md)
+* Checklist del proceso de release: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
+* Suite de pruebas manuales: [`docs/test_suite.md`](docs/test_suite.md)
 * Changelog (corto): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detallado): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Estructura del repo / archivos clave: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
@@ -145,34 +156,30 @@ MIT — ver [`LICENSE`](LICENSE).
 
 # toT — from Text to Time
 
-Are you hesitant to start certain readings because you don't know how much work it will really take?
-Do you find it hard to finish reading and abandon them in the middle?
-Do you want to overcome your difficulties and develop your reading skills using scientific measurement and organization tools?
-Does your browser accumulate a lot of tabs and bookmarks with news and articles of interest that you don't know if you will be able to read?
-Do you have to teach a class this semester and must provide your students with a realistic bibliography?
-Do you have to prepare a paper for tomorrow to present to an audience for one hour?
-Do you need to script an audiovisual capsule with precise timing?
-Is the pile of books on your bedside table growing mercilessly?
-Do you want to do experimental studies related to reading time?
+**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines configurable WPM presets, precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings with less guesswork.
 
-*This app is for you.*
-
-**toT** estimates reading time from a text and a speed set in WPM (words per minute). The app also has customizable speed presets and can measure your real speed with a stopwatch.
-
-This app is designed for:
-* Quickly estimate the reading time of any text you enter or compose.
-* Measure and adjust your real speed in different scenarios.
-* Configure customized WPM presets according to the type of reader, reading mode, text complexity, language or any desired parameter.
+*Are you hesitant to start certain readings because you don't know how much work it will really take?*
+*Do you find it hard to finish reading and abandon them in the middle?*
+*Do you want to overcome your difficulties and develop your reading skills using scientific measurement and organization tools?*
+*Does your browser accumulate a lot of tabs and bookmarks with news and articles of interest that you don't know if you will be able to read?*
+*Do you have to teach a class this semester and must provide your students with a realistic bibliography?*
+*Do you have to prepare a paper for tomorrow to present to an audience for one hour?*
+*Do you need to script an audiovisual capsule with precise timing?*
+*Is the pile of books on your bedside table growing mercilessly?*
+*Do you want to do experimental studies related to reading time?*
 
 ## Features
 
 * Text can be entered by pasting it from the clipboard and/or manually.
+* Full-text editor with find.
 * Reading-time estimation with configurable WPM (words per minute).
 * Word and character counting (with/without spaces).
 * “Precise mode” word segmentation using `Intl.Segmenter`.
 * WPM presets: create/edit/delete + restore defaults.
 * Stopwatch with real WPM calculation; optional floating window.
-* Multi-language UI.
+* Text snapshots: save/load current texts.
+* Task editor: text list organizer to plan readings.
+* Multi-language UI: `es`, `es-cl`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
 
 ---
 
@@ -199,7 +206,7 @@ This app is designed for:
 Notes:
 
 * This is a **portable build** (no installer).
-* User settings/state are stored locally on your machine.
+* User settings/state are stored locally in `app.getPath('userData')/config` (no cloud service dependency).
 
 ---
 
@@ -207,11 +214,17 @@ Notes:
 
 Usage instructions are included in the app menu (“How to use?”).
 
+Quick actions in the main window:
+* `📋↺` / `📋+`: replace or append clipboard text.
+* `⌨`: open full-text editor.
+* `💾` / `📂`: save/load current-text snapshot.
+* `📝` / `🗃️`: new task or load task.
+
 ---
 
 ## Screenshots
 
-![Ventana principal completa](public/assets/instrucciones/ventana-principal-completa.en.png)
+![Main window overview](public/assets/instrucciones/ventana-principal-completa.en.png)
 
 ---
 
@@ -223,6 +236,14 @@ cd tot
 npm install
 npm start
 ```
+
+## Build portable package (Windows x64)
+
+```bash
+npm run dist:win
+```
+
+The artifact is generated in `build-output/`.
 
 ### Developer notes (DevTools, logs, and the Development menu)
 
@@ -257,7 +278,8 @@ This is development-only: in packaged builds the “Development” menu is hidde
 
 ## Documentation
 
-* Release process checklist: [`docs/release_checklist.md`](docs/release_checklist.md)
+* Release process checklist: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
+* Manual test suite: [`docs/test_suite.md`](docs/test_suite.md)
 * Changelog (short): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detailed): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Repo structure / key files: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)

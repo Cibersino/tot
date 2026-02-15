@@ -15,6 +15,7 @@
 // Logger and DOM references
 // =============================================================================
 const log = window.getLogger ? window.getLogger('language') : console;
+log.debug('Language window starting...');
 const langFilter = document.getElementById('langFilter');
 const langList = document.getElementById('langList');
 const statusLine = document.getElementById('statusLine');

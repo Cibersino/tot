@@ -10,6 +10,8 @@
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
 - Manual editor window (open/edit/apply semantics)
+- Text snapshot feature (save, load, persistence)
+- Task editor window (task lists, library, links, column widths, window position).
 - Stopwatch (velocity) + floating window behavior (unfocused app)
 - Menu actions: Guide/Instructions/FAQ/About (+ link routing)
 - Persistence sanity (settings/current_text/editor_state)
@@ -58,7 +60,14 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - `user_settings.json`
 - `current_text.json`
 - `editor_state.json`
-- plus `presets_defaults/` (runtime defaults copies)
+- `presets_defaults/*.json` (runtime defaults copies)
+- `saved_current_texts/*.json` (saved text snapshots)
+- `tasks/` (created on first use of the task editor)
+  - `tasks/lists/*.json` (saved task lists)
+  - `tasks/library.json` (task row library)
+  - `tasks/allowed_hosts.json` (allowlist for https link opening)
+  - `tasks/column_widths.json` (task editor column widths)
+  - `tasks/task_editor_position.json` (task editor last position; x/y only)
 
 **Windows example (typical):**
 `%APPDATA%\@cibersino\tot\config\...`
@@ -108,12 +117,12 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-02 First-run language selection reachable (clean run only)
 **Goal:** first-run language path is reachable and applies.
 1. (Clean run) Launch app after removing config.
-2. If language window appears, search/filter list and select **Chileno** (or any other regional language available).
+2. If language window appears, search/filter list and select **Español achilenao (`es-cl`)** (or any other language available).
 3. Confirm window closes and app continues.
 
 **Expected:**
 - Language is applied without crash.
-- If language picker does not appear automatically, it must be reachable via menu “Preferences → Language” (see REG-i18n-02).
+- If language picker does not appear automatically, it must be reachable via menu “Preferences → Language” (see REG-I18N-01).
 
 ### SM-03 Clipboard overwrite + automatic results
 **Goal:** overwrite-from-clipboard updates preview + counts + time.
@@ -143,7 +152,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Preview shows empty-state label.
 - Words/chars/time go to zero.
-- Stopwatch is reset due to text change.
+- Stopwatch is reset because current text becomes empty.
 
 ### SM-06 Counting mode toggle (precise/simple)
 **Goal:** toggle works and results remain coherent.
@@ -179,11 +188,12 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Goal:** stopwatch runs and floating window reflects state.
 1. With non-empty text, press ▶ to start stopwatch.
 2. Wait ~2–3 seconds; press pause.
-3. Toggle **FW** (floating window).
+3. Toggle floating window (label may appear as **VF**/**FW** depending language).
 4. Confirm floating window shows same time/state; try start/pause from floating window.
 
 **Expected:**
 - Stopwatch display increments while running.
+- Main and floating window remain synchronized after pause/resume actions from either window.
 
 ### SM-10 Menu: About + Updater
 **Goal:** About modal loads and updater check is reachable.
@@ -205,7 +215,18 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Snapshot file is created.
 - Current text is overwritten; preview/results update.
-- Stopwatch resets due to text change.
+- Stopwatch behavior follows REG-CRONO-02 semantics (non-empty restore: no reset; empty restore: reset).
+
+### SM-12 Task editor: open + basic save
+**Goal:** save and load tasks.
+1. From the main window, click **📝** (new task) to open the task editor.
+2. Add one row with required text (and any numeric fields as desired).
+3. Save the task list (accept the save dialog; choose a name).
+4. Close the task editor, click **🗃️** (load task), and verify the saved data is present.
+
+**Expected:** 
+- task editor opens
+- save/load round-trip works
 
 ---
 
@@ -229,6 +250,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - No unexpected resets of presets/text unless intentionally cleared.
+
+#### REG-FR-03 First-run fallback when closing language window
+**Goal:** startup remains unblocked if language window closes without explicit selection.
+1. Remove config (2.2).
+2. Launch app to show the language window.
+3. Close the language window using the window close button (without selecting language).
+
+**Expected:**
+- App continues startup and main window opens.
+- A safe fallback language is applied/persisted.
+- No startup deadlock or blank state.
 
 ---
 
@@ -258,6 +290,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Text clears.
+- Stopwatch resets to `00:00:00`.
 
 #### REG-MAIN-04 Snapshots: overwrite + cancel semantics
 **Goal:** load behaves like an overwrite flow; cancels are no-ops.
@@ -334,11 +367,15 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - App selects a safe fallback preset (e.g., “default” or first available).
 
 #### REG-PRESETS-05 Repeat REG-01 to REG-04 with default presets
-- Repeat previous steps with a default preset
-- Repeat previous steps with a language default preset.
+1. Repeat edit/delete flows with a **general default** preset (e.g., `default`).
+2. Repeat edit/delete flows with a **language default** preset (if present in current language).
+3. After deleting a default preset in current language, switch to another language and verify it is not globally removed.
+4. Run **Restore defaults (R)** and verify removed defaults reappear for current language.
 
 **Expected:**
-- Same results.
+- Default preset edit/delete flows complete without corruption/crash.
+- Deletion of defaults respects language scoping (no unintended cross-language removal).
+- Restore defaults recovers removed defaults for the active language.
 
 #### REG-PRESETS-06 Restore defaults
 **Goal:** restoring defaults yields a sane list and selection.
@@ -437,6 +474,90 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ---
 
+### REG-TASKS — Task editor (lists, library, links)
+
+#### REG-TASKS-01 Open new task editor + close guard
+**Goal:** Task editor window open/close correctly.
+1. From the main window, click new task (**📝**).
+2. Verify the task editor window opens and is interactive (you can add/edit rows).
+3. Attempt to close with unsaved changes:
+   - Cancel keeps the window open.
+   - Confirm closes the window.
+
+**Expected:**
+- Window opens.
+- Close confirmation behaves correctly.
+
+#### REG-TASKS-02 Save + load task list
+**Goal:** saved list can be reopened.
+1. Open Tasks editor (📝).
+2. Add 2 rows with distinct values.
+3. Save as a new list (name: e.g., "demo").
+4. Close editor.
+5. Click **🗃️** to load a Task in the saved folder.
+6. Click Save again and choose the same filename (overwrite).
+
+**Expected:**
+- Loaded list shows the same rows + meta name.
+- Overwrite confirmation: at most one confirmation (OS dialog); no additional in-app overwrite prompt.
+
+#### REG-TASKS-03 Delete task list
+**Goal:** Delete a task is working.
+1. Load a previously saved list so a source path is present.
+2. Trigger delete; accept the confirmation.
+3. Try loading the same list again.
+
+**Expected:**
+- Delete removes the file.
+- Deleted list is no longer available in the open dialog (or, if force-selected by path, load fails safely with user-facing notice).
+
+#### REG-TASKS-04 Library save/load/delete
+**Goal:** Save and load a text row to general library.
+1. Save a row to the library (once without comment, once with comment if supported).
+2. Open the library modal and verify the saved entry appears.
+3. Insert/apply the library entry into the current task list.
+4. Delete the library entry and verify it disappears.
+
+**Expected:**
+- Library list/save/delete works.
+- Confirmation deny is a no-op.
+
+#### REG-TASKS-05 Column widths persistence
+**Goal:** Resize columns widths.
+1. Resize at least two task editor columns.
+2. Close and reopen the task editor.
+3. Verify the widths persisted.
+
+**Expected:**
+- Column widths restore on open.
+
+#### REG-TASKS-06 Link opening
+**Goal:** link opening respects https + allowlist rules.
+1. Open Tasks editor and add a row with Link populated.
+2. Test cases:
+   a) https://example.com (first time): confirm dialog; can "trust host"; opens.
+   b) https://example.com (after trusting): opens without confirm.
+   c) http://example.com: blocked; show "Link blocked."
+   d) Local absolute path (e.g., C:\Users\...\file.pdf):
+      - With an existing file: confirm dialog; opens if accepted.
+      - With a missing file: show "File not found."
+
+**Expected:**
+- Confirm prompt appears for (a) and (d) and not for (b).
+- (c) is blocked with user-visible notice.
+- Local path opens only if the file exists and the user confirms.
+
+#### REG-TASKS-07 Task editor window position persistence
+**Goal:** Task editor position keep the same position after close.
+1. Open the task editor and move it to a noticeable position.
+2. Close and reopen the task editor.
+3. Verify the position is restored (size may remain fixed).
+
+**Expected:**
+- Position (x/y) is restored.
+
+---
+
 ### REG-CRONO — Stopwatch + floating window
 
 #### REG-CRONO-01 Start/pause/reset in main
@@ -447,23 +568,26 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Time increments while running; reset returns to 00:00:00.
 
-#### REG-CRONO-02 Text change forces reset
-**Goal:** any text update triggers crono reset.
+#### REG-CRONO-02 Text change semantics (non-empty vs empty)
+**Goal:** non-empty text changes do not reset, but empty text does reset.
 1. Start stopwatch.
-2. Overwrite/Append clipboard or edit in editor.
-3. Confirm crono resets.
+2. While running, overwrite/append with a **non-empty** text (clipboard or editor).
+3. Confirm stopwatch does **not** reset.
+4. Clear current text (trash in main window).
+5. Confirm stopwatch resets.
 
 **Expected:**
-- Reset is requested automatically on textChanged.
+- Non-empty text changes keep elapsed state.
+- Clearing text resets to `00:00:00`.
 
 #### REG-CRONO-03 Floating window state sync + unfocused behavior
 **Goal:** floating window remains usable when main is unfocused.
-1. Enable VF (floating window).
+1. Enable floating window (label may appear as **VF**/**FW** depending language).
 2. Alt-tab away (unfocus app), then interact with floating window (play/pause/stop).
 3. Verify state remains consistent when returning to main.
 
 **Expected:**
-- Floating window shows always on top, with updated state and control the stopwatch.
+- Floating window remains usable while main is unfocused and stays synchronized with main stopwatch state.
 
 ---
 
@@ -489,10 +613,11 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Goal:** external links are restricted; app docs open properly (packaged preferred).
 1. From About (or other UI link points), attempt to open:
    - GitHub release/docs links (allowed host)
+   - DOI links from “Links de interés” (allowed host)
 2. (Packaged build) open bundled docs (LICENSE, PRIVACY, etc.) if wired in UI.
 
 **Expected:**
-- Only HTTPS + allowed GitHub hosts are opened externally.
+- Only HTTPS + allowlisted hosts are opened externally (GitHub/DOI set).
 - App docs open via OS viewer; missing docs yield safe failure.
 
 ---
@@ -531,6 +656,32 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Snapshot remains on disk after relaunch.
 - Loading from a descendant subfolder works and overwrites current text.
 
+#### REG-PERSIST-04 Tasks: config/tasks persistence (lists, library, allowlist, widths, window position)
+**Goal:** task feature state persists under config/tasks and reloads correctly after restart.
+1. Click **📝** to open Tasks editor.
+2. Resize at least two columns to non-default widths.
+3. Add a row with a distinctive Text + Time and an optional Comment.
+4. Save the list (name: e.g., "persist_demo").
+5. Save the same row into Library (choose Include comment = Yes).
+6. Open an https link to a new host and choose "Trust this host from now on".
+7. Move the Tasks editor window to a distinctive position; close the editor; quit the app.
+8. Inspect `config/tasks/` on disk:
+   - `lists/persist_demo.json` exists
+   - `library.json` exists
+   - `allowed_hosts.json` exists
+   - `column_widths.json` exists
+   - `task_editor_position.json` exists
+9. Relaunch the app.
+10. Open Tasks editor and verify:
+    - Window position restored (x/y) and fully visible.
+    - Column widths restored.
+    - Library entry still present.
+    - Opening a link to the trusted host does not prompt again.
+
+**Expected:**
+- All files above exist and are valid JSON.
+- Tasks state (position, column widths, library, allowed hosts) persists across restart.
+
 ---
 
 ### REG-I18N — Language switching and number formatting
@@ -548,7 +699,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-I18N-02 Cross-window i18n consistency
 **Goal:** editor/preset/flotante reflect language updates.
 1. Change language.
-2. Open editor, preset modal, floating window.
+2. Open editor, preset modal, floating window, task editor.
 
 **Expected:**
 - Each window applies translations without crash.
@@ -572,12 +723,14 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### EDGE-01 Large paste / truncation behavior
 **Goal:** app handles oversized text safely.
-1. Attempt to paste or insert very large text in editor.
-2. Observe truncation warnings / safe behavior.
+1. Attempt to paste/drop very large text in editor (well above paste/drop threshold).
+2. Attempt to exceed max text size by typing/concatenating until near hard limit.
+3. Observe notices and resulting text size.
 
 **Expected:**
-- Text is truncated to max limits; UI remains responsive.
-- Warning/notice may appear for truncation.
+- Oversized paste/drop is rejected or limited safely (no freeze/crash).
+- Hard-cap overflow paths truncate safely when applicable.
+- UI remains responsive and user receives notice on limit/truncation scenarios.
 
 ### EDGE-02 Offline updater
 **Goal:** updater fails gracefully without hanging.

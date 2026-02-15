@@ -9,7 +9,9 @@
         "edit": "⌨",
         "clear": "🗑",
         "snapshot_load": "📂",
-        "snapshot_save": "💾"
+        "snapshot_save": "💾",
+        "task_new": "📝",
+        "task_load": "🗃️"
       },
       "tooltips": {
         "overwrite_clipboard": "Replace current text with clipboard",
@@ -18,6 +20,8 @@
         "clear": "Clear current text",
         "snapshot_load": "Load text snapshot",
         "snapshot_save": "Save current text to a snapshot",
+        "task_new": "New task",
+        "task_load": "Load task",
         "new_preset": "Create a new preset",
         "edit_preset": "Edit selected preset",
         "delete_preset": "Delete selected preset",
@@ -60,6 +64,85 @@
         "flotante_short": "FW",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      }
+    },
+    "tasks": {
+      "title": "Editor — Tasks",
+      "labels": {
+        "name": "Name",
+        "total": "TOTAL TIME",
+        "empty": "(empty)",
+        "search": "Search",
+        "search_placeholder": "Search library..."
+      },
+      "columns": {
+        "texto": "Text",
+        "tiempo": "Time",
+        "percent": "%",
+        "falta": "R",
+        "tipo": "Type",
+        "enlace": "Link",
+        "comentario": "",
+        "acciones": "Actions"
+      },
+      "buttons": {
+        "save": "Save",
+        "delete": "Delete",
+        "add_row": "Add row",
+        "open_library": "Open library",
+        "comment": "💬",
+        "link_open": "↗️",
+        "move_up": "↑",
+        "move_down": "↓",
+        "delete_row": "🗑",
+        "library_row_save": "💾",
+        "library_row_load": "Load",
+        "library_row_delete": "Delete",
+        "close": "Close",
+        "cancel": "Cancel",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "tooltips": {
+        "move_up": "Move up",
+        "move_down": "Move down",
+        "delete_row": "Delete row",
+        "library_row_save": "Save to library",
+        "library_row_load": "Load row",
+        "library_row_delete": "Delete from library",
+        "link_open": "Open link",
+        "comment": "Add/edit comment"
+      },
+      "modals": {
+        "comment_title": "Comment",
+        "library_title": "Library",
+        "library_save_title": "Save to library",
+        "library_save_question": "Include comment?"
+      },
+      "alerts": {
+        "task_unavailable": "Task functionality is unavailable.",
+        "task_open_error": "Could not open the task editor.",
+        "task_load_error": "Could not load the task.",
+        "task_save_error": "Could not save the task.",
+        "task_save_success": "Task saved.",
+        "task_delete_error": "Could not delete the task.",
+        "task_delete_unavailable": "No saved task to delete.",
+        "task_invalid_file": "Invalid task file.",
+        "task_invalid_rows": "There are invalid rows in the task.",
+        "task_path_outside": "The file must be inside the tasks folder.",
+        "name_required": "Task name is required.",
+        "row_text_required": "Row text cannot be empty.",
+        "library_load_error": "Could not load the library.",
+        "library_save_error": "Could not save to the library.",
+        "library_save_success": "Row saved to the library.",
+        "library_delete_error": "Could not delete from the library.",
+        "link_blocked": "Link blocked.",
+        "link_missing": "File not found.",
+        "link_error": "Error opening link."
+      },
+      "confirm": {
+        "discard_changes": "There are unsaved changes. Discard them?",
+        "close_unsaved": "There are unsaved changes. Close without saving?"
       }
     },
     "modal_preset": {
@@ -185,3 +268,4 @@
     }
   }
 }
+
