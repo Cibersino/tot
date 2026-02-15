@@ -19,22 +19,26 @@
 
 *Esta app es para ti.*
 
-**toT** estima tiempo de lectura a partir de un texto y una velocidad configurada en WPM (palabras por minuto). La app también cuenta con presets de velocidad personalizables y puede medir tu velocidad real con un cronómetro.
+**toT** estima tiempo de lectura a partir de un texto y una velocidad configurada en WPM (palabras por minuto). La app también cuenta con presets personalizables, snapshots del texto actual, un editor de tareas para planificar lecturas y un cronómetro para medir velocidad real.
 
 Esta app está pensada para:
 * Estimar rápidamente el tiempo de lectura de cualquier texto que introduzcas o compongas.
 * Medir y ajustar tu velocidad real en distintos escenarios.
-* *Configurar presets de WPM personalizados de acuerdo el tipo de lector, la modalidad de lectura, la complejidad de los textos, el idioma o cualquier parámetro que se desee.
+* Configurar presets de WPM personalizados según tipo de lector, modalidad de lectura, complejidad del texto, idioma u otros parámetros.
+* Organizar lecturas con listas de tareas (tiempo total/restante, enlaces, comentarios y biblioteca reutilizable).
 
 ## Funcionalidades
 
 * El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.
+* Editor de texto completo con búsqueda.
 * Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.
 * Conteo de palabras y caracteres (con/sin espacios).
 * Segmentación “precisa” de palabras usando `Intl.Segmenter`.
 * Presets de WPM: crear/editar/eliminar + restaurar valores por defecto.
 * Cronómetro con cálculo de WPM real + ventana flotante.
-* Interfaz multi-idioma.
+* Snapshots de textos: guardar/cargar los textos actuales.
+* Editor de tareas: organizador de listas de textos para planificar lecturas.
+* Interfaz multi-idioma: `es`, `es-cl`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
 
 ---
 
@@ -58,13 +62,19 @@ Esta app está pensada para:
 
 Notas:
 * Este es un **build portable** (sin instalador).
-* El estado/configuración del usuario se almacena localmente en tu máquina.
+* El estado/configuración se almacena localmente en `app.getPath('userData')/config` (sin dependencia de servicios en la nube).
 
 ---
 
 ## Uso
 
 Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar la app?”).
+
+Accesos rápidos visibles en la ventana principal:
+* `📋↺` / `📋+`: reemplazar o agregar texto desde portapapeles.
+* `⌨`: abrir editor de texto completo.
+* `💾` / `📂`: guardar/cargar snapshot del texto actual.
+* `📝` / `🗃️`: nueva tarea o cargar tarea.
 
 ---
 
@@ -82,6 +92,14 @@ cd tot
 npm install
 npm start
 ```
+
+## Generar build portable (Windows x64)
+
+```bash
+npm run dist:win
+```
+
+El artefacto se genera en `build-output/`.
 
 ### Notas para desarrolladores (DevTools, logs y menú Development)
 
@@ -117,6 +135,7 @@ Esto es solo para desarrollo: en builds empaquetados no se muestra el menú “D
 ## Documentación
 
 * Checklist del proceso de release: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
+* Suite de pruebas manuales: [`docs/test_suite.md`](docs/test_suite.md)
 * Changelog (corto): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detallado): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Estructura del repo / archivos clave: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
@@ -157,22 +176,26 @@ Do you want to do experimental studies related to reading time?
 
 *This app is for you.*
 
-**toT** estimates reading time from a text and a speed set in WPM (words per minute). The app also has customizable speed presets and can measure your real speed with a stopwatch.
+**toT** estimates reading time from a text and a speed set in WPM (words per minute). The app also includes customizable presets, current-text snapshots, a task editor for reading plans, and a stopwatch to measure real speed.
 
 This app is designed for:
 * Quickly estimate the reading time of any text you enter or compose.
 * Measure and adjust your real speed in different scenarios.
 * Configure customized WPM presets according to the type of reader, reading mode, text complexity, language or any desired parameter.
+* Organize reading plans with task lists (total/remaining time, links, comments, and reusable library rows).
 
 ## Features
 
 * Text can be entered by pasting it from the clipboard and/or manually.
+* Full-text editor with find.
 * Reading-time estimation with configurable WPM (words per minute).
 * Word and character counting (with/without spaces).
 * “Precise mode” word segmentation using `Intl.Segmenter`.
 * WPM presets: create/edit/delete + restore defaults.
 * Stopwatch with real WPM calculation; optional floating window.
-* Multi-language UI.
+* Text snapshots: save/load current texts.
+* Task editor: text list organizer to plan readings.
+* Multi-language UI: `es`, `es-cl`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
 
 ---
 
@@ -199,7 +222,7 @@ This app is designed for:
 Notes:
 
 * This is a **portable build** (no installer).
-* User settings/state are stored locally on your machine.
+* User settings/state are stored locally in `app.getPath('userData')/config` (no cloud service dependency).
 
 ---
 
@@ -207,11 +230,17 @@ Notes:
 
 Usage instructions are included in the app menu (“How to use?”).
 
+Quick actions in the main window:
+* `📋↺` / `📋+`: replace or append clipboard text.
+* `⌨`: open full-text editor.
+* `💾` / `📂`: save/load current-text snapshot.
+* `📝` / `🗃️`: new task or load task.
+
 ---
 
 ## Screenshots
 
-![Ventana principal completa](public/assets/instrucciones/ventana-principal-completa.en.png)
+![Main window overview](public/assets/instrucciones/ventana-principal-completa.en.png)
 
 ---
 
@@ -223,6 +252,14 @@ cd tot
 npm install
 npm start
 ```
+
+## Build portable package (Windows x64)
+
+```bash
+npm run dist:win
+```
+
+The artifact is generated in `build-output/`.
 
 ### Developer notes (DevTools, logs, and the Development menu)
 
@@ -258,6 +295,7 @@ This is development-only: in packaged builds the “Development” menu is hidde
 ## Documentation
 
 * Release process checklist: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
+* Manual test suite: [`docs/test_suite.md`](docs/test_suite.md)
 * Changelog (short): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detailed): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Repo structure / key files: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
