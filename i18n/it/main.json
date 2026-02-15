@@ -35,8 +35,8 @@
       "snapshot_overwrite_load": "Sostituire il testo attuale con lo snapshot selezionato \"{name}\"?",
       "task_overwrite_save": "Sovrascrivere la lista di attività esistente?",
       "task_delete_confirm": "Eliminare la lista di attività \"{name}\"?",
-      "task_library_overwrite": "Un elemento chiamato \"{name}\" esiste già nella libreria. Sovrascrivere?",
-      "task_library_delete": "Eliminare \"{name}\" dalla libreria?",
+      "task_library_row_save_overwrite": "Un elemento chiamato \"{name}\" esiste già nella libreria. Sovrascrivere?",
+      "task_library_row_delete": "Eliminare \"{name}\" dalla libreria?",
       "task_link_confirm": "Aprire questo link?",
       "task_link_trust_host": "Fidarsi di questo host da ora in poi",
       "task_path_confirm": "Aprire questo file locale?",
@@ -56,3 +56,4 @@
     }
   }
 }
+

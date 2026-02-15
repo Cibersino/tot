@@ -78,15 +78,15 @@
         "save": "Elkünun",
         "delete": "Ñamümün",
         "add_row": "Dewman ruka",
-        "load_library": "Kintun biblioteca",
+        "open_library": "Nülán biblioteca",
         "comment": "💬",
         "link_open": "↗️",
         "move_up": "↑",
         "move_down": "↓",
         "delete_row": "🗑",
-        "save_library": "💾",
-        "library_load": "Kintun",
-        "library_delete": "Ñamümün",
+        "library_row_save": "💾",
+        "library_row_load": "Kintun",
+        "library_row_delete": "Ñamümün",
         "close": "Nürüfün",
         "cancel": "Katrüntun",
         "yes": "Sí",
@@ -96,9 +96,9 @@
         "move_up": "Wünen ruka",
         "move_down": "Inan ruka",
         "delete_row": "Ñamümün ruka",
-        "save_library": "Elkünun ruka biblioteca mew",
-        "library_load": "Kintun ruka",
-        "library_delete": "Ñamümün ruka biblioteca mew",
+        "library_row_save": "Elkünun ruka biblioteca mew",
+        "library_row_load": "Kintun ruka",
+        "library_row_delete": "Ñamümün ruka biblioteca mew",
         "link_open": "Ruta wechun",
         "comment": "Elüwün kañi nütram"
       },
@@ -241,3 +241,4 @@
     }
   }
 }
+

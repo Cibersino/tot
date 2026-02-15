@@ -613,7 +613,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
         let message = resolveDialogText(
           dialogTexts,
-          'task_library_overwrite',
+          'task_library_row_save_overwrite',
           'Overwrite existing library entry?'
         );
         message = message.replace('{name}', resEntry.entry.texto);
@@ -670,7 +670,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
       let message = resolveDialogText(
         dialogTexts,
-        'task_library_delete',
+        'task_library_row_delete',
         'Delete this library entry?'
       );
       message = message.replace('{name}', items[idx].texto || texto);

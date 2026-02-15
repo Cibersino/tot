@@ -89,15 +89,15 @@
         "save": "Guardar",
         "delete": "Eliminar",
         "add_row": "Agregar fila",
-        "load_library": "Cargar biblioteca",
+        "open_library": "Abrir biblioteca",
         "comment": "💬",
         "link_open": "↗️",
         "move_up": "↑",
         "move_down": "↓",
         "delete_row": "🗑",
-        "save_library": "💾",
-        "library_load": "Cargar",
-        "library_delete": "Eliminar",
+        "library_row_save": "💾",
+        "library_row_load": "Cargar",
+        "library_row_delete": "Eliminar",
         "close": "Cerrar",
         "cancel": "Cancelar",
         "yes": "Sí",
@@ -107,9 +107,9 @@
         "move_up": "Subir fila",
         "move_down": "Bajar fila",
         "delete_row": "Eliminar fila",
-        "save_library": "Guardar en biblioteca",
-        "library_load": "Cargar fila",
-        "library_delete": "Eliminar de biblioteca",
+        "library_row_save": "Guardar en biblioteca",
+        "library_row_load": "Cargar fila",
+        "library_row_delete": "Eliminar de biblioteca",
         "link_open": "Abrir enlace",
         "comment": "Agregar/editar comentario"
       },
@@ -268,3 +268,4 @@
     }
   }
 }
+
