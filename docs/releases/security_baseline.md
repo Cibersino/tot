@@ -22,6 +22,7 @@ Leyenda:
 
 Regla operativa:
 * Este baseline aplica **solo** al artefacto inspeccionado. Si se re-empaqueta, se debe re-ejecutar el Post-packaging Gate.
+* Este archivo es la **línea base reusable** para releases futuros; cada release debe completar estados/evidencias sobre esta misma estructura.
 
 ---
 
@@ -39,6 +40,7 @@ Estado por gate:
 Notas:
 * Si el veredicto es PASS, registrar el identificador del artefacto validado (nombre exacto + hash o evidencia equivalente).
 * Si el veredicto es BLOCKER/PENDING, registrar el/los ítems bloqueantes y el plan de cierre.
+* Registrar siempre el **delta de seguridad** del release (canales IPC nuevos/modificados, ventanas nuevas, cambios CSP, rutas nuevas de persistencia, cambios en updater/enlaces externos).
 
 ---
 
@@ -53,13 +55,14 @@ Checklist:
 * [PENDING] La app no depende de cargar contenido remoto arbitrario para operar.
 
 Notas / evidencia:
-* Indicar si existen superficies que consumen HTML/texto no confiable (p. ej. editor, previews) y cómo se acota el riesgo (CSP + sandbox + IPC whitelist).
+* Indicar superficies con input no confiable y su control (texto principal, editor, presets, task editor, links externos, snapshots, clipboard).
+* Indicar cómo se acota riesgo de inyección/escalamiento (CSP + sandbox + IPC whitelist + restricción de navegación).
 
 ---
 
 ## 3) BrowserWindow posture — Ship Gate
 
-**Invariantes requeridas en todas las ventanas** (main / editor / preset / language / flotante / otras):
+**Invariantes requeridas en todas las ventanas** (main / editor / task_editor / preset / language / flotante / otras):
 
 Checklist:
 * [PENDING] `contextIsolation: true`
@@ -67,13 +70,17 @@ Checklist:
 * [PENDING] `sandbox: true`
 * [PENDING] No se usa `enableRemoteModule` (si aparece: incidente).
 * [PENDING] No hay `webview` embebidos (`webviewTag` / `<webview>`).
+* [PENDING] No se desactiva `webSecurity` ni se habilitan flags equivalentes que relajen aislamiento.
 * [PENDING] No se navega a contenido remoto para renderizar UI (modelo local-first / local-only, salvo excepción explícita documentada).
+* [PENDING] Existe control explícito de navegación/ventana emergente (`will-navigate`, `setWindowOpenHandler` o control equivalente deny-by-default).
 
 Criterio de bloqueo:
 * Cualquier ventana que deshabilite `sandbox`, habilite `nodeIntegration`, o deshabilite `contextIsolation`.
+* Falta de control de navegación no deseada en ventanas renderer con contenido interactivo.
 
 Evidencia mínima sugerida:
-* Lista de ventanas y dónde se setean `webPreferences` (archivo + referencia aproximada de línea).
+* Lista exhaustiva de ventanas y dónde se setean `webPreferences` (archivo + referencia aproximada de línea).
+* Evidencia del control de navegación/ventanas emergentes y del flujo permitido para salidas externas.
 
 ---
 
@@ -87,6 +94,7 @@ Checklist:
 * [PENDING] Preloads exponen API vía `contextBridge` y no exponen Node a renderer.
 * [PENDING] Preloads no implementan file I/O, network I/O, ni ejecución dinámica.
 * [PENDING] Preloads no exponen superficies amplias (ej. acceso directo a `ipcRenderer` sin wrapper de propósito).
+* [PENDING] APIs preload se mantienen separadas por ventana y con propósito explícito (ej. `electronAPI`, `editorAPI`, `taskEditorAPI`, `presetAPI`, `languageAPI`, `flotanteAPI`).
 * [PENDING] Logging en preload es mínimo; decisiones de seguridad se aplican en main.
 
 Criterio de bloqueo:
@@ -94,6 +102,7 @@ Criterio de bloqueo:
 
 Evidencia mínima sugerida:
 * Enumeración de APIs expuestas (`window.*API`) + lista de métodos y su propósito (por preload).
+* Confirmación de que no se expone `ipcRenderer` crudo, `require`, `process`, `fs` o primitivos de ejecución dinámica.
 
 ---
 
@@ -107,6 +116,7 @@ Checklist:
 * [PENDING] Disciplina de esquema (plain object donde corresponde; coerción/normalización de tipos).
 * [PENDING] Whitelisting de campos (ignorar/dropear campos desconocidos; no “passthrough”).
 * [PENDING] Size fuses para strings controlables por el renderer (texto, nombres/descripciones, meta).
+* [PENDING] Size fuses cubren también entradas de Task Editor (texto, enlace, comentario y payloads de listas/biblioteca).
 * [PENDING] Sender restriction cuando el canal debe pertenecer a una ventana específica.
 * [PENDING] Fallos recuperables devuelven respuesta estructurada `{ ok:false, ... }` y feedback UX cuando aplica.
 
@@ -116,6 +126,8 @@ Mapa de superficies “de impacto” (completar por release, al menos con los ca
 * [PENDING] Presets: creación/edición/borrado con sanitización y límites.
 * [PENDING] Apertura de modales/ventanas: payload acotado + control de origen.
 * [PENDING] Apertura de enlaces/docs: allowlist + validación + no “open arbitrary”.
+* [PENDING] Task Editor (listas/biblioteca/enlaces): esquema + sender guard + límites + política de apertura de links/paths.
+* [PENDING] Snapshots de texto: validación de esquema + contención de ruta + confirmación de sobreescritura.
 
 Criterio de bloqueo:
 * Añadir un canal IPC nuevo de impacto sin: whitelist, size fuse y (si aplica) sender guard.
@@ -123,6 +135,7 @@ Criterio de bloqueo:
 Evidencia mínima sugerida:
 * Lista de canales IPC “de impacto” y dónde se registran (archivo + referencia aproximada).
 * Para cada canal: shape de request/response y validaciones relevantes.
+* Tabla explícita de cambios IPC respecto al release anterior (canal nuevo/modificado/eliminado + riesgo + veredicto).
 
 ---
 
@@ -141,6 +154,7 @@ Baseline mínimo aceptable (ajustar solo con justificación explícita):
 
 Checklist:
 * [PENDING] CSP presente en **todas** las páginas HTML de ventanas renderer.
+* [PENDING] CSP presente también en HTMLs informativos/auxiliares (`public/info/*.html` u equivalentes).
 * [PENDING] `script-src 'self'` (sin fuentes remotas; sin `unsafe-eval`; sin inline scripts).
 * [PENDING] No hay `<script>` inline en HTML.
 * [PENDING] No hay handlers inline tipo `onclick=...`.
@@ -151,6 +165,7 @@ Criterio de bloqueo:
 
 Evidencia mínima sugerida:
 * Lista de HTMLs con su CSP (muestra representativa o verificación sistemática).
+* Resultado de búsqueda de `<script>` inline / handlers inline y resolución de hallazgos.
 
 ---
 
@@ -164,13 +179,14 @@ Checklist:
 * [PENDING] Persistencia de usuario confinada a un directorio controlado por la app (p. ej. `app.getPath('userData')/...`).
 * [PENDING] No existe lectura/escritura arbitraria por rutas entregadas por renderer (salvo diseño explícito con validación fuerte).
 * [PENDING] Entradas no confiables que llegan a persistencia (texto, presets) están acotadas por tamaño y saneo antes de persistir.
+* [PENDING] Rutas seleccionadas por diálogos (`save/open`) se normalizan y confinan al root esperado (p. ej. `tasks/lists`, `saved_current_texts`).
 * [PENDING] Lecturas i18n limitadas al árbol `i18n/` y las claves/tags se normalizan.
 
 Criterio de bloqueo:
 * Introducir rutas controladas por renderer para lectura/escritura sin validación estricta y sin rediseño de seguridad.
 
 Evidencia mínima sugerida:
-* Inventario de archivos persistidos + ubicación base + quién puede escribirlos.
+* Inventario de archivos persistidos esperados (p. ej. `user_settings.json`, `current_text.json`, `presets_defaults/*`, `tasks/*`, `saved_current_texts/*`) + ubicación base + quién puede escribirlos.
 * Enumeración de rutas abiertas por diálogos del sistema (si existen) y cómo se validan.
 
 ---
@@ -198,6 +214,7 @@ Checklist:
 * [PENDING] El check de versión consulta un endpoint HTTPS fijo y conocido (documentar cuál).
 * [PENDING] Si hay update, se solicita consentimiento explícito del usuario.
 * [PENDING] La acción de “Download” abre el release oficial en navegador externo (o flujo equivalente bajo control del usuario).
+* [PENDING] Endpoint de check y URL de descarga no son controlables por renderer.
 * [PENDING] No existe descarga silenciosa de binarios.
 * [PENDING] No existe ejecución automática de instaladores.
 * [PENDING] No existe auto-update in-app (download/quitAndInstall/etc.).
@@ -210,6 +227,7 @@ Criterio de bloqueo:
 
 Evidencia mínima sugerida:
 * Endpoint usado + decisión de UX + confirmación de que no existe auto-update.
+* Referencias de código del handler IPC y del flujo de confirmación UX.
 
 ---
 
@@ -224,12 +242,13 @@ Checklist:
   * Si se detecta un secreto: incidente y bloquea publicación hasta rotación/remoción.
 
 * [PENDING] Packaging excludes (política “no arrastrar dev”):
-  * La configuración de empaquetado excluye explícitamente directorios no distribuibles (mínimo: `tools_local/` y equivalentes).
+  * La configuración de empaquetado usa allowlist estricta de runtime (`build.files`) o excludes explícitos equivalentes.
+  * Quedan fuera directorios no distribuibles (mínimo: `tools_local/` y equivalentes).
   * Excluye backups, evidence folders, scripts internos que no sean runtime.
 
 * [PENDING] DevTools / Debug hooks (política para build distribuible):
   * En build empaquetado: DevTools **no se abre automáticamente**.
-  * En build empaquetado: no existe un menú/atajo propio de la app que abra DevTools salvo modo debug explícito.
+  * En build empaquetado: no existe un menú/atajo propio de la app que abra DevTools salvo modo debug explícito y deliberado.
   * Nota: DevTools en modo dev es normal.
 
 * [PENDING] Source maps (si aplica):
@@ -243,6 +262,7 @@ Criterio de bloqueo:
 
 Evidencia mínima sugerida:
 * Comandos/outputs usados para verificar (p. ej. grep de secretos, inspección de config build, etc.).
+* Resumen de archivos efectivamente incluidos por configuración de empaquetado.
 
 ---
 
@@ -260,6 +280,7 @@ No re-valida postura de seguridad “en fuente” (IPC/CSP/etc.) salvo en la med
 
 Checklist:
 * [PENDING] Listado exacto de dependencias de producción incluidas en el build (top-level):
+  * Confrontar lo incluido en artefacto contra `package.json` (`dependencies`) y contra el runtime esperado de Electron.
   * Enumerar `resources/app.asar/node_modules` o ruta equivalente y registrar nombres + versiones.
   * Resultado (pegar debajo):
     * `<TBD: lista exacta o “no hay node_modules en artefacto”>`
@@ -278,11 +299,12 @@ Checklist:
   * Confirmar que solo incluye lo esperado (app + recursos + runtime).
   * Confirmar ausencia de archivos sensibles (tokens, llaves, `.env`, dumps, logs de dev).
   * Confirmar ausencia de material de desarrollo no intencionado (herramientas locales, evidence folders, backups).
-  * Confirmar que las páginas renderer incluidas corresponden al set esperado (no HTML “extra” no revisado).
+  * Confirmar que las páginas renderer incluidas corresponden al set esperado (main/editor/task_editor/preset/language/flotante/info u otras explícitamente aprobadas).
 
 * [PENDING] Smoke “renderer containment” sobre el artefacto:
   * Confirmar que renderer no expone Node (`window.require` / `window.process`).
   * Confirmar que funcionalidades principales operan sin pedir permisos no esperados.
+  * Confirmar que navegación externa no controlada queda bloqueada (solo flujos permitidos vía main/allowlist).
 
 Criterio de bloqueo:
 * Cualquier hallazgo de material dev/sensible dentro del artefacto.
