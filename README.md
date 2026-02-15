@@ -116,7 +116,7 @@ Esto es solo para desarrollo: en builds empaquetados no se muestra el menú “D
 
 ## Documentación
 
-* Checklist del proceso de release: [`docs/release_checklist.md`](docs/release_checklist.md)
+* Checklist del proceso de release: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
 * Changelog (corto): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detallado): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Estructura del repo / archivos clave: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
@@ -257,7 +257,7 @@ This is development-only: in packaged builds the “Development” menu is hidde
 
 ## Documentation
 
-* Release process checklist: [`docs/release_checklist.md`](docs/release_checklist.md)
+* Release process checklist: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
 * Changelog (short): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detailed): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Repo structure / key files: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
