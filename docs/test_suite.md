@@ -117,12 +117,12 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-02 First-run language selection reachable (clean run only)
 **Goal:** first-run language path is reachable and applies.
 1. (Clean run) Launch app after removing config.
-2. If language window appears, search/filter list and select **Chileno** (or any other regional language available).
+2. If language window appears, search/filter list and select **Español achilenao (`es-cl`)** (or any other language available).
 3. Confirm window closes and app continues.
 
 **Expected:**
 - Language is applied without crash.
-- If language picker does not appear automatically, it must be reachable via menu “Preferences → Language” (see REG-i18n-02).
+- If language picker does not appear automatically, it must be reachable via menu “Preferences → Language” (see REG-I18N-01).
 
 ### SM-03 Clipboard overwrite + automatic results
 **Goal:** overwrite-from-clipboard updates preview + counts + time.
@@ -188,11 +188,12 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Goal:** stopwatch runs and floating window reflects state.
 1. With non-empty text, press ▶ to start stopwatch.
 2. Wait ~2–3 seconds; press pause.
-3. Toggle **FW** (floating window).
+3. Toggle floating window (label may appear as **VF**/**FW** depending language).
 4. Confirm floating window shows same time/state; try start/pause from floating window.
 
 **Expected:**
 - Stopwatch display increments while running.
+- Main and floating window remain synchronized after pause/resume actions from either window.
 
 ### SM-10 Menu: About + Updater
 **Goal:** About modal loads and updater check is reachable.
@@ -214,7 +215,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Snapshot file is created.
 - Current text is overwritten; preview/results update.
-- Stopwatch resets due to text change.
+- Stopwatch behavior follows REG-CRONO-02 semantics (non-empty restore: no reset; empty restore: reset).
 
 ### SM-12 Task editor: open + basic save
 **Goal:** save and load tasks.
@@ -278,6 +279,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Text clears.
+- Stopwatch resets to `00:00:00`.
 
 #### REG-MAIN-04 Snapshots: overwrite + cancel semantics
 **Goal:** load behaves like an overwrite flow; cancels are no-ops.
@@ -551,23 +553,26 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Time increments while running; reset returns to 00:00:00.
 
-#### REG-CRONO-02 Text change forces reset
-**Goal:** any text update triggers crono reset.
+#### REG-CRONO-02 Text change semantics (non-empty vs empty)
+**Goal:** non-empty text changes do not reset, but empty text does reset.
 1. Start stopwatch.
-2. Overwrite/Append clipboard or edit in editor.
-3. Confirm crono resets.
+2. While running, overwrite/append with a **non-empty** text (clipboard or editor).
+3. Confirm stopwatch does **not** reset.
+4. Clear current text (trash in main window).
+5. Confirm stopwatch resets.
 
 **Expected:**
-- Reset is requested automatically on textChanged.
+- Non-empty text changes keep elapsed state.
+- Clearing text resets to `00:00:00`.
 
 #### REG-CRONO-03 Floating window state sync + unfocused behavior
 **Goal:** floating window remains usable when main is unfocused.
-1. Enable VF (floating window).
+1. Enable floating window (label may appear as **VF**/**FW** depending language).
 2. Alt-tab away (unfocus app), then interact with floating window (play/pause/stop).
 3. Verify state remains consistent when returning to main.
 
 **Expected:**
-- Floating window shows always on top, with updated state and control the stopwatch.
+- Floating window remains usable while main is unfocused and stays synchronized with main stopwatch state.
 
 ---
 
