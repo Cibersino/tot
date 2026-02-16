@@ -21,7 +21,12 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[task-editor] AppConstants no disponible; verifica la carga de constants.js');
 }
-const { DEFAULT_LANG } = AppConstants;
+const {
+  DEFAULT_LANG,
+  TASK_ROW_TEXT_MAX_CHARS,
+  TASK_ROW_TYPE_MAX_CHARS,
+  TASK_ROW_LINK_MAX_CHARS,
+} = AppConstants;
 
 // =============================================================================
 // i18n
@@ -270,6 +275,7 @@ function renderRow(row) {
   const tdTexto = document.createElement('td');
   const textoInput = document.createElement('input');
   textoInput.type = 'text';
+  textoInput.maxLength = TASK_ROW_TEXT_MAX_CHARS;
   textoInput.value = row.texto;
   textoInput.addEventListener('input', () => {
     const next = textoInput.value;
@@ -339,6 +345,7 @@ function renderRow(row) {
   const tdTipo = document.createElement('td');
   const tipoInput = document.createElement('input');
   tipoInput.type = 'text';
+  tipoInput.maxLength = TASK_ROW_TYPE_MAX_CHARS;
   tipoInput.value = row.tipo;
   tipoInput.addEventListener('input', () => {
     const next = tipoInput.value;
@@ -355,6 +362,7 @@ function renderRow(row) {
   enlaceWrap.className = 'link-cell';
   const enlaceInput = document.createElement('input');
   enlaceInput.type = 'text';
+  enlaceInput.maxLength = TASK_ROW_LINK_MAX_CHARS;
   enlaceInput.value = row.enlace;
   enlaceInput.addEventListener('input', () => {
     const next = enlaceInput.value;
