@@ -23,6 +23,7 @@ if (!AppConstants) {
 }
 const {
   DEFAULT_LANG,
+  TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
@@ -137,6 +138,13 @@ function markDirty() {
 
 function resetDirty() {
   dirty = false;
+}
+
+function clampTaskName(input) {
+  const name = String(input || '').trim();
+  return name.length > TASK_NAME_MAX_CHARS
+    ? name.slice(0, TASK_NAME_MAX_CHARS)
+    : name;
 }
 
 function formatDuration(totalSeconds) {
@@ -604,20 +612,22 @@ function applyTaskPayload(payload) {
     log.warn('task-editor-init payload invalid (ignored):', payload);
     return;
   }
+  const safeName = clampTaskName(task.meta.name || '');
   meta = {
-    name: String(task.meta.name || ''),
+    name: safeName,
     createdAt: task.meta.createdAt || new Date().toISOString(),
     updatedAt: task.meta.updatedAt || new Date().toISOString(),
   };
   sourcePath = payload.sourcePath || null;
   rows = task.rows.map((r) => createRow(r));
   resetDirty();
-  taskNameInput.value = meta.name;
+  taskNameInput.value = safeName;
   renderTable();
 }
 
 function validateBeforeSave() {
-  const name = taskNameInput.value.trim();
+  const name = clampTaskName(taskNameInput.value);
+  if (taskNameInput.value !== name) taskNameInput.value = name;
   for (const row of rows) {
     if (!String(row.texto || '').trim()) {
       showEditorNotice('renderer.tasks.alerts.row_text_required');
@@ -864,8 +874,10 @@ if (btnTaskAddRow) {
 }
 
 if (taskNameInput) {
+  taskNameInput.maxLength = TASK_NAME_MAX_CHARS;
   taskNameInput.addEventListener('input', () => {
-    const next = taskNameInput.value;
+    const next = clampTaskName(taskNameInput.value);
+    if (taskNameInput.value !== next) taskNameInput.value = next;
     if (next !== meta.name) {
       meta.name = next;
       markDirty();
