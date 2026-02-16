@@ -957,7 +957,7 @@ async function applyTaskEditorTranslations() {
   if (commentSave) commentSave.textContent = tr('renderer.tasks.buttons.save', commentSave.textContent || '');
   if (commentCancel) commentCancel.textContent = tr('renderer.tasks.buttons.cancel', commentCancel.textContent || '');
   if (commentSnapshotSelect) {
-    commentSnapshotSelect.textContent = tr('renderer.tasks.buttons.select_snapshot', commentSnapshotSelect.textContent || 'select snapshot');
+    commentSnapshotSelect.textContent = tr('renderer.tasks.buttons.select_snapshot', commentSnapshotSelect.textContent || '');
   }
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title', libraryTitle.textContent || '');
