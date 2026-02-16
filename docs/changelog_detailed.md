@@ -51,6 +51,15 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [0.1.4] toT - nuevo editor de tareas y snapshots
+
+### Fecha release y último commit
+
+- Fecha: `2026-02-16`
+- Último commit: `6971888588e60adcc94651358195f241f6681138`
+
 ### Resumen de cambios
 
 - Snapshots del texto vigente (Issue #50): controles **Cargar/Guardar** con diálogos nativos para guardar el texto vigente como snapshot y cargar uno sobrescribiendo el texto vigente (con confirmación).
