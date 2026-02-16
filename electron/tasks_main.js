@@ -21,6 +21,7 @@ const path = require('path');
 const { dialog, shell, BrowserWindow } = require('electron');
 const Log = require('./log');
 const menuBuilder = require('./menu_builder');
+const { normalizeSnapshotRelPath } = require('./current_text_snapshots_main');
 const {
   DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
@@ -171,9 +172,10 @@ function normalizeRow(raw) {
   const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
   if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   const comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
+  const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
   return {
     ok: true,
-    row: { texto, tiempoSeconds, percentComplete, tipo, enlace, comentario },
+    row: { texto, tiempoSeconds, percentComplete, tipo, enlace, comentario, snapshotRelPath },
   };
 }
 
@@ -192,8 +194,10 @@ function normalizeLibraryEntry(raw, includeComment) {
   if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   let comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
   if (!includeComment) comentario = '';
+  const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
   const entry = { texto, tiempoSeconds, tipo, enlace };
   if (comentario) entry.comentario = comentario;
+  if (snapshotRelPath) entry.snapshotRelPath = snapshotRelPath;
   return { ok: true, entry };
 }
 
@@ -586,6 +590,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
           tipo: typeof entry.tipo === 'string' ? entry.tipo : String(entry.tipo || ''),
           enlace: typeof entry.enlace === 'string' ? entry.enlace : String(entry.enlace || ''),
           comentario: typeof entry.comentario === 'string' ? entry.comentario : '',
+          snapshotRelPath: normalizeSnapshotRelPath(entry.snapshotRelPath || ''),
           _norm: normalizeTexto(entry.texto),
         }))
         .sort((a, b) => a._norm.localeCompare(b._norm));
