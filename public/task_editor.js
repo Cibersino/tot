@@ -82,6 +82,8 @@ const commentCancel = document.getElementById('commentCancel');
 const commentSave = document.getElementById('commentSave');
 const commentInput = document.getElementById('commentInput');
 const commentTitle = document.getElementById('commentTitle');
+const commentSnapshotSelect = document.getElementById('commentSnapshotSelect');
+const commentSnapshotPath = document.getElementById('commentSnapshotPath');
 
 const libraryModal = document.getElementById('libraryModal');
 const libraryBackdrop = document.getElementById('libraryBackdrop');
@@ -111,6 +113,7 @@ let sourcePath = null;
 let dirty = false;
 let rowIdCounter = 1;
 let pendingCommentRowId = null;
+let pendingCommentSnapshotRelPath = '';
 let pendingLibraryRowId = null;
 let libraryItemsCache = [];
 let columnWidths = {};
@@ -145,6 +148,33 @@ function clampTaskName(input) {
   return name.length > TASK_NAME_MAX_CHARS
     ? name.slice(0, TASK_NAME_MAX_CHARS)
     : name;
+}
+
+function normalizeSnapshotRelPath(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return '';
+  const normalizedSlashes = raw.replace(/\\/g, '/');
+  const withoutLeading = normalizedSlashes.startsWith('/')
+    ? normalizedSlashes.slice(1)
+    : normalizedSlashes;
+  const segments = withoutLeading.split('/').filter(Boolean);
+  if (!segments.length) return '';
+  if (segments.some((seg) => seg === '.' || seg === '..')) return '';
+  const rel = `/${segments.join('/')}`;
+  if (!rel.toLowerCase().endsWith('.json')) return '';
+  return rel;
+}
+
+function setCommentSnapshotDisplay(snapshotRelPath) {
+  if (!commentSnapshotPath) return;
+  const safeRel = normalizeSnapshotRelPath(snapshotRelPath);
+  if (!safeRel) {
+    commentSnapshotPath.textContent = '';
+    commentSnapshotPath.hidden = true;
+    return;
+  }
+  commentSnapshotPath.textContent = safeRel;
+  commentSnapshotPath.hidden = false;
 }
 
 function formatDuration(totalSeconds) {
@@ -241,6 +271,63 @@ function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.
   return api;
 }
 
+function resetPendingCommentDraft() {
+  pendingCommentRowId = null;
+  pendingCommentSnapshotRelPath = '';
+  setCommentSnapshotDisplay('');
+}
+
+function dismissCommentModal() {
+  resetPendingCommentDraft();
+  closeModal(commentModal);
+}
+
+async function selectSnapshotForPendingCommentRow() {
+  if (!pendingCommentRowId) return;
+  const api = getTaskEditorApi('selectTaskRowSnapshot');
+  if (!api) return;
+  const res = await api.selectTaskRowSnapshot();
+  if (!res || res.ok === false) {
+    const code = res && res.code ? res.code : 'READ_FAILED';
+    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+    if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
+      showEditorNotice('renderer.tasks.alerts.link_blocked');
+      return;
+    }
+    showEditorNotice('renderer.tasks.alerts.library_load_error');
+    return;
+  }
+  const safeRel = normalizeSnapshotRelPath(res.snapshotRelPath || '');
+  if (!safeRel) {
+    showEditorNotice('renderer.tasks.alerts.library_load_error');
+    return;
+  }
+  pendingCommentSnapshotRelPath = safeRel;
+  setCommentSnapshotDisplay(safeRel);
+}
+
+async function loadSnapshotForRow(row) {
+  const snapshotRelPath = normalizeSnapshotRelPath(row && row.snapshotRelPath ? row.snapshotRelPath : '');
+  if (!snapshotRelPath) return;
+  const api = getTaskEditorApi('loadTaskRowSnapshot');
+  if (!api) return;
+  const res = await api.loadTaskRowSnapshot(snapshotRelPath);
+  if (!res || res.ok === false) {
+    const code = res && res.code ? res.code : 'READ_FAILED';
+    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+    if (code === 'NOT_FOUND') {
+      showEditorNotice('renderer.tasks.alerts.link_missing');
+      return;
+    }
+    if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
+      showEditorNotice('renderer.tasks.alerts.link_blocked');
+      return;
+    }
+    showEditorNotice('renderer.tasks.alerts.link_error');
+    return;
+  }
+}
+
 // =============================================================================
 // Rendering / table
 // =============================================================================
@@ -259,6 +346,7 @@ function createRow(data = {}) {
     tipo: String(data.tipo || ''),
     enlace: String(data.enlace || ''),
     comentario: String(data.comentario || ''),
+    snapshotRelPath: normalizeSnapshotRelPath(data.snapshotRelPath || ''),
   };
 }
 
@@ -410,6 +498,21 @@ function renderRow(row) {
 
   // Comment
   const tdComentario = document.createElement('td');
+  const commentActions = document.createElement('div');
+  commentActions.className = 'cell-actions';
+  const snapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath || '');
+  if (snapshotRelPath) {
+    const snapshotBtn = buildActionButton(
+      'renderer.tasks.buttons.snapshot',
+      'snapshot',
+      'renderer.tasks.tooltips.snapshot_load',
+      () => {
+        loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
+      }
+    );
+    snapshotBtn.title = `${tr('renderer.tasks.tooltips.snapshot_load', snapshotBtn.textContent)} ${snapshotRelPath}`;
+    commentActions.appendChild(snapshotBtn);
+  }
   const commentBtn = document.createElement('button');
   commentBtn.type = 'button';
   commentBtn.className = 'icon-btn';
@@ -417,10 +520,13 @@ function renderRow(row) {
   commentBtn.title = tr('renderer.tasks.tooltips.comment', commentBtn.textContent);
   commentBtn.addEventListener('click', () => {
     pendingCommentRowId = row.id;
+    pendingCommentSnapshotRelPath = snapshotRelPath;
     commentInput.value = row.comentario || '';
+    setCommentSnapshotDisplay(pendingCommentSnapshotRelPath);
     openModal(commentModal);
   });
-  tdComentario.appendChild(commentBtn);
+  commentActions.appendChild(commentBtn);
+  tdComentario.appendChild(commentActions);
 
   // Actions
   const tdActions = document.createElement('td');
@@ -653,6 +759,7 @@ async function saveTask() {
       tipo: r.tipo,
       enlace: r.enlace,
       comentario: r.comentario,
+      snapshotRelPath: normalizeSnapshotRelPath(r.snapshotRelPath || ''),
     })),
     sourcePath,
   };
@@ -743,6 +850,7 @@ function renderLibraryItems(items) {
         tipo: entry.tipo || '',
         enlace: entry.enlace || '',
         comentario: entry.comentario || '',
+        snapshotRelPath: entry.snapshotRelPath || '',
       });
       closeModal(libraryModal);
     });
@@ -845,6 +953,9 @@ async function applyTaskEditorTranslations() {
   if (commentTitle) commentTitle.textContent = tr('renderer.tasks.modals.comment_title', commentTitle.textContent || '');
   if (commentSave) commentSave.textContent = tr('renderer.tasks.buttons.save', commentSave.textContent || '');
   if (commentCancel) commentCancel.textContent = tr('renderer.tasks.buttons.cancel', commentCancel.textContent || '');
+  if (commentSnapshotSelect) {
+    commentSnapshotSelect.textContent = tr('renderer.tasks.buttons.select_snapshot', commentSnapshotSelect.textContent || 'select snapshot');
+  }
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title', libraryTitle.textContent || '');
   if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.labels.search', librarySearchLabel.textContent || '');
@@ -905,16 +1016,33 @@ if (btnTaskLoadLibrary) {
   });
 }
 
-wireModalClose(commentModal, commentClose, commentBackdrop, commentCancel);
+if (commentClose) commentClose.addEventListener('click', () => dismissCommentModal());
+if (commentBackdrop) commentBackdrop.addEventListener('click', () => dismissCommentModal());
+if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentModal());
+if (commentSnapshotSelect) {
+  commentSnapshotSelect.addEventListener('click', () => {
+    selectSnapshotForPendingCommentRow().catch((err) => log.error('selectSnapshotForPendingCommentRow failed:', err));
+  });
+}
 if (commentSave) {
   commentSave.addEventListener('click', () => {
     const row = rows.find((r) => r.id === pendingCommentRowId);
     if (row) {
-      row.comentario = commentInput.value || '';
-      markDirty();
+      const nextComment = commentInput.value || '';
+      const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
+      let changed = false;
+      if (row.comentario !== nextComment) {
+        row.comentario = nextComment;
+        changed = true;
+      }
+      if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
+        row.snapshotRelPath = nextSnapshotRelPath;
+        changed = true;
+        renderTable();
+      }
+      if (changed) markDirty();
     }
-    pendingCommentRowId = null;
-    closeModal(commentModal);
+    dismissCommentModal();
   });
 }
 

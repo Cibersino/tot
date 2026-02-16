@@ -9,7 +9,7 @@
 // - Enforce snapshot path containment under config/saved_current_texts.
 // - Validate snapshot JSON schema { text: "<string>" }.
 // - Apply loaded snapshots through text_state (same semantics as overwrite).
-// - Register IPC handlers: current-text-snapshot-save / current-text-snapshot-load.
+// - Register IPC handlers: current-text-snapshot-save / current-text-snapshot-select / current-text-snapshot-load.
 // =============================================================================
 
 // =============================================================================
@@ -17,7 +17,7 @@
 // =============================================================================
 const fs = require('fs');
 const path = require('path');
-const { dialog } = require('electron');
+const { dialog, BrowserWindow } = require('electron');
 const Log = require('./log');
 const { DEFAULT_LANG } = require('./constants_main');
 const {
@@ -64,6 +64,29 @@ function isPathInsideRoot(rootReal, candidatePath) {
   const rel = path.relative(rootReal, candidatePath);
   if (rel === '') return true;
   return !rel.startsWith('..') && !path.isAbsolute(rel);
+}
+
+function normalizeSnapshotRelPath(raw) {
+  const source = typeof raw === 'string' ? raw.trim() : '';
+  if (!source) return '';
+  const normalizedSlashes = source.replace(/\\/g, '/');
+  const withoutLeading = normalizedSlashes.startsWith('/')
+    ? normalizedSlashes.slice(1)
+    : normalizedSlashes;
+  const segments = withoutLeading.split('/').filter(Boolean);
+  if (!segments.length) return '';
+  if (segments.some((seg) => seg === '.' || seg === '..')) return '';
+  const rel = `/${segments.join('/')}`;
+  if (!rel.toLowerCase().endsWith('.json')) return '';
+  return rel;
+}
+
+function resolveSnapshotFromRelPath(rootReal, snapshotRelPath) {
+  const rel = normalizeSnapshotRelPath(snapshotRelPath);
+  if (!rootReal || !rel) return null;
+  const resolved = path.resolve(path.join(rootReal, rel.slice(1)));
+  if (!isPathInsideRoot(rootReal, resolved)) return null;
+  return resolved;
 }
 
 function getDefaultSnapshotName(rootDir) {
@@ -162,7 +185,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return null;
   };
 
-  ipcMain.handle('current-text-snapshot-save', async () => {
+  const resolveOwnerWin = (event) => {
+    try {
+      const senderWin = event && event.sender
+        ? BrowserWindow.fromWebContents(event.sender)
+        : null;
+      return senderWin || resolveMainWin();
+    } catch {
+      return resolveMainWin();
+    }
+  };
+
+  ipcMain.handle('current-text-snapshot-save', async (event) => {
     try {
       const root = ensureSnapshotsRoot();
       if (!root) {
@@ -177,7 +211,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const defaultName = getDefaultSnapshotName(root);
       const defaultPath = path.join(root, defaultName);
 
-      const dialogRes = await dialog.showSaveDialog(resolveMainWin(), {
+      const dialogRes = await dialog.showSaveDialog(resolveOwnerWin(event), {
         defaultPath,
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
@@ -228,7 +262,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   });
 
-  ipcMain.handle('current-text-snapshot-load', async () => {
+  ipcMain.handle('current-text-snapshot-select', async (event) => {
     try {
       const root = ensureSnapshotsRoot();
       if (!root) {
@@ -240,7 +274,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'READ_FAILED', message: 'snapshots dir realpath failed' };
       }
 
-      const dialogRes = await dialog.showOpenDialog(resolveMainWin(), {
+      const dialogRes = await dialog.showOpenDialog(resolveOwnerWin(event), {
         defaultPath: root,
         filters: [{ name: 'JSON', extensions: ['json'] }],
         properties: ['openFile'],
@@ -255,14 +289,83 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       if (!selectedReal) {
         return { ok: false, code: 'READ_FAILED', message: 'snapshot realpath failed' };
       }
-
       if (!isPathInsideRoot(rootReal, selectedReal)) {
         return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
       }
 
       const stats = fs.statSync(selectedReal);
+      if (!stats.isFile()) {
+        return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot path is not a file' };
+      }
 
-      const confirmed = await confirmOverwrite('load', resolveMainWin(), path.basename(selectedReal));
+      const relRaw = path.relative(rootReal, selectedReal).split(path.sep).join('/');
+      const snapshotRelPath = normalizeSnapshotRelPath(`/${relRaw}`);
+      if (!snapshotRelPath) {
+        return { ok: false, code: 'INVALID_SCHEMA', message: 'invalid snapshot relative path' };
+      }
+
+      return {
+        ok: true,
+        snapshotRelPath,
+        path: selectedReal,
+        filename: path.basename(selectedReal),
+        bytes: stats.size,
+        mtime: stats.mtimeMs,
+      };
+    } catch (err) {
+      log.error('snapshot select failed:', err);
+      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    }
+  });
+
+  ipcMain.handle('current-text-snapshot-load', async (event, payload) => {
+    try {
+      const root = ensureSnapshotsRoot();
+      if (!root) {
+        return { ok: false, code: 'READ_FAILED', message: 'snapshots dir unavailable' };
+      }
+
+      const rootReal = safeRealpath(root);
+      if (!rootReal) {
+        return { ok: false, code: 'READ_FAILED', message: 'snapshots dir realpath failed' };
+      }
+
+      let selectedReal = '';
+      const requestedRelPath = normalizeSnapshotRelPath(payload && payload.snapshotRelPath ? payload.snapshotRelPath : '');
+      if (requestedRelPath) {
+        selectedReal = resolveSnapshotFromRelPath(rootReal, requestedRelPath);
+        if (!selectedReal) {
+          return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
+        }
+        if (!fs.existsSync(selectedReal)) {
+          return { ok: false, code: 'NOT_FOUND' };
+        }
+      } else {
+        const dialogRes = await dialog.showOpenDialog(resolveOwnerWin(event), {
+          defaultPath: root,
+          filters: [{ name: 'JSON', extensions: ['json'] }],
+          properties: ['openFile'],
+        });
+        if (!dialogRes || dialogRes.canceled || !dialogRes.filePaths || !dialogRes.filePaths.length) {
+          return { ok: false, code: 'CANCELLED' };
+        }
+
+        const selectedPath = String(dialogRes.filePaths[0] || '');
+        selectedReal = safeRealpath(selectedPath);
+        if (!selectedReal) {
+          return { ok: false, code: 'READ_FAILED', message: 'snapshot realpath failed' };
+        }
+        if (!isPathInsideRoot(rootReal, selectedReal)) {
+          return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
+        }
+      }
+
+      const stats = fs.statSync(selectedReal);
+      if (!stats.isFile()) {
+        return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot path is not a file' };
+      }
+
+      const confirmed = await confirmOverwrite('load', resolveOwnerWin(event), path.basename(selectedReal));
       if (!confirmed) {
         return { ok: false, code: 'CONFIRM_DENIED' };
       }
@@ -284,14 +387,16 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'INVALID_SCHEMA', message: 'invalid snapshot schema' };
       }
 
+      const source = requestedRelPath ? 'task-editor' : 'main-window';
       const res = textState.applyCurrentText(parsed.text, {
-        source: 'main-window',
+        source,
         action: 'load_snapshot',
       });
 
       return {
         ok: true,
         path: selectedReal,
+        snapshotRelPath: normalizeSnapshotRelPath(`/${path.relative(rootReal, selectedReal).split(path.sep).join('/')}`),
         filename: path.basename(selectedReal),
         bytes: stats.size,
         mtime: stats.mtimeMs,
@@ -310,6 +415,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 // =============================================================================
 module.exports = {
   registerIpc,
+  normalizeSnapshotRelPath,
 };
 
 // =============================================================================
