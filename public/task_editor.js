@@ -353,13 +353,12 @@ function createRow(data = {}) {
   };
 }
 
-function buildActionButton(labelKey, fallbackLabel, titleKey, onClick) {
+function buildActionButton(labelKey, titleKey, onClick) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'icon-btn';
-  const label = tr(labelKey, fallbackLabel);
-  btn.textContent = label;
-  const title = tr(titleKey, label);
+  btn.textContent = tr(labelKey, btn.textContent || '');
+  const title = tr(titleKey, btn.title || btn.textContent || '');
   if (title) btn.title = title;
   btn.addEventListener('click', onClick);
   return btn;
@@ -473,8 +472,8 @@ function renderRow(row) {
   const enlaceBtn = document.createElement('button');
   enlaceBtn.type = 'button';
   enlaceBtn.className = 'icon-btn';
-  enlaceBtn.textContent = tr('renderer.tasks.buttons.link_open', 'Open');
-  enlaceBtn.title = tr('renderer.tasks.tooltips.link_open', enlaceBtn.textContent);
+  enlaceBtn.textContent = tr('renderer.tasks.buttons.link_open', enlaceBtn.textContent || '');
+  enlaceBtn.title = tr('renderer.tasks.tooltips.link_open', enlaceBtn.title || enlaceBtn.textContent || '');
   enlaceBtn.addEventListener('click', async () => {
     const raw = enlaceInput.value;
     const api = getTaskEditorApi('openTaskLink');
@@ -507,20 +506,20 @@ function renderRow(row) {
   if (snapshotRelPath) {
     const snapshotBtn = buildActionButton(
       'renderer.tasks.buttons.snapshot',
-      'snapshot',
       'renderer.tasks.tooltips.snapshot_load',
       () => {
         loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
       }
     );
-    snapshotBtn.title = `${tr('renderer.tasks.tooltips.snapshot_load', snapshotBtn.textContent)} ${snapshotRelPath}`;
+    const snapshotTitle = tr('renderer.tasks.tooltips.snapshot_load', snapshotBtn.title || snapshotBtn.textContent || '');
+    snapshotBtn.title = `${snapshotTitle} ${snapshotRelPath}`.trim();
     commentActions.appendChild(snapshotBtn);
   }
   const commentBtn = document.createElement('button');
   commentBtn.type = 'button';
   commentBtn.className = 'icon-btn';
-  commentBtn.textContent = tr('renderer.tasks.buttons.comment', 'Comment');
-  commentBtn.title = tr('renderer.tasks.tooltips.comment', commentBtn.textContent);
+  commentBtn.textContent = tr('renderer.tasks.buttons.comment', commentBtn.textContent || '');
+  commentBtn.title = tr('renderer.tasks.tooltips.comment', commentBtn.title || commentBtn.textContent || '');
   commentBtn.addEventListener('click', () => {
     pendingCommentRowId = row.id;
     pendingCommentSnapshotRelPath = snapshotRelPath;
@@ -536,10 +535,10 @@ function renderRow(row) {
   const actionsWrap = document.createElement('div');
   actionsWrap.className = 'cell-actions';
 
-  const btnUp = buildActionButton('renderer.tasks.buttons.move_up', 'Up', 'renderer.tasks.tooltips.move_up', () => moveRow(row.id, -1));
-  const btnDown = buildActionButton('renderer.tasks.buttons.move_down', 'Down', 'renderer.tasks.tooltips.move_down', () => moveRow(row.id, 1));
-  const btnDelete = buildActionButton('renderer.tasks.buttons.delete_row', 'Del', 'renderer.tasks.tooltips.delete_row', () => deleteRow(row.id));
-  const btnSaveLib = buildActionButton('renderer.tasks.buttons.library_row_save', 'Save', 'renderer.tasks.tooltips.library_row_save', () => {
+  const btnUp = buildActionButton('renderer.tasks.buttons.move_up', 'renderer.tasks.tooltips.move_up', () => moveRow(row.id, -1));
+  const btnDown = buildActionButton('renderer.tasks.buttons.move_down', 'renderer.tasks.tooltips.move_down', () => moveRow(row.id, 1));
+  const btnDelete = buildActionButton('renderer.tasks.buttons.delete_row', 'renderer.tasks.tooltips.delete_row', () => deleteRow(row.id));
+  const btnSaveLib = buildActionButton('renderer.tasks.buttons.library_row_save', 'renderer.tasks.tooltips.library_row_save', () => {
     pendingLibraryRowId = row.id;
     openModal(includeCommentModal);
   });
@@ -845,7 +844,7 @@ function renderLibraryItems(items) {
     const actions = document.createElement('div');
     actions.className = 'cell-actions';
 
-    const btnLoad = buildActionButton('renderer.tasks.buttons.library_row_load', 'Load', 'renderer.tasks.tooltips.library_row_load', () => {
+    const btnLoad = buildActionButton('renderer.tasks.buttons.library_row_load', 'renderer.tasks.tooltips.library_row_load', () => {
       addRow({
         texto: entry.texto,
         tiempoSeconds: Number(entry.tiempoSeconds) || 0,
@@ -857,7 +856,7 @@ function renderLibraryItems(items) {
       });
       closeModal(libraryModal);
     });
-    const btnDelete = buildActionButton('renderer.tasks.buttons.library_row_delete', 'Del', 'renderer.tasks.tooltips.library_row_delete', async () => {
+    const btnDelete = buildActionButton('renderer.tasks.buttons.library_row_delete', 'renderer.tasks.tooltips.library_row_delete', async () => {
       const api = getTaskEditorApi('deleteLibraryEntry');
       if (!api) return;
       const delRes = await api.deleteLibraryEntry(entry.texto);
