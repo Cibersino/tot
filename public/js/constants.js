@@ -11,6 +11,7 @@
     WPM_MAX: 500, // Maximum WPM for reading speed.
     PRESET_NAME_MAX: 20, // Max chars for preset names.
     PRESET_DESC_MAX: 120, // Max chars for preset descriptions.
+    TASK_NAME_MAX_CHARS: 50, // Max chars for task list name. Must match electron/constants_main.js.
     TASK_ROW_TEXT_MAX_CHARS: 200, // Max chars for task row "text" (texto). Must match electron/constants_main.js.
     TASK_ROW_TYPE_MAX_CHARS: 50, // Max chars for task row "type" (tipo). Must match electron/constants_main.js.
     TASK_ROW_LINK_MAX_CHARS: 1000, // Max chars for task row "link" (enlace). Must match electron/constants_main.js.

@@ -23,6 +23,7 @@ const Log = require('./log');
 const menuBuilder = require('./menu_builder');
 const {
   DEFAULT_LANG,
+  TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
@@ -198,7 +199,10 @@ function normalizeLibraryEntry(raw, includeComment) {
 
 function normalizeTaskMeta(rawMeta, { preserveCreatedAt } = {}) {
   const meta = rawMeta && typeof rawMeta === 'object' ? rawMeta : {};
-  const name = String(meta.name || '').trim();
+  const rawName = String(meta.name || '').trim();
+  const name = rawName.length > TASK_NAME_MAX_CHARS
+    ? rawName.slice(0, TASK_NAME_MAX_CHARS)
+    : rawName;
 
   let createdAt = '';
   if (typeof meta.createdAt === 'string' && meta.createdAt.trim()) {
