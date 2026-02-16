@@ -4,9 +4,9 @@ Checklist mecánico para preparar y publicar una nueva versión.
 
 Fecha: `2026-02-16`
 Tag objetivo (GitHub): `v0.1.4`
-Commit freeze (Git): `<SHA_COMMIT>`
-Artefacto inspeccionado: `<ZIP/INSTALLER>`
-SHA256(artefacto): `<SHA256>`
+Commit freeze (Git): `27f64e80bb6186a1785697962572391bf334045b`
+Artefacto inspeccionado: `toT-0.1.4-win-x64.zip`
+SHA256(artefacto): `1B7B884842C0C1341D038C8DECD4DE82124F68F49AAE47FB6CB31AF277ADB37F`
 
 ## 0. Regla de versión (SemVer)
 * Desde `0.1.0` en adelante, usar SemVer estricto: `MAJOR.MINOR.PATCH`.
@@ -58,53 +58,53 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 * [x] `package-lock.json`: consistente con `package.json` (actualizar/regenerar según flujo del repo: npm install).
 * [x] Confirmar que `tools_local/` (y equivalentes) no está tracked ni entró al commit del release.
 * [x] Working tree limpio (sin cambios locales).
-* [ ] Commit final del release creado antes de empaquetar.
-  * Commit: `<HASH>`
+* [x] Commit final del release creado antes de empaquetar.
+  * Commit: `27f64e80bb6186a1785697962572391bf334045b`
 
 * Nota: Este commit, desde el cual se genearará el artefacto, será el que se utilice para el tag del release.
 
 ## 4. Packaging (generar artefacto final)
 
-* [ ] Generar el artefacto final (ZIP/installer) desde el estado freeze.
-* [ ] Registrar identificador del artefacto final:
-  * Nombre exacto: `<TBD>`
-* [ ] Sanity: ejecutar la app desde el artefacto empaquetado (modo “packaged”, no `npm start`).
+* [x] Generar el artefacto final (ZIP/installer) desde el estado freeze.
+* [x] Registrar identificador del artefacto final:
+  * Nombre exacto: `toT-0.1.4-win-x64.zip`
+* [x] Sanity: ejecutar la app desde el artefacto empaquetado (modo “packaged”, no `npm start`).
 
 ## 5. Baseline de seguridad
 
-* [ ] `docs/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:
-  * [ ] Ship Gate: todo `[PASS]`.
-  * [ ] Post-packaging Gate: ejecutado sobre el artefacto final y todo `[PASS]`.
-  * [ ] Si queda `[PENDING]` o `[BLOCKER]`: no publicar.
+* [x] `docs/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:
+  * [x] Ship Gate: todo `[PASS]`.
+  * [x] Post-packaging Gate: ejecutado sobre el artefacto final y todo `[PASS]`.
+  * [x] Si queda `[PENDING]` o `[BLOCKER]`: no publicar.
 
 ## 6. Baseline legal (licencias/redistribución)
 
-* [ ] `docs/legal_baseline.md`: ejecutar el baseline sobre el artefacto final y asegurar veredicto consistente:
-  * [ ] Ship Gate: completado y en `PASS` (inventarios + documentos requeridos).
-  * [ ] Post-packaging Gate: ejecutado sobre el artefacto final y en `PASS` (contenido, deps runtime, docs, servicios).
-  * [ ] Si queda `PENDING` o `BLOCKER`: no publicar.
+* [x] `docs/legal_baseline.md`: ejecutar el baseline sobre el artefacto final y asegurar veredicto consistente:
+  * [x] Ship Gate: completado y en `PASS` (inventarios + documentos requeridos).
+  * [x] Post-packaging Gate: ejecutado sobre el artefacto final y en `PASS` (contenido, deps runtime, docs, servicios).
+  * [x] Si queda `PENDING` o `BLOCKER`: no publicar.
 
 ## 7. Manual test gate (sobre el build empaquetado)
 
-* [ ] Corre **Release smoke** desde `docs/test_suite.md` (SM-01 … SM-10) y registra resultados (Pass/Fail + notes + issue links).
-* [ ] Si hay cambios de alto riesgo, corre **Full regression** desde `docs/test_suite.md`.
+* [x] Corre **Release smoke** desde `docs/test_suite.md` (SM-01 … SM-10) y registra resultados (Pass/Fail + notes + issue links).
+* [x] Si hay cambios de alto riesgo, corre **Full regression** desde `docs/test_suite.md`.
 
 ## 8. Publicación (GitHub tag + release + cierre)
 
-* [ ] GitHub tag del release: `v0.1.4` (prefijo `v` obligatorio) apuntando al commit del freeze.
-* [ ] Publicar GitHub Release `v0.1.4` (Latest si corresponde) y adjuntar el artefacto final.
-* [ ] Release notes: usar el resumen de `CHANGELOG.md` (y/o link explícito a `docs/changelog_detailed.md`).
-* [ ] Cerrar el milestone `0.1.4` al publicar el release (y crear el siguiente si corresponde).
+* [x] GitHub tag del release: `v0.1.4` (prefijo `v` obligatorio) apuntando al commit del freeze.
+* [x] Publicar GitHub Release `v0.1.4` (Latest si corresponde) y adjuntar el artefacto final.
+* [x] Release notes: usar el resumen de `CHANGELOG.md` (y/o link explícito a `docs/changelog_detailed.md`).
+* [x] Cerrar el milestone `0.1.4` al publicar el release (y crear el siguiente si corresponde).
 
 ## 9. Documentación del release (commit/PR)
 
 Guardar la documentación específica del release en `docs/releases/0.1.4/`.  
 **No es gate de publicación** (puede mergearse antes o después del release).
 
-* [ ] Agregar:
-  * [ ] `docs/releases/0.1.4/release_checklist_<X_Y_Z>.md`
-  * [ ] `docs/releases/0.1.4/security_baseline_<X_Y_Z>.md`
-  * [ ] `docs/releases/0.1.4/legal_baseline_<X_Y_Z>.md`
-* [ ] En los 3 docs registrar: `tag v0.1.4`, `SHA commit freeze`, nombre del artefacto, `SHA256` del artefacto.
+* [x] Agregar:
+  * [x] `docs/releases/0.1.4/release_checklist_<X_Y_Z>.md`
+  * [x] `docs/releases/0.1.4/security_baseline_<X_Y_Z>.md`
+  * [x] `docs/releases/0.1.4/legal_baseline_<X_Y_Z>.md`
+* [x] En los 3 docs registrar: `tag v0.1.4`, `SHA commit freeze`, nombre del artefacto, `SHA256` del artefacto.
 
-* [ ] Commits en rama (no `main`) + PR + merge a `main`.
+* [x] Commits en rama (no `main`) + PR + merge a `main`.
