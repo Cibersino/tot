@@ -21,7 +21,13 @@ const path = require('path');
 const { dialog, shell, BrowserWindow } = require('electron');
 const Log = require('./log');
 const menuBuilder = require('./menu_builder');
-const { DEFAULT_LANG } = require('./constants_main');
+const {
+  DEFAULT_LANG,
+  TASK_NAME_MAX_CHARS,
+  TASK_ROW_TEXT_MAX_CHARS,
+  TASK_ROW_TYPE_MAX_CHARS,
+  TASK_ROW_LINK_MAX_CHARS,
+} = require('./constants_main');
 const {
   ensureTasksDirs,
   getTasksListsDir,
@@ -151,6 +157,7 @@ function normalizeRow(raw) {
   if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_ROW' };
   const texto = String(raw.texto || '').trim();
   if (!texto) return { ok: false, code: 'EMPTY_TEXTO' };
+  if (texto.length > TASK_ROW_TEXT_MAX_CHARS) return { ok: false, code: 'TEXTO_TOO_LONG' };
   const tiempoSeconds = Number(raw.tiempoSeconds);
   if (!Number.isFinite(tiempoSeconds) || tiempoSeconds < 0) {
     return { ok: false, code: 'INVALID_TIEMPO' };
@@ -160,7 +167,9 @@ function normalizeRow(raw) {
     return { ok: false, code: 'INVALID_PERCENT' };
   }
   const tipo = typeof raw.tipo === 'string' ? raw.tipo : String(raw.tipo || '');
+  if (tipo.length > TASK_ROW_TYPE_MAX_CHARS) return { ok: false, code: 'TIPO_TOO_LONG' };
   const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
+  if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   const comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
   return {
     ok: true,
@@ -172,12 +181,15 @@ function normalizeLibraryEntry(raw, includeComment) {
   if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_ROW' };
   const texto = String(raw.texto || '').trim();
   if (!texto) return { ok: false, code: 'EMPTY_TEXTO' };
+  if (texto.length > TASK_ROW_TEXT_MAX_CHARS) return { ok: false, code: 'TEXTO_TOO_LONG' };
   const tiempoSeconds = Number(raw.tiempoSeconds);
   if (!Number.isFinite(tiempoSeconds) || tiempoSeconds < 0) {
     return { ok: false, code: 'INVALID_TIEMPO' };
   }
   const tipo = typeof raw.tipo === 'string' ? raw.tipo : String(raw.tipo || '');
+  if (tipo.length > TASK_ROW_TYPE_MAX_CHARS) return { ok: false, code: 'TIPO_TOO_LONG' };
   const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
+  if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   let comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
   if (!includeComment) comentario = '';
   const entry = { texto, tiempoSeconds, tipo, enlace };
@@ -187,7 +199,10 @@ function normalizeLibraryEntry(raw, includeComment) {
 
 function normalizeTaskMeta(rawMeta, { preserveCreatedAt } = {}) {
   const meta = rawMeta && typeof rawMeta === 'object' ? rawMeta : {};
-  const name = String(meta.name || '').trim();
+  const rawName = String(meta.name || '').trim();
+  const name = rawName.length > TASK_NAME_MAX_CHARS
+    ? rawName.slice(0, TASK_NAME_MAX_CHARS)
+    : rawName;
 
   let createdAt = '';
   if (typeof meta.createdAt === 'string' && meta.createdAt.trim()) {

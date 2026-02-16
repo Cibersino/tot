@@ -8,6 +8,10 @@ const MAX_IPC_MULTIPLIER = 4;
 const MAX_IPC_CHARS = MAX_TEXT_CHARS * MAX_IPC_MULTIPLIER; // Safety limit of characters that can be sent via IPC to prevent memory overflow.
 const MAX_PRESET_STR_CHARS = 65536; // Safety limit for preset name and description strings to prevent memory overflow.
 const MAX_META_STR_CHARS = 4096; // Safety limit for metadata strings (like title, author) to prevent memory overflow.
+const TASK_NAME_MAX_CHARS = 50; // Max chars for task list name.
+const TASK_ROW_TEXT_MAX_CHARS = 200; // Max chars for task row "text" (texto).
+const TASK_ROW_TYPE_MAX_CHARS = 50; // Max chars for task row "type" (tipo).
+const TASK_ROW_LINK_MAX_CHARS = 1000; // Max chars for task row "link" (enlace).
 
 module.exports = {
   DEFAULT_LANG,
@@ -16,4 +20,8 @@ module.exports = {
   MAX_IPC_CHARS,
   MAX_PRESET_STR_CHARS,
   MAX_META_STR_CHARS,
+  TASK_NAME_MAX_CHARS,
+  TASK_ROW_TEXT_MAX_CHARS,
+  TASK_ROW_TYPE_MAX_CHARS,
+  TASK_ROW_LINK_MAX_CHARS,
 };

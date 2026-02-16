@@ -85,9 +85,8 @@
         "move_down": "↓",
         "delete_row": "🗑",
         "library_row_save": "💾",
-        "library_row_load": "Charger",
-        "library_row_delete": "Supprimer",
-        "close": "Fermer",
+        "library_row_load": "📥",
+        "library_row_delete": "🗑",
         "cancel": "Annuler",
         "yes": "Oui",
         "no": "Non"
