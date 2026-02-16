@@ -103,8 +103,8 @@ body {
   border: 1px solid var(--border);
   background: var(--panel);
   border-radius: 8px;
-  width: 150px;
-  flex: 0 0 150px;
+  width: 180px;
+  flex: 0 0 180px;
   margin: 0;
 }
 
