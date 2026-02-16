@@ -715,6 +715,12 @@ function renderLibraryItems(items) {
     const durationSeconds = Math.max(0, Number(entry.tiempoSeconds) || 0);
     const controls = document.createElement('div');
     controls.className = 'library-item__controls';
+    const time = document.createElement('span');
+    time.className = 'library-item__time';
+    time.textContent = `(${formatDuration(durationSeconds)})`;
+    if (durationSeconds === 0) {
+      time.classList.add('library-item__time--hidden');
+    }
 
     const actions = document.createElement('div');
     actions.className = 'cell-actions';
@@ -745,12 +751,7 @@ function renderLibraryItems(items) {
 
     actions.appendChild(btnLoad);
     actions.appendChild(btnDelete);
-    if (durationSeconds > 0) {
-      const time = document.createElement('span');
-      time.className = 'library-item__time';
-      time.textContent = `(${formatDuration(durationSeconds)})`;
-      controls.appendChild(time);
-    }
+    controls.appendChild(time);
     controls.appendChild(actions);
     li.appendChild(text);
     li.appendChild(controls);

@@ -375,6 +375,10 @@ body.is-resizing {
   white-space: nowrap;
 }
 
+.library-item__time--hidden {
+  visibility: hidden;
+}
+
 .library-item .cell-actions {
   display: flex;
   gap: 8px;
