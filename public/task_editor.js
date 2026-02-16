@@ -290,6 +290,7 @@ async function selectSnapshotForPendingCommentRow() {
   if (!res || res.ok === false) {
     const code = res && res.code ? res.code : 'READ_FAILED';
     if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+    log.warn('selectTaskRowSnapshot failed:', { code, response: res || null });
     if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
       showEditorNotice('renderer.tasks.alerts.link_blocked');
       return;
@@ -299,6 +300,7 @@ async function selectSnapshotForPendingCommentRow() {
   }
   const safeRel = normalizeSnapshotRelPath(res.snapshotRelPath || '');
   if (!safeRel) {
+    log.warn('selectTaskRowSnapshot returned invalid snapshotRelPath:', { snapshotRelPath: res.snapshotRelPath || '' });
     showEditorNotice('renderer.tasks.alerts.library_load_error');
     return;
   }
@@ -315,6 +317,7 @@ async function loadSnapshotForRow(row) {
   if (!res || res.ok === false) {
     const code = res && res.code ? res.code : 'READ_FAILED';
     if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+    log.warn('loadTaskRowSnapshot failed:', { code, snapshotRelPath, response: res || null });
     if (code === 'NOT_FOUND') {
       showEditorNotice('renderer.tasks.alerts.link_missing');
       return;
