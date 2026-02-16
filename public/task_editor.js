@@ -80,7 +80,6 @@ const commentTitle = document.getElementById('commentTitle');
 const libraryModal = document.getElementById('libraryModal');
 const libraryBackdrop = document.getElementById('libraryBackdrop');
 const libraryClose = document.getElementById('libraryClose');
-const libraryCancel = document.getElementById('libraryCancel');
 const libraryList = document.getElementById('libraryList');
 const libraryEmpty = document.getElementById('libraryEmpty');
 const libraryTitle = document.getElementById('libraryTitle');
@@ -200,10 +199,10 @@ function closeModal(modalEl) {
 }
 
 // Centralized modal close wiring for consistent behavior across dialogs.
-function wireModalClose(modalEl, closeBtn, backdrop, cancelBtn) {
-  if (closeBtn) closeBtn.addEventListener('click', () => closeModal(modalEl));
-  if (backdrop) backdrop.addEventListener('click', () => closeModal(modalEl));
-  if (cancelBtn) cancelBtn.addEventListener('click', () => closeModal(modalEl));
+function wireModalClose(modalEl, ...closeTriggers) {
+  closeTriggers.forEach((trigger) => {
+    if (trigger) trigger.addEventListener('click', () => closeModal(modalEl));
+  });
 }
 
 function showEditorNotice(key, opts = {}) {
@@ -818,7 +817,6 @@ async function applyTaskEditorTranslations() {
   if (commentCancel) commentCancel.textContent = tr('renderer.tasks.buttons.cancel', commentCancel.textContent || '');
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title', libraryTitle.textContent || '');
-  if (libraryCancel) libraryCancel.textContent = tr('renderer.tasks.buttons.close', libraryCancel.textContent || '');
   if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.labels.search', librarySearchLabel.textContent || '');
   if (librarySearchInput) {
     librarySearchInput.setAttribute(
@@ -888,7 +886,7 @@ if (commentSave) {
   });
 }
 
-wireModalClose(libraryModal, libraryClose, libraryBackdrop, libraryCancel);
+wireModalClose(libraryModal, libraryClose, libraryBackdrop);
 if (librarySearchInput) {
   librarySearchInput.addEventListener('input', () => filterLibraryItems());
 }
