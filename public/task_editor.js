@@ -702,7 +702,13 @@ function renderLibraryItems(items) {
     li.className = 'library-item';
     const text = document.createElement('div');
     text.className = 'library-item__text';
-    text.textContent = `${entry.texto} (${formatDuration(entry.tiempoSeconds || 0)})`;
+    text.textContent = `${entry.texto}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'library-item__controls';
+    const time = document.createElement('span');
+    time.className = 'library-item__time';
+    time.textContent = `(${formatDuration(entry.tiempoSeconds || 0)})`;
 
     const actions = document.createElement('div');
     actions.className = 'cell-actions';
@@ -733,8 +739,10 @@ function renderLibraryItems(items) {
 
     actions.appendChild(btnLoad);
     actions.appendChild(btnDelete);
+    controls.appendChild(time);
+    controls.appendChild(actions);
     li.appendChild(text);
-    li.appendChild(actions);
+    li.appendChild(controls);
     libraryList.appendChild(li);
   });
 }
