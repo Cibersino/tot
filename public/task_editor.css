@@ -363,6 +363,11 @@ body.is-resizing {
   padding-right: 8px;
 }
 
+.library-item .cell-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .library-empty {
   color: var(--muted);
   font-size: 13px;
