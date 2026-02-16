@@ -21,7 +21,13 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[task-editor] AppConstants no disponible; verifica la carga de constants.js');
 }
-const { DEFAULT_LANG } = AppConstants;
+const {
+  DEFAULT_LANG,
+  TASK_NAME_MAX_CHARS,
+  TASK_ROW_TEXT_MAX_CHARS,
+  TASK_ROW_TYPE_MAX_CHARS,
+  TASK_ROW_LINK_MAX_CHARS,
+} = AppConstants;
 
 // =============================================================================
 // i18n
@@ -80,7 +86,6 @@ const commentTitle = document.getElementById('commentTitle');
 const libraryModal = document.getElementById('libraryModal');
 const libraryBackdrop = document.getElementById('libraryBackdrop');
 const libraryClose = document.getElementById('libraryClose');
-const libraryCancel = document.getElementById('libraryCancel');
 const libraryList = document.getElementById('libraryList');
 const libraryEmpty = document.getElementById('libraryEmpty');
 const libraryTitle = document.getElementById('libraryTitle');
@@ -133,6 +138,13 @@ function markDirty() {
 
 function resetDirty() {
   dirty = false;
+}
+
+function clampTaskName(input) {
+  const name = String(input || '').trim();
+  return name.length > TASK_NAME_MAX_CHARS
+    ? name.slice(0, TASK_NAME_MAX_CHARS)
+    : name;
 }
 
 function formatDuration(totalSeconds) {
@@ -200,10 +212,10 @@ function closeModal(modalEl) {
 }
 
 // Centralized modal close wiring for consistent behavior across dialogs.
-function wireModalClose(modalEl, closeBtn, backdrop, cancelBtn) {
-  if (closeBtn) closeBtn.addEventListener('click', () => closeModal(modalEl));
-  if (backdrop) backdrop.addEventListener('click', () => closeModal(modalEl));
-  if (cancelBtn) cancelBtn.addEventListener('click', () => closeModal(modalEl));
+function wireModalClose(modalEl, ...closeTriggers) {
+  closeTriggers.forEach((trigger) => {
+    if (trigger) trigger.addEventListener('click', () => closeModal(modalEl));
+  });
 }
 
 function showEditorNotice(key, opts = {}) {
@@ -271,6 +283,7 @@ function renderRow(row) {
   const tdTexto = document.createElement('td');
   const textoInput = document.createElement('input');
   textoInput.type = 'text';
+  textoInput.maxLength = TASK_ROW_TEXT_MAX_CHARS;
   textoInput.value = row.texto;
   textoInput.addEventListener('input', () => {
     const next = textoInput.value;
@@ -340,6 +353,7 @@ function renderRow(row) {
   const tdTipo = document.createElement('td');
   const tipoInput = document.createElement('input');
   tipoInput.type = 'text';
+  tipoInput.maxLength = TASK_ROW_TYPE_MAX_CHARS;
   tipoInput.value = row.tipo;
   tipoInput.addEventListener('input', () => {
     const next = tipoInput.value;
@@ -356,6 +370,7 @@ function renderRow(row) {
   enlaceWrap.className = 'link-cell';
   const enlaceInput = document.createElement('input');
   enlaceInput.type = 'text';
+  enlaceInput.maxLength = TASK_ROW_LINK_MAX_CHARS;
   enlaceInput.value = row.enlace;
   enlaceInput.addEventListener('input', () => {
     const next = enlaceInput.value;
@@ -597,20 +612,22 @@ function applyTaskPayload(payload) {
     log.warn('task-editor-init payload invalid (ignored):', payload);
     return;
   }
+  const safeName = clampTaskName(task.meta.name || '');
   meta = {
-    name: String(task.meta.name || ''),
+    name: safeName,
     createdAt: task.meta.createdAt || new Date().toISOString(),
     updatedAt: task.meta.updatedAt || new Date().toISOString(),
   };
   sourcePath = payload.sourcePath || null;
   rows = task.rows.map((r) => createRow(r));
   resetDirty();
-  taskNameInput.value = meta.name;
+  taskNameInput.value = safeName;
   renderTable();
 }
 
 function validateBeforeSave() {
-  const name = taskNameInput.value.trim();
+  const name = clampTaskName(taskNameInput.value);
+  if (taskNameInput.value !== name) taskNameInput.value = name;
   for (const row of rows) {
     if (!String(row.texto || '').trim()) {
       showEditorNotice('renderer.tasks.alerts.row_text_required');
@@ -703,7 +720,17 @@ function renderLibraryItems(items) {
     li.className = 'library-item';
     const text = document.createElement('div');
     text.className = 'library-item__text';
-    text.textContent = `${entry.texto} (${formatDuration(entry.tiempoSeconds || 0)})`;
+    text.textContent = `${entry.texto}`;
+
+    const durationSeconds = Math.max(0, Number(entry.tiempoSeconds) || 0);
+    const controls = document.createElement('div');
+    controls.className = 'library-item__controls';
+    const time = document.createElement('span');
+    time.className = 'library-item__time';
+    time.textContent = `(${formatDuration(durationSeconds)})`;
+    if (durationSeconds === 0) {
+      time.classList.add('library-item__time--hidden');
+    }
 
     const actions = document.createElement('div');
     actions.className = 'cell-actions';
@@ -734,8 +761,10 @@ function renderLibraryItems(items) {
 
     actions.appendChild(btnLoad);
     actions.appendChild(btnDelete);
+    controls.appendChild(time);
+    controls.appendChild(actions);
     li.appendChild(text);
-    li.appendChild(actions);
+    li.appendChild(controls);
     libraryList.appendChild(li);
   });
 }
@@ -818,7 +847,6 @@ async function applyTaskEditorTranslations() {
   if (commentCancel) commentCancel.textContent = tr('renderer.tasks.buttons.cancel', commentCancel.textContent || '');
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title', libraryTitle.textContent || '');
-  if (libraryCancel) libraryCancel.textContent = tr('renderer.tasks.buttons.close', libraryCancel.textContent || '');
   if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.labels.search', librarySearchLabel.textContent || '');
   if (librarySearchInput) {
     librarySearchInput.setAttribute(
@@ -846,8 +874,10 @@ if (btnTaskAddRow) {
 }
 
 if (taskNameInput) {
+  taskNameInput.maxLength = TASK_NAME_MAX_CHARS;
   taskNameInput.addEventListener('input', () => {
-    const next = taskNameInput.value;
+    const next = clampTaskName(taskNameInput.value);
+    if (taskNameInput.value !== next) taskNameInput.value = next;
     if (next !== meta.name) {
       meta.name = next;
       markDirty();
@@ -888,7 +918,7 @@ if (commentSave) {
   });
 }
 
-wireModalClose(libraryModal, libraryClose, libraryBackdrop, libraryCancel);
+wireModalClose(libraryModal, libraryClose, libraryBackdrop);
 if (librarySearchInput) {
   librarySearchInput.addEventListener('input', () => filterLibraryItems());
 }

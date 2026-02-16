@@ -103,8 +103,8 @@ body {
   border: 1px solid var(--border);
   background: var(--panel);
   border-radius: 8px;
-  width: 150px;
-  flex: 0 0 150px;
+  width: 180px;
+  flex: 0 0 180px;
   margin: 0;
 }
 
@@ -361,6 +361,27 @@ body.is-resizing {
 .library-item__text {
   flex: 1 1 auto;
   padding-right: 8px;
+}
+
+.library-item__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.library-item__time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.library-item__time--hidden {
+  visibility: hidden;
+}
+
+.library-item .cell-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .library-empty {
