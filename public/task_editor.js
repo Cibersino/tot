@@ -144,7 +144,7 @@ function resetDirty() {
 }
 
 function clampTaskName(input) {
-  const name = String(input || '').trim();
+  const name = String(input || '');
   return name.length > TASK_NAME_MAX_CHARS
     ? name.slice(0, TASK_NAME_MAX_CHARS)
     : name;
@@ -734,7 +734,7 @@ function applyTaskPayload(payload) {
 }
 
 function validateBeforeSave() {
-  const name = clampTaskName(taskNameInput.value);
+  const name = clampTaskName(taskNameInput.value).trim();
   if (taskNameInput.value !== name) taskNameInput.value = name;
   for (const row of rows) {
     if (!String(row.texto || '').trim()) {
