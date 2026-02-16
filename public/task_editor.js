@@ -511,13 +511,14 @@ function renderRow(row) {
         loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
       }
     );
+    snapshotBtn.classList.add('icon-btn--tiny');
     const snapshotTitle = tr('renderer.tasks.tooltips.snapshot_load', snapshotBtn.title || snapshotBtn.textContent || '');
     snapshotBtn.title = `${snapshotTitle} ${snapshotRelPath}`.trim();
     commentActions.appendChild(snapshotBtn);
   }
   const commentBtn = document.createElement('button');
   commentBtn.type = 'button';
-  commentBtn.className = 'icon-btn';
+  commentBtn.className = 'icon-btn icon-btn--tiny';
   commentBtn.textContent = tr('renderer.tasks.buttons.comment', commentBtn.textContent || '');
   commentBtn.title = tr('renderer.tasks.tooltips.comment', commentBtn.title || commentBtn.textContent || '');
   commentBtn.addEventListener('click', () => {
