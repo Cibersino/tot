@@ -414,11 +414,15 @@ function ensureFindWindow() {
 
 function closeFindWindow() {
   const win = resolveFindWindow();
-  if (!win) return;
+  if (!win) {
+    closingFindWindow = false;
+    return;
+  }
   closingFindWindow = true;
   try {
     win.close();
   } catch (err) {
+    closingFindWindow = false;
     log.error('Error closing editor find window:', err);
   }
 }
@@ -571,12 +575,65 @@ function detachEditorWindow() {
     );
   }
 
-  try { win.removeListener('move', onMove); } catch (err) { log.warnOnce('editorFind.detachEditor.move', 'Unable to detach editor move listener (ignored):', err); }
-  try { win.removeListener('resize', onResize); } catch (err) { log.warnOnce('editorFind.detachEditor.resize', 'Unable to detach editor resize listener (ignored):', err); }
-  try { win.removeListener('maximize', onMaximize); } catch (err) { log.warnOnce('editorFind.detachEditor.maximize', 'Unable to detach editor maximize listener (ignored):', err); }
-  try { win.removeListener('unmaximize', onUnmaximize); } catch (err) { log.warnOnce('editorFind.detachEditor.unmaximize', 'Unable to detach editor unmaximize listener (ignored):', err); }
-  try { win.removeListener('close', onClose); } catch (err) { log.warnOnce('editorFind.detachEditor.close', 'Unable to detach editor close listener (ignored):', err); }
-  try { win.removeListener('closed', onClosed); } catch (err) { log.warnOnce('editorFind.detachEditor.closed', 'Unable to detach editor closed listener (ignored):', err); }
+  try {
+    win.removeListener('move', onMove);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.detachEditor.move',
+      'Unable to detach editor move listener (ignored):',
+      err
+    );
+  }
+
+  try {
+    win.removeListener('resize', onResize);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.detachEditor.resize',
+      'Unable to detach editor resize listener (ignored):',
+      err
+    );
+  }
+
+  try {
+    win.removeListener('maximize', onMaximize);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.detachEditor.maximize',
+      'Unable to detach editor maximize listener (ignored):',
+      err
+    );
+  }
+
+  try {
+    win.removeListener('unmaximize', onUnmaximize);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.detachEditor.unmaximize',
+      'Unable to detach editor unmaximize listener (ignored):',
+      err
+    );
+  }
+
+  try {
+    win.removeListener('close', onClose);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.detachEditor.close',
+      'Unable to detach editor close listener (ignored):',
+      err
+    );
+  }
+
+  try {
+    win.removeListener('closed', onClosed);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.detachEditor.closed',
+      'Unable to detach editor closed listener (ignored):',
+      err
+    );
+  }
 
   editorListeners = null;
 }
@@ -704,4 +761,3 @@ module.exports = {
   closeFindWindow,
   getFindWindow: resolveFindWindow,
 };
-
