@@ -49,6 +49,7 @@ tot/
 │ ├── preload.js
 │ ├── language_preload.js
 │ ├── editor_preload.js
+│ ├── editor_find_preload.js
 │ ├── task_editor_preload.js
 │ ├── preset_preload.js
 │ ├── flotante_preload.js
@@ -59,6 +60,7 @@ tot/
 │ ├── tasks_main.js
 │ ├── task_editor_position.js
 │ ├── editor_state.js
+│ ├── editor_find_main.js
 │ ├── presets_main.js
 │ ├── menu_builder.js
 │ ├── updater.js
@@ -100,16 +102,19 @@ tot/
 │ ├── renderer.js
 │ ├── language_window.js
 │ ├── editor.js
+│ ├── editor_find.js
 │ ├── task_editor.js
 │ ├── preset_modal.js
 │ ├── flotante.js
 │ ├── index.html
 │ ├── language_window.html
 │ ├── editor.html
+│ ├── editor_find.html
 │ ├── task_editor.html
 │ ├── preset_modal.html
 │ ├── flotante.html
 │ ├── editor.css
+│ ├── editor_find.css
 │ ├── task_editor.css
 │ ├── flotante.css
 │ └── style.css
