@@ -11,7 +11,7 @@
 ## Principios base de comportamiento (normativo)
 
 Estos principios definen el baseline del comportamiento de la app para evitar drift durante cleanup/refactor.
-Si una propuesta contradice estos principios, se debe justificar con evidencia de Nivel 3.
+Si una propuesta contradice estos principios, se debe justificar con evidencia de Nivel 4.
 
 ### P1) Modelo de startup y frontera READY
 
@@ -116,7 +116,7 @@ Si una propuesta contradice estos principios, se debe justificar con evidencia d
 ### P6) Regla de cambio durante cleanup
 
 1. Si un cambio toca startup/READY, idioma/fallbacks o owners de contrato, tratarlo como cambio sensible.
-2. Si no se puede conservar contrato/timing, escalar a Nivel 3 con Evidence/Risk/Validation.
+2. Si no se puede conservar contrato/timing, escalar a Nivel 4 con Evidence/Risk/Validation.
 3. No introducir duplicacion de politicas (normalizacion, fallbacks, limites, notify/i18n) en modulos feature.
 
 ### P7) Idioma de diagnosticos runtime en `.js`
@@ -325,6 +325,8 @@ Output requirement:
 * Evitar drift entre módulos: no mezclar fail-fast y degrade sin clasificación explícita.
 * Si corregir el drift exige cambiar superficie pública o paths saludables (IPC surface, channel names, payload/return shapes, side effects, timing/ordering), escalar a Nivel 4 (no hacerlo aquí).
 * Permitido en este nivel: corregir handling de failure-mode (throw vs guard+degrade vs best-effort) para cumplir la convención, manteniendo intactos los paths saludables.
+
+**Contrato observable (healthy-path)** = comportamiento cuando el bridge está correctamente cableado; los miswire/failure modes son precisamente lo que este gate puede corregir si la convención lo clasifica distinto.
 
 ### Prompt Nivel 3 para Codex:
 
@@ -644,7 +646,7 @@ Do a careful final pass to ensure `<TARGET_FILE>` is coherent end-to-end after L
 
 Constraints:
 - Preserve observable behavior/contract as-is (public API, IPC surface, payload/return shapes, side effects, timing/ordering).
-- Avoid architecture changes and cross-module rewrites. If a change affects consumers, it is Level 3 and must NOT be done here.
+- Avoid architecture changes and cross-module rewrites. If a change affects consumers, it is Level 4 and must NOT be done here.
 - Prefer minimal edits with clear local payoff. Default to "no change" if uncertain.
 - Apply changes ONLY to `<TARGET_FILE>`.
 
@@ -662,7 +664,7 @@ What to do:
      inconsistent return shapes, redundant branching.
 2) Contract consistency check:
    - Verify IPC handlers and exports still match actual call sites and expected payload/return shapes.
-   - If you find a mismatch, only fix it if it can be done locally WITHOUT changing the contract; otherwise report it as Level 3 evidence (no code change).
+   - If you find a mismatch, only fix it if it can be done locally WITHOUT changing the contract; otherwise report it as Level 4 evidence (no code change).
 3) Logging API consistency check:
    - Verify each log call matches the logging API (method names + argument shapes) as defined in `electron/log.js` or `public/js/log.js`.
    - If you detect signature drift (e.g., passing a dedupe key to a non-once method), correct it in the smallest way that preserves intended logging behavior and avoids spam.
