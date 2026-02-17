@@ -8,6 +8,116 @@
 
 - Faltan (): 
 
+## Principios base de comportamiento (normativo)
+
+Estos principios definen el baseline del comportamiento de la app para evitar drift durante cleanup/refactor.
+Si una propuesta contradice estos principios, se debe justificar con evidencia de Nivel 3.
+
+### P1) Modelo de startup y frontera READY
+
+1. Objetivo de la frontera READY: mostrar la app temprano, pero mantenerla inerte hasta estabilizar startup.
+- La main window puede crearse antes de READY.
+- La UI principal queda bloqueada por splash overlay hasta READY del renderer.
+- El menu existe, pero su interactividad se habilita solo post-READY.
+
+2. PRE_READY y READY son estados reales de coordinación, no solo etiquetas de log.
+- Main autoriza READY solo cuando hay invariantes de main + handshake de renderer.
+- Invariantes de main: `languageResolved && menuInstalled && mainWindowCreated`.
+- Renderer pasa a READY solo cuando hay invariantes del renderer + `startup:ready` recibido.
+
+3. Acciones de usuario en PRE_READY deben estar guardadas.
+- En main: `guardMainUserAction(...)`.
+- En renderer: `guardUserAction(...)`.
+
+4. La secuencia de arranque dentro de `app.whenReady` es sensible a timing.
+- Orden actual inicializa storage, text state, settings y registro IPC antes del flujo de idioma/ventana principal.
+- No reordenar sin evidencia fuerte.
+
+### P2) Frontera de modularizacion main vs renderer
+
+1. `electron/main.js` es orquestador.
+- Debe concentrar ciclo de vida, ventanas, handshake de startup y wiring de modulos.
+- La logica de feature e IPC de dominio vive en modulos delegados con `registerIpc(...)`.
+
+2. `public/renderer.js` es orquestador de UI.
+- Compone modulos de `public/js/*`, aplica bootstrap y conecta eventos/UI.
+- No duplicar aqui logica que ya tiene owner en modulos de `public/js/*` o en main.
+
+3. La comunicacion main<->renderer se hace por preload/API expuesta.
+- Superficie principal expuesta: `window.electronAPI`.
+- Mantener aislamiento (`contextIsolation:true`, `nodeIntegration:false`, `sandbox:true`) en ventanas.
+
+4. Patron modular de require/exposition (obligatorio).
+- Main process:
+  - `require(...)` de modulos al inicio del archivo.
+  - `main.js` orquesta; los modulos de feature exponen funciones explicitas (`init`, `registerIpc`, helpers) en lugar de registrar side effects al importar.
+  - La integracion entre modulos se hace por dependencias inyectadas y contratos pequenos (no acoplamiento oculto).
+- Preload:
+  - Expone una sola superficie `window.*API` por ventana via `contextBridge`.
+  - No exponer APIs ad hoc fuera de esa superficie ni mezclar responsabilidades de varias ventanas en un preload.
+- Renderer:
+  - Los modulos base de `public/js/*` exponen namespaces globales estables (por ejemplo `AppConstants`, `RendererI18n`, `Notify`).
+  - Los entrypoints (`renderer.js`, `editor.js`, etc.) consumen esas superficies; no redefinen ni mutan contratos globales.
+  - El orden de carga en HTML debe respetar proveedor primero y consumidor despues.
+
+### P3) Carga de ventanas HTML y estilo estable de modulos
+
+1. Cada ventana carga HTML local con preload dedicado.
+- `loadFile(...)` + preload especifico por ventana.
+
+2. Modelo de visibilidad: no es unico para todas las ventanas.
+- Modelo A (startup shell): `mainWin` visible temprano pero inerte hasta READY (splash + guardas).
+- Modelo B (apertura diferida): `show:false` + `ready-to-show` para ventanas que deben esperar primer paint estable.
+- `flotanteWin` es on-demand y fuera del boundary de startup; no esta obligado al modelo B.
+
+3. En HTML, el orden de scripts es contractual de hecho para modulos globales.
+- Cargar primero bases (`log.js`, `constants.js`, `notify.js`, `i18n.js`, etc.) y entrypoint al final.
+- Si un entrypoint depende de un modulo previo, explicitarlo y respetarlo (ej: `menu_actions.js` antes de `renderer.js`).
+
+### P4) Idioma y cadena de fallbacks
+
+1. `DEFAULT_LANG` es el unico hardcoded permitido para fallback final.
+- Debe estar sincronizado entre main y renderer.
+- No se permite introducir hardcoded de ultimo recurso en modulos de feature.
+
+2. Cadena de resolucion de idioma (obligatoria).
+- Prioridad 1: idioma persistido en settings (si es valido).
+- Prioridad 2: seleccion de usuario en ventana de idioma (primer arranque).
+- Prioridad 3 (last resort): si sigue unset, persistir `DEFAULT_LANG` y continuar startup.
+
+3. Distincion obligatoria de etapas.
+- Default bootstrap: valor temporal seguro mientras carga config/settings.
+- Idioma efectivo: valor real despues de resolver settings y listeners.
+- No mezclar ambos conceptos en logs, variables ni decisiones.
+
+4. Normalizacion y fallback deben tener owner canonico.
+- Main/settings canonicaliza tags y base.
+- RendererI18n resuelve bundles con fallback controlado al default.
+- Los modulos de feature consumen el resultado; no reimplementan normalizacion/fallback.
+
+5. Regla no-duplication para fallback.
+- No crear mini-normalizadores ni fallback chains locales por modulo.
+- Excepcion aceptada (bootstrap critico): lista minima de idiomas duplicada entre `electron/main.js` y `public/language_window.js`.
+- Esta excepcion no se trata como drift mientras se mantenga acotada a 2 idiomas fijos y sincronizados.
+
+6. Fallback con efecto persistente no puede ser silencioso.
+- Si un fallback cambia `settings.language`, debe quedar explicito y trazable.
+
+### P5) Owners de contrato (single source of truth)
+
+1. Limites y constantes duras: `electron/constants_main.js` (owner) + exposicion read-only por `get-app-config`.
+2. Defaults de renderer y consumo de config main: `public/js/constants.js` (owner del baseline renderer).
+3. Settings, normalizacion de idioma y broadcast `settings-updated`: `electron/settings.js` (owner).
+4. I18n renderer (`window.RendererI18n`): `public/js/i18n.js` (owner).
+5. Notificaciones UI (`window.Notify`): `public/js/notify.js` (owner).
+6. Estado de texto actual y su IPC: `electron/text_state.js` via delegacion desde main.
+
+### P6) Regla de cambio durante cleanup
+
+1. Si un cambio toca startup/READY, idioma/fallbacks o owners de contrato, tratarlo como cambio sensible.
+2. Si no se puede conservar contrato/timing, escalar a Nivel 3 con Evidence/Risk/Validation.
+3. No introducir duplicacion de politicas (normalizacion, fallbacks, limites, notify/i18n) en modulos feature.
+
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
 **0.1 Mapa de lectura**
