@@ -119,6 +119,15 @@ Si una propuesta contradice estos principios, se debe justificar con evidencia d
 2. Si no se puede conservar contrato/timing, escalar a Nivel 3 con Evidence/Risk/Validation.
 3. No introducir duplicacion de politicas (normalizacion, fallbacks, limites, notify/i18n) en modulos feature.
 
+### P7) Idioma de diagnosticos runtime en `.js`
+
+1. En archivos `.js`, los mensajes tecnicos de warning/error deben escribirse solo en ingles.
+- Aplica a `log.warn|warnOnce|error|errorOnce` y `console.warn|error`.
+- No mezclar idiomas dentro del mismo modulo para diagnosticos tecnicos.
+
+2. Esta regla no aplica a texto user-facing.
+- Mensajes para usuario final siguen i18n/keys del producto.
+
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
 **0.1 Mapa de lectura**
@@ -436,6 +445,7 @@ Output requirement:
 * Obligatorio: revisar la política explícita de los archivos `log.js` (se ven como `electron_log.js` y `public_js_log.js` en tu carpeta raíz).
 * Basarse en la lógica aplicada a archivos ya revisados (p.ej. `main.js`).
 * Ajustar nivel por recuperabilidad.
+* En `.js`, warnings/errors tecnicos en ingles unicamente.
 * Mensajes cortos y accionables, consistentes con el estilo del proyecto.
 * No dejar ningún fallback silencioso.
 
@@ -450,6 +460,7 @@ Align logging in `<TARGET_FILE>` with the project logging policy and established
 - Levels match recoverability (error vs warn vs info vs debug),
 - Fallbacks are never silent (per policy),
 - High-frequency repeatable events where additional occurrences add no new diagnostic value are deduplicated (use warnOnce/errorOnce),
+- Developer diagnostics in `.js` warning/error logs are English-only (non-UI diagnostics),
 - Messages are short, actionable, and consistent with the repo (see `electron/main.js` patterns).
 
 Default rule (do not force changes):
@@ -459,6 +470,7 @@ Hard constraints:
 - Do NOT change observable runtime behavior/contract (public API, IPC surface, channel names, payload/return shapes, side effects, timing/ordering).
 - Changes must be limited to logging (levels/messages/dedupe) plus minimal local structure strictly required to support that (e.g., introducing a stable key constant).
 - Avoid over-logging: do not add new logs on healthy/high-frequency paths.
+- Keep warning/error diagnostic message text in `.js` files English-only (non-user-facing logs).
 - Call-site style (policy): use `log.warn|warnOnce|error|errorOnce` directly; do NOT add/keep local aliases/wrappers (e.g., `warnOnceRenderer`). If a helper needs it, pass the method reference (e.g., `{ warnOnce: log.warnOnce }`) or pass `log`.
 
 Reference material (inspect before editing):
@@ -987,6 +999,7 @@ Output requirement:
 * Solo `console.*` (o el mecanismo console-based que ya exista en el archivo).
 * No agregar logs en paths sanos/de alta frecuencia.
 * Dedupe solo si es realmente spameable y no aporta más (con mecanismo local estable; sin keys dinámicas basadas en input).
+* Mensajes tecnicos de warning/error en `.js` solo en ingles (texto user-facing queda fuera de esta regla).
 
 **Prompt Codex (LP3 logs):**
 ```
@@ -999,6 +1012,7 @@ Align logging with preload constraints and repo style:
 - Console-based only (no `window.getLogger`, no `require('./log')`, no new deps).
 - Fallbacks should not be silently problematic, but avoid noise on healthy/high-frequency paths.
 - Deduplicate only when repeated occurrences add no diagnostic value; use a stable local mechanism (e.g., Set) with stable keys (no user input in keys).
+- Keep warning/error diagnostics in `.js` English-only (non-user-facing logs).
 
 Hard constraints:
 - Do NOT change contract/timing (exposed keys/semantics and IPC).
