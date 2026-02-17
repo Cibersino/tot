@@ -214,3 +214,6 @@ window.editorFindAPI.onSettingsChanged(async (settings) => {
   focusQuery(true);
 })();
 
+// =============================================================================
+// End of public/editor_find.js
+// =============================================================================
