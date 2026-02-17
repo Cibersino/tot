@@ -762,3 +762,7 @@ module.exports = {
   closeFindWindow,
   getFindWindow: resolveFindWindow,
 };
+
+// =============================================================================
+// End of electron/editor_find_main.js
+// =============================================================================
