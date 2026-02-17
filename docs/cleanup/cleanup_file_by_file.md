@@ -270,7 +270,57 @@ Output requirement:
 
 ---
 
-## Nivel 4: Logs (después de estabilizar el flujo)
+## Nivel 4: Convención de modos de falla bridge (policy gate)
+
+* Objetivo: clasificar dependencias bridge/API en required startup vs optional capability vs best-effort side action.
+* Base obligatoria: `docs/cleanup/bridge_failure_mode_convention.md`.
+* Evitar drift entre módulos: no mezclar fail-fast y degrade sin clasificación explícita.
+* Si corregir el drift exige cambio de contrato/semántica observable, escalar a Nivel 3 (no hacerlo aquí).
+* No cambiar behavior/contract/timing.
+
+### Prompt Nivel 4 para Codex:
+```
+# Target file: `<TARGET_FILE>`
+
+Level 4 — Bridge dependency failure-mode alignment (policy-driven, contract-preserving).
+
+Objective:
+Align `<TARGET_FILE>` with the bridge failure-mode convention in
+`docs/cleanup/bridge_failure_mode_convention.md`, without changing observable contract/timing.
+
+Hard constraints:
+- Preserve observable contract as-is (public API, IPC surface, channel names, payload/return shapes, side effects, timing/ordering).
+- Do NOT reorder startup sequencing inside `app.whenReady` (if present).
+- Do NOT reorder IPC registration in a way that could change readiness/race behavior.
+- Scope edits to `<TARGET_FILE>` only.
+
+What to do:
+1) Inventory bridge dependencies in this file (e.g., `window.*API`, preload bridge methods, send-to-window paths).
+2) Classify each dependency/path as:
+   - required startup dependency,
+   - optional capability,
+   - best-effort side action.
+3) Check for drift against repo baseline and the convention file:
+   - inconsistent handling for the same dependency class,
+   - unclassified coexistence,
+   - silent fallbacks where a real fallback exists.
+4) Apply only minimal local changes that improve consistency/clarity while preserving behavior.
+5) If any fix would require contract or timing change, do NOT implement it here; report as Level 3 evidence.
+
+Output requirement:
+- Decision: CHANGED | NO CHANGE
+- If NO CHANGE: 3–8 bullets explaining why no safe Level 4 change was worth doing.
+- If CHANGED: for each non-trivial change:
+  - Gain: one sentence.
+  - Cost: one sentence.
+  - Validation: how to verify (manual check / smoke path / simple repo grep).
+- One explicit sentence confirming observable contract/timing were preserved.
+- Do NOT output diffs.
+```
+
+---
+
+## Nivel 5: Logs (después de estabilizar el flujo)
 
 * Obligatorio: revisar la política explícita de los archivos `log.js` (se ven como `electron_log.js` y `public_js_log.js` en tu carpeta raíz).
 * Basarse en la lógica aplicada a archivos ya revisados (p.ej. `main.js`).
@@ -278,11 +328,11 @@ Output requirement:
 * Mensajes cortos y accionables, consistentes con el estilo del proyecto.
 * No dejar ningún fallback silencioso.
 
-### Prompt Nivel 4 para Codex:
+### Prompt Nivel 5 para Codex:
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 4 — Logs (policy-driven tuning after flow stabilization).
+Level 5 — Logs (policy-driven tuning after flow stabilization).
 
 Objective:
 Align logging in `<TARGET_FILE>` with the project logging policy and established style, so that:
@@ -366,7 +416,7 @@ Output requirement:
 
 ---
 
-## Nivel 5: Comentarios
+## Nivel 6: Comentarios
 
 * Ajustar comentarios para que sirvan de orientación cualquier persona con pocos conocimientos técnicos.
 * Revisar comentarios y borrarlos, reescribirlos o agregar otros si son aporte real.
@@ -376,11 +426,11 @@ Output requirement:
   - marcador de “End of …” al final.
 * Todos los comentarios deben ser en inglés (pero sin traducir los nombres o claves que usa el código, aunque estén en otro idioma).
 
-### Prompt Nivel 5 para Codex:
+### Prompt Nivel 6 para Codex:
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 5 — Comments (reader-oriented, `electron/main.js` style).
+Level 6 — Comments (reader-oriented, `electron/main.js` style).
 
 Objective:
 Improve comments so the file is easier to understand for a new contributor with limited context, while keeping comments genuinely useful (intent/constraints, not obvious syntax). Follow the project’s comment style as in `electron/main.js`:
@@ -431,19 +481,19 @@ Output requirement:
 ```
 ---
 
-## Nivel 6: Revision final
+## Nivel 7: Revision final
 
 * Eliminar legacy o resabios tras refactorizaciones o cualquier cambio en la app.
 * Revisar que todo el código haya quedado coherente.
 
-### Prompt Nivel 6 para Codex:
+### Prompt Nivel 7 para Codex:
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 6 — Final review (coherence + leftover cleanup after refactors).
+Level 7 — Final review (coherence + leftover cleanup after refactors).
 
 Objective:
-Do a careful final pass to ensure `<TARGET_FILE>` is coherent end-to-end after Levels 1–5:
+Do a careful final pass to ensure `<TARGET_FILE>` is coherent end-to-end after Levels 1–6:
 - remove leftovers / dead code / stale patterns introduced by earlier refactors;
 - ensure internal consistency (naming, control flow, invariants, helper usage);
 - ensure logging API usage matches the repo policy (no signature drift);
@@ -486,16 +536,16 @@ Mandatory gate output (for each non-trivial change you apply):
 Output requirement:
 - Include: `Decision: CHANGED | NO CHANGE`
   - If CHANGED: list each non-trivial change with Change/Gain/Cost/Risk/Validation.
-  - If NO CHANGE: “No Level 6 changes justified” + 3–8 bullets of what you checked (anchors).
+  - If NO CHANGE: “No Level 7 changes justified” + 3–8 bullets of what you checked (anchors).
 - Include one explicit sentence confirming the observable contract/timing were preserved.
 - Do NOT output diffs.
 ```
 
 ---
 
-## Nivel 7: Smoke test (human-run; minimal)
+## Nivel 8: Smoke test (human-run; minimal)
 
-**Objetivo:** verificar rápidamente que los cambios de L1–L6 no rompieron el contrato observable del archivo.
+**Objetivo:** verificar rápidamente que los cambios de L1–L7 no rompieron el contrato observable del archivo.
 
 **Regla:** NO usar Codex en este nivel. El smoke es humano y se basa en flujos normales de la app. Referencia base: `docs/test_suite.md` (subset “Release smoke”), adaptando 6–15 pasos segun las responsabilidades del archivo.
 
@@ -508,16 +558,16 @@ Output requirement:
 5) Cerrar y reabrir la app si el modulo participa en boot o en persistencia.
 
 **Evidencia (obligatoria, simple):**
-En `docs/cleanup/_evidence/issue64_repo_cleanup.md`, bajo `### L7`, registrar:
+En `docs/cleanup/_evidence/issue64_repo_cleanup.md`, bajo `### L8`, registrar:
 - Resultado: PASS | FAIL | PENDING
 - Lista de pasos efectivamente ejecutados (6–15 bullets max).
 - Nota corta si hubo algun log anomalo (solo lo relevante).
 
 ---
 
-## Nivel 8: Debug / triage (solo si falla el smoke)
+## Nivel 9: Debug / triage (solo si falla el smoke)
 
-* Solo si falla un paso del Nivel 7: triage guiado por evidencia para aislar causa raíz y proponer la siguiente acción (sin modificar código en este nivel).
+* Solo si falla un paso del Nivel 8: triage guiado por evidencia para aislar causa raíz y proponer la siguiente acción (sin modificar código en este nivel).
 
 ---
 
