@@ -56,7 +56,7 @@
       }
     },
     "tasks": {
-      "title": "Editor — Aufgaben",
+      "title": "toT — Aufgaben",
       "labels": {
         "name": "Name",
         "total": "GESAMTZEIT",
@@ -148,7 +148,7 @@
       "save": "Speichern"
     },
     "editor": {
-      "title": "Editor — Vollständiger Text",
+      "title": "toT — Vollständiger Text",
       "placeholder": "Hier eingeben oder einfügen...",
       "calc_button": "Berechnen",
       "calc_while_typing": "Während des Tippens berechnen",

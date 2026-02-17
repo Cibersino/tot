@@ -56,7 +56,7 @@
       }
     },
     "tasks": {
-      "title": "Editor — Tareas",
+      "title": "toT — Tareas",
       "labels": {
         "name": "Üi",
         "total": "KELLU",
@@ -148,7 +148,7 @@
       "save": "Elkünun"
     },
     "editor": {
-      "title": "Editor — Kom wirin",
+      "title": "toT — Kom wirin",
       "placeholder": "Wiringe faw...",
       "calc_button": "RAKIDUAMNGE",
       "calc_while_typing": "Rakiduamnge wirin mu",

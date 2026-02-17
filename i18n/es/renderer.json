@@ -67,7 +67,7 @@
       }
     },
     "tasks": {
-      "title": "Editor — Tareas",
+      "title": "toT — Tareas",
       "labels": {
         "name": "Nombre",
         "total": "TIEMPO TOTAL",
@@ -162,7 +162,7 @@
       "save": "Guardar"
     },
     "editor": {
-      "title": "Editor — Texto completo",
+      "title": "toT — Texto completo",
       "placeholder": "Escribe o pega aquí...",
       "calc_button": "CALCULAR",
       "calc_while_typing": "Calcular mientras escribe",

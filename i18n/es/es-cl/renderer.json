@@ -56,7 +56,7 @@
       }
     },
     "tasks": {
-      "title": "Editor — Misiones",
+      "title": "toT — Misiones",
       "labels": {
         "name": "Mote",
         "total": "VIDA ÚTIL",
@@ -148,7 +148,7 @@
       "save": "Guardar"
     },
     "editor": {
-      "title": "Editor — El texto completito",
+      "title": "toT — El texto completito",
       "placeholder": "Escribe o pega la custión aquí...",
       "calc_button": "CALCULEISHON",
       "calc_while_typing": "Contar mientras escribís",
