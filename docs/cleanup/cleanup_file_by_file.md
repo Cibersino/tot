@@ -37,7 +37,8 @@ Si una propuesta contradice estos principios, se debe justificar con evidencia d
 
 1. `electron/main.js` es orquestador.
 - Debe concentrar ciclo de vida, ventanas, handshake de startup y wiring de modulos.
-- La logica de feature e IPC de dominio vive en modulos delegados con `registerIpc(...)`.
+- La logica de feature e IPC de dominio vive preferentemente en modulos delegados con `registerIpc(...)`.
+- `electron/main.js` puede mantener handlers de orquestacion/coordinacion transversal cuando corresponde.
 
 2. `public/renderer.js` es orquestador de UI.
 - Compone modulos de `public/js/*`, aplica bootstrap y conecta eventos/UI.
