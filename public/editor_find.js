@@ -15,19 +15,19 @@ log.debug('Editor find window starting...');
 
 const { AppConstants } = window;
 if (!AppConstants) {
-  throw new Error('[editor-find] AppConstants no disponible; verifica la carga de constants.js');
+  throw new Error('[editor-find] AppConstants unavailable; verify constants.js is loaded.');
 }
 const { DEFAULT_LANG } = AppConstants;
 
 const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer) {
-  throw new Error('[editor-find] RendererI18n no disponible; no se puede continuar');
+  throw new Error('[editor-find] RendererI18n unavailable; cannot continue.');
 }
 
 const tr = (path, fallback) => tRenderer(path, fallback);
 const editorFindAPI = window.editorFindAPI;
 if (!editorFindAPI) {
-  throw new Error('[editor-find] editorFindAPI no disponible; verifica editor_find_preload.js');
+  throw new Error('[editor-find] editorFindAPI unavailable; verify editor_find_preload.js.');
 }
 
 const labelEl = document.getElementById('findLabel');
