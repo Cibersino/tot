@@ -25,6 +25,7 @@ if (!loadRendererTranslations || !tRenderer) {
 }
 
 const tr = (path, fallback) => tRenderer(path, fallback);
+const editorFindAPI = window.editorFindAPI;
 
 const labelEl = document.getElementById('findLabel');
 const inputEl = document.getElementById('findQuery');
@@ -46,6 +47,11 @@ const findState = {
   activeMatchOrdinal: 0,
   finalUpdate: true,
 };
+
+function applyIncomingState(payload) {
+  normalizeState(payload);
+  applyUiState();
+}
 
 function normalizeState(payload) {
   if (!payload || typeof payload !== 'object') return;
@@ -127,7 +133,7 @@ function focusQuery(selectAll = false) {
 
 async function pushQuery() {
   try {
-    await window.editorFindAPI.setQuery(inputEl.value || '');
+    await editorFindAPI.setQuery(inputEl.value || '');
   } catch (err) {
     log.error('Error sending find query to main process:', err);
   }
@@ -135,16 +141,17 @@ async function pushQuery() {
 
 async function initLanguage() {
   try {
-    if (window.editorFindAPI && typeof window.editorFindAPI.getSettings === 'function') {
-      const settings = await window.editorFindAPI.getSettings();
-      if (settings && settings.language) {
-        idiomaActual = settings.language || idiomaActual;
-      }
-    } else {
+    if (!editorFindAPI || typeof editorFindAPI.getSettings !== 'function') {
       log.warnOnce(
         'editor-find.getSettings.missing',
         '[editor-find] editorFindAPI.getSettings missing; using default language.'
       );
+      return;
+    }
+
+    const settings = await editorFindAPI.getSettings();
+    if (settings && settings.language) {
+      idiomaActual = settings.language || idiomaActual;
     }
   } catch (err) {
     log.warnOnce(
@@ -163,40 +170,38 @@ inputEl.addEventListener('keydown', (event) => {
   if (event.key !== 'Enter') return;
   event.preventDefault();
   if (event.shiftKey) {
-    window.editorFindAPI.prev().catch((err) => log.error('Error on Shift+Enter prev:', err));
+    editorFindAPI.prev().catch((err) => log.error('Error on Shift+Enter prev:', err));
   } else {
-    window.editorFindAPI.next().catch((err) => log.error('Error on Enter next:', err));
+    editorFindAPI.next().catch((err) => log.error('Error on Enter next:', err));
   }
 });
 
 prevEl.addEventListener('click', () => {
-  window.editorFindAPI.prev().catch((err) => log.error('Error navigating to previous match:', err));
+  editorFindAPI.prev().catch((err) => log.error('Error navigating to previous match:', err));
 });
 
 nextEl.addEventListener('click', () => {
-  window.editorFindAPI.next().catch((err) => log.error('Error navigating to next match:', err));
+  editorFindAPI.next().catch((err) => log.error('Error navigating to next match:', err));
 });
 
 closeEl.addEventListener('click', () => {
-  window.editorFindAPI.close().catch((err) => log.error('Error closing find window:', err));
+  editorFindAPI.close().catch((err) => log.error('Error closing find window:', err));
 });
 
-window.editorFindAPI.onInit((payload) => {
-  normalizeState(payload);
-  applyUiState();
+editorFindAPI.onInit((payload) => {
+  applyIncomingState(payload);
 });
 
-window.editorFindAPI.onState((payload) => {
-  normalizeState(payload);
-  applyUiState();
+editorFindAPI.onState((payload) => {
+  applyIncomingState(payload);
 });
 
-window.editorFindAPI.onFocusQuery((payload) => {
+editorFindAPI.onFocusQuery((payload) => {
   const selectAll = !!(payload && payload.selectAll);
   focusQuery(selectAll);
 });
 
-window.editorFindAPI.onSettingsChanged(async (settings) => {
+editorFindAPI.onSettingsChanged(async (settings) => {
   try {
     const nextLang = settings && settings.language ? settings.language : '';
     if (!nextLang || nextLang === idiomaActual) return;
