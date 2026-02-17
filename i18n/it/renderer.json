@@ -166,8 +166,6 @@
       "next_title": "Occorrenza successiva",
       "close_title": "Chiudi la barra di ricerca",
       "status_no_matches": "Nessuna corrispondenza",
-      "status_wrap_start": "Ritorno all'inizio",
-      "status_wrap_end": "Ritorno alla fine",
       "status_empty_query": "Digita per cercare"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-

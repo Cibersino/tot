@@ -166,8 +166,6 @@
       "next_title": "Inan kintun",
       "close_title": "Nürüfün kintun wechun",
       "status_no_matches": "Chem no rume kintulay",
-      "status_wrap_start": "Wiñotuy llitun mew",
-      "status_wrap_end": "Wiñotuy afpun mew",
       "status_empty_query": "Wirin kintual"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-

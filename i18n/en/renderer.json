@@ -180,8 +180,6 @@
       "next_title": "Next match",
       "close_title": "Close find bar",
       "status_no_matches": "No matches",
-      "status_wrap_start": "Wrapped to start",
-      "status_wrap_end": "Wrapped to end",
       "status_empty_query": "Type to search"
     },
     "alerts": {
