@@ -6,28 +6,29 @@
 // =============================================================================
 // Main-process coordinator for editor native find/search.
 // Responsibilities:
+// - Own the find window lifecycle (create/show/close/position).
 // - Handle editor/find-window shortcuts via before-input-event.
 // - Drive native search lifecycle using webContents.findInPage APIs.
 // - Keep find UI state synced from found-in-page events.
-// - Own cleanup behavior when find/editor windows close.
 
+const { BrowserWindow, screen } = require('electron');
+const path = require('path');
 const Log = require('./log');
 
 const log = Log.get('editor-find-main');
 
-// =============================================================================
-// Dependency injection hooks (set by registerIpc)
-// =============================================================================
-let getWindows = () => ({});
-let ensureFindWindow = null;
-let closeFindWindow = null;
-let positionFindWindow = null;
+const EDITOR_FIND_WINDOW_HTML = path.join(__dirname, '../public/editor_find.html');
+const EDITOR_FIND_PRELOAD = path.join(__dirname, 'editor_find_preload.js');
 
 // =============================================================================
-// Internal state
+// Internal refs/state
 // =============================================================================
+let editorWinRef = null;
+let findWin = null;
+
 let editorListeners = null;
 let findListeners = null;
+
 let pendingFocusQuery = false;
 let closingFindWindow = false;
 let editorClosing = false;
@@ -47,24 +48,12 @@ function isAliveWindow(win) {
   return !!(win && !win.isDestroyed());
 }
 
-function resolveWindows() {
-  try {
-    const wins = typeof getWindows === 'function' ? (getWindows() || {}) : {};
-    return wins && typeof wins === 'object' ? wins : {};
-  } catch (err) {
-    log.error('Error resolving windows for editor find:', err);
-    return {};
-  }
-}
-
 function resolveEditorWindow() {
-  const wins = resolveWindows();
-  return isAliveWindow(wins.editorWin) ? wins.editorWin : null;
+  return isAliveWindow(editorWinRef) ? editorWinRef : null;
 }
 
 function resolveFindWindow() {
-  const wins = resolveWindows();
-  return isAliveWindow(wins.editorFindWin) ? wins.editorFindWin : null;
+  return isAliveWindow(findWin) ? findWin : null;
 }
 
 function hasQuery() {
@@ -81,13 +70,15 @@ function buildPublicState() {
 }
 
 function safeSendToFindWindow(channel, payload) {
-  const findWin = resolveFindWindow();
-  if (!findWin) return;
-  const wc = findWin.webContents;
+  const win = resolveFindWindow();
+  if (!win) return;
+
+  const wc = win.webContents;
   const isLoading = typeof wc.isLoadingMainFrame === 'function'
     ? wc.isLoadingMainFrame()
     : wc.isLoading();
   if (isLoading) return;
+
   try {
     wc.send(channel, payload);
   } catch (err) {
@@ -251,17 +242,185 @@ function sendFocusQuery() {
 
 function tryDispatchPendingFocus() {
   if (!pendingFocusQuery) return;
-  const findWin = resolveFindWindow();
-  if (!findWin) return;
+  const win = resolveFindWindow();
+  if (!win) return;
 
-  const wc = findWin.webContents;
+  const wc = win.webContents;
   const isLoading = typeof wc.isLoadingMainFrame === 'function'
     ? wc.isLoadingMainFrame()
     : wc.isLoading();
-
   if (isLoading) return;
+
   sendFocusQuery();
   pendingFocusQuery = false;
+}
+
+function positionFindWindow() {
+  const hostWin = resolveEditorWindow();
+  const win = resolveFindWindow();
+  if (!hostWin || !win) return;
+
+  try {
+    const hostBounds = hostWin.getContentBounds();
+    const findBounds = win.getBounds();
+    const margin = 12;
+
+    let targetX = Math.round(hostBounds.x + Math.max(0, hostBounds.width - findBounds.width - margin));
+    let targetY = Math.round(hostBounds.y + margin);
+
+    const display = screen.getDisplayNearestPoint({ x: targetX, y: targetY });
+    const workArea = display && display.workArea ? display.workArea : null;
+    if (workArea) {
+      const maxX = workArea.x + workArea.width - findBounds.width;
+      const maxY = workArea.y + workArea.height - findBounds.height;
+      targetX = Math.min(Math.max(targetX, workArea.x), maxX);
+      targetY = Math.min(Math.max(targetY, workArea.y), maxY);
+    }
+
+    win.setBounds({
+      x: targetX,
+      y: targetY,
+      width: findBounds.width,
+      height: findBounds.height,
+    }, false);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.position.failed',
+      'Unable to position editor find window (ignored):',
+      err
+    );
+  }
+}
+
+function detachFindWindow() {
+  if (!findListeners) return;
+  const { wc, onBeforeInput, onDidFinishLoad } = findListeners;
+
+  try {
+    wc.removeListener('before-input-event', onBeforeInput);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.detachFind.beforeInput',
+      'Unable to detach find before-input-event listener (ignored):',
+      err
+    );
+  }
+
+  try {
+    wc.removeListener('did-finish-load', onDidFinishLoad);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.detachFind.didFinishLoad',
+      'Unable to detach find did-finish-load listener (ignored):',
+      err
+    );
+  }
+
+  findListeners = null;
+}
+
+function handleFindWindowClosed() {
+  detachFindWindow();
+  pendingFocusQuery = false;
+
+  if (!closingFindWindow) {
+    clearSearch({ clearSelection: true });
+    focusEditorWindow();
+  }
+
+  closingFindWindow = false;
+}
+
+function attachFindWindow(win) {
+  detachFindWindow();
+  if (!isAliveWindow(win)) return;
+
+  const wc = win.webContents;
+
+  const onBeforeInput = (event, input) => {
+    try {
+      handleFindBeforeInput(event, input);
+    } catch (err) {
+      log.error('Error in find before-input-event handler:', err);
+    }
+  };
+
+  const onDidFinishLoad = () => {
+    publishInit();
+    publishState();
+    tryDispatchPendingFocus();
+  };
+
+  wc.on('before-input-event', onBeforeInput);
+  wc.on('did-finish-load', onDidFinishLoad);
+  findListeners = { wc, onBeforeInput, onDidFinishLoad };
+}
+
+function createFindWindow() {
+  const hostWin = resolveEditorWindow();
+  if (!hostWin) {
+    log.warnOnce(
+      'editorFind.create.noEditor',
+      'createFindWindow ignored: editor window unavailable.'
+    );
+    return null;
+  }
+
+  const existing = resolveFindWindow();
+  if (existing) return existing;
+
+  findWin = new BrowserWindow({
+    width: 560,
+    height: 56,
+    show: false,
+    frame: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    movable: false,
+    skipTaskbar: true,
+    parent: hostWin,
+    modal: false,
+    webPreferences: {
+      preload: EDITOR_FIND_PRELOAD,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  findWin.setMenu(null);
+  findWin.setMenuBarVisibility(false);
+
+  attachFindWindow(findWin);
+  findWin.loadFile(EDITOR_FIND_WINDOW_HTML);
+  findWin.once('ready-to-show', () => {
+    positionFindWindow();
+  });
+  findWin.on('closed', () => {
+    handleFindWindowClosed();
+    findWin = null;
+  });
+
+  return findWin;
+}
+
+function ensureFindWindow() {
+  const existing = resolveFindWindow();
+  if (existing) return existing;
+  return createFindWindow();
+}
+
+function closeFindWindow() {
+  const win = resolveFindWindow();
+  if (!win) return;
+  closingFindWindow = true;
+  try {
+    win.close();
+  } catch (err) {
+    log.error('Error closing editor find window:', err);
+  }
 }
 
 function openFindUi(origin = 'unknown') {
@@ -275,19 +434,8 @@ function openFindUi(origin = 'unknown') {
     return { ok: false, error: 'editor window unavailable' };
   }
 
-  let findWin = resolveFindWindow();
-  if (!findWin) {
-    if (typeof ensureFindWindow !== 'function') {
-      log.warnOnce(
-        'editorFind.open.ensureMissing',
-        'openFindUi unavailable: ensureFindWindow callback missing.'
-      );
-      return { ok: false, error: 'find window unavailable' };
-    }
-    findWin = ensureFindWindow();
-  }
-
-  if (!isAliveWindow(findWin)) {
+  const win = ensureFindWindow();
+  if (!isAliveWindow(win)) {
     log.warnOnce(
       'editorFind.open.createFailed',
       'openFindUi failed: find window was not created.'
@@ -295,21 +443,11 @@ function openFindUi(origin = 'unknown') {
     return { ok: false, error: 'find window unavailable' };
   }
 
-  if (typeof positionFindWindow === 'function') {
-    try {
-      positionFindWindow();
-    } catch (err) {
-      log.warnOnce(
-        'editorFind.position.onOpen',
-        'Unable to position find window on open (ignored):',
-        err
-      );
-    }
-  }
+  positionFindWindow();
 
   try {
-    findWin.show();
-    findWin.focus();
+    win.show();
+    win.focus();
   } catch (err) {
     log.error('Error showing/focusing find window:', err);
   }
@@ -325,20 +463,7 @@ function openFindUi(origin = 'unknown') {
 function closeFindUi({ restoreFocus = true } = {}) {
   clearSearch({ clearSelection: true });
   pendingFocusQuery = false;
-
-  const findWin = resolveFindWindow();
-  if (findWin) {
-    closingFindWindow = true;
-    try {
-      if (typeof closeFindWindow === 'function') {
-        closeFindWindow();
-      } else {
-        findWin.close();
-      }
-    } catch (err) {
-      log.error('Error closing find window:', err);
-    }
-  }
+  closeFindWindow();
 
   if (restoreFocus) {
     focusEditorWindow();
@@ -398,9 +523,34 @@ function handleFindBeforeInput(event, input) {
   }
 }
 
+function onEditorWindowWillClose() {
+  editorClosing = true;
+}
+
+function onEditorWindowClosed() {
+  editorClosing = false;
+  pendingFocusQuery = false;
+  closingFindWindow = false;
+  clearStateOnly();
+  detachEditorWindow();
+  editorWinRef = null;
+}
+
 function detachEditorWindow() {
   if (!editorListeners) return;
-  const { wc, onBeforeInput, onFoundInPage } = editorListeners;
+  const {
+    win,
+    wc,
+    onBeforeInput,
+    onFoundInPage,
+    onMove,
+    onResize,
+    onMaximize,
+    onUnmaximize,
+    onClose,
+    onClosed,
+  } = editorListeners;
+
   try {
     wc.removeListener('before-input-event', onBeforeInput);
   } catch (err) {
@@ -410,6 +560,7 @@ function detachEditorWindow() {
       err
     );
   }
+
   try {
     wc.removeListener('found-in-page', onFoundInPage);
   } catch (err) {
@@ -419,14 +570,24 @@ function detachEditorWindow() {
       err
     );
   }
+
+  try { win.removeListener('move', onMove); } catch (err) { log.warnOnce('editorFind.detachEditor.move', 'Unable to detach editor move listener (ignored):', err); }
+  try { win.removeListener('resize', onResize); } catch (err) { log.warnOnce('editorFind.detachEditor.resize', 'Unable to detach editor resize listener (ignored):', err); }
+  try { win.removeListener('maximize', onMaximize); } catch (err) { log.warnOnce('editorFind.detachEditor.maximize', 'Unable to detach editor maximize listener (ignored):', err); }
+  try { win.removeListener('unmaximize', onUnmaximize); } catch (err) { log.warnOnce('editorFind.detachEditor.unmaximize', 'Unable to detach editor unmaximize listener (ignored):', err); }
+  try { win.removeListener('close', onClose); } catch (err) { log.warnOnce('editorFind.detachEditor.close', 'Unable to detach editor close listener (ignored):', err); }
+  try { win.removeListener('closed', onClosed); } catch (err) { log.warnOnce('editorFind.detachEditor.closed', 'Unable to detach editor closed listener (ignored):', err); }
+
   editorListeners = null;
 }
 
 function attachEditorWindow(editorWin) {
   detachEditorWindow();
+  editorWinRef = null;
   editorClosing = false;
 
   if (!isAliveWindow(editorWin)) return;
+  editorWinRef = editorWin;
 
   const wc = editorWin.webContents;
   const onBeforeInput = (event, input) => {
@@ -444,97 +605,51 @@ function attachEditorWindow(editorWin) {
     }
   };
 
+  const onMove = () => positionFindWindow();
+  const onResize = () => positionFindWindow();
+  const onMaximize = () => positionFindWindow();
+  const onUnmaximize = () => positionFindWindow();
+  const onClose = () => {
+    onEditorWindowWillClose();
+    closeFindWindow();
+  };
+  const onClosed = () => {
+    onEditorWindowClosed();
+  };
+
   wc.on('before-input-event', onBeforeInput);
   wc.on('found-in-page', onFoundInPage);
-  editorListeners = { wc, onBeforeInput, onFoundInPage };
-}
+  editorWin.on('move', onMove);
+  editorWin.on('resize', onResize);
+  editorWin.on('maximize', onMaximize);
+  editorWin.on('unmaximize', onUnmaximize);
+  editorWin.on('close', onClose);
+  editorWin.on('closed', onClosed);
 
-function detachFindWindow() {
-  if (!findListeners) return;
-  const { wc, onBeforeInput, onDidFinishLoad } = findListeners;
-  try {
-    wc.removeListener('before-input-event', onBeforeInput);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachFind.beforeInput',
-      'Unable to detach find before-input-event listener (ignored):',
-      err
-    );
-  }
-  try {
-    wc.removeListener('did-finish-load', onDidFinishLoad);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachFind.didFinishLoad',
-      'Unable to detach find did-finish-load listener (ignored):',
-      err
-    );
-  }
-  findListeners = null;
-}
-
-function attachFindWindow(findWin) {
-  detachFindWindow();
-  if (!isAliveWindow(findWin)) return;
-
-  const wc = findWin.webContents;
-  const onBeforeInput = (event, input) => {
-    try {
-      handleFindBeforeInput(event, input);
-    } catch (err) {
-      log.error('Error in find before-input-event handler:', err);
-    }
+  editorListeners = {
+    win: editorWin,
+    wc,
+    onBeforeInput,
+    onFoundInPage,
+    onMove,
+    onResize,
+    onMaximize,
+    onUnmaximize,
+    onClose,
+    onClosed,
   };
-  const onDidFinishLoad = () => {
-    publishInit();
-    publishState();
-    tryDispatchPendingFocus();
-  };
-
-  wc.on('before-input-event', onBeforeInput);
-  wc.on('did-finish-load', onDidFinishLoad);
-  findListeners = { wc, onBeforeInput, onDidFinishLoad };
-}
-
-function handleFindWindowClosed() {
-  detachFindWindow();
-  pendingFocusQuery = false;
-
-  if (!closingFindWindow) {
-    clearSearch({ clearSelection: true });
-    focusEditorWindow();
-  }
-
-  closingFindWindow = false;
-}
-
-function onEditorWindowWillClose() {
-  editorClosing = true;
-}
-
-function onEditorWindowClosed() {
-  editorClosing = false;
-  pendingFocusQuery = false;
-  closingFindWindow = false;
-  detachEditorWindow();
-  clearStateOnly();
 }
 
 function isAuthorizedFindSender(event) {
-  const findWin = resolveFindWindow();
-  if (!findWin || !event || !event.sender) return false;
-  return event.sender === findWin.webContents;
+  const win = resolveFindWindow();
+  if (!win || !event || !event.sender) return false;
+  return event.sender === win.webContents;
 }
 
 // =============================================================================
 // IPC registration
 // =============================================================================
-function registerIpc(ipcMain, opts = {}) {
-  getWindows = typeof opts.getWindows === 'function' ? opts.getWindows : () => ({});
-  ensureFindWindow = typeof opts.ensureFindWindow === 'function' ? opts.ensureFindWindow : null;
-  closeFindWindow = typeof opts.closeFindWindow === 'function' ? opts.closeFindWindow : null;
-  positionFindWindow = typeof opts.positionFindWindow === 'function' ? opts.positionFindWindow : null;
-
+function registerIpc(ipcMain) {
   ipcMain.handle('editor-find-set-query', (event, rawQuery) => {
     if (!isAuthorizedFindSender(event)) {
       log.warnOnce(
@@ -586,8 +701,7 @@ function registerIpc(ipcMain, opts = {}) {
 module.exports = {
   registerIpc,
   attachEditorWindow,
-  attachFindWindow,
-  handleFindWindowClosed,
-  onEditorWindowWillClose,
-  onEditorWindowClosed,
+  closeFindWindow,
+  getFindWindow: resolveFindWindow,
 };
+
