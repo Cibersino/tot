@@ -50,6 +50,7 @@ Unclassified coexistence is drift and should be treated as a policy violation.
 3. Dedupe keys must be stable short IDs, optionally with controlled suffixes.
 4. Do not put unbounded dynamic data in dedupe keys.
 5. Keep dynamic diagnostics in message arguments, not in the dedupe key.
+6. In `.js` source files, developer diagnostics emitted through warning/error channels must be English-only (`log.warn|warnOnce|error|errorOnce`, `console.warn|error`); user-facing UI text remains i18n-owned.
 
 ## 6. Coding patterns
 
@@ -96,6 +97,7 @@ try {
 4. Are dedupe keys stable and bounded?
 5. Did the change avoid contract drift (channels, payloads, ordering)?
 6. Did the author cite mature baseline modules, not only recent feature files?
+7. Are warning/error diagnostics in `.js` files English-only (non-UI diagnostics)?
 
 ## 9. Baseline selection rule
 
