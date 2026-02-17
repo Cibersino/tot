@@ -82,6 +82,7 @@ body {
 }
 
 .find-close {
-  min-width: 64px;
+  width: 30px;
+  min-width: 30px;
+  padding: 0;
 }
-
