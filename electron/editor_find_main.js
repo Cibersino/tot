@@ -19,6 +19,8 @@ const log = Log.get('editor-find-main');
 
 const EDITOR_FIND_WINDOW_HTML = path.join(__dirname, '../public/editor_find.html');
 const EDITOR_FIND_PRELOAD = path.join(__dirname, 'editor_find_preload.js');
+const FIND_WIN_WIDTH = 560;
+const FIND_WIN_HEIGHT = 56;
 
 // =============================================================================
 // Internal refs/state
@@ -262,17 +264,16 @@ function positionFindWindow() {
 
   try {
     const hostBounds = hostWin.getContentBounds();
-    const findBounds = win.getBounds();
     const margin = 12;
 
-    let targetX = Math.round(hostBounds.x + Math.max(0, hostBounds.width - findBounds.width - margin));
+    let targetX = Math.round(hostBounds.x + Math.max(0, hostBounds.width - FIND_WIN_WIDTH - margin));
     let targetY = Math.round(hostBounds.y + margin);
 
     const display = screen.getDisplayNearestPoint({ x: targetX, y: targetY });
     const workArea = display && display.workArea ? display.workArea : null;
     if (workArea) {
-      const maxX = workArea.x + workArea.width - findBounds.width;
-      const maxY = workArea.y + workArea.height - findBounds.height;
+      const maxX = workArea.x + workArea.width - FIND_WIN_WIDTH;
+      const maxY = workArea.y + workArea.height - FIND_WIN_HEIGHT;
       targetX = Math.min(Math.max(targetX, workArea.x), maxX);
       targetY = Math.min(Math.max(targetY, workArea.y), maxY);
     }
@@ -280,8 +281,8 @@ function positionFindWindow() {
     win.setBounds({
       x: targetX,
       y: targetY,
-      width: findBounds.width,
-      height: findBounds.height,
+      width: FIND_WIN_WIDTH,
+      height: FIND_WIN_HEIGHT,
     }, false);
   } catch (err) {
     log.warnOnce(
@@ -370,8 +371,8 @@ function createFindWindow() {
   if (existing) return existing;
 
   findWin = new BrowserWindow({
-    width: 560,
-    height: 56,
+    width: FIND_WIN_WIDTH,
+    height: FIND_WIN_HEIGHT,
     show: false,
     frame: false,
     resizable: false,
