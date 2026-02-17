@@ -74,7 +74,10 @@ body {
 }
 
 .find-status {
-  min-width: 70px;
+  width: 120px;
+  min-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-align: center;
   font-size: 12px;
   color: #444;
