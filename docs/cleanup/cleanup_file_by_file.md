@@ -318,9 +318,67 @@ Output requirement:
 
 ---
 
-## Nivel 3: Cambios de arquitectura/contrato (excepcional, con evidencia fuerte)
+## Nivel 3: Convención de modos de falla bridge (policy gate)
 
-Solo se entra aquí si el diagnóstico muestra un dolor real que no se resuelve con Nivel 1–2.
+* Objetivo: clasificar dependencias bridge/API en required startup vs optional capability vs best-effort side action.
+* Base obligatoria: `docs/cleanup/bridge_failure_mode_convention.md`.
+* Evitar drift entre módulos: no mezclar fail-fast y degrade sin clasificación explícita.
+* Si corregir el drift exige cambiar superficie pública o paths saludables (IPC surface, channel names, payload/return shapes, side effects, timing/ordering), escalar a Nivel 4 (no hacerlo aquí).
+* Permitido en este nivel: corregir handling de failure-mode (throw vs guard+degrade vs best-effort) para cumplir la convención, manteniendo intactos los paths saludables.
+
+### Prompt Nivel 3 para Codex:
+
+```
+# Target file: `<TARGET_FILE>`
+
+Level 3 — Bridge dependency failure-mode alignment (policy-driven).
+
+Objective:
+Align `<TARGET_FILE>` with the bridge failure-mode convention in
+`docs/cleanup/bridge_failure_mode_convention.md`.
+
+Hard constraints:
+
+* Preserve IPC surface, channel names, payload/return shapes, side effects, and healthy-path timing/ordering.
+* Do NOT reorder startup sequencing inside `app.whenReady` (if present).
+* Do NOT reorder IPC registration in a way that could change readiness/race behavior.
+* Scope edits to `<TARGET_FILE>` only.
+
+What to do:
+
+1. Inventory bridge dependencies in this file (e.g., `window.*API`, preload bridge methods, send-to-window paths).
+2. Classify each dependency/path as:
+
+   * required startup dependency,
+   * optional capability,
+   * best-effort side action.
+3. Check for drift against repo baseline and the convention file:
+
+   * inconsistent handling for the same dependency class,
+   * unclassified coexistence,
+   * silent fallbacks where a real fallback exists.
+4. Apply only the minimal local changes needed to comply with the convention (including changing throw/guard/best-effort handling when misclassified), while preserving healthy-path behavior/timing.
+5. If any fix would require changing IPC surface/channels/payloads/ordering or other healthy-path behavior, do NOT implement it here; report as Level 4 evidence.
+
+Output requirement:
+
+* Decision: CHANGED | NO CHANGE
+* If NO CHANGE: 3–8 bullets explaining why no safe Level 3 change was worth doing.
+* If CHANGED: for each non-trivial change:
+
+  * Gain: one sentence.
+  * Cost: one sentence.
+  * Validation: how to verify (manual check / smoke path / simple repo grep).
+* One explicit sentence confirming healthy-path contract/timing were preserved.
+* Do NOT output diffs.
+
+```
+
+---
+
+## Nivel 4: Cambios de arquitectura/contrato (excepcional, con evidencia fuerte)
+
+Solo se entra aquí si el diagnóstico muestra un dolor real que no se resuelve con Nivel 1–3.
 
 Ejemplos típicos:
 
@@ -329,113 +387,75 @@ Ejemplos típicos:
 * cambiar API pública o semántica de retorno,
 * cambios con impacto en múltiples consumidores.
 
-**Requisito para Nivel 3:**
+**Requisito para Nivel 4:**
 
 * evidencia directa en el código (o bug reproducible),
 * riesgo explícito,
 * plan de validación claro.
 
-### Prompt Nivel 3 para Codex:
+### Prompt Nivel 4 para Codex:
+
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 3 — Architecture / contract changes (exceptional; evidence-driven).
+Level 4 — Architecture / contract changes (exceptional; evidence-driven).
 
 Objective:
-Only if there is strong evidence of real pain that cannot be addressed in Levels 1–2, propose and (if justified) implement a minimal architecture/contract change that measurably improves the situation.
+Only if there is strong evidence of real pain that cannot be addressed in Levels 1–3, propose and (if justified) implement a minimal architecture/contract change that measurably improves the situation.
 
 Entry criteria (must be satisfied to change code):
-- Direct evidence in code OR a reproducible bug/issue:
-  - point to exact call sites / usage patterns in the repo, OR
-  - provide minimal repro steps that demonstrate the pain.
-- Explicit risk assessment: what could break and where.
-- Clear validation plan: how to confirm correctness after the change.
+
+* Direct evidence in code OR a reproducible bug/issue:
+
+  * point to exact call sites / usage patterns in the repo, OR
+  * provide minimal repro steps that demonstrate the pain.
+* Explicit risk assessment: what could break and where.
+* Clear validation plan: how to confirm correctness after the change.
 
 Process:
-1) Inspect the repo and identify whether `<TARGET_FILE>` has a real pain point that requires Level 3, e.g.:
-   - duplicated responsibility across modules,
-   - unstable/ambiguous contract (IPC payloads/returns),
-   - sync/async mismatch causing issues,
-   - multiple consumers depending on inconsistent semantics,
-   - cross-module coupling causing bugs or maintenance pain.
-2) If NO strong evidence exists:
-   - Do NOT change code.
-   - Output “Decision: NO CHANGE (no Level 3 justified)” and list the evidence you checked (file + identifier anchors).
-3) If evidence DOES exist:
-   - Apply the smallest possible Level 3 change that resolves it.
-   - Update all affected consumers consistently (only if required by the change).
-   - Avoid broad rewrites and unnecessary architecture.
+
+1. Inspect the repo and identify whether `<TARGET_FILE>` has a real pain point that requires Level 4, e.g.:
+
+   * duplicated responsibility across modules,
+   * unstable/ambiguous contract (IPC payloads/returns),
+   * sync/async mismatch causing issues,
+   * multiple consumers depending on inconsistent semantics,
+   * cross-module coupling causing bugs or maintenance pain.
+2. If NO strong evidence exists:
+
+   * Do NOT change code.
+   * Output “Decision: NO CHANGE (no Level 4 justified)” and list the evidence you checked (file + identifier anchors).
+3. If evidence DOES exist:
+
+   * Apply the smallest possible Level 4 change that resolves it.
+   * Update all affected consumers consistently (only if required by the change).
+   * Avoid broad rewrites and unnecessary architecture.
 
 Anti “refactor that makes it worse” rule:
 If a change:
-- introduces more concepts than it removes;
-- increases indirection without reducing real pain;
-- forces readers to read more to understand the same behavior;
+
+* introduces more concepts than it removes;
+* increases indirection without reducing real pain;
+* forces readers to read more to understand the same behavior;
   then discard it or scale it back.
 
 Mandatory Gate output (for each non-trivial change you make):
-- Evidence: one sentence + where it appears (file(s)/function(s) or repro steps).
-- Risk: one sentence.
-- Validation: how to verify (manual smoke path, repo grep, or a concrete runtime check).
+
+* Evidence: one sentence + where it appears (file(s)/function(s) or repro steps).
+* Risk: one sentence.
+* Validation: how to verify (manual smoke path, repo grep, or a concrete runtime check).
 
 You may inspect the repo as needed. If you implement anything, ensure the repo builds/runs and the app’s IPC paths still work.
 
 Output requirement:
-- The report must include:
-  - Decision: CHANGED | NO CHANGE
-  - If NO CHANGE: 3–10 bullets of evidence checked (anchors).
-  - If CHANGED: list each non-trivial change with Evidence/Risk/Validation, and explicitly confirm the observable contract/timing were preserved (or state what contract changed and why it was required).
-- Do NOT output diffs.
-```
 
----
+* The report must include:
 
-## Nivel 4: Convención de modos de falla bridge (policy gate)
+  * Decision: CHANGED | NO CHANGE
+  * If NO CHANGE: 3–10 bullets of evidence checked (anchors).
+  * If CHANGED: list each non-trivial change with Evidence/Risk/Validation, and explicitly confirm the observable contract/timing were preserved (or state what contract changed and why it was required).
+* Do NOT output diffs.
 
-* Objetivo: clasificar dependencias bridge/API en required startup vs optional capability vs best-effort side action.
-* Base obligatoria: `docs/cleanup/bridge_failure_mode_convention.md`.
-* Evitar drift entre módulos: no mezclar fail-fast y degrade sin clasificación explícita.
-* Si corregir el drift exige cambio de contrato/semántica observable, escalar a Nivel 3 (no hacerlo aquí).
-* No cambiar behavior/contract/timing.
-
-### Prompt Nivel 4 para Codex:
-```
-# Target file: `<TARGET_FILE>`
-
-Level 4 — Bridge dependency failure-mode alignment (policy-driven, contract-preserving).
-
-Objective:
-Align `<TARGET_FILE>` with the bridge failure-mode convention in
-`docs/cleanup/bridge_failure_mode_convention.md`, without changing observable contract/timing.
-
-Hard constraints:
-- Preserve observable contract as-is (public API, IPC surface, channel names, payload/return shapes, side effects, timing/ordering).
-- Do NOT reorder startup sequencing inside `app.whenReady` (if present).
-- Do NOT reorder IPC registration in a way that could change readiness/race behavior.
-- Scope edits to `<TARGET_FILE>` only.
-
-What to do:
-1) Inventory bridge dependencies in this file (e.g., `window.*API`, preload bridge methods, send-to-window paths).
-2) Classify each dependency/path as:
-   - required startup dependency,
-   - optional capability,
-   - best-effort side action.
-3) Check for drift against repo baseline and the convention file:
-   - inconsistent handling for the same dependency class,
-   - unclassified coexistence,
-   - silent fallbacks where a real fallback exists.
-4) Apply only minimal local changes that improve consistency/clarity while preserving behavior.
-5) If any fix would require contract or timing change, do NOT implement it here; report as Level 3 evidence.
-
-Output requirement:
-- Decision: CHANGED | NO CHANGE
-- If NO CHANGE: 3–8 bullets explaining why no safe Level 4 change was worth doing.
-- If CHANGED: for each non-trivial change:
-  - Gain: one sentence.
-  - Cost: one sentence.
-  - Validation: how to verify (manual check / smoke path / simple repo grep).
-- One explicit sentence confirming observable contract/timing were preserved.
-- Do NOT output diffs.
 ```
 
 ---
