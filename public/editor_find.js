@@ -197,21 +197,35 @@ editorFindAPI.onInit((payload) => {
 
 editorFindAPI.onState(applyIncomingState);
 
-editorFindAPI.onFocusQuery((payload) => {
-  const selectAll = !!(payload && payload.selectAll);
-  focusQuery(selectAll);
-});
+if (typeof editorFindAPI.onFocusQuery === 'function') {
+  editorFindAPI.onFocusQuery((payload) => {
+    const selectAll = !!(payload && payload.selectAll);
+    focusQuery(selectAll);
+  });
+} else {
+  log.warnOnce(
+    'editor-find.onFocusQuery.missing',
+    '[editor-find] editorFindAPI.onFocusQuery missing; focus-sync capability disabled.'
+  );
+}
 
-editorFindAPI.onSettingsChanged(async (settings) => {
-  try {
-    const nextLang = settings && settings.language ? settings.language : '';
-    if (!nextLang || nextLang === idiomaActual) return;
-    idiomaActual = nextLang;
-    await applyTranslations();
-  } catch (err) {
-    log.warn('editor-find: failed to apply settings update:', err);
-  }
-});
+if (typeof editorFindAPI.onSettingsChanged === 'function') {
+  editorFindAPI.onSettingsChanged(async (settings) => {
+    try {
+      const nextLang = settings && settings.language ? settings.language : '';
+      if (!nextLang || nextLang === idiomaActual) return;
+      idiomaActual = nextLang;
+      await applyTranslations();
+    } catch (err) {
+      log.warn('editor-find: failed to apply settings update:', err);
+    }
+  });
+} else {
+  log.warnOnce(
+    'editor-find.onSettingsChanged.missing',
+    '[editor-find] editorFindAPI.onSettingsChanged missing; live language updates disabled.'
+  );
+}
 
 (async () => {
   await initLanguage();
