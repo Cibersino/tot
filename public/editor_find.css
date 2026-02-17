@@ -1,0 +1,87 @@
+/* public/editor_find.css */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  color: #1d1d1d;
+  background: #f1f1f1;
+  border: 1px solid #c9c9c9;
+}
+
+.find-wrap {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(140px, 1fr) auto auto auto auto;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+}
+
+.find-label {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.find-input {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  border: 1px solid #b8b8b8;
+  border-radius: 5px;
+  padding: 0 8px;
+  font-size: 13px;
+  color: #1d1d1d;
+  background: #ffffff;
+}
+
+.find-input:focus-visible,
+.find-btn:focus-visible {
+  outline: 2px solid #2b78ff;
+  outline-offset: 1px;
+}
+
+.find-btn {
+  height: 30px;
+  border: 1px solid #b8b8b8;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #1d1d1d;
+  padding: 0 10px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.find-btn:hover:enabled {
+  background: #f6f6f6;
+}
+
+.find-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.find-status {
+  min-width: 70px;
+  text-align: center;
+  font-size: 12px;
+  color: #444;
+  white-space: nowrap;
+}
+
+.find-close {
+  min-width: 64px;
+}
+

@@ -407,6 +407,7 @@ function broadcastSettingsUpdated(settings, windows) {
   const targets = [
     { win: windows.mainWin, name: 'mainWin' },
     { win: windows.editorWin, name: 'editorWin' },
+    { win: windows.editorFindWin, name: 'editorFindWin' },
     { win: windows.presetWin, name: 'presetWin' },
     { win: windows.flotanteWin, name: 'flotanteWin' },
     { win: windows.taskEditorWin, name: 'taskEditorWin' },
@@ -467,7 +468,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
 function registerIpc(
   ipcMain,
   {
-    getWindows, // () => ({ mainWin, editorWin, presetWin, langWin, flotanteWin })
+    getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin })
     buildAppMenu, // function(lang)
   }
 ) {
@@ -522,11 +523,16 @@ function registerIpc(
 
       // Hide the toolbar/menu in secondary windows (best-effort).
       try {
-        const { editorWin, presetWin, langWin, taskEditorWin } = windows;
+        const { editorWin, editorFindWin, presetWin, langWin, taskEditorWin } = windows;
 
         if (editorWin && !editorWin.isDestroyed()) {
           editorWin.setMenu(null);
           editorWin.setMenuBarVisibility(false);
+        }
+
+        if (editorFindWin && !editorFindWin.isDestroyed()) {
+          editorFindWin.setMenu(null);
+          editorFindWin.setMenuBarVisibility(false);
         }
 
         if (presetWin && !presetWin.isDestroyed()) {

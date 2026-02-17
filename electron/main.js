@@ -41,6 +41,7 @@ const updater = require('./updater');
 const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
+const editorFindMain = require('./editor_find_main');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -53,6 +54,8 @@ log.debug('Main process starting...');
 // Language selection modal (first launch) assets
 const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
+const EDITOR_FIND_WINDOW_HTML = path.join(__dirname, '../public/editor_find.html');
+const EDITOR_FIND_PRELOAD = path.join(__dirname, 'editor_find_preload.js');
 // Fallback exists if the manifest is missing/corrupt so the picker still works.
 // Keep this list intentionally minimal to avoid drift and make fallback usage obvious.
 const FALLBACK_LANGUAGES = [
@@ -91,6 +94,14 @@ function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
 }
 
+function resolveEditorWindow() {
+  return isAliveWindow(editorWin) ? editorWin : null;
+}
+
+function resolveEditorFindWindow() {
+  return isAliveWindow(editorFindWin) ? editorFindWin : null;
+}
+
 // =============================================================================
 // Global window references (singletons)
 // =============================================================================
@@ -98,6 +109,7 @@ function resolveMainWindow() {
 
 let mainWin = null;     // Main window (index.html)
 let editorWin = null;   // Editor window (editor.html) - user edits current text
+let editorFindWin = null; // Editor find window (editor_find.html)
 let presetWin = null;   // Preset modal (preset_modal.html) - create/edit preset
 let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating stopwatch window (flotante.html)
@@ -266,6 +278,14 @@ function createMainWindow() {
         }
       }
 
+      if (isAliveWindow(editorFindWin)) {
+        try {
+          editorFindWin.close();
+        } catch (err) {
+          log.error('Error closing editorFindWin from mainWin.close:', err);
+        }
+      }
+
       if (isAliveWindow(presetWin)) {
         try {
           presetWin.close();
@@ -300,6 +320,121 @@ function createMainWindow() {
       log.error('Error calling app.quit() in mainWin.closed:', err);
     }
   });
+}
+
+function positionEditorFindWindow() {
+  const hostWin = resolveEditorWindow();
+  const findWin = resolveEditorFindWindow();
+  if (!hostWin || !findWin) return;
+
+  try {
+    const hostBounds = hostWin.getContentBounds();
+    const findBounds = findWin.getBounds();
+    const margin = 12;
+
+    let targetX = Math.round(hostBounds.x + Math.max(0, hostBounds.width - findBounds.width - margin));
+    let targetY = Math.round(hostBounds.y + margin);
+
+    const display = screen.getDisplayNearestPoint({ x: targetX, y: targetY });
+    const workArea = display && display.workArea ? display.workArea : null;
+    if (workArea) {
+      const maxX = workArea.x + workArea.width - findBounds.width;
+      const maxY = workArea.y + workArea.height - findBounds.height;
+      targetX = Math.min(Math.max(targetX, workArea.x), maxX);
+      targetY = Math.min(Math.max(targetY, workArea.y), maxY);
+    }
+
+    findWin.setBounds({
+      x: targetX,
+      y: targetY,
+      width: findBounds.width,
+      height: findBounds.height,
+    }, false);
+  } catch (err) {
+    log.warnOnce(
+      'editorFind.position.failed',
+      'Unable to position editor find window (ignored):',
+      err
+    );
+  }
+}
+
+function closeEditorFindWindow() {
+  const findWin = resolveEditorFindWindow();
+  if (!findWin) return;
+  try {
+    findWin.close();
+  } catch (err) {
+    log.error('Error closing editor find window:', err);
+  }
+}
+
+function createEditorFindWindow() {
+  const hostWin = resolveEditorWindow();
+  if (!hostWin) {
+    log.warnOnce(
+      'editorFind.create.noEditor',
+      'createEditorFindWindow ignored: editor window unavailable.'
+    );
+    return null;
+  }
+
+  if (resolveEditorFindWindow()) {
+    return editorFindWin;
+  }
+
+  editorFindWin = new BrowserWindow({
+    width: 560,
+    height: 56,
+    show: false,
+    frame: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    movable: false,
+    skipTaskbar: true,
+    parent: hostWin,
+    modal: false,
+    webPreferences: {
+      preload: EDITOR_FIND_PRELOAD,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  editorFindWin.setMenu(null);
+  editorFindWin.setMenuBarVisibility(false);
+
+  try {
+    editorFindMain.attachFindWindow(editorFindWin);
+  } catch (err) {
+    log.error('Error attaching find-window listeners:', err);
+  }
+
+  editorFindWin.loadFile(EDITOR_FIND_WINDOW_HTML);
+
+  editorFindWin.once('ready-to-show', () => {
+    positionEditorFindWindow();
+  });
+
+  editorFindWin.on('closed', () => {
+    try {
+      editorFindMain.handleFindWindowClosed();
+    } catch (err) {
+      log.error('Error handling editor find window close:', err);
+    }
+    editorFindWin = null;
+  });
+
+  return editorFindWin;
+}
+
+function ensureEditorFindWindow() {
+  const existing = resolveEditorFindWindow();
+  if (existing) return existing;
+  return createEditorFindWindow();
 }
 
 /**
@@ -343,6 +478,20 @@ function createEditorWindow() {
 
   editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
 
+  try {
+    editorFindMain.attachEditorWindow(editorWin);
+  } catch (err) {
+    log.error('Error attaching editor find listeners:', err);
+  }
+
+  const syncEditorFindPosition = () => {
+    positionEditorFindWindow();
+  };
+  editorWin.on('move', syncEditorFindPosition);
+  editorWin.on('resize', syncEditorFindPosition);
+  editorWin.on('maximize', syncEditorFindPosition);
+  editorWin.on('unmaximize', syncEditorFindPosition);
+
   // When ready, apply maximized state (if needed), show it, and send initial data.
   editorWin.once('ready-to-show', () => {
     try {
@@ -352,6 +501,7 @@ function createEditorWindow() {
       }
 
       editorWin.show();
+      positionEditorFindWindow();
 
       // Send current text so the editor can render and allow editing.
       try {
@@ -380,8 +530,29 @@ function createEditorWindow() {
   // Delegate persistent window-state management to editor_state.js.
   editorState.attachTo(editorWin, loadJson, saveJson);
 
+  editorWin.on('close', () => {
+    try {
+      editorFindMain.onEditorWindowWillClose();
+    } catch (err) {
+      log.error('Error notifying editor find before editor close:', err);
+    }
+
+    try {
+      closeEditorFindWindow();
+    } catch (err) {
+      log.error('Error closing editor find from editor close:', err);
+    }
+  });
+
   // Drop reference on close so the window can be recreated later.
   editorWin.on('closed', () => {
+    try {
+      editorFindMain.onEditorWindowClosed();
+    } catch (err) {
+      log.error('Error handling editor find cleanup on editor closed:', err);
+    }
+
+    editorFindWin = null;
     editorWin = null;
   });
 }
@@ -1395,10 +1566,21 @@ app.whenReady().then(() => {
     editorWin,
   }));
 
+  editorFindMain.registerIpc(ipcMain, {
+    getWindows: () => ({
+      editorWin,
+      editorFindWin,
+    }),
+    ensureFindWindow: () => ensureEditorFindWindow(),
+    closeFindWindow: () => closeEditorFindWindow(),
+    positionFindWindow: () => positionEditorFindWindow(),
+  });
+
   settingsState.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
       editorWin,
+      editorFindWin,
       presetWin,
       langWin,
       flotanteWin,
@@ -1411,6 +1593,7 @@ app.whenReady().then(() => {
     getWindows: () => ({
       mainWin,
       editorWin,
+      editorFindWin,
       presetWin,
       langWin,
       flotanteWin,
