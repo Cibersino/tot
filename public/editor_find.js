@@ -26,6 +26,9 @@ if (!loadRendererTranslations || !tRenderer) {
 
 const tr = (path, fallback) => tRenderer(path, fallback);
 const editorFindAPI = window.editorFindAPI;
+if (!editorFindAPI) {
+  throw new Error('[editor-find] editorFindAPI no disponible; verifica editor_find_preload.js');
+}
 
 const labelEl = document.getElementById('findLabel');
 const inputEl = document.getElementById('findQuery');
@@ -141,7 +144,7 @@ async function pushQuery() {
 
 async function initLanguage() {
   try {
-    if (!editorFindAPI || typeof editorFindAPI.getSettings !== 'function') {
+    if (typeof editorFindAPI.getSettings !== 'function') {
       log.warnOnce(
         'editor-find.getSettings.missing',
         '[editor-find] editorFindAPI.getSettings missing; using default language.'
@@ -192,9 +195,7 @@ editorFindAPI.onInit((payload) => {
   applyIncomingState(payload);
 });
 
-editorFindAPI.onState((payload) => {
-  applyIncomingState(payload);
-});
+editorFindAPI.onState(applyIncomingState);
 
 editorFindAPI.onFocusQuery((payload) => {
   const selectAll = !!(payload && payload.selectAll);
@@ -217,7 +218,9 @@ editorFindAPI.onSettingsChanged(async (settings) => {
   await applyTranslations();
   applyUiState();
   focusQuery(true);
-})();
+})().catch((err) => {
+  log.error('editor-find bootstrap failed:', err);
+});
 
 // =============================================================================
 // End of public/editor_find.js
