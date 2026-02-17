@@ -10,6 +10,11 @@
 // - Handle editor/find-window shortcuts via before-input-event.
 // - Drive native search lifecycle using webContents.findInPage APIs.
 // - Keep find UI state synced from found-in-page events.
+// - Enforce that find IPC commands are accepted only from the find window.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const { BrowserWindow, screen } = require('electron');
 const path = require('path');
@@ -17,13 +22,16 @@ const Log = require('./log');
 
 const log = Log.get('editor-find-main');
 
+// =============================================================================
+// Constants / config (paths, window size)
+// =============================================================================
 const EDITOR_FIND_WINDOW_HTML = path.join(__dirname, '../public/editor_find.html');
 const EDITOR_FIND_PRELOAD = path.join(__dirname, 'editor_find_preload.js');
 const FIND_WIN_WIDTH = 560;
 const FIND_WIN_HEIGHT = 56;
 
 // =============================================================================
-// Internal refs/state
+// Shared state (window refs + find session state)
 // =============================================================================
 let editorWinRef = null;
 let findWin = null;
@@ -44,7 +52,7 @@ const state = {
 };
 
 // =============================================================================
-// Helpers
+// Helpers (guards, state publishing, search actions)
 // =============================================================================
 function isAliveWindow(win) {
   return !!(win && !win.isDestroyed());
@@ -220,6 +228,9 @@ function handleFoundInPage(result) {
   publishState();
 }
 
+// =============================================================================
+// Input helpers (keyboard shortcuts)
+// =============================================================================
 function isCmdOrCtrl(input) {
   return !!(input && (input.control || input.meta));
 }
@@ -257,6 +268,9 @@ function tryDispatchPendingFocus() {
   pendingFocusQuery = false;
 }
 
+// =============================================================================
+// Find window lifecycle / wiring
+// =============================================================================
 function positionFindWindow() {
   const hostWin = resolveEditorWindow();
   const win = resolveFindWindow();
@@ -480,6 +494,9 @@ function closeFindUi({ restoreFocus = true } = {}) {
   return { ok: true };
 }
 
+// =============================================================================
+// Editor event handling / lifecycle wiring
+// =============================================================================
 function handleEditorBeforeInput(event, input) {
   if (!input || input.type !== 'keyDown') return;
 
@@ -678,6 +695,9 @@ function attachEditorWindow(editorWin) {
   };
 }
 
+// =============================================================================
+// IPC authorization + registration
+// =============================================================================
 function isAuthorizedFindSender(event) {
   const win = resolveFindWindow();
   if (!win || !event || !event.sender) return false;
@@ -694,9 +714,6 @@ function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handl
   });
 }
 
-// =============================================================================
-// IPC registration
-// =============================================================================
 function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
@@ -732,7 +749,7 @@ function registerIpc(ipcMain) {
 }
 
 // =============================================================================
-// Exports
+// Exports / module surface
 // =============================================================================
 module.exports = {
   registerIpc,
