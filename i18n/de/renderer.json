@@ -166,8 +166,6 @@
       "next_title": "Naechster Treffer",
       "close_title": "Suchleiste schliessen",
       "status_no_matches": "Keine Treffer",
-      "status_wrap_start": "Zum Anfang gesprungen",
-      "status_wrap_end": "Zum Ende gesprungen",
       "status_empty_query": "Zum Suchen tippen"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-

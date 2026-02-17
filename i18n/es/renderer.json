@@ -180,8 +180,6 @@
       "next_title": "Coincidencia siguiente",
       "close_title": "Cerrar barra de busqueda",
       "status_no_matches": "Sin coincidencias",
-      "status_wrap_start": "Volvió al inicio",
-      "status_wrap_end": "Volvió al final",
       "status_empty_query": "Escribe para buscar"
     },
     "alerts": {

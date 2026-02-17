@@ -166,8 +166,6 @@
       "next_title": "Correspondance suivante",
       "close_title": "Fermer la barre de recherche",
       "status_no_matches": "Aucune correspondance",
-      "status_wrap_start": "Retour au debut",
-      "status_wrap_end": "Retour a la fin",
       "status_empty_query": "Saisir pour rechercher"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-

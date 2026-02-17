@@ -166,8 +166,6 @@
       "next_title": "La que sigue",
       "close_title": "Pitiarse la barra de búsqueda",
       "status_no_matches": "No pillamos niuna custión",
-      "status_wrap_start": "Se dio la güelta al principio",
-      "status_wrap_end": "Se dio la güelta al final",
       "status_empty_query": "Escribe algo po"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-

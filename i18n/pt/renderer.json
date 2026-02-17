@@ -166,8 +166,6 @@
       "next_title": "Correspondencia seguinte",
       "close_title": "Fechar a barra de busca",
       "status_no_matches": "Sem correspondencias",
-      "status_wrap_start": "Voltou ao inicio",
-      "status_wrap_end": "Voltou ao fim",
       "status_empty_query": "Digite para buscar"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-
