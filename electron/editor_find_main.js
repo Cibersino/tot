@@ -293,29 +293,32 @@ function positionFindWindow() {
   }
 }
 
+function removeListenerWithWarn(target, eventName, listener, warnKey, warnMessage) {
+  try {
+    target.removeListener(eventName, listener);
+  } catch (err) {
+    log.warnOnce(warnKey, warnMessage, err);
+  }
+}
+
 function detachFindWindow() {
   if (!findListeners) return;
   const { wc, onBeforeInput, onDidFinishLoad } = findListeners;
 
-  try {
-    wc.removeListener('before-input-event', onBeforeInput);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachFind.beforeInput',
-      'Unable to detach find before-input-event listener (ignored):',
-      err
-    );
-  }
-
-  try {
-    wc.removeListener('did-finish-load', onDidFinishLoad);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachFind.didFinishLoad',
-      'Unable to detach find did-finish-load listener (ignored):',
-      err
-    );
-  }
+  removeListenerWithWarn(
+    wc,
+    'before-input-event',
+    onBeforeInput,
+    'editorFind.detachFind.beforeInput',
+    'Unable to detach find before-input-event listener (ignored):'
+  );
+  removeListenerWithWarn(
+    wc,
+    'did-finish-load',
+    onDidFinishLoad,
+    'editorFind.detachFind.didFinishLoad',
+    'Unable to detach find did-finish-load listener (ignored):'
+  );
 
   findListeners = null;
 }
@@ -556,85 +559,62 @@ function detachEditorWindow() {
     onClosed,
   } = editorListeners;
 
-  try {
-    wc.removeListener('before-input-event', onBeforeInput);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachEditor.beforeInput',
-      'Unable to detach editor before-input-event listener (ignored):',
-      err
-    );
-  }
-
-  try {
-    wc.removeListener('found-in-page', onFoundInPage);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachEditor.foundInPage',
-      'Unable to detach editor found-in-page listener (ignored):',
-      err
-    );
-  }
-
-  try {
-    win.removeListener('move', onMove);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachEditor.move',
-      'Unable to detach editor move listener (ignored):',
-      err
-    );
-  }
-
-  try {
-    win.removeListener('resize', onResize);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachEditor.resize',
-      'Unable to detach editor resize listener (ignored):',
-      err
-    );
-  }
-
-  try {
-    win.removeListener('maximize', onMaximize);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachEditor.maximize',
-      'Unable to detach editor maximize listener (ignored):',
-      err
-    );
-  }
-
-  try {
-    win.removeListener('unmaximize', onUnmaximize);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachEditor.unmaximize',
-      'Unable to detach editor unmaximize listener (ignored):',
-      err
-    );
-  }
-
-  try {
-    win.removeListener('close', onClose);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachEditor.close',
-      'Unable to detach editor close listener (ignored):',
-      err
-    );
-  }
-
-  try {
-    win.removeListener('closed', onClosed);
-  } catch (err) {
-    log.warnOnce(
-      'editorFind.detachEditor.closed',
-      'Unable to detach editor closed listener (ignored):',
-      err
-    );
-  }
+  removeListenerWithWarn(
+    wc,
+    'before-input-event',
+    onBeforeInput,
+    'editorFind.detachEditor.beforeInput',
+    'Unable to detach editor before-input-event listener (ignored):'
+  );
+  removeListenerWithWarn(
+    wc,
+    'found-in-page',
+    onFoundInPage,
+    'editorFind.detachEditor.foundInPage',
+    'Unable to detach editor found-in-page listener (ignored):'
+  );
+  removeListenerWithWarn(
+    win,
+    'move',
+    onMove,
+    'editorFind.detachEditor.move',
+    'Unable to detach editor move listener (ignored):'
+  );
+  removeListenerWithWarn(
+    win,
+    'resize',
+    onResize,
+    'editorFind.detachEditor.resize',
+    'Unable to detach editor resize listener (ignored):'
+  );
+  removeListenerWithWarn(
+    win,
+    'maximize',
+    onMaximize,
+    'editorFind.detachEditor.maximize',
+    'Unable to detach editor maximize listener (ignored):'
+  );
+  removeListenerWithWarn(
+    win,
+    'unmaximize',
+    onUnmaximize,
+    'editorFind.detachEditor.unmaximize',
+    'Unable to detach editor unmaximize listener (ignored):'
+  );
+  removeListenerWithWarn(
+    win,
+    'close',
+    onClose,
+    'editorFind.detachEditor.close',
+    'Unable to detach editor close listener (ignored):'
+  );
+  removeListenerWithWarn(
+    win,
+    'closed',
+    onClosed,
+    'editorFind.detachEditor.closed',
+    'Unable to detach editor closed listener (ignored):'
+  );
 
   editorListeners = null;
 }
@@ -704,53 +684,51 @@ function isAuthorizedFindSender(event) {
   return event.sender === win.webContents;
 }
 
+function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handler) {
+  ipcMain.handle(channel, (event, ...args) => {
+    if (!isAuthorizedFindSender(event)) {
+      log.warnOnce(warnKey, warnMessage);
+      return { ok: false, error: 'unauthorized' };
+    }
+    return handler(...args);
+  });
+}
+
 // =============================================================================
 // IPC registration
 // =============================================================================
 function registerIpc(ipcMain) {
-  ipcMain.handle('editor-find-set-query', (event, rawQuery) => {
-    if (!isAuthorizedFindSender(event)) {
-      log.warnOnce(
-        'editorFind.ipc.setQuery.unauthorized',
-        'editor-find-set-query unauthorized (ignored).'
-      );
-      return { ok: false, error: 'unauthorized' };
-    }
-    return setQuery(rawQuery);
-  });
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-set-query',
+    'editorFind.ipc.setQuery.unauthorized',
+    'editor-find-set-query unauthorized (ignored).',
+    (rawQuery) => setQuery(rawQuery)
+  );
 
-  ipcMain.handle('editor-find-next', (event) => {
-    if (!isAuthorizedFindSender(event)) {
-      log.warnOnce(
-        'editorFind.ipc.next.unauthorized',
-        'editor-find-next unauthorized (ignored).'
-      );
-      return { ok: false, error: 'unauthorized' };
-    }
-    return navigate(true);
-  });
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-next',
+    'editorFind.ipc.next.unauthorized',
+    'editor-find-next unauthorized (ignored).',
+    () => navigate(true)
+  );
 
-  ipcMain.handle('editor-find-prev', (event) => {
-    if (!isAuthorizedFindSender(event)) {
-      log.warnOnce(
-        'editorFind.ipc.prev.unauthorized',
-        'editor-find-prev unauthorized (ignored).'
-      );
-      return { ok: false, error: 'unauthorized' };
-    }
-    return navigate(false);
-  });
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-prev',
+    'editorFind.ipc.prev.unauthorized',
+    'editor-find-prev unauthorized (ignored).',
+    () => navigate(false)
+  );
 
-  ipcMain.handle('editor-find-close', (event) => {
-    if (!isAuthorizedFindSender(event)) {
-      log.warnOnce(
-        'editorFind.ipc.close.unauthorized',
-        'editor-find-close unauthorized (ignored).'
-      );
-      return { ok: false, error: 'unauthorized' };
-    }
-    return closeFindUi({ restoreFocus: true });
-  });
+  registerAuthorizedFindIpc(
+    ipcMain,
+    'editor-find-close',
+    'editorFind.ipc.close.unauthorized',
+    'editor-find-close unauthorized (ignored).',
+    () => closeFindUi({ restoreFocus: true })
+  );
 }
 
 // =============================================================================
