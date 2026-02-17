@@ -155,13 +155,13 @@
       "clear": "🗑",
       "clear_title": "Lifün"
     },
-"editor_find": {
+    "editor_find": {
       "label": "Kintun",
       "input_placeholder": "Kintun...",
       "input_aria": "Kintun wirintukun mew",
       "prev": "Wünen",
       "next": "Inan",
-      "close": "Nürüfün",
+      "close": "🗙",
       "prev_title": "Wünen kintun",
       "next_title": "Inan kintun",
       "close_title": "Nürüfün kintun wechun",
