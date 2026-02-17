@@ -373,7 +373,6 @@ Output requirement:
   * Validation: how to verify (manual check / smoke path / simple repo grep).
 * One explicit sentence confirming healthy-path contract/timing were preserved.
 * Do NOT output diffs.
-
 ```
 
 ---
@@ -457,7 +456,6 @@ Output requirement:
   * If NO CHANGE: 3–10 bullets of evidence checked (anchors).
   * If CHANGED: list each non-trivial change with Evidence/Risk/Validation, and explicitly confirm the observable contract/timing were preserved (or state what contract changed and why it was required).
 * Do NOT output diffs.
-
 ```
 
 ---
