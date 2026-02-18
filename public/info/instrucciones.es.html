@@ -273,7 +273,8 @@
         <ul>
           <li><strong>💾</strong>: abre un cuadro de diálogo nativo para “guardar archivo”, ubicado en
             <code>config/saved_current_texts/</code>. Puedes guardar en <strong>subcarpetas</strong> (y crear carpetas)
-            siempre que permanezcas dentro del árbol de snapshots. El snapshot se guarda como JSON.</li>
+            siempre que permanezcas dentro del árbol de snapshots. El snapshot se guarda como JSON.
+          </li>
           <li><strong>📂</strong>: abre un cuadro de diálogo nativo para “abrir archivo” y te permite seleccionar
             cualquier archivo de snapshot dentro de <code>config/saved_current_texts/</code> (incluidas las
             subcarpetas). La app solicitará confirmación porque sobrescribirá el texto actual.</li>
@@ -441,7 +442,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Paso 6 — Gestión de tareas (opcional)</h3>
+        <h3>Paso 6 — Tareas: planear y rastrear lecturas</h3>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/editor-tareas.png" alt="Captura: ventana del editor de tareas" loading="lazy"
@@ -475,9 +476,11 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             Paso 5) </li>
           <li>Actualiza <strong>%</strong> con tu porcentaje aproximado completado para rastrear el progreso; el tiempo
             restante en <strong>R</strong> se actualiza en consecuencia.</li>
-          <li>Use <strong>Tipo</strong> para categorizar elementos (ej. “libro”, “artículo”, “paper”, “video”).</li>
+          <li>Use <strong>Tipo</strong> para categorizar elementos (ej. “url”, “pdf”, “libro”, “paper”).</li>
           <li>Use <strong>Enlace</strong> para almacenar una ruta local o una URL HTTPS para el elemento.</li>
-          <li>Use <strong>Comentario</strong> para cualquier nota que quieras agregar sobre el elemento.</li>
+          <li>Use <strong>💬</strong> para cualquier nota que quieras agregar sobre el elemento y/o vincularlo a
+            cualquier <strong>snapshot de texto</strong> guardado (aparecerá un icono clickeable <strong>📥</strong>).
+          </li>
         </ul>
 
         <h4>6.3 Links</h4>
@@ -489,9 +492,10 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li>Para rutas locales, pega las rutas absolutas de cada archivo (por ejemplo,
             C:\Users\user\Documents\mybook.txt).</li>
           <li>Para URLs, asegúrate de incluir el protoclo (por ejemplo, https://).</li>
-          <li>Al hacer clic en el enlace, se intentará abrirlo con la aplicación predeterminada (por ejemplo, un PDF se
-            abrirá en el visor de PDF predeterminado, una URL se abrirá en el navegador web predeterminado).</li>
-          <li>Cuando hace clic en un enlace URL, la aplicación puede solicitar confirmación (y puede recordar hosts
+          <li>Al hacer clic en <strong>↗️</strong>, se intentará abrirlo con la aplicación predeterminada (por ejemplo,
+            un PDF se abrirá en el visor de PDF predeterminado, una URL se abrirá en el navegador web predeterminado).
+          </li>
+          <li>Cuando haces clic en un enlace URL, la aplicación te puede solicitar confirmación (y puede recordar hosts
             confiables) antes de abrirla en el navegador predeterminado.</li>>
         </ul>
 
@@ -726,7 +730,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             <ul>
               <li><strong>Texto actual</strong> y configuración general (idioma, WPM, modo de conteo, presets).</li>
               <li><strong>Snapshots de texto guardados</strong> (biblioteca opcional bajo
-                <code>config/saved_current_texts/</code>).</li>
+                <code>config/saved_current_texts/</code>).
+              </li>
               <li><strong>Tareas guardadas</strong> (listas de tareas, biblioteca de tareas y lista de enlaces
                 permitidos).</li>
             </ul>
