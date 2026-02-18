@@ -51,6 +51,15 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [0.1.5] toT - reemplazo find/search editor
+
+### Fecha release y último commit
+
+- Fecha: `2026-02-18`
+- Último commit: `3041dbf630f69500fa36e84d9e2c2536283fd879`
+
 ### Resumen de cambios
 
 - Editor (Find/Search): reemplazo del sistema de búsqueda manual embebido por una ventana dedicada, controlada desde main y basada en `webContents.findInPage`.
