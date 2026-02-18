@@ -150,8 +150,8 @@
     "editor": {
       "title": "toT — Kom wirin",
       "placeholder": "Wiringe faw...",
-      "calc_button": "RAKIDUAMNGE",
-      "calc_while_typing": "Rakiduamnge wirin mu",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Auto-elkünun ka auto-calcular wirin wirintukun mew",
       "clear": "🗑",
       "clear_title": "Lifün"
     },

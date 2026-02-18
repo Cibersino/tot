@@ -150,8 +150,8 @@
     "editor": {
       "title": "toT — El texto completito",
       "placeholder": "Escribe o pega la custión aquí...",
-      "calc_button": "CALCULEISHON",
-      "calc_while_typing": "Contar mientras escribís",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Auto-salvar y auto-contar mientras escribís",
       "clear": "🗑",
       "clear_title": "Pitiarse too"
     },

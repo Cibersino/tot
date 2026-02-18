@@ -164,8 +164,8 @@
     "editor": {
       "title": "toT — Texto completo",
       "placeholder": "Escribe o pega aquí...",
-      "calc_button": "CALCULAR",
-      "calc_while_typing": "Calcular mientras escribe",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Auto-guardar y auto-recalcular mientras escribes",
       "clear": "🗑",
       "clear_title": "Vaciar"
     },
