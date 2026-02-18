@@ -11,6 +11,9 @@
 // =============================================================================
 
 (() => {
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[current-text-snapshots] window.getLogger unavailable; cannot continue');
+  }
   const log = window.getLogger('current-text-snapshots');
   log.debug('Current text snapshots starting...');
 
@@ -33,7 +36,7 @@
       window.Notify.notifyMain(key);
       return;
     }
-    log.warnOnce('current_text_snapshots.notify.unavailable', 'Notify API unavailable; toast dropped.');
+    log.warn('Notify API unavailable; toast dropped.');
   }
 
   function handleSaveResult(res) {
