@@ -715,6 +715,10 @@ function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handl
 }
 
 function registerIpc(ipcMain) {
+  if (!ipcMain || typeof ipcMain.handle !== 'function') {
+    throw new Error('[editor-find-main] registerIpc requires ipcMain');
+  }
+
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-set-query',
