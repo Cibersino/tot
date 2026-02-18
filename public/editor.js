@@ -14,6 +14,9 @@
 // =============================================================================
 // Logger
 // =============================================================================
+if (typeof window.getLogger !== 'function') {
+  throw new Error('[editor] window.getLogger unavailable; cannot continue');
+}
 const log = window.getLogger('editor');
 
 log.debug('Manual editor starting...');
@@ -23,10 +26,29 @@ log.debug('Manual editor starting...');
 // =============================================================================
 const { AppConstants } = window;
 if (!AppConstants) {
-  throw new Error('[editor] AppConstants no disponible; verifica la carga de constants.js');
+  throw new Error('[editor] AppConstants unavailable; verify constants.js load order');
 }
 const { DEFAULT_LANG, PASTE_ALLOW_LIMIT, SMALL_UPDATE_THRESHOLD } = AppConstants;
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
+
+if (!window.editorAPI) {
+  throw new Error('[editor] editorAPI unavailable; cannot continue');
+}
+if (typeof window.editorAPI.setCurrentText !== 'function') {
+  throw new Error('[editor] editorAPI.setCurrentText unavailable; cannot continue');
+}
+if (typeof window.editorAPI.getCurrentText !== 'function') {
+  throw new Error('[editor] editorAPI.getCurrentText unavailable; cannot continue');
+}
+if (typeof window.editorAPI.onInitText !== 'function') {
+  throw new Error('[editor] editorAPI.onInitText unavailable; cannot continue');
+}
+if (typeof window.editorAPI.onExternalUpdate !== 'function') {
+  throw new Error('[editor] editorAPI.onExternalUpdate unavailable; cannot continue');
+}
+if (typeof window.editorAPI.onForceClear !== 'function') {
+  throw new Error('[editor] editorAPI.onForceClear unavailable; cannot continue');
+}
 
 // =============================================================================
 // Bootstrap: config and translations (async, best-effort)
@@ -43,11 +65,13 @@ let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text si
     log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
   }
   try {
-    if (window.editorAPI && typeof window.editorAPI.getSettings === 'function') {
+    if (typeof window.editorAPI.getSettings === 'function') {
       const settings = await window.editorAPI.getSettings();
       if (settings && settings.language) {
         idiomaActual = settings.language || DEFAULT_LANG;
       }
+    } else {
+      log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
     }
     await applyEditorTranslations();
   } catch (err) {
@@ -82,7 +106,7 @@ let translationsLoadedFor = null;
 
 const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer) {
-  throw new Error('[editor] RendererI18n no disponible; no se puede continuar');
+  throw new Error('[editor] RendererI18n unavailable; cannot continue');
 }
 
 const tr = (path, fallback) => tRenderer(path, fallback);
@@ -122,7 +146,7 @@ async function applyEditorTranslations() {
 // =============================================================================
 // Settings integration
 // =============================================================================
-if (window.editorAPI && typeof window.editorAPI.onSettingsChanged === 'function') {
+if (typeof window.editorAPI.onSettingsChanged === 'function') {
   window.editorAPI.onSettingsChanged(async (settings) => {
     try {
       const nextLang = settings && settings.language ? settings.language : '';
@@ -133,6 +157,8 @@ if (window.editorAPI && typeof window.editorAPI.onSettingsChanged === 'function'
       log.warn('editor: failed to apply settings update:', err);
     }
   });
+} else {
+  log.warn('editorAPI.onSettingsChanged missing; live language updates disabled.');
 }
 
 // =============================================================================
@@ -190,6 +216,18 @@ function showNotice(msg, opts = {}) {
 
 // Expose for cross-script notifications (used by public/js/notify.js)
 window.showNotice = showNotice;
+
+function notifyEditor(key, opts = {}) {
+  if (typeof window.Notify?.notifyEditor === 'function') {
+    window.Notify.notifyEditor(key, opts);
+    return;
+  }
+  log.warnOnce(
+    'editor.notifyEditor.missing',
+    '[editor] window.Notify.notifyEditor missing; falling back to showNotice.'
+  );
+  showNotice(tr(key, key), opts);
+}
 
 // =============================================================================
 // Focus and selection helpers
@@ -322,7 +360,7 @@ function sendCurrentTextToMain(action, options = {}) {
 // Truncation notifications
 // =============================================================================
 function notifyTextTruncated() {
-  window.Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
+  notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
 }
 
 // =============================================================================
@@ -348,7 +386,7 @@ function insertTextAtCursor(rawText) {
   try {
     const available = maxTextChars - editor.value.length;
     if (available <= 0) {
-      window.Notify.notifyEditor('renderer.editor_alerts.paste_limit', { type: 'warn' });
+      notifyEditor('renderer.editor_alerts.paste_limit', { type: 'warn' });
       restoreFocusToEditor();
       return { inserted: 0, truncated: false };
     }
@@ -367,7 +405,7 @@ function insertTextAtCursor(rawText) {
     sendCurrentTextToMain('paste');
 
     if (truncated) {
-      window.Notify.notifyEditor('renderer.editor_alerts.paste_truncated', { type: 'warn', duration: 5000 });
+      notifyEditor('renderer.editor_alerts.paste_truncated', { type: 'warn', duration: 5000 });
     }
 
     restoreFocusToEditor();
@@ -590,7 +628,7 @@ if (editor) {
       ev.stopPropagation();
       const text = (ev.clipboardData && ev.clipboardData.getData('text/plain')) || '';
       if (!text) {
-        window.Notify.notifyEditor('renderer.editor_alerts.paste_no_text', { type: 'warn' });
+        notifyEditor('renderer.editor_alerts.paste_no_text', { type: 'warn' });
         restoreFocusToEditor();
         return;
       }
@@ -600,7 +638,7 @@ if (editor) {
         return;
       }
 
-      window.Notify.notifyEditor('renderer.editor_alerts.paste_too_big', { type: 'warn', duration: 5000 });
+      notifyEditor('renderer.editor_alerts.paste_too_big', { type: 'warn', duration: 5000 });
       restoreFocusToEditor();
     } catch (err) {
       log.error('paste handler error:', err);
@@ -621,7 +659,7 @@ if (editor) {
       if (!text) {
         ev.preventDefault();
         ev.stopPropagation();
-        window.Notify.notifyEditor('renderer.editor_alerts.drop_no_text', { type: 'warn' });
+        notifyEditor('renderer.editor_alerts.drop_no_text', { type: 'warn' });
         restoreFocusToEditor();
         return;
       }
@@ -629,7 +667,7 @@ if (editor) {
       if (text.length > PASTE_ALLOW_LIMIT) {
         ev.preventDefault();
         ev.stopPropagation();
-        window.Notify.notifyEditor('renderer.editor_alerts.drop_too_big', { type: 'warn', duration: 5000 });
+        notifyEditor('renderer.editor_alerts.drop_too_big', { type: 'warn', duration: 5000 });
         restoreFocusToEditor();
         return;
       }
@@ -642,7 +680,7 @@ if (editor) {
           if (editor.value.length > maxTextChars) {
             editor.value = editor.value.slice(0, maxTextChars);
             dispatchNativeInputEvent();
-            window.Notify.notifyEditor('renderer.editor_alerts.drop_truncated', { type: 'warn', duration: 5000 });
+            notifyEditor('renderer.editor_alerts.drop_truncated', { type: 'warn', duration: 5000 });
           }
           // Notifying the main-mark coming from the editor to avoid eco-back.
           sendCurrentTextToMain('drop', {
@@ -673,7 +711,7 @@ editor.addEventListener('input', () => {
 
   if (editor.value && editor.value.length > maxTextChars) {
     editor.value = editor.value.slice(0, maxTextChars);
-    window.Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+    notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
     sendCurrentTextToMain('truncated', {
       onPrimaryError: (err) => log.error('editor: error sending set-current-text after truncate:', err),
       onFallbackError: (err) => log.warnOnce(
@@ -716,23 +754,23 @@ btnTrash.addEventListener('click', () => {
   restoreFocusToEditor();
 });
 
-// CALCULATE button behavior: only active when automatic calculation is disabled
+// CALC/SAVE button behavior: only active when automatic save and calculation is disabled
 if (btnCalc) btnCalc.addEventListener('click', () => {
   try {
     const res = window.editorAPI.setCurrentText({ text: editor.value || '', meta: { source: 'editor', action: 'overwrite' } });
     handleTruncationResponse(res);
     // Do not close the modal or ask anything -per spec
   } catch (err) {
-    log.error('Error executing CALCULAR:', err);
-    window.Notify.notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
+    log.error('Error executing CALC/SAVE:', err);
+    notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
     restoreFocusToEditor();
   }
 });
 
-// Checkbox toggles whether CALCULAR is enabled (when unchecked) or disabled (when checked)
+// Checkbox toggles whether CALC/SAVE is enabled (when unchecked) or disabled (when checked)
 if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
   if (calcWhileTyping.checked) {
-    // enable automatic sending; disable CALCULATE
+    // enable automatic sending; disable CALC/SAVE
     btnCalc.disabled = true;
     // Also send current content once to keep sync
     sendCurrentTextToMain('typing_toggle_on', {
@@ -743,7 +781,7 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
         err
       )
     });
-    // disable automatic sending; enable CALCULATE
+    // disable automatic sending; enable CALC/SAVE
   } else btnCalc.disabled = false;
 });
 
