@@ -290,6 +290,10 @@ function scheduleInitialCheck() {
 // IPC registration / handlers
 // =============================================================================
 function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef } = {}) {
+  if (!ipcMain || typeof ipcMain.handle !== 'function') {
+    throw new Error('[updater] registerIpc requires ipcMain');
+  }
+
   if (typeof mainRef === 'function') {
     mainWinRef = mainRef;
   }
@@ -297,21 +301,19 @@ function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef
     currentLanguageRef = langRef;
   }
 
-  if (ipcMain && typeof ipcMain.handle === 'function') {
-    ipcMain.handle('check-for-updates', async (_event, payload = {}) => {
-      try {
-        const manual =
-          payload && typeof payload.manual === 'boolean' ? payload.manual : false;
-        await checkForUpdates({
-          lang: typeof currentLanguageRef === 'function' ? currentLanguageRef() : DEFAULT_LANG,
-          manual,
-        });
-        return { ok: true };
-      } catch (err) {
-        return { ok: false, error: String(err) };
-      }
-    });
-  }
+  ipcMain.handle('check-for-updates', async (_event, payload = {}) => {
+    try {
+      const manual =
+        payload && typeof payload.manual === 'boolean' ? payload.manual : false;
+      await checkForUpdates({
+        lang: typeof currentLanguageRef === 'function' ? currentLanguageRef() : DEFAULT_LANG,
+        manual,
+      });
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: String(err) };
+    }
+  });
 }
 
 // =============================================================================

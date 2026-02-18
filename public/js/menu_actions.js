@@ -15,6 +15,9 @@
     // =============================================================================
     // Logger / shared state
     // =============================================================================
+    if (typeof window.getLogger !== 'function') {
+        throw new Error('[menu-actions] window.getLogger unavailable; cannot continue');
+    }
     const log = window.getLogger('menu-actions');
     log.debug('Menu actions starting...');
 
@@ -102,7 +105,7 @@
         // Try again when the DOM is ready (and other APIs have been injected)
         document.addEventListener('DOMContentLoaded', () => {
             if (!setupListener()) {
-                log.warn('menuActions: onMenuClick unavailable after DOMContentLoaded; menu clicks will not be handled');
+                log.warn('BOOTSTRAP: menuActions: onMenuClick unavailable after DOMContentLoaded; menu clicks will not be handled');
             }
         });
     }

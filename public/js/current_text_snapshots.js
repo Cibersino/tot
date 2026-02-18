@@ -1,5 +1,4 @@
 // public/js/current_text_snapshots.js
-/* global Notify */
 'use strict';
 
 // =============================================================================
@@ -12,6 +11,9 @@
 // =============================================================================
 
 (() => {
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[current-text-snapshots] window.getLogger unavailable; cannot continue');
+  }
   const log = window.getLogger('current-text-snapshots');
   log.debug('Current text snapshots starting...');
 
@@ -26,15 +28,15 @@
   });
 
   function toast(key, opts = {}) {
-    if (typeof Notify?.toastMain === 'function') {
-      Notify.toastMain(key, opts);
+    if (typeof window.Notify?.toastMain === 'function') {
+      window.Notify.toastMain(key, opts);
       return;
     }
-    if (typeof Notify?.notifyMain === 'function') {
-      Notify.notifyMain(key);
+    if (typeof window.Notify?.notifyMain === 'function') {
+      window.Notify.notifyMain(key);
       return;
     }
-    log.warnOnce('current_text_snapshots.notify.unavailable', 'Notify API unavailable; toast dropped.');
+    log.warn('Notify API unavailable; toast dropped.');
   }
 
   function handleSaveResult(res) {

@@ -231,8 +231,8 @@ function copyDefaultPresetsIfMissing() {
  * @param {Function} opts.getWindows -() => ({ mainWin, editorWin, presetWin, flotanteWin, langWin })
  */
 function registerIpc(ipcMain, { getWindows } = {}) {
-  if (!ipcMain) {
-    throw new Error('[presets_main] registerIpc requiere ipcMain');
+  if (!ipcMain || typeof ipcMain.handle !== 'function') {
+    throw new Error('[presets_main] registerIpc requires ipcMain');
   }
 
   const resolveWindows =

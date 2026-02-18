@@ -30,6 +30,7 @@ tot/
 ├── docs/
 │ ├── cleanup/
 │ │ ├── _evidence/
+│ │ ├── bridge_failure_mode_convention.md
 │ │ ├── cleanup_file_by_file.md
 │ │ ├── naming_convention.md
 │ │ └── no_silence.md
@@ -143,6 +144,7 @@ tot/
 - `electron/main.js` — Punto de entrada del proceso principal: ciclo de vida de la app, creación de ventanas, wiring de IPC, orquestación general.
 - `electron/preload.js` — Preload de la ventana principal: expone la API IPC segura hacia `public/renderer.js`.
 - `electron/editor_preload.js` — Preload del editor manual: expone IPC específico del editor hacia `public/editor.js`.
+- `electron/editor_find_preload.js` — Preload de la ventana de búsqueda del editor: expone `window.editorFindAPI` hacia `public/editor_find.js`.
 - `electron/preset_preload.js` — Preload del modal de presets: expone `window.presetAPI` y maneja `preset-init` (buffer/replay) y `settings-updated` hacia `public/preset_modal.js`.
 - `electron/task_editor_preload.js` — Preload del editor de tareas (expone `window.taskEditorAPI` y callbacks como `onInit` / `onRequestClose`).
 - `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` (`setLanguage`, `getAvailableLanguages`) para persistir/seleccionar idioma; `setLanguage` invoca `set-language` y luego emite `language-selected` para destrabar el startup.
@@ -151,6 +153,7 @@ tot/
 **Renderer (UI / ventanas):**
 - `public/renderer.js` — Lógica principal de UI (ventana principal).
 - `public/editor.js` — Lógica del editor manual (ventana editor).
+- `public/editor_find.js` — Lógica de la ventana dedicada de búsqueda del editor.
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
 - `public/task_editor.js` — Renderer del editor de tareas (UI + tabla + biblioteca + anchos de columnas).
 - `public/flotante.js` — Lógica de la ventana flotante del cronómetro.
@@ -163,6 +166,7 @@ tot/
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): diálogos nativos, lectura/escritura JSON `{ "text": "<string>" }` bajo `config/saved_current_texts/` (incluye subcarpetas), confirmación de overwrite y chequeo de contención (realpath/relative) para evitar escapes fuera del árbol.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
+- `electron/editor_find_main.js` — Coordinador del buscador nativo del editor: ciclo de vida de la ventana de búsqueda, atajos (`Ctrl/Cmd+F`, `F3`, `Shift+F3`, `Esc`), IPC autorizado y sincronización de estado con `found-in-page`.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
 - `electron/task_editor_position.js` — Persistencia de posición (x/y) de la ventana del editor de tareas.
@@ -229,7 +233,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `docs/changelog_detailed.md` — Changelog detallado (técnico/narrativo; post-0.0.930 con formato mecánico).
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
-- `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, etc.).
+- `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, etc.).
 
 ### 7) Política de actualización de este archivo
 

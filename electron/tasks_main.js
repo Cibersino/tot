@@ -326,7 +326,7 @@ function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
 // IPC registration
 // =============================================================================
 function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
-  if (!ipcMain) {
+  if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[tasks_main] registerIpc requires ipcMain');
   }
 

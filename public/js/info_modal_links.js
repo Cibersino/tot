@@ -15,6 +15,9 @@
   // =============================================================================
   // Logger
   // =============================================================================
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[info-modal-links] window.getLogger unavailable; cannot continue');
+  }
   const log = window.getLogger('info-modal-links');
   log.debug('Info modal links starting...');
 
@@ -88,8 +91,7 @@
         if (rawHref.startsWith('appdoc:')) {
           const docKey = rawHref.slice('appdoc:'.length).trim();
           if (!api || typeof api.openAppDoc !== 'function') {
-            log.warnOnce(
-              'renderer.info.appdoc.missing',
+            log.warn(
               'openAppDoc not available; blocked app doc:',
               docKey
             );
@@ -110,8 +112,7 @@
 
         const resolvedHref = link.href || rawHref;
         if (!api || typeof api.openExternalUrl !== 'function') {
-          log.warnOnce(
-            'renderer.info.external.missing',
+          log.warn(
             'openExternalUrl not available; blocked navigation to:',
             resolvedHref
           );

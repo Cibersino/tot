@@ -15,6 +15,9 @@
   // =============================================================================
   // Logger
   // =============================================================================
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[notify] window.getLogger unavailable; cannot continue');
+  }
   const log = window.getLogger('notify');
   log.debug('Notify starting...');
 
