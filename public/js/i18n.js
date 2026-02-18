@@ -16,9 +16,15 @@
   // =============================================================================
   // Logger / constants
   // =============================================================================
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[i18n] window.getLogger unavailable; cannot continue');
+  }
   const log = window.getLogger('i18n');
   log.debug('Renderer i18n starting...');
   const { AppConstants } = window;
+  if (!AppConstants || typeof AppConstants.DEFAULT_LANG !== 'string' || !AppConstants.DEFAULT_LANG.trim()) {
+    throw new Error('[i18n] AppConstants.DEFAULT_LANG unavailable; cannot continue');
+  }
   const { DEFAULT_LANG } = AppConstants;
 
   // =============================================================================
