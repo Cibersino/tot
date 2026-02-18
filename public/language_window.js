@@ -1,4 +1,6 @@
 // public/language_window.js
+'use strict';
+
 // =============================================================================
 // Overview
 // =============================================================================
@@ -9,7 +11,6 @@
 // - Maintain busy/disabled UI state during async actions.
 // - Fall back to a local list when IPC data is unavailable.
 // =============================================================================
-'use strict';
 
 // =============================================================================
 // Logger and DOM references
