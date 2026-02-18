@@ -56,7 +56,7 @@
       }
     },
     "tasks": {
-      "title": "Editor — Tareas",
+      "title": "toT — Tareas",
       "labels": {
         "name": "Üi",
         "total": "KELLU",
@@ -148,26 +148,24 @@
       "save": "Elkünun"
     },
     "editor": {
-      "title": "Editor — Kom wirin",
+      "title": "toT — Kom wirin",
       "placeholder": "Wiringe faw...",
       "calc_button": "RAKIDUAMNGE",
       "calc_while_typing": "Rakiduamnge wirin mu",
       "clear": "🗑",
       "clear_title": "Lifün"
     },
-"editor_find": {
+    "editor_find": {
       "label": "Kintun",
       "input_placeholder": "Kintun...",
       "input_aria": "Kintun wirintukun mew",
       "prev": "Wünen",
       "next": "Inan",
-      "close": "Nürüfün",
+      "close": "🗙",
       "prev_title": "Wünen kintun",
       "next_title": "Inan kintun",
       "close_title": "Nürüfün kintun wechun",
       "status_no_matches": "Chem no rume kintulay",
-      "status_wrap_start": "Wiñotuy llitun mew",
-      "status_wrap_end": "Wiñotuy afpun mew",
       "status_empty_query": "Wirin kintual"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-

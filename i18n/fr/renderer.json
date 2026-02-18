@@ -56,7 +56,7 @@
       }
     },
     "tasks": {
-      "title": "Éditeur — Tâches",
+      "title": "toT — Tâches",
       "labels": {
         "name": "Nom",
         "total": "TEMPS TOTAL",
@@ -148,7 +148,7 @@
       "save": "Sauvegarder"
     },
     "editor": {
-      "title": "Éditeur — Texte complet",
+      "title": "toT — Texte complet",
       "placeholder": "Tapez ou collez ici...",
       "calc_button": "CALCULER",
       "calc_while_typing": "Calculer pendant la frappe",
@@ -161,13 +161,11 @@
       "input_aria": "Rechercher dans le texte",
       "prev": "Precedent",
       "next": "Suivant",
-      "close": "Fermer",
+      "close": "🗙",
       "prev_title": "Correspondance precedente",
       "next_title": "Correspondance suivante",
       "close_title": "Fermer la barre de recherche",
       "status_no_matches": "Aucune correspondance",
-      "status_wrap_start": "Retour au debut",
-      "status_wrap_end": "Retour a la fin",
       "status_empty_query": "Saisir pour rechercher"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-

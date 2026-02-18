@@ -41,6 +41,7 @@ const updater = require('./updater');
 const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
+const editorFindMain = require('./editor_find_main');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -266,6 +267,12 @@ function createMainWindow() {
         }
       }
 
+      try {
+        editorFindMain.closeFindWindow();
+      } catch (err) {
+        log.error('Error closing editorFindWin from mainWin.close:', err);
+      }
+
       if (isAliveWindow(presetWin)) {
         try {
           presetWin.close();
@@ -342,6 +349,12 @@ function createEditorWindow() {
   editorWin.setMenuBarVisibility(false);
 
   editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
+
+  try {
+    editorFindMain.attachEditorWindow(editorWin);
+  } catch (err) {
+    log.error('Error attaching editor find listeners:', err);
+  }
 
   // When ready, apply maximized state (if needed), show it, and send initial data.
   editorWin.once('ready-to-show', () => {
@@ -1395,10 +1408,13 @@ app.whenReady().then(() => {
     editorWin,
   }));
 
+  editorFindMain.registerIpc(ipcMain);
+
   settingsState.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
       editorWin,
+      editorFindWin: editorFindMain.getFindWindow(),
       presetWin,
       langWin,
       flotanteWin,
@@ -1411,6 +1427,7 @@ app.whenReady().then(() => {
     getWindows: () => ({
       mainWin,
       editorWin,
+      editorFindWin: editorFindMain.getFindWindow(),
       presetWin,
       langWin,
       flotanteWin,
@@ -1494,6 +1511,7 @@ app.on('will-quit', () => {
     log.error('Error clearing stopwatch in will-quit:', err);
   }
 });
+
 // =============================================================================
 // End of electron/main.js
 // =============================================================================

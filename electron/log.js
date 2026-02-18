@@ -17,6 +17,7 @@
  * - warn: recoverable anomalies / degraded behavior / fallback paths. Typical: "using default position", "shortcut register failed", "could not apply optional behavior".
  * - info: high-level lifecycle/state transitions (low volume).
  * - debug: verbose diagnostics; may be noisy; high volume is acceptable.
+ * - language rule: warning/error developer diagnostics in `.js` files are English-only; user-facing text remains i18n-owned.
  *
  * Call-site style:
  * - Call logger methods directly: log.warn/log.warnOnce/log.error/log.errorOnce (and debug/info as needed).

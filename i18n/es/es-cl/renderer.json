@@ -56,7 +56,7 @@
       }
     },
     "tasks": {
-      "title": "Editor — Misiones",
+      "title": "toT — Misiones",
       "labels": {
         "name": "Mote",
         "total": "VIDA ÚTIL",
@@ -148,7 +148,7 @@
       "save": "Guardar"
     },
     "editor": {
-      "title": "Editor — El texto completito",
+      "title": "toT — El texto completito",
       "placeholder": "Escribe o pega la custión aquí...",
       "calc_button": "CALCULEISHON",
       "calc_while_typing": "Contar mientras escribís",
@@ -161,13 +161,11 @@
       "input_aria": "Pillar palabras en la custión",
       "prev": "Atrás",
       "next": "Siguiente",
-      "close": "Chao",
+      "close": "🗙",
       "prev_title": "La de atrás",
       "next_title": "La que sigue",
       "close_title": "Pitiarse la barra de búsqueda",
       "status_no_matches": "No pillamos niuna custión",
-      "status_wrap_start": "Se dio la güelta al principio",
-      "status_wrap_end": "Se dio la güelta al final",
       "status_empty_query": "Escribe algo po"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-

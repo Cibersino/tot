@@ -211,10 +211,31 @@ body {
   font-size: 12px;
 }
 
+.task-table .icon-btn--tiny {
+  padding: 2px;
+}
+
 #commentInput {
   width: 100%;
   border-radius: 6px;
   padding: 6px;
+}
+
+.comment-snapshot-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.comment-snapshot-path {
+  color: var(--muted);
+  font-size: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .link-cell {

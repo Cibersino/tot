@@ -1,0 +1,34 @@
+<!-- public/editor_find.html -->
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
+  <title>toT — Buscar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="editor_find.css" />
+</head>
+<body>
+  <div class="find-wrap" role="search" aria-label="Find">
+    <label id="findLabel" class="find-label" for="findQuery">Buscar</label>
+    <input
+      id="findQuery"
+      class="find-input"
+      type="text"
+      autocomplete="off"
+      spellcheck="false"
+      placeholder="Buscar..."
+      aria-label="Buscar en el texto"
+    />
+    <button id="findPrev" class="find-btn" type="button" title="Coincidencia anterior">Anterior</button>
+    <button id="findNext" class="find-btn" type="button" title="Coincidencia siguiente">Siguiente</button>
+    <span id="findStatus" class="find-status" role="status" aria-live="polite">Escribe para buscar</span>
+    <button id="findClose" class="find-btn find-close" type="button" title="Cerrar barra de busqueda">🗙</button>
+  </div>
+
+  <script src="js/log.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="editor_find.js"></script>
+</body>
+</html>
