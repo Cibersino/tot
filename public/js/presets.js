@@ -16,10 +16,21 @@
   // =============================================================================
   // Logger / renderer dependencies
   // =============================================================================
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[presets] window.getLogger unavailable; cannot continue');
+  }
   const log = window.getLogger('presets');
   log.debug('Presets starting...');
-  const { DEFAULT_LANG } = window.AppConstants;
-  const { getLangBase } = window.RendererI18n;
+  const { AppConstants } = window;
+  if (!AppConstants) {
+    throw new Error('[presets] AppConstants unavailable; verify constants.js load order');
+  }
+  const { DEFAULT_LANG } = AppConstants;
+  const { RendererI18n } = window;
+  if (!RendererI18n || typeof RendererI18n.getLangBase !== 'function') {
+    throw new Error('[presets] RendererI18n.getLangBase unavailable; cannot continue');
+  }
+  const { getLangBase } = RendererI18n;
 
   // =============================================================================
   // Helpers (merge + DOM utilities)
@@ -85,14 +96,21 @@
     language = DEFAULT_LANG,
     selectEl
   }) {
-    if (!electronAPI) throw new Error('electronAPI requerido para cargar presets');
+    if (!electronAPI) throw new Error('electronAPI is required to load presets');
 
     const settingsSnapshot = normalizeSettings(settings, language);
     let defaults = { general: [], languagePresets: {} };
-    try {
-      defaults = await electronAPI.getDefaultPresets();
-    } catch (err) {
-      log.error('Error getting default presets from main:', err);
+    if (typeof electronAPI.getDefaultPresets === 'function') {
+      try {
+        defaults = await electronAPI.getDefaultPresets();
+      } catch (err) {
+        log.error('Error getting default presets from main:', err);
+      }
+    } else {
+      log.warnOnce(
+        'presets.getDefaultPresets.missing',
+        '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
+      );
     }
 
     const finalList = combinePresets({ settings: settingsSnapshot, defaults });
@@ -151,6 +169,11 @@
         try {
           if (electronAPI && typeof electronAPI.setSelectedPreset === 'function') {
             await electronAPI.setSelectedPreset(selected.name);
+          } else {
+            log.warnOnce(
+              'presets.setSelectedPreset.missing',
+              '[presets] electronAPI.setSelectedPreset unavailable; selection persistence skipped'
+            );
           }
         } catch (err) {
           log.error('Error persisting selected preset:', err);
