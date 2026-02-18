@@ -664,10 +664,7 @@ function armIpcSubscriptions() {
         maybeUnblockReady();
       });
     } else {
-      log.errorOnce(
-        'renderer.startup.ready.unavailable',
-        'startup:ready listener unavailable; renderer may remain pre-READY.'
-      );
+      throw new Error('[renderer] electronAPI.onStartupReady unavailable; cannot bootstrap renderer readiness');
     }
 
     if (typeof window.electronAPI.onSettingsChanged === 'function') {
@@ -697,10 +694,7 @@ function armIpcSubscriptions() {
       );
     }
   } else {
-    log.warnOnce(
-      'renderer.ipc.electronAPI.unavailable',
-      'electronAPI unavailable; IPC subscriptions not armed.'
-    );
+    throw new Error('[renderer] electronAPI unavailable; cannot bootstrap renderer readiness');
   }
 
   ipcSubscriptionsArmed = true;
