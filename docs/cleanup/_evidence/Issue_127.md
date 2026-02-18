@@ -60,6 +60,7 @@ Checklist de observabilidad (resumen):
 - Si el fallback/miss puede repetirse y no aporta, usar dedupe con key estable y acotada.
 - No usar datos dinámicos no acotados en la key.
 - En `.js`, diagnósticos dev (logs warn/error y errores lanzados con `throw`) deben ser **English-only**; los nombres propios/identificadores deben mantenerse verbatim (ej.: `modoConteo`, `acerca_de`, `setModeConteo`, keys i18n, channels IPC, object keys, constantes, IDs internos); UI sigue i18n.
+- Mantener mecanismo de logger por contexto (`Log.get`/`window.getLogger` en main/renderer, `console` en preload) y estilo de call-site directo (`log.warn|warnOnce|error|errorOnce`, sin wrappers/aliases locales).
 
 ---
 
@@ -128,6 +129,8 @@ Hard constraints:
 * Preserve IPC surface, channel names, payload/return shapes, side effects, and HEALTHY-PATH timing/ordering.
 * Do NOT reorder startup sequencing inside `app.whenReady` (if present).
 * Do NOT reorder IPC registration in a way that could change readiness/race behavior.
+* Keep the logger mechanism defined by runtime context (`electron/log.js` and `public/js/log.js` headers): main/renderer keep repo logger usage; preload stays console-based.
+* Call-site style is mandatory: use `log.warn|warnOnce|error|errorOnce` directly; do not add local wrappers/aliases for these methods.
 * Scope edits to **`<TARGET_FILE>` AND `docs\cleanup\_evidence\Issue_127.md` only** (no other files).
 * You MAY change failure-path behavior (miswire/missing/invalid bridge) to comply with the convention.
   Do NOT claim “changes failure timing/behavior” as Level 4 evidence unless HEALTHY-PATH changes too.
@@ -212,6 +215,8 @@ Output requirement (no diffs):
   * Dev diagnostics in `.js` must be English-only (non-user-facing), including warning/error logs and thrown errors (`throw new Error(...)`, `throw ...`).
   * Proper names / identifiers must remain verbatim inside those diagnostics (function/method names, i18n keys, config/object keys, IPC channel names, constants, internal IDs such as `modoConteo`, `acerca_de`, `setModeConteo`).
   * Dedupe keys must be stable/bounded (no user input or unbounded dynamic data in keys).
+  * Use `warnOnce/errorOnce` only for high-frequency repeatable misses/failures where repetition adds no diagnostic value; otherwise use `warn/error`.
+  * If a fallback is BOOTSTRAP-only, the message or explicit dedupe key must start with `BOOTSTRAP:` and that path must become unreachable after init.
 
 Final response rule:
 - In your chat response, do NOT paste the full ledger. Only state:

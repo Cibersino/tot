@@ -324,6 +324,7 @@ Output requirement:
 * Objetivo: **inventariar y clasificar exhaustivamente** (1:1) todas las dependencias bridge/API usadas por el archivo en: **required startup dependency** vs **optional capability** vs **best-effort side action**, y **enforzar** el handling correcto según la convención.
 * Base obligatoria: `docs/cleanup/bridge_failure_mode_convention.md` (matriz + checklist).
 * Evitar drift entre módulos: no mezclar fail-fast, degrade y drop sin **clasificación explícita por call-site**.
+* Política de logging obligatoria en este nivel: mantener el mecanismo de logger del contexto (`Log.get`/`window.getLogger` en main/renderer, `console` en preload) y estilo de call-site directo (`log.warn|warnOnce|error|errorOnce`, sin wrappers/aliases locales).
 * **PASS (requisito mínimo de auditoría por archivo):**
   - Existe un **Bridge Dependency Ledger** (tabla) que enumera **todas** las dependencias/paths bridge del archivo (sin “for example”, sin “other calls exist”).
   - Cada entrada del ledger tiene **una** clasificación (required/optional/best-effort) + justificación breve.
@@ -356,6 +357,8 @@ Hard constraints:
 * Preserve IPC surface, channel names, payload/return shapes, side effects, and HEALTHY-PATH timing/ordering.
 * Do NOT reorder startup sequencing inside `app.whenReady` (if present).
 * Do NOT reorder IPC registration in a way that could change readiness/race behavior.
+* Keep the logger mechanism defined by runtime context (`electron/log.js` and `public/js/log.js` headers): main/renderer keep repo logger usage; preload stays console-based.
+* Call-site style is mandatory: use `log.warn|warnOnce|error|errorOnce` directly; do not add local wrappers/aliases for these methods.
 * Scope edits to `<TARGET_FILE>` only.
 * You MAY change failure-path behavior (miswire/missing/invalid bridge) to comply with the convention.
   Do NOT claim “changes failure timing/behavior” as Level 4 evidence unless HEALTHY-PATH changes too.
@@ -430,6 +433,8 @@ Output requirement (no diffs):
   * Dev diagnostics in `.js` must be English-only (non-user-facing), including warning/error logs and thrown errors (`throw new Error(...)`, `throw ...`).
   * Proper names / identifiers must remain verbatim inside those diagnostics (function/method names, i18n keys, config/object keys, IPC channel names, constants, internal IDs).
   * Dedupe keys must be stable/bounded (no user input or unbounded dynamic data in keys).
+  * Use `warnOnce/errorOnce` only for high-frequency repeatable misses/failures where repetition adds no diagnostic value; otherwise use `warn/error`.
+  * If a fallback is BOOTSTRAP-only, the message or explicit dedupe key must start with `BOOTSTRAP:` and that path must become unreachable after init.
 ```
 
 ---
