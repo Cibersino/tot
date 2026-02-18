@@ -30,17 +30,17 @@ if (!loadRendererTranslations || !tRenderer) {
 }
 
 const tr = (path, fallback) => tRenderer(path, fallback);
-const editorFindAPI = window.editorFindAPI;
-if (!editorFindAPI) {
+const findApi = window.editorFindAPI;
+if (!findApi) {
   throw new Error('[editor-find] editorFindAPI unavailable; verify editor_find_preload.js.');
 }
 if (
-  typeof editorFindAPI.setQuery !== 'function' ||
-  typeof editorFindAPI.next !== 'function' ||
-  typeof editorFindAPI.prev !== 'function' ||
-  typeof editorFindAPI.close !== 'function' ||
-  typeof editorFindAPI.onInit !== 'function' ||
-  typeof editorFindAPI.onState !== 'function'
+  typeof findApi.setQuery !== 'function' ||
+  typeof findApi.next !== 'function' ||
+  typeof findApi.prev !== 'function' ||
+  typeof findApi.close !== 'function' ||
+  typeof findApi.onInit !== 'function' ||
+  typeof findApi.onState !== 'function'
 ) {
   throw new Error('[editor-find] editorFindAPI required methods unavailable; cannot continue.');
 }
@@ -160,7 +160,7 @@ function focusQuery(selectAll = false) {
 
 async function pushQuery() {
   try {
-    await editorFindAPI.setQuery(inputEl.value || '');
+    await findApi.setQuery(inputEl.value || '');
   } catch (err) {
     log.error('Error sending find query to main process:', err);
   }
@@ -171,7 +171,7 @@ async function pushQuery() {
 // =============================================================================
 async function initLanguage() {
   try {
-    if (typeof editorFindAPI.getSettings !== 'function') {
+    if (typeof findApi.getSettings !== 'function') {
       log.warnOnce(
         'BOOTSTRAP:editor-find.getSettings.missing',
         'BOOTSTRAP: [editor-find] editorFindAPI.getSettings missing; using default language.'
@@ -179,7 +179,7 @@ async function initLanguage() {
       return;
     }
 
-    const settings = await editorFindAPI.getSettings();
+    const settings = await findApi.getSettings();
     if (settings && settings.language) {
       idiomaActual = settings.language || idiomaActual;
     }
@@ -203,35 +203,35 @@ inputEl.addEventListener('keydown', (event) => {
   if (event.key !== 'Enter') return;
   event.preventDefault();
   if (event.shiftKey) {
-    editorFindAPI.prev().catch((err) => log.error('Error on Shift+Enter prev:', err));
+    findApi.prev().catch((err) => log.error('Error on Shift+Enter prev:', err));
   } else {
-    editorFindAPI.next().catch((err) => log.error('Error on Enter next:', err));
+    findApi.next().catch((err) => log.error('Error on Enter next:', err));
   }
 });
 
 prevEl.addEventListener('click', () => {
-  editorFindAPI.prev().catch((err) => log.error('Error navigating to previous match:', err));
+  findApi.prev().catch((err) => log.error('Error navigating to previous match:', err));
 });
 
 nextEl.addEventListener('click', () => {
-  editorFindAPI.next().catch((err) => log.error('Error navigating to next match:', err));
+  findApi.next().catch((err) => log.error('Error navigating to next match:', err));
 });
 
 closeEl.addEventListener('click', () => {
-  editorFindAPI.close().catch((err) => log.error('Error closing find window:', err));
+  findApi.close().catch((err) => log.error('Error closing find window:', err));
 });
 
 // =============================================================================
 // Bridge subscriptions
 // =============================================================================
-editorFindAPI.onInit((payload) => {
+findApi.onInit((payload) => {
   applyIncomingState(payload);
 });
 
-editorFindAPI.onState(applyIncomingState);
+findApi.onState(applyIncomingState);
 
-if (typeof editorFindAPI.onFocusQuery === 'function') {
-  editorFindAPI.onFocusQuery((payload) => {
+if (typeof findApi.onFocusQuery === 'function') {
+  findApi.onFocusQuery((payload) => {
     const selectAll = !!(payload && payload.selectAll);
     focusQuery(selectAll);
   });
@@ -242,8 +242,8 @@ if (typeof editorFindAPI.onFocusQuery === 'function') {
   );
 }
 
-if (typeof editorFindAPI.onSettingsChanged === 'function') {
-  editorFindAPI.onSettingsChanged(async (settings) => {
+if (typeof findApi.onSettingsChanged === 'function') {
+  findApi.onSettingsChanged(async (settings) => {
     try {
       const nextLang = settings && settings.language ? settings.language : '';
       if (!nextLang || nextLang === idiomaActual) return;
