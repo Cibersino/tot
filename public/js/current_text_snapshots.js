@@ -1,5 +1,4 @@
 // public/js/current_text_snapshots.js
-/* global Notify */
 'use strict';
 
 // =============================================================================
@@ -26,12 +25,12 @@
   });
 
   function toast(key, opts = {}) {
-    if (typeof Notify?.toastMain === 'function') {
-      Notify.toastMain(key, opts);
+    if (typeof window.Notify?.toastMain === 'function') {
+      window.Notify.toastMain(key, opts);
       return;
     }
-    if (typeof Notify?.notifyMain === 'function') {
-      Notify.notifyMain(key);
+    if (typeof window.Notify?.notifyMain === 'function') {
+      window.Notify.notifyMain(key);
       return;
     }
     log.warnOnce('current_text_snapshots.notify.unavailable', 'Notify API unavailable; toast dropped.');

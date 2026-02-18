@@ -1,5 +1,4 @@
 // public/editor.js
-/* global Notify */
 'use strict';
 
 // =============================================================================
@@ -156,31 +155,31 @@ function showNotice(msg, opts = {}) {
   }
 
   try {
-    if (typeof Notify?.toastEditorText === 'function') {
-      Notify.toastEditorText(text, { type, duration });
+    if (typeof window.Notify?.toastEditorText === 'function') {
+      window.Notify.toastEditorText(text, { type, duration });
       return;
     }
     log.warnOnce(
       'editor.showNotice.toastEditorText.missing',
-      'showNotice: Notify.toastEditorText missing; falling back to Notify.notifyMain.'
+      'showNotice: window.Notify.toastEditorText missing; falling back to window.Notify.notifyMain.'
     );
-    if (typeof Notify?.notifyMain === 'function') {
-      Notify.notifyMain(text);
+    if (typeof window.Notify?.notifyMain === 'function') {
+      window.Notify.notifyMain(text);
     } else {
       log.errorOnce(
         'editor.showNotice.notifyMain.missing',
-        'showNotice fallback unavailable: Notify.notifyMain missing; notice dropped.'
+        'showNotice fallback unavailable: window.Notify.notifyMain missing; notice dropped.'
       );
     }
   } catch (err) {
     log.warn('showNotice failed; attempting fallback:', err);
     try {
-      if (typeof Notify?.notifyMain === 'function') {
-        Notify.notifyMain(text);
+      if (typeof window.Notify?.notifyMain === 'function') {
+        window.Notify.notifyMain(text);
       } else {
         log.errorOnce(
           'editor.showNotice.notifyMain.missing',
-          'showNotice fallback unavailable: Notify.notifyMain missing; notice dropped.'
+          'showNotice fallback unavailable: window.Notify.notifyMain missing; notice dropped.'
         );
       }
     } catch (fallbackErr) {
@@ -323,7 +322,7 @@ function sendCurrentTextToMain(action, options = {}) {
 // Truncation notifications
 // =============================================================================
 function notifyTextTruncated() {
-  Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
+  window.Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
 }
 
 // =============================================================================
@@ -349,7 +348,7 @@ function insertTextAtCursor(rawText) {
   try {
     const available = maxTextChars - editor.value.length;
     if (available <= 0) {
-      Notify.notifyEditor('renderer.editor_alerts.paste_limit', { type: 'warn' });
+      window.Notify.notifyEditor('renderer.editor_alerts.paste_limit', { type: 'warn' });
       restoreFocusToEditor();
       return { inserted: 0, truncated: false };
     }
@@ -368,7 +367,7 @@ function insertTextAtCursor(rawText) {
     sendCurrentTextToMain('paste');
 
     if (truncated) {
-      Notify.notifyEditor('renderer.editor_alerts.paste_truncated', { type: 'warn', duration: 5000 });
+      window.Notify.notifyEditor('renderer.editor_alerts.paste_truncated', { type: 'warn', duration: 5000 });
     }
 
     restoreFocusToEditor();
@@ -591,7 +590,7 @@ if (editor) {
       ev.stopPropagation();
       const text = (ev.clipboardData && ev.clipboardData.getData('text/plain')) || '';
       if (!text) {
-        Notify.notifyEditor('renderer.editor_alerts.paste_no_text', { type: 'warn' });
+        window.Notify.notifyEditor('renderer.editor_alerts.paste_no_text', { type: 'warn' });
         restoreFocusToEditor();
         return;
       }
@@ -601,7 +600,7 @@ if (editor) {
         return;
       }
 
-      Notify.notifyEditor('renderer.editor_alerts.paste_too_big', { type: 'warn', duration: 5000 });
+      window.Notify.notifyEditor('renderer.editor_alerts.paste_too_big', { type: 'warn', duration: 5000 });
       restoreFocusToEditor();
     } catch (err) {
       log.error('paste handler error:', err);
@@ -622,7 +621,7 @@ if (editor) {
       if (!text) {
         ev.preventDefault();
         ev.stopPropagation();
-        Notify.notifyEditor('renderer.editor_alerts.drop_no_text', { type: 'warn' });
+        window.Notify.notifyEditor('renderer.editor_alerts.drop_no_text', { type: 'warn' });
         restoreFocusToEditor();
         return;
       }
@@ -630,7 +629,7 @@ if (editor) {
       if (text.length > PASTE_ALLOW_LIMIT) {
         ev.preventDefault();
         ev.stopPropagation();
-        Notify.notifyEditor('renderer.editor_alerts.drop_too_big', { type: 'warn', duration: 5000 });
+        window.Notify.notifyEditor('renderer.editor_alerts.drop_too_big', { type: 'warn', duration: 5000 });
         restoreFocusToEditor();
         return;
       }
@@ -643,7 +642,7 @@ if (editor) {
           if (editor.value.length > maxTextChars) {
             editor.value = editor.value.slice(0, maxTextChars);
             dispatchNativeInputEvent();
-            Notify.notifyEditor('renderer.editor_alerts.drop_truncated', { type: 'warn', duration: 5000 });
+            window.Notify.notifyEditor('renderer.editor_alerts.drop_truncated', { type: 'warn', duration: 5000 });
           }
           // Notifying the main-mark coming from the editor to avoid eco-back.
           sendCurrentTextToMain('drop', {
@@ -674,7 +673,7 @@ editor.addEventListener('input', () => {
 
   if (editor.value && editor.value.length > maxTextChars) {
     editor.value = editor.value.slice(0, maxTextChars);
-    Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+    window.Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
     sendCurrentTextToMain('truncated', {
       onPrimaryError: (err) => log.error('editor: error sending set-current-text after truncate:', err),
       onFallbackError: (err) => log.warnOnce(
@@ -725,7 +724,7 @@ if (btnCalc) btnCalc.addEventListener('click', () => {
     // Do not close the modal or ask anything -per spec
   } catch (err) {
     log.error('Error executing CALCULAR:', err);
-    Notify.notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
+    window.Notify.notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
     restoreFocusToEditor();
   }
 });
