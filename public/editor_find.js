@@ -156,8 +156,8 @@ async function initLanguage() {
   try {
     if (typeof editorFindAPI.getSettings !== 'function') {
       log.warnOnce(
-        'editor-find.getSettings.missing',
-        '[editor-find] editorFindAPI.getSettings missing; using default language.'
+        'BOOTSTRAP:editor-find.getSettings.missing',
+        'BOOTSTRAP: [editor-find] editorFindAPI.getSettings missing; using default language.'
       );
       return;
     }
@@ -168,8 +168,8 @@ async function initLanguage() {
     }
   } catch (err) {
     log.warnOnce(
-      'editor-find.getSettings.failed',
-      '[editor-find] editorFindAPI.getSettings failed; using default language.',
+      'BOOTSTRAP:editor-find.getSettings.failed',
+      'BOOTSTRAP: [editor-find] editorFindAPI.getSettings failed; using default language.',
       err
     );
   }
@@ -214,8 +214,8 @@ if (typeof editorFindAPI.onFocusQuery === 'function') {
   });
 } else {
   log.warnOnce(
-    'editor-find.onFocusQuery.missing',
-    '[editor-find] editorFindAPI.onFocusQuery missing; focus-sync capability disabled.'
+    'BOOTSTRAP:editor-find.onFocusQuery.missing',
+    'BOOTSTRAP: [editor-find] editorFindAPI.onFocusQuery missing; focus-sync capability disabled.'
   );
 }
 
@@ -232,8 +232,8 @@ if (typeof editorFindAPI.onSettingsChanged === 'function') {
   });
 } else {
   log.warnOnce(
-    'editor-find.onSettingsChanged.missing',
-    '[editor-find] editorFindAPI.onSettingsChanged missing; live language updates disabled.'
+    'BOOTSTRAP:editor-find.onSettingsChanged.missing',
+    'BOOTSTRAP: [editor-find] editorFindAPI.onSettingsChanged missing; live language updates disabled.'
   );
 }
 
