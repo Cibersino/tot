@@ -9,6 +9,11 @@
 // - Keep find controls in sync with native main-process state.
 // - Forward query/navigation actions through editorFindAPI.
 // - Apply renderer translations and react to language updates.
+// - Bootstrap initial language, UI state, and query focus.
+
+// =============================================================================
+// Logger and required runtime dependencies
+// =============================================================================
 
 const log = window.getLogger('editor-find');
 log.debug('Editor find window starting...');
@@ -40,6 +45,9 @@ if (
   throw new Error('[editor-find] editorFindAPI required methods unavailable; cannot continue.');
 }
 
+// =============================================================================
+// DOM references and shared state
+// =============================================================================
 const labelEl = document.getElementById('findLabel');
 const inputEl = document.getElementById('findQuery');
 const prevEl = document.getElementById('findPrev');
@@ -61,6 +69,9 @@ const findState = {
   finalUpdate: true,
 };
 
+// =============================================================================
+// State and UI helpers
+// =============================================================================
 function applyIncomingState(payload) {
   normalizeState(payload);
   applyUiState();
@@ -129,6 +140,9 @@ async function applyTranslations() {
   applyUiState();
 }
 
+// =============================================================================
+// Focus and bridge command helpers
+// =============================================================================
 function focusQuery(selectAll = false) {
   try {
     inputEl.focus();
@@ -152,6 +166,9 @@ async function pushQuery() {
   }
 }
 
+// =============================================================================
+// Language bootstrap helper
+// =============================================================================
 async function initLanguage() {
   try {
     if (typeof editorFindAPI.getSettings !== 'function') {
@@ -175,6 +192,9 @@ async function initLanguage() {
   }
 }
 
+// =============================================================================
+// UI event wiring
+// =============================================================================
 inputEl.addEventListener('input', () => {
   pushQuery();
 });
@@ -201,6 +221,9 @@ closeEl.addEventListener('click', () => {
   editorFindAPI.close().catch((err) => log.error('Error closing find window:', err));
 });
 
+// =============================================================================
+// Bridge subscriptions
+// =============================================================================
 editorFindAPI.onInit((payload) => {
   applyIncomingState(payload);
 });
@@ -237,6 +260,9 @@ if (typeof editorFindAPI.onSettingsChanged === 'function') {
   );
 }
 
+// =============================================================================
+// Bootstrap sequence
+// =============================================================================
 (async () => {
   await initLanguage();
   await applyTranslations();
