@@ -283,6 +283,24 @@ Healthy-path confirmation: the healthy-path contract/timing was preserved (same 
 
 Failure-path confirmation: failure-mode handling is now aligned to the convention matrix (required dependencies fail fast; optional capabilities guard+continue with deduplicated diagnostics; best-effort actions drop on failure without breaking flow).
 
+#### Delta (pass 2)
+
+What changed:
+- Replaced non-fatal handling for missing `electronAPI.onStartupReady` with a hard throw in `armIpcSubscriptions`.
+- Replaced non-fatal handling for missing `window.electronAPI` with a hard throw in `armIpcSubscriptions`.
+- Kept existing IPC registration order unchanged; only missing-contract failure-path behavior changed.
+- Re-checked all previously marked required startup dependencies; they are explicit fail-fast (`throw`) paths.
+
+Updated ledger rows (affected IDs only):
+
+| ID | Location anchor | Bridge member/path | Class | Current handling | Required handling | Action taken | Dedupe key (if any) |
+|----|------------------|--------------------|-------|------------------|-------------------|--------------|---------------------|
+| R15 | startup readiness subscription (`L654`) startup/rare | `window.electronAPI.onStartupReady` | required startup dependency | Pass 1 state: missing listener emitted `errorOnce` and left renderer pre-READY (no hard abort). Pass 2 state: missing listener or missing `electronAPI` throws and aborts bootstrap. | Hard abort invalid startup path with clear diagnostic. | Kept class as required and enforced true fail-fast via `throw` in both missing `onStartupReady` and missing `electronAPI` branches. | n/a |
+
+Confirmations:
+- Healthy-path contract/timing preserved (no IPC surface/channel/payload/ordering changes in valid bridge wiring).
+- Failure-path handling is aligned to the convention, and `onStartupReady` is now consistent with its required class via true fail-fast.
+
 ---
 
 ## Definition of Done
