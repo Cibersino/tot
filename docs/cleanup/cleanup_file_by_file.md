@@ -121,8 +121,9 @@ Si una propuesta contradice estos principios, se debe justificar con evidencia d
 
 ### P7) Idioma de diagnosticos runtime en `.js`
 
-1. En archivos `.js`, los mensajes tecnicos de warning/error deben escribirse solo en ingles.
-- Aplica a `log.warn|warnOnce|error|errorOnce` y `console.warn|error`.
+1. En archivos `.js`, los mensajes tecnicos de diagnostico (logs warning/error y errores lanzados con `throw`) deben escribirse solo en ingles.
+- Aplica a `log.warn|warnOnce|error|errorOnce`, `console.warn|error`, `throw new Error(...)` y `throw ...`.
+- Los nombres propios/identificadores deben mantenerse verbatim aunque no esten en ingles (ej.: `modoConteo`, `acerca_de`, `setModeConteo`, keys i18n, channels IPC, object keys, constantes, IDs internos).
 - No mezclar idiomas dentro del mismo modulo para diagnosticos tecnicos.
 
 2. Esta regla no aplica a texto user-facing.
@@ -426,7 +427,8 @@ Output requirement (no diffs):
 
 * Logging notes:
 
-  * Dev diagnostics in `.js` must be English-only (non-user-facing).
+  * Dev diagnostics in `.js` must be English-only (non-user-facing), including warning/error logs and thrown errors (`throw new Error(...)`, `throw ...`).
+  * Proper names / identifiers must remain verbatim inside those diagnostics (function/method names, i18n keys, config/object keys, IPC channel names, constants, internal IDs).
   * Dedupe keys must be stable/bounded (no user input or unbounded dynamic data in keys).
 ```
 
