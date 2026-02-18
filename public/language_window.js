@@ -15,7 +15,10 @@
 // =============================================================================
 // Logger and DOM references
 // =============================================================================
-const log = window.getLogger ? window.getLogger('language') : console;
+if (typeof window.getLogger !== 'function') {
+  throw new Error('[language] window.getLogger unavailable; cannot continue');
+}
+const log = window.getLogger('language');
 log.debug('Language window starting...');
 const langFilter = document.getElementById('langFilter');
 const langList = document.getElementById('langList');
@@ -116,6 +119,11 @@ const renderList = () => {
 
 const selectLanguage = async (lang) => {
   if (!lang || isBusy) return;
+  if (!window.languageAPI || typeof window.languageAPI.setLanguage !== 'function') {
+    log.warnOnce('language_window.api.setLanguage.unavailable', 'setLanguage unavailable; language selection ignored.');
+    setStatus('Unable to set language. Try again.', true);
+    return;
+  }
 
   setBusy(true, 'Applying language...');
   try {
@@ -199,7 +207,7 @@ const loadLanguages = async () => {
     if (window.languageAPI && typeof window.languageAPI.getAvailableLanguages === 'function') {
       available = await window.languageAPI.getAvailableLanguages();
     } else {
-      throw new Error('getAvailableLanguages unavailable');
+      throw new Error('[language] getAvailableLanguages unavailable');
     }
   } catch (e) {
     fallbackLogged = true;
