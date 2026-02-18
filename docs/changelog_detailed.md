@@ -57,6 +57,7 @@ Reglas:
 - Superficie de búsqueda: la UI de búsqueda dejó de coexistir en el mismo DOM del editor; además se redujo exposición de textos de la barra inferior del editor moviendo labels a `data-label` + pseudo-elementos CSS.
 - Snapshots: endurecimiento de validaciones y normalización del flujo de selección/carga por ruta relativa (`snapshotRelPath`) para uso desde Task Editor.
 - UI/i18n: ajustes de títulos de ventanas (`toT — ...`), nuevas claves de snapshot en tareas y limpieza de textos hardcodeados en inglés en el editor de tareas.
+- Cleanup policy gate (Issue #127, Nivel 3): cierre de auditoría bridge file-by-file con foco principal en renderer (`public/**`), más ajustes complementarios en main (`electron/**`), manteniendo intacto el contrato healthy-path.
 
 ### Agregado
 
@@ -101,6 +102,11 @@ Reglas:
   - cierre de find usa ícono `🗙`;
   - se retiran claves de wrap (`status_wrap_start`, `status_wrap_end`) en `renderer.editor_find`.
 - `public/flotante.html`: título actualizado a `toT — Cronómetro flotante`.
+- Alineación de failure-mode bridge (Issue #127):
+  - **renderer (principal):** se homogeniza el manejo de bridges en `public/**` con fail-fast explícito en dependencias requeridas de arranque (ej. `window.getLogger` y contratos core por módulo), guard + continuidad en capacidades opcionales y diagnósticos no silenciosos/deduplicados;
+  - **main (complementario):** se endurece fail-fast explícito de contratos requeridos de registro IPC (`registerIpc` / `registerLinkIpc`) para evitar registro silencioso o fallo implícito;
+  - se ajusta dedupe por frecuencia real (`warn/warnOnce`, `error/errorOnce`) siguiendo `electron/log.js` y `public/js/log.js`;
+  - se completa evidencia por archivo en `docs/cleanup/_evidence/Issue_127.md` bajo `## Tracking` (incluye ledger por archivo y frontera Level 4).
 
 ### Arreglado
 
@@ -112,6 +118,10 @@ Reglas:
 - Snapshots:
   - mejores diagnósticos y rutas de error (`warn`) en selección/carga desde Task Editor;
   - se reduce ambigüedad de metadatos al aplicar snapshot cargado usando `source: 'main-window'`.
+- Bridge/IPC (Issue #127):
+  - **renderer (principal):** corrección de rutas con fail-fast implícito, guards faltantes y/o fallback silencioso en módulos de UI/bridge (`public/renderer.js`, `public/editor.js`, `public/task_editor.js`, `public/js/*`, etc.), sin alterar contratos ni ordering;
+  - **main (complementario):** corrección puntual de contratos de registro IPC requeridos y validaciones de arranque en módulos `electron/*` auditados;
+  - cobertura y consistencia de diagnóstico en rutas opcionales/best-effort sin alterar canalización healthy-path.
 
 ### Removido
 
@@ -149,6 +159,7 @@ Reglas:
   - `current-text-snapshot-select`:
     - OK (actual): `{ ok:true, snapshotRelPath }`
     - Se removieron del payload OK: `path`, `filename`, `bytes`, `mtime`.
+- Issue #127 (Nivel 3): **sin cambios contractuales adicionales** en canales IPC, payload/return shapes, side effects u ordering del healthy-path; los cambios se limitaron a enforcement de failure-path/diagnóstico.
 
 ### Archivos
 
@@ -178,6 +189,34 @@ Reglas:
   - `i18n/fr/renderer.json`
   - `i18n/it/renderer.json`
   - `i18n/pt/renderer.json`
+- Bridge alignment (Issue #127, auditados):
+  - `public/renderer.js`
+  - `public/language_window.js`
+  - `public/flotante.js`
+  - `public/preset_modal.js`
+  - `public/editor.js`
+  - `public/editor_find.js`
+  - `public/task_editor.js`
+  - `public/js/crono.js`
+  - `public/js/presets.js`
+  - `public/js/menu_actions.js`
+  - `public/js/i18n.js`
+  - `public/js/notify.js`
+  - `public/js/current_text_snapshots.js`
+  - `public/js/count.js`
+  - `public/js/format.js`
+  - `public/js/info_modal_links.js`
+  - `electron/main.js`
+  - `electron/text_state.js`
+  - `electron/settings.js`
+  - `electron/presets_main.js`
+  - `electron/tasks_main.js`
+  - `electron/current_text_snapshots_main.js`
+  - `electron/editor_find_main.js`
+  - `electron/updater.js`
+  - `electron/link_openers.js`
+  - `electron/menu_builder.js`
+  - evidencia consolidada: `docs/cleanup/_evidence/Issue_127.md`
 
 ---
 
