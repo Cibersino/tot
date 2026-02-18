@@ -24,7 +24,7 @@ log.debug('Renderer main starting...');
 
 const { AppConstants } = window;
 if (!AppConstants) {
-  throw new Error('[renderer] AppConstants no disponible; verifica la carga de constants.js');
+  throw new Error('[renderer] AppConstants unavailable; verify constants.js load order');
 }
 
 const {
@@ -218,7 +218,7 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
 // =============================================================================
 const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
-  throw new Error('[renderer] RendererI18n no disponible; no se puede continuar');
+  throw new Error('[renderer] RendererI18n unavailable; cannot continue');
 }
 
 const getCronoLabels = () => ({
@@ -340,7 +340,7 @@ if (typeof saveSnapshot !== 'function' || typeof loadSnapshot !== 'function') {
 // =============================================================================
 const { contarTexto: contarTextoModulo } = window.CountUtils || {};
 if (typeof contarTextoModulo !== 'function') {
-  throw new Error('[renderer] CountUtils no disponible; no se puede continuar');
+  throw new Error('[renderer] CountUtils unavailable; cannot continue');
 }
 
 function contarTexto(texto) {
@@ -1217,7 +1217,7 @@ setupToggleModoPreciso();
         }
 
         // In case of failure, inform the user
-        const errMsg = res && res.error ? String(res.error) : 'Desconocido';
+        const errMsg = res && res.error ? String(res.error) : 'Unknown';
         log.error('default presets folder failed to open:', errMsg);
         Notify.notifyMain('renderer.alerts.open_presets_fail');
       } catch (err) {
