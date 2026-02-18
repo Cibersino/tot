@@ -698,6 +698,11 @@ function setupToggleModoPreciso() {
           } catch (err) {
             log.error('Error persisting modeCount using setModeCount:', err);
           }
+        } else if (window.electronAPI) {
+          log.warnOnce(
+            'renderer.ipc.setModeConteo.unavailable',
+            'setModeConteo unavailable; mode persistence skipped.'
+          );
         }
       } catch (err) {
         log.error('Error handling change of toggleModoPreciso:', err);
@@ -1383,6 +1388,11 @@ btnEmptyMain.addEventListener('click', async () => {
     setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : '', { applyRules: true });
     if (window.electronAPI && typeof window.electronAPI.forceClearEditor === 'function') {
       try { await window.electronAPI.forceClearEditor(); } catch (err) { log.error('Error invoking forceClearEditor:', err); }
+    } else if (window.electronAPI) {
+      log.warnOnce(
+        'renderer.ipc.forceClearEditor.unavailable',
+        'forceClearEditor unavailable; editor clear sync skipped.'
+      );
     }
   } catch (err) {
     log.error('Error clearing text from main window:', err);
