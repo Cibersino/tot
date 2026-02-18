@@ -127,7 +127,7 @@
     if (!selectedName && !persisted && !hasCurrent) {
       log.warnOnce(
         `presets.selectedPreset.none:${lang}`,
-        'No persisted preset selection for langKey; selecting safe default and persisting.',
+        'No persisted preset selection for langKey; selecting safe default and persisting (may be normal on first run).',
         { lang }
       );
     }
