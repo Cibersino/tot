@@ -150,8 +150,8 @@
     "editor": {
       "title": "toT — Vollständiger Text",
       "placeholder": "Hier eingeben oder einfügen...",
-      "calc_button": "Berechnen",
-      "calc_while_typing": "Während des Tippens berechnen",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Automatisches Speichern und Neuberechnen während der Eingabe",
       "clear": "🗑",
       "clear_title": "Löschen"
     },
