@@ -250,7 +250,7 @@ function parseSnapshotFile(selectedReal) {
 // IPC registration
 // =============================================================================
 function registerIpc(ipcMain, { getWindows } = {}) {
-  if (!ipcMain) {
+  if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[current_text_snapshots] registerIpc requires ipcMain');
   }
 
