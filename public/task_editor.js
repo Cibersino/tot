@@ -1,5 +1,4 @@
 // public/task_editor.js
-/* global Notify */
 'use strict';
 
 // =============================================================================
@@ -250,13 +249,13 @@ function wireModalClose(modalEl, ...closeTriggers) {
 
 function showEditorNotice(key, opts = {}) {
   try {
-    if (typeof Notify?.notifyEditor === 'function') {
-      Notify.notifyEditor(key, opts);
+    if (typeof window.Notify?.notifyEditor === 'function') {
+      window.Notify.notifyEditor(key, opts);
       return;
     }
-    log.warnOnce('task_editor.notify.missing', 'Notify.notifyEditor unavailable (ignored).');
+    log.warnOnce('task_editor.notify.missing', 'window.Notify.notifyEditor unavailable (ignored).');
   } catch (err) {
-    log.warn('Notify.notifyEditor failed:', err);
+    log.warn('window.Notify.notifyEditor failed:', err);
   }
 }
 

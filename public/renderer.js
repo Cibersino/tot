@@ -1,5 +1,4 @@
 // public/renderer.js
-/* global Notify */
 'use strict';
 
 // =============================================================================
@@ -1175,28 +1174,28 @@ setupToggleModoPreciso();
     registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
     registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
     registerMenuActionGuarded('cargador_texto', () => {
-      Notify.notifyMain('renderer.alerts.wip_cargador_texto'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_cargador_texto'); // WIP
     });
     registerMenuActionGuarded('cargador_imagen', () => {
-      Notify.notifyMain('renderer.alerts.wip_cargador_imagen'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_cargador_imagen'); // WIP
     });
     registerMenuActionGuarded('test_velocidad', () => {
-      Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP
     });
     registerMenuActionGuarded('diseno_skins', () => {
-      Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
     });
     registerMenuActionGuarded('diseno_crono_flotante', () => {
-      Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_diseno_crono'); // WIP
     });
     registerMenuActionGuarded('diseno_fuentes', () => {
-      Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_diseno_fuentes'); // WIP
     });
     registerMenuActionGuarded('diseno_colores', () => {
-      Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_diseno_colores'); // WIP
     });
     registerMenuActionGuarded('shortcuts', () => {
-      Notify.notifyMain('renderer.alerts.wip_shortcuts'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_shortcuts'); // WIP
     });
     registerMenuActionGuarded('presets_por_defecto', async () => {
       try {
@@ -1205,7 +1204,7 @@ setupToggleModoPreciso();
             'renderer.ipc.openDefaultPresetsFolder.unavailable',
             'openDefaultPresetsFolder unavailable at electronAPI; action skipped.'
           );
-          Notify.notifyMain('renderer.alerts.open_presets_unsupported');
+          window.Notify.notifyMain('renderer.alerts.open_presets_unsupported');
           return;
         }
 
@@ -1219,24 +1218,24 @@ setupToggleModoPreciso();
         // In case of failure, inform the user
         const errMsg = res && res.error ? String(res.error) : 'Unknown';
         log.error('default presets folder failed to open:', errMsg);
-        Notify.notifyMain('renderer.alerts.open_presets_fail');
+        window.Notify.notifyMain('renderer.alerts.open_presets_fail');
       } catch (err) {
         log.error('default presets folder failed to open', err);
-        Notify.notifyMain('renderer.alerts.open_presets_error');
+        window.Notify.notifyMain('renderer.alerts.open_presets_error');
       }
     });
 
     registerMenuActionGuarded('avisos', () => {
-      Notify.notifyMain('renderer.alerts.wip_avisos'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_avisos'); // WIP
     });
     registerMenuActionGuarded('discord', () => {
-      Notify.notifyMain('renderer.alerts.wip_discord'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_discord'); // WIP
     });
 
     registerMenuActionGuarded('links_interes', () => { showInfoModal('links_interes') });
 
     registerMenuActionGuarded('colabora', () => {
-      Notify.notifyMain('renderer.alerts.wip_colabora'); // WIP
+      window.Notify.notifyMain('renderer.alerts.wip_colabora'); // WIP
     });
 
     registerMenuActionGuarded('actualizar_version', async () => {
@@ -1348,14 +1347,14 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
     unavailableMessage: 'readClipboard unavailable; clipboard action skipped.'
   });
   if (!readClipboard) {
-    if (unavailableKey) Notify.notifyMain(unavailableKey);
+    if (unavailableKey) window.Notify.notifyMain(unavailableKey);
     return { ok: false, unavailable: true };
   }
 
   const res = await readClipboard();
   if (res && res.ok === false) {
     if (res.tooLarge === true) {
-      Notify.notifyMain(tooLargeKey);
+      window.Notify.notifyMain(tooLargeKey);
       return { ok: false, tooLarge: true };
     }
     throw new Error(res.error || 'clipboard read failed');
@@ -1378,7 +1377,7 @@ btnOverwriteClipboard.addEventListener('click', async () => {
     const clip = read.text;
 
     if (clip.length > maxIpcChars) {
-      Notify.notifyMain('renderer.alerts.clipboard_too_large');
+      window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
       return;
     }
 
@@ -1388,7 +1387,7 @@ btnOverwriteClipboard.addEventListener('click', async () => {
       unavailableMessage: 'setCurrentText unavailable; clipboard overwrite skipped.'
     });
     if (!setCurrentText) {
-      Notify.notifyMain('renderer.alerts.clipboard_error');
+      window.Notify.notifyMain('renderer.alerts.clipboard_error');
       return;
     }
     const resp = await setCurrentText({
@@ -1402,11 +1401,11 @@ btnOverwriteClipboard.addEventListener('click', async () => {
 
     setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : clip, { applyRules: true });
     if (resp && resp.truncated) {
-      Notify.notifyMain('renderer.alerts.clipboard_overflow');
+      window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
   } catch (err) {
     log.error('clipboard error:', err);
-    Notify.notifyMain('renderer.alerts.clipboard_error');
+    window.Notify.notifyMain('renderer.alerts.clipboard_error');
   }
 });
 
@@ -1427,7 +1426,7 @@ btnAppendClipboard.addEventListener('click', async () => {
       unavailableMessage: 'getCurrentText unavailable; clipboard append skipped.'
     });
     if (!getCurrentText) {
-      Notify.notifyMain('renderer.alerts.append_error');
+      window.Notify.notifyMain('renderer.alerts.append_error');
       return;
     }
     const current = await getCurrentText() || '';
@@ -1437,13 +1436,13 @@ btnAppendClipboard.addEventListener('click', async () => {
 
     const projectedLen = current.length + (current ? joiner.length : 0) + clip.length;
     if (projectedLen > maxIpcChars) {
-      Notify.notifyMain('renderer.alerts.append_too_large');
+      window.Notify.notifyMain('renderer.alerts.append_too_large');
       return;
     }
 
     const available = maxTextChars - current.length;
     if (available <= 0) {
-      Notify.notifyMain('renderer.alerts.text_limit');
+      window.Notify.notifyMain('renderer.alerts.text_limit');
       return;
     }
 
@@ -1455,7 +1454,7 @@ btnAppendClipboard.addEventListener('click', async () => {
       unavailableMessage: 'setCurrentText unavailable; clipboard append skipped.'
     });
     if (!setCurrentText) {
-      Notify.notifyMain('renderer.alerts.append_error');
+      window.Notify.notifyMain('renderer.alerts.append_error');
       return;
     }
     const resp = await setCurrentText({
@@ -1471,11 +1470,11 @@ btnAppendClipboard.addEventListener('click', async () => {
 
     // Notify truncation only if main confirms it
     if (resp && resp.truncated) {
-      Notify.notifyMain('renderer.alerts.append_overflow');
+      window.Notify.notifyMain('renderer.alerts.append_overflow');
     }
   } catch (err) {
     log.error('An error occurred while pasting the clipboard:', err);
-    Notify.notifyMain('renderer.alerts.append_error');
+    window.Notify.notifyMain('renderer.alerts.append_error');
   }
 });
 
@@ -1519,7 +1518,7 @@ btnEmptyMain.addEventListener('click', async () => {
       unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
     });
     if (!setCurrentText) {
-      Notify.notifyMain('renderer.alerts.clear_error');
+      window.Notify.notifyMain('renderer.alerts.clear_error');
       return;
     }
     const resp = await setCurrentText({
@@ -1538,7 +1537,7 @@ btnEmptyMain.addEventListener('click', async () => {
     }
   } catch (err) {
     log.error('Error clearing text from main window:', err);
-    Notify.notifyMain('renderer.alerts.clear_error');
+    window.Notify.notifyMain('renderer.alerts.clear_error');
   }
 });
 
@@ -1582,14 +1581,14 @@ function handleTaskOpenResult(res, { mode } = {}) {
     const code = res && res.code ? res.code : 'READ_FAILED';
     if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
     if (code === 'PATH_OUTSIDE_TASKS') {
-      Notify.notifyMain('renderer.tasks.alerts.task_path_outside');
+      window.Notify.notifyMain('renderer.tasks.alerts.task_path_outside');
       return;
     }
     if (code === 'INVALID_JSON' || code === 'INVALID_SCHEMA') {
-      Notify.notifyMain('renderer.tasks.alerts.task_invalid_file');
+      window.Notify.notifyMain('renderer.tasks.alerts.task_invalid_file');
       return;
     }
-    Notify.notifyMain(mode === 'load'
+    window.Notify.notifyMain(mode === 'load'
       ? 'renderer.tasks.alerts.task_load_error'
       : 'renderer.tasks.alerts.task_open_error');
     return;
@@ -1605,14 +1604,14 @@ if (btnNewTask) {
           'renderer.ipc.openTaskEditor.unavailable',
           'openTaskEditor unavailable; new-task action skipped.'
         );
-        Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+        window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
         return;
       }
       const res = await window.electronAPI.openTaskEditor('new');
       handleTaskOpenResult(res, { mode: 'new' });
     } catch (err) {
       log.error('Error opening task editor (new):', err);
-      Notify.notifyMain('renderer.tasks.alerts.task_open_error');
+      window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
     }
   });
 }
@@ -1626,14 +1625,14 @@ if (btnLoadTask) {
           'renderer.ipc.openTaskEditor.unavailable',
           'openTaskEditor unavailable; load-task action skipped.'
         );
-        Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
+        window.Notify.notifyMain('renderer.tasks.alerts.task_unavailable');
         return;
       }
       const res = await window.electronAPI.openTaskEditor('load');
       handleTaskOpenResult(res, { mode: 'load' });
     } catch (err) {
       log.error('Error opening task editor (load):', err);
-      Notify.notifyMain('renderer.tasks.alerts.task_load_error');
+      window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
     }
   });
 }
@@ -1645,8 +1644,8 @@ if (btnHelp) {
     const tipCount = HELP_TIP_KEY_LIST.length;
     if (!tipCount) {
       log.error('Help tip list is empty.');
-      if (typeof Notify?.notifyMain === 'function') {
-        Notify.notifyMain('renderer.main.tips.results_help.tip1');
+      if (typeof window.Notify?.notifyMain === 'function') {
+        window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
       }
       return;
     }
@@ -1661,18 +1660,18 @@ if (btnHelp) {
     const tipKey = HELP_TIP_KEY_LIST[idx];
 
     try {
-      if (typeof Notify?.toastMain === 'function') {
-        Notify.toastMain(tipKey);
-      } else if (typeof Notify?.notifyMain === 'function') {
-        Notify.notifyMain(tipKey);
+      if (typeof window.Notify?.toastMain === 'function') {
+        window.Notify.toastMain(tipKey);
+      } else if (typeof window.Notify?.notifyMain === 'function') {
+        window.Notify.notifyMain(tipKey);
       } else {
         log.error('Notify API unavailable for help tips.');
       }
     } catch (err) {
       log.error('Error showing help tip:', err);
       try {
-        if (typeof Notify?.notifyMain === 'function') {
-          Notify.notifyMain(tipKey);
+        if (typeof window.Notify?.notifyMain === 'function') {
+          window.Notify.notifyMain(tipKey);
         } else {
           log.error('Notify notifyMain unavailable for help tip fallback.');
         }
@@ -1694,7 +1693,7 @@ btnNewPreset.addEventListener('click', () => {
         'renderer.ipc.openPresetModal.unavailable',
         'openPresetModal unavailable in electronAPI; preset-new action skipped.'
       );
-      Notify.notifyMain('renderer.alerts.modal_unavailable');
+      window.Notify.notifyMain('renderer.alerts.modal_unavailable');
     }
   } catch (err) {
     log.error('Error opening new preset modal:', err);
@@ -1718,7 +1717,7 @@ btnEditPreset.addEventListener('click', async () => {
           'renderer.ipc.notifyNoSelectionEdit.unavailable',
           'notifyNoSelectionEdit unavailable; using renderer fallback notification.'
         );
-        Notify.notifyMain('renderer.alerts.edit_none');
+        window.Notify.notifyMain('renderer.alerts.edit_none');
         return;
       }
     }
@@ -1726,7 +1725,7 @@ btnEditPreset.addEventListener('click', async () => {
     // Find preset data from cache
     const preset = allPresetsCache.find(p => p.name === selectedName);
     if (!preset) {
-      Notify.notifyMain('renderer.alerts.preset_not_found');
+      window.Notify.notifyMain('renderer.alerts.preset_not_found');
       return;
     }
 
@@ -1744,11 +1743,11 @@ btnEditPreset.addEventListener('click', async () => {
         'renderer.ipc.openPresetModal.unavailable',
         'openPresetModal unavailable in electronAPI; preset-edit action skipped.'
       );
-      Notify.notifyMain('renderer.alerts.edit_unavailable');
+      window.Notify.notifyMain('renderer.alerts.edit_unavailable');
     }
   } catch (err) {
     log.error('Error opening edit preset modal:', err);
-    Notify.notifyMain('renderer.alerts.edit_error');
+    window.Notify.notifyMain('renderer.alerts.edit_error');
   }
 });
 
@@ -1764,7 +1763,7 @@ btnDeletePreset.addEventListener('click', async () => {
       unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'
     });
     if (!requestDeletePreset) {
-      Notify.notifyMain('renderer.alerts.delete_error');
+      window.Notify.notifyMain('renderer.alerts.delete_error');
       return;
     }
     // Call main to request deletion; main shows native dialogs as needed
@@ -1788,11 +1787,11 @@ btnDeletePreset.addEventListener('click', async () => {
       }
       // Unexpected error: log and show a simple alert
       log.error('Error deleting preset:', res && res.error ? res.error : res);
-      Notify.notifyMain('renderer.alerts.delete_error');
+      window.Notify.notifyMain('renderer.alerts.delete_error');
     }
   } catch (err) {
     log.error('Error in deletion request:', err);
-    Notify.notifyMain('renderer.alerts.delete_error');
+    window.Notify.notifyMain('renderer.alerts.delete_error');
   }
 });
 
@@ -1807,7 +1806,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
       unavailableMessage: 'requestRestoreDefaults unavailable; presets restore action skipped.'
     });
     if (!requestRestoreDefaults) {
-      Notify.notifyMain('renderer.alerts.restore_error');
+      window.Notify.notifyMain('renderer.alerts.restore_error');
       return;
     }
     // Call main to request restore. Main will show a native confirmation dialog.
@@ -1824,11 +1823,11 @@ btnResetDefaultPresets.addEventListener('click', async () => {
         return;
       }
       log.error('Error restoring presets:', res && res.error ? res.error : res);
-      Notify.notifyMain('renderer.alerts.restore_error');
+      window.Notify.notifyMain('renderer.alerts.restore_error');
     }
   } catch (err) {
     log.error('Error in restoring request:', err);
-    Notify.notifyMain('renderer.alerts.restore_error');
+    window.Notify.notifyMain('renderer.alerts.restore_error');
   }
 });
 
