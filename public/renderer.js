@@ -696,7 +696,7 @@ function setupToggleModoPreciso() {
           try {
             await window.electronAPI.setModeConteo(nuevoModo);
           } catch (err) {
-            log.error('Error persisting modeCount using setModeCount:', err);
+            log.error('Error persisting modeConteo using setModeConteo:', err);
           }
         } else if (window.electronAPI) {
           log.warnOnce(
