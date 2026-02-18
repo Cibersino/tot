@@ -134,6 +134,14 @@ Hard constraints:
 * Scope edits to **`<TARGET_FILE>` AND `docs\cleanup\_evidence\Issue_127.md` only** (no other files).
 * You MAY change failure-path behavior (miswire/missing/invalid bridge) to comply with the convention.
   Do NOT claim “changes failure timing/behavior” as Level 4 evidence unless HEALTHY-PATH changes too.
+* Level 3 scope guard: this level is ONLY for bridge dependency failure-mode alignment. Do NOT “polish” or refactor unrelated logging/messages. Only add/adjust diagnostics that are strictly required to comply with the bridge failure-mode convention (required fail-fast; optional/best-effort guarded + deduped diagnostics). Do not rewrite existing logs unless required for that alignment.
+
+Anti-abstraction rule:
+
+* Do NOT introduce helpers/abstractions by default.
+* A local helper is allowed ONLY if it clearly improves human readability/maintainability AND is justified by repetition/complexity:
+  - typically **3+ call-sites** with the same non-trivial pattern, OR
+  - a repeated multi-branch pattern that would otherwise be error-prone if duplicated.
 
 What to do (NO SKIPPING):
 
@@ -217,6 +225,7 @@ Output requirement (no diffs):
   * Dedupe keys must be stable/bounded (no user input or unbounded dynamic data in keys).
   * Use `warnOnce/errorOnce` only for high-frequency repeatable misses/failures where repetition adds no diagnostic value; otherwise use `warn/error`.
   * If a fallback is BOOTSTRAP-only, the message or explicit dedupe key must start with `BOOTSTRAP:` and that path must become unreachable after init.
+  * The concrete logger behavior/signatures come from the runtime logger headers (`electron/log.js`, `public/js/log.js`). Follow those headers; do not invent alternative logging conventions.
 
 Final response rule:
 - In your chat response, do NOT paste the full ledger. Only state:
