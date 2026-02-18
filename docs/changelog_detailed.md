@@ -51,6 +51,134 @@ Reglas:
 
 ## Unreleased
 
+### Resumen de cambios
+
+- Editor (Find/Search): reemplazo del sistema de búsqueda manual embebido por una ventana dedicada, controlada desde main y basada en `webContents.findInPage`.
+- Superficie de búsqueda: la UI de búsqueda dejó de coexistir en el mismo DOM del editor; además se redujo exposición de textos de la barra inferior del editor moviendo labels a `data-label` + pseudo-elementos CSS.
+- Snapshots: endurecimiento de validaciones y normalización del flujo de selección/carga por ruta relativa (`snapshotRelPath`) para uso desde Task Editor.
+- UI/i18n: ajustes de títulos de ventanas (`toT — ...`), nuevas claves de snapshot en tareas y limpieza de textos hardcodeados en inglés en el editor de tareas.
+
+### Agregado
+
+- Main: nuevo módulo `electron/editor_find_main.js` para búsqueda nativa del editor:
+  - ciclo de vida de la ventana de búsqueda (`BrowserWindow` hijo del editor);
+  - atajos `Ctrl/Cmd+F`, `F3`, `Shift+F3`, `Esc` vía `before-input-event`;
+  - ejecución de `findInPage(...)`, consumo de `found-in-page` y limpieza con `stopFindInPage('clearSelection')`;
+  - sincronización de estado `{ query, matches, activeMatchOrdinal, finalUpdate }` hacia la UI de búsqueda.
+- Preload: nuevo `electron/editor_find_preload.js` que expone `window.editorFindAPI` para la ventana de búsqueda.
+- UI: nueva ventana de búsqueda del editor:
+  - `public/editor_find.html`
+  - `public/editor_find.css`
+  - `public/editor_find.js`
+- i18n (tareas): nuevas claves para flujo de snapshot en comentario:
+  - `renderer.tasks.buttons.snapshot`
+  - `renderer.tasks.buttons.select_snapshot`
+  - `renderer.tasks.tooltips.snapshot_load`
+
+### Cambiado
+
+- `electron/main.js`:
+  - integra `editorFindMain.attachEditorWindow(editorWin)` al crear editor;
+  - registra IPC de find (`editorFindMain.registerIpc(ipcMain)`);
+  - cierra la ventana de búsqueda como best-effort al cerrar la main window.
+- `electron/settings.js`:
+  - `broadcastSettingsUpdated(...)` ahora incluye `editorFindWin`;
+  - la política de ocultar menú en ventanas secundarias ahora también aplica a `editorFindWin`.
+- `public/editor.html`, `public/editor.css`, `public/editor.js`:
+  - se elimina la find bar embebida y el overlay manual de highlights;
+  - barra inferior migra a labels por atributo (`data-label`) renderizados por CSS (`::before` / `::after`);
+  - `btnCalc` pasa a semántica visual `CALC/SAVE` y checkbox a texto de auto-guardar/auto-recalcular.
+- `electron/current_text_snapshots_main.js`:
+  - refactor de helpers (`getSnapshotsRoot`, `validateSelectedSnapshot`, `parseSnapshotFile`, etc.);
+  - validaciones explícitas de `realpath`, contención y schema antes de responder;
+  - diálogos asociados a la ventana dueña del sender (fallback a `mainWin`).
+- Task Editor (`public/task_editor.js`, `public/task_editor.html`, `public/task_editor.css`):
+  - botones de acción sin fallback hardcodeado en inglés;
+  - botón de snapshot de comentario con estilo compacto (`icon-btn--tiny`);
+  - ajustes de anchos por defecto de columnas y textos base de modales.
+- i18n (`i18n/*/renderer.json` en `arn`, `de`, `en`, `es`, `es/es-cl`, `fr`, `it`, `pt`):
+  - títulos de editor/tareas pasan a formato `toT — ...`;
+  - cierre de find usa ícono `🗙`;
+  - se retiran claves de wrap (`status_wrap_start`, `status_wrap_end`) en `renderer.editor_find`.
+- `public/flotante.html`: título actualizado a `toT — Cronómetro flotante`.
+
+### Arreglado
+
+- Búsqueda del editor:
+  - cierre/reapertura limpia estado activo de búsqueda y retorna foco al textarea del editor;
+  - sincronización de navegación con el match activo reportado por `found-in-page`.
+- Task Editor:
+  - regresión en nombre de tarea: el trim se mueve a validación de guardado (ya no se recorta durante edición en `clampTaskName`).
+- Snapshots:
+  - mejores diagnósticos y rutas de error (`warn`) en selección/carga desde Task Editor;
+  - se reduce ambigüedad de metadatos al aplicar snapshot cargado usando `source: 'main-window'`.
+
+### Removido
+
+- Sistema legacy de búsqueda manual en `public/editor.js` (count local, wrap-status local y overlay DOM de resaltado).
+- Barra de búsqueda embebida en `public/editor.html` y estilos asociados en `public/editor.css`.
+
+### Contratos tocados
+
+- IPC nuevos (find window → main, `invoke`):
+  - `editor-find-set-query`:
+    - Payload: `query` (`string`)
+    - OK: `{ ok:true, requestId? }`
+    - Error: `{ ok:false, error:'unauthorized'|... }`
+  - `editor-find-next`:
+    - Payload: ninguno
+    - OK: `{ ok:true, requestId? }` o `{ ok:true, skipped:'empty query' }`
+    - Error: `{ ok:false, error:'unauthorized'|... }`
+  - `editor-find-prev`:
+    - Payload: ninguno
+    - OK: `{ ok:true, requestId? }` o `{ ok:true, skipped:'empty query' }`
+    - Error: `{ ok:false, error:'unauthorized'|... }`
+  - `editor-find-close`:
+    - Payload: ninguno
+    - OK: `{ ok:true }`
+    - Error: `{ ok:false, error:'unauthorized'|... }`
+- IPC nuevos (main → find window, `send`):
+  - `editor-find-init`: payload `{ query, matches, activeMatchOrdinal, finalUpdate }`
+  - `editor-find-state`: payload `{ query, matches, activeMatchOrdinal, finalUpdate }`
+  - `editor-find-focus-query`: payload `{ selectAll:boolean }`
+- Preload API nueva (`window.editorFindAPI`):
+  - `setQuery(query)`, `next()`, `prev()`, `close()`
+  - `onInit(cb)`, `onState(cb)`, `onFocusQuery(cb)`
+  - `getSettings()`, `onSettingsChanged(cb)`
+- IPC ajustado (snapshot select):
+  - `current-text-snapshot-select`:
+    - OK (actual): `{ ok:true, snapshotRelPath }`
+    - Se removieron del payload OK: `path`, `filename`, `bytes`, `mtime`.
+
+### Archivos
+
+- Main/preload:
+  - `electron/main.js`
+  - `electron/settings.js`
+  - `electron/current_text_snapshots_main.js`
+  - `electron/editor_find_main.js` (nuevo)
+  - `electron/editor_find_preload.js` (nuevo)
+- Renderer/UI:
+  - `public/editor.html`
+  - `public/editor.css`
+  - `public/editor.js`
+  - `public/editor_find.html` (nuevo)
+  - `public/editor_find.css` (nuevo)
+  - `public/editor_find.js` (nuevo)
+  - `public/task_editor.html`
+  - `public/task_editor.css`
+  - `public/task_editor.js`
+  - `public/flotante.html`
+- i18n:
+  - `i18n/arn/renderer.json`
+  - `i18n/de/renderer.json`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `i18n/es/es-cl/renderer.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/renderer.json`
+
 ---
 
 ## [0.1.4] toT - nuevo editor de tareas y snapshots
