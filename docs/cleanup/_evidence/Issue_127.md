@@ -306,6 +306,18 @@ Confirmations:
 - Healthy-path contract/timing preserved (no IPC surface/channel/payload/ordering changes in valid bridge wiring).
 - Failure-path handling is aligned to the convention, and `onStartupReady` is now consistent with its required class via true fail-fast.
 
+#### Delta (language policy)
+
+What changed:
+- Updated throw diagnostic text only: `[renderer] AppConstants no disponible; verifica la carga de constants.js` -> `[renderer] AppConstants unavailable; verify constants.js load order`.
+- Updated throw diagnostic text only: `[renderer] RendererI18n no disponible; no se puede continuar` -> `[renderer] RendererI18n unavailable; cannot continue`.
+- Updated throw diagnostic text only: `[renderer] CountUtils no disponible; no se puede continuar` -> `[renderer] CountUtils unavailable; cannot continue`.
+- Updated logged fallback token only: `Desconocido` -> `Unknown` in the `default presets folder failed to open` diagnostic path.
+
+Confirmations:
+- Healthy-path contract/timing preserved (no IPC surface/channel/payload/ordering changes).
+- Startup and IPC registration ordering preserved (message-string updates only; no control-flow changes).
+
 ---
 
 ## Definition of Done
