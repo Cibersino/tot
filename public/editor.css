@@ -87,6 +87,10 @@ body {
   height: 36px;
 }
 
+#btnCalc::before {
+  content: attr(data-label);
+}
+
 #btnCalc[disabled] {
   opacity: 0.65;
   cursor: default;
@@ -102,6 +106,10 @@ body {
   user-select: none;
 }
 
+.calc-label::after {
+  content: attr(data-label);
+}
+
 /* Trash button (right aligned) */
 #btnTrash {
   display: inline-flex;
@@ -114,6 +122,10 @@ body {
   border: 1px solid transparent;
   cursor: pointer;
   font-size: 14px;
+}
+
+#btnTrash::before {
+  content: attr(data-label);
 }
 
 #btnTrash:hover {

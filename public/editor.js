@@ -99,15 +99,21 @@ async function applyEditorTranslations() {
   await ensureEditorTranslations(idiomaActual);
   document.title = tr('renderer.editor.title', document.title);
   if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder', editor.getAttribute('placeholder') || ''));
-  if (btnCalc) btnCalc.textContent = tr('renderer.editor.calc_button', btnCalc.textContent || '');
+  if (btnCalc) {
+    const calcText = tr('renderer.editor.calc_button', btnCalc.getAttribute('data-label') || '');
+    btnCalc.setAttribute('data-label', calcText);
+    btnCalc.setAttribute('aria-label', calcText);
+  }
   if (calcLabel) {
-    const chk = calcLabel.querySelector('input');
-    calcLabel.textContent = tr('renderer.editor.calc_while_typing', calcLabel.textContent || '');
-    if (chk) calcLabel.prepend(chk);
+    const calcWhileTypingText = tr('renderer.editor.calc_while_typing', calcLabel.getAttribute('data-label') || '');
+    calcLabel.setAttribute('data-label', calcWhileTypingText);
+    if (calcWhileTyping) calcWhileTyping.setAttribute('aria-label', calcWhileTypingText);
   }
   if (btnTrash) {
-    btnTrash.textContent = tr('renderer.editor.clear', btnTrash.textContent || '');
-    btnTrash.title = tr('renderer.editor.clear_title', btnTrash.title || btnTrash.textContent || '');
+    const clearText = tr('renderer.editor.clear', btnTrash.getAttribute('data-label') || '');
+    btnTrash.setAttribute('data-label', clearText);
+    btnTrash.setAttribute('aria-label', clearText);
+    btnTrash.title = tr('renderer.editor.clear_title', btnTrash.title || clearText || '');
   }
   if (bottomBar) {
     bottomBar.setAttribute('aria-label', tr('renderer.editor.title', bottomBar.getAttribute('aria-label') || ''));
