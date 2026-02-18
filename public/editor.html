@@ -15,15 +15,15 @@
     <textarea id="editorArea" placeholder="Escribe o pega aquí..."></textarea>
   </div>
 
-  <!-- Bottom bar: CALCULATE | checkbox | TRASH (right aligned) -->
+  <!-- Bottom bar: CALC/SAVE | checkbox | TRASH (right aligned) -->
   <div id="bottomBar" class="bottom-bar" role="region" aria-label="Controles del editor">
     <div class="left-controls">
-      <button id="btnCalc" class="btn-calc" disabled>CALCULAR</button>
-      <label class="calc-label"><input id="calcWhileTyping" type="checkbox" checked /> Calcular mientras escribe</label>
+      <button id="btnCalc" class="btn-calc" disabled data-label="CALCULAR" aria-label="CALC/SAVE"></button>
+      <label class="calc-label" data-label="Auto-guardar y auto-recalcular mientras escribes"><input id="calcWhileTyping" type="checkbox" checked aria-label="Auto-guardar y auto-recalcular mientras escribes" /></label>
     </div>
 
     <div class="right-controls">
-      <button id="btnTrash" class="btn-trash" title="Vaciar">🗑</button>
+      <button id="btnTrash" class="btn-trash" data-label="Vaciar" aria-label="Vaciar" title="Vaciar"></button>
     </div>
   </div>
 
