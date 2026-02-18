@@ -29,6 +29,16 @@ const editorFindAPI = window.editorFindAPI;
 if (!editorFindAPI) {
   throw new Error('[editor-find] editorFindAPI unavailable; verify editor_find_preload.js.');
 }
+if (
+  typeof editorFindAPI.setQuery !== 'function' ||
+  typeof editorFindAPI.next !== 'function' ||
+  typeof editorFindAPI.prev !== 'function' ||
+  typeof editorFindAPI.close !== 'function' ||
+  typeof editorFindAPI.onInit !== 'function' ||
+  typeof editorFindAPI.onState !== 'function'
+) {
+  throw new Error('[editor-find] editorFindAPI required methods unavailable; cannot continue.');
+}
 
 const labelEl = document.getElementById('findLabel');
 const inputEl = document.getElementById('findQuery');
