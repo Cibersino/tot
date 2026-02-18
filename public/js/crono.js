@@ -16,6 +16,9 @@
   // =============================================================================
   // Logger / scope
   // =============================================================================
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[crono] window.getLogger unavailable; cannot continue');
+  }
   const log = window.getLogger('crono');
   log.debug('Crono starting...');
 
@@ -122,6 +125,8 @@
         } catch (err) {
           log.warnOnce('crono.getCronoState', '[crono] getCronoState failed:', err);
         }
+      } else {
+        log.warnOnce('crono.getCronoState.missing', '[crono] getCronoState unavailable; using local stopwatch state');
       }
       return null;
     } catch (err) {
@@ -245,6 +250,7 @@
       }
     }
 
+    log.warnOnce('crono.setCronoElapsed.missing', '[crono] setCronoElapsed unavailable; using local stopwatch state');
     await fallbackLocal();
     return msRounded;
   }
@@ -420,6 +426,8 @@
           try {
             if (electronAPI && typeof electronAPI.sendCronoReset === 'function') {
               electronAPI.sendCronoReset();
+            } else {
+              log.warnOnce('crono.sendCronoReset.missing', '[crono] sendCronoReset unavailable; applying local reset only');
             }
           } catch (err) {
             log.error('Error requesting stopwatch reset after empty text:', err);
@@ -483,6 +491,8 @@
         elements.tToggle.addEventListener('click', () => {
           if (electronAPI && typeof electronAPI.sendCronoToggle === 'function') {
             electronAPI.sendCronoToggle();
+          } else {
+            log.warnOnce('crono.sendCronoToggle.missing', '[crono] sendCronoToggle unavailable; toggle action ignored');
           }
         });
       }
@@ -491,6 +501,8 @@
         elements.tReset.addEventListener('click', () => {
           if (electronAPI && typeof electronAPI.sendCronoReset === 'function') {
             electronAPI.sendCronoReset();
+          } else {
+            log.warnOnce('crono.sendCronoReset.missing', '[crono] sendCronoReset unavailable; reset action ignored');
           }
         });
       }
@@ -515,6 +527,8 @@
             elements.toggleVF.setAttribute('aria-checked', 'false');
           }
         });
+      } else if (electronAPI) {
+        log.warnOnce('crono.onFlotanteClosed.missing', '[crono] onFlotanteClosed unavailable; flotante toggle may desync');
       }
 
       if (elements.cronoDisplay) {
