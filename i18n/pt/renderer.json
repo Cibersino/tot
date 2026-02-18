@@ -150,8 +150,8 @@
     "editor": {
       "title": "toT — Texto completo",
       "placeholder": "Cole ou digite seu texto aqui...",
-      "calc_button": "CALCULAR",
-      "calc_while_typing": "Calcular enquanto digita",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Auto-salvar e auto-calcular enquanto digita",
       "clear": "🗑",
       "clear_title": "Limpar"
     },
