@@ -14,11 +14,14 @@
 // =============================================================================
 // Logger / constants
 // =============================================================================
+if (typeof window.getLogger !== 'function') {
+  throw new Error('[task-editor] window.getLogger unavailable; cannot continue');
+}
 const log = window.getLogger('task-editor');
 log.debug('Task editor starting...');
 const { AppConstants } = window;
 if (!AppConstants) {
-  throw new Error('[task-editor] AppConstants no disponible; verifica la carga de constants.js');
+  throw new Error('[task-editor] AppConstants unavailable; verify constants.js load order');
 }
 const {
   DEFAULT_LANG,
@@ -36,7 +39,7 @@ let translationsLoadedFor = null;
 
 const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
 if (!loadRendererTranslations || !tRenderer) {
-  throw new Error('[task-editor] RendererI18n no disponible; no se puede continuar');
+  throw new Error('[task-editor] RendererI18n unavailable; cannot continue');
 }
 
 const tr = (path, fallback) => tRenderer(path, fallback);
@@ -1074,6 +1077,10 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
 
 if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
   window.taskEditorAPI.onRequestClose(() => {
+    if (typeof window.taskEditorAPI.confirmClose !== 'function') {
+      log.warnOnce('task_editor.confirmClose.missing', 'taskEditorAPI.confirmClose unavailable; close request ignored.');
+      return;
+    }
     if (!dirty) {
       window.taskEditorAPI.confirmClose();
       return;
