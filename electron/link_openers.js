@@ -88,6 +88,10 @@ async function openPathWithLog(shell, rawKey, filePath) {
 // =============================================================================
 
 function registerLinkIpc({ ipcMain, app, shell }) {
+  if (!ipcMain || typeof ipcMain.handle !== 'function') {
+    throw new Error('[link_openers] registerLinkIpc requires ipcMain');
+  }
+
   ipcMain.handle('open-external-url', async (_e, url) => {
     try {
       const raw = typeof url === 'string' ? url.trim() : '';
