@@ -56,7 +56,7 @@
       }
     },
     "tasks": {
-      "title": "Editor — Aufgaben",
+      "title": "toT — Aufgaben",
       "labels": {
         "name": "Name",
         "total": "GESAMTZEIT",
@@ -148,7 +148,7 @@
       "save": "Speichern"
     },
     "editor": {
-      "title": "Editor — Vollständiger Text",
+      "title": "toT — Vollständiger Text",
       "placeholder": "Hier eingeben oder einfügen...",
       "calc_button": "Berechnen",
       "calc_while_typing": "Während des Tippens berechnen",
@@ -161,13 +161,11 @@
       "input_aria": "Im Text suchen",
       "prev": "Zuruck",
       "next": "Weiter",
-      "close": "Schliessen",
+      "close": "🗙",
       "prev_title": "Vorheriger Treffer",
       "next_title": "Naechster Treffer",
       "close_title": "Suchleiste schliessen",
       "status_no_matches": "Keine Treffer",
-      "status_wrap_start": "Zum Anfang gesprungen",
-      "status_wrap_end": "Zum Ende gesprungen",
       "status_empty_query": "Zum Suchen tippen"
     },
     "alerts": {
@@ -240,4 +238,3 @@
     }
   }
 }
-

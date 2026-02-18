@@ -51,6 +51,8 @@ const api = {
   onInit,
   saveTaskList: (payload) => ipcRenderer.invoke('task-list-save', payload),
   deleteTaskList: (path) => ipcRenderer.invoke('task-list-delete', { path }),
+  selectTaskRowSnapshot: () => ipcRenderer.invoke('current-text-snapshot-select'),
+  loadTaskRowSnapshot: (snapshotRelPath) => ipcRenderer.invoke('current-text-snapshot-load', { snapshotRelPath }),
   listLibrary: () => ipcRenderer.invoke('task-library-list'),
   saveLibraryRow: (row, includeComment) => ipcRenderer.invoke('task-library-save', { row, includeComment }),
   deleteLibraryEntry: (texto) => ipcRenderer.invoke('task-library-delete', { texto }),

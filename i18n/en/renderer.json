@@ -67,7 +67,7 @@
       }
     },
     "tasks": {
-      "title": "Editor — Tasks",
+      "title": "toT — Tasks",
       "labels": {
         "name": "Name",
         "total": "TOTAL TIME",
@@ -98,6 +98,8 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "Select snapshot",
         "cancel": "Cancel",
         "yes": "Yes",
         "no": "No"
@@ -109,6 +111,7 @@
         "library_row_save": "Save to library",
         "library_row_load": "Load row",
         "library_row_delete": "Delete from library",
+        "snapshot_load": "Load selected snapshot from comment",
         "link_open": "Open link",
         "comment": "Add/edit comment"
       },
@@ -159,7 +162,7 @@
       "save": "Save"
     },
     "editor": {
-      "title": "Editor — Full text",
+      "title": "toT — Full text",
       "placeholder": "Type or paste here...",
       "calc_button": "CALCULATE",
       "calc_while_typing": "Calculate while typing",
@@ -172,13 +175,11 @@
       "input_aria": "Find in text",
       "prev": "Prev",
       "next": "Next",
-      "close": "Close",
+      "close": "🗙",
       "prev_title": "Previous match",
       "next_title": "Next match",
       "close_title": "Close find bar",
       "status_no_matches": "No matches",
-      "status_wrap_start": "Wrapped to start",
-      "status_wrap_end": "Wrapped to end",
       "status_empty_query": "Type to search"
     },
     "alerts": {
@@ -267,4 +268,3 @@
     }
   }
 }
-

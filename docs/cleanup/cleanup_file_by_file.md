@@ -8,6 +8,126 @@
 
 - Faltan (): 
 
+## Principios base de comportamiento (normativo)
+
+Estos principios definen el baseline del comportamiento de la app para evitar drift durante cleanup/refactor.
+Si una propuesta contradice estos principios, se debe justificar con evidencia de Nivel 4.
+
+### P1) Modelo de startup y frontera READY
+
+1. Objetivo de la frontera READY: mostrar la app temprano, pero mantenerla inerte hasta estabilizar startup.
+- La main window puede crearse antes de READY.
+- La UI principal queda bloqueada por splash overlay hasta READY del renderer.
+- El menu existe, pero su interactividad se habilita solo post-READY.
+
+2. PRE_READY y READY son estados reales de coordinación, no solo etiquetas de log.
+- Main autoriza READY solo cuando hay invariantes de main + handshake de renderer.
+- Invariantes de main: `languageResolved && menuInstalled && mainWindowCreated`.
+- Renderer pasa a READY solo cuando hay invariantes del renderer + `startup:ready` recibido.
+
+3. Acciones de usuario en PRE_READY deben estar guardadas.
+- En main: `guardMainUserAction(...)`.
+- En renderer: `guardUserAction(...)`.
+
+4. La secuencia de arranque dentro de `app.whenReady` es sensible a timing.
+- Orden actual inicializa storage, text state, settings y registro IPC antes del flujo de idioma/ventana principal.
+- No reordenar sin evidencia fuerte.
+
+### P2) Frontera de modularizacion main vs renderer
+
+1. `electron/main.js` es orquestador.
+- Debe concentrar ciclo de vida, ventanas, handshake de startup y wiring de modulos.
+- La logica de feature e IPC de dominio vive preferentemente en modulos delegados con `registerIpc(...)`.
+- `electron/main.js` puede mantener handlers de orquestacion/coordinacion transversal cuando corresponde.
+
+2. `public/renderer.js` es orquestador de UI.
+- Compone modulos de `public/js/*`, aplica bootstrap y conecta eventos/UI.
+- No duplicar aqui logica que ya tiene owner en modulos de `public/js/*` o en main.
+
+3. La comunicacion main<->renderer se hace por preload/API expuesta.
+- Superficie principal expuesta: `window.electronAPI`.
+- Mantener aislamiento (`contextIsolation:true`, `nodeIntegration:false`, `sandbox:true`) en ventanas.
+
+4. Patron modular de require/exposition (obligatorio).
+- Main process:
+  - `require(...)` de modulos al inicio del archivo.
+  - `main.js` orquesta; los modulos de feature exponen funciones explicitas (`init`, `registerIpc`, helpers) en lugar de registrar side effects al importar.
+  - La integracion entre modulos se hace por dependencias inyectadas y contratos pequenos (no acoplamiento oculto).
+- Preload:
+  - Expone una sola superficie `window.*API` por ventana via `contextBridge`.
+  - No exponer APIs ad hoc fuera de esa superficie ni mezclar responsabilidades de varias ventanas en un preload.
+- Renderer:
+  - Los modulos base de `public/js/*` exponen namespaces globales estables (por ejemplo `AppConstants`, `RendererI18n`, `Notify`).
+  - Los entrypoints (`renderer.js`, `editor.js`, etc.) consumen esas superficies; no redefinen ni mutan contratos globales.
+  - El orden de carga en HTML debe respetar proveedor primero y consumidor despues.
+
+### P3) Carga de ventanas HTML y estilo estable de modulos
+
+1. Cada ventana carga HTML local con preload dedicado.
+- `loadFile(...)` + preload especifico por ventana.
+
+2. Modelo de visibilidad: no es unico para todas las ventanas.
+- Modelo A (startup shell): `mainWin` visible temprano pero inerte hasta READY (splash + guardas).
+- Modelo B (apertura diferida): `show:false` + `ready-to-show` para ventanas que deben esperar primer paint estable.
+- `flotanteWin` es on-demand y fuera del boundary de startup; no esta obligado al modelo B.
+
+3. En HTML, el orden de scripts es contractual de hecho para modulos globales.
+- Cargar primero bases (`log.js`, `constants.js`, `notify.js`, `i18n.js`, etc.) y entrypoint al final.
+- Si un entrypoint depende de un modulo previo, explicitarlo y respetarlo (ej: `menu_actions.js` antes de `renderer.js`).
+
+### P4) Idioma y cadena de fallbacks
+
+1. `DEFAULT_LANG` es el unico hardcoded permitido para fallback final.
+- Debe estar sincronizado entre main y renderer.
+- No se permite introducir hardcoded de ultimo recurso en modulos de feature.
+
+2. Cadena de resolucion de idioma (obligatoria).
+- Prioridad 1: idioma persistido en settings (si es valido).
+- Prioridad 2: seleccion de usuario en ventana de idioma (primer arranque).
+- Prioridad 3 (last resort): si sigue unset, persistir `DEFAULT_LANG` y continuar startup.
+
+3. Distincion obligatoria de etapas.
+- Default bootstrap: valor temporal seguro mientras carga config/settings.
+- Idioma efectivo: valor real despues de resolver settings y listeners.
+- No mezclar ambos conceptos en logs, variables ni decisiones.
+
+4. Normalizacion y fallback deben tener owner canonico.
+- Main/settings canonicaliza tags y base.
+- RendererI18n resuelve bundles con fallback controlado al default.
+- Los modulos de feature consumen el resultado; no reimplementan normalizacion/fallback.
+
+5. Regla no-duplication para fallback.
+- No crear mini-normalizadores ni fallback chains locales por modulo.
+- Excepcion aceptada (bootstrap critico): lista minima de idiomas duplicada entre `electron/main.js` y `public/language_window.js`.
+- Esta excepcion no se trata como drift mientras se mantenga acotada a 2 idiomas fijos y sincronizados.
+
+6. Fallback con efecto persistente no puede ser silencioso.
+- Si un fallback cambia `settings.language`, debe quedar explicito y trazable.
+
+### P5) Owners de contrato (single source of truth)
+
+1. Limites y constantes duras: `electron/constants_main.js` (owner) + exposicion read-only por `get-app-config`.
+2. Defaults de renderer y consumo de config main: `public/js/constants.js` (owner del baseline renderer).
+3. Settings, normalizacion de idioma y broadcast `settings-updated`: `electron/settings.js` (owner).
+4. I18n renderer (`window.RendererI18n`): `public/js/i18n.js` (owner).
+5. Notificaciones UI (`window.Notify`): `public/js/notify.js` (owner).
+6. Estado de texto actual y su IPC: `electron/text_state.js` via delegacion desde main.
+
+### P6) Regla de cambio durante cleanup
+
+1. Si un cambio toca startup/READY, idioma/fallbacks o owners de contrato, tratarlo como cambio sensible.
+2. Si no se puede conservar contrato/timing, escalar a Nivel 4 con Evidence/Risk/Validation.
+3. No introducir duplicacion de politicas (normalizacion, fallbacks, limites, notify/i18n) en modulos feature.
+
+### P7) Idioma de diagnosticos runtime en `.js`
+
+1. En archivos `.js`, los mensajes tecnicos de warning/error deben escribirse solo en ingles.
+- Aplica a `log.warn|warnOnce|error|errorOnce` y `console.warn|error`.
+- No mezclar idiomas dentro del mismo modulo para diagnosticos tecnicos.
+
+2. Esta regla no aplica a texto user-facing.
+- Mensajes para usuario final siguen i18n/keys del producto.
+
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
 **0.1 Mapa de lectura**
@@ -198,9 +318,68 @@ Output requirement:
 
 ---
 
-## Nivel 3: Cambios de arquitectura/contrato (excepcional, con evidencia fuerte)
+## Nivel 3: Convención de modos de falla bridge (policy gate)
 
-Solo se entra aquí si el diagnóstico muestra un dolor real que no se resuelve con Nivel 1–2.
+* Objetivo: clasificar dependencias bridge/API en required startup vs optional capability vs best-effort side action.
+* Base obligatoria: `docs/cleanup/bridge_failure_mode_convention.md`.
+* Evitar drift entre módulos: no mezclar fail-fast y degrade sin clasificación explícita.
+* Si corregir el drift exige cambiar superficie pública o paths saludables (IPC surface, channel names, payload/return shapes, side effects, timing/ordering), escalar a Nivel 4 (no hacerlo aquí).
+* Permitido en este nivel: corregir handling de failure-mode (throw vs guard+degrade vs best-effort) para cumplir la convención, manteniendo intactos los paths saludables.
+
+**Contrato observable (healthy-path)** = comportamiento cuando el bridge está correctamente cableado; los miswire/failure modes son precisamente lo que este gate puede corregir si la convención lo clasifica distinto.
+
+### Prompt Nivel 3 para Codex:
+
+```
+# Target file: `<TARGET_FILE>`
+
+Level 3 — Bridge dependency failure-mode alignment (policy-driven).
+
+Objective:
+Align `<TARGET_FILE>` with the bridge failure-mode convention in
+`docs/cleanup/bridge_failure_mode_convention.md`.
+
+Hard constraints:
+
+* Preserve IPC surface, channel names, payload/return shapes, side effects, and healthy-path timing/ordering.
+* Do NOT reorder startup sequencing inside `app.whenReady` (if present).
+* Do NOT reorder IPC registration in a way that could change readiness/race behavior.
+* Scope edits to `<TARGET_FILE>` only.
+
+What to do:
+
+1. Inventory bridge dependencies in this file (e.g., `window.*API`, preload bridge methods, send-to-window paths).
+2. Classify each dependency/path as:
+
+   * required startup dependency,
+   * optional capability,
+   * best-effort side action.
+3. Check for drift against repo baseline and the convention file:
+
+   * inconsistent handling for the same dependency class,
+   * unclassified coexistence,
+   * silent fallbacks where a real fallback exists.
+4. Apply only the minimal local changes needed to comply with the convention (including changing throw/guard/best-effort handling when misclassified), while preserving healthy-path behavior/timing.
+5. If any fix would require changing IPC surface/channels/payloads/ordering or other healthy-path behavior, do NOT implement it here; report as Level 4 evidence.
+
+Output requirement:
+
+* Decision: CHANGED | NO CHANGE
+* If NO CHANGE: 3–8 bullets explaining why no safe Level 3 change was worth doing.
+* If CHANGED: for each non-trivial change:
+
+  * Gain: one sentence.
+  * Cost: one sentence.
+  * Validation: how to verify (manual check / smoke path / simple repo grep).
+* One explicit sentence confirming healthy-path contract/timing were preserved.
+* Do NOT output diffs.
+```
+
+---
+
+## Nivel 4: Cambios de arquitectura/contrato (excepcional, con evidencia fuerte)
+
+Solo se entra aquí si el diagnóstico muestra un dolor real que no se resuelve con Nivel 1–3.
 
 Ejemplos típicos:
 
@@ -209,86 +388,99 @@ Ejemplos típicos:
 * cambiar API pública o semántica de retorno,
 * cambios con impacto en múltiples consumidores.
 
-**Requisito para Nivel 3:**
+**Requisito para Nivel 4:**
 
 * evidencia directa en el código (o bug reproducible),
 * riesgo explícito,
 * plan de validación claro.
 
-### Prompt Nivel 3 para Codex:
+### Prompt Nivel 4 para Codex:
+
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 3 — Architecture / contract changes (exceptional; evidence-driven).
+Level 4 — Architecture / contract changes (exceptional; evidence-driven).
 
 Objective:
-Only if there is strong evidence of real pain that cannot be addressed in Levels 1–2, propose and (if justified) implement a minimal architecture/contract change that measurably improves the situation.
+Only if there is strong evidence of real pain that cannot be addressed in Levels 1–3, propose and (if justified) implement a minimal architecture/contract change that measurably improves the situation.
 
 Entry criteria (must be satisfied to change code):
-- Direct evidence in code OR a reproducible bug/issue:
-  - point to exact call sites / usage patterns in the repo, OR
-  - provide minimal repro steps that demonstrate the pain.
-- Explicit risk assessment: what could break and where.
-- Clear validation plan: how to confirm correctness after the change.
+
+* Direct evidence in code OR a reproducible bug/issue:
+
+  * point to exact call sites / usage patterns in the repo, OR
+  * provide minimal repro steps that demonstrate the pain.
+* Explicit risk assessment: what could break and where.
+* Clear validation plan: how to confirm correctness after the change.
 
 Process:
-1) Inspect the repo and identify whether `<TARGET_FILE>` has a real pain point that requires Level 3, e.g.:
-   - duplicated responsibility across modules,
-   - unstable/ambiguous contract (IPC payloads/returns),
-   - sync/async mismatch causing issues,
-   - multiple consumers depending on inconsistent semantics,
-   - cross-module coupling causing bugs or maintenance pain.
-2) If NO strong evidence exists:
-   - Do NOT change code.
-   - Output “Decision: NO CHANGE (no Level 3 justified)” and list the evidence you checked (file + identifier anchors).
-3) If evidence DOES exist:
-   - Apply the smallest possible Level 3 change that resolves it.
-   - Update all affected consumers consistently (only if required by the change).
-   - Avoid broad rewrites and unnecessary architecture.
+
+1. Inspect the repo and identify whether `<TARGET_FILE>` has a real pain point that requires Level 4, e.g.:
+
+   * duplicated responsibility across modules,
+   * unstable/ambiguous contract (IPC payloads/returns),
+   * sync/async mismatch causing issues,
+   * multiple consumers depending on inconsistent semantics,
+   * cross-module coupling causing bugs or maintenance pain.
+2. If NO strong evidence exists:
+
+   * Do NOT change code.
+   * Output “Decision: NO CHANGE (no Level 4 justified)” and list the evidence you checked (file + identifier anchors).
+3. If evidence DOES exist:
+
+   * Apply the smallest possible Level 4 change that resolves it.
+   * Update all affected consumers consistently (only if required by the change).
+   * Avoid broad rewrites and unnecessary architecture.
 
 Anti “refactor that makes it worse” rule:
 If a change:
-- introduces more concepts than it removes;
-- increases indirection without reducing real pain;
-- forces readers to read more to understand the same behavior;
+
+* introduces more concepts than it removes;
+* increases indirection without reducing real pain;
+* forces readers to read more to understand the same behavior;
   then discard it or scale it back.
 
 Mandatory Gate output (for each non-trivial change you make):
-- Evidence: one sentence + where it appears (file(s)/function(s) or repro steps).
-- Risk: one sentence.
-- Validation: how to verify (manual smoke path, repo grep, or a concrete runtime check).
+
+* Evidence: one sentence + where it appears (file(s)/function(s) or repro steps).
+* Risk: one sentence.
+* Validation: how to verify (manual smoke path, repo grep, or a concrete runtime check).
 
 You may inspect the repo as needed. If you implement anything, ensure the repo builds/runs and the app’s IPC paths still work.
 
 Output requirement:
-- The report must include:
-  - Decision: CHANGED | NO CHANGE
-  - If NO CHANGE: 3–10 bullets of evidence checked (anchors).
-  - If CHANGED: list each non-trivial change with Evidence/Risk/Validation, and explicitly confirm the observable contract/timing were preserved (or state what contract changed and why it was required).
-- Do NOT output diffs.
+
+* The report must include:
+
+  * Decision: CHANGED | NO CHANGE
+  * If NO CHANGE: 3–10 bullets of evidence checked (anchors).
+  * If CHANGED: list each non-trivial change with Evidence/Risk/Validation, and explicitly confirm the observable contract/timing were preserved (or state what contract changed and why it was required).
+* Do NOT output diffs.
 ```
 
 ---
 
-## Nivel 4: Logs (después de estabilizar el flujo)
+## Nivel 5: Logs (después de estabilizar el flujo)
 
 * Obligatorio: revisar la política explícita de los archivos `log.js` (se ven como `electron_log.js` y `public_js_log.js` en tu carpeta raíz).
 * Basarse en la lógica aplicada a archivos ya revisados (p.ej. `main.js`).
 * Ajustar nivel por recuperabilidad.
+* En `.js`, warnings/errors tecnicos en ingles unicamente.
 * Mensajes cortos y accionables, consistentes con el estilo del proyecto.
 * No dejar ningún fallback silencioso.
 
-### Prompt Nivel 4 para Codex:
+### Prompt Nivel 5 para Codex:
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 4 — Logs (policy-driven tuning after flow stabilization).
+Level 5 — Logs (policy-driven tuning after flow stabilization).
 
 Objective:
 Align logging in `<TARGET_FILE>` with the project logging policy and established style, so that:
 - Levels match recoverability (error vs warn vs info vs debug),
 - Fallbacks are never silent (per policy),
 - High-frequency repeatable events where additional occurrences add no new diagnostic value are deduplicated (use warnOnce/errorOnce),
+- Developer diagnostics in `.js` warning/error logs are English-only (non-UI diagnostics),
 - Messages are short, actionable, and consistent with the repo (see `electron/main.js` patterns).
 
 Default rule (do not force changes):
@@ -298,6 +490,7 @@ Hard constraints:
 - Do NOT change observable runtime behavior/contract (public API, IPC surface, channel names, payload/return shapes, side effects, timing/ordering).
 - Changes must be limited to logging (levels/messages/dedupe) plus minimal local structure strictly required to support that (e.g., introducing a stable key constant).
 - Avoid over-logging: do not add new logs on healthy/high-frequency paths.
+- Keep warning/error diagnostic message text in `.js` files English-only (non-user-facing logs).
 - Call-site style (policy): use `log.warn|warnOnce|error|errorOnce` directly; do NOT add/keep local aliases/wrappers (e.g., `warnOnceRenderer`). If a helper needs it, pass the method reference (e.g., `{ warnOnce: log.warnOnce }`) or pass `log`.
 
 Reference material (inspect before editing):
@@ -366,7 +559,7 @@ Output requirement:
 
 ---
 
-## Nivel 5: Comentarios
+## Nivel 6: Comentarios
 
 * Ajustar comentarios para que sirvan de orientación cualquier persona con pocos conocimientos técnicos.
 * Revisar comentarios y borrarlos, reescribirlos o agregar otros si son aporte real.
@@ -376,11 +569,11 @@ Output requirement:
   - marcador de “End of …” al final.
 * Todos los comentarios deben ser en inglés (pero sin traducir los nombres o claves que usa el código, aunque estén en otro idioma).
 
-### Prompt Nivel 5 para Codex:
+### Prompt Nivel 6 para Codex:
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 5 — Comments (reader-oriented, `electron/main.js` style).
+Level 6 — Comments (reader-oriented, `electron/main.js` style).
 
 Objective:
 Improve comments so the file is easier to understand for a new contributor with limited context, while keeping comments genuinely useful (intent/constraints, not obvious syntax). Follow the project’s comment style as in `electron/main.js`:
@@ -431,19 +624,19 @@ Output requirement:
 ```
 ---
 
-## Nivel 6: Revision final
+## Nivel 7: Revision final
 
 * Eliminar legacy o resabios tras refactorizaciones o cualquier cambio en la app.
 * Revisar que todo el código haya quedado coherente.
 
-### Prompt Nivel 6 para Codex:
+### Prompt Nivel 7 para Codex:
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 6 — Final review (coherence + leftover cleanup after refactors).
+Level 7 — Final review (coherence + leftover cleanup after refactors).
 
 Objective:
-Do a careful final pass to ensure `<TARGET_FILE>` is coherent end-to-end after Levels 1–5:
+Do a careful final pass to ensure `<TARGET_FILE>` is coherent end-to-end after Levels 1–6:
 - remove leftovers / dead code / stale patterns introduced by earlier refactors;
 - ensure internal consistency (naming, control flow, invariants, helper usage);
 - ensure logging API usage matches the repo policy (no signature drift);
@@ -451,7 +644,7 @@ Do a careful final pass to ensure `<TARGET_FILE>` is coherent end-to-end after L
 
 Constraints:
 - Preserve observable behavior/contract as-is (public API, IPC surface, payload/return shapes, side effects, timing/ordering).
-- Avoid architecture changes and cross-module rewrites. If a change affects consumers, it is Level 3 and must NOT be done here.
+- Avoid architecture changes and cross-module rewrites. If a change affects consumers, it is Level 4 and must NOT be done here.
 - Prefer minimal edits with clear local payoff. Default to "no change" if uncertain.
 - Apply changes ONLY to `<TARGET_FILE>`.
 
@@ -469,7 +662,7 @@ What to do:
      inconsistent return shapes, redundant branching.
 2) Contract consistency check:
    - Verify IPC handlers and exports still match actual call sites and expected payload/return shapes.
-   - If you find a mismatch, only fix it if it can be done locally WITHOUT changing the contract; otherwise report it as Level 3 evidence (no code change).
+   - If you find a mismatch, only fix it if it can be done locally WITHOUT changing the contract; otherwise report it as Level 4 evidence (no code change).
 3) Logging API consistency check:
    - Verify each log call matches the logging API (method names + argument shapes) as defined in `electron/log.js` or `public/js/log.js`.
    - If you detect signature drift (e.g., passing a dedupe key to a non-once method), correct it in the smallest way that preserves intended logging behavior and avoids spam.
@@ -486,16 +679,16 @@ Mandatory gate output (for each non-trivial change you apply):
 Output requirement:
 - Include: `Decision: CHANGED | NO CHANGE`
   - If CHANGED: list each non-trivial change with Change/Gain/Cost/Risk/Validation.
-  - If NO CHANGE: “No Level 6 changes justified” + 3–8 bullets of what you checked (anchors).
+  - If NO CHANGE: “No Level 7 changes justified” + 3–8 bullets of what you checked (anchors).
 - Include one explicit sentence confirming the observable contract/timing were preserved.
 - Do NOT output diffs.
 ```
 
 ---
 
-## Nivel 7: Smoke test (human-run; minimal)
+## Nivel 8: Smoke test (human-run; minimal)
 
-**Objetivo:** verificar rápidamente que los cambios de L1–L6 no rompieron el contrato observable del archivo.
+**Objetivo:** verificar rápidamente que los cambios de L1–L7 no rompieron el contrato observable del archivo.
 
 **Regla:** NO usar Codex en este nivel. El smoke es humano y se basa en flujos normales de la app. Referencia base: `docs/test_suite.md` (subset “Release smoke”), adaptando 6–15 pasos segun las responsabilidades del archivo.
 
@@ -508,16 +701,16 @@ Output requirement:
 5) Cerrar y reabrir la app si el modulo participa en boot o en persistencia.
 
 **Evidencia (obligatoria, simple):**
-En `docs/cleanup/_evidence/issue64_repo_cleanup.md`, bajo `### L7`, registrar:
+En `docs/cleanup/_evidence/issue64_repo_cleanup.md`, bajo `### L8`, registrar:
 - Resultado: PASS | FAIL | PENDING
 - Lista de pasos efectivamente ejecutados (6–15 bullets max).
 - Nota corta si hubo algun log anomalo (solo lo relevante).
 
 ---
 
-## Nivel 8: Debug / triage (solo si falla el smoke)
+## Nivel 9: Debug / triage (solo si falla el smoke)
 
-* Solo si falla un paso del Nivel 7: triage guiado por evidencia para aislar causa raíz y proponer la siguiente acción (sin modificar código en este nivel).
+* Solo si falla un paso del Nivel 8: triage guiado por evidencia para aislar causa raíz y proponer la siguiente acción (sin modificar código en este nivel).
 
 ---
 
@@ -826,6 +1019,7 @@ Output requirement:
 * Solo `console.*` (o el mecanismo console-based que ya exista en el archivo).
 * No agregar logs en paths sanos/de alta frecuencia.
 * Dedupe solo si es realmente spameable y no aporta más (con mecanismo local estable; sin keys dinámicas basadas en input).
+* Mensajes tecnicos de warning/error en `.js` solo en ingles (texto user-facing queda fuera de esta regla).
 
 **Prompt Codex (LP3 logs):**
 ```
@@ -838,6 +1032,7 @@ Align logging with preload constraints and repo style:
 - Console-based only (no `window.getLogger`, no `require('./log')`, no new deps).
 - Fallbacks should not be silently problematic, but avoid noise on healthy/high-frequency paths.
 - Deduplicate only when repeated occurrences add no diagnostic value; use a stable local mechanism (e.g., Set) with stable keys (no user input in keys).
+- Keep warning/error diagnostics in `.js` English-only (non-user-facing logs).
 
 Hard constraints:
 - Do NOT change contract/timing (exposed keys/semantics and IPC).

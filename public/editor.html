@@ -5,29 +5,13 @@
   <meta charset="utf-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
 
-  <title>Editor — Texto completo</title>
+  <title>toT — Texto completo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="editor.css" />
 </head>
 <body>
-  <div id="findBar" class="find-bar" role="search" aria-label="Find in text" hidden>
-    <label class="find-label" for="findInput">Find</label>
-    <input id="findInput" type="search" autocomplete="off" spellcheck="false" placeholder="Find..." />
-    <div class="find-meta">
-      <span id="findCount" class="find-count" aria-live="polite"></span>
-      <span id="findStatus" class="find-status" aria-live="polite"></span>
-    </div>
-    <div class="find-actions">
-      <button id="findPrev" type="button">Prev</button>
-      <button id="findNext" type="button">Next</button>
-      <button id="findClose" type="button">Close</button>
-    </div>
-  </div>
   <!-- The textarea takes up all the available space -->
   <div class="editor-wrap">
-    <div id="findHighlightOverlay" class="find-highlight-overlay" aria-hidden="true" hidden>
-      <div id="findHighlightLayer" class="find-highlight-layer"></div>
-    </div>
     <textarea id="editorArea" placeholder="Escribe o pega aquí..."></textarea>
   </div>
 

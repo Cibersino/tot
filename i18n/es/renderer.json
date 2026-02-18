@@ -67,7 +67,7 @@
       }
     },
     "tasks": {
-      "title": "Editor — Tareas",
+      "title": "toT — Tareas",
       "labels": {
         "name": "Nombre",
         "total": "TIEMPO TOTAL",
@@ -98,6 +98,8 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
+        "select_snapshot": "Seleccionar snapshot",
         "cancel": "Cancelar",
         "yes": "Sí",
         "no": "No"
@@ -109,6 +111,7 @@
         "library_row_save": "Guardar en biblioteca",
         "library_row_load": "Cargar fila",
         "library_row_delete": "Eliminar de biblioteca",
+        "snapshot_load": "Cargar snapshot seleccionado en el comentario",
         "link_open": "Abrir enlace",
         "comment": "Agregar/editar comentario"
       },
@@ -159,7 +162,7 @@
       "save": "Guardar"
     },
     "editor": {
-      "title": "Editor — Texto completo",
+      "title": "toT — Texto completo",
       "placeholder": "Escribe o pega aquí...",
       "calc_button": "CALCULAR",
       "calc_while_typing": "Calcular mientras escribe",
@@ -172,13 +175,11 @@
       "input_aria": "Buscar en el texto",
       "prev": "Anterior",
       "next": "Siguiente",
-      "close": "Cerrar",
+      "close": "🗙",
       "prev_title": "Coincidencia anterior",
       "next_title": "Coincidencia siguiente",
       "close_title": "Cerrar barra de busqueda",
       "status_no_matches": "Sin coincidencias",
-      "status_wrap_start": "Volvió al inicio",
-      "status_wrap_end": "Volvió al final",
       "status_empty_query": "Escribe para buscar"
     },
     "alerts": {
@@ -267,4 +268,3 @@
     }
   }
 }
-
