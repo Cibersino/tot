@@ -59,7 +59,7 @@ Checklist de observabilidad (resumen):
 - No silent fallback cuando hay fallback real.
 - Si el fallback/miss puede repetirse y no aporta, usar dedupe con key estable y acotada.
 - No usar datos dinámicos no acotados en la key.
-- En `.js`, diagnósticos dev (warn/error) deben ser **English-only**; UI sigue i18n.
+- En `.js`, diagnósticos dev (logs warn/error y errores lanzados con `throw`) deben ser **English-only**; los nombres propios/identificadores deben mantenerse verbatim (ej.: `modoConteo`, `acerca_de`, `setModeConteo`, keys i18n, channels IPC, object keys, constantes, IDs internos); UI sigue i18n.
 
 ---
 
@@ -209,7 +209,8 @@ Output requirement (no diffs):
   * One explicit sentence confirming failure-path handling was aligned to the convention.
 
 * Logging notes:
-  * Dev diagnostics in `.js` must be English-only (non-user-facing).
+  * Dev diagnostics in `.js` must be English-only (non-user-facing), including warning/error logs and thrown errors (`throw new Error(...)`, `throw ...`).
+  * Proper names / identifiers must remain verbatim inside those diagnostics (function/method names, i18n keys, config/object keys, IPC channel names, constants, internal IDs such as `modoConteo`, `acerca_de`, `setModeConteo`).
   * Dedupe keys must be stable/bounded (no user input or unbounded dynamic data in keys).
 
 Final response rule:
@@ -290,12 +291,16 @@ What changed:
 - Replaced non-fatal handling for missing `window.electronAPI` with a hard throw in `armIpcSubscriptions`.
 - Kept existing IPC registration order unchanged; only missing-contract failure-path behavior changed.
 - Re-checked all previously marked required startup dependencies; they are explicit fail-fast (`throw`) paths.
+- Aligned pass-through `window.electronAPI` ledger entries with the new bootstrap invariant (missing object now hard-aborts before those paths).
 
 Updated ledger rows (affected IDs only):
 
 | ID | Location anchor | Bridge member/path | Class | Current handling | Required handling | Action taken | Dedupe key (if any) |
 |----|------------------|--------------------|-------|------------------|-------------------|--------------|---------------------|
 | R15 | startup readiness subscription (`L654`) startup/rare | `window.electronAPI.onStartupReady` | required startup dependency | Pass 1 state: missing listener emitted `errorOnce` and left renderer pre-READY (no hard abort). Pass 2 state: missing listener or missing `electronAPI` throws and aborts bootstrap. | Hard abort invalid startup path with clear diagnostic. | Kept class as required and enforced true fail-fast via `throw` in both missing `onStartupReady` and missing `electronAPI` branches. | n/a |
+| R41 | preset helper payloads (`L486`, `L519`, `L633`, `L1290`) startup+interactive | `window.electronAPI` (pass-through object to preset helper contracts) | required startup dependency (bootstrap-gated invariant) | Pass 1 row marked optional pass-through. Current code now hard-aborts in `armIpcSubscriptions` if `window.electronAPI` is missing, so this path is only reachable after required bootstrap invariant is satisfied. | Hard abort invalid startup path; downstream method-level capabilities may still be optional. | Reclassified evidence for consistency with pass 2 fail-fast behavior (no additional code change). | n/a |
+| R42 | info-modal link binder payload (`L1110`) interactive/rare | `window.electronAPI` (pass-through to `bindInfoModalLinks`) | required startup dependency (bootstrap-gated invariant) | Pass 1 row treated this pass-through as optional. Current behavior aborts before modal wiring if `window.electronAPI` is absent. | Hard abort invalid startup path; preserve healthy-path modal behavior. | Reclassified evidence for consistency with pass 2 fail-fast behavior (no additional code change). | n/a |
+| R43 | crono controller payload (`L1852`) startup/rare | `window.electronAPI` (pass-through to `RendererCrono` controller) | required startup dependency (bootstrap-gated invariant) | Pass 1 row treated this pass-through as optional. Current behavior aborts before normal startup completion when `window.electronAPI` is absent. | Hard abort invalid startup path; keep existing controller semantics when bridge is valid. | Reclassified evidence for consistency with pass 2 fail-fast behavior (no additional code change). | n/a |
 
 Confirmations:
 - Healthy-path contract/timing preserved (no IPC surface/channel/payload/ordering changes in valid bridge wiring).
