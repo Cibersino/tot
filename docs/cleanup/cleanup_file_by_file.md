@@ -121,8 +121,9 @@ Si una propuesta contradice estos principios, se debe justificar con evidencia d
 
 ### P7) Idioma de diagnosticos runtime en `.js`
 
-1. En archivos `.js`, los mensajes tecnicos de warning/error deben escribirse solo en ingles.
-- Aplica a `log.warn|warnOnce|error|errorOnce` y `console.warn|error`.
+1. En archivos `.js`, los mensajes tecnicos de diagnostico (logs warning/error y errores lanzados con `throw`) deben escribirse solo en ingles.
+- Aplica a `log.warn|warnOnce|error|errorOnce`, `console.warn|error`, `throw new Error(...)` y `throw ...`.
+- Los nombres propios/identificadores deben mantenerse verbatim aunque no esten en ingles (ej.: `modoConteo`, `acerca_de`, `setModeConteo`, keys i18n, channels IPC, object keys, constantes, IDs internos).
 - No mezclar idiomas dentro del mismo modulo para diagnosticos tecnicos.
 
 2. Esta regla no aplica a texto user-facing.
@@ -320,11 +321,22 @@ Output requirement:
 
 ## Nivel 3: Convención de modos de falla bridge (policy gate)
 
-* Objetivo: clasificar dependencias bridge/API en required startup vs optional capability vs best-effort side action.
-* Base obligatoria: `docs/cleanup/bridge_failure_mode_convention.md`.
-* Evitar drift entre módulos: no mezclar fail-fast y degrade sin clasificación explícita.
-* Si corregir el drift exige cambiar superficie pública o paths saludables (IPC surface, channel names, payload/return shapes, side effects, timing/ordering), escalar a Nivel 4 (no hacerlo aquí).
-* Permitido en este nivel: corregir handling de failure-mode (throw vs guard+degrade vs best-effort) para cumplir la convención, manteniendo intactos los paths saludables.
+* Objetivo: **inventariar y clasificar exhaustivamente** (1:1) todas las dependencias bridge/API usadas por el archivo en: **required startup dependency** vs **optional capability** vs **best-effort side action**, y **enforzar** el handling correcto según la convención.
+* Base obligatoria: `docs/cleanup/bridge_failure_mode_convention.md` (matriz + checklist).
+* Evitar drift entre módulos: no mezclar fail-fast, degrade y drop sin **clasificación explícita por call-site**.
+* Política de logging obligatoria en este nivel: mantener el mecanismo de logger del contexto (`Log.get`/`window.getLogger` en main/renderer, `console` en preload) y estilo de call-site directo (`log.warn|warnOnce|error|errorOnce`, sin wrappers/aliases locales).
+* **PASS (requisito mínimo de auditoría por archivo):**
+  - Existe un **Bridge Dependency Ledger** (tabla) que enumera **todas** las dependencias/paths bridge del archivo (sin “for example”, sin “other calls exist”).
+  - Cada entrada del ledger tiene **una** clasificación (required/optional/best-effort) + justificación breve.
+  - Cada entrada queda como: **(a)** “ya compliant”, **(b)** “corregida en Nivel 3”, o **(c)** “Level 4 evidence” con motivo **concreto** (ver regla abajo).
+* Permitido y esperado en este nivel: corregir handling de failure-mode (throw vs guard+degrade vs best-effort drop) **en todos los call-sites bridge del archivo**, manteniendo intactos los paths saludables.
+* “Minimal” aquí significa: **cambio mínimo por sitio** (y helpers locales pequeños si reducen duplicación), pero la **cobertura debe ser completa** (no cherry-picking).
+* Escalar a Nivel 4 **solo** si corregir un drift exige cambiar **contrato observable (healthy-path)** o requiere cambios cross-file:
+  - IPC surface, channel names, payload/return shapes,
+  - side effects o semántica cuando el bridge está correctamente cableado,
+  - timing/ordering del healthy-path,
+  - o reordenamientos de startup/registro IPC.
+  Cambios de **failure-path** (miswire/missing/invalid bridge) **NO** son, por sí solos, “Level 4”.
 
 **Contrato observable (healthy-path)** = comportamiento cuando el bridge está correctamente cableado; los miswire/failure modes son precisamente lo que este gate puede corregir si la convención lo clasifica distinto.
 
@@ -333,46 +345,96 @@ Output requirement:
 ```
 # Target file: `<TARGET_FILE>`
 
-Level 3 — Bridge dependency failure-mode alignment (policy-driven).
+Level 3 — Bridge dependency failure-mode alignment (policy-driven, enforcement gate).
 
 Objective:
-Align `<TARGET_FILE>` with the bridge failure-mode convention in
-`docs/cleanup/bridge_failure_mode_convention.md`.
+Fully align `<TARGET_FILE>` with the bridge failure-mode convention in
+`docs/cleanup/bridge_failure_mode_convention.md` by producing a COMPLETE bridge inventory + classification
+AND enforcing the correct failure-mode handling for EVERY bridge dependency/path in this file.
 
 Hard constraints:
 
-* Preserve IPC surface, channel names, payload/return shapes, side effects, and healthy-path timing/ordering.
+* Preserve IPC surface, channel names, payload/return shapes, side effects, and HEALTHY-PATH timing/ordering.
 * Do NOT reorder startup sequencing inside `app.whenReady` (if present).
 * Do NOT reorder IPC registration in a way that could change readiness/race behavior.
+* Keep the logger mechanism defined by runtime context (`electron/log.js` and `public/js/log.js` headers): main/renderer keep repo logger usage; preload stays console-based.
+* Call-site style is mandatory: use `log.warn|warnOnce|error|errorOnce` directly; do not add local wrappers/aliases for these methods.
 * Scope edits to `<TARGET_FILE>` only.
+* You MAY change failure-path behavior (miswire/missing/invalid bridge) to comply with the convention.
+  Do NOT claim “changes failure timing/behavior” as Level 4 evidence unless HEALTHY-PATH changes too.
 
-What to do:
+What to do (NO SKIPPING):
 
-1. Inventory bridge dependencies in this file (e.g., `window.*API`, preload bridge methods, send-to-window paths).
-2. Classify each dependency/path as:
+1. Exhaustive inventory:
+   Enumerate EVERY bridge dependency/path used in this file (no “for example”):
 
-   * required startup dependency,
-   * optional capability,
-   * best-effort side action.
-3. Check for drift against repo baseline and the convention file:
+   * all `window.*API` / preload bridge members consumed here,
+   * any send-to-window / IPC-adjacent paths invoked from this module.
+     For each entry capture:
+   * Location anchor (function/section + line or nearest unique snippet),
+   * Bridge member/path,
+   * Current failure behavior (throw/guard/silent/try-catch/log level/dedupe),
+   * Frequency class (startup/rare vs interactive vs potentially high-frequency).
+
+2. Classification (1:1):
+   For EACH inventory entry, assign exactly ONE:
+
+   * required startup dependency
+   * optional capability
+   * best-effort side action
+     Add a one-sentence justification grounded in the convention.
+
+3. Drift check:
+   Identify ALL drift:
 
    * inconsistent handling for the same dependency class,
    * unclassified coexistence,
-   * silent fallbacks where a real fallback exists.
-4. Apply only the minimal local changes needed to comply with the convention (including changing throw/guard/best-effort handling when misclassified), while preserving healthy-path behavior/timing.
-5. If any fix would require changing IPC surface/channels/payloads/ordering or other healthy-path behavior, do NOT implement it here; report as Level 4 evidence.
+   * silent fallbacks where a real fallback exists,
+   * missing dedupe where repetition adds no diagnostic value,
+   * mis-leveled logging (noise on hot paths vs missing diagnostics).
 
-Output requirement:
+4. Enforcement (required):
+   Apply minimal local changes so that EVERY inventory entry’s handling matches the decision matrix:
+
+   * Required -> fail fast (do not continue invalid init path; clear diagnostic)
+   * Optional -> guard + continue + deduplicated diagnostic (stable bounded key; no user input in key)
+   * Best-effort -> drop without breaking flow + deduplicated “failed (ignored)” diagnostic when a real intended action is dropped
+     “Minimal” means minimal per-site change; coverage must be complete (no cherry-picking).
+
+5. Level 4 evidence (strict boundary):
+   Mark something as Level 4 ONLY if fixing it would change HEALTHY-PATH behavior (when bridge is correctly wired)
+   or requires cross-file changes. If you claim Level 4, state EXACTLY:
+
+   * what healthy-path behavior would change (channels/payloads/ordering/side effects),
+   * why it cannot be fixed locally in this file without changing contract/timing.
+
+Output requirement (no diffs):
 
 * Decision: CHANGED | NO CHANGE
-* If NO CHANGE: 3–8 bullets explaining why no safe Level 3 change was worth doing.
+
+  * NO CHANGE is acceptable ONLY if the ledger shows every entry is already compliant or correctly escalated.
+
+* Provide a “Bridge Dependency Ledger” table (ALWAYS, both CHANGED and NO CHANGE) with columns:
+  [ID | Location anchor | Bridge member/path | Class | Current handling | Required handling | Action taken | Dedupe key (if any)]
+
 * If CHANGED: for each non-trivial change:
 
   * Gain: one sentence.
   * Cost: one sentence.
   * Validation: how to verify (manual check / smoke path / simple repo grep).
-* One explicit sentence confirming healthy-path contract/timing were preserved.
-* Do NOT output diffs.
+
+* Confirmations:
+
+  * One explicit sentence confirming healthy-path contract/timing were preserved.
+  * One explicit sentence confirming failure-path handling was aligned to the convention.
+
+* Logging notes:
+
+  * Dev diagnostics in `.js` must be English-only (non-user-facing), including warning/error logs and thrown errors (`throw new Error(...)`, `throw ...`).
+  * Proper names / identifiers must remain verbatim inside those diagnostics (function/method names, i18n keys, config/object keys, IPC channel names, constants, internal IDs).
+  * Dedupe keys must be stable/bounded (no user input or unbounded dynamic data in keys).
+  * Use `warnOnce/errorOnce` only for high-frequency repeatable misses/failures where repetition adds no diagnostic value; otherwise use `warn/error`.
+  * If a fallback is BOOTSTRAP-only, the message or explicit dedupe key must start with `BOOTSTRAP:` and that path must become unreachable after init.
 ```
 
 ---

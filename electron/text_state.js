@@ -184,8 +184,8 @@ function init(options) {
     }
     if (!hasTextProp && !isRawString && typeof raw !== 'undefined') {
       log.warnOnce(
-        'text_state.init.unexpectedShape',
-        'Current text file has unexpected shape; using empty string.'
+        'BOOTSTRAP:text_state.init.unexpectedShape',
+        'BOOTSTRAP: Current text file has unexpected shape; using empty string.'
       );
     }
 
@@ -223,6 +223,10 @@ function init(options) {
  * Broadcasts updates to main/editor windows (best-effort).
  */
 function registerIpc(ipcMain, windowsResolver) {
+  if (!ipcMain || typeof ipcMain.handle !== 'function') {
+    throw new Error('[text_state] registerIpc requires ipcMain');
+  }
+
   if (typeof windowsResolver === 'function') {
     getWindows = windowsResolver;
   } else if (windowsResolver && typeof windowsResolver === 'object') {

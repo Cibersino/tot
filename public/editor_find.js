@@ -14,6 +14,9 @@
 // =============================================================================
 // Logger and required runtime dependencies
 // =============================================================================
+if (typeof window.getLogger !== 'function') {
+  throw new Error('[editor-find] window.getLogger unavailable; cannot continue.');
+}
 
 const log = window.getLogger('editor-find');
 log.debug('Editor find window starting...');
@@ -162,7 +165,11 @@ async function pushQuery() {
   try {
     await findApi.setQuery(inputEl.value || '');
   } catch (err) {
-    log.error('Error sending find query to main process:', err);
+    log.errorOnce(
+      'editor-find.setQuery.failed',
+      'Error sending find query to main process:',
+      err
+    );
   }
 }
 

@@ -16,6 +16,9 @@
 // Logger / globals
 // =============================================================================
 
+if (typeof window.getLogger !== 'function') {
+  throw new Error('[flotante]window.getLogger unavailable; cannot continue');
+}
 const log = window.getLogger('flotante');
 
 log.debug('Flotante starting...');
@@ -50,20 +53,19 @@ if (!btnReset) {
 }
 
 if (!window.flotanteAPI) {
-  log.error('flotanteAPI missing; IPC bridge unavailable.');
-} else {
-  if (typeof window.flotanteAPI.onState !== 'function') {
-    log.warn('flotanteAPI.onState missing; state updates disabled (ignored).');
-  }
-  if (typeof window.flotanteAPI.getSettings !== 'function') {
-    log.warn('flotanteAPI.getSettings missing; using default language (ignored).');
-  }
-  if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
-    log.warn('flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).');
-  }
-  if (typeof window.flotanteAPI.sendCommand !== 'function') {
-    log.error('flotanteAPI.sendCommand missing; controls may fail.');
-  }
+  throw new Error('[flotante] flotanteAPI unavailable; cannot continue');
+}
+if (typeof window.flotanteAPI.onState !== 'function') {
+  throw new Error('[flotante] flotanteAPI.onState unavailable; cannot continue');
+}
+if (typeof window.flotanteAPI.sendCommand !== 'function') {
+  throw new Error('[flotante] flotanteAPI.sendCommand unavailable; cannot continue');
+}
+if (typeof window.flotanteAPI.getSettings !== 'function') {
+  log.warn('flotanteAPI.getSettings missing; using default language (ignored).');
+}
+if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
+  log.warn('flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).');
 }
 
 // =============================================================================
@@ -109,12 +111,10 @@ function renderState(state) {
 // Bridge integration (flotanteAPI)
 // =============================================================================
 
-if (window.flotanteAPI && typeof window.flotanteAPI.onState === 'function') {
-  // onState now listens to 'crono-state' (main)
-  window.flotanteAPI.onState((state) => {
-    try { renderState(state); } catch (err) { log.error(err); }
-  });
-}
+// onState now listens to 'crono-state' (main)
+window.flotanteAPI.onState((state) => {
+  try { renderState(state); } catch (err) { log.error(err); }
+});
 
 async function applyFlotanteTranslations(lang) {
   const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
@@ -150,7 +150,7 @@ async function applyFlotanteTranslations(lang) {
 (async () => {
   try {
     let lang = DEFAULT_LANG;
-    if (window.flotanteAPI && typeof window.flotanteAPI.getSettings === 'function') {
+    if (typeof window.flotanteAPI.getSettings === 'function') {
       try {
         const settings = await window.flotanteAPI.getSettings();
         if (settings && settings.language) lang = settings.language;
@@ -165,7 +165,7 @@ async function applyFlotanteTranslations(lang) {
   }
 })();
 
-if (window.flotanteAPI && typeof window.flotanteAPI.onSettingsChanged === 'function') {
+if (typeof window.flotanteAPI.onSettingsChanged === 'function') {
   window.flotanteAPI.onSettingsChanged((settings) => {
     const nextLang = settings && settings.language ? settings.language : '';
     if (!nextLang || nextLang === translationsLoadedFor) return;
@@ -181,20 +181,20 @@ if (window.flotanteAPI && typeof window.flotanteAPI.onSettingsChanged === 'funct
 
 // Buttons: send commands to main
 btnToggle.addEventListener('click', () => {
-  if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'toggle' });
+  window.flotanteAPI.sendCommand({ cmd: 'toggle' });
 });
 btnReset.addEventListener('click', () => {
-  if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'reset' });
+  window.flotanteAPI.sendCommand({ cmd: 'reset' });
 });
 
 // Local keyboard: when the window has focus
 window.addEventListener('keydown', (ev) => {
   if (ev.code === 'Space' || ev.key === ' ' || ev.key === 'Enter') {
     ev.preventDefault();
-    if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'toggle' });
+    window.flotanteAPI.sendCommand({ cmd: 'toggle' });
   } else if (ev.key === 'r' || ev.key === 'R' || ev.key === 'Escape') {
     // 'r' or Escape -> reset (Escape can close flotante; choose 'r')
-    if (window.flotanteAPI) window.flotanteAPI.sendCommand({ cmd: 'reset' });
+    window.flotanteAPI.sendCommand({ cmd: 'reset' });
   }
 });
 

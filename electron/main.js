@@ -80,9 +80,15 @@ function isMainInteractive() {
 
 function guardMainUserAction(actionId, message) {
   if (isMainInteractive()) return true;
+  const rawMessage = typeof message === 'string' && message.trim()
+    ? message.trim()
+    : 'Main action ignored (pre-READY).';
+  const bootstrapMessage = rawMessage.startsWith('BOOTSTRAP:')
+    ? rawMessage
+    : `BOOTSTRAP: ${rawMessage}`;
   log.warnOnce(
     `BOOTSTRAP:main.preReady.${actionId}`,
-    message || 'Main action ignored (pre-READY):',
+    bootstrapMessage,
     actionId
   );
   return false;
