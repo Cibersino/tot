@@ -17,9 +17,9 @@
   // =============================================================================
   // DEFAULT_LANG is the app's fallback language tag (e.g., "en", "es", "pt-BR").
   // It is used when no explicit language is provided by the caller.
-  const { DEFAULT_LANG } = window.AppConstants;
   const log = window.getLogger('count');
   log.debug('Count utilities starting...');
+  const { DEFAULT_LANG } = window.AppConstants;
 
   // Hyphen joiners we accept for "alnum join" in Precise word counting.
   // This supports common hyphenated compounds and numeric ranges without spaces (e.g., "e-mail", "3–4").
