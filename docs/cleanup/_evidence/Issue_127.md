@@ -134,7 +134,8 @@ Hard constraints:
 * Scope edits to **`<TARGET_FILE>` AND `docs\cleanup\_evidence\Issue_127.md` only** (no other files).
 * You MAY change failure-path behavior (miswire/missing/invalid bridge) to comply with the convention.
   Do NOT claim “changes failure timing/behavior” as Level 4 evidence unless HEALTHY-PATH changes too.
-* Level 3 scope guard: this level is ONLY for bridge dependency failure-mode alignment. Do NOT “polish” or refactor unrelated logging/messages. Only add/adjust diagnostics that are strictly required to comply with the bridge failure-mode convention (required fail-fast; optional/best-effort guarded + deduped diagnostics). Do not rewrite existing logs unless required for that alignment.
+* Level 3 scope guard: this level is ONLY for bridge dependency failure-mode alignment. Do NOT “polish” or refactor unrelated logging/messages. Only add/adjust diagnostics that are strictly required to comply with the bridge failure-mode convention (required fail-fast; optional/best-effort guarded + appropriate diagnostics). Do not rewrite existing logs unless required for that alignment.
+* Precedence rule: If there is any tension between the “decision matrix” wording and logging behavior, **the logger headers (`electron/log.js`, `public/js/log.js`) win**. Interpret “dedupe” requirements in the matrix in a way that is consistent with those headers.
 
 Anti-abstraction rule:
 
@@ -167,14 +168,16 @@ What to do (NO SKIPPING):
    * inconsistent handling for the same dependency class,
    * unclassified coexistence,
    * silent fallbacks where a real fallback exists,
-   * missing dedupe where repetition adds no diagnostic value,
+   * missing dedupe **when the failure can repeat IN HIGH FREQUENCY and repetition adds no diagnostic value**,
    * mis-leveled logging (noise on hot paths vs missing diagnostics).
 
 4. Enforcement (required):
-   Apply minimal local changes so that EVERY inventory entry’s handling matches the decision matrix:
+   Apply minimal local changes so that EVERY inventory entry’s handling matches the decision matrix.
+   IMPORTANT: “dedupe” MUST be applied in a way that matches the logger headers (see Logging notes).
+
    * Required -> fail fast (do not continue invalid init path; clear diagnostic)
-   * Optional -> guard + continue + deduplicated diagnostic (stable bounded key; no user input in key)
-   * Best-effort -> drop without breaking flow + deduplicated “failed (ignored)” diagnostic when a real intended action is dropped
+   * Optional -> guard + continue + diagnostic.
+   * Best-effort -> drop without breaking flow + diagnostic when a real intended action is dropped:
    “Minimal” means minimal per-site change; coverage must be complete (no cherry-picking).
 
 5. Level 4 evidence (strict boundary):
@@ -223,8 +226,8 @@ Output requirement (no diffs):
   * Dev diagnostics in `.js` must be English-only (non-user-facing), including warning/error logs and thrown errors (`throw new Error(...)`, `throw ...`).
   * Proper names / identifiers must remain verbatim inside those diagnostics (function/method names, i18n keys, config/object keys, IPC channel names, constants, internal IDs such as `modoConteo`, `acerca_de`, `setModeConteo`).
   * Dedupe keys must be stable/bounded (no user input or unbounded dynamic data in keys).
-  * Use `warnOnce/errorOnce` only for high-frequency repeatable misses/failures where repetition adds no diagnostic value; otherwise use `warn/error`.
-  * If a fallback is BOOTSTRAP-only, the message or explicit dedupe key must start with `BOOTSTRAP:` and that path must become unreachable after init.
+  * Use `warnOnce/errorOnce` only for high-frequency repeatable misses/failures where repetition adds no diagnostic value; otherwise use by default `warn/error`.
+  * If a fallback is BOOTSTRAP-only, the message and the explicit dedupe key must start with `BOOTSTRAP:` and that path must become unreachable after init. (see)
   * The concrete logger behavior/signatures come from the runtime logger headers (`electron/log.js`, `public/js/log.js`). Follow those headers; do not invent alternative logging conventions.
 
 Final response rule:
