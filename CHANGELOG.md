@@ -12,6 +12,15 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
 - **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
 
+## [0.1.6] toT - Iteraciones
+- Fecha: `2026-02-19`
+
+- Selector de texto (Issue #131): nuevo flujo de append iterado con `N` repeticiones en un solo clic de `📋+` (lectura única de portapapeles, normalización/clamp de `N`, validación previa de tamaño y una sola escritura IPC).
+- Rendimiento/sincronización: corregida la demora de actualización de la ventana principal cuando el editor la cubre completa (`backgroundThrottling:false` en `mainWin`).
+- Canonicalización de texto vigente: `electron/text_state.js` normaliza saltos de línea a `LF` (`\n`) tanto en bootstrap como en `set-current-text`, y persiste la versión normalizada cuando corresponde.
+- Estado de texto vigente: `public/renderer.js` elimina la doble autoridad local y usa `current-text-updated` como fuente única de sincronización UI.
+- Editor manual: endurecimiento de límites de entrada (`beforeinput`) y del pipeline `paste`/`drop` para evitar overshoot/truncado reactivo y ecos locales.
+
 ## [0.1.5] toT - reemplazo find/search editor
 - Fecha: `2026-02-18`
 
