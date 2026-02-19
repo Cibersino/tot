@@ -461,35 +461,86 @@ async function applyExternalUpdate(payload) {
       return;
     }
 
-    const useNative = newText.length <= SMALL_UPDATE_THRESHOLD;
-    const prevActive = document.activeElement;
+    const prevSuppressLocalUpdate = suppressLocalUpdate;
+    suppressLocalUpdate = true;
+    try {
+      const useNative = newText.length <= SMALL_UPDATE_THRESHOLD;
+      const prevActive = document.activeElement;
 
-    const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;
-    const metaAction = incomingMeta && incomingMeta.action ? incomingMeta.action : null;
+      const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;
+      const metaAction = incomingMeta && incomingMeta.action ? incomingMeta.action : null;
 
-    if (metaSource === 'main-window' && metaAction === 'append_newline') {
-      if (newText.startsWith(editor.value)) {
-        let toInsert = newText.slice(editor.value.length);
-        if (!toInsert) return;
-        if (toInsert.length <= SMALL_UPDATE_THRESHOLD) {
-          try {
-            editor.focus();
-            const tpos = editor.value.length;
-            setCaretSafe(tpos);
-            const ok = document.execCommand && document.execCommand('insertText', false, toInsert);
-            if (!ok && typeof editor.setRangeText === 'function') {
-              editor.setRangeText(toInsert, tpos, tpos, 'end');
-              dispatchNativeInputEvent();
-            } else if (!ok) {
+      if (metaSource === 'main-window' && metaAction === 'append_newline') {
+        if (newText.startsWith(editor.value)) {
+          let toInsert = newText.slice(editor.value.length);
+          if (!toInsert) return;
+          if (toInsert.length <= SMALL_UPDATE_THRESHOLD) {
+            try {
+              editor.focus();
+              const tpos = editor.value.length;
+              setCaretSafe(tpos);
+              const ok = document.execCommand && document.execCommand('insertText', false, toInsert);
+              if (!ok && typeof editor.setRangeText === 'function') {
+                editor.setRangeText(toInsert, tpos, tpos, 'end');
+                dispatchNativeInputEvent();
+              } else if (!ok) {
+                editor.value = editor.value + toInsert;
+                dispatchNativeInputEvent();
+              }
+            } catch {
               editor.value = editor.value + toInsert;
               dispatchNativeInputEvent();
+            } finally {
+              try { if (prevActive && prevActive !== editor) prevActive.focus(); }
+              catch (err) { log.warnOnce('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
+            }
+            return;
+          } else {
+            try {
+              editor.style.visibility = 'hidden';
+              editor.value = newText;
+              dispatchNativeInputEvent();
+            } catch {
+              editor.value = newText;
+              dispatchNativeInputEvent();
+            } finally {
+              editor.style.visibility = '';
+              try { if (prevActive && prevActive !== editor) prevActive.focus(); }
+              catch (err) { log.warnOnce('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
+            }
+            if (truncated) {
+              notifyTextTruncated()
+            }
+            return;
+          }
+        }
+      }
+
+      if (metaSource === 'main' || metaSource === 'main-window' || !metaSource) {
+        if (useNative) {
+          try {
+            editor.focus();
+            selectAllEditor();
+            let execOK = false;
+            try { execOK = document.execCommand && document.execCommand('insertText', false, newText); } catch { execOK = false; }
+            if (!execOK) {
+              if (typeof editor.setRangeText === 'function') {
+                editor.setRangeText(newText, 0, editor.value.length, 'end');
+                dispatchNativeInputEvent();
+              } else {
+                editor.value = newText;
+                dispatchNativeInputEvent();
+              }
             }
           } catch {
-            editor.value = editor.value + toInsert;
+            editor.value = newText;
             dispatchNativeInputEvent();
           } finally {
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { log.warnOnce('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
+            catch (err) { log.warnOnce('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
+          }
+          if (truncated) {
+            notifyTextTruncated()
           }
           return;
         } else {
@@ -503,7 +554,7 @@ async function applyExternalUpdate(payload) {
           } finally {
             editor.style.visibility = '';
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { log.warnOnce('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
+            catch (err) { log.warnOnce('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
           }
           if (truncated) {
             notifyTextTruncated()
@@ -511,68 +562,23 @@ async function applyExternalUpdate(payload) {
           return;
         }
       }
-    }
 
-    if (metaSource === 'main' || metaSource === 'main-window' || !metaSource) {
-      if (useNative) {
-        try {
-          editor.focus();
-          selectAllEditor();
-          let execOK = false;
-          try { execOK = document.execCommand && document.execCommand('insertText', false, newText); } catch { execOK = false; }
-          if (!execOK) {
-            if (typeof editor.setRangeText === 'function') {
-              editor.setRangeText(newText, 0, editor.value.length, 'end');
-              dispatchNativeInputEvent();
-            } else {
-              editor.value = newText;
-              dispatchNativeInputEvent();
-            }
-          }
-        } catch {
-          editor.value = newText;
-          dispatchNativeInputEvent();
-        } finally {
-          try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (err) { log.warnOnce('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
-        }
-        if (truncated) {
-          notifyTextTruncated()
-        }
-        return;
-      } else {
-        try {
-          editor.style.visibility = 'hidden';
-          editor.value = newText;
-          dispatchNativeInputEvent();
-        } catch {
-          editor.value = newText;
-          dispatchNativeInputEvent();
-        } finally {
-          editor.style.visibility = '';
-          try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (err) { log.warnOnce('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
-        }
-        if (truncated) {
-          notifyTextTruncated()
-        }
-        return;
+      // fallback
+      try {
+        editor.style.visibility = 'hidden';
+        editor.value = newText;
+        dispatchNativeInputEvent();
+      } catch {
+        editor.value = newText;
+        dispatchNativeInputEvent();
+      } finally {
+        editor.style.visibility = '';
       }
-    }
-
-    // fallback
-    try {
-      editor.style.visibility = 'hidden';
-      editor.value = newText;
-      dispatchNativeInputEvent();
-    } catch {
-      editor.value = newText;
-      dispatchNativeInputEvent();
+      if (truncated) {
+        notifyTextTruncated()
+      }
     } finally {
-      editor.style.visibility = '';
-    }
-    if (truncated) {
-      notifyTextTruncated()
+      suppressLocalUpdate = prevSuppressLocalUpdate;
     }
   } catch (err) {
     log.error('applyExternalUpdate error:', err);
