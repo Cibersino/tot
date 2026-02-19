@@ -31,7 +31,17 @@
         "flotante_window": "Ventana flotante"
       },
       "aria": {
-        "append_repeat_count": "Repeticiones de pegado"
+        "append_repeat_count": "Repeticiones de pegado",
+        "wpm_input": "Palabras por minuto",
+        "wpm_slider": "Deslizador de palabras por minuto",
+        "speed_presets": "Presets de velocidad",
+        "precise_mode_toggle": "Modo preciso",
+        "crono_controls": "Controles del cronómetro",
+        "crono_display": "Display del cronómetro",
+        "crono_toggle": "Iniciar o pausar cronómetro",
+        "crono_reset": "Reiniciar cronómetro",
+        "floating_window_toggle": "Ventana flotante",
+        "floating_window_group": "Control de ventana flotante"
       },
       "speed": {
         "title": "VELOCIDAD DE LECTURA",
