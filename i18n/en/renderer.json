@@ -31,7 +31,17 @@
         "flotante_window": "Floating window"
       },
       "aria": {
-        "append_repeat_count": "Paste repetitions"
+        "append_repeat_count": "Paste repetitions",
+        "wpm_input": "Words per minute",
+        "wpm_slider": "Words-per-minute slider",
+        "speed_presets": "Speed presets",
+        "precise_mode_toggle": "Precise mode",
+        "crono_controls": "Stopwatch controls",
+        "crono_display": "Stopwatch display",
+        "crono_toggle": "Start or pause stopwatch",
+        "crono_reset": "Reset stopwatch",
+        "floating_window_toggle": "Floating window",
+        "floating_window_group": "Floating window controls"
       },
       "speed": {
         "title": "READING SPEED",

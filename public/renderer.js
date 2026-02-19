@@ -233,6 +233,12 @@ const getCronoLabels = () => ({
 
 function applyTranslations() {
   if (!tRenderer) return;
+  const applyAriaLabel = (el, key, fallback = '') => {
+    if (!el) return;
+    const defaultValue = fallback || el.getAttribute('aria-label') || '';
+    const aria = tRenderer(key, defaultValue);
+    if (aria) el.setAttribute('aria-label', aria);
+  };
   // Text selector buttons
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
@@ -247,8 +253,7 @@ function applyTranslations() {
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
   if (appendRepeatInput) {
     appendRepeatInput.title = tRenderer('renderer.main.tooltips.append_repeat_count', appendRepeatInput.title || '');
-    const appendRepeatAria = tRenderer('renderer.main.aria.append_repeat_count', appendRepeatInput.getAttribute('aria-label') || '');
-    if (appendRepeatAria) appendRepeatInput.setAttribute('aria-label', appendRepeatAria);
+    applyAriaLabel(appendRepeatInput, 'renderer.main.aria.append_repeat_count');
   }
   if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
   if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
@@ -276,6 +281,9 @@ function applyTranslations() {
   // Speed selector labels
   const wpmLabel = document.querySelector('.wpm-row span');
   if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label', wpmLabel.textContent || '');
+  applyAriaLabel(wpmInput, 'renderer.main.aria.wpm_input');
+  applyAriaLabel(wpmSlider, 'renderer.main.aria.wpm_slider');
+  applyAriaLabel(presetsSelect, 'renderer.main.aria.speed_presets');
   // Results: precise mode label
   const togglePrecisoLabel = document.querySelector('.toggle-wrapper .toggle-label');
   if (togglePrecisoLabel) {
@@ -286,6 +294,7 @@ function applyTranslations() {
       toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip', toggleWrapper.title || togglePrecisoLabel.title || '');
     }
   }
+  applyAriaLabel(toggleModoPreciso, 'renderer.main.aria.precise_mode_toggle', togglePrecisoLabel ? togglePrecisoLabel.textContent : '');
   // Stopwatch: speed label and controls aria-label
   const realWpmLabel = document.querySelector('.realwpm');
   if (realWpmLabel && realWpmLabel.firstChild) {
@@ -293,9 +302,21 @@ function applyTranslations() {
   }
   const cronoControls = document.querySelector('.crono-controls');
   if (cronoControls) {
-    const ariaLabel = tRenderer('renderer.main.crono.controls_label', cronoControls.getAttribute('aria-label') || '');
+    const ariaLabel = tRenderer(
+      'renderer.main.aria.crono_controls',
+      tRenderer('renderer.main.crono.controls_label', cronoControls.getAttribute('aria-label') || '')
+    );
     if (ariaLabel) cronoControls.setAttribute('aria-label', ariaLabel);
   }
+  const cronoDisplayEl = document.getElementById('cronoDisplay');
+  const cronoToggleBtn = document.getElementById('cronoToggle');
+  const cronoResetBtn = document.getElementById('cronoReset');
+  const vfSwitchWrapper = document.querySelector('.vf-switch-wrapper');
+  applyAriaLabel(cronoDisplayEl, 'renderer.main.aria.crono_display');
+  applyAriaLabel(cronoToggleBtn, 'renderer.main.aria.crono_toggle');
+  applyAriaLabel(cronoResetBtn, 'renderer.main.aria.crono_reset');
+  applyAriaLabel(toggleVF, 'renderer.main.aria.floating_window_toggle');
+  applyAriaLabel(vfSwitchWrapper, 'renderer.main.aria.floating_window_group');
   const labelsCrono = getCronoLabels();
   if (cronoController && typeof cronoController.updateLabels === 'function') {
     cronoController.updateLabels(labelsCrono);
