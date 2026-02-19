@@ -135,6 +135,16 @@ body {
   flex-wrap: wrap;
 }
 
+.append-repeat-input {
+  width: 56px;
+  height: 30px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
 .controls-sep {
   width: 1px;
   height: 18px;

@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Replace current text with clipboard",
         "append_clipboard": "Append clipboard at the end of current text (new line)",
+        "append_repeat_count": "Append repetitions (1-9999)",
         "edit": "Open full current text window",
         "clear": "Clear current text",
         "snapshot_load": "Load text snapshot",
@@ -28,6 +29,9 @@
         "reset_presets": "Restore default presets",
         "help_button": "Show a useful tip",
         "flotante_window": "Floating window"
+      },
+      "aria": {
+        "append_repeat_count": "Paste repetitions"
       },
       "speed": {
         "title": "READING SPEED",

@@ -9,6 +9,7 @@
     SMALL_UPDATE_THRESHOLD: 200_000, // If text is smaller than this, update the preview immediately.
     WPM_MIN: 50, // Minimum WPM for reading speed.
     WPM_MAX: 500, // Maximum WPM for reading speed.
+    MAX_APPEND_REPEAT: 9_999, // Maximum allowed repetitions for the clipboard append action.
     PRESET_NAME_MAX: 20, // Max chars for preset names.
     PRESET_DESC_MAX: 120, // Max chars for preset descriptions.
     TASK_NAME_MAX_CHARS: 50, // Max chars for task list name. Must match electron/constants_main.js.

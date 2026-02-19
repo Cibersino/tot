@@ -30,6 +30,7 @@ const {
   DEFAULT_LANG,
   WPM_MIN,
   WPM_MAX,
+  MAX_APPEND_REPEAT,
   PREVIEW_INLINE_THRESHOLD,
   PREVIEW_START_CHARS,
   PREVIEW_END_CHARS
@@ -41,6 +42,7 @@ const {
 const textPreview = document.getElementById('textPreview');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
+const appendRepeatInput = document.getElementById('appendRepeatInput');
 const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
 const btnLoadSnapshot = document.getElementById('btnLoadSnapshot');
@@ -76,6 +78,10 @@ if (wpmSlider) {
 if (wpmInput) {
   wpmInput.min = String(WPM_MIN);
   wpmInput.max = String(WPM_MAX);
+}
+if (appendRepeatInput) {
+  appendRepeatInput.min = '1';
+  appendRepeatInput.max = String(MAX_APPEND_REPEAT);
 }
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
@@ -239,6 +245,11 @@ function applyTranslations() {
   // Text selector tooltips
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
+  if (appendRepeatInput) {
+    appendRepeatInput.title = tRenderer('renderer.main.tooltips.append_repeat_count', appendRepeatInput.title || '');
+    const appendRepeatAria = tRenderer('renderer.main.aria.append_repeat_count', appendRepeatInput.getAttribute('aria-label') || '');
+    if (appendRepeatAria) appendRepeatInput.setAttribute('aria-label', appendRepeatAria);
+  }
   if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
   if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
   if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load', btnLoadSnapshot.title || '');
@@ -1363,6 +1374,61 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
   return { ok: true, text };
 }
 
+function normalizeAppendRepeat(rawValue) {
+  const numericValue = Number(rawValue);
+  if (!Number.isInteger(numericValue) || numericValue < 1) return 1;
+  return Math.min(numericValue, MAX_APPEND_REPEAT);
+}
+
+function getAppendRepeatCount() {
+  if (!appendRepeatInput) return 1;
+  const normalized = normalizeAppendRepeat(appendRepeatInput.value);
+  appendRepeatInput.value = String(normalized);
+  return normalized;
+}
+
+function projectRepeatedAppendLength(current, clip, repeatCount) {
+  const clipLength = clip.length;
+  const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
+  let projected = current.length;
+  let hasContent = current.length > 0;
+  let endsWithNewline = hasContent && (current.endsWith('\n') || current.endsWith('\r'));
+
+  for (let i = 0; i < repeatCount; i += 1) {
+    if (hasContent) {
+      projected += endsWithNewline ? 1 : 2;
+      endsWithNewline = true;
+    }
+    if (clipLength > 0) {
+      projected += clipLength;
+      hasContent = true;
+      endsWithNewline = clipEndsWithNewline;
+    }
+  }
+  return projected;
+}
+
+function buildRepeatedAppendText(current, clip, repeatCount) {
+  const clipLength = clip.length;
+  const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
+  const parts = [current];
+  let hasContent = current.length > 0;
+  let endsWithNewline = hasContent && (current.endsWith('\n') || current.endsWith('\r'));
+
+  for (let i = 0; i < repeatCount; i += 1) {
+    if (hasContent) {
+      parts.push(endsWithNewline ? '\n' : '\n\n');
+      endsWithNewline = true;
+    }
+    if (clipLength > 0) {
+      parts.push(clip);
+      hasContent = true;
+      endsWithNewline = clipEndsWithNewline;
+    }
+  }
+  return parts.join('');
+}
+
 // =============================================================================
 // Overwrite current text with clipboard content
 // =============================================================================
@@ -1430,11 +1496,9 @@ btnAppendClipboard.addEventListener('click', async () => {
       return;
     }
     const current = await getCurrentText() || '';
+    const repeatCount = getAppendRepeatCount();
 
-    let joiner = '';
-    if (current) joiner = current.endsWith('\n') || current.endsWith('\r') ? '\n' : '\n\n';
-
-    const projectedLen = current.length + (current ? joiner.length : 0) + clip.length;
+    const projectedLen = projectRepeatedAppendLength(current, clip, repeatCount);
     if (projectedLen > maxIpcChars) {
       window.Notify.notifyMain('renderer.alerts.append_too_large');
       return;
@@ -1446,7 +1510,7 @@ btnAppendClipboard.addEventListener('click', async () => {
       return;
     }
 
-    const newFull = current + (current ? joiner : '') + clip;
+    const newFull = buildRepeatedAppendText(current, clip, repeatCount);
 
     // Send object with meta (append_newline)
     const setCurrentText = getOptionalElectronMethod('setCurrentText', {

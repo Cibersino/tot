@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
         "append_clipboard": "Pegar portapapeles al final del texto actual (nueva línea)",
+        "append_repeat_count": "Repeticiones del append (1-9999)",
         "edit": "Abrir ventana del texto actual completo",
         "clear": "Vaciar texto actual",
         "snapshot_load": "Cargar snapshot de texto",
@@ -28,6 +29,9 @@
         "reset_presets": "Restaurar presets por defecto",
         "help_button": "Mostrar consejo útil",
         "flotante_window": "Ventana flotante"
+      },
+      "aria": {
+        "append_repeat_count": "Repeticiones de pegado"
       },
       "speed": {
         "title": "VELOCIDAD DE LECTURA",
