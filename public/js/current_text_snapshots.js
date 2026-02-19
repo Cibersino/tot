@@ -50,7 +50,7 @@
       toast(TOAST_KEYS.saveError, { type: 'error' });
       return;
     }
-    toast(TOAST_KEYS.saveSuccess, { type: 'info' });
+    toast(TOAST_KEYS.saveSuccess, { type: 'info', duration: 2500 });
   }
 
   function handleLoadResult(res) {
@@ -64,9 +64,9 @@
       toast(TOAST_KEYS.loadError, { type: 'error' });
       return;
     }
-    toast(TOAST_KEYS.loadSuccess, { type: 'info' });
+    toast(TOAST_KEYS.loadSuccess, { type: 'info', duration: 2500 });
     if (res.truncated) {
-      toast(TOAST_KEYS.truncated, { type: 'warn' });
+      toast(TOAST_KEYS.truncated, { type: 'warn', duration: 3500 });
     }
   }
 
