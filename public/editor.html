@@ -1,14 +1,17 @@
 <!-- public/editor.html -->
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
 
   <title>toT — Texto completo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="editor.css" />
 </head>
+
 <body>
   <!-- The textarea takes up all the available space -->
   <div class="editor-wrap">
@@ -19,7 +22,9 @@
   <div id="bottomBar" class="bottom-bar" role="region" aria-label="Controles del editor">
     <div class="left-controls">
       <button id="btnCalc" class="btn-calc" disabled data-label="CALCULAR" aria-label="CALC/SAVE"></button>
-      <label class="calc-label" data-label="Auto-guardar y auto-recalcular mientras escribes"><input id="calcWhileTyping" type="checkbox" checked aria-label="Auto-guardar y auto-recalcular mientras escribes" /></label>
+      <label class="calc-label" data-label="Auto-guardar y auto-recalcular mientras escribes"><input
+          id="calcWhileTyping" type="checkbox" checked
+          aria-label="Auto-guardar y auto-recalcular mientras escribes" /></label>
     </div>
 
     <div class="right-controls">
@@ -33,4 +38,5 @@
   <script src="js/i18n.js"></script>
   <script src="editor.js"></script>
 </body>
+
 </html>
