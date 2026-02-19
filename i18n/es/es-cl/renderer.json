@@ -101,6 +101,9 @@
         "library_row_save": "Guardar en biblio",
         "library_row_load": "Cargar fila",
         "library_row_delete": "Pitiarsela de la biblio",
+        "snapshot_load": "Cargar un coso de texto para esta fila",
+        "snapshot_select": "Seleccionar un coso de texto para esta fila",
+        "snapshot_clear": "Quitar el coso seleccionado de esta fila",
         "link_open": "Abrir ruta",
         "comment": "Añadir/editar opinión"
       },
