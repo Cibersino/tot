@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
         "append_clipboard": "Pegar lo copiao en la línea de abajo",
+        "append_repeat": "Cantidad de veces que te repetís el plato (1-9999)",
         "edit": "Truquearse con el texto completo",
         "clear": "Limpieza es viveza",
         "snapshot_load": "Cargar un coso de texto",

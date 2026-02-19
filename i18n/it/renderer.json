@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Sostituire il testo corrente con gli appunti",
         "append_clipboard": "Aggiungi il testo degli appunti alla fine del testo corrente (nuova riga)",
+        "append_repeat": "Numero di ripetizioni dell'append (1-9999)",
         "edit": "Apri la finestra del testo corrente completo",
         "clear": "Svuota il testo corrente",
         "snapshot_load": "Carica un snapshot di testo",
