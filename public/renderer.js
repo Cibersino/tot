@@ -205,6 +205,7 @@ let splashRemovedSent = false;
 let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
+let hasCurrentTextSubscription = false;
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
   const api = window.electronAPI;
@@ -611,6 +612,7 @@ const settingsChangeHandler = async (newSettings) => {
 function armIpcSubscriptions() {
   // Subscribe to updates from main (current text changes)
   if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
+    hasCurrentTextSubscription = true;
     window.electronAPI.onCurrentTextUpdated((text) => {
       try {
         if (!isRendererReady()) {
@@ -627,10 +629,7 @@ function armIpcSubscriptions() {
       }
     });
   } else if (window.electronAPI) {
-    log.warnOnce(
-      'renderer.ipc.onCurrentTextUpdated.unavailable',
-      'onCurrentTextUpdated unavailable; current text updates will not sync.'
-    );
+    throw new Error('[renderer] electronAPI.onCurrentTextUpdated unavailable; cannot maintain current text synchronization');
   }
 
   // Subscribe to preset create/update notifications from main
@@ -1486,7 +1485,10 @@ btnOverwriteClipboard.addEventListener('click', async () => {
       throw new Error(resp.error || 'set-current-text failed');
     }
 
-    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : clip, { applyRules: true });
+    // UI/state sync is authoritative via "current-text-updated" subscription.
+    if (!hasCurrentTextSubscription) {
+      throw new Error('current-text-updated subscription unavailable');
+    }
     if (resp && resp.truncated) {
       window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
@@ -1551,7 +1553,10 @@ btnAppendClipboard.addEventListener('click', async () => {
       throw new Error(resp.error || 'set-current-text failed');
     }
 
-    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : newFull, { applyRules: true });
+    // UI/state sync is authoritative via "current-text-updated" subscription.
+    if (!hasCurrentTextSubscription) {
+      throw new Error('current-text-updated subscription unavailable');
+    }
 
     // Notify truncation only if main confirms it
     if (resp && resp.truncated) {
@@ -1610,15 +1615,12 @@ btnEmptyMain.addEventListener('click', async () => {
       text: '',
       meta: { source: 'main-window', action: 'overwrite' }
     });
-
-    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : '', { applyRules: true });
-    if (window.electronAPI && typeof window.electronAPI.forceClearEditor === 'function') {
-      try { await window.electronAPI.forceClearEditor(); } catch (err) { log.error('Error invoking forceClearEditor:', err); }
-    } else if (window.electronAPI) {
-      log.warnOnce(
-        'renderer.ipc.forceClearEditor.unavailable',
-        'forceClearEditor unavailable; editor clear sync skipped.'
-      );
+    if (resp && resp.ok === false) {
+      throw new Error(resp.error || 'set-current-text failed');
+    }
+    // UI/state sync is authoritative via "current-text-updated" subscription.
+    if (!hasCurrentTextSubscription) {
+      throw new Error('current-text-updated subscription unavailable');
     }
   } catch (err) {
     log.error('Error clearing text from main window:', err);
