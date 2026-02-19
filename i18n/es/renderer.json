@@ -241,6 +241,7 @@
       "drop_no_text": "Arrastrar y soltar: no se detectó texto plano.",
       "type_limit": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido.",
       "paste_limit": "No es posible pegar más texto: ya se alcanzó el tamaño máximo permitido.",
+      "drop_limit": "No es posible soltar más texto: ya se alcanzó el tamaño máximo permitido.",
       "paste_truncated": "El texto pegado se ha truncado para no exceder el máximo permitido.",
       "drop_truncated": "El texto arrastrado excedía el espacio disponible y fue truncado.",
       "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",

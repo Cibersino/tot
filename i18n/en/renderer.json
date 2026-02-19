@@ -241,6 +241,7 @@
       "drop_no_text": "Drag and drop: no plain text detected.",
       "type_limit": "Cannot type more text: maximum size reached.",
       "paste_limit": "Cannot paste more text: maximum size reached.",
+      "drop_limit": "Cannot drop more text: maximum size reached.",
       "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
       "drop_truncated": "Dragged text exceeded the available space and was truncated.",
       "text_truncated": "Text was truncated to fit the application limit.",
