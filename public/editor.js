@@ -29,7 +29,7 @@ if (!AppConstants) {
   throw new Error('[editor] AppConstants unavailable; verify constants.js load order');
 }
 const { DEFAULT_LANG, PASTE_ALLOW_LIMIT, SMALL_UPDATE_THRESHOLD } = AppConstants;
-let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
+let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute editor limit. Local writes must stay within this bound to prevent lags and OOM.
 
 if (!window.editorAPI) {
   throw new Error('[editor] editorAPI unavailable; cannot continue');
@@ -254,6 +254,23 @@ function getSelectionRange() {
   return { start, end };
 }
 
+function getInsertionCapacity() {
+  const { start, end } = getSelectionRange();
+  const selectedLength = Math.max(0, end - start);
+  return maxTextChars - (editor.value.length - selectedLength);
+}
+
+function getBeforeInputIncomingLength(ev) {
+  const inputType = (ev && typeof ev.inputType === 'string') ? ev.inputType : '';
+  if (ev && typeof ev.data === 'string') {
+    return ev.data.length;
+  }
+  if (inputType === 'insertLineBreak' || inputType === 'insertParagraph') {
+    return 1;
+  }
+  return null;
+}
+
 function setSelectionSafe(start, end) {
   if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(start, end);
 }
@@ -384,7 +401,7 @@ function handleTruncationResponse(resPromise) {
 
 function insertTextAtCursor(rawText) {
   try {
-    const available = maxTextChars - editor.value.length;
+    const available = getInsertionCapacity();
     if (available <= 0) {
       notifyEditor('renderer.editor_alerts.paste_limit', { type: 'warn' });
       restoreFocusToEditor();
@@ -712,23 +729,39 @@ if (editor) {
 // =============================================================================
 // Local input (typing)
 // =============================================================================
+if (editor) {
+  editor.addEventListener('beforeinput', (ev) => {
+    try {
+      if (suppressLocalUpdate || editor.readOnly) return;
+      const inputType = (typeof ev.inputType === 'string') ? ev.inputType : '';
+      if (!inputType || !inputType.startsWith('insert')) return;
+
+      // Paste/drop already have dedicated handlers with custom notifications.
+      if (inputType === 'insertFromPaste' || inputType === 'insertFromDrop') return;
+
+      const { start } = getSelectionRange();
+      const available = getInsertionCapacity();
+      if (available <= 0) {
+        ev.preventDefault();
+        notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+        restoreFocusToEditor(start);
+        return;
+      }
+
+      const incomingLength = getBeforeInputIncomingLength(ev);
+      if (incomingLength !== null && incomingLength > available) {
+        ev.preventDefault();
+        notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+        restoreFocusToEditor(start);
+      }
+    } catch (err) {
+      log.error('beforeinput guard error:', err);
+    }
+  });
+}
+
 editor.addEventListener('input', () => {
   if (suppressLocalUpdate || editor.readOnly) return;
-
-  if (editor.value && editor.value.length > maxTextChars) {
-    editor.value = editor.value.slice(0, maxTextChars);
-    notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
-    sendCurrentTextToMain('truncated', {
-      onPrimaryError: (err) => log.error('editor: error sending set-current-text after truncate:', err),
-      onFallbackError: (err) => log.warnOnce(
-        'setCurrentText.truncate.fallback',
-        'editorAPI.setCurrentText fallback failed (ignored):',
-        err
-      )
-    });
-    restoreFocusToEditor();
-    return;
-  }
 
   if (!suppressLocalUpdate) {
     if (debounceTimer) clearTimeout(debounceTimer);
