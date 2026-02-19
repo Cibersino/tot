@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Kangelu wirin tachi portapapeles mu",
         "append_clipboard": "Pültrün tachi portapapeles afkechi wirin mu (we ruka)",
+        "append_repeat": "Pültrün tachi portapapeles afkechi wirin mu (we ruka) ka repeat",
         "edit": "Nülan wirin weyel tati",
         "clear": "Nentun kom wirin",
         "snapshot_load": "Kintun snapshot weyel tati",

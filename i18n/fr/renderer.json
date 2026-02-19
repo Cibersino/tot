@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Remplacer le texte actuel par le presse-papier",
         "append_clipboard": "Coller le presse-papier à la fin du texte actuel (nouvelle ligne)",
+        "append_repeat": "Nombre de répétitions du append (1-9999)",
         "edit": "Ouvrir la fenêtre du texte actuel complet",
         "clear": "Vider le texte actuel",
         "snapshot_load": "Charger un snapshot de texte",
