@@ -88,6 +88,8 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "select_snapshot": "Kintun snapshot",
+        "clear_snapshot": "🗙",
         "cancel": "Katrüntun",
         "yes": "Sí",
         "no": "No"
