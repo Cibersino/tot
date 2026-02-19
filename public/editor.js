@@ -399,11 +399,25 @@ function handleTruncationResponse(resPromise) {
   }
 }
 
-function insertTextAtCursor(rawText) {
+function insertTextAtCursor(rawText, options = {}) {
   try {
+    const action = (options && typeof options.action === 'string') ? options.action : 'paste';
+    const limitAlertKey = (options && typeof options.limitAlertKey === 'string')
+      ? options.limitAlertKey
+      : 'renderer.editor_alerts.paste_limit';
+    const truncatedAlertKey = (options && typeof options.truncatedAlertKey === 'string')
+      ? options.truncatedAlertKey
+      : 'renderer.editor_alerts.paste_truncated';
+    const syncOptions = {};
+    if (options && typeof options.onPrimaryError === 'function') {
+      syncOptions.onPrimaryError = options.onPrimaryError;
+    }
+    if (options && typeof options.onFallbackError === 'function') {
+      syncOptions.onFallbackError = options.onFallbackError;
+    }
     const available = getInsertionCapacity();
     if (available <= 0) {
-      notifyEditor('renderer.editor_alerts.paste_limit', { type: 'warn' });
+      notifyEditor(limitAlertKey, { type: 'warn' });
       restoreFocusToEditor();
       return { inserted: 0, truncated: false };
     }
@@ -419,10 +433,10 @@ function insertTextAtCursor(rawText) {
     tryNativeInsertAtSelection(toInsert);
 
     // Notify main
-    sendCurrentTextToMain('paste');
+    sendCurrentTextToMain(action, syncOptions);
 
     if (truncated) {
-      notifyEditor('renderer.editor_alerts.paste_truncated', { type: 'warn', duration: 5000 });
+      notifyEditor(truncatedAlertKey, { type: 'warn', duration: 5000 });
     }
 
     restoreFocusToEditor();
@@ -442,6 +456,49 @@ function dispatchNativeInputEvent() {
     editor.dispatchEvent(ev);
   } catch (err) {
     log.error('dispatchNativeInputEvent error:', err);
+  }
+}
+
+function handleTextTransferInsert(ev, transferConfig) {
+  const source = transferConfig && transferConfig.source ? transferConfig.source : 'transfer';
+  const noTextAlertKey = transferConfig && transferConfig.noTextAlertKey
+    ? transferConfig.noTextAlertKey
+    : 'renderer.editor_alerts.paste_no_text';
+  const tooBigAlertKey = transferConfig && transferConfig.tooBigAlertKey
+    ? transferConfig.tooBigAlertKey
+    : 'renderer.editor_alerts.paste_too_big';
+  const insertOptions = transferConfig && transferConfig.insertOptions ? transferConfig.insertOptions : {};
+  const getText = transferConfig && typeof transferConfig.getText === 'function'
+    ? transferConfig.getText
+    : () => '';
+
+  try {
+    if (editor.readOnly) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      return;
+    }
+
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    const text = String(getText(ev) || '');
+    if (!text) {
+      notifyEditor(noTextAlertKey, { type: 'warn' });
+      restoreFocusToEditor();
+      return;
+    }
+
+    if (text.length > PASTE_ALLOW_LIMIT) {
+      notifyEditor(tooBigAlertKey, { type: 'warn', duration: 5000 });
+      restoreFocusToEditor();
+      return;
+    }
+
+    insertTextAtCursor(text, insertOptions);
+  } catch (err) {
+    log.error(`${source} handler error:`, err);
+    restoreFocusToEditor();
   }
 }
 
@@ -640,90 +697,40 @@ window.editorAPI.onForceClear(() => {
 // Paste / drop handlers
 // =============================================================================
 if (editor) {
-  editor.addEventListener('paste', (ev) => {
-    try {
-      if (editor.readOnly) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        return;
-      }
-      ev.preventDefault();
-      ev.stopPropagation();
-      const text = (ev.clipboardData && ev.clipboardData.getData('text/plain')) || '';
-      if (!text) {
-        notifyEditor('renderer.editor_alerts.paste_no_text', { type: 'warn' });
-        restoreFocusToEditor();
-        return;
-      }
-
-      if (text.length <= PASTE_ALLOW_LIMIT) {
-        insertTextAtCursor(text);
-        return;
-      }
-
-      notifyEditor('renderer.editor_alerts.paste_too_big', { type: 'warn', duration: 5000 });
-      restoreFocusToEditor();
-    } catch (err) {
-      log.error('paste handler error:', err);
-      restoreFocusToEditor();
+  const pasteTransferConfig = {
+    source: 'paste',
+    noTextAlertKey: 'renderer.editor_alerts.paste_no_text',
+    tooBigAlertKey: 'renderer.editor_alerts.paste_too_big',
+    getText: (event) => (event.clipboardData && event.clipboardData.getData('text/plain')) || '',
+    insertOptions: {
+      action: 'paste',
+      limitAlertKey: 'renderer.editor_alerts.paste_limit',
+      truncatedAlertKey: 'renderer.editor_alerts.paste_truncated'
     }
-  });
+  };
 
-  // DROP: if small, allow native browser insertion and then notify main.
-  editor.addEventListener('drop', (ev) => {
-    try {
-      if (editor.readOnly) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        return;
-      }
-      const dt = ev.dataTransfer;
-      const text = (dt && dt.getData && dt.getData('text/plain')) || '';
-      if (!text) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        notifyEditor('renderer.editor_alerts.drop_no_text', { type: 'warn' });
-        restoreFocusToEditor();
-        return;
-      }
-
-      if (text.length > PASTE_ALLOW_LIMIT) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        notifyEditor('renderer.editor_alerts.drop_too_big', { type: 'warn', duration: 5000 });
-        restoreFocusToEditor();
-        return;
-      }
-
-      // For small sizes we let the browser do the native insertion (not prevent default).
-      // Subsequently, on the next tick, we notify the main that the editor has changed.
-      setTimeout(() => {
-        try {
-          // Ensure maximum truncation
-          if (editor.value.length > maxTextChars) {
-            editor.value = editor.value.slice(0, maxTextChars);
-            dispatchNativeInputEvent();
-            notifyEditor('renderer.editor_alerts.drop_truncated', { type: 'warn', duration: 5000 });
-          }
-          // Notifying the main-mark coming from the editor to avoid eco-back.
-          sendCurrentTextToMain('drop', {
-            onFallbackError: (err) => log.warnOnce(
-              'setCurrentText.drop.fallback',
-              'editorAPI.setCurrentText fallback failed (ignored):',
-              err
-            )
-          });
-        } catch (err) {
-          log.error('drop postprocess error:', err);
-        }
-      }, 0);
-
-      // NO preventDefault: allow native insertion
-    } catch (err) {
-      log.error('drop handler error:', err);
-      restoreFocusToEditor();
+  const dropTransferConfig = {
+    source: 'drop',
+    noTextAlertKey: 'renderer.editor_alerts.drop_no_text',
+    tooBigAlertKey: 'renderer.editor_alerts.drop_too_big',
+    getText: (event) => {
+      const dt = event.dataTransfer;
+      return (dt && dt.getData && dt.getData('text/plain')) || '';
+    },
+    insertOptions: {
+      action: 'drop',
+      limitAlertKey: 'renderer.editor_alerts.drop_limit',
+      truncatedAlertKey: 'renderer.editor_alerts.drop_truncated',
+      onFallbackError: (err) => log.warnOnce(
+        'setCurrentText.drop.fallback',
+        'editorAPI.setCurrentText fallback failed (ignored):',
+        err
+      )
     }
-  });
+  };
+
+  editor.addEventListener('paste', (ev) => { handleTextTransferInsert(ev, pasteTransferConfig); });
+  editor.addEventListener('drop', (ev) => { handleTextTransferInsert(ev, dropTransferConfig); });
 }
 
 // =============================================================================
