@@ -101,6 +101,9 @@
         "library_row_save": "Salva nella biblioteca",
         "library_row_load": "Carica la riga",
         "library_row_delete": "Elimina dalla biblioteca",
+        "snapshot_load": "Carica snapshot di testo per questa riga",
+        "snapshot_select": "Seleziona snapshot di testo per questa riga",
+        "snapshot_clear": "Rimuovi snapshot di testo per questa riga",
         "link_open": "Apri link",
         "comment": "Aggiungi/modifica commento"
       },

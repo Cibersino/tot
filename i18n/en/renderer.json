@@ -126,8 +126,9 @@
         "library_row_save": "Save to library",
         "library_row_load": "Load row",
         "library_row_delete": "Delete from library",
-        "snapshot_load": "Load selected snapshot from comment",
-        "snapshot_clear": "Remove selected snapshot from comment",
+        "snapshot_load": "Load a text snapshot for this row",
+        "snapshot_select": "Select a text snapshot for this row",
+        "snapshot_clear": "Remove selected snapshot from this row",
         "link_open": "Open link",
         "comment": "Add/edit comment"
       },

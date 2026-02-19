@@ -101,6 +101,9 @@
         "library_row_save": "Elkünun ruka biblioteca mew",
         "library_row_load": "Kintun ruka",
         "library_row_delete": "Ñamümün ruka biblioteca mew",
+        "snapshot_load": "Kintun snapshot weyel tati ruka",
+        "snapshot_select": "Kintun snapshot weyel tati ruka",
+        "snapshot_clear": "Ñamümün snapshot weyel tati ruka",
         "link_open": "Ruta wechun",
         "comment": "Elüwün kañi nütram"
       },

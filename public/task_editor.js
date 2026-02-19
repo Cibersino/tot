@@ -969,6 +969,11 @@ async function applyTaskEditorTranslations() {
   if (commentCancel) commentCancel.textContent = tr('renderer.tasks.buttons.cancel', commentCancel.textContent || '');
   if (commentSnapshotSelect) {
     commentSnapshotSelect.textContent = tr('renderer.tasks.buttons.select_snapshot', commentSnapshotSelect.textContent || '');
+    commentSnapshotSelect.title = tr(
+      'renderer.tasks.tooltips.snapshot_select',
+      commentSnapshotSelect.title || commentSnapshotSelect.textContent || ''
+    );
+    commentSnapshotSelect.setAttribute('aria-label', commentSnapshotSelect.title || commentSnapshotSelect.textContent || '');
   }
   if (commentSnapshotClear) {
     commentSnapshotClear.textContent = tr('renderer.tasks.buttons.clear_snapshot', commentSnapshotClear.textContent || '');

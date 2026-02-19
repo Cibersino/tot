@@ -101,6 +101,9 @@
         "library_row_save": "In Bibliothek speichern",
         "library_row_load": "Zeile Laden",
         "library_row_delete": "Aus Bibliothek löschen",
+        "snapshot_load": "Laden Sie einen Text-Snapshot für diese Zeile",
+        "snapshot_select": "Wählen Sie einen Text-Snapshot für diese Zeile aus",
+        "snapshot_clear": "Entfernen Sie den ausgewählten Text-Snapshot von dieser Zeile",
         "link_open": "Link öffnen",
         "comment": "Kommentar hinzufügen/bearbeiten"
       },

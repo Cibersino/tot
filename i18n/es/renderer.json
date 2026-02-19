@@ -126,8 +126,9 @@
         "library_row_save": "Guardar en biblioteca",
         "library_row_load": "Cargar fila",
         "library_row_delete": "Eliminar de biblioteca",
-        "snapshot_load": "Cargar snapshot seleccionado en el comentario",
-        "snapshot_clear": "Quitar snapshot seleccionado del comentario",
+        "snapshot_load": "Cargar snapshot de texto para esta fila",
+        "snapshot_select": "Seleccionar snapshot para esta fila",
+        "snapshot_clear": "Quitar snapshot seleccionado de esta fila",
         "link_open": "Abrir enlace",
         "comment": "Agregar/editar comentario"
       },
