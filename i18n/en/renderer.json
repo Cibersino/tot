@@ -114,6 +114,7 @@
         "library_row_delete": "🗑",
         "snapshot": "📥",
         "select_snapshot": "Select snapshot",
+        "clear_snapshot": "🗙",
         "cancel": "Cancel",
         "yes": "Yes",
         "no": "No"
@@ -126,6 +127,7 @@
         "library_row_load": "Load row",
         "library_row_delete": "Delete from library",
         "snapshot_load": "Load selected snapshot from comment",
+        "snapshot_clear": "Remove selected snapshot from comment",
         "link_open": "Open link",
         "comment": "Add/edit comment"
       },

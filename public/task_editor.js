@@ -85,6 +85,7 @@ const commentSave = document.getElementById('commentSave');
 const commentInput = document.getElementById('commentInput');
 const commentTitle = document.getElementById('commentTitle');
 const commentSnapshotSelect = document.getElementById('commentSnapshotSelect');
+const commentSnapshotClear = document.getElementById('commentSnapshotClear');
 const commentSnapshotPath = document.getElementById('commentSnapshotPath');
 
 const libraryModal = document.getElementById('libraryModal');
@@ -173,10 +174,12 @@ function setCommentSnapshotDisplay(snapshotRelPath) {
   if (!safeRel) {
     commentSnapshotPath.textContent = '';
     commentSnapshotPath.hidden = true;
+    if (commentSnapshotClear) commentSnapshotClear.hidden = true;
     return;
   }
   commentSnapshotPath.textContent = safeRel;
   commentSnapshotPath.hidden = false;
+  if (commentSnapshotClear) commentSnapshotClear.hidden = false;
 }
 
 function formatDuration(totalSeconds) {
@@ -308,6 +311,12 @@ async function selectSnapshotForPendingCommentRow() {
   }
   pendingCommentSnapshotRelPath = safeRel;
   setCommentSnapshotDisplay(safeRel);
+}
+
+function clearSnapshotForPendingCommentRow() {
+  if (!pendingCommentRowId) return;
+  pendingCommentSnapshotRelPath = '';
+  setCommentSnapshotDisplay('');
 }
 
 async function loadSnapshotForRow(row) {
@@ -961,6 +970,10 @@ async function applyTaskEditorTranslations() {
   if (commentSnapshotSelect) {
     commentSnapshotSelect.textContent = tr('renderer.tasks.buttons.select_snapshot', commentSnapshotSelect.textContent || '');
   }
+  if (commentSnapshotClear) {
+    commentSnapshotClear.textContent = tr('renderer.tasks.buttons.clear_snapshot', commentSnapshotClear.textContent || '');
+    commentSnapshotClear.title = tr('renderer.tasks.tooltips.snapshot_clear', commentSnapshotClear.title || commentSnapshotClear.textContent || '');
+  }
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title', libraryTitle.textContent || '');
   if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.labels.search', librarySearchLabel.textContent || '');
@@ -1027,6 +1040,11 @@ if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentM
 if (commentSnapshotSelect) {
   commentSnapshotSelect.addEventListener('click', () => {
     selectSnapshotForPendingCommentRow().catch((err) => log.error('selectSnapshotForPendingCommentRow failed:', err));
+  });
+}
+if (commentSnapshotClear) {
+  commentSnapshotClear.addEventListener('click', () => {
+    clearSnapshotForPendingCommentRow();
   });
 }
 if (commentSave) {
