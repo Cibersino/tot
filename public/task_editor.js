@@ -973,6 +973,7 @@ async function applyTaskEditorTranslations() {
   if (commentSnapshotClear) {
     commentSnapshotClear.textContent = tr('renderer.tasks.buttons.clear_snapshot', commentSnapshotClear.textContent || '');
     commentSnapshotClear.title = tr('renderer.tasks.tooltips.snapshot_clear', commentSnapshotClear.title || commentSnapshotClear.textContent || '');
+    commentSnapshotClear.setAttribute('aria-label', commentSnapshotClear.title || commentSnapshotClear.textContent || '');
   }
 
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title', libraryTitle.textContent || '');
