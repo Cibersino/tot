@@ -51,6 +51,31 @@ Reglas:
 
 ## Unreleased
 
+### Agregado
+
+- Selector de texto (Issue #131): nuevo input numérico `appendRepeatInput` junto a `📋+` para repetir append del portapapeles `N` veces en un solo click.
+
+### Cambiado
+
+- `public/renderer.js` (Issue #131): el flujo `📋+` ahora:
+  - lee portapapeles una sola vez;
+  - normaliza `N` (si no es entero válido `>=1`, usa `1`; clamp superior a `MAX_APPEND_REPEAT`);
+  - construye el texto final equivalente a `N` clicks consecutivos, aplicando la regla de joiner por iteración (`\n` o `\n\n` según el acumulado);
+  - valida tamaño proyectado contra `maxIpcChars` antes de `setCurrentText(...)`;
+  - mantiene una sola llamada a `setCurrentText({ text, meta:{ source:'main-window', action:'append_newline' } })`;
+  - mantiene notificación de truncado solo cuando `main` reporta `resp.truncated`.
+- UI: ajuste visual de `.append-repeat-input` para diferenciarlo de botones (`btn-standard`) y mejorar legibilidad/foco.
+- `public/js/constants.js`: nuevo `MAX_APPEND_REPEAT = 9_999`.
+
+### Archivos
+
+- `public/index.html`
+- `public/style.css`
+- `public/js/constants.js`
+- `public/renderer.js`
+- `i18n/es/renderer.json`
+- `i18n/en/renderer.json`
+
 ---
 
 ## [0.1.5] toT - reemplazo find/search editor
