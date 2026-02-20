@@ -71,9 +71,53 @@ const toggleModoPreciso = document.getElementById('toggleModoPreciso');
 
 const wpmSlider = document.getElementById('wpmSlider');
 const wpmInput = document.getElementById('wpmInput');
+const { WpmCurve } = window;
+const wpmCurveMapper = (
+  WpmCurve && typeof WpmCurve.createMapperFromConstants === 'function'
+)
+  ? WpmCurve.createMapperFromConstants(AppConstants)
+  : null;
+
+if (!wpmCurveMapper) {
+  log.warnOnce(
+    'renderer.wpmCurve.unavailable',
+    '[renderer] WpmCurve unavailable; using linear slider mapping.'
+  );
+}
+
+function clampWpm(rawValue) {
+  const numeric = Number(rawValue);
+  const safe = Number.isFinite(numeric) ? Math.round(numeric) : WPM_MIN;
+  return Math.min(Math.max(safe, WPM_MIN), WPM_MAX);
+}
+
+function wpmFromSliderControl(rawControl) {
+  if (wpmCurveMapper && typeof wpmCurveMapper.wpmFromControl === 'function') {
+    return clampWpm(wpmCurveMapper.wpmFromControl(rawControl));
+  }
+  return clampWpm(rawControl);
+}
+
+function sliderControlFromWpm(rawWpm) {
+  if (wpmCurveMapper && typeof wpmCurveMapper.controlFromWpm === 'function') {
+    return wpmCurveMapper.controlFromWpm(rawWpm);
+  }
+  return clampWpm(rawWpm);
+}
+
+function syncWpmControls(rawWpm) {
+  const normalizedWpm = clampWpm(rawWpm);
+  if (wpmInput) wpmInput.value = String(normalizedWpm);
+  if (wpmSlider) wpmSlider.value = String(sliderControlFromWpm(normalizedWpm));
+  return normalizedWpm;
+}
+
 if (wpmSlider) {
   wpmSlider.min = String(WPM_MIN);
   wpmSlider.max = String(WPM_MAX);
+  if (wpmCurveMapper && Number.isFinite(wpmCurveMapper.controlStep) && wpmCurveMapper.controlStep > 0) {
+    wpmSlider.step = String(wpmCurveMapper.controlStep);
+  }
 }
 if (wpmInput) {
   wpmInput.min = String(WPM_MIN);
@@ -335,7 +379,7 @@ function applyTranslations() {
   }
 }
 
-let wpm = Number(wpmSlider.value);
+let wpm = syncWpmControls(wpmInput ? wpmInput.value : WPM_MIN);
 let currentPresetName = null;
 
 // Local preset cache (full list loaded once)
@@ -552,7 +596,7 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
     });
     if (selected) {
       currentPresetName = selected.name;
-      wpm = selected.wpm;
+      wpm = syncWpmControls(selected.wpm);
     } else {
       currentPresetName = null;
     }
@@ -664,7 +708,7 @@ function armIpcSubscriptions() {
             });
             if (selected) {
               currentPresetName = selected.name;
-              wpm = selected.wpm;
+              wpm = syncWpmControls(selected.wpm);
               updatePreviewAndResults(currentText);
             }
           }
@@ -1321,7 +1365,7 @@ presetsSelect.addEventListener('change', async () => {
       });
       if (selected) {
         currentPresetName = selected.name;
-        wpm = selected.wpm;
+        wpm = syncWpmControls(selected.wpm);
         updateTimeOnlyFromStats();
       }
     } catch (err) {
@@ -1343,8 +1387,8 @@ function resetPresetSelection() {
 // Keep slider/input in sync and invalidate preset selection
 wpmSlider.addEventListener('input', () => {
   if (!guardUserAction('wpm-slider')) return;
-  wpm = Number(wpmSlider.value);
-  wpmInput.value = wpm;
+  wpm = wpmFromSliderControl(wpmSlider.value);
+  wpmInput.value = String(wpm);
   resetPresetSelection();
   updateTimeOnlyFromStats();
 });
@@ -1352,11 +1396,8 @@ wpmSlider.addEventListener('input', () => {
 wpmInput.addEventListener('blur', () => {
   if (!guardUserAction('wpm-input-blur')) return;
   let val = Number(wpmInput.value);
-  if (isNaN(val)) val = Number(wpmSlider.value) || WPM_MIN;
-  val = Math.min(Math.max(val, WPM_MIN), WPM_MAX);
-  wpm = val;
-  wpmInput.value = wpm;
-  wpmSlider.value = wpm;
+  if (isNaN(val)) val = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
+  wpm = syncWpmControls(val);
   resetPresetSelection();
   updateTimeOnlyFromStats();
 });

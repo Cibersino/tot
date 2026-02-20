@@ -54,10 +54,10 @@
     <aside class="velocity" aria-labelledby="vel-title">
       <h4 id="vel-title" class="section-title">VELOCIDAD DE LECTURA</h4>
       <div class="wpm-row">
-        <input id="wpmInput" type="number" min="50" max="500" value="200" />
+        <input id="wpmInput" type="number" min="10" max="700" value="200" />
         <span>palabras por minuto (WPM)</span>
       </div>
-      <input id="wpmSlider" class="wpm-slider" type="range" min="50" max="500" value="200" />
+      <input id="wpmSlider" class="wpm-slider" type="range" min="10" max="700" value="200" />
       <div class="presets-row">
         <select id="presets" aria-label="Presets de velocidad">
         </select>
@@ -140,6 +140,7 @@
 
   <script src="./js/log.js"></script>
   <script src="./js/constants.js"></script>
+  <script src="./js/wpm_curve.js"></script>
   <script src="./js/notify.js"></script>
   <script src="./js/menu_actions.js"></script>
   <script src="./js/i18n.js"></script>
