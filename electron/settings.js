@@ -470,11 +470,17 @@ function registerIpc(
   {
     getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin })
     buildAppMenu, // function(lang)
+    guardIpcWhileLocked, // function(event, { channel, ...opts }) => { ok:false,... } | null
   } = {}
 ) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
   }
+
+  const maybeBlockedByOcrLock = (event, channel, opts = {}) => {
+    if (typeof guardIpcWhileLocked !== 'function') return null;
+    return guardIpcWhileLocked(event, Object.assign({ channel }, opts));
+  };
 
   // get-settings: returns the current settings object (normalized)
   ipcMain.handle('get-settings', async () => {
@@ -491,8 +497,11 @@ function registerIpc(
   });
 
   // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
-  ipcMain.handle('set-language', async (_event, lang) => {
+  ipcMain.handle('set-language', async (event, lang) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'set-language');
+      if (blocked) return blocked;
+
       const chosenRaw = String(lang || '');
       const chosen = normalizeLangTag(chosenRaw);
       if (!chosen) {
@@ -563,8 +572,11 @@ function registerIpc(
   });
 
   // set-mode-conteo: updates modeConteo and broadcasts
-  ipcMain.handle('set-mode-conteo', async (_event, mode) => {
+  ipcMain.handle('set-mode-conteo', async (event, mode) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'set-mode-conteo');
+      if (blocked) return blocked;
+
       let settings = getSettings();
       settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
       settings = saveSettings(settings);
@@ -580,8 +592,11 @@ function registerIpc(
   });
 
   // set-selected-preset: persists selection per language
-  ipcMain.handle('set-selected-preset', async (_event, presetName) => {
+  ipcMain.handle('set-selected-preset', async (event, presetName) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'set-selected-preset');
+      if (blocked) return blocked;
+
       const name = typeof presetName === 'string' ? presetName.trim() : '';
       if (!name) {
         log.warnOnce(

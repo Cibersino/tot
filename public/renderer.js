@@ -40,6 +40,7 @@ const {
 // DOM references
 // =============================================================================
 const textPreview = document.getElementById('textPreview');
+const btnImportExtract = document.getElementById('btnImportExtract');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const appendRepeatInput = document.getElementById('appendRepeatInput');
@@ -153,14 +154,27 @@ function isRendererReady() {
   return rendererReadyState === 'READY';
 }
 
+function isOcrLockActive() {
+  return !!ocrLockActive;
+}
+
 function guardUserAction(actionId) {
-  if (isRendererReady()) return true;
-  log.warnOnce(
-    `BOOTSTRAP:renderer.preReady.${actionId}`,
-    'Renderer action ignored (pre-READY):',
-    actionId
-  );
-  return false;
+  if (!isRendererReady()) {
+    log.warnOnce(
+      `BOOTSTRAP:renderer.preReady.${actionId}`,
+      'Renderer action ignored (pre-READY):',
+      actionId
+    );
+    return false;
+  }
+  if (isOcrLockActive()) {
+    log.warnOnce(
+      `OCR_LOCKED:renderer.action.${actionId}`,
+      `OCR lock active: blocked renderer action '${actionId}'.`
+    );
+    return false;
+  }
+  return true;
 }
 
 function sendRendererCoreReady() {
@@ -250,6 +264,37 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
+let ocrLockActive = false;
+let ocrLockReason = '';
+
+function applyGlobalOcrLockUi() {
+  const controls = document.querySelectorAll('button, input, select, textarea');
+  controls.forEach((el) => {
+    if (!el || el.dataset.ocrLockExempt === '1') return;
+    if (ocrLockActive) {
+      if (!Object.prototype.hasOwnProperty.call(el.dataset, 'ocrLockPrevDisabled')) {
+        el.dataset.ocrLockPrevDisabled = el.disabled ? '1' : '0';
+      }
+      el.disabled = true;
+      return;
+    }
+    if (!Object.prototype.hasOwnProperty.call(el.dataset, 'ocrLockPrevDisabled')) return;
+    el.disabled = (el.dataset.ocrLockPrevDisabled === '1');
+    delete el.dataset.ocrLockPrevDisabled;
+  });
+}
+
+function updateOcrLockState(payload) {
+  const nextLocked = !!(payload && payload.locked);
+  const nextReason = nextLocked
+    ? String((payload && payload.reason) || 'OCR_RUNNING')
+    : '';
+  const changed = (ocrLockActive !== nextLocked) || (ocrLockReason !== nextReason);
+  ocrLockActive = nextLocked;
+  ocrLockReason = nextReason;
+  if (!changed) return;
+  applyGlobalOcrLockUi();
+}
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
   const api = window.electronAPI;
@@ -285,6 +330,7 @@ function applyTranslations() {
     if (aria) el.setAttribute('aria-label', aria);
   };
   // Text selector buttons
+  if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
@@ -294,6 +340,10 @@ function applyTranslations() {
   if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new', btnNewTask.textContent || '');
   if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load', btnLoadTask.textContent || '');
   // Text selector tooltips
+  if (btnImportExtract) {
+    btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract', btnImportExtract.title || '');
+    applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract', btnImportExtract.title || btnImportExtract.textContent || '');
+  }
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
   if (appendRepeatInput) {
@@ -741,6 +791,21 @@ function armIpcSubscriptions() {
       throw new Error('[renderer] electronAPI.onStartupReady unavailable; cannot bootstrap renderer readiness');
     }
 
+    if (typeof window.electronAPI.onOcrLockState === 'function') {
+      window.electronAPI.onOcrLockState((payload) => {
+        try {
+          updateOcrLockState(payload || {});
+        } catch (err) {
+          log.error('Error handling ocr-lock-state event:', err);
+        }
+      });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onOcrLockState.unavailable',
+        'onOcrLockState unavailable; OCR lock live updates will not sync.'
+      );
+    }
+
     if (typeof window.electronAPI.onSettingsChanged === 'function') {
       window.electronAPI.onSettingsChanged(settingsChangeHandler);
     } else {
@@ -863,6 +928,23 @@ async function runStartupOrchestrator() {
         }
       } catch (err) {
         log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
+      }
+    }
+
+    const getOcrLockState = getOptionalElectronMethod('getOcrLockState', {
+      dedupeKey: 'renderer.ipc.getOcrLockState.unavailable',
+      unavailableMessage: 'getOcrLockState unavailable; assuming OCR lock is inactive.'
+    });
+    if (getOcrLockState) {
+      try {
+        const lockSnapshot = await getOcrLockState();
+        if (lockSnapshot && lockSnapshot.ok === true) {
+          updateOcrLockState(lockSnapshot);
+        } else if (lockSnapshot && lockSnapshot.code === 'OCR_LOCKED') {
+          updateOcrLockState({ locked: true, reason: lockSnapshot.reason || 'OCR_RUNNING' });
+        }
+      } catch (err) {
+        log.warn('BOOTSTRAP: getOcrLockState failed; assuming unlocked:', err);
       }
     }
 
@@ -1409,6 +1491,42 @@ wpmInput.addEventListener('keydown', (e) => {
     wpmInput.blur();
   }
 });
+
+// =============================================================================
+// Import/OCR entry point (Batch 1 scaffold)
+// =============================================================================
+if (btnImportExtract) {
+  btnImportExtract.addEventListener('click', async () => {
+    if (!guardUserAction('import-select-file')) return;
+    try {
+      const importSelectFile = getOptionalElectronMethod('importSelectFile', {
+        dedupeKey: 'renderer.ipc.importSelectFile.unavailable',
+        unavailableMessage: 'importSelectFile unavailable; import action skipped.'
+      });
+      if (!importSelectFile) {
+        window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
+        return;
+      }
+      const res = await importSelectFile();
+      if (!res || res.ok !== true) {
+        const code = res && typeof res.code === 'string' ? res.code : '';
+        if (code === 'OCR_LOCKED') return;
+        if (code === 'IMPORT_NOT_READY' || code === 'IMPORT_NOT_IMPLEMENTED') {
+          window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
+          return;
+        }
+        log.warn('import-select-file failed:', res);
+        window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
+        return;
+      }
+      // Batch 1 only wires contracts; run/apply flows land in next batches.
+      window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
+    } catch (err) {
+      log.error('Error in import-select-file scaffold:', err);
+      window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
+    }
+  });
+}
 
 // =============================================================================
 // Clipboard helpers (shared by overwrite/append)

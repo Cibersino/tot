@@ -33,6 +33,18 @@ const api = {
     openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url),
     openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey),
     openTaskEditor: (mode) => ipcRenderer.invoke('open-task-editor', { mode }),
+    importSelectFile: () => ipcRenderer.invoke('import-select-file'),
+    importRun: (payload) => ipcRenderer.invoke('import-run', payload),
+    importCancel: () => ipcRenderer.invoke('import-cancel'),
+    importApply: (payload) => ipcRenderer.invoke('import-apply', payload),
+    importDiscard: (payload) => ipcRenderer.invoke('import-discard', payload),
+    getOcrLockState: () => ipcRenderer.invoke('ocr-lock-get-state'),
+    onOcrLockState: (cb) => {
+        const wrapper = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('ocr-lock-state callback error:', err); }
+        };
+        return subscribeWithUnsub('ocr-lock-state', wrapper, 'removeListener error (ocr-lock-state):');
+    },
     onCurrentTextUpdated: (cb) => {
         ipcRenderer.on('current-text-updated', (_e, text) => cb(text));
     },

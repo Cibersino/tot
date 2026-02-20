@@ -252,7 +252,7 @@ function init(options) {
  * - clipboard-read-text
  * Broadcasts updates to main/editor windows (best-effort).
  */
-function registerIpc(ipcMain, windowsResolver) {
+function registerIpc(ipcMain, windowsResolver, { guardIpcWhileLocked } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[text_state] registerIpc requires ipcMain');
   }
@@ -263,11 +263,19 @@ function registerIpc(ipcMain, windowsResolver) {
     getWindows = () => windowsResolver;
   }
 
+  const maybeBlockedByOcrLock = (event, channel, opts = {}) => {
+    if (typeof guardIpcWhileLocked !== 'function') return null;
+    return guardIpcWhileLocked(event, Object.assign({ channel }, opts));
+  };
+
   // Returns the current text as a simple string (compatibility)
   ipcMain.handle('get-current-text', async () => {
     return currentText || '';
   });
   ipcMain.handle('clipboard-read-text', (event) => {
+    const blocked = maybeBlockedByOcrLock(event, 'clipboard-read-text');
+    if (blocked) return blocked;
+
     const { mainWin } = getWindows() || {};
     const senderWin = BrowserWindow.fromWebContents(event.sender);
     if (!mainWin || mainWin.isDestroyed() || !senderWin || senderWin !== mainWin) {
@@ -310,6 +318,9 @@ function registerIpc(ipcMain, windowsResolver) {
         );
         return { ok: false, error: 'unauthorized' };
       }
+
+      const blocked = maybeBlockedByOcrLock(_event, 'set-current-text');
+      if (blocked) return blocked;
 
       const isPayloadObject = payload && typeof payload === 'object';
       const hasTextProp =
@@ -359,8 +370,11 @@ function registerIpc(ipcMain, windowsResolver) {
   });
 
   // Forced cleaning of the editor (invoked from the main screen)
-  ipcMain.handle('force-clear-editor', async () => {
+  ipcMain.handle('force-clear-editor', async (event) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'force-clear-editor');
+      if (blocked) return blocked;
+
       const { mainWin, editorWin } = getWindows() || {};
 
       // Maintain internal status

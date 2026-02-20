@@ -230,7 +230,7 @@ function copyDefaultPresetsIfMissing() {
  * @param {Object} opts
  * @param {Function} opts.getWindows -() => ({ mainWin, editorWin, presetWin, flotanteWin, langWin })
  */
-function registerIpc(ipcMain, { getWindows } = {}) {
+function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[presets_main] registerIpc requires ipcMain');
   }
@@ -239,6 +239,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     typeof getWindows === 'function'
       ? () => getWindows() || {}
       : () => getWindows || {};
+
+  const maybeBlockedByOcrLock = (event, channel, opts = {}) => {
+    if (typeof guardIpcWhileLocked !== 'function') return null;
+    return guardIpcWhileLocked(event, Object.assign({ channel }, opts));
+  };
 
   // Best-effort: seed user config defaults on startup.
   copyDefaultPresetsIfMissing();
@@ -439,8 +444,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: open the config presets folder in the OS file manager.
-  ipcMain.handle('open-default-presets-folder', async () => {
+  ipcMain.handle('open-default-presets-folder', async (event) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'open-default-presets-folder');
+      if (blocked) return blocked;
+
       ensureConfigPresetsDir();
       const presetsDir = getConfigPresetsDir();
       // shell.openPath returns '' on success, or an error string
@@ -463,8 +471,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: create or overwrite a user preset and broadcast changes.
-  ipcMain.handle('create-preset', (_event, preset) => {
+  ipcMain.handle('create-preset', (event, preset) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'create-preset');
+      if (blocked) return blocked;
+
       const sanitized = sanitizePresetInput(preset);
       if (!sanitized.ok) {
         log.warnOnce(
@@ -512,8 +523,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: confirm deletion with a native dialog, then persist changes.
-  ipcMain.handle('request-delete-preset', async (_event, name) => {
+  ipcMain.handle('request-delete-preset', async (event, name) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'request-delete-preset');
+      if (blocked) return blocked;
+
       if (typeof name !== 'undefined' && name !== null && typeof name !== 'string') {
         log.warnOnce(
           'presets_main.request-delete-preset.invalid_name',
@@ -632,8 +646,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: confirm and restore defaults for the current language.
-  ipcMain.handle('request-restore-defaults', async () => {
+  ipcMain.handle('request-restore-defaults', async (event) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'request-restore-defaults');
+      if (blocked) return blocked;
+
       let settings = settingsState.getSettings();
       const { lang, dialogLang, dialogTexts } = getDialogContext(settings);
       const { yesLabel, noLabel } = getYesNoLabels(dialogTexts);
@@ -714,8 +731,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: show info dialog when edit is requested with no selection.
-  ipcMain.handle('notify-no-selection-edit', async () => {
+  ipcMain.handle('notify-no-selection-edit', async (event) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'notify-no-selection-edit');
+      if (blocked) return blocked;
+
       const settings = settingsState.getSettings();
       const { dialogTexts } = getDialogContext(settings);
 
@@ -742,8 +762,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: confirm edit, replace preset, and broadcast.
-  ipcMain.handle('edit-preset', async (_event, payload) => {
+  ipcMain.handle('edit-preset', async (event, payload) => {
     try {
+      const blocked = maybeBlockedByOcrLock(event, 'edit-preset');
+      if (blocked) return blocked;
+
       const originalName =
         isPlainObject(payload) && Object.prototype.hasOwnProperty.call(payload, 'originalName')
           ? String(payload.originalName || '').trim()

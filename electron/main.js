@@ -37,6 +37,7 @@ const editorState = require('./editor_state');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const snapshotsMain = require('./current_text_snapshots_main');
+const importOcrMain = require('./import_ocr_main');
 const updater = require('./updater');
 const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
@@ -75,10 +76,17 @@ function isAliveWindow(win) {
 }
 
 function isMainInteractive() {
-  return mainReadyState === 'READY' && menuEnabled;
+  return mainReadyState === 'READY' && menuEnabled && !importOcrMain.isOcrLockActive();
 }
 
 function guardMainUserAction(actionId, message) {
+  if (importOcrMain.isOcrLockActive()) {
+    log.warnOnce(
+      `OCR_LOCKED:main.${actionId}`,
+      `OCR lock active: blocked main action '${actionId}'.`
+    );
+    return false;
+  }
   if (isMainInteractive()) return true;
   const rawMessage = typeof message === 'string' && message.trim()
     ? message.trim()
@@ -1126,6 +1134,9 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
 
 // Floating window: open/close + commands from the flotante UI
 ipcMain.handle('flotante-open', async () => {
+  if (importOcrMain.isOcrLockActive()) {
+    return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
+  }
   if (!guardMainUserAction('flotante-open', 'flotante-open ignored (pre-READY).')) {
     return { ok: false, error: 'not ready' };
   }
@@ -1148,6 +1159,9 @@ ipcMain.handle('flotante-open', async () => {
 });
 
 ipcMain.handle('flotante-close', () => {
+  if (importOcrMain.isOcrLockActive()) {
+    return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
+  }
   if (!guardMainUserAction('flotante-close', 'flotante-close ignored (pre-READY).')) {
     return { ok: false, error: 'not ready' };
   }
@@ -1220,6 +1234,9 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
 // Editor window: open (create or focus) and push current text
 ipcMain.handle('open-editor', () => {
+  if (importOcrMain.isOcrLockActive()) {
+    return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
+  }
   if (!guardMainUserAction('open-editor', 'open-editor ignored (pre-READY).')) {
     return { ok: false, error: 'not ready' };
   }
@@ -1270,6 +1287,9 @@ ipcMain.on('task-editor-confirm-close', (event) => {
 
 // Preset modal: open (with payload normalization)
 ipcMain.handle('open-preset-modal', (event, payload) => {
+  if (importOcrMain.isOcrLockActive()) {
+    return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
+  }
   if (!guardMainUserAction('open-preset-modal', 'open-preset-modal ignored (pre-READY).')) {
     return { ok: false, error: 'not ready' };
   }
@@ -1414,7 +1434,9 @@ app.whenReady().then(() => {
   textState.registerIpc(ipcMain, () => ({
     mainWin,
     editorWin,
-  }));
+  }), {
+    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
+  });
 
   editorFindMain.registerIpc(ipcMain);
 
@@ -1429,6 +1451,7 @@ app.whenReady().then(() => {
       taskEditorWin,
     }),
     buildAppMenu,
+    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
   });
 
   presetsMain.registerIpc(ipcMain, {
@@ -1441,12 +1464,14 @@ app.whenReady().then(() => {
       flotanteWin,
       taskEditorWin,
     }),
+    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
   });
 
   snapshotsMain.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
+    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
   });
 
   tasksMain.registerIpc(ipcMain, {
@@ -1461,6 +1486,19 @@ app.whenReady().then(() => {
         taskEditorWin.show();
       }
     },
+    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
+  });
+
+  importOcrMain.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+      editorWin,
+      editorFindWin: editorFindMain.getFindWindow(),
+      presetWin,
+      langWin,
+      flotanteWin,
+      taskEditorWin,
+    }),
   });
 
   updater.registerIpc(ipcMain, {
