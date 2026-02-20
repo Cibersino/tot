@@ -30,6 +30,7 @@ const {
   DEFAULT_LANG,
   WPM_MIN,
   WPM_MAX,
+  MAX_APPEND_REPEAT,
   PREVIEW_INLINE_THRESHOLD,
   PREVIEW_START_CHARS,
   PREVIEW_END_CHARS
@@ -41,6 +42,7 @@ const {
 const textPreview = document.getElementById('textPreview');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
+const appendRepeatInput = document.getElementById('appendRepeatInput');
 const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
 const btnLoadSnapshot = document.getElementById('btnLoadSnapshot');
@@ -69,13 +71,61 @@ const toggleModoPreciso = document.getElementById('toggleModoPreciso');
 
 const wpmSlider = document.getElementById('wpmSlider');
 const wpmInput = document.getElementById('wpmInput');
+const { WpmCurve } = window;
+const wpmCurveMapper = (
+  WpmCurve && typeof WpmCurve.createMapperFromConstants === 'function'
+)
+  ? WpmCurve.createMapperFromConstants(AppConstants)
+  : null;
+
+if (!wpmCurveMapper) {
+  log.warnOnce(
+    'renderer.wpmCurve.unavailable',
+    '[renderer] WpmCurve unavailable; using linear slider mapping.'
+  );
+}
+
+function clampWpm(rawValue) {
+  const numeric = Number(rawValue);
+  const safe = Number.isFinite(numeric) ? Math.round(numeric) : WPM_MIN;
+  return Math.min(Math.max(safe, WPM_MIN), WPM_MAX);
+}
+
+function wpmFromSliderControl(rawControl) {
+  if (wpmCurveMapper && typeof wpmCurveMapper.wpmFromControl === 'function') {
+    return clampWpm(wpmCurveMapper.wpmFromControl(rawControl));
+  }
+  return clampWpm(rawControl);
+}
+
+function sliderControlFromWpm(rawWpm) {
+  if (wpmCurveMapper && typeof wpmCurveMapper.controlFromWpm === 'function') {
+    return wpmCurveMapper.controlFromWpm(rawWpm);
+  }
+  return clampWpm(rawWpm);
+}
+
+function syncWpmControls(rawWpm) {
+  const normalizedWpm = clampWpm(rawWpm);
+  if (wpmInput) wpmInput.value = String(normalizedWpm);
+  if (wpmSlider) wpmSlider.value = String(sliderControlFromWpm(normalizedWpm));
+  return normalizedWpm;
+}
+
 if (wpmSlider) {
   wpmSlider.min = String(WPM_MIN);
   wpmSlider.max = String(WPM_MAX);
+  if (wpmCurveMapper && Number.isFinite(wpmCurveMapper.controlStep) && wpmCurveMapper.controlStep > 0) {
+    wpmSlider.step = String(wpmCurveMapper.controlStep);
+  }
 }
 if (wpmInput) {
   wpmInput.min = String(WPM_MIN);
   wpmInput.max = String(WPM_MAX);
+}
+if (appendRepeatInput) {
+  appendRepeatInput.min = '1';
+  appendRepeatInput.max = String(MAX_APPEND_REPEAT);
 }
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
@@ -199,6 +249,7 @@ let splashRemovedSent = false;
 let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
+let hasCurrentTextSubscription = false;
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
   const api = window.electronAPI;
@@ -227,6 +278,12 @@ const getCronoLabels = () => ({
 
 function applyTranslations() {
   if (!tRenderer) return;
+  const applyAriaLabel = (el, key, fallback = '') => {
+    if (!el) return;
+    const defaultValue = fallback || el.getAttribute('aria-label') || '';
+    const aria = tRenderer(key, defaultValue);
+    if (aria) el.setAttribute('aria-label', aria);
+  };
   // Text selector buttons
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
@@ -239,6 +296,10 @@ function applyTranslations() {
   // Text selector tooltips
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
+  if (appendRepeatInput) {
+    appendRepeatInput.title = tRenderer('renderer.main.tooltips.append_repeat_count', appendRepeatInput.title || '');
+    applyAriaLabel(appendRepeatInput, 'renderer.main.aria.append_repeat_count');
+  }
   if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
   if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
   if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load', btnLoadSnapshot.title || '');
@@ -265,6 +326,9 @@ function applyTranslations() {
   // Speed selector labels
   const wpmLabel = document.querySelector('.wpm-row span');
   if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label', wpmLabel.textContent || '');
+  applyAriaLabel(wpmInput, 'renderer.main.aria.wpm_input');
+  applyAriaLabel(wpmSlider, 'renderer.main.aria.wpm_slider');
+  applyAriaLabel(presetsSelect, 'renderer.main.aria.speed_presets');
   // Results: precise mode label
   const togglePrecisoLabel = document.querySelector('.toggle-wrapper .toggle-label');
   if (togglePrecisoLabel) {
@@ -275,6 +339,7 @@ function applyTranslations() {
       toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip', toggleWrapper.title || togglePrecisoLabel.title || '');
     }
   }
+  applyAriaLabel(toggleModoPreciso, 'renderer.main.aria.precise_mode_toggle', togglePrecisoLabel ? togglePrecisoLabel.textContent : '');
   // Stopwatch: speed label and controls aria-label
   const realWpmLabel = document.querySelector('.realwpm');
   if (realWpmLabel && realWpmLabel.firstChild) {
@@ -282,9 +347,21 @@ function applyTranslations() {
   }
   const cronoControls = document.querySelector('.crono-controls');
   if (cronoControls) {
-    const ariaLabel = tRenderer('renderer.main.crono.controls_label', cronoControls.getAttribute('aria-label') || '');
+    const ariaLabel = tRenderer(
+      'renderer.main.aria.crono_controls',
+      tRenderer('renderer.main.crono.controls_label', cronoControls.getAttribute('aria-label') || '')
+    );
     if (ariaLabel) cronoControls.setAttribute('aria-label', ariaLabel);
   }
+  const cronoDisplayEl = document.getElementById('cronoDisplay');
+  const cronoToggleBtn = document.getElementById('cronoToggle');
+  const cronoResetBtn = document.getElementById('cronoReset');
+  const vfSwitchWrapper = document.querySelector('.vf-switch-wrapper');
+  applyAriaLabel(cronoDisplayEl, 'renderer.main.aria.crono_display');
+  applyAriaLabel(cronoToggleBtn, 'renderer.main.aria.crono_toggle');
+  applyAriaLabel(cronoResetBtn, 'renderer.main.aria.crono_reset');
+  applyAriaLabel(toggleVF, 'renderer.main.aria.floating_window_toggle');
+  applyAriaLabel(vfSwitchWrapper, 'renderer.main.aria.floating_window_group');
   const labelsCrono = getCronoLabels();
   if (cronoController && typeof cronoController.updateLabels === 'function') {
     cronoController.updateLabels(labelsCrono);
@@ -302,7 +379,7 @@ function applyTranslations() {
   }
 }
 
-let wpm = Number(wpmSlider.value);
+let wpm = syncWpmControls(wpmInput ? wpmInput.value : WPM_MIN);
 let currentPresetName = null;
 
 // Local preset cache (full list loaded once)
@@ -519,7 +596,7 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
     });
     if (selected) {
       currentPresetName = selected.name;
-      wpm = selected.wpm;
+      wpm = syncWpmControls(selected.wpm);
     } else {
       currentPresetName = null;
     }
@@ -579,6 +656,7 @@ const settingsChangeHandler = async (newSettings) => {
 function armIpcSubscriptions() {
   // Subscribe to updates from main (current text changes)
   if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
+    hasCurrentTextSubscription = true;
     window.electronAPI.onCurrentTextUpdated((text) => {
       try {
         if (!isRendererReady()) {
@@ -595,10 +673,7 @@ function armIpcSubscriptions() {
       }
     });
   } else if (window.electronAPI) {
-    log.warnOnce(
-      'renderer.ipc.onCurrentTextUpdated.unavailable',
-      'onCurrentTextUpdated unavailable; current text updates will not sync.'
-    );
+    throw new Error('[renderer] electronAPI.onCurrentTextUpdated unavailable; cannot maintain current text synchronization');
   }
 
   // Subscribe to preset create/update notifications from main
@@ -633,7 +708,7 @@ function armIpcSubscriptions() {
             });
             if (selected) {
               currentPresetName = selected.name;
-              wpm = selected.wpm;
+              wpm = syncWpmControls(selected.wpm);
               updatePreviewAndResults(currentText);
             }
           }
@@ -1290,7 +1365,7 @@ presetsSelect.addEventListener('change', async () => {
       });
       if (selected) {
         currentPresetName = selected.name;
-        wpm = selected.wpm;
+        wpm = syncWpmControls(selected.wpm);
         updateTimeOnlyFromStats();
       }
     } catch (err) {
@@ -1312,8 +1387,8 @@ function resetPresetSelection() {
 // Keep slider/input in sync and invalidate preset selection
 wpmSlider.addEventListener('input', () => {
   if (!guardUserAction('wpm-slider')) return;
-  wpm = Number(wpmSlider.value);
-  wpmInput.value = wpm;
+  wpm = wpmFromSliderControl(wpmSlider.value);
+  wpmInput.value = String(wpm);
   resetPresetSelection();
   updateTimeOnlyFromStats();
 });
@@ -1321,11 +1396,8 @@ wpmSlider.addEventListener('input', () => {
 wpmInput.addEventListener('blur', () => {
   if (!guardUserAction('wpm-input-blur')) return;
   let val = Number(wpmInput.value);
-  if (isNaN(val)) val = Number(wpmSlider.value) || WPM_MIN;
-  val = Math.min(Math.max(val, WPM_MIN), WPM_MAX);
-  wpm = val;
-  wpmInput.value = wpm;
-  wpmSlider.value = wpm;
+  if (isNaN(val)) val = wpmFromSliderControl(wpmSlider ? wpmSlider.value : WPM_MIN);
+  wpm = syncWpmControls(val);
   resetPresetSelection();
   updateTimeOnlyFromStats();
 });
@@ -1361,6 +1433,61 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
   }
   const text = (res && typeof res === 'object') ? (res.text || '') : (res || '');
   return { ok: true, text };
+}
+
+function normalizeAppendRepeat(rawValue) {
+  const numericValue = Number(rawValue);
+  if (!Number.isInteger(numericValue) || numericValue < 1) return 1;
+  return Math.min(numericValue, MAX_APPEND_REPEAT);
+}
+
+function getAppendRepeatCount() {
+  if (!appendRepeatInput) return 1;
+  const normalized = normalizeAppendRepeat(appendRepeatInput.value);
+  appendRepeatInput.value = String(normalized);
+  return normalized;
+}
+
+function projectRepeatedAppendLength(current, clip, repeatCount) {
+  const clipLength = clip.length;
+  const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
+  let projected = current.length;
+  let hasContent = current.length > 0;
+  let endsWithNewline = hasContent && (current.endsWith('\n') || current.endsWith('\r'));
+
+  for (let i = 0; i < repeatCount; i += 1) {
+    if (hasContent) {
+      projected += endsWithNewline ? 1 : 2;
+      endsWithNewline = true;
+    }
+    if (clipLength > 0) {
+      projected += clipLength;
+      hasContent = true;
+      endsWithNewline = clipEndsWithNewline;
+    }
+  }
+  return projected;
+}
+
+function buildRepeatedAppendText(current, clip, repeatCount) {
+  const clipLength = clip.length;
+  const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
+  const parts = [current];
+  let hasContent = current.length > 0;
+  let endsWithNewline = hasContent && (current.endsWith('\n') || current.endsWith('\r'));
+
+  for (let i = 0; i < repeatCount; i += 1) {
+    if (hasContent) {
+      parts.push(endsWithNewline ? '\n' : '\n\n');
+      endsWithNewline = true;
+    }
+    if (clipLength > 0) {
+      parts.push(clip);
+      hasContent = true;
+      endsWithNewline = clipEndsWithNewline;
+    }
+  }
+  return parts.join('');
 }
 
 // =============================================================================
@@ -1399,7 +1526,10 @@ btnOverwriteClipboard.addEventListener('click', async () => {
       throw new Error(resp.error || 'set-current-text failed');
     }
 
-    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : clip, { applyRules: true });
+    // UI/state sync is authoritative via "current-text-updated" subscription.
+    if (!hasCurrentTextSubscription) {
+      throw new Error('current-text-updated subscription unavailable');
+    }
     if (resp && resp.truncated) {
       window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
@@ -1430,11 +1560,9 @@ btnAppendClipboard.addEventListener('click', async () => {
       return;
     }
     const current = await getCurrentText() || '';
+    const repeatCount = getAppendRepeatCount();
 
-    let joiner = '';
-    if (current) joiner = current.endsWith('\n') || current.endsWith('\r') ? '\n' : '\n\n';
-
-    const projectedLen = current.length + (current ? joiner.length : 0) + clip.length;
+    const projectedLen = projectRepeatedAppendLength(current, clip, repeatCount);
     if (projectedLen > maxIpcChars) {
       window.Notify.notifyMain('renderer.alerts.append_too_large');
       return;
@@ -1446,7 +1574,7 @@ btnAppendClipboard.addEventListener('click', async () => {
       return;
     }
 
-    const newFull = current + (current ? joiner : '') + clip;
+    const newFull = buildRepeatedAppendText(current, clip, repeatCount);
 
     // Send object with meta (append_newline)
     const setCurrentText = getOptionalElectronMethod('setCurrentText', {
@@ -1466,7 +1594,10 @@ btnAppendClipboard.addEventListener('click', async () => {
       throw new Error(resp.error || 'set-current-text failed');
     }
 
-    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : newFull, { applyRules: true });
+    // UI/state sync is authoritative via "current-text-updated" subscription.
+    if (!hasCurrentTextSubscription) {
+      throw new Error('current-text-updated subscription unavailable');
+    }
 
     // Notify truncation only if main confirms it
     if (resp && resp.truncated) {
@@ -1525,15 +1656,12 @@ btnEmptyMain.addEventListener('click', async () => {
       text: '',
       meta: { source: 'main-window', action: 'overwrite' }
     });
-
-    setCurrentTextAndUpdateUI(resp && resp.text ? resp.text : '', { applyRules: true });
-    if (window.electronAPI && typeof window.electronAPI.forceClearEditor === 'function') {
-      try { await window.electronAPI.forceClearEditor(); } catch (err) { log.error('Error invoking forceClearEditor:', err); }
-    } else if (window.electronAPI) {
-      log.warnOnce(
-        'renderer.ipc.forceClearEditor.unavailable',
-        'forceClearEditor unavailable; editor clear sync skipped.'
-      );
+    if (resp && resp.ok === false) {
+      throw new Error(resp.error || 'set-current-text failed');
+    }
+    // UI/state sync is authoritative via "current-text-updated" subscription.
+    if (!hasCurrentTextSubscription) {
+      throw new Error('current-text-updated subscription unavailable');
     }
   } catch (err) {
     log.error('Error clearing text from main window:', err);

@@ -392,6 +392,8 @@ function createFindWindow() {
     height: FIND_WIN_HEIGHT,
     show: false,
     frame: false,
+    hasShadow: false,
+    thickFrame: false,
     resizable: false,
     minimizable: false,
     maximizable: false,

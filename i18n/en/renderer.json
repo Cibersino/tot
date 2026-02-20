@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Replace current text with clipboard",
         "append_clipboard": "Append clipboard at the end of current text (new line)",
+        "append_repeat_count": "Append repetitions (1-9999)",
         "edit": "Open full current text window",
         "clear": "Clear current text",
         "snapshot_load": "Load text snapshot",
@@ -28,6 +29,19 @@
         "reset_presets": "Restore default presets",
         "help_button": "Show a useful tip",
         "flotante_window": "Floating window"
+      },
+      "aria": {
+        "append_repeat_count": "Paste repetitions",
+        "wpm_input": "Words per minute",
+        "wpm_slider": "Words-per-minute slider",
+        "speed_presets": "Speed presets",
+        "precise_mode_toggle": "Precise mode",
+        "crono_controls": "Stopwatch controls",
+        "crono_display": "Stopwatch display",
+        "crono_toggle": "Start or pause stopwatch",
+        "crono_reset": "Reset stopwatch",
+        "floating_window_toggle": "Floating window",
+        "floating_window_group": "Floating window controls"
       },
       "speed": {
         "title": "READING SPEED",
@@ -100,6 +114,7 @@
         "library_row_delete": "🗑",
         "snapshot": "📥",
         "select_snapshot": "Select snapshot",
+        "clear_snapshot": "🗙",
         "cancel": "Cancel",
         "yes": "Yes",
         "no": "No"
@@ -111,7 +126,9 @@
         "library_row_save": "Save to library",
         "library_row_load": "Load row",
         "library_row_delete": "Delete from library",
-        "snapshot_load": "Load selected snapshot from comment",
+        "snapshot_load": "Load a text snapshot for this row",
+        "snapshot_select": "Select a text snapshot for this row",
+        "snapshot_clear": "Remove selected snapshot from this row",
         "link_open": "Open link",
         "comment": "Add/edit comment"
       },
@@ -227,6 +244,7 @@
       "drop_no_text": "Drag and drop: no plain text detected.",
       "type_limit": "Cannot type more text: maximum size reached.",
       "paste_limit": "Cannot paste more text: maximum size reached.",
+      "drop_limit": "Cannot drop more text: maximum size reached.",
       "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
       "drop_truncated": "Dragged text exceeded the available space and was truncated.",
       "text_truncated": "Text was truncated to fit the application limit.",

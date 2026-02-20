@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Remplacer le texte actuel par le presse-papier",
         "append_clipboard": "Coller le presse-papier à la fin du texte actuel (nouvelle ligne)",
+        "append_repeat": "Nombre de répétitions du append (1-9999)",
         "edit": "Ouvrir la fenêtre du texte actuel complet",
         "clear": "Vider le texte actuel",
         "snapshot_load": "Charger un snapshot de texte",
@@ -87,6 +88,8 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "select_snapshot": "Sélectionner un snapshot",
+        "clear_snapshot": "🗙",
         "cancel": "Annuler",
         "yes": "Oui",
         "no": "Non"
@@ -98,6 +101,9 @@
         "library_row_save": "Sauvegarder dans la bibliothèque",
         "library_row_load": "Charger la ligne",
         "library_row_delete": "Supprimer la ligne de la bibliothèque",
+        "snapshot_load": "Charger un snapshot de texte pour cette ligne",
+        "snapshot_select": "Sélectionner un snapshot de texte pour cette ligne",
+        "snapshot_clear": "Supprimer le snapshot de texte de cette ligne",
         "link_open": "Ouvrir le lien",
         "comment": "Ajouter/modifier un commentaire"
       },

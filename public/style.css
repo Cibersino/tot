@@ -135,6 +135,24 @@ body {
   flex-wrap: wrap;
 }
 
+.append-repeat-input {
+  width: 60px;
+  height: 30px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  border: 1px solid #b8ae9c;
+  background: #f8f5ee;
+  color: #2b2b2b;
+  font-size: 14px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.append-repeat-input:focus {
+  outline: 2px solid rgb(30 130 230 / .22);
+  outline-offset: 1px;
+}
+
 .controls-sep {
   width: 1px;
   height: 18px;

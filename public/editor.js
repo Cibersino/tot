@@ -29,7 +29,7 @@ if (!AppConstants) {
   throw new Error('[editor] AppConstants unavailable; verify constants.js load order');
 }
 const { DEFAULT_LANG, PASTE_ALLOW_LIMIT, SMALL_UPDATE_THRESHOLD } = AppConstants;
-let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute limit of the text size in the editor. If the total content exceeds this value, it is truncated. Prevents crashes, extreme lags and OOM.
+let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute editor limit. Local writes must stay within this bound to prevent lags and OOM.
 
 if (!window.editorAPI) {
   throw new Error('[editor] editorAPI unavailable; cannot continue');
@@ -254,6 +254,23 @@ function getSelectionRange() {
   return { start, end };
 }
 
+function getInsertionCapacity() {
+  const { start, end } = getSelectionRange();
+  const selectedLength = Math.max(0, end - start);
+  return maxTextChars - (editor.value.length - selectedLength);
+}
+
+function getBeforeInputIncomingLength(ev) {
+  const inputType = (ev && typeof ev.inputType === 'string') ? ev.inputType : '';
+  if (ev && typeof ev.data === 'string') {
+    return ev.data.length;
+  }
+  if (inputType === 'insertLineBreak' || inputType === 'insertParagraph') {
+    return 1;
+  }
+  return null;
+}
+
 function setSelectionSafe(start, end) {
   if (typeof editor.setSelectionRange === 'function') editor.setSelectionRange(start, end);
 }
@@ -382,11 +399,25 @@ function handleTruncationResponse(resPromise) {
   }
 }
 
-function insertTextAtCursor(rawText) {
+function insertTextAtCursor(rawText, options = {}) {
   try {
-    const available = maxTextChars - editor.value.length;
+    const action = (options && typeof options.action === 'string') ? options.action : 'paste';
+    const limitAlertKey = (options && typeof options.limitAlertKey === 'string')
+      ? options.limitAlertKey
+      : 'renderer.editor_alerts.paste_limit';
+    const truncatedAlertKey = (options && typeof options.truncatedAlertKey === 'string')
+      ? options.truncatedAlertKey
+      : 'renderer.editor_alerts.paste_truncated';
+    const syncOptions = {};
+    if (options && typeof options.onPrimaryError === 'function') {
+      syncOptions.onPrimaryError = options.onPrimaryError;
+    }
+    if (options && typeof options.onFallbackError === 'function') {
+      syncOptions.onFallbackError = options.onFallbackError;
+    }
+    const available = getInsertionCapacity();
     if (available <= 0) {
-      notifyEditor('renderer.editor_alerts.paste_limit', { type: 'warn' });
+      notifyEditor(limitAlertKey, { type: 'warn' });
       restoreFocusToEditor();
       return { inserted: 0, truncated: false };
     }
@@ -402,10 +433,10 @@ function insertTextAtCursor(rawText) {
     tryNativeInsertAtSelection(toInsert);
 
     // Notify main
-    sendCurrentTextToMain('paste');
+    sendCurrentTextToMain(action, syncOptions);
 
     if (truncated) {
-      notifyEditor('renderer.editor_alerts.paste_truncated', { type: 'warn', duration: 5000 });
+      notifyEditor(truncatedAlertKey, { type: 'warn', duration: 5000 });
     }
 
     restoreFocusToEditor();
@@ -425,6 +456,49 @@ function dispatchNativeInputEvent() {
     editor.dispatchEvent(ev);
   } catch (err) {
     log.error('dispatchNativeInputEvent error:', err);
+  }
+}
+
+function handleTextTransferInsert(ev, transferConfig) {
+  const source = transferConfig && transferConfig.source ? transferConfig.source : 'transfer';
+  const noTextAlertKey = transferConfig && transferConfig.noTextAlertKey
+    ? transferConfig.noTextAlertKey
+    : 'renderer.editor_alerts.paste_no_text';
+  const tooBigAlertKey = transferConfig && transferConfig.tooBigAlertKey
+    ? transferConfig.tooBigAlertKey
+    : 'renderer.editor_alerts.paste_too_big';
+  const insertOptions = transferConfig && transferConfig.insertOptions ? transferConfig.insertOptions : {};
+  const getText = transferConfig && typeof transferConfig.getText === 'function'
+    ? transferConfig.getText
+    : () => '';
+
+  try {
+    if (editor.readOnly) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      return;
+    }
+
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    const text = String(getText(ev) || '');
+    if (!text) {
+      notifyEditor(noTextAlertKey, { type: 'warn' });
+      restoreFocusToEditor();
+      return;
+    }
+
+    if (text.length > PASTE_ALLOW_LIMIT) {
+      notifyEditor(tooBigAlertKey, { type: 'warn', duration: 5000 });
+      restoreFocusToEditor();
+      return;
+    }
+
+    insertTextAtCursor(text, insertOptions);
+  } catch (err) {
+    log.error(`${source} handler error:`, err);
+    restoreFocusToEditor();
   }
 }
 
@@ -461,35 +535,86 @@ async function applyExternalUpdate(payload) {
       return;
     }
 
-    const useNative = newText.length <= SMALL_UPDATE_THRESHOLD;
-    const prevActive = document.activeElement;
+    const prevSuppressLocalUpdate = suppressLocalUpdate;
+    suppressLocalUpdate = true;
+    try {
+      const useNative = newText.length <= SMALL_UPDATE_THRESHOLD;
+      const prevActive = document.activeElement;
 
-    const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;
-    const metaAction = incomingMeta && incomingMeta.action ? incomingMeta.action : null;
+      const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;
+      const metaAction = incomingMeta && incomingMeta.action ? incomingMeta.action : null;
 
-    if (metaSource === 'main-window' && metaAction === 'append_newline') {
-      if (newText.startsWith(editor.value)) {
-        let toInsert = newText.slice(editor.value.length);
-        if (!toInsert) return;
-        if (toInsert.length <= SMALL_UPDATE_THRESHOLD) {
-          try {
-            editor.focus();
-            const tpos = editor.value.length;
-            setCaretSafe(tpos);
-            const ok = document.execCommand && document.execCommand('insertText', false, toInsert);
-            if (!ok && typeof editor.setRangeText === 'function') {
-              editor.setRangeText(toInsert, tpos, tpos, 'end');
-              dispatchNativeInputEvent();
-            } else if (!ok) {
+      if (metaSource === 'main-window' && metaAction === 'append_newline') {
+        if (newText.startsWith(editor.value)) {
+          let toInsert = newText.slice(editor.value.length);
+          if (!toInsert) return;
+          if (toInsert.length <= SMALL_UPDATE_THRESHOLD) {
+            try {
+              editor.focus();
+              const tpos = editor.value.length;
+              setCaretSafe(tpos);
+              const ok = document.execCommand && document.execCommand('insertText', false, toInsert);
+              if (!ok && typeof editor.setRangeText === 'function') {
+                editor.setRangeText(toInsert, tpos, tpos, 'end');
+                dispatchNativeInputEvent();
+              } else if (!ok) {
+                editor.value = editor.value + toInsert;
+                dispatchNativeInputEvent();
+              }
+            } catch {
               editor.value = editor.value + toInsert;
               dispatchNativeInputEvent();
+            } finally {
+              try { if (prevActive && prevActive !== editor) prevActive.focus(); }
+              catch (err) { log.warnOnce('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
+            }
+            return;
+          } else {
+            try {
+              editor.style.visibility = 'hidden';
+              editor.value = newText;
+              dispatchNativeInputEvent();
+            } catch {
+              editor.value = newText;
+              dispatchNativeInputEvent();
+            } finally {
+              editor.style.visibility = '';
+              try { if (prevActive && prevActive !== editor) prevActive.focus(); }
+              catch (err) { log.warnOnce('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
+            }
+            if (truncated) {
+              notifyTextTruncated()
+            }
+            return;
+          }
+        }
+      }
+
+      if (metaSource === 'main' || metaSource === 'main-window' || !metaSource) {
+        if (useNative) {
+          try {
+            editor.focus();
+            selectAllEditor();
+            let execOK = false;
+            try { execOK = document.execCommand && document.execCommand('insertText', false, newText); } catch { execOK = false; }
+            if (!execOK) {
+              if (typeof editor.setRangeText === 'function') {
+                editor.setRangeText(newText, 0, editor.value.length, 'end');
+                dispatchNativeInputEvent();
+              } else {
+                editor.value = newText;
+                dispatchNativeInputEvent();
+              }
             }
           } catch {
-            editor.value = editor.value + toInsert;
+            editor.value = newText;
             dispatchNativeInputEvent();
           } finally {
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { log.warnOnce('focus.prevActive.append_newline.native', 'prevActive.focus() failed (ignored):', err); }
+            catch (err) { log.warnOnce('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
+          }
+          if (truncated) {
+            notifyTextTruncated()
           }
           return;
         } else {
@@ -503,7 +628,7 @@ async function applyExternalUpdate(payload) {
           } finally {
             editor.style.visibility = '';
             try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-            catch (err) { log.warnOnce('focus.prevActive.append_newline.full', 'prevActive.focus() failed (ignored):', err); }
+            catch (err) { log.warnOnce('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
           }
           if (truncated) {
             notifyTextTruncated()
@@ -511,68 +636,23 @@ async function applyExternalUpdate(payload) {
           return;
         }
       }
-    }
 
-    if (metaSource === 'main' || metaSource === 'main-window' || !metaSource) {
-      if (useNative) {
-        try {
-          editor.focus();
-          selectAllEditor();
-          let execOK = false;
-          try { execOK = document.execCommand && document.execCommand('insertText', false, newText); } catch { execOK = false; }
-          if (!execOK) {
-            if (typeof editor.setRangeText === 'function') {
-              editor.setRangeText(newText, 0, editor.value.length, 'end');
-              dispatchNativeInputEvent();
-            } else {
-              editor.value = newText;
-              dispatchNativeInputEvent();
-            }
-          }
-        } catch {
-          editor.value = newText;
-          dispatchNativeInputEvent();
-        } finally {
-          try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (err) { log.warnOnce('focus.prevActive.main.native', 'prevActive.focus() failed (ignored):', err); }
-        }
-        if (truncated) {
-          notifyTextTruncated()
-        }
-        return;
-      } else {
-        try {
-          editor.style.visibility = 'hidden';
-          editor.value = newText;
-          dispatchNativeInputEvent();
-        } catch {
-          editor.value = newText;
-          dispatchNativeInputEvent();
-        } finally {
-          editor.style.visibility = '';
-          try { if (prevActive && prevActive !== editor) prevActive.focus(); }
-          catch (err) { log.warnOnce('focus.prevActive.main.full', 'prevActive.focus() failed (ignored):', err); }
-        }
-        if (truncated) {
-          notifyTextTruncated()
-        }
-        return;
+      // fallback
+      try {
+        editor.style.visibility = 'hidden';
+        editor.value = newText;
+        dispatchNativeInputEvent();
+      } catch {
+        editor.value = newText;
+        dispatchNativeInputEvent();
+      } finally {
+        editor.style.visibility = '';
       }
-    }
-
-    // fallback
-    try {
-      editor.style.visibility = 'hidden';
-      editor.value = newText;
-      dispatchNativeInputEvent();
-    } catch {
-      editor.value = newText;
-      dispatchNativeInputEvent();
+      if (truncated) {
+        notifyTextTruncated()
+      }
     } finally {
-      editor.style.visibility = '';
-    }
-    if (truncated) {
-      notifyTextTruncated()
+      suppressLocalUpdate = prevSuppressLocalUpdate;
     }
   } catch (err) {
     log.error('applyExternalUpdate error:', err);
@@ -617,112 +697,78 @@ window.editorAPI.onForceClear(() => {
 // Paste / drop handlers
 // =============================================================================
 if (editor) {
-  editor.addEventListener('paste', (ev) => {
-    try {
-      if (editor.readOnly) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        return;
-      }
-      ev.preventDefault();
-      ev.stopPropagation();
-      const text = (ev.clipboardData && ev.clipboardData.getData('text/plain')) || '';
-      if (!text) {
-        notifyEditor('renderer.editor_alerts.paste_no_text', { type: 'warn' });
-        restoreFocusToEditor();
-        return;
-      }
-
-      if (text.length <= PASTE_ALLOW_LIMIT) {
-        insertTextAtCursor(text);
-        return;
-      }
-
-      notifyEditor('renderer.editor_alerts.paste_too_big', { type: 'warn', duration: 5000 });
-      restoreFocusToEditor();
-    } catch (err) {
-      log.error('paste handler error:', err);
-      restoreFocusToEditor();
+  const pasteTransferConfig = {
+    source: 'paste',
+    noTextAlertKey: 'renderer.editor_alerts.paste_no_text',
+    tooBigAlertKey: 'renderer.editor_alerts.paste_too_big',
+    getText: (event) => (event.clipboardData && event.clipboardData.getData('text/plain')) || '',
+    insertOptions: {
+      action: 'paste',
+      limitAlertKey: 'renderer.editor_alerts.paste_limit',
+      truncatedAlertKey: 'renderer.editor_alerts.paste_truncated'
     }
-  });
+  };
 
-  // DROP: if small, allow native browser insertion and then notify main.
-  editor.addEventListener('drop', (ev) => {
-    try {
-      if (editor.readOnly) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        return;
-      }
-      const dt = ev.dataTransfer;
-      const text = (dt && dt.getData && dt.getData('text/plain')) || '';
-      if (!text) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        notifyEditor('renderer.editor_alerts.drop_no_text', { type: 'warn' });
-        restoreFocusToEditor();
-        return;
-      }
-
-      if (text.length > PASTE_ALLOW_LIMIT) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        notifyEditor('renderer.editor_alerts.drop_too_big', { type: 'warn', duration: 5000 });
-        restoreFocusToEditor();
-        return;
-      }
-
-      // For small sizes we let the browser do the native insertion (not prevent default).
-      // Subsequently, on the next tick, we notify the main that the editor has changed.
-      setTimeout(() => {
-        try {
-          // Ensure maximum truncation
-          if (editor.value.length > maxTextChars) {
-            editor.value = editor.value.slice(0, maxTextChars);
-            dispatchNativeInputEvent();
-            notifyEditor('renderer.editor_alerts.drop_truncated', { type: 'warn', duration: 5000 });
-          }
-          // Notifying the main-mark coming from the editor to avoid eco-back.
-          sendCurrentTextToMain('drop', {
-            onFallbackError: (err) => log.warnOnce(
-              'setCurrentText.drop.fallback',
-              'editorAPI.setCurrentText fallback failed (ignored):',
-              err
-            )
-          });
-        } catch (err) {
-          log.error('drop postprocess error:', err);
-        }
-      }, 0);
-
-      // NO preventDefault: allow native insertion
-    } catch (err) {
-      log.error('drop handler error:', err);
-      restoreFocusToEditor();
+  const dropTransferConfig = {
+    source: 'drop',
+    noTextAlertKey: 'renderer.editor_alerts.drop_no_text',
+    tooBigAlertKey: 'renderer.editor_alerts.drop_too_big',
+    getText: (event) => {
+      const dt = event.dataTransfer;
+      return (dt && dt.getData && dt.getData('text/plain')) || '';
+    },
+    insertOptions: {
+      action: 'drop',
+      limitAlertKey: 'renderer.editor_alerts.drop_limit',
+      truncatedAlertKey: 'renderer.editor_alerts.drop_truncated',
+      onFallbackError: (err) => log.warnOnce(
+        'setCurrentText.drop.fallback',
+        'editorAPI.setCurrentText fallback failed (ignored):',
+        err
+      )
     }
-  });
+  };
+
+  editor.addEventListener('paste', (ev) => { handleTextTransferInsert(ev, pasteTransferConfig); });
+  editor.addEventListener('drop', (ev) => { handleTextTransferInsert(ev, dropTransferConfig); });
 }
 
 // =============================================================================
 // Local input (typing)
 // =============================================================================
+if (editor) {
+  editor.addEventListener('beforeinput', (ev) => {
+    try {
+      if (suppressLocalUpdate || editor.readOnly) return;
+      const inputType = (typeof ev.inputType === 'string') ? ev.inputType : '';
+      if (!inputType || !inputType.startsWith('insert')) return;
+
+      // Paste/drop already have dedicated handlers with custom notifications.
+      if (inputType === 'insertFromPaste' || inputType === 'insertFromDrop') return;
+
+      const { start } = getSelectionRange();
+      const available = getInsertionCapacity();
+      if (available <= 0) {
+        ev.preventDefault();
+        notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+        restoreFocusToEditor(start);
+        return;
+      }
+
+      const incomingLength = getBeforeInputIncomingLength(ev);
+      if (incomingLength !== null && incomingLength > available) {
+        ev.preventDefault();
+        notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+        restoreFocusToEditor(start);
+      }
+    } catch (err) {
+      log.error('beforeinput guard error:', err);
+    }
+  });
+}
+
 editor.addEventListener('input', () => {
   if (suppressLocalUpdate || editor.readOnly) return;
-
-  if (editor.value && editor.value.length > maxTextChars) {
-    editor.value = editor.value.slice(0, maxTextChars);
-    notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
-    sendCurrentTextToMain('truncated', {
-      onPrimaryError: (err) => log.error('editor: error sending set-current-text after truncate:', err),
-      onFallbackError: (err) => log.warnOnce(
-        'setCurrentText.truncate.fallback',
-        'editorAPI.setCurrentText fallback failed (ignored):',
-        err
-      )
-    });
-    restoreFocusToEditor();
-    return;
-  }
 
   if (!suppressLocalUpdate) {
     if (debounceTimer) clearTimeout(debounceTimer);

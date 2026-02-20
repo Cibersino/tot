@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Kangelu wirin tachi portapapeles mu",
         "append_clipboard": "Pültrün tachi portapapeles afkechi wirin mu (we ruka)",
+        "append_repeat": "Pültrün tachi portapapeles afkechi wirin mu (we ruka) ka repeat",
         "edit": "Nülan wirin weyel tati",
         "clear": "Nentun kom wirin",
         "snapshot_load": "Kintun snapshot weyel tati",
@@ -87,6 +88,8 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "select_snapshot": "Kintun snapshot",
+        "clear_snapshot": "🗙",
         "cancel": "Katrüntun",
         "yes": "Sí",
         "no": "No"
@@ -98,6 +101,9 @@
         "library_row_save": "Elkünun ruka biblioteca mew",
         "library_row_load": "Kintun ruka",
         "library_row_delete": "Ñamümün ruka biblioteca mew",
+        "snapshot_load": "Kintun snapshot weyel tati ruka",
+        "snapshot_select": "Kintun snapshot weyel tati ruka",
+        "snapshot_clear": "Ñamümün snapshot weyel tati ruka",
         "link_open": "Ruta wechun",
         "comment": "Elüwün kañi nütram"
       },

@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Aktuellen Text mit der Zwischenablage ersetzen",
         "append_clipboard": "Hängen Sie die Zwischenablage am Ende des aktuellen Textes an (neue Zeile)",
+        "append_repeat": "Anzahl der Wiederholungen des Anhängens (1-9999)",
         "edit": "Öffnen Sie das vollständige aktuelle Textfenster",
         "clear": "Aktuellen Text löschen",
         "snapshot_load": "Laden Sie einen Text-Snapshot",
@@ -87,6 +88,8 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "select_snapshot": "Snapshot auswählen",
+        "clear_snapshot": "🗙",
         "cancel": "Abbrechen",
         "yes": "Ja",
         "no": "Nein"
@@ -98,6 +101,9 @@
         "library_row_save": "In Bibliothek speichern",
         "library_row_load": "Zeile Laden",
         "library_row_delete": "Aus Bibliothek löschen",
+        "snapshot_load": "Laden Sie einen Text-Snapshot für diese Zeile",
+        "snapshot_select": "Wählen Sie einen Text-Snapshot für diese Zeile aus",
+        "snapshot_clear": "Entfernen Sie den ausgewählten Text-Snapshot von dieser Zeile",
         "link_open": "Link öffnen",
         "comment": "Kommentar hinzufügen/bearbeiten"
       },

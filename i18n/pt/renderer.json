@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Substituir o texto atual pelo conteúdo da área de transferência",
         "append_clipboard": "Adicionar o conteúdo da área de transferência ao final do texto atual (nova linha)",
+        "append_repeat": "Número de repetições do append (1-9999)",
         "edit": "Abrir a janela de edição do texto atual completo",
         "clear": "Limpar o texto atual",
         "snapshot_load": "Carregar snapshot de texto",
@@ -87,6 +88,8 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "select_snapshot": "Selecionar snapshot",
+        "clear_snapshot": "🗙",
         "cancel": "Cancelar",
         "yes": "Sim",
         "no": "Não"
@@ -98,6 +101,9 @@
         "library_row_save": "Salvar na biblioteca",
         "library_row_load": "Carregar linha",
         "library_row_delete": "Excluir da biblioteca",
+        "snapshot_load": "Carregar snapshot de texto para esta linha",
+        "snapshot_select": "Selecionar snapshot de texto para esta linha",
+        "snapshot_clear": "Remover snapshot de texto desta linha",
         "link_open": "Abrir enlace",
         "comment": "Editar comentário"
       },
