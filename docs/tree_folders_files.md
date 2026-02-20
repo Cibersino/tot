@@ -97,6 +97,7 @@ tot/
 │ │ ├── format.js
 │ │ ├── i18n.js
 │ │ ├── constants.js
+│ │ ├── wpm_curve.js
 │ │ ├── notify.js
 │ │ ├── info_modal_links.js
 │ │ └── log.js
@@ -181,6 +182,7 @@ tot/
 Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` suele actuar como orquestador.
 
 - `public/js/constants.js` — Constantes compartidas del renderer.
+- `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
 - `public/js/count.js` — Cálculos de conteo (palabras/caracteres; modo simple/preciso).
 - `public/js/format.js` — Helpers de formateo (tiempo y numeros); expone `window.FormatUtils`.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
