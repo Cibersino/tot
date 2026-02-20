@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Sostituire il testo corrente con gli appunti",
         "append_clipboard": "Aggiungi il testo degli appunti alla fine del testo corrente (nuova riga)",
+        "append_repeat": "Numero di ripetizioni dell'append (1-9999)",
         "edit": "Apri la finestra del testo corrente completo",
         "clear": "Svuota il testo corrente",
         "snapshot_load": "Carica un snapshot di testo",
@@ -87,6 +88,8 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "select_snapshot": "Seleziona snapshot",
+        "clear_snapshot": "🗙",
         "cancel": "Annulla",
         "yes": "Sì",
         "no": "No"
@@ -98,6 +101,9 @@
         "library_row_save": "Salva nella biblioteca",
         "library_row_load": "Carica la riga",
         "library_row_delete": "Elimina dalla biblioteca",
+        "snapshot_load": "Carica snapshot di testo per questa riga",
+        "snapshot_select": "Seleziona snapshot di testo per questa riga",
+        "snapshot_clear": "Rimuovi snapshot di testo per questa riga",
         "link_open": "Apri link",
         "comment": "Aggiungi/modifica commento"
       },

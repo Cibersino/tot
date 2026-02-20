@@ -53,6 +53,117 @@ Reglas:
 
 ---
 
+## [0.1.6] toT - Iteraciones
+
+- Fecha: `2026-02-19`
+- Último commit: `f0d7690baa50aa566fd37704a0e591c46ce6565a`
+
+### Resumen
+
+- Selector de texto (Issue #131): nuevo flujo de append iterado con `N` repeticiones en un solo clic de `📋+` (lectura única de portapapeles, normalización/clamp de `N`, validación previa de tamaño y una sola escritura IPC).
+- Velocidad de lectura (WPM): el slider de la ventana principal pasa a mapeo no lineal suave (exponencial leve) sin saltos de enteros; se amplía el rango operativo a `10..700` en slider e inputs numéricos.
+- Rendimiento/sincronización: corregida la demora de actualización de la ventana principal cuando el editor la cubre completa (`backgroundThrottling:false` en `mainWin`).
+- Canonicalización de texto vigente: `electron/text_state.js` normaliza saltos de línea a `LF` (`\n`) tanto en bootstrap como en `set-current-text`, y persiste la versión normalizada cuando corresponde.
+- Estado de texto vigente: `public/renderer.js` elimina la doble autoridad local y usa `current-text-updated` como fuente única de sincronización UI.
+- Editor manual: endurecimiento de límites de entrada (`beforeinput`) y del pipeline `paste`/`drop` para evitar overshoot/truncado reactivo y ecos locales.
+
+### Agregado
+
+- Selector de texto (Issue #131): nuevo input numérico `appendRepeatInput` junto a `📋+` para repetir append del portapapeles `N` veces en un solo click.
+- Task Editor (comentarios): nuevo botón `commentSnapshotClear` (`🗙`) para quitar el `snapshotRelPath` seleccionado de la fila antes de guardar el comentario.
+- i18n (accesibilidad): nuevas claves `renderer.main.aria.*` para `wpmInput`, `wpmSlider`, presets de velocidad, toggle de modo preciso y controles del cronómetro/ventana flotante.
+- i18n (tareas): nuevas claves `renderer.tasks.buttons.clear_snapshot`, `renderer.tasks.tooltips.snapshot_select` y `renderer.tasks.tooltips.snapshot_clear` en `en`, `es`, `arn`, `de`, `es/es-cl`, `fr`, `it`, `pt`.
+- i18n (selector de texto): cobertura de `renderer.main.tooltips.append_repeat` en `arn`, `de`, `es/es-cl`, `fr`, `it`, `pt`.
+- Editor: nueva alerta `renderer.editor_alerts.drop_limit` para diferenciar el límite de `drop` del límite de `paste`.
+
+### Cambiado
+
+- `public/renderer.js` (Issue #131): el flujo `📋+` ahora:
+  - lee portapapeles una sola vez;
+  - normaliza `N` (si no es entero válido `>=1`, usa `1`; clamp superior a `MAX_APPEND_REPEAT`);
+  - construye el texto final equivalente a `N` clicks consecutivos, aplicando la regla de joiner por iteración (`\n` o `\n\n` según el acumulado);
+  - valida tamaño proyectado contra `maxIpcChars` antes de `setCurrentText(...)`;
+  - mantiene una sola llamada a `setCurrentText({ text, meta:{ source:'main-window', action:'append_newline' } })`;
+  - mantiene notificación de truncado solo cuando `main` reporta `resp.truncated`.
+- UI: ajuste visual de `.append-repeat-input` para diferenciarlo de botones (`btn-standard`) y mejorar legibilidad/foco.
+- `public/js/constants.js`: nuevo `MAX_APPEND_REPEAT = 9_999`.
+- WPM slider/UI:
+  - `public/js/constants.js`: `WPM_MIN/WPM_MAX` pasan a `10/700` y se agregan `WPM_SLIDER_STEP`, `WPM_SLIDER_CURVE` y `WPM_SLIDER_EXP_STRENGTH`.
+  - `public/js/wpm_curve.js` (nuevo): módulo de mapeo discreto slider↔WPM (curva `linear/exp`) que garantiza cobertura completa de enteros (`10..700`) sin gaps.
+  - `public/renderer.js`: integración mínima del módulo (`wpmFromSliderControl`, `sliderControlFromWpm`, `syncWpmControls`) en init y sincronización slider/input/presets.
+  - `public/index.html` y `public/preset_modal.html`: actualización de límites visibles `min/max` de WPM a `10/700`.
+- `public/renderer.js`: se elimina la doble autoridad de estado para texto vigente; `clipboard overwrite`, `clipboard append` y `clear` ya no aplican sincronización optimista local y dependen de `current-text-updated` como fuente única.
+- `public/renderer.js`: `onCurrentTextUpdated` pasa a requerimiento de arranque (fail-fast) y se valida `hasCurrentTextSubscription` antes de aceptar éxito de `setCurrentText(...)`.
+- `public/editor.js`: refactor del pipeline de transferencia de texto (`paste`/`drop`) a un handler común (`handleTextTransferInsert`) con configuración por acción.
+- `public/editor.js`: el límite de escritura se controla en `beforeinput` con capacidad real de inserción (`getInsertionCapacity`, contemplando selección), en lugar de truncar post-input.
+- `public/editor.js`: `applyExternalUpdate(...)` aplica `suppressLocalUpdate` durante sincronización externa para evitar reenvíos locales no deseados.
+- `electron/text_state.js`: normalización de saltos de línea a `LF` (`\n`) en init y en `set-current-text`; si el texto se normaliza/trunca en bootstrap, se persiste la versión canónica.
+- `public/js/current_text_snapshots.js`: ajuste de duración de toasts (`save/load` OK a `2500ms`, truncado a `3500ms`).
+- `public/task_editor.html`, `public/task_editor.css`, `public/task_editor.js`: ajustes de UI del modal de comentario (cierres `🗙`, botón clear compacto, títulos/aria para snapshot select/clear).
+- `electron/editor_find_main.js`: ventana Find del editor sin sombra (`hasShadow:false`) y sin `thickFrame`.
+- Documentación/manuales:
+  - `docs/test_suite.md`: casos nuevos/actualizados para append repetido, normalización/clamp de `N` y guardas de overflow.
+  - `public/info/instrucciones.es.html`, `public/info/instrucciones.en.html`: se documenta el input `1-9999` de repetición de append y su normalización (`N inválido => 1`).
+- Assets de manual: actualización de capturas en `public/assets/instrucciones/*` para reflejar UI/flujo vigentes.
+- `public/editor.html`: normalización de formato/indentación (sin cambios funcionales).
+
+### Arreglado
+
+- Editor maximizado/cubriendo monitor completo: se corrige la demora de actualización en ventana principal desactivando throttling por oclusión (`backgroundThrottling:false`) en `mainWin`.
+- Editor: se corrige el doble update/eco local al recibir sincronizaciones externas desde main.
+- Editor: se corrigen edge cases del límite de caracteres al escribir (incluyendo reemplazo de selección y salto de línea), evitando overshoot temporal y truncado reactivo.
+
+### Contratos tocados
+
+- Sin cambios contractuales de IPC/storage/IDs en este tramo; los cambios se concentran en sincronización renderer, validaciones locales, accesibilidad, UX y documentación.
+
+### Archivos
+
+- Main/estado:
+  - `electron/main.js`
+  - `electron/text_state.js`
+  - `electron/editor_find_main.js`
+- Renderer/UI:
+  - `public/index.html`
+  - `public/preset_modal.html`
+  - `public/style.css`
+  - `public/js/constants.js`
+  - `public/js/wpm_curve.js`
+  - `public/renderer.js`
+  - `public/editor.html`
+  - `public/editor.js`
+  - `public/js/current_text_snapshots.js`
+  - `public/task_editor.css`
+  - `public/task_editor.html`
+  - `public/task_editor.js`
+- i18n:
+  - `i18n/arn/renderer.json`
+  - `i18n/de/renderer.json`
+  - `i18n/en/renderer.json`
+  - `i18n/es/es-cl/renderer.json`
+  - `i18n/es/renderer.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/renderer.json`
+- Documentación:
+  - `docs/test_suite.md`
+  - `public/info/instrucciones.en.html`
+  - `public/info/instrucciones.es.html`
+- Assets/manual:
+  - `public/assets/instrucciones/cronometro.png`
+  - `public/assets/instrucciones/editor-manual-sobre-ventana-principal.png`
+  - `public/assets/instrucciones/editor-tareas-library.png`
+  - `public/assets/instrucciones/editor-tareas.png`
+  - `public/assets/instrucciones/guia-basica.gif`
+  - `public/assets/instrucciones/resultados-conteo.png`
+  - `public/assets/instrucciones/selector-texto-ventana-principal.png`
+  - `public/assets/instrucciones/selector-velocidad-ventana-principal.png`
+  - `public/assets/instrucciones/toggle-modo-preciso.png`
+  - `public/assets/instrucciones/ventana-principal-completa.en.png`
+  - `public/assets/instrucciones/ventana-principal-completa.png`
+
+---
+
 ## [0.1.5] toT - reemplazo find/search editor
 
 ### Fecha release y último commit

@@ -243,6 +243,8 @@ function createMainWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      // Keep processing renderer work even when the window is fully occluded.
+      backgroundThrottling: false,
     },
   });
 

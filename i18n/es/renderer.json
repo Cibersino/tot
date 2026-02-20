@@ -16,6 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
         "append_clipboard": "Pegar portapapeles al final del texto actual (nueva línea)",
+        "append_repeat_count": "Repeticiones del append (1-9999)",
         "edit": "Abrir ventana del texto actual completo",
         "clear": "Vaciar texto actual",
         "snapshot_load": "Cargar snapshot de texto",
@@ -28,6 +29,19 @@
         "reset_presets": "Restaurar presets por defecto",
         "help_button": "Mostrar consejo útil",
         "flotante_window": "Ventana flotante"
+      },
+      "aria": {
+        "append_repeat_count": "Repeticiones de pegado",
+        "wpm_input": "Palabras por minuto",
+        "wpm_slider": "Deslizador de palabras por minuto",
+        "speed_presets": "Presets de velocidad",
+        "precise_mode_toggle": "Modo preciso",
+        "crono_controls": "Controles del cronómetro",
+        "crono_display": "Display del cronómetro",
+        "crono_toggle": "Iniciar o pausar cronómetro",
+        "crono_reset": "Reiniciar cronómetro",
+        "floating_window_toggle": "Ventana flotante",
+        "floating_window_group": "Control de ventana flotante"
       },
       "speed": {
         "title": "VELOCIDAD DE LECTURA",
@@ -100,6 +114,7 @@
         "library_row_delete": "🗑",
         "snapshot": "📥",
         "select_snapshot": "Seleccionar snapshot",
+        "clear_snapshot": "🗙",
         "cancel": "Cancelar",
         "yes": "Sí",
         "no": "No"
@@ -111,7 +126,9 @@
         "library_row_save": "Guardar en biblioteca",
         "library_row_load": "Cargar fila",
         "library_row_delete": "Eliminar de biblioteca",
-        "snapshot_load": "Cargar snapshot seleccionado en el comentario",
+        "snapshot_load": "Cargar snapshot de texto para esta fila",
+        "snapshot_select": "Seleccionar snapshot para esta fila",
+        "snapshot_clear": "Quitar snapshot seleccionado de esta fila",
         "link_open": "Abrir enlace",
         "comment": "Agregar/editar comentario"
       },
@@ -227,6 +244,7 @@
       "drop_no_text": "Arrastrar y soltar: no se detectó texto plano.",
       "type_limit": "No es posible escribir más texto: ya se alcanzó el tamaño máximo permitido.",
       "paste_limit": "No es posible pegar más texto: ya se alcanzó el tamaño máximo permitido.",
+      "drop_limit": "No es posible soltar más texto: ya se alcanzó el tamaño máximo permitido.",
       "paste_truncated": "El texto pegado se ha truncado para no exceder el máximo permitido.",
       "drop_truncated": "El texto arrastrado excedía el espacio disponible y fue truncado.",
       "text_truncated": "El texto fue truncado para ajustarse al límite máximo de la aplicación.",

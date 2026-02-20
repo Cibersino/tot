@@ -6,7 +6,7 @@
 
 **Scope coverage (app-level):**
 - Startup + first-run language selection
-- Clipboard overwrite/append, empty text, automatic count/time calculation
+- Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
 - Manual editor window (open/edit/apply semantics)
@@ -134,15 +134,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Preview shows start/end of the text (or full if short).
 - Words/chars/time update immediately.
 
-### SM-04 Append clipboard (+ newline semantics)
-**Goal:** append-from-clipboard adds new content and updates counts.
+### SM-04 Append clipboard (+ newline semantics + repeat input)
+**Goal:** append-from-clipboard adds new content with correct newline/repeat semantics and updates counts.
 1. Copy text to clipboard.
-2. Click **📋+**.
-3. Observe preview and results.
+2. Set repeat input (`appendRepeatInput`) to `1` and click **📋+**.
+3. Set repeat input to `2` and click **📋+** once.
+4. Observe preview and results.
 
 **Expected:**
 - Text length increases; preview changes accordingly.
 - Counts/time increase.
+- With `N=2`, one click behaves like two consecutive appends using the same clipboard content.
 
 ### SM-05 Empty current text
 **Goal:** clearing text resets results.
@@ -303,6 +305,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - After cancel: current text remains `T2`.
 - After confirm: current text becomes `T1` and UI updates.
+
+#### REG-MAIN-05 Append repeat input normalization/clamp
+**Goal:** invalid/overflow values in append repeat input are normalized safely.
+1. Copy a short text to clipboard.
+2. Set repeat input to each value and click **📋+** once per case: `''`, `0`, `-3`, `3.7`, `abc`.
+3. Set repeat input to a very large value (e.g., `100000`) and click **📋+**.
+
+**Expected:**
+- Invalid values (`''`, `0`, `-3`, decimal, text) are treated as `N=1` (no crash, no broken flow).
+- Values above max are clamped to the app max (`MAX_APPEND_REPEAT` / UI max).
+- Append action still uses a single IPC write path (observable as normal success/failure behavior, not repeated dialog/error bursts).
 
 ---
 
@@ -760,6 +773,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Invalid snapshot shows failure notice; current text remains `TE1`.
 - Outside-tree selection is rejected with “outside snapshots tree” notice; current text remains `TE1`.
 - No crash/hang.
+
+### EDGE-05 Append repeat overflow guards (IPC/text cap)
+**Goal:** repeated append fails safely when projected payload/size exceeds limits.
+1. Put a large text in clipboard (large enough that repeating with high `N` can exceed limits).
+2. Set repeat input to a high value and click **📋+**.
+3. If current text is already near max size, click **📋+** again with any valid `N`.
+
+**Expected:**
+- If projected payload exceeds IPC cap, append is aborted with the same “append too large” behavior.
+- If text limit is already reached, append is blocked with text-limit behavior.
+- Current text is not corrupted and app remains responsive.
 
 ---
 

@@ -47,6 +47,12 @@ function sanitizeMeta(raw) {
   return out;
 }
 
+function normalizeLineEndings(text) {
+  const value = String(text || '');
+  if (!value.includes('\r')) return value;
+  return value.replace(/\r\n?/g, '\n');
+}
+
 // =============================================================================
 // Shared state and injected dependencies
 // =============================================================================
@@ -112,7 +118,7 @@ function persistCurrentTextOnQuit() {
 }
 
 function applyCurrentText(rawText, rawMeta) {
-  let text = String(rawText || '');
+  let text = normalizeLineEndings(rawText);
   let truncated = false;
 
   if (text.length > maxTextChars) {
@@ -189,14 +195,27 @@ function init(options) {
       );
     }
 
+    const normalizedTxt = normalizeLineEndings(txt);
+    const lineEndingsNormalized = normalizedTxt !== txt;
+    txt = normalizedTxt;
+
+    let shouldPersistNormalized = lineEndingsNormalized;
     if (txt.length > maxTextChars) {
       log.warn(
         `Initial text exceeds effective hard cap (${txt.length} > ${maxTextChars}); truncated and saved.`
       );
       txt = txt.slice(0, maxTextChars);
-      if (saveJson && currentTextFile) {
-        saveJson(currentTextFile, { text: txt });
-      }
+      shouldPersistNormalized = true;
+    }
+
+    if (lineEndingsNormalized) {
+      log.warnOnce(
+        'BOOTSTRAP:text_state.init.line_endings_normalized',
+        'BOOTSTRAP: Current text line endings normalized to LF and saved.'
+      );
+    }
+    if (shouldPersistNormalized && saveJson && currentTextFile) {
+      saveJson(currentTextFile, { text: txt });
     }
 
     currentText = txt;
