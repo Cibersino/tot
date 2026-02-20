@@ -47,6 +47,17 @@ function sanitizeMeta(raw) {
   return out;
 }
 
+const ALLOWED_SET_CURRENT_TEXT_ACTIONS = new Set([
+  'overwrite',
+  'append_newline',
+  'typing',
+  'typing_toggle_on',
+  'clear',
+  'paste',
+  'drop',
+  'set',
+]);
+
 function normalizeLineEndings(text) {
   const value = String(text || '');
   if (!value.includes('\r')) return value;
@@ -284,6 +295,22 @@ function registerIpc(ipcMain, windowsResolver) {
   // set-current-text: accept { text, meta } or simple string
   ipcMain.handle('set-current-text', (_event, payload) => {
     try {
+      const { mainWin, editorWin } = getWindows() || {};
+      const senderWin = _event && _event.sender
+        ? BrowserWindow.fromWebContents(_event.sender)
+        : null;
+
+      const mainAllowed = !!(mainWin && !mainWin.isDestroyed() && senderWin && senderWin === mainWin);
+      const editorAllowed = !!(editorWin && !editorWin.isDestroyed() && senderWin && senderWin === editorWin);
+
+      if (!mainAllowed && !editorAllowed) {
+        log.warnOnce(
+          'text_state.setCurrentText.unauthorized',
+          'set-current-text unauthorized (ignored).'
+        );
+        return { ok: false, error: 'unauthorized' };
+      }
+
       const isPayloadObject = payload && typeof payload === 'object';
       const hasTextProp =
         isPayloadObject &&
@@ -303,8 +330,25 @@ function registerIpc(ipcMain, windowsResolver) {
         );
         throw new Error('set-current-text payload too large');
       }
+      const incomingMeta = hasTextProp ? sanitizeMeta(payload.meta) : null;
+      const incomingAction = incomingMeta && typeof incomingMeta.action === 'string'
+        ? incomingMeta.action
+        : '';
+      const normalizedAction = ALLOWED_SET_CURRENT_TEXT_ACTIONS.has(incomingAction)
+        ? incomingAction
+        : 'set';
+      if (incomingAction && normalizedAction === 'set' && incomingAction !== 'set') {
+        log.warnOnce(
+          'text_state.setCurrentText.invalid_action',
+          `set-current-text invalid action '${incomingAction}'; using 'set'.`
+        );
+      }
 
-      return applyCurrentText(text, hasTextProp ? payload.meta : null);
+      const normalizedMeta = {
+        source: editorAllowed ? 'editor' : 'main-window',
+        action: normalizedAction,
+      };
+      return applyCurrentText(text, normalizedMeta);
     } catch (err) {
       const msg = err && typeof err.message === 'string' ? err.message : '';
       if (msg !== 'set-current-text payload too large') {
