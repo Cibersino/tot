@@ -51,6 +51,31 @@ Reglas:
 
 ## Unreleased
 
+### Resumen
+
+- Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
+
+### Cambiado
+
+- `electron/text_state.js`:
+  - `set-current-text` ahora autoriza explícitamente el sender y acepta solo `mainWin`/`editorWin`; otros senders reciben `{ ok:false, error:'unauthorized' }`.
+  - `meta.source` pasa a derivarse en main según sender (`editor` o `main-window`), evitando spoofing desde payload renderer.
+  - `meta.action` pasa por allowlist blanda (`overwrite`, `append_newline`, `typing`, `typing_toggle_on`, `clear`, `paste`, `drop`, `set`); acciones desconocidas se normalizan a `set` con warning (sin reject duro).
+
+### Arreglado
+
+- Se corrige una brecha de defensa en profundidad: `set-current-text` no aplicaba control de autorización por sender, a diferencia de otros handlers sensibles.
+
+### Contratos tocados
+
+- IPC `set-current-text` (failure-path):
+  - se formaliza respuesta `unauthorized` para senders no autorizados.
+- Sin cambios en canal, shape healthy-path ni superficie de preload (`window.electronAPI.setCurrentText` / `window.editorAPI.setCurrentText` se mantienen).
+
+### Archivos
+
+- `electron/text_state.js`
+
 ---
 
 ## [0.1.6] toT - Iteraciones
