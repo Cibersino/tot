@@ -84,6 +84,12 @@
         "flotante_short": "FW",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      },
+      "import_apply": {
+        "title": "Import finished. Choose apply mode:",
+        "overwrite": "Overwrite",
+        "append": "Append",
+        "ocr_running": "OCR in progress..."
       }
     },
     "tasks": {

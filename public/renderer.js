@@ -42,6 +42,13 @@ const {
 const textPreview = document.getElementById('textPreview');
 const btnImportExtract = document.getElementById('btnImportExtract');
 const btnCancelOcr = document.getElementById('btnCancelOcr');
+const ocrProgressPanel = document.getElementById('ocrProgressPanel');
+const ocrProgressText = document.getElementById('ocrProgressText');
+const importApplyModal = document.getElementById('importApplyModal');
+const importApplyBackdrop = document.getElementById('importApplyBackdrop');
+const importApplyTitle = document.getElementById('importApplyTitle');
+const btnImportApplyOverwrite = document.getElementById('btnImportApplyOverwrite');
+const btnImportApplyAppend = document.getElementById('btnImportApplyAppend');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const appendRepeatInput = document.getElementById('appendRepeatInput');
@@ -268,9 +275,148 @@ let hasCurrentTextSubscription = false;
 let ocrLockActive = false;
 let ocrLockReason = '';
 const importJobSessionMap = new Map();
+let ocrProgressJobId = '';
+let ocrProgressStartedAt = 0;
+let ocrProgressPageDone = 0;
+let ocrProgressPageTotal = 0;
+let ocrProgressStage = '';
+let importApplyResolve = null;
 
 if (btnCancelOcr) {
   btnCancelOcr.dataset.ocrLockExempt = '1';
+}
+
+function formatElapsedLabel(ms) {
+  const totalSeconds = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  return `${minutes}m ${seconds}s`;
+}
+
+function inferEtaMs(elapsedMs, pageDone, pageTotal) {
+  if (!Number.isFinite(elapsedMs) || elapsedMs <= 0) return null;
+  if (!Number.isFinite(pageDone) || !Number.isFinite(pageTotal)) return null;
+  if (pageDone <= 0 || pageTotal <= 0 || pageDone >= pageTotal) return null;
+  const remainingPages = pageTotal - pageDone;
+  return Math.max(0, Math.round((elapsedMs / pageDone) * remainingPages));
+}
+
+function getStageLabel(stage) {
+  const normalized = String(stage || '').toLowerCase();
+  if (normalized === 'queued') return 'Queued';
+  if (normalized === 'running') return 'Running';
+  if (normalized === 'ocr') return 'OCR';
+  if (normalized === 'completed') return 'Completed';
+  if (normalized === 'failed') return 'Failed';
+  if (normalized === 'canceled') return 'Canceled';
+  return 'OCR';
+}
+
+function resetOcrProgressState() {
+  ocrProgressJobId = '';
+  ocrProgressStartedAt = 0;
+  ocrProgressPageDone = 0;
+  ocrProgressPageTotal = 0;
+  ocrProgressStage = '';
+  if (ocrProgressText) {
+    ocrProgressText.textContent = 'OCR in progress...';
+  }
+}
+
+function updateOcrProgressText() {
+  if (!ocrProgressText) return;
+  if (!ocrLockActive) {
+    ocrProgressText.textContent = 'OCR in progress...';
+    return;
+  }
+
+  const startedAt = ocrProgressStartedAt || Date.now();
+  const elapsedMs = Math.max(0, Date.now() - startedAt);
+  const stageLabel = getStageLabel(ocrProgressStage || ocrLockReason || 'ocr');
+
+  const safeDone = Number.isFinite(ocrProgressPageDone) ? Math.max(0, Math.floor(ocrProgressPageDone)) : 0;
+  const safeTotal = Number.isFinite(ocrProgressPageTotal) ? Math.max(0, Math.floor(ocrProgressPageTotal)) : 0;
+  const pageLabel = safeTotal > 0
+    ? `${Math.min(safeDone, safeTotal)}/${safeTotal}`
+    : '-/-';
+
+  const etaMs = inferEtaMs(elapsedMs, safeDone, safeTotal);
+  const etaLabel = etaMs == null ? '--' : formatElapsedLabel(etaMs);
+  ocrProgressText.textContent = `${stageLabel} · pages ${pageLabel} · elapsed ${formatElapsedLabel(elapsedMs)} · ETA ${etaLabel}`;
+}
+
+function handleImportProgress(payload) {
+  const p = payload && typeof payload === 'object' ? payload : {};
+  if (typeof p.jobId === 'string' && p.jobId) {
+    ocrProgressJobId = p.jobId;
+  }
+  if (!ocrProgressStartedAt) {
+    const heartbeatTs = Number(p.heartbeatTs);
+    ocrProgressStartedAt = Number.isFinite(heartbeatTs) && heartbeatTs > 0
+      ? heartbeatTs
+      : Date.now();
+  }
+  if (typeof p.stage === 'string' && p.stage.trim()) {
+    ocrProgressStage = p.stage.trim();
+  }
+  if (Number.isFinite(Number(p.pageDone))) {
+    ocrProgressPageDone = Number(p.pageDone);
+  }
+  if (Number.isFinite(Number(p.pageTotal))) {
+    ocrProgressPageTotal = Number(p.pageTotal);
+  }
+  updateOcrProgressText();
+}
+
+function showImportApplyModal() {
+  if (!importApplyModal) return;
+  importApplyModal.setAttribute('aria-hidden', 'false');
+  if (btnImportApplyOverwrite && typeof btnImportApplyOverwrite.focus === 'function') {
+    btnImportApplyOverwrite.focus();
+  }
+}
+
+function hideImportApplyModal() {
+  if (!importApplyModal) return;
+  importApplyModal.setAttribute('aria-hidden', 'true');
+}
+
+function settleImportApplyChoice(mode) {
+  const resolve = importApplyResolve;
+  importApplyResolve = null;
+  hideImportApplyModal();
+  if (typeof resolve === 'function') {
+    resolve(mode);
+  }
+}
+
+function chooseImportApplyMode() {
+  if (
+    !importApplyModal
+    || !btnImportApplyOverwrite
+    || !btnImportApplyAppend
+  ) {
+    const fallbackRaw = window.prompt(
+      'Import finished. Choose apply mode: OVERWRITE or APPEND',
+      'OVERWRITE'
+    );
+    const fallbackMode = String(fallbackRaw || '').trim().toLowerCase();
+    if (fallbackMode === 'overwrite' || fallbackMode === 'append') {
+      return Promise.resolve(fallbackMode);
+    }
+    return Promise.resolve('');
+  }
+
+  if (importApplyResolve) {
+    settleImportApplyChoice('');
+  }
+
+  return new Promise((resolve) => {
+    importApplyResolve = resolve;
+    showImportApplyModal();
+  });
 }
 
 function applyGlobalOcrLockUi() {
@@ -291,8 +437,20 @@ function applyGlobalOcrLockUi() {
 }
 
 function syncOcrControlVisibility() {
-  if (!btnCancelOcr) return;
-  btnCancelOcr.hidden = !ocrLockActive;
+  if (btnCancelOcr) {
+    btnCancelOcr.hidden = !ocrLockActive;
+  }
+  if (ocrProgressPanel) {
+    ocrProgressPanel.hidden = !ocrLockActive;
+  }
+  if (ocrLockActive) {
+    if (!ocrProgressStartedAt) {
+      ocrProgressStartedAt = Date.now();
+    }
+    updateOcrProgressText();
+    return;
+  }
+  resetOcrProgressState();
 }
 
 function updateOcrLockState(payload) {
@@ -395,6 +553,16 @@ async function handleImportFinished(payload) {
   const sessionId = jobId ? importJobSessionMap.get(jobId) : '';
   if (jobId) importJobSessionMap.delete(jobId);
 
+  if (jobId && ocrProgressJobId && jobId === ocrProgressJobId) {
+    if (p.ok) {
+      ocrProgressStage = 'completed';
+      ocrProgressPageDone = Math.max(ocrProgressPageDone, ocrProgressPageTotal || 0);
+    } else {
+      ocrProgressStage = String(p.code || '').toUpperCase() === 'OCR_CANCELED' ? 'canceled' : 'failed';
+    }
+    updateOcrProgressText();
+  }
+
   if (!p.ok) {
     const message = humanizeImportError(p);
     if (message) showImportDialogMessage(message);
@@ -407,14 +575,11 @@ async function handleImportFinished(payload) {
     return;
   }
 
-  const applyNow = window.confirm('Import finished. Apply extracted text now?');
-  if (!applyNow) {
+  const mode = await chooseImportApplyMode();
+  if (mode !== 'overwrite' && mode !== 'append') {
     await discardImportSession(sessionId);
     return;
   }
-
-  const overwrite = window.confirm('Apply mode: OK = overwrite current text, Cancel = append.');
-  const mode = overwrite ? 'overwrite' : 'append';
 
   const importApply = getOptionalElectronMethod('importApply', {
     dedupeKey: 'renderer.ipc.importApply.unavailable',
@@ -469,6 +634,9 @@ function applyTranslations() {
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnCancelOcr) btnCancelOcr.textContent = tRenderer('renderer.main.buttons.cancel_ocr', btnCancelOcr.textContent || '');
+  if (importApplyTitle) importApplyTitle.textContent = tRenderer('renderer.main.import_apply.title', importApplyTitle.textContent || '');
+  if (btnImportApplyOverwrite) btnImportApplyOverwrite.textContent = tRenderer('renderer.main.import_apply.overwrite', btnImportApplyOverwrite.textContent || '');
+  if (btnImportApplyAppend) btnImportApplyAppend.textContent = tRenderer('renderer.main.import_apply.append', btnImportApplyAppend.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
@@ -512,6 +680,9 @@ function applyTranslations() {
   if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window', vfSwitchLabel.title || '');
   // Section titles
   if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title', selectorTitle.textContent || '');
+  if (ocrProgressText && !ocrLockActive) {
+    ocrProgressText.textContent = tRenderer('renderer.main.import_apply.ocr_running', ocrProgressText.textContent || '');
+  }
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
   if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title', resultsTitle.textContent || '');
   if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title', cronTitle.textContent || '');
@@ -952,6 +1123,7 @@ function armIpcSubscriptions() {
       window.electronAPI.onImportProgress((payload) => {
         try {
           const p = payload && typeof payload === 'object' ? payload : {};
+          handleImportProgress(p);
           log.debug('import-progress:', p);
         } catch (err) {
           log.warn('Error handling import-progress:', err);
@@ -1711,6 +1883,14 @@ if (btnImportExtract) {
 
       if (runRes.jobId && selectRes.sessionId) {
         importJobSessionMap.set(String(runRes.jobId), String(selectRes.sessionId));
+        if (String(selectRes.route || '').startsWith('ocr_')) {
+          ocrProgressJobId = String(runRes.jobId);
+          ocrProgressStartedAt = Date.now();
+          ocrProgressStage = 'queued';
+          ocrProgressPageDone = 0;
+          ocrProgressPageTotal = 0;
+          updateOcrProgressText();
+        }
       }
     } catch (err) {
       log.error('Error in import flow:', err);
@@ -1739,6 +1919,31 @@ if (btnCancelOcr) {
     }
   });
 }
+
+if (btnImportApplyOverwrite) {
+  btnImportApplyOverwrite.addEventListener('click', () => {
+    settleImportApplyChoice('overwrite');
+  });
+}
+
+if (btnImportApplyAppend) {
+  btnImportApplyAppend.addEventListener('click', () => {
+    settleImportApplyChoice('append');
+  });
+}
+
+if (importApplyBackdrop) {
+  importApplyBackdrop.addEventListener('click', () => {
+    settleImportApplyChoice('');
+  });
+}
+
+document.addEventListener('keydown', (event) => {
+  if (!event || event.key !== 'Escape') return;
+  if (!importApplyModal || importApplyModal.getAttribute('aria-hidden') !== 'false') return;
+  event.preventDefault();
+  settleImportApplyChoice('');
+});
 
 // =============================================================================
 // Clipboard helpers (shared by overwrite/append)

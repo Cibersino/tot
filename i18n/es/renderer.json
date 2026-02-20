@@ -84,6 +84,12 @@
         "flotante_short": "VF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      },
+      "import_apply": {
+        "title": "Importación finalizada. Elige modo de aplicación:",
+        "overwrite": "Overwrite",
+        "append": "Append",
+        "ocr_running": "OCR en progreso..."
       }
     },
     "tasks": {

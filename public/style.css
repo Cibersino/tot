@@ -135,6 +135,41 @@ body {
   flex-wrap: wrap;
 }
 
+.ocr-progress-panel {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 4px;
+  min-height: 34px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 6px;
+  border: 1px solid #d8c89a;
+  border-radius: 6px;
+  background: #fff6da;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+.ocr-progress-panel:not([hidden]) {
+  display: flex;
+}
+
+.ocr-progress-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  color: #2d2d2d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ocr-progress-cancel {
+  flex: 0 0 auto;
+}
+
 .append-repeat-input {
   width: 60px;
   height: 30px;
@@ -526,6 +561,51 @@ select#presets {
   padding: 0;                     /* horizontal space for button */
   z-index: 1002;                  /* above the content */
   background: transparent;        /* leave the content visible below */
+}
+
+.import-apply-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-apply-modal[aria-hidden="false"] {
+  display: flex;
+}
+
+.import-apply-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.import-apply-modal-panel {
+  position: relative;
+  z-index: 1101;
+  width: min(520px, calc(100% - 24px));
+  background: #fdf6e3;
+  border: 1px solid #e8dbc2;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.import-apply-title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #222;
+}
+
+.import-apply-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .info-modal-header h2 {
