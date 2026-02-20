@@ -16,6 +16,7 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - Fecha: `2026-02-19`
 
 - Selector de texto (Issue #131): nuevo flujo de append iterado con `N` repeticiones en un solo clic de `📋+` (lectura única de portapapeles, normalización/clamp de `N`, validación previa de tamaño y una sola escritura IPC).
+- Velocidad de lectura (WPM): el slider de la ventana principal pasa a mapeo no lineal suave (exponencial leve) sin saltos de enteros; se amplía el rango operativo a `10..700` en slider e inputs numéricos.
 - Rendimiento/sincronización: corregida la demora de actualización de la ventana principal cuando el editor la cubre completa (`backgroundThrottling:false` en `mainWin`).
 - Canonicalización de texto vigente: `electron/text_state.js` normaliza saltos de línea a `LF` (`\n`) tanto en bootstrap como en `set-current-text`, y persiste la versión normalizada cuando corresponde.
 - Estado de texto vigente: `public/renderer.js` elimina la doble autoridad local y usa `current-text-updated` como fuente única de sincronización UI.

@@ -61,6 +61,7 @@ Reglas:
 ### Resumen
 
 - Selector de texto (Issue #131): nuevo flujo de append iterado con `N` repeticiones en un solo clic de `📋+` (lectura única de portapapeles, normalización/clamp de `N`, validación previa de tamaño y una sola escritura IPC).
+- Velocidad de lectura (WPM): el slider de la ventana principal pasa a mapeo no lineal suave (exponencial leve) sin saltos de enteros; se amplía el rango operativo a `10..700` en slider e inputs numéricos.
 - Rendimiento/sincronización: corregida la demora de actualización de la ventana principal cuando el editor la cubre completa (`backgroundThrottling:false` en `mainWin`).
 - Canonicalización de texto vigente: `electron/text_state.js` normaliza saltos de línea a `LF` (`\n`) tanto en bootstrap como en `set-current-text`, y persiste la versión normalizada cuando corresponde.
 - Estado de texto vigente: `public/renderer.js` elimina la doble autoridad local y usa `current-text-updated` como fuente única de sincronización UI.
@@ -86,6 +87,11 @@ Reglas:
   - mantiene notificación de truncado solo cuando `main` reporta `resp.truncated`.
 - UI: ajuste visual de `.append-repeat-input` para diferenciarlo de botones (`btn-standard`) y mejorar legibilidad/foco.
 - `public/js/constants.js`: nuevo `MAX_APPEND_REPEAT = 9_999`.
+- WPM slider/UI:
+  - `public/js/constants.js`: `WPM_MIN/WPM_MAX` pasan a `10/700` y se agregan `WPM_SLIDER_STEP`, `WPM_SLIDER_CURVE` y `WPM_SLIDER_EXP_STRENGTH`.
+  - `public/js/wpm_curve.js` (nuevo): módulo de mapeo discreto slider↔WPM (curva `linear/exp`) que garantiza cobertura completa de enteros (`10..700`) sin gaps.
+  - `public/renderer.js`: integración mínima del módulo (`wpmFromSliderControl`, `sliderControlFromWpm`, `syncWpmControls`) en init y sincronización slider/input/presets.
+  - `public/index.html` y `public/preset_modal.html`: actualización de límites visibles `min/max` de WPM a `10/700`.
 - `public/renderer.js`: se elimina la doble autoridad de estado para texto vigente; `clipboard overwrite`, `clipboard append` y `clear` ya no aplican sincronización optimista local y dependen de `current-text-updated` como fuente única.
 - `public/renderer.js`: `onCurrentTextUpdated` pasa a requerimiento de arranque (fail-fast) y se valida `hasCurrentTextSubscription` antes de aceptar éxito de `setCurrentText(...)`.
 - `public/editor.js`: refactor del pipeline de transferencia de texto (`paste`/`drop`) a un handler común (`handleTextTransferInsert`) con configuración por acción.
@@ -119,8 +125,10 @@ Reglas:
   - `electron/editor_find_main.js`
 - Renderer/UI:
   - `public/index.html`
+  - `public/preset_modal.html`
   - `public/style.css`
   - `public/js/constants.js`
+  - `public/js/wpm_curve.js`
   - `public/renderer.js`
   - `public/editor.html`
   - `public/editor.js`
