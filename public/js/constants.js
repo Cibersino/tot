@@ -7,8 +7,11 @@
     MAX_TEXT_CHARS: 10_000_000, // Renderer fallback. Real limit from main (constants_main.js via IPC).
     PASTE_ALLOW_LIMIT: 10_000, // Max chars allowed in paste. This is a soft limit to prevent performance issues.
     SMALL_UPDATE_THRESHOLD: 200_000, // If text is smaller than this, update the preview immediately.
-    WPM_MIN: 50, // Minimum WPM for reading speed.
-    WPM_MAX: 500, // Maximum WPM for reading speed.
+    WPM_MIN: 10, // Minimum WPM for reading speed.
+    WPM_MAX: 700, // Maximum WPM for reading speed.
+    WPM_SLIDER_STEP: 0.1, // Internal slider resolution; displayed WPM remains integer.
+    WPM_SLIDER_CURVE: 'exp', // WPM slider mapping curve ('linear' | 'exp').
+    WPM_SLIDER_EXP_STRENGTH: 1.15, // Mild exponential strength for slider distribution.
     MAX_APPEND_REPEAT: 9_999, // Maximum allowed repetitions for the clipboard append action.
     PRESET_NAME_MAX: 20, // Max chars for preset names.
     PRESET_DESC_MAX: 120, // Max chars for preset descriptions.
