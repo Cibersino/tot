@@ -90,6 +90,28 @@
         "overwrite": "Overwrite",
         "append": "Append",
         "ocr_running": "OCR in progress..."
+      },
+      "ocr_options": {
+        "title": "OCR options",
+        "context_image": "File: {filename} - image OCR",
+        "context_pdf_scanned": "File: {filename} - scanned PDF OCR",
+        "context_generic": "File: {filename}",
+        "preset_label": "Preset",
+        "language_label": "Language",
+        "dpi_label": "DPI / quality",
+        "timeout_label": "Timeout per page (s)",
+        "preprocess_label": "Preprocessing",
+        "preset_fast": "Fast",
+        "preset_balanced": "Balanced",
+        "preset_high_accuracy": "High accuracy",
+        "preset_custom": "Custom",
+        "preprocess_basic": "Basic",
+        "preprocess_standard": "Standard",
+        "preprocess_aggressive": "Aggressive",
+        "guidance_presets": "Fast ~{fast}s/page · Balanced ~{balanced}s/page · High accuracy ~{high}s/page",
+        "guidance_total": "Estimated total: ~{total} for {pages} page(s) (approximate)",
+        "start": "Start OCR",
+        "abort": "Abort"
       }
     },
     "tasks": {

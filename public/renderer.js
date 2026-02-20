@@ -49,6 +49,24 @@ const importApplyBackdrop = document.getElementById('importApplyBackdrop');
 const importApplyTitle = document.getElementById('importApplyTitle');
 const btnImportApplyOverwrite = document.getElementById('btnImportApplyOverwrite');
 const btnImportApplyAppend = document.getElementById('btnImportApplyAppend');
+const ocrOptionsModal = document.getElementById('ocrOptionsModal');
+const ocrOptionsBackdrop = document.getElementById('ocrOptionsBackdrop');
+const ocrOptionsTitle = document.getElementById('ocrOptionsTitle');
+const ocrOptionsContext = document.getElementById('ocrOptionsContext');
+const ocrPresetLabel = document.getElementById('ocrPresetLabel');
+const ocrPresetSelect = document.getElementById('ocrPresetSelect');
+const ocrLanguageLabel = document.getElementById('ocrLanguageLabel');
+const ocrLanguageSelect = document.getElementById('ocrLanguageSelect');
+const ocrDpiLabel = document.getElementById('ocrDpiLabel');
+const ocrDpiInput = document.getElementById('ocrDpiInput');
+const ocrTimeoutLabel = document.getElementById('ocrTimeoutLabel');
+const ocrTimeoutInput = document.getElementById('ocrTimeoutInput');
+const ocrPreprocessLabel = document.getElementById('ocrPreprocessLabel');
+const ocrPreprocessSelect = document.getElementById('ocrPreprocessSelect');
+const ocrPresetGuidance = document.getElementById('ocrPresetGuidance');
+const ocrTotalGuidance = document.getElementById('ocrTotalGuidance');
+const btnOcrOptionsStart = document.getElementById('btnOcrOptionsStart');
+const btnOcrOptionsAbort = document.getElementById('btnOcrOptionsAbort');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const appendRepeatInput = document.getElementById('appendRepeatInput');
@@ -281,6 +299,23 @@ let ocrProgressPageDone = 0;
 let ocrProgressPageTotal = 0;
 let ocrProgressStage = '';
 let importApplyResolve = null;
+let ocrOptionsResolve = null;
+let ocrOptionsPageCount = 1;
+let ocrOptionsFileKind = '';
+let ocrOptionsFilename = '';
+
+const OCR_PRESET_VALUES = Object.freeze({
+  fast: Object.freeze({ dpi: 220, timeoutPerPageSec: 45, preprocess: 'basic' }),
+  balanced: Object.freeze({ dpi: 300, timeoutPerPageSec: 90, preprocess: 'standard' }),
+  high_accuracy: Object.freeze({ dpi: 400, timeoutPerPageSec: 180, preprocess: 'aggressive' }),
+});
+const OCR_DPI_MIN = 150;
+const OCR_DPI_MAX = 600;
+const OCR_DPI_STEP = 25;
+const OCR_TIMEOUT_MIN = 30;
+const OCR_TIMEOUT_MAX = 600;
+const OCR_TIMEOUT_STEP = 15;
+const OCR_PREPROCESS_LIST = Object.freeze(['basic', 'standard', 'aggressive']);
 
 if (btnCancelOcr) {
   btnCancelOcr.dataset.ocrLockExempt = '1';
@@ -416,6 +451,309 @@ function chooseImportApplyMode() {
   return new Promise((resolve) => {
     importApplyResolve = resolve;
     showImportApplyModal();
+  });
+}
+
+function clampToStep(raw, { min, max, step, fallback }) {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  const stepped = Math.round((n - min) / step) * step + min;
+  return Math.min(max, Math.max(min, Math.floor(stepped)));
+}
+
+function isOcrRoute(route) {
+  return String(route || '').trim().toLowerCase().startsWith('ocr_');
+}
+
+function normalizeLangBaseLocal(rawLang) {
+  const normalized = String(rawLang || '').trim().toLowerCase().replace(/_/g, '-');
+  if (!normalized) return '';
+  const idx = normalized.indexOf('-');
+  return idx > 0 ? normalized.slice(0, idx) : normalized;
+}
+
+function getDefaultOcrLanguageFromUi() {
+  const base = normalizeLangBaseLocal(idiomaActual || DEFAULT_LANG);
+  if (base === 'es') return 'es';
+  if (base === 'en') return 'en';
+  return 'en';
+}
+
+function getOcrPresetConfig(presetKey) {
+  if (Object.prototype.hasOwnProperty.call(OCR_PRESET_VALUES, presetKey)) {
+    return OCR_PRESET_VALUES[presetKey];
+  }
+  return OCR_PRESET_VALUES.balanced;
+}
+
+function formatDurationFromSeconds(rawSeconds) {
+  const total = Math.max(0, Math.floor(Number(rawSeconds) || 0));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  return `${minutes}m ${seconds}s`;
+}
+
+function getSafeOcrPageCount(rawPages) {
+  const n = Number(rawPages);
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.floor(n);
+}
+
+function getSelectedOcrPresetKey() {
+  const value = ocrPresetSelect && typeof ocrPresetSelect.value === 'string'
+    ? ocrPresetSelect.value.trim().toLowerCase()
+    : '';
+  if (value === 'fast' || value === 'balanced' || value === 'high_accuracy' || value === 'custom') {
+    return value;
+  }
+  return 'balanced';
+}
+
+function getSelectedOcrPreprocess() {
+  const value = ocrPreprocessSelect && typeof ocrPreprocessSelect.value === 'string'
+    ? ocrPreprocessSelect.value.trim().toLowerCase()
+    : '';
+  if (OCR_PREPROCESS_LIST.includes(value)) return value;
+  return 'standard';
+}
+
+function syncOcrCustomControlState() {
+  const isCustom = getSelectedOcrPresetKey() === 'custom';
+  if (ocrDpiInput) ocrDpiInput.disabled = !isCustom;
+  if (ocrTimeoutInput) ocrTimeoutInput.disabled = !isCustom;
+  if (ocrPreprocessSelect) ocrPreprocessSelect.disabled = !isCustom;
+}
+
+function applyPresetValuesToControls(presetKey) {
+  const key = presetKey || 'balanced';
+  if (key === 'custom') {
+    syncOcrCustomControlState();
+    return;
+  }
+  const cfg = getOcrPresetConfig(key);
+  if (ocrDpiInput) ocrDpiInput.value = String(cfg.dpi);
+  if (ocrTimeoutInput) ocrTimeoutInput.value = String(cfg.timeoutPerPageSec);
+  if (ocrPreprocessSelect) ocrPreprocessSelect.value = cfg.preprocess;
+  syncOcrCustomControlState();
+}
+
+function normalizeOcrControlValues() {
+  const preset = getSelectedOcrPresetKey();
+  if (preset === 'custom') {
+    const normalizedDpi = clampToStep(
+      ocrDpiInput ? ocrDpiInput.value : OCR_PRESET_VALUES.balanced.dpi,
+      {
+        min: OCR_DPI_MIN,
+        max: OCR_DPI_MAX,
+        step: OCR_DPI_STEP,
+        fallback: OCR_PRESET_VALUES.balanced.dpi,
+      }
+    );
+    const normalizedTimeout = clampToStep(
+      ocrTimeoutInput ? ocrTimeoutInput.value : OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
+      {
+        min: OCR_TIMEOUT_MIN,
+        max: OCR_TIMEOUT_MAX,
+        step: OCR_TIMEOUT_STEP,
+        fallback: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
+      }
+    );
+    if (ocrDpiInput) ocrDpiInput.value = String(normalizedDpi);
+    if (ocrTimeoutInput) ocrTimeoutInput.value = String(normalizedTimeout);
+    if (ocrPreprocessSelect) ocrPreprocessSelect.value = getSelectedOcrPreprocess();
+    return;
+  }
+
+  applyPresetValuesToControls(preset);
+}
+
+function updateOcrOptionsContextText() {
+  if (!ocrOptionsContext) return;
+  const filename = ocrOptionsFilename || '';
+  if (ocrOptionsFileKind === 'image') {
+    ocrOptionsContext.textContent = msgRenderer(
+      'renderer.main.ocr_options.context_image',
+      { filename },
+      filename ? `File: ${filename} - image OCR` : 'Image OCR'
+    );
+    return;
+  }
+  if (ocrOptionsFileKind === 'pdf') {
+    ocrOptionsContext.textContent = msgRenderer(
+      'renderer.main.ocr_options.context_pdf_scanned',
+      { filename },
+      filename ? `File: ${filename} - scanned PDF OCR` : 'Scanned PDF OCR'
+    );
+    return;
+  }
+  ocrOptionsContext.textContent = msgRenderer(
+    'renderer.main.ocr_options.context_generic',
+    { filename },
+    filename ? `File: ${filename}` : 'OCR'
+  );
+}
+
+function updateOcrOptionsGuidanceText() {
+  if (ocrPresetGuidance) {
+    ocrPresetGuidance.textContent = msgRenderer(
+      'renderer.main.ocr_options.guidance_presets',
+      {
+        fast: OCR_PRESET_VALUES.fast.timeoutPerPageSec,
+        balanced: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
+        high: OCR_PRESET_VALUES.high_accuracy.timeoutPerPageSec,
+      },
+      `Fast ~${OCR_PRESET_VALUES.fast.timeoutPerPageSec}s/page · Balanced ~${OCR_PRESET_VALUES.balanced.timeoutPerPageSec}s/page · High accuracy ~${OCR_PRESET_VALUES.high_accuracy.timeoutPerPageSec}s/page`
+    );
+  }
+
+  const preset = getSelectedOcrPresetKey();
+  let timeoutPerPageSec = OCR_PRESET_VALUES.balanced.timeoutPerPageSec;
+  if (preset === 'custom') {
+    timeoutPerPageSec = clampToStep(
+      ocrTimeoutInput ? ocrTimeoutInput.value : timeoutPerPageSec,
+      {
+        min: OCR_TIMEOUT_MIN,
+        max: OCR_TIMEOUT_MAX,
+        step: OCR_TIMEOUT_STEP,
+        fallback: timeoutPerPageSec,
+      }
+    );
+  } else {
+    timeoutPerPageSec = getOcrPresetConfig(preset).timeoutPerPageSec;
+  }
+
+  const pages = getSafeOcrPageCount(ocrOptionsPageCount);
+  const totalSec = timeoutPerPageSec * pages;
+  if (ocrTotalGuidance) {
+    ocrTotalGuidance.textContent = msgRenderer(
+      'renderer.main.ocr_options.guidance_total',
+      {
+        total: formatDurationFromSeconds(totalSec),
+        pages,
+      },
+      `Estimated total: ~${formatDurationFromSeconds(totalSec)} for ${pages} page(s) (approximate)`
+    );
+  }
+}
+
+function collectNormalizedOcrOptions() {
+  const preset = getSelectedOcrPresetKey();
+  const langRaw = ocrLanguageSelect && typeof ocrLanguageSelect.value === 'string'
+    ? ocrLanguageSelect.value.trim().toLowerCase()
+    : '';
+  const language = (langRaw === 'es' || langRaw === 'en' || langRaw === 'es+en')
+    ? langRaw
+    : getDefaultOcrLanguageFromUi();
+
+  let dpi = OCR_PRESET_VALUES.balanced.dpi;
+  let timeoutPerPageSec = OCR_PRESET_VALUES.balanced.timeoutPerPageSec;
+  let preprocessProfile = OCR_PRESET_VALUES.balanced.preprocess;
+
+  if (preset === 'custom') {
+    dpi = clampToStep(
+      ocrDpiInput ? ocrDpiInput.value : dpi,
+      { min: OCR_DPI_MIN, max: OCR_DPI_MAX, step: OCR_DPI_STEP, fallback: dpi }
+    );
+    timeoutPerPageSec = clampToStep(
+      ocrTimeoutInput ? ocrTimeoutInput.value : timeoutPerPageSec,
+      { min: OCR_TIMEOUT_MIN, max: OCR_TIMEOUT_MAX, step: OCR_TIMEOUT_STEP, fallback: timeoutPerPageSec }
+    );
+    preprocessProfile = getSelectedOcrPreprocess();
+  } else {
+    const cfg = getOcrPresetConfig(preset);
+    dpi = cfg.dpi;
+    timeoutPerPageSec = cfg.timeoutPerPageSec;
+    preprocessProfile = cfg.preprocess;
+  }
+
+  return {
+    qualityPreset: preset,
+    preset,
+    ocrLanguage: language,
+    languageTag: language,
+    dpi,
+    timeoutPerPageSec,
+    preprocessProfile,
+  };
+}
+
+function showOcrOptionsModal() {
+  if (!ocrOptionsModal) return;
+  ocrOptionsModal.setAttribute('aria-hidden', 'false');
+  if (ocrPresetSelect && typeof ocrPresetSelect.focus === 'function') {
+    ocrPresetSelect.focus();
+  }
+}
+
+function hideOcrOptionsModal() {
+  if (!ocrOptionsModal) return;
+  ocrOptionsModal.setAttribute('aria-hidden', 'true');
+}
+
+function settleOcrOptions(confirmed) {
+  const resolve = ocrOptionsResolve;
+  ocrOptionsResolve = null;
+  hideOcrOptionsModal();
+  if (typeof resolve !== 'function') return;
+  if (!confirmed) {
+    resolve({ confirmed: false, options: null });
+    return;
+  }
+  normalizeOcrControlValues();
+  resolve({
+    confirmed: true,
+    options: collectNormalizedOcrOptions(),
+  });
+}
+
+function promptOcrOptionsDialog({ kind, filename, pageCountHint }) {
+  if (
+    !ocrOptionsModal
+    || !ocrPresetSelect
+    || !ocrLanguageSelect
+    || !ocrDpiInput
+    || !ocrTimeoutInput
+    || !ocrPreprocessSelect
+    || !btnOcrOptionsStart
+    || !btnOcrOptionsAbort
+  ) {
+    return Promise.resolve({
+      confirmed: true,
+      options: {
+        qualityPreset: 'balanced',
+        preset: 'balanced',
+        ocrLanguage: getDefaultOcrLanguageFromUi(),
+        languageTag: getDefaultOcrLanguageFromUi(),
+        dpi: OCR_PRESET_VALUES.balanced.dpi,
+        timeoutPerPageSec: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
+        preprocessProfile: OCR_PRESET_VALUES.balanced.preprocess,
+      },
+    });
+  }
+
+  if (ocrOptionsResolve) {
+    settleOcrOptions(false);
+  }
+
+  ocrOptionsPageCount = getSafeOcrPageCount(pageCountHint);
+  ocrOptionsFileKind = String(kind || '').trim().toLowerCase();
+  ocrOptionsFilename = String(filename || '').trim();
+
+  ocrPresetSelect.value = 'balanced';
+  ocrLanguageSelect.value = getDefaultOcrLanguageFromUi();
+  ocrDpiInput.value = String(OCR_PRESET_VALUES.balanced.dpi);
+  ocrTimeoutInput.value = String(OCR_PRESET_VALUES.balanced.timeoutPerPageSec);
+  ocrPreprocessSelect.value = OCR_PRESET_VALUES.balanced.preprocess;
+
+  syncOcrCustomControlState();
+  updateOcrOptionsContextText();
+  updateOcrOptionsGuidanceText();
+
+  showOcrOptionsModal();
+  return new Promise((resolve) => {
+    ocrOptionsResolve = resolve;
   });
 }
 
@@ -637,6 +975,32 @@ function applyTranslations() {
   if (importApplyTitle) importApplyTitle.textContent = tRenderer('renderer.main.import_apply.title', importApplyTitle.textContent || '');
   if (btnImportApplyOverwrite) btnImportApplyOverwrite.textContent = tRenderer('renderer.main.import_apply.overwrite', btnImportApplyOverwrite.textContent || '');
   if (btnImportApplyAppend) btnImportApplyAppend.textContent = tRenderer('renderer.main.import_apply.append', btnImportApplyAppend.textContent || '');
+  if (ocrOptionsTitle) ocrOptionsTitle.textContent = tRenderer('renderer.main.ocr_options.title', ocrOptionsTitle.textContent || '');
+  if (ocrPresetLabel) ocrPresetLabel.textContent = tRenderer('renderer.main.ocr_options.preset_label', ocrPresetLabel.textContent || '');
+  if (ocrLanguageLabel) ocrLanguageLabel.textContent = tRenderer('renderer.main.ocr_options.language_label', ocrLanguageLabel.textContent || '');
+  if (ocrDpiLabel) ocrDpiLabel.textContent = tRenderer('renderer.main.ocr_options.dpi_label', ocrDpiLabel.textContent || '');
+  if (ocrTimeoutLabel) ocrTimeoutLabel.textContent = tRenderer('renderer.main.ocr_options.timeout_label', ocrTimeoutLabel.textContent || '');
+  if (ocrPreprocessLabel) ocrPreprocessLabel.textContent = tRenderer('renderer.main.ocr_options.preprocess_label', ocrPreprocessLabel.textContent || '');
+  if (btnOcrOptionsStart) btnOcrOptionsStart.textContent = tRenderer('renderer.main.ocr_options.start', btnOcrOptionsStart.textContent || '');
+  if (btnOcrOptionsAbort) btnOcrOptionsAbort.textContent = tRenderer('renderer.main.ocr_options.abort', btnOcrOptionsAbort.textContent || '');
+  if (ocrPresetSelect) {
+    const optFast = ocrPresetSelect.querySelector('option[value="fast"]');
+    const optBalanced = ocrPresetSelect.querySelector('option[value="balanced"]');
+    const optHigh = ocrPresetSelect.querySelector('option[value="high_accuracy"]');
+    const optCustom = ocrPresetSelect.querySelector('option[value="custom"]');
+    if (optFast) optFast.textContent = tRenderer('renderer.main.ocr_options.preset_fast', optFast.textContent || 'Fast');
+    if (optBalanced) optBalanced.textContent = tRenderer('renderer.main.ocr_options.preset_balanced', optBalanced.textContent || 'Balanced');
+    if (optHigh) optHigh.textContent = tRenderer('renderer.main.ocr_options.preset_high_accuracy', optHigh.textContent || 'High accuracy');
+    if (optCustom) optCustom.textContent = tRenderer('renderer.main.ocr_options.preset_custom', optCustom.textContent || 'Custom');
+  }
+  if (ocrPreprocessSelect) {
+    const optBasic = ocrPreprocessSelect.querySelector('option[value="basic"]');
+    const optStandard = ocrPreprocessSelect.querySelector('option[value="standard"]');
+    const optAggressive = ocrPreprocessSelect.querySelector('option[value="aggressive"]');
+    if (optBasic) optBasic.textContent = tRenderer('renderer.main.ocr_options.preprocess_basic', optBasic.textContent || 'Basic');
+    if (optStandard) optStandard.textContent = tRenderer('renderer.main.ocr_options.preprocess_standard', optStandard.textContent || 'Standard');
+    if (optAggressive) optAggressive.textContent = tRenderer('renderer.main.ocr_options.preprocess_aggressive', optAggressive.textContent || 'Aggressive');
+  }
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
@@ -683,6 +1047,8 @@ function applyTranslations() {
   if (ocrProgressText && !ocrLockActive) {
     ocrProgressText.textContent = tRenderer('renderer.main.import_apply.ocr_running', ocrProgressText.textContent || '');
   }
+  updateOcrOptionsContextText();
+  updateOcrOptionsGuidanceText();
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
   if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title', resultsTitle.textContent || '');
   if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title', cronTitle.textContent || '');
@@ -1867,12 +2233,26 @@ if (btnImportExtract) {
         return;
       }
 
+      let runOptions = {
+        languageTag: idiomaActual || DEFAULT_LANG,
+        timeoutPerPageSec: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
+      };
+      if (isOcrRoute(selectRes.route)) {
+        const ocrOptsRes = await promptOcrOptionsDialog({
+          kind: selectRes.kind,
+          filename: selectRes.filename,
+          pageCountHint: selectRes.pageCountHint,
+        });
+        if (!ocrOptsRes || ocrOptsRes.confirmed !== true) {
+          await discardImportSession(selectRes.sessionId);
+          return;
+        }
+        runOptions = Object.assign({}, runOptions, ocrOptsRes.options || {});
+      }
+
       const runRes = await importRun({
         sessionId: selectRes.sessionId,
-        options: {
-          languageTag: idiomaActual || DEFAULT_LANG,
-          timeoutPerPageSec: 90,
-        },
+        options: runOptions,
       });
       if (!runRes || runRes.ok !== true) {
         const message = humanizeImportError(runRes);
@@ -1920,6 +2300,56 @@ if (btnCancelOcr) {
   });
 }
 
+if (ocrPresetSelect) {
+  ocrPresetSelect.addEventListener('change', () => {
+    applyPresetValuesToControls(getSelectedOcrPresetKey());
+    normalizeOcrControlValues();
+    updateOcrOptionsGuidanceText();
+  });
+}
+
+if (ocrDpiInput) {
+  ocrDpiInput.addEventListener('change', () => {
+    normalizeOcrControlValues();
+    updateOcrOptionsGuidanceText();
+  });
+}
+
+if (ocrTimeoutInput) {
+  ocrTimeoutInput.addEventListener('change', () => {
+    normalizeOcrControlValues();
+    updateOcrOptionsGuidanceText();
+  });
+}
+
+if (ocrPreprocessSelect) {
+  ocrPreprocessSelect.addEventListener('change', () => {
+    if (getSelectedOcrPresetKey() !== 'custom') {
+      applyPresetValuesToControls(getSelectedOcrPresetKey());
+    } else if (ocrPreprocessSelect) {
+      ocrPreprocessSelect.value = getSelectedOcrPreprocess();
+    }
+  });
+}
+
+if (btnOcrOptionsStart) {
+  btnOcrOptionsStart.addEventListener('click', () => {
+    settleOcrOptions(true);
+  });
+}
+
+if (btnOcrOptionsAbort) {
+  btnOcrOptionsAbort.addEventListener('click', () => {
+    settleOcrOptions(false);
+  });
+}
+
+if (ocrOptionsBackdrop) {
+  ocrOptionsBackdrop.addEventListener('click', () => {
+    settleOcrOptions(false);
+  });
+}
+
 if (btnImportApplyOverwrite) {
   btnImportApplyOverwrite.addEventListener('click', () => {
     settleImportApplyChoice('overwrite');
@@ -1940,9 +2370,15 @@ if (importApplyBackdrop) {
 
 document.addEventListener('keydown', (event) => {
   if (!event || event.key !== 'Escape') return;
-  if (!importApplyModal || importApplyModal.getAttribute('aria-hidden') !== 'false') return;
-  event.preventDefault();
-  settleImportApplyChoice('');
+  if (ocrOptionsModal && ocrOptionsModal.getAttribute('aria-hidden') === 'false') {
+    event.preventDefault();
+    settleOcrOptions(false);
+    return;
+  }
+  if (importApplyModal && importApplyModal.getAttribute('aria-hidden') === 'false') {
+    event.preventDefault();
+    settleImportApplyChoice('');
+  }
 });
 
 // =============================================================================

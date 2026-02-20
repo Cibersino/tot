@@ -156,6 +156,51 @@
       </div>
     </div>
 
+    <!-- OCR OPTIONS MODAL -->
+    <div id="ocrOptionsModal" class="ocr-options-modal" aria-hidden="true" role="dialog" aria-labelledby="ocrOptionsTitle"
+      aria-modal="true">
+      <div id="ocrOptionsBackdrop" class="ocr-options-modal-backdrop"></div>
+      <div class="ocr-options-modal-panel" role="document">
+        <h2 id="ocrOptionsTitle" class="ocr-options-title">OCR options</h2>
+        <p id="ocrOptionsContext" class="ocr-options-context"></p>
+        <div class="ocr-options-grid">
+          <label id="ocrPresetLabel" for="ocrPresetSelect">Preset</label>
+          <select id="ocrPresetSelect">
+            <option value="fast">Fast</option>
+            <option value="balanced" selected>Balanced</option>
+            <option value="high_accuracy">High accuracy</option>
+            <option value="custom">Custom</option>
+          </select>
+
+          <label id="ocrLanguageLabel" for="ocrLanguageSelect">Language</label>
+          <select id="ocrLanguageSelect">
+            <option value="es">es</option>
+            <option value="en">en</option>
+            <option value="es+en">es+en</option>
+          </select>
+
+          <label id="ocrDpiLabel" for="ocrDpiInput">DPI / quality</label>
+          <input id="ocrDpiInput" type="number" min="150" max="600" step="25" value="300" />
+
+          <label id="ocrTimeoutLabel" for="ocrTimeoutInput">Timeout per page (s)</label>
+          <input id="ocrTimeoutInput" type="number" min="30" max="600" step="15" value="90" />
+
+          <label id="ocrPreprocessLabel" for="ocrPreprocessSelect">Preprocessing</label>
+          <select id="ocrPreprocessSelect">
+            <option value="basic">Basic</option>
+            <option value="standard" selected>Standard</option>
+            <option value="aggressive">Aggressive</option>
+          </select>
+        </div>
+        <p id="ocrPresetGuidance" class="ocr-options-guidance">Fast ~45s/page · Balanced ~90s/page · High accuracy ~180s/page</p>
+        <p id="ocrTotalGuidance" class="ocr-options-guidance">Estimated total: ~1m 30s (approximate)</p>
+        <div class="ocr-options-actions">
+          <button id="btnOcrOptionsStart" class="btn-standard">Start OCR</button>
+          <button id="btnOcrOptionsAbort" class="btn-standard">Abort</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="./js/log.js"></script>
