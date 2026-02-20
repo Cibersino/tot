@@ -1,10 +1,10 @@
 # Baseline legal para distribución (por release)
 
-Fecha: `<YYYY-MM-DD>`
-Tag objetivo (GitHub): `v<MAJOR.MINOR.PATCH>`
-Commit freeze (Git): `<SHA_COMMIT>`
-Artefacto inspeccionado: `<ZIP/INSTALLER>`
-SHA256(artefacto): `<SHA256>`
+Fecha: `2026-02-19`
+Tag objetivo (GitHub): `v0.1.6`
+Commit freeze (Git): `cbc2e1610687ae511ad6c39907d3c4825ac99ccf`
+Artefacto inspeccionado: `toT-0.1.6-win-x64.zip`
+SHA256(artefacto): `2389A93122DE99913A612142EC77A90C152AFD43EB82F28227BC88CB77575052`
 
 Pregunta única que responde este documento: **¿El artefacto es legalmente redistribuible en este release?**
 
@@ -29,14 +29,14 @@ Regla operativa:
 
 ## 1) Veredicto del release
 
-**Veredicto actual:** `<PASS | BLOCKER | PENDING>`  
-**Decisión:** `<OK publicar | NO publicar>`
+**Veredicto actual:** `PASS`  
+**Decisión:** `OK publicar`
 
 Estado por gate:
-* **Ship Gate (inventario + cobertura legal):** `<PASS | BLOCKER | PENDING>`
-  * Servicios externos + terceros redistribuidos (secciones 2–5): `<PASS | BLOCKER | PENDING>`
-  * Higiene legal de release (sección 6): `<PASS | BLOCKER | PENDING>`
-* **Post-packaging Gate (artefacto build):** `<PASS | BLOCKER | PENDING>`
+* **Ship Gate (inventario + cobertura legal):** `PASS`
+  * Servicios externos + terceros redistribuidos (secciones 2–5): `PASS`
+  * Higiene legal de release (sección 6): `PASS`
+* **Post-packaging Gate (artefacto build):** `PASS`
 
 Notas:
 * Si el veredicto es PASS, registrar el identificador exacto del artefacto validado (nombre + hash).
@@ -50,10 +50,10 @@ Notas:
 **Objetivo práctico:** que todo lo consumido externamente y todo lo redistribuido tenga inventario y cobertura legal antes de empaquetar.
 
 Checklist:
-* [PENDING] Existe inventario legal efectivo del release (servicios externos + material de terceros + docs entregables).
-* [PENDING] Cada ítem del inventario tiene: origen, licencia/términos, decisión de redistribución y evidencia.
-* [PENDING] Hay comparación explícita contra release anterior (added/removed/changed).
-* [PENDING] Si hay incertidumbre legal, el ítem queda en PENDING hasta resolver.
+* [PASS] Existe inventario legal efectivo del release (servicios externos + material de terceros + docs entregables).
+* [PASS] Cada ítem del inventario tiene: origen, licencia/términos, decisión de redistribución y evidencia.
+* [PASS] Hay comparación explícita contra release anterior (added/removed/changed).
+* [PASS] Si hay incertidumbre legal, el ítem queda en PENDING hasta resolver.
 
 Criterio de bloqueo:
 * Publicar con un tercero redistribuido sin licencia/notice identificable y redistribuible.
@@ -73,10 +73,10 @@ Servicios externos efectivos esperados (baseline actual; completar por release):
   * `https://github.com/Cibersino/tot/releases/latest`
 
 Checklist:
-* [PENDING] Lista efectiva de endpoints/servicios usada por la app en este release (incluye cualquier host nuevo).
-* [PENDING] Host allowlist efectiva registrada y consistente con la lista de endpoints.
-* [PENDING] Confirmar ausencia de credenciales embebidas (`token`, `key`, `user:pass`, `.env`, etc.).
-* [PENDING] Si aparece servicio nuevo: inventariar obligación legal asociada (ToS, aviso, privacidad, atribución, etc.).
+* [PASS] Lista efectiva de endpoints/servicios usada por la app en este release (incluye cualquier host nuevo).
+* [PASS] Host allowlist efectiva registrada y consistente con la lista de endpoints.
+* [PASS] Confirmar ausencia de credenciales embebidas (`token`, `key`, `user:pass`, `.env`, etc.).
+* [PASS] Si aparece servicio nuevo: inventariar obligación legal asociada (ToS, aviso, privacidad, atribución, etc.).
 
 Criterio de bloqueo:
 * Secret/credencial embebida en repo o artefacto.
@@ -95,14 +95,14 @@ Evidencia mínima sugerida:
 **Objetivo práctico:** identificar todo lo de terceros que viaja dentro del artefacto y su obligación asociada.
 
 Checklist:
-* [PENDING] Fonts redistribuidas inventariadas con licencia/notice:
+* [PASS] Fonts redistribuidas inventariadas con licencia/notice:
   * `Baskervville` — `public/fonts/LICENSE_Baskervville_OFL.txt`
   * Otras (si existen): `<FontName> — <ruta licencia/notice>`
-* [PENDING] Assets redistribuidos de terceros inventariados (si todo es propio, declararlo explícitamente).
-* [PENDING] Runtime notices obligatorios inventariados:
+* [PASS] Assets redistribuidos de terceros inventariados (si todo es propio, declararlo explícitamente).
+* [PASS] Runtime notices obligatorios inventariados:
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
-* [PENDING] Cada tercero tiene trazabilidad completa:
+* [PASS] Cada tercero tiene trazabilidad completa:
   * `componente | origen | licencia | obligación | archivo notice/doc`
 
 Criterio de bloqueo:
@@ -119,12 +119,12 @@ Evidencia mínima sugerida:
 Este punto no asume “sin deps”; debe verificarse en cada release.
 
 Checklist:
-* [PENDING] Modelo esperado para este release (marcar uno):
-  * [ ] No hay `node_modules` runtime (solo runtime Electron + app bundle).
+* [PASS] Modelo esperado para este release (marcar uno):
+  * [x] No hay `node_modules` runtime (solo runtime Electron + app bundle).
   * [ ] Sí hay `node_modules` runtime (listar top-level).
-* [PENDING] Si hay deps runtime: listar `nombre@versión`, licencia y cobertura documental.
-* [PENDING] Si no hay deps runtime: registrar la expectativa explícitamente para validar contra artefacto en Post-packaging.
-* [PENDING] Cualquier dependencia efectiva encontrada en artefacto queda cubierta por esta sección y por documentos de §6.
+* [PASS] Si hay deps runtime: listar `nombre@versión`, licencia y cobertura documental.
+* [PASS] Si no hay deps runtime: registrar la expectativa explícitamente para validar contra artefacto en Post-packaging.
+* [PASS] Cualquier dependencia efectiva encontrada en artefacto queda cubierta por esta sección y por documentos de §6.
 
 Criterio de bloqueo:
 * Dependencia runtime efectiva sin cobertura de licencia/notice aplicable.
@@ -140,16 +140,16 @@ Evidencia mínima sugerida:
 **Objetivo práctico:** dejar cerrado qué documentos recibe el usuario y asegurar que build/repo no arrastren material impropio.
 
 Checklist:
-* [PENDING] Lista efectiva de documentos legales que deben incluirse en artefacto:
+* [PASS] Lista efectiva de documentos legales que deben incluirse en artefacto:
   * `LICENSE`
   * `PRIVACY.md`
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
   * Licencias/notices de fonts redistribuidas (ej. `public/fonts/LICENSE_Baskervville_OFL.txt`)
   * Notices adicionales si aplica (ej. `THIRD_PARTY_NOTICES.md`)
-* [PENDING] `public/info/acerca_de.html` (u otra UI equivalente) es consistente con el inventario legal anterior.
-* [PENDING] Configuración de empaquetado usa allowlist/excludes coherentes para no arrastrar material no distribuible.
-* [PENDING] Confirmar ausencia de `tools_local/`, backups, dumps, `.env` y secretos en lo que se planea distribuir.
+* [PASS] `public/info/acerca_de.html` (u otra UI equivalente) es consistente con el inventario legal anterior.
+* [PASS] Configuración de empaquetado usa allowlist/excludes coherentes para no arrastrar material no distribuible.
+* [PASS] Confirmar ausencia de `tools_local/`, backups, dumps, `.env` y secretos en lo que se planea distribuir.
 
 Criterio de bloqueo:
 * Documento legal obligatorio faltante en la lista efectiva de entrega.
@@ -168,11 +168,11 @@ Este gate valida el **artefacto real** que se publica (zip/installer), no solo e
 ## 7) Inspección del contenido del artefacto
 
 Checklist:
-* [PENDING] Confirmar que el artefacto contiene solo runtime + app + docs legales esperados.
-* [PENDING] Confirmar ausencia de material no distribuible/sensible:
+* [PASS] Confirmar que el artefacto contiene solo runtime + app + docs legales esperados.
+* [PASS] Confirmar ausencia de material no distribuible/sensible:
   * `tools_local/`, backups, evidence folders, dumps
   * `.env`, credenciales, llaves, logs de desarrollo
-* [PENDING] Registrar evidencia mínima (árbol/archivo listado de raíz + `resources/`).
+* [PASS] Registrar evidencia mínima (árbol/archivo listado de raíz + `resources/`).
 
 Criterio de bloqueo:
 * Presencia de material sensible o no distribuible en artefacto final.
@@ -185,12 +185,12 @@ Evidencia mínima sugerida:
 ## 8) Dependencias runtime efectivas (en artefacto)
 
 Checklist:
-* [PENDING] Verificar si existen:
+* [PASS] Verificar si existen:
   * `resources/app.asar/node_modules/**`
   * `resources/app.asar.unpacked/**`
   * `resources/app/node_modules/**`
-* [PENDING] Si existen deps runtime: listar top-level real y cruzar contra §5.
-* [PENDING] Cualquier dependencia inesperada se clasifica y cubre legalmente antes de publicar.
+* [PASS] Si existen deps runtime: listar top-level real y cruzar contra §5.
+* [PASS] Cualquier dependencia inesperada se clasifica y cubre legalmente antes de publicar.
 
 Criterio de bloqueo:
 * Dependencia runtime efectiva inesperada sin cobertura legal/documental.
@@ -203,9 +203,9 @@ Evidencia mínima sugerida:
 ## 9) Verificación de documentos legales en artefacto (contra §6)
 
 Checklist:
-* [PENDING] Cada documento listado en §6 está presente en el artefacto final.
-* [PENDING] Verificar accesibilidad práctica: el usuario puede abrir esos documentos (por UI o por ubicación clara en zip/installer).
-* [PENDING] Confirmar que nombres/rutas finales no rompen la trazabilidad definida en §6.
+* [PASS] Cada documento listado en §6 está presente en el artefacto final.
+* [PASS] Verificar accesibilidad práctica: el usuario puede abrir esos documentos (por UI o por ubicación clara en zip/installer).
+* [PASS] Confirmar que nombres/rutas finales no rompen la trazabilidad definida en §6.
 
 Criterio de bloqueo:
 * Falta cualquier documento legal obligatorio en el artefacto final.
@@ -218,8 +218,8 @@ Evidencia mínima sugerida:
 ## 10) Servicios externos sanity en artefacto
 
 Checklist:
-* [PENDING] Confirmar que endpoints/hosts del build empaquetado coinciden con §3.
-* [PENDING] Si aparece conectividad nueva, volver a §3 y §2 (estado pasa a PENDING hasta cerrar inventario/cobertura).
+* [PASS] Confirmar que endpoints/hosts del build empaquetado coinciden con §3.
+* [PASS] Si aparece conectividad nueva, volver a §3 y §2 (estado pasa a PENDING hasta cerrar inventario/cobertura).
 
 Criterio de bloqueo:
 * Endpoint/host efectivo no inventariado con obligación legal mínima cerrada.
@@ -245,7 +245,7 @@ La app queda marcada como **“legalmente redistribuible en este release”** ú
 * Hay ítems nuevos (servicios/terceros/deps/docs) sin inventario/cobertura cerrada.
 * No se ejecutó por completo el Post-packaging Gate sobre el artefacto final.
 
-Veredicto final: `<PASS | BLOCKER | PENDING>`  
-Artefacto validado: `<nombre exacto>`
+Veredicto final: `PASS`  
+Artefacto validado: `oT-0.1.6-win-x64.zip`
 
 ---
