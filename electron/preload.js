@@ -38,6 +38,18 @@ const api = {
     importCancel: () => ipcRenderer.invoke('import-cancel'),
     importApply: (payload) => ipcRenderer.invoke('import-apply', payload),
     importDiscard: (payload) => ipcRenderer.invoke('import-discard', payload),
+    onImportProgress: (cb) => {
+        const wrapper = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('import-progress callback error:', err); }
+        };
+        return subscribeWithUnsub('import-progress', wrapper, 'removeListener error (import-progress):');
+    },
+    onImportFinished: (cb) => {
+        const wrapper = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('import-finished callback error:', err); }
+        };
+        return subscribeWithUnsub('import-finished', wrapper, 'removeListener error (import-finished):');
+    },
     getOcrLockState: () => ipcRenderer.invoke('ocr-lock-get-state'),
     onOcrLockState: (cb) => {
         const wrapper = (_e, payload) => {

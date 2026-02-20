@@ -37,7 +37,7 @@ const editorState = require('./editor_state');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const snapshotsMain = require('./current_text_snapshots_main');
-const importOcrMain = require('./import_ocr_main');
+const importOcrOrchestrator = require('./import_ocr/orchestrator');
 const updater = require('./updater');
 const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
@@ -76,11 +76,11 @@ function isAliveWindow(win) {
 }
 
 function isMainInteractive() {
-  return mainReadyState === 'READY' && menuEnabled && !importOcrMain.isOcrLockActive();
+  return mainReadyState === 'READY' && menuEnabled && !importOcrOrchestrator.isOcrLockActive();
 }
 
 function guardMainUserAction(actionId, message) {
-  if (importOcrMain.isOcrLockActive()) {
+  if (importOcrOrchestrator.isOcrLockActive()) {
     log.warnOnce(
       `OCR_LOCKED:main.${actionId}`,
       `OCR lock active: blocked main action '${actionId}'.`
@@ -1134,7 +1134,7 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
 
 // Floating window: open/close + commands from the flotante UI
 ipcMain.handle('flotante-open', async () => {
-  if (importOcrMain.isOcrLockActive()) {
+  if (importOcrOrchestrator.isOcrLockActive()) {
     return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
   }
   if (!guardMainUserAction('flotante-open', 'flotante-open ignored (pre-READY).')) {
@@ -1159,7 +1159,7 @@ ipcMain.handle('flotante-open', async () => {
 });
 
 ipcMain.handle('flotante-close', () => {
-  if (importOcrMain.isOcrLockActive()) {
+  if (importOcrOrchestrator.isOcrLockActive()) {
     return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
   }
   if (!guardMainUserAction('flotante-close', 'flotante-close ignored (pre-READY).')) {
@@ -1234,7 +1234,7 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
 // Editor window: open (create or focus) and push current text
 ipcMain.handle('open-editor', () => {
-  if (importOcrMain.isOcrLockActive()) {
+  if (importOcrOrchestrator.isOcrLockActive()) {
     return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
   }
   if (!guardMainUserAction('open-editor', 'open-editor ignored (pre-READY).')) {
@@ -1287,7 +1287,7 @@ ipcMain.on('task-editor-confirm-close', (event) => {
 
 // Preset modal: open (with payload normalization)
 ipcMain.handle('open-preset-modal', (event, payload) => {
-  if (importOcrMain.isOcrLockActive()) {
+  if (importOcrOrchestrator.isOcrLockActive()) {
     return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
   }
   if (!guardMainUserAction('open-preset-modal', 'open-preset-modal ignored (pre-READY).')) {
@@ -1435,7 +1435,7 @@ app.whenReady().then(() => {
     mainWin,
     editorWin,
   }), {
-    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
+    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
   });
 
   editorFindMain.registerIpc(ipcMain);
@@ -1451,7 +1451,7 @@ app.whenReady().then(() => {
       taskEditorWin,
     }),
     buildAppMenu,
-    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
+    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
   });
 
   presetsMain.registerIpc(ipcMain, {
@@ -1464,14 +1464,14 @@ app.whenReady().then(() => {
       flotanteWin,
       taskEditorWin,
     }),
-    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
+    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
   });
 
   snapshotsMain.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
+    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
   });
 
   tasksMain.registerIpc(ipcMain, {
@@ -1486,10 +1486,10 @@ app.whenReady().then(() => {
         taskEditorWin.show();
       }
     },
-    guardIpcWhileLocked: importOcrMain.guardIpcWhileLocked,
+    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
   });
 
-  importOcrMain.registerIpc(ipcMain, {
+  importOcrOrchestrator.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
       editorWin,
@@ -1499,6 +1499,7 @@ app.whenReady().then(() => {
       flotanteWin,
       taskEditorWin,
     }),
+    textState,
   });
 
   updater.registerIpc(ipcMain, {

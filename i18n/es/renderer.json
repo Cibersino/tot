@@ -4,6 +4,8 @@
       "selector_title": "Primera y última parte del texto analizado:",
       "selector_empty": "(vacío)",
       "buttons": {
+        "import_extract": "📥",
+        "cancel_ocr": "⛔",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +16,8 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Importar o extraer texto desde archivo",
+        "cancel_ocr": "Cancelar OCR en ejecución",
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
         "append_clipboard": "Pegar portapapeles al final del texto actual (nueva línea)",
         "append_repeat_count": "Repeticiones del append (1-9999)",
@@ -31,6 +35,8 @@
         "flotante_window": "Ventana flotante"
       },
       "aria": {
+        "import_extract": "Importar o extraer texto",
+        "cancel_ocr": "Cancelar OCR",
         "append_repeat_count": "Repeticiones de pegado",
         "wpm_input": "Palabras por minuto",
         "wpm_slider": "Deslizador de palabras por minuto",

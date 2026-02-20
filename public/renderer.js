@@ -41,6 +41,7 @@ const {
 // =============================================================================
 const textPreview = document.getElementById('textPreview');
 const btnImportExtract = document.getElementById('btnImportExtract');
+const btnCancelOcr = document.getElementById('btnCancelOcr');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const appendRepeatInput = document.getElementById('appendRepeatInput');
@@ -158,7 +159,7 @@ function isOcrLockActive() {
   return !!ocrLockActive;
 }
 
-function guardUserAction(actionId) {
+function guardUserAction(actionId, { allowWhenOcrLocked = false } = {}) {
   if (!isRendererReady()) {
     log.warnOnce(
       `BOOTSTRAP:renderer.preReady.${actionId}`,
@@ -167,7 +168,7 @@ function guardUserAction(actionId) {
     );
     return false;
   }
-  if (isOcrLockActive()) {
+  if (isOcrLockActive() && !allowWhenOcrLocked) {
     log.warnOnce(
       `OCR_LOCKED:renderer.action.${actionId}`,
       `OCR lock active: blocked renderer action '${actionId}'.`
@@ -266,6 +267,11 @@ let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
 let ocrLockActive = false;
 let ocrLockReason = '';
+const importJobSessionMap = new Map();
+
+if (btnCancelOcr) {
+  btnCancelOcr.dataset.ocrLockExempt = '1';
+}
 
 function applyGlobalOcrLockUi() {
   const controls = document.querySelectorAll('button, input, select, textarea');
@@ -284,6 +290,11 @@ function applyGlobalOcrLockUi() {
   });
 }
 
+function syncOcrControlVisibility() {
+  if (!btnCancelOcr) return;
+  btnCancelOcr.hidden = !ocrLockActive;
+}
+
 function updateOcrLockState(payload) {
   const nextLocked = !!(payload && payload.locked);
   const nextReason = nextLocked
@@ -292,8 +303,12 @@ function updateOcrLockState(payload) {
   const changed = (ocrLockActive !== nextLocked) || (ocrLockReason !== nextReason);
   ocrLockActive = nextLocked;
   ocrLockReason = nextReason;
-  if (!changed) return;
+  if (!changed) {
+    syncOcrControlVisibility();
+    return;
+  }
   applyGlobalOcrLockUi();
+  syncOcrControlVisibility();
 }
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
@@ -306,6 +321,128 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
     return null;
   }
   return api[methodName].bind(api);
+}
+
+function showImportDialogMessage(message) {
+  const text = String(message || '').trim();
+  if (!text) return;
+  try {
+    window.alert(text);
+  } catch (err) {
+    log.warn('Unable to show import dialog message:', err);
+  }
+}
+
+function humanizeImportError(res) {
+  const code = res && typeof res.code === 'string' ? res.code : '';
+  if (code === 'IMPORT_DEP_MISSING_MAMMOTH') {
+    return 'DOCX import dependency is missing in this build.';
+  }
+  if (code === 'IMPORT_DEP_MISSING_PDFJS') {
+    return 'PDF import dependency is missing in this build.';
+  }
+  if (code === 'IMPORT_TEXT_DECODE_FAILED') {
+    return 'Text decoding failed. Choose a compatible encoding (feature pending).';
+  }
+  if (code === 'IMPORT_SIGNATURE_MISMATCH') {
+    return 'Selected file content does not match the file extension.';
+  }
+  if (code === 'OCR_UNAVAILABLE_PLATFORM' || code === 'OCR_PLATFORM_PROFILE_INVALID') {
+    return 'OCR is not available for this platform build.';
+  }
+  if (code === 'OCR_TIMEOUT_PAGE') {
+    return 'OCR timed out for this page/image.';
+  }
+  if (code === 'OCR_EMPTY_RESULT') {
+    return 'OCR completed but no text was detected.';
+  }
+  if (code === 'OCR_CANCELED') {
+    return 'OCR was canceled.';
+  }
+  if (code === 'OCR_CANCEL_KILL_TIMEOUT') {
+    return 'OCR cancel requested, but process did not stop in time.';
+  }
+  if (code === 'IMPORT_PDF_NO_TEXT_LAYER') {
+    return 'PDF has no selectable text layer; OCR flow is required.';
+  }
+  if (code === 'OCR_LOCKED') {
+    return '';
+  }
+  if (code === 'CANCELLED') {
+    return '';
+  }
+  const message = res && typeof res.message === 'string' ? res.message : '';
+  if (message) return message;
+  return code ? `Import failed (${code}).` : 'Import failed.';
+}
+
+async function discardImportSession(sessionId) {
+  const importDiscard = getOptionalElectronMethod('importDiscard', {
+    dedupeKey: 'renderer.ipc.importDiscard.unavailable',
+    unavailableMessage: 'importDiscard unavailable; session cleanup skipped.'
+  });
+  if (!importDiscard || !sessionId) return;
+  try {
+    await importDiscard({ sessionId });
+  } catch (err) {
+    log.warn('Failed to discard import session (ignored):', err);
+  }
+}
+
+async function handleImportFinished(payload) {
+  const p = payload && typeof payload === 'object' ? payload : {};
+  const jobId = typeof p.jobId === 'string' ? p.jobId : '';
+  const sessionId = jobId ? importJobSessionMap.get(jobId) : '';
+  if (jobId) importJobSessionMap.delete(jobId);
+
+  if (!p.ok) {
+    const message = humanizeImportError(p);
+    if (message) showImportDialogMessage(message);
+    if (sessionId) await discardImportSession(sessionId);
+    return;
+  }
+
+  if (!sessionId) {
+    showImportDialogMessage('Import completed but session mapping was not found.');
+    return;
+  }
+
+  const applyNow = window.confirm('Import finished. Apply extracted text now?');
+  if (!applyNow) {
+    await discardImportSession(sessionId);
+    return;
+  }
+
+  const overwrite = window.confirm('Apply mode: OK = overwrite current text, Cancel = append.');
+  const mode = overwrite ? 'overwrite' : 'append';
+
+  const importApply = getOptionalElectronMethod('importApply', {
+    dedupeKey: 'renderer.ipc.importApply.unavailable',
+    unavailableMessage: 'importApply unavailable; cannot apply imported text.'
+  });
+  if (!importApply) {
+    await discardImportSession(sessionId);
+    return;
+  }
+
+  try {
+    const applyRes = await importApply({
+      sessionId,
+      mode,
+      repeatCount: 1,
+    });
+    if (!applyRes || applyRes.ok !== true) {
+      const message = humanizeImportError(applyRes);
+      if (message) showImportDialogMessage(message);
+      return;
+    }
+    if (applyRes.truncated) {
+      showImportDialogMessage('Imported text exceeded maximum size and was truncated.');
+    }
+  } catch (err) {
+    log.error('Error applying import session:', err);
+    showImportDialogMessage('Failed to apply imported text.');
+  }
 }
 
 // =============================================================================
@@ -331,6 +468,7 @@ function applyTranslations() {
   };
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
+  if (btnCancelOcr) btnCancelOcr.textContent = tRenderer('renderer.main.buttons.cancel_ocr', btnCancelOcr.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
@@ -343,6 +481,10 @@ function applyTranslations() {
   if (btnImportExtract) {
     btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract', btnImportExtract.title || '');
     applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract', btnImportExtract.title || btnImportExtract.textContent || '');
+  }
+  if (btnCancelOcr) {
+    btnCancelOcr.title = tRenderer('renderer.main.tooltips.cancel_ocr', btnCancelOcr.title || '');
+    applyAriaLabel(btnCancelOcr, 'renderer.main.aria.cancel_ocr', btnCancelOcr.title || btnCancelOcr.textContent || '');
   }
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
@@ -803,6 +945,35 @@ function armIpcSubscriptions() {
       log.warnOnce(
         'renderer.ipc.onOcrLockState.unavailable',
         'onOcrLockState unavailable; OCR lock live updates will not sync.'
+      );
+    }
+
+    if (typeof window.electronAPI.onImportProgress === 'function') {
+      window.electronAPI.onImportProgress((payload) => {
+        try {
+          const p = payload && typeof payload === 'object' ? payload : {};
+          log.debug('import-progress:', p);
+        } catch (err) {
+          log.warn('Error handling import-progress:', err);
+        }
+      });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onImportProgress.unavailable',
+        'onImportProgress unavailable; import progress updates will not sync.'
+      );
+    }
+
+    if (typeof window.electronAPI.onImportFinished === 'function') {
+      window.electronAPI.onImportFinished((payload) => {
+        handleImportFinished(payload).catch((err) => {
+          log.error('Error handling import-finished event:', err);
+        });
+      });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onImportFinished.unavailable',
+        'onImportFinished unavailable; import completion updates will not sync.'
       );
     }
 
@@ -1504,26 +1675,67 @@ if (btnImportExtract) {
         unavailableMessage: 'importSelectFile unavailable; import action skipped.'
       });
       if (!importSelectFile) {
-        window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
+        showImportDialogMessage('Import feature is unavailable in this environment.');
         return;
       }
-      const res = await importSelectFile();
-      if (!res || res.ok !== true) {
-        const code = res && typeof res.code === 'string' ? res.code : '';
-        if (code === 'OCR_LOCKED') return;
-        if (code === 'IMPORT_NOT_READY' || code === 'IMPORT_NOT_IMPLEMENTED') {
-          window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
-          return;
-        }
-        log.warn('import-select-file failed:', res);
-        window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
+
+      const selectRes = await importSelectFile();
+      if (!selectRes || selectRes.ok !== true) {
+        const message = humanizeImportError(selectRes);
+        if (message) showImportDialogMessage(message);
         return;
       }
-      // Batch 1 only wires contracts; run/apply flows land in next batches.
-      window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
+
+      const importRun = getOptionalElectronMethod('importRun', {
+        dedupeKey: 'renderer.ipc.importRun.unavailable',
+        unavailableMessage: 'importRun unavailable; import execution skipped.'
+      });
+      if (!importRun) {
+        await discardImportSession(selectRes.sessionId);
+        return;
+      }
+
+      const runRes = await importRun({
+        sessionId: selectRes.sessionId,
+        options: {
+          languageTag: idiomaActual || DEFAULT_LANG,
+          timeoutPerPageSec: 90,
+        },
+      });
+      if (!runRes || runRes.ok !== true) {
+        const message = humanizeImportError(runRes);
+        if (message) showImportDialogMessage(message);
+        await discardImportSession(selectRes.sessionId);
+        return;
+      }
+
+      if (runRes.jobId && selectRes.sessionId) {
+        importJobSessionMap.set(String(runRes.jobId), String(selectRes.sessionId));
+      }
     } catch (err) {
-      log.error('Error in import-select-file scaffold:', err);
-      window.Notify.notifyMain('renderer.alerts.wip_cargador_texto');
+      log.error('Error in import flow:', err);
+      showImportDialogMessage('Import failed unexpectedly.');
+    }
+  });
+}
+
+if (btnCancelOcr) {
+  btnCancelOcr.addEventListener('click', async () => {
+    if (!guardUserAction('import-cancel', { allowWhenOcrLocked: true })) return;
+    try {
+      const importCancel = getOptionalElectronMethod('importCancel', {
+        dedupeKey: 'renderer.ipc.importCancel.unavailable',
+        unavailableMessage: 'importCancel unavailable; OCR cancel skipped.'
+      });
+      if (!importCancel) return;
+      const res = await importCancel();
+      if (!res || res.ok !== true) {
+        const message = humanizeImportError(res);
+        if (message) showImportDialogMessage(message);
+      }
+    } catch (err) {
+      log.error('Error requesting OCR cancel:', err);
+      showImportDialogMessage('Failed to request OCR cancel.');
     }
   });
 }
