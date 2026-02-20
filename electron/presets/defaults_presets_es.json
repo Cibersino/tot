@@ -3,5 +3,15 @@
     "name": "Inglés No-Ficción",
     "wpm": 238,
     "description": "Promedio de lectura silenciosa en adultos de textos ficción en inglés (Brysbaert, 2019)."
+  },
+  {
+    "name": "Inglés Ficción",
+    "wpm": 260,
+    "description": "Promedio de lectura silenciosa en adultos de textos no ficción en inglés (Brysbaert, 2019)."
+  },
+  {
+    "name": "Inglés Voz Alta",
+    "wpm": 183,
+    "description": "Promedio de lectura en voz alta en adultos de textos en inglés (Brysbaert, 2019)."
   }
 ]
