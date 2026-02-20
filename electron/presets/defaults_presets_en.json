@@ -3,5 +3,15 @@
     "name": "English Non-Fiction",
     "wpm": 238,
     "description": "Average silent reading rate of adults for non-fiction texts in english (Brysbaert, 2019)."
+  },
+  {
+    "name": "English Fiction",
+    "wpm": 260,
+    "description": "Average silent reading rate of adults for fiction texts in english (Brysbaert, 2019)."
+  },
+  {
+    "name": "English Aloud",
+    "wpm": 183,
+    "description": "Average aloud reading rate of adults for text in english (Brysbaert, 2019)."
   }
 ]
