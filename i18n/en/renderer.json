@@ -87,6 +87,7 @@
       },
       "import_apply": {
         "title": "Import finished. Choose apply mode:",
+        "title_with_elapsed": "Import finished. OCR completed in {elapsed}. Choose apply mode:",
         "overwrite": "Overwrite",
         "append": "Append",
         "ocr_running": "OCR in progress..."

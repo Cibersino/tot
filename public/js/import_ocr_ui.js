@@ -256,14 +256,37 @@
     if (typeof resolve === 'function') resolve(mode);
   }
 
-  function chooseApplyMode() {
+  function getImportApplyTitle(options = {}) {
+    const fallbackTitle = importApplyTitle
+      ? (importApplyTitle.textContent || '')
+      : 'Import finished. Choose apply mode:';
+    const baseTitle = t('renderer.main.import_apply.title', fallbackTitle);
+    const opts = options && typeof options === 'object' ? options : {};
+    if (!opts.isOcrJob) return baseTitle;
+
+    const summary = opts.summary && typeof opts.summary === 'object' ? opts.summary : {};
+    const elapsedMs = Number(summary.elapsedMs);
+    if (!Number.isFinite(elapsedMs) || elapsedMs <= 0) return baseTitle;
+
+    const elapsed = formatElapsedLabel(elapsedMs);
+    return msg(
+      'renderer.main.import_apply.title_with_elapsed',
+      { elapsed },
+      `${baseTitle} OCR completed in ${elapsed}.`
+    );
+  }
+
+  function chooseApplyMode(options = {}) {
+    const applyTitle = getImportApplyTitle(options);
+    if (importApplyTitle) importApplyTitle.textContent = applyTitle;
+
     if (
       !importApplyModal
       || !btnImportApplyOverwrite
       || !btnImportApplyAppend
     ) {
       const fallbackRaw = window.prompt(
-        'Import finished. Choose apply mode: OVERWRITE or APPEND',
+        `${applyTitle} OVERWRITE or APPEND`,
         'OVERWRITE'
       );
       const fallbackMode = String(fallbackRaw || '').trim().toLowerCase();

@@ -275,6 +275,7 @@ let hasCurrentTextSubscription = false;
 let ocrLockActive = false;
 let ocrLockReason = '';
 const importJobSessionMap = new Map();
+const importJobIsOcrMap = new Map();
 
 if (btnCancelOcr) {
   btnCancelOcr.dataset.ocrLockExempt = '1';
@@ -292,17 +293,27 @@ function getDefaultImportRunOptions() {
   return importOcrUi.getDefaultRunOptions();
 }
 
-function chooseImportApplyMode() {
+function chooseImportApplyMode(options = {}) {
   if (!importOcrUi || typeof importOcrUi.chooseApplyMode !== 'function') {
+    const opts = options && typeof options === 'object' ? options : {};
+    const isOcrJob = !!opts.isOcrJob;
+    const summary = opts.summary && typeof opts.summary === 'object' ? opts.summary : {};
+    const elapsedMs = Number(summary.elapsedMs);
+    const elapsedSec = Number.isFinite(elapsedMs) && elapsedMs > 0
+      ? Math.max(1, Math.floor(elapsedMs / 1000))
+      : 0;
+    const timingHint = isOcrJob && elapsedSec > 0
+      ? ` (OCR elapsed: ${elapsedSec}s)`
+      : '';
     const fallbackRaw = window.prompt(
-      'Import finished. Choose apply mode: OVERWRITE or APPEND',
+      `Import finished${timingHint}. Choose apply mode: OVERWRITE or APPEND`,
       'OVERWRITE'
     );
     const fallbackMode = String(fallbackRaw || '').trim().toLowerCase();
     if (fallbackMode === 'overwrite' || fallbackMode === 'append') return Promise.resolve(fallbackMode);
     return Promise.resolve('');
   }
-  return importOcrUi.chooseApplyMode();
+  return importOcrUi.chooseApplyMode(options || {});
 }
 
 function promptOcrOptionsDialog(payload) {
@@ -523,6 +534,7 @@ async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
     }
 
     importJobSessionMap.set(String(rerunRes.jobId), String(sessionId));
+    importJobIsOcrMap.set(String(rerunRes.jobId), true);
     noteQueuedOcrJob(String(rerunRes.jobId));
     return true;
   } catch (err) {
@@ -537,7 +549,9 @@ async function handleImportFinished(payload) {
   const p = payload && typeof payload === 'object' ? payload : {};
   const jobId = typeof p.jobId === 'string' ? p.jobId : '';
   const sessionId = jobId ? importJobSessionMap.get(jobId) : '';
+  const isOcrJob = jobId ? importJobIsOcrMap.get(jobId) === true : false;
   if (jobId) importJobSessionMap.delete(jobId);
+  if (jobId) importJobIsOcrMap.delete(jobId);
   if (importOcrUi && typeof importOcrUi.markImportFinished === 'function') {
     importOcrUi.markImportFinished(p);
   }
@@ -558,7 +572,10 @@ async function handleImportFinished(payload) {
     return;
   }
 
-  const mode = await chooseImportApplyMode();
+  const mode = await chooseImportApplyMode({
+    isOcrJob,
+    summary: p.summary,
+  });
   if (mode !== 'overwrite' && mode !== 'append') {
     await discardImportSession(sessionId);
     return;
@@ -1877,8 +1894,10 @@ if (btnImportExtract) {
       }
 
       if (runRes.jobId && selectRes.sessionId) {
+        const isOcrJob = isOcrRoute(selectRes.route);
         importJobSessionMap.set(String(runRes.jobId), String(selectRes.sessionId));
-        if (isOcrRoute(selectRes.route)) noteQueuedOcrJob(String(runRes.jobId));
+        importJobIsOcrMap.set(String(runRes.jobId), isOcrJob);
+        if (isOcrJob) noteQueuedOcrJob(String(runRes.jobId));
       }
     } catch (err) {
       log.error('Error in import flow:', err);
