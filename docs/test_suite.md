@@ -400,12 +400,16 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORTOCR-06 OCR progress + cancel semantics
 **Goal:** OCR progress surface and cancel behavior are correct.
-1. Start OCR on a medium file.
+1. Start OCR on `sample_scanned.pdf` (or another scanned PDF with multiple pages).
 2. While running, verify progress panel shows stage, pages, elapsed, and ETA.
-3. Press **Cancel OCR**.
+3. Confirm stage sequence includes `preflight` before `rasterizing`/`ocr`.
+4. Confirm `pageTotal` becomes known after `preflight` and stays stable during the run.
+5. Press **Cancel OCR**.
 
 **Expected:**
 - Progress surface updates while OCR is active.
+- Stage flow is coherent (`preflight -> rasterizing -> ocr -> finalizing -> completed` on success path).
+- No long scanned-PDF raster phase with `0/0` page counters after preflight is finished.
 - Cancel stops OCR with explicit user notice.
 - Current text is not modified on cancel/failure.
 
@@ -426,6 +430,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Same apply modal is used (`Overwrite` / `Append`).
 - OCR completion message includes elapsed-time hint (no extra modal).
+
+#### REG-IMPORTOCR-09 Scanned PDF focused vs unfocused equivalence
+**Goal:** scanned-PDF OCR result is robust to main-window focus state.
+1. Run scanned-PDF OCR while keeping main window focused until completion.
+2. Run the same scanned-PDF OCR again, but switch focus away from the main window for most of the run.
+3. Compare outcomes (success/failure and overall completion behavior).
+
+**Expected:**
+- Both runs complete successfully under normal conditions.
+- No deterministic timeout/failure tied only to focus loss.
+- Progress still updates coherently in both runs.
 
 ---
 

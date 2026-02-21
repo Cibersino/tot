@@ -76,15 +76,12 @@
   let ocrProgressPageTotal = 0;
   let ocrProgressStage = '';
   let ocrProgressStageStartedAt = 0;
-  let ocrProgressOcrStageStartedAt = 0;
-  let ocrProgressPageHint = 0;
   const ocrQueuedJobMetaById = new Map();
   let ocrProgressMeta = {
     preset: 'balanced',
     dpi: OCR_PRESET_VALUES.balanced.dpi,
     timeoutPerPageSec: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
     preprocessProfile: OCR_PRESET_VALUES.balanced.preprocess,
-    pageCountHint: 0,
   };
 
   let importApplyResolve = null;
@@ -227,17 +224,11 @@
     if (normalized !== ocrProgressStage) {
       ocrProgressStage = normalized;
       ocrProgressStageStartedAt = nowTs;
-      if (normalized === 'ocr') {
-        ocrProgressOcrStageStartedAt = nowTs;
-      }
     }
   }
 
   function getKnownOcrPageTotal(rawPageTotal) {
-    const directTotal = Number.isFinite(rawPageTotal) ? Math.max(0, Math.floor(rawPageTotal)) : 0;
-    if (directTotal > 0) return directTotal;
-    if (ocrProgressPageHint > 0) return ocrProgressPageHint;
-    return 0;
+    return Number.isFinite(rawPageTotal) ? Math.max(0, Math.floor(rawPageTotal)) : 0;
   }
 
   function inferStageAwareEtaMs({ nowTs, elapsedMs, pageDone, pageTotal }) {
@@ -256,35 +247,29 @@
     const ocrSecPerPage = estimateOcrSecPerPage(dpi, preprocess);
     const remainingPages = Math.max(0, knownTotal - Math.min(safeDone, knownTotal));
 
+    if (remainingPages <= 0 || stage === 'completed') return 0;
+    if (stage === 'failed' || stage === 'canceled') return null;
+
+    // v2 alternates rasterizing/ocr per page; completed-page throughput is the stable live ETA.
+    if (safeDone > 0 && elapsedMs > 0) {
+      return Math.max(0, Math.round((elapsedMs / safeDone) * remainingPages));
+    }
+
     if (stage === 'rasterizing') {
-      const rasterElapsedMs = ocrProgressStageStartedAt > 0 ? Math.max(0, nowTs - ocrProgressStageStartedAt) : elapsedMs;
-      const rasterTotalMs = Math.round(rasterSecPerPage * knownTotal * 1000);
-      const remainingRasterMs = Math.max(0, rasterTotalMs - rasterElapsedMs);
-      const remainingOcrMs = Math.round(ocrSecPerPage * knownTotal * 1000);
-      return remainingRasterMs + remainingOcrMs;
+      return Math.max(0, Math.round((rasterSecPerPage + ocrSecPerPage) * remainingPages * 1000));
     }
 
     if (stage === 'ocr') {
-      if (remainingPages <= 0) return 0;
-      if (safeDone > 0) {
-        const ocrStartedAt = ocrProgressOcrStageStartedAt > 0
-          ? ocrProgressOcrStageStartedAt
-          : (ocrProgressStageStartedAt > 0 ? ocrProgressStageStartedAt : (ocrProgressStartedAt || nowTs));
-        const ocrElapsedMs = Math.max(0, nowTs - ocrStartedAt);
-        if (ocrElapsedMs > 0) {
-          return Math.max(0, Math.round((ocrElapsedMs / safeDone) * remainingPages));
-        }
-      }
-      return Math.max(0, Math.round(ocrSecPerPage * remainingPages * 1000));
+      const remainingRasterPages = Math.max(0, remainingPages - 1);
+      const ocrRemainingMs = Math.round(ocrSecPerPage * remainingPages * 1000);
+      const rasterRemainingMs = Math.round(rasterSecPerPage * remainingRasterPages * 1000);
+      return Math.max(0, ocrRemainingMs + rasterRemainingMs);
     }
 
-    if (stage === 'queued' || stage === 'running' || stage === 'extracting') {
+    if (stage === 'queued' || stage === 'running' || stage === 'extracting' || stage === 'preflight') {
       const totalEstimateMs = Math.round((rasterSecPerPage + ocrSecPerPage) * knownTotal * 1000);
       return Math.max(0, totalEstimateMs - elapsedMs);
     }
-
-    if (stage === 'completed') return 0;
-    if (stage === 'failed' || stage === 'canceled') return null;
 
     return inferEtaMs(elapsedMs, safeDone, knownTotal);
   }
@@ -294,6 +279,7 @@
     if (normalized === 'queued') return t('renderer.main.import_progress.stage_queued', 'Queued');
     if (normalized === 'running' || normalized === 'ocr_running') return t('renderer.main.import_progress.stage_running', 'Running');
     if (normalized === 'extracting') return t('renderer.main.import_progress.stage_extracting', 'Extracting');
+    if (normalized === 'preflight') return t('renderer.main.import_progress.stage_preflight', 'Preparing');
     if (normalized === 'rasterizing') return t('renderer.main.import_progress.stage_rasterizing', 'Rasterizing');
     if (normalized === 'ocr') return t('renderer.main.import_progress.stage_ocr', 'OCR');
     if (normalized === 'finalizing') return t('renderer.main.import_progress.stage_finalizing', 'Finalizing');
@@ -311,14 +297,11 @@
     ocrProgressPageTotal = 0;
     ocrProgressStage = '';
     ocrProgressStageStartedAt = 0;
-    ocrProgressOcrStageStartedAt = 0;
-    ocrProgressPageHint = 0;
     ocrProgressMeta = {
       preset: 'balanced',
       dpi: OCR_PRESET_VALUES.balanced.dpi,
       timeoutPerPageSec: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
       preprocessProfile: OCR_PRESET_VALUES.balanced.preprocess,
-      pageCountHint: 0,
     };
     if (ocrProgressText) {
       ocrProgressText.textContent = t('renderer.main.import_apply.ocr_running', 'OCR in progress...');
@@ -402,7 +385,6 @@
     if (Number.isFinite(Number(p.pageDone))) ocrProgressPageDone = Number(p.pageDone);
     if (Number.isFinite(Number(p.pageTotal))) {
       ocrProgressPageTotal = Number(p.pageTotal);
-      if (ocrProgressPageTotal > 0) ocrProgressPageHint = Math.max(0, Math.floor(ocrProgressPageTotal));
     }
 
     updateOcrProgressText();
@@ -537,12 +519,6 @@
     return Math.floor(n);
   }
 
-  function getOptionalPageCountHint(rawPages) {
-    const n = Number(rawPages);
-    if (!Number.isFinite(n) || n < 1) return 0;
-    return Math.floor(n);
-  }
-
   function normalizePresetKey(rawValue, fallback = 'balanced') {
     const value = String(rawValue || '').trim().toLowerCase();
     if (value === 'fast' || value === 'balanced' || value === 'high_accuracy' || value === 'custom') {
@@ -586,16 +562,12 @@
       dpi: normalizeDpiValue(raw.dpi, fallbackDpi),
       timeoutPerPageSec: normalizeTimeoutPerPageSec(raw.timeoutPerPageSec, fallbackTimeout),
       preprocessProfile: normalizePreprocessProfile(raw.preprocessProfile || raw.preprocess, fallbackPreprocess),
-      pageCountHint: getOptionalPageCountHint(raw.pageCountHint),
     };
   }
 
   function setActiveProgressMeta(meta) {
     const safeMeta = buildQueuedJobMeta(meta || {});
     ocrProgressMeta = safeMeta;
-    if (safeMeta.pageCountHint > 0) {
-      ocrProgressPageHint = safeMeta.pageCountHint;
-    }
   }
 
   function getEstimatePreprocessFactor(preprocessProfile) {

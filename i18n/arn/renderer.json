@@ -92,6 +92,7 @@
         "stage_queued": "Üngon mew",
         "stage_running": "Amuley",
         "stage_extracting": "Nentun mew",
+        "stage_preflight": "Preparando",
         "stage_rasterizing": "Adentun mew",
         "stage_ocr": "OCR",
         "stage_finalizing": "Afpun mew",
@@ -288,3 +289,4 @@
     }
   }
 }
+

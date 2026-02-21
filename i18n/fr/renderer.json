@@ -92,6 +92,7 @@
         "stage_queued": "En file d'attente",
         "stage_running": "En cours",
         "stage_extracting": "Extraction",
+        "stage_preflight": "Preparation",
         "stage_rasterizing": "Rastérisation",
         "stage_ocr": "OCR",
         "stage_finalizing": "Finalisation",
@@ -288,3 +289,4 @@
     }
   }
 }
+

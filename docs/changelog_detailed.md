@@ -54,6 +54,7 @@ Reglas:
 ### Resumen
 
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
+- OCR Engine v2 (Issue #138): migración completa de OCR para PDF escaneado a pipeline por página con `preflight` de total de páginas, rasterización/OCR incremental y progreso determinista sin fallback legacy.
 
 ### Cambiado
 
@@ -61,20 +62,46 @@ Reglas:
   - `set-current-text` ahora autoriza explícitamente el sender y acepta solo `mainWin`/`editorWin`; otros senders reciben `{ ok:false, error:'unauthorized' }`.
   - `meta.source` pasa a derivarse en main según sender (`editor` o `main-window`), evitando spoofing desde payload renderer.
   - `meta.action` pasa por allowlist blanda (`overwrite`, `append_newline`, `typing`, `typing_toggle_on`, `clear`, `paste`, `drop`, `set`); acciones desconocidas se normalizan a `set` con warning (sin reject duro).
+- `electron/import_ocr/ocr_pipeline.js`:
+  - reemplazo de OCR PDF escaneado batch por flujo v2: `preflight` (conteo de páginas) + raster/OCR por página (`pdftoppm -singlefile -f N -l N`).
+  - se elimina la dependencia del modelo legacy que rasterizaba todo el PDF antes de iniciar OCR.
+  - timeout rediseñado: budget por página (raster + OCR) y watchdog de stall sin progreso con diagnóstico de `stage/page`.
+- `public/js/import_ocr_ui.js`:
+  - soporte explícito del stage `preflight`.
+  - retiro del fallback de UI basado en `pageCountHint` para compensar raster `0/0` legacy; ahora depende del contrato de progreso v2.
+- i18n (`i18n/*/renderer.json`):
+  - nueva clave `renderer.main.import_progress.stage_preflight` en idiomas soportados.
 
 ### Arreglado
 
 - Se corrige una brecha de defensa en profundidad: `set-current-text` no aplicaba control de autorización por sender, a diferencia de otros handlers sensibles.
+- Se corrige comportamiento frágil de OCR en PDF escaneado asociado a tiempos de rasterización largos (incluyendo escenarios con ventana principal desenfocada), al remover el timeout monolítico de raster batch.
+- Se corrige inconsistencia de progreso en rasterización de PDF escaneado (largos periodos con `pageDone=0/pageTotal=0`).
 
 ### Contratos tocados
 
 - IPC `set-current-text` (failure-path):
   - se formaliza respuesta `unauthorized` para senders no autorizados.
 - Sin cambios en canal, shape healthy-path ni superficie de preload (`window.electronAPI.setCurrentText` / `window.editorAPI.setCurrentText` se mantienen).
+- IPC `import-progress` (OCR PDF escaneado):
+  - nuevo stage observable: `preflight`.
+  - después de `preflight`, `pageTotal` pasa a ser determinístico para el resto del job OCR.
+  - payload mantiene shape base (`jobId`, `stage`, `pageDone`, `pageTotal`, `heartbeatTs`) y puede incluir diagnóstico (`currentPage`, `phaseElapsedMs`, `jobElapsedMs`).
 
 ### Archivos
 
 - `electron/text_state.js`
+- `electron/import_ocr/ocr_pipeline.js`
+- `public/js/import_ocr_ui.js`
+- `i18n/en/renderer.json`
+- `i18n/es/renderer.json`
+- `i18n/de/renderer.json`
+- `i18n/fr/renderer.json`
+- `i18n/it/renderer.json`
+- `i18n/pt/renderer.json`
+- `i18n/arn/renderer.json`
+- `i18n/es/es-cl/renderer.json`
+- `docs/test_suite.md`
 
 ---
 

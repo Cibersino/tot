@@ -147,33 +147,97 @@ function removeDirIfExists(dirPath) {
   }
 }
 
+function removeFileIfExists(filePath) {
+  if (!filePath) return;
+  try {
+    if (!ensurePathExists(filePath)) return;
+    fs.unlinkSync(filePath);
+  } catch {
+    // no-op
+  }
+}
+
 function createJobTempDir(prefix = 'tot-ocr-') {
   const baseDir = path.join(os.tmpdir(), prefix);
   ensureDir(baseDir);
   return fs.mkdtempSync(path.join(baseDir, 'job-'));
 }
 
-function escapeRegExp(text) {
-  return String(text || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function toPdfJsFactoryPath(dirPath) {
+  const raw = String(dirPath || '').trim();
+  if (!raw) return '';
+  const normalized = raw.replace(/\\/g, '/');
+  return normalized.endsWith('/') ? normalized : `${normalized}/`;
 }
 
-function listRasterizedPngPages(tempDir, prefixBase) {
-  const files = fs.readdirSync(tempDir);
-  const pattern = new RegExp(`^${escapeRegExp(prefixBase)}-(\\d+)\\.png$`, 'i');
-  const pages = [];
-  files.forEach((name) => {
-    const match = pattern.exec(name);
-    if (!match) return;
-    const pageNum = Number(match[1]);
-    if (!Number.isFinite(pageNum) || pageNum <= 0) return;
-    pages.push({
-      pageNum,
-      filePath: path.join(tempDir, name),
-      filename: name,
+function resolvePdfJsStandardFontsDir() {
+  try {
+    const packageJsonPath = require.resolve('pdfjs-dist/package.json');
+    const packageDir = path.dirname(packageJsonPath);
+    const fontsDir = path.join(packageDir, 'standard_fonts');
+    if (fs.existsSync(fontsDir)) return toPdfJsFactoryPath(fontsDir);
+  } catch {
+    // no-op
+  }
+  return '';
+}
+
+async function loadPdfJs() {
+  try {
+    // pdfjs-dist v5+ ships ESM bundles.
+    return await import('pdfjs-dist/legacy/build/pdf.mjs');
+  } catch {
+    try {
+      // Backward compatibility for older pdfjs-dist versions.
+      return require('pdfjs-dist/legacy/build/pdf.js');
+    } catch {
+      return null;
+    }
+  }
+}
+
+async function preflightPdfPageCount(pdfPath) {
+  const pdfjs = await loadPdfJs();
+  const getDocument = pdfjs && typeof pdfjs.getDocument === 'function'
+    ? pdfjs.getDocument
+    : (pdfjs && pdfjs.default && typeof pdfjs.default.getDocument === 'function'
+      ? pdfjs.default.getDocument
+      : null);
+  if (!getDocument) {
+    return fail('IMPORT_DEP_MISSING_PDFJS', 'PDF extraction dependency is not installed.');
+  }
+
+  let loadingTask = null;
+  try {
+    const buffer = fs.readFileSync(pdfPath);
+    const standardFontDataUrl = resolvePdfJsStandardFontsDir();
+    loadingTask = getDocument({
+      data: new Uint8Array(buffer),
+      disableWorker: true,
+      useSystemFonts: true,
+      ...(standardFontDataUrl ? { standardFontDataUrl } : {}),
     });
-  });
-  pages.sort((a, b) => a.pageNum - b.pageNum);
-  return pages;
+    const doc = await loadingTask.promise;
+    const pageTotal = Number.isFinite(doc && doc.numPages)
+      ? Math.max(0, Math.floor(doc.numPages))
+      : 0;
+    if (pageTotal <= 0) {
+      return fail('OCR_RASTER_FAILED', 'PDF preflight found no pages.');
+    }
+    return { ok: true, pageTotal };
+  } catch (err) {
+    return fail('OCR_RASTER_FAILED', 'PDF preflight failed.', {
+      error: String(err),
+    });
+  } finally {
+    try {
+      if (loadingTask && typeof loadingTask.destroy === 'function') {
+        loadingTask.destroy();
+      }
+    } catch {
+      // no-op
+    }
+  }
 }
 
 async function runProcessWithTimeout({
@@ -370,108 +434,233 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
   const dpi = clampInt(options.dpi, 150, 600, 300);
   const timeoutPerPageSec = clampInt(options.timeoutPerPageSec, 30, 600, 90);
   const timeoutPerPageMs = timeoutPerPageSec * 1000;
+  const rasterTimeoutPerPageSec = clampInt(
+    options.rasterTimeoutPerPageSec,
+    30,
+    900,
+    Math.max(45, Math.floor(timeoutPerPageSec * 0.8))
+  );
+  const rasterTimeoutPerPageMs = rasterTimeoutPerPageSec * 1000;
+  const stallTimeoutSec = clampInt(
+    options.stallTimeoutSec,
+    60,
+    1800,
+    Math.max(120, timeoutPerPageSec * 2)
+  );
+  const stallTimeoutMs = stallTimeoutSec * 1000;
   const requestedLang = options.ocrLanguage || options.ocrLang || options.languageTag || options.lang || '';
   const langRes = resolveAndValidateOcrLanguage(requestedLang, sidecar.tessdataPath);
   if (!langRes.ok) return langRes;
   const { tesseractLang } = langRes;
 
   const tempDir = createJobTempDir('tot-ocr-pdf-');
-  const prefixBase = 'page';
-  const prefixPath = path.join(tempDir, prefixBase);
   const warnings = [];
-
-  let watchdogHandle = null;
-  let watchdogTimedOut = false;
+  const startedAt = Date.now();
   let activeChild = null;
+  let pageDone = 0;
+  let pageTotal = 0;
+  let stage = 'queued';
+  let stageStartedAt = startedAt;
+  let currentPage = 0;
+  let lastProgressAt = startedAt;
+  let stallWatchdogHandle = null;
+  let stallTimedOut = false;
+  let stallMeta = null;
 
   try {
     if (typeof options.isCancelRequested === 'function' && options.isCancelRequested()) {
       return fail('OCR_CANCELED', 'OCR canceled by user.');
     }
 
-    safeInvoke(options.onStage, 'rasterizing');
-    safeInvoke(options.onProgress, {
-      stage: 'rasterizing',
-      pageDone: 0,
-      pageTotal: 0,
-    });
-
-    const rasterTimeoutMs = Math.max(120_000, timeoutPerPageMs * 2);
-    const rasterRes = await runProcessWithTimeout({
-      executablePath: sidecar.pdftoppmPath,
-      args: ['-r', String(dpi), '-png', pdfPath, prefixPath],
-      timeoutMs: rasterTimeoutMs,
-      onChildProcess: (child) => {
-        activeChild = child;
-        safeInvoke(options.onChildProcess, child);
-      },
-      isCancelRequested: options.isCancelRequested,
-      maxStdoutChars: 200_000,
-      maxStderrChars: 500_000,
-    });
-    if (!rasterRes.ok) {
-      if (rasterRes.code === 'OCR_TIMEOUT_PAGE') {
-        return fail('OCR_RASTER_FAILED', 'PDF rasterization timed out.', {
-          timeoutMs: rasterTimeoutMs,
-          stderr: rasterRes.stderr || '',
-        });
+    function emitProgress(nextStage, {
+      nextPageDone,
+      nextPageTotal,
+      nextCurrentPage,
+      resetStageClock = false,
+    } = {}) {
+      const normalizedStage = String(nextStage || stage || 'running').trim().toLowerCase() || 'running';
+      const nowTs = Date.now();
+      const stageChanged = normalizedStage !== stage;
+      if (stageChanged || resetStageClock) {
+        stageStartedAt = nowTs;
       }
-      if (rasterRes.code === 'OCR_CANCELED') return rasterRes;
-      return fail('OCR_RASTER_FAILED', 'PDF rasterization failed.', {
-        stderr: rasterRes.stderr || '',
-        error: rasterRes.error || '',
-      });
-    }
-    if (rasterRes.stderrTruncated) warnings.push('pdftoppm stderr truncated in-memory.');
+      stage = normalizedStage;
 
-    const pages = listRasterizedPngPages(tempDir, prefixBase);
-    if (!pages.length) {
-      return fail('OCR_RASTER_FAILED', 'PDF rasterization produced no pages.');
-    }
-    const pageTotal = pages.length;
-    const totalTimeoutMs = Math.max(120_000, (pageTotal * timeoutPerPageMs) + 60_000);
+      if (Number.isFinite(nextPageDone)) {
+        pageDone = Math.max(0, Math.floor(nextPageDone));
+      }
+      if (Number.isFinite(nextPageTotal)) {
+        pageTotal = Math.max(0, Math.floor(nextPageTotal));
+      }
+      if (Number.isFinite(nextCurrentPage)) {
+        currentPage = Math.max(0, Math.floor(nextCurrentPage));
+      }
 
-    watchdogHandle = setTimeout(async () => {
-      watchdogTimedOut = true;
+      lastProgressAt = nowTs;
+      safeInvoke(options.onStage, stage);
+      const payload = {
+        stage,
+        pageDone,
+        pageTotal,
+        phaseElapsedMs: Math.max(0, nowTs - stageStartedAt),
+        jobElapsedMs: Math.max(0, nowTs - startedAt),
+      };
+      if (currentPage > 0) payload.currentPage = currentPage;
+      safeInvoke(options.onProgress, payload);
+    }
+
+    stallWatchdogHandle = setInterval(async () => {
+      if (stallTimedOut) return;
+      const nowTs = Date.now();
+      const stalledForMs = nowTs - lastProgressAt;
+      if (stalledForMs < stallTimeoutMs) return;
+
+      stallTimedOut = true;
+      stallMeta = {
+        stage,
+        pageNumber: currentPage > 0 ? currentPage : undefined,
+        pageDone,
+        pageTotal,
+        stallTimeoutSec,
+        stalledForMs,
+      };
+
       if (activeChild) {
         await terminateWithEscalation(activeChild, {
           gracefulWaitMs: 2000,
           forceWaitMs: 5000,
         });
       }
-    }, totalTimeoutMs);
-    if (typeof watchdogHandle.unref === 'function') watchdogHandle.unref();
+    }, 1000);
+    if (typeof stallWatchdogHandle.unref === 'function') stallWatchdogHandle.unref();
 
-    safeInvoke(options.onStage, 'ocr');
-    safeInvoke(options.onProgress, {
-      stage: 'ocr',
-      pageDone: 0,
-      pageTotal,
+    emitProgress('preflight', {
+      nextPageDone: 0,
+      nextPageTotal: 0,
+      nextCurrentPage: 0,
+      resetStageClock: true,
+    });
+
+    const preflightRes = await preflightPdfPageCount(pdfPath);
+    if (!preflightRes.ok) return preflightRes;
+    pageTotal = preflightRes.pageTotal;
+    if (stallTimedOut) {
+      return fail('OCR_TIMEOUT_JOB', 'OCR job stalled with no progress.', Object.assign({}, stallMeta || {}, {
+        timeoutMs: stallTimeoutMs,
+      }));
+    }
+
+    emitProgress('preflight', {
+      nextPageDone: 0,
+      nextPageTotal: pageTotal,
+      nextCurrentPage: 0,
     });
 
     const pageTexts = [];
-    for (let idx = 0; idx < pages.length; idx += 1) {
-      const pageInfo = pages[idx];
-      const pageNumber = pageInfo.pageNum;
-
-      if (watchdogTimedOut) {
-        return fail('OCR_TIMEOUT_JOB', 'OCR job timed out before completion.', {
-          pageDone: idx,
-          pageTotal,
-          timeoutMs: totalTimeoutMs,
-        });
+    for (let pageNumber = 1; pageNumber <= pageTotal; pageNumber += 1) {
+      if (stallTimedOut) {
+        return fail('OCR_TIMEOUT_JOB', 'OCR job stalled with no progress.', Object.assign({}, stallMeta || {}, {
+          timeoutMs: stallTimeoutMs,
+        }));
       }
       if (typeof options.isCancelRequested === 'function' && options.isCancelRequested()) {
         return fail('OCR_CANCELED', 'OCR canceled by user.', {
-          pageDone: idx,
+          pageDone,
           pageTotal,
+          pageNumber,
         });
       }
+
+      const pageBase = path.join(tempDir, `page-${String(pageNumber).padStart(6, '0')}`);
+      const pageImagePath = `${pageBase}.png`;
+      removeFileIfExists(pageImagePath);
+
+      emitProgress('rasterizing', {
+        nextPageDone: pageDone,
+        nextPageTotal: pageTotal,
+        nextCurrentPage: pageNumber,
+        resetStageClock: true,
+      });
+
+      const rasterRes = await runProcessWithTimeout({
+        executablePath: sidecar.pdftoppmPath,
+        args: [
+          '-f',
+          String(pageNumber),
+          '-l',
+          String(pageNumber),
+          '-singlefile',
+          '-r',
+          String(dpi),
+          '-png',
+          pdfPath,
+          pageBase,
+        ],
+        timeoutMs: rasterTimeoutPerPageMs,
+        onChildProcess: (child) => {
+          activeChild = child;
+          safeInvoke(options.onChildProcess, child);
+        },
+        isCancelRequested: options.isCancelRequested,
+        maxStdoutChars: 200_000,
+        maxStderrChars: 500_000,
+      });
+      activeChild = null;
+      if (!rasterRes.ok) {
+        if (stallTimedOut) {
+          return fail('OCR_TIMEOUT_JOB', 'OCR job stalled with no progress.', Object.assign({}, stallMeta || {}, {
+            timeoutMs: stallTimeoutMs,
+            stderr: rasterRes.stderr || '',
+          }));
+        }
+        if (rasterRes.code === 'OCR_TIMEOUT_PAGE') {
+          return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
+            stage: 'rasterizing',
+            timeoutPerPageSec: rasterTimeoutPerPageSec,
+            pageNumber,
+            pageDone,
+            pageTotal,
+            stderr: rasterRes.stderr || '',
+          });
+        }
+        if (rasterRes.code === 'OCR_CANCELED') {
+          return fail('OCR_CANCELED', 'OCR canceled by user.', {
+            pageDone,
+            pageTotal,
+            pageNumber,
+          });
+        }
+        return fail('OCR_RASTER_FAILED', 'PDF rasterization failed.', {
+          stage: 'rasterizing',
+          pageNumber,
+          pageDone,
+          pageTotal,
+          stderr: rasterRes.stderr || '',
+          error: rasterRes.error || '',
+        });
+      }
+      if (rasterRes.stderrTruncated) warnings.push(`pdftoppm stderr truncated for page ${pageNumber}.`);
+      if (!ensurePathExists(pageImagePath)) {
+        return fail('OCR_RASTER_FAILED', 'PDF rasterization produced no page image.', {
+          stage: 'rasterizing',
+          pageNumber,
+          pageDone,
+          pageTotal,
+          imagePath: pageImagePath,
+        });
+      }
+
+      emitProgress('ocr', {
+        nextPageDone: pageDone,
+        nextPageTotal: pageTotal,
+        nextCurrentPage: pageNumber,
+        resetStageClock: true,
+      });
 
       const pageRes = await runProcessWithTimeout({
         executablePath: sidecar.tesseractPath,
         args: resolveTesseractArgs({
-          inputPath: pageInfo.filePath,
+          inputPath: pageImagePath,
           tesseractLang,
           tessdataPath: sidecar.tessdataPath,
         }),
@@ -482,26 +671,37 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
         },
         isCancelRequested: options.isCancelRequested,
       });
+      activeChild = null;
 
       if (!pageRes.ok) {
+        removeFileIfExists(pageImagePath);
+        if (stallTimedOut) {
+          return fail('OCR_TIMEOUT_JOB', 'OCR job stalled with no progress.', Object.assign({}, stallMeta || {}, {
+            timeoutMs: stallTimeoutMs,
+            stderr: pageRes.stderr || '',
+          }));
+        }
         if (pageRes.code === 'OCR_TIMEOUT_PAGE') {
           return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
+            stage: 'ocr',
             timeoutPerPageSec,
             pageNumber,
-            pageDone: idx,
+            pageDone,
             pageTotal,
             stderr: pageRes.stderr || '',
           });
         }
         if (pageRes.code === 'OCR_CANCELED') {
           return fail('OCR_CANCELED', 'OCR canceled by user.', {
-            pageDone: idx,
+            pageDone,
             pageTotal,
+            pageNumber,
           });
         }
         return fail('OCR_EXEC_FAILED', 'OCR process exited with error.', {
+          stage: 'ocr',
           pageNumber,
-          pageDone: idx,
+          pageDone,
           pageTotal,
           stderr: pageRes.stderr || '',
           error: pageRes.error || '',
@@ -517,31 +717,35 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
       } else {
         warnings.push(`No OCR text detected for page ${pageNumber}.`);
       }
+      removeFileIfExists(pageImagePath);
 
-      safeInvoke(options.onProgress, {
-        stage: 'ocr',
-        pageDone: idx + 1,
-        pageTotal,
+      emitProgress('ocr', {
+        nextPageDone: pageNumber,
+        nextPageTotal: pageTotal,
+        nextCurrentPage: pageNumber,
       });
     }
 
-    if (watchdogTimedOut) {
-      return fail('OCR_TIMEOUT_JOB', 'OCR job timed out before completion.', {
-        pageDone: pageTotal,
-        pageTotal,
-        timeoutMs: totalTimeoutMs,
-      });
+    if (stallTimedOut) {
+      return fail('OCR_TIMEOUT_JOB', 'OCR job stalled with no progress.', Object.assign({}, stallMeta || {}, {
+        timeoutMs: stallTimeoutMs,
+      }));
     }
 
     const text = normalizeMultiline(pageTexts.join('\n\n'));
     if (!text) {
       return fail('OCR_EMPTY_RESULT', 'OCR completed but produced no text.', {
-        pageDone: pageTotal,
+        pageDone,
         pageTotal,
       });
     }
 
-    safeInvoke(options.onStage, 'finalizing');
+    emitProgress('finalizing', {
+      nextPageDone: pageTotal,
+      nextPageTotal: pageTotal,
+      nextCurrentPage: pageTotal,
+      resetStageClock: true,
+    });
 
     return {
       ok: true,
@@ -558,7 +762,7 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
       error: String(err),
     });
   } finally {
-    if (watchdogHandle) clearTimeout(watchdogHandle);
+    if (stallWatchdogHandle) clearInterval(stallWatchdogHandle);
     removeDirIfExists(tempDir);
   }
 }

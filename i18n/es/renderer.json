@@ -122,6 +122,7 @@
         "stage_queued": "En cola",
         "stage_running": "En ejecución",
         "stage_extracting": "Extrayendo",
+        "stage_preflight": "Preparando",
         "stage_rasterizing": "Rasterizando",
         "stage_ocr": "OCR",
         "stage_finalizing": "Finalizando",
@@ -370,3 +371,4 @@
     }
   }
 }
+
