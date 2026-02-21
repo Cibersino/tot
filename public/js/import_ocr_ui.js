@@ -38,6 +38,7 @@
   const ocrPreprocessSelect = document.getElementById('ocrPreprocessSelect');
   const ocrPresetGuidance = document.getElementById('ocrPresetGuidance');
   const ocrTotalGuidance = document.getElementById('ocrTotalGuidance');
+  const ocrTotalDisclaimer = document.getElementById('ocrTotalDisclaimer');
   const btnOcrOptionsStart = document.getElementById('btnOcrOptionsStart');
   const btnOcrOptionsAbort = document.getElementById('btnOcrOptionsAbort');
 
@@ -768,7 +769,13 @@
           total: formatDurationFromSeconds(totalSec),
           pages,
         },
-        `Estimated total: ~${formatDurationFromSeconds(totalSec)} for ${pages} page(s) (approximate)`
+        `Estimated total: ~${formatDurationFromSeconds(totalSec)} for ${pages} page(s)`
+      );
+    }
+    if (ocrTotalDisclaimer) {
+      ocrTotalDisclaimer.textContent = t(
+        'renderer.main.ocr_options.guidance_disclaimer',
+        '(approximate, depends on document complexity and device performance)'
       );
     }
   }

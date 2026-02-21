@@ -80,7 +80,7 @@
         "preprocess_standard": "Piola",
         "preprocess_aggressive": "Brutal",
         "guidance_presets": "Usain Bolt ~{fast}s/pág · Equilibrao ~{balanced}s/pág · Fino y elegante ~{high}s/pág",
-        "guidance_total": "Calculo total: ~{total}s pa {pages} página(s) (aprox)",
+        "guidance_total": "Calculo total: ~{total}s pa {pages} página(s) (aprox, depende de lo pelúo del doc y qué tan chula es la máquina)",
         "start": "Start OCR",
         "abort": "Me arrepentí"
       },

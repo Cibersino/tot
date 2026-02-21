@@ -80,7 +80,8 @@
         "preprocess_standard": "Standard",
         "preprocess_aggressive": "Aggressiv",
         "guidance_presets": "Schnell ~{fast}s/Seite · Ausgewogen ~{balanced}s/Seite · Hohe Genauigkeit ~{high}s/Seite",
-        "guidance_total": "Geschätzte Gesamtzeit: ~{total} für {pages} Seite(n) (ungefähr)",
+        "guidance_total": "Geschätzte Gesamtzeit: ~{total} für {pages} Seite(n)",
+        "guidance_disclaimer": "(ungefähr, abhängig von der Komplexität des Dokuments und der Leistung des Geräts)",
         "start": "OCR starten",
         "abort": "Abbrechen"
       },

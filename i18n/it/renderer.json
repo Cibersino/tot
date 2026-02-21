@@ -80,7 +80,8 @@
         "preprocess_standard": "Standard",
         "preprocess_aggressive": "Aggressivo",
         "guidance_presets": "Rapido ~{fast}s/pagina · Bilanciato ~{balanced}s/pagina · Alta precisione ~{high}s/pagina",
-        "guidance_total": "Stima totale: ~{total} per {pages} pagina(e) (approssimato)",
+        "guidance_total": "Stima totale: ~{total} per {pages} pagina(e)",
+        "guidance_disclaimer": "(approssimato, dipende dalla complessità del documento e dalle prestazioni del dispositivo)",
         "start": "Avvia OCR",
         "abort": "Annulla"
       },
