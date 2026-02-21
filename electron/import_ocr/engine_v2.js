@@ -176,14 +176,12 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
 
   const tempDir = createJobTempDir('tot-ocr-pdf-');
   const warnings = [];
-  const startedAt = Date.now();
   let activeChild = null;
   let pageDone = 0;
   let pageTotal = 0;
   let stage = 'queued';
-  let stageStartedAt = startedAt;
   let currentPage = 0;
-  let lastProgressAt = startedAt;
+  let lastProgressAt = Date.now();
   let stallWatchdogHandle = null;
   let stallTimedOut = false;
   let stallMeta = null;
@@ -197,14 +195,9 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
       nextPageDone,
       nextPageTotal,
       nextCurrentPage,
-      resetStageClock = false,
     } = {}) {
       const normalizedStage = String(nextStage || stage || 'running').trim().toLowerCase() || 'running';
       const nowTs = Date.now();
-      const stageChanged = normalizedStage !== stage;
-      if (stageChanged || resetStageClock) {
-        stageStartedAt = nowTs;
-      }
       stage = normalizedStage;
 
       if (Number.isFinite(nextPageDone)) {
@@ -222,10 +215,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         stage,
         pageDone,
         pageTotal,
-        phaseElapsedMs: Math.max(0, nowTs - stageStartedAt),
-        jobElapsedMs: Math.max(0, nowTs - startedAt),
       };
-      if (currentPage > 0) payload.currentPage = currentPage;
       safeInvoke(options.onProgress, payload);
     }
 
@@ -258,7 +248,6 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
       nextPageDone: 0,
       nextPageTotal: 0,
       nextCurrentPage: 0,
-      resetStageClock: true,
     });
 
     const preflightRes = await preflightPdfPageCount(pdfPath);
@@ -291,7 +280,6 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         nextPageDone: pageDone,
         nextPageTotal: pageTotal,
         nextCurrentPage: pageNumber,
-        resetStageClock: true,
       });
 
       const rasterRes = await runProcessWithTimeout({
@@ -365,7 +353,6 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         nextPageDone: pageDone,
         nextPageTotal: pageTotal,
         nextCurrentPage: pageNumber,
-        resetStageClock: true,
       });
 
       const pageRes = await runProcessWithTimeout({
@@ -450,7 +437,6 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
       nextPageDone: pageTotal,
       nextPageTotal: pageTotal,
       nextCurrentPage: pageTotal,
-      resetStageClock: true,
     });
 
     return {

@@ -86,7 +86,7 @@ Reglas:
 - IPC `import-progress` (OCR PDF escaneado):
   - nuevo stage observable: `preflight`.
   - después de `preflight`, `pageTotal` pasa a ser determinístico para el resto del job OCR.
-  - payload mantiene shape base (`jobId`, `stage`, `pageDone`, `pageTotal`, `heartbeatTs`) y puede incluir diagnóstico (`currentPage`, `phaseElapsedMs`, `jobElapsedMs`).
+  - payload mantiene shape base (`jobId`, `stage`, `pageDone`, `pageTotal`, `heartbeatTs`).
 
 ### Archivos
 
