@@ -631,17 +631,6 @@ async function runJob(job) {
           job.activeChild = child || null;
         },
         isCancelRequested: () => !!job.cancelRequested,
-        onStage: (stage) => {
-          const normalized = String(stage || '').trim().toLowerCase();
-          if (normalized) {
-            job.stage = normalized;
-          }
-          emitImportProgress(job, {
-            stage: job.stage || 'running',
-            pageDone: progressState.pageDone,
-            pageTotal: progressState.pageTotal,
-          });
-        },
         onProgress: (progress) => {
           const p = progress && typeof progress === 'object' ? progress : {};
           if (typeof p.stage === 'string' && p.stage.trim()) {
