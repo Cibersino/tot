@@ -20,7 +20,7 @@
         "cancel_ocr": "Cancel running OCR",
         "overwrite_clipboard": "Replace current text with clipboard",
         "append_clipboard": "Append clipboard at the end of current text (new line)",
-        "append_repeat_count": "Append repetitions (1-9999)",
+        "append_repeat_count": "Append repetitions",
         "edit": "Open full current text window",
         "clear": "Clear current text",
         "snapshot_load": "Load text snapshot",
