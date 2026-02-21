@@ -35,6 +35,7 @@ const APP_DOC_FILES = Object.freeze({
   'license-electron': 'LICENSE.electron.txt',
   'licenses-chromium': 'LICENSES.chromium.html',
   'privacy-policy': 'PRIVACY.md',
+  'third-party-notices': 'THIRD_PARTY_NOTICES.md',
 });
 const APP_DOC_BASKERVVILLE = 'license-baskervville';
 
@@ -134,7 +135,7 @@ function registerLinkIpc({ ipcMain, app, shell }) {
         return { ok: false, reason: 'not_available_in_dev' };
       }
 
-      if (!app.isPackaged && (rawKey === 'license-app' || rawKey === 'privacy-policy')) {
+      if (!app.isPackaged && Object.prototype.hasOwnProperty.call(APP_DOC_FILES, rawKey)) {
         const fileName = APP_DOC_FILES[rawKey];
         if (!fileName) {
           log.warn('open-app-doc blocked: unknown doc key:', rawKey);
