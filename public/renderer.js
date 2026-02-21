@@ -361,9 +361,9 @@ function handleImportProgress(payload) {
   importOcrUi.handleImportProgress(payload || {});
 }
 
-function noteQueuedOcrJob(jobId) {
+function noteQueuedOcrJob(payload) {
   if (!importOcrUi || typeof importOcrUi.noteJobQueued !== 'function') return;
-  importOcrUi.noteJobQueued(jobId);
+  importOcrUi.noteJobQueued(payload);
 }
 
 function applyGlobalOcrLockUi() {
@@ -559,14 +559,15 @@ async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
   }
 
   try {
+    const ocrRunOptions = Object.assign(
+      {},
+      getDefaultImportRunOptions(),
+      ocrOptsRes.options || {},
+      { forcePdfOcr: true }
+    );
     const rerunRes = await importRun({
       sessionId,
-      options: Object.assign(
-        {},
-        getDefaultImportRunOptions(),
-        ocrOptsRes.options || {},
-        { forcePdfOcr: true }
-      ),
+      options: ocrRunOptions,
     });
     if (!rerunRes || rerunRes.ok !== true || !rerunRes.jobId) {
       const message = humanizeImportError(rerunRes);
@@ -575,9 +576,17 @@ async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
       return true;
     }
 
-    importJobSessionMap.set(String(rerunRes.jobId), String(sessionId));
-    importJobIsOcrMap.set(String(rerunRes.jobId), true);
-    noteQueuedOcrJob(String(rerunRes.jobId));
+    const queuedJobId = String(rerunRes.jobId);
+    importJobSessionMap.set(queuedJobId, String(sessionId));
+    importJobIsOcrMap.set(queuedJobId, true);
+    noteQueuedOcrJob({
+      jobId: queuedJobId,
+      pageCountHint,
+      preset: ocrRunOptions.preset || ocrRunOptions.qualityPreset || 'balanced',
+      timeoutPerPageSec: ocrRunOptions.timeoutPerPageSec,
+      dpi: ocrRunOptions.dpi,
+      preprocessProfile: ocrRunOptions.preprocessProfile,
+    });
     return true;
   } catch (err) {
     log.error('Error requesting scanned-PDF OCR fallback:', err);
@@ -1947,7 +1956,18 @@ if (btnImportExtract) {
         const isOcrJob = isOcrRoute(selectRes.route);
         importJobSessionMap.set(String(runRes.jobId), String(selectRes.sessionId));
         importJobIsOcrMap.set(String(runRes.jobId), isOcrJob);
-        if (isOcrJob) noteQueuedOcrJob(String(runRes.jobId));
+        if (isOcrJob) {
+          noteQueuedOcrJob({
+            jobId: String(runRes.jobId),
+            pageCountHint: Number.isFinite(Number(selectRes.pageCountHint))
+              ? Math.max(1, Math.floor(Number(selectRes.pageCountHint)))
+              : 0,
+            preset: runOptions.preset || runOptions.qualityPreset || 'balanced',
+            timeoutPerPageSec: runOptions.timeoutPerPageSec,
+            dpi: runOptions.dpi,
+            preprocessProfile: runOptions.preprocessProfile,
+          });
+        }
       }
     } catch (err) {
       log.error('Error in import flow:', err);

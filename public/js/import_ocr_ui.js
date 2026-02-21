@@ -53,6 +53,18 @@
   const OCR_TIMEOUT_MAX = 600;
   const OCR_TIMEOUT_STEP = 15;
   const OCR_PREPROCESS_LIST = Object.freeze(['basic', 'standard', 'aggressive']);
+  const OCR_ESTIMATE_BASE_DPI = 300;
+  const OCR_ESTIMATE_BASE_RASTER_SEC_PER_PAGE = 2.8;
+  const OCR_ESTIMATE_BASE_OCR_SEC_PER_PAGE = 3.2;
+  const OCR_ESTIMATE_RASTER_EXPONENT = 2.6;
+  const OCR_ESTIMATE_OCR_EXPONENT = 1.6;
+  const OCR_ESTIMATE_MIN_RASTER_SEC_PER_PAGE = 1.8;
+  const OCR_ESTIMATE_MIN_OCR_SEC_PER_PAGE = 2.3;
+  const OCR_PREPROCESS_ESTIMATE_FACTOR = Object.freeze({
+    basic: 1.0,
+    standard: 1.0,
+    aggressive: 1.0,
+  });
 
   let lockActive = false;
   let lockReason = '';
@@ -62,6 +74,17 @@
   let ocrProgressPageDone = 0;
   let ocrProgressPageTotal = 0;
   let ocrProgressStage = '';
+  let ocrProgressStageStartedAt = 0;
+  let ocrProgressOcrStageStartedAt = 0;
+  let ocrProgressPageHint = 0;
+  const ocrQueuedJobMetaById = new Map();
+  let ocrProgressMeta = {
+    preset: 'balanced',
+    dpi: OCR_PRESET_VALUES.balanced.dpi,
+    timeoutPerPageSec: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
+    preprocessProfile: OCR_PRESET_VALUES.balanced.preprocess,
+    pageCountHint: 0,
+  };
 
   let importApplyResolve = null;
   let ocrOptionsResolve = null;
@@ -193,6 +216,78 @@
     return Math.max(0, Math.round((elapsedMs / pageDone) * remainingPages));
   }
 
+  function normalizeStageKey(rawStage) {
+    return String(rawStage || '').trim().toLowerCase();
+  }
+
+  function setOcrProgressStage(stage, nowTs = Date.now()) {
+    const normalized = normalizeStageKey(stage);
+    if (!normalized) return;
+    if (normalized !== ocrProgressStage) {
+      ocrProgressStage = normalized;
+      ocrProgressStageStartedAt = nowTs;
+      if (normalized === 'ocr') {
+        ocrProgressOcrStageStartedAt = nowTs;
+      }
+    }
+  }
+
+  function getKnownOcrPageTotal(rawPageTotal) {
+    const directTotal = Number.isFinite(rawPageTotal) ? Math.max(0, Math.floor(rawPageTotal)) : 0;
+    if (directTotal > 0) return directTotal;
+    if (ocrProgressPageHint > 0) return ocrProgressPageHint;
+    return 0;
+  }
+
+  function inferStageAwareEtaMs({ nowTs, elapsedMs, pageDone, pageTotal }) {
+    const knownTotal = getKnownOcrPageTotal(pageTotal);
+    if (knownTotal <= 0) {
+      return inferEtaMs(elapsedMs, pageDone, pageTotal);
+    }
+    const safeDone = Number.isFinite(pageDone) ? Math.max(0, Math.floor(pageDone)) : 0;
+    const stage = normalizeStageKey(ocrProgressStage || lockReason || 'ocr');
+    const dpi = normalizeDpiValue(ocrProgressMeta.dpi, OCR_PRESET_VALUES.balanced.dpi);
+    const preprocess = normalizePreprocessProfile(
+      ocrProgressMeta.preprocessProfile,
+      OCR_PRESET_VALUES.balanced.preprocess
+    );
+    const rasterSecPerPage = estimateRasterSecPerPage(dpi, preprocess);
+    const ocrSecPerPage = estimateOcrSecPerPage(dpi, preprocess);
+    const remainingPages = Math.max(0, knownTotal - Math.min(safeDone, knownTotal));
+
+    if (stage === 'rasterizing') {
+      const rasterElapsedMs = ocrProgressStageStartedAt > 0 ? Math.max(0, nowTs - ocrProgressStageStartedAt) : elapsedMs;
+      const rasterTotalMs = Math.round(rasterSecPerPage * knownTotal * 1000);
+      const remainingRasterMs = Math.max(0, rasterTotalMs - rasterElapsedMs);
+      const remainingOcrMs = Math.round(ocrSecPerPage * knownTotal * 1000);
+      return remainingRasterMs + remainingOcrMs;
+    }
+
+    if (stage === 'ocr') {
+      if (remainingPages <= 0) return 0;
+      if (safeDone > 0) {
+        const ocrStartedAt = ocrProgressOcrStageStartedAt > 0
+          ? ocrProgressOcrStageStartedAt
+          : (ocrProgressStageStartedAt > 0 ? ocrProgressStageStartedAt : (ocrProgressStartedAt || nowTs));
+        const ocrElapsedMs = Math.max(0, nowTs - ocrStartedAt);
+        if (ocrElapsedMs > 0) {
+          return Math.max(0, Math.round((ocrElapsedMs / safeDone) * remainingPages));
+        }
+      }
+      return Math.max(0, Math.round(ocrSecPerPage * remainingPages * 1000));
+    }
+
+    if (stage === 'queued' || stage === 'running' || stage === 'extracting') {
+      const totalEstimateMs = Math.round((rasterSecPerPage + ocrSecPerPage) * knownTotal * 1000);
+      return Math.max(0, totalEstimateMs - elapsedMs);
+    }
+
+    if (stage === 'completed') return 0;
+    if (stage === 'failed' || stage === 'canceled') return null;
+
+    return inferEtaMs(elapsedMs, safeDone, knownTotal);
+  }
+
   function getStageLabel(stage) {
     const normalized = String(stage || '').toLowerCase();
     if (normalized === 'queued') return t('renderer.main.import_progress.stage_queued', 'Queued');
@@ -208,11 +303,22 @@
   }
 
   function resetOcrProgressState() {
+    if (ocrProgressJobId) ocrQueuedJobMetaById.delete(ocrProgressJobId);
     ocrProgressJobId = '';
     ocrProgressStartedAt = 0;
     ocrProgressPageDone = 0;
     ocrProgressPageTotal = 0;
     ocrProgressStage = '';
+    ocrProgressStageStartedAt = 0;
+    ocrProgressOcrStageStartedAt = 0;
+    ocrProgressPageHint = 0;
+    ocrProgressMeta = {
+      preset: 'balanced',
+      dpi: OCR_PRESET_VALUES.balanced.dpi,
+      timeoutPerPageSec: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
+      preprocessProfile: OCR_PRESET_VALUES.balanced.preprocess,
+      pageCountHint: 0,
+    };
     if (ocrProgressText) {
       ocrProgressText.textContent = t('renderer.main.import_apply.ocr_running', 'OCR in progress...');
     }
@@ -226,16 +332,23 @@
     }
 
     const startedAt = ocrProgressStartedAt || Date.now();
-    const elapsedMs = Math.max(0, Date.now() - startedAt);
+    const nowTs = Date.now();
+    const elapsedMs = Math.max(0, nowTs - startedAt);
     const stageLabel = getStageLabel(ocrProgressStage || lockReason || 'ocr');
 
     const safeDone = Number.isFinite(ocrProgressPageDone) ? Math.max(0, Math.floor(ocrProgressPageDone)) : 0;
     const safeTotal = Number.isFinite(ocrProgressPageTotal) ? Math.max(0, Math.floor(ocrProgressPageTotal)) : 0;
-    const pageLabel = safeTotal > 0
-      ? `${Math.min(safeDone, safeTotal)}/${safeTotal}`
+    const knownTotal = getKnownOcrPageTotal(safeTotal);
+    const pageLabel = knownTotal > 0
+      ? `${Math.min(safeDone, knownTotal)}/${knownTotal}`
       : '-/-';
 
-    const etaMs = inferEtaMs(elapsedMs, safeDone, safeTotal);
+    const etaMs = inferStageAwareEtaMs({
+      nowTs,
+      elapsedMs,
+      pageDone: safeDone,
+      pageTotal: knownTotal,
+    });
     const etaLabel = etaMs == null ? '--' : formatElapsedLabel(etaMs);
     const pagesWord = t('renderer.main.import_progress.pages', 'pages');
     const elapsedWord = t('renderer.main.import_progress.elapsed', 'elapsed');
@@ -264,7 +377,16 @@
 
   function handleImportProgress(payload) {
     const p = payload && typeof payload === 'object' ? payload : {};
-    if (typeof p.jobId === 'string' && p.jobId) ocrProgressJobId = p.jobId;
+    if (typeof p.jobId === 'string' && p.jobId) {
+      const nextJobId = p.jobId.trim();
+      if (nextJobId && nextJobId !== ocrProgressJobId) {
+        ocrProgressJobId = nextJobId;
+        const queuedMeta = ocrQueuedJobMetaById.get(nextJobId);
+        if (queuedMeta) setActiveProgressMeta(queuedMeta);
+      } else if (nextJobId) {
+        ocrProgressJobId = nextJobId;
+      }
+    }
 
     if (!ocrProgressStartedAt) {
       const heartbeatTs = Number(p.heartbeatTs);
@@ -272,18 +394,31 @@
         ? heartbeatTs
         : Date.now();
     }
-    if (typeof p.stage === 'string' && p.stage.trim()) ocrProgressStage = p.stage.trim();
+    const nowTs = Date.now();
+    if (typeof p.stage === 'string' && p.stage.trim()) {
+      setOcrProgressStage(p.stage.trim(), nowTs);
+    }
     if (Number.isFinite(Number(p.pageDone))) ocrProgressPageDone = Number(p.pageDone);
-    if (Number.isFinite(Number(p.pageTotal))) ocrProgressPageTotal = Number(p.pageTotal);
+    if (Number.isFinite(Number(p.pageTotal))) {
+      ocrProgressPageTotal = Number(p.pageTotal);
+      if (ocrProgressPageTotal > 0) ocrProgressPageHint = Math.max(0, Math.floor(ocrProgressPageTotal));
+    }
 
     updateOcrProgressText();
   }
 
-  function noteJobQueued(jobId) {
+  function noteJobQueued(payload) {
+    const p = (payload && typeof payload === 'object')
+      ? payload
+      : { jobId: payload };
+    const jobId = typeof p.jobId === 'string' ? p.jobId.trim() : '';
     if (!jobId) return;
-    ocrProgressJobId = String(jobId);
+    const queuedMeta = buildQueuedJobMeta(p);
+    ocrQueuedJobMetaById.set(jobId, queuedMeta);
+    setActiveProgressMeta(queuedMeta);
+    ocrProgressJobId = jobId;
     ocrProgressStartedAt = Date.now();
-    ocrProgressStage = 'queued';
+    setOcrProgressStage('queued', ocrProgressStartedAt);
     ocrProgressPageDone = 0;
     ocrProgressPageTotal = 0;
     updateOcrProgressText();
@@ -295,11 +430,13 @@
     if (!jobId || !ocrProgressJobId || jobId !== ocrProgressJobId) return;
 
     if (p.ok) {
-      ocrProgressStage = 'completed';
+      setOcrProgressStage('completed', Date.now());
       ocrProgressPageDone = Math.max(ocrProgressPageDone, ocrProgressPageTotal || 0);
     } else {
-      ocrProgressStage = String(p.code || '').toUpperCase() === 'OCR_CANCELED' ? 'canceled' : 'failed';
+      const nextStage = String(p.code || '').toUpperCase() === 'OCR_CANCELED' ? 'canceled' : 'failed';
+      setOcrProgressStage(nextStage, Date.now());
     }
+    ocrQueuedJobMetaById.delete(jobId);
     updateOcrProgressText();
   }
 
@@ -399,22 +536,128 @@
     return Math.floor(n);
   }
 
-  function getSelectedOcrPresetKey() {
-    const value = ocrPresetSelect && typeof ocrPresetSelect.value === 'string'
-      ? ocrPresetSelect.value.trim().toLowerCase()
-      : '';
+  function getOptionalPageCountHint(rawPages) {
+    const n = Number(rawPages);
+    if (!Number.isFinite(n) || n < 1) return 0;
+    return Math.floor(n);
+  }
+
+  function normalizePresetKey(rawValue, fallback = 'balanced') {
+    const value = String(rawValue || '').trim().toLowerCase();
     if (value === 'fast' || value === 'balanced' || value === 'high_accuracy' || value === 'custom') {
       return value;
     }
-    return 'balanced';
+    return fallback;
+  }
+
+  function normalizePreprocessProfile(rawValue, fallback = 'standard') {
+    const value = String(rawValue || '').trim().toLowerCase();
+    if (OCR_PREPROCESS_LIST.includes(value)) return value;
+    return fallback;
+  }
+
+  function normalizeDpiValue(rawDpi, fallbackDpi) {
+    return clampToStep(rawDpi, {
+      min: OCR_DPI_MIN,
+      max: OCR_DPI_MAX,
+      step: OCR_DPI_STEP,
+      fallback: fallbackDpi,
+    });
+  }
+
+  function normalizeTimeoutPerPageSec(rawTimeoutSec, fallbackSec) {
+    return clampToStep(rawTimeoutSec, {
+      min: OCR_TIMEOUT_MIN,
+      max: OCR_TIMEOUT_MAX,
+      step: OCR_TIMEOUT_STEP,
+      fallback: fallbackSec,
+    });
+  }
+
+  function buildQueuedJobMeta(raw = {}) {
+    const preset = normalizePresetKey(raw.preset || raw.qualityPreset, 'balanced');
+    const presetCfg = getOcrPresetConfig(preset === 'custom' ? 'balanced' : preset);
+    const fallbackDpi = presetCfg.dpi;
+    const fallbackTimeout = presetCfg.timeoutPerPageSec;
+    const fallbackPreprocess = presetCfg.preprocess;
+    return {
+      preset,
+      dpi: normalizeDpiValue(raw.dpi, fallbackDpi),
+      timeoutPerPageSec: normalizeTimeoutPerPageSec(raw.timeoutPerPageSec, fallbackTimeout),
+      preprocessProfile: normalizePreprocessProfile(raw.preprocessProfile || raw.preprocess, fallbackPreprocess),
+      pageCountHint: getOptionalPageCountHint(raw.pageCountHint),
+    };
+  }
+
+  function setActiveProgressMeta(meta) {
+    const safeMeta = buildQueuedJobMeta(meta || {});
+    ocrProgressMeta = safeMeta;
+    if (safeMeta.pageCountHint > 0) {
+      ocrProgressPageHint = safeMeta.pageCountHint;
+    }
+  }
+
+  function getEstimatePreprocessFactor(preprocessProfile) {
+    const normalized = normalizePreprocessProfile(preprocessProfile, 'standard');
+    const factor = OCR_PREPROCESS_ESTIMATE_FACTOR[normalized];
+    return Number.isFinite(factor) && factor > 0 ? factor : 1.0;
+  }
+
+  function getDpiEstimateRatio(rawDpi) {
+    const dpi = normalizeDpiValue(rawDpi, OCR_PRESET_VALUES.balanced.dpi);
+    const ratio = dpi / OCR_ESTIMATE_BASE_DPI;
+    return Math.max(0.25, Math.min(3, ratio));
+  }
+
+  function estimateRasterSecPerPage(dpi, preprocessProfile) {
+    const ratio = getDpiEstimateRatio(dpi);
+    const profileFactor = getEstimatePreprocessFactor(preprocessProfile);
+    const estimate = OCR_ESTIMATE_BASE_RASTER_SEC_PER_PAGE
+      * Math.pow(ratio, OCR_ESTIMATE_RASTER_EXPONENT)
+      * profileFactor;
+    return Math.max(OCR_ESTIMATE_MIN_RASTER_SEC_PER_PAGE, estimate);
+  }
+
+  function estimateOcrSecPerPage(dpi, preprocessProfile) {
+    const ratio = getDpiEstimateRatio(dpi);
+    const profileFactor = getEstimatePreprocessFactor(preprocessProfile);
+    const estimate = OCR_ESTIMATE_BASE_OCR_SEC_PER_PAGE
+      * Math.pow(ratio, OCR_ESTIMATE_OCR_EXPONENT)
+      * profileFactor;
+    return Math.max(OCR_ESTIMATE_MIN_OCR_SEC_PER_PAGE, estimate);
+  }
+
+  function estimateTotalSecPerPage(dpi, preprocessProfile) {
+    return estimateRasterSecPerPage(dpi, preprocessProfile) + estimateOcrSecPerPage(dpi, preprocessProfile);
+  }
+
+  function estimateTotalSecForPages(pageCount, dpi, preprocessProfile) {
+    const pages = getSafeOcrPageCount(pageCount);
+    return estimateTotalSecPerPage(dpi, preprocessProfile) * pages;
+  }
+
+  function formatSecPerPageForGuidance(rawSec) {
+    const n = Number(rawSec);
+    if (!Number.isFinite(n) || n <= 0) return '0';
+    if (n < 10) {
+      const rounded = Math.round(n * 10) / 10;
+      return String(rounded).replace(/\.0$/, '');
+    }
+    return String(Math.round(n));
+  }
+
+  function getSelectedOcrPresetKey() {
+    const value = ocrPresetSelect && typeof ocrPresetSelect.value === 'string'
+      ? ocrPresetSelect.value
+      : '';
+    return normalizePresetKey(value, 'balanced');
   }
 
   function getSelectedOcrPreprocess() {
     const value = ocrPreprocessSelect && typeof ocrPreprocessSelect.value === 'string'
-      ? ocrPreprocessSelect.value.trim().toLowerCase()
+      ? ocrPreprocessSelect.value
       : '';
-    if (OCR_PREPROCESS_LIST.includes(value)) return value;
-    return 'standard';
+    return normalizePreprocessProfile(value, 'standard');
   }
 
   function syncOcrCustomControlState() {
@@ -440,23 +683,13 @@
   function normalizeOcrControlValues() {
     const preset = getSelectedOcrPresetKey();
     if (preset === 'custom') {
-      const normalizedDpi = clampToStep(
+      const normalizedDpi = normalizeDpiValue(
         ocrDpiInput ? ocrDpiInput.value : OCR_PRESET_VALUES.balanced.dpi,
-        {
-          min: OCR_DPI_MIN,
-          max: OCR_DPI_MAX,
-          step: OCR_DPI_STEP,
-          fallback: OCR_PRESET_VALUES.balanced.dpi,
-        }
+        OCR_PRESET_VALUES.balanced.dpi
       );
-      const normalizedTimeout = clampToStep(
+      const normalizedTimeout = normalizeTimeoutPerPageSec(
         ocrTimeoutInput ? ocrTimeoutInput.value : OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
-        {
-          min: OCR_TIMEOUT_MIN,
-          max: OCR_TIMEOUT_MAX,
-          step: OCR_TIMEOUT_STEP,
-          fallback: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
-        }
+        OCR_PRESET_VALUES.balanced.timeoutPerPageSec
       );
       if (ocrDpiInput) ocrDpiInput.value = String(normalizedDpi);
       if (ocrTimeoutInput) ocrTimeoutInput.value = String(normalizedTimeout);
@@ -494,35 +727,40 @@
 
   function updateOcrOptionsGuidanceText() {
     if (ocrPresetGuidance) {
+      const fastEstimate = estimateTotalSecPerPage(OCR_PRESET_VALUES.fast.dpi, OCR_PRESET_VALUES.fast.preprocess);
+      const balancedEstimate = estimateTotalSecPerPage(OCR_PRESET_VALUES.balanced.dpi, OCR_PRESET_VALUES.balanced.preprocess);
+      const highEstimate = estimateTotalSecPerPage(
+        OCR_PRESET_VALUES.high_accuracy.dpi,
+        OCR_PRESET_VALUES.high_accuracy.preprocess
+      );
       ocrPresetGuidance.textContent = msg(
         'renderer.main.ocr_options.guidance_presets',
         {
-          fast: OCR_PRESET_VALUES.fast.timeoutPerPageSec,
-          balanced: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
-          high: OCR_PRESET_VALUES.high_accuracy.timeoutPerPageSec,
+          fast: formatSecPerPageForGuidance(fastEstimate),
+          balanced: formatSecPerPageForGuidance(balancedEstimate),
+          high: formatSecPerPageForGuidance(highEstimate),
         },
-        `Fast ~${OCR_PRESET_VALUES.fast.timeoutPerPageSec}s/page · Balanced ~${OCR_PRESET_VALUES.balanced.timeoutPerPageSec}s/page · High accuracy ~${OCR_PRESET_VALUES.high_accuracy.timeoutPerPageSec}s/page`
+        `Fast ~${formatSecPerPageForGuidance(fastEstimate)}s/page · Balanced ~${formatSecPerPageForGuidance(balancedEstimate)}s/page · High accuracy ~${formatSecPerPageForGuidance(highEstimate)}s/page`
       );
     }
 
     const preset = getSelectedOcrPresetKey();
-    let timeoutPerPageSec = OCR_PRESET_VALUES.balanced.timeoutPerPageSec;
+    let estimateDpi = OCR_PRESET_VALUES.balanced.dpi;
+    let estimatePreprocess = OCR_PRESET_VALUES.balanced.preprocess;
     if (preset === 'custom') {
-      timeoutPerPageSec = clampToStep(
-        ocrTimeoutInput ? ocrTimeoutInput.value : timeoutPerPageSec,
-        {
-          min: OCR_TIMEOUT_MIN,
-          max: OCR_TIMEOUT_MAX,
-          step: OCR_TIMEOUT_STEP,
-          fallback: timeoutPerPageSec,
-        }
+      estimateDpi = normalizeDpiValue(
+        ocrDpiInput ? ocrDpiInput.value : estimateDpi,
+        estimateDpi
       );
+      estimatePreprocess = getSelectedOcrPreprocess();
     } else {
-      timeoutPerPageSec = getOcrPresetConfig(preset).timeoutPerPageSec;
+      const cfg = getOcrPresetConfig(preset);
+      estimateDpi = cfg.dpi;
+      estimatePreprocess = cfg.preprocess;
     }
 
     const pages = getSafeOcrPageCount(ocrOptionsPageCount);
-    const totalSec = timeoutPerPageSec * pages;
+    const totalSec = estimateTotalSecForPages(pages, estimateDpi, estimatePreprocess);
     if (ocrTotalGuidance) {
       ocrTotalGuidance.textContent = msg(
         'renderer.main.ocr_options.guidance_total',
@@ -550,13 +788,13 @@
     let preprocessProfile = OCR_PRESET_VALUES.balanced.preprocess;
 
     if (preset === 'custom') {
-      dpi = clampToStep(
+      dpi = normalizeDpiValue(
         ocrDpiInput ? ocrDpiInput.value : dpi,
-        { min: OCR_DPI_MIN, max: OCR_DPI_MAX, step: OCR_DPI_STEP, fallback: dpi }
+        dpi
       );
-      timeoutPerPageSec = clampToStep(
+      timeoutPerPageSec = normalizeTimeoutPerPageSec(
         ocrTimeoutInput ? ocrTimeoutInput.value : timeoutPerPageSec,
-        { min: OCR_TIMEOUT_MIN, max: OCR_TIMEOUT_MAX, step: OCR_TIMEOUT_STEP, fallback: timeoutPerPageSec }
+        timeoutPerPageSec
       );
       preprocessProfile = getSelectedOcrPreprocess();
     } else {
@@ -763,6 +1001,7 @@
         } else {
           ocrPreprocessSelect.value = getSelectedOcrPreprocess();
         }
+        updateOcrOptionsGuidanceText();
       });
     }
 
