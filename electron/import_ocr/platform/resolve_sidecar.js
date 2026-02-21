@@ -142,7 +142,7 @@ function validateSidecarRuntime({
   sidecarRootBase = '',
   platform = process.platform,
   arch = process.arch,
-  requiredLanguages = ['eng', 'spa'],
+  requiredLanguages = ['eng', 'spa', 'fra', 'deu', 'ita', 'por'],
 } = {}) {
   const resolved = resolveSidecarPaths({
     resourcesPath,
