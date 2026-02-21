@@ -104,6 +104,7 @@ Checklist:
   * `pdftoppm` / Poppler (binario + runtime libs)
   * `tessdata` (`eng`, `spa`)
   * Referencias de origen (release upstream) registradas en `THIRD_PARTY_NOTICES.md`.
+  * Archivos de licencia/notice correspondientes presentes en `third_party_licenses/**`.
 * [PENDING] Runtime notices obligatorios inventariados:
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
@@ -149,6 +150,7 @@ Checklist:
   * `LICENSE`
   * `PRIVACY.md`
   * `THIRD_PARTY_NOTICES.md` (obligatorio cuando se distribuyen sidecars OCR)
+  * `third_party_licenses/**` (archivos de licencia/notice referenciados por `THIRD_PARTY_NOTICES.md`)
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
   * Licencias/notices de fonts redistribuidas (ej. `public/fonts/LICENSE_Baskervville_OFL.txt`)
@@ -210,6 +212,7 @@ Evidencia mínima sugerida:
 
 Checklist:
 * [PENDING] Cada documento listado en §6 está presente en el artefacto final.
+* [PENDING] `THIRD_PARTY_NOTICES.md` no contiene rutas rotas y cada referencia a `third_party_licenses/**` existe en el artefacto.
 * [PENDING] Verificar accesibilidad práctica: el usuario puede abrir esos documentos (por UI o por ubicación clara en zip/installer).
 * [PENDING] Confirmar que nombres/rutas finales no rompen la trazabilidad definida en §6.
 

@@ -53,6 +53,7 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 * [ ] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
 * [ ] `docs/releases/ocr_sidecar_runtime_guidance.md`: verificar coherencia de la guía de advertencias OS (SmartScreen/Gatekeeper) para sidecars OCR.
 * [ ] `THIRD_PARTY_NOTICES.md`: actualizar referencias de origen/licencia de sidecars OCR (`tesseract`, `pdftoppm`, `tessdata`) usadas en el release.
+* [ ] `third_party_licenses/**`: verificar que los archivos referenciados por `THIRD_PARTY_NOTICES.md` existen y coinciden con el bundle del release.
 
 ## 3. Alinear la versión (freeze justo antes del empaquetado)
 
@@ -74,16 +75,16 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 
 ## 5. Baseline de seguridad
 
-* [ ] `docs/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:
+* [ ] `docs/releases/security_baseline.md`: revisar/actualizar y asegurar que el **veredicto** quede consistente:
   * [ ] Ship Gate: todo `[PASS]`.
   * [ ] Post-packaging Gate: ejecutado sobre el artefacto final y todo `[PASS]`.
   * [ ] Si queda `[PENDING]` o `[BLOCKER]`: no publicar.
 
 ## 6. Baseline legal (licencias/redistribución)
 
-* [ ] `docs/legal_baseline.md`: ejecutar el baseline sobre el artefacto final y asegurar veredicto consistente:
+* [ ] `docs/releases/legal_baseline.md`: ejecutar el baseline sobre el artefacto final y asegurar veredicto consistente:
   * [ ] Ship Gate: completado y en `PASS` (inventarios + documentos requeridos).
-  * [ ] Post-packaging Gate: ejecutado sobre el artefacto final y en `PASS` (contenido, deps runtime, docs, servicios).
+  * [ ] Post-packaging Gate: ejecutado sobre el artefacto final y en `PASS` (contenido, deps runtime, docs, servicios, `third_party_licenses/**`).
   * [ ] Si queda `PENDING` o `BLOCKER`: no publicar.
 * [ ] Confirmar en release notes:
   * [ ] enlace a `docs/releases/ocr_sidecar_runtime_guidance.md` (advertencias OS esperables en MVP sin firma/notarización pagada).

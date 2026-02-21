@@ -43,6 +43,11 @@ tot/
 │ ├── test_suite.md
 │ └── tree_folders_files.md
 ├── electron/
+│ ├── import_ocr/                  # {orquestación import/OCR + adaptadores por plataforma}
+│ │ ├── platform/
+│ │ ├── orchestrator.js
+│ │ ├── ocr_pipeline.js
+│ │ └── extract_phase_a.js
 │ ├── presets/                     # {presets para restauración de fábrica}
 │ │ ├── defaults_presets.json
 │ │ ├── defaults_presets_en.json
@@ -77,6 +82,9 @@ tot/
 │ ├── darwin-x64/
 │ ├── darwin-arm64/
 │ └── README.md
+├── third_party_licenses/          # {licencias/notices de terceros redistribuidos}
+│ ├── poppler/
+│ └── tesseract/
 ├── public/
 │ ├── assets/
 │ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
@@ -184,6 +192,10 @@ tot/
 - `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
 - `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique).
 - `electron/log.js` — Logger del proceso principal (política de logs/fallbacks).
+- `electron/import_ocr/orchestrator.js` — Orquestador import/OCR (sesiones/jobs/lock global, routing y flujos apply/discard).
+- `electron/import_ocr/extract_phase_a.js` — Extractores no-OCR (txt/docx/pdf-text-layer) y utilidades de fase A.
+- `electron/import_ocr/ocr_pipeline.js` — Pipeline OCR/raster (`tesseract` + `pdftoppm`) con progreso/cancelación/cleanup.
+- `electron/import_ocr/platform/*` — Adaptadores y perfiles por plataforma/arquitectura para sidecars OCR.
 
 ### 3) Módulos del renderer (public/js)
 
@@ -244,6 +256,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `docs/changelog_detailed.md` — Changelog detallado (técnico/narrativo; post-0.0.930 con formato mecánico).
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
 - `THIRD_PARTY_NOTICES.md` — Referencias de origen/licencia para componentes redistribuidos de terceros (incluyendo sidecars OCR).
+- `third_party_licenses/` — Copias locales de licencias/notices de terceros referenciadas por `THIRD_PARTY_NOTICES.md`.
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
 - `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, etc.).
 
@@ -253,6 +266,7 @@ Actualizar `docs/tree_folders_files.md` cuando:
 - Se agreguen/renombren entry points (main/preloads/ventanas).
 - Se mueva o divida lógica en módulos principales (`electron/` o `public/js/`).
 - Cambie la estructura de `i18n/`, `docs/` o el layout general del repo.
+- Cambie la estructura de `ocr/` o `third_party_licenses/` para distribución.
 - Se introduzca o elimine persistencia relevante en `config/`.
 
 Regla: este archivo describe **estructura y responsabilidades**; el detalle operativo vive en los Issues/Project y en la documentación específica.
