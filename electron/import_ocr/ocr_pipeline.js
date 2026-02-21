@@ -362,7 +362,6 @@ async function runImageOcr(session, sidecar, options = {}) {
   if (!langRes.ok) return langRes;
   const { tesseractLang } = langRes;
 
-  safeInvoke(options.onStage, 'ocr');
   safeInvoke(options.onProgress, {
     stage: 'ocr',
     pageDone: 0,
@@ -400,7 +399,11 @@ async function runImageOcr(session, sidecar, options = {}) {
     pageDone: 1,
     pageTotal: 1,
   });
-  safeInvoke(options.onStage, 'finalizing');
+  safeInvoke(options.onProgress, {
+    stage: 'finalizing',
+    pageDone: 1,
+    pageTotal: 1,
+  });
 
   const warnings = [];
   if (processRes.stdoutTruncated) warnings.push('OCR stdout truncated in-memory.');
@@ -497,7 +500,6 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
       }
 
       lastProgressAt = nowTs;
-      safeInvoke(options.onStage, stage);
       const payload = {
         stage,
         pageDone,

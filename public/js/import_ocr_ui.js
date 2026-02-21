@@ -75,7 +75,6 @@
   let ocrProgressPageDone = 0;
   let ocrProgressPageTotal = 0;
   let ocrProgressStage = '';
-  let ocrProgressStageStartedAt = 0;
   const ocrQueuedJobMetaById = new Map();
   let ocrProgressMeta = {
     preset: 'balanced',
@@ -218,12 +217,11 @@
     return String(rawStage || '').trim().toLowerCase();
   }
 
-  function setOcrProgressStage(stage, nowTs = Date.now()) {
+  function setOcrProgressStage(stage) {
     const normalized = normalizeStageKey(stage);
     if (!normalized) return;
     if (normalized !== ocrProgressStage) {
       ocrProgressStage = normalized;
-      ocrProgressStageStartedAt = nowTs;
     }
   }
 
@@ -231,7 +229,7 @@
     return Number.isFinite(rawPageTotal) ? Math.max(0, Math.floor(rawPageTotal)) : 0;
   }
 
-  function inferStageAwareEtaMs({ nowTs, elapsedMs, pageDone, pageTotal }) {
+  function inferStageAwareEtaMs({ elapsedMs, pageDone, pageTotal }) {
     const knownTotal = getKnownOcrPageTotal(pageTotal);
     if (knownTotal <= 0) {
       return inferEtaMs(elapsedMs, pageDone, pageTotal);
@@ -296,7 +294,6 @@
     ocrProgressPageDone = 0;
     ocrProgressPageTotal = 0;
     ocrProgressStage = '';
-    ocrProgressStageStartedAt = 0;
     ocrProgressMeta = {
       preset: 'balanced',
       dpi: OCR_PRESET_VALUES.balanced.dpi,
@@ -328,7 +325,6 @@
       : '-/-';
 
     const etaMs = inferStageAwareEtaMs({
-      nowTs,
       elapsedMs,
       pageDone: safeDone,
       pageTotal: knownTotal,
@@ -378,9 +374,8 @@
         ? heartbeatTs
         : Date.now();
     }
-    const nowTs = Date.now();
     if (typeof p.stage === 'string' && p.stage.trim()) {
-      setOcrProgressStage(p.stage.trim(), nowTs);
+      setOcrProgressStage(p.stage.trim());
     }
     if (Number.isFinite(Number(p.pageDone))) ocrProgressPageDone = Number(p.pageDone);
     if (Number.isFinite(Number(p.pageTotal))) {
@@ -401,7 +396,7 @@
     setActiveProgressMeta(queuedMeta);
     ocrProgressJobId = jobId;
     ocrProgressStartedAt = Date.now();
-    setOcrProgressStage('queued', ocrProgressStartedAt);
+    setOcrProgressStage('queued');
     ocrProgressPageDone = 0;
     ocrProgressPageTotal = 0;
     updateOcrProgressText();
@@ -413,11 +408,11 @@
     if (!jobId || !ocrProgressJobId || jobId !== ocrProgressJobId) return;
 
     if (p.ok) {
-      setOcrProgressStage('completed', Date.now());
+      setOcrProgressStage('completed');
       ocrProgressPageDone = Math.max(ocrProgressPageDone, ocrProgressPageTotal || 0);
     } else {
       const nextStage = String(p.code || '').toUpperCase() === 'OCR_CANCELED' ? 'canceled' : 'failed';
-      setOcrProgressStage(nextStage, Date.now());
+      setOcrProgressStage(nextStage);
     }
     ocrQueuedJobMetaById.delete(jobId);
     updateOcrProgressText();
