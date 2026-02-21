@@ -31,7 +31,7 @@ Todos estos datos quedan solo **en tu equipo**.
 ## 3. Conectividad y terceros
 
 ### 3.1 Verificación de actualizaciones (GitHub)
-La app puede consultar información pública de releases en GitHub para determinar si existe una versión más reciente, y puede abrir el navegador hacia la página oficial de releases.
+La app puede consultar información pública de releases en GitHub para determinar si existe una versión más reciente, y puede abrir el navegador hacia la página oficial de releases (solo tras confirmación del usuario).
 
 - La app **no envía tu texto** durante esta verificación.
 - Como en cualquier conexión HTTPS a un tercero, **GitHub puede ver tu IP** y metadatos estándar de la conexión (p. ej., fecha/hora y encabezados de red habituales).
