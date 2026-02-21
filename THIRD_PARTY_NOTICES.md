@@ -10,6 +10,8 @@ This file lists the primary third-party components redistributed with the app ru
 * Upstream project: https://github.com/tesseract-ocr/tesseract
 * Source reference (Windows package used in current setup): https://github.com/tesseract-ocr/tesseract/releases/download/5.5.0/tesseract-ocr-w64-setup-5.5.0.20241111.exe
 * Primary upstream license: Apache License 2.0.
+* Local license text in this repository:
+  * `third_party_licenses/tesseract/TESSERACT_INSTALLER_LICENSE.txt`
 
 ### Poppler (`pdftoppm`)
 
@@ -21,12 +23,19 @@ This file lists the primary third-party components redistributed with the app ru
   * https://github.com/conda-forge/poppler-feedstock
   * https://anaconda.org/conda-forge/poppler
 * Primary upstream/package license in that chain: GPL-2.0-only.
+* Local license texts in this repository:
+  * `third_party_licenses/poppler/POPPLER_COPYING.txt`
+  * `third_party_licenses/poppler/POPPLER_COPYING_GPL-2.0.txt`
+  * `third_party_licenses/poppler/POPPLER_COPYING_ADOBE.txt`
+  * `third_party_licenses/poppler/POPPLER_WINDOWS_PACKAGING_MIT_LICENSE.txt`
 
 ### Tesseract language data (`tessdata`)
 
 * Components: `eng.traineddata`, `spa.traineddata`.
 * Upstream project: https://github.com/tesseract-ocr/tessdata
 * Primary upstream license: Apache License 2.0.
+* Local license text in this repository:
+  * `third_party_licenses/tesseract/TESSERACT_INSTALLER_LICENSE.txt` (used because these traineddata files were extracted from the same Tesseract installer package source).
 
 ## GPL source-compliance path (Poppler sidecar)
 
