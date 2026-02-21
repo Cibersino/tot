@@ -72,7 +72,10 @@ function getTempDir(app) {
 }
 
 async function copyToTemp(app, srcPath, tempName) {
-  const tempPath = path.join(getTempDir(app), tempName);
+  const safeTempName = String(tempName || '')
+    .replace(/[\\/]+/g, '_')
+    .replace(/[:*?"<>|]/g, '_');
+  const tempPath = path.join(getTempDir(app), safeTempName);
   const data = await fs.promises.readFile(srcPath);
   await fs.promises.writeFile(tempPath, data);
   return tempPath;
