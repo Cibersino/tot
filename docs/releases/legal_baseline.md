@@ -102,7 +102,7 @@ Checklist:
 * [PENDING] Sidecars OCR redistribuidos inventariados con trazabilidad mínima:
   * `tesseract` (binario + runtime libs)
   * `pdftoppm` / Poppler (binario + runtime libs)
-  * `tessdata` (`eng`, `spa`)
+  * `tessdata` (`eng`, `spa`, `fra`, `deu`, `ita`, `por`)
   * Referencias de origen (release upstream) registradas en `THIRD_PARTY_NOTICES.md`.
   * Archivos de licencia/notice correspondientes presentes en `third_party_licenses/**`.
 * [PENDING] Runtime notices obligatorios inventariados:
