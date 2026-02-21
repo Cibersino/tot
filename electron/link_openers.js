@@ -36,6 +36,9 @@ const APP_DOC_FILES = Object.freeze({
   'licenses-chromium': 'LICENSES.chromium.html',
   'privacy-policy': 'PRIVACY.md',
   'third-party-notices': 'THIRD_PARTY_NOTICES.md',
+  'license-ocr-tesseract': 'third_party_licenses/tesseract/TESSERACT_INSTALLER_LICENSE.txt',
+  'license-ocr-poppler-gpl2': 'third_party_licenses/poppler/POPPLER_COPYING_GPL-2.0.txt',
+  'license-ocr-poppler-mit': 'third_party_licenses/poppler/POPPLER_WINDOWS_PACKAGING_MIT_LICENSE.txt',
 });
 const APP_DOC_BASKERVVILLE = 'license-baskervville';
 
