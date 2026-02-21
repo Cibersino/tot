@@ -12,8 +12,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { BrowserWindow, dialog } = require('electron');
+const { app, BrowserWindow, dialog } = require('electron');
 const Log = require('../log');
+const settingsState = require('../settings');
 const { validateRegistry } = require('./platform/profile_registry');
 const { validateSidecarRuntime } = require('./platform/resolve_sidecar');
 const { runPhaseAExtraction } = require('./extract_phase_a');
@@ -160,6 +161,67 @@ function normalizePath(rawPath) {
     return path.resolve(String(rawPath || ''));
   } catch {
     return '';
+  }
+}
+
+function normalizeExistingDirPath(rawPath) {
+  const normalized = normalizePath(rawPath);
+  if (!normalized) return '';
+  try {
+    const st = fs.statSync(normalized);
+    if (!st.isDirectory()) return '';
+    return normalized;
+  } catch {
+    return '';
+  }
+}
+
+function getOsPathSafely(key) {
+  try {
+    if (!app || typeof app.getPath !== 'function') return '';
+    return normalizeExistingDirPath(app.getPath(key));
+  } catch {
+    return '';
+  }
+}
+
+function resolveImportDialogDefaultPath() {
+  try {
+    const settings = settingsState.getSettings();
+    const stored = settings && typeof settings.last_import_dir === 'string'
+      ? settings.last_import_dir.trim()
+      : '';
+    const validStored = normalizeExistingDirPath(stored);
+    if (validStored) return validStored;
+  } catch (err) {
+    log.warnOnce(
+      'import_ocr_orchestrator.resolveImportDialogDefaultPath.settingsRead',
+      'Unable to read settings for import default path (using OS fallback).',
+      err
+    );
+  }
+
+  const documentsDir = getOsPathSafely('documents');
+  if (documentsDir) return documentsDir;
+  return getOsPathSafely('home');
+}
+
+function persistLastImportDir(filePath) {
+  const dirPath = normalizeExistingDirPath(path.dirname(String(filePath || '')));
+  if (!dirPath) return;
+
+  try {
+    const settings = settingsState.getSettings();
+    if (!settings || typeof settings !== 'object') return;
+    if (settings.last_import_dir === dirPath) return;
+    settings.last_import_dir = dirPath;
+    settingsState.saveSettings(settings);
+  } catch (err) {
+    log.warnOnce(
+      'import_ocr_orchestrator.persistLastImportDir',
+      'Failed to persist last import directory (ignored).',
+      err
+    );
   }
 }
 
@@ -758,9 +820,11 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
     if (blocked) return blocked;
 
     const owner = resolveMainWindow();
+    const defaultPath = resolveImportDialogDefaultPath();
     const picker = await dialog.showOpenDialog(owner, {
       filters: FILE_FILTERS,
       properties: ['openFile'],
+      defaultPath: defaultPath || undefined,
     });
     if (!picker || picker.canceled || !picker.filePaths || !picker.filePaths.length) {
       return fail('CANCELLED', 'File selection canceled.');
@@ -768,6 +832,7 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
 
     const selected = validateSelectedFile(picker.filePaths[0]);
     if (!selected.ok) return selected;
+    persistLastImportDir(selected.filePath);
 
     if (selected.kind === 'image') {
       const registryReady = ensureProfileRegistryReady();

@@ -56,6 +56,7 @@ const createDefaultSettings = (language = '') => ({
   presets_by_language: {},
   selected_preset_by_language: {},
   disabled_default_presets: {},
+  last_import_dir: '',
 });
 
 // =============================================================================
@@ -248,6 +249,22 @@ function normalizeSettings(s) {
       { type: typeof s.disabled_default_presets, isArray: Array.isArray(s.disabled_default_presets) }
     );
     s.disabled_default_presets = {};
+  }
+
+  // last_import_dir:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof s.last_import_dir === 'undefined') {
+    s.last_import_dir = '';
+  } else if (typeof s.last_import_dir !== 'string') {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidLastImportDir',
+      'Invalid last_import_dir; forcing empty string:',
+      { type: typeof s.last_import_dir }
+    );
+    s.last_import_dir = '';
+  } else {
+    s.last_import_dir = s.last_import_dir.trim();
   }
 
   // modeConteo:
