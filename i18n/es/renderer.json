@@ -280,6 +280,8 @@
       "import_ocr_raster_failed": "La rasterización del PDF falló antes del OCR.",
       "import_ocr_timeout_page": "OCR agotó el tiempo para esta página/imagen.",
       "import_ocr_timeout_job": "OCR agotó el tiempo antes de completar el documento.",
+      "import_ocr_lang_unsupported": "El idioma OCR seleccionado no está soportado en esta compilación.",
+      "import_ocr_lang_unavailable": "Los datos del idioma OCR seleccionado no están instalados en este runtime.",
       "import_ocr_empty_result": "OCR finalizó pero no detectó texto.",
       "import_ocr_not_running": "No hay un OCR en ejecución.",
       "import_ocr_canceled": "OCR fue cancelado.",

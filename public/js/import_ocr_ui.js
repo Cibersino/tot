@@ -74,6 +74,12 @@
   let tRendererFn = (_key, fallback = '') => fallback;
   let msgRendererFn = null;
   let listenersBound = false;
+  const log = (window.getLogger && typeof window.getLogger === 'function')
+    ? window.getLogger('import-ocr-ui')
+    : {
+      warn: () => {},
+      warnOnce: () => {},
+    };
 
   function t(key, fallback = '') {
     try {
@@ -106,10 +112,68 @@
   }
 
   function getDefaultOcrLanguageFromUi() {
-    const base = normalizeLangBaseLocal(currentUiLanguage || defaultLanguage || 'en');
-    if (base === 'es') return 'es';
-    if (base === 'en') return 'en';
-    return 'en';
+    return normalizeLangBaseLocal(currentUiLanguage || defaultLanguage || '');
+  }
+
+  function normalizeAvailableUiLanguages(list) {
+    const values = Array.isArray(list)
+      ? list.map((item) => String(item || '').trim().toLowerCase()).filter(Boolean)
+      : [];
+    return Array.from(new Set(values));
+  }
+
+  function getAvailableOcrLanguagesFromSelect() {
+    if (!ocrLanguageSelect) return [];
+    const values = [];
+    const opts = ocrLanguageSelect.querySelectorAll('option');
+    opts.forEach((opt) => {
+      if (!opt) return;
+      const value = String(opt.value || '').trim().toLowerCase();
+      if (!value) return;
+      values.push(value);
+    });
+    return Array.from(new Set(values));
+  }
+
+  function resolvePreferredOcrLanguage(availableUiLanguages) {
+    const available = normalizeAvailableUiLanguages(availableUiLanguages);
+    if (!available.length) return '';
+
+    const activeBase = normalizeLangBaseLocal(currentUiLanguage || '');
+    if (activeBase && available.includes(activeBase)) return activeBase;
+
+    const fallbackBase = normalizeLangBaseLocal(defaultLanguage || '');
+    if (fallbackBase && available.includes(fallbackBase)) {
+      if (activeBase && activeBase !== fallbackBase) {
+        log.warnOnce(
+          `import-ocr-ui.ocr-lang-fallback.${activeBase}->${fallbackBase}`,
+          `OCR language fallback applied (active unavailable). active='${activeBase}' fallback='${fallbackBase}'.`
+        );
+      }
+      return fallbackBase;
+    }
+
+    const chosen = available[0];
+    if (chosen && activeBase && activeBase !== chosen) {
+      log.warnOnce(
+        `import-ocr-ui.ocr-lang-fallback.${activeBase}->${chosen}`,
+        `OCR language fallback applied (active/app-default unavailable). active='${activeBase}' chosen='${chosen}' available=${available.join(',')}.`
+      );
+    }
+    return chosen;
+  }
+
+  function setOcrLanguageOptions(availableUiLanguages) {
+    if (!ocrLanguageSelect) return [];
+    const available = normalizeAvailableUiLanguages(availableUiLanguages);
+    ocrLanguageSelect.innerHTML = '';
+    available.forEach((value) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = value;
+      ocrLanguageSelect.appendChild(option);
+    });
+    return available;
   }
 
   function formatElapsedLabel(ms) {
@@ -470,12 +534,13 @@
 
   function collectNormalizedOcrOptions() {
     const preset = getSelectedOcrPresetKey();
+    const availableUiLanguages = getAvailableOcrLanguagesFromSelect();
     const langRaw = ocrLanguageSelect && typeof ocrLanguageSelect.value === 'string'
       ? ocrLanguageSelect.value.trim().toLowerCase()
       : '';
-    const language = (langRaw === 'es' || langRaw === 'en' || langRaw === 'es+en')
+    const language = availableUiLanguages.includes(langRaw)
       ? langRaw
-      : getDefaultOcrLanguageFromUi();
+      : resolvePreferredOcrLanguage(availableUiLanguages);
 
     let dpi = OCR_PRESET_VALUES.balanced.dpi;
     let timeoutPerPageSec = OCR_PRESET_VALUES.balanced.timeoutPerPageSec;
@@ -538,7 +603,9 @@
     });
   }
 
-  function promptOcrOptionsDialog({ kind, filename, pageCountHint }) {
+  function promptOcrOptionsDialog({ kind, filename, pageCountHint, availableUiLanguages }) {
+    const availableLanguages = normalizeAvailableUiLanguages(availableUiLanguages);
+    const preferredLanguage = resolvePreferredOcrLanguage(availableLanguages);
     if (
       !ocrOptionsModal
       || !ocrPresetSelect
@@ -549,19 +616,24 @@
       || !btnOcrOptionsStart
       || !btnOcrOptionsAbort
     ) {
-      const fallbackLanguage = getDefaultOcrLanguageFromUi();
+      if (!preferredLanguage) {
+        return Promise.resolve({ confirmed: false, options: null });
+      }
       return Promise.resolve({
         confirmed: true,
         options: {
           qualityPreset: 'balanced',
           preset: 'balanced',
-          ocrLanguage: fallbackLanguage,
-          languageTag: fallbackLanguage,
+          ocrLanguage: preferredLanguage,
+          languageTag: preferredLanguage,
           dpi: OCR_PRESET_VALUES.balanced.dpi,
           timeoutPerPageSec: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
           preprocessProfile: OCR_PRESET_VALUES.balanced.preprocess,
         },
       });
+    }
+    if (!preferredLanguage) {
+      return Promise.resolve({ confirmed: false, options: null });
     }
 
     if (ocrOptionsResolve) settleOcrOptions(false);
@@ -571,7 +643,8 @@
     ocrOptionsFilename = String(filename || '').trim();
 
     ocrPresetSelect.value = 'balanced';
-    ocrLanguageSelect.value = getDefaultOcrLanguageFromUi();
+    setOcrLanguageOptions(availableLanguages);
+    ocrLanguageSelect.value = preferredLanguage;
     ocrDpiInput.value = String(OCR_PRESET_VALUES.balanced.dpi);
     ocrTimeoutInput.value = String(OCR_PRESET_VALUES.balanced.timeoutPerPageSec);
     ocrPreprocessSelect.value = OCR_PRESET_VALUES.balanced.preprocess;

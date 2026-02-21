@@ -293,6 +293,36 @@ function getDefaultImportRunOptions() {
   return importOcrUi.getDefaultRunOptions();
 }
 
+async function getAvailableOcrLanguages() {
+  const importGetOcrLanguages = getOptionalElectronMethod('importGetOcrLanguages', {
+    dedupeKey: 'renderer.ipc.importGetOcrLanguages.unavailable',
+    unavailableMessage: 'importGetOcrLanguages unavailable; OCR language options cannot be resolved.'
+  });
+  if (!importGetOcrLanguages) {
+    return { ok: false, code: 'IMPORT_UNAVAILABLE', message: 'importGetOcrLanguages unavailable' };
+  }
+
+  try {
+    const res = await importGetOcrLanguages();
+    if (!res || res.ok !== true) {
+      return res || { ok: false, code: 'IMPORT_UNAVAILABLE', message: 'importGetOcrLanguages failed' };
+    }
+    const availableUiLanguages = Array.isArray(res.availableUiLanguages)
+      ? res.availableUiLanguages.map((item) => String(item || '').trim().toLowerCase()).filter(Boolean)
+      : [];
+    if (!availableUiLanguages.length) {
+      return { ok: false, code: 'OCR_LANG_UNAVAILABLE', message: 'No OCR language options available.' };
+    }
+    return {
+      ok: true,
+      availableUiLanguages,
+    };
+  } catch (err) {
+    log.error('Failed to resolve OCR language capabilities:', err);
+    return { ok: false, code: 'IMPORT_UNAVAILABLE', message: 'importGetOcrLanguages threw an exception.' };
+  }
+}
+
 function chooseImportApplyMode(options = {}) {
   if (!importOcrUi || typeof importOcrUi.chooseApplyMode !== 'function') {
     const opts = options && typeof options === 'object' ? options : {};
@@ -414,6 +444,7 @@ function showImportDialogMessage(keyPath) {
 }
 
 const IMPORT_ERROR_MESSAGE_KEYS = Object.freeze({
+  IMPORT_UNAVAILABLE: 'renderer.alerts.import_unavailable',
   IMPORT_DEP_MISSING_MAMMOTH: 'renderer.alerts.import_dep_missing_mammoth',
   IMPORT_DEP_MISSING_PDFJS: 'renderer.alerts.import_dep_missing_pdfjs',
   IMPORT_TEXT_DECODE_FAILED: 'renderer.alerts.import_decode_failed',
@@ -445,6 +476,8 @@ const IMPORT_ERROR_MESSAGE_KEYS = Object.freeze({
   OCR_RASTER_FAILED: 'renderer.alerts.import_ocr_raster_failed',
   OCR_TIMEOUT_PAGE: 'renderer.alerts.import_ocr_timeout_page',
   OCR_TIMEOUT_JOB: 'renderer.alerts.import_ocr_timeout_job',
+  OCR_LANG_UNSUPPORTED: 'renderer.alerts.import_ocr_lang_unsupported',
+  OCR_LANG_UNAVAILABLE: 'renderer.alerts.import_ocr_lang_unavailable',
   OCR_EMPTY_RESULT: 'renderer.alerts.import_ocr_empty_result',
   OCR_NOT_RUNNING: 'renderer.alerts.import_ocr_not_running',
   OCR_CANCELED: 'renderer.alerts.import_ocr_canceled',
@@ -497,10 +530,19 @@ async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
   const warningMsg = humanizeImportError(p);
   if (warningMsg) showImportDialogMessage(warningMsg);
 
+  const ocrLangRes = await getAvailableOcrLanguages();
+  if (!ocrLangRes || ocrLangRes.ok !== true) {
+    const message = humanizeImportError(ocrLangRes);
+    if (message) showImportDialogMessage(message);
+    await discardImportSession(sessionId);
+    return true;
+  }
+
   const ocrOptsRes = await promptOcrOptionsDialog({
     kind: 'pdf',
     filename: String(summary.filename || ''),
     pageCountHint,
+    availableUiLanguages: ocrLangRes.availableUiLanguages,
   });
   if (!ocrOptsRes || ocrOptsRes.confirmed !== true) {
     await discardImportSession(sessionId);
@@ -1870,10 +1912,18 @@ if (btnImportExtract) {
 
       let runOptions = getDefaultImportRunOptions();
       if (isOcrRoute(selectRes.route)) {
+        const ocrLangRes = await getAvailableOcrLanguages();
+        if (!ocrLangRes || ocrLangRes.ok !== true) {
+          const message = humanizeImportError(ocrLangRes);
+          if (message) showImportDialogMessage(message);
+          await discardImportSession(selectRes.sessionId);
+          return;
+        }
         const ocrOptsRes = await promptOcrOptionsDialog({
           kind: selectRes.kind,
           filename: selectRes.filename,
           pageCountHint: selectRes.pageCountHint,
+          availableUiLanguages: ocrLangRes.availableUiLanguages,
         });
         if (!ocrOptsRes || ocrOptsRes.confirmed !== true) {
           await discardImportSession(selectRes.sessionId);

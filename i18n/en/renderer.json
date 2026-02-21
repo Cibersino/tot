@@ -280,6 +280,8 @@
       "import_ocr_raster_failed": "PDF rasterization failed before OCR.",
       "import_ocr_timeout_page": "OCR timed out for this page/image.",
       "import_ocr_timeout_job": "OCR timed out before completing the full document.",
+      "import_ocr_lang_unsupported": "Selected OCR language is not supported in this app build.",
+      "import_ocr_lang_unavailable": "Selected OCR language data is not installed in this runtime.",
       "import_ocr_empty_result": "OCR completed but no text was detected.",
       "import_ocr_not_running": "No OCR job is currently running.",
       "import_ocr_canceled": "OCR was canceled.",

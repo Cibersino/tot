@@ -34,6 +34,7 @@ const api = {
     openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey),
     openTaskEditor: (mode) => ipcRenderer.invoke('open-task-editor', { mode }),
     importSelectFile: () => ipcRenderer.invoke('import-select-file'),
+    importGetOcrLanguages: () => ipcRenderer.invoke('import-get-ocr-languages'),
     importRun: (payload) => ipcRenderer.invoke('import-run', payload),
     importCancel: () => ipcRenderer.invoke('import-cancel'),
     importApply: (payload) => ipcRenderer.invoke('import-apply', payload),

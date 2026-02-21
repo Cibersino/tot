@@ -7,6 +7,10 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { resolveSidecarPaths } = require('./platform/resolve_sidecar');
 const {
+  mapUiLanguageToTesseract,
+  getRequiredTesseractCodes,
+} = require('./language_policy');
+const {
   terminateWithEscalation,
 } = require('./platform/process_control');
 
@@ -20,32 +24,40 @@ function clampInt(raw, min, max, fallback) {
   return Math.min(max, Math.max(min, Math.floor(n)));
 }
 
-function normalizeLangBase(raw) {
-  const value = String(raw || '').trim().toLowerCase().replace(/_/g, '-');
-  if (!value) return '';
-  return value.split('-')[0];
-}
-
-function mapToTesseractLang(rawLang) {
-  const value = String(rawLang || '').trim().toLowerCase();
-  if (!value) return 'eng';
-  if (value === 'es' || value === 'spa') return 'spa';
-  if (value === 'en' || value === 'eng') return 'eng';
-  if (value === 'es+en' || value === 'en+es' || value === 'spa+eng' || value === 'eng+spa') {
-    return 'spa+eng';
-  }
-  const base = normalizeLangBase(value);
-  if (base === 'es') return 'spa';
-  if (base === 'en') return 'eng';
-  return 'eng';
-}
-
 function ensurePathExists(targetPath) {
   try {
     return fs.existsSync(targetPath);
   } catch {
     return false;
   }
+}
+
+function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
+  const requested = String(rawLang || '').trim();
+  const tesseractLang = mapUiLanguageToTesseract(requested);
+  if (!tesseractLang) {
+    return fail('OCR_LANG_UNSUPPORTED', 'Requested OCR language is not supported.', {
+      language: requested,
+    });
+  }
+
+  const requiredCodes = getRequiredTesseractCodes(tesseractLang);
+  const missingCodes = requiredCodes.filter((code) => {
+    const trainedDataPath = path.join(tessdataPath, `${code}.traineddata`);
+    return !ensurePathExists(trainedDataPath);
+  });
+  if (missingCodes.length > 0) {
+    return fail('OCR_LANG_UNAVAILABLE', 'Requested OCR language data is not installed.', {
+      language: requested,
+      tesseractLang,
+      missingCodes,
+    });
+  }
+
+  return {
+    ok: true,
+    tesseractLang,
+  };
 }
 
 function readProcessStreams(child, maxStdoutChars = 2_000_000, maxStderrChars = 200_000) {
@@ -281,9 +293,10 @@ async function runImageOcr(session, sidecar, options = {}) {
 
   const timeoutPerPageSec = clampInt(options.timeoutPerPageSec, 30, 600, 90);
   const timeoutMs = timeoutPerPageSec * 1000;
-  const tesseractLang = mapToTesseractLang(
-    options.ocrLanguage || options.ocrLang || options.languageTag || options.lang || ''
-  );
+  const requestedLang = options.ocrLanguage || options.ocrLang || options.languageTag || options.lang || '';
+  const langRes = resolveAndValidateOcrLanguage(requestedLang, sidecar.tessdataPath);
+  if (!langRes.ok) return langRes;
+  const { tesseractLang } = langRes;
 
   safeInvoke(options.onStage, 'ocr');
   safeInvoke(options.onProgress, {
@@ -357,9 +370,10 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
   const dpi = clampInt(options.dpi, 150, 600, 300);
   const timeoutPerPageSec = clampInt(options.timeoutPerPageSec, 30, 600, 90);
   const timeoutPerPageMs = timeoutPerPageSec * 1000;
-  const tesseractLang = mapToTesseractLang(
-    options.ocrLanguage || options.ocrLang || options.languageTag || options.lang || ''
-  );
+  const requestedLang = options.ocrLanguage || options.ocrLang || options.languageTag || options.lang || '';
+  const langRes = resolveAndValidateOcrLanguage(requestedLang, sidecar.tessdataPath);
+  if (!langRes.ok) return langRes;
+  const { tesseractLang } = langRes;
 
   const tempDir = createJobTempDir('tot-ocr-pdf-');
   const prefixBase = 'page';

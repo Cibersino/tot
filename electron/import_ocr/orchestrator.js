@@ -17,6 +17,7 @@ const Log = require('../log');
 const settingsState = require('../settings');
 const { validateRegistry } = require('./platform/profile_registry');
 const { validateSidecarRuntime } = require('./platform/resolve_sidecar');
+const { buildAvailableUiLanguages } = require('./language_policy');
 const { runPhaseAExtraction } = require('./extract_phase_a');
 const { runOcrPipeline } = require('./ocr_pipeline');
 const { terminateWithEscalation } = require('./platform/process_control');
@@ -225,6 +226,32 @@ function persistLastImportDir(filePath) {
   }
 }
 
+function listInstalledTessdataLanguages(tessdataPath) {
+  const dirPath = String(tessdataPath || '').trim();
+  if (!dirPath) return [];
+  try {
+    const st = fs.statSync(dirPath);
+    if (!st.isDirectory()) return [];
+  } catch {
+    return [];
+  }
+  try {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    const codes = [];
+    entries.forEach((entry) => {
+      if (!entry || !entry.isFile()) return;
+      const name = String(entry.name || '').trim().toLowerCase();
+      if (!name.endsWith('.traineddata')) return;
+      const code = name.slice(0, -'.traineddata'.length).trim();
+      if (!code) return;
+      codes.push(code);
+    });
+    return Array.from(new Set(codes));
+  } catch {
+    return [];
+  }
+}
+
 function getFileKindByExtension(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === '.txt') return 'txt';
@@ -338,6 +365,41 @@ function ensureOcrRuntimeReady() {
     profileKey: runtime.profileKey,
     source: runtime.source,
     sidecarBaseDir: runtime.sidecarBaseDir,
+    tessdataPath: runtime.tessdataPath,
+    requiredLanguages: Array.isArray(runtime.requiredLanguages) ? runtime.requiredLanguages : [],
+  };
+}
+
+function getOcrLanguageCapabilities() {
+  const registryReady = ensureProfileRegistryReady();
+  if (!registryReady.ok) {
+    return fail(
+      'OCR_PLATFORM_PROFILE_INVALID',
+      'OCR platform profile registry is invalid.',
+      { errors: registryReady.errors.slice(0, 10) }
+    );
+  }
+
+  const runtimeReady = ensureOcrRuntimeReady();
+  if (!runtimeReady.ok) return runtimeReady;
+
+  const installedTesseractLanguages = listInstalledTessdataLanguages(runtimeReady.tessdataPath);
+  const availableUiLanguages = buildAvailableUiLanguages(installedTesseractLanguages);
+  if (!availableUiLanguages.length) {
+    return fail('OCR_LANG_UNAVAILABLE', 'No supported OCR language data is installed.', {
+      profileKey: runtimeReady.profileKey,
+      installedTesseractLanguages,
+    });
+  }
+
+  return {
+    ok: true,
+    profileKey: runtimeReady.profileKey,
+    source: runtimeReady.source,
+    sidecarBaseDir: runtimeReady.sidecarBaseDir,
+    tessdataPath: runtimeReady.tessdataPath,
+    installedTesseractLanguages,
+    availableUiLanguages,
   };
 }
 
@@ -807,6 +869,26 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
       return fail('UNAUTHORIZED', 'unauthorized');
     }
     return Object.assign({ ok: true }, getOcrLockState());
+  });
+
+  ipcMain.handle('import-get-ocr-languages', async (event) => {
+    const unauthorized = ensureMainSender(event, 'import-get-ocr-languages');
+    if (unauthorized) return unauthorized;
+
+    const blocked = guardIpcWhileLocked(event, {
+      channel: 'import-get-ocr-languages',
+      mainWindowOnly: true,
+    });
+    if (blocked) return blocked;
+
+    const caps = getOcrLanguageCapabilities();
+    if (!caps.ok) return caps;
+    return {
+      ok: true,
+      availableUiLanguages: caps.availableUiLanguages,
+      installedTesseractLanguages: caps.installedTesseractLanguages,
+      profileKey: caps.profileKey,
+    };
   });
 
   ipcMain.handle('import-select-file', async (event) => {
