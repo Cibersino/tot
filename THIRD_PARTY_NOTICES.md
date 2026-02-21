@@ -33,6 +33,7 @@ This file lists the primary third-party components redistributed with the app ru
 
 * Components: `eng.traineddata`, `spa.traineddata`.
 * Upstream project: https://github.com/tesseract-ocr/tessdata
+* Source reference (Windows package used in current setup): https://github.com/tesseract-ocr/tesseract/releases/download/5.5.0/tesseract-ocr-w64-setup-5.5.0.20241111.exe (traineddata extracted from this package in current setup).
 * Primary upstream license: Apache License 2.0.
 * Local license text in this repository:
   * `third_party_licenses/tesseract/TESSERACT_INSTALLER_LICENSE.txt` (used because these traineddata files were extracted from the same Tesseract installer package source).
