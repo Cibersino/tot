@@ -37,7 +37,8 @@ tot/
 │ ├── releases/                    # {con subcarpetas por release con docs de chequeo}
 │ │ ├── release_checklist.md
 │ │ ├── security_baseline.md
-│ │ └── legal_baseline.md
+│ │ ├── legal_baseline.md
+│ │ └── ocr_sidecar_runtime_guidance.md
 │ ├── changelog_detailed.md
 │ ├── test_suite.md
 │ └── tree_folders_files.md
@@ -70,6 +71,12 @@ tot/
 │ └── log.js
 ├── i18n/                          # {subcarpetas por idioma y variantes regionales}
 │ └── languages.json
+├── ocr/                           # {sidecars OCR por target; se empaqueta fuera de app.asar}
+│ ├── win32-x64/
+│ ├── linux-x64/
+│ ├── darwin-x64/
+│ ├── darwin-arm64/
+│ └── README.md
 ├── public/
 │ ├── assets/
 │ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
@@ -132,6 +139,7 @@ tot/
 ├── CHANGELOG.md
 ├── PRIVACY.md
 ├── README.md
+├── THIRD_PARTY_NOTICES.md
 └── LICENSE
 ```
 
@@ -231,9 +239,11 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 ### 6) Documentación y operación del repo
 
 - `docs/releases/release_checklist.md` — Checklist mecánico de release (fuentes de verdad, changelog, consistencia).
+- `docs/releases/ocr_sidecar_runtime_guidance.md` — Guía operativa para advertencias OS esperables al ejecutar OCR sidecars en artefactos MVP.
 - `docs/releases/<version>/` — Baselines y checklists versionados por release.
 - `docs/changelog_detailed.md` — Changelog detallado (técnico/narrativo; post-0.0.930 con formato mecánico).
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
+- `THIRD_PARTY_NOTICES.md` — Referencias de origen/licencia para componentes redistribuidos de terceros (incluyendo sidecars OCR).
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
 - `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, etc.).
 

@@ -55,6 +55,8 @@
 Notas:
 * Este es un **build portable** (sin instalador).
 * El estado/configuración se almacena localmente en `app.getPath('userData')/config` (sin dependencia de servicios en la nube).
+* OCR usa binarios sidecar locales (`tesseract` + `pdftoppm`); en MVP pueden aparecer advertencias del sistema operativo.
+* Guía de advertencias/allow por OS: [`docs/releases/ocr_sidecar_runtime_guidance.md`](docs/releases/ocr_sidecar_runtime_guidance.md).
 
 ---
 
@@ -127,11 +129,13 @@ Esto es solo para desarrollo: en builds empaquetados no se muestra el menú “D
 ## Documentación
 
 * Checklist del proceso de release: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
+* Guía de runtime OCR (advertencias OS y flujo recomendado): [`docs/releases/ocr_sidecar_runtime_guidance.md`](docs/releases/ocr_sidecar_runtime_guidance.md)
 * Suite de pruebas manuales: [`docs/test_suite.md`](docs/test_suite.md)
 * Changelog (corto): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detallado): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Estructura del repo / archivos clave: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
 * Política de privacidad (offline): [`PRIVACY.md`](PRIVACY.md)
+* Avisos de terceros redistribuidos: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 
 ---
 
@@ -207,6 +211,8 @@ Notes:
 
 * This is a **portable build** (no installer).
 * User settings/state are stored locally in `app.getPath('userData')/config` (no cloud service dependency).
+* OCR uses local sidecar binaries (`tesseract` + `pdftoppm`); in MVP, OS trust warnings may appear.
+* OS warning/allow guidance: [`docs/releases/ocr_sidecar_runtime_guidance.md`](docs/releases/ocr_sidecar_runtime_guidance.md).
 
 ---
 
@@ -279,11 +285,13 @@ This is development-only: in packaged builds the “Development” menu is hidde
 ## Documentation
 
 * Release process checklist: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
+* OCR runtime guidance (OS warnings and recommended flow): [`docs/releases/ocr_sidecar_runtime_guidance.md`](docs/releases/ocr_sidecar_runtime_guidance.md)
 * Manual test suite: [`docs/test_suite.md`](docs/test_suite.md)
 * Changelog (short): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detailed): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Repo structure / key files: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
 * Privacy policy (offline): [`PRIVACY.md`](PRIVACY.md)
+* Redistributed third-party notices: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 
 ---
 

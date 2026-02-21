@@ -25,3 +25,4 @@ Notes:
 
 * The app does not use system `PATH` for OCR sidecars.
 * Missing sidecars/language data produce explicit OCR errors (`OCR_BINARY_MISSING`).
+* Sidecar source/license references are tracked in `THIRD_PARTY_NOTICES.md`.

@@ -99,6 +99,11 @@ Checklist:
   * `Baskervville` — `public/fonts/LICENSE_Baskervville_OFL.txt`
   * Otras (si existen): `<FontName> — <ruta licencia/notice>`
 * [PENDING] Assets redistribuidos de terceros inventariados (si todo es propio, declararlo explícitamente).
+* [PENDING] Sidecars OCR redistribuidos inventariados con trazabilidad mínima:
+  * `tesseract` (binario + runtime libs)
+  * `pdftoppm` / Poppler (binario + runtime libs)
+  * `tessdata` (`eng`, `spa`)
+  * Referencias de origen (release upstream) registradas en `THIRD_PARTY_NOTICES.md`.
 * [PENDING] Runtime notices obligatorios inventariados:
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
@@ -143,10 +148,11 @@ Checklist:
 * [PENDING] Lista efectiva de documentos legales que deben incluirse en artefacto:
   * `LICENSE`
   * `PRIVACY.md`
+  * `THIRD_PARTY_NOTICES.md` (obligatorio cuando se distribuyen sidecars OCR)
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
   * Licencias/notices de fonts redistribuidas (ej. `public/fonts/LICENSE_Baskervville_OFL.txt`)
-  * Notices adicionales si aplica (ej. `THIRD_PARTY_NOTICES.md`)
+  * Notices/licencias adicionales de sidecars OCR si el paquete upstream las provee como archivos separados.
 * [PENDING] `public/info/acerca_de.html` (u otra UI equivalente) es consistente con el inventario legal anterior.
 * [PENDING] Configuración de empaquetado usa allowlist/excludes coherentes para no arrastrar material no distribuible.
 * [PENDING] Confirmar ausencia de `tools_local/`, backups, dumps, `.env` y secretos en lo que se planea distribuir.

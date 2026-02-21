@@ -51,6 +51,8 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 * [ ] `README.md`: verificar que no quede desactualizado.
 * [ ] `public/info/instrucciones.*.html`: verificar que no queden desactualizados.
 * [ ] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
+* [ ] `docs/releases/ocr_sidecar_runtime_guidance.md`: verificar coherencia de la guía de advertencias OS (SmartScreen/Gatekeeper) para sidecars OCR.
+* [ ] `THIRD_PARTY_NOTICES.md`: actualizar referencias de origen/licencia de sidecars OCR (`tesseract`, `pdftoppm`, `tessdata`) usadas en el release.
 
 ## 3. Alinear la versión (freeze justo antes del empaquetado)
 
@@ -83,6 +85,9 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
   * [ ] Ship Gate: completado y en `PASS` (inventarios + documentos requeridos).
   * [ ] Post-packaging Gate: ejecutado sobre el artefacto final y en `PASS` (contenido, deps runtime, docs, servicios).
   * [ ] Si queda `PENDING` o `BLOCKER`: no publicar.
+* [ ] Confirmar en release notes:
+  * [ ] enlace a `docs/releases/ocr_sidecar_runtime_guidance.md` (advertencias OS esperables en MVP sin firma/notarización pagada).
+  * [ ] referencia a `THIRD_PARTY_NOTICES.md` para sidecars OCR y fuentes upstream.
 
 ## 7. Manual test gate (sobre el build empaquetado)
 

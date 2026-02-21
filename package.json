@@ -45,7 +45,8 @@
       "public/**",
       "i18n/**",
       "LICENSE",
-      "PRIVACY.md"
+      "PRIVACY.md",
+      "THIRD_PARTY_NOTICES.md"
     ],
     "win": {
       "icon": "public/assets/logo-cibersino.ico",
