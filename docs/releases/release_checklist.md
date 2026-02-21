@@ -7,6 +7,7 @@ Tag objetivo (GitHub): `v<MAJOR.MINOR.PATCH>`
 Commit freeze (Git): `<SHA_COMMIT>`
 Artefacto inspeccionado: `<ZIP/INSTALLER>`
 SHA256(artefacto): `<SHA256>`
+Plataformas objetivo del release (scope): `<platform-arch,...>`
 
 ## 0. Regla de versión (SemVer)
 * Desde `0.1.0` en adelante, usar SemVer estricto: `MAJOR.MINOR.PATCH`.
@@ -52,6 +53,7 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 * [ ] `public/info/instrucciones.*.html`: verificar que no queden desactualizados.
 * [ ] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
 * [ ] `docs/releases/ocr_sidecar_runtime_guidance.md`: verificar coherencia de la guía de advertencias OS (SmartScreen/Gatekeeper) para sidecars OCR.
+* [ ] Si OCR sidecars aplica a las plataformas objetivo de este release: preparar/actualizar `docs/releases/ocr_cross_target_smoke_matrix.md`.
 * [ ] `THIRD_PARTY_NOTICES.md`: actualizar referencias de origen/licencia de sidecars OCR (`tesseract`, `pdftoppm`, `tessdata`) usadas en el release.
 * [ ] `third_party_licenses/**`: verificar que los archivos referenciados por `THIRD_PARTY_NOTICES.md` existen y coinciden con el bundle del release.
 
@@ -68,6 +70,7 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 
 ## 4. Packaging (generar artefacto final)
 
+* [ ] Confirmar explícitamente que este release aplica solo a las plataformas objetivo declaradas arriba.
 * [ ] Generar el artefacto final (ZIP/installer) desde el estado freeze.
 * [ ] Registrar identificador del artefacto final:
   * Nombre exacto: `<TBD>`
@@ -94,6 +97,8 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 
 * [ ] Corre **Release smoke** desde `docs/test_suite.md` (SM-01 … SM-10) y registra resultados (Pass/Fail + notes + issue links).
 * [ ] Si hay cambios de alto riesgo, corre **Full regression** desde `docs/test_suite.md`.
+* [ ] Si OCR sidecars aplica en este release: ejecutar la matriz OCR para las plataformas objetivo declaradas (`docs/releases/ocr_cross_target_smoke_matrix.md`).
+* [ ] No validar plataformas fuera del scope declarado del release, salvo decisión explícita.
 
 ## 8. Publicación (GitHub tag + release + cierre)
 
@@ -111,6 +116,7 @@ Guardar la documentación específica del release en `docs/releases/<X.Y.Z>/`.
   * [ ] `docs/releases/<X.Y.Z>/release_checklist_<X_Y_Z>.md`
   * [ ] `docs/releases/<X.Y.Z>/security_baseline_<X_Y_Z>.md`
   * [ ] `docs/releases/<X.Y.Z>/legal_baseline_<X_Y_Z>.md`
-* [ ] En los 3 docs registrar: `tag vX.Y.Z`, `SHA commit freeze`, nombre del artefacto, `SHA256` del artefacto.
+  * [ ] `docs/releases/<X.Y.Z>/ocr_cross_target_smoke_matrix_<X_Y_Z>.md` (si OCR sidecars aplica en ese release)
+* [ ] En los docs aplicables registrar: `tag vX.Y.Z`, `SHA commit freeze`, nombre del artefacto, `SHA256` del artefacto.
 
 * [ ] Commits en rama (no `main`) + PR + merge a `main`.

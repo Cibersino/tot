@@ -38,7 +38,8 @@ tot/
 │ │ ├── release_checklist.md
 │ │ ├── security_baseline.md
 │ │ ├── legal_baseline.md
-│ │ └── ocr_sidecar_runtime_guidance.md
+│ │ ├── ocr_sidecar_runtime_guidance.md
+│ │ └── ocr_cross_target_smoke_matrix.md
 │ ├── changelog_detailed.md
 │ ├── test_suite.md
 │ └── tree_folders_files.md
@@ -252,6 +253,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `docs/releases/release_checklist.md` — Checklist mecánico de release (fuentes de verdad, changelog, consistencia).
 - `docs/releases/ocr_sidecar_runtime_guidance.md` — Guía operativa para advertencias OS esperables al ejecutar OCR sidecars en artefactos MVP.
+- `docs/releases/ocr_cross_target_smoke_matrix.md` — Matriz operativa cross-target para validar OCR sidecar (éxito/cancelación/fallo explícito) por artefacto.
 - `docs/releases/<version>/` — Baselines y checklists versionados por release.
 - `docs/changelog_detailed.md` — Changelog detallado (técnico/narrativo; post-0.0.930 con formato mecánico).
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
