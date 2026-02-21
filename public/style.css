@@ -604,6 +604,7 @@ select#presets {
 .import-apply-actions {
   margin-top: 10px;
   display: flex;
+  justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
 }
