@@ -3,7 +3,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const iconv = require('iconv-lite');
 
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
@@ -37,14 +36,26 @@ function decodeTextBuffer(buffer, options = {}) {
   const preferredEncoding = typeof options.textEncoding === 'string'
     ? options.textEncoding.trim().toLowerCase()
     : '';
+  const needsLegacyDecoder = !!(preferredEncoding && preferredEncoding !== 'utf8' && preferredEncoding !== 'utf-8');
+  const iconv = needsLegacyDecoder ? loadIconvLite() : null;
 
-  if (preferredEncoding && !iconv.encodingExists(preferredEncoding)) {
+  if (needsLegacyDecoder && !iconv) {
+    return fail(
+      'IMPORT_TEXT_DECODE_FAILED',
+      'Legacy text decoding dependency is unavailable for selected encoding.',
+      {
+        encoding: preferredEncoding,
+      }
+    );
+  }
+
+  if (needsLegacyDecoder && !iconv.encodingExists(preferredEncoding)) {
     return fail('IMPORT_TEXT_ENCODING_UNSUPPORTED', 'Requested text encoding is not supported.', {
       encoding: preferredEncoding,
     });
   }
 
-  if (preferredEncoding && preferredEncoding !== 'utf8' && preferredEncoding !== 'utf-8') {
+  if (needsLegacyDecoder) {
     try {
       const decoded = iconv.decode(buffer, preferredEncoding);
       return { ok: true, text: normalizeLineEndings(decoded), encoding: preferredEncoding };
@@ -76,6 +87,15 @@ function loadMammoth() {
   try {
     // Optional dependency in local/offline environments.
     return require('mammoth');
+  } catch {
+    return null;
+  }
+}
+
+function loadIconvLite() {
+  try {
+    // Optional dependency for legacy text encodings.
+    return require('iconv-lite');
   } catch {
     return null;
   }
