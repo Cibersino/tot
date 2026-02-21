@@ -378,71 +378,87 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
   return api[methodName].bind(api);
 }
 
-function showImportDialogMessage(message) {
-  const text = String(message || '').trim();
-  if (!text) return;
+function showImportDialogMessage(keyPath) {
+  const key = String(keyPath || '').trim();
+  if (!key) return;
   try {
     if (typeof window.Notify?.notifyMain === 'function') {
-      window.Notify.notifyMain(text);
+      window.Notify.notifyMain(key);
       return;
     }
     log.warnOnce(
       'renderer.notifyMain.unavailable.import_dialog',
       'Notify.notifyMain unavailable; falling back to window.alert for import message.'
     );
-    window.alert(text);
+    const fallbackText = (
+      window.RendererI18n
+      && typeof window.RendererI18n.msgRenderer === 'function'
+    )
+      ? window.RendererI18n.msgRenderer(key, {}, key)
+      : key;
+    window.alert(fallbackText);
   } catch (err) {
     log.warn('Unable to show import dialog message:', err);
   }
 }
 
+const IMPORT_ERROR_MESSAGE_KEYS = Object.freeze({
+  IMPORT_DEP_MISSING_MAMMOTH: 'renderer.alerts.import_dep_missing_mammoth',
+  IMPORT_DEP_MISSING_PDFJS: 'renderer.alerts.import_dep_missing_pdfjs',
+  IMPORT_TEXT_DECODE_FAILED: 'renderer.alerts.import_decode_failed',
+  IMPORT_TEXT_ENCODING_UNSUPPORTED: 'renderer.alerts.import_decode_failed',
+  IMPORT_TEXT_BINARY_DETECTED: 'renderer.alerts.import_text_binary_detected',
+  IMPORT_SIGNATURE_MISMATCH: 'renderer.alerts.import_signature_mismatch',
+  IMPORT_UNSUPPORTED_FORMAT: 'renderer.alerts.import_unsupported_format',
+  IMPORT_UNSUPPORTED_KIND: 'renderer.alerts.import_unsupported_format',
+  IMPORT_READ_FAILED: 'renderer.alerts.import_read_failed',
+  IMPORT_DOCX_EXTRACT_FAILED: 'renderer.alerts.import_read_failed',
+  IMPORT_PDF_EXTRACT_FAILED: 'renderer.alerts.import_read_failed',
+  IMPORT_INVALID_PATH: 'renderer.alerts.import_invalid_path',
+  IMPORT_INVALID_SESSION: 'renderer.alerts.import_invalid_path',
+  IMPORT_INVALID_PAYLOAD: 'renderer.alerts.import_invalid_payload',
+  IMPORT_SESSION_NOT_FOUND: 'renderer.alerts.import_session_not_found',
+  IMPORT_NOT_READY_TO_APPLY: 'renderer.alerts.import_not_ready_to_apply',
+  IMPORT_APPLY_UNAVAILABLE: 'renderer.alerts.import_apply_unavailable',
+  IMPORT_BUSY: 'renderer.alerts.import_busy',
+  IMPORT_EXEC_FAILED: 'renderer.alerts.import_failed_generic',
+  OCR_UNAVAILABLE_PLATFORM: 'renderer.alerts.import_ocr_unavailable_platform',
+  OCR_PLATFORM_PROFILE_INVALID: 'renderer.alerts.import_ocr_unavailable_platform',
+  OCR_BINARY_MISSING: 'renderer.alerts.import_ocr_binary_missing',
+  OCR_RUNTIME_PATH_INVALID: 'renderer.alerts.import_ocr_binary_missing',
+  OCR_RUNTIME_NOT_VALIDATED: 'renderer.alerts.import_ocr_binary_missing',
+  OCR_EXEC_FAILED: 'renderer.alerts.import_ocr_exec_failed',
+  OCR_PROCESS_INVALID: 'renderer.alerts.import_ocr_exec_failed',
+  OCR_PROCESS_TERMINATE_FAILED: 'renderer.alerts.import_ocr_exec_failed',
+  OCR_PROCESS_KILL_FAILED: 'renderer.alerts.import_ocr_exec_failed',
+  OCR_RASTER_FAILED: 'renderer.alerts.import_ocr_raster_failed',
+  OCR_TIMEOUT_PAGE: 'renderer.alerts.import_ocr_timeout_page',
+  OCR_TIMEOUT_JOB: 'renderer.alerts.import_ocr_timeout_job',
+  OCR_EMPTY_RESULT: 'renderer.alerts.import_ocr_empty_result',
+  OCR_NOT_RUNNING: 'renderer.alerts.import_ocr_not_running',
+  OCR_CANCELED: 'renderer.alerts.import_ocr_canceled',
+  OCR_CANCEL_KILL_TIMEOUT: 'renderer.alerts.import_ocr_cancel_timeout',
+  IMPORT_PDF_NO_TEXT_LAYER: 'renderer.alerts.import_pdf_no_text_layer',
+});
+
 function humanizeImportError(res) {
   const code = res && typeof res.code === 'string' ? res.code : '';
-  if (code === 'IMPORT_DEP_MISSING_MAMMOTH') {
-    return 'DOCX import dependency is missing in this build.';
-  }
-  if (code === 'IMPORT_DEP_MISSING_PDFJS') {
-    return 'PDF import dependency is missing in this build.';
-  }
-  if (code === 'IMPORT_TEXT_DECODE_FAILED') {
-    return 'Text decoding failed. Choose a compatible encoding (feature pending).';
-  }
-  if (code === 'IMPORT_SIGNATURE_MISMATCH') {
-    return 'Selected file content does not match the file extension.';
-  }
-  if (code === 'OCR_UNAVAILABLE_PLATFORM' || code === 'OCR_PLATFORM_PROFILE_INVALID') {
-    return 'OCR is not available for this platform build.';
-  }
-  if (code === 'OCR_TIMEOUT_PAGE') {
-    return 'OCR timed out for this page/image.';
-  }
-  if (code === 'OCR_TIMEOUT_JOB') {
-    return 'OCR timed out before completing the full document.';
-  }
-  if (code === 'OCR_RASTER_FAILED') {
-    return 'PDF rasterization failed before OCR.';
-  }
-  if (code === 'OCR_EMPTY_RESULT') {
-    return 'OCR completed but no text was detected.';
-  }
-  if (code === 'OCR_CANCELED') {
-    return 'OCR was canceled.';
-  }
-  if (code === 'OCR_CANCEL_KILL_TIMEOUT') {
-    return 'OCR cancel requested, but process did not stop in time.';
-  }
-  if (code === 'IMPORT_PDF_NO_TEXT_LAYER') {
-    return 'PDF has no selectable text layer; OCR flow is required.';
-  }
+  const mappedKey = IMPORT_ERROR_MESSAGE_KEYS[code];
+  if (mappedKey) return mappedKey;
   if (code === 'OCR_LOCKED') {
     return '';
   }
   if (code === 'CANCELLED') {
     return '';
   }
-  const message = res && typeof res.message === 'string' ? res.message : '';
-  if (message) return message;
-  return code ? `Import failed (${code}).` : 'Import failed.';
+  if (code) {
+    log.warnOnce(
+      `renderer.import_error.unmapped.${code}`,
+      'Unmapped import/OCR error code; using generic key:',
+      code
+    );
+  }
+  return 'renderer.alerts.import_failed_generic';
 }
 
 async function discardImportSession(sessionId) {
@@ -511,7 +527,7 @@ async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
     return true;
   } catch (err) {
     log.error('Error requesting scanned-PDF OCR fallback:', err);
-    showImportDialogMessage('Failed to start OCR for scanned PDF.');
+    showImportDialogMessage('renderer.alerts.import_scanned_pdf_ocr_start_failed');
     await discardImportSession(sessionId);
     return true;
   }
@@ -538,7 +554,7 @@ async function handleImportFinished(payload) {
   }
 
   if (!sessionId) {
-    showImportDialogMessage('Import completed but session mapping was not found.');
+    showImportDialogMessage('renderer.alerts.import_session_mapping_missing');
     return;
   }
 
@@ -569,11 +585,11 @@ async function handleImportFinished(payload) {
       return;
     }
     if (applyRes.truncated) {
-      showImportDialogMessage('Imported text exceeded maximum size and was truncated.');
+      showImportDialogMessage('renderer.alerts.import_truncated');
     }
   } catch (err) {
     log.error('Error applying import session:', err);
-    showImportDialogMessage('Failed to apply imported text.');
+    showImportDialogMessage('renderer.alerts.import_apply_failed');
   }
 }
 
@@ -1815,7 +1831,7 @@ if (btnImportExtract) {
         unavailableMessage: 'importSelectFile unavailable; import action skipped.'
       });
       if (!importSelectFile) {
-        showImportDialogMessage('Import feature is unavailable in this environment.');
+        showImportDialogMessage('renderer.alerts.import_unavailable');
         return;
       }
 
@@ -1866,7 +1882,7 @@ if (btnImportExtract) {
       }
     } catch (err) {
       log.error('Error in import flow:', err);
-      showImportDialogMessage('Import failed unexpectedly.');
+      showImportDialogMessage('renderer.alerts.import_unexpected');
     }
   });
 }
@@ -1887,7 +1903,7 @@ if (btnCancelOcr) {
       }
     } catch (err) {
       log.error('Error requesting OCR cancel:', err);
-      showImportDialogMessage('Failed to request OCR cancel.');
+      showImportDialogMessage('renderer.alerts.import_cancel_request_failed');
     }
   });
 }
