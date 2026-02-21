@@ -416,6 +416,12 @@ function humanizeImportError(res) {
   if (code === 'OCR_TIMEOUT_PAGE') {
     return 'OCR timed out for this page/image.';
   }
+  if (code === 'OCR_TIMEOUT_JOB') {
+    return 'OCR timed out before completing the full document.';
+  }
+  if (code === 'OCR_RASTER_FAILED') {
+    return 'PDF rasterization failed before OCR.';
+  }
   if (code === 'OCR_EMPTY_RESULT') {
     return 'OCR completed but no text was detected.';
   }
@@ -452,6 +458,65 @@ async function discardImportSession(sessionId) {
   }
 }
 
+async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
+  if (!sessionId) return false;
+
+  const p = payload && typeof payload === 'object' ? payload : {};
+  const summary = p.summary && typeof p.summary === 'object' ? p.summary : {};
+  const pageCountHint = Number.isFinite(Number(summary.pagesTotal))
+    ? Math.max(1, Math.floor(Number(summary.pagesTotal)))
+    : 1;
+
+  const warningMsg = humanizeImportError(p);
+  if (warningMsg) showImportDialogMessage(warningMsg);
+
+  const ocrOptsRes = await promptOcrOptionsDialog({
+    kind: 'pdf',
+    filename: String(summary.filename || ''),
+    pageCountHint,
+  });
+  if (!ocrOptsRes || ocrOptsRes.confirmed !== true) {
+    await discardImportSession(sessionId);
+    return true;
+  }
+
+  const importRun = getOptionalElectronMethod('importRun', {
+    dedupeKey: 'renderer.ipc.importRun.unavailable',
+    unavailableMessage: 'importRun unavailable; PDF OCR fallback execution skipped.'
+  });
+  if (!importRun) {
+    await discardImportSession(sessionId);
+    return true;
+  }
+
+  try {
+    const rerunRes = await importRun({
+      sessionId,
+      options: Object.assign(
+        {},
+        getDefaultImportRunOptions(),
+        ocrOptsRes.options || {},
+        { forcePdfOcr: true }
+      ),
+    });
+    if (!rerunRes || rerunRes.ok !== true || !rerunRes.jobId) {
+      const message = humanizeImportError(rerunRes);
+      if (message) showImportDialogMessage(message);
+      await discardImportSession(sessionId);
+      return true;
+    }
+
+    importJobSessionMap.set(String(rerunRes.jobId), String(sessionId));
+    noteQueuedOcrJob(String(rerunRes.jobId));
+    return true;
+  } catch (err) {
+    log.error('Error requesting scanned-PDF OCR fallback:', err);
+    showImportDialogMessage('Failed to start OCR for scanned PDF.');
+    await discardImportSession(sessionId);
+    return true;
+  }
+}
+
 async function handleImportFinished(payload) {
   const p = payload && typeof payload === 'object' ? payload : {};
   const jobId = typeof p.jobId === 'string' ? p.jobId : '';
@@ -462,6 +527,10 @@ async function handleImportFinished(payload) {
   }
 
   if (!p.ok) {
+    if (String(p.code || '') === 'IMPORT_PDF_NO_TEXT_LAYER' && sessionId) {
+      const handled = await handlePdfProbeNoTextFallback(sessionId, p);
+      if (handled) return;
+    }
     const message = humanizeImportError(p);
     if (message) showImportDialogMessage(message);
     if (sessionId) await discardImportSession(sessionId);

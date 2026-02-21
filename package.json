@@ -30,6 +30,15 @@
       "output": "build-output",
       "buildResources": "public/assets"
     },
+    "extraResources": [
+      {
+        "from": "ocr",
+        "to": "ocr",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "files": [
       "package.json",
       "electron/**",

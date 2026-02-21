@@ -15,7 +15,7 @@ const path = require('path');
 const { BrowserWindow, dialog } = require('electron');
 const Log = require('../log');
 const { validateRegistry } = require('./platform/profile_registry');
-const { resolveCurrentProfile } = require('./platform/resolve_sidecar');
+const { validateSidecarRuntime } = require('./platform/resolve_sidecar');
 const { runPhaseAExtraction } = require('./extract_phase_a');
 const { runOcrPipeline } = require('./ocr_pipeline');
 const { terminateWithEscalation } = require('./platform/process_control');
@@ -44,6 +44,11 @@ let profileRegistryStatus = {
   ok: true,
   errors: [],
   profileCount: 0,
+};
+let sidecarRuntimeStatus = {
+  ok: false,
+  code: 'OCR_RUNTIME_NOT_VALIDATED',
+  message: 'OCR sidecar runtime not validated yet.',
 };
 
 const sessions = new Map();
@@ -252,16 +257,26 @@ function ensureProfileRegistryReady() {
   return profileRegistryStatus;
 }
 
-function ensurePlatformSupported() {
-  const profileRes = resolveCurrentProfile();
-  if (!profileRes.ok) {
+function refreshSidecarRuntimeStatus() {
+  sidecarRuntimeStatus = validateSidecarRuntime();
+  return sidecarRuntimeStatus;
+}
+
+function ensureOcrRuntimeReady() {
+  const runtime = refreshSidecarRuntimeStatus();
+  if (!runtime.ok) {
     return fail(
-      profileRes.code || 'OCR_UNAVAILABLE_PLATFORM',
-      profileRes.message || 'Current platform is not supported for OCR.',
-      profileRes
+      runtime.code || 'OCR_BINARY_MISSING',
+      runtime.message || 'OCR sidecar runtime is unavailable.',
+      runtime
     );
   }
-  return { ok: true, profileKey: profileRes.profileKey };
+  return {
+    ok: true,
+    profileKey: runtime.profileKey,
+    source: runtime.source,
+    sidecarBaseDir: runtime.sidecarBaseDir,
+  };
 }
 
 function validateSelectedFile(filePath) {
@@ -329,12 +344,19 @@ function createSession({ filePath, filename, kind, route }) {
 
 function createJob(session, options = {}) {
   const jobId = makeId('import_job');
-  const isOcrRoute = String(session.route || '').startsWith('ocr_');
+  const forcePdfOcr = !!(
+    session
+    && session.kind === 'pdf'
+    && options
+    && options.forcePdfOcr === true
+  );
+  const resolvedRoute = forcePdfOcr ? 'ocr_pdf_scanned' : String(session.route || '');
+  const isOcrRoute = resolvedRoute.startsWith('ocr_');
   const job = {
     jobId,
     sessionId: session.sessionId,
     kind: isOcrRoute ? 'ocr' : 'extract',
-    route: session.route,
+    route: resolvedRoute,
     status: 'queued',
     stage: 'queued',
     createdAt: Date.now(),
@@ -348,8 +370,14 @@ function createJob(session, options = {}) {
   return job;
 }
 
-function startHeartbeat(job, { pageDone = 0, pageTotal = 0 } = {}) {
+function startHeartbeat(job, progressRef = null) {
   const timer = setInterval(() => {
+    const pageDone = progressRef && Number.isFinite(progressRef.pageDone)
+      ? Math.max(0, Math.floor(progressRef.pageDone))
+      : 0;
+    const pageTotal = progressRef && Number.isFinite(progressRef.pageTotal)
+      ? Math.max(0, Math.floor(progressRef.pageTotal))
+      : 0;
     emitImportProgress(job, {
       stage: job.stage || 'running',
       pageDone,
@@ -458,10 +486,14 @@ async function runJob(job) {
   const startedAt = Date.now();
   const isOcrJob = job.kind === 'ocr';
   job.status = 'running';
-  job.stage = isOcrJob ? 'ocr' : 'extracting';
+  job.stage = isOcrJob ? 'queued' : 'extracting';
   job.startedAt = startedAt;
   session.status = 'running';
-  emitImportProgress(job, { stage: job.stage });
+  const progressState = {
+    pageDone: 0,
+    pageTotal: 0,
+  };
+  emitImportProgress(job, { stage: job.stage, pageDone: 0, pageTotal: 0 });
   let heartbeatTimer = null;
 
   try {
@@ -469,12 +501,40 @@ async function runJob(job) {
     if (isOcrJob) {
       setOcrLockState(true, 'OCR_RUNNING');
       activeJobId = job.jobId;
-      heartbeatTimer = startHeartbeat(job, { pageDone: 0, pageTotal: 1 });
+      heartbeatTimer = startHeartbeat(job, progressState);
       extractRes = await runOcrPipeline(session, Object.assign({}, job.options || {}, {
         onChildProcess: (child) => {
           job.activeChild = child || null;
         },
         isCancelRequested: () => !!job.cancelRequested,
+        onStage: (stage) => {
+          const normalized = String(stage || '').trim().toLowerCase();
+          if (normalized) {
+            job.stage = normalized;
+          }
+          emitImportProgress(job, {
+            stage: job.stage || 'running',
+            pageDone: progressState.pageDone,
+            pageTotal: progressState.pageTotal,
+          });
+        },
+        onProgress: (progress) => {
+          const p = progress && typeof progress === 'object' ? progress : {};
+          if (typeof p.stage === 'string' && p.stage.trim()) {
+            job.stage = p.stage.trim().toLowerCase();
+          }
+          if (Number.isFinite(Number(p.pageDone))) {
+            progressState.pageDone = Math.max(0, Math.floor(Number(p.pageDone)));
+          }
+          if (Number.isFinite(Number(p.pageTotal))) {
+            progressState.pageTotal = Math.max(0, Math.floor(Number(p.pageTotal)));
+          }
+          emitImportProgress(job, {
+            stage: job.stage || 'running',
+            pageDone: progressState.pageDone,
+            pageTotal: progressState.pageTotal,
+          });
+        },
       }));
     } else {
       extractRes = await runPhaseAExtraction(session, job.options || {});
@@ -483,6 +543,9 @@ async function runJob(job) {
     if (!extractRes || extractRes.ok !== true) {
       const errRes = extractRes || fail('IMPORT_EXEC_FAILED', 'Import execution failed.');
       const isCanceled = String(errRes.code || '') === 'OCR_CANCELED';
+      const errSummary = (errRes.summary && typeof errRes.summary === 'object')
+        ? errRes.summary
+        : {};
       session.status = isCanceled ? 'canceled' : 'failed';
       job.status = isCanceled ? 'canceled' : 'failed';
       job.stage = isCanceled ? 'canceled' : 'failed';
@@ -494,8 +557,15 @@ async function runJob(job) {
         summary: {
           kind: session.kind,
           filename: session.filename,
-          extractedChars: 0,
+          pagesProcessed: Number.isFinite(errSummary.pagesProcessed)
+            ? errSummary.pagesProcessed
+            : (isOcrJob ? progressState.pageDone : 0),
+          pagesTotal: Number.isFinite(errSummary.pagesTotal)
+            ? errSummary.pagesTotal
+            : (isOcrJob ? progressState.pageTotal : 0),
+          extractedChars: Number.isFinite(errSummary.extractedChars) ? errSummary.extractedChars : 0,
           elapsedMs: Math.max(0, job.finishedAt - startedAt),
+          warnings: Array.isArray(errSummary.warnings) ? errSummary.warnings : [],
         },
       });
       return errRes;
@@ -508,17 +578,27 @@ async function runJob(job) {
       job.finishedAt = Date.now();
       const noTextRes = fail(
         'IMPORT_PDF_NO_TEXT_LAYER',
-        'PDF has no selectable text; OCR path is required.'
+        'PDF has no selectable text; OCR path is required.',
+        {
+          summary: {
+            kind: session.kind,
+            filename: session.filename,
+            pagesProcessed: Number.isFinite(extractRes.summary && extractRes.summary.pagesProcessed)
+              ? extractRes.summary.pagesProcessed
+              : 0,
+            pagesTotal: Number.isFinite(extractRes.summary && extractRes.summary.pagesTotal)
+              ? extractRes.summary.pagesTotal
+              : 0,
+            extractedChars: 0,
+            elapsedMs: Math.max(0, job.finishedAt - startedAt),
+            warnings: [],
+          },
+        }
       );
       emitImportFinished(job, {
         ok: false,
         code: noTextRes.code,
-        summary: {
-          kind: session.kind,
-          filename: session.filename,
-          extractedChars: 0,
-          elapsedMs: Math.max(0, job.finishedAt - startedAt),
-        },
+        summary: noTextRes.summary,
       });
       return noTextRes;
     }
@@ -531,8 +611,12 @@ async function runJob(job) {
     job.finishedAt = Date.now();
     emitImportProgress(job, {
       stage: 'completed',
-      pageDone: isOcrJob ? 1 : 0,
-      pageTotal: isOcrJob ? 1 : 0,
+      pageDone: Number.isFinite(session.summary && session.summary.pagesProcessed)
+        ? session.summary.pagesProcessed
+        : (isOcrJob ? 1 : 0),
+      pageTotal: Number.isFinite(session.summary && session.summary.pagesTotal)
+        ? session.summary.pagesTotal
+        : (isOcrJob ? 1 : 0),
     });
     emitImportFinished(job, { ok: true, summary: session.summary });
     return { ok: true };
@@ -642,6 +726,19 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
   }
 
   ensureProfileRegistryReady();
+  const runtimeSnapshot = refreshSidecarRuntimeStatus();
+  if (runtimeSnapshot.ok) {
+    log.info(
+      `OCR sidecar runtime ready (${runtimeSnapshot.profileKey}, ${runtimeSnapshot.source}):`,
+      runtimeSnapshot.sidecarBaseDir
+    );
+  } else {
+    log.warn(
+      'OCR sidecar runtime unavailable at startup:',
+      runtimeSnapshot.code || 'OCR_BINARY_MISSING',
+      runtimeSnapshot.message || ''
+    );
+  }
 
   ipcMain.handle('ocr-lock-get-state', (event) => {
     if (!isKnownAppSender(event)) {
@@ -681,8 +778,8 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
           { errors: registryReady.errors.slice(0, 10) }
         );
       }
-      const platformSupport = ensurePlatformSupported();
-      if (!platformSupport.ok) return platformSupport;
+      const runtimeReady = ensureOcrRuntimeReady();
+      if (!runtimeReady.ok) return runtimeReady;
     }
 
     const session = createSession(selected);
@@ -721,7 +818,23 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
       return fail('IMPORT_BUSY', 'Session already running.');
     }
 
-    const job = createJob(session, p.options || {});
+    const runOptions = (p.options && typeof p.options === 'object') ? p.options : {};
+    const wantsOcr = String(session.route || '').startsWith('ocr_')
+      || (session.kind === 'pdf' && runOptions.forcePdfOcr === true);
+    if (wantsOcr) {
+      const registryReady = ensureProfileRegistryReady();
+      if (!registryReady.ok) {
+        return fail(
+          'OCR_PLATFORM_PROFILE_INVALID',
+          'OCR platform profile registry is invalid.',
+          { errors: registryReady.errors.slice(0, 10) }
+        );
+      }
+      const runtimeReady = ensureOcrRuntimeReady();
+      if (!runtimeReady.ok) return runtimeReady;
+    }
+
+    const job = createJob(session, runOptions);
     runJob(job).catch((err) => {
       log.error('Unhandled import job error:', err);
     });

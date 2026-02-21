@@ -133,7 +133,10 @@
     const normalized = String(stage || '').toLowerCase();
     if (normalized === 'queued') return 'Queued';
     if (normalized === 'running') return 'Running';
+    if (normalized === 'extracting') return 'Extracting';
+    if (normalized === 'rasterizing') return 'Rasterizing';
     if (normalized === 'ocr') return 'OCR';
+    if (normalized === 'finalizing') return 'Finalizing';
     if (normalized === 'completed') return 'Completed';
     if (normalized === 'failed') return 'Failed';
     if (normalized === 'canceled') return 'Canceled';
@@ -717,4 +720,3 @@
     isLockActive: () => lockActive,
   };
 })();
-
