@@ -7,6 +7,7 @@
 **Scope coverage (app-level):**
 - Startup + first-run language selection
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
+- File import/extraction (`txt`, `docx`, `pdf`) + OCR routes (image + scanned PDF), including progress/cancel/apply behavior
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
 - Manual editor window (open/edit/apply semantics)
@@ -98,6 +99,16 @@ Esto es una prueba: 1,234.56 — ¿funciona?
 ### 3.2 Large text (edge-case only)
 
 Any text large enough to stress editor limits and truncation messaging (see Edge cases).
+
+### 3.3 Import/OCR sample files
+
+Prepare a small local folder with:
+
+- `sample.txt`: short multiline UTF-8 text.
+- `sample.docx`: short selectable text.
+- `sample_selectable.pdf`: PDF with selectable text layer.
+- `sample_scanned.pdf`: image-only PDF (no selectable text layer).
+- `sample_image.png` (or `.jpg`): readable text image.
 
 ---
 
@@ -230,6 +241,21 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - task editor opens
 - save/load round-trip works
 
+### SM-13 Import/OCR quick gate
+**Goal:** confirm import/OCR entry path is operational end-to-end.
+1. Click the import/extract button and select `sample.txt`.
+2. Confirm apply modal appears; choose **Overwrite**.
+3. Click import/extract again and select `sample_image.png` (or `.jpg`).
+4. In OCR options, confirm language list shows available OCR options for the target.
+5. Start OCR, wait completion, and in apply modal choose **Append**.
+
+**Expected:**
+- Import button opens file picker and routes correctly by file type.
+- Non-OCR import applies text correctly.
+- OCR options dialog opens for image route and starts without error.
+- OCR completion returns apply modal with `Overwrite` / `Append` and elapsed-time hint for OCR jobs.
+- Current text updates according to chosen apply mode.
+
 ---
 
 ## 5) Full Regression Suite (30–60 minutes)
@@ -316,6 +342,90 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Invalid values (`''`, `0`, `-3`, decimal, text) are treated as `N=1` (no crash, no broken flow).
 - Values above max are clamped to the app max (`MAX_APPEND_REPEAT` / UI max).
 - Append action still uses a single IPC write path (observable as normal success/failure behavior, not repeated dialog/error bursts).
+
+---
+
+### REG-IMPORTOCR — Import/extract + OCR flows
+
+#### REG-IMPORTOCR-01 TXT import apply modes
+**Goal:** txt import supports overwrite/append with explicit choice.
+1. Click import/extract and choose `sample.txt`.
+2. In apply modal, choose **Overwrite**.
+3. Repeat import with the same file and choose **Append**.
+
+**Expected:**
+- Overwrite replaces current text with imported content.
+- Append adds imported text using current append semantics.
+- No silent failures.
+
+#### REG-IMPORTOCR-02 DOCX import
+**Goal:** docx extraction works and applies via same apply modal.
+1. Import `sample.docx`.
+2. Choose **Overwrite** in apply modal.
+
+**Expected:**
+- Extracted text is readable and applied.
+- No OCR dialog appears for docx route.
+
+#### REG-IMPORTOCR-03 Selectable PDF import
+**Goal:** selectable PDF uses non-OCR extraction path.
+1. Import `sample_selectable.pdf`.
+2. Choose **Overwrite** in apply modal.
+
+**Expected:**
+- Text-layer extraction succeeds.
+- OCR options dialog does not appear for selectable-text PDF.
+
+#### REG-IMPORTOCR-04 Scanned PDF fallback to OCR
+**Goal:** scanned-PDF probe falls back to OCR route with explicit UI.
+1. Import `sample_scanned.pdf`.
+2. Confirm the app reports no selectable text and offers OCR fallback.
+3. Continue to OCR options and start OCR.
+4. On completion, choose **Overwrite** or **Append**.
+
+**Expected:**
+- Probe failure is explicit (no silent fallback).
+- OCR options dialog appears for scanned-PDF route.
+- OCR completion reaches apply modal and applies per selected mode.
+
+#### REG-IMPORTOCR-05 OCR options language availability
+**Goal:** OCR language selector shows only available languages.
+1. Start OCR flow with `sample_image.png` (or `.jpg`) or `sample_scanned.pdf`.
+2. Open OCR options and inspect language selector values.
+
+**Expected:**
+- Selector includes only languages that have installed `traineddata` on the tested target.
+- If current baseline data is installed, options include: `es`, `en`, `es+en`, `fr`, `de`, `it`, `pt`.
+- `arn` is not shown as an OCR option.
+
+#### REG-IMPORTOCR-06 OCR progress + cancel semantics
+**Goal:** OCR progress surface and cancel behavior are correct.
+1. Start OCR on a medium file.
+2. While running, verify progress panel shows stage, pages, elapsed, and ETA.
+3. Press **Cancel OCR**.
+
+**Expected:**
+- Progress surface updates while OCR is active.
+- Cancel stops OCR with explicit user notice.
+- Current text is not modified on cancel/failure.
+
+#### REG-IMPORTOCR-07 OCR global lock behavior
+**Goal:** non-OCR actions are blocked while OCR is running.
+1. Start OCR.
+2. While OCR is active, try main actions (overwrite/append/import/preset actions).
+
+**Expected:**
+- Non-OCR actions are blocked consistently by lock behavior.
+- Progress visibility and **Cancel OCR** remain available.
+
+#### REG-IMPORTOCR-08 OCR elapsed-time message in apply modal
+**Goal:** OCR completion message includes elapsed time in same apply modal.
+1. Complete an OCR run (image or scanned PDF).
+2. Observe the apply modal message before choosing mode.
+
+**Expected:**
+- Same apply modal is used (`Overwrite` / `Append`).
+- OCR completion message includes elapsed-time hint (no extra modal).
 
 ---
 
@@ -809,7 +919,7 @@ For each failure:
 - Observed behavior
 - Expected behavior
 - Repro steps (if different)
-- Issue link created (label: `bug`, plus area label: `i18n` / `presets` / `editor` / `updater` / `crono`)
+- Issue link created (label: `bug`, plus area label: `import-ocr` / `i18n` / `presets` / `editor` / `updater` / `crono`)
 
 ---
 
