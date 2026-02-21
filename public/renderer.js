@@ -382,6 +382,14 @@ function showImportDialogMessage(message) {
   const text = String(message || '').trim();
   if (!text) return;
   try {
+    if (typeof window.Notify?.notifyMain === 'function') {
+      window.Notify.notifyMain(text);
+      return;
+    }
+    log.warnOnce(
+      'renderer.notifyMain.unavailable.import_dialog',
+      'Notify.notifyMain unavailable; falling back to window.alert for import message.'
+    );
     window.alert(text);
   } catch (err) {
     log.warn('Unable to show import dialog message:', err);

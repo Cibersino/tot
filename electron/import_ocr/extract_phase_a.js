@@ -95,6 +95,25 @@ async function loadPdfJs() {
   }
 }
 
+function toPdfJsFactoryPath(dirPath) {
+  const raw = String(dirPath || '').trim();
+  if (!raw) return '';
+  const normalized = raw.replace(/\\/g, '/');
+  return normalized.endsWith('/') ? normalized : `${normalized}/`;
+}
+
+function resolvePdfJsStandardFontsDir() {
+  try {
+    const packageJsonPath = require.resolve('pdfjs-dist/package.json');
+    const packageDir = path.dirname(packageJsonPath);
+    const fontsDir = path.join(packageDir, 'standard_fonts');
+    if (fs.existsSync(fontsDir)) return toPdfJsFactoryPath(fontsDir);
+  } catch {
+    // no-op; fallback below
+  }
+  return '';
+}
+
 async function extractTxt(filePath, options = {}) {
   const readRes = readBuffer(filePath);
   if (!readRes.ok) return readRes;
@@ -162,10 +181,12 @@ async function extractPdf(filePath) {
   let loadingTask = null;
   try {
     const buffer = fs.readFileSync(filePath);
+    const standardFontDataUrl = resolvePdfJsStandardFontsDir();
     loadingTask = getDocument({
       data: new Uint8Array(buffer),
       disableWorker: true,
       useSystemFonts: true,
+      ...(standardFontDataUrl ? { standardFontDataUrl } : {}),
     });
     const doc = await loadingTask.promise;
     const chunks = [];
