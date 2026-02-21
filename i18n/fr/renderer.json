@@ -54,6 +54,49 @@
         "flotante_short": "FF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      },
+      "import_apply": {
+        "title": "Import terminé. Choisissez le mode d'application :",
+        "title_with_elapsed": "Import terminé. OCR terminé en {elapsed}. Choisissez le mode d'application :",
+        "overwrite": "Remplacer",
+        "append": "Ajouter",
+        "ocr_running": "OCR en cours..."
+      },
+      "ocr_options": {
+        "title": "Options OCR",
+        "context_image": "Fichier : {filename} - OCR d'image",
+        "context_pdf_scanned": "Fichier : {filename} - OCR de PDF scanné",
+        "context_generic": "Fichier : {filename}",
+        "preset_label": "Preset",
+        "language_label": "Langue",
+        "dpi_label": "DPI / qualité",
+        "timeout_label": "Timeout par page (s)",
+        "preprocess_label": "Prétraitement",
+        "preset_fast": "Rapide",
+        "preset_balanced": "Équilibré",
+        "preset_high_accuracy": "Haute précision",
+        "preset_custom": "Personnalisé",
+        "preprocess_basic": "Basique",
+        "preprocess_standard": "Standard",
+        "preprocess_aggressive": "Agressif",
+        "guidance_presets": "Rapide ~{fast}s/page · Équilibré ~{balanced}s/page · Haute précision ~{high}s/page",
+        "guidance_total": "Estimation totale : ~{total} pour {pages} page(s) (approximatif)",
+        "start": "Démarrer OCR",
+        "abort": "Annuler"
+      },
+      "import_progress": {
+        "pages": "pages",
+        "elapsed": "écoulé",
+        "eta": "ETA",
+        "stage_queued": "En file d'attente",
+        "stage_running": "En cours",
+        "stage_extracting": "Extraction",
+        "stage_rasterizing": "Rastérisation",
+        "stage_ocr": "OCR",
+        "stage_finalizing": "Finalisation",
+        "stage_completed": "Terminé",
+        "stage_failed": "Échec",
+        "stage_canceled": "Annulé"
       }
     },
     "tasks": {

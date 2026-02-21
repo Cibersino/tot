@@ -195,16 +195,16 @@
 
   function getStageLabel(stage) {
     const normalized = String(stage || '').toLowerCase();
-    if (normalized === 'queued') return 'Queued';
-    if (normalized === 'running') return 'Running';
-    if (normalized === 'extracting') return 'Extracting';
-    if (normalized === 'rasterizing') return 'Rasterizing';
-    if (normalized === 'ocr') return 'OCR';
-    if (normalized === 'finalizing') return 'Finalizing';
-    if (normalized === 'completed') return 'Completed';
-    if (normalized === 'failed') return 'Failed';
-    if (normalized === 'canceled') return 'Canceled';
-    return 'OCR';
+    if (normalized === 'queued') return t('renderer.main.import_progress.stage_queued', 'Queued');
+    if (normalized === 'running' || normalized === 'ocr_running') return t('renderer.main.import_progress.stage_running', 'Running');
+    if (normalized === 'extracting') return t('renderer.main.import_progress.stage_extracting', 'Extracting');
+    if (normalized === 'rasterizing') return t('renderer.main.import_progress.stage_rasterizing', 'Rasterizing');
+    if (normalized === 'ocr') return t('renderer.main.import_progress.stage_ocr', 'OCR');
+    if (normalized === 'finalizing') return t('renderer.main.import_progress.stage_finalizing', 'Finalizing');
+    if (normalized === 'completed') return t('renderer.main.import_progress.stage_completed', 'Completed');
+    if (normalized === 'failed') return t('renderer.main.import_progress.stage_failed', 'Failed');
+    if (normalized === 'canceled') return t('renderer.main.import_progress.stage_canceled', 'Canceled');
+    return t('renderer.main.import_progress.stage_ocr', 'OCR');
   }
 
   function resetOcrProgressState() {
@@ -237,7 +237,10 @@
 
     const etaMs = inferEtaMs(elapsedMs, safeDone, safeTotal);
     const etaLabel = etaMs == null ? '--' : formatElapsedLabel(etaMs);
-    ocrProgressText.textContent = `${stageLabel} · pages ${pageLabel} · elapsed ${formatElapsedLabel(elapsedMs)} · ETA ${etaLabel}`;
+    const pagesWord = t('renderer.main.import_progress.pages', 'pages');
+    const elapsedWord = t('renderer.main.import_progress.elapsed', 'elapsed');
+    const etaWord = t('renderer.main.import_progress.eta', 'ETA');
+    ocrProgressText.textContent = `${stageLabel} · ${pagesWord} ${pageLabel} · ${elapsedWord} ${formatElapsedLabel(elapsedMs)} · ${etaWord} ${etaLabel}`;
   }
 
   function syncOcrControlVisibility() {

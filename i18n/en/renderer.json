@@ -113,6 +113,20 @@
         "guidance_total": "Estimated total: ~{total} for {pages} page(s) (approximate)",
         "start": "Start OCR",
         "abort": "Abort"
+      },
+      "import_progress": {
+        "pages": "pages",
+        "elapsed": "elapsed",
+        "eta": "ETA",
+        "stage_queued": "Queued",
+        "stage_running": "Running",
+        "stage_extracting": "Extracting",
+        "stage_rasterizing": "Rasterizing",
+        "stage_ocr": "OCR",
+        "stage_finalizing": "Finalizing",
+        "stage_completed": "Completed",
+        "stage_failed": "Failed",
+        "stage_canceled": "Canceled"
       }
     },
     "tasks": {
