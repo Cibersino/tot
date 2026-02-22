@@ -15,6 +15,10 @@
   const btnCancelOcr = document.getElementById('btnCancelOcr');
   const ocrProgressPanel = document.getElementById('ocrProgressPanel');
   const ocrProgressText = document.getElementById('ocrProgressText');
+  const ocrProgressStageText = document.getElementById('ocrProgressStage');
+  const ocrProgressPagesText = document.getElementById('ocrProgressPages');
+  const ocrProgressElapsedText = document.getElementById('ocrProgressElapsed');
+  const ocrProgressEtaText = document.getElementById('ocrProgressEta');
 
   const importApplyModal = document.getElementById('importApplyModal');
   const importApplyBackdrop = document.getElementById('importApplyBackdrop');
@@ -276,15 +280,44 @@
     const normalized = String(stage || '').toLowerCase();
     if (normalized === 'queued') return t('renderer.main.import_progress.stage_queued', 'Queued');
     if (normalized === 'running' || normalized === 'ocr_running') return t('renderer.main.import_progress.stage_running', 'Running');
-    if (normalized === 'extracting') return t('renderer.main.import_progress.stage_extracting', 'Extracting');
-    if (normalized === 'preflight') return t('renderer.main.import_progress.stage_preflight', 'Preparing');
-    if (normalized === 'rasterizing') return t('renderer.main.import_progress.stage_rasterizing', 'Rasterizing');
-    if (normalized === 'ocr') return t('renderer.main.import_progress.stage_ocr', 'OCR');
-    if (normalized === 'finalizing') return t('renderer.main.import_progress.stage_finalizing', 'Finalizing');
+    if (normalized === 'extracting') return t('renderer.main.import_progress.stage_extracting', 'Extracting...');
+    if (normalized === 'preflight') return t('renderer.main.import_progress.stage_preflight', 'Preparing...');
+    if (normalized === 'rasterizing') return t('renderer.main.import_progress.stage_rasterizing', 'Rasterizing...');
+    if (normalized === 'ocr') return t('renderer.main.import_progress.stage_ocr', 'OCR...');
+    if (normalized === 'finalizing') return t('renderer.main.import_progress.stage_finalizing', 'Finalizing...');
     if (normalized === 'completed') return t('renderer.main.import_progress.stage_completed', 'Completed');
     if (normalized === 'failed') return t('renderer.main.import_progress.stage_failed', 'Failed');
     if (normalized === 'canceled') return t('renderer.main.import_progress.stage_canceled', 'Canceled');
     return t('renderer.main.import_progress.stage_ocr', 'OCR');
+  }
+
+  function hasOcrProgressSegments() {
+    return !!(ocrProgressStageText && ocrProgressPagesText && ocrProgressElapsedText && ocrProgressEtaText);
+  }
+
+  function setOcrProgressFallbackText(text) {
+    const message = String(text || '');
+    if (!ocrProgressText) return;
+    if (hasOcrProgressSegments()) {
+      ocrProgressStageText.textContent = message;
+      ocrProgressPagesText.textContent = '';
+      ocrProgressElapsedText.textContent = '';
+      ocrProgressEtaText.textContent = '';
+      return;
+    }
+    ocrProgressText.textContent = message;
+  }
+
+  function setOcrProgressSegmentsText(stageText, pagesText, elapsedText, etaText) {
+    if (!ocrProgressText) return;
+    if (hasOcrProgressSegments()) {
+      ocrProgressStageText.textContent = String(stageText || '');
+      ocrProgressPagesText.textContent = String(pagesText || '');
+      ocrProgressElapsedText.textContent = String(elapsedText || '');
+      ocrProgressEtaText.textContent = String(etaText || '');
+      return;
+    }
+    ocrProgressText.textContent = `${stageText} · ${pagesText} · ${elapsedText} · ${etaText}`;
   }
 
   function resetOcrProgressState() {
@@ -300,15 +333,13 @@
       timeoutPerPageSec: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
       preprocessProfile: OCR_PRESET_VALUES.balanced.preprocess,
     };
-    if (ocrProgressText) {
-      ocrProgressText.textContent = t('renderer.main.import_apply.ocr_running', 'OCR in progress...');
-    }
+    setOcrProgressFallbackText(t('renderer.main.import_apply.ocr_running', 'OCR in progress...'));
   }
 
   function updateOcrProgressText() {
     if (!ocrProgressText) return;
     if (!lockActive) {
-      ocrProgressText.textContent = t('renderer.main.import_apply.ocr_running', 'OCR in progress...');
+      setOcrProgressFallbackText(t('renderer.main.import_apply.ocr_running', 'OCR in progress...'));
       return;
     }
 
@@ -333,7 +364,12 @@
     const pagesWord = t('renderer.main.import_progress.pages', 'pages');
     const elapsedWord = t('renderer.main.import_progress.elapsed', 'elapsed');
     const etaWord = t('renderer.main.import_progress.eta', 'ETA');
-    ocrProgressText.textContent = `${stageLabel} · ${pagesWord} ${pageLabel} · ${elapsedWord} ${formatElapsedLabel(elapsedMs)} · ${etaWord} ${etaLabel}`;
+    setOcrProgressSegmentsText(
+      stageLabel,
+      `${pagesWord} ${pageLabel}`,
+      `${elapsedWord} ${formatElapsedLabel(elapsedMs)}`,
+      `${etaWord} ${etaLabel}`
+    );
   }
 
   function syncOcrControlVisibility() {
@@ -936,7 +972,7 @@
     }
 
     if (!lockActive && ocrProgressText) {
-      ocrProgressText.textContent = t('renderer.main.import_apply.ocr_running', ocrProgressText.textContent || '');
+      setOcrProgressFallbackText(t('renderer.main.import_apply.ocr_running', 'OCR in progress...'));
     }
     updateOcrOptionsContextText();
     updateOcrOptionsGuidanceText();

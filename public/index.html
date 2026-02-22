@@ -52,7 +52,12 @@
         <button id="btnLoadTask" class="btn-standard" title="Cargar tareas">🗃️</button>
       </div>
       <div id="ocrProgressPanel" class="ocr-progress-panel" hidden>
-        <span id="ocrProgressText" class="ocr-progress-text" aria-live="polite">OCR in progress...</span>
+        <span id="ocrProgressText" class="ocr-progress-text" aria-live="polite">
+          <span id="ocrProgressStage" class="ocr-progress-segment">OCR in progress...</span>
+          <span id="ocrProgressPages" class="ocr-progress-segment ocr-progress-segment--numeric"></span>
+          <span id="ocrProgressElapsed" class="ocr-progress-segment ocr-progress-segment--numeric"></span>
+          <span id="ocrProgressEta" class="ocr-progress-segment ocr-progress-segment--numeric"></span>
+        </span>
         <button id="btnCancelOcr" class="btn-standard ocr-progress-cancel" title="Cancelar OCR">⛔</button>
       </div>
     </section>
