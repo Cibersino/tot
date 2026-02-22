@@ -632,6 +632,7 @@ select#presets {
   position: relative;
   z-index: 1111;
   width: min(620px, calc(100% - 24px));
+  text-align: center;
   background: #fdf6e3;
   border: 1px solid #e8dbc2;
   border-radius: 8px;
@@ -658,18 +659,22 @@ select#presets {
   margin-top: 10px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  column-gap: 12px;
   align-items: center;
+  justify-items: center;
 }
 
 .ocr-options-grid label {
   font-size: 13px;
   color: #2a2a2a;
+  justify-self: end;
+  text-align: right;
 }
 
 .ocr-options-grid select,
 .ocr-options-grid input {
   height: 30px;
+  width: 150px;
   padding: 4px 6px;
   border-radius: 5px;
   border: 1px solid #cfcfcf;
@@ -677,6 +682,7 @@ select#presets {
   color: #222;
   font-size: 14px;
   box-sizing: border-box;
+  justify-self: start;
 }
 
 .ocr-options-grid select:disabled,
@@ -695,6 +701,7 @@ select#presets {
 .ocr-options-actions {
   margin-top: 10px;
   display: flex;
+  justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
 }
