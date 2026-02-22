@@ -46,9 +46,15 @@ tot/
 ├── electron/
 │ ├── import_ocr/                  # {orquestación import/OCR + adaptadores por plataforma}
 │ │ ├── platform/
+│ │ │ ├── resolve_sidecar.js
+│ │ │ ├── process_control.js
+│ │ │ └── profile_registry.js
 │ │ ├── orchestrator.js
 │ │ ├── ocr_pipeline.js
-│ │ └── extract_phase_a.js
+│ │ ├── ocr_runtime.js
+│ │ ├── extract_phase_a.js
+│ │ ├── engine_v2.js
+│ │ └── language_policy.js
 │ ├── presets/                     # {presets para restauración de fábrica}
 │ │ ├── defaults_presets.json
 │ │ ├── defaults_presets_en.json
@@ -110,6 +116,7 @@ tot/
 │ │ ├── crono.js
 │ │ ├── menu_actions.js
 │ │ ├── current_text_snapshots.js
+│ │ ├── import_ocr_ui.js
 │ │ ├── format.js
 │ │ ├── i18n.js
 │ │ ├── constants.js
