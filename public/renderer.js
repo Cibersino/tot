@@ -582,24 +582,40 @@ const IMPORT_ERROR_MESSAGE_KEYS = Object.freeze({
   OCR_CANCEL_KILL_TIMEOUT: 'renderer.alerts.import_ocr_cancel_timeout',
 });
 const OCR_PRECONDITION_WINDOW_LABELS = Object.freeze({
-  editor: 'Manual editor',
-  editor_find: 'Find window',
-  preset: 'Preset window',
-  task_editor: 'Task editor',
-  language: 'Language window',
-  flotante: 'Floating stopwatch window',
+  editor: 'renderer.alerts.import_ocr_precondition_window_editor',
+  editor_find: 'renderer.alerts.import_ocr_precondition_window_editor_find',
+  preset: 'renderer.alerts.import_ocr_precondition_window_preset',
+  task_editor: 'renderer.alerts.import_ocr_precondition_window_task_editor',
+  language: 'renderer.alerts.import_ocr_precondition_window_language',
+  flotante: 'renderer.alerts.import_ocr_precondition_window_flotante',
 });
 
 function mapPreconditionWindowLabel(rawId) {
   const key = String(rawId || '').trim().toLowerCase();
+  const msg = (
+    window.RendererI18n
+    && typeof window.RendererI18n.msgRenderer === 'function'
+  )
+    ? window.RendererI18n.msgRenderer
+    : null;
   if (key && Object.prototype.hasOwnProperty.call(OCR_PRECONDITION_WINDOW_LABELS, key)) {
-    return OCR_PRECONDITION_WINDOW_LABELS[key];
+    const labelKey = OCR_PRECONDITION_WINDOW_LABELS[key];
+    if (!msg) return key;
+    return msg(labelKey, {}, key);
   }
-  return key || 'Secondary window';
+  if (!msg) return key || 'Secondary window';
+  return msg('renderer.alerts.import_ocr_precondition_window_secondary', {}, key || 'Secondary window');
 }
 
 function buildOcrPreconditionWarning(res) {
   const p = res && typeof res === 'object' ? res : {};
+  const msg = (
+    window.RendererI18n
+    && typeof window.RendererI18n.msgRenderer === 'function'
+  )
+    ? window.RendererI18n.msgRenderer
+    : null;
+  const t = (path, params, fallback) => (msg ? msg(path, params || {}, fallback) : fallback);
   const reasons = new Set(
     (Array.isArray(p.reasons) ? p.reasons : [])
       .map((item) => String(item || '').trim().toUpperCase())
@@ -615,18 +631,42 @@ function buildOcrPreconditionWarning(res) {
   if (hasSecondaryWindows) {
     if (openSecondaryWindows.length > 0) {
       const labels = Array.from(new Set(openSecondaryWindows.map(mapPreconditionWindowLabel)));
-      details.push(`Close these secondary windows: ${labels.join(', ')}.`);
+      details.push(
+        t(
+          'renderer.alerts.import_ocr_precondition_close_secondary_windows',
+          { windows: labels.join(', ') },
+          `Close these secondary windows: ${labels.join(', ')}.`
+        )
+      );
     } else {
-      details.push('Close all secondary windows.');
+      details.push(
+        t(
+          'renderer.alerts.import_ocr_precondition_close_all_secondary_windows',
+          {},
+          'Close all secondary windows.'
+        )
+      );
     }
   }
   if (hasRunningStopwatch) {
-    details.push('Pause the stopwatch.');
+    details.push(
+      t(
+        'renderer.alerts.import_ocr_precondition_pause_stopwatch',
+        {},
+        'Pause the stopwatch.'
+      )
+    );
   }
   if (!details.length) {
-    details.push('Close any secondary windows and pause the stopwatch.');
+    details.push(
+      t(
+        'renderer.alerts.import_ocr_precondition_close_secondary_and_pause_stopwatch',
+        {},
+        'Close any secondary windows and pause the stopwatch.'
+      )
+    );
   }
-  return `Cannot start OCR right now. ${details.join(' ')}`;
+  return `${t('renderer.alerts.import_ocr_precondition_cannot_start', {}, 'Cannot start OCR right now.')} ${details.join(' ')}`;
 }
 
 function showOcrPreconditionWarning(res) {
