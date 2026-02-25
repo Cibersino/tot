@@ -49,6 +49,11 @@
   const ocrTotalDisclaimer = document.getElementById('ocrTotalDisclaimer');
   const btnOcrOptionsStart = document.getElementById('btnOcrOptionsStart');
   const btnOcrOptionsAbort = document.getElementById('btnOcrOptionsAbort');
+  const appMaxPasteRepeatRaw = Number(window.AppConstants && window.AppConstants.MAX_PASTE_REPEAT);
+  if (!Number.isFinite(appMaxPasteRepeatRaw) || appMaxPasteRepeatRaw < 1) {
+    throw new Error('[import-ocr-ui] AppConstants.MAX_PASTE_REPEAT unavailable; cannot continue');
+  }
+  const APP_MAX_PASTE_REPEAT = Math.floor(appMaxPasteRepeatRaw);
 
   const OCR_PRESET_VALUES = Object.freeze({
     fast: Object.freeze({ dpi: 220, timeoutPerPageSec: 45, preprocess: 'basic' }),
@@ -96,7 +101,7 @@
   let choiceDismissValue = '';
   let choiceRepeatEnabled = false;
   let choiceRepeatMin = 1;
-  let choiceRepeatMax = 9999;
+  let choiceRepeatMax = APP_MAX_PASTE_REPEAT;
   let choiceRepeatStep = 1;
   let choiceRepeatChangeHandler = null;
   let ocrOptionsResolve = null;
@@ -115,6 +120,12 @@
       warn: () => {},
       warnOnce: () => {},
     };
+
+  if (importApplyRepeatInput) {
+    importApplyRepeatInput.min = '1';
+    importApplyRepeatInput.max = String(APP_MAX_PASTE_REPEAT);
+    importApplyRepeatInput.step = '1';
+  }
 
   function t(key, fallback = '') {
     try {
@@ -525,7 +536,7 @@
 
   function normalizeChoiceRepeatConfig(opts = {}) {
     const minCandidate = parsePositiveInt(opts.repeatMin, 1);
-    const maxCandidate = parsePositiveInt(opts.repeatMax, 9999);
+    const maxCandidate = parsePositiveInt(opts.repeatMax, APP_MAX_PASTE_REPEAT);
     choiceRepeatMin = Math.max(1, minCandidate);
     choiceRepeatMax = Math.max(choiceRepeatMin, maxCandidate);
     choiceRepeatStep = parsePositiveInt(opts.repeatStep, 1);
@@ -543,7 +554,7 @@
   function resetChoiceRepeatState() {
     choiceRepeatEnabled = false;
     choiceRepeatMin = 1;
-    choiceRepeatMax = 9999;
+    choiceRepeatMax = APP_MAX_PASTE_REPEAT;
     choiceRepeatStep = 1;
     choiceRepeatChangeHandler = null;
     if (importApplyRepeatRow) importApplyRepeatRow.hidden = true;
@@ -590,7 +601,7 @@
 
   function normalizeExternalRepeatValue(rawValue, rawMin, rawMax) {
     const min = parsePositiveInt(rawMin, 1);
-    const max = Math.max(min, parsePositiveInt(rawMax, 9999));
+    const max = Math.max(min, parsePositiveInt(rawMax, APP_MAX_PASTE_REPEAT));
     const n = Number(rawValue);
     if (!Number.isFinite(n)) return min;
     return Math.min(max, Math.max(min, Math.floor(n)));
