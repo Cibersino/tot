@@ -458,6 +458,35 @@ function validateSelectedFile(filePath) {
   };
 }
 
+function selectImportSessionFromFilePath(filePath) {
+  const selected = validateSelectedFile(filePath);
+  if (!selected.ok) return selected;
+  persistLastImportDir(selected.filePath);
+
+  if (selected.kind === 'image') {
+    const registryReady = ensureProfileRegistryReady();
+    if (!registryReady.ok) {
+      return fail(
+        'OCR_PLATFORM_PROFILE_INVALID',
+        'OCR platform profile registry is invalid.',
+        { errors: registryReady.errors.slice(0, 10) }
+      );
+    }
+    const runtimeReady = ensureOcrRuntimeReady();
+    if (!runtimeReady.ok) return runtimeReady;
+  }
+
+  const session = createSession(selected);
+  return {
+    ok: true,
+    sessionId: session.sessionId,
+    kind: session.kind,
+    filename: session.filename,
+    route: session.route,
+    pageCountHint: null,
+  };
+}
+
 function createSession({ filePath, filename, kind, route }) {
   const sessionId = makeId('import_session');
   const session = {
@@ -836,32 +865,23 @@ function registerIpc(ipcMain, {
       return fail('CANCELLED', 'File selection canceled.');
     }
 
-    const selected = validateSelectedFile(picker.filePaths[0]);
-    if (!selected.ok) return selected;
-    persistLastImportDir(selected.filePath);
+    return selectImportSessionFromFilePath(picker.filePaths[0]);
+  });
 
-    if (selected.kind === 'image') {
-      const registryReady = ensureProfileRegistryReady();
-      if (!registryReady.ok) {
-        return fail(
-          'OCR_PLATFORM_PROFILE_INVALID',
-          'OCR platform profile registry is invalid.',
-          { errors: registryReady.errors.slice(0, 10) }
-        );
-      }
-      const runtimeReady = ensureOcrRuntimeReady();
-      if (!runtimeReady.ok) return runtimeReady;
+  ipcMain.handle('import-select-file-path', async (event, payload) => {
+    const unauthorized = ensureMainSender(event, 'import-select-file-path');
+    if (unauthorized) return unauthorized;
+
+    const blocked = maybeBlockedByInteractionGate(event, 'import-select-file-path', { mainWindowOnly: true });
+    if (blocked) return blocked;
+
+    const p = payload && typeof payload === 'object' ? payload : {};
+    const filePath = typeof p.filePath === 'string' ? p.filePath.trim() : '';
+    if (!filePath) {
+      return fail('IMPORT_INVALID_PAYLOAD', 'Missing filePath.');
     }
 
-    const session = createSession(selected);
-    return {
-      ok: true,
-      sessionId: session.sessionId,
-      kind: session.kind,
-      filename: session.filename,
-      route: session.route,
-      pageCountHint: null,
-    };
+    return selectImportSessionFromFilePath(filePath);
   });
 
   ipcMain.handle('import-run', async (event, payload) => {

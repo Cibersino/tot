@@ -1,7 +1,7 @@
 // electron/preload.js
 'use strict';
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 
 const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {
@@ -34,6 +34,18 @@ const api = {
     openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey),
     openTaskEditor: (mode) => ipcRenderer.invoke('open-task-editor', { mode }),
     importSelectFile: () => ipcRenderer.invoke('import-select-file'),
+    importSelectFilePath: (filePath) => ipcRenderer.invoke('import-select-file-path', { filePath }),
+    getPathForDroppedFile: (fileObj) => {
+        try {
+            const resolved = webUtils && typeof webUtils.getPathForFile === 'function'
+                ? webUtils.getPathForFile(fileObj)
+                : '';
+            return typeof resolved === 'string' ? resolved : '';
+        } catch (err) {
+            console.error('getPathForDroppedFile failed:', err);
+            return '';
+        }
+    },
     importGetOcrLanguages: () => ipcRenderer.invoke('import-get-ocr-languages'),
     importRun: (payload) => ipcRenderer.invoke('import-run', payload),
     importCancel: () => ipcRenderer.invoke('import-cancel'),

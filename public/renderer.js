@@ -2082,8 +2082,130 @@ wpmInput.addEventListener('keydown', (e) => {
 });
 
 // =============================================================================
-// Import/OCR entry point (Batch 1 scaffold)
+// Import/OCR entry point
 // =============================================================================
+async function runImportFlowFromSelection(selectRes) {
+  if (!selectRes || selectRes.ok !== true || !selectRes.sessionId) {
+    const message = humanizeImportError(selectRes);
+    if (message) showImportDialogMessage(message);
+    return;
+  }
+
+  const importRun = getOptionalElectronMethod('importRun', {
+    dedupeKey: 'renderer.ipc.importRun.unavailable',
+    unavailableMessage: 'importRun unavailable; import execution skipped.'
+  });
+  if (!importRun) {
+    await discardImportSession(selectRes.sessionId);
+    return;
+  }
+
+  let runOptions = getDefaultImportRunOptions();
+  if (isOcrRoute(selectRes.route)) {
+    const ocrLangRes = await getAvailableOcrLanguages();
+    if (!ocrLangRes || ocrLangRes.ok !== true) {
+      const message = humanizeImportError(ocrLangRes);
+      if (message) showImportDialogMessage(message);
+      await discardImportSession(selectRes.sessionId);
+      return;
+    }
+    const ocrOptsRes = await promptOcrOptionsDialog({
+      kind: selectRes.kind,
+      filename: selectRes.filename,
+      pageCountHint: selectRes.pageCountHint,
+      availableUiLanguages: ocrLangRes.availableUiLanguages,
+    });
+    if (!ocrOptsRes || ocrOptsRes.confirmed !== true) {
+      await discardImportSession(selectRes.sessionId);
+      return;
+    }
+    runOptions = Object.assign({}, runOptions, ocrOptsRes.options || {});
+  }
+
+  const runRes = await importRun({
+    sessionId: selectRes.sessionId,
+    options: runOptions,
+  });
+  if (!runRes || runRes.ok !== true) {
+    if (String(runRes && runRes.code || '') === 'OCR_PRECONDITION_FAILED') {
+      showOcrPreconditionWarning(runRes);
+    } else {
+      const message = humanizeImportError(runRes);
+      if (message) showImportDialogMessage(message);
+    }
+    await discardImportSession(selectRes.sessionId);
+    return;
+  }
+
+  if (runRes.jobId && selectRes.sessionId) {
+    const isOcrJob = isOcrRoute(selectRes.route);
+    importJobSessionMap.set(String(runRes.jobId), String(selectRes.sessionId));
+    importJobIsOcrMap.set(String(runRes.jobId), isOcrJob);
+    if (isOcrJob) {
+      noteQueuedOcrJob({
+        jobId: String(runRes.jobId),
+        pageCountHint: Number.isFinite(Number(selectRes.pageCountHint))
+          ? Math.max(1, Math.floor(Number(selectRes.pageCountHint)))
+          : 0,
+        preset: runOptions.preset || runOptions.qualityPreset || 'balanced',
+        timeoutPerPageSec: runOptions.timeoutPerPageSec,
+        dpi: runOptions.dpi,
+        preprocessProfile: runOptions.preprocessProfile,
+      });
+    }
+  }
+}
+
+async function selectImportSessionFromDroppedFile(filePath) {
+  const importSelectFilePath = getOptionalElectronMethod('importSelectFilePath', {
+    dedupeKey: 'renderer.ipc.importSelectFilePath.unavailable',
+    unavailableMessage: 'importSelectFilePath unavailable; drop import action skipped.'
+  });
+  if (!importSelectFilePath) {
+    return { ok: false, code: 'IMPORT_UNAVAILABLE' };
+  }
+  try {
+    return await importSelectFilePath(filePath);
+  } catch (err) {
+    log.error('Error selecting dropped file for import:', err);
+    return { ok: false, code: 'IMPORT_UNAVAILABLE' };
+  }
+}
+
+function installMainWindowFileDropImport() {
+  const importDrop = window.ImportDrop;
+  if (!importDrop || typeof importDrop.installFileDropHandler !== 'function') {
+    log.warnOnce(
+      'renderer.importDrop.unavailable',
+      'ImportDrop module unavailable; file-drop import disabled.'
+    );
+    return;
+  }
+
+  importDrop.installFileDropHandler({
+    target: window,
+    electronAPI: window.electronAPI,
+    logger: log,
+    guardUserAction: () => guardUserAction('import-drop-file'),
+    onResolvedPath: async (droppedPath) => {
+      const selectRes = await selectImportSessionFromDroppedFile(droppedPath);
+      if (!selectRes || selectRes.ok !== true) {
+        const message = humanizeImportError(selectRes);
+        if (message) showImportDialogMessage(message);
+        return;
+      }
+      await runImportFlowFromSelection(selectRes);
+    },
+    onInvalidPath: () => {
+      showImportDialogMessage('renderer.alerts.import_invalid_path');
+    },
+    onUnhandledError: (err) => {
+      log.error('Error in dropped-file import flow:', err);
+      showImportDialogMessage('renderer.alerts.import_unexpected');
+    },
+  });
+}
+
 if (btnImportExtract) {
   btnImportExtract.addEventListener('click', async () => {
     if (!guardUserAction('import-select-file')) return;
@@ -2103,76 +2225,14 @@ if (btnImportExtract) {
         if (message) showImportDialogMessage(message);
         return;
       }
-
-      const importRun = getOptionalElectronMethod('importRun', {
-        dedupeKey: 'renderer.ipc.importRun.unavailable',
-        unavailableMessage: 'importRun unavailable; import execution skipped.'
-      });
-      if (!importRun) {
-        await discardImportSession(selectRes.sessionId);
-        return;
-      }
-
-      let runOptions = getDefaultImportRunOptions();
-      if (isOcrRoute(selectRes.route)) {
-        const ocrLangRes = await getAvailableOcrLanguages();
-        if (!ocrLangRes || ocrLangRes.ok !== true) {
-          const message = humanizeImportError(ocrLangRes);
-          if (message) showImportDialogMessage(message);
-          await discardImportSession(selectRes.sessionId);
-          return;
-        }
-        const ocrOptsRes = await promptOcrOptionsDialog({
-          kind: selectRes.kind,
-          filename: selectRes.filename,
-          pageCountHint: selectRes.pageCountHint,
-          availableUiLanguages: ocrLangRes.availableUiLanguages,
-        });
-        if (!ocrOptsRes || ocrOptsRes.confirmed !== true) {
-          await discardImportSession(selectRes.sessionId);
-          return;
-        }
-        runOptions = Object.assign({}, runOptions, ocrOptsRes.options || {});
-      }
-
-      const runRes = await importRun({
-        sessionId: selectRes.sessionId,
-        options: runOptions,
-      });
-      if (!runRes || runRes.ok !== true) {
-        if (String(runRes && runRes.code || '') === 'OCR_PRECONDITION_FAILED') {
-          showOcrPreconditionWarning(runRes);
-        } else {
-          const message = humanizeImportError(runRes);
-          if (message) showImportDialogMessage(message);
-        }
-        await discardImportSession(selectRes.sessionId);
-        return;
-      }
-
-      if (runRes.jobId && selectRes.sessionId) {
-        const isOcrJob = isOcrRoute(selectRes.route);
-        importJobSessionMap.set(String(runRes.jobId), String(selectRes.sessionId));
-        importJobIsOcrMap.set(String(runRes.jobId), isOcrJob);
-        if (isOcrJob) {
-          noteQueuedOcrJob({
-            jobId: String(runRes.jobId),
-            pageCountHint: Number.isFinite(Number(selectRes.pageCountHint))
-              ? Math.max(1, Math.floor(Number(selectRes.pageCountHint)))
-              : 0,
-            preset: runOptions.preset || runOptions.qualityPreset || 'balanced',
-            timeoutPerPageSec: runOptions.timeoutPerPageSec,
-            dpi: runOptions.dpi,
-            preprocessProfile: runOptions.preprocessProfile,
-          });
-        }
-      }
+      await runImportFlowFromSelection(selectRes);
     } catch (err) {
       log.error('Error in import flow:', err);
       showImportDialogMessage('renderer.alerts.import_unexpected');
     }
   });
 }
+installMainWindowFileDropImport();
 
 if (btnCancelOcr) {
   btnCancelOcr.addEventListener('click', async () => {
