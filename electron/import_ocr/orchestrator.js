@@ -1043,3 +1043,7 @@ function registerIpc(ipcMain, {
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_ocr/orchestrator.js
+// =============================================================================
