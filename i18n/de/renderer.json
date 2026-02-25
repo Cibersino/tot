@@ -16,7 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Aktuellen Text mit der Zwischenablage ersetzen",
         "append_clipboard": "Hängen Sie die Zwischenablage am Ende des aktuellen Textes an (neue Zeile)",
-        "append_repeat": "Anzahl der Wiederholungen des Anhängens",
+        "paste_repeat_count": "Anzahl der Einfüge-Wiederholungen",
         "edit": "Öffnen Sie das vollständige aktuelle Textfenster",
         "clear": "Aktuellen Text löschen",
         "snapshot_load": "Laden Sie einen Text-Snapshot",
@@ -289,4 +289,3 @@
     }
   }
 }
-

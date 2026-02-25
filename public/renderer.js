@@ -30,7 +30,7 @@ const {
   DEFAULT_LANG,
   WPM_MIN,
   WPM_MAX,
-  MAX_APPEND_REPEAT,
+  MAX_PASTE_REPEAT,
   PREVIEW_INLINE_THRESHOLD,
   PREVIEW_START_CHARS,
   PREVIEW_END_CHARS
@@ -43,7 +43,7 @@ const textPreview = document.getElementById('textPreview');
 const btnImportExtract = document.getElementById('btnImportExtract');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
-const appendRepeatInput = document.getElementById('appendRepeatInput');
+const pasteRepeatInput = document.getElementById('pasteRepeatInput');
 const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
 const btnLoadSnapshot = document.getElementById('btnLoadSnapshot');
@@ -132,9 +132,9 @@ if (wpmInput) {
   wpmInput.min = String(WPM_MIN);
   wpmInput.max = String(WPM_MAX);
 }
-if (appendRepeatInput) {
-  appendRepeatInput.min = '1';
-  appendRepeatInput.max = String(MAX_APPEND_REPEAT);
+if (pasteRepeatInput) {
+  pasteRepeatInput.min = '1';
+  pasteRepeatInput.max = String(MAX_PASTE_REPEAT);
 }
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
@@ -885,9 +885,9 @@ function applyTranslations() {
   }
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
-  if (appendRepeatInput) {
-    appendRepeatInput.title = tRenderer('renderer.main.tooltips.append_repeat_count', appendRepeatInput.title || '');
-    applyAriaLabel(appendRepeatInput, 'renderer.main.aria.append_repeat_count');
+  if (pasteRepeatInput) {
+    pasteRepeatInput.title = tRenderer('renderer.main.tooltips.paste_repeat_count', pasteRepeatInput.title || '');
+    applyAriaLabel(pasteRepeatInput, 'renderer.main.aria.paste_repeat_count');
   }
   if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
   if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
@@ -2202,20 +2202,20 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
   return { ok: true, text };
 }
 
-function normalizeAppendRepeat(rawValue) {
+function normalizePasteRepeat(rawValue) {
   const numericValue = Number(rawValue);
   if (!Number.isInteger(numericValue) || numericValue < 1) return 1;
-  return Math.min(numericValue, MAX_APPEND_REPEAT);
+  return Math.min(numericValue, MAX_PASTE_REPEAT);
 }
 
-function getAppendRepeatCount() {
-  if (!appendRepeatInput) return 1;
-  const normalized = normalizeAppendRepeat(appendRepeatInput.value);
-  appendRepeatInput.value = String(normalized);
+function getPasteRepeatCount() {
+  if (!pasteRepeatInput) return 1;
+  const normalized = normalizePasteRepeat(pasteRepeatInput.value);
+  pasteRepeatInput.value = String(normalized);
   return normalized;
 }
 
-function projectRepeatedAppendLength(current, clip, repeatCount) {
+function projectRepeatedPasteLength(current, clip, repeatCount) {
   const clipLength = clip.length;
   const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
   let projected = current.length;
@@ -2236,7 +2236,7 @@ function projectRepeatedAppendLength(current, clip, repeatCount) {
   return projected;
 }
 
-function buildRepeatedAppendText(current, clip, repeatCount) {
+function buildRepeatedPasteText(current, clip, repeatCount) {
   const clipLength = clip.length;
   const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
   const parts = [current];
@@ -2269,14 +2269,14 @@ btnOverwriteClipboard.addEventListener('click', async () => {
     });
     if (!read.ok) return;
     const clip = read.text;
-    const repeatCount = getAppendRepeatCount();
+    const repeatCount = getPasteRepeatCount();
 
-    const projectedLen = projectRepeatedAppendLength('', clip, repeatCount);
+    const projectedLen = projectRepeatedPasteLength('', clip, repeatCount);
     if (projectedLen > maxIpcChars) {
       window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
       return;
     }
-    const overwriteText = buildRepeatedAppendText('', clip, repeatCount);
+    const overwriteText = buildRepeatedPasteText('', clip, repeatCount);
 
     // Send object with meta (overwrite)
     const setCurrentText = getOptionalElectronMethod('setCurrentText', {
@@ -2330,9 +2330,9 @@ btnAppendClipboard.addEventListener('click', async () => {
       return;
     }
     const current = await getCurrentText() || '';
-    const repeatCount = getAppendRepeatCount();
+    const repeatCount = getPasteRepeatCount();
 
-    const projectedLen = projectRepeatedAppendLength(current, clip, repeatCount);
+    const projectedLen = projectRepeatedPasteLength(current, clip, repeatCount);
     if (projectedLen > maxIpcChars) {
       window.Notify.notifyMain('renderer.alerts.append_too_large');
       return;
@@ -2344,7 +2344,7 @@ btnAppendClipboard.addEventListener('click', async () => {
       return;
     }
 
-    const newFull = buildRepeatedAppendText(current, clip, repeatCount);
+    const newFull = buildRepeatedPasteText(current, clip, repeatCount);
 
     // Send object with meta (append_newline)
     const setCurrentText = getOptionalElectronMethod('setCurrentText', {

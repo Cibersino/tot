@@ -20,7 +20,7 @@
         "cancel_ocr": "Cancel running OCR",
         "overwrite_clipboard": "Replace current text with clipboard",
         "append_clipboard": "Append clipboard at the end of current text (new line)",
-        "append_repeat_count": "Append repetitions",
+        "paste_repeat_count": "Paste repetitions",
         "edit": "Open full current text window",
         "clear": "Clear current text",
         "snapshot_load": "Load text snapshot",
@@ -37,7 +37,7 @@
       "aria": {
         "import_extract": "Import or extract text",
         "cancel_ocr": "Cancel OCR",
-        "append_repeat_count": "Paste repetitions",
+        "paste_repeat_count": "Paste repetitions",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words-per-minute slider",
         "speed_presets": "Speed presets",

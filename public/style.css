@@ -183,7 +183,7 @@ body {
   flex: 0 0 auto;
 }
 
-.append-repeat-input {
+.paste-repeat-input {
   width: 60px;
   height: 30px;
   padding: 4px 6px;
@@ -196,7 +196,7 @@ body {
   box-sizing: border-box;
 }
 
-.append-repeat-input:focus {
+.paste-repeat-input:focus {
   outline: 2px solid rgb(30 130 230 / .22);
   outline-offset: 1px;
 }

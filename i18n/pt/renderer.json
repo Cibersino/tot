@@ -16,7 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Substituir o texto atual pelo conteúdo da área de transferência",
         "append_clipboard": "Adicionar o conteúdo da área de transferência ao final do texto atual (nova linha)",
-        "append_repeat": "Número de repetições do append",
+        "paste_repeat_count": "Número de repetições da colagem",
         "edit": "Abrir a janela de edição do texto atual completo",
         "clear": "Limpar o texto atual",
         "snapshot_load": "Carregar snapshot de texto",
@@ -289,4 +289,3 @@
     }
   }
 }
-
