@@ -92,6 +92,12 @@
         "append": "Añadir",
         "ocr_running": "OCR en progreso..."
       },
+      "pdf_selectable_choice": {
+        "title": "Se detectó un PDF con texto seleccionable",
+        "message": "Recomendación: prueba primero en normal. Si el resultado no es bueno, usa extracción vía OCR.",
+        "normal": "Extracción normal",
+        "ocr": "Extracción vía OCR"
+      },
       "ocr_options": {
         "title": "Opciones OCR",
         "context_image": "Archivo: {filename} - OCR de imagen",
@@ -371,4 +377,3 @@
     }
   }
 }
-

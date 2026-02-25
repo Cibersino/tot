@@ -614,6 +614,13 @@ select#presets {
   color: #222;
 }
 
+.import-apply-context {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #222;
+}
+
 .import-apply-actions {
   margin-top: 10px;
   display: flex;

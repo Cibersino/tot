@@ -92,6 +92,12 @@
         "append": "Append",
         "ocr_running": "OCR in progress..."
       },
+      "pdf_selectable_choice": {
+        "title": "PDF with selectable text detected",
+        "message": "Recommendation: try it on normal first. If results are not good, use extraction via OCR.",
+        "normal": "Normal extraction",
+        "ocr": "Extraction via OCR"
+      },
       "ocr_options": {
         "title": "OCR options",
         "context_image": "File: {filename} - image OCR",
@@ -371,4 +377,3 @@
     }
   }
 }
-

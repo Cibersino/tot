@@ -323,27 +323,110 @@ async function getAvailableOcrLanguages() {
   }
 }
 
-function chooseImportApplyMode(options = {}) {
-  if (!importOcrUi || typeof importOcrUi.chooseApplyMode !== 'function') {
-    const opts = options && typeof options === 'object' ? options : {};
-    const isOcrJob = !!opts.isOcrJob;
-    const summary = opts.summary && typeof opts.summary === 'object' ? opts.summary : {};
-    const elapsedMs = Number(summary.elapsedMs);
-    const elapsedSec = Number.isFinite(elapsedMs) && elapsedMs > 0
-      ? Math.max(1, Math.floor(elapsedMs / 1000))
-      : 0;
-    const timingHint = isOcrJob && elapsedSec > 0
-      ? ` (OCR elapsed: ${elapsedSec}s)`
-      : '';
-    const fallbackRaw = window.prompt(
-      `Import finished${timingHint}. Choose apply mode: OVERWRITE or APPEND`,
-      'OVERWRITE'
-    );
-    const fallbackMode = String(fallbackRaw || '').trim().toLowerCase();
-    if (fallbackMode === 'overwrite' || fallbackMode === 'append') return Promise.resolve(fallbackMode);
-    return Promise.resolve('');
+function formatImportElapsedLabel(ms) {
+  const totalSeconds = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  return `${minutes}m ${seconds}s`;
+}
+
+async function promptImportChoiceWithFallback({
+  choice,
+  fallbackPrompt = '',
+  defaultValue = '',
+  allowedValues = [],
+} = {}) {
+  const safeChoice = (choice && typeof choice === 'object') ? choice : {};
+  if (importOcrUi && typeof importOcrUi.promptChoice === 'function') {
+    return importOcrUi.promptChoice(safeChoice);
   }
-  return importOcrUi.chooseApplyMode(options || {});
+  const promptText = String(fallbackPrompt || safeChoice.title || '').trim();
+  const fallbackRaw = window.prompt(promptText, String(defaultValue || ''));
+  const normalized = String(fallbackRaw || '').trim().toLowerCase();
+  const allowed = new Set(
+    (Array.isArray(allowedValues) ? allowedValues : [])
+      .map((value) => String(value || '').trim().toLowerCase())
+      .filter(Boolean)
+  );
+  if (allowed.has(normalized)) return normalized;
+  return String(safeChoice.dismissValue || '');
+}
+
+function chooseImportApplyMode(options = {}) {
+  const opts = options && typeof options === 'object' ? options : {};
+  const isOcrJob = !!opts.isOcrJob;
+  const summary = opts.summary && typeof opts.summary === 'object' ? opts.summary : {};
+  const baseTitle = tRenderer
+    ? tRenderer('renderer.main.import_apply.title', 'Import finished. Choose apply mode:')
+    : 'Import finished. Choose apply mode:';
+  let applyTitle = baseTitle;
+  const elapsedMs = Number(summary.elapsedMs);
+  if (isOcrJob && Number.isFinite(elapsedMs) && elapsedMs > 0) {
+    const elapsed = formatImportElapsedLabel(elapsedMs);
+    applyTitle = msgRenderer
+      ? msgRenderer(
+        'renderer.main.import_apply.title_with_elapsed',
+        { elapsed },
+        `${baseTitle} OCR completed in ${elapsed}.`
+      )
+      : `${baseTitle} OCR completed in ${elapsed}.`;
+  }
+
+  const choice = {
+    title: applyTitle,
+    context: '',
+    primaryLabel: tRenderer
+      ? tRenderer('renderer.main.import_apply.overwrite', 'Overwrite')
+      : 'Overwrite',
+    primaryValue: 'overwrite',
+    secondaryLabel: tRenderer
+      ? tRenderer('renderer.main.import_apply.append', 'Append')
+      : 'Append',
+    secondaryValue: 'append',
+    dismissValue: '',
+  };
+  return promptImportChoiceWithFallback({
+    choice,
+    fallbackPrompt: `${applyTitle} OVERWRITE or APPEND`,
+    defaultValue: 'OVERWRITE',
+    allowedValues: ['overwrite', 'append'],
+  });
+}
+
+function choosePdfSelectableExtractionMode() {
+  const title = tRenderer
+    ? tRenderer(
+      'renderer.main.pdf_selectable_choice.title',
+      'PDF with selectable text detected'
+    )
+    : 'PDF with selectable text detected';
+  const message = tRenderer
+    ? tRenderer(
+      'renderer.main.pdf_selectable_choice.message',
+      'Recommendation: try it on normal first. If results are not good, use extraction via OCR.'
+    )
+    : 'Recommendation: try it on normal first. If results are not good, use extraction via OCR.';
+  const choice = {
+    title,
+    context: message,
+    primaryLabel: tRenderer
+      ? tRenderer('renderer.main.pdf_selectable_choice.normal', 'Normal extraction')
+      : 'Normal extraction',
+    primaryValue: 'normal',
+    secondaryLabel: tRenderer
+      ? tRenderer('renderer.main.pdf_selectable_choice.ocr', 'Extraction via OCR')
+      : 'Extraction via OCR',
+    secondaryValue: 'ocr',
+    dismissValue: '',
+  };
+  return promptImportChoiceWithFallback({
+    choice,
+    fallbackPrompt: `${title}\n${message}\nNORMAL or OCR`,
+    defaultValue: 'NORMAL',
+    allowedValues: ['normal', 'ocr'],
+  });
 }
 
 function promptOcrOptionsDialog(payload) {
@@ -518,35 +601,29 @@ async function discardImportSession(sessionId) {
   }
 }
 
-async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
-  if (!sessionId) return false;
+async function startPdfOcrFromSession(sessionId, summary = {}) {
+  if (!sessionId) {
+    return { ok: false, code: 'IMPORT_SESSION_NOT_FOUND' };
+  }
 
-  const p = payload && typeof payload === 'object' ? payload : {};
-  const summary = p.summary && typeof p.summary === 'object' ? p.summary : {};
-  const pageCountHint = Number.isFinite(Number(summary.pagesTotal))
-    ? Math.max(1, Math.floor(Number(summary.pagesTotal)))
+  const safeSummary = summary && typeof summary === 'object' ? summary : {};
+  const pageCountHint = Number.isFinite(Number(safeSummary.pagesTotal))
+    ? Math.max(1, Math.floor(Number(safeSummary.pagesTotal)))
     : 1;
-
-  const warningMsg = humanizeImportError(p);
-  if (warningMsg) showImportDialogMessage(warningMsg);
 
   const ocrLangRes = await getAvailableOcrLanguages();
   if (!ocrLangRes || ocrLangRes.ok !== true) {
-    const message = humanizeImportError(ocrLangRes);
-    if (message) showImportDialogMessage(message);
-    await discardImportSession(sessionId);
-    return true;
+    return ocrLangRes || { ok: false, code: 'OCR_LANG_UNAVAILABLE' };
   }
 
   const ocrOptsRes = await promptOcrOptionsDialog({
     kind: 'pdf',
-    filename: String(summary.filename || ''),
+    filename: String(safeSummary.filename || ''),
     pageCountHint,
     availableUiLanguages: ocrLangRes.availableUiLanguages,
   });
   if (!ocrOptsRes || ocrOptsRes.confirmed !== true) {
-    await discardImportSession(sessionId);
-    return true;
+    return { ok: false, code: 'CANCELLED' };
   }
 
   const importRun = getOptionalElectronMethod('importRun', {
@@ -554,8 +631,7 @@ async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
     unavailableMessage: 'importRun unavailable; PDF OCR fallback execution skipped.'
   });
   if (!importRun) {
-    await discardImportSession(sessionId);
-    return true;
+    return { ok: false, code: 'IMPORT_UNAVAILABLE' };
   }
 
   try {
@@ -570,10 +646,7 @@ async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
       options: ocrRunOptions,
     });
     if (!rerunRes || rerunRes.ok !== true || !rerunRes.jobId) {
-      const message = humanizeImportError(rerunRes);
-      if (message) showImportDialogMessage(message);
-      await discardImportSession(sessionId);
-      return true;
+      return rerunRes || { ok: false, code: 'IMPORT_EXEC_FAILED' };
     }
 
     const queuedJobId = String(rerunRes.jobId);
@@ -587,13 +660,35 @@ async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
       dpi: ocrRunOptions.dpi,
       preprocessProfile: ocrRunOptions.preprocessProfile,
     });
-    return true;
+    return { ok: true };
   } catch (err) {
     log.error('Error requesting scanned-PDF OCR fallback:', err);
-    showImportDialogMessage('renderer.alerts.import_scanned_pdf_ocr_start_failed');
-    await discardImportSession(sessionId);
-    return true;
+    return { ok: false, code: 'IMPORT_SCANNED_PDF_OCR_START_FAILED' };
   }
+}
+
+async function handlePdfOcrStartFailure(sessionId, startRes) {
+  if (String(startRes && startRes.code || '') === 'IMPORT_SCANNED_PDF_OCR_START_FAILED') {
+    showImportDialogMessage('renderer.alerts.import_scanned_pdf_ocr_start_failed');
+  } else {
+    const message = humanizeImportError(startRes);
+    if (message) showImportDialogMessage(message);
+  }
+  await discardImportSession(sessionId);
+}
+
+async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
+  if (!sessionId) return false;
+
+  const p = payload && typeof payload === 'object' ? payload : {};
+  const summary = p.summary && typeof p.summary === 'object' ? p.summary : {};
+  const warningMsg = humanizeImportError(p);
+  if (warningMsg) showImportDialogMessage(warningMsg);
+  const startRes = await startPdfOcrFromSession(sessionId, summary);
+  if (!startRes || startRes.ok !== true) {
+    await handlePdfOcrStartFailure(sessionId, startRes);
+  }
+  return true;
 }
 
 async function handleImportFinished(payload) {
@@ -623,9 +718,26 @@ async function handleImportFinished(payload) {
     return;
   }
 
+  const summary = p.summary && typeof p.summary === 'object' ? p.summary : {};
+  const isPdfProbeSuccess = !isOcrJob && String(summary.kind || '').trim().toLowerCase() === 'pdf';
+  if (isPdfProbeSuccess) {
+    const extractionMode = await choosePdfSelectableExtractionMode();
+    if (extractionMode === 'ocr') {
+      const startRes = await startPdfOcrFromSession(sessionId, summary);
+      if (!startRes || startRes.ok !== true) {
+        await handlePdfOcrStartFailure(sessionId, startRes);
+      }
+      return;
+    }
+    if (extractionMode !== 'normal') {
+      await discardImportSession(sessionId);
+      return;
+    }
+  }
+
   const mode = await chooseImportApplyMode({
     isOcrJob,
-    summary: p.summary,
+    summary,
   });
   if (mode !== 'overwrite' && mode !== 'append') {
     await discardImportSession(sessionId);

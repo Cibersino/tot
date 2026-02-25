@@ -6,7 +6,7 @@
 // Responsibilities:
 // - Own Import/OCR UI surfaces in main window:
 //   - OCR progress panel + cancel button visibility text
-//   - Import apply choice modal (Overwrite / Append)
+//   - Shared import choice modal (generic 2-choice dialog)
 //   - Shared OCR options modal (preset/language/custom controls)
 // - Keep OCR UI behavior cohesive so renderer.js stays orchestration-focused.
 // =============================================================================
@@ -23,6 +23,7 @@
   const importApplyModal = document.getElementById('importApplyModal');
   const importApplyBackdrop = document.getElementById('importApplyBackdrop');
   const importApplyTitle = document.getElementById('importApplyTitle');
+  const importApplyContext = document.getElementById('importApplyContext');
   const btnImportApplyOverwrite = document.getElementById('btnImportApplyOverwrite');
   const btnImportApplyAppend = document.getElementById('btnImportApplyAppend');
 
@@ -88,7 +89,8 @@
   };
   let ocrProgressEtaLabel = '--';
 
-  let importApplyResolve = null;
+  let choiceResolve = null;
+  let choiceDismissValue = '';
   let ocrOptionsResolve = null;
   let ocrOptionsPageCount = 1;
   let ocrOptionsFileKind = '';
@@ -485,7 +487,7 @@
     updateOcrProgressText();
   }
 
-  function showImportApplyModal() {
+  function showChoiceModal() {
     if (!importApplyModal) return;
     importApplyModal.setAttribute('aria-hidden', 'false');
     if (btnImportApplyOverwrite && typeof btnImportApplyOverwrite.focus === 'function') {
@@ -493,62 +495,55 @@
     }
   }
 
-  function hideImportApplyModal() {
+  function hideChoiceModal() {
     if (!importApplyModal) return;
     importApplyModal.setAttribute('aria-hidden', 'true');
   }
 
-  function settleImportApplyChoice(mode) {
-    const resolve = importApplyResolve;
-    importApplyResolve = null;
-    hideImportApplyModal();
-    if (typeof resolve === 'function') resolve(mode);
+  function settleChoice(rawValue) {
+    const resolve = choiceResolve;
+    choiceResolve = null;
+    choiceDismissValue = '';
+    hideChoiceModal();
+    if (typeof resolve === 'function') resolve(String(rawValue || ''));
   }
 
-  function getImportApplyTitle(options = {}) {
-    const fallbackTitle = importApplyTitle
-      ? (importApplyTitle.textContent || '')
-      : 'Import finished. Choose apply mode:';
-    const baseTitle = t('renderer.main.import_apply.title', fallbackTitle);
-    const opts = options && typeof options === 'object' ? options : {};
-    if (!opts.isOcrJob) return baseTitle;
-
-    const summary = opts.summary && typeof opts.summary === 'object' ? opts.summary : {};
-    const elapsedMs = Number(summary.elapsedMs);
-    if (!Number.isFinite(elapsedMs) || elapsedMs <= 0) return baseTitle;
-
-    const elapsed = formatElapsedLabel(elapsedMs);
-    return msg(
-      'renderer.main.import_apply.title_with_elapsed',
-      { elapsed },
-      `${baseTitle} OCR completed in ${elapsed}.`
-    );
-  }
-
-  function chooseApplyMode(options = {}) {
-    const applyTitle = getImportApplyTitle(options);
-    if (importApplyTitle) importApplyTitle.textContent = applyTitle;
-
+  function promptChoice(options = {}) {
     if (
       !importApplyModal
+      || !importApplyTitle
       || !btnImportApplyOverwrite
       || !btnImportApplyAppend
     ) {
-      const fallbackRaw = window.prompt(
-        `${applyTitle} OVERWRITE or APPEND`,
-        'OVERWRITE'
-      );
-      const fallbackMode = String(fallbackRaw || '').trim().toLowerCase();
-      if (fallbackMode === 'overwrite' || fallbackMode === 'append') {
-        return Promise.resolve(fallbackMode);
-      }
-      return Promise.resolve('');
+      return Promise.resolve(String(options && options.dismissValue || ''));
     }
 
-    if (importApplyResolve) settleImportApplyChoice('');
+    const opts = (options && typeof options === 'object') ? options : {};
+    const titleText = String(opts.title || importApplyTitle.textContent || '').trim();
+    const contextText = String(opts.context || '').trim();
+    const primaryLabel = String(opts.primaryLabel || btnImportApplyOverwrite.textContent || '').trim();
+    const secondaryLabel = String(opts.secondaryLabel || btnImportApplyAppend.textContent || '').trim();
+    const primaryValue = String(opts.primaryValue || '');
+    const secondaryValue = String(opts.secondaryValue || '');
+    const dismissValue = String(opts.dismissValue || '');
+
+    if (choiceResolve) settleChoice(choiceDismissValue);
+    choiceDismissValue = dismissValue;
+
+    importApplyTitle.textContent = titleText;
+    if (importApplyContext) {
+      importApplyContext.textContent = contextText;
+      importApplyContext.hidden = !contextText;
+    }
+
+    btnImportApplyOverwrite.textContent = primaryLabel;
+    btnImportApplyOverwrite.dataset.returnValue = primaryValue;
+    btnImportApplyAppend.textContent = secondaryLabel;
+    btnImportApplyAppend.dataset.returnValue = secondaryValue;
+
     return new Promise((resolve) => {
-      importApplyResolve = resolve;
-      showImportApplyModal();
+      choiceResolve = resolve;
+      showChoiceModal();
     });
   }
 
@@ -970,10 +965,6 @@
       const aria = t('renderer.main.aria.cancel_ocr', btnCancelOcr.title || btnCancelOcr.textContent || '');
       if (aria) btnCancelOcr.setAttribute('aria-label', aria);
     }
-    if (importApplyTitle) importApplyTitle.textContent = t('renderer.main.import_apply.title', importApplyTitle.textContent || '');
-    if (btnImportApplyOverwrite) btnImportApplyOverwrite.textContent = t('renderer.main.import_apply.overwrite', btnImportApplyOverwrite.textContent || '');
-    if (btnImportApplyAppend) btnImportApplyAppend.textContent = t('renderer.main.import_apply.append', btnImportApplyAppend.textContent || '');
-
     if (ocrOptionsTitle) ocrOptionsTitle.textContent = t('renderer.main.ocr_options.title', ocrOptionsTitle.textContent || '');
     if (ocrPresetLabel) ocrPresetLabel.textContent = t('renderer.main.ocr_options.preset_label', ocrPresetLabel.textContent || '');
     if (ocrLanguageLabel) ocrLanguageLabel.textContent = t('renderer.main.ocr_options.language_label', ocrLanguageLabel.textContent || '');
@@ -1057,13 +1048,17 @@
     }
 
     if (btnImportApplyOverwrite) {
-      btnImportApplyOverwrite.addEventListener('click', () => settleImportApplyChoice('overwrite'));
+      btnImportApplyOverwrite.addEventListener('click', () => {
+        settleChoice(btnImportApplyOverwrite.dataset.returnValue || '');
+      });
     }
     if (btnImportApplyAppend) {
-      btnImportApplyAppend.addEventListener('click', () => settleImportApplyChoice('append'));
+      btnImportApplyAppend.addEventListener('click', () => {
+        settleChoice(btnImportApplyAppend.dataset.returnValue || '');
+      });
     }
     if (importApplyBackdrop) {
-      importApplyBackdrop.addEventListener('click', () => settleImportApplyChoice(''));
+      importApplyBackdrop.addEventListener('click', () => settleChoice(choiceDismissValue));
     }
 
     document.addEventListener('keydown', (event) => {
@@ -1075,7 +1070,7 @@
       }
       if (importApplyModal && importApplyModal.getAttribute('aria-hidden') === 'false') {
         event.preventDefault();
-        settleImportApplyChoice('');
+        settleChoice(choiceDismissValue);
       }
     });
   }
@@ -1091,7 +1086,7 @@
     handleImportProgress,
     noteJobQueued,
     markImportFinished,
-    chooseApplyMode,
+    promptChoice,
     promptOcrOptionsDialog,
     isOcrRoute,
     getDefaultRunOptions,
