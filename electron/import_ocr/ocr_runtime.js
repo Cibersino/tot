@@ -35,6 +35,24 @@ function ensurePathExists(targetPath) {
   }
 }
 
+function normalizeCaptureLimit(rawLimit, fallback) {
+  const n = Number(rawLimit);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.floor(n);
+}
+
+function appendChunkWithLimit(currentText, chunk, maxChars) {
+  const text = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk || '');
+  const remaining = maxChars - currentText.length;
+  if (remaining <= 0) {
+    return { nextText: currentText, truncated: true };
+  }
+  if (text.length > remaining) {
+    return { nextText: currentText + text.slice(0, remaining), truncated: true };
+  }
+  return { nextText: currentText + text, truncated: false };
+}
+
 function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
   const requested = String(rawLang || '').trim();
   const tesseractLang = mapUiLanguageToTesseract(requested);
@@ -69,6 +87,14 @@ function readProcessStreams(
   maxStderrChars = OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS
 ) {
   return new Promise((resolve) => {
+    const normalizedMaxStdoutChars = normalizeCaptureLimit(
+      maxStdoutChars,
+      OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS
+    );
+    const normalizedMaxStderrChars = normalizeCaptureLimit(
+      maxStderrChars,
+      OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS
+    );
     let stdoutText = '';
     let stderrText = '';
     let stdoutTruncated = false;
@@ -77,36 +103,18 @@ function readProcessStreams(
     if (child.stdout) {
       child.stdout.on('data', (chunk) => {
         if (stdoutTruncated) return;
-        const text = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk || '');
-        const remaining = maxStdoutChars - stdoutText.length;
-        if (remaining <= 0) {
-          stdoutTruncated = true;
-          return;
-        }
-        if (text.length > remaining) {
-          stdoutText += text.slice(0, remaining);
-          stdoutTruncated = true;
-          return;
-        }
-        stdoutText += text;
+        const next = appendChunkWithLimit(stdoutText, chunk, normalizedMaxStdoutChars);
+        stdoutText = next.nextText;
+        stdoutTruncated = next.truncated;
       });
     }
 
     if (child.stderr) {
       child.stderr.on('data', (chunk) => {
         if (stderrTruncated) return;
-        const text = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk || '');
-        const remaining = maxStderrChars - stderrText.length;
-        if (remaining <= 0) {
-          stderrTruncated = true;
-          return;
-        }
-        if (text.length > remaining) {
-          stderrText += text.slice(0, remaining);
-          stderrTruncated = true;
-          return;
-        }
-        stderrText += text;
+        const next = appendChunkWithLimit(stderrText, chunk, normalizedMaxStderrChars);
+        stderrText = next.nextText;
+        stderrTruncated = next.truncated;
       });
     }
 
