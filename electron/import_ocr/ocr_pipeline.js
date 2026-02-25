@@ -22,6 +22,24 @@ function isPdfInput(session) {
   return ext === '.pdf';
 }
 
+function validateSidecarPrerequisites(sidecar) {
+  if (!ensurePathExists(sidecar.tesseractPath)) {
+    return fail('OCR_BINARY_MISSING', 'Tesseract sidecar binary not found.', {
+      binary: 'tesseract',
+      path: sidecar.tesseractPath,
+      profileKey: sidecar.profileKey,
+    });
+  }
+  if (!ensurePathExists(sidecar.tessdataPath)) {
+    return fail('OCR_BINARY_MISSING', 'Tesseract language data directory not found.', {
+      binary: 'tessdata',
+      path: sidecar.tessdataPath,
+      profileKey: sidecar.profileKey,
+    });
+  }
+  return null;
+}
+
 async function runImageOcr(session, sidecar, options = {}) {
   const imagePath = session && typeof session.filePath === 'string' ? session.filePath : '';
   if (!imagePath || !ensurePathExists(imagePath)) {
@@ -96,27 +114,16 @@ async function runImageOcr(session, sidecar, options = {}) {
 }
 
 async function runOcrPipeline(session, options = {}) {
-  const sidecar = resolveSidecarPaths(options || {});
+  const normalizedOptions = options || {};
+  const sidecar = resolveSidecarPaths(normalizedOptions);
   if (!sidecar.ok) return sidecar;
 
-  if (!ensurePathExists(sidecar.tesseractPath)) {
-    return fail('OCR_BINARY_MISSING', 'Tesseract sidecar binary not found.', {
-      binary: 'tesseract',
-      path: sidecar.tesseractPath,
-      profileKey: sidecar.profileKey,
-    });
-  }
-  if (!ensurePathExists(sidecar.tessdataPath)) {
-    return fail('OCR_BINARY_MISSING', 'Tesseract language data directory not found.', {
-      binary: 'tessdata',
-      path: sidecar.tessdataPath,
-      profileKey: sidecar.profileKey,
-    });
-  }
+  const sidecarValidationResult = validateSidecarPrerequisites(sidecar);
+  if (sidecarValidationResult) return sidecarValidationResult;
   if (isPdfInput(session)) {
-    return runPdfRasterOcrV2(session, sidecar, options || {});
+    return runPdfRasterOcrV2(session, sidecar, normalizedOptions);
   }
-  return runImageOcr(session, sidecar, options || {});
+  return runImageOcr(session, sidecar, normalizedOptions);
 }
 
 module.exports = {
