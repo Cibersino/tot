@@ -14,6 +14,7 @@ const path = require('path');
 const { app, BrowserWindow, dialog } = require('electron');
 const Log = require('../log');
 const settingsState = require('../settings');
+const { MAX_PASTE_REPEAT } = require('../constants_main');
 const { validateRegistry } = require('./platform/profile_registry');
 const { validateSidecarRuntime } = require('./platform/resolve_sidecar');
 const { buildAvailableUiLanguages } = require('./language_policy');
@@ -24,7 +25,6 @@ const { terminateWithEscalation } = require('./platform/process_control');
 const log = Log.get('import-ocr-orchestrator');
 log.debug('Import/OCR orchestrator starting...');
 
-const MAX_REPEAT_COUNT = 9999;
 const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 const FILE_FILTERS = Object.freeze([
@@ -607,7 +607,7 @@ function normalizeApplyMode(raw) {
 function clampRepeatCount(raw) {
   const n = Number(raw);
   if (!Number.isFinite(n)) return 1;
-  return Math.min(MAX_REPEAT_COUNT, Math.max(1, Math.floor(n)));
+  return Math.min(MAX_PASTE_REPEAT, Math.max(1, Math.floor(n)));
 }
 
 function buildRepeatedAppendText(current, clip, repeatCount) {
