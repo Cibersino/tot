@@ -1,6 +1,19 @@
 // electron/import_ocr/ocr_pipeline.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Resolve and validate OCR sidecar runtime prerequisites for image/PDF paths.
+// - Normalize optional bridge callbacks used by OCR execution (progress, child, cancel).
+// - Route PDF input to runPdfRasterOcrV2 and non-PDF input to single-image OCR.
+// - Execute single-image OCR with timeout/language validation and normalized output.
+// - Return normalized OCR result/failure objects consumed by import OCR orchestration.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 const path = require('path');
 const Log = require('../log');
 const { resolveSidecarPaths } = require('./platform/resolve_sidecar');
@@ -18,6 +31,9 @@ const {
 const log = Log.get('import-ocr-pipeline');
 log.debug('OCR pipeline starting...');
 
+// =============================================================================
+// Helpers (routing, callback normalization, failure shaping)
+// =============================================================================
 function isPdfInput(session) {
   const route = String((session && session.route) || '').trim().toLowerCase();
   if (route === 'ocr_pdf_scanned') return true;
@@ -75,6 +91,9 @@ function failMissingSidecarBinary(binary, targetPath, profileKey, message) {
   });
 }
 
+// =============================================================================
+// Image OCR path (single-page pipeline)
+// =============================================================================
 async function runImageOcr(session, sidecar, options = {}) {
   const imagePath = session && typeof session.filePath === 'string' ? session.filePath : '';
   if (!imagePath || !ensurePathExists(imagePath)) {
@@ -143,6 +162,9 @@ async function runImageOcr(session, sidecar, options = {}) {
   };
 }
 
+// =============================================================================
+// Pipeline entrypoint (shared sidecar checks + route dispatch)
+// =============================================================================
 async function runOcrPipeline(session, options = {}) {
   const normalizedOptions = normalizeBridgeCallbacks(options || {});
   const sidecar = resolveSidecarPaths(normalizedOptions);
@@ -170,6 +192,9 @@ async function runOcrPipeline(session, options = {}) {
   return runImageOcr(session, sidecar, normalizedOptions);
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   runOcrPipeline,
 };
