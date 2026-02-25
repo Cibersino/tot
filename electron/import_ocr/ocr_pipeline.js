@@ -16,6 +16,7 @@ const {
 } = require('./ocr_runtime');
 
 const log = Log.get('import-ocr-pipeline');
+log.debug('OCR pipeline starting...');
 
 function isPdfInput(session) {
   const route = String((session && session.route) || '').trim().toLowerCase();
