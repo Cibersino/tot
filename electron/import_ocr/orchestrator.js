@@ -799,6 +799,19 @@ function registerIpc(ipcMain, {
     throw new Error('[import_ocr/orchestrator] registerIpc requires ipcMain');
   }
 
+  function getPayloadObject(payload) {
+    return payload && typeof payload === 'object' ? payload : {};
+  }
+
+  function rejectIfUnauthorizedOrBlocked(event, channel, { gate = true } = {}) {
+    const unauthorized = ensureMainSender(event, channel);
+    if (unauthorized) return unauthorized;
+    if (!gate) return null;
+    const blocked = maybeBlockedByInteractionGate(event, channel, { mainWindowOnly: true });
+    if (blocked) return blocked;
+    return null;
+  }
+
   if (typeof getWindows === 'function') {
     resolveWindows = getWindows;
   }
@@ -831,11 +844,8 @@ function registerIpc(ipcMain, {
   }
 
   ipcMain.handle('import-get-ocr-languages', async (event) => {
-    const unauthorized = ensureMainSender(event, 'import-get-ocr-languages');
-    if (unauthorized) return unauthorized;
-
-    const blocked = maybeBlockedByInteractionGate(event, 'import-get-ocr-languages', { mainWindowOnly: true });
-    if (blocked) return blocked;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-get-ocr-languages');
+    if (rejected) return rejected;
 
     const caps = getOcrLanguageCapabilities();
     if (!caps.ok) return caps;
@@ -848,11 +858,8 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-select-file', async (event) => {
-    const unauthorized = ensureMainSender(event, 'import-select-file');
-    if (unauthorized) return unauthorized;
-
-    const blocked = maybeBlockedByInteractionGate(event, 'import-select-file', { mainWindowOnly: true });
-    if (blocked) return blocked;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-select-file');
+    if (rejected) return rejected;
 
     const owner = resolveMainWindow();
     const defaultPath = resolveImportDialogDefaultPath();
@@ -869,13 +876,10 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-select-file-path', async (event, payload) => {
-    const unauthorized = ensureMainSender(event, 'import-select-file-path');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-select-file-path');
+    if (rejected) return rejected;
 
-    const blocked = maybeBlockedByInteractionGate(event, 'import-select-file-path', { mainWindowOnly: true });
-    if (blocked) return blocked;
-
-    const p = payload && typeof payload === 'object' ? payload : {};
+    const p = getPayloadObject(payload);
     const filePath = typeof p.filePath === 'string' ? p.filePath.trim() : '';
     if (!filePath) {
       return fail('IMPORT_INVALID_PAYLOAD', 'Missing filePath.');
@@ -885,13 +889,10 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-run', async (event, payload) => {
-    const unauthorized = ensureMainSender(event, 'import-run');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-run');
+    if (rejected) return rejected;
 
-    const blocked = maybeBlockedByInteractionGate(event, 'import-run', { mainWindowOnly: true });
-    if (blocked) return blocked;
-
-    const p = payload && typeof payload === 'object' ? payload : {};
+    const p = getPayloadObject(payload);
     const sessionId = typeof p.sessionId === 'string' ? p.sessionId.trim() : '';
     if (!sessionId) {
       return fail('IMPORT_INVALID_PAYLOAD', 'Missing sessionId.');
@@ -955,8 +956,8 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-cancel', async (event) => {
-    const unauthorized = ensureMainSender(event, 'import-cancel');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-cancel', { gate: false });
+    if (rejected) return rejected;
 
     if (!activeJobId || !jobs.has(activeJobId)) {
       return fail('OCR_NOT_RUNNING', 'No active OCR job.');
@@ -990,13 +991,10 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-apply', async (event, payload) => {
-    const unauthorized = ensureMainSender(event, 'import-apply');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-apply');
+    if (rejected) return rejected;
 
-    const blocked = maybeBlockedByInteractionGate(event, 'import-apply', { mainWindowOnly: true });
-    if (blocked) return blocked;
-
-    const p = payload && typeof payload === 'object' ? payload : {};
+    const p = getPayloadObject(payload);
     const sessionId = typeof p.sessionId === 'string' ? p.sessionId.trim() : '';
     if (!sessionId) {
       return fail('IMPORT_INVALID_PAYLOAD', 'Missing sessionId.');
@@ -1025,13 +1023,10 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-discard', async (event, payload) => {
-    const unauthorized = ensureMainSender(event, 'import-discard');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-discard');
+    if (rejected) return rejected;
 
-    const blocked = maybeBlockedByInteractionGate(event, 'import-discard', { mainWindowOnly: true });
-    if (blocked) return blocked;
-
-    const p = payload && typeof payload === 'object' ? payload : {};
+    const p = getPayloadObject(payload);
     const sessionId = typeof p.sessionId === 'string' ? p.sessionId.trim() : '';
     if (!sessionId) {
       return fail('IMPORT_INVALID_PAYLOAD', 'Missing sessionId.');
