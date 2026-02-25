@@ -2096,7 +2096,6 @@ if (!importEntry || typeof importEntry.createController !== 'function') {
     btnImportExtract,
     importJobSessionMap,
     importJobIsOcrMap,
-    importDrop: window.ImportDrop,
     electronAPI: window.electronAPI,
     getOptionalElectronMethod,
     showImportDialogMessage,
