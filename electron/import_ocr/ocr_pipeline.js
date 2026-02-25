@@ -2,6 +2,7 @@
 'use strict';
 
 const path = require('path');
+const Log = require('../log');
 const { resolveSidecarPaths } = require('./platform/resolve_sidecar');
 const { runPdfRasterOcrV2 } = require('./engine_v2');
 const {
@@ -11,15 +12,59 @@ const {
   resolveAndValidateOcrLanguage,
   runProcessWithTimeout,
   resolveTesseractArgs,
-  safeInvoke,
   normalizeMultiline,
 } = require('./ocr_runtime');
+
+const log = Log.get('import-ocr-pipeline');
 
 function isPdfInput(session) {
   const route = String((session && session.route) || '').trim().toLowerCase();
   if (route === 'ocr_pdf_scanned') return true;
   const ext = path.extname(String((session && session.filePath) || '')).toLowerCase();
   return ext === '.pdf';
+}
+
+function normalizeOptionalCallback(callback, name, fallbackValueOnError) {
+  if (callback === undefined || callback === null) return null;
+  if (typeof callback !== 'function') {
+    log.warnOnce(
+      `import_ocr_pipeline.bridge.invalid.${name}`,
+      `${name} callback is invalid (ignored); expected function.`
+    );
+    return null;
+  }
+  return (...args) => {
+    try {
+      return callback(...args);
+    } catch (err) {
+      if (name === 'isCancelRequested') {
+        log.warnOnce(
+          'import_ocr_pipeline.bridge.failed_ignored.isCancelRequested',
+          'isCancelRequested callback failed (ignored); treating as not canceled.',
+          err
+        );
+      } else {
+        log.warnOnce(
+          `import_ocr_pipeline.bridge.failed_ignored.${name}`,
+          `${name} callback failed (ignored):`,
+          err
+        );
+      }
+      return fallbackValueOnError;
+    }
+  };
+}
+
+function normalizeBridgeCallbacks(options = {}) {
+  const normalizedOptions = Object.assign({}, options || {});
+  normalizedOptions.onProgress = normalizeOptionalCallback(normalizedOptions.onProgress, 'onProgress');
+  normalizedOptions.onChildProcess = normalizeOptionalCallback(normalizedOptions.onChildProcess, 'onChildProcess');
+  normalizedOptions.isCancelRequested = normalizeOptionalCallback(
+    normalizedOptions.isCancelRequested,
+    'isCancelRequested',
+    false
+  );
+  return normalizedOptions;
 }
 
 function failMissingSidecarBinary(binary, targetPath, profileKey, message) {
@@ -44,7 +89,8 @@ async function runImageOcr(session, sidecar, options = {}) {
   const { tesseractLang } = langRes;
 
   const emitProgress = (stage, pageDone) => {
-    safeInvoke(options.onProgress, {
+    if (typeof options.onProgress !== 'function') return;
+    options.onProgress({
       stage,
       pageDone,
       pageTotal: 1,
@@ -98,7 +144,7 @@ async function runImageOcr(session, sidecar, options = {}) {
 }
 
 async function runOcrPipeline(session, options = {}) {
-  const normalizedOptions = options || {};
+  const normalizedOptions = normalizeBridgeCallbacks(options || {});
   const sidecar = resolveSidecarPaths(normalizedOptions);
   if (!sidecar.ok) return sidecar;
 
