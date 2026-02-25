@@ -308,7 +308,6 @@
       "import_ocr_not_running": "No hay un OCR en ejecución.",
       "import_ocr_canceled": "OCR fue cancelado.",
       "import_ocr_cancel_timeout": "Se solicitó cancelar OCR, pero el proceso no se detuvo a tiempo.",
-      "import_pdf_no_text_layer": "El PDF no tiene capa de texto seleccionable; se requiere flujo OCR.",
       "import_scanned_pdf_ocr_start_failed": "No se pudo iniciar OCR para el PDF escaneado.",
       "import_session_mapping_missing": "La importación terminó pero no se encontró el mapeo de sesión.",
       "import_truncated": "El texto importado excedió el tamaño máximo y fue truncado.",

@@ -565,7 +565,6 @@ const IMPORT_ERROR_MESSAGE_KEYS = Object.freeze({
   OCR_NOT_RUNNING: 'renderer.alerts.import_ocr_not_running',
   OCR_CANCELED: 'renderer.alerts.import_ocr_canceled',
   OCR_CANCEL_KILL_TIMEOUT: 'renderer.alerts.import_ocr_cancel_timeout',
-  IMPORT_PDF_NO_TEXT_LAYER: 'renderer.alerts.import_pdf_no_text_layer',
 });
 
 function humanizeImportError(res) {
@@ -677,14 +676,10 @@ async function handlePdfOcrStartFailure(sessionId, startRes) {
   await discardImportSession(sessionId);
 }
 
-async function handlePdfProbeNoTextFallback(sessionId, payload = {}) {
+async function handlePdfProbeNoTextFallback(sessionId, summary = {}) {
   if (!sessionId) return false;
-
-  const p = payload && typeof payload === 'object' ? payload : {};
-  const summary = p.summary && typeof p.summary === 'object' ? p.summary : {};
-  const warningMsg = humanizeImportError(p);
-  if (warningMsg) showImportDialogMessage(warningMsg);
-  const startRes = await startPdfOcrFromSession(sessionId, summary);
+  const safeSummary = summary && typeof summary === 'object' ? summary : {};
+  const startRes = await startPdfOcrFromSession(sessionId, safeSummary);
   if (!startRes || startRes.ok !== true) {
     await handlePdfOcrStartFailure(sessionId, startRes);
   }
@@ -703,8 +698,12 @@ async function handleImportFinished(payload) {
   }
 
   if (!p.ok) {
-    if (String(p.code || '') === 'IMPORT_PDF_NO_TEXT_LAYER' && sessionId) {
-      const handled = await handlePdfProbeNoTextFallback(sessionId, p);
+    if (String(p.code || '') === 'IMPORT_PDF_NO_TEXT_LAYER') {
+      if (!sessionId) {
+        showImportDialogMessage('renderer.alerts.import_session_mapping_missing');
+        return;
+      }
+      const handled = await handlePdfProbeNoTextFallback(sessionId, p.summary);
       if (handled) return;
     }
     const message = humanizeImportError(p);

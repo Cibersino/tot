@@ -308,7 +308,6 @@
       "import_ocr_not_running": "No OCR job is currently running.",
       "import_ocr_canceled": "OCR was canceled.",
       "import_ocr_cancel_timeout": "OCR cancel requested, but process did not stop in time.",
-      "import_pdf_no_text_layer": "PDF has no selectable text layer; OCR flow is required.",
       "import_scanned_pdf_ocr_start_failed": "Failed to start OCR for scanned PDF.",
       "import_session_mapping_missing": "Import completed but session mapping was not found.",
       "import_truncated": "Imported text exceeded maximum size and was truncated.",
