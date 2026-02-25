@@ -117,6 +117,7 @@ tot/
 │ │ ├── menu_actions.js
 │ │ ├── current_text_snapshots.js
 │ │ ├── import_ocr_ui.js
+│ │ ├── import_entry.js
 │ │ ├── format.js
 │ │ ├── i18n.js
 │ │ ├── constants.js
@@ -203,6 +204,9 @@ tot/
 - `electron/import_ocr/orchestrator.js` — Orquestador import/OCR (sesiones/jobs/lock global, routing y flujos apply/discard).
 - `electron/import_ocr/extract_phase_a.js` — Extractores no-OCR (txt/docx/pdf-text-layer) y utilidades de fase A.
 - `electron/import_ocr/ocr_pipeline.js` — Pipeline OCR/raster (`tesseract` + `pdftoppm`) con progreso/cancelación/cleanup.
+- `electron/import_ocr/ocr_runtime.js` — Helpers runtime para OCR: validación de idioma/datos (`traineddata`), normalización, ejecución de procesos externos con timeout/cancelación, y captura acotada de `stdout/stderr`.
+- `electron/import_ocr/engine_v2.js` — Motor OCR v2 para PDF escaneado por página (raster + OCR), con preflight de páginas (`pdfjs`), watchdog anti-stall, progreso por etapas y limpieza de temporales.
+- `electron/import_ocr/language_policy.js` — Política de idiomas OCR: mapeo UI→Tesseract, idiomas requeridos por combinación, catálogo disponible según `tessdata`, y resolución de idioma preferido con fallback.
 - `electron/import_ocr/platform/*` — Adaptadores y perfiles por plataforma/arquitectura para sidecars OCR.
 
 ### 3) Módulos del renderer (public/js)
@@ -218,6 +222,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
+- `public/js/import_ocr_ui.js` — Capa UI de Import/OCR en la ventana principal: panel de progreso/cancelación, modal overwrite/append (con repetición), modal de opciones OCR (preset/idioma/custom), y estimaciones ETA.
+- `public/js/import_entry.js` — Entrada unificada de importación (botón + drag&drop): resuelve rutas soltadas (`file://`, `text/uri-list`, bridge), orquesta `import-select/import-run/import-discard`, y delega prompts de OCR.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
