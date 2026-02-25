@@ -230,7 +230,7 @@ function copyDefaultPresetsIfMissing() {
  * @param {Object} opts
  * @param {Function} opts.getWindows -() => ({ mainWin, editorWin, presetWin, flotanteWin, langWin })
  */
-function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
+function registerIpc(ipcMain, { getWindows, guardIpcByInteractionGate } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[presets_main] registerIpc requires ipcMain');
   }
@@ -240,9 +240,9 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
       ? () => getWindows() || {}
       : () => getWindows || {};
 
-  const maybeBlockedByOcrLock = (event, channel, opts = {}) => {
-    if (typeof guardIpcWhileLocked !== 'function') return null;
-    return guardIpcWhileLocked(event, Object.assign({ channel }, opts));
+  const maybeBlockedByInteractionGate = (event, channel, opts = {}) => {
+    if (typeof guardIpcByInteractionGate !== 'function') return null;
+    return guardIpcByInteractionGate(event, Object.assign({ channel }, opts));
   };
 
   // Best-effort: seed user config defaults on startup.
@@ -446,7 +446,7 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
   // IPC: open the config presets folder in the OS file manager.
   ipcMain.handle('open-default-presets-folder', async (event) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'open-default-presets-folder');
+      const blocked = maybeBlockedByInteractionGate(event, 'open-default-presets-folder');
       if (blocked) return blocked;
 
       ensureConfigPresetsDir();
@@ -473,7 +473,7 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
   // IPC: create or overwrite a user preset and broadcast changes.
   ipcMain.handle('create-preset', (event, preset) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'create-preset');
+      const blocked = maybeBlockedByInteractionGate(event, 'create-preset');
       if (blocked) return blocked;
 
       const sanitized = sanitizePresetInput(preset);
@@ -525,7 +525,7 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
   // IPC: confirm deletion with a native dialog, then persist changes.
   ipcMain.handle('request-delete-preset', async (event, name) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'request-delete-preset');
+      const blocked = maybeBlockedByInteractionGate(event, 'request-delete-preset');
       if (blocked) return blocked;
 
       if (typeof name !== 'undefined' && name !== null && typeof name !== 'string') {
@@ -648,7 +648,7 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
   // IPC: confirm and restore defaults for the current language.
   ipcMain.handle('request-restore-defaults', async (event) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'request-restore-defaults');
+      const blocked = maybeBlockedByInteractionGate(event, 'request-restore-defaults');
       if (blocked) return blocked;
 
       let settings = settingsState.getSettings();
@@ -733,7 +733,7 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
   // IPC: show info dialog when edit is requested with no selection.
   ipcMain.handle('notify-no-selection-edit', async (event) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'notify-no-selection-edit');
+      const blocked = maybeBlockedByInteractionGate(event, 'notify-no-selection-edit');
       if (blocked) return blocked;
 
       const settings = settingsState.getSettings();
@@ -764,7 +764,7 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
   // IPC: confirm edit, replace preset, and broadcast.
   ipcMain.handle('edit-preset', async (event, payload) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'edit-preset');
+      const blocked = maybeBlockedByInteractionGate(event, 'edit-preset');
       if (blocked) return blocked;
 
       const originalName =

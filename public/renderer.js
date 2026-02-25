@@ -162,11 +162,11 @@ function isRendererReady() {
   return rendererReadyState === 'READY';
 }
 
-function isOcrLockActive() {
-  return !!ocrLockActive;
+function isInteractionGateBlocked() {
+  return !!interactionGateBlocked;
 }
 
-function guardUserAction(actionId, { allowWhenOcrLocked = false } = {}) {
+function guardUserAction(actionId, { allowWhenInteractionBlocked = false } = {}) {
   if (!isRendererReady()) {
     log.warnOnce(
       `BOOTSTRAP:renderer.preReady.${actionId}`,
@@ -175,10 +175,10 @@ function guardUserAction(actionId, { allowWhenOcrLocked = false } = {}) {
     );
     return false;
   }
-  if (isOcrLockActive() && !allowWhenOcrLocked) {
+  if (isInteractionGateBlocked() && !allowWhenInteractionBlocked) {
     log.warnOnce(
-      `OCR_LOCKED:renderer.action.${actionId}`,
-      `OCR lock active: blocked renderer action '${actionId}'.`
+      `INTERACTION_BLOCKED:renderer.action.${actionId}`,
+      `Interaction gate active: blocked renderer action '${actionId}'.`
     );
     return false;
   }
@@ -272,13 +272,13 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
-let ocrLockActive = false;
-let ocrLockReason = '';
+let interactionGateBlocked = false;
+let interactionGateReason = '';
 const importJobSessionMap = new Map();
 const importJobIsOcrMap = new Map();
 
 if (btnCancelOcr) {
-  btnCancelOcr.dataset.ocrLockExempt = '1';
+  btnCancelOcr.dataset.interactionGateExempt = '1';
 }
 
 function isOcrRoute(route) {
@@ -449,44 +449,44 @@ function noteQueuedOcrJob(payload) {
   importOcrUi.noteJobQueued(payload);
 }
 
-function applyGlobalOcrLockUi() {
+function applyGlobalInteractionGateUi() {
   const controls = document.querySelectorAll('button, input, select, textarea');
   controls.forEach((el) => {
-    if (!el || el.dataset.ocrLockExempt === '1') return;
-    if (ocrLockActive) {
-      if (!Object.prototype.hasOwnProperty.call(el.dataset, 'ocrLockPrevDisabled')) {
-        el.dataset.ocrLockPrevDisabled = el.disabled ? '1' : '0';
+    if (!el || el.dataset.interactionGateExempt === '1') return;
+    if (interactionGateBlocked) {
+      if (!Object.prototype.hasOwnProperty.call(el.dataset, 'interactionGatePrevDisabled')) {
+        el.dataset.interactionGatePrevDisabled = el.disabled ? '1' : '0';
       }
       el.disabled = true;
       return;
     }
-    if (!Object.prototype.hasOwnProperty.call(el.dataset, 'ocrLockPrevDisabled')) return;
-    el.disabled = (el.dataset.ocrLockPrevDisabled === '1');
-    delete el.dataset.ocrLockPrevDisabled;
+    if (!Object.prototype.hasOwnProperty.call(el.dataset, 'interactionGatePrevDisabled')) return;
+    el.disabled = (el.dataset.interactionGatePrevDisabled === '1');
+    delete el.dataset.interactionGatePrevDisabled;
   });
 }
 
 function syncOcrControlVisibility() {
   if (!importOcrUi || typeof importOcrUi.setLockState !== 'function') return;
   importOcrUi.setLockState({
-    locked: ocrLockActive,
-    reason: ocrLockReason,
+    locked: interactionGateBlocked,
+    reason: interactionGateReason,
   });
 }
 
-function updateOcrLockState(payload) {
-  const nextLocked = !!(payload && payload.locked);
-  const nextReason = nextLocked
+function updateInteractionGateState(payload) {
+  const nextBlocked = !!(payload && payload.blocked);
+  const nextReason = nextBlocked
     ? String((payload && payload.reason) || 'OCR_RUNNING')
     : '';
-  const changed = (ocrLockActive !== nextLocked) || (ocrLockReason !== nextReason);
-  ocrLockActive = nextLocked;
-  ocrLockReason = nextReason;
+  const changed = (interactionGateBlocked !== nextBlocked) || (interactionGateReason !== nextReason);
+  interactionGateBlocked = nextBlocked;
+  interactionGateReason = nextReason;
   if (!changed) {
     syncOcrControlVisibility();
     return;
   }
-  applyGlobalOcrLockUi();
+  applyGlobalInteractionGateUi();
   syncOcrControlVisibility();
 }
 
@@ -566,12 +566,72 @@ const IMPORT_ERROR_MESSAGE_KEYS = Object.freeze({
   OCR_CANCELED: 'renderer.alerts.import_ocr_canceled',
   OCR_CANCEL_KILL_TIMEOUT: 'renderer.alerts.import_ocr_cancel_timeout',
 });
+const OCR_PRECONDITION_WINDOW_LABELS = Object.freeze({
+  editor: 'Manual editor',
+  editor_find: 'Find window',
+  preset: 'Preset window',
+  task_editor: 'Task editor',
+  language: 'Language window',
+  flotante: 'Floating stopwatch window',
+});
+
+function mapPreconditionWindowLabel(rawId) {
+  const key = String(rawId || '').trim().toLowerCase();
+  if (key && Object.prototype.hasOwnProperty.call(OCR_PRECONDITION_WINDOW_LABELS, key)) {
+    return OCR_PRECONDITION_WINDOW_LABELS[key];
+  }
+  return key || 'Secondary window';
+}
+
+function buildOcrPreconditionWarning(res) {
+  const p = res && typeof res === 'object' ? res : {};
+  const reasons = new Set(
+    (Array.isArray(p.reasons) ? p.reasons : [])
+      .map((item) => String(item || '').trim().toUpperCase())
+      .filter(Boolean)
+  );
+  const openSecondaryWindows = Array.isArray(p.openSecondaryWindows)
+    ? p.openSecondaryWindows.map((item) => String(item || '').trim().toLowerCase()).filter(Boolean)
+    : [];
+  const hasSecondaryWindows = reasons.has('SECONDARY_WINDOWS_OPEN') || openSecondaryWindows.length > 0;
+  const hasRunningStopwatch = reasons.has('STOPWATCH_RUNNING') || !!p.stopwatchRunning;
+
+  const details = [];
+  if (hasSecondaryWindows) {
+    if (openSecondaryWindows.length > 0) {
+      const labels = Array.from(new Set(openSecondaryWindows.map(mapPreconditionWindowLabel)));
+      details.push(`Close these secondary windows: ${labels.join(', ')}.`);
+    } else {
+      details.push('Close all secondary windows.');
+    }
+  }
+  if (hasRunningStopwatch) {
+    details.push('Pause the stopwatch.');
+  }
+  if (!details.length) {
+    details.push('Close any secondary windows and pause the stopwatch.');
+  }
+  return `Cannot start OCR right now. ${details.join(' ')}`;
+}
+
+function showOcrPreconditionWarning(res) {
+  const message = buildOcrPreconditionWarning(res);
+  try {
+    if (typeof window.Notify?.notifyMain === 'function') {
+      window.Notify.notifyMain(message);
+      return;
+    }
+    window.alert(message);
+  } catch (err) {
+    log.warn('Unable to show OCR precondition warning:', err);
+  }
+}
 
 function humanizeImportError(res) {
   const code = res && typeof res.code === 'string' ? res.code : '';
   const mappedKey = IMPORT_ERROR_MESSAGE_KEYS[code];
   if (mappedKey) return mappedKey;
-  if (code === 'OCR_LOCKED') {
+  if (code === 'INTERACTION_BLOCKED' || code === 'OCR_PRECONDITION_FAILED') {
     return '';
   }
   if (code === 'CANCELLED') {
@@ -667,7 +727,10 @@ async function startPdfOcrFromSession(sessionId, summary = {}) {
 }
 
 async function handlePdfOcrStartFailure(sessionId, startRes) {
-  if (String(startRes && startRes.code || '') === 'IMPORT_SCANNED_PDF_OCR_START_FAILED') {
+  const code = String(startRes && startRes.code || '');
+  if (code === 'OCR_PRECONDITION_FAILED') {
+    showOcrPreconditionWarning(startRes);
+  } else if (code === 'IMPORT_SCANNED_PDF_OCR_START_FAILED') {
     showImportDialogMessage('renderer.alerts.import_scanned_pdf_ocr_start_failed');
   } else {
     const message = humanizeImportError(startRes);
@@ -1267,18 +1330,18 @@ function armIpcSubscriptions() {
       throw new Error('[renderer] electronAPI.onStartupReady unavailable; cannot bootstrap renderer readiness');
     }
 
-    if (typeof window.electronAPI.onOcrLockState === 'function') {
-      window.electronAPI.onOcrLockState((payload) => {
+    if (typeof window.electronAPI.onInteractionGateState === 'function') {
+      window.electronAPI.onInteractionGateState((payload) => {
         try {
-          updateOcrLockState(payload || {});
+          updateInteractionGateState(payload || {});
         } catch (err) {
-          log.error('Error handling ocr-lock-state event:', err);
+          log.error('Error handling interaction-gate-state event:', err);
         }
       });
     } else {
       log.warnOnce(
-        'renderer.ipc.onOcrLockState.unavailable',
-        'onOcrLockState unavailable; OCR lock live updates will not sync.'
+        'renderer.ipc.onInteractionGateState.unavailable',
+        'onInteractionGateState unavailable; interaction-gate live updates will not sync.'
       );
     }
 
@@ -1439,20 +1502,20 @@ async function runStartupOrchestrator() {
       }
     }
 
-    const getOcrLockState = getOptionalElectronMethod('getOcrLockState', {
-      dedupeKey: 'renderer.ipc.getOcrLockState.unavailable',
-      unavailableMessage: 'getOcrLockState unavailable; assuming OCR lock is inactive.'
+    const getInteractionGateState = getOptionalElectronMethod('getInteractionGateState', {
+      dedupeKey: 'renderer.ipc.getInteractionGateState.unavailable',
+      unavailableMessage: 'getInteractionGateState unavailable; assuming interaction gate is inactive.'
     });
-    if (getOcrLockState) {
+    if (getInteractionGateState) {
       try {
-        const lockSnapshot = await getOcrLockState();
-        if (lockSnapshot && lockSnapshot.ok === true) {
-          updateOcrLockState(lockSnapshot);
-        } else if (lockSnapshot && lockSnapshot.code === 'OCR_LOCKED') {
-          updateOcrLockState({ locked: true, reason: lockSnapshot.reason || 'OCR_RUNNING' });
+        const gateSnapshot = await getInteractionGateState();
+        if (gateSnapshot && gateSnapshot.ok === true) {
+          updateInteractionGateState(gateSnapshot);
+        } else if (gateSnapshot && gateSnapshot.code === 'INTERACTION_BLOCKED') {
+          updateInteractionGateState({ blocked: true, reason: gateSnapshot.reason || 'OCR_RUNNING' });
         }
       } catch (err) {
-        log.warn('BOOTSTRAP: getOcrLockState failed; assuming unlocked:', err);
+        log.warn('BOOTSTRAP: getInteractionGateState failed; assuming unblocked:', err);
       }
     }
 
@@ -2059,8 +2122,12 @@ if (btnImportExtract) {
         options: runOptions,
       });
       if (!runRes || runRes.ok !== true) {
-        const message = humanizeImportError(runRes);
-        if (message) showImportDialogMessage(message);
+        if (String(runRes && runRes.code || '') === 'OCR_PRECONDITION_FAILED') {
+          showOcrPreconditionWarning(runRes);
+        } else {
+          const message = humanizeImportError(runRes);
+          if (message) showImportDialogMessage(message);
+        }
         await discardImportSession(selectRes.sessionId);
         return;
       }
@@ -2091,7 +2158,7 @@ if (btnImportExtract) {
 
 if (btnCancelOcr) {
   btnCancelOcr.addEventListener('click', async () => {
-    if (!guardUserAction('import-cancel', { allowWhenOcrLocked: true })) return;
+    if (!guardUserAction('import-cancel', { allowWhenInteractionBlocked: true })) return;
     try {
       const importCancel = getOptionalElectronMethod('importCancel', {
         dedupeKey: 'renderer.ipc.importCancel.unavailable',

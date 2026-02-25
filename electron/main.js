@@ -61,6 +61,8 @@ const FALLBACK_LANGUAGES = [
   { tag: 'es', label: 'Español' },
   { tag: 'en', label: 'English' },
 ];
+const INTERACTION_GATE_BLOCK_CODE = 'INTERACTION_BLOCKED';
+const INTERACTION_GATE_DEFAULT_REASON = 'OCR_RUNNING';
 
 // =============================================================================
 // Helpers (guards + validation)
@@ -76,18 +78,18 @@ function isAliveWindow(win) {
 }
 
 function isMainInteractive() {
-  return mainReadyState === 'READY' && menuEnabled && !importOcrOrchestrator.isOcrLockActive();
+  return mainReadyState === 'READY' && menuEnabled && !isInteractionGateActive();
 }
 
-function guardMainUserAction(actionId, message) {
-  if (importOcrOrchestrator.isOcrLockActive()) {
+function guardMainUserAction(actionId, message, { allowWhenBlocked = false } = {}) {
+  if (isInteractionGateActive() && !allowWhenBlocked) {
     log.warnOnce(
-      `OCR_LOCKED:main.${actionId}`,
-      `OCR lock active: blocked main action '${actionId}'.`
+      `INTERACTION_BLOCKED:main.${actionId}`,
+      `Interaction gate active: blocked main action '${actionId}'.`
     );
     return false;
   }
-  if (isMainInteractive()) return true;
+  if (mainReadyState === 'READY' && menuEnabled) return true;
   const rawMessage = typeof message === 'string' && message.trim()
     ? message.trim()
     : 'Main action ignored (pre-READY).';
@@ -132,6 +134,144 @@ let languageResolved = false;
 let menuInstalled = false;
 let mainWindowCreated = false;
 let languageSelectionHandler = null;
+let interactionGateActive = false;
+let interactionGateReason = '';
+
+function getKnownWindowsArray() {
+  const findWin = (editorFindMain && typeof editorFindMain.getFindWindow === 'function')
+    ? editorFindMain.getFindWindow()
+    : null;
+  return [mainWin, editorWin, findWin, presetWin, langWin, flotanteWin, taskEditorWin];
+}
+
+function getKnownAliveWindows() {
+  const seen = new Set();
+  const out = [];
+  getKnownWindowsArray().forEach((win) => {
+    if (!isAliveWindow(win)) return;
+    const key = String(win.id || '');
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    out.push(win);
+  });
+  return out;
+}
+
+function isKnownWindowSender(event) {
+  try {
+    const senderWin = event && event.sender
+      ? BrowserWindow.fromWebContents(event.sender)
+      : null;
+    if (!senderWin) return false;
+    return getKnownAliveWindows().some((win) => win === senderWin);
+  } catch {
+    return false;
+  }
+}
+
+function isMainWindowSender(event) {
+  try {
+    const senderWin = event && event.sender
+      ? BrowserWindow.fromWebContents(event.sender)
+      : null;
+    return !!(senderWin && senderWin === resolveMainWindow());
+  } catch {
+    return false;
+  }
+}
+
+function getInteractionGateState() {
+  return {
+    blocked: !!interactionGateActive,
+    reason: interactionGateReason || '',
+  };
+}
+
+function isInteractionGateActive() {
+  return !!interactionGateActive;
+}
+
+function setInteractionGateState(blocked, reason = '') {
+  const nextBlocked = !!blocked;
+  const nextReason = nextBlocked
+    ? String(reason || INTERACTION_GATE_DEFAULT_REASON)
+    : '';
+  if (interactionGateActive === nextBlocked && interactionGateReason === nextReason) return;
+
+  interactionGateActive = nextBlocked;
+  interactionGateReason = nextReason;
+  const payload = getInteractionGateState();
+  getKnownAliveWindows().forEach((win) => {
+    try {
+      win.webContents.send('interaction-gate-state', payload);
+    } catch (err) {
+      log.warnOnce(
+        `interaction_gate.send.${String(win.id || 'unknown')}`,
+        "webContents.send('interaction-gate-state') failed (ignored):",
+        err
+      );
+    }
+  });
+}
+
+function guardIpcByInteractionGate(event, options = {}) {
+  if (!isInteractionGateActive()) return null;
+  if (options && options.allowWhenBlocked) return null;
+
+  const knownWindowsOnly = !options || options.knownWindowsOnly !== false;
+  if (knownWindowsOnly && !isKnownWindowSender(event)) return null;
+
+  const mainWindowOnly = !!(options && options.mainWindowOnly);
+  if (mainWindowOnly && !isMainWindowSender(event)) return null;
+
+  const channel = options && typeof options.channel === 'string' && options.channel
+    ? options.channel
+    : 'unknown';
+
+  log.warnOnce(
+    `interaction_gate.blocked.${channel}`,
+    `Interaction gate active: blocked IPC '${channel}'.`
+  );
+
+  return {
+    ok: false,
+    code: INTERACTION_GATE_BLOCK_CODE,
+    message: 'User interaction is currently blocked while OCR is running.',
+    reason: interactionGateReason || INTERACTION_GATE_DEFAULT_REASON,
+  };
+}
+
+function getActiveSecondaryWindowsForOcrPreflight() {
+  const findWin = (editorFindMain && typeof editorFindMain.getFindWindow === 'function')
+    ? editorFindMain.getFindWindow()
+    : null;
+  const refs = [
+    { id: 'editor', win: editorWin },
+    { id: 'editor_find', win: findWin },
+    { id: 'preset', win: presetWin },
+    { id: 'task_editor', win: taskEditorWin },
+    { id: 'language', win: langWin },
+    { id: 'flotante', win: flotanteWin },
+  ];
+  return refs
+    .filter(({ win }) => isAliveWindow(win))
+    .map(({ id }) => id);
+}
+
+function validateOcrStartPreconditions() {
+  const openSecondaryWindows = getActiveSecondaryWindowsForOcrPreflight();
+  const stopwatchRunning = !!(crono && crono.running);
+  const reasons = [];
+  if (openSecondaryWindows.length) reasons.push('SECONDARY_WINDOWS_OPEN');
+  if (stopwatchRunning) reasons.push('STOPWATCH_RUNNING');
+
+  return {
+    ok: reasons.length === 0,
+    reasons,
+    openSecondaryWindows,
+    stopwatchRunning,
+  };
+}
 
 // =============================================================================
 // Menu + development utilities
@@ -171,7 +311,7 @@ function buildAppMenu(lang) {
   menuBuilder.buildAppMenu(effectiveLang, {
     resolveMainWindow,
     onOpenLanguage: () => createLanguageWindow(),
-    isMenuEnabled: () => (menuEnabled && mainReadyState === 'READY'),
+    isMenuEnabled: () => isMainInteractive(),
   });
   menuInstalled = true;
 }
@@ -1134,9 +1274,6 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
 
 // Floating window: open/close + commands from the flotante UI
 ipcMain.handle('flotante-open', async () => {
-  if (importOcrOrchestrator.isOcrLockActive()) {
-    return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
-  }
   if (!guardMainUserAction('flotante-open', 'flotante-open ignored (pre-READY).')) {
     return { ok: false, error: 'not ready' };
   }
@@ -1159,9 +1296,6 @@ ipcMain.handle('flotante-open', async () => {
 });
 
 ipcMain.handle('flotante-close', () => {
-  if (importOcrOrchestrator.isOcrLockActive()) {
-    return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
-  }
   if (!guardMainUserAction('flotante-close', 'flotante-close ignored (pre-READY).')) {
     return { ok: false, error: 'not ready' };
   }
@@ -1234,9 +1368,6 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
 
 // Editor window: open (create or focus) and push current text
 ipcMain.handle('open-editor', () => {
-  if (importOcrOrchestrator.isOcrLockActive()) {
-    return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
-  }
   if (!guardMainUserAction('open-editor', 'open-editor ignored (pre-READY).')) {
     return { ok: false, error: 'not ready' };
   }
@@ -1287,9 +1418,6 @@ ipcMain.on('task-editor-confirm-close', (event) => {
 
 // Preset modal: open (with payload normalization)
 ipcMain.handle('open-preset-modal', (event, payload) => {
-  if (importOcrOrchestrator.isOcrLockActive()) {
-    return { ok: false, code: 'OCR_LOCKED', error: 'ocr locked' };
-  }
   if (!guardMainUserAction('open-preset-modal', 'open-preset-modal ignored (pre-READY).')) {
     return { ok: false, error: 'not ready' };
   }
@@ -1378,6 +1506,13 @@ ipcMain.handle('get-app-runtime-info', () => {
   }
 });
 
+ipcMain.handle('interaction-gate-get-state', (event) => {
+  if (!isKnownWindowSender(event)) {
+    return { ok: false, code: 'UNAUTHORIZED', error: 'unauthorized' };
+  }
+  return Object.assign({ ok: true }, getInteractionGateState());
+});
+
 ipcMain.on('startup:renderer-core-ready', () => {
   if (rendererCoreReady) {
     log.warnOnce('startup.rendererCoreReady.duplicate', 'startup:renderer-core-ready already handled (ignored).');
@@ -1435,7 +1570,7 @@ app.whenReady().then(() => {
     mainWin,
     editorWin,
   }), {
-    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
+    guardIpcByInteractionGate,
   });
 
   editorFindMain.registerIpc(ipcMain);
@@ -1451,7 +1586,7 @@ app.whenReady().then(() => {
       taskEditorWin,
     }),
     buildAppMenu,
-    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
+    guardIpcByInteractionGate,
   });
 
   presetsMain.registerIpc(ipcMain, {
@@ -1464,14 +1599,14 @@ app.whenReady().then(() => {
       flotanteWin,
       taskEditorWin,
     }),
-    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
+    guardIpcByInteractionGate,
   });
 
   snapshotsMain.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
+    guardIpcByInteractionGate,
   });
 
   tasksMain.registerIpc(ipcMain, {
@@ -1486,7 +1621,7 @@ app.whenReady().then(() => {
         taskEditorWin.show();
       }
     },
-    guardIpcWhileLocked: importOcrOrchestrator.guardIpcWhileLocked,
+    guardIpcByInteractionGate,
   });
 
   importOcrOrchestrator.registerIpc(ipcMain, {
@@ -1500,6 +1635,15 @@ app.whenReady().then(() => {
       taskEditorWin,
     }),
     textState,
+    guardIpcByInteractionGate,
+    validateOcrStartPreconditions,
+    onOcrExecutionStateChange: ({ running, reason } = {}) => {
+      if (running) {
+        setInteractionGateState(true, String(reason || INTERACTION_GATE_DEFAULT_REASON));
+        return;
+      }
+      setInteractionGateState(false, '');
+    },
   });
 
   updater.registerIpc(ipcMain, {

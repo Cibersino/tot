@@ -249,7 +249,7 @@ function parseSnapshotFile(selectedReal) {
 // =============================================================================
 // IPC registration
 // =============================================================================
-function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
+function registerIpc(ipcMain, { getWindows, guardIpcByInteractionGate } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[current_text_snapshots] registerIpc requires ipcMain');
   }
@@ -262,14 +262,14 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
     return null;
   };
 
-  const maybeBlockedByOcrLock = (event, channel, opts = {}) => {
-    if (typeof guardIpcWhileLocked !== 'function') return null;
-    return guardIpcWhileLocked(event, Object.assign({ channel }, opts));
+  const maybeBlockedByInteractionGate = (event, channel, opts = {}) => {
+    if (typeof guardIpcByInteractionGate !== 'function') return null;
+    return guardIpcByInteractionGate(event, Object.assign({ channel }, opts));
   };
 
   ipcMain.handle('current-text-snapshot-save', async (event) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'current-text-snapshot-save');
+      const blocked = maybeBlockedByInteractionGate(event, 'current-text-snapshot-save');
       if (blocked) return blocked;
 
       const rootInfo = getSnapshotsRoot('write');
@@ -335,7 +335,7 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
 
   ipcMain.handle('current-text-snapshot-select', async (event) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'current-text-snapshot-select');
+      const blocked = maybeBlockedByInteractionGate(event, 'current-text-snapshot-select');
       if (blocked) return blocked;
 
       const rootInfo = getSnapshotsRoot('read');
@@ -368,7 +368,7 @@ function registerIpc(ipcMain, { getWindows, guardIpcWhileLocked } = {}) {
 
   ipcMain.handle('current-text-snapshot-load', async (event, payload) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'current-text-snapshot-load');
+      const blocked = maybeBlockedByInteractionGate(event, 'current-text-snapshot-load');
       if (blocked) return blocked;
 
       const rootInfo = getSnapshotsRoot('read');

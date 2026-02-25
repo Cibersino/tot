@@ -6,9 +6,8 @@
 // =============================================================================
 // Responsibilities:
 // - Own import/OCR session and job stores (main-process authority).
-// - Own global OCR lock state and broadcast lock changes to renderers.
 // - Register import/OCR IPC contracts and job orchestration.
-// - Provide shared IPC lock-guard helpers for other main-process modules.
+// - Coordinate OCR lifecycle notifications for the main-process interaction gate.
 
 const fs = require('fs');
 const path = require('path');
@@ -52,15 +51,13 @@ let sidecarRuntimeStatus = {
   code: 'OCR_RUNTIME_NOT_VALIDATED',
   message: 'OCR sidecar runtime not validated yet.',
 };
+let guardIpcByInteractionGate = null;
+let validateOcrStartPreconditionsFn = null;
+let onOcrExecutionStateChange = null;
 
 const sessions = new Map();
 const jobs = new Map();
 let activeJobId = '';
-
-const ocrLockState = {
-  locked: false,
-  reason: '',
-};
 
 // =============================================================================
 // Helpers
@@ -93,32 +90,6 @@ function safeSend(win, channel, payload) {
       `webContents.send('${channel}') failed (ignored):`,
       err
     );
-  }
-}
-
-function getUniqueAliveWindows() {
-  const windows = resolveWindows() || {};
-  const seen = new Set();
-  const out = [];
-  Object.values(windows).forEach((win) => {
-    if (!isAliveWindow(win)) return;
-    const key = String(win.id || '');
-    if (!key || seen.has(key)) return;
-    seen.add(key);
-    out.push(win);
-  });
-  return out;
-}
-
-function isKnownAppSender(event) {
-  try {
-    const senderWin = event && event.sender
-      ? BrowserWindow.fromWebContents(event.sender)
-      : null;
-    if (!senderWin) return false;
-    return getUniqueAliveWindows().some((win) => win === senderWin);
-  } catch {
-    return false;
   }
 }
 
@@ -176,6 +147,23 @@ function emitImportFinished(job, result) {
       : {},
   };
   safeSend(resolveMainWindow(), 'import-finished', payload);
+}
+
+function maybeBlockedByInteractionGate(event, channel, opts = {}) {
+  if (typeof guardIpcByInteractionGate !== 'function') return null;
+  return guardIpcByInteractionGate(event, Object.assign({ channel }, opts));
+}
+
+function emitOcrExecutionStateChange(running, reason = '') {
+  if (typeof onOcrExecutionStateChange !== 'function') return;
+  try {
+    onOcrExecutionStateChange({
+      running: !!running,
+      reason: running ? String(reason || 'OCR_RUNNING') : '',
+    });
+  } catch (err) {
+    log.error('onOcrExecutionStateChange callback failed:', err);
+  }
 }
 
 function normalizePath(rawPath) {
@@ -625,7 +613,7 @@ async function runJob(job) {
   try {
     let extractRes = null;
     if (isOcrJob) {
-      setOcrLockState(true, 'OCR_RUNNING');
+      emitOcrExecutionStateChange(true, 'OCR_RUNNING');
       activeJobId = job.jobId;
       heartbeatTimer = startHeartbeat(job, progressState);
       extractRes = await runOcrPipeline(session, Object.assign({}, job.options || {}, {
@@ -761,74 +749,23 @@ async function runJob(job) {
     job.activeChild = null;
     if (activeJobId === job.jobId) {
       activeJobId = '';
-      setOcrLockState(false);
+    }
+    if (isOcrJob) {
+      emitOcrExecutionStateChange(false, '');
     }
   }
-}
-
-function guardIpcWhileLocked(event, options = {}) {
-  if (!isOcrLockActive()) return null;
-  if (options && options.allowWhenLocked) return null;
-
-  const knownWindowsOnly = !options || options.knownWindowsOnly !== false;
-  if (knownWindowsOnly && !isKnownAppSender(event)) return null;
-
-  const mainWindowOnly = !!(options && options.mainWindowOnly);
-  if (mainWindowOnly && !isMainWindowSender(event)) return null;
-
-  const channel = options && typeof options.channel === 'string' && options.channel
-    ? options.channel
-    : 'unknown';
-
-  log.warnOnce(
-    `import_ocr_orchestrator.lock.blocked.${channel}`,
-    `OCR lock active: blocked IPC '${channel}'.`
-  );
-
-  return fail(
-    'OCR_LOCKED',
-    'OCR is currently running; action blocked.',
-    { reason: ocrLockState.reason || 'OCR_RUNNING' }
-  );
-}
-
-function getOcrLockState() {
-  return {
-    locked: !!ocrLockState.locked,
-    reason: ocrLockState.reason || '',
-    activeJobId: activeJobId || null,
-  };
-}
-
-function isOcrLockActive() {
-  return !!ocrLockState.locked;
-}
-
-function setOcrLockState(locked, reason = '') {
-  const nextLocked = !!locked;
-  const nextReason = nextLocked
-    ? String(reason || 'OCR_RUNNING')
-    : '';
-
-  if (ocrLockState.locked === nextLocked && ocrLockState.reason === nextReason) {
-    return;
-  }
-
-  ocrLockState.locked = nextLocked;
-  ocrLockState.reason = nextReason;
-  const payload = {
-    locked: ocrLockState.locked,
-    reason: ocrLockState.reason,
-  };
-  getUniqueAliveWindows().forEach((win) => {
-    safeSend(win, 'ocr-lock-state', payload);
-  });
 }
 
 // =============================================================================
 // IPC registration
 // =============================================================================
-function registerIpc(ipcMain, { getWindows, textState } = {}) {
+function registerIpc(ipcMain, {
+  getWindows,
+  textState,
+  guardIpcByInteractionGate: interactionGuard,
+  validateOcrStartPreconditions,
+  onOcrExecutionStateChange: onOcrExecutionStateChangeCb,
+} = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_ocr/orchestrator] registerIpc requires ipcMain');
   }
@@ -839,6 +776,15 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
   if (textState && typeof textState === 'object') {
     textStateApi = textState;
   }
+  guardIpcByInteractionGate = typeof interactionGuard === 'function'
+    ? interactionGuard
+    : null;
+  validateOcrStartPreconditionsFn = typeof validateOcrStartPreconditions === 'function'
+    ? validateOcrStartPreconditions
+    : null;
+  onOcrExecutionStateChange = typeof onOcrExecutionStateChangeCb === 'function'
+    ? onOcrExecutionStateChangeCb
+    : null;
 
   ensureProfileRegistryReady();
   const runtimeSnapshot = refreshSidecarRuntimeStatus();
@@ -855,21 +801,11 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
     );
   }
 
-  ipcMain.handle('ocr-lock-get-state', (event) => {
-    if (!isKnownAppSender(event)) {
-      return fail('UNAUTHORIZED', 'unauthorized');
-    }
-    return Object.assign({ ok: true }, getOcrLockState());
-  });
-
   ipcMain.handle('import-get-ocr-languages', async (event) => {
     const unauthorized = ensureMainSender(event, 'import-get-ocr-languages');
     if (unauthorized) return unauthorized;
 
-    const blocked = guardIpcWhileLocked(event, {
-      channel: 'import-get-ocr-languages',
-      mainWindowOnly: true,
-    });
+    const blocked = maybeBlockedByInteractionGate(event, 'import-get-ocr-languages', { mainWindowOnly: true });
     if (blocked) return blocked;
 
     const caps = getOcrLanguageCapabilities();
@@ -886,10 +822,7 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
     const unauthorized = ensureMainSender(event, 'import-select-file');
     if (unauthorized) return unauthorized;
 
-    const blocked = guardIpcWhileLocked(event, {
-      channel: 'import-select-file',
-      mainWindowOnly: true,
-    });
+    const blocked = maybeBlockedByInteractionGate(event, 'import-select-file', { mainWindowOnly: true });
     if (blocked) return blocked;
 
     const owner = resolveMainWindow();
@@ -935,10 +868,7 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
     const unauthorized = ensureMainSender(event, 'import-run');
     if (unauthorized) return unauthorized;
 
-    const blocked = guardIpcWhileLocked(event, {
-      channel: 'import-run',
-      mainWindowOnly: true,
-    });
+    const blocked = maybeBlockedByInteractionGate(event, 'import-run', { mainWindowOnly: true });
     if (blocked) return blocked;
 
     const p = payload && typeof payload === 'object' ? payload : {};
@@ -960,6 +890,27 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
     const wantsOcr = String(session.route || '').startsWith('ocr_')
       || (session.kind === 'pdf' && runOptions.forcePdfOcr === true);
     if (wantsOcr) {
+      if (typeof validateOcrStartPreconditionsFn === 'function') {
+        const preconditions = validateOcrStartPreconditionsFn();
+        const preconditionsOk = !!(preconditions && preconditions.ok === true);
+        if (!preconditionsOk) {
+          const reasons = Array.isArray(preconditions && preconditions.reasons)
+            ? preconditions.reasons.map((item) => String(item || '').trim()).filter(Boolean)
+            : [];
+          const openSecondaryWindows = Array.isArray(preconditions && preconditions.openSecondaryWindows)
+            ? preconditions.openSecondaryWindows.map((item) => String(item || '').trim()).filter(Boolean)
+            : [];
+          return fail(
+            'OCR_PRECONDITION_FAILED',
+            'Cannot start OCR while secondary windows are open or stopwatch is running.',
+            {
+              reasons,
+              openSecondaryWindows,
+              stopwatchRunning: !!(preconditions && preconditions.stopwatchRunning),
+            }
+          );
+        }
+      }
       const registryReady = ensureProfileRegistryReady();
       if (!registryReady.ok) {
         return fail(
@@ -1022,10 +973,7 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
     const unauthorized = ensureMainSender(event, 'import-apply');
     if (unauthorized) return unauthorized;
 
-    const blocked = guardIpcWhileLocked(event, {
-      channel: 'import-apply',
-      mainWindowOnly: true,
-    });
+    const blocked = maybeBlockedByInteractionGate(event, 'import-apply', { mainWindowOnly: true });
     if (blocked) return blocked;
 
     const p = payload && typeof payload === 'object' ? payload : {};
@@ -1060,10 +1008,7 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
     const unauthorized = ensureMainSender(event, 'import-discard');
     if (unauthorized) return unauthorized;
 
-    const blocked = guardIpcWhileLocked(event, {
-      channel: 'import-discard',
-      mainWindowOnly: true,
-    });
+    const blocked = maybeBlockedByInteractionGate(event, 'import-discard', { mainWindowOnly: true });
     if (blocked) return blocked;
 
     const p = payload && typeof payload === 'object' ? payload : {};
@@ -1082,8 +1027,4 @@ function registerIpc(ipcMain, { getWindows, textState } = {}) {
 
 module.exports = {
   registerIpc,
-  guardIpcWhileLocked,
-  setOcrLockState,
-  getOcrLockState,
-  isOcrLockActive,
 };

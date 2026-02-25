@@ -51,12 +51,12 @@ const api = {
         };
         return subscribeWithUnsub('import-finished', wrapper, 'removeListener error (import-finished):');
     },
-    getOcrLockState: () => ipcRenderer.invoke('ocr-lock-get-state'),
-    onOcrLockState: (cb) => {
+    getInteractionGateState: () => ipcRenderer.invoke('interaction-gate-get-state'),
+    onInteractionGateState: (cb) => {
         const wrapper = (_e, payload) => {
-            try { cb(payload); } catch (err) { console.error('ocr-lock-state callback error:', err); }
+            try { cb(payload); } catch (err) { console.error('interaction-gate-state callback error:', err); }
         };
-        return subscribeWithUnsub('ocr-lock-state', wrapper, 'removeListener error (ocr-lock-state):');
+        return subscribeWithUnsub('interaction-gate-state', wrapper, 'removeListener error (interaction-gate-state):');
     },
     onCurrentTextUpdated: (cb) => {
         ipcRenderer.on('current-text-updated', (_e, text) => cb(text));

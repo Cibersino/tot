@@ -325,7 +325,7 @@ function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
 // =============================================================================
 // IPC registration
 // =============================================================================
-function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhileLocked } = {}) {
+function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcByInteractionGate } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[tasks_main] registerIpc requires ipcMain');
   }
@@ -333,9 +333,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
   const resolveWins = () => (typeof getWindows === 'function' ? (getWindows() || {}) : {});
   const resolveMainWin = () => resolveWins().mainWin || null;
   const resolveTaskEditorWin = () => resolveWins().taskEditorWin || null;
-  const maybeBlockedByOcrLock = (event, channel, opts = {}) => {
-    if (typeof guardIpcWhileLocked !== 'function') return null;
-    return guardIpcWhileLocked(event, Object.assign({ channel }, opts));
+  const maybeBlockedByInteractionGate = (event, channel, opts = {}) => {
+    if (typeof guardIpcByInteractionGate !== 'function') return null;
+    return guardIpcByInteractionGate(event, Object.assign({ channel }, opts));
   };
 
   // =============================================================================
@@ -343,7 +343,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
   // =============================================================================
   ipcMain.handle('open-task-editor', async (event, payload) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'open-task-editor');
+      const blocked = maybeBlockedByInteractionGate(event, 'open-task-editor');
       if (blocked) return blocked;
 
       const mainWin = resolveMainWin();
@@ -445,7 +445,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
   // =============================================================================
   ipcMain.handle('task-list-save', async (event, payload) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'task-list-save');
+      const blocked = maybeBlockedByInteractionGate(event, 'task-list-save');
       if (blocked) return blocked;
 
       const taskEditorWin = resolveTaskEditorWin();
@@ -523,7 +523,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
 
   ipcMain.handle('task-list-delete', async (event, payload) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'task-list-delete');
+      const blocked = maybeBlockedByInteractionGate(event, 'task-list-delete');
       if (blocked) return blocked;
 
       const taskEditorWin = resolveTaskEditorWin();
@@ -581,7 +581,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
   // =============================================================================
   ipcMain.handle('task-library-list', async (event) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'task-library-list');
+      const blocked = maybeBlockedByInteractionGate(event, 'task-library-list');
       if (blocked) return blocked;
 
       const taskEditorWin = resolveTaskEditorWin();
@@ -621,7 +621,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
 
   ipcMain.handle('task-library-save', async (event, payload) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'task-library-save');
+      const blocked = maybeBlockedByInteractionGate(event, 'task-library-save');
       if (blocked) return blocked;
 
       const taskEditorWin = resolveTaskEditorWin();
@@ -682,7 +682,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
 
   ipcMain.handle('task-library-delete', async (event, payload) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'task-library-delete');
+      const blocked = maybeBlockedByInteractionGate(event, 'task-library-delete');
       if (blocked) return blocked;
 
       const taskEditorWin = resolveTaskEditorWin();
@@ -741,7 +741,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
   // =============================================================================
   ipcMain.handle('task-columns-load', async (event) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'task-columns-load');
+      const blocked = maybeBlockedByInteractionGate(event, 'task-columns-load');
       if (blocked) return blocked;
 
       const taskEditorWin = resolveTaskEditorWin();
@@ -777,7 +777,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
 
   ipcMain.handle('task-columns-save', async (event, payload) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'task-columns-save');
+      const blocked = maybeBlockedByInteractionGate(event, 'task-columns-save');
       if (blocked) return blocked;
 
       const taskEditorWin = resolveTaskEditorWin();
@@ -807,7 +807,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, guardIpcWhil
   // =============================================================================
   ipcMain.handle('task-open-link', async (event, payload) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'task-open-link');
+      const blocked = maybeBlockedByInteractionGate(event, 'task-open-link');
       if (blocked) return blocked;
 
       const taskEditorWin = resolveTaskEditorWin();

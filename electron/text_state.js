@@ -252,7 +252,7 @@ function init(options) {
  * - clipboard-read-text
  * Broadcasts updates to main/editor windows (best-effort).
  */
-function registerIpc(ipcMain, windowsResolver, { guardIpcWhileLocked } = {}) {
+function registerIpc(ipcMain, windowsResolver, { guardIpcByInteractionGate } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[text_state] registerIpc requires ipcMain');
   }
@@ -263,9 +263,9 @@ function registerIpc(ipcMain, windowsResolver, { guardIpcWhileLocked } = {}) {
     getWindows = () => windowsResolver;
   }
 
-  const maybeBlockedByOcrLock = (event, channel, opts = {}) => {
-    if (typeof guardIpcWhileLocked !== 'function') return null;
-    return guardIpcWhileLocked(event, Object.assign({ channel }, opts));
+  const maybeBlockedByInteractionGate = (event, channel, opts = {}) => {
+    if (typeof guardIpcByInteractionGate !== 'function') return null;
+    return guardIpcByInteractionGate(event, Object.assign({ channel }, opts));
   };
 
   // Returns the current text as a simple string (compatibility)
@@ -273,7 +273,7 @@ function registerIpc(ipcMain, windowsResolver, { guardIpcWhileLocked } = {}) {
     return currentText || '';
   });
   ipcMain.handle('clipboard-read-text', (event) => {
-    const blocked = maybeBlockedByOcrLock(event, 'clipboard-read-text');
+    const blocked = maybeBlockedByInteractionGate(event, 'clipboard-read-text');
     if (blocked) return blocked;
 
     const { mainWin } = getWindows() || {};
@@ -319,7 +319,7 @@ function registerIpc(ipcMain, windowsResolver, { guardIpcWhileLocked } = {}) {
         return { ok: false, error: 'unauthorized' };
       }
 
-      const blocked = maybeBlockedByOcrLock(_event, 'set-current-text');
+      const blocked = maybeBlockedByInteractionGate(_event, 'set-current-text');
       if (blocked) return blocked;
 
       const isPayloadObject = payload && typeof payload === 'object';
@@ -372,7 +372,7 @@ function registerIpc(ipcMain, windowsResolver, { guardIpcWhileLocked } = {}) {
   // Forced cleaning of the editor (invoked from the main screen)
   ipcMain.handle('force-clear-editor', async (event) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'force-clear-editor');
+      const blocked = maybeBlockedByInteractionGate(event, 'force-clear-editor');
       if (blocked) return blocked;
 
       const { mainWin, editorWin } = getWindows() || {};

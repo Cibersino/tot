@@ -487,16 +487,16 @@ function registerIpc(
   {
     getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin })
     buildAppMenu, // function(lang)
-    guardIpcWhileLocked, // function(event, { channel, ...opts }) => { ok:false,... } | null
+    guardIpcByInteractionGate, // function(event, { channel, ...opts }) => { ok:false,... } | null
   } = {}
 ) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
   }
 
-  const maybeBlockedByOcrLock = (event, channel, opts = {}) => {
-    if (typeof guardIpcWhileLocked !== 'function') return null;
-    return guardIpcWhileLocked(event, Object.assign({ channel }, opts));
+  const maybeBlockedByInteractionGate = (event, channel, opts = {}) => {
+    if (typeof guardIpcByInteractionGate !== 'function') return null;
+    return guardIpcByInteractionGate(event, Object.assign({ channel }, opts));
   };
 
   // get-settings: returns the current settings object (normalized)
@@ -516,7 +516,7 @@ function registerIpc(
   // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (event, lang) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'set-language');
+      const blocked = maybeBlockedByInteractionGate(event, 'set-language');
       if (blocked) return blocked;
 
       const chosenRaw = String(lang || '');
@@ -591,7 +591,7 @@ function registerIpc(
   // set-mode-conteo: updates modeConteo and broadcasts
   ipcMain.handle('set-mode-conteo', async (event, mode) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'set-mode-conteo');
+      const blocked = maybeBlockedByInteractionGate(event, 'set-mode-conteo');
       if (blocked) return blocked;
 
       let settings = getSettings();
@@ -611,7 +611,7 @@ function registerIpc(
   // set-selected-preset: persists selection per language
   ipcMain.handle('set-selected-preset', async (event, presetName) => {
     try {
-      const blocked = maybeBlockedByOcrLock(event, 'set-selected-preset');
+      const blocked = maybeBlockedByInteractionGate(event, 'set-selected-preset');
       if (blocked) return blocked;
 
       const name = typeof presetName === 'string' ? presetName.trim() : '';
