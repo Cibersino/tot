@@ -1,3 +1,4 @@
+// electron/import_ocr/language_policy.js
 'use strict';
 
 const { DEFAULT_LANG } = require('../constants_main');
@@ -102,3 +103,7 @@ module.exports = {
   buildAvailableUiLanguages,
   resolvePreferredUiLanguage,
 };
+
+// =============================================================================
+// End of electron/import_ocr/language_policy.js
+// =============================================================================

@@ -464,3 +464,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
 module.exports = {
   runPdfRasterOcrV2,
 };
+
+// =============================================================================
+// End of electron/import_ocr/engine_v2.js
+// =============================================================================

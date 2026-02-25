@@ -133,3 +133,7 @@ module.exports = {
   waitForProcessExit,
   terminateWithEscalation,
 };
+
+// =============================================================================
+// End of electron/import_ocr/platform/process_control.js
+// =============================================================================

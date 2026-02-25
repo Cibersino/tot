@@ -275,3 +275,7 @@ async function runPhaseAExtraction(session, options = {}) {
 module.exports = {
   runPhaseAExtraction,
 };
+
+// =============================================================================
+// End of electron/import_ocr/extract_phase_a.js
+// =============================================================================

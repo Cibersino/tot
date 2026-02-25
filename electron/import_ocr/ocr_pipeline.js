@@ -122,3 +122,7 @@ async function runOcrPipeline(session, options = {}) {
 module.exports = {
   runOcrPipeline,
 };
+
+// =============================================================================
+// End of electron/import_ocr/ocr_pipeline.js
+// =============================================================================

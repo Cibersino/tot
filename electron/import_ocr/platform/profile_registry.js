@@ -125,3 +125,7 @@ module.exports = {
   listProfileKeys,
   validateRegistry,
 };
+
+// =============================================================================
+// End of electron/import_ocr/platform/profile_registry.js
+// =============================================================================

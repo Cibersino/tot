@@ -226,3 +226,7 @@ module.exports = {
   resolveSidecarPaths,
   validateSidecarRuntime,
 };
+
+// =============================================================================
+// End of electron/import_ocr/platform/resolve_sidecar.js
+// =============================================================================
