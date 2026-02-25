@@ -28,8 +28,7 @@ function isPdfInput(session) {
 function normalizeOptionalCallback(callback, name, fallbackValueOnError) {
   if (callback === undefined || callback === null) return null;
   if (typeof callback !== 'function') {
-    log.warnOnce(
-      `import_ocr_pipeline.bridge.invalid.${name}`,
+    log.warn(
       `${name} callback is invalid (ignored); expected function.`
     );
     return null;
