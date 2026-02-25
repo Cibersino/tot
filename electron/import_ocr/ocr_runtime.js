@@ -12,6 +12,11 @@ const {
   terminateWithEscalation,
 } = require('./platform/process_control');
 
+const OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS = 2_000_000; // Default cap for OCR process stdout capture (typically tesseract text output).
+const OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS = 200_000; // Default cap for OCR process stderr capture when no per-call override is provided.
+const OCR_RASTER_STDOUT_LIMIT_CHARS = 200_000; // Raster (pdftoppm) override: stdout is not expected to carry main payload.
+const OCR_RASTER_STDERR_LIMIT_CHARS = 500_000; // Raster (pdftoppm) override: stderr can be verbose for diagnostics.
+
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
 }
@@ -58,7 +63,11 @@ function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
   };
 }
 
-function readProcessStreams(child, maxStdoutChars = 2_000_000, maxStderrChars = 200_000) {
+function readProcessStreams(
+  child,
+  maxStdoutChars = OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS,
+  maxStderrChars = OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS
+) {
   return new Promise((resolve) => {
     let stdoutText = '';
     let stderrText = '';
@@ -134,8 +143,8 @@ async function runProcessWithTimeout({
   timeoutMs,
   onChildProcess,
   isCancelRequested,
-  maxStdoutChars = 2_000_000,
-  maxStderrChars = 200_000,
+  maxStdoutChars = OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS,
+  maxStderrChars = OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS,
 }) {
   let child = null;
   let spawnError = null;
@@ -243,6 +252,10 @@ function resolveTesseractArgs({ inputPath, tesseractLang, tessdataPath }) {
 }
 
 module.exports = {
+  OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS,
+  OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS,
+  OCR_RASTER_STDOUT_LIMIT_CHARS,
+  OCR_RASTER_STDERR_LIMIT_CHARS,
   fail,
   clampInt,
   ensurePathExists,

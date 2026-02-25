@@ -8,6 +8,8 @@ const {
   terminateWithEscalation,
 } = require('./platform/process_control');
 const {
+  OCR_RASTER_STDOUT_LIMIT_CHARS,
+  OCR_RASTER_STDERR_LIMIT_CHARS,
   fail,
   clampInt,
   ensurePathExists,
@@ -303,8 +305,8 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
           safeInvoke(options.onChildProcess, child);
         },
         isCancelRequested: options.isCancelRequested,
-        maxStdoutChars: 200_000,
-        maxStderrChars: 500_000,
+        maxStdoutChars: OCR_RASTER_STDOUT_LIMIT_CHARS,
+        maxStderrChars: OCR_RASTER_STDERR_LIMIT_CHARS,
       });
       activeChild = null;
       if (!rasterRes.ok) {
