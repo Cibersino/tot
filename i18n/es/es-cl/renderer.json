@@ -16,7 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
         "append_clipboard": "Pegar lo copiao en la línea de abajo",
-        "append_repeat": "Cantidad de veces que te repetís el plato (1-9999)",
+        "paste_repeat_count": "Cantidad de veces que te repetís el plato",
         "edit": "Truquearse con el texto completo",
         "clear": "Limpieza es viveza",
         "snapshot_load": "Cargar un coso de texto",
@@ -54,6 +54,50 @@
         "flotante_short": "VF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      },
+      "import_apply": {
+        "title": "Importación terminada. Elige cómo querís aplicar el texto:",
+        "title_with_elapsed": "Importación terminada. OCR listeilor en {elapsed}. Elige cómo querís aplicar el texto:",
+        "overwrite": "Aplastar",
+        "append": "Añadir",
+        "ocr_running": "OCR en marcha..."
+      },
+      "ocr_options": {
+        "title": "Opciones del OCR",
+        "context_image": "Archivo: {filename} - OCR de foto",
+        "context_pdf_scanned": "Archivo: {filename} - OCR de PDF truqueado",
+        "context_generic": "Archivo: {filename}",
+        "preset_label": "Preset",
+        "language_label": "Hablamiento",
+        "dpi_label": "DPI / Pureza",
+        "timeout_label": "Demora por página (s)",
+        "preprocess_label": "Preprocesamiento",
+        "preset_fast": "Usain Bolt",
+        "preset_balanced": "Equilibrao",
+        "preset_high_accuracy": "Fino y elegante",
+        "preset_custom": "A tu pinta",
+        "preprocess_basic": "Elemental",
+        "preprocess_standard": "Piola",
+        "preprocess_aggressive": "Brutal",
+        "guidance_presets": "Usain Bolt ~{fast}s/pág · Equilibrao ~{balanced}s/pág · Fino y elegante ~{high}s/pág",
+        "guidance_total": "Calculo total: ~{total}s pa {pages} página(s) (aprox, depende de lo pelúo del doc y qué tan chula es la máquina)",
+        "start": "Start OCR",
+        "abort": "Me arrepentí"
+      },
+      "import_progress": {
+        "pages": "páginas",
+        "elapsed": "transcurrío",
+        "eta": "ETA",
+        "stage_queued": "En la fila",
+        "stage_running": "Corriendo",
+        "stage_extracting": "Extrayendo...",
+        "stage_preflight": "Preparando...",
+        "stage_rasterizing": "Rasterizando...",
+        "stage_ocr": "OCR...",
+        "stage_finalizing": "Terminando...",
+        "stage_completed": "Completao",
+        "stage_failed": "Fallao",
+        "stage_canceled": "Cancelao"
       }
     },
     "tasks": {

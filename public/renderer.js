@@ -30,7 +30,7 @@ const {
   DEFAULT_LANG,
   WPM_MIN,
   WPM_MAX,
-  MAX_APPEND_REPEAT,
+  MAX_PASTE_REPEAT,
   PREVIEW_INLINE_THRESHOLD,
   PREVIEW_START_CHARS,
   PREVIEW_END_CHARS
@@ -40,9 +40,10 @@ const {
 // DOM references
 // =============================================================================
 const textPreview = document.getElementById('textPreview');
+const btnImportExtract = document.getElementById('btnImportExtract');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
-const appendRepeatInput = document.getElementById('appendRepeatInput');
+const pasteRepeatInput = document.getElementById('pasteRepeatInput');
 const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
 const btnLoadSnapshot = document.getElementById('btnLoadSnapshot');
@@ -50,6 +51,14 @@ const btnSaveSnapshot = document.getElementById('btnSaveSnapshot');
 const btnNewTask = document.getElementById('btnNewTask');
 const btnLoadTask = document.getElementById('btnLoadTask');
 const btnHelp = document.getElementById('btnHelp');
+
+const importOcrUi = window.ImportOcrUi || null;
+if (!importOcrUi) {
+  throw new Error('[renderer] ImportOcrUi unavailable; cannot continue');
+}
+const btnCancelOcr = typeof importOcrUi.getCancelButton === 'function'
+  ? importOcrUi.getCancelButton()
+  : null;
 
 // =============================================================================
 // UI keys and static lists
@@ -123,9 +132,9 @@ if (wpmInput) {
   wpmInput.min = String(WPM_MIN);
   wpmInput.max = String(WPM_MAX);
 }
-if (appendRepeatInput) {
-  appendRepeatInput.min = '1';
-  appendRepeatInput.max = String(MAX_APPEND_REPEAT);
+if (pasteRepeatInput) {
+  pasteRepeatInput.min = '1';
+  pasteRepeatInput.max = String(MAX_PASTE_REPEAT);
 }
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
@@ -153,14 +162,27 @@ function isRendererReady() {
   return rendererReadyState === 'READY';
 }
 
-function guardUserAction(actionId) {
-  if (isRendererReady()) return true;
-  log.warnOnce(
-    `BOOTSTRAP:renderer.preReady.${actionId}`,
-    'Renderer action ignored (pre-READY):',
-    actionId
-  );
-  return false;
+function isInteractionGateBlocked() {
+  return !!interactionGateBlocked;
+}
+
+function guardUserAction(actionId, { allowWhenInteractionBlocked = false } = {}) {
+  if (!isRendererReady()) {
+    log.warnOnce(
+      `BOOTSTRAP:renderer.preReady.${actionId}`,
+      'Renderer action ignored (pre-READY):',
+      actionId
+    );
+    return false;
+  }
+  if (isInteractionGateBlocked() && !allowWhenInteractionBlocked) {
+    log.warnOnce(
+      `INTERACTION_BLOCKED:renderer.action.${actionId}`,
+      `Interaction gate active: blocked renderer action '${actionId}'.`
+    );
+    return false;
+  }
+  return true;
 }
 
 function sendRendererCoreReady() {
@@ -250,6 +272,238 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
+let interactionGateBlocked = false;
+let interactionGateReason = '';
+const importJobSessionMap = new Map();
+const importJobIsOcrMap = new Map();
+
+if (btnCancelOcr) {
+  btnCancelOcr.dataset.interactionGateExempt = '1';
+}
+
+function isOcrRoute(route) {
+  if (!importOcrUi || typeof importOcrUi.isOcrRoute !== 'function') return false;
+  return importOcrUi.isOcrRoute(route);
+}
+
+function getDefaultImportRunOptions() {
+  if (!importOcrUi || typeof importOcrUi.getDefaultRunOptions !== 'function') {
+    return { languageTag: idiomaActual || DEFAULT_LANG, timeoutPerPageSec: 90 };
+  }
+  return importOcrUi.getDefaultRunOptions();
+}
+
+async function getAvailableOcrLanguages() {
+  const importGetOcrLanguages = getOptionalElectronMethod('importGetOcrLanguages', {
+    dedupeKey: 'renderer.ipc.importGetOcrLanguages.unavailable',
+    unavailableMessage: 'importGetOcrLanguages unavailable; OCR language options cannot be resolved.'
+  });
+  if (!importGetOcrLanguages) {
+    return { ok: false, code: 'IMPORT_UNAVAILABLE', message: 'importGetOcrLanguages unavailable' };
+  }
+
+  try {
+    const res = await importGetOcrLanguages();
+    if (!res || res.ok !== true) {
+      return res || { ok: false, code: 'IMPORT_UNAVAILABLE', message: 'importGetOcrLanguages failed' };
+    }
+    const availableUiLanguages = Array.isArray(res.availableUiLanguages)
+      ? res.availableUiLanguages.map((item) => String(item || '').trim().toLowerCase()).filter(Boolean)
+      : [];
+    if (!availableUiLanguages.length) {
+      return { ok: false, code: 'OCR_LANG_UNAVAILABLE', message: 'No OCR language options available.' };
+    }
+    return {
+      ok: true,
+      availableUiLanguages,
+    };
+  } catch (err) {
+    log.error('Failed to resolve OCR language capabilities:', err);
+    return { ok: false, code: 'IMPORT_UNAVAILABLE', message: 'importGetOcrLanguages threw an exception.' };
+  }
+}
+
+function formatImportElapsedLabel(ms) {
+  const totalSeconds = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  return `${minutes}m ${seconds}s`;
+}
+
+function setMainPasteRepeatValue(rawValue) {
+  const normalized = normalizePasteRepeat(rawValue);
+  if (pasteRepeatInput) {
+    pasteRepeatInput.value = String(normalized);
+  }
+  return normalized;
+}
+
+function getMainPasteRepeatValue() {
+  if (!pasteRepeatInput) return 1;
+  return setMainPasteRepeatValue(pasteRepeatInput.value);
+}
+
+function promptImportChoice(choice = {}) {
+  const safeChoice = (choice && typeof choice === 'object') ? choice : {};
+  if (!importOcrUi || typeof importOcrUi.promptChoice !== 'function') {
+    throw new Error('[renderer] ImportOcrUi.promptChoice unavailable; cannot continue.');
+  }
+  return importOcrUi.promptChoice(safeChoice);
+}
+
+async function chooseImportApplyChoice(options = {}) {
+  const opts = options && typeof options === 'object' ? options : {};
+  const isOcrJob = !!opts.isOcrJob;
+  const summary = opts.summary && typeof opts.summary === 'object' ? opts.summary : {};
+  const initialRepeat = getMainPasteRepeatValue();
+  const baseTitle = tRenderer
+    ? tRenderer('renderer.main.import_apply.title', 'Import finished. Choose apply mode:')
+    : 'Import finished. Choose apply mode:';
+  let applyTitle = baseTitle;
+  const elapsedMs = Number(summary.elapsedMs);
+  if (isOcrJob && Number.isFinite(elapsedMs) && elapsedMs > 0) {
+    const elapsed = formatImportElapsedLabel(elapsedMs);
+    applyTitle = msgRenderer
+      ? msgRenderer(
+        'renderer.main.import_apply.title_with_elapsed',
+        { elapsed },
+        `${baseTitle} OCR completed in ${elapsed}.`
+      )
+      : `${baseTitle} OCR completed in ${elapsed}.`;
+  }
+
+  const choice = {
+    title: applyTitle,
+    context: '',
+    primaryLabel: tRenderer
+      ? tRenderer('renderer.main.import_apply.overwrite', 'Overwrite')
+      : 'Overwrite',
+    primaryValue: 'overwrite',
+    secondaryLabel: tRenderer
+      ? tRenderer('renderer.main.import_apply.append', 'Append')
+      : 'Append',
+    secondaryValue: 'append',
+    dismissValue: '',
+    showRepeatInput: true,
+    repeatLabel: tRenderer
+      ? tRenderer('renderer.main.import_apply.repeat_count', 'Repeat count')
+      : 'Repeat count',
+    repeatAriaLabel: tRenderer
+      ? tRenderer('renderer.main.import_apply.repeat_count', 'Repeat count')
+      : 'Repeat count',
+    repeatValue: initialRepeat,
+    repeatMin: 1,
+    repeatMax: MAX_PASTE_REPEAT,
+    repeatStep: 1,
+    onRepeatChange: (nextRepeat) => {
+      setMainPasteRepeatValue(nextRepeat);
+    },
+  };
+  const rawChoice = await promptImportChoice(choice);
+  const choicePayload = (rawChoice && typeof rawChoice === 'object')
+    ? rawChoice
+    : { value: rawChoice, repeatCount: initialRepeat };
+  const mode = String(choicePayload.value || '').trim().toLowerCase();
+  const repeatCount = setMainPasteRepeatValue(choicePayload.repeatCount);
+  return { mode, repeatCount };
+}
+
+function choosePdfSelectableExtractionMode() {
+  const title = tRenderer
+    ? tRenderer(
+      'renderer.main.pdf_selectable_choice.title',
+      'PDF with selectable text detected'
+    )
+    : 'PDF with selectable text detected';
+  const message = tRenderer
+    ? tRenderer(
+      'renderer.main.pdf_selectable_choice.message',
+      'Recommendation: try it on normal first. If results are not good, use extraction via OCR.'
+    )
+    : 'Recommendation: try it on normal first. If results are not good, use extraction via OCR.';
+  const choice = {
+    title,
+    context: message,
+    primaryLabel: tRenderer
+      ? tRenderer('renderer.main.pdf_selectable_choice.normal', 'Normal extraction')
+      : 'Normal extraction',
+    primaryValue: 'normal',
+    secondaryLabel: tRenderer
+      ? tRenderer('renderer.main.pdf_selectable_choice.ocr', 'Extraction via OCR')
+      : 'Extraction via OCR',
+    secondaryValue: 'ocr',
+    dismissValue: '',
+  };
+  return promptImportChoice(choice).then((rawChoice) => {
+    if (rawChoice && typeof rawChoice === 'object') {
+      return String(rawChoice.value || '');
+    }
+    return String(rawChoice || '');
+  });
+}
+
+function promptOcrOptionsDialog(payload) {
+  if (!importOcrUi || typeof importOcrUi.promptOcrOptionsDialog !== 'function') {
+    return Promise.resolve({
+      confirmed: true,
+      options: getDefaultImportRunOptions(),
+    });
+  }
+  return importOcrUi.promptOcrOptionsDialog(payload || {});
+}
+
+function handleImportProgress(payload) {
+  if (!importOcrUi || typeof importOcrUi.handleImportProgress !== 'function') return;
+  importOcrUi.handleImportProgress(payload || {});
+}
+
+function noteQueuedOcrJob(payload) {
+  if (!importOcrUi || typeof importOcrUi.noteJobQueued !== 'function') return;
+  importOcrUi.noteJobQueued(payload);
+}
+
+function applyGlobalInteractionGateUi() {
+  const controls = document.querySelectorAll('button, input, select, textarea');
+  controls.forEach((el) => {
+    if (!el || el.dataset.interactionGateExempt === '1') return;
+    if (interactionGateBlocked) {
+      if (!Object.prototype.hasOwnProperty.call(el.dataset, 'interactionGatePrevDisabled')) {
+        el.dataset.interactionGatePrevDisabled = el.disabled ? '1' : '0';
+      }
+      el.disabled = true;
+      return;
+    }
+    if (!Object.prototype.hasOwnProperty.call(el.dataset, 'interactionGatePrevDisabled')) return;
+    el.disabled = (el.dataset.interactionGatePrevDisabled === '1');
+    delete el.dataset.interactionGatePrevDisabled;
+  });
+}
+
+function syncOcrControlVisibility() {
+  if (!importOcrUi || typeof importOcrUi.setLockState !== 'function') return;
+  importOcrUi.setLockState({
+    locked: interactionGateBlocked,
+    reason: interactionGateReason,
+  });
+}
+
+function updateInteractionGateState(payload) {
+  const nextBlocked = !!(payload && payload.blocked);
+  const nextReason = nextBlocked
+    ? String((payload && payload.reason) || 'OCR_RUNNING')
+    : '';
+  const changed = (interactionGateBlocked !== nextBlocked) || (interactionGateReason !== nextReason);
+  interactionGateBlocked = nextBlocked;
+  interactionGateReason = nextReason;
+  if (!changed) {
+    syncOcrControlVisibility();
+    return;
+  }
+  applyGlobalInteractionGateUi();
+  syncOcrControlVisibility();
+}
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
   const api = window.electronAPI;
@@ -261,6 +515,342 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
     return null;
   }
   return api[methodName].bind(api);
+}
+
+function showImportDialogMessage(keyPath) {
+  const key = String(keyPath || '').trim();
+  if (!key) return;
+  try {
+    if (typeof window.Notify?.notifyMain === 'function') {
+      window.Notify.notifyMain(key);
+      return;
+    }
+    log.warnOnce(
+      'renderer.notifyMain.unavailable.import_dialog',
+      'Notify.notifyMain unavailable; falling back to window.alert for import message.'
+    );
+    const fallbackText = (
+      window.RendererI18n
+      && typeof window.RendererI18n.msgRenderer === 'function'
+    )
+      ? window.RendererI18n.msgRenderer(key, {}, key)
+      : key;
+    window.alert(fallbackText);
+  } catch (err) {
+    log.warn('Unable to show import dialog message:', err);
+  }
+}
+
+const IMPORT_ERROR_MESSAGE_KEYS = Object.freeze({
+  IMPORT_UNAVAILABLE: 'renderer.alerts.import_unavailable',
+  IMPORT_DEP_MISSING_MAMMOTH: 'renderer.alerts.import_dep_missing_mammoth',
+  IMPORT_DEP_MISSING_PDFJS: 'renderer.alerts.import_dep_missing_pdfjs',
+  IMPORT_TEXT_DECODE_FAILED: 'renderer.alerts.import_decode_failed',
+  IMPORT_TEXT_ENCODING_UNSUPPORTED: 'renderer.alerts.import_decode_failed',
+  IMPORT_TEXT_BINARY_DETECTED: 'renderer.alerts.import_text_binary_detected',
+  IMPORT_SIGNATURE_MISMATCH: 'renderer.alerts.import_signature_mismatch',
+  IMPORT_UNSUPPORTED_FORMAT: 'renderer.alerts.import_unsupported_format',
+  IMPORT_UNSUPPORTED_KIND: 'renderer.alerts.import_unsupported_format',
+  IMPORT_READ_FAILED: 'renderer.alerts.import_read_failed',
+  IMPORT_DOCX_EXTRACT_FAILED: 'renderer.alerts.import_read_failed',
+  IMPORT_PDF_EXTRACT_FAILED: 'renderer.alerts.import_read_failed',
+  IMPORT_INVALID_PATH: 'renderer.alerts.import_invalid_path',
+  IMPORT_INVALID_SESSION: 'renderer.alerts.import_invalid_path',
+  IMPORT_INVALID_PAYLOAD: 'renderer.alerts.import_invalid_payload',
+  IMPORT_SESSION_NOT_FOUND: 'renderer.alerts.import_session_not_found',
+  IMPORT_NOT_READY_TO_APPLY: 'renderer.alerts.import_not_ready_to_apply',
+  IMPORT_APPLY_UNAVAILABLE: 'renderer.alerts.import_apply_unavailable',
+  IMPORT_BUSY: 'renderer.alerts.import_busy',
+  IMPORT_EXEC_FAILED: 'renderer.alerts.import_failed_generic',
+  OCR_UNAVAILABLE_PLATFORM: 'renderer.alerts.import_ocr_unavailable_platform',
+  OCR_PLATFORM_PROFILE_INVALID: 'renderer.alerts.import_ocr_unavailable_platform',
+  OCR_BINARY_MISSING: 'renderer.alerts.import_ocr_binary_missing',
+  OCR_RUNTIME_PATH_INVALID: 'renderer.alerts.import_ocr_binary_missing',
+  OCR_RUNTIME_NOT_VALIDATED: 'renderer.alerts.import_ocr_binary_missing',
+  OCR_EXEC_FAILED: 'renderer.alerts.import_ocr_exec_failed',
+  OCR_PROCESS_INVALID: 'renderer.alerts.import_ocr_exec_failed',
+  OCR_PROCESS_TERMINATE_FAILED: 'renderer.alerts.import_ocr_exec_failed',
+  OCR_PROCESS_KILL_FAILED: 'renderer.alerts.import_ocr_exec_failed',
+  OCR_RASTER_FAILED: 'renderer.alerts.import_ocr_raster_failed',
+  OCR_TIMEOUT_PAGE: 'renderer.alerts.import_ocr_timeout_page',
+  OCR_TIMEOUT_JOB: 'renderer.alerts.import_ocr_timeout_job',
+  OCR_LANG_UNSUPPORTED: 'renderer.alerts.import_ocr_lang_unsupported',
+  OCR_LANG_UNAVAILABLE: 'renderer.alerts.import_ocr_lang_unavailable',
+  OCR_EMPTY_RESULT: 'renderer.alerts.import_ocr_empty_result',
+  OCR_NOT_RUNNING: 'renderer.alerts.import_ocr_not_running',
+  OCR_CANCELED: 'renderer.alerts.import_ocr_canceled',
+  OCR_CANCEL_KILL_TIMEOUT: 'renderer.alerts.import_ocr_cancel_timeout',
+});
+const OCR_PRECONDITION_WINDOW_LABELS = Object.freeze({
+  editor: 'Manual editor',
+  editor_find: 'Find window',
+  preset: 'Preset window',
+  task_editor: 'Task editor',
+  language: 'Language window',
+  flotante: 'Floating stopwatch window',
+});
+
+function mapPreconditionWindowLabel(rawId) {
+  const key = String(rawId || '').trim().toLowerCase();
+  if (key && Object.prototype.hasOwnProperty.call(OCR_PRECONDITION_WINDOW_LABELS, key)) {
+    return OCR_PRECONDITION_WINDOW_LABELS[key];
+  }
+  return key || 'Secondary window';
+}
+
+function buildOcrPreconditionWarning(res) {
+  const p = res && typeof res === 'object' ? res : {};
+  const reasons = new Set(
+    (Array.isArray(p.reasons) ? p.reasons : [])
+      .map((item) => String(item || '').trim().toUpperCase())
+      .filter(Boolean)
+  );
+  const openSecondaryWindows = Array.isArray(p.openSecondaryWindows)
+    ? p.openSecondaryWindows.map((item) => String(item || '').trim().toLowerCase()).filter(Boolean)
+    : [];
+  const hasSecondaryWindows = reasons.has('SECONDARY_WINDOWS_OPEN') || openSecondaryWindows.length > 0;
+  const hasRunningStopwatch = reasons.has('STOPWATCH_RUNNING') || !!p.stopwatchRunning;
+
+  const details = [];
+  if (hasSecondaryWindows) {
+    if (openSecondaryWindows.length > 0) {
+      const labels = Array.from(new Set(openSecondaryWindows.map(mapPreconditionWindowLabel)));
+      details.push(`Close these secondary windows: ${labels.join(', ')}.`);
+    } else {
+      details.push('Close all secondary windows.');
+    }
+  }
+  if (hasRunningStopwatch) {
+    details.push('Pause the stopwatch.');
+  }
+  if (!details.length) {
+    details.push('Close any secondary windows and pause the stopwatch.');
+  }
+  return `Cannot start OCR right now. ${details.join(' ')}`;
+}
+
+function showOcrPreconditionWarning(res) {
+  const message = buildOcrPreconditionWarning(res);
+  try {
+    if (typeof window.Notify?.notifyMain === 'function') {
+      window.Notify.notifyMain(message);
+      return;
+    }
+    window.alert(message);
+  } catch (err) {
+    log.warn('Unable to show OCR precondition warning:', err);
+  }
+}
+
+function humanizeImportError(res) {
+  const code = res && typeof res.code === 'string' ? res.code : '';
+  const mappedKey = IMPORT_ERROR_MESSAGE_KEYS[code];
+  if (mappedKey) return mappedKey;
+  if (code === 'INTERACTION_BLOCKED' || code === 'OCR_PRECONDITION_FAILED') {
+    return '';
+  }
+  if (code === 'CANCELLED') {
+    return '';
+  }
+  if (code) {
+    log.warnOnce(
+      `renderer.import_error.unmapped.${code}`,
+      'Unmapped import/OCR error code; using generic key:',
+      code
+    );
+  }
+  return 'renderer.alerts.import_failed_generic';
+}
+
+async function discardImportSession(sessionId) {
+  const importDiscard = getOptionalElectronMethod('importDiscard', {
+    dedupeKey: 'renderer.ipc.importDiscard.unavailable',
+    unavailableMessage: 'importDiscard unavailable; session cleanup skipped.'
+  });
+  if (!importDiscard || !sessionId) return;
+  try {
+    await importDiscard({ sessionId });
+  } catch (err) {
+    log.warn('Failed to discard import session (ignored):', err);
+  }
+}
+
+async function startPdfOcrFromSession(sessionId, summary = {}) {
+  if (!sessionId) {
+    return { ok: false, code: 'IMPORT_SESSION_NOT_FOUND' };
+  }
+
+  const safeSummary = summary && typeof summary === 'object' ? summary : {};
+  const pageCountHint = Number.isFinite(Number(safeSummary.pagesTotal))
+    ? Math.max(1, Math.floor(Number(safeSummary.pagesTotal)))
+    : 1;
+
+  const ocrLangRes = await getAvailableOcrLanguages();
+  if (!ocrLangRes || ocrLangRes.ok !== true) {
+    return ocrLangRes || { ok: false, code: 'OCR_LANG_UNAVAILABLE' };
+  }
+
+  const ocrOptsRes = await promptOcrOptionsDialog({
+    kind: 'pdf',
+    filename: String(safeSummary.filename || ''),
+    pageCountHint,
+    availableUiLanguages: ocrLangRes.availableUiLanguages,
+  });
+  if (!ocrOptsRes || ocrOptsRes.confirmed !== true) {
+    return { ok: false, code: 'CANCELLED' };
+  }
+
+  const importRun = getOptionalElectronMethod('importRun', {
+    dedupeKey: 'renderer.ipc.importRun.unavailable',
+    unavailableMessage: 'importRun unavailable; PDF OCR fallback execution skipped.'
+  });
+  if (!importRun) {
+    return { ok: false, code: 'IMPORT_UNAVAILABLE' };
+  }
+
+  try {
+    const ocrRunOptions = Object.assign(
+      {},
+      getDefaultImportRunOptions(),
+      ocrOptsRes.options || {},
+      { forcePdfOcr: true }
+    );
+    const rerunRes = await importRun({
+      sessionId,
+      options: ocrRunOptions,
+    });
+    if (!rerunRes || rerunRes.ok !== true || !rerunRes.jobId) {
+      return rerunRes || { ok: false, code: 'IMPORT_EXEC_FAILED' };
+    }
+
+    const queuedJobId = String(rerunRes.jobId);
+    importJobSessionMap.set(queuedJobId, String(sessionId));
+    importJobIsOcrMap.set(queuedJobId, true);
+    noteQueuedOcrJob({
+      jobId: queuedJobId,
+      pageCountHint,
+      preset: ocrRunOptions.preset || ocrRunOptions.qualityPreset || 'balanced',
+      timeoutPerPageSec: ocrRunOptions.timeoutPerPageSec,
+      dpi: ocrRunOptions.dpi,
+      preprocessProfile: ocrRunOptions.preprocessProfile,
+    });
+    return { ok: true };
+  } catch (err) {
+    log.error('Error requesting scanned-PDF OCR fallback:', err);
+    return { ok: false, code: 'IMPORT_SCANNED_PDF_OCR_START_FAILED' };
+  }
+}
+
+async function handlePdfOcrStartFailure(sessionId, startRes) {
+  const code = String(startRes && startRes.code || '');
+  if (code === 'OCR_PRECONDITION_FAILED') {
+    showOcrPreconditionWarning(startRes);
+  } else if (code === 'IMPORT_SCANNED_PDF_OCR_START_FAILED') {
+    showImportDialogMessage('renderer.alerts.import_scanned_pdf_ocr_start_failed');
+  } else {
+    const message = humanizeImportError(startRes);
+    if (message) showImportDialogMessage(message);
+  }
+  await discardImportSession(sessionId);
+}
+
+async function handlePdfProbeNoTextFallback(sessionId, summary = {}) {
+  if (!sessionId) return false;
+  const safeSummary = summary && typeof summary === 'object' ? summary : {};
+  const startRes = await startPdfOcrFromSession(sessionId, safeSummary);
+  if (!startRes || startRes.ok !== true) {
+    await handlePdfOcrStartFailure(sessionId, startRes);
+  }
+  return true;
+}
+
+async function handleImportFinished(payload) {
+  const p = payload && typeof payload === 'object' ? payload : {};
+  const jobId = typeof p.jobId === 'string' ? p.jobId : '';
+  const sessionId = jobId ? importJobSessionMap.get(jobId) : '';
+  const isOcrJob = jobId ? importJobIsOcrMap.get(jobId) === true : false;
+  if (jobId) importJobSessionMap.delete(jobId);
+  if (jobId) importJobIsOcrMap.delete(jobId);
+  if (importOcrUi && typeof importOcrUi.markImportFinished === 'function') {
+    importOcrUi.markImportFinished(p);
+  }
+
+  if (!p.ok) {
+    if (String(p.code || '') === 'IMPORT_PDF_NO_TEXT_LAYER') {
+      if (!sessionId) {
+        showImportDialogMessage('renderer.alerts.import_session_mapping_missing');
+        return;
+      }
+      const handled = await handlePdfProbeNoTextFallback(sessionId, p.summary);
+      if (handled) return;
+    }
+    const message = humanizeImportError(p);
+    if (message) showImportDialogMessage(message);
+    if (sessionId) await discardImportSession(sessionId);
+    return;
+  }
+
+  if (!sessionId) {
+    showImportDialogMessage('renderer.alerts.import_session_mapping_missing');
+    return;
+  }
+
+  const summary = p.summary && typeof p.summary === 'object' ? p.summary : {};
+  const isPdfProbeSuccess = !isOcrJob && String(summary.kind || '').trim().toLowerCase() === 'pdf';
+  if (isPdfProbeSuccess) {
+    const extractionMode = await choosePdfSelectableExtractionMode();
+    if (extractionMode === 'ocr') {
+      const startRes = await startPdfOcrFromSession(sessionId, summary);
+      if (!startRes || startRes.ok !== true) {
+        await handlePdfOcrStartFailure(sessionId, startRes);
+      }
+      return;
+    }
+    if (extractionMode !== 'normal') {
+      await discardImportSession(sessionId);
+      return;
+    }
+  }
+
+  const applyChoice = await chooseImportApplyChoice({
+    isOcrJob,
+    summary,
+  });
+  if (
+    !applyChoice
+    || (applyChoice.mode !== 'overwrite' && applyChoice.mode !== 'append')
+  ) {
+    await discardImportSession(sessionId);
+    return;
+  }
+
+  const importApply = getOptionalElectronMethod('importApply', {
+    dedupeKey: 'renderer.ipc.importApply.unavailable',
+    unavailableMessage: 'importApply unavailable; cannot apply imported text.'
+  });
+  if (!importApply) {
+    await discardImportSession(sessionId);
+    return;
+  }
+
+  try {
+    const applyRes = await importApply({
+      sessionId,
+      mode: applyChoice.mode,
+      repeatCount: normalizePasteRepeat(applyChoice.repeatCount),
+    });
+    if (!applyRes || applyRes.ok !== true) {
+      const message = humanizeImportError(applyRes);
+      if (message) showImportDialogMessage(message);
+      return;
+    }
+    if (applyRes.truncated) {
+      showImportDialogMessage('renderer.alerts.import_truncated');
+    }
+  } catch (err) {
+    log.error('Error applying import session:', err);
+    showImportDialogMessage('renderer.alerts.import_apply_failed');
+  }
 }
 
 // =============================================================================
@@ -285,6 +875,19 @@ function applyTranslations() {
     if (aria) el.setAttribute('aria-label', aria);
   };
   // Text selector buttons
+  if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
+  if (importOcrUi && typeof importOcrUi.setI18n === 'function') {
+    importOcrUi.setI18n({ tRenderer, msgRenderer });
+  }
+  if (importOcrUi && typeof importOcrUi.setLanguage === 'function') {
+    importOcrUi.setLanguage({
+      uiLanguage: idiomaActual || DEFAULT_LANG,
+      fallbackLanguage: DEFAULT_LANG,
+    });
+  }
+  if (importOcrUi && typeof importOcrUi.applyTranslations === 'function') {
+    importOcrUi.applyTranslations();
+  }
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
@@ -294,11 +897,15 @@ function applyTranslations() {
   if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new', btnNewTask.textContent || '');
   if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load', btnLoadTask.textContent || '');
   // Text selector tooltips
+  if (btnImportExtract) {
+    btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract', btnImportExtract.title || '');
+    applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract', btnImportExtract.title || btnImportExtract.textContent || '');
+  }
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
-  if (appendRepeatInput) {
-    appendRepeatInput.title = tRenderer('renderer.main.tooltips.append_repeat_count', appendRepeatInput.title || '');
-    applyAriaLabel(appendRepeatInput, 'renderer.main.aria.append_repeat_count');
+  if (pasteRepeatInput) {
+    pasteRepeatInput.title = tRenderer('renderer.main.tooltips.paste_repeat_count', pasteRepeatInput.title || '');
+    applyAriaLabel(pasteRepeatInput, 'renderer.main.aria.paste_repeat_count');
   }
   if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
   if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
@@ -741,6 +1348,53 @@ function armIpcSubscriptions() {
       throw new Error('[renderer] electronAPI.onStartupReady unavailable; cannot bootstrap renderer readiness');
     }
 
+    if (typeof window.electronAPI.onInteractionGateState === 'function') {
+      window.electronAPI.onInteractionGateState((payload) => {
+        try {
+          updateInteractionGateState(payload || {});
+        } catch (err) {
+          log.error('Error handling interaction-gate-state event:', err);
+        }
+      });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onInteractionGateState.unavailable',
+        'onInteractionGateState unavailable; interaction-gate live updates will not sync.'
+      );
+    }
+
+    if (typeof window.electronAPI.onImportProgress === 'function') {
+      window.electronAPI.onImportProgress((payload) => {
+        try {
+          const p = payload && typeof payload === 'object' ? payload : {};
+          handleImportProgress(p);
+          if (p.kind !== 'tick') {
+            log.debug('import-progress:', p);
+          }
+        } catch (err) {
+          log.warn('Error handling import-progress:', err);
+        }
+      });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onImportProgress.unavailable',
+        'onImportProgress unavailable; import progress updates will not sync.'
+      );
+    }
+
+    if (typeof window.electronAPI.onImportFinished === 'function') {
+      window.electronAPI.onImportFinished((payload) => {
+        handleImportFinished(payload).catch((err) => {
+          log.error('Error handling import-finished event:', err);
+        });
+      });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onImportFinished.unavailable',
+        'onImportFinished unavailable; import completion updates will not sync.'
+      );
+    }
+
     if (typeof window.electronAPI.onSettingsChanged === 'function') {
       window.electronAPI.onSettingsChanged(settingsChangeHandler);
     } else {
@@ -863,6 +1517,23 @@ async function runStartupOrchestrator() {
         }
       } catch (err) {
         log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
+      }
+    }
+
+    const getInteractionGateState = getOptionalElectronMethod('getInteractionGateState', {
+      dedupeKey: 'renderer.ipc.getInteractionGateState.unavailable',
+      unavailableMessage: 'getInteractionGateState unavailable; assuming interaction gate is inactive.'
+    });
+    if (getInteractionGateState) {
+      try {
+        const gateSnapshot = await getInteractionGateState();
+        if (gateSnapshot && gateSnapshot.ok === true) {
+          updateInteractionGateState(gateSnapshot);
+        } else if (gateSnapshot && gateSnapshot.code === 'INTERACTION_BLOCKED') {
+          updateInteractionGateState({ blocked: true, reason: gateSnapshot.reason || 'OCR_RUNNING' });
+        }
+      } catch (err) {
+        log.warn('BOOTSTRAP: getInteractionGateState failed; assuming unblocked:', err);
       }
     }
 
@@ -1411,6 +2082,57 @@ wpmInput.addEventListener('keydown', (e) => {
 });
 
 // =============================================================================
+// Import/OCR entry point
+// =============================================================================
+const importEntry = window.ImportEntry;
+if (!importEntry || typeof importEntry.createController !== 'function') {
+  log.warnOnce(
+    'renderer.importEntry.unavailable',
+    'ImportEntry module unavailable; import button/drop entry disabled.'
+  );
+} else {
+  importEntry.createController({
+    log,
+    btnImportExtract,
+    importJobSessionMap,
+    importJobIsOcrMap,
+    electronAPI: window.electronAPI,
+    getOptionalElectronMethod,
+    showImportDialogMessage,
+    humanizeImportError,
+    discardImportSession,
+    getDefaultImportRunOptions,
+    isOcrRoute,
+    getAvailableOcrLanguages,
+    promptOcrOptionsDialog,
+    showOcrPreconditionWarning,
+    noteQueuedOcrJob,
+    guardUserAction,
+  }).bind();
+}
+
+if (btnCancelOcr) {
+  btnCancelOcr.addEventListener('click', async () => {
+    if (!guardUserAction('import-cancel', { allowWhenInteractionBlocked: true })) return;
+    try {
+      const importCancel = getOptionalElectronMethod('importCancel', {
+        dedupeKey: 'renderer.ipc.importCancel.unavailable',
+        unavailableMessage: 'importCancel unavailable; OCR cancel skipped.'
+      });
+      if (!importCancel) return;
+      const res = await importCancel();
+      if (!res || res.ok !== true) {
+        const message = humanizeImportError(res);
+        if (message) showImportDialogMessage(message);
+      }
+    } catch (err) {
+      log.error('Error requesting OCR cancel:', err);
+      showImportDialogMessage('renderer.alerts.import_cancel_request_failed');
+    }
+  });
+}
+
+// =============================================================================
 // Clipboard helpers (shared by overwrite/append)
 // =============================================================================
 async function readClipboardText({ tooLargeKey, unavailableKey }) {
@@ -1435,20 +2157,20 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
   return { ok: true, text };
 }
 
-function normalizeAppendRepeat(rawValue) {
+function normalizePasteRepeat(rawValue) {
   const numericValue = Number(rawValue);
   if (!Number.isInteger(numericValue) || numericValue < 1) return 1;
-  return Math.min(numericValue, MAX_APPEND_REPEAT);
+  return Math.min(numericValue, MAX_PASTE_REPEAT);
 }
 
-function getAppendRepeatCount() {
-  if (!appendRepeatInput) return 1;
-  const normalized = normalizeAppendRepeat(appendRepeatInput.value);
-  appendRepeatInput.value = String(normalized);
+function getPasteRepeatCount() {
+  if (!pasteRepeatInput) return 1;
+  const normalized = normalizePasteRepeat(pasteRepeatInput.value);
+  pasteRepeatInput.value = String(normalized);
   return normalized;
 }
 
-function projectRepeatedAppendLength(current, clip, repeatCount) {
+function projectRepeatedPasteLength(current, clip, repeatCount) {
   const clipLength = clip.length;
   const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
   let projected = current.length;
@@ -1469,7 +2191,7 @@ function projectRepeatedAppendLength(current, clip, repeatCount) {
   return projected;
 }
 
-function buildRepeatedAppendText(current, clip, repeatCount) {
+function buildRepeatedPasteText(current, clip, repeatCount) {
   const clipLength = clip.length;
   const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
   const parts = [current];
@@ -1502,11 +2224,14 @@ btnOverwriteClipboard.addEventListener('click', async () => {
     });
     if (!read.ok) return;
     const clip = read.text;
+    const repeatCount = getPasteRepeatCount();
 
-    if (clip.length > maxIpcChars) {
+    const projectedLen = projectRepeatedPasteLength('', clip, repeatCount);
+    if (projectedLen > maxIpcChars) {
       window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
       return;
     }
+    const overwriteText = buildRepeatedPasteText('', clip, repeatCount);
 
     // Send object with meta (overwrite)
     const setCurrentText = getOptionalElectronMethod('setCurrentText', {
@@ -1518,7 +2243,7 @@ btnOverwriteClipboard.addEventListener('click', async () => {
       return;
     }
     const resp = await setCurrentText({
-      text: clip,
+      text: overwriteText,
       meta: { source: 'main-window', action: 'overwrite' }
     });
 
@@ -1560,9 +2285,9 @@ btnAppendClipboard.addEventListener('click', async () => {
       return;
     }
     const current = await getCurrentText() || '';
-    const repeatCount = getAppendRepeatCount();
+    const repeatCount = getPasteRepeatCount();
 
-    const projectedLen = projectRepeatedAppendLength(current, clip, repeatCount);
+    const projectedLen = projectRepeatedPasteLength(current, clip, repeatCount);
     if (projectedLen > maxIpcChars) {
       window.Notify.notifyMain('renderer.alerts.append_too_large');
       return;
@@ -1574,7 +2299,7 @@ btnAppendClipboard.addEventListener('click', async () => {
       return;
     }
 
-    const newFull = buildRepeatedAppendText(current, clip, repeatCount);
+    const newFull = buildRepeatedPasteText(current, clip, repeatCount);
 
     // Send object with meta (append_newline)
     const setCurrentText = getOptionalElectronMethod('setCurrentText', {

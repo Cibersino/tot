@@ -1,7 +1,7 @@
 // electron/preload.js
 'use strict';
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 
 const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {
@@ -33,6 +33,43 @@ const api = {
     openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url),
     openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey),
     openTaskEditor: (mode) => ipcRenderer.invoke('open-task-editor', { mode }),
+    importSelectFile: () => ipcRenderer.invoke('import-select-file'),
+    importSelectFilePath: (filePath) => ipcRenderer.invoke('import-select-file-path', { filePath }),
+    getPathForDroppedFile: (fileObj) => {
+        try {
+            const resolved = webUtils && typeof webUtils.getPathForFile === 'function'
+                ? webUtils.getPathForFile(fileObj)
+                : '';
+            return typeof resolved === 'string' ? resolved : '';
+        } catch (err) {
+            console.error('getPathForDroppedFile failed:', err);
+            return '';
+        }
+    },
+    importGetOcrLanguages: () => ipcRenderer.invoke('import-get-ocr-languages'),
+    importRun: (payload) => ipcRenderer.invoke('import-run', payload),
+    importCancel: () => ipcRenderer.invoke('import-cancel'),
+    importApply: (payload) => ipcRenderer.invoke('import-apply', payload),
+    importDiscard: (payload) => ipcRenderer.invoke('import-discard', payload),
+    onImportProgress: (cb) => {
+        const wrapper = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('import-progress callback error:', err); }
+        };
+        return subscribeWithUnsub('import-progress', wrapper, 'removeListener error (import-progress):');
+    },
+    onImportFinished: (cb) => {
+        const wrapper = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('import-finished callback error:', err); }
+        };
+        return subscribeWithUnsub('import-finished', wrapper, 'removeListener error (import-finished):');
+    },
+    getInteractionGateState: () => ipcRenderer.invoke('interaction-gate-get-state'),
+    onInteractionGateState: (cb) => {
+        const wrapper = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('interaction-gate-state callback error:', err); }
+        };
+        return subscribeWithUnsub('interaction-gate-state', wrapper, 'removeListener error (interaction-gate-state):');
+    },
     onCurrentTextUpdated: (cb) => {
         ipcRenderer.on('current-text-updated', (_e, text) => cb(text));
     },

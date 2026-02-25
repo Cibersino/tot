@@ -7,7 +7,7 @@
 
 # toT — de Texto a Tiempo
 
-**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas y cronómetro para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
+**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina importación/extracción de texto desde archivos de texto e imagen, presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas y cronómetro para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
 
 *¿No te atreves a empezar ciertas lecturas debido a no saber cuánto trabajo realmente te tomará?*
 *¿Te cuesta terminar las lecturas y las abandonas en la mitad?*
@@ -21,6 +21,7 @@
 
 ## Funcionalidades
 
+* Importar o extraer texto desde archivos `txt`, `docx`, `pdf` e imágenes (`png`, `jpg`, `jpeg`, `webp`), con OCR local para imágenes y PDF escaneados.
 * El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.
 * Editor de texto completo con búsqueda.
 * Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.
@@ -55,6 +56,8 @@
 Notas:
 * Este es un **build portable** (sin instalador).
 * El estado/configuración se almacena localmente en `app.getPath('userData')/config` (sin dependencia de servicios en la nube).
+* OCR usa binarios sidecar locales (`tesseract` + `pdftoppm`); en MVP pueden aparecer advertencias del sistema operativo.
+* Guía de advertencias/allow por OS: [`docs/releases/ocr_sidecar_runtime_guidance.md`](docs/releases/ocr_sidecar_runtime_guidance.md).
 
 ---
 
@@ -63,6 +66,7 @@ Notas:
 Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar la app?”).
 
 Accesos rápidos visibles en la ventana principal:
+* `📥`: importar o extraer texto desde archivo (incluye flujo OCR cuando aplica).
 * `📋↺` / `📋+`: reemplazar o agregar texto desde portapapeles.
 * `⌨`: abrir editor de texto completo.
 * `💾` / `📂`: guardar/cargar snapshot del texto actual.
@@ -127,11 +131,13 @@ Esto es solo para desarrollo: en builds empaquetados no se muestra el menú “D
 ## Documentación
 
 * Checklist del proceso de release: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
+* Guía de runtime OCR (advertencias OS y flujo recomendado): [`docs/releases/ocr_sidecar_runtime_guidance.md`](docs/releases/ocr_sidecar_runtime_guidance.md)
 * Suite de pruebas manuales: [`docs/test_suite.md`](docs/test_suite.md)
 * Changelog (corto): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detallado): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Estructura del repo / archivos clave: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
 * Política de privacidad (offline): [`PRIVACY.md`](PRIVACY.md)
+* Avisos de terceros redistribuidos: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 
 ---
 
@@ -156,7 +162,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 # toT — from Text to Time
 
-**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines configurable WPM presets, precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings with less guesswork.
+**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines file text import/extraction from text and image files, configurable WPM presets, precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings with less guesswork.
 
 *Are you hesitant to start certain readings because you don't know how much work it will really take?*
 *Do you find it hard to finish reading and abandon them in the middle?*
@@ -170,6 +176,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 ## Features
 
+* Import or extract text from `txt`, `docx`, `pdf`, and image files (`png`, `jpg`, `jpeg`, `webp`), with local OCR for images and scanned PDFs.
 * Text can be entered by pasting it from the clipboard and/or manually.
 * Full-text editor with find.
 * Reading-time estimation with configurable WPM (words per minute).
@@ -207,6 +214,8 @@ Notes:
 
 * This is a **portable build** (no installer).
 * User settings/state are stored locally in `app.getPath('userData')/config` (no cloud service dependency).
+* OCR uses local sidecar binaries (`tesseract` + `pdftoppm`); in MVP, OS trust warnings may appear.
+* OS warning/allow guidance: [`docs/releases/ocr_sidecar_runtime_guidance.md`](docs/releases/ocr_sidecar_runtime_guidance.md).
 
 ---
 
@@ -215,6 +224,7 @@ Notes:
 Usage instructions are included in the app menu (“How to use?”).
 
 Quick actions in the main window:
+* `📥`: import or extract text from file (includes OCR flow when needed).
 * `📋↺` / `📋+`: replace or append clipboard text.
 * `⌨`: open full-text editor.
 * `💾` / `📂`: save/load current-text snapshot.
@@ -279,11 +289,13 @@ This is development-only: in packaged builds the “Development” menu is hidde
 ## Documentation
 
 * Release process checklist: [`docs/releases/release_checklist.md`](docs/releases/release_checklist.md)
+* OCR runtime guidance (OS warnings and recommended flow): [`docs/releases/ocr_sidecar_runtime_guidance.md`](docs/releases/ocr_sidecar_runtime_guidance.md)
 * Manual test suite: [`docs/test_suite.md`](docs/test_suite.md)
 * Changelog (short): [`CHANGELOG.md`](CHANGELOG.md)
 * Changelog (detailed): [`docs/changelog_detailed.md`](docs/changelog_detailed.md)
 * Repo structure / key files: [`docs/tree_folders_files.md`](docs/tree_folders_files.md)
 * Privacy policy (offline): [`PRIVACY.md`](PRIVACY.md)
+* Redistributed third-party notices: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 
 ---
 

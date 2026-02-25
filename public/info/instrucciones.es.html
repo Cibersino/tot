@@ -22,6 +22,11 @@
     </ul>
   </nav>
 
+  <p><strong>toT</strong> es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a
+    planificar cargas de lectura realistas. Combina importación/extracción de texto desde archivos de texto e imagen,
+    presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas y cronómetro para que
+    puedas medir, organizar y terminar lecturas con menos incertidumbre.</p>
+
   <article class="instrucciones-document">
 
     <!-- =========================================================
@@ -42,8 +47,35 @@
 
         <ol>
           <li>
-            <p><strong>Carga el texto</strong></p>
+            <p><strong>Importa una página modelo (flujo recomendado para familiarizarte)</strong></p>
             <ul>
+              <li><strong>Fuentes soportadas:</strong> portapapeles, archivos de texto simples (<code>.txt</code>,
+                <code>.docx</code>), imágenes (<code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>,
+                <code>.webp</code>) y PDF (con texto seleccionable + escaneados vía OCR).
+              </li>
+              <li>Toma una buena foto de una página representativa de un libro y guárdala en cualquier carpeta de tu
+                computador.</li>
+              <li>Antes de importar, define un WPM base con un preset o con el slider/input (puedes partir con un
+                preset por defecto).</li>
+              <li>Presiona <strong>📥</strong> o arrastra/suelta esa foto en la ventana principal, elige idioma OCR,
+                deja preset en <strong>Balanceado</strong> y presiona <strong>Start OCR</strong>. Durante el arrastre
+                verás un resaltado visual de destino.
+              </li>
+              <li>Si la extracción termina bien, elige <strong>Sobrescribir</strong>. Abre el <strong>Editor
+                  manual</strong>
+                (⌨) para revisar la calidad del texto extraído.</li>
+              <li>Vuelve a la ventana principal, en el input a la derecha de <strong>📋+</strong> ingresa
+                <code>(páginas totales del libro - 1)</code> y haz clic en <strong>📋+</strong>.
+              </li>
+              <li>La app iterará esa página modelo para aproximar palabras/caracteres totales y el tiempo estimado
+                según el WPM elegido.</li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>Copia desde el portapapeles</strong></p>
+            <ul>
+              <li>Usa <strong>🗑</strong> para partir de cero.</li>
               <li>Desde cualquier fuente: copia el texto y usa el botón <strong>📋↺</strong>.</li>
               <li>Si estás armando un texto por partes: usa el botón <strong>📋+</strong> tantas veces como
                 necesites.</li>
@@ -57,7 +89,6 @@
               <li>Corrige si ves saltos de línea raros, guiones de corte o “basura” (menús, anuncios, encabezados
                 repetidos).</li>
               <li>Puedes modificar o agregar lo que quieras, escribiendo o pegando en el mismo editor.</li>
-              <li>Si quieres partir de cero, usa <strong>🗑</strong>.</li>
             </ul>
           </li>
 
@@ -135,18 +166,22 @@
           ¿La ruma de libros en tu velador crece sin compasión?<br />
           ¿Quieres hacer estudios experimentales relacionados con el tiempo de lectura?</p>
 
-        <p>Esta app es para ti.</p>
-
-        <p><strong>toT</strong> estima tiempo de lectura a partir de un texto y una velocidad
-          configurada en WPM (palabras por minuto). La app también cuenta con presets de velocidad personalizables y
-          puede medir tu velocidad real con un cronómetro.</p>
-
         <p>Esta app está pensada para:</p>
         <ul>
-          <li>Estimar rápidamente el tiempo de lectura de cualquier texto que introduzcas o compongas.</li>
-          <li>Medir y ajustar tu velocidad real en distintos escenarios.</li>
-          <li>Configurar presets de WPM personalizados de acuerdo con el tipo de lector, la modalidad de lectura, la
-            complejidad de los textos, el idioma o cualquier parámetro que se desee.</li>
+          <li>Importar o extraer texto desde archivos <code>txt</code>, <code>docx</code>, <code>pdf</code> e imágenes
+            (<code>png</code>, <code>jpg</code>, <code>jpeg</code>, <code>webp</code>), con OCR local para imágenes y
+            PDF escaneados.</li>
+          <li>El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.</li>
+          <li>Editor de texto completo con búsqueda.</li>
+          <li>Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.</li>
+          <li>Conteo de palabras y caracteres (con/sin espacios).</li>
+          <li>Segmentación “precisa” de palabras usando <code>Intl.Segmenter</code>.</li>
+          <li>Presets de WPM: crear/editar/eliminar + restaurar valores por defecto.</li>
+          <li>Cronómetro con cálculo de WPM real + ventana flotante.</li>
+          <li>Snapshots de textos: guardar/cargar los textos actuales.</li>
+          <li>Editor de tareas: organizador de listas de textos para planificar lecturas.</li>
+          <li>Interfaz multi-idioma: <code>es</code>, <code>es-cl</code>, <code>arn</code>, <code>en</code>,
+            <code>fr</code>, <code>de</code>, <code>it</code>, <code>pt</code>.</li>
         </ul>
 
         <figure class="instrucciones-media">
@@ -161,7 +196,38 @@
         <p>Tu primera decisión es <strong>cómo construir el texto que deseas estimar</strong>. De aquí en adelante lo
           llamaremos <strong>texto actual</strong>.</p>
 
-        <h4>Ruta 1A — Usar portapapeles (desde web/PDF/cualquier fuente)</h4>
+        <h4>Ruta 1A — Importar archivos (recomendado como ruta principal)</h4>
+
+        <p>Usa el botón <strong>📥</strong> para importar o extraer texto directamente desde archivos, con ruteo
+          automático según tipo de archivo. También puedes <strong>arrastrar y soltar</strong> un archivo sobre la
+          ventana principal: ejecuta el mismo flujo de importación que <strong>📥</strong>.</p>
+
+        <ul>
+          <li><strong>Texto simple:</strong> <code>.txt</code>, <code>.docx</code>.</li>
+          <li><strong>Imágenes:</strong> <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>
+            (vía OCR).</li>
+          <li><strong>PDF con texto seleccionable:</strong> elige <strong>Extracción normal</strong> o
+            <strong>Extracción vía OCR</strong>.</li>
+          <li><strong>PDF escaneado sin texto seleccionable:</strong> se abren directo las opciones OCR.</li>
+        </ul>
+
+        <ol>
+          <li>Haz clic en <strong>📥</strong> y selecciona el archivo, o arrastra/suelta el archivo sobre la ventana
+            principal (cuando arrastras archivos se mostrará un resaltado visual de destino).</li>
+          <li>Si se detecta un PDF con texto seleccionable, elige <strong>Extracción normal</strong> o
+            <strong>Extracción vía OCR</strong> (recomendación: prueba primero en normal, es mucho más rápida).</li>
+          <li>Si la ruta va por OCR (imagen, PDF escaneado o elección manual), configura opciones (idioma OCR + preset)
+            y ejecuta <strong>Iniciar OCR</strong>.</li>
+          <li>Cuando el texto esté listo, elige <strong>Sobrescribir</strong> o <strong>Añadir</strong>.</li>
+          <li>Si quieres aproximar un libro completo desde una página modelo, usa el input junto a <strong>📋+</strong>
+            con <code>(páginas totales - 1)</code> y luego haz clic en <strong>📋+</strong>.</li>
+        </ol>
+
+        <p><strong>Nota:</strong> <em>toT</em> ofrece soluciones de importación, extracción y OCR para reducir el
+          trabajo manual. Aun así, la calidad final depende del material de origen (calidad de foto, PDF, formato) y
+          de los permisos de uso/copia del contenido.</p>
+
+        <h4>Ruta 1B — Usar portapapeles (desde web/PDF/cualquier fuente)</h4>
 
         <ol>
           <li>
@@ -186,20 +252,18 @@
           </li>
         </ol>
 
-        <p><strong>Nota:</strong> algunas páginas o documentos restringen la copia o alteran lo copiado. Aun así,
-          existen métodos para extraer/transcribir el contenido a texto (por ejemplo, conversión u OCR). <em>toT</em>
-          solo mide el texto que tú le entregas; la obtención de ese texto y sus implicancias quedan bajo
-          responsabilidad del usuario.</p>
-
         <ol start="3">
           <li>
             <p>En la ventana principal de la app, elige una de estas acciones:</p>
             <ul>
               <li><strong>📋↺</strong>: reemplaza completamente el texto actual por el portapapeles.</li>
               <li><strong>📋+</strong>: añade el portapapeles al final del texto actual.</li>
-              <li><strong>Input 1-9999</strong> (junto a <strong>📋+</strong>): define cuántas veces se repite ese append en un solo clic.</li>
+              <li><strong>Input de repeticiones de pegado</strong> (junto a <strong>📋↺</strong> y <strong>📋+</strong>):
+                define cuántas veces se aplica el bloque del portapapeles en un solo clic.</li>
             </ul>
-            <p><strong>Nota:</strong> con <code>N=2</code>, un clic en <strong>📋+</strong> equivale a dos clics consecutivos. Si el valor es inválido (vacío, 0, negativo, decimal o texto), se usa <code>1</code>.</p>
+            <p><strong>Nota:</strong> con <code>N=2</code>, un clic en <strong>📋↺</strong> reemplaza una vez y repite
+              una vez con separación de nueva línea; un clic en <strong>📋+</strong> agrega dos veces. Si el valor es
+              inválido (vacío, 0, negativo, decimal o texto), se usa <code>1</code>.</p>
           </li>
         </ol>
 
@@ -219,10 +283,10 @@
         <p><strong>Control de calidad rápido:</strong></p>
         <ul>
           <li>Si copias desde PDF o fuentes con formato, revisa si quedaron saltos de línea extraños, guiones de corte,
-            o espacios invisibles. Si ves problemas, pasa por el Editor manual (Ruta 1B o Paso 2).</li>
+            o espacios invisibles. Si ves problemas, pasa por el Editor manual (Ruta 1C o Paso 2).</li>
         </ul>
 
-        <h4>Ruta 1B — Escribir o pegar directamente en el Editor manual</h4>
+        <h4>Ruta 1C — Escribir o pegar directamente en el Editor manual</h4>
 
         <ol>
           <li>Abre el <strong>Editor manual</strong> con el botón <strong>⌨</strong>.</li>
@@ -248,7 +312,7 @@
             alt="Captura: editor manual sobre ventana principal" loading="lazy" decoding="async" />
         </figure>
 
-        <h4>Ruta 1C — Mezcla (recomendado para textos reales)</h4>
+        <h4>Ruta 1D — Mezcla (recomendado para textos reales)</h4>
 
         <ol>
           <li>Carga un borrador rápido con <strong>📋↺</strong>.</li>
@@ -267,7 +331,7 @@
           <strong>🗑</strong> de la ventana principal o del editor manual.
         </p>
 
-        <h4>Ruta 1D — Guardar / Cargar snapshots</h4>
+        <h4>Ruta 1E — Guardar / Cargar snapshots</h4>
 
         <p>Si reutiliza textos con frecuencia, puede guardar y cargar <strong>snapshots</strong> del texto actual
           utilizando los botones <strong>💾</strong> y <strong>📂</strong>.</p>

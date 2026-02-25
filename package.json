@@ -30,13 +30,24 @@
       "output": "build-output",
       "buildResources": "public/assets"
     },
+    "extraResources": [
+      {
+        "from": "ocr",
+        "to": "ocr",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "files": [
       "package.json",
       "electron/**",
       "public/**",
       "i18n/**",
       "LICENSE",
-      "PRIVACY.md"
+      "PRIVACY.md",
+      "THIRD_PARTY_NOTICES.md",
+      "third_party_licenses/**"
     ],
     "win": {
       "icon": "public/assets/logo-cibersino.ico",
@@ -50,5 +61,9 @@
       ]
     },
     "artifactName": "toT-${version}-win-${arch}.${ext}"
+  },
+  "dependencies": {
+    "mammoth": "^1.11.0",
+    "pdfjs-dist": "^5.4.624"
   }
 }

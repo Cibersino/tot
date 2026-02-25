@@ -16,7 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Aktuellen Text mit der Zwischenablage ersetzen",
         "append_clipboard": "Hängen Sie die Zwischenablage am Ende des aktuellen Textes an (neue Zeile)",
-        "append_repeat": "Anzahl der Wiederholungen des Anhängens (1-9999)",
+        "paste_repeat_count": "Anzahl der Einfüge-Wiederholungen",
         "edit": "Öffnen Sie das vollständige aktuelle Textfenster",
         "clear": "Aktuellen Text löschen",
         "snapshot_load": "Laden Sie einen Text-Snapshot",
@@ -54,6 +54,51 @@
         "flotante_short": "SF",
         "play_symbol": "▶",
         "pause_symbol": "⏸"
+      },
+      "import_apply": {
+        "title": "Import abgeschlossen. Wählen Sie den Anwendungsmodus:",
+        "title_with_elapsed": "Import abgeschlossen. OCR in {elapsed} abgeschlossen. Wählen Sie den Anwendungsmodus:",
+        "overwrite": "Überschreiben",
+        "append": "Anhängen",
+        "ocr_running": "OCR läuft..."
+      },
+      "ocr_options": {
+        "title": "OCR-Optionen",
+        "context_image": "Datei: {filename} - Bild-OCR",
+        "context_pdf_scanned": "Datei: {filename} - OCR für gescanntes PDF",
+        "context_generic": "Datei: {filename}",
+        "preset_label": "Preset",
+        "language_label": "Sprache",
+        "dpi_label": "DPI / Qualität",
+        "timeout_label": "Timeout pro Seite (s)",
+        "preprocess_label": "Vorverarbeitung",
+        "preset_fast": "Schnell",
+        "preset_balanced": "Ausgewogen",
+        "preset_high_accuracy": "Hohe Genauigkeit",
+        "preset_custom": "Benutzerdefiniert",
+        "preprocess_basic": "Einfach",
+        "preprocess_standard": "Standard",
+        "preprocess_aggressive": "Aggressiv",
+        "guidance_presets": "Schnell ~{fast}s/Seite · Ausgewogen ~{balanced}s/Seite · Hohe Genauigkeit ~{high}s/Seite",
+        "guidance_total": "Geschätzte Gesamtzeit: ~{total} für {pages} Seite(n)",
+        "guidance_disclaimer": "(ungefähr, abhängig von der Komplexität des Dokuments und der Leistung des Geräts)",
+        "start": "OCR starten",
+        "abort": "Abbrechen"
+      },
+      "import_progress": {
+        "pages": "Seiten",
+        "elapsed": "verstrichen",
+        "eta": "ETA",
+        "stage_queued": "In Warteschlange",
+        "stage_running": "Läuft",
+        "stage_extracting": "Extrahieren...",
+        "stage_preflight": "Vorbereitung...",
+        "stage_rasterizing": "Rasterisierung...",
+        "stage_ocr": "OCR...",
+        "stage_finalizing": "Finalisierung...",
+        "stage_completed": "Abgeschlossen",
+        "stage_failed": "Fehlgeschlagen",
+        "stage_canceled": "Abgebrochen"
       }
     },
     "tasks": {

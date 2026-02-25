@@ -22,6 +22,11 @@
     </ul>
   </nav>
 
+  <p><strong>toT</strong> is a desktop app that turns text into estimated reading time and helps you plan realistic
+    reading workloads. It combines file text import/extraction from text and image files, configurable WPM presets,
+    precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings
+    with less guesswork.</p>
+
   <article class="instrucciones-document">
 
     <!-- =========================================================
@@ -41,8 +46,34 @@
 
         <ol>
           <li>
-            <p><strong>Load text</strong></p>
+            <p><strong>Import a model page (recommended onboarding flow)</strong></p>
             <ul>
+              <li><strong>Supported sources:</strong> clipboard, simple text files (<code>.txt</code>,
+                <code>.docx</code>), images (<code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>,
+                <code>.webp</code>), and PDFs (selectable-text PDFs + scanned PDFs via OCR).
+              </li>
+              <li>Take a good photo of a representative page from any book and save it in any folder on your computer.
+              </li>
+              <li>To get familiar with the app, choose a base WPM using a preset or the slider/input (a default preset
+                is fine to start).</li>
+              <li>Press <strong>📥</strong> or drag/drop that photo onto the main window, choose OCR language, keep
+                <strong>Balanced</strong>, and press <strong>Start OCR</strong>. While dragging, a visual drop
+                highlight is shown.
+              </li>
+              <li>If extraction succeeds, choose <strong>Overwrite</strong>. Open the <strong>Manual Editor</strong>
+                (⌨) to inspect how clean the extraction is.</li>
+              <li>Back in the main window, click the input to the right of <strong>📋+</strong>, enter
+                <code>(book total pages - 1)</code>, then click <strong>📋+</strong>.
+              </li>
+              <li>The app will iterate the model page to approximate total words/characters and estimated reading time
+                using your selected WPM.</li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>Copy from clipboard</strong></p>
+            <ul>
+              <li>Use <strong>🗑</strong> to start from scratch.</li>
               <li>From any source: copy the text and use <strong>📋↺</strong></li>
               <li>If you are assembling a text in parts: use <strong>📋+</strong> as many times as you need
               </li>
@@ -56,7 +87,6 @@
               <li>Correct everything weird: line breaks, hyphenation or “garbage” (menus, ads, repeated headers).
               </li>
               <li>You can modify or add whatever you want, by typing or pasting in the Manual Editor.</li>
-              <li>If you want to start from scratch, use <strong>🗑</strong>.</li>
             </ul>
           </li>
 
@@ -135,17 +165,22 @@
           Is the pile of books on your bedside table growing mercilessly?<br />
           Do you want to do experimental studies related to reading time?</p>
 
-        <p>This app is for you.</p>
-
-        <p><strong>toT</strong> estimates reading time from a text and a speed set in WPM (words per
-          minute). The app also has customizable speed presets and can measure your real speed with a stopwatch.</p>
-
         <p>This app is designed for:</p>
         <ul>
-          <li>Quickly estimate the reading time of any text you enter or compose.</li>
-          <li>Measure and adjust your real speed in different scenarios.</li>
-          <li>Configure customized WPM presets according to the type of reader, reading mode, text complexity, language
-            or any desired parameter.</li>
+          <li>Import or extract text from <code>txt</code>, <code>docx</code>, <code>pdf</code>, and image files
+            (<code>png</code>, <code>jpg</code>, <code>jpeg</code>, <code>webp</code>), with local OCR for images and
+            scanned PDFs.
+          <li>Text can be entered by pasting it from the clipboard and/or manually.</li>
+          <li>Full-text editor with find.</li>
+          <li>Reading-time estimation with configurable WPM (words per minute).</li>
+          <li>Word and character counting (with/without spaces).</li>
+          <li>“Precise mode” word segmentation using <code>Intl.Segmenter</code>.</li>
+          <li>WPM presets: create/edit/delete + restore defaults.</li>
+          <li>Stopwatch with real WPM calculation; optional floating window.</li>
+          <li>Text snapshots: save/load current texts.</li>
+          <li>Task editor: text list organizer to plan readings.</li>
+          <li>Multi-language UI: <code>es</code>, <code>es-cl</code>, <code>arn</code>, <code>en</code>,
+            <code>fr</code>, <code>de</code>, <code>it</code>, <code>pt</code>.</li>
         </ul>
 
         <figure class="instrucciones-media">
@@ -160,7 +195,38 @@
         <p>Your first decision is <strong>how to construct the text you wish to estimate</strong>. From here on we will
           call it <strong>current text</strong>.</p>
 
-        <h4>Route 1A — Use Clipboard (from web/PDF/any source)</h4>
+        <h4>Route 1A — Import files (recommended primary route)</h4>
+
+        <p>Use the <strong>📥</strong> button to import or extract text directly from files, with automatic routing by
+          file type. You can also <strong>drag and drop</strong> a file onto the main window: it runs the same import
+          flow as <strong>📥</strong>.</p>
+
+        <ul>
+          <li><strong>Simple text:</strong> <code>.txt</code>, <code>.docx</code>.</li>
+          <li><strong>Images:</strong> <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>
+            (OCR).</li>
+          <li><strong>PDF with selectable text:</strong> choose <strong>Normal extraction</strong> or
+            <strong>Extraction via OCR</strong>.</li>
+          <li><strong>Scanned PDF without selectable text:</strong> OCR options open directly.</li>
+        </ul>
+
+        <ol>
+          <li>Click <strong>📥</strong> and choose the file, or drag/drop the file onto the main window (while dragging
+            files, a visual drop highlight is shown).</li>
+          <li>If a selectable-text PDF is detected, choose <strong>Normal extraction</strong> or
+            <strong>Extraction via OCR</strong> (recommendation: try it on normal first, it's much faster).</li>
+          <li>If OCR path is used (image, scanned PDF, or manual OCR choice), configure options (OCR language + preset)
+            and run <strong>Start OCR</strong>.</li>
+          <li>When text is ready, choose <strong>Overwrite</strong> or <strong>Append</strong>.</li>
+          <li>If you want to approximate a full book from one model page, use the input next to
+            <strong>📋+</strong> with <code>(total pages - 1)</code>, then click <strong>📋+</strong>.
+          </li>
+        </ol>
+
+        <p><strong>Note:</strong> <em>toT</em> provides import, extraction, and OCR paths to reduce manual work.
+          Final quality still depends on source quality (photo/PDF/format) and content permissions in your context.</p>
+
+        <h4>Route 1B — Use Clipboard (from web/PDF/any source)</h4>
 
         <ol>
           <li>
@@ -185,19 +251,18 @@
           </li>
         </ol>
 
-        <p><strong>Note:</strong> some pages or documents restrict copying or alter copying. Even so, there are methods
-          to extract/transcribe content to text (e.g., conversion or OCR). <em>toT</em> only measures the text that you
-          give it; obtaining that text and its implications are user responsibility.</p>
-
         <ol start="3">
           <li>
             <p>In the main app window, choose one of these actions:</p>
             <ul>
               <li><strong>📋↺</strong>: completely replaces the current text with the clipboard.</li>
               <li><strong>📋+</strong>: adds the clipboard to the end of the current text.</li>
-              <li><strong>Input 1-9999</strong> (next to <strong>📋+</strong>): sets how many times that append is repeated with a single click.</li>
+              <li><strong>Paste repetitions input</strong> (next to <strong>📋↺</strong> and <strong>📋+</strong>):
+                sets how many times the clipboard block is applied with a single click.</li>
             </ul>
-            <p><strong>Note:</strong> with <code>N=2</code>, one click on <strong>📋+</strong> is equivalent to two consecutive clicks. If the value is invalid (empty, 0, negative, decimal, or text), <code>1</code> is used.</p>
+            <p><strong>Note:</strong> with <code>N=2</code>, one click on <strong>📋↺</strong> overwrites once and
+              repeats once with a new-line separation; one click on <strong>📋+</strong> appends twice. If the value is
+              invalid (empty, 0, negative, decimal, or text), <code>1</code> is used.</p>
           </li>
         </ol>
 
@@ -217,10 +282,10 @@
         <p><strong>Fast quality control:</strong></p>
         <ul>
           <li>If you copy from PDF or formatted sources/documents, check for extraneous line breaks, dashes, or
-            invisible spaces. If you see problems, go through the Manual Editor (Path 1B or Step 2).</li>
+            invisible spaces. If you see problems, go through the Manual Editor (Path 1C or Step 2).</li>
         </ul>
 
-        <h4>Route 1B — Type or paste directly into the Manual Editor</h4>
+        <h4>Route 1C — Type or paste directly into the Manual Editor</h4>
 
         <ol>
           <li>Open <strong>Manual Editor</strong> with the button <strong>⌨</strong>.</li>
@@ -245,7 +310,7 @@
             alt="Screenshot: manual editor on main window" loading="lazy" decoding="async" />
         </figure>
 
-        <h4>Route 1C — Mixing (recommended for real texts)</h4>
+        <h4>Route 1D — Mixing (recommended for real texts)</h4>
 
         <ol>
           <li>Load a quick draft with <strong>📋↺</strong>.</li>
@@ -263,7 +328,7 @@
         <p><strong>Note:</strong> You can completely empty the current text quickly with the <strong>🗑</strong> button
           in the main window or in the manual editor.</p>
 
-        <h4>Route 1D — Save / Load snapshots</h4>
+        <h4>Route 1E — Save / Load snapshots</h4>
 
         <p>If you frequently reuse texts, you can save and load <strong>snapshots</strong> of the current text using the
           <strong>💾</strong> and <strong>📂</strong> buttons.

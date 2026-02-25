@@ -37,11 +37,24 @@ tot/
 │ ├── releases/                    # {con subcarpetas por release con docs de chequeo}
 │ │ ├── release_checklist.md
 │ │ ├── security_baseline.md
-│ │ └── legal_baseline.md
+│ │ ├── legal_baseline.md
+│ │ ├── ocr_sidecar_runtime_guidance.md
+│ │ └── ocr_cross_target_smoke_matrix.md
 │ ├── changelog_detailed.md
 │ ├── test_suite.md
 │ └── tree_folders_files.md
 ├── electron/
+│ ├── import_ocr/                  # {orquestación import/OCR + adaptadores por plataforma}
+│ │ ├── platform/
+│ │ │ ├── resolve_sidecar.js
+│ │ │ ├── process_control.js
+│ │ │ └── profile_registry.js
+│ │ ├── orchestrator.js
+│ │ ├── ocr_pipeline.js
+│ │ ├── ocr_runtime.js
+│ │ ├── extract_phase_a.js
+│ │ ├── engine_v2.js
+│ │ └── language_policy.js
 │ ├── presets/                     # {presets para restauración de fábrica}
 │ │ ├── defaults_presets.json
 │ │ ├── defaults_presets_en.json
@@ -70,6 +83,15 @@ tot/
 │ └── log.js
 ├── i18n/                          # {subcarpetas por idioma y variantes regionales}
 │ └── languages.json
+├── ocr/                           # {sidecars OCR por target; se empaqueta fuera de app.asar}
+│ ├── win32-x64/
+│ ├── linux-x64/
+│ ├── darwin-x64/
+│ ├── darwin-arm64/
+│ └── README.md
+├── third_party_licenses/          # {licencias/notices de terceros redistribuidos}
+│ ├── poppler/
+│ └── tesseract/
 ├── public/
 │ ├── assets/
 │ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
@@ -94,6 +116,8 @@ tot/
 │ │ ├── crono.js
 │ │ ├── menu_actions.js
 │ │ ├── current_text_snapshots.js
+│ │ ├── import_ocr_ui.js
+│ │ ├── import_entry.js
 │ │ ├── format.js
 │ │ ├── i18n.js
 │ │ ├── constants.js
@@ -132,6 +156,7 @@ tot/
 ├── CHANGELOG.md
 ├── PRIVACY.md
 ├── README.md
+├── THIRD_PARTY_NOTICES.md
 └── LICENSE
 ```
 
@@ -176,6 +201,13 @@ tot/
 - `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
 - `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique).
 - `electron/log.js` — Logger del proceso principal (política de logs/fallbacks).
+- `electron/import_ocr/orchestrator.js` — Orquestador import/OCR (sesiones/jobs/lock global, routing y flujos apply/discard).
+- `electron/import_ocr/extract_phase_a.js` — Extractores no-OCR (txt/docx/pdf-text-layer) y utilidades de fase A.
+- `electron/import_ocr/ocr_pipeline.js` — Pipeline OCR/raster (`tesseract` + `pdftoppm`) con progreso/cancelación/cleanup.
+- `electron/import_ocr/ocr_runtime.js` — Helpers runtime para OCR: validación de idioma/datos (`traineddata`), normalización, ejecución de procesos externos con timeout/cancelación, y captura acotada de `stdout/stderr`.
+- `electron/import_ocr/engine_v2.js` — Motor OCR v2 para PDF escaneado por página (raster + OCR), con preflight de páginas (`pdfjs`), watchdog anti-stall, progreso por etapas y limpieza de temporales.
+- `electron/import_ocr/language_policy.js` — Política de idiomas OCR: mapeo UI→Tesseract, idiomas requeridos por combinación, catálogo disponible según `tessdata`, y resolución de idioma preferido con fallback.
+- `electron/import_ocr/platform/*` — Adaptadores y perfiles por plataforma/arquitectura para sidecars OCR.
 
 ### 3) Módulos del renderer (public/js)
 
@@ -190,6 +222,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
+- `public/js/import_ocr_ui.js` — Capa UI de Import/OCR en la ventana principal: panel de progreso/cancelación, modal overwrite/append (con repetición), modal de opciones OCR (preset/idioma/custom), y estimaciones ETA.
+- `public/js/import_entry.js` — Entrada unificada de importación (botón + drag&drop): resuelve rutas soltadas (`file://`, `text/uri-list`, bridge), orquesta `import-select/import-run/import-discard`, y delega prompts de OCR.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
@@ -231,9 +265,13 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 ### 6) Documentación y operación del repo
 
 - `docs/releases/release_checklist.md` — Checklist mecánico de release (fuentes de verdad, changelog, consistencia).
+- `docs/releases/ocr_sidecar_runtime_guidance.md` — Guía operativa para advertencias OS esperables al ejecutar OCR sidecars en artefactos MVP.
+- `docs/releases/ocr_cross_target_smoke_matrix.md` — Matriz operativa cross-target para validar OCR sidecar (éxito/cancelación/fallo explícito) por artefacto.
 - `docs/releases/<version>/` — Baselines y checklists versionados por release.
 - `docs/changelog_detailed.md` — Changelog detallado (técnico/narrativo; post-0.0.930 con formato mecánico).
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
+- `THIRD_PARTY_NOTICES.md` — Referencias de origen/licencia para componentes redistribuidos de terceros (incluyendo sidecars OCR).
+- `third_party_licenses/` — Copias locales de licencias/notices de terceros referenciadas por `THIRD_PARTY_NOTICES.md`.
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
 - `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, etc.).
 
@@ -243,6 +281,7 @@ Actualizar `docs/tree_folders_files.md` cuando:
 - Se agreguen/renombren entry points (main/preloads/ventanas).
 - Se mueva o divida lógica en módulos principales (`electron/` o `public/js/`).
 - Cambie la estructura de `i18n/`, `docs/` o el layout general del repo.
+- Cambie la estructura de `ocr/` o `third_party_licenses/` para distribución.
 - Se introduzca o elimine persistencia relevante en `config/`.
 
 Regla: este archivo describe **estructura y responsabilidades**; el detalle operativo vive en los Issues/Project y en la documentación específica.

@@ -249,7 +249,7 @@ function parseSnapshotFile(selectedReal) {
 // =============================================================================
 // IPC registration
 // =============================================================================
-function registerIpc(ipcMain, { getWindows } = {}) {
+function registerIpc(ipcMain, { getWindows, guardIpcByInteractionGate } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[current_text_snapshots] registerIpc requires ipcMain');
   }
@@ -262,8 +262,16 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return null;
   };
 
+  const maybeBlockedByInteractionGate = (event, channel, opts = {}) => {
+    if (typeof guardIpcByInteractionGate !== 'function') return null;
+    return guardIpcByInteractionGate(event, Object.assign({ channel }, opts));
+  };
+
   ipcMain.handle('current-text-snapshot-save', async (event) => {
     try {
+      const blocked = maybeBlockedByInteractionGate(event, 'current-text-snapshot-save');
+      if (blocked) return blocked;
+
       const rootInfo = getSnapshotsRoot('write');
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;
@@ -327,6 +335,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
   ipcMain.handle('current-text-snapshot-select', async (event) => {
     try {
+      const blocked = maybeBlockedByInteractionGate(event, 'current-text-snapshot-select');
+      if (blocked) return blocked;
+
       const rootInfo = getSnapshotsRoot('read');
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;
@@ -357,6 +368,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
   ipcMain.handle('current-text-snapshot-load', async (event, payload) => {
     try {
+      const blocked = maybeBlockedByInteractionGate(event, 'current-text-snapshot-load');
+      if (blocked) return blocked;
+
       const rootInfo = getSnapshotsRoot('read');
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;

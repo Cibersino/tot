@@ -56,6 +56,7 @@ const createDefaultSettings = (language = '') => ({
   presets_by_language: {},
   selected_preset_by_language: {},
   disabled_default_presets: {},
+  last_import_dir: '',
 });
 
 // =============================================================================
@@ -248,6 +249,22 @@ function normalizeSettings(s) {
       { type: typeof s.disabled_default_presets, isArray: Array.isArray(s.disabled_default_presets) }
     );
     s.disabled_default_presets = {};
+  }
+
+  // last_import_dir:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof s.last_import_dir === 'undefined') {
+    s.last_import_dir = '';
+  } else if (typeof s.last_import_dir !== 'string') {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidLastImportDir',
+      'Invalid last_import_dir; forcing empty string:',
+      { type: typeof s.last_import_dir }
+    );
+    s.last_import_dir = '';
+  } else {
+    s.last_import_dir = s.last_import_dir.trim();
   }
 
   // modeConteo:
@@ -470,11 +487,17 @@ function registerIpc(
   {
     getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin })
     buildAppMenu, // function(lang)
+    guardIpcByInteractionGate, // function(event, { channel, ...opts }) => { ok:false,... } | null
   } = {}
 ) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
   }
+
+  const maybeBlockedByInteractionGate = (event, channel, opts = {}) => {
+    if (typeof guardIpcByInteractionGate !== 'function') return null;
+    return guardIpcByInteractionGate(event, Object.assign({ channel }, opts));
+  };
 
   // get-settings: returns the current settings object (normalized)
   ipcMain.handle('get-settings', async () => {
@@ -491,8 +514,11 @@ function registerIpc(
   });
 
   // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
-  ipcMain.handle('set-language', async (_event, lang) => {
+  ipcMain.handle('set-language', async (event, lang) => {
     try {
+      const blocked = maybeBlockedByInteractionGate(event, 'set-language');
+      if (blocked) return blocked;
+
       const chosenRaw = String(lang || '');
       const chosen = normalizeLangTag(chosenRaw);
       if (!chosen) {
@@ -563,8 +589,11 @@ function registerIpc(
   });
 
   // set-mode-conteo: updates modeConteo and broadcasts
-  ipcMain.handle('set-mode-conteo', async (_event, mode) => {
+  ipcMain.handle('set-mode-conteo', async (event, mode) => {
     try {
+      const blocked = maybeBlockedByInteractionGate(event, 'set-mode-conteo');
+      if (blocked) return blocked;
+
       let settings = getSettings();
       settings.modeConteo = mode === 'simple' ? 'simple' : 'preciso';
       settings = saveSettings(settings);
@@ -580,8 +609,11 @@ function registerIpc(
   });
 
   // set-selected-preset: persists selection per language
-  ipcMain.handle('set-selected-preset', async (_event, presetName) => {
+  ipcMain.handle('set-selected-preset', async (event, presetName) => {
     try {
+      const blocked = maybeBlockedByInteractionGate(event, 'set-selected-preset');
+      if (blocked) return blocked;
+
       const name = typeof presetName === 'string' ? presetName.trim() : '';
       if (!name) {
         log.warnOnce(
