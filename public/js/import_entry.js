@@ -72,6 +72,13 @@
       throw new Error('[import-entry] guardUserAction callback is required');
     }
 
+    function setDropHighlightState(active) {
+      const doc = globalObj && globalObj.document ? globalObj.document : null;
+      const body = doc && doc.body ? doc.body : null;
+      if (!body || !body.classList) return;
+      body.classList.toggle('file-drop-active', !!active);
+    }
+
     async function runImportFlowFromSelection(selectRes) {
       if (!selectRes || selectRes.ok !== true || !selectRes.sessionId) {
         const message = humanizeImportError(selectRes);
@@ -179,6 +186,9 @@
         target: globalObj,
         electronAPI,
         logger: log,
+        onDragStateChange: (active) => {
+          setDropHighlightState(active);
+        },
         guardUserAction: () => guardUserAction('import-drop-file'),
         onResolvedPath: async (droppedPath) => {
           const selectRes = await selectImportSessionFromDroppedFile(droppedPath);

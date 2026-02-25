@@ -157,10 +157,39 @@
     const onUnhandledError = typeof opts.onUnhandledError === 'function'
       ? opts.onUnhandledError
       : (() => {});
+    const onDragStateChange = typeof opts.onDragStateChange === 'function'
+      ? opts.onDragStateChange
+      : (() => {});
     const electronAPI = opts.electronAPI && typeof opts.electronAPI === 'object'
       ? opts.electronAPI
       : globalObj.electronAPI;
     const logger = opts.logger || null;
+    let dragDepth = 0;
+    let dragActive = false;
+
+    const setDragActive = (nextActive) => {
+      const normalizedNext = !!nextActive;
+      if (dragActive === normalizedNext) return;
+      dragActive = normalizedNext;
+      try {
+        onDragStateChange(dragActive);
+      } catch (err) {
+        if (logger && typeof logger.warnOnce === 'function') {
+          logger.warnOnce(
+            'import-drop.onDragStateChange.failed',
+            'onDragStateChange callback failed (ignored):',
+            err
+          );
+        }
+      }
+    };
+
+    const onDragEnter = (event) => {
+      if (!hasFileDragPayload(event)) return;
+      event.preventDefault();
+      dragDepth += 1;
+      setDragActive(true);
+    };
 
     const onDragOver = (event) => {
       if (!hasFileDragPayload(event)) return;
@@ -168,12 +197,35 @@
       if (event.dataTransfer) {
         event.dataTransfer.dropEffect = 'copy';
       }
+      setDragActive(true);
+    };
+
+    const onDragLeave = (event) => {
+      if (!dragActive) return;
+      event.preventDefault();
+      if (!event.relatedTarget) {
+        resetDragState();
+        return;
+      }
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) {
+        setDragActive(false);
+      }
+    };
+
+    const resetDragState = () => {
+      dragDepth = 0;
+      setDragActive(false);
     };
 
     const onDrop = async (event) => {
-      if (!hasFileDragPayload(event)) return;
+      if (!hasFileDragPayload(event)) {
+        resetDragState();
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
+      resetDragState();
       if (!guardUserAction()) return;
 
       try {
@@ -188,13 +240,28 @@
       }
     };
 
+    const onDragEnd = () => {
+      resetDragState();
+    };
+
     target.addEventListener('dragover', onDragOver);
+    target.addEventListener('dragenter', onDragEnter);
+    target.addEventListener('dragleave', onDragLeave);
     target.addEventListener('drop', onDrop);
+    if (globalObj && typeof globalObj.addEventListener === 'function') {
+      globalObj.addEventListener('dragend', onDragEnd);
+    }
 
     return () => {
       try {
         target.removeEventListener('dragover', onDragOver);
+        target.removeEventListener('dragenter', onDragEnter);
+        target.removeEventListener('dragleave', onDragLeave);
         target.removeEventListener('drop', onDrop);
+        if (globalObj && typeof globalObj.removeEventListener === 'function') {
+          globalObj.removeEventListener('dragend', onDragEnd);
+        }
+        resetDragState();
       } catch {
         // no-op
       }
