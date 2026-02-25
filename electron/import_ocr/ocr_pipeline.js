@@ -53,15 +53,13 @@ async function runImageOcr(session, sidecar, options = {}) {
     onChildProcess: options.onChildProcess,
     isCancelRequested: options.isCancelRequested,
   });
-  if (!processRes.ok) {
-    if (processRes.code === 'OCR_TIMEOUT_PAGE') {
-      return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
-        timeoutPerPageSec,
-        stderr: processRes.stderr || '',
-      });
-    }
-    return processRes;
+  if (!processRes.ok && processRes.code === 'OCR_TIMEOUT_PAGE') {
+    return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
+      timeoutPerPageSec,
+      stderr: processRes.stderr || '',
+    });
   }
+  if (!processRes.ok) return processRes;
 
   const text = normalizeMultiline(processRes.stdout);
   if (!text) {
@@ -96,7 +94,8 @@ async function runImageOcr(session, sidecar, options = {}) {
 }
 
 async function runOcrPipeline(session, options = {}) {
-  const sidecar = resolveSidecarPaths(options || {});
+  const normalizedOptions = options || {};
+  const sidecar = resolveSidecarPaths(normalizedOptions);
   if (!sidecar.ok) return sidecar;
 
   if (!ensurePathExists(sidecar.tesseractPath)) {
@@ -114,9 +113,9 @@ async function runOcrPipeline(session, options = {}) {
     });
   }
   if (isPdfInput(session)) {
-    return runPdfRasterOcrV2(session, sidecar, options || {});
+    return runPdfRasterOcrV2(session, sidecar, normalizedOptions);
   }
-  return runImageOcr(session, sidecar, options || {});
+  return runImageOcr(session, sidecar, normalizedOptions);
 }
 
 module.exports = {
