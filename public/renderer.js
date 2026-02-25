@@ -2269,11 +2269,14 @@ btnOverwriteClipboard.addEventListener('click', async () => {
     });
     if (!read.ok) return;
     const clip = read.text;
+    const repeatCount = getAppendRepeatCount();
 
-    if (clip.length > maxIpcChars) {
+    const projectedLen = projectRepeatedAppendLength('', clip, repeatCount);
+    if (projectedLen > maxIpcChars) {
       window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
       return;
     }
+    const overwriteText = buildRepeatedAppendText('', clip, repeatCount);
 
     // Send object with meta (overwrite)
     const setCurrentText = getOptionalElectronMethod('setCurrentText', {
@@ -2285,7 +2288,7 @@ btnOverwriteClipboard.addEventListener('click', async () => {
       return;
     }
     const resp = await setCurrentText({
-      text: clip,
+      text: overwriteText,
       meta: { source: 'main-window', action: 'overwrite' }
     });
 
