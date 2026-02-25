@@ -53,55 +53,152 @@ Reglas:
 
 ### Resumen
 
-- Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
-- OCR Engine v2 (Issue #138): migración completa de OCR para PDF escaneado a pipeline por página con `preflight` de total de páginas, rasterización/OCR incremental y progreso determinista sin fallback legacy.
+- **Nueva feature principal**: ahora la app permite **importar archivos y extraer texto** desde `txt`, `docx`, `pdf` e imágenes (`png`, `jpg`, `jpeg`, `webp`), incluyendo OCR local para imágenes y PDFs escaneados.
+- Flujo OCR completo en UI: opciones de OCR (preset/idioma/parámetros), progreso en vivo por etapas/páginas, cancelación explícita y apply final (`Overwrite`/`Append`) en el mismo flujo de importación.
+- Distribución OCR embebida para Windows x64 con sidecars separados por herramienta (`tesseract/` y `poppler/`) y `tessdata` incluida, más wiring de empaquetado/legal/docs para release.
+- Endurecimiento operativo mientras corre OCR: lock de interacción global, precondiciones de arranque OCR (sin ventanas secundarias abiertas y sin cronómetro corriendo) y guardas de IPC en módulos principales.
+
+### Agregado
+
+- Botón `📥` de importación/extracción en ventana principal + entrada por **drag & drop** de archivos.
+- Nuevos módulos de renderer para la feature:
+  - `public/js/import_entry.js` (entry unificado botón + drop)
+  - `public/js/import_ocr_ui.js` (modales/options/progreso/cancelación/apply)
+- Nuevos módulos main para import/OCR:
+  - `electron/import_ocr/orchestrator.js`
+  - `electron/import_ocr/extract_phase_a.js`
+  - `electron/import_ocr/ocr_pipeline.js`
+  - `electron/import_ocr/engine_v2.js`
+  - `electron/import_ocr/ocr_runtime.js`
+  - `electron/import_ocr/language_policy.js`
+  - `electron/import_ocr/platform/{profile_registry,resolve_sidecar,process_control}.js`
+- OCR para imagen y PDF escaneado con pipeline por etapas (`preflight`, `rasterizing`, `ocr`, `finalizing`) y timeout/cancelación tipados.
+- Selector de idioma OCR dinámico según `traineddata` instalada (`es`, `en`, `es+en`, `fr`, `de`, `it`, `pt` cuando estén disponibles).
+- Soporte de extracción no-OCR:
+  - `txt` (detección binaria + decodificación controlada),
+  - `docx` (vía `mammoth`),
+  - `pdf` con capa de texto (vía `pdfjs-dist`).
+- Soporte sidecar OCR en repo:
+  - `ocr/README.md`
+  - `ocr/win32-x64/tesseract/**`
+  - `ocr/win32-x64/poppler/**`
+  - placeholders para `ocr/linux-x64`, `ocr/darwin-x64`, `ocr/darwin-arm64`.
+- Nuevo archivo `THIRD_PARTY_NOTICES.md` y nuevos textos locales de licencias:
+  - `third_party_licenses/poppler/*`
+  - `third_party_licenses/tesseract/TESSERACT_INSTALLER_LICENSE.txt`
+- Nueva documentación de release OCR:
+  - `docs/releases/ocr_sidecar_runtime_guidance.md`
+  - `docs/releases/ocr_cross_target_smoke_matrix.md`
+- Nuevas claves `appdoc:` para abrir avisos/licencias OCR desde “Acerca de”.
 
 ### Cambiado
 
-- `electron/text_state.js`:
-  - `set-current-text` ahora autoriza explícitamente el sender y acepta solo `mainWin`/`editorWin`; otros senders reciben `{ ok:false, error:'unauthorized' }`.
-  - `meta.source` pasa a derivarse en main según sender (`editor` o `main-window`), evitando spoofing desde payload renderer.
-  - `meta.action` pasa por allowlist blanda (`overwrite`, `append_newline`, `typing`, `typing_toggle_on`, `clear`, `paste`, `drop`, `set`); acciones desconocidas se normalizan a `set` con warning (sin reject duro).
-- `electron/import_ocr/ocr_pipeline.js`:
-  - reemplazo de OCR PDF escaneado batch por flujo v2: `preflight` (conteo de páginas) + raster/OCR por página (`pdftoppm -singlefile -f N -l N`).
-  - se elimina la dependencia del modelo legacy que rasterizaba todo el PDF antes de iniciar OCR.
-  - timeout rediseñado: budget por página (raster + OCR) y watchdog de stall sin progreso con diagnóstico de `stage/page`.
-- `public/js/import_ocr_ui.js`:
-  - soporte explícito del stage `preflight`.
-  - retiro del fallback de UI basado en `pageCountHint` para compensar raster `0/0` legacy; ahora depende del contrato de progreso v2.
-- i18n (`i18n/*/renderer.json`):
-  - nueva clave `renderer.main.import_progress.stage_preflight` en idiomas soportados.
-
-### Arreglado
-
-- Se corrige una brecha de defensa en profundidad: `set-current-text` no aplicaba control de autorización por sender, a diferencia de otros handlers sensibles.
-- Se corrige comportamiento frágil de OCR en PDF escaneado asociado a tiempos de rasterización largos (incluyendo escenarios con ventana principal desenfocada), al remover el timeout monolítico de raster batch.
-- Se corrige inconsistencia de progreso en rasterización de PDF escaneado (largos periodos con `pageDone=0/pageTotal=0`).
+- Flujo PDF con capa de texto:
+  - extracción directa disponible;
+  - opción explícita para ejecutar OCR si el usuario lo prefiere;
+  - si no hay capa de texto, respuesta explícita (`IMPORT_PDF_NO_TEXT_LAYER`) y continuidad por ruta OCR.
+- Modal de apply de importación unificado:
+  - `Overwrite` / `Append` en un solo diálogo;
+  - contador de repetición también disponible en el apply de importación.
+- Barra de progreso OCR mejorada:
+  - heartbeat en vivo;
+  - páginas `done/total` estables tras `preflight`;
+  - ETA y tiempo transcurrido visibles.
+- `main` añade **interaction gate** durante OCR:
+  - bloquea acciones principales no permitidas mientras OCR está activo;
+  - conserva capacidad de cancelación OCR.
+- Precondiciones de arranque OCR en `main`:
+  - no iniciar OCR con ventanas secundarias abiertas;
+  - no iniciar OCR con cronómetro corriendo;
+  - retorna `OCR_PRECONDITION_FAILED` con razones.
+- Endurecimiento de IPC por interaction gate en módulos existentes (`text_state`, `settings`, `presets_main`, `tasks_main`, `current_text_snapshots_main`).
+- `text_state` endurece `set-current-text`:
+  - autorización explícita de sender (`main`/`editor`);
+  - normalización/whitelist de `meta.action`.
+- `settings` agrega persistencia de carpeta usada en importación (`last_import_dir`) para default del file picker.
+- `electron/preload.js` amplía bridge con métodos Import/OCR + estado del interaction gate + helper de path para archivos drop (`webUtils.getPathForFile`).
+- `package.json`/packaging:
+  - añade `extraResources` para empaquetar `ocr/**` fuera de `app.asar`;
+  - incluye `THIRD_PARTY_NOTICES.md` y `third_party_licenses/**` en artefacto;
+  - agrega dependencias `mammoth` y `pdfjs-dist`.
+- `electron/link_openers.js` amplía allowlist `open-app-doc` para avisos/licencias OCR y endurece sanitización de nombres temporales.
+- UI/i18n:
+  - nuevas traducciones/alerts/tooltips/ARIA para import/OCR en `es`, `es-cl`, `en`, `arn`, `de`, `fr`, `it`, `pt`;
+  - `public/style.css` añade estilos para drop-highlight, modales import/OCR y panel de progreso.
+- Documentación y manuales:
+  - `README.md` (ES/EN) incorpora la feature de import/extract + OCR;
+  - `PRIVACY.md` se actualiza (vigencia `2026-02-20`, versión `0.1.6`, detalle de datos locales y conectividad);
+  - `docs/test_suite.md` agrega bloque de regresión `REG-IMPORTOCR` y smoke `SM-13`;
+  - `public/info/instrucciones.*.html`, `public/info/acerca_de.html` y assets actualizados para el nuevo flujo.
 
 ### Contratos tocados
 
-- IPC `set-current-text` (failure-path):
-  - se formaliza respuesta `unauthorized` para senders no autorizados.
-- Sin cambios en canal, shape healthy-path ni superficie de preload (`window.electronAPI.setCurrentText` / `window.editorAPI.setCurrentText` se mantienen).
-- IPC `import-progress` (OCR PDF escaneado):
-  - nuevo stage observable: `preflight`.
-  - después de `preflight`, `pageTotal` pasa a ser determinístico para el resto del job OCR.
-  - payload mantiene shape base (`jobId`, `stage`, `pageDone`, `pageTotal`, `heartbeatTs`).
+- IPC nuevos (`invoke`, main window):
+  - `import-get-ocr-languages`
+  - `import-select-file`
+  - `import-select-file-path` (payload `{ filePath }`)
+  - `import-run` (payload `{ sessionId, options }`)
+  - `import-cancel`
+  - `import-apply` (payload `{ sessionId, mode, repeatCount }`)
+  - `import-discard` (payload `{ sessionId }`)
+- IPC nuevos (`send`, main -> renderer):
+  - `import-progress` (payload con `jobId`, `stage`, `pageDone`, `pageTotal`, `kind`, `heartbeatTs`)
+  - `import-finished` (payload con `jobId`, `ok`, `code`, `summary`)
+  - `interaction-gate-state` (payload `{ blocked, reason }`)
+- IPC nuevo (`invoke`):
+  - `interaction-gate-get-state`
+- Preload (`window.electronAPI`) agrega métodos:
+  - `importSelectFile`, `importSelectFilePath`, `importGetOcrLanguages`
+  - `importRun`, `importCancel`, `importApply`, `importDiscard`
+  - `onImportProgress`, `onImportFinished`
+  - `getInteractionGateState`, `onInteractionGateState`
+  - `getPathForDroppedFile`
+- Storage/settings:
+  - nueva key persistida: `last_import_dir` en `user_settings.json`.
+- `open-app-doc` (allowlist) agrega keys:
+  - `third-party-notices`
+  - `license-ocr-tesseract`
+  - `license-ocr-poppler-gpl2`
+  - `license-ocr-poppler-mit`
 
 ### Archivos
 
-- `electron/text_state.js`
-- `electron/import_ocr/ocr_pipeline.js`
-- `public/js/import_ocr_ui.js`
-- `i18n/en/renderer.json`
-- `i18n/es/renderer.json`
-- `i18n/de/renderer.json`
-- `i18n/fr/renderer.json`
-- `i18n/it/renderer.json`
-- `i18n/pt/renderer.json`
-- `i18n/arn/renderer.json`
-- `i18n/es/es-cl/renderer.json`
-- `docs/test_suite.md`
+- Main/IPC/OCR:
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `electron/import_ocr/**`
+  - `electron/text_state.js`
+  - `electron/settings.js`
+  - `electron/presets_main.js`
+  - `electron/tasks_main.js`
+  - `electron/current_text_snapshots_main.js`
+  - `electron/link_openers.js`
+- Renderer/UI:
+  - `public/renderer.js`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/js/import_entry.js`
+  - `public/js/import_ocr_ui.js`
+  - `i18n/*/renderer.json`
+- Runtime/packaging/legal:
+  - `ocr/**`
+  - `package.json`
+  - `package-lock.json`
+  - `THIRD_PARTY_NOTICES.md`
+  - `third_party_licenses/**`
+- Docs:
+  - `README.md`
+  - `PRIVACY.md`
+  - `docs/test_suite.md`
+  - `docs/releases/release_checklist.md`
+  - `docs/releases/ocr_sidecar_runtime_guidance.md`
+  - `docs/releases/ocr_cross_target_smoke_matrix.md`
+  - `docs/tree_folders_files.md`
+  - `public/info/instrucciones.es.html`
+  - `public/info/instrucciones.en.html`
+  - `public/info/acerca_de.html`
+  - `public/assets/instrucciones/*`
+
 
 ---
 
