@@ -6,8 +6,15 @@
 // =============================================================================
 // Responsibilities:
 // - Own import/OCR session and job stores (main-process authority).
-// - Register import/OCR IPC contracts and job orchestration.
-// - Coordinate OCR lifecycle notifications for the main-process interaction gate.
+// - Validate selected files and route them to extraction vs OCR pipelines.
+// - Emit import progress/finish notifications to the main window.
+// - Apply extracted text to current text state with repeat/append semantics.
+// - Register import/OCR IPC handlers and enforce sender/gate checks.
+// - Coordinate OCR execution state with the interaction gate integration callback.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const fs = require('fs');
 const path = require('path');
@@ -25,6 +32,9 @@ const { terminateWithEscalation } = require('./platform/process_control');
 const log = Log.get('import-ocr-orchestrator');
 log.debug('Import/OCR orchestrator starting...');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
 const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 const LOG_KEY_PROFILE_REGISTRY_INVALID = 'import_ocr_orchestrator.profileRegistry.invalid';
 const LOG_KEY_TEXT_STATE_API_MISSING = 'import_ocr_orchestrator.textStateApi.missing';
@@ -39,7 +49,7 @@ const FILE_FILTERS = Object.freeze([
 ]);
 
 // =============================================================================
-// State
+// Shared state
 // =============================================================================
 let resolveWindows = () => ({});
 let textStateApi = null;
@@ -63,7 +73,7 @@ const jobs = new Map();
 let activeJobId = '';
 
 // =============================================================================
-// Helpers
+// Helpers (validation, normalization, bridge safety)
 // =============================================================================
 function makeId(prefix) {
   idSeq += 1;
@@ -676,6 +686,9 @@ function applySessionText(session, { mode, repeatCount }) {
   };
 }
 
+// =============================================================================
+// Job execution
+// =============================================================================
 async function runJob(job) {
   const session = sessions.get(job.sessionId);
   if (!session) {
@@ -826,7 +839,7 @@ async function runJob(job) {
 }
 
 // =============================================================================
-// IPC registration
+// IPC registration / handlers
 // =============================================================================
 function registerIpc(ipcMain, {
   getWindows,
@@ -1101,6 +1114,9 @@ function registerIpc(ipcMain, {
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   registerIpc,
 };
