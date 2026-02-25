@@ -2,6 +2,7 @@
 'use strict';
 
 const path = require('path');
+const Log = require('../log');
 const { resolveSidecarPaths } = require('./platform/resolve_sidecar');
 const { runPdfRasterOcrV2 } = require('./engine_v2');
 const {
@@ -11,15 +12,68 @@ const {
   resolveAndValidateOcrLanguage,
   runProcessWithTimeout,
   resolveTesseractArgs,
-  safeInvoke,
   normalizeMultiline,
 } = require('./ocr_runtime');
+
+const log = Log.get('ocr_pipeline');
 
 function isPdfInput(session) {
   const route = String((session && session.route) || '').trim().toLowerCase();
   if (route === 'ocr_pdf_scanned') return true;
   const ext = path.extname(String((session && session.filePath) || '')).toLowerCase();
   return ext === '.pdf';
+}
+
+function emitProgress(onProgress, payload) {
+  if (typeof onProgress !== 'function') return;
+  try {
+    onProgress(payload);
+  } catch (err) {
+    log.warnOnce(
+      'ocr_pipeline.onProgress.failed',
+      'OCR progress callback failed (ignored):',
+      err
+    );
+  }
+}
+
+function buildChildProcessHook(onChildProcess) {
+  if (typeof onChildProcess !== 'function') return undefined;
+  return (child) => {
+    try {
+      onChildProcess(child);
+    } catch (err) {
+      log.warnOnce(
+        'ocr_pipeline.onChildProcess.failed',
+        'OCR child process callback failed (ignored):',
+        err
+      );
+    }
+  };
+}
+
+function buildCancelProbe(isCancelRequested) {
+  if (typeof isCancelRequested !== 'function') return undefined;
+  return () => {
+    try {
+      return isCancelRequested();
+    } catch (err) {
+      log.warnOnce(
+        'ocr_pipeline.isCancelRequested.failed',
+        'OCR cancel probe failed (ignored):',
+        err
+      );
+      return false;
+    }
+  };
+}
+
+function normalizeBridgeOptions(options = {}) {
+  const normalized = Object.assign({}, options || {});
+  normalized.onProgress = typeof normalized.onProgress === 'function' ? normalized.onProgress : null;
+  normalized.onChildProcess = buildChildProcessHook(normalized.onChildProcess);
+  normalized.isCancelRequested = buildCancelProbe(normalized.isCancelRequested);
+  return normalized;
 }
 
 function validateSidecarPrerequisites(sidecar) {
@@ -53,7 +107,7 @@ async function runImageOcr(session, sidecar, options = {}) {
   if (!langRes.ok) return langRes;
   const { tesseractLang } = langRes;
 
-  safeInvoke(options.onProgress, {
+  emitProgress(options.onProgress, {
     stage: 'ocr',
     pageDone: 0,
     pageTotal: 1,
@@ -86,12 +140,12 @@ async function runImageOcr(session, sidecar, options = {}) {
     return fail('OCR_EMPTY_RESULT', 'OCR completed but produced no text.');
   }
 
-  safeInvoke(options.onProgress, {
+  emitProgress(options.onProgress, {
     stage: 'ocr',
     pageDone: 1,
     pageTotal: 1,
   });
-  safeInvoke(options.onProgress, {
+  emitProgress(options.onProgress, {
     stage: 'finalizing',
     pageDone: 1,
     pageTotal: 1,
@@ -114,7 +168,7 @@ async function runImageOcr(session, sidecar, options = {}) {
 }
 
 async function runOcrPipeline(session, options = {}) {
-  const normalizedOptions = options || {};
+  const normalizedOptions = normalizeBridgeOptions(options || {});
   const sidecar = resolveSidecarPaths(normalizedOptions);
   if (!sidecar.ok) return sidecar;
 
