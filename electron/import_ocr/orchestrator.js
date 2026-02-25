@@ -26,6 +26,9 @@ const log = Log.get('import-ocr-orchestrator');
 log.debug('Import/OCR orchestrator starting...');
 
 const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+const LOG_KEY_PROFILE_REGISTRY_INVALID = 'import_ocr_orchestrator.profileRegistry.invalid';
+const LOG_KEY_TEXT_STATE_API_MISSING = 'import_ocr_orchestrator.textStateApi.missing';
+const LOG_KEY_OCR_EXEC_STATE_CB_MISSING = 'import_ocr_orchestrator.onOcrExecutionStateChange.missing';
 
 const FILE_FILTERS = Object.freeze([
   { name: 'Supported files', extensions: ['txt', 'docx', 'pdf', 'png', 'jpg', 'jpeg', 'webp'] },
@@ -163,8 +166,8 @@ function maybeBlockedByInteractionGate(event, channel, opts = {}) {
 function emitOcrExecutionStateChange(running, reason = '') {
   if (typeof onOcrExecutionStateChange !== 'function') {
     log.warnOnce(
-      'import_ocr_orchestrator.onOcrExecutionStateChange.missing',
-      'onOcrExecutionStateChange callback unavailable (ignored).'
+      LOG_KEY_OCR_EXEC_STATE_CB_MISSING,
+      'onOcrExecutionStateChange callback unavailable; OCR interaction-gate sync disabled.'
     );
     return;
   }
@@ -362,7 +365,7 @@ function ensureMainSender(event, channel) {
 function ensureProfileRegistryReady() {
   profileRegistryStatus = validateRegistry();
   if (!profileRegistryStatus.ok) {
-    log.error('OCR platform profile registry invalid:', profileRegistryStatus.errors);
+    log.errorOnce(LOG_KEY_PROFILE_REGISTRY_INVALID, 'OCR platform profile registry invalid:', profileRegistryStatus.errors);
   }
   return profileRegistryStatus;
 }
@@ -636,8 +639,8 @@ function buildRepeatedAppendText(current, clip, repeatCount) {
 function applySessionText(session, { mode, repeatCount }) {
   if (!textStateApi || typeof textStateApi.applyCurrentText !== 'function' || typeof textStateApi.getCurrentText !== 'function') {
     log.warnOnce(
-      'import_ocr_orchestrator.applySessionText.bridgeUnavailable',
-      'textState.applyCurrentText/getCurrentText unavailable; import-apply disabled.'
+      LOG_KEY_TEXT_STATE_API_MISSING,
+      'textState.applyCurrentText/getCurrentText unavailable; import-apply capability disabled.'
     );
     return fail('IMPORT_APPLY_UNAVAILABLE', 'Current-text apply bridge is unavailable.');
   }
@@ -858,7 +861,7 @@ function registerIpc(ipcMain, {
   }
   if (!textStateApi || typeof textStateApi.applyCurrentText !== 'function' || typeof textStateApi.getCurrentText !== 'function') {
     log.warnOnce(
-      'import_ocr_orchestrator.registerIpc.textStateApi.missing',
+      LOG_KEY_TEXT_STATE_API_MISSING,
       'textState.applyCurrentText/getCurrentText unavailable; import-apply capability disabled.'
     );
   }
@@ -885,7 +888,7 @@ function registerIpc(ipcMain, {
     : null;
   if (!onOcrExecutionStateChange) {
     log.warnOnce(
-      'import_ocr_orchestrator.registerIpc.onOcrExecutionStateChange.missing',
+      LOG_KEY_OCR_EXEC_STATE_CB_MISSING,
       'onOcrExecutionStateChange callback unavailable; OCR interaction-gate sync disabled.'
     );
   }
