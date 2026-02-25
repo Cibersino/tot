@@ -31,7 +31,7 @@ This file lists the primary third-party components redistributed with the app ru
 
 ### Tesseract language data (`tessdata`)
 
-* Components: `eng.traineddata`, `spa.traineddata`, `fra.traineddata`, `deu.traineddata`, `ita.traineddata`, `por.traineddata`.
+* Components: `eng.traineddata`, `spa.traineddata`, `fra.traineddata`, `deu.traineddata`, `ita.traineddata`, `por.traineddata`, `osd.traineddata`.
 * Upstream project: https://github.com/tesseract-ocr/tessdata
 * Source reference (Windows package used in current setup): https://github.com/tesseract-ocr/tesseract/releases/download/5.5.0/tesseract-ocr-w64-setup-5.5.0.20241111.exe (traineddata extracted from this package in current setup).
 * Primary upstream license: Apache License 2.0.
