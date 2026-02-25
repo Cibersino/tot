@@ -10,10 +10,10 @@ Runtime lookup order:
 
 Expected per-target layout:
 
-* `ocr/win32-x64/tesseract.exe`
-* `ocr/win32-x64/pdftoppm.exe`
-* `ocr/win32-x64/tessdata/eng.traineddata`
-* `ocr/win32-x64/tessdata/spa.traineddata`
+* `ocr/win32-x64/tesseract/tesseract.exe`
+* `ocr/win32-x64/tesseract/tessdata/eng.traineddata`
+* `ocr/win32-x64/tesseract/tessdata/spa.traineddata`
+* `ocr/win32-x64/poppler/pdftoppm.exe`
 
 Equivalent target folders are expected for:
 
@@ -24,5 +24,6 @@ Equivalent target folders are expected for:
 Notes:
 
 * The app does not use system `PATH` for OCR sidecars.
+* On Windows, sidecar runtimes are isolated by tool (`tesseract/` and `poppler/`), and each process is launched with `cwd` set to its executable directory.
 * Missing sidecars/language data produce explicit OCR errors (`OCR_BINARY_MISSING`).
 * Sidecar source/license references are tracked in `THIRD_PARTY_NOTICES.md`.

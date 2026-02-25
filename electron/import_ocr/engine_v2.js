@@ -296,6 +296,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
           pdfPath,
           pageBase,
         ],
+        workingDirectory: path.dirname(sidecar.pdftoppmPath),
         timeoutMs: rasterTimeoutPerPageMs,
         onChildProcess: (child) => {
           activeChild = child;
@@ -362,6 +363,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
           tesseractLang,
           tessdataPath: sidecar.tessdataPath,
         }),
+        workingDirectory: path.dirname(sidecar.tesseractPath),
         timeoutMs: timeoutPerPageMs,
         onChildProcess: (child) => {
           activeChild = child;

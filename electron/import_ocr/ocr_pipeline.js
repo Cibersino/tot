@@ -48,6 +48,7 @@ async function runImageOcr(session, sidecar, options = {}) {
       tesseractLang,
       tessdataPath: sidecar.tessdataPath,
     }),
+    workingDirectory: path.dirname(sidecar.tesseractPath),
     timeoutMs,
     onChildProcess: options.onChildProcess,
     isCancelRequested: options.isCancelRequested,

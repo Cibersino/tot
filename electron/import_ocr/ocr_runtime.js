@@ -130,6 +130,7 @@ function normalizeMultiline(text) {
 async function runProcessWithTimeout({
   executablePath,
   args,
+  workingDirectory,
   timeoutMs,
   onChildProcess,
   isCancelRequested,
@@ -140,12 +141,21 @@ async function runProcessWithTimeout({
   let spawnError = null;
   let timedOut = false;
   let timeoutHandle = null;
+  const normalizedExecutablePath = String(executablePath || '').trim();
+  const derivedWorkingDirectory = normalizedExecutablePath
+    ? path.dirname(normalizedExecutablePath)
+    : '';
+  const normalizedWorkingDirectory = String(workingDirectory || derivedWorkingDirectory).trim();
+  const spawnOptions = {
+    windowsHide: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  };
+  if (normalizedWorkingDirectory) {
+    spawnOptions.cwd = normalizedWorkingDirectory;
+  }
 
   try {
-    child = spawn(executablePath, args, {
-      windowsHide: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    child = spawn(executablePath, args, spawnOptions);
   } catch (err) {
     spawnError = err;
   }
@@ -155,6 +165,7 @@ async function runProcessWithTimeout({
       error: String(spawnError || ''),
       path: executablePath,
       args,
+      cwd: normalizedWorkingDirectory || '',
     });
   }
 
@@ -184,6 +195,7 @@ async function runProcessWithTimeout({
       stderr: processRes.stderr || '',
       path: executablePath,
       args,
+      cwd: normalizedWorkingDirectory || '',
     });
   }
 
@@ -204,6 +216,7 @@ async function runProcessWithTimeout({
       stderr: processRes.stderr || '',
       path: executablePath,
       args,
+      cwd: normalizedWorkingDirectory || '',
     });
   }
 

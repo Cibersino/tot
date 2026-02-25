@@ -11,10 +11,10 @@ const TARGET_PROFILE_REGISTRY = Object.freeze({
   'win32-x64': Object.freeze({
     sidecarDir: 'ocr/win32-x64',
     binaries: Object.freeze({
-      tesseract: 'tesseract.exe',
-      pdftoppm: 'pdftoppm.exe',
+      tesseract: 'tesseract/tesseract.exe',
+      pdftoppm: 'poppler/pdftoppm.exe',
     }),
-    tessdataDir: 'tessdata',
+    tessdataDir: 'tesseract/tessdata',
   }),
   'linux-x64': Object.freeze({
     sidecarDir: 'ocr/linux-x64',
@@ -125,4 +125,3 @@ module.exports = {
   listProfileKeys,
   validateRegistry,
 };
-
