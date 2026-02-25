@@ -81,7 +81,13 @@ function resolveMainWindow() {
 }
 
 function safeSend(win, channel, payload) {
-  if (!isAliveWindow(win)) return;
+  if (!isAliveWindow(win)) {
+    log.warnOnce(
+      `import_ocr_orchestrator.safeSend.${channel}.targetUnavailable`,
+      `webContents.send('${channel}') failed (ignored): target window unavailable.`
+    );
+    return;
+  }
   try {
     win.webContents.send(channel, payload);
   } catch (err) {
@@ -155,7 +161,13 @@ function maybeBlockedByInteractionGate(event, channel, opts = {}) {
 }
 
 function emitOcrExecutionStateChange(running, reason = '') {
-  if (typeof onOcrExecutionStateChange !== 'function') return;
+  if (typeof onOcrExecutionStateChange !== 'function') {
+    log.warnOnce(
+      'import_ocr_orchestrator.onOcrExecutionStateChange.missing',
+      'onOcrExecutionStateChange callback unavailable (ignored).'
+    );
+    return;
+  }
   try {
     onOcrExecutionStateChange({
       running: !!running,
@@ -623,6 +635,10 @@ function buildRepeatedAppendText(current, clip, repeatCount) {
 
 function applySessionText(session, { mode, repeatCount }) {
   if (!textStateApi || typeof textStateApi.applyCurrentText !== 'function' || typeof textStateApi.getCurrentText !== 'function') {
+    log.warnOnce(
+      'import_ocr_orchestrator.applySessionText.bridgeUnavailable',
+      'textState.applyCurrentText/getCurrentText unavailable; import-apply disabled.'
+    );
     return fail('IMPORT_APPLY_UNAVAILABLE', 'Current-text apply bridge is unavailable.');
   }
 
@@ -819,6 +835,9 @@ function registerIpc(ipcMain, {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_ocr/orchestrator] registerIpc requires ipcMain');
   }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_ocr/orchestrator] registerIpc requires getWindows');
+  }
 
   function getPayloadObject(payload) {
     return payload && typeof payload === 'object' ? payload : {};
@@ -833,21 +852,43 @@ function registerIpc(ipcMain, {
     return null;
   }
 
-  if (typeof getWindows === 'function') {
-    resolveWindows = getWindows;
-  }
+  resolveWindows = getWindows;
   if (textState && typeof textState === 'object') {
     textStateApi = textState;
+  }
+  if (!textStateApi || typeof textStateApi.applyCurrentText !== 'function' || typeof textStateApi.getCurrentText !== 'function') {
+    log.warnOnce(
+      'import_ocr_orchestrator.registerIpc.textStateApi.missing',
+      'textState.applyCurrentText/getCurrentText unavailable; import-apply capability disabled.'
+    );
   }
   guardIpcByInteractionGate = typeof interactionGuard === 'function'
     ? interactionGuard
     : null;
+  if (!guardIpcByInteractionGate) {
+    log.warnOnce(
+      'import_ocr_orchestrator.registerIpc.guardIpcByInteractionGate.missing',
+      'guardIpcByInteractionGate unavailable; import/OCR IPC guard checks disabled.'
+    );
+  }
   validateOcrStartPreconditionsFn = typeof validateOcrStartPreconditions === 'function'
     ? validateOcrStartPreconditions
     : null;
+  if (!validateOcrStartPreconditionsFn) {
+    log.warnOnce(
+      'import_ocr_orchestrator.registerIpc.validateOcrStartPreconditions.missing',
+      'validateOcrStartPreconditions unavailable; OCR precondition checks disabled.'
+    );
+  }
   onOcrExecutionStateChange = typeof onOcrExecutionStateChangeCb === 'function'
     ? onOcrExecutionStateChangeCb
     : null;
+  if (!onOcrExecutionStateChange) {
+    log.warnOnce(
+      'import_ocr_orchestrator.registerIpc.onOcrExecutionStateChange.missing',
+      'onOcrExecutionStateChange callback unavailable; OCR interaction-gate sync disabled.'
+    );
+  }
 
   ensureProfileRegistryReady();
   const runtimeSnapshot = refreshSidecarRuntimeStatus();
