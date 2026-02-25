@@ -549,6 +549,43 @@ function buildSummary(session, elapsedMs, extractResult = {}) {
   };
 }
 
+function setJobTerminalState(session, job, terminalStatus) {
+  session.status = terminalStatus;
+  job.status = terminalStatus;
+  job.stage = terminalStatus;
+  job.finishedAt = Date.now();
+}
+
+function buildExecutionFailureSummary({
+  session,
+  errSummary,
+  isOcrJob,
+  progressState,
+  startedAt,
+  finishedAt,
+}) {
+  return {
+    kind: session.kind,
+    filename: session.filename,
+    pagesProcessed: Number.isFinite(errSummary.pagesProcessed)
+      ? errSummary.pagesProcessed
+      : (isOcrJob ? progressState.pageDone : 0),
+    pagesTotal: Number.isFinite(errSummary.pagesTotal)
+      ? errSummary.pagesTotal
+      : (isOcrJob ? progressState.pageTotal : 0),
+    extractedChars: Number.isFinite(errSummary.extractedChars) ? errSummary.extractedChars : 0,
+    elapsedMs: Math.max(0, finishedAt - startedAt),
+    warnings: Array.isArray(errSummary.warnings) ? errSummary.warnings : [],
+  };
+}
+
+function toTrimmedStringList(rawList) {
+  if (!Array.isArray(rawList)) return [];
+  return rawList
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+}
+
 function normalizeApplyMode(raw) {
   const value = typeof raw === 'string' ? raw.trim().toLowerCase() : '';
   if (value === 'append') return 'append';
@@ -675,39 +712,29 @@ async function runJob(job) {
     if (!extractRes || extractRes.ok !== true) {
       const errRes = extractRes || fail('IMPORT_EXEC_FAILED', 'Import execution failed.');
       const isCanceled = String(errRes.code || '') === 'OCR_CANCELED';
+      const terminalStatus = isCanceled ? 'canceled' : 'failed';
       const errSummary = (errRes.summary && typeof errRes.summary === 'object')
         ? errRes.summary
         : {};
-      session.status = isCanceled ? 'canceled' : 'failed';
-      job.status = isCanceled ? 'canceled' : 'failed';
-      job.stage = isCanceled ? 'canceled' : 'failed';
-      job.finishedAt = Date.now();
+      setJobTerminalState(session, job, terminalStatus);
 
       emitImportFinished(job, {
         ok: false,
         code: errRes.code || (isCanceled ? 'OCR_CANCELED' : 'IMPORT_EXEC_FAILED'),
-        summary: {
-          kind: session.kind,
-          filename: session.filename,
-          pagesProcessed: Number.isFinite(errSummary.pagesProcessed)
-            ? errSummary.pagesProcessed
-            : (isOcrJob ? progressState.pageDone : 0),
-          pagesTotal: Number.isFinite(errSummary.pagesTotal)
-            ? errSummary.pagesTotal
-            : (isOcrJob ? progressState.pageTotal : 0),
-          extractedChars: Number.isFinite(errSummary.extractedChars) ? errSummary.extractedChars : 0,
-          elapsedMs: Math.max(0, job.finishedAt - startedAt),
-          warnings: Array.isArray(errSummary.warnings) ? errSummary.warnings : [],
-        },
+        summary: buildExecutionFailureSummary({
+          session,
+          errSummary,
+          isOcrJob,
+          progressState,
+          startedAt,
+          finishedAt: job.finishedAt,
+        }),
       });
       return errRes;
     }
 
     if (session.route === 'phase_a_pdf_probe' && !String(extractRes.text || '').trim()) {
-      session.status = 'failed';
-      job.status = 'failed';
-      job.stage = 'failed';
-      job.finishedAt = Date.now();
+      setJobTerminalState(session, job, 'failed');
       const noTextRes = fail(
         'IMPORT_PDF_NO_TEXT_LAYER',
         'PDF has no selectable text; OCR path is required.',
@@ -737,10 +764,7 @@ async function runJob(job) {
 
     session.extractedText = String(extractRes.text || '');
     session.summary = buildSummary(session, Date.now() - startedAt, extractRes);
-    session.status = 'completed';
-    job.status = 'completed';
-    job.stage = 'completed';
-    job.finishedAt = Date.now();
+    setJobTerminalState(session, job, 'completed');
     emitImportProgress(job, {
       stage: 'completed',
       pageDone: Number.isFinite(session.summary && session.summary.pagesProcessed)
@@ -754,10 +778,7 @@ async function runJob(job) {
     return { ok: true };
   } catch (err) {
     const code = 'IMPORT_EXEC_FAILED';
-    session.status = 'failed';
-    job.status = 'failed';
-    job.stage = 'failed';
-    job.finishedAt = Date.now();
+    setJobTerminalState(session, job, 'failed');
     log.error('Import/OCR job failed:', err);
     emitImportFinished(job, {
       ok: false,
@@ -915,12 +936,8 @@ function registerIpc(ipcMain, {
         const preconditions = validateOcrStartPreconditionsFn();
         const preconditionsOk = !!(preconditions && preconditions.ok === true);
         if (!preconditionsOk) {
-          const reasons = Array.isArray(preconditions && preconditions.reasons)
-            ? preconditions.reasons.map((item) => String(item || '').trim()).filter(Boolean)
-            : [];
-          const openSecondaryWindows = Array.isArray(preconditions && preconditions.openSecondaryWindows)
-            ? preconditions.openSecondaryWindows.map((item) => String(item || '').trim()).filter(Boolean)
-            : [];
+          const reasons = toTrimmedStringList(preconditions && preconditions.reasons);
+          const openSecondaryWindows = toTrimmedStringList(preconditions && preconditions.openSecondaryWindows);
           return fail(
             'OCR_PRECONDITION_FAILED',
             'Cannot start OCR while secondary windows are open or stopwatch is running.',
