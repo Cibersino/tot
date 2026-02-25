@@ -22,6 +22,14 @@ function isPdfInput(session) {
   return ext === '.pdf';
 }
 
+function failMissingSidecarBinary(binary, targetPath, profileKey, message) {
+  return fail('OCR_BINARY_MISSING', message, {
+    binary,
+    path: targetPath,
+    profileKey,
+  });
+}
+
 async function runImageOcr(session, sidecar, options = {}) {
   const imagePath = session && typeof session.filePath === 'string' ? session.filePath : '';
   if (!imagePath || !ensurePathExists(imagePath)) {
@@ -35,11 +43,15 @@ async function runImageOcr(session, sidecar, options = {}) {
   if (!langRes.ok) return langRes;
   const { tesseractLang } = langRes;
 
-  safeInvoke(options.onProgress, {
-    stage: 'ocr',
-    pageDone: 0,
-    pageTotal: 1,
-  });
+  const emitProgress = (stage, pageDone) => {
+    safeInvoke(options.onProgress, {
+      stage,
+      pageDone,
+      pageTotal: 1,
+    });
+  };
+
+  emitProgress('ocr', 0);
 
   const processRes = await runProcessWithTimeout({
     executablePath: sidecar.tesseractPath,
@@ -66,16 +78,8 @@ async function runImageOcr(session, sidecar, options = {}) {
     return fail('OCR_EMPTY_RESULT', 'OCR completed but produced no text.');
   }
 
-  safeInvoke(options.onProgress, {
-    stage: 'ocr',
-    pageDone: 1,
-    pageTotal: 1,
-  });
-  safeInvoke(options.onProgress, {
-    stage: 'finalizing',
-    pageDone: 1,
-    pageTotal: 1,
-  });
+  emitProgress('ocr', 1);
+  emitProgress('finalizing', 1);
 
   const warnings = [];
   if (processRes.stdoutTruncated) warnings.push('OCR stdout truncated in-memory.');
@@ -99,18 +103,20 @@ async function runOcrPipeline(session, options = {}) {
   if (!sidecar.ok) return sidecar;
 
   if (!ensurePathExists(sidecar.tesseractPath)) {
-    return fail('OCR_BINARY_MISSING', 'Tesseract sidecar binary not found.', {
-      binary: 'tesseract',
-      path: sidecar.tesseractPath,
-      profileKey: sidecar.profileKey,
-    });
+    return failMissingSidecarBinary(
+      'tesseract',
+      sidecar.tesseractPath,
+      sidecar.profileKey,
+      'Tesseract sidecar binary not found.'
+    );
   }
   if (!ensurePathExists(sidecar.tessdataPath)) {
-    return fail('OCR_BINARY_MISSING', 'Tesseract language data directory not found.', {
-      binary: 'tessdata',
-      path: sidecar.tessdataPath,
-      profileKey: sidecar.profileKey,
-    });
+    return failMissingSidecarBinary(
+      'tessdata',
+      sidecar.tessdataPath,
+      sidecar.profileKey,
+      'Tesseract language data directory not found.'
+    );
   }
   if (isPdfInput(session)) {
     return runPdfRasterOcrV2(session, sidecar, normalizedOptions);
