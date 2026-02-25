@@ -1176,7 +1176,9 @@ function armIpcSubscriptions() {
         try {
           const p = payload && typeof payload === 'object' ? payload : {};
           handleImportProgress(p);
-          log.debug('import-progress:', p);
+          if (p.kind !== 'tick') {
+            log.debug('import-progress:', p);
+          }
         } catch (err) {
           log.warn('Error handling import-progress:', err);
         }

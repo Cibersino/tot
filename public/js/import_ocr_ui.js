@@ -86,6 +86,7 @@
     timeoutPerPageSec: OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
     preprocessProfile: OCR_PRESET_VALUES.balanced.preprocess,
   };
+  let ocrProgressEtaLabel = '--';
 
   let importApplyResolve = null;
   let ocrOptionsResolve = null;
@@ -233,6 +234,18 @@
     return Number.isFinite(rawPageTotal) ? Math.max(0, Math.floor(rawPageTotal)) : 0;
   }
 
+  function isEtaRecomputeStage(stageKey) {
+    return stageKey === 'queued'
+      || stageKey === 'running'
+      || stageKey === 'ocr_running'
+      || stageKey === 'extracting'
+      || stageKey === 'preflight'
+      || stageKey === 'finalizing'
+      || stageKey === 'completed'
+      || stageKey === 'failed'
+      || stageKey === 'canceled';
+  }
+
   function inferStageAwareEtaMs({ elapsedMs, pageDone, pageTotal }) {
     const knownTotal = getKnownOcrPageTotal(pageTotal);
     if (knownTotal <= 0) {
@@ -327,6 +340,7 @@
     ocrProgressPageDone = 0;
     ocrProgressPageTotal = 0;
     ocrProgressStage = '';
+    ocrProgressEtaLabel = '--';
     ocrProgressMeta = {
       preset: 'balanced',
       dpi: OCR_PRESET_VALUES.balanced.dpi,
@@ -336,7 +350,9 @@
     setOcrProgressFallbackText(t('renderer.main.import_apply.ocr_running', 'OCR in progress...'));
   }
 
-  function updateOcrProgressText() {
+  function updateOcrProgressText(options = {}) {
+    const opts = options && typeof options === 'object' ? options : {};
+    const recomputeEta = opts.recomputeEta !== false;
     if (!ocrProgressText) return;
     if (!lockActive) {
       setOcrProgressFallbackText(t('renderer.main.import_apply.ocr_running', 'OCR in progress...'));
@@ -355,12 +371,14 @@
       ? `${Math.min(safeDone, knownTotal)}/${knownTotal}`
       : '-/-';
 
-    const etaMs = inferStageAwareEtaMs({
-      elapsedMs,
-      pageDone: safeDone,
-      pageTotal: knownTotal,
-    });
-    const etaLabel = etaMs == null ? '--' : formatElapsedLabel(etaMs);
+    if (recomputeEta) {
+      const etaMs = inferStageAwareEtaMs({
+        elapsedMs,
+        pageDone: safeDone,
+        pageTotal: knownTotal,
+      });
+      ocrProgressEtaLabel = etaMs == null ? '--' : formatElapsedLabel(etaMs);
+    }
     const pagesWord = t('renderer.main.import_progress.pages', 'pages');
     const elapsedWord = t('renderer.main.import_progress.elapsed', 'elapsed');
     const etaWord = t('renderer.main.import_progress.eta', 'ETA');
@@ -368,7 +386,7 @@
       stageLabel,
       `${pagesWord} ${pageLabel}`,
       `${elapsedWord} ${formatElapsedLabel(elapsedMs)}`,
-      `${etaWord} ${etaLabel}`
+      `${etaWord} ${ocrProgressEtaLabel || '--'}`
     );
   }
 
@@ -393,6 +411,11 @@
 
   function handleImportProgress(payload) {
     const p = payload && typeof payload === 'object' ? payload : {};
+    const isTick = String(p.kind || '').trim().toLowerCase() === 'tick';
+    const prevPageDone = ocrProgressPageDone;
+    const prevPageTotal = ocrProgressPageTotal;
+    let incomingStage = '';
+    let stageChanged = false;
     if (typeof p.jobId === 'string' && p.jobId) {
       const nextJobId = p.jobId.trim();
       if (nextJobId && nextJobId !== ocrProgressJobId) {
@@ -411,6 +434,8 @@
         : Date.now();
     }
     if (typeof p.stage === 'string' && p.stage.trim()) {
+      incomingStage = normalizeStageKey(p.stage.trim());
+      stageChanged = incomingStage && incomingStage !== normalizeStageKey(ocrProgressStage);
       setOcrProgressStage(p.stage.trim());
     }
     if (Number.isFinite(Number(p.pageDone))) ocrProgressPageDone = Number(p.pageDone);
@@ -418,7 +443,13 @@
       ocrProgressPageTotal = Number(p.pageTotal);
     }
 
-    updateOcrProgressText();
+    const pageChanged = ocrProgressPageDone !== prevPageDone || ocrProgressPageTotal !== prevPageTotal;
+    const shouldRecomputeEta = !isTick && (
+      pageChanged
+      || (stageChanged && isEtaRecomputeStage(incomingStage))
+      || ocrProgressEtaLabel === '--'
+    );
+    updateOcrProgressText({ recomputeEta: shouldRecomputeEta });
   }
 
   function noteJobQueued(payload) {

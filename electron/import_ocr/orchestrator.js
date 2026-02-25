@@ -137,12 +137,33 @@ function isMainWindowSender(event) {
 function emitImportProgress(job, partial = {}) {
   const payload = Object.assign({
     jobId: job.jobId,
+    kind: 'progress',
     stage: job.stage || 'queued',
     pageDone: 0,
     pageTotal: 0,
     heartbeatTs: Date.now(),
   }, partial || {});
   safeSend(resolveMainWindow(), 'import-progress', payload);
+}
+
+function startHeartbeat(job, progressRef = null) {
+  const timer = setInterval(() => {
+    const pageDone = progressRef && Number.isFinite(progressRef.pageDone)
+      ? Math.max(0, Math.floor(progressRef.pageDone))
+      : 0;
+    const pageTotal = progressRef && Number.isFinite(progressRef.pageTotal)
+      ? Math.max(0, Math.floor(progressRef.pageTotal))
+      : 0;
+    emitImportProgress(job, {
+      kind: 'tick',
+      stage: job.stage || 'running',
+      pageDone,
+      pageTotal,
+      heartbeatTs: Date.now(),
+    });
+  }, 1000);
+  if (typeof timer.unref === 'function') timer.unref();
+  return timer;
 }
 
 function emitImportFinished(job, result) {
@@ -599,12 +620,14 @@ async function runJob(job) {
     pageTotal: 0,
   };
   emitImportProgress(job, { stage: job.stage, pageDone: 0, pageTotal: 0 });
+  let heartbeatTimer = null;
 
   try {
     let extractRes = null;
     if (isOcrJob) {
       setOcrLockState(true, 'OCR_RUNNING');
       activeJobId = job.jobId;
+      heartbeatTimer = startHeartbeat(job, progressState);
       extractRes = await runOcrPipeline(session, Object.assign({}, job.options || {}, {
         onChildProcess: (child) => {
           job.activeChild = child || null;
@@ -731,6 +754,10 @@ async function runJob(job) {
     });
     return fail(code, 'Import execution failed.', { error: String(err) });
   } finally {
+    if (heartbeatTimer) {
+      clearInterval(heartbeatTimer);
+      heartbeatTimer = null;
+    }
     job.activeChild = null;
     if (activeJobId === job.jobId) {
       activeJobId = '';
