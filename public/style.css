@@ -621,6 +621,32 @@ select#presets {
   color: #222;
 }
 
+.import-apply-repeat-row {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.import-apply-repeat-label {
+  font-size: 14px;
+  color: #222;
+}
+
+.import-apply-repeat-input {
+  width: 96px;
+  height: 30px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  color: #222;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
 .import-apply-actions {
   margin-top: 10px;
   display: flex;

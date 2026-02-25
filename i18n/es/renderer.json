@@ -90,6 +90,7 @@
         "title_with_elapsed": "Importación finalizada. OCR completado en {elapsed}. Elige modo de aplicación:",
         "overwrite": "Sobrescribir",
         "append": "Añadir",
+        "repeat_count": "Repeticiones",
         "ocr_running": "OCR en progreso..."
       },
       "pdf_selectable_choice": {

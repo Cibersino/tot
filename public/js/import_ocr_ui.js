@@ -24,6 +24,9 @@
   const importApplyBackdrop = document.getElementById('importApplyBackdrop');
   const importApplyTitle = document.getElementById('importApplyTitle');
   const importApplyContext = document.getElementById('importApplyContext');
+  const importApplyRepeatRow = document.getElementById('importApplyRepeatRow');
+  const importApplyRepeatLabel = document.getElementById('importApplyRepeatLabel');
+  const importApplyRepeatInput = document.getElementById('importApplyRepeatInput');
   const btnImportApplyOverwrite = document.getElementById('btnImportApplyOverwrite');
   const btnImportApplyAppend = document.getElementById('btnImportApplyAppend');
 
@@ -91,6 +94,11 @@
 
   let choiceResolve = null;
   let choiceDismissValue = '';
+  let choiceRepeatEnabled = false;
+  let choiceRepeatMin = 1;
+  let choiceRepeatMax = 9999;
+  let choiceRepeatStep = 1;
+  let choiceRepeatChangeHandler = null;
   let ocrOptionsResolve = null;
   let ocrOptionsPageCount = 1;
   let ocrOptionsFileKind = '';
@@ -500,32 +508,142 @@
     importApplyModal.setAttribute('aria-hidden', 'true');
   }
 
+  function parsePositiveInt(raw, fallback) {
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return fallback;
+    const floored = Math.floor(n);
+    if (floored < 1) return fallback;
+    return floored;
+  }
+
+  function normalizeChoiceRepeatValue(rawValue) {
+    const n = Number(rawValue);
+    if (!Number.isFinite(n)) return choiceRepeatMin;
+    const floored = Math.floor(n);
+    return Math.min(choiceRepeatMax, Math.max(choiceRepeatMin, floored));
+  }
+
+  function normalizeChoiceRepeatConfig(opts = {}) {
+    const minCandidate = parsePositiveInt(opts.repeatMin, 1);
+    const maxCandidate = parsePositiveInt(opts.repeatMax, 9999);
+    choiceRepeatMin = Math.max(1, minCandidate);
+    choiceRepeatMax = Math.max(choiceRepeatMin, maxCandidate);
+    choiceRepeatStep = parsePositiveInt(opts.repeatStep, 1);
+  }
+
+  function notifyChoiceRepeatChange(repeatCount) {
+    if (typeof choiceRepeatChangeHandler !== 'function') return;
+    try {
+      choiceRepeatChangeHandler(repeatCount);
+    } catch (err) {
+      log.warn('choice repeat callback failed (ignored):', err);
+    }
+  }
+
+  function resetChoiceRepeatState() {
+    choiceRepeatEnabled = false;
+    choiceRepeatMin = 1;
+    choiceRepeatMax = 9999;
+    choiceRepeatStep = 1;
+    choiceRepeatChangeHandler = null;
+    if (importApplyRepeatRow) importApplyRepeatRow.hidden = true;
+  }
+
+  function applyChoiceRepeatOptions(opts = {}) {
+    const repeatEnabled = !!(
+      opts.showRepeatInput
+      && importApplyRepeatRow
+      && importApplyRepeatInput
+    );
+
+    choiceRepeatEnabled = repeatEnabled;
+    choiceRepeatChangeHandler = typeof opts.onRepeatChange === 'function'
+      ? opts.onRepeatChange
+      : null;
+
+    if (!repeatEnabled) {
+      resetChoiceRepeatState();
+      return;
+    }
+
+    normalizeChoiceRepeatConfig(opts);
+    const normalizedInitialValue = normalizeChoiceRepeatValue(
+      Object.prototype.hasOwnProperty.call(opts, 'repeatValue')
+        ? opts.repeatValue
+        : choiceRepeatMin
+    );
+
+    importApplyRepeatInput.min = String(choiceRepeatMin);
+    importApplyRepeatInput.max = String(choiceRepeatMax);
+    importApplyRepeatInput.step = String(choiceRepeatStep);
+    importApplyRepeatInput.value = String(normalizedInitialValue);
+    importApplyRepeatInput.setAttribute(
+      'aria-label',
+      String(opts.repeatAriaLabel || opts.repeatLabel || importApplyRepeatInput.getAttribute('aria-label') || 'Repeat count')
+    );
+    if (importApplyRepeatLabel) {
+      importApplyRepeatLabel.textContent = String(opts.repeatLabel || importApplyRepeatLabel.textContent || '').trim();
+    }
+    importApplyRepeatRow.hidden = false;
+    notifyChoiceRepeatChange(normalizedInitialValue);
+  }
+
+  function normalizeExternalRepeatValue(rawValue, rawMin, rawMax) {
+    const min = parsePositiveInt(rawMin, 1);
+    const max = Math.max(min, parsePositiveInt(rawMax, 9999));
+    const n = Number(rawValue);
+    if (!Number.isFinite(n)) return min;
+    return Math.min(max, Math.max(min, Math.floor(n)));
+  }
+
   function settleChoice(rawValue) {
     const resolve = choiceResolve;
     choiceResolve = null;
     choiceDismissValue = '';
+    const selectedValue = String(rawValue || '');
+    let nextPayload = selectedValue;
+    if (choiceRepeatEnabled) {
+      const repeatCount = normalizeChoiceRepeatValue(
+        importApplyRepeatInput ? importApplyRepeatInput.value : choiceRepeatMin
+      );
+      if (importApplyRepeatInput) {
+        importApplyRepeatInput.value = String(repeatCount);
+      }
+      notifyChoiceRepeatChange(repeatCount);
+      nextPayload = {
+        value: selectedValue,
+        repeatCount,
+      };
+    }
+    resetChoiceRepeatState();
     hideChoiceModal();
-    if (typeof resolve === 'function') resolve(String(rawValue || ''));
+    if (typeof resolve === 'function') resolve(nextPayload);
   }
 
   function promptChoice(options = {}) {
+    const opts = (options && typeof options === 'object') ? options : {};
+    const dismissValue = String(opts.dismissValue || '');
     if (
       !importApplyModal
       || !importApplyTitle
       || !btnImportApplyOverwrite
       || !btnImportApplyAppend
     ) {
-      return Promise.resolve(String(options && options.dismissValue || ''));
+      if (opts.showRepeatInput) {
+        return Promise.resolve({
+          value: dismissValue,
+          repeatCount: normalizeExternalRepeatValue(opts.repeatValue, opts.repeatMin, opts.repeatMax),
+        });
+      }
+      return Promise.resolve(dismissValue);
     }
 
-    const opts = (options && typeof options === 'object') ? options : {};
     const titleText = String(opts.title || importApplyTitle.textContent || '').trim();
     const contextText = String(opts.context || '').trim();
     const primaryLabel = String(opts.primaryLabel || btnImportApplyOverwrite.textContent || '').trim();
     const secondaryLabel = String(opts.secondaryLabel || btnImportApplyAppend.textContent || '').trim();
     const primaryValue = String(opts.primaryValue || '');
     const secondaryValue = String(opts.secondaryValue || '');
-    const dismissValue = String(opts.dismissValue || '');
 
     if (choiceResolve) settleChoice(choiceDismissValue);
     choiceDismissValue = dismissValue;
@@ -540,6 +658,7 @@
     btnImportApplyOverwrite.dataset.returnValue = primaryValue;
     btnImportApplyAppend.textContent = secondaryLabel;
     btnImportApplyAppend.dataset.returnValue = secondaryValue;
+    applyChoiceRepeatOptions(opts);
 
     return new Promise((resolve) => {
       choiceResolve = resolve;
@@ -1055,6 +1174,21 @@
     if (btnImportApplyAppend) {
       btnImportApplyAppend.addEventListener('click', () => {
         settleChoice(btnImportApplyAppend.dataset.returnValue || '');
+      });
+    }
+    if (importApplyRepeatInput) {
+      importApplyRepeatInput.addEventListener('input', () => {
+        if (!choiceRepeatEnabled) return;
+        const raw = String(importApplyRepeatInput.value || '').trim();
+        if (!raw) return;
+        const repeatCount = normalizeChoiceRepeatValue(raw);
+        notifyChoiceRepeatChange(repeatCount);
+      });
+      importApplyRepeatInput.addEventListener('change', () => {
+        if (!choiceRepeatEnabled) return;
+        const repeatCount = normalizeChoiceRepeatValue(importApplyRepeatInput.value);
+        importApplyRepeatInput.value = String(repeatCount);
+        notifyChoiceRepeatChange(repeatCount);
       });
     }
     if (importApplyBackdrop) {

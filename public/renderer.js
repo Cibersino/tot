@@ -332,32 +332,32 @@ function formatImportElapsedLabel(ms) {
   return `${minutes}m ${seconds}s`;
 }
 
-async function promptImportChoiceWithFallback({
-  choice,
-  fallbackPrompt = '',
-  defaultValue = '',
-  allowedValues = [],
-} = {}) {
-  const safeChoice = (choice && typeof choice === 'object') ? choice : {};
-  if (importOcrUi && typeof importOcrUi.promptChoice === 'function') {
-    return importOcrUi.promptChoice(safeChoice);
+function setMainPasteRepeatValue(rawValue) {
+  const normalized = normalizePasteRepeat(rawValue);
+  if (pasteRepeatInput) {
+    pasteRepeatInput.value = String(normalized);
   }
-  const promptText = String(fallbackPrompt || safeChoice.title || '').trim();
-  const fallbackRaw = window.prompt(promptText, String(defaultValue || ''));
-  const normalized = String(fallbackRaw || '').trim().toLowerCase();
-  const allowed = new Set(
-    (Array.isArray(allowedValues) ? allowedValues : [])
-      .map((value) => String(value || '').trim().toLowerCase())
-      .filter(Boolean)
-  );
-  if (allowed.has(normalized)) return normalized;
-  return String(safeChoice.dismissValue || '');
+  return normalized;
 }
 
-function chooseImportApplyMode(options = {}) {
+function getMainPasteRepeatValue() {
+  if (!pasteRepeatInput) return 1;
+  return setMainPasteRepeatValue(pasteRepeatInput.value);
+}
+
+function promptImportChoice(choice = {}) {
+  const safeChoice = (choice && typeof choice === 'object') ? choice : {};
+  if (!importOcrUi || typeof importOcrUi.promptChoice !== 'function') {
+    throw new Error('[renderer] ImportOcrUi.promptChoice unavailable; cannot continue.');
+  }
+  return importOcrUi.promptChoice(safeChoice);
+}
+
+async function chooseImportApplyChoice(options = {}) {
   const opts = options && typeof options === 'object' ? options : {};
   const isOcrJob = !!opts.isOcrJob;
   const summary = opts.summary && typeof opts.summary === 'object' ? opts.summary : {};
+  const initialRepeat = getMainPasteRepeatValue();
   const baseTitle = tRenderer
     ? tRenderer('renderer.main.import_apply.title', 'Import finished. Choose apply mode:')
     : 'Import finished. Choose apply mode:';
@@ -386,13 +386,28 @@ function chooseImportApplyMode(options = {}) {
       : 'Append',
     secondaryValue: 'append',
     dismissValue: '',
+    showRepeatInput: true,
+    repeatLabel: tRenderer
+      ? tRenderer('renderer.main.import_apply.repeat_count', 'Repeat count')
+      : 'Repeat count',
+    repeatAriaLabel: tRenderer
+      ? tRenderer('renderer.main.import_apply.repeat_count', 'Repeat count')
+      : 'Repeat count',
+    repeatValue: initialRepeat,
+    repeatMin: 1,
+    repeatMax: MAX_PASTE_REPEAT,
+    repeatStep: 1,
+    onRepeatChange: (nextRepeat) => {
+      setMainPasteRepeatValue(nextRepeat);
+    },
   };
-  return promptImportChoiceWithFallback({
-    choice,
-    fallbackPrompt: `${applyTitle} OVERWRITE or APPEND`,
-    defaultValue: 'OVERWRITE',
-    allowedValues: ['overwrite', 'append'],
-  });
+  const rawChoice = await promptImportChoice(choice);
+  const choicePayload = (rawChoice && typeof rawChoice === 'object')
+    ? rawChoice
+    : { value: rawChoice, repeatCount: initialRepeat };
+  const mode = String(choicePayload.value || '').trim().toLowerCase();
+  const repeatCount = setMainPasteRepeatValue(choicePayload.repeatCount);
+  return { mode, repeatCount };
 }
 
 function choosePdfSelectableExtractionMode() {
@@ -421,11 +436,11 @@ function choosePdfSelectableExtractionMode() {
     secondaryValue: 'ocr',
     dismissValue: '',
   };
-  return promptImportChoiceWithFallback({
-    choice,
-    fallbackPrompt: `${title}\n${message}\nNORMAL or OCR`,
-    defaultValue: 'NORMAL',
-    allowedValues: ['normal', 'ocr'],
+  return promptImportChoice(choice).then((rawChoice) => {
+    if (rawChoice && typeof rawChoice === 'object') {
+      return String(rawChoice.value || '');
+    }
+    return String(rawChoice || '');
   });
 }
 
@@ -797,11 +812,14 @@ async function handleImportFinished(payload) {
     }
   }
 
-  const mode = await chooseImportApplyMode({
+  const applyChoice = await chooseImportApplyChoice({
     isOcrJob,
     summary,
   });
-  if (mode !== 'overwrite' && mode !== 'append') {
+  if (
+    !applyChoice
+    || (applyChoice.mode !== 'overwrite' && applyChoice.mode !== 'append')
+  ) {
     await discardImportSession(sessionId);
     return;
   }
@@ -818,8 +836,8 @@ async function handleImportFinished(payload) {
   try {
     const applyRes = await importApply({
       sessionId,
-      mode,
-      repeatCount: 1,
+      mode: applyChoice.mode,
+      repeatCount: normalizePasteRepeat(applyChoice.repeatCount),
     });
     if (!applyRes || applyRes.ok !== true) {
       const message = humanizeImportError(applyRes);

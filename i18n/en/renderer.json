@@ -90,6 +90,7 @@
         "title_with_elapsed": "Import finished. OCR completed in {elapsed}. Choose apply mode:",
         "overwrite": "Overwrite",
         "append": "Append",
+        "repeat_count": "Repeat count",
         "ocr_running": "OCR in progress..."
       },
       "pdf_selectable_choice": {
