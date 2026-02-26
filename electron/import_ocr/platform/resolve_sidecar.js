@@ -1,6 +1,19 @@
 // electron/import_ocr/platform/resolve_sidecar.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Resolve the OCR sidecar profile for the active platform/arch.
+// - Resolve the base directory source (explicit, env, resourcesPath, appPath).
+// - Compose normalized sidecar binary/data paths from profile + base directory.
+// - Validate sidecar runtime completeness (dirs, binaries, traineddata files).
+// - Return normalized success/failure objects used by OCR orchestrator/pipeline.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 const fs = require('fs');
 const path = require('path');
 const Log = require('../../log');
@@ -11,6 +24,9 @@ const {
 
 const log = Log.get('import-ocr-resolve-sidecar');
 
+// =============================================================================
+// Helpers (result shaping + path/runtime normalization)
+// =============================================================================
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
 }
@@ -61,6 +77,9 @@ function detectPackagedRuntime(explicitFlag) {
   return process.defaultApp !== true;
 }
 
+// =============================================================================
+// Sidecar resolution (profile + root base + concrete paths)
+// =============================================================================
 function resolveSidecarRootBase({
   resourcesPath = process.resourcesPath,
   appPath = process.cwd(),
@@ -134,6 +153,9 @@ function resolveSidecarPaths({
   };
 }
 
+// =============================================================================
+// Runtime validation (filesystem checks + language data)
+// =============================================================================
 function pathExists(targetPath) {
   try {
     return fs.existsSync(targetPath);
@@ -241,6 +263,9 @@ function validateSidecarRuntime({
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   resolveCurrentProfile,
   resolveSidecarRootBase,
