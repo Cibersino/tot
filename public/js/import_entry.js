@@ -10,6 +10,11 @@
 // - Keep renderer.js lean by isolating orchestration glue.
 // =============================================================================
 (function initImportEntryModule(globalObj) {
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[import-entry] getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('import-entry');
+
   function asObject(raw) {
     return (raw && typeof raw === 'object') ? raw : {};
   }
@@ -53,7 +58,7 @@
     return types.includes('Files') || types.includes('text/uri-list');
   }
 
-  function resolveDroppedFilePathFromBridge(fileObj, electronAPI, log) {
+  function resolveDroppedFilePathFromBridge(fileObj, electronAPI) {
     if (!electronAPI || typeof electronAPI.getPathForDroppedFile !== 'function') {
       log.warnOnce(
         'import-entry.resolvePath.bridge.unavailable',
@@ -100,21 +105,21 @@
     return '';
   }
 
-  function resolvePathFromDroppedFileObject(fileObj, electronAPI, log) {
+  function resolvePathFromDroppedFileObject(fileObj, electronAPI) {
     const directPath = fileObj && typeof fileObj.path === 'string' ? fileObj.path.trim() : '';
     if (directPath) return directPath;
-    const bridgePath = resolveDroppedFilePathFromBridge(fileObj, electronAPI, log);
+    const bridgePath = resolveDroppedFilePathFromBridge(fileObj, electronAPI);
     if (bridgePath) return bridgePath;
     return '';
   }
 
-  function extractDroppedFilePath(event, { electronAPI, log } = {}) {
+  function extractDroppedFilePath(event, { electronAPI } = {}) {
     const dt = event && event.dataTransfer;
     if (!dt) return '';
 
     if (dt.files && dt.files.length > 0) {
       const firstFile = dt.files[0];
-      const firstPath = resolvePathFromDroppedFileObject(firstFile, electronAPI, log);
+      const firstPath = resolvePathFromDroppedFileObject(firstFile, electronAPI);
       if (firstPath) return firstPath;
     }
 
@@ -123,7 +128,7 @@
         const item = dt.items[i];
         if (!item || item.kind !== 'file' || typeof item.getAsFile !== 'function') continue;
         const file = item.getAsFile();
-        const candidatePath = resolvePathFromDroppedFileObject(file, electronAPI, log);
+        const candidatePath = resolvePathFromDroppedFileObject(file, electronAPI);
         if (candidatePath) return candidatePath;
       }
     }
@@ -175,10 +180,6 @@
     const electronAPI = opts.electronAPI && typeof opts.electronAPI === 'object'
       ? opts.electronAPI
       : globalObj.electronAPI;
-    const log = opts.log;
-    if (!log || typeof log.warnOnce !== 'function') {
-      throw new Error('[import-entry] log.warnOnce is required');
-    }
     let dragDepth = 0;
     let dragActive = false;
 
@@ -242,7 +243,7 @@
       if (!guardUserAction()) return;
 
       try {
-        const droppedPath = extractDroppedFilePath(event, { electronAPI, log });
+        const droppedPath = extractDroppedFilePath(event, { electronAPI });
         if (!droppedPath) {
           onInvalidPath();
           return;
@@ -283,7 +284,6 @@
 
   function createController(options = {}) {
     const opts = asObject(options);
-    const log = opts.log;
     const btnImportExtract = opts.btnImportExtract || null;
     const importJobSessionMap = opts.importJobSessionMap;
     const importJobIsOcrMap = opts.importJobIsOcrMap;
@@ -307,12 +307,6 @@
       }
     }
 
-    function requireLoggerMethod(methodName) {
-      if (!log || typeof log[methodName] !== 'function') {
-        throw new Error(`[import-entry] log.${methodName} is required`);
-      }
-    }
-
     requireControllerCallback('getOptionalElectronMethod', getOptionalElectronMethod);
     requireControllerCallback('showImportDialogMessage', showImportDialogMessage);
     requireControllerCallback('humanizeImportError', humanizeImportError);
@@ -323,8 +317,6 @@
     requireControllerCallback('promptOcrOptionsDialog', promptOcrOptionsDialog);
     requireControllerCallback('showOcrPreconditionWarning', showOcrPreconditionWarning);
     requireControllerCallback('noteQueuedOcrJob', noteQueuedOcrJob);
-    requireLoggerMethod('warnOnce');
-    requireLoggerMethod('error');
     if (!(importJobSessionMap instanceof Map) || !(importJobIsOcrMap instanceof Map)) {
       throw new Error('[import-entry] import job maps are required');
     }
@@ -429,7 +421,6 @@
       installFileDropHandler({
         target: globalObj,
         electronAPI,
-        log,
         onDragStateChange: (active) => {
           setDropHighlightState(active);
         },
