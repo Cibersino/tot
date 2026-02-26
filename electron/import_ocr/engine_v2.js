@@ -22,6 +22,10 @@ const {
 } = require('./ocr_runtime');
 
 const LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED = 'import_ocr_engine_v2.bridge.failed_ignored.isCancelRequested';
+const LOG_KEY_TMP_FILE_CLEANUP_FAILED = 'import_ocr_engine_v2.cleanup.remove_file_failed_ignored';
+const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_engine_v2.pdfjs.standard_fonts.fallback';
+const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_engine_v2.pdfjs.esm_fallback';
+const LOG_KEY_PDFJS_LOAD_FAILED = 'import_ocr_engine_v2.pdfjs.load_failed';
 const log = Log.get('import-ocr-engine-v2');
 
 function ensureDir(dirPath) {
@@ -37,8 +41,8 @@ function removeDirIfExists(dirPath) {
       return;
     }
     fs.rmdirSync(dirPath, { recursive: true });
-  } catch {
-    // no-op
+  } catch (err) {
+    log.warn('Temporary OCR directory cleanup failed (ignored):', dirPath, err);
   }
 }
 
@@ -47,8 +51,13 @@ function removeFileIfExists(filePath) {
   try {
     if (!ensurePathExists(filePath)) return;
     fs.unlinkSync(filePath);
-  } catch {
-    // no-op
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_TMP_FILE_CLEANUP_FAILED,
+      'Temporary OCR file cleanup failed (ignored):',
+      filePath,
+      err
+    );
   }
 }
 
@@ -71,8 +80,16 @@ function resolvePdfJsStandardFontsDir() {
     const packageDir = path.dirname(packageJsonPath);
     const fontsDir = path.join(packageDir, 'standard_fonts');
     if (fs.existsSync(fontsDir)) return toPdfJsFactoryPath(fontsDir);
-  } catch {
-    // no-op
+    log.warnOnce(
+      LOG_KEY_PDFJS_FONTS_DIR_FALLBACK,
+      'pdfjs-dist standard_fonts directory not found; continuing without standardFontDataUrl.'
+    );
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_PDFJS_FONTS_DIR_FALLBACK,
+      'Resolving pdfjs-dist standard_fonts failed; continuing without standardFontDataUrl.',
+      err
+    );
   }
   return '';
 }
@@ -81,11 +98,21 @@ async function loadPdfJs() {
   try {
     // pdfjs-dist v5+ ships ESM bundles.
     return await import('pdfjs-dist/legacy/build/pdf.mjs');
-  } catch {
+  } catch (errEsm) {
+    log.warnOnce(
+      LOG_KEY_PDFJS_ESM_FALLBACK,
+      'pdfjs ESM load failed (ignored); trying legacy CommonJS fallback.',
+      errEsm
+    );
     try {
       // Backward compatibility for older pdfjs-dist versions.
       return require('pdfjs-dist/legacy/build/pdf.js');
-    } catch {
+    } catch (errCjs) {
+      log.warnOnce(
+        LOG_KEY_PDFJS_LOAD_FAILED,
+        'pdfjs load failed after ESM and CommonJS attempts.',
+        errCjs
+      );
       return null;
     }
   }
@@ -129,8 +156,8 @@ async function preflightPdfPageCount(pdfPath) {
       if (loadingTask && typeof loadingTask.destroy === 'function') {
         loadingTask.destroy();
       }
-    } catch {
-      // no-op
+    } catch (err) {
+      log.warn('pdfjs loadingTask.destroy failed (ignored):', err);
     }
   }
 }
