@@ -14,6 +14,15 @@ function normalizeLineEndings(text) {
   return value.replace(/\r\n?/g, '\n');
 }
 
+function buildSummary(text, pagesProcessed, pagesTotal, warnings) {
+  return {
+    pagesProcessed,
+    pagesTotal,
+    extractedChars: text.length,
+    warnings,
+  };
+}
+
 function loadIconvLite() {
   try {
     // Optional dependency for legacy text encodings.
@@ -107,12 +116,7 @@ async function extractTxt(filePath, options = {}) {
   return {
     ok: true,
     text: decodeRes.text,
-    summary: {
-      pagesProcessed: 1,
-      pagesTotal: 1,
-      extractedChars: decodeRes.text.length,
-      warnings: [],
-    },
+    summary: buildSummary(decodeRes.text, 1, 1, []),
   };
 }
 
@@ -140,12 +144,7 @@ async function extractDocx(filePath) {
     return {
       ok: true,
       text,
-      summary: {
-        pagesProcessed: 1,
-        pagesTotal: 1,
-        extractedChars: text.length,
-        warnings,
-      },
+      summary: buildSummary(text, 1, 1, warnings),
     };
   } catch (err) {
     return fail('IMPORT_DOCX_EXTRACT_FAILED', 'Failed to extract text from DOCX.', {
@@ -187,13 +186,17 @@ async function loadPdfJs() {
   }
 }
 
+function resolvePdfGetDocument(pdfjs) {
+  if (pdfjs && typeof pdfjs.getDocument === 'function') return pdfjs.getDocument;
+  if (pdfjs && pdfjs.default && typeof pdfjs.default.getDocument === 'function') {
+    return pdfjs.default.getDocument;
+  }
+  return null;
+}
+
 async function extractPdf(filePath) {
   const pdfjs = await loadPdfJs();
-  const getDocument = pdfjs && typeof pdfjs.getDocument === 'function'
-    ? pdfjs.getDocument
-    : (pdfjs && pdfjs.default && typeof pdfjs.default.getDocument === 'function'
-      ? pdfjs.default.getDocument
-      : null);
+  const getDocument = resolvePdfGetDocument(pdfjs);
   if (!getDocument) {
     return fail('IMPORT_DEP_MISSING_PDFJS', 'PDF extraction dependency is not installed.');
   }
@@ -226,12 +229,7 @@ async function extractPdf(filePath) {
     return {
       ok: true,
       text,
-      summary: {
-        pagesProcessed: doc.numPages || 0,
-        pagesTotal: doc.numPages || 0,
-        extractedChars: text.length,
-        warnings: [],
-      },
+      summary: buildSummary(text, doc.numPages || 0, doc.numPages || 0, []),
     };
   } catch (err) {
     return fail('IMPORT_PDF_EXTRACT_FAILED', 'Failed to extract text from PDF.', {
