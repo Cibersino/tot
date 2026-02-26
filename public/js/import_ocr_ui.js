@@ -5,14 +5,17 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Own Import/OCR UI surfaces in main window:
-//   - OCR progress panel + cancel button visibility text
-//   - Shared import choice modal (generic 2-choice dialog)
-//   - Shared OCR options modal (preset/language/custom controls)
-// - Keep OCR UI behavior cohesive so renderer.js stays orchestration-focused.
+// - Own OCR progress UI state and labels in the main window.
+// - Own the shared import choice modal flow and repeat-count controls.
+// - Own the OCR options modal flow (preset, language, custom controls).
+// - Expose a single window.ImportOcrUi API for renderer orchestration.
+// - Keep OCR/import UI details local so renderer.js stays orchestration-focused.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // DOM references
+  // =============================================================================
   const btnCancelOcr = document.getElementById('btnCancelOcr');
   const ocrProgressPanel = document.getElementById('ocrProgressPanel');
   const ocrProgressText = document.getElementById('ocrProgressText');
@@ -50,6 +53,10 @@
   const ocrTotalDisclaimer = document.getElementById('ocrTotalDisclaimer');
   const btnOcrOptionsStart = document.getElementById('btnOcrOptionsStart');
   const btnOcrOptionsAbort = document.getElementById('btnOcrOptionsAbort');
+
+  // =============================================================================
+  // Constants / config (limits, defaults, estimation tuning)
+  // =============================================================================
   const appMaxPasteRepeatRaw = Number(window.AppConstants && window.AppConstants.MAX_PASTE_REPEAT);
   if (!Number.isFinite(appMaxPasteRepeatRaw) || appMaxPasteRepeatRaw < 1) {
     throw new Error('[import-ocr-ui] AppConstants.MAX_PASTE_REPEAT unavailable; cannot continue');
@@ -81,6 +88,9 @@
     aggressive: 1.0,
   });
 
+  // =============================================================================
+  // Shared state
+  // =============================================================================
   let lockActive = false;
   let lockReason = '';
 
@@ -115,6 +125,10 @@
   let tRendererFn = (_key, fallback = '') => fallback;
   let msgRendererFn = null;
   let listenersBound = false;
+
+  // =============================================================================
+  // Logger / required startup guards
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-ocr-ui] getLogger unavailable; cannot continue');
   }
@@ -123,12 +137,18 @@
     throw new Error('[import-ocr-ui] logger instance invalid; cannot continue');
   }
 
+  // =============================================================================
+  // Initial DOM control defaults
+  // =============================================================================
   if (importApplyRepeatInput) {
     importApplyRepeatInput.min = '1';
     importApplyRepeatInput.max = String(APP_MAX_PASTE_REPEAT);
     importApplyRepeatInput.step = '1';
   }
 
+  // =============================================================================
+  // Helpers: i18n and language normalization
+  // =============================================================================
   function t(key, fallback = '') {
     try {
       if (typeof tRendererFn === 'function') return tRendererFn(key, fallback);
@@ -238,6 +258,9 @@
     return available;
   }
 
+  // =============================================================================
+  // OCR progress flow (state updates, ETA, and UI text)
+  // =============================================================================
   function formatElapsedLabel(ms) {
     const totalSeconds = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
     const hours = Math.floor(totalSeconds / 3600);
@@ -522,6 +545,9 @@
     updateOcrProgressText();
   }
 
+  // =============================================================================
+  // Choice modal flow
+  // =============================================================================
   function showChoiceModal() {
     if (!importApplyModal) return;
     importApplyModal.setAttribute('aria-hidden', 'false');
@@ -697,6 +723,9 @@
     });
   }
 
+  // =============================================================================
+  // OCR options helpers (normalization, estimation, and derived text)
+  // =============================================================================
   function clampToStep(raw, { min, max, step, fallback }) {
     const n = Number(raw);
     if (!Number.isFinite(n)) return fallback;
@@ -1001,6 +1030,9 @@
     };
   }
 
+  // =============================================================================
+  // OCR options modal flow
+  // =============================================================================
   function showOcrOptionsModal() {
     if (!ocrOptionsModal) return;
     ocrOptionsModal.setAttribute('aria-hidden', 'false');
@@ -1086,6 +1118,9 @@
     });
   }
 
+  // =============================================================================
+  // Public API methods consumed by renderer.js
+  // =============================================================================
   function isOcrRoute(route) {
     return String(route || '').trim().toLowerCase().startsWith('ocr_');
   }
@@ -1108,6 +1143,9 @@
     if (typeof fallbackLanguage === 'string' && fallbackLanguage.trim()) defaultLanguage = fallbackLanguage.trim();
   }
 
+  // =============================================================================
+  // UI translation and listener wiring
+  // =============================================================================
   function applyTranslations() {
     if (btnCancelOcr) {
       btnCancelOcr.textContent = t('renderer.main.buttons.cancel_ocr', btnCancelOcr.textContent || '');
@@ -1240,6 +1278,9 @@
     });
   }
 
+  // =============================================================================
+  // Bootstrapping and module surface
+  // =============================================================================
   bindUiListeners();
   syncOcrControlVisibility();
 
@@ -1261,5 +1302,5 @@
 })();
 
 // =============================================================================
-// End of public/js/import_ocr_ui.js
+// End of public\js\import_ocr_ui.js
 // =============================================================================
