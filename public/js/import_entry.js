@@ -53,18 +53,22 @@
     return types.includes('Files') || types.includes('text/uri-list');
   }
 
-  function resolveDroppedFilePathFromBridge(fileObj, electronAPI, logger) {
-    if (!electronAPI || typeof electronAPI.getPathForDroppedFile !== 'function') return '';
+  function resolveDroppedFilePathFromBridge(fileObj, electronAPI, log) {
+    if (!electronAPI || typeof electronAPI.getPathForDroppedFile !== 'function') {
+      log.warnOnce(
+        'import-entry.resolvePath.bridge.unavailable',
+        'getPathForDroppedFile unavailable; dropped file bridge path resolution skipped.'
+      );
+      return '';
+    }
     try {
       return normalizeDroppedPath(electronAPI.getPathForDroppedFile(fileObj));
     } catch (err) {
-      if (logger && typeof logger.warnOnce === 'function') {
-        logger.warnOnce(
-          'import-entry.resolvePath.bridge.failed',
-          'Failed to resolve dropped file path from preload bridge (falling back):',
-          err
-        );
-      }
+      log.warnOnce(
+        'import-entry.resolvePath.bridge.failed',
+        'Failed to resolve dropped file path from preload bridge (falling back):',
+        err
+      );
       return '';
     }
   }
@@ -96,21 +100,21 @@
     return '';
   }
 
-  function resolvePathFromDroppedFileObject(fileObj, electronAPI, logger) {
+  function resolvePathFromDroppedFileObject(fileObj, electronAPI, log) {
     const directPath = fileObj && typeof fileObj.path === 'string' ? fileObj.path.trim() : '';
     if (directPath) return directPath;
-    const bridgePath = resolveDroppedFilePathFromBridge(fileObj, electronAPI, logger);
+    const bridgePath = resolveDroppedFilePathFromBridge(fileObj, electronAPI, log);
     if (bridgePath) return bridgePath;
     return '';
   }
 
-  function extractDroppedFilePath(event, { electronAPI, logger } = {}) {
+  function extractDroppedFilePath(event, { electronAPI, log } = {}) {
     const dt = event && event.dataTransfer;
     if (!dt) return '';
 
     if (dt.files && dt.files.length > 0) {
       const firstFile = dt.files[0];
-      const firstPath = resolvePathFromDroppedFileObject(firstFile, electronAPI, logger);
+      const firstPath = resolvePathFromDroppedFileObject(firstFile, electronAPI, log);
       if (firstPath) return firstPath;
     }
 
@@ -119,7 +123,7 @@
         const item = dt.items[i];
         if (!item || item.kind !== 'file' || typeof item.getAsFile !== 'function') continue;
         const file = item.getAsFile();
-        const candidatePath = resolvePathFromDroppedFileObject(file, electronAPI, logger);
+        const candidatePath = resolvePathFromDroppedFileObject(file, electronAPI, log);
         if (candidatePath) return candidatePath;
       }
     }
@@ -171,7 +175,10 @@
     const electronAPI = opts.electronAPI && typeof opts.electronAPI === 'object'
       ? opts.electronAPI
       : globalObj.electronAPI;
-    const logger = opts.logger || null;
+    const log = opts.log;
+    if (!log || typeof log.warnOnce !== 'function') {
+      throw new Error('[import-entry] log.warnOnce is required');
+    }
     let dragDepth = 0;
     let dragActive = false;
 
@@ -182,13 +189,11 @@
       try {
         onDragStateChange(dragActive);
       } catch (err) {
-        if (logger && typeof logger.warnOnce === 'function') {
-          logger.warnOnce(
-            'import-entry.onDragStateChange.failed',
-            'onDragStateChange callback failed (ignored):',
-            err
-          );
-        }
+        log.warnOnce(
+          'import-entry.onDragStateChange.failed',
+          'onDragStateChange callback failed (ignored):',
+          err
+        );
       }
     };
 
@@ -237,7 +242,7 @@
       if (!guardUserAction()) return;
 
       try {
-        const droppedPath = extractDroppedFilePath(event, { electronAPI, logger });
+        const droppedPath = extractDroppedFilePath(event, { electronAPI, log });
         if (!droppedPath) {
           onInvalidPath();
           return;
@@ -278,7 +283,7 @@
 
   function createController(options = {}) {
     const opts = asObject(options);
-    const log = opts.log || console;
+    const log = opts.log;
     const btnImportExtract = opts.btnImportExtract || null;
     const importJobSessionMap = opts.importJobSessionMap;
     const importJobIsOcrMap = opts.importJobIsOcrMap;
@@ -302,6 +307,12 @@
       }
     }
 
+    function requireLoggerMethod(methodName) {
+      if (!log || typeof log[methodName] !== 'function') {
+        throw new Error(`[import-entry] log.${methodName} is required`);
+      }
+    }
+
     requireControllerCallback('getOptionalElectronMethod', getOptionalElectronMethod);
     requireControllerCallback('showImportDialogMessage', showImportDialogMessage);
     requireControllerCallback('humanizeImportError', humanizeImportError);
@@ -312,6 +323,8 @@
     requireControllerCallback('promptOcrOptionsDialog', promptOcrOptionsDialog);
     requireControllerCallback('showOcrPreconditionWarning', showOcrPreconditionWarning);
     requireControllerCallback('noteQueuedOcrJob', noteQueuedOcrJob);
+    requireLoggerMethod('warnOnce');
+    requireLoggerMethod('error');
     if (!(importJobSessionMap instanceof Map) || !(importJobIsOcrMap instanceof Map)) {
       throw new Error('[import-entry] import job maps are required');
     }
@@ -407,9 +420,7 @@
       try {
         return await importSelectFilePath(filePath);
       } catch (err) {
-        if (log && typeof log.error === 'function') {
-          log.error('Error selecting dropped file for import:', err);
-        }
+        log.error('Error selecting dropped file for import:', err);
         return { ok: false, code: 'IMPORT_UNAVAILABLE' };
       }
     }
@@ -418,7 +429,7 @@
       installFileDropHandler({
         target: globalObj,
         electronAPI,
-        logger: log,
+        log,
         onDragStateChange: (active) => {
           setDropHighlightState(active);
         },
@@ -436,9 +447,7 @@
           showImportDialogMessage('renderer.alerts.import_invalid_path');
         },
         onUnhandledError: (err) => {
-          if (log && typeof log.error === 'function') {
-            log.error('Error in dropped-file import flow:', err);
-          }
+          log.error('Error in dropped-file import flow:', err);
           showImportDialogMessage('renderer.alerts.import_unexpected');
         },
       });
@@ -466,9 +475,7 @@
           }
           await runImportFlowFromSelection(selectRes);
         } catch (err) {
-          if (log && typeof log.error === 'function') {
-            log.error('Error in import flow:', err);
-          }
+          log.error('Error in import flow:', err);
           showImportDialogMessage('renderer.alerts.import_unexpected');
         }
       });
