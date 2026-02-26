@@ -684,6 +684,7 @@ Output requirement:
   - If NO CHANGE: 3–8 bullets explaining why no meaningful comment improvements were warranted.
 - Do NOT output diffs.
 ```
+
 ---
 
 ## Nivel 7: Revision final
