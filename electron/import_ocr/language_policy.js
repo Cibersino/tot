@@ -1,8 +1,24 @@
 // electron/import_ocr/language_policy.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Define the canonical UI language to Tesseract language mapping used by OCR.
+// - Normalize language tags/bases for consistent cross-module comparisons.
+// - Parse mapped Tesseract language strings into required traineddata code lists.
+// - Build available OCR UI language options from installed tessdata codes.
+// - Resolve preferred OCR UI language using requested, active, default, and fallback order.
+
+// =============================================================================
+// Imports
+// =============================================================================
 const { DEFAULT_LANG } = require('../constants_main');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
 const UI_LANG_TO_TESSERACT = Object.freeze({
   es: 'spa',
   en: 'eng',
@@ -14,6 +30,9 @@ const UI_LANG_TO_TESSERACT = Object.freeze({
 
 const UI_LANG_ORDER = Object.freeze(['es', 'en', 'fr', 'de', 'it', 'pt']);
 
+// =============================================================================
+// Helpers (normalization, mapping, and preference resolution)
+// =============================================================================
 function normalizeLangBase(raw) {
   const value = String(raw || '').trim().toLowerCase().replace(/_/g, '-');
   if (!value) return '';
@@ -97,6 +116,9 @@ function resolvePreferredUiLanguage({
   return { value: '', reason: 'none' };
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   UI_LANG_TO_TESSERACT,
   UI_LANG_ORDER,
