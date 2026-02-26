@@ -23,20 +23,23 @@ function normalizeLangBase(raw) {
 function mapUiLanguageToTesseract(rawLang) {
   const value = String(rawLang || '').trim().toLowerCase();
   if (!value) return '';
-  if (value === 'es+en' || value === 'en+es' || value === 'spa+eng' || value === 'eng+spa') {
+  if (value === 'es+en' || value === 'en+es') {
     return 'spa+eng';
   }
   const base = normalizeLangBase(value);
   return UI_LANG_TO_TESSERACT[base] || '';
 }
 
-function getRequiredTesseractCodes(rawLang) {
-  const mapped = mapUiLanguageToTesseract(rawLang);
-  if (!mapped) return [];
-  return mapped
+function parseTesseractLangCodes(rawTesseractLang) {
+  const value = String(rawTesseractLang || '').trim().toLowerCase();
+  if (!value) return [];
+  const parts = value
     .split('+')
     .map((part) => String(part || '').trim().toLowerCase())
     .filter(Boolean);
+  if (!parts.length) return [];
+  if (parts.some((part) => !/^[a-z0-9_]{3,32}$/.test(part))) return [];
+  return parts;
 }
 
 function buildAvailableUiLanguages(installedCodes = []) {
@@ -99,7 +102,7 @@ module.exports = {
   UI_LANG_ORDER,
   normalizeLangBase,
   mapUiLanguageToTesseract,
-  getRequiredTesseractCodes,
+  parseTesseractLangCodes,
   buildAvailableUiLanguages,
   resolvePreferredUiLanguage,
 };

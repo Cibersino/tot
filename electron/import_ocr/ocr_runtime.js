@@ -21,7 +21,7 @@ const { spawn } = require('child_process');
 const Log = require('../log');
 const {
   mapUiLanguageToTesseract,
-  getRequiredTesseractCodes,
+  parseTesseractLangCodes,
 } = require('./language_policy');
 const {
   terminateWithEscalation,
@@ -99,7 +99,12 @@ function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
     });
   }
 
-  const requiredCodes = getRequiredTesseractCodes(tesseractLang);
+  const requiredCodes = parseTesseractLangCodes(tesseractLang);
+  if (requiredCodes.length === 0) {
+    return fail('OCR_LANG_UNSUPPORTED', 'Requested OCR language is not supported.', {
+      language: requested,
+    });
+  }
   const missingCodes = requiredCodes.filter((code) => {
     const trainedDataPath = path.join(tessdataPath, `${code}.traineddata`);
     return !ensurePathExists(trainedDataPath);
