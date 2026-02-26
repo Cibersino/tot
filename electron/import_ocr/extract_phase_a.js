@@ -14,6 +14,15 @@ function normalizeLineEndings(text) {
   return value.replace(/\r\n?/g, '\n');
 }
 
+function loadIconvLite() {
+  try {
+    // Optional dependency for legacy text encodings.
+    return require('iconv-lite');
+  } catch {
+    return null;
+  }
+}
+
 function readBuffer(filePath) {
   try {
     return { ok: true, buffer: fs.readFileSync(filePath) };
@@ -83,57 +92,6 @@ function decodeTextBuffer(buffer, options = {}) {
   return { ok: true, text: normalizeLineEndings(utf8Text), encoding: 'utf-8' };
 }
 
-function loadMammoth() {
-  try {
-    // Optional dependency in local/offline environments.
-    return require('mammoth');
-  } catch {
-    return null;
-  }
-}
-
-function loadIconvLite() {
-  try {
-    // Optional dependency for legacy text encodings.
-    return require('iconv-lite');
-  } catch {
-    return null;
-  }
-}
-
-async function loadPdfJs() {
-  try {
-    // pdfjs-dist v5+ ships ESM bundles.
-    return await import('pdfjs-dist/legacy/build/pdf.mjs');
-  } catch {
-    try {
-      // Backward compatibility for older pdfjs-dist versions.
-      return require('pdfjs-dist/legacy/build/pdf.js');
-    } catch {
-      return null;
-    }
-  }
-}
-
-function toPdfJsFactoryPath(dirPath) {
-  const raw = String(dirPath || '').trim();
-  if (!raw) return '';
-  const normalized = raw.replace(/\\/g, '/');
-  return normalized.endsWith('/') ? normalized : `${normalized}/`;
-}
-
-function resolvePdfJsStandardFontsDir() {
-  try {
-    const packageJsonPath = require.resolve('pdfjs-dist/package.json');
-    const packageDir = path.dirname(packageJsonPath);
-    const fontsDir = path.join(packageDir, 'standard_fonts');
-    if (fs.existsSync(fontsDir)) return toPdfJsFactoryPath(fontsDir);
-  } catch {
-    // no-op; fallback below
-  }
-  return '';
-}
-
 async function extractTxt(filePath, options = {}) {
   const readRes = readBuffer(filePath);
   if (!readRes.ok) return readRes;
@@ -156,6 +114,15 @@ async function extractTxt(filePath, options = {}) {
       warnings: [],
     },
   };
+}
+
+function loadMammoth() {
+  try {
+    // Optional dependency in local/offline environments.
+    return require('mammoth');
+  } catch {
+    return null;
+  }
 }
 
 async function extractDocx(filePath) {
@@ -184,6 +151,39 @@ async function extractDocx(filePath) {
     return fail('IMPORT_DOCX_EXTRACT_FAILED', 'Failed to extract text from DOCX.', {
       error: String(err),
     });
+  }
+}
+
+function toPdfJsFactoryPath(dirPath) {
+  const raw = String(dirPath || '').trim();
+  if (!raw) return '';
+  const normalized = raw.replace(/\\/g, '/');
+  return normalized.endsWith('/') ? normalized : `${normalized}/`;
+}
+
+function resolvePdfJsStandardFontsDir() {
+  try {
+    const packageJsonPath = require.resolve('pdfjs-dist/package.json');
+    const packageDir = path.dirname(packageJsonPath);
+    const fontsDir = path.join(packageDir, 'standard_fonts');
+    if (fs.existsSync(fontsDir)) return toPdfJsFactoryPath(fontsDir);
+  } catch {
+    // no-op; fallback below
+  }
+  return '';
+}
+
+async function loadPdfJs() {
+  try {
+    // pdfjs-dist v5+ ships ESM bundles.
+    return await import('pdfjs-dist/legacy/build/pdf.mjs');
+  } catch {
+    try {
+      // Backward compatibility for older pdfjs-dist versions.
+      return require('pdfjs-dist/legacy/build/pdf.js');
+    } catch {
+      return null;
+    }
   }
 }
 
