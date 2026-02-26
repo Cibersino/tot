@@ -1,6 +1,20 @@
 // electron/import_ocr/ocr_runtime.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Provide shared runtime helpers used by OCR image and PDF pipelines.
+// - Validate OCR language requests against available tessdata files.
+// - Execute external OCR/raster processes with timeout and cancellation support.
+// - Capture stdout/stderr with in-memory truncation caps and truncation flags.
+// - Normalize bridge callback failure handling for optional runtime hooks.
+// - Return consistent result/failure object shapes consumed by OCR orchestrators.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
@@ -13,6 +27,9 @@ const {
   terminateWithEscalation,
 } = require('./platform/process_control');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
 const OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS = 2_000_000; // Default cap for OCR process stdout capture (typically tesseract text output).
 const OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS = 200_000; // Default cap for OCR process stderr capture when no per-call override is provided.
 const OCR_RASTER_STDOUT_LIMIT_CHARS = 200_000; // Raster (pdftoppm) override: stdout is not expected to carry main payload.
@@ -24,6 +41,9 @@ const SAFE_INVOKE_LABEL_ON_CHILD_PROCESS = 'onChildProcess';
 
 const log = Log.get('import-ocr-runtime');
 
+// =============================================================================
+// Helpers (result shaping and local normalization)
+// =============================================================================
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
 }
@@ -67,6 +87,9 @@ function normalizeSafeInvokeLabel(rawLabel) {
   return label;
 }
 
+// =============================================================================
+// OCR language validation
+// =============================================================================
 function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
   const requested = String(rawLang || '').trim();
   const tesseractLang = mapUiLanguageToTesseract(requested);
@@ -95,6 +118,9 @@ function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
   };
 }
 
+// =============================================================================
+// Process output capture
+// =============================================================================
 function readProcessStreams(
   child,
   maxStdoutChars = OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS,
@@ -145,6 +171,9 @@ function readProcessStreams(
   });
 }
 
+// =============================================================================
+// Optional bridge callbacks and text normalization
+// =============================================================================
 function safeInvoke(cb, maybeLabel, ...restArgs) {
   if (typeof cb !== 'function') return;
   const hasExplicitLabel = typeof maybeLabel === 'string' && restArgs.length > 0;
@@ -167,6 +196,9 @@ function normalizeMultiline(text) {
   return String(text || '').replace(/\r\n?/g, '\n').trim();
 }
 
+// =============================================================================
+// External process execution (timeout + cancellation)
+// =============================================================================
 async function runProcessWithTimeout({
   executablePath,
   args,
@@ -281,6 +313,9 @@ async function runProcessWithTimeout({
   };
 }
 
+// =============================================================================
+// OCR argument builders
+// =============================================================================
 function resolveTesseractArgs({ inputPath, tesseractLang, tessdataPath }) {
   return [
     inputPath,
@@ -294,6 +329,9 @@ function resolveTesseractArgs({ inputPath, tesseractLang, tessdataPath }) {
   ];
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS,
   OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS,
