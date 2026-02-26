@@ -21,7 +21,6 @@
     throw new Error('[count] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('count');
-  log.debug('Count utilities starting...');
   if (!window.AppConstants || typeof window.AppConstants.DEFAULT_LANG !== 'string' || window.AppConstants.DEFAULT_LANG.trim() === '') {
     throw new Error('[count] window.AppConstants.DEFAULT_LANG unavailable; cannot continue');
   }

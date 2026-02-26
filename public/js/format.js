@@ -18,7 +18,6 @@
     throw new Error('[format] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('format');
-  log.debug('Format utilities starting...');
   if (!window.AppConstants || typeof window.AppConstants.DEFAULT_LANG !== 'string' || window.AppConstants.DEFAULT_LANG.trim() === '') {
     throw new Error('[format] window.AppConstants.DEFAULT_LANG unavailable; cannot continue');
   }

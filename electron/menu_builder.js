@@ -31,7 +31,6 @@ const { normalizeLangTag, getLangBase } = require('./settings');
 // =============================================================================
 
 const log = Log.get('menu');
-log.debug('Menu builder starting...');
 
 const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 

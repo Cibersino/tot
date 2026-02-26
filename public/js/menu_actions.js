@@ -19,7 +19,6 @@
         throw new Error('[menu-actions] window.getLogger unavailable; cannot continue');
     }
     const log = window.getLogger('menu-actions');
-    log.debug('Menu actions starting...');
 
     // actionId -> handler
     const registry = new Map();

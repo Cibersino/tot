@@ -19,7 +19,6 @@
     throw new Error('[notify] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('notify');
-  log.debug('Notify starting...');
 
   // =============================================================================
   // Helpers (i18n + toast rendering)

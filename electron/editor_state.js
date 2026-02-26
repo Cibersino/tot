@@ -20,7 +20,6 @@ const { getEditorStateFile, loadJson, saveJson } = require('./fs_storage');
 const Log = require('./log');
 
 const log = Log.get('editor-state');
-log.debug('Editor state starting...');
 
 // =============================================================================
 // Constants / defaults

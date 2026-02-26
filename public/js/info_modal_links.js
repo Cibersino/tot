@@ -19,7 +19,6 @@
     throw new Error('[info-modal-links] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('info-modal-links');
-  log.debug('Info modal links starting...');
 
   // =============================================================================
   // Helpers
