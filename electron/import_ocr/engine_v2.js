@@ -193,6 +193,24 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
       return fail('OCR_CANCELED', 'OCR canceled by user.');
     }
 
+    function failIfStalled(extra = {}) {
+      if (!stallTimedOut) return null;
+      return buildStallFail(stallMeta, stallTimeoutMs, extra);
+    }
+
+    function failCanceledForPage(pageNumber) {
+      return fail('OCR_CANCELED', 'OCR canceled by user.', {
+        pageDone,
+        pageTotal,
+        pageNumber,
+      });
+    }
+
+    function onChildProcess(child) {
+      activeChild = child;
+      safeInvoke(options.onChildProcess, 'onChildProcess', child);
+    }
+
     function emitProgress(nextStage, {
       nextPageDone,
       nextPageTotal,
@@ -255,7 +273,10 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
     const preflightRes = await preflightPdfPageCount(pdfPath);
     if (!preflightRes.ok) return preflightRes;
     pageTotal = preflightRes.pageTotal;
-    if (stallTimedOut) return buildStallFail(stallMeta, stallTimeoutMs);
+    {
+      const stallFail = failIfStalled();
+      if (stallFail) return stallFail;
+    }
 
     emitProgress('preflight', {
       nextPageDone: 0,
@@ -265,13 +286,12 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
 
     const pageTexts = [];
     for (let pageNumber = 1; pageNumber <= pageTotal; pageNumber += 1) {
-      if (stallTimedOut) return buildStallFail(stallMeta, stallTimeoutMs);
+      {
+        const stallFail = failIfStalled();
+        if (stallFail) return stallFail;
+      }
       if (typeof options.isCancelRequested === 'function' && options.isCancelRequested()) {
-        return fail('OCR_CANCELED', 'OCR canceled by user.', {
-          pageDone,
-          pageTotal,
-          pageNumber,
-        });
+        return failCanceledForPage(pageNumber);
       }
 
       const pageBase = path.join(tempDir, `page-${String(pageNumber).padStart(6, '0')}`);
@@ -300,20 +320,18 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         ],
         workingDirectory: path.dirname(sidecar.pdftoppmPath),
         timeoutMs: rasterTimeoutPerPageMs,
-        onChildProcess: (child) => {
-          activeChild = child;
-          safeInvoke(options.onChildProcess, 'onChildProcess', child);
-        },
+        onChildProcess,
         isCancelRequested: options.isCancelRequested,
         maxStdoutChars: OCR_RASTER_STDOUT_LIMIT_CHARS,
         maxStderrChars: OCR_RASTER_STDERR_LIMIT_CHARS,
       });
       activeChild = null;
       if (!rasterRes.ok) {
-        if (stallTimedOut) {
-          return buildStallFail(stallMeta, stallTimeoutMs, {
+        {
+          const stallFail = failIfStalled({
             stderr: rasterRes.stderr || '',
           });
+          if (stallFail) return stallFail;
         }
         if (rasterRes.code === 'OCR_TIMEOUT_PAGE') {
           return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
@@ -326,11 +344,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
           });
         }
         if (rasterRes.code === 'OCR_CANCELED') {
-          return fail('OCR_CANCELED', 'OCR canceled by user.', {
-            pageDone,
-            pageTotal,
-            pageNumber,
-          });
+          return failCanceledForPage(pageNumber);
         }
         return fail('OCR_RASTER_FAILED', 'PDF rasterization failed.', {
           stage: 'rasterizing',
@@ -367,20 +381,18 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         }),
         workingDirectory: path.dirname(sidecar.tesseractPath),
         timeoutMs: timeoutPerPageMs,
-        onChildProcess: (child) => {
-          activeChild = child;
-          safeInvoke(options.onChildProcess, 'onChildProcess', child);
-        },
+        onChildProcess,
         isCancelRequested: options.isCancelRequested,
       });
       activeChild = null;
 
       if (!pageRes.ok) {
         removeFileIfExists(pageImagePath);
-        if (stallTimedOut) {
-          return buildStallFail(stallMeta, stallTimeoutMs, {
+        {
+          const stallFail = failIfStalled({
             stderr: pageRes.stderr || '',
           });
+          if (stallFail) return stallFail;
         }
         if (pageRes.code === 'OCR_TIMEOUT_PAGE') {
           return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
@@ -393,11 +405,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
           });
         }
         if (pageRes.code === 'OCR_CANCELED') {
-          return fail('OCR_CANCELED', 'OCR canceled by user.', {
-            pageDone,
-            pageTotal,
-            pageNumber,
-          });
+          return failCanceledForPage(pageNumber);
         }
         return fail('OCR_EXEC_FAILED', 'OCR process exited with error.', {
           stage: 'ocr',
@@ -427,7 +435,10 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
       });
     }
 
-    if (stallTimedOut) return buildStallFail(stallMeta, stallTimeoutMs);
+    {
+      const stallFail = failIfStalled();
+      if (stallFail) return stallFail;
+    }
 
     const text = normalizeMultiline(pageTexts.join('\n\n'));
     if (!text) {
