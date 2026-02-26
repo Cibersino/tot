@@ -115,12 +115,13 @@
   let tRendererFn = (_key, fallback = '') => fallback;
   let msgRendererFn = null;
   let listenersBound = false;
-  const log = (window.getLogger && typeof window.getLogger === 'function')
-    ? window.getLogger('import-ocr-ui')
-    : {
-      warn: () => {},
-      warnOnce: () => {},
-    };
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[import-ocr-ui] getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('import-ocr-ui');
+  if (!log || typeof log.warn !== 'function' || typeof log.warnOnce !== 'function') {
+    throw new Error('[import-ocr-ui] logger instance invalid; cannot continue');
+  }
 
   if (importApplyRepeatInput) {
     importApplyRepeatInput.min = '1';
