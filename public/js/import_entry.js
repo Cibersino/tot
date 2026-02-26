@@ -292,42 +292,26 @@
     const noteQueuedOcrJob = opts.noteQueuedOcrJob;
     const guardUserAction = opts.guardUserAction;
 
-    if (typeof getOptionalElectronMethod !== 'function') {
-      throw new Error('[import-entry] getOptionalElectronMethod callback is required');
+    function requireControllerCallback(name, callbackFn) {
+      if (typeof callbackFn !== 'function') {
+        throw new Error(`[import-entry] ${name} callback is required`);
+      }
     }
-    if (typeof showImportDialogMessage !== 'function') {
-      throw new Error('[import-entry] showImportDialogMessage callback is required');
-    }
-    if (typeof humanizeImportError !== 'function') {
-      throw new Error('[import-entry] humanizeImportError callback is required');
-    }
-    if (typeof discardImportSession !== 'function') {
-      throw new Error('[import-entry] discardImportSession callback is required');
-    }
-    if (typeof getDefaultImportRunOptions !== 'function') {
-      throw new Error('[import-entry] getDefaultImportRunOptions callback is required');
-    }
-    if (typeof isOcrRoute !== 'function') {
-      throw new Error('[import-entry] isOcrRoute callback is required');
-    }
-    if (typeof getAvailableOcrLanguages !== 'function') {
-      throw new Error('[import-entry] getAvailableOcrLanguages callback is required');
-    }
-    if (typeof promptOcrOptionsDialog !== 'function') {
-      throw new Error('[import-entry] promptOcrOptionsDialog callback is required');
-    }
-    if (typeof showOcrPreconditionWarning !== 'function') {
-      throw new Error('[import-entry] showOcrPreconditionWarning callback is required');
-    }
-    if (typeof noteQueuedOcrJob !== 'function') {
-      throw new Error('[import-entry] noteQueuedOcrJob callback is required');
-    }
+
+    requireControllerCallback('getOptionalElectronMethod', getOptionalElectronMethod);
+    requireControllerCallback('showImportDialogMessage', showImportDialogMessage);
+    requireControllerCallback('humanizeImportError', humanizeImportError);
+    requireControllerCallback('discardImportSession', discardImportSession);
+    requireControllerCallback('getDefaultImportRunOptions', getDefaultImportRunOptions);
+    requireControllerCallback('isOcrRoute', isOcrRoute);
+    requireControllerCallback('getAvailableOcrLanguages', getAvailableOcrLanguages);
+    requireControllerCallback('promptOcrOptionsDialog', promptOcrOptionsDialog);
+    requireControllerCallback('showOcrPreconditionWarning', showOcrPreconditionWarning);
+    requireControllerCallback('noteQueuedOcrJob', noteQueuedOcrJob);
     if (!(importJobSessionMap instanceof Map) || !(importJobIsOcrMap instanceof Map)) {
       throw new Error('[import-entry] import job maps are required');
     }
-    if (typeof guardUserAction !== 'function') {
-      throw new Error('[import-entry] guardUserAction callback is required');
-    }
+    requireControllerCallback('guardUserAction', guardUserAction);
 
     function setDropHighlightState(active) {
       const doc = globalObj && globalObj.document ? globalObj.document : null;
