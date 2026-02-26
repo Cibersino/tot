@@ -37,7 +37,6 @@
             throw new Error('registerMenuAction: callback debe ser funcion');
         }
         registry.set(payload, callback);
-        log.debug(`menuActions: registered action -> ${payload}`);
     }
 
     function unregisterMenuAction(payload) {
@@ -52,7 +51,6 @@
     // IPC handler / listener registration
     // =============================================================================
     function handleMenuClick(payload) {
-        log.debug('menu-click received (menu_actions.js):', payload);
         const action = registry.get(payload);
         if (action) {
             try {
