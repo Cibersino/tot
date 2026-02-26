@@ -4,8 +4,16 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Data-driven platform/arch sidecar metadata.
-// Keep platform differences centralized in this registry.
+// OCR sidecar target profile registry.
+// Responsibilities:
+// - Define immutable sidecar metadata by "platform-arch" key.
+// - Normalize platform/arch inputs used for profile lookup.
+// - Provide profile lookup helpers with explicit miss fallbacks.
+// - Validate registry shape and required fields for startup checks.
+
+// =============================================================================
+// Constants / config (registry data)
+// =============================================================================
 
 const TARGET_PROFILE_REGISTRY = Object.freeze({
   'win32-x64': Object.freeze({
@@ -46,6 +54,10 @@ function normalizeKeyPart(value) {
   return String(value || '').trim().toLowerCase();
 }
 
+// =============================================================================
+// Helpers (lookup and key derivation)
+// =============================================================================
+
 function getProfileKey(platform = process.platform, arch = process.arch) {
   const p = normalizeKeyPart(platform);
   const a = normalizeKeyPart(arch);
@@ -62,6 +74,10 @@ function getProfileByKey(profileKey) {
 function listProfileKeys() {
   return Object.keys(TARGET_PROFILE_REGISTRY);
 }
+
+// =============================================================================
+// Validation
+// =============================================================================
 
 function validateRegistry() {
   const errors = [];
@@ -117,6 +133,10 @@ function validateRegistry() {
     profileCount: keys.length,
   };
 }
+
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 
 module.exports = {
   TARGET_PROFILE_REGISTRY,
