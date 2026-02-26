@@ -3,10 +3,13 @@
 
 const fs = require('fs');
 const path = require('path');
+const Log = require('../../log');
 const {
   getProfileKey,
   getProfileByKey,
 } = require('./profile_registry');
+
+const log = Log.get('import-ocr-resolve-sidecar');
 
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
@@ -43,7 +46,12 @@ function normalizeBaseDir(rawPath) {
   if (!value) return '';
   try {
     return path.resolve(value);
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      'import_ocr_resolve_sidecar.normalizeBaseDir.failed',
+      'normalizeBaseDir failed (using empty path fallback):',
+      err
+    );
     return '';
   }
 }
@@ -129,7 +137,12 @@ function resolveSidecarPaths({
 function pathExists(targetPath) {
   try {
     return fs.existsSync(targetPath);
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      'import_ocr_resolve_sidecar.pathExists.failed',
+      'fs.existsSync failed (treated as missing):',
+      err
+    );
     return false;
   }
 }
@@ -154,6 +167,14 @@ function validateSidecarRuntime({
     arch,
   });
   if (!resolved.ok) return resolved;
+
+  if (!Array.isArray(requiredLanguages)) {
+    log.warnOnce(
+      'import_ocr_resolve_sidecar.requiredLanguages.invalid',
+      'requiredLanguages is invalid (using empty language validation list).',
+      { type: typeof requiredLanguages }
+    );
+  }
 
   const missing = [];
   const addMissing = (kind, targetPath, detail = '') => {
