@@ -96,16 +96,22 @@
     return '';
   }
 
+  function resolvePathFromDroppedFileObject(fileObj, electronAPI, logger) {
+    const directPath = fileObj && typeof fileObj.path === 'string' ? fileObj.path.trim() : '';
+    if (directPath) return directPath;
+    const bridgePath = resolveDroppedFilePathFromBridge(fileObj, electronAPI, logger);
+    if (bridgePath) return bridgePath;
+    return '';
+  }
+
   function extractDroppedFilePath(event, { electronAPI, logger } = {}) {
     const dt = event && event.dataTransfer;
     if (!dt) return '';
 
     if (dt.files && dt.files.length > 0) {
       const firstFile = dt.files[0];
-      const firstPath = firstFile && typeof firstFile.path === 'string' ? firstFile.path.trim() : '';
+      const firstPath = resolvePathFromDroppedFileObject(firstFile, electronAPI, logger);
       if (firstPath) return firstPath;
-      const bridgePath = resolveDroppedFilePathFromBridge(firstFile, electronAPI, logger);
-      if (bridgePath) return bridgePath;
     }
 
     if (dt.items && dt.items.length > 0) {
@@ -113,10 +119,8 @@
         const item = dt.items[i];
         if (!item || item.kind !== 'file' || typeof item.getAsFile !== 'function') continue;
         const file = item.getAsFile();
-        const candidatePath = file && typeof file.path === 'string' ? file.path.trim() : '';
+        const candidatePath = resolvePathFromDroppedFileObject(file, electronAPI, logger);
         if (candidatePath) return candidatePath;
-        const bridgePath = resolveDroppedFilePathFromBridge(file, electronAPI, logger);
-        if (bridgePath) return bridgePath;
       }
     }
 
