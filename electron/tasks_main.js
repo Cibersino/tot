@@ -89,7 +89,6 @@ function sanitizeTaskBaseName(base) {
 
 function resolveDialogText(dialogTexts, key, fallback) {
   return menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
-    log,
     warnPrefix: 'tasks_main.dialog.missing',
   });
 }

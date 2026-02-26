@@ -48,7 +48,6 @@ function presetJsonKey(filePath) {
 
 const resolveDialogText = (dialogTexts, key, fallback) =>
   menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
-    log,
     warnPrefix: 'presets_main.dialog.missing'
   });
 
