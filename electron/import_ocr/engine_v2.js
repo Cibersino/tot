@@ -218,7 +218,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         pageDone,
         pageTotal,
       };
-      safeInvoke(options.onProgress, payload);
+      safeInvoke(options.onProgress, 'onProgress', payload);
     }
 
     stallWatchdogHandle = setInterval(async () => {
@@ -302,7 +302,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         timeoutMs: rasterTimeoutPerPageMs,
         onChildProcess: (child) => {
           activeChild = child;
-          safeInvoke(options.onChildProcess, child);
+          safeInvoke(options.onChildProcess, 'onChildProcess', child);
         },
         isCancelRequested: options.isCancelRequested,
         maxStdoutChars: OCR_RASTER_STDOUT_LIMIT_CHARS,
@@ -369,7 +369,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         timeoutMs: timeoutPerPageMs,
         onChildProcess: (child) => {
           activeChild = child;
-          safeInvoke(options.onChildProcess, child);
+          safeInvoke(options.onChildProcess, 'onChildProcess', child);
         },
         isCancelRequested: options.isCancelRequested,
       });

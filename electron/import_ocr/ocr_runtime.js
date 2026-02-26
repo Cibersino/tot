@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
+const Log = require('../log');
 const {
   mapUiLanguageToTesseract,
   getRequiredTesseractCodes,
@@ -16,6 +17,12 @@ const OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS = 2_000_000; // Default cap for OCR
 const OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS = 200_000; // Default cap for OCR process stderr capture when no per-call override is provided.
 const OCR_RASTER_STDOUT_LIMIT_CHARS = 200_000; // Raster (pdftoppm) override: stdout is not expected to carry main payload.
 const OCR_RASTER_STDERR_LIMIT_CHARS = 500_000; // Raster (pdftoppm) override: stderr can be verbose for diagnostics.
+const LOG_KEY_BRIDGE_CALLBACK_FAILED_BASE = 'import_ocr_runtime.bridge.failed_ignored.safeInvoke';
+const LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED = 'import_ocr_runtime.bridge.failed_ignored.isCancelRequested';
+const SAFE_INVOKE_LABEL_OTHER = 'other';
+const SAFE_INVOKE_LABEL_ON_CHILD_PROCESS = 'onChildProcess';
+
+const log = Log.get('import-ocr-runtime');
 
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
@@ -51,6 +58,13 @@ function appendChunkWithLimit(currentText, chunk, maxChars) {
     return { nextText: currentText + text.slice(0, remaining), truncated: true };
   }
   return { nextText: currentText + text, truncated: false };
+}
+
+function normalizeSafeInvokeLabel(rawLabel) {
+  const label = typeof rawLabel === 'string' ? rawLabel.trim() : '';
+  if (!label) return SAFE_INVOKE_LABEL_OTHER;
+  if (!/^[A-Za-z0-9_]{1,64}$/.test(label)) return SAFE_INVOKE_LABEL_OTHER;
+  return label;
 }
 
 function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
@@ -131,12 +145,21 @@ function readProcessStreams(
   });
 }
 
-function safeInvoke(cb, ...args) {
+function safeInvoke(cb, maybeLabel, ...restArgs) {
   if (typeof cb !== 'function') return;
+  const hasExplicitLabel = typeof maybeLabel === 'string' && restArgs.length > 0;
+  const label = hasExplicitLabel ? normalizeSafeInvokeLabel(maybeLabel) : SAFE_INVOKE_LABEL_OTHER;
+  const args = hasExplicitLabel
+    ? restArgs
+    : (maybeLabel === undefined && restArgs.length === 0 ? [] : [maybeLabel, ...restArgs]);
   try {
     cb(...args);
-  } catch {
-    // no-op
+  } catch (err) {
+    log.warnOnce(
+      `${LOG_KEY_BRIDGE_CALLBACK_FAILED_BASE}.${label}`,
+      `Bridge callback '${label}' failed (ignored).`,
+      err
+    );
   }
 }
 
@@ -186,7 +209,7 @@ async function runProcessWithTimeout({
     });
   }
 
-  safeInvoke(onChildProcess, child);
+  safeInvoke(onChildProcess, SAFE_INVOKE_LABEL_ON_CHILD_PROCESS, child);
 
   child.once('error', (err) => {
     spawnError = err;
@@ -222,7 +245,19 @@ async function runProcessWithTimeout({
     });
   }
 
-  if (typeof isCancelRequested === 'function' && isCancelRequested()) {
+  let cancelRequested = false;
+  if (typeof isCancelRequested === 'function') {
+    try {
+      cancelRequested = !!isCancelRequested();
+    } catch (err) {
+      log.warnOnce(
+        LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED,
+        'isCancelRequested callback failed (ignored); treating as not canceled.',
+        err
+      );
+    }
+  }
+  if (cancelRequested) {
     return fail('OCR_CANCELED', 'OCR canceled by user.');
   }
 
