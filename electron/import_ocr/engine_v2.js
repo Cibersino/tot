@@ -1,6 +1,20 @@
 // electron/import_ocr/engine_v2.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Run scanned-PDF OCR by rasterizing each page and invoking tesseract.
+// - Preflight PDF readability/page count via pdfjs before heavy processing.
+// - Emit normalized progress updates and enforce stall timeout cancellation.
+// - Return stable success/failure payload shapes consumed by OCR orchestration.
+// - Clean up temporary files/directories and keep fallback diagnostics visible.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -21,12 +35,20 @@ const {
   normalizeMultiline,
 } = require('./ocr_runtime');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED = 'import_ocr_engine_v2.bridge.failed_ignored.isCancelRequested';
 const LOG_KEY_TMP_FILE_CLEANUP_FAILED = 'import_ocr_engine_v2.cleanup.remove_file_failed_ignored';
 const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_engine_v2.pdfjs.standard_fonts.fallback';
 const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_engine_v2.pdfjs.esm_fallback';
 const LOG_KEY_PDFJS_LOAD_FAILED = 'import_ocr_engine_v2.pdfjs.load_failed';
 const log = Log.get('import-ocr-engine-v2');
+
+// =============================================================================
+// Helpers (filesystem/temp cleanup)
+// =============================================================================
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
@@ -66,6 +88,10 @@ function createJobTempDir(prefix = 'tot-ocr-') {
   ensureDir(baseDir);
   return fs.mkdtempSync(path.join(baseDir, 'job-'));
 }
+
+// =============================================================================
+// Helpers (pdfjs loading + preflight)
+// =============================================================================
 
 function toPdfJsFactoryPath(dirPath) {
   const raw = String(dirPath || '').trim();
@@ -171,6 +197,10 @@ function buildStallFail(stallMeta, stallTimeoutMs, extra = {}) {
     }, extra || {})
   );
 }
+
+// =============================================================================
+// OCR pipeline (PDF raster + per-page OCR)
+// =============================================================================
 
 async function runPdfRasterOcrV2(session, sidecar, options = {}) {
   const pdfPath = session && typeof session.filePath === 'string' ? session.filePath : '';
@@ -518,6 +548,10 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
     removeDirIfExists(tempDir);
   }
 }
+
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 
 module.exports = {
   runPdfRasterOcrV2,
