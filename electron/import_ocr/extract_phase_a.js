@@ -1,17 +1,41 @@
 // electron/import_ocr/extract_phase_a.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Phase A extraction module for text-based imports.
+// Responsibilities:
+// - Normalize extracted text line endings before returning results.
+// - Extract text from TXT, DOCX, and PDF files.
+// - Convert extraction failures into structured fail(...) payloads.
+// - Resolve optional extraction dependencies with explicit degraded-path diagnostics.
+// - Return a consistent { ok, text, summary } shape for successful extraction.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const fs = require('fs');
 const path = require('path');
 const Log = require('../log');
 
 const log = Log.get('import-ocr-extract-phase-a');
+
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const LOG_KEY_ICONV_MISSING = 'import_ocr_extract_phase_a.iconv.missing';
 const LOG_KEY_MAMMOTH_MISSING = 'import_ocr_extract_phase_a.mammoth.missing';
 const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_extract_phase_a.pdfjs.esm_fallback';
 const LOG_KEY_PDFJS_MISSING = 'import_ocr_extract_phase_a.pdfjs.missing';
 const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_extract_phase_a.pdfjs.standard_fonts.fallback';
 const LOG_KEY_PDFJS_DESTROY_FAILED = 'import_ocr_extract_phase_a.pdfjs.loadingTask.destroy_failed';
+
+// =============================================================================
+// Helpers (shared result + normalization + decode)
+// =============================================================================
 
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
@@ -115,6 +139,10 @@ function decodeTextBuffer(buffer, options = {}) {
   return { ok: true, text: normalizeLineEndings(utf8Text), encoding: 'utf-8' };
 }
 
+// =============================================================================
+// TXT extraction path
+// =============================================================================
+
 async function extractTxt(filePath, options = {}) {
   const readRes = readBuffer(filePath);
   if (!readRes.ok) return readRes;
@@ -133,6 +161,10 @@ async function extractTxt(filePath, options = {}) {
     summary: buildSummary(decodeRes.text, 1, 1, []),
   };
 }
+
+// =============================================================================
+// DOCX extraction path
+// =============================================================================
 
 function loadMammoth() {
   try {
@@ -171,6 +203,10 @@ async function extractDocx(filePath) {
     });
   }
 }
+
+// =============================================================================
+// PDF extraction path
+// =============================================================================
 
 function toPdfJsFactoryPath(dirPath) {
   const raw = String(dirPath || '').trim();
@@ -283,6 +319,10 @@ async function extractPdf(filePath) {
   }
 }
 
+// =============================================================================
+// Entry point
+// =============================================================================
+
 async function runPhaseAExtraction(session, options = {}) {
   const filePath = session && typeof session.filePath === 'string' ? session.filePath : '';
   const kind = session && typeof session.kind === 'string' ? session.kind : '';
@@ -306,6 +346,10 @@ async function runPhaseAExtraction(session, options = {}) {
     ext,
   });
 }
+
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 
 module.exports = {
   runPhaseAExtraction,
