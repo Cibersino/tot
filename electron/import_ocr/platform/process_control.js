@@ -2,6 +2,12 @@
 'use strict';
 
 const { spawn } = require('child_process');
+const Log = require('../../log');
+
+const LOG_KEY_KILL_GROUP_FAILED_FALLBACK = 'import_ocr_process_control.kill_group_failed_fallback_pid';
+const LOG_KEY_REMOVE_EXIT_LISTENER_FAILED = 'import_ocr_process_control.wait_exit.remove_listener_failed_ignored';
+
+const log = Log.get('import-ocr-process-control');
 
 function normalizePid(child) {
   if (!child || typeof child.pid !== 'number' || child.pid <= 0) return 0;
@@ -43,7 +49,12 @@ function killProcessTree(child) {
     // Negative PID targets the process group when available.
     process.kill(-pid, 'SIGKILL');
     return { ok: true, pid, via: 'group' };
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_KILL_GROUP_FAILED_FALLBACK,
+      "process.kill(-pid, 'SIGKILL') failed (ignored): retrying with process.kill(pid, 'SIGKILL').",
+      err
+    );
     try {
       process.kill(pid, 'SIGKILL');
       return { ok: true, pid, via: 'pid' };
@@ -79,8 +90,12 @@ function waitForProcessExit(child, timeoutMs = 0) {
       setTimeout(() => {
         try {
           child.removeListener('exit', onExit);
-        } catch {
-          // no-op
+        } catch (err) {
+          log.warnOnce(
+            LOG_KEY_REMOVE_EXIT_LISTENER_FAILED,
+            "child.removeListener('exit', onExit) failed (ignored).",
+            err
+          );
         }
         finish(false);
       }, timeoutMs);
