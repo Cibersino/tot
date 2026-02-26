@@ -4,6 +4,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const Log = require('../log');
 const {
   terminateWithEscalation,
 } = require('./platform/process_control');
@@ -19,6 +20,9 @@ const {
   safeInvoke,
   normalizeMultiline,
 } = require('./ocr_runtime');
+
+const LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED = 'import_ocr_engine_v2.bridge.failed_ignored.isCancelRequested';
+const log = Log.get('import-ocr-engine-v2');
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
@@ -189,7 +193,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
   let stallMeta = null;
 
   try {
-    if (typeof options.isCancelRequested === 'function' && options.isCancelRequested()) {
+    if (isCancelRequestedSafe()) {
       return fail('OCR_CANCELED', 'OCR canceled by user.');
     }
 
@@ -204,6 +208,20 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         pageTotal,
         pageNumber,
       });
+    }
+
+    function isCancelRequestedSafe() {
+      if (typeof options.isCancelRequested !== 'function') return false;
+      try {
+        return !!options.isCancelRequested();
+      } catch (err) {
+        log.warnOnce(
+          LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED,
+          'isCancelRequested callback failed (ignored); treating as not canceled.',
+          err
+        );
+        return false;
+      }
     }
 
     function onChildProcess(child) {
@@ -290,7 +308,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         const stallFail = failIfStalled();
         if (stallFail) return stallFail;
       }
-      if (typeof options.isCancelRequested === 'function' && options.isCancelRequested()) {
+      if (isCancelRequestedSafe()) {
         return failCanceledForPage(pageNumber);
       }
 
