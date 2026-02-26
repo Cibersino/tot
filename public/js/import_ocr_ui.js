@@ -131,8 +131,18 @@
 
   function t(key, fallback = '') {
     try {
-      return typeof tRendererFn === 'function' ? tRendererFn(key, fallback) : fallback;
-    } catch {
+      if (typeof tRendererFn === 'function') return tRendererFn(key, fallback);
+      log.warnOnce(
+        'import-ocr-ui.i18n.tRenderer.non-function',
+        'tRenderer unavailable; using fallback text.'
+      );
+      return fallback;
+    } catch (err) {
+      log.warnOnce(
+        'import-ocr-ui.i18n.tRenderer.failed',
+        'tRenderer failed; using fallback text.',
+        err
+      );
       return fallback;
     }
   }
@@ -141,8 +151,12 @@
     if (typeof msgRendererFn === 'function') {
       try {
         return msgRendererFn(key, params, fallback);
-      } catch {
-        // fallback path below
+      } catch (err) {
+        log.warnOnce(
+          'import-ocr-ui.i18n.msgRenderer.failed',
+          'msgRenderer failed; using fallback text.',
+          err
+        );
       }
     }
     let text = t(key, fallback);
@@ -194,7 +208,7 @@
     if (fallbackBase && available.includes(fallbackBase)) {
       if (activeBase && activeBase !== fallbackBase) {
         log.warnOnce(
-          `import-ocr-ui.ocr-lang-fallback.${activeBase}->${fallbackBase}`,
+          'import-ocr-ui.ocr-lang-fallback.active-unavailable',
           `OCR language fallback applied (active unavailable). active='${activeBase}' fallback='${fallbackBase}'.`
         );
       }
@@ -204,7 +218,7 @@
     const chosen = available[0];
     if (chosen && activeBase && activeBase !== chosen) {
       log.warnOnce(
-        `import-ocr-ui.ocr-lang-fallback.${activeBase}->${chosen}`,
+        'import-ocr-ui.ocr-lang-fallback.active-app-default-unavailable',
         `OCR language fallback applied (active/app-default unavailable). active='${activeBase}' chosen='${chosen}' available=${available.join(',')}.`
       );
     }
@@ -549,7 +563,11 @@
     try {
       choiceRepeatChangeHandler(repeatCount);
     } catch (err) {
-      log.warn('choice repeat callback failed (ignored):', err);
+      log.warnOnce(
+        'import-ocr-ui.choice-repeat-callback.failed',
+        'choice repeat callback failed (ignored):',
+        err
+      );
     }
   }
 
