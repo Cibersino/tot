@@ -3,6 +3,15 @@
 
 const fs = require('fs');
 const path = require('path');
+const Log = require('../log');
+
+const log = Log.get('import-ocr-extract-phase-a');
+const LOG_KEY_ICONV_MISSING = 'import_ocr_extract_phase_a.iconv.missing';
+const LOG_KEY_MAMMOTH_MISSING = 'import_ocr_extract_phase_a.mammoth.missing';
+const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_extract_phase_a.pdfjs.esm_fallback';
+const LOG_KEY_PDFJS_MISSING = 'import_ocr_extract_phase_a.pdfjs.missing';
+const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_extract_phase_a.pdfjs.standard_fonts.fallback';
+const LOG_KEY_PDFJS_DESTROY_FAILED = 'import_ocr_extract_phase_a.pdfjs.loadingTask.destroy_failed';
 
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
@@ -27,7 +36,12 @@ function loadIconvLite() {
   try {
     // Optional dependency for legacy text encodings.
     return require('iconv-lite');
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_ICONV_MISSING,
+      'iconv-lite require failed; legacy text decoding is unavailable.',
+      err
+    );
     return null;
   }
 }
@@ -124,7 +138,12 @@ function loadMammoth() {
   try {
     // Optional dependency in local/offline environments.
     return require('mammoth');
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_MAMMOTH_MISSING,
+      'mammoth require failed; DOCX extraction is unavailable.',
+      err
+    );
     return null;
   }
 }
@@ -166,8 +185,16 @@ function resolvePdfJsStandardFontsDir() {
     const packageDir = path.dirname(packageJsonPath);
     const fontsDir = path.join(packageDir, 'standard_fonts');
     if (fs.existsSync(fontsDir)) return toPdfJsFactoryPath(fontsDir);
-  } catch {
-    // no-op; fallback below
+    log.warnOnce(
+      LOG_KEY_PDFJS_FONTS_DIR_FALLBACK,
+      'pdfjs-dist standard_fonts directory not found; continuing without standardFontDataUrl.'
+    );
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_PDFJS_FONTS_DIR_FALLBACK,
+      'Resolving pdfjs-dist standard_fonts failed; continuing without standardFontDataUrl.',
+      err
+    );
   }
   return '';
 }
@@ -176,11 +203,21 @@ async function loadPdfJs() {
   try {
     // pdfjs-dist v5+ ships ESM bundles.
     return await import('pdfjs-dist/legacy/build/pdf.mjs');
-  } catch {
+  } catch (esmErr) {
+    log.warnOnce(
+      LOG_KEY_PDFJS_ESM_FALLBACK,
+      'pdfjs-dist ESM import failed; attempting CommonJS fallback.',
+      esmErr
+    );
     try {
       // Backward compatibility for older pdfjs-dist versions.
       return require('pdfjs-dist/legacy/build/pdf.js');
-    } catch {
+    } catch (cjsErr) {
+      log.warnOnce(
+        LOG_KEY_PDFJS_MISSING,
+        'pdfjs-dist require failed; PDF extraction dependency is unavailable.',
+        cjsErr
+      );
       return null;
     }
   }
@@ -240,8 +277,8 @@ async function extractPdf(filePath) {
       if (loadingTask && typeof loadingTask.destroy === 'function') {
         loadingTask.destroy();
       }
-    } catch {
-      // no-op
+    } catch (err) {
+      log.warnOnce(LOG_KEY_PDFJS_DESTROY_FAILED, 'loadingTask.destroy failed (ignored):', err);
     }
   }
 }
