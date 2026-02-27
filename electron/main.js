@@ -205,8 +205,7 @@ function setInteractionGateState(blocked, reason = '') {
     try {
       win.webContents.send('interaction-gate-state', payload);
     } catch (err) {
-      log.warnOnce(
-        `interaction_gate.send.${String(win.id || 'unknown')}`,
+      log.warn(
         "webContents.send('interaction-gate-state') failed (ignored):",
         err
       );
@@ -530,7 +529,7 @@ function createEditorWindow() {
           meta: { source: 'main', action: 'init' },
         });
       } catch (err) {
-        log.error('Error sending editor-init-text to editor:', err);
+        log.warn('editor-init-text send failed (ignored):', err);
       }
 
       // Notify the main window that the editor is ready (UI may enable/refresh controls).
@@ -539,7 +538,7 @@ function createEditorWindow() {
           mainWin.webContents.send('editor-ready');
         }
       } catch (err) {
-        log.error('Error notifying editor-ready to main window:', err);
+        log.warn('editor-ready send failed (ignored):', err);
       }
     } catch (err) {
       log.error('Error showing editor:', err);
@@ -601,7 +600,7 @@ function createTaskEditorWindow() {
     try {
       taskEditorWin.webContents.send('task-editor-request-close');
     } catch (err) {
-      log.warnOnce('taskEditor.close.requestFailed', 'task editor close request failed; forcing close.', err);
+      log.warn('task editor close request failed; forcing close.', err);
       taskEditorForceClose = true;
       try {
         taskEditorWin.close();
@@ -629,7 +628,7 @@ function createPresetWindow(initialData) {
       presetWin.focus();
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (err) {
-      log.error('Error sending init to presetWin already open:', err);
+      log.warn('preset-init send failed (ignored):', err);
     }
     return;
   }
@@ -660,7 +659,7 @@ function createPresetWindow(initialData) {
     try {
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (err) {
-      log.error('Error sending preset-init:', err);
+      log.warn('preset-init send failed (ignored):', err);
     }
   });
 
@@ -750,6 +749,7 @@ function maybeAuthorizeStartupReady() {
   const targetWin = resolveMainWindow();
   if (!targetWin) {
     log.error('startup:ready emit failed: main window unavailable.');
+    app.quit();
     return;
   }
 
@@ -757,6 +757,7 @@ function maybeAuthorizeStartupReady() {
     targetWin.webContents.send('startup:ready');
   } catch (err) {
     log.error('Error emitting startup:ready to renderer:', err);
+    app.quit();
   }
 }
 
@@ -1038,7 +1039,7 @@ async function createFlotanteWindow(options = {}) {
         mainWin.webContents.send('flotante-closed');
       }
     } catch (err) {
-      log.warnOnce('mainWin.send.flotante-closed', "mainWin send('flotante-closed') failed (ignored):", err);
+      log.warn("mainWin send('flotante-closed') failed (ignored):", err);
     }
   });
 
@@ -1385,7 +1386,7 @@ ipcMain.handle('open-editor', () => {
           meta: { source: 'main', action: 'init' },
         });
       } catch (err) {
-        log.error('Error sending editor-init-text from open-editor:', err);
+        log.warn('editor-init-text send failed from open-editor (ignored):', err);
       }
 
       // Notify main UI that editor is ready (it already is, but keeps state consistent).
@@ -1394,7 +1395,7 @@ ipcMain.handle('open-editor', () => {
           mainWin.webContents.send('editor-ready');
         }
       } catch (err) {
-        log.warn('Unable to notify editor-ready (editor already open):', err);
+        log.warn('editor-ready send failed (editor already open, ignored):', err);
       }
     }
 
