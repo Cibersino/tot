@@ -469,7 +469,6 @@ Only if there is strong evidence of real pain that cannot be addressed in Levels
 Entry criteria (must be satisfied to change code):
 
 * Direct evidence in code OR a reproducible bug/issue:
-
   * point to exact call sites / usage patterns in the repo, OR
   * provide minimal repro steps that demonstrate the pain.
 * Explicit risk assessment: what could break and where.
@@ -478,25 +477,23 @@ Entry criteria (must be satisfied to change code):
 Process:
 
 1. Inspect the repo and identify whether `<TARGET_FILE>` has a real pain point that requires Level 4, e.g.:
-
    * duplicated responsibility across modules,
    * unstable/ambiguous contract (IPC payloads/returns),
    * sync/async mismatch causing issues,
    * multiple consumers depending on inconsistent semantics,
    * cross-module coupling causing bugs or maintenance pain.
-2. If NO strong evidence exists:
 
+2. If NO strong evidence exists:
    * Do NOT change code.
    * Output “Decision: NO CHANGE (no Level 4 justified)” and list the evidence you checked (file + identifier anchors).
+   
 3. If evidence DOES exist:
-
    * Apply the smallest possible Level 4 change that resolves it.
    * Update all affected consumers consistently (only if required by the change).
    * Avoid broad rewrites and unnecessary architecture.
 
 Anti “refactor that makes it worse” rule:
 If a change:
-
 * introduces more concepts than it removes;
 * increases indirection without reducing real pain;
 * forces readers to read more to understand the same behavior;
@@ -513,7 +510,6 @@ You may inspect the repo as needed. If you implement anything, ensure the repo b
 Output requirement:
 
 * The report must include:
-
   * Decision: CHANGED | NO CHANGE
   * If NO CHANGE: 3–10 bullets of evidence checked (anchors).
   * If CHANGED: list each non-trivial change with Evidence/Risk/Validation, and explicitly confirm the observable contract/timing were preserved (or state what contract changed and why it was required).
