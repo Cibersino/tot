@@ -567,8 +567,12 @@ What to do:
 
 0.1) Enforce call-site style: remove any local log method aliases/wrappers and update call sites accordingly (no behavior/timing change).
 
-1) Audit every existing logging site AND every fallback / best-effort path that could be silent or misleading:
-   - payload shape normalization, defaulting, suspicious input acceptance,
+Definition (to avoid ambiguity):
+- “Fallback” here means substituting for a missing/failing intended action or capability (degraded behavior), not normal/contractual input normalization/clamping in pure helpers.
+- Do not add logs for purely contractual sanitization/defaulting unless it indicates a bug and the log site is not a hot path; prefer logging at the boundary where the invalid input/call is introduced.
+
+1) Audit every existing logging site AND every fallback / best-effort path (missing/failing action/capability) that could be silent or misleading:
+   - boundary-level payload shape issues (suspicious/invalid input acceptance that changes decisions),
    - send-to-window races (missing/destroyed windows),
    - optional I/O / parse / load steps with fallback behavior.
 
@@ -579,6 +583,7 @@ What to do:
    - debug: verbose diagnostics; do not add new debug logs unless they materially improve diagnosis.
 
 3) No silent fallbacks rule:
+   - Pure normalization/clamping defaults that are explicitly contractual are NOT considered “fallbacks” for this rule.
    - Any fallback MUST emit at least a warn (or warnOnce) unless the behavior is explicitly a no-op by contract (i.e., not a fallback).
    - If the fallback is BOOTSTRAP-only (pre-init), the message OR the explicit dedupe key MUST start with `BOOTSTRAP:` and that path must become unreachable after init. If it can happen after init, it is NOT bootstrap.
 
