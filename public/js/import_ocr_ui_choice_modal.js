@@ -1,3 +1,4 @@
+// public/js/import_ocr_ui_choice_modal.js
 'use strict';
 
 (() => {
@@ -202,3 +203,7 @@
 
   window.createImportOcrUiChoiceModal = createImportOcrUiChoiceModal;
 })();
+
+// =============================================================================
+// End of public/js/import_ocr_ui_choice_modal.js
+// =============================================================================

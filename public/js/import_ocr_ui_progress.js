@@ -1,3 +1,4 @@
+// public/js/import_ocr_ui_progress.js
 'use strict';
 
 (() => {
@@ -300,3 +301,7 @@
 
   window.createImportOcrUiProgress = createImportOcrUiProgress;
 })();
+
+// =============================================================================
+// End of public/js/import_ocr_ui_progress.js
+// =============================================================================
