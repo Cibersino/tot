@@ -275,7 +275,7 @@
 
     function markImportFinished(payload) {
       const p = payload && typeof payload === 'object' ? payload : {};
-      const jobId = typeof p.jobId === 'string' ? p.jobId : '';
+      const jobId = typeof p.jobId === 'string' ? p.jobId.trim() : '';
       if (!jobId || !state.ocrProgressJobId || jobId !== state.ocrProgressJobId) return;
 
       if (p.ok) {
