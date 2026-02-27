@@ -1,8 +1,25 @@
 // public/js/import_ocr_ui_progress.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Build progress UI handlers for OCR import state updates.
+// - Track OCR progress stage, page counters, elapsed time, and ETA label state.
+// - Render progress status into segmented UI fields or text fallback.
+// - Keep lock-driven visibility in sync for progress panel and cancel button.
+// - Expose a factory consumed by import_ocr_ui.js.
+
+// =============================================================================
+// Factory and module export
+// =============================================================================
+
 (() => {
   function createImportOcrUiProgress({ refs, state, t, shared }) {
+    // =============================================================================
+    // Dependencies and shared references
+    // =============================================================================
     if (!refs || !state || typeof t !== 'function' || !shared) {
       throw new Error('[import-ocr-ui.progress] missing dependencies');
     }
@@ -17,6 +34,10 @@
       ocrProgressElapsedText,
       ocrProgressEtaText,
     } = refs;
+
+    // =============================================================================
+    // Helpers: formatting, stage normalization, and ETA inference
+    // =============================================================================
 
     function formatElapsedLabel(ms) {
       const totalSeconds = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
@@ -109,6 +130,10 @@
       return t('renderer.main.import_progress.stage_ocr', 'OCR');
     }
 
+    // =============================================================================
+    // Helpers: progress text rendering and fallback behavior
+    // =============================================================================
+
     function hasOcrProgressSegments() {
       return !!(ocrProgressStageText && ocrProgressPagesText && ocrProgressElapsedText && ocrProgressEtaText);
     }
@@ -157,6 +182,10 @@
       );
       ocrProgressText.textContent = `${stageText} · ${pagesText} · ${elapsedText} · ${etaText}`;
     }
+
+    // =============================================================================
+    // Progress state transitions and refresh path
+    // =============================================================================
 
     function resetOcrProgressState() {
       if (state.ocrProgressJobId) state.ocrQueuedJobMetaById.delete(state.ocrProgressJobId);
@@ -283,6 +312,10 @@
       updateOcrProgressText({ recomputeEta: shouldRecomputeEta });
     }
 
+    // =============================================================================
+    // Public handlers exposed to the OCR UI facade
+    // =============================================================================
+
     function noteJobQueued(payload) {
       const p = (payload && typeof payload === 'object')
         ? payload
@@ -316,6 +349,10 @@
       updateOcrProgressText();
     }
 
+    // =============================================================================
+    // Module surface
+    // =============================================================================
+
     return {
       setLockState,
       handleImportProgress,
@@ -325,6 +362,10 @@
       setOcrProgressFallbackText,
     };
   }
+
+  // =============================================================================
+  // Export
+  // =============================================================================
 
   window.createImportOcrUiProgress = createImportOcrUiProgress;
 })();
