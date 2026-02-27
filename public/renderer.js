@@ -193,12 +193,10 @@ function sendRendererCoreReady() {
       window.electronAPI.sendStartupRendererCoreReady();
     } catch (err) {
       log.error('Error sending startup:renderer-core-ready:', err);
+      throw err;
     }
   } else {
-    log.warnOnce(
-      'BOOTSTRAP:renderer.startup.coreReady.unavailable',
-      'startup:renderer-core-ready unavailable; renderer/core ready signal not sent.'
-    );
+    throw new Error('[renderer] startup:renderer-core-ready unavailable; cannot complete startup handshake');
   }
 }
 
@@ -210,12 +208,10 @@ function sendSplashRemoved() {
       window.electronAPI.sendStartupSplashRemoved();
     } catch (err) {
       log.error('Error sending startup:splash-removed:', err);
+      throw err;
     }
   } else {
-    log.warnOnce(
-      'BOOTSTRAP:renderer.startup.splashRemoved.unavailable',
-      'startup:splash-removed unavailable; post-READY confirmation not sent.'
-    );
+    throw new Error('[renderer] startup:splash-removed unavailable; cannot complete startup handshake');
   }
 }
 
@@ -1540,7 +1536,7 @@ async function runStartupOrchestrator() {
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
       dedupeKey: 'renderer.ipc.getAppConfig.unavailable',
-      unavailableMessage: 'getAppConfig unavailable; bootstrap will use default limits.'
+      unavailableMessage: 'BOOTSTRAP: getAppConfig unavailable; using default limits.'
     });
     if (getAppConfig) {
       try {
@@ -1562,7 +1558,7 @@ async function runStartupOrchestrator() {
 
     const getInteractionGateState = getOptionalElectronMethod('getInteractionGateState', {
       dedupeKey: 'renderer.ipc.getInteractionGateState.unavailable',
-      unavailableMessage: 'getInteractionGateState unavailable; assuming interaction gate is inactive.'
+      unavailableMessage: 'BOOTSTRAP: getInteractionGateState unavailable; assuming interaction gate is inactive.'
     });
     if (getInteractionGateState) {
       try {
@@ -1581,7 +1577,7 @@ async function runStartupOrchestrator() {
     // Load user settings once at renderer startup
     const getSettings = getOptionalElectronMethod('getSettings', {
       dedupeKey: 'renderer.ipc.getSettings.unavailable',
-      unavailableMessage: 'getSettings unavailable; bootstrap will use default settings.'
+      unavailableMessage: 'BOOTSTRAP: getSettings unavailable; using default settings.'
     });
     if (getSettings) {
       try {
@@ -1615,7 +1611,7 @@ async function runStartupOrchestrator() {
     // Get current initial text (state-only)
     const getCurrentText = getOptionalElectronMethod('getCurrentText', {
       dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
-      unavailableMessage: 'getCurrentText unavailable; bootstrap will use empty text.'
+      unavailableMessage: 'BOOTSTRAP: getCurrentText unavailable; using empty text.'
     });
     if (getCurrentText) {
       try {
