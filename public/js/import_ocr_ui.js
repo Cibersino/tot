@@ -60,6 +60,25 @@
   if (!shared) {
     throw new Error('[import-ocr-ui] ImportOcrUiShared unavailable; cannot continue');
   }
+  const sharedBalancedPreset = shared.OCR_PRESET_VALUES && shared.OCR_PRESET_VALUES.balanced;
+  if (!sharedBalancedPreset) {
+    throw new Error('[import-ocr-ui] ImportOcrUiShared.OCR_PRESET_VALUES.balanced unavailable; cannot continue');
+  }
+  if (!Number.isFinite(Number(sharedBalancedPreset.dpi))) {
+    throw new Error('[import-ocr-ui] ImportOcrUiShared.OCR_PRESET_VALUES.balanced.dpi invalid; cannot continue');
+  }
+  if (!Number.isFinite(Number(sharedBalancedPreset.timeoutPerPageSec))) {
+    throw new Error('[import-ocr-ui] ImportOcrUiShared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec invalid; cannot continue');
+  }
+  if (typeof sharedBalancedPreset.preprocess !== 'string' || !sharedBalancedPreset.preprocess.trim()) {
+    throw new Error('[import-ocr-ui] ImportOcrUiShared.OCR_PRESET_VALUES.balanced.preprocess invalid; cannot continue');
+  }
+  if (typeof shared.normalizeLangBaseLocal !== 'function') {
+    throw new Error('[import-ocr-ui] ImportOcrUiShared.normalizeLangBaseLocal unavailable; cannot continue');
+  }
+  if (typeof shared.normalizeAvailableUiLanguages !== 'function') {
+    throw new Error('[import-ocr-ui] ImportOcrUiShared.normalizeAvailableUiLanguages unavailable; cannot continue');
+  }
   if (typeof window.createImportOcrUiProgress !== 'function') {
     throw new Error('[import-ocr-ui] createImportOcrUiProgress unavailable; cannot continue');
   }
