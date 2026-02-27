@@ -45,7 +45,12 @@
       }
       if (/^\/[a-zA-Z]:\//.test(pathname)) pathname = pathname.slice(1);
       return pathname.replace(/\//g, '\\');
-    } catch {
+    } catch (err) {
+      log.warnOnce(
+        'import-entry.decodeFileUrl.invalid',
+        'Failed to decode dropped file URL (falling back to other path extraction):',
+        err
+      );
       return '';
     }
   }
@@ -276,8 +281,8 @@
           globalObj.removeEventListener('dragend', onDragEnd);
         }
         resetDragState();
-      } catch {
-        // no-op
+      } catch (err) {
+        log.warn('Failed to remove drag/drop handlers during cleanup (ignored):', err);
       }
     };
   }
