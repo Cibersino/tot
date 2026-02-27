@@ -1,12 +1,29 @@
 // public/js/import_ocr_ui_options_modal.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Build the OCR options modal controller for import_ocr_ui.js.
+// - Normalize OCR option inputs (preset, language, dpi, timeout, preprocess).
+// - Render OCR context and guidance text for the current file and page count.
+// - Resolve dialog outcomes as { confirmed, options } for upstream orchestration.
+// - Expose window.createImportOcrUiOptionsModal for facade composition.
+
+// =============================================================================
+// Factory and dependency contract
+// =============================================================================
+
 (() => {
   function createImportOcrUiOptionsModal({ refs, state, t, msg, shared, resolvePreferredOcrLanguage }) {
     if (!refs || !state || typeof t !== 'function' || typeof msg !== 'function' || !shared || typeof resolvePreferredOcrLanguage !== 'function') {
       throw new Error('[import-ocr-ui.options] missing dependencies');
     }
 
+    // =============================================================================
+    // Logger and shared refs
+    // =============================================================================
     const log = window.getLogger('import-ocr-ui.options');
 
     const {
@@ -21,6 +38,10 @@
       ocrTotalGuidance,
       ocrTotalDisclaimer,
     } = refs;
+
+    // =============================================================================
+    // Helpers: language and preset controls
+    // =============================================================================
 
     function getAvailableOcrLanguagesFromSelect() {
       if (!ocrLanguageSelect) return [];
@@ -100,6 +121,10 @@
       }
       applyPresetValuesToControls(preset);
     }
+
+    // =============================================================================
+    // Helpers: context, guidance, and option payload shaping
+    // =============================================================================
 
     function updateOcrOptionsContextText() {
       if (!ocrOptionsContext) return;
@@ -223,6 +248,10 @@
       };
     }
 
+    // =============================================================================
+    // Modal visibility and settle flow
+    // =============================================================================
+
     function showOcrOptionsModal() {
       if (!ocrOptionsModal) return;
       ocrOptionsModal.setAttribute('aria-hidden', 'false');
@@ -251,6 +280,10 @@
         options: collectNormalizedOcrOptions(),
       });
     }
+
+    // =============================================================================
+    // Public entrypoint: prompt flow with fallback outcomes
+    // =============================================================================
 
     function promptOcrOptionsDialog({ kind, filename, pageCountHint, availableUiLanguages }) {
       const availableLanguages = shared.normalizeAvailableUiLanguages(availableUiLanguages);
@@ -320,6 +353,10 @@
       });
     }
 
+    // =============================================================================
+    // Module surface
+    // =============================================================================
+
     return {
       promptOcrOptionsDialog,
       settleOcrOptions,
@@ -333,6 +370,9 @@
     };
   }
 
+  // =============================================================================
+  // Export
+  // =============================================================================
   window.createImportOcrUiOptionsModal = createImportOcrUiOptionsModal;
 })();
 
