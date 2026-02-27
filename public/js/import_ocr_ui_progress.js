@@ -6,6 +6,7 @@
     if (!refs || !state || typeof t !== 'function' || !shared) {
       throw new Error('[import-ocr-ui.progress] missing dependencies');
     }
+    const log = window.getLogger('import-ocr-ui.progress');
 
     const {
       btnCancelOcr,
@@ -114,7 +115,13 @@
 
     function setOcrProgressFallbackText(text) {
       const message = String(text || '');
-      if (!ocrProgressText) return;
+      if (!ocrProgressText) {
+        log.warnOnce(
+          'import-ocr-ui.progress.ocrProgressText.unavailable',
+          'OCR progress update failed (ignored): ocrProgressText element unavailable.'
+        );
+        return;
+      }
       if (hasOcrProgressSegments()) {
         ocrProgressStageText.textContent = message;
         ocrProgressPagesText.textContent = '';
@@ -122,11 +129,21 @@
         ocrProgressEtaText.textContent = '';
         return;
       }
+      log.warnOnce(
+        'import-ocr-ui.progress.segments.unavailable',
+        'OCR progress segmented render failed (ignored): segment elements unavailable; using text fallback.'
+      );
       ocrProgressText.textContent = message;
     }
 
     function setOcrProgressSegmentsText(stageText, pagesText, elapsedText, etaText) {
-      if (!ocrProgressText) return;
+      if (!ocrProgressText) {
+        log.warnOnce(
+          'import-ocr-ui.progress.ocrProgressText.unavailable',
+          'OCR progress update failed (ignored): ocrProgressText element unavailable.'
+        );
+        return;
+      }
       if (hasOcrProgressSegments()) {
         ocrProgressStageText.textContent = String(stageText || '');
         ocrProgressPagesText.textContent = String(pagesText || '');
@@ -134,6 +151,10 @@
         ocrProgressEtaText.textContent = String(etaText || '');
         return;
       }
+      log.warnOnce(
+        'import-ocr-ui.progress.segments.unavailable',
+        'OCR progress segmented render failed (ignored): segment elements unavailable; using text fallback.'
+      );
       ocrProgressText.textContent = `${stageText} · ${pagesText} · ${elapsedText} · ${etaText}`;
     }
 
@@ -157,7 +178,13 @@
     function updateOcrProgressText(options = {}) {
       const opts = options && typeof options === 'object' ? options : {};
       const recomputeEta = opts.recomputeEta !== false;
-      if (!ocrProgressText) return;
+      if (!ocrProgressText) {
+        log.warnOnce(
+          'import-ocr-ui.progress.ocrProgressText.unavailable',
+          'OCR progress update failed (ignored): ocrProgressText element unavailable.'
+        );
+        return;
+      }
       if (!state.lockActive) {
         setOcrProgressFallbackText(t('renderer.main.import_apply.ocr_running', 'OCR in progress...'));
         return;
