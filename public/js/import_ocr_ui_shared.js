@@ -1,7 +1,22 @@
 // public/js/import_ocr_ui_shared.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Shared OCR UI helpers for renderer modules.
+// Responsibilities:
+// - Define OCR preset defaults and normalization limits.
+// - Normalize user-controlled OCR options into safe bounded values.
+// - Build normalized queued-job metadata from mixed payload shapes.
+// - Provide OCR time-estimation helpers used by options/progress UI.
+// - Expose a frozen shared API on window.ImportOcrUiShared.
+
 (() => {
+  // =============================================================================
+  // Constants / config (presets, limits, estimate model)
+  // =============================================================================
+
   const OCR_PRESET_VALUES = Object.freeze({
     fast: Object.freeze({ dpi: 220, timeoutPerPageSec: 45, preprocess: 'basic' }),
     balanced: Object.freeze({ dpi: 300, timeoutPerPageSec: 90, preprocess: 'standard' }),
@@ -26,6 +41,10 @@
     standard: 1.0,
     aggressive: 1.0,
   });
+
+  // =============================================================================
+  // Helpers (normalization, shaping, estimates)
+  // =============================================================================
 
   function normalizeLangBaseLocal(rawLang) {
     const normalized = String(rawLang || '').trim().toLowerCase().replace(/_/g, '-');
@@ -180,6 +199,10 @@
   function getKnownOcrPageTotal(rawPageTotal) {
     return Number.isFinite(rawPageTotal) ? Math.max(0, Math.floor(rawPageTotal)) : 0;
   }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
 
   window.ImportOcrUiShared = Object.freeze({
     OCR_PRESET_VALUES,
