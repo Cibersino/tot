@@ -159,11 +159,19 @@
         || !btnImportApplyAppend
       ) {
         if (opts.showRepeatInput) {
+          log.warnOnce(
+            'import-ocr-ui.choice.modal-unavailable.fallback-with-repeat',
+            'Import choice modal unavailable; returning dismissValue with normalized repeatCount fallback.'
+          );
           return Promise.resolve({
             value: dismissValue,
             repeatCount: normalizeExternalRepeatValue(opts.repeatValue, opts.repeatMin, opts.repeatMax),
           });
         }
+        log.warnOnce(
+          'import-ocr-ui.choice.modal-unavailable.fallback-dismiss',
+          'Import choice modal unavailable; returning dismissValue fallback.'
+        );
         return Promise.resolve(dismissValue);
       }
 
