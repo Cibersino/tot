@@ -1,11 +1,29 @@
 // public/js/import_ocr_ui_choice_modal.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Build the import choice modal controller for overwrite/append decisions.
+// - Manage repeat-count state, normalization, and optional repeat callbacks.
+// - Provide fallback resolutions when modal controls are unavailable.
+// - Resolve active choice promises and keep modal visibility/state in sync.
+// - Expose window.createImportOcrUiChoiceModal for facade composition.
+
+// =============================================================================
+// Factory and dependency contract
+// =============================================================================
+
 (() => {
   function createImportOcrUiChoiceModal({ refs, state, appMaxPasteRepeat }) {
     if (!refs || !state || !Number.isFinite(appMaxPasteRepeat) || appMaxPasteRepeat < 1) {
       throw new Error('[import-ocr-ui.choice] missing dependencies');
     }
+
+    // =============================================================================
+    // Logger and shared refs
+    // =============================================================================
 
     const log = window.getLogger('import-ocr-ui.choice');
 
@@ -20,6 +38,10 @@
       btnImportApplyAppend,
     } = refs;
 
+    // =============================================================================
+    // Modal visibility helpers
+    // =============================================================================
+
     function showChoiceModal() {
       if (!importApplyModal) return;
       importApplyModal.setAttribute('aria-hidden', 'false');
@@ -32,6 +54,10 @@
       if (!importApplyModal) return;
       importApplyModal.setAttribute('aria-hidden', 'true');
     }
+
+    // =============================================================================
+    // Repeat value normalization helpers
+    // =============================================================================
 
     function parsePositiveInt(raw, fallback) {
       const n = Number(raw);
@@ -55,6 +81,10 @@
       state.choiceRepeatMax = Math.max(state.choiceRepeatMin, maxCandidate);
       state.choiceRepeatStep = parsePositiveInt(opts.repeatStep, 1);
     }
+
+    // =============================================================================
+    // Repeat callback and repeat UI state handling
+    // =============================================================================
 
     function notifyChoiceRepeatChange(repeatCount) {
       if (typeof state.choiceRepeatChangeHandler !== 'function') return;
@@ -116,6 +146,10 @@
       importApplyRepeatRow.hidden = false;
       notifyChoiceRepeatChange(normalizedInitialValue);
     }
+
+    // =============================================================================
+    // Choice settle/prompt flow
+    // =============================================================================
 
     function normalizeExternalRepeatValue(rawValue, rawMin, rawMax) {
       const min = parsePositiveInt(rawMin, 1);
@@ -203,6 +237,10 @@
       });
     }
 
+    // =============================================================================
+    // Module surface
+    // =============================================================================
+
     return {
       promptChoice,
       settleChoice,
@@ -210,6 +248,10 @@
       notifyChoiceRepeatChange,
     };
   }
+
+  // =============================================================================
+  // Export
+  // =============================================================================
 
   window.createImportOcrUiChoiceModal = createImportOcrUiChoiceModal;
 })();
