@@ -6,15 +6,23 @@
 // =============================================================================
 // Responsibilities:
 // - Own import entry wiring for main renderer UI.
+// - Normalize and resolve dropped file paths from browser payload variants.
 // - Share the same run path for button-based and drop-based imports.
-// - Keep renderer.js lean by isolating orchestration glue.
+// - Validate required controller dependencies before binding UI actions.
+// - Keep renderer.js lean by isolating import orchestration glue.
 // =============================================================================
 (function initImportEntryModule(globalObj) {
+  // =============================================================================
+  // Module bootstrap / logger
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-entry] getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('import-entry');
 
+  // =============================================================================
+  // Helpers (normalization + dropped path extraction)
+  // =============================================================================
   function asObject(raw) {
     return (raw && typeof raw === 'object') ? raw : {};
   }
@@ -155,6 +163,9 @@
     return '';
   }
 
+  // =============================================================================
+  // UI wiring (drag and drop entry point)
+  // =============================================================================
   function installFileDropHandler(options = {}) {
     const opts = options && typeof options === 'object' ? options : {};
     const target = opts.target && typeof opts.target.addEventListener === 'function'
@@ -287,6 +298,9 @@
     };
   }
 
+  // =============================================================================
+  // Controller factory (button/drop to import flow orchestration)
+  // =============================================================================
   function createController(options = {}) {
     const opts = asObject(options);
     const btnImportExtract = opts.btnImportExtract || null;
@@ -487,6 +501,9 @@
     });
   }
 
+  // =============================================================================
+  // Module surface
+  // =============================================================================
   globalObj.ImportEntry = Object.freeze({
     createController,
   });
