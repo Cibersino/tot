@@ -2,10 +2,12 @@
 'use strict';
 
 (() => {
-  function createImportOcrUiChoiceModal({ refs, state, log, appMaxPasteRepeat }) {
-    if (!refs || !state || !log || !Number.isFinite(appMaxPasteRepeat) || appMaxPasteRepeat < 1) {
+  function createImportOcrUiChoiceModal({ refs, state, appMaxPasteRepeat }) {
+    if (!refs || !state || !Number.isFinite(appMaxPasteRepeat) || appMaxPasteRepeat < 1) {
       throw new Error('[import-ocr-ui.choice] missing dependencies');
     }
+
+    const log = window.getLogger('import-ocr-ui.choice');
 
     const {
       importApplyModal,

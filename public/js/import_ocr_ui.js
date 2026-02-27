@@ -276,7 +276,6 @@
   const choiceModalUi = window.createImportOcrUiChoiceModal({
     refs,
     state,
-    log,
     appMaxPasteRepeat: APP_MAX_PASTE_REPEAT,
   });
 
