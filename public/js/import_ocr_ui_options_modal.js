@@ -7,6 +7,8 @@
       throw new Error('[import-ocr-ui.options] missing dependencies');
     }
 
+    const log = window.getLogger('import-ocr-ui.options');
+
     const {
       ocrOptionsModal,
       ocrPresetSelect,
@@ -264,8 +266,16 @@
         || !refs.btnOcrOptionsAbort
       ) {
         if (!preferredLanguage) {
+          log.warnOnce(
+            'import-ocr-ui.options.modal-unavailable.cancel-no-language',
+            'OCR options modal unavailable; dialog canceled because preferred OCR language is unavailable.'
+          );
           return Promise.resolve({ confirmed: false, options: null });
         }
+        log.warnOnce(
+          'import-ocr-ui.options.modal-unavailable.fallback-defaults',
+          'OCR options modal unavailable; using balanced OCR defaults.'
+        );
         return Promise.resolve({
           confirmed: true,
           options: {
@@ -280,6 +290,10 @@
         });
       }
       if (!preferredLanguage) {
+        log.warnOnce(
+          'import-ocr-ui.options.language-unavailable.cancel',
+          'OCR options dialog canceled because preferred OCR language is unavailable.'
+        );
         return Promise.resolve({ confirmed: false, options: null });
       }
 
