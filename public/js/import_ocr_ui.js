@@ -207,9 +207,9 @@
     const fallbackBase = shared.normalizeLangBaseLocal(state.defaultLanguage || '');
     if (fallbackBase && available.includes(fallbackBase)) {
       if (activeBase && activeBase !== fallbackBase) {
-        log.warnOnce(
-          'import-ocr-ui.ocr-lang-fallback.active-unavailable',
-          `OCR language fallback applied (active unavailable). active='${activeBase}' fallback='${fallbackBase}'.`
+        log.warn(
+          'OCR language fallback applied (active unavailable):',
+          { activeBase, fallbackBase }
         );
       }
       return fallbackBase;
@@ -217,9 +217,9 @@
 
     const chosen = available[0];
     if (chosen && activeBase && activeBase !== chosen) {
-      log.warnOnce(
-        'import-ocr-ui.ocr-lang-fallback.active-app-default-unavailable',
-        `OCR language fallback applied (active/app-default unavailable). active='${activeBase}' chosen='${chosen}' available=${available.join(',')}.`
+      log.warn(
+        'OCR language fallback applied (active/app-default unavailable):',
+        { activeBase, chosen, available }
       );
     }
     return chosen;
