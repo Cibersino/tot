@@ -59,6 +59,12 @@ if (!importOcrUi) {
 const btnCancelOcr = typeof importOcrUi.getCancelButton === 'function'
   ? importOcrUi.getCancelButton()
   : null;
+if (!btnCancelOcr && typeof importOcrUi.getCancelButton !== 'function') {
+  log.warnOnce(
+    'renderer.importOcrUi.getCancelButton.unavailable',
+    'ImportOcrUi.getCancelButton unavailable; cancel OCR control will not be wired.'
+  );
+}
 
 // =============================================================================
 // UI keys and static lists
@@ -278,12 +284,26 @@ if (btnCancelOcr) {
 }
 
 function isOcrRoute(route) {
-  if (!importOcrUi || typeof importOcrUi.isOcrRoute !== 'function') return false;
+  if (!importOcrUi || typeof importOcrUi.isOcrRoute !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.isOcrRoute.unavailable',
+        'ImportOcrUi.isOcrRoute unavailable; assuming non-OCR route.'
+      );
+    }
+    return false;
+  }
   return importOcrUi.isOcrRoute(route);
 }
 
 function getDefaultImportRunOptions() {
   if (!importOcrUi || typeof importOcrUi.getDefaultRunOptions !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.getDefaultRunOptions.unavailable',
+        'ImportOcrUi.getDefaultRunOptions unavailable; using fallback defaults.'
+      );
+    }
     return { languageTag: idiomaActual || DEFAULT_LANG, timeoutPerPageSec: 90 };
   }
   return importOcrUi.getDefaultRunOptions();
@@ -442,6 +462,12 @@ function choosePdfSelectableExtractionMode() {
 
 function promptOcrOptionsDialog(payload) {
   if (!importOcrUi || typeof importOcrUi.promptOcrOptionsDialog !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.promptOcrOptionsDialog.unavailable',
+        'ImportOcrUi.promptOcrOptionsDialog unavailable; auto-confirming with defaults.'
+      );
+    }
     return Promise.resolve({
       confirmed: true,
       options: getDefaultImportRunOptions(),
@@ -451,12 +477,28 @@ function promptOcrOptionsDialog(payload) {
 }
 
 function handleImportProgress(payload) {
-  if (!importOcrUi || typeof importOcrUi.handleImportProgress !== 'function') return;
+  if (!importOcrUi || typeof importOcrUi.handleImportProgress !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.handleImportProgress.unavailable',
+        'ImportOcrUi.handleImportProgress unavailable; progress UI will not update.'
+      );
+    }
+    return;
+  }
   importOcrUi.handleImportProgress(payload || {});
 }
 
 function noteQueuedOcrJob(payload) {
-  if (!importOcrUi || typeof importOcrUi.noteJobQueued !== 'function') return;
+  if (!importOcrUi || typeof importOcrUi.noteJobQueued !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.noteJobQueued.unavailable',
+        'ImportOcrUi.noteJobQueued unavailable; queued job UI will not update.'
+      );
+    }
+    return;
+  }
   importOcrUi.noteJobQueued(payload);
 }
 
@@ -478,7 +520,15 @@ function applyGlobalInteractionGateUi() {
 }
 
 function syncOcrControlVisibility() {
-  if (!importOcrUi || typeof importOcrUi.setLockState !== 'function') return;
+  if (!importOcrUi || typeof importOcrUi.setLockState !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.setLockState.unavailable',
+        'ImportOcrUi.setLockState unavailable; lock UI will not sync.'
+      );
+    }
+    return;
+  }
   importOcrUi.setLockState({
     locked: interactionGateBlocked,
     reason: interactionGateReason,
@@ -809,6 +859,11 @@ async function handleImportFinished(payload) {
   if (jobId) importJobIsOcrMap.delete(jobId);
   if (importOcrUi && typeof importOcrUi.markImportFinished === 'function') {
     importOcrUi.markImportFinished(p);
+  } else if (importOcrUi) {
+    log.warnOnce(
+      'renderer.importOcrUi.markImportFinished.unavailable',
+      'ImportOcrUi.markImportFinished unavailable; import completion UI will not update.'
+    );
   }
 
   if (!p.ok) {
@@ -914,15 +969,30 @@ function applyTranslations() {
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (importOcrUi && typeof importOcrUi.setI18n === 'function') {
     importOcrUi.setI18n({ tRenderer, msgRenderer });
+  } else if (importOcrUi) {
+    log.warnOnce(
+      'renderer.importOcrUi.setI18n.unavailable',
+      'ImportOcrUi.setI18n unavailable; OCR UI translations will not sync.'
+    );
   }
   if (importOcrUi && typeof importOcrUi.setLanguage === 'function') {
     importOcrUi.setLanguage({
       uiLanguage: idiomaActual || DEFAULT_LANG,
       fallbackLanguage: DEFAULT_LANG,
     });
+  } else if (importOcrUi) {
+    log.warnOnce(
+      'renderer.importOcrUi.setLanguage.unavailable',
+      'ImportOcrUi.setLanguage unavailable; OCR UI language will not sync.'
+    );
   }
   if (importOcrUi && typeof importOcrUi.applyTranslations === 'function') {
     importOcrUi.applyTranslations();
+  } else if (importOcrUi) {
+    log.warnOnce(
+      'renderer.importOcrUi.applyTranslations.unavailable',
+      'ImportOcrUi.applyTranslations unavailable; OCR UI labels will not refresh.'
+    );
   }
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
