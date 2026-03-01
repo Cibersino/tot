@@ -6,14 +6,22 @@
 // =============================================================================
 // Responsibilities:
 // - Own import/OCR session and job stores (main-process authority).
-// - Register import/OCR IPC contracts and job orchestration.
-// - Coordinate OCR lifecycle notifications for the main-process interaction gate.
+// - Validate selected files and route them to extraction vs OCR pipelines.
+// - Emit import progress/finish notifications to the main window.
+// - Apply extracted text to current text state with repeat/append semantics.
+// - Register import/OCR IPC handlers and enforce sender/gate checks.
+// - Coordinate OCR execution state with the interaction gate integration callback.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const fs = require('fs');
 const path = require('path');
 const { app, BrowserWindow, dialog } = require('electron');
 const Log = require('../log');
 const settingsState = require('../settings');
+const { MAX_PASTE_REPEAT } = require('../constants_main');
 const { validateRegistry } = require('./platform/profile_registry');
 const { validateSidecarRuntime } = require('./platform/resolve_sidecar');
 const { buildAvailableUiLanguages } = require('./language_policy');
@@ -24,8 +32,13 @@ const { terminateWithEscalation } = require('./platform/process_control');
 const log = Log.get('import-ocr-orchestrator');
 log.debug('Import/OCR orchestrator starting...');
 
-const MAX_REPEAT_COUNT = 9999;
+// =============================================================================
+// Constants / config
+// =============================================================================
 const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+const LOG_KEY_PROFILE_REGISTRY_INVALID = 'import_ocr_orchestrator.profileRegistry.invalid';
+const LOG_KEY_TEXT_STATE_API_MISSING = 'import_ocr_orchestrator.textStateApi.missing';
+const LOG_KEY_OCR_EXEC_STATE_CB_MISSING = 'import_ocr_orchestrator.onOcrExecutionStateChange.missing';
 
 const FILE_FILTERS = Object.freeze([
   { name: 'Supported files', extensions: ['txt', 'docx', 'pdf', 'png', 'jpg', 'jpeg', 'webp'] },
@@ -36,7 +49,7 @@ const FILE_FILTERS = Object.freeze([
 ]);
 
 // =============================================================================
-// State
+// Shared state
 // =============================================================================
 let resolveWindows = () => ({});
 let textStateApi = null;
@@ -60,7 +73,7 @@ const jobs = new Map();
 let activeJobId = '';
 
 // =============================================================================
-// Helpers
+// Helpers (validation, normalization, bridge safety)
 // =============================================================================
 function makeId(prefix) {
   idSeq += 1;
@@ -81,7 +94,13 @@ function resolveMainWindow() {
 }
 
 function safeSend(win, channel, payload) {
-  if (!isAliveWindow(win)) return;
+  if (!isAliveWindow(win)) {
+    log.warnOnce(
+      `import_ocr_orchestrator.safeSend.${channel}.targetUnavailable`,
+      `webContents.send('${channel}') failed (ignored): target window unavailable.`
+    );
+    return;
+  }
   try {
     win.webContents.send(channel, payload);
   } catch (err) {
@@ -155,7 +174,13 @@ function maybeBlockedByInteractionGate(event, channel, opts = {}) {
 }
 
 function emitOcrExecutionStateChange(running, reason = '') {
-  if (typeof onOcrExecutionStateChange !== 'function') return;
+  if (typeof onOcrExecutionStateChange !== 'function') {
+    log.warnOnce(
+      LOG_KEY_OCR_EXEC_STATE_CB_MISSING,
+      'onOcrExecutionStateChange callback unavailable; OCR interaction-gate sync disabled.'
+    );
+    return;
+  }
   try {
     onOcrExecutionStateChange({
       running: !!running,
@@ -350,7 +375,7 @@ function ensureMainSender(event, channel) {
 function ensureProfileRegistryReady() {
   profileRegistryStatus = validateRegistry();
   if (!profileRegistryStatus.ok) {
-    log.error('OCR platform profile registry invalid:', profileRegistryStatus.errors);
+    log.errorOnce(LOG_KEY_PROFILE_REGISTRY_INVALID, 'OCR platform profile registry invalid:', profileRegistryStatus.errors);
   }
   return profileRegistryStatus;
 }
@@ -549,6 +574,43 @@ function buildSummary(session, elapsedMs, extractResult = {}) {
   };
 }
 
+function setJobTerminalState(session, job, terminalStatus) {
+  session.status = terminalStatus;
+  job.status = terminalStatus;
+  job.stage = terminalStatus;
+  job.finishedAt = Date.now();
+}
+
+function buildExecutionFailureSummary({
+  session,
+  errSummary,
+  isOcrJob,
+  progressState,
+  startedAt,
+  finishedAt,
+}) {
+  return {
+    kind: session.kind,
+    filename: session.filename,
+    pagesProcessed: Number.isFinite(errSummary.pagesProcessed)
+      ? errSummary.pagesProcessed
+      : (isOcrJob ? progressState.pageDone : 0),
+    pagesTotal: Number.isFinite(errSummary.pagesTotal)
+      ? errSummary.pagesTotal
+      : (isOcrJob ? progressState.pageTotal : 0),
+    extractedChars: Number.isFinite(errSummary.extractedChars) ? errSummary.extractedChars : 0,
+    elapsedMs: Math.max(0, finishedAt - startedAt),
+    warnings: Array.isArray(errSummary.warnings) ? errSummary.warnings : [],
+  };
+}
+
+function toTrimmedStringList(rawList) {
+  if (!Array.isArray(rawList)) return [];
+  return rawList
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+}
+
 function normalizeApplyMode(raw) {
   const value = typeof raw === 'string' ? raw.trim().toLowerCase() : '';
   if (value === 'append') return 'append';
@@ -558,7 +620,7 @@ function normalizeApplyMode(raw) {
 function clampRepeatCount(raw) {
   const n = Number(raw);
   if (!Number.isFinite(n)) return 1;
-  return Math.min(MAX_REPEAT_COUNT, Math.max(1, Math.floor(n)));
+  return Math.min(MAX_PASTE_REPEAT, Math.max(1, Math.floor(n)));
 }
 
 function buildRepeatedAppendText(current, clip, repeatCount) {
@@ -586,6 +648,10 @@ function buildRepeatedAppendText(current, clip, repeatCount) {
 
 function applySessionText(session, { mode, repeatCount }) {
   if (!textStateApi || typeof textStateApi.applyCurrentText !== 'function' || typeof textStateApi.getCurrentText !== 'function') {
+    log.warnOnce(
+      LOG_KEY_TEXT_STATE_API_MISSING,
+      'textState.applyCurrentText/getCurrentText unavailable; import-apply capability disabled.'
+    );
     return fail('IMPORT_APPLY_UNAVAILABLE', 'Current-text apply bridge is unavailable.');
   }
 
@@ -620,6 +686,9 @@ function applySessionText(session, { mode, repeatCount }) {
   };
 }
 
+// =============================================================================
+// Job execution
+// =============================================================================
 async function runJob(job) {
   const session = sessions.get(job.sessionId);
   if (!session) {
@@ -675,39 +744,29 @@ async function runJob(job) {
     if (!extractRes || extractRes.ok !== true) {
       const errRes = extractRes || fail('IMPORT_EXEC_FAILED', 'Import execution failed.');
       const isCanceled = String(errRes.code || '') === 'OCR_CANCELED';
+      const terminalStatus = isCanceled ? 'canceled' : 'failed';
       const errSummary = (errRes.summary && typeof errRes.summary === 'object')
         ? errRes.summary
         : {};
-      session.status = isCanceled ? 'canceled' : 'failed';
-      job.status = isCanceled ? 'canceled' : 'failed';
-      job.stage = isCanceled ? 'canceled' : 'failed';
-      job.finishedAt = Date.now();
+      setJobTerminalState(session, job, terminalStatus);
 
       emitImportFinished(job, {
         ok: false,
         code: errRes.code || (isCanceled ? 'OCR_CANCELED' : 'IMPORT_EXEC_FAILED'),
-        summary: {
-          kind: session.kind,
-          filename: session.filename,
-          pagesProcessed: Number.isFinite(errSummary.pagesProcessed)
-            ? errSummary.pagesProcessed
-            : (isOcrJob ? progressState.pageDone : 0),
-          pagesTotal: Number.isFinite(errSummary.pagesTotal)
-            ? errSummary.pagesTotal
-            : (isOcrJob ? progressState.pageTotal : 0),
-          extractedChars: Number.isFinite(errSummary.extractedChars) ? errSummary.extractedChars : 0,
-          elapsedMs: Math.max(0, job.finishedAt - startedAt),
-          warnings: Array.isArray(errSummary.warnings) ? errSummary.warnings : [],
-        },
+        summary: buildExecutionFailureSummary({
+          session,
+          errSummary,
+          isOcrJob,
+          progressState,
+          startedAt,
+          finishedAt: job.finishedAt,
+        }),
       });
       return errRes;
     }
 
     if (session.route === 'phase_a_pdf_probe' && !String(extractRes.text || '').trim()) {
-      session.status = 'failed';
-      job.status = 'failed';
-      job.stage = 'failed';
-      job.finishedAt = Date.now();
+      setJobTerminalState(session, job, 'failed');
       const noTextRes = fail(
         'IMPORT_PDF_NO_TEXT_LAYER',
         'PDF has no selectable text; OCR path is required.',
@@ -737,10 +796,7 @@ async function runJob(job) {
 
     session.extractedText = String(extractRes.text || '');
     session.summary = buildSummary(session, Date.now() - startedAt, extractRes);
-    session.status = 'completed';
-    job.status = 'completed';
-    job.stage = 'completed';
-    job.finishedAt = Date.now();
+    setJobTerminalState(session, job, 'completed');
     emitImportProgress(job, {
       stage: 'completed',
       pageDone: Number.isFinite(session.summary && session.summary.pagesProcessed)
@@ -754,10 +810,7 @@ async function runJob(job) {
     return { ok: true };
   } catch (err) {
     const code = 'IMPORT_EXEC_FAILED';
-    session.status = 'failed';
-    job.status = 'failed';
-    job.stage = 'failed';
-    job.finishedAt = Date.now();
+    setJobTerminalState(session, job, 'failed');
     log.error('Import/OCR job failed:', err);
     emitImportFinished(job, {
       ok: false,
@@ -786,7 +839,7 @@ async function runJob(job) {
 }
 
 // =============================================================================
-// IPC registration
+// IPC registration / handlers
 // =============================================================================
 function registerIpc(ipcMain, {
   getWindows,
@@ -798,22 +851,60 @@ function registerIpc(ipcMain, {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_ocr/orchestrator] registerIpc requires ipcMain');
   }
-
-  if (typeof getWindows === 'function') {
-    resolveWindows = getWindows;
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_ocr/orchestrator] registerIpc requires getWindows');
   }
+
+  function getPayloadObject(payload) {
+    return payload && typeof payload === 'object' ? payload : {};
+  }
+
+  function rejectIfUnauthorizedOrBlocked(event, channel, { gate = true } = {}) {
+    const unauthorized = ensureMainSender(event, channel);
+    if (unauthorized) return unauthorized;
+    if (!gate) return null;
+    const blocked = maybeBlockedByInteractionGate(event, channel, { mainWindowOnly: true });
+    if (blocked) return blocked;
+    return null;
+  }
+
+  resolveWindows = getWindows;
   if (textState && typeof textState === 'object') {
     textStateApi = textState;
+  }
+  if (!textStateApi || typeof textStateApi.applyCurrentText !== 'function' || typeof textStateApi.getCurrentText !== 'function') {
+    log.warnOnce(
+      LOG_KEY_TEXT_STATE_API_MISSING,
+      'textState.applyCurrentText/getCurrentText unavailable; import-apply capability disabled.'
+    );
   }
   guardIpcByInteractionGate = typeof interactionGuard === 'function'
     ? interactionGuard
     : null;
+  if (!guardIpcByInteractionGate) {
+    log.warnOnce(
+      'import_ocr_orchestrator.registerIpc.guardIpcByInteractionGate.missing',
+      'guardIpcByInteractionGate unavailable; import/OCR IPC guard checks disabled.'
+    );
+  }
   validateOcrStartPreconditionsFn = typeof validateOcrStartPreconditions === 'function'
     ? validateOcrStartPreconditions
     : null;
+  if (!validateOcrStartPreconditionsFn) {
+    log.warnOnce(
+      'import_ocr_orchestrator.registerIpc.validateOcrStartPreconditions.missing',
+      'validateOcrStartPreconditions unavailable; OCR precondition checks disabled.'
+    );
+  }
   onOcrExecutionStateChange = typeof onOcrExecutionStateChangeCb === 'function'
     ? onOcrExecutionStateChangeCb
     : null;
+  if (!onOcrExecutionStateChange) {
+    log.warnOnce(
+      LOG_KEY_OCR_EXEC_STATE_CB_MISSING,
+      'onOcrExecutionStateChange callback unavailable; OCR interaction-gate sync disabled.'
+    );
+  }
 
   ensureProfileRegistryReady();
   const runtimeSnapshot = refreshSidecarRuntimeStatus();
@@ -831,11 +922,8 @@ function registerIpc(ipcMain, {
   }
 
   ipcMain.handle('import-get-ocr-languages', async (event) => {
-    const unauthorized = ensureMainSender(event, 'import-get-ocr-languages');
-    if (unauthorized) return unauthorized;
-
-    const blocked = maybeBlockedByInteractionGate(event, 'import-get-ocr-languages', { mainWindowOnly: true });
-    if (blocked) return blocked;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-get-ocr-languages');
+    if (rejected) return rejected;
 
     const caps = getOcrLanguageCapabilities();
     if (!caps.ok) return caps;
@@ -848,11 +936,8 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-select-file', async (event) => {
-    const unauthorized = ensureMainSender(event, 'import-select-file');
-    if (unauthorized) return unauthorized;
-
-    const blocked = maybeBlockedByInteractionGate(event, 'import-select-file', { mainWindowOnly: true });
-    if (blocked) return blocked;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-select-file');
+    if (rejected) return rejected;
 
     const owner = resolveMainWindow();
     const defaultPath = resolveImportDialogDefaultPath();
@@ -869,13 +954,10 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-select-file-path', async (event, payload) => {
-    const unauthorized = ensureMainSender(event, 'import-select-file-path');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-select-file-path');
+    if (rejected) return rejected;
 
-    const blocked = maybeBlockedByInteractionGate(event, 'import-select-file-path', { mainWindowOnly: true });
-    if (blocked) return blocked;
-
-    const p = payload && typeof payload === 'object' ? payload : {};
+    const p = getPayloadObject(payload);
     const filePath = typeof p.filePath === 'string' ? p.filePath.trim() : '';
     if (!filePath) {
       return fail('IMPORT_INVALID_PAYLOAD', 'Missing filePath.');
@@ -885,13 +967,10 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-run', async (event, payload) => {
-    const unauthorized = ensureMainSender(event, 'import-run');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-run');
+    if (rejected) return rejected;
 
-    const blocked = maybeBlockedByInteractionGate(event, 'import-run', { mainWindowOnly: true });
-    if (blocked) return blocked;
-
-    const p = payload && typeof payload === 'object' ? payload : {};
+    const p = getPayloadObject(payload);
     const sessionId = typeof p.sessionId === 'string' ? p.sessionId.trim() : '';
     if (!sessionId) {
       return fail('IMPORT_INVALID_PAYLOAD', 'Missing sessionId.');
@@ -914,12 +993,8 @@ function registerIpc(ipcMain, {
         const preconditions = validateOcrStartPreconditionsFn();
         const preconditionsOk = !!(preconditions && preconditions.ok === true);
         if (!preconditionsOk) {
-          const reasons = Array.isArray(preconditions && preconditions.reasons)
-            ? preconditions.reasons.map((item) => String(item || '').trim()).filter(Boolean)
-            : [];
-          const openSecondaryWindows = Array.isArray(preconditions && preconditions.openSecondaryWindows)
-            ? preconditions.openSecondaryWindows.map((item) => String(item || '').trim()).filter(Boolean)
-            : [];
+          const reasons = toTrimmedStringList(preconditions && preconditions.reasons);
+          const openSecondaryWindows = toTrimmedStringList(preconditions && preconditions.openSecondaryWindows);
           return fail(
             'OCR_PRECONDITION_FAILED',
             'Cannot start OCR while secondary windows are open or stopwatch is running.',
@@ -955,8 +1030,8 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-cancel', async (event) => {
-    const unauthorized = ensureMainSender(event, 'import-cancel');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-cancel', { gate: false });
+    if (rejected) return rejected;
 
     if (!activeJobId || !jobs.has(activeJobId)) {
       return fail('OCR_NOT_RUNNING', 'No active OCR job.');
@@ -990,13 +1065,10 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-apply', async (event, payload) => {
-    const unauthorized = ensureMainSender(event, 'import-apply');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-apply');
+    if (rejected) return rejected;
 
-    const blocked = maybeBlockedByInteractionGate(event, 'import-apply', { mainWindowOnly: true });
-    if (blocked) return blocked;
-
-    const p = payload && typeof payload === 'object' ? payload : {};
+    const p = getPayloadObject(payload);
     const sessionId = typeof p.sessionId === 'string' ? p.sessionId.trim() : '';
     if (!sessionId) {
       return fail('IMPORT_INVALID_PAYLOAD', 'Missing sessionId.');
@@ -1025,13 +1097,10 @@ function registerIpc(ipcMain, {
   });
 
   ipcMain.handle('import-discard', async (event, payload) => {
-    const unauthorized = ensureMainSender(event, 'import-discard');
-    if (unauthorized) return unauthorized;
+    const rejected = rejectIfUnauthorizedOrBlocked(event, 'import-discard');
+    if (rejected) return rejected;
 
-    const blocked = maybeBlockedByInteractionGate(event, 'import-discard', { mainWindowOnly: true });
-    if (blocked) return blocked;
-
-    const p = payload && typeof payload === 'object' ? payload : {};
+    const p = getPayloadObject(payload);
     const sessionId = typeof p.sessionId === 'string' ? p.sessionId.trim() : '';
     if (!sessionId) {
       return fail('IMPORT_INVALID_PAYLOAD', 'Missing sessionId.');
@@ -1045,6 +1114,13 @@ function registerIpc(ipcMain, {
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_ocr/orchestrator.js
+// =============================================================================

@@ -20,7 +20,6 @@
     throw new Error('[crono] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('crono');
-  log.debug('Crono starting...');
 
   // =============================================================================
   // Helpers (format/parse + WPM)

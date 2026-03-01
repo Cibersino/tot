@@ -6,10 +6,23 @@
 // =============================================================================
 // Responsibilities:
 // - Own import entry wiring for main renderer UI.
+// - Normalize and resolve dropped file paths from browser payload variants.
 // - Share the same run path for button-based and drop-based imports.
-// - Keep renderer.js lean by isolating orchestration glue.
+// - Validate required controller dependencies before binding UI actions.
+// - Keep renderer.js lean by isolating import orchestration glue.
 // =============================================================================
 (function initImportEntryModule(globalObj) {
+  // =============================================================================
+  // Module bootstrap / logger
+  // =============================================================================
+  if (typeof window.getLogger !== 'function') {
+    throw new Error('[import-entry] getLogger unavailable; cannot continue');
+  }
+  const log = window.getLogger('import-entry');
+
+  // =============================================================================
+  // Helpers (normalization + dropped path extraction)
+  // =============================================================================
   function asObject(raw) {
     return (raw && typeof raw === 'object') ? raw : {};
   }
@@ -40,7 +53,12 @@
       }
       if (/^\/[a-zA-Z]:\//.test(pathname)) pathname = pathname.slice(1);
       return pathname.replace(/\//g, '\\');
-    } catch {
+    } catch (err) {
+      log.warnOnce(
+        'import-entry.decodeFileUrl.invalid',
+        'Failed to decode dropped file URL (falling back to other path extraction):',
+        err
+      );
       return '';
     }
   }
@@ -53,18 +71,22 @@
     return types.includes('Files') || types.includes('text/uri-list');
   }
 
-  function resolveDroppedFilePathFromBridge(fileObj, electronAPI, logger) {
-    if (!electronAPI || typeof electronAPI.getPathForDroppedFile !== 'function') return '';
+  function resolveDroppedFilePathFromBridge(fileObj, electronAPI) {
+    if (!electronAPI || typeof electronAPI.getPathForDroppedFile !== 'function') {
+      log.warnOnce(
+        'import-entry.resolvePath.bridge.unavailable',
+        'getPathForDroppedFile unavailable; dropped file bridge path resolution skipped.'
+      );
+      return '';
+    }
     try {
       return normalizeDroppedPath(electronAPI.getPathForDroppedFile(fileObj));
     } catch (err) {
-      if (logger && typeof logger.warnOnce === 'function') {
-        logger.warnOnce(
-          'import-entry.resolvePath.bridge.failed',
-          'Failed to resolve dropped file path from preload bridge (falling back):',
-          err
-        );
-      }
+      log.warnOnce(
+        'import-entry.resolvePath.bridge.failed',
+        'Failed to resolve dropped file path from preload bridge (falling back):',
+        err
+      );
       return '';
     }
   }
@@ -96,16 +118,22 @@
     return '';
   }
 
-  function extractDroppedFilePath(event, { electronAPI, logger } = {}) {
+  function resolvePathFromDroppedFileObject(fileObj, electronAPI) {
+    const directPath = fileObj && typeof fileObj.path === 'string' ? fileObj.path.trim() : '';
+    if (directPath) return directPath;
+    const bridgePath = resolveDroppedFilePathFromBridge(fileObj, electronAPI);
+    if (bridgePath) return bridgePath;
+    return '';
+  }
+
+  function extractDroppedFilePath(event, { electronAPI } = {}) {
     const dt = event && event.dataTransfer;
     if (!dt) return '';
 
     if (dt.files && dt.files.length > 0) {
       const firstFile = dt.files[0];
-      const firstPath = firstFile && typeof firstFile.path === 'string' ? firstFile.path.trim() : '';
+      const firstPath = resolvePathFromDroppedFileObject(firstFile, electronAPI);
       if (firstPath) return firstPath;
-      const bridgePath = resolveDroppedFilePathFromBridge(firstFile, electronAPI, logger);
-      if (bridgePath) return bridgePath;
     }
 
     if (dt.items && dt.items.length > 0) {
@@ -113,10 +141,8 @@
         const item = dt.items[i];
         if (!item || item.kind !== 'file' || typeof item.getAsFile !== 'function') continue;
         const file = item.getAsFile();
-        const candidatePath = file && typeof file.path === 'string' ? file.path.trim() : '';
+        const candidatePath = resolvePathFromDroppedFileObject(file, electronAPI);
         if (candidatePath) return candidatePath;
-        const bridgePath = resolveDroppedFilePathFromBridge(file, electronAPI, logger);
-        if (bridgePath) return bridgePath;
       }
     }
 
@@ -137,6 +163,9 @@
     return '';
   }
 
+  // =============================================================================
+  // UI wiring (drag and drop entry point)
+  // =============================================================================
   function installFileDropHandler(options = {}) {
     const opts = options && typeof options === 'object' ? options : {};
     const target = opts.target && typeof opts.target.addEventListener === 'function'
@@ -167,7 +196,6 @@
     const electronAPI = opts.electronAPI && typeof opts.electronAPI === 'object'
       ? opts.electronAPI
       : globalObj.electronAPI;
-    const logger = opts.logger || null;
     let dragDepth = 0;
     let dragActive = false;
 
@@ -178,13 +206,11 @@
       try {
         onDragStateChange(dragActive);
       } catch (err) {
-        if (logger && typeof logger.warnOnce === 'function') {
-          logger.warnOnce(
-            'import-entry.onDragStateChange.failed',
-            'onDragStateChange callback failed (ignored):',
-            err
-          );
-        }
+        log.warnOnce(
+          'import-entry.onDragStateChange.failed',
+          'onDragStateChange callback failed (ignored):',
+          err
+        );
       }
     };
 
@@ -233,7 +259,7 @@
       if (!guardUserAction()) return;
 
       try {
-        const droppedPath = extractDroppedFilePath(event, { electronAPI, logger });
+        const droppedPath = extractDroppedFilePath(event, { electronAPI });
         if (!droppedPath) {
           onInvalidPath();
           return;
@@ -266,15 +292,17 @@
           globalObj.removeEventListener('dragend', onDragEnd);
         }
         resetDragState();
-      } catch {
-        // no-op
+      } catch (err) {
+        log.warn('Failed to remove drag/drop handlers during cleanup (ignored):', err);
       }
     };
   }
 
+  // =============================================================================
+  // Controller factory (button/drop to import flow orchestration)
+  // =============================================================================
   function createController(options = {}) {
     const opts = asObject(options);
-    const log = opts.log || console;
     const btnImportExtract = opts.btnImportExtract || null;
     const importJobSessionMap = opts.importJobSessionMap;
     const importJobIsOcrMap = opts.importJobIsOcrMap;
@@ -292,42 +320,26 @@
     const noteQueuedOcrJob = opts.noteQueuedOcrJob;
     const guardUserAction = opts.guardUserAction;
 
-    if (typeof getOptionalElectronMethod !== 'function') {
-      throw new Error('[import-entry] getOptionalElectronMethod callback is required');
+    function requireControllerCallback(name, callbackFn) {
+      if (typeof callbackFn !== 'function') {
+        throw new Error(`[import-entry] ${name} callback is required`);
+      }
     }
-    if (typeof showImportDialogMessage !== 'function') {
-      throw new Error('[import-entry] showImportDialogMessage callback is required');
-    }
-    if (typeof humanizeImportError !== 'function') {
-      throw new Error('[import-entry] humanizeImportError callback is required');
-    }
-    if (typeof discardImportSession !== 'function') {
-      throw new Error('[import-entry] discardImportSession callback is required');
-    }
-    if (typeof getDefaultImportRunOptions !== 'function') {
-      throw new Error('[import-entry] getDefaultImportRunOptions callback is required');
-    }
-    if (typeof isOcrRoute !== 'function') {
-      throw new Error('[import-entry] isOcrRoute callback is required');
-    }
-    if (typeof getAvailableOcrLanguages !== 'function') {
-      throw new Error('[import-entry] getAvailableOcrLanguages callback is required');
-    }
-    if (typeof promptOcrOptionsDialog !== 'function') {
-      throw new Error('[import-entry] promptOcrOptionsDialog callback is required');
-    }
-    if (typeof showOcrPreconditionWarning !== 'function') {
-      throw new Error('[import-entry] showOcrPreconditionWarning callback is required');
-    }
-    if (typeof noteQueuedOcrJob !== 'function') {
-      throw new Error('[import-entry] noteQueuedOcrJob callback is required');
-    }
+
+    requireControllerCallback('getOptionalElectronMethod', getOptionalElectronMethod);
+    requireControllerCallback('showImportDialogMessage', showImportDialogMessage);
+    requireControllerCallback('humanizeImportError', humanizeImportError);
+    requireControllerCallback('discardImportSession', discardImportSession);
+    requireControllerCallback('getDefaultImportRunOptions', getDefaultImportRunOptions);
+    requireControllerCallback('isOcrRoute', isOcrRoute);
+    requireControllerCallback('getAvailableOcrLanguages', getAvailableOcrLanguages);
+    requireControllerCallback('promptOcrOptionsDialog', promptOcrOptionsDialog);
+    requireControllerCallback('showOcrPreconditionWarning', showOcrPreconditionWarning);
+    requireControllerCallback('noteQueuedOcrJob', noteQueuedOcrJob);
     if (!(importJobSessionMap instanceof Map) || !(importJobIsOcrMap instanceof Map)) {
       throw new Error('[import-entry] import job maps are required');
     }
-    if (typeof guardUserAction !== 'function') {
-      throw new Error('[import-entry] guardUserAction callback is required');
-    }
+    requireControllerCallback('guardUserAction', guardUserAction);
 
     function setDropHighlightState(active) {
       const doc = globalObj && globalObj.document ? globalObj.document : null;
@@ -419,9 +431,7 @@
       try {
         return await importSelectFilePath(filePath);
       } catch (err) {
-        if (log && typeof log.error === 'function') {
-          log.error('Error selecting dropped file for import:', err);
-        }
+        log.error('Error selecting dropped file for import:', err);
         return { ok: false, code: 'IMPORT_UNAVAILABLE' };
       }
     }
@@ -430,7 +440,6 @@
       installFileDropHandler({
         target: globalObj,
         electronAPI,
-        logger: log,
         onDragStateChange: (active) => {
           setDropHighlightState(active);
         },
@@ -448,9 +457,7 @@
           showImportDialogMessage('renderer.alerts.import_invalid_path');
         },
         onUnhandledError: (err) => {
-          if (log && typeof log.error === 'function') {
-            log.error('Error in dropped-file import flow:', err);
-          }
+          log.error('Error in dropped-file import flow:', err);
           showImportDialogMessage('renderer.alerts.import_unexpected');
         },
       });
@@ -478,9 +485,7 @@
           }
           await runImportFlowFromSelection(selectRes);
         } catch (err) {
-          if (log && typeof log.error === 'function') {
-            log.error('Error in import flow:', err);
-          }
+          log.error('Error in import flow:', err);
           showImportDialogMessage('renderer.alerts.import_unexpected');
         }
       });
@@ -496,7 +501,14 @@
     });
   }
 
+  // =============================================================================
+  // Module surface
+  // =============================================================================
   globalObj.ImportEntry = Object.freeze({
     createController,
   });
 })(window);
+
+// =============================================================================
+// End of public/js/import_entry.js
+// =============================================================================

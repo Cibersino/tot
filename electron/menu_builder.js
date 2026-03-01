@@ -31,7 +31,6 @@ const { normalizeLangTag, getLangBase } = require('./settings');
 // =============================================================================
 
 const log = Log.get('menu');
-log.debug('Menu builder starting...');
 
 const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 
@@ -60,9 +59,8 @@ function resolveMenuLabel(obj, key, fallback) {
 
 function resolveDialogText(dialogTexts, key, fallback, opts = {}) {
     if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
-    const logger = opts.log || log;
     const prefix = opts.warnPrefix || 'menu_builder.dialog.missing';
-    logger.warnOnce(
+    log.warnOnce(
         `${prefix}:${key}`,
         'Missing dialog translation key (using fallback):',
         key

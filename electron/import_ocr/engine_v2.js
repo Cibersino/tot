@@ -1,13 +1,30 @@
 // electron/import_ocr/engine_v2.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Run scanned-PDF OCR by rasterizing each page and invoking tesseract.
+// - Preflight PDF readability/page count via pdfjs before heavy processing.
+// - Emit normalized progress updates and enforce stall timeout cancellation.
+// - Return stable success/failure payload shapes consumed by OCR orchestration.
+// - Clean up temporary files/directories and keep fallback diagnostics visible.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const Log = require('../log');
 const {
   terminateWithEscalation,
 } = require('./platform/process_control');
 const {
+  OCR_RASTER_STDOUT_LIMIT_CHARS,
+  OCR_RASTER_STDERR_LIMIT_CHARS,
   fail,
   clampInt,
   ensurePathExists,
@@ -17,6 +34,21 @@ const {
   safeInvoke,
   normalizeMultiline,
 } = require('./ocr_runtime');
+
+// =============================================================================
+// Constants / config
+// =============================================================================
+
+const LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED = 'import_ocr_engine_v2.bridge.failed_ignored.isCancelRequested';
+const LOG_KEY_TMP_FILE_CLEANUP_FAILED = 'import_ocr_engine_v2.cleanup.remove_file_failed_ignored';
+const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_engine_v2.pdfjs.standard_fonts.fallback';
+const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_engine_v2.pdfjs.esm_fallback';
+const LOG_KEY_PDFJS_LOAD_FAILED = 'import_ocr_engine_v2.pdfjs.load_failed';
+const log = Log.get('import-ocr-engine-v2');
+
+// =============================================================================
+// Helpers (filesystem/temp cleanup)
+// =============================================================================
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
@@ -31,8 +63,8 @@ function removeDirIfExists(dirPath) {
       return;
     }
     fs.rmdirSync(dirPath, { recursive: true });
-  } catch {
-    // no-op
+  } catch (err) {
+    log.warn('Temporary OCR directory cleanup failed (ignored):', dirPath, err);
   }
 }
 
@@ -41,8 +73,13 @@ function removeFileIfExists(filePath) {
   try {
     if (!ensurePathExists(filePath)) return;
     fs.unlinkSync(filePath);
-  } catch {
-    // no-op
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_TMP_FILE_CLEANUP_FAILED,
+      'Temporary OCR file cleanup failed (ignored):',
+      filePath,
+      err
+    );
   }
 }
 
@@ -51,6 +88,10 @@ function createJobTempDir(prefix = 'tot-ocr-') {
   ensureDir(baseDir);
   return fs.mkdtempSync(path.join(baseDir, 'job-'));
 }
+
+// =============================================================================
+// Helpers (pdfjs loading + preflight)
+// =============================================================================
 
 function toPdfJsFactoryPath(dirPath) {
   const raw = String(dirPath || '').trim();
@@ -65,8 +106,16 @@ function resolvePdfJsStandardFontsDir() {
     const packageDir = path.dirname(packageJsonPath);
     const fontsDir = path.join(packageDir, 'standard_fonts');
     if (fs.existsSync(fontsDir)) return toPdfJsFactoryPath(fontsDir);
-  } catch {
-    // no-op
+    log.warnOnce(
+      LOG_KEY_PDFJS_FONTS_DIR_FALLBACK,
+      'pdfjs-dist standard_fonts directory not found; continuing without standardFontDataUrl.'
+    );
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_PDFJS_FONTS_DIR_FALLBACK,
+      'Resolving pdfjs-dist standard_fonts failed; continuing without standardFontDataUrl.',
+      err
+    );
   }
   return '';
 }
@@ -75,11 +124,21 @@ async function loadPdfJs() {
   try {
     // pdfjs-dist v5+ ships ESM bundles.
     return await import('pdfjs-dist/legacy/build/pdf.mjs');
-  } catch {
+  } catch (errEsm) {
+    log.warnOnce(
+      LOG_KEY_PDFJS_ESM_FALLBACK,
+      'pdfjs ESM load failed (ignored); trying legacy CommonJS fallback.',
+      errEsm
+    );
     try {
       // Backward compatibility for older pdfjs-dist versions.
       return require('pdfjs-dist/legacy/build/pdf.js');
-    } catch {
+    } catch (errCjs) {
+      log.warnOnce(
+        LOG_KEY_PDFJS_LOAD_FAILED,
+        'pdfjs load failed after ESM and CommonJS attempts.',
+        errCjs
+      );
       return null;
     }
   }
@@ -123,8 +182,8 @@ async function preflightPdfPageCount(pdfPath) {
       if (loadingTask && typeof loadingTask.destroy === 'function') {
         loadingTask.destroy();
       }
-    } catch {
-      // no-op
+    } catch (err) {
+      log.warn('pdfjs loadingTask.destroy failed (ignored):', err);
     }
   }
 }
@@ -138,6 +197,10 @@ function buildStallFail(stallMeta, stallTimeoutMs, extra = {}) {
     }, extra || {})
   );
 }
+
+// =============================================================================
+// OCR pipeline (PDF raster + per-page OCR)
+// =============================================================================
 
 async function runPdfRasterOcrV2(session, sidecar, options = {}) {
   const pdfPath = session && typeof session.filePath === 'string' ? session.filePath : '';
@@ -187,8 +250,40 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
   let stallMeta = null;
 
   try {
-    if (typeof options.isCancelRequested === 'function' && options.isCancelRequested()) {
+    if (isCancelRequestedSafe()) {
       return fail('OCR_CANCELED', 'OCR canceled by user.');
+    }
+
+    function failIfStalled(extra = {}) {
+      if (!stallTimedOut) return null;
+      return buildStallFail(stallMeta, stallTimeoutMs, extra);
+    }
+
+    function failCanceledForPage(pageNumber) {
+      return fail('OCR_CANCELED', 'OCR canceled by user.', {
+        pageDone,
+        pageTotal,
+        pageNumber,
+      });
+    }
+
+    function isCancelRequestedSafe() {
+      if (typeof options.isCancelRequested !== 'function') return false;
+      try {
+        return !!options.isCancelRequested();
+      } catch (err) {
+        log.warnOnce(
+          LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED,
+          'isCancelRequested callback failed (ignored); treating as not canceled.',
+          err
+        );
+        return false;
+      }
+    }
+
+    function onChildProcess(child) {
+      activeChild = child;
+      safeInvoke(options.onChildProcess, 'onChildProcess', child);
     }
 
     function emitProgress(nextStage, {
@@ -216,7 +311,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         pageDone,
         pageTotal,
       };
-      safeInvoke(options.onProgress, payload);
+      safeInvoke(options.onProgress, 'onProgress', payload);
     }
 
     stallWatchdogHandle = setInterval(async () => {
@@ -253,7 +348,10 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
     const preflightRes = await preflightPdfPageCount(pdfPath);
     if (!preflightRes.ok) return preflightRes;
     pageTotal = preflightRes.pageTotal;
-    if (stallTimedOut) return buildStallFail(stallMeta, stallTimeoutMs);
+    {
+      const stallFail = failIfStalled();
+      if (stallFail) return stallFail;
+    }
 
     emitProgress('preflight', {
       nextPageDone: 0,
@@ -263,13 +361,12 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
 
     const pageTexts = [];
     for (let pageNumber = 1; pageNumber <= pageTotal; pageNumber += 1) {
-      if (stallTimedOut) return buildStallFail(stallMeta, stallTimeoutMs);
-      if (typeof options.isCancelRequested === 'function' && options.isCancelRequested()) {
-        return fail('OCR_CANCELED', 'OCR canceled by user.', {
-          pageDone,
-          pageTotal,
-          pageNumber,
-        });
+      {
+        const stallFail = failIfStalled();
+        if (stallFail) return stallFail;
+      }
+      if (isCancelRequestedSafe()) {
+        return failCanceledForPage(pageNumber);
       }
 
       const pageBase = path.join(tempDir, `page-${String(pageNumber).padStart(6, '0')}`);
@@ -298,20 +395,18 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         ],
         workingDirectory: path.dirname(sidecar.pdftoppmPath),
         timeoutMs: rasterTimeoutPerPageMs,
-        onChildProcess: (child) => {
-          activeChild = child;
-          safeInvoke(options.onChildProcess, child);
-        },
+        onChildProcess,
         isCancelRequested: options.isCancelRequested,
-        maxStdoutChars: 200_000,
-        maxStderrChars: 500_000,
+        maxStdoutChars: OCR_RASTER_STDOUT_LIMIT_CHARS,
+        maxStderrChars: OCR_RASTER_STDERR_LIMIT_CHARS,
       });
       activeChild = null;
       if (!rasterRes.ok) {
-        if (stallTimedOut) {
-          return buildStallFail(stallMeta, stallTimeoutMs, {
+        {
+          const stallFail = failIfStalled({
             stderr: rasterRes.stderr || '',
           });
+          if (stallFail) return stallFail;
         }
         if (rasterRes.code === 'OCR_TIMEOUT_PAGE') {
           return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
@@ -324,11 +419,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
           });
         }
         if (rasterRes.code === 'OCR_CANCELED') {
-          return fail('OCR_CANCELED', 'OCR canceled by user.', {
-            pageDone,
-            pageTotal,
-            pageNumber,
-          });
+          return failCanceledForPage(pageNumber);
         }
         return fail('OCR_RASTER_FAILED', 'PDF rasterization failed.', {
           stage: 'rasterizing',
@@ -365,20 +456,18 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
         }),
         workingDirectory: path.dirname(sidecar.tesseractPath),
         timeoutMs: timeoutPerPageMs,
-        onChildProcess: (child) => {
-          activeChild = child;
-          safeInvoke(options.onChildProcess, child);
-        },
+        onChildProcess,
         isCancelRequested: options.isCancelRequested,
       });
       activeChild = null;
 
       if (!pageRes.ok) {
         removeFileIfExists(pageImagePath);
-        if (stallTimedOut) {
-          return buildStallFail(stallMeta, stallTimeoutMs, {
+        {
+          const stallFail = failIfStalled({
             stderr: pageRes.stderr || '',
           });
+          if (stallFail) return stallFail;
         }
         if (pageRes.code === 'OCR_TIMEOUT_PAGE') {
           return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
@@ -391,11 +480,7 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
           });
         }
         if (pageRes.code === 'OCR_CANCELED') {
-          return fail('OCR_CANCELED', 'OCR canceled by user.', {
-            pageDone,
-            pageTotal,
-            pageNumber,
-          });
+          return failCanceledForPage(pageNumber);
         }
         return fail('OCR_EXEC_FAILED', 'OCR process exited with error.', {
           stage: 'ocr',
@@ -425,7 +510,10 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
       });
     }
 
-    if (stallTimedOut) return buildStallFail(stallMeta, stallTimeoutMs);
+    {
+      const stallFail = failIfStalled();
+      if (stallFail) return stallFail;
+    }
 
     const text = normalizeMultiline(pageTexts.join('\n\n'));
     if (!text) {
@@ -461,6 +549,14 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
   }
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   runPdfRasterOcrV2,
 };
+
+// =============================================================================
+// End of electron/import_ocr/engine_v2.js
+// =============================================================================

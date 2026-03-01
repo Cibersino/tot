@@ -1,13 +1,32 @@
 // electron/import_ocr/platform/resolve_sidecar.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Resolve the OCR sidecar profile for the active platform/arch.
+// - Resolve the base directory source (explicit, env, resourcesPath, appPath).
+// - Compose normalized sidecar binary/data paths from profile + base directory.
+// - Validate sidecar runtime completeness (dirs, binaries, traineddata files).
+// - Return normalized success/failure objects used by OCR orchestrator/pipeline.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 const fs = require('fs');
 const path = require('path');
+const Log = require('../../log');
 const {
   getProfileKey,
   getProfileByKey,
 } = require('./profile_registry');
 
+const log = Log.get('import-ocr-resolve-sidecar');
+
+// =============================================================================
+// Helpers (result shaping + path/runtime normalization)
+// =============================================================================
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
 }
@@ -43,7 +62,12 @@ function normalizeBaseDir(rawPath) {
   if (!value) return '';
   try {
     return path.resolve(value);
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      'import_ocr_resolve_sidecar.normalizeBaseDir.failed',
+      'normalizeBaseDir failed (using empty path fallback):',
+      err
+    );
     return '';
   }
 }
@@ -53,6 +77,9 @@ function detectPackagedRuntime(explicitFlag) {
   return process.defaultApp !== true;
 }
 
+// =============================================================================
+// Sidecar resolution (profile + root base + concrete paths)
+// =============================================================================
 function resolveSidecarRootBase({
   resourcesPath = process.resourcesPath,
   appPath = process.cwd(),
@@ -126,10 +153,18 @@ function resolveSidecarPaths({
   };
 }
 
+// =============================================================================
+// Runtime validation (filesystem checks + language data)
+// =============================================================================
 function pathExists(targetPath) {
   try {
     return fs.existsSync(targetPath);
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      'import_ocr_resolve_sidecar.pathExists.failed',
+      'fs.existsSync failed (treated as missing):',
+      err
+    );
     return false;
   }
 }
@@ -154,6 +189,14 @@ function validateSidecarRuntime({
     arch,
   });
   if (!resolved.ok) return resolved;
+
+  if (!Array.isArray(requiredLanguages)) {
+    log.warnOnce(
+      'import_ocr_resolve_sidecar.requiredLanguages.invalid',
+      'requiredLanguages is invalid (using empty language validation list).',
+      { type: typeof requiredLanguages }
+    );
+  }
 
   const missing = [];
   const addMissing = (kind, targetPath, detail = '') => {
@@ -220,9 +263,16 @@ function validateSidecarRuntime({
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   resolveCurrentProfile,
   resolveSidecarRootBase,
   resolveSidecarPaths,
   validateSidecarRuntime,
 };
+
+// =============================================================================
+// End of electron/import_ocr/platform/resolve_sidecar.js
+// =============================================================================

@@ -43,7 +43,6 @@ const APP_DOC_FILES = Object.freeze({
 const APP_DOC_BASKERVVILLE = 'license-baskervville';
 
 const log = Log.get('link-openers');
-log.debug('Link openers starting...');
 
 // =============================================================================
 // Helpers

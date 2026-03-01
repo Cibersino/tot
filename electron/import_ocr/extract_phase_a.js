@@ -1,8 +1,41 @@
 // electron/import_ocr/extract_phase_a.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Phase A extraction module for text-based imports.
+// Responsibilities:
+// - Normalize extracted text line endings before returning results.
+// - Extract text from TXT, DOCX, and PDF files.
+// - Convert extraction failures into structured fail(...) payloads.
+// - Resolve optional extraction dependencies with explicit degraded-path diagnostics.
+// - Return a consistent { ok, text, summary } shape for successful extraction.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const fs = require('fs');
 const path = require('path');
+const Log = require('../log');
+
+const log = Log.get('import-ocr-extract-phase-a');
+
+// =============================================================================
+// Constants / config
+// =============================================================================
+
+const LOG_KEY_ICONV_MISSING = 'import_ocr_extract_phase_a.iconv.missing';
+const LOG_KEY_MAMMOTH_MISSING = 'import_ocr_extract_phase_a.mammoth.missing';
+const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_extract_phase_a.pdfjs.esm_fallback';
+const LOG_KEY_PDFJS_MISSING = 'import_ocr_extract_phase_a.pdfjs.missing';
+const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_extract_phase_a.pdfjs.standard_fonts.fallback';
+const LOG_KEY_PDFJS_DESTROY_FAILED = 'import_ocr_extract_phase_a.pdfjs.loadingTask.destroy_failed';
+
+// =============================================================================
+// Helpers (shared result + normalization + decode)
+// =============================================================================
 
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
@@ -12,6 +45,29 @@ function normalizeLineEndings(text) {
   const value = String(text || '');
   if (!value.includes('\r')) return value;
   return value.replace(/\r\n?/g, '\n');
+}
+
+function buildSummary(text, pagesProcessed, pagesTotal, warnings) {
+  return {
+    pagesProcessed,
+    pagesTotal,
+    extractedChars: text.length,
+    warnings,
+  };
+}
+
+function loadIconvLite() {
+  try {
+    // Optional dependency for legacy text encodings.
+    return require('iconv-lite');
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_ICONV_MISSING,
+      'iconv-lite require failed; legacy text decoding is unavailable.',
+      err
+    );
+    return null;
+  }
 }
 
 function readBuffer(filePath) {
@@ -83,56 +139,9 @@ function decodeTextBuffer(buffer, options = {}) {
   return { ok: true, text: normalizeLineEndings(utf8Text), encoding: 'utf-8' };
 }
 
-function loadMammoth() {
-  try {
-    // Optional dependency in local/offline environments.
-    return require('mammoth');
-  } catch {
-    return null;
-  }
-}
-
-function loadIconvLite() {
-  try {
-    // Optional dependency for legacy text encodings.
-    return require('iconv-lite');
-  } catch {
-    return null;
-  }
-}
-
-async function loadPdfJs() {
-  try {
-    // pdfjs-dist v5+ ships ESM bundles.
-    return await import('pdfjs-dist/legacy/build/pdf.mjs');
-  } catch {
-    try {
-      // Backward compatibility for older pdfjs-dist versions.
-      return require('pdfjs-dist/legacy/build/pdf.js');
-    } catch {
-      return null;
-    }
-  }
-}
-
-function toPdfJsFactoryPath(dirPath) {
-  const raw = String(dirPath || '').trim();
-  if (!raw) return '';
-  const normalized = raw.replace(/\\/g, '/');
-  return normalized.endsWith('/') ? normalized : `${normalized}/`;
-}
-
-function resolvePdfJsStandardFontsDir() {
-  try {
-    const packageJsonPath = require.resolve('pdfjs-dist/package.json');
-    const packageDir = path.dirname(packageJsonPath);
-    const fontsDir = path.join(packageDir, 'standard_fonts');
-    if (fs.existsSync(fontsDir)) return toPdfJsFactoryPath(fontsDir);
-  } catch {
-    // no-op; fallback below
-  }
-  return '';
-}
+// =============================================================================
+// TXT extraction path
+// =============================================================================
 
 async function extractTxt(filePath, options = {}) {
   const readRes = readBuffer(filePath);
@@ -149,13 +158,26 @@ async function extractTxt(filePath, options = {}) {
   return {
     ok: true,
     text: decodeRes.text,
-    summary: {
-      pagesProcessed: 1,
-      pagesTotal: 1,
-      extractedChars: decodeRes.text.length,
-      warnings: [],
-    },
+    summary: buildSummary(decodeRes.text, 1, 1, []),
   };
+}
+
+// =============================================================================
+// DOCX extraction path
+// =============================================================================
+
+function loadMammoth() {
+  try {
+    // Optional dependency in local/offline environments.
+    return require('mammoth');
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_MAMMOTH_MISSING,
+      'mammoth require failed; DOCX extraction is unavailable.',
+      err
+    );
+    return null;
+  }
 }
 
 async function extractDocx(filePath) {
@@ -173,12 +195,7 @@ async function extractDocx(filePath) {
     return {
       ok: true,
       text,
-      summary: {
-        pagesProcessed: 1,
-        pagesTotal: 1,
-        extractedChars: text.length,
-        warnings,
-      },
+      summary: buildSummary(text, 1, 1, warnings),
     };
   } catch (err) {
     return fail('IMPORT_DOCX_EXTRACT_FAILED', 'Failed to extract text from DOCX.', {
@@ -187,13 +204,72 @@ async function extractDocx(filePath) {
   }
 }
 
+// =============================================================================
+// PDF extraction path
+// =============================================================================
+
+function toPdfJsFactoryPath(dirPath) {
+  const raw = String(dirPath || '').trim();
+  if (!raw) return '';
+  const normalized = raw.replace(/\\/g, '/');
+  return normalized.endsWith('/') ? normalized : `${normalized}/`;
+}
+
+function resolvePdfJsStandardFontsDir() {
+  try {
+    const packageJsonPath = require.resolve('pdfjs-dist/package.json');
+    const packageDir = path.dirname(packageJsonPath);
+    const fontsDir = path.join(packageDir, 'standard_fonts');
+    if (fs.existsSync(fontsDir)) return toPdfJsFactoryPath(fontsDir);
+    log.warnOnce(
+      LOG_KEY_PDFJS_FONTS_DIR_FALLBACK,
+      'pdfjs-dist standard_fonts directory not found; continuing without standardFontDataUrl.'
+    );
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_PDFJS_FONTS_DIR_FALLBACK,
+      'Resolving pdfjs-dist standard_fonts failed; continuing without standardFontDataUrl.',
+      err
+    );
+  }
+  return '';
+}
+
+async function loadPdfJs() {
+  try {
+    // pdfjs-dist v5+ ships ESM bundles.
+    return await import('pdfjs-dist/legacy/build/pdf.mjs');
+  } catch (esmErr) {
+    log.warnOnce(
+      LOG_KEY_PDFJS_ESM_FALLBACK,
+      'pdfjs-dist ESM import failed; attempting CommonJS fallback.',
+      esmErr
+    );
+    try {
+      // Backward compatibility for older pdfjs-dist versions.
+      return require('pdfjs-dist/legacy/build/pdf.js');
+    } catch (cjsErr) {
+      log.warnOnce(
+        LOG_KEY_PDFJS_MISSING,
+        'pdfjs-dist require failed; PDF extraction dependency is unavailable.',
+        cjsErr
+      );
+      return null;
+    }
+  }
+}
+
+function resolvePdfGetDocument(pdfjs) {
+  if (pdfjs && typeof pdfjs.getDocument === 'function') return pdfjs.getDocument;
+  if (pdfjs && pdfjs.default && typeof pdfjs.default.getDocument === 'function') {
+    return pdfjs.default.getDocument;
+  }
+  return null;
+}
+
 async function extractPdf(filePath) {
   const pdfjs = await loadPdfJs();
-  const getDocument = pdfjs && typeof pdfjs.getDocument === 'function'
-    ? pdfjs.getDocument
-    : (pdfjs && pdfjs.default && typeof pdfjs.default.getDocument === 'function'
-      ? pdfjs.default.getDocument
-      : null);
+  const getDocument = resolvePdfGetDocument(pdfjs);
   if (!getDocument) {
     return fail('IMPORT_DEP_MISSING_PDFJS', 'PDF extraction dependency is not installed.');
   }
@@ -226,12 +302,7 @@ async function extractPdf(filePath) {
     return {
       ok: true,
       text,
-      summary: {
-        pagesProcessed: doc.numPages || 0,
-        pagesTotal: doc.numPages || 0,
-        extractedChars: text.length,
-        warnings: [],
-      },
+      summary: buildSummary(text, doc.numPages || 0, doc.numPages || 0, []),
     };
   } catch (err) {
     return fail('IMPORT_PDF_EXTRACT_FAILED', 'Failed to extract text from PDF.', {
@@ -242,11 +313,15 @@ async function extractPdf(filePath) {
       if (loadingTask && typeof loadingTask.destroy === 'function') {
         loadingTask.destroy();
       }
-    } catch {
-      // no-op
+    } catch (err) {
+      log.warnOnce(LOG_KEY_PDFJS_DESTROY_FAILED, 'loadingTask.destroy failed (ignored):', err);
     }
   }
 }
+
+// =============================================================================
+// Entry point
+// =============================================================================
 
 async function runPhaseAExtraction(session, options = {}) {
   const filePath = session && typeof session.filePath === 'string' ? session.filePath : '';
@@ -272,6 +347,14 @@ async function runPhaseAExtraction(session, options = {}) {
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   runPhaseAExtraction,
 };
+
+// =============================================================================
+// End of electron/import_ocr/extract_phase_a.js
+// =============================================================================

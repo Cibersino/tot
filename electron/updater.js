@@ -43,7 +43,6 @@ let updateCheckDone = false;
 // =============================================================================
 const resolveDialogText = (dialogTexts, key, fallback) =>
   menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
-    log,
     warnPrefix: 'updater.dialog.missing'
   });
 

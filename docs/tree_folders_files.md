@@ -117,6 +117,10 @@ tot/
 │ │ ├── menu_actions.js
 │ │ ├── current_text_snapshots.js
 │ │ ├── import_ocr_ui.js
+│ │ ├── import_ocr_ui_shared.js
+│ │ ├── import_ocr_ui_progress.js
+│ │ ├── import_ocr_ui_options_modal.js
+│ │ ├── import_ocr_ui_choice_modal.js
 │ │ ├── import_entry.js
 │ │ ├── format.js
 │ │ ├── i18n.js
@@ -222,7 +226,11 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
-- `public/js/import_ocr_ui.js` — Capa UI de Import/OCR en la ventana principal: panel de progreso/cancelación, modal overwrite/append (con repetición), modal de opciones OCR (preset/idioma/custom), y estimaciones ETA.
+- `public/js/import_ocr_ui.js` — Fachada/orquestador de Import/OCR UI: estado mutable, guards de startup, wiring de listeners y composición de submódulos OCR.
+- `public/js/import_ocr_ui_shared.js` — Utilidades y constantes compartidas de OCR UI: presets, normalización/clamping de inputs, helpers de idioma y estimaciones de tiempo.
+- `public/js/import_ocr_ui_progress.js` — Submódulo de progreso OCR: lock state, stage/page tracking, ETA stage-aware y actualización del panel de progreso.
+- `public/js/import_ocr_ui_options_modal.js` — Submódulo del modal de opciones OCR: presets/custom, idioma OCR, validación de controles y guidance contextual.
+- `public/js/import_ocr_ui_choice_modal.js` — Submódulo del modal overwrite/append: selección de acción, soporte de repeat count y cierre/settle seguro.
 - `public/js/import_entry.js` — Entrada unificada de importación (botón + drag&drop): resuelve rutas soltadas (`file://`, `text/uri-list`, bridge), orquesta `import-select/import-run/import-discard`, y delega prompts de OCR.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.

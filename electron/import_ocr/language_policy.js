@@ -1,7 +1,24 @@
+// electron/import_ocr/language_policy.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Define the canonical UI language to Tesseract language mapping used by OCR.
+// - Normalize language tags/bases for consistent cross-module comparisons.
+// - Parse mapped Tesseract language strings into required traineddata code lists.
+// - Build available OCR UI language options from installed tessdata codes.
+// - Resolve preferred OCR UI language using requested, active, default, and fallback order.
+
+// =============================================================================
+// Imports
+// =============================================================================
 const { DEFAULT_LANG } = require('../constants_main');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
 const UI_LANG_TO_TESSERACT = Object.freeze({
   es: 'spa',
   en: 'eng',
@@ -13,6 +30,9 @@ const UI_LANG_TO_TESSERACT = Object.freeze({
 
 const UI_LANG_ORDER = Object.freeze(['es', 'en', 'fr', 'de', 'it', 'pt']);
 
+// =============================================================================
+// Helpers (normalization, mapping, and preference resolution)
+// =============================================================================
 function normalizeLangBase(raw) {
   const value = String(raw || '').trim().toLowerCase().replace(/_/g, '-');
   if (!value) return '';
@@ -22,20 +42,23 @@ function normalizeLangBase(raw) {
 function mapUiLanguageToTesseract(rawLang) {
   const value = String(rawLang || '').trim().toLowerCase();
   if (!value) return '';
-  if (value === 'es+en' || value === 'en+es' || value === 'spa+eng' || value === 'eng+spa') {
+  if (value === 'es+en' || value === 'en+es') {
     return 'spa+eng';
   }
   const base = normalizeLangBase(value);
   return UI_LANG_TO_TESSERACT[base] || '';
 }
 
-function getRequiredTesseractCodes(rawLang) {
-  const mapped = mapUiLanguageToTesseract(rawLang);
-  if (!mapped) return [];
-  return mapped
+function parseTesseractLangCodes(rawTesseractLang) {
+  const value = String(rawTesseractLang || '').trim().toLowerCase();
+  if (!value) return [];
+  const parts = value
     .split('+')
     .map((part) => String(part || '').trim().toLowerCase())
     .filter(Boolean);
+  if (!parts.length) return [];
+  if (parts.some((part) => !/^[a-z0-9_]{3,32}$/.test(part))) return [];
+  return parts;
 }
 
 function buildAvailableUiLanguages(installedCodes = []) {
@@ -93,12 +116,19 @@ function resolvePreferredUiLanguage({
   return { value: '', reason: 'none' };
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   UI_LANG_TO_TESSERACT,
   UI_LANG_ORDER,
   normalizeLangBase,
   mapUiLanguageToTesseract,
-  getRequiredTesseractCodes,
+  parseTesseractLangCodes,
   buildAvailableUiLanguages,
   resolvePreferredUiLanguage,
 };
+
+// =============================================================================
+// End of electron/import_ocr/language_policy.js
+// =============================================================================

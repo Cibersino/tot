@@ -1,8 +1,33 @@
 // electron/import_ocr/platform/process_control.js
 'use strict';
 
-const { spawn } = require('child_process');
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Normalize child process PID validation used by OCR process-control paths.
+// - Attempt graceful termination and return stable result objects.
+// - Escalate to forced termination with platform-specific behavior.
+// - Wait for process exit with timeout-aware listener cleanup.
+// - Expose a single escalation helper used by OCR cancellation/timeout flows.
 
+// =============================================================================
+// Imports / logger
+// =============================================================================
+const { spawn } = require('child_process');
+const Log = require('../../log');
+
+// =============================================================================
+// Constants / config
+// =============================================================================
+const LOG_KEY_KILL_GROUP_FAILED_FALLBACK = 'import_ocr_process_control.kill_group_failed_fallback_pid';
+const LOG_KEY_REMOVE_EXIT_LISTENER_FAILED = 'import_ocr_process_control.wait_exit.remove_listener_failed_ignored';
+
+const log = Log.get('import-ocr-process-control');
+
+// =============================================================================
+// Helpers (PID normalization + process termination primitives)
+// =============================================================================
 function normalizePid(child) {
   if (!child || typeof child.pid !== 'number' || child.pid <= 0) return 0;
   return child.pid;
@@ -43,7 +68,12 @@ function killProcessTree(child) {
     // Negative PID targets the process group when available.
     process.kill(-pid, 'SIGKILL');
     return { ok: true, pid, via: 'group' };
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      LOG_KEY_KILL_GROUP_FAILED_FALLBACK,
+      "process.kill(-pid, 'SIGKILL') failed (ignored): retrying with process.kill(pid, 'SIGKILL').",
+      err
+    );
     try {
       process.kill(pid, 'SIGKILL');
       return { ok: true, pid, via: 'pid' };
@@ -53,6 +83,9 @@ function killProcessTree(child) {
   }
 }
 
+// =============================================================================
+// Helpers (process exit waiting)
+// =============================================================================
 function waitForProcessExit(child, timeoutMs = 0) {
   return new Promise((resolve) => {
     if (!child) {
@@ -79,8 +112,12 @@ function waitForProcessExit(child, timeoutMs = 0) {
       setTimeout(() => {
         try {
           child.removeListener('exit', onExit);
-        } catch {
-          // no-op
+        } catch (err) {
+          log.warnOnce(
+            LOG_KEY_REMOVE_EXIT_LISTENER_FAILED,
+            "child.removeListener('exit', onExit) failed (ignored).",
+            err
+          );
         }
         finish(false);
       }, timeoutMs);
@@ -88,6 +125,9 @@ function waitForProcessExit(child, timeoutMs = 0) {
   });
 }
 
+// =============================================================================
+// Main helper (graceful-to-forced escalation)
+// =============================================================================
 async function terminateWithEscalation(
   child,
   {
@@ -127,9 +167,16 @@ async function terminateWithEscalation(
   };
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   terminateProcessGracefully,
   killProcessTree,
   waitForProcessExit,
   terminateWithEscalation,
 };
+
+// =============================================================================
+// End of electron/import_ocr/platform/process_control.js
+// =============================================================================

@@ -1,7 +1,21 @@
 // electron/import_ocr/ocr_pipeline.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Resolve and validate OCR sidecar runtime prerequisites for image/PDF paths.
+// - Normalize optional bridge callbacks used by OCR execution (progress, child, cancel).
+// - Route PDF input to runPdfRasterOcrV2 and non-PDF input to single-image OCR.
+// - Execute single-image OCR with timeout/language validation and normalized output.
+// - Return normalized OCR result/failure objects consumed by import OCR orchestration.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 const path = require('path');
+const Log = require('../log');
 const { resolveSidecarPaths } = require('./platform/resolve_sidecar');
 const { runPdfRasterOcrV2 } = require('./engine_v2');
 const {
@@ -11,10 +25,15 @@ const {
   resolveAndValidateOcrLanguage,
   runProcessWithTimeout,
   resolveTesseractArgs,
-  safeInvoke,
   normalizeMultiline,
 } = require('./ocr_runtime');
 
+const log = Log.get('import-ocr-pipeline');
+log.debug('OCR pipeline starting...');
+
+// =============================================================================
+// Helpers (routing, callback normalization, failure shaping)
+// =============================================================================
 function isPdfInput(session) {
   const route = String((session && session.route) || '').trim().toLowerCase();
   if (route === 'ocr_pdf_scanned') return true;
@@ -22,6 +41,59 @@ function isPdfInput(session) {
   return ext === '.pdf';
 }
 
+function normalizeOptionalCallback(callback, name, fallbackValueOnError) {
+  if (callback === undefined || callback === null) return null;
+  if (typeof callback !== 'function') {
+    log.warn(
+      `${name} callback is invalid (ignored); expected function.`
+    );
+    return null;
+  }
+  return (...args) => {
+    try {
+      return callback(...args);
+    } catch (err) {
+      if (name === 'isCancelRequested') {
+        log.warnOnce(
+          'import_ocr_pipeline.bridge.failed_ignored.isCancelRequested',
+          'isCancelRequested callback failed (ignored); treating as not canceled.',
+          err
+        );
+      } else {
+        log.warnOnce(
+          `import_ocr_pipeline.bridge.failed_ignored.${name}`,
+          `${name} callback failed (ignored):`,
+          err
+        );
+      }
+      return fallbackValueOnError;
+    }
+  };
+}
+
+function normalizeBridgeCallbacks(options = {}) {
+  const normalizedOptions = Object.assign({}, options || {});
+  normalizedOptions.onProgress = normalizeOptionalCallback(normalizedOptions.onProgress, 'onProgress');
+  normalizedOptions.onChildProcess = normalizeOptionalCallback(normalizedOptions.onChildProcess, 'onChildProcess');
+  normalizedOptions.isCancelRequested = normalizeOptionalCallback(
+    normalizedOptions.isCancelRequested,
+    'isCancelRequested',
+    false
+  );
+  return normalizedOptions;
+}
+
+function failMissingSidecarBinary(binary, targetPath, profileKey, message) {
+  return fail('OCR_BINARY_MISSING', message, {
+    binary,
+    path: targetPath,
+    profileKey,
+  });
+}
+
+// =============================================================================
+// Image OCR path (single-page pipeline)
+// =============================================================================
 async function runImageOcr(session, sidecar, options = {}) {
   const imagePath = session && typeof session.filePath === 'string' ? session.filePath : '';
   if (!imagePath || !ensurePathExists(imagePath)) {
@@ -35,11 +107,16 @@ async function runImageOcr(session, sidecar, options = {}) {
   if (!langRes.ok) return langRes;
   const { tesseractLang } = langRes;
 
-  safeInvoke(options.onProgress, {
-    stage: 'ocr',
-    pageDone: 0,
-    pageTotal: 1,
-  });
+  const emitProgress = (stage, pageDone) => {
+    if (typeof options.onProgress !== 'function') return;
+    options.onProgress({
+      stage,
+      pageDone,
+      pageTotal: 1,
+    });
+  };
+
+  emitProgress('ocr', 0);
 
   const processRes = await runProcessWithTimeout({
     executablePath: sidecar.tesseractPath,
@@ -53,31 +130,21 @@ async function runImageOcr(session, sidecar, options = {}) {
     onChildProcess: options.onChildProcess,
     isCancelRequested: options.isCancelRequested,
   });
-  if (!processRes.ok) {
-    if (processRes.code === 'OCR_TIMEOUT_PAGE') {
-      return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
-        timeoutPerPageSec,
-        stderr: processRes.stderr || '',
-      });
-    }
-    return processRes;
+  if (!processRes.ok && processRes.code === 'OCR_TIMEOUT_PAGE') {
+    return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
+      timeoutPerPageSec,
+      stderr: processRes.stderr || '',
+    });
   }
+  if (!processRes.ok) return processRes;
 
   const text = normalizeMultiline(processRes.stdout);
   if (!text) {
     return fail('OCR_EMPTY_RESULT', 'OCR completed but produced no text.');
   }
 
-  safeInvoke(options.onProgress, {
-    stage: 'ocr',
-    pageDone: 1,
-    pageTotal: 1,
-  });
-  safeInvoke(options.onProgress, {
-    stage: 'finalizing',
-    pageDone: 1,
-    pageTotal: 1,
-  });
+  emitProgress('ocr', 1);
+  emitProgress('finalizing', 1);
 
   const warnings = [];
   if (processRes.stdoutTruncated) warnings.push('OCR stdout truncated in-memory.');
@@ -95,30 +162,43 @@ async function runImageOcr(session, sidecar, options = {}) {
   };
 }
 
+// =============================================================================
+// Pipeline entrypoint (shared sidecar checks + route dispatch)
+// =============================================================================
 async function runOcrPipeline(session, options = {}) {
-  const sidecar = resolveSidecarPaths(options || {});
+  const normalizedOptions = normalizeBridgeCallbacks(options || {});
+  const sidecar = resolveSidecarPaths(normalizedOptions);
   if (!sidecar.ok) return sidecar;
 
   if (!ensurePathExists(sidecar.tesseractPath)) {
-    return fail('OCR_BINARY_MISSING', 'Tesseract sidecar binary not found.', {
-      binary: 'tesseract',
-      path: sidecar.tesseractPath,
-      profileKey: sidecar.profileKey,
-    });
+    return failMissingSidecarBinary(
+      'tesseract',
+      sidecar.tesseractPath,
+      sidecar.profileKey,
+      'Tesseract sidecar binary not found.'
+    );
   }
   if (!ensurePathExists(sidecar.tessdataPath)) {
-    return fail('OCR_BINARY_MISSING', 'Tesseract language data directory not found.', {
-      binary: 'tessdata',
-      path: sidecar.tessdataPath,
-      profileKey: sidecar.profileKey,
-    });
+    return failMissingSidecarBinary(
+      'tessdata',
+      sidecar.tessdataPath,
+      sidecar.profileKey,
+      'Tesseract language data directory not found.'
+    );
   }
   if (isPdfInput(session)) {
-    return runPdfRasterOcrV2(session, sidecar, options || {});
+    return runPdfRasterOcrV2(session, sidecar, normalizedOptions);
   }
-  return runImageOcr(session, sidecar, options || {});
+  return runImageOcr(session, sidecar, normalizedOptions);
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
   runOcrPipeline,
 };
+
+// =============================================================================
+// End of electron/import_ocr/ocr_pipeline.js
+// =============================================================================

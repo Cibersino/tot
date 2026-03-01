@@ -1,17 +1,49 @@
 // electron/import_ocr/ocr_runtime.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Provide shared runtime helpers used by OCR image and PDF pipelines.
+// - Validate OCR language requests against available tessdata files.
+// - Execute external OCR/raster processes with timeout and cancellation support.
+// - Capture stdout/stderr with in-memory truncation caps and truncation flags.
+// - Normalize bridge callback failure handling for optional runtime hooks.
+// - Return consistent result/failure object shapes consumed by OCR orchestrators.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
+const Log = require('../log');
 const {
   mapUiLanguageToTesseract,
-  getRequiredTesseractCodes,
+  parseTesseractLangCodes,
 } = require('./language_policy');
 const {
   terminateWithEscalation,
 } = require('./platform/process_control');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+const OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS = 2_000_000; // Default cap for OCR process stdout capture (typically tesseract text output).
+const OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS = 200_000; // Default cap for OCR process stderr capture when no per-call override is provided.
+const OCR_RASTER_STDOUT_LIMIT_CHARS = 200_000; // Raster (pdftoppm) override: stdout is not expected to carry main payload.
+const OCR_RASTER_STDERR_LIMIT_CHARS = 500_000; // Raster (pdftoppm) override: stderr can be verbose for diagnostics.
+const LOG_KEY_BRIDGE_CALLBACK_FAILED_BASE = 'import_ocr_runtime.bridge.failed_ignored.safeInvoke';
+const LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED = 'import_ocr_runtime.bridge.failed_ignored.isCancelRequested';
+const SAFE_INVOKE_LABEL_OTHER = 'other';
+const SAFE_INVOKE_LABEL_ON_CHILD_PROCESS = 'onChildProcess';
+
+const log = Log.get('import-ocr-runtime');
+
+// =============================================================================
+// Helpers (result shaping and local normalization)
+// =============================================================================
 function fail(code, message, extra = {}) {
   return Object.assign({ ok: false, code, message }, extra);
 }
@@ -30,6 +62,34 @@ function ensurePathExists(targetPath) {
   }
 }
 
+function normalizeCaptureLimit(rawLimit, fallback) {
+  const n = Number(rawLimit);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.floor(n);
+}
+
+function appendChunkWithLimit(currentText, chunk, maxChars) {
+  const text = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk || '');
+  const remaining = maxChars - currentText.length;
+  if (remaining <= 0) {
+    return { nextText: currentText, truncated: true };
+  }
+  if (text.length > remaining) {
+    return { nextText: currentText + text.slice(0, remaining), truncated: true };
+  }
+  return { nextText: currentText + text, truncated: false };
+}
+
+function normalizeSafeInvokeLabel(rawLabel) {
+  const label = typeof rawLabel === 'string' ? rawLabel.trim() : '';
+  if (!label) return SAFE_INVOKE_LABEL_OTHER;
+  if (!/^[A-Za-z0-9_]{1,64}$/.test(label)) return SAFE_INVOKE_LABEL_OTHER;
+  return label;
+}
+
+// =============================================================================
+// OCR language validation
+// =============================================================================
 function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
   const requested = String(rawLang || '').trim();
   const tesseractLang = mapUiLanguageToTesseract(requested);
@@ -39,7 +99,12 @@ function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
     });
   }
 
-  const requiredCodes = getRequiredTesseractCodes(tesseractLang);
+  const requiredCodes = parseTesseractLangCodes(tesseractLang);
+  if (requiredCodes.length === 0) {
+    return fail('OCR_LANG_UNSUPPORTED', 'Requested OCR language is not supported.', {
+      language: requested,
+    });
+  }
   const missingCodes = requiredCodes.filter((code) => {
     const trainedDataPath = path.join(tessdataPath, `${code}.traineddata`);
     return !ensurePathExists(trainedDataPath);
@@ -58,8 +123,23 @@ function resolveAndValidateOcrLanguage(rawLang, tessdataPath) {
   };
 }
 
-function readProcessStreams(child, maxStdoutChars = 2_000_000, maxStderrChars = 200_000) {
+// =============================================================================
+// Process output capture
+// =============================================================================
+function readProcessStreams(
+  child,
+  maxStdoutChars = OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS,
+  maxStderrChars = OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS
+) {
   return new Promise((resolve) => {
+    const normalizedMaxStdoutChars = normalizeCaptureLimit(
+      maxStdoutChars,
+      OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS
+    );
+    const normalizedMaxStderrChars = normalizeCaptureLimit(
+      maxStderrChars,
+      OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS
+    );
     let stdoutText = '';
     let stderrText = '';
     let stdoutTruncated = false;
@@ -68,36 +148,18 @@ function readProcessStreams(child, maxStdoutChars = 2_000_000, maxStderrChars = 
     if (child.stdout) {
       child.stdout.on('data', (chunk) => {
         if (stdoutTruncated) return;
-        const text = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk || '');
-        const remaining = maxStdoutChars - stdoutText.length;
-        if (remaining <= 0) {
-          stdoutTruncated = true;
-          return;
-        }
-        if (text.length > remaining) {
-          stdoutText += text.slice(0, remaining);
-          stdoutTruncated = true;
-          return;
-        }
-        stdoutText += text;
+        const next = appendChunkWithLimit(stdoutText, chunk, normalizedMaxStdoutChars);
+        stdoutText = next.nextText;
+        stdoutTruncated = next.truncated;
       });
     }
 
     if (child.stderr) {
       child.stderr.on('data', (chunk) => {
         if (stderrTruncated) return;
-        const text = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk || '');
-        const remaining = maxStderrChars - stderrText.length;
-        if (remaining <= 0) {
-          stderrTruncated = true;
-          return;
-        }
-        if (text.length > remaining) {
-          stderrText += text.slice(0, remaining);
-          stderrTruncated = true;
-          return;
-        }
-        stderrText += text;
+        const next = appendChunkWithLimit(stderrText, chunk, normalizedMaxStderrChars);
+        stderrText = next.nextText;
+        stderrTruncated = next.truncated;
       });
     }
 
@@ -114,12 +176,24 @@ function readProcessStreams(child, maxStdoutChars = 2_000_000, maxStderrChars = 
   });
 }
 
-function safeInvoke(cb, ...args) {
+// =============================================================================
+// Optional bridge callbacks and text normalization
+// =============================================================================
+function safeInvoke(cb, maybeLabel, ...restArgs) {
   if (typeof cb !== 'function') return;
+  const hasExplicitLabel = typeof maybeLabel === 'string' && restArgs.length > 0;
+  const label = hasExplicitLabel ? normalizeSafeInvokeLabel(maybeLabel) : SAFE_INVOKE_LABEL_OTHER;
+  const args = hasExplicitLabel
+    ? restArgs
+    : (maybeLabel === undefined && restArgs.length === 0 ? [] : [maybeLabel, ...restArgs]);
   try {
     cb(...args);
-  } catch {
-    // no-op
+  } catch (err) {
+    log.warnOnce(
+      `${LOG_KEY_BRIDGE_CALLBACK_FAILED_BASE}.${label}`,
+      `Bridge callback '${label}' failed (ignored).`,
+      err
+    );
   }
 }
 
@@ -127,6 +201,9 @@ function normalizeMultiline(text) {
   return String(text || '').replace(/\r\n?/g, '\n').trim();
 }
 
+// =============================================================================
+// External process execution (timeout + cancellation)
+// =============================================================================
 async function runProcessWithTimeout({
   executablePath,
   args,
@@ -134,8 +211,8 @@ async function runProcessWithTimeout({
   timeoutMs,
   onChildProcess,
   isCancelRequested,
-  maxStdoutChars = 2_000_000,
-  maxStderrChars = 200_000,
+  maxStdoutChars = OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS,
+  maxStderrChars = OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS,
 }) {
   let child = null;
   let spawnError = null;
@@ -169,7 +246,7 @@ async function runProcessWithTimeout({
     });
   }
 
-  safeInvoke(onChildProcess, child);
+  safeInvoke(onChildProcess, SAFE_INVOKE_LABEL_ON_CHILD_PROCESS, child);
 
   child.once('error', (err) => {
     spawnError = err;
@@ -205,7 +282,19 @@ async function runProcessWithTimeout({
     });
   }
 
-  if (typeof isCancelRequested === 'function' && isCancelRequested()) {
+  let cancelRequested = false;
+  if (typeof isCancelRequested === 'function') {
+    try {
+      cancelRequested = !!isCancelRequested();
+    } catch (err) {
+      log.warnOnce(
+        LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED,
+        'isCancelRequested callback failed (ignored); treating as not canceled.',
+        err
+      );
+    }
+  }
+  if (cancelRequested) {
     return fail('OCR_CANCELED', 'OCR canceled by user.');
   }
 
@@ -229,6 +318,9 @@ async function runProcessWithTimeout({
   };
 }
 
+// =============================================================================
+// OCR argument builders
+// =============================================================================
 function resolveTesseractArgs({ inputPath, tesseractLang, tessdataPath }) {
   return [
     inputPath,
@@ -242,7 +334,14 @@ function resolveTesseractArgs({ inputPath, tesseractLang, tessdataPath }) {
   ];
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 module.exports = {
+  OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS,
+  OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS,
+  OCR_RASTER_STDOUT_LIMIT_CHARS,
+  OCR_RASTER_STDERR_LIMIT_CHARS,
   fail,
   clampInt,
   ensurePathExists,
@@ -252,3 +351,7 @@ module.exports = {
   safeInvoke,
   normalizeMultiline,
 };
+
+// =============================================================================
+// End of electron/import_ocr/ocr_runtime.js
+// =============================================================================

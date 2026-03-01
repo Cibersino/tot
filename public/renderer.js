@@ -59,6 +59,12 @@ if (!importOcrUi) {
 const btnCancelOcr = typeof importOcrUi.getCancelButton === 'function'
   ? importOcrUi.getCancelButton()
   : null;
+if (!btnCancelOcr && typeof importOcrUi.getCancelButton !== 'function') {
+  log.warnOnce(
+    'renderer.importOcrUi.getCancelButton.unavailable',
+    'ImportOcrUi.getCancelButton unavailable; cancel OCR control will not be wired.'
+  );
+}
 
 // =============================================================================
 // UI keys and static lists
@@ -193,12 +199,10 @@ function sendRendererCoreReady() {
       window.electronAPI.sendStartupRendererCoreReady();
     } catch (err) {
       log.error('Error sending startup:renderer-core-ready:', err);
+      throw err;
     }
   } else {
-    log.warnOnce(
-      'BOOTSTRAP:renderer.startup.coreReady.unavailable',
-      'startup:renderer-core-ready unavailable; renderer/core ready signal not sent.'
-    );
+    throw new Error('[renderer] startup:renderer-core-ready unavailable; cannot complete startup handshake');
   }
 }
 
@@ -210,12 +214,10 @@ function sendSplashRemoved() {
       window.electronAPI.sendStartupSplashRemoved();
     } catch (err) {
       log.error('Error sending startup:splash-removed:', err);
+      throw err;
     }
   } else {
-    log.warnOnce(
-      'BOOTSTRAP:renderer.startup.splashRemoved.unavailable',
-      'startup:splash-removed unavailable; post-READY confirmation not sent.'
-    );
+    throw new Error('[renderer] startup:splash-removed unavailable; cannot complete startup handshake');
   }
 }
 
@@ -282,12 +284,26 @@ if (btnCancelOcr) {
 }
 
 function isOcrRoute(route) {
-  if (!importOcrUi || typeof importOcrUi.isOcrRoute !== 'function') return false;
+  if (!importOcrUi || typeof importOcrUi.isOcrRoute !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.isOcrRoute.unavailable',
+        'ImportOcrUi.isOcrRoute unavailable; assuming non-OCR route.'
+      );
+    }
+    return false;
+  }
   return importOcrUi.isOcrRoute(route);
 }
 
 function getDefaultImportRunOptions() {
   if (!importOcrUi || typeof importOcrUi.getDefaultRunOptions !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.getDefaultRunOptions.unavailable',
+        'ImportOcrUi.getDefaultRunOptions unavailable; using fallback defaults.'
+      );
+    }
     return { languageTag: idiomaActual || DEFAULT_LANG, timeoutPerPageSec: 90 };
   }
   return importOcrUi.getDefaultRunOptions();
@@ -446,6 +462,12 @@ function choosePdfSelectableExtractionMode() {
 
 function promptOcrOptionsDialog(payload) {
   if (!importOcrUi || typeof importOcrUi.promptOcrOptionsDialog !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.promptOcrOptionsDialog.unavailable',
+        'ImportOcrUi.promptOcrOptionsDialog unavailable; auto-confirming with defaults.'
+      );
+    }
     return Promise.resolve({
       confirmed: true,
       options: getDefaultImportRunOptions(),
@@ -455,12 +477,28 @@ function promptOcrOptionsDialog(payload) {
 }
 
 function handleImportProgress(payload) {
-  if (!importOcrUi || typeof importOcrUi.handleImportProgress !== 'function') return;
+  if (!importOcrUi || typeof importOcrUi.handleImportProgress !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.handleImportProgress.unavailable',
+        'ImportOcrUi.handleImportProgress unavailable; progress UI will not update.'
+      );
+    }
+    return;
+  }
   importOcrUi.handleImportProgress(payload || {});
 }
 
 function noteQueuedOcrJob(payload) {
-  if (!importOcrUi || typeof importOcrUi.noteJobQueued !== 'function') return;
+  if (!importOcrUi || typeof importOcrUi.noteJobQueued !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.noteJobQueued.unavailable',
+        'ImportOcrUi.noteJobQueued unavailable; queued job UI will not update.'
+      );
+    }
+    return;
+  }
   importOcrUi.noteJobQueued(payload);
 }
 
@@ -482,7 +520,15 @@ function applyGlobalInteractionGateUi() {
 }
 
 function syncOcrControlVisibility() {
-  if (!importOcrUi || typeof importOcrUi.setLockState !== 'function') return;
+  if (!importOcrUi || typeof importOcrUi.setLockState !== 'function') {
+    if (importOcrUi) {
+      log.warnOnce(
+        'renderer.importOcrUi.setLockState.unavailable',
+        'ImportOcrUi.setLockState unavailable; lock UI will not sync.'
+      );
+    }
+    return;
+  }
   importOcrUi.setLockState({
     locked: interactionGateBlocked,
     reason: interactionGateReason,
@@ -582,24 +628,40 @@ const IMPORT_ERROR_MESSAGE_KEYS = Object.freeze({
   OCR_CANCEL_KILL_TIMEOUT: 'renderer.alerts.import_ocr_cancel_timeout',
 });
 const OCR_PRECONDITION_WINDOW_LABELS = Object.freeze({
-  editor: 'Manual editor',
-  editor_find: 'Find window',
-  preset: 'Preset window',
-  task_editor: 'Task editor',
-  language: 'Language window',
-  flotante: 'Floating stopwatch window',
+  editor: 'renderer.alerts.import_ocr_precondition_window_editor',
+  editor_find: 'renderer.alerts.import_ocr_precondition_window_editor_find',
+  preset: 'renderer.alerts.import_ocr_precondition_window_preset',
+  task_editor: 'renderer.alerts.import_ocr_precondition_window_task_editor',
+  language: 'renderer.alerts.import_ocr_precondition_window_language',
+  flotante: 'renderer.alerts.import_ocr_precondition_window_flotante',
 });
 
 function mapPreconditionWindowLabel(rawId) {
   const key = String(rawId || '').trim().toLowerCase();
+  const msg = (
+    window.RendererI18n
+    && typeof window.RendererI18n.msgRenderer === 'function'
+  )
+    ? window.RendererI18n.msgRenderer
+    : null;
   if (key && Object.prototype.hasOwnProperty.call(OCR_PRECONDITION_WINDOW_LABELS, key)) {
-    return OCR_PRECONDITION_WINDOW_LABELS[key];
+    const labelKey = OCR_PRECONDITION_WINDOW_LABELS[key];
+    if (!msg) return key;
+    return msg(labelKey, {}, key);
   }
-  return key || 'Secondary window';
+  if (!msg) return key || 'Secondary window';
+  return msg('renderer.alerts.import_ocr_precondition_window_secondary', {}, key || 'Secondary window');
 }
 
 function buildOcrPreconditionWarning(res) {
   const p = res && typeof res === 'object' ? res : {};
+  const msg = (
+    window.RendererI18n
+    && typeof window.RendererI18n.msgRenderer === 'function'
+  )
+    ? window.RendererI18n.msgRenderer
+    : null;
+  const t = (path, params, fallback) => (msg ? msg(path, params || {}, fallback) : fallback);
   const reasons = new Set(
     (Array.isArray(p.reasons) ? p.reasons : [])
       .map((item) => String(item || '').trim().toUpperCase())
@@ -615,18 +677,42 @@ function buildOcrPreconditionWarning(res) {
   if (hasSecondaryWindows) {
     if (openSecondaryWindows.length > 0) {
       const labels = Array.from(new Set(openSecondaryWindows.map(mapPreconditionWindowLabel)));
-      details.push(`Close these secondary windows: ${labels.join(', ')}.`);
+      details.push(
+        t(
+          'renderer.alerts.import_ocr_precondition_close_secondary_windows',
+          { windows: labels.join(', ') },
+          `Close these secondary windows: ${labels.join(', ')}.`
+        )
+      );
     } else {
-      details.push('Close all secondary windows.');
+      details.push(
+        t(
+          'renderer.alerts.import_ocr_precondition_close_all_secondary_windows',
+          {},
+          'Close all secondary windows.'
+        )
+      );
     }
   }
   if (hasRunningStopwatch) {
-    details.push('Pause the stopwatch.');
+    details.push(
+      t(
+        'renderer.alerts.import_ocr_precondition_pause_stopwatch',
+        {},
+        'Pause the stopwatch.'
+      )
+    );
   }
   if (!details.length) {
-    details.push('Close any secondary windows and pause the stopwatch.');
+    details.push(
+      t(
+        'renderer.alerts.import_ocr_precondition_close_secondary_and_pause_stopwatch',
+        {},
+        'Close any secondary windows and pause the stopwatch.'
+      )
+    );
   }
-  return `Cannot start OCR right now. ${details.join(' ')}`;
+  return `${t('renderer.alerts.import_ocr_precondition_cannot_start', {}, 'Cannot start OCR right now.')} ${details.join(' ')}`;
 }
 
 function showOcrPreconditionWarning(res) {
@@ -773,6 +859,11 @@ async function handleImportFinished(payload) {
   if (jobId) importJobIsOcrMap.delete(jobId);
   if (importOcrUi && typeof importOcrUi.markImportFinished === 'function') {
     importOcrUi.markImportFinished(p);
+  } else if (importOcrUi) {
+    log.warnOnce(
+      'renderer.importOcrUi.markImportFinished.unavailable',
+      'ImportOcrUi.markImportFinished unavailable; import completion UI will not update.'
+    );
   }
 
   if (!p.ok) {
@@ -878,15 +969,30 @@ function applyTranslations() {
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (importOcrUi && typeof importOcrUi.setI18n === 'function') {
     importOcrUi.setI18n({ tRenderer, msgRenderer });
+  } else if (importOcrUi) {
+    log.warnOnce(
+      'renderer.importOcrUi.setI18n.unavailable',
+      'ImportOcrUi.setI18n unavailable; OCR UI translations will not sync.'
+    );
   }
   if (importOcrUi && typeof importOcrUi.setLanguage === 'function') {
     importOcrUi.setLanguage({
       uiLanguage: idiomaActual || DEFAULT_LANG,
       fallbackLanguage: DEFAULT_LANG,
     });
+  } else if (importOcrUi) {
+    log.warnOnce(
+      'renderer.importOcrUi.setLanguage.unavailable',
+      'ImportOcrUi.setLanguage unavailable; OCR UI language will not sync.'
+    );
   }
   if (importOcrUi && typeof importOcrUi.applyTranslations === 'function') {
     importOcrUi.applyTranslations();
+  } else if (importOcrUi) {
+    log.warnOnce(
+      'renderer.importOcrUi.applyTranslations.unavailable',
+      'ImportOcrUi.applyTranslations unavailable; OCR UI labels will not refresh.'
+    );
   }
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
@@ -1500,7 +1606,7 @@ async function runStartupOrchestrator() {
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
       dedupeKey: 'renderer.ipc.getAppConfig.unavailable',
-      unavailableMessage: 'getAppConfig unavailable; bootstrap will use default limits.'
+      unavailableMessage: 'BOOTSTRAP: getAppConfig unavailable; using default limits.'
     });
     if (getAppConfig) {
       try {
@@ -1522,7 +1628,7 @@ async function runStartupOrchestrator() {
 
     const getInteractionGateState = getOptionalElectronMethod('getInteractionGateState', {
       dedupeKey: 'renderer.ipc.getInteractionGateState.unavailable',
-      unavailableMessage: 'getInteractionGateState unavailable; assuming interaction gate is inactive.'
+      unavailableMessage: 'BOOTSTRAP: getInteractionGateState unavailable; assuming interaction gate is inactive.'
     });
     if (getInteractionGateState) {
       try {
@@ -1541,7 +1647,7 @@ async function runStartupOrchestrator() {
     // Load user settings once at renderer startup
     const getSettings = getOptionalElectronMethod('getSettings', {
       dedupeKey: 'renderer.ipc.getSettings.unavailable',
-      unavailableMessage: 'getSettings unavailable; bootstrap will use default settings.'
+      unavailableMessage: 'BOOTSTRAP: getSettings unavailable; using default settings.'
     });
     if (getSettings) {
       try {
@@ -1575,7 +1681,7 @@ async function runStartupOrchestrator() {
     // Get current initial text (state-only)
     const getCurrentText = getOptionalElectronMethod('getCurrentText', {
       dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
-      unavailableMessage: 'getCurrentText unavailable; bootstrap will use empty text.'
+      unavailableMessage: 'BOOTSTRAP: getCurrentText unavailable; using empty text.'
     });
     if (getCurrentText) {
       try {
