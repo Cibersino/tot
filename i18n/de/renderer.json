@@ -81,7 +81,8 @@
         "preprocess_aggressive": "Aggressiv",
         "guidance_presets": "Schnell ~{fast}s/Seite · Ausgewogen ~{balanced}s/Seite · Hohe Genauigkeit ~{high}s/Seite",
         "guidance_total": "Geschätzte Gesamtzeit: ~{total} für {pages} Seite(n)",
-        "guidance_disclaimer": "(ungefähr, abhängig von der Komplexität des Dokuments und der Leistung des Geräts)",
+        "guidance_disclaimer": "Die ETA ist eine Annäherung. In Wirklichkeit hängt sie von der Komplexität der Datei und der Leistung des Geräts ab.",
+        "guidance_eta_note": "Die ETA kann in den ersten Seiten steigen, während sich die Geschwindigkeit pro Seite stabilisiert.",
         "start": "OCR starten",
         "abort": "Abbrechen"
       },

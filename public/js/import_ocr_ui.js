@@ -50,6 +50,7 @@
   const ocrPresetGuidance = document.getElementById('ocrPresetGuidance');
   const ocrTotalGuidance = document.getElementById('ocrTotalGuidance');
   const ocrTotalDisclaimer = document.getElementById('ocrTotalDisclaimer');
+  const ocrEtaNote = document.getElementById('ocrEtaNote');
   const btnOcrOptionsStart = document.getElementById('btnOcrOptionsStart');
   const btnOcrOptionsAbort = document.getElementById('btnOcrOptionsAbort');
 
@@ -259,6 +260,7 @@
     ocrPresetGuidance,
     ocrTotalGuidance,
     ocrTotalDisclaimer,
+    ocrEtaNote,
     btnOcrOptionsStart,
     btnOcrOptionsAbort,
   };

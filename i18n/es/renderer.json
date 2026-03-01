@@ -118,7 +118,8 @@
         "preprocess_aggressive": "Agresivo",
         "guidance_presets": "Rápido ~{fast}s/pág · Balanceado ~{balanced}s/pág · Alta precisión ~{high}s/pág",
         "guidance_total": "Estimación total: ~{total} para {pages} página(s)",
-        "guidance_disclaimer": "(aproximado, depende de la complejidad del documento y el rendimiento del dispositivo)",
+        "guidance_disclaimer": "La ETA es una aproximación. En realidad, depende de la complejidad del archivo y el rendimiento del dispositivo.",
+        "guidance_eta_note": "La ETA puede subir en las primeras páginas mientras se estabiliza el ritmo por página.",
         "start": "Iniciar OCR",
         "abort": "Abortar"
       },

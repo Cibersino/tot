@@ -81,7 +81,8 @@
         "preprocess_aggressive": "Yafv",
         "guidance_presets": "Pürüm ~{fast}s/tapül · Rangi ~{balanced}s/tapül · Kume kintun ~{high}s/tapül",
         "guidance_total": "Tvfa mvten amuleay: ~{total} fey {pages} tapül mew",
-        "guidance_disclaimer": "(münefe, dokumentu komplexidad ka dispositivo rendimiento mew)",
+        "guidance_disclaimer": "ETA ka tvfa mvten amuleay mew petu afiy tachi fütra wirin, ka inchiñan ka chachay mew.",
+        "guidance_eta_note": "ETA ka müley rise fey tapül mew ka per-tapül speed stabilizes.",
         "start": "Yallupe OCR",
         "abort": "Katrütun"
       },

@@ -781,6 +781,15 @@ select#presets {
   line-height: 1.35;
 }
 
+#ocrTotalGuidance {
+  font-weight: 600;
+}
+
+#ocrTotalDisclaimer,
+#ocrEtaNote {
+  font-size: 10px;
+}
+
 .ocr-options-actions {
   margin-top: 10px;
   display: flex;
