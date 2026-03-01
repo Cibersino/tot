@@ -16,7 +16,7 @@
         "task_load": "🗃️"
       },
       "tooltips": {
-        "import_extract": "Importar o extraer texto desde archivo",
+        "import_extract": "Importar o extraer texto desde un archivo",
         "cancel_ocr": "Cancelar OCR en ejecución",
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
         "append_clipboard": "Pegar portapapeles al final del texto actual (nueva línea)",

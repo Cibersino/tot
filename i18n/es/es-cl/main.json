@@ -29,7 +29,11 @@
       "desarrollo": "La cocina",
       "recargar": "Dárselo de nuevo",
       "forcereload": "Reiniciar a la mala",
-      "toggle_devtools": "Mirar las tripas (DevTools)"
+      "toggle_devtools": "Mirar las tripas (DevTools)",
+      "language": {
+        "empty": "No hay hablamientos disponibles",
+        "invalid": "La lista de hablamientos está mal formada"
+      }
     },
     "dialog": {
       "ok": "Ya era",

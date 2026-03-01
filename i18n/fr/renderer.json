@@ -66,17 +66,6 @@
         "precise_mode": "Mode précis",
         "precise_tooltip": "Basé sur Intl.Segmenter"
       },
-      "tips": {
-        "results_help": {
-          "tip1": "Le mode précis utilise la segmentation Unicode pour compter les caractères (graphèmes) et les mots avec Intl.Segmenter.",
-          "tip2": "Lorsque vous saisissez manuellement un temps dans le chronomètre, les fractions de seconde invisibles sont supprimées.",
-          "tip3": "Pour sélectionner tout le texte d'une zone, utilisez Ctrl + A (Windows et Linux) ou Command(⌘) + A (Mac).",
-          "tip4": "Vous pouvez sélectionner du texte en sélectionnant d'abord une extrémité puis, en maintenant Shift, en cliquant sur l'autre extrémité.",
-          "tip5": "Un livre standard contient généralement entre 250 et 300 mots par page (cela s'applique seulement aux langues utilisant l'alphabet latin, ou des dérivés proches, avec une structure grammaticale similaire).",
-          "tip6": "\"Tu as inventé un élixir non de mémoire, mais de rappel.\" (Platon)",
-          "tip7": "\"L'écriture exige une double abstraction : de l'aspect sonore du langage et de l'interlocuteur.\" (Vygotski)"
-        }
-      },
       "crono": {
         "title": "CHRONOMÈTRE",
         "speed": "Vitesse :",

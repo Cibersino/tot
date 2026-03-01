@@ -66,17 +66,6 @@
         "precise_mode": "Modalità precisa",
         "precise_tooltip": "Basato su Intl.Segmenter"
       },
-      "tips": {
-        "results_help": {
-          "tip1": "La modalità precisa usa la segmentazione Unicode per contare caratteri (grafemi) e parole tramite Intl.Segmenter.",
-          "tip2": "Quando inserisci manualmente un tempo nel cronometro, le frazioni di secondo invisibili vengono eliminate.",
-          "tip3": "Per selezionare tutto il testo in un'area usa Ctrl + A (Windows e Linux) o Command(⌘) + A (Mac).",
-          "tip4": "Puoi selezionare il testo selezionando prima un estremo e poi, tenendo premuto Shift, cliccando sull'altro estremo.",
-          "tip5": "Un libro standard contiene di solito tra 250 e 300 parole per pagina (vale solo per lingue con alfabeto latino, o derivati vicini, e struttura grammaticale simile).",
-          "tip6": "\"Hai inventato un elisir non della memoria, ma del ricordare.\" (Platone)",
-          "tip7": "\"La scrittura richiede una doppia astrazione: dall'aspetto sonoro del linguaggio e dall'interlocutore.\" (Vygotskij)"
-        }
-      },
       "crono": {
         "title": "CRONOMETRO",
         "speed": "Velocità:",

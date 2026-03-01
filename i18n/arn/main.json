@@ -25,7 +25,15 @@
       "colabora": "KELLUAFUIMI ($)",
       "ayuda": "?",
       "actualizar_version": "Küpal we version",
-      "acerca_de": "Tachi app dungu"
+      "acerca_de": "Tachi app dungu",
+      "desarrollo": "Kümechiñ dungu",
+      "recargar": "Rewün",
+      "forcereload": "Rewün ka küpal",
+      "toggle_devtools": "Toggle DevTools",
+      "language": {
+        "empty": "Ngelay kezungun düllilu",
+        "invalid": "Kezungun listu weyülün"
+      }
     },
     "dialog": {
       "ok": "Llowün",

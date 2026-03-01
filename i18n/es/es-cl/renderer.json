@@ -4,6 +4,8 @@
       "selector_title": "El principio y el final del coso:",
       "selector_empty": "(pelao)",
       "buttons": {
+        "import_extract": "📤",
+        "cancel_ocr": "⛔",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +16,8 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Importar texto desde un archivo",
+        "cancel_ocr": "Parar el OCR en marcha",
         "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
         "append_clipboard": "Pegar lo copiao en la línea de abajo",
         "paste_repeat_count": "Cantidad de veces que te repetís el plato",
@@ -29,6 +33,21 @@
         "reset_presets": "Dejar los presets como venían",
         "help_button": "Informeishon",
         "flotante_window": "Ventanita porfiada"
+      },
+      "aria": {
+        "import_extract": "Importar o extraer texto",
+        "cancel_ocr": "Parar OCR",
+        "paste_repeat_count": "Repeticiones del plato",
+        "wpm_input": "Palabras por minuto",
+        "wpm_slider": "Deslizador de palabras por minuto",
+        "speed_presets": "Presets de velocidad",
+        "precise_mode_toggle": "Modo fino",
+        "crono_controls": "Controles del cronómetro",
+        "crono_display": "Display del cronómetro",
+        "crono_toggle": "Iniciar o pausar cronómetro",
+        "crono_reset": "Reiniciar cronómetro",
+        "floating_window_toggle": "Ventana flotante",
+        "floating_window_group": "Control de ventana flotante"
       },
       "speed": {
         "title": "QUÉ TAN RÁPIDO LEÍS",
@@ -60,7 +79,14 @@
         "title_with_elapsed": "Importación terminada. OCR listeilor en {elapsed}. Elige cómo querís aplicar el texto:",
         "overwrite": "Aplastar",
         "append": "Añadir",
+        "repeat_count": "Repetir plato",
         "ocr_running": "OCR en marcha..."
+      },
+      "pdf_selectable_choice": {
+        "title": "Detectamos un PDF con texto seleccionable",
+        "message": "Recomendación: prueba primero la opción normal. Si no te gusta, usa la extracción vía OCR.",
+        "normal": "Texto seleccionable",
+        "ocr": "Extracción vía OCR"
       },
       "ocr_options": {
         "title": "Opciones del OCR",
@@ -81,6 +107,8 @@
         "preprocess_aggressive": "Brutal",
         "guidance_presets": "Usain Bolt ~{fast}s/pág · Equilibrao ~{balanced}s/pág · Fino y elegante ~{high}s/pág",
         "guidance_total": "Calculo total: ~{total}s pa {pages} página(s) (aprox, depende de lo pelúo del doc y qué tan chula es la máquina)",
+        "guidance_disclaimer": "La ETA es una aproximación. En realidad, depende de lo pelúo del doc y qué tan chula es la máquina.",
+        "guidance_eta_note": "La ETA puede subir en las primeras páginas mientras se estabiliza el ritmo por página.",
         "start": "Start OCR",
         "abort": "Me arrepentí"
       },
@@ -132,6 +160,7 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
         "select_snapshot": "Seleccionar coso",
         "clear_snapshot": "🗙",
         "cancel": "Cancelar",
@@ -244,6 +273,51 @@
       "open_presets_unsupported": "No se puede abrir la carpeta aquí, hno.",
       "open_presets_error": "Drama al intentar abrir la carpeta. Lorea la consola.",
       "open_presets_fail": "No pudimos abrir la carpeta de presets. Lorea la consola.",
+      "import_unavailable": "La función de importación/OCR no está disponible en este entorno.",
+      "import_dep_missing_mammoth": "Falta la dependencia para importar DOCX en esta compilación.",
+      "import_dep_missing_pdfjs": "Falta la dependencia para importar PDF en esta compilación.",
+      "import_decode_failed": "Falló la decodificación del texto. Elige una codificación compatible.",
+      "import_text_binary_detected": "El archivo de texto seleccionado parece contener datos binarios.",
+      "import_signature_mismatch": "El contenido del archivo seleccionado no coincide con la extensión.",
+      "import_unsupported_format": "Formato de archivo no soportado.",
+      "import_read_failed": "No fue posible leer el archivo seleccionado.",
+      "import_invalid_path": "La ruta del archivo seleccionado es inválida.",
+      "import_invalid_payload": "La solicitud de importación es inválida.",
+      "import_session_not_found": "No se encontró la sesión de importación.",
+      "import_not_ready_to_apply": "El resultado de importación aún no está listo para aplicar.",
+      "import_apply_unavailable": "No se pudo aplicar el texto importado en este entorno.",
+      "import_busy": "La sesión de importación ya está en ejecución.",
+      "import_ocr_unavailable_platform": "OCR no está disponible para esta compilación de plataforma.",
+      "import_ocr_binary_missing": "Faltan archivos del entorno OCR o están incompletos.",
+      "import_ocr_exec_failed": "La ejecución de OCR falló.",
+      "import_ocr_raster_failed": "La rasterización del PDF falló antes del OCR.",
+      "import_ocr_timeout_page": "OCR agotó el tiempo para esta página/imagen.",
+      "import_ocr_timeout_job": "OCR agotó el tiempo antes de completar el documento.",
+      "import_ocr_lang_unsupported": "El idioma OCR seleccionado no está soportado en esta compilación.",
+      "import_ocr_lang_unavailable": "Los datos del idioma OCR seleccionado no están instalados en este runtime.",
+      "import_ocr_empty_result": "OCR finalizó pero no detectó texto.",
+      "import_ocr_not_running": "No hay un OCR en ejecución.",
+      "import_ocr_canceled": "OCR fue cancelado.",
+      "import_ocr_cancel_timeout": "Se solicitó cancelar OCR, pero el proceso no se detuvo a tiempo.",
+      "import_scanned_pdf_ocr_start_failed": "No se pudo iniciar OCR para el PDF escaneado.",
+      "import_session_mapping_missing": "La importación terminó pero no se encontró el mapeo de sesión.",
+      "import_truncated": "El texto importado excedió el tamaño máximo y fue truncado.",
+      "import_apply_failed": "No se pudo aplicar el texto importado.",
+      "import_cancel_request_failed": "No se pudo solicitar la cancelación de OCR.",
+      "import_ocr_precondition_cannot_start": "No se puede iniciar OCR en este momento.",
+      "import_ocr_precondition_close_secondary_windows": "Cierra estas ventanas secundarias: {windows}.",
+      "import_ocr_precondition_close_all_secondary_windows": "Cierra todas las ventanas secundarias.",
+      "import_ocr_precondition_pause_stopwatch": "Pausa el cronómetro.",
+      "import_ocr_precondition_close_secondary_and_pause_stopwatch": "Cierra cualquier ventana secundaria y pausa el cronómetro.",
+      "import_ocr_precondition_window_editor": "Editor manual",
+      "import_ocr_precondition_window_editor_find": "Ventana de búsqueda",
+      "import_ocr_precondition_window_preset": "Ventana de preset",
+      "import_ocr_precondition_window_task_editor": "Editor de tareas",
+      "import_ocr_precondition_window_language": "Ventana de idioma",
+      "import_ocr_precondition_window_flotante": "Ventana de cronómetro flotante",
+      "import_ocr_precondition_window_secondary": "Ventana secundaria",
+      "import_unexpected": "La importación falló de forma inesperada.",
+      "import_failed_generic": "La importación falló.",
       "wip_cargador_texto": "WIP: Aquí se viene el chupaletras desde archivos de texto.",
       "wip_cargador_imagen": "WIP: Aquí se viene el chupaletras desde fotos.",
       "wip_test_velocidad": "WIP: Aquí se viene el test de los víos.",
@@ -263,6 +337,7 @@
       "drop_no_text": "Lo que tiraste no tiene niuna letra.",
       "type_limit": "Ya no podís escribir más, se llenó.",
       "paste_limit": "Ya no podís pegar más, se llenó.",
+      "drop_limit": "Ya no podís agregar más, se llenó.",
       "paste_truncated": "Se cortó el texto pa' que cupiera.",
       "drop_truncated": "Lo que tiraste estaba muy largo y lo mochamos.",
       "text_truncated": "Mochamos el texto pa' que entre en la aplicación.",
@@ -276,9 +351,25 @@
       "process_error": "Drama al procesar el preset. Lorea la consola."
     },
     "info": {
+      "external": {
+        "blocked": "Bloqueado",
+        "missing": "Extraviado",
+        "error": "Error al abrir"
+      },
+      "appdoc": {
+        "blocked": "Archivo bloqueado",
+        "missing": "Archivo extraviado",
+        "error": "Error al abrir el archivo"
+      },
       "acerca_de": {
         "app_name": "toT",
-        "title": "La ficha"
+        "title": "La ficha",
+        "version": {
+          "unavailable": "Desconocida"
+        },
+        "env": {
+          "unavailable": "Desconocido"
+        }
       },
       "links_interes": {
         "app_name": "toT",

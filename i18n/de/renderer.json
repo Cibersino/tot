@@ -66,17 +66,6 @@
         "precise_mode": "Präziser Modus",
         "precise_tooltip": "Basierend auf Intl.Segmenter"
       },
-      "tips": {
-        "results_help": {
-          "tip1": "Der präzise Modus verwendet Unicode-Segmentierung, um Zeichen (Grapheme) und Wörter mit Intl.Segmenter zu zählen.",
-          "tip2": "Wenn Sie manuell eine Zeit in die Stoppuhr eingeben, werden unsichtbare Sekundenbruchteile entfernt.",
-          "tip3": "Um den gesamten Text in einem Bereich auszuwählen, verwenden Sie Strg + A (Windows und Linux) oder Command(⌘) + A (Mac).",
-          "tip4": "Sie können Text auswählen, indem Sie zuerst den Text an einem Ende markieren und dann bei gedrückter Umschalttaste auf das andere Ende klicken.",
-          "tip5": "Ein Standardbuch enthält normalerweise zwischen 250 und 300 Wörtern pro Seite (dies gilt nur für Sprachen mit lateinischem Alphabet oder ähnlichen Ableitungen und vergleichbarer grammatischer Struktur).",
-          "tip6": "\"Du hast kein Elixier der Erinnerung erfunden, sondern eines des Erinnerns.\" (Platon)",
-          "tip7": "\"Schreiben erfordert eine doppelte Abstraktion: von der Lautseite der Sprache und vom Gesprächspartner.\" (Wygotski)"
-        }
-      },
       "crono": {
         "title": "STOPPUHR",
         "speed": "Geschwindigkeit:",
