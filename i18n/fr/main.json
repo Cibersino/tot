@@ -25,7 +25,15 @@
       "colabora": "CONTRIBUER ($)",
       "ayuda": "?",
       "actualizar_version": "Mettre à jour la version",
-      "acerca_de": "À propos"
+      "acerca_de": "À propos",
+      "desarrollo": "Développement",
+      "recargar": "Recharger",
+      "forcereload": "Forcer le rechargement",
+      "toggle_devtools": "Basculer DevTools",
+      "language": {
+        "empty": "Aucune langue disponible",
+        "invalid": "Liste de langues invalide"
+      }
     },
     "dialog": {
       "ok": "OK",
@@ -56,4 +64,3 @@
     }
   }
 }
-

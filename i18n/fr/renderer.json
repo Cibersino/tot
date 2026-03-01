@@ -4,6 +4,8 @@
       "selector_title": "Première et dernière partie du texte analysé :",
       "selector_empty": "(vide)",
       "buttons": {
+        "import_extract": "📥",
+        "cancel_ocr": "⛔",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +16,8 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Importer ou extraire du texte depuis un fichier",
+        "cancel_ocr": "Annuler l'OCR en cours",
         "overwrite_clipboard": "Remplacer le texte actuel par le presse-papier",
         "append_clipboard": "Coller le presse-papier à la fin du texte actuel (nouvelle ligne)",
         "paste_repeat_count": "Nombre de répétitions du collage",
@@ -29,6 +33,21 @@
         "reset_presets": "Restaurer les presets par défaut",
         "help_button": "Afficher une astuce",
         "flotante_window": "Fenêtre flottante"
+      },
+      "aria": {
+        "import_extract": "Importer ou extraire du texte",
+        "cancel_ocr": "Annuler l'OCR",
+        "paste_repeat_count": "Répétitions de collage",
+        "wpm_input": "Mots par minute",
+        "wpm_slider": "Curseur de mots par minute",
+        "speed_presets": "Presets de vitesse",
+        "precise_mode_toggle": "Mode précis",
+        "crono_controls": "Contrôles du chronomètre",
+        "crono_display": "Affichage du chronomètre",
+        "crono_toggle": "Démarrer ou mettre en pause le chronomètre",
+        "crono_reset": "Réinitialiser le chronomètre",
+        "floating_window_toggle": "Fenêtre flottante",
+        "floating_window_group": "Contrôles de la fenêtre flottante"
       },
       "speed": {
         "title": "VITESSE DE LECTURE",
@@ -47,6 +66,17 @@
         "precise_mode": "Mode précis",
         "precise_tooltip": "Basé sur Intl.Segmenter"
       },
+      "tips": {
+        "results_help": {
+          "tip1": "Le mode précis utilise la segmentation Unicode pour compter les caractères (graphèmes) et les mots avec Intl.Segmenter.",
+          "tip2": "Lorsque vous saisissez manuellement un temps dans le chronomètre, les fractions de seconde invisibles sont supprimées.",
+          "tip3": "Pour sélectionner tout le texte d'une zone, utilisez Ctrl + A (Windows et Linux) ou Command(⌘) + A (Mac).",
+          "tip4": "Vous pouvez sélectionner du texte en sélectionnant d'abord une extrémité puis, en maintenant Shift, en cliquant sur l'autre extrémité.",
+          "tip5": "Un livre standard contient généralement entre 250 et 300 mots par page (cela s'applique seulement aux langues utilisant l'alphabet latin, ou des dérivés proches, avec une structure grammaticale similaire).",
+          "tip6": "\"Tu as inventé un élixir non de mémoire, mais de rappel.\" (Platon)",
+          "tip7": "\"L'écriture exige une double abstraction : de l'aspect sonore du langage et de l'interlocuteur.\" (Vygotski)"
+        }
+      },
       "crono": {
         "title": "CHRONOMÈTRE",
         "speed": "Vitesse :",
@@ -60,7 +90,14 @@
         "title_with_elapsed": "Import terminé. OCR terminé en {elapsed}. Choisissez le mode d'application :",
         "overwrite": "Remplacer",
         "append": "Ajouter",
+        "repeat_count": "Répétitions",
         "ocr_running": "OCR en cours..."
+      },
+      "pdf_selectable_choice": {
+        "title": "PDF avec texte sélectionnable détecté",
+        "message": "Recommandation : essayez d'abord le mode normal. Si le résultat n'est pas bon, utilisez l'extraction via OCR.",
+        "normal": "Extraction normale",
+        "ocr": "Extraction via OCR"
       },
       "ocr_options": {
         "title": "Options OCR",
@@ -134,6 +171,7 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
         "select_snapshot": "Sélectionner un snapshot",
         "clear_snapshot": "🗙",
         "cancel": "Annuler",
@@ -246,6 +284,51 @@
       "open_presets_unsupported": "L'ouverture de presets n'est pas prise en charge dans cet environnement.",
       "open_presets_error": "Une erreur s'est produite lors de l'ouverture du dossier des presets. Vérifiez la console.",
       "open_presets_fail": "Impossible d'ouvrir le dossier par défaut des presets. Vérifiez la console pour plus de détails.",
+      "import_unavailable": "La fonction d'importation/OCR n'est pas disponible dans cet environnement.",
+      "import_dep_missing_mammoth": "La dépendance d'import DOCX est manquante dans cette build.",
+      "import_dep_missing_pdfjs": "La dépendance d'import PDF est manquante dans cette build.",
+      "import_decode_failed": "Le décodage du texte a échoué. Choisissez un encodage compatible.",
+      "import_text_binary_detected": "Le fichier texte sélectionné semble contenir des données binaires.",
+      "import_signature_mismatch": "Le contenu du fichier sélectionné ne correspond pas à son extension.",
+      "import_unsupported_format": "Format de fichier non pris en charge.",
+      "import_read_failed": "Impossible de lire le fichier sélectionné.",
+      "import_invalid_path": "Le chemin du fichier sélectionné est invalide.",
+      "import_invalid_payload": "La requête d'importation est invalide.",
+      "import_session_not_found": "Session d'importation introuvable.",
+      "import_not_ready_to_apply": "Le résultat d'importation n'est pas prêt à être appliqué.",
+      "import_apply_unavailable": "Impossible d'appliquer le texte importé dans cet environnement.",
+      "import_busy": "La session d'importation est déjà en cours.",
+      "import_ocr_unavailable_platform": "OCR n'est pas disponible pour cette build de plateforme.",
+      "import_ocr_binary_missing": "Les fichiers d'exécution OCR sont manquants ou incomplets.",
+      "import_ocr_exec_failed": "L'exécution OCR a échoué.",
+      "import_ocr_raster_failed": "La rasterisation du PDF a échoué avant OCR.",
+      "import_ocr_timeout_page": "OCR a expiré pour cette page/image.",
+      "import_ocr_timeout_job": "OCR a expiré avant de terminer le document complet.",
+      "import_ocr_lang_unsupported": "La langue OCR sélectionnée n'est pas prise en charge dans cette build de l'app.",
+      "import_ocr_lang_unavailable": "Les données de la langue OCR sélectionnée ne sont pas installées dans ce runtime.",
+      "import_ocr_empty_result": "OCR terminé mais aucun texte n'a été détecté.",
+      "import_ocr_not_running": "Aucune tâche OCR n'est en cours.",
+      "import_ocr_canceled": "OCR a été annulé.",
+      "import_ocr_cancel_timeout": "Annulation OCR demandée, mais le processus ne s'est pas arrêté à temps.",
+      "import_scanned_pdf_ocr_start_failed": "Échec du démarrage OCR pour le PDF scanné.",
+      "import_session_mapping_missing": "Import terminé, mais le mapping de session est introuvable.",
+      "import_truncated": "Le texte importé dépasse la taille maximale et a été tronqué.",
+      "import_apply_failed": "Échec de l'application du texte importé.",
+      "import_cancel_request_failed": "Échec de la demande d'annulation OCR.",
+      "import_ocr_precondition_cannot_start": "Impossible de démarrer OCR pour le moment.",
+      "import_ocr_precondition_close_secondary_windows": "Fermez ces fenêtres secondaires : {windows}.",
+      "import_ocr_precondition_close_all_secondary_windows": "Fermez toutes les fenêtres secondaires.",
+      "import_ocr_precondition_pause_stopwatch": "Mettez le chronomètre en pause.",
+      "import_ocr_precondition_close_secondary_and_pause_stopwatch": "Fermez toutes les fenêtres secondaires et mettez le chronomètre en pause.",
+      "import_ocr_precondition_window_editor": "Éditeur manuel",
+      "import_ocr_precondition_window_editor_find": "Fenêtre de recherche",
+      "import_ocr_precondition_window_preset": "Fenêtre de preset",
+      "import_ocr_precondition_window_task_editor": "Éditeur de tâches",
+      "import_ocr_precondition_window_language": "Fenêtre de langue",
+      "import_ocr_precondition_window_flotante": "Fenêtre de chronomètre flottant",
+      "import_ocr_precondition_window_secondary": "Fenêtre secondaire",
+      "import_unexpected": "L'importation a échoué de manière inattendue.",
+      "import_failed_generic": "L'importation a échoué.",
       "wip_cargador_texto": "WIP : Dans une version future, il sera possible d'importer du texte à partir de fichiers texte ici.",
       "wip_cargador_imagen": "WIP : Dans une version future, il sera possible d'importer du texte à partir de fichiers image ici.",
       "wip_test_velocidad": "WIP : Le test de vitesse de lecture s'ouvrira ici dans une version future.",
@@ -265,6 +348,7 @@
       "drop_no_text": "Glisser-déposer : aucun texte brut détecté.",
       "type_limit": "Impossible d'écrire plus de texte : taille maximale atteinte.",
       "paste_limit": "Impossible de coller plus de texte : taille maximale atteinte.",
+      "drop_limit": "Impossible de déposer plus de texte : taille maximale atteinte.",
       "paste_truncated": "Le texte collé a été tronqué pour éviter de dépasser la limite maximale.",
       "drop_truncated": "Le texte déplacé a dépassé l'espace disponible et a été tronqué.",
       "text_truncated": "Le texte a été tronqué pour respecter la limite maximale de l'application.",
@@ -278,9 +362,25 @@
       "process_error": "Une erreur s'est produite lors du traitement du preset. Vérifiez la console."
     },
     "info": {
+      "external": {
+        "blocked": "Lien bloqué",
+        "missing": "Lien introuvable",
+        "error": "Erreur lors de l'ouverture du lien"
+      },
+      "appdoc": {
+        "blocked": "Document bloqué",
+        "missing": "Document introuvable",
+        "error": "Erreur lors de l'ouverture du document"
+      },
       "acerca_de": {
         "app_name": "toT",
-        "title": "À propos"
+        "title": "À propos",
+        "version": {
+          "unavailable": "Indisponible"
+        },
+        "env": {
+          "unavailable": "Indisponible"
+        }
       },
       "links_interes": {
         "app_name": "toT",
