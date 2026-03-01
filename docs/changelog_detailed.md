@@ -66,9 +66,9 @@ Reglas:
   - `public/js/import_ocr_ui.js` (modales/options/progreso/cancelación/apply)
 - Nuevos módulos main para import/OCR:
   - `electron/import_ocr/orchestrator.js`
-  - `electron/import_ocr/extract_phase_a.js`
+  - `electron/import_ocr/text_extraction.js`
   - `electron/import_ocr/ocr_pipeline.js`
-  - `electron/import_ocr/engine_v2.js`
+  - `electron/import_ocr/pdf_raster_ocr.js`
   - `electron/import_ocr/ocr_runtime.js`
   - `electron/import_ocr/language_policy.js`
   - `electron/import_ocr/platform/{profile_registry,resolve_sidecar,process_control}.js`

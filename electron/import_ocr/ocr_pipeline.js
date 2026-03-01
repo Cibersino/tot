@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Resolve and validate OCR sidecar runtime prerequisites for image/PDF paths.
 // - Normalize optional bridge callbacks used by OCR execution (progress, child, cancel).
-// - Route PDF input to runPdfRasterOcrV2 and non-PDF input to single-image OCR.
+// - Route PDF input to runPdfRasterOcr and non-PDF input to single-image OCR.
 // - Execute single-image OCR with timeout/language validation and normalized output.
 // - Return normalized OCR result/failure objects consumed by import OCR orchestration.
 
@@ -17,7 +17,7 @@
 const path = require('path');
 const Log = require('../log');
 const { resolveSidecarPaths } = require('./platform/resolve_sidecar');
-const { runPdfRasterOcrV2 } = require('./engine_v2');
+const { runPdfRasterOcr } = require('./pdf_raster_ocr');
 const {
   fail,
   clampInt,
@@ -187,7 +187,7 @@ async function runOcrPipeline(session, options = {}) {
     );
   }
   if (isPdfInput(session)) {
-    return runPdfRasterOcrV2(session, sidecar, normalizedOptions);
+    return runPdfRasterOcr(session, sidecar, normalizedOptions);
   }
   return runImageOcr(session, sidecar, normalizedOptions);
 }

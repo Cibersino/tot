@@ -52,8 +52,8 @@ tot/
 │ │ ├── orchestrator.js
 │ │ ├── ocr_pipeline.js
 │ │ ├── ocr_runtime.js
-│ │ ├── extract_phase_a.js
-│ │ ├── engine_v2.js
+│ │ ├── text_extraction.js
+│ │ ├── pdf_raster_ocr.js
 │ │ └── language_policy.js
 │ ├── presets/                     # {presets para restauración de fábrica}
 │ │ ├── defaults_presets.json
@@ -207,10 +207,10 @@ tot/
 - `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique).
 - `electron/log.js` — Logger del proceso principal (política de logs/fallbacks).
 - `electron/import_ocr/orchestrator.js` — Orquestador import/OCR (sesiones/jobs/lock global, routing y flujos apply/discard).
-- `electron/import_ocr/extract_phase_a.js` — Extractores no-OCR (txt/docx/pdf-text-layer) y utilidades de fase A.
+- `electron/import_ocr/text_extraction.js` — Extractores no-OCR (txt/docx/pdf-text-layer) y utilidades de extracción de texto.
 - `electron/import_ocr/ocr_pipeline.js` — Pipeline OCR/raster (`tesseract` + `pdftoppm`) con progreso/cancelación/cleanup.
 - `electron/import_ocr/ocr_runtime.js` — Helpers runtime para OCR: validación de idioma/datos (`traineddata`), normalización, ejecución de procesos externos con timeout/cancelación, y captura acotada de `stdout/stderr`.
-- `electron/import_ocr/engine_v2.js` — Motor OCR v2 para PDF escaneado por página (raster + OCR), con preflight de páginas (`pdfjs`), watchdog anti-stall, progreso por etapas y limpieza de temporales.
+- `electron/import_ocr/pdf_raster_ocr.js` — Motor OCR para PDF escaneado por página (raster + OCR), con preflight de páginas (`pdfjs`), watchdog anti-stall, progreso por etapas y limpieza de temporales.
 - `electron/import_ocr/language_policy.js` — Política de idiomas OCR: mapeo UI→Tesseract, idiomas requeridos por combinación, catálogo disponible según `tessdata`, y resolución de idioma preferido con fallback.
 - `electron/import_ocr/platform/*` — Adaptadores y perfiles por plataforma/arquitectura para sidecars OCR.
 
