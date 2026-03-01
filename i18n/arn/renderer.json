@@ -87,9 +87,9 @@
         "abort": "Katrütun"
       },
       "import_progress": {
-        "pages": "tapül",
-        "elapsed": "rupachi antü",
-        "eta": "müne antü",
+        "pages": "tapül:",
+        "elapsed": "rupachi antü:",
+        "eta": "müne antü:",
         "stage_queued": "Üngon mew",
         "stage_running": "Amuley",
         "stage_extracting": "Nentun mew...",

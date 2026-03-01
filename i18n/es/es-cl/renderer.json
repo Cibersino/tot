@@ -85,9 +85,9 @@
         "abort": "Me arrepentí"
       },
       "import_progress": {
-        "pages": "páginas",
-        "elapsed": "transcurrío",
-        "eta": "ETA",
+        "pages": "páginas:",
+        "elapsed": "transcurrío:",
+        "eta": "ETA:",
         "stage_queued": "En la fila",
         "stage_running": "Corriendo",
         "stage_extracting": "Extrayendo...",

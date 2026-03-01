@@ -124,9 +124,9 @@
         "abort": "Abortar"
       },
       "import_progress": {
-        "pages": "páginas",
-        "elapsed": "transcurrido",
-        "eta": "ETA",
+        "pages": "páginas:",
+        "elapsed": "transcurrido:",
+        "eta": "ETA:",
         "stage_queued": "En cola",
         "stage_running": "En ejecución",
         "stage_extracting": "Extrayendo...",

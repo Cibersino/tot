@@ -87,9 +87,9 @@
         "abort": "Abbrechen"
       },
       "import_progress": {
-        "pages": "Seiten",
-        "elapsed": "verstrichen",
-        "eta": "ETA",
+        "pages": "Seiten:",
+        "elapsed": "verstrichen:",
+        "eta": "ETA:",
         "stage_queued": "In Warteschlange",
         "stage_running": "Läuft",
         "stage_extracting": "Extrahieren...",
