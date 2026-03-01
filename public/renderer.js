@@ -141,6 +141,10 @@ if (wpmInput) {
 if (pasteRepeatInput) {
   pasteRepeatInput.min = '1';
   pasteRepeatInput.max = String(MAX_PASTE_REPEAT);
+  updatePasteRepeatWarningState(pasteRepeatInput.value);
+  pasteRepeatInput.addEventListener('input', () => {
+    updatePasteRepeatWarningState(pasteRepeatInput.value);
+  });
 }
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
@@ -348,11 +352,19 @@ function formatImportElapsedLabel(ms) {
   return `${minutes}m ${seconds}s`;
 }
 
+function updatePasteRepeatWarningState(rawValue) {
+  if (!pasteRepeatInput) return;
+  const numericValue = Number(rawValue);
+  const shouldWarn = Number.isFinite(numericValue) && numericValue > 1;
+  pasteRepeatInput.classList.toggle('paste-repeat-input--warning', shouldWarn);
+}
+
 function setMainPasteRepeatValue(rawValue) {
   const normalized = normalizePasteRepeat(rawValue);
   if (pasteRepeatInput) {
     pasteRepeatInput.value = String(normalized);
   }
+  updatePasteRepeatWarningState(normalized);
   return normalized;
 }
 
@@ -2017,6 +2029,7 @@ function getPasteRepeatCount() {
   if (!pasteRepeatInput) return 1;
   const normalized = normalizePasteRepeat(pasteRepeatInput.value);
   pasteRepeatInput.value = String(normalized);
+  updatePasteRepeatWarningState(normalized);
   return normalized;
 }
 
