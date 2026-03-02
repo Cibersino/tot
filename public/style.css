@@ -238,6 +238,13 @@ body.file-drop-active .app-container::before {
   outline-offset: 1px;
 }
 
+.paste-repeat-input.paste-repeat-input--warning {
+  border: 2px solid #c47a2c;
+  background: #fff2e3;
+  color: #4a2d11;
+  box-shadow: 0 0 0 2px rgb(196 122 44 / .18);
+}
+
 .controls-sep {
   width: 1px;
   height: 18px;
@@ -779,6 +786,15 @@ select#presets {
   font-size: 13px;
   color: #3a3a3a;
   line-height: 1.35;
+}
+
+#ocrTotalGuidance {
+  font-weight: 600;
+}
+
+#ocrTotalDisclaimer,
+#ocrEtaNote {
+  font-size: 10px;
 }
 
 .ocr-options-actions {

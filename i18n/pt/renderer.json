@@ -4,6 +4,8 @@
       "selector_title": "Primeira e última parte do texto analisado:",
       "selector_empty": "(vazio)",
       "buttons": {
+        "import_extract": "📥",
+        "cancel_ocr": "⛔",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +16,8 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Importar ou extrair texto de arquivo",
+        "cancel_ocr": "Cancelar OCR em execução",
         "overwrite_clipboard": "Substituir o texto atual pelo conteúdo da área de transferência",
         "append_clipboard": "Adicionar o conteúdo da área de transferência ao final do texto atual (nova linha)",
         "paste_repeat_count": "Número de repetições da colagem",
@@ -29,6 +33,21 @@
         "reset_presets": "Restaurar presets padrão",
         "help_button": "Mostrar dica útil",
         "flotante_window": "Janela flutuante"
+      },
+      "aria": {
+        "import_extract": "Importar ou extrair texto",
+        "cancel_ocr": "Cancelar OCR",
+        "paste_repeat_count": "Repetições de colagem",
+        "wpm_input": "Palavras por minuto",
+        "wpm_slider": "Controle deslizante de palavras por minuto",
+        "speed_presets": "Presets de velocidade",
+        "precise_mode_toggle": "Modo preciso",
+        "crono_controls": "Controles do cronômetro",
+        "crono_display": "Display do cronômetro",
+        "crono_toggle": "Iniciar ou pausar cronômetro",
+        "crono_reset": "Reiniciar cronômetro",
+        "floating_window_toggle": "Janela flutuante",
+        "floating_window_group": "Controles da janela flutuante"
       },
       "speed": {
         "title": "VELOCIDADE DE LEITURA",
@@ -60,7 +79,14 @@
         "title_with_elapsed": "Importação finalizada. OCR concluído em {elapsed}. Escolha o modo de aplicação:",
         "overwrite": "Sobrescrever",
         "append": "Anexar",
+        "repeat_count": "Repetições",
         "ocr_running": "OCR em andamento..."
+      },
+      "pdf_selectable_choice": {
+        "title": "PDF com texto selecionável detectado",
+        "message": "Recomendação: tente primeiro no modo normal. Se o resultado não for bom, use extração via OCR.",
+        "normal": "Extração normal",
+        "ocr": "Extração via OCR"
       },
       "ocr_options": {
         "title": "Opções de OCR",
@@ -81,14 +107,15 @@
         "preprocess_aggressive": "Agressivo",
         "guidance_presets": "Rápido ~{fast}s/pág · Balanceado ~{balanced}s/pág · Alta precisão ~{high}s/pág",
         "guidance_total": "Estimativa total: ~{total} para {pages} página(s)",
-        "guidance_disclaimer": "(aproximado, depende da complexidade do documento e do desempenho do dispositivo)",
+        "guidance_disclaimer": "A ETA é uma estimativa. Na realidade, depende da complexidade do arquivo e do desempenho do dispositivo.",
+        "guidance_eta_note": "A ETA pode aumentar durante as primeiras páginas enquanto a velocidade por página se estabiliza.",
         "start": "Iniciar OCR",
         "abort": "Cancelar"
       },
       "import_progress": {
-        "pages": "páginas",
-        "elapsed": "decorrido",
-        "eta": "ETA",
+        "pages": "páginas:",
+        "elapsed": "decorrido:",
+        "eta": "ETA:",
         "stage_queued": "Na fila",
         "stage_running": "Em execução",
         "stage_extracting": "Extraindo...",
@@ -112,13 +139,14 @@
       },
       "columns": {
         "texto": "Texto",
-        "tempo": "Tempo",
+        "tiempo": "Tempo",
         "percent": "%",
         "falta": "F",
         "tipo": "Tipo",
         "enlace": "Enlace",
         "comentario": "",
-        "acciones": "Ações"
+        "acciones": "Ações",
+        "tempo": "Tempo"
       },
       "buttons": {
         "save": "Salvar",
@@ -133,6 +161,7 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
         "select_snapshot": "Selecionar snapshot",
         "clear_snapshot": "🗙",
         "cancel": "Cancelar",
@@ -245,6 +274,51 @@
       "open_presets_unsupported": "A abertura de presets não é suportada neste ambiente.",
       "open_presets_error": "Ocorreu um erro ao abrir a pasta de presets. Verifique o console.",
       "open_presets_fail": "Não foi possível abrir a pasta padrão de presets. Verifique o console para mais detalhes.",
+      "import_unavailable": "A funcionalidade de importação/OCR não está disponível neste ambiente.",
+      "import_dep_missing_mammoth": "A dependência de importação DOCX está ausente nesta compilação.",
+      "import_dep_missing_pdfjs": "A dependência de importação PDF está ausente nesta compilação.",
+      "import_decode_failed": "Falha ao decodificar texto. Escolha uma codificação compatível.",
+      "import_text_binary_detected": "O arquivo de texto selecionado parece conter dados binários.",
+      "import_signature_mismatch": "O conteúdo do arquivo selecionado não corresponde à extensão do arquivo.",
+      "import_unsupported_format": "Formato de arquivo não suportado.",
+      "import_read_failed": "Não foi possível ler o arquivo selecionado.",
+      "import_invalid_path": "O caminho do arquivo selecionado é inválido.",
+      "import_invalid_payload": "A carga da solicitação de importação é inválida.",
+      "import_session_not_found": "Sessão de importação não encontrada.",
+      "import_not_ready_to_apply": "O resultado da importação ainda não está pronto para ser aplicado.",
+      "import_apply_unavailable": "Não foi possível aplicar o texto importado neste ambiente.",
+      "import_busy": "A sessão de importação já está em execução.",
+      "import_ocr_unavailable_platform": "OCR não está disponível para esta compilação de plataforma.",
+      "import_ocr_binary_missing": "Arquivos de runtime OCR ausentes ou incompletos.",
+      "import_ocr_exec_failed": "A execução do OCR falhou.",
+      "import_ocr_raster_failed": "A rasterização do PDF falhou antes do OCR.",
+      "import_ocr_timeout_page": "OCR excedeu o tempo para esta página/imagem.",
+      "import_ocr_timeout_job": "OCR excedeu o tempo antes de concluir o documento completo.",
+      "import_ocr_lang_unsupported": "O idioma OCR selecionado não é suportado nesta compilação do app.",
+      "import_ocr_lang_unavailable": "Os dados do idioma OCR selecionado não estão instalados neste runtime.",
+      "import_ocr_empty_result": "OCR concluído, mas nenhum texto foi detectado.",
+      "import_ocr_not_running": "Nenhum job de OCR está em execução no momento.",
+      "import_ocr_canceled": "OCR foi cancelado.",
+      "import_ocr_cancel_timeout": "Cancelamento de OCR solicitado, mas o processo não parou a tempo.",
+      "import_scanned_pdf_ocr_start_failed": "Falha ao iniciar OCR para PDF escaneado.",
+      "import_session_mapping_missing": "Importação concluída, mas o mapeamento da sessão não foi encontrado.",
+      "import_truncated": "O texto importado excedeu o tamanho máximo e foi truncado.",
+      "import_apply_failed": "Falha ao aplicar o texto importado.",
+      "import_cancel_request_failed": "Falha ao solicitar cancelamento de OCR.",
+      "import_ocr_precondition_cannot_start": "Não é possível iniciar OCR agora.",
+      "import_ocr_precondition_close_secondary_windows": "Feche estas janelas secundárias: {windows}.",
+      "import_ocr_precondition_close_all_secondary_windows": "Feche todas as janelas secundárias.",
+      "import_ocr_precondition_pause_stopwatch": "Pause o cronômetro.",
+      "import_ocr_precondition_close_secondary_and_pause_stopwatch": "Feche todas as janelas secundárias e pause o cronômetro.",
+      "import_ocr_precondition_window_editor": "Editor manual",
+      "import_ocr_precondition_window_editor_find": "Janela de busca",
+      "import_ocr_precondition_window_preset": "Janela de preset",
+      "import_ocr_precondition_window_task_editor": "Editor de tarefas",
+      "import_ocr_precondition_window_language": "Janela de idioma",
+      "import_ocr_precondition_window_flotante": "Janela de cronômetro flutuante",
+      "import_ocr_precondition_window_secondary": "Janela secundária",
+      "import_unexpected": "A importação falhou de forma inesperada.",
+      "import_failed_generic": "A importação falhou.",
       "wip_cargador_texto": "WIP: Em uma versão futura, será possível importar texto de arquivos de texto aqui.",
       "wip_cargador_imagen": "WIP: Em uma versão futura, será possível importar texto de arquivos de imagem aqui.",
       "wip_test_velocidad": "WIP: O teste de velocidade de leitura será aberto aqui em uma versão futura.",
@@ -264,6 +338,7 @@
       "drop_no_text": "Arrastar e soltar: nenhum texto simples detectado.",
       "type_limit": "Não é possível digitar mais texto: tamanho máximo atingido.",
       "paste_limit": "Não é possível colar mais texto: tamanho máximo atingido.",
+      "drop_limit": "Não é possível soltar mais texto: tamanho máximo atingido.",
       "paste_truncated": "O texto colado foi truncado para evitar exceder o limite máximo.",
       "drop_truncated": "O texto arrastado excedeu o espaço disponível e foi truncado.",
       "text_truncated": "O texto foi truncado para adequar-se ao limite máximo da aplicação.",
@@ -277,9 +352,25 @@
       "process_error": "Ocorreu um erro ao processar o preset. Verifique o console."
     },
     "info": {
+      "external": {
+        "blocked": "Link bloqueado",
+        "missing": "Link não encontrado",
+        "error": "Erro ao abrir link"
+      },
+      "appdoc": {
+        "blocked": "Documento bloqueado",
+        "missing": "Documento não encontrado",
+        "error": "Erro ao abrir documento"
+      },
       "acerca_de": {
         "app_name": "toT",
-        "title": "Sobre"
+        "title": "Sobre",
+        "version": {
+          "unavailable": "Indisponível"
+        },
+        "env": {
+          "unavailable": "Indisponível"
+        }
       },
       "links_interes": {
         "app_name": "toT",

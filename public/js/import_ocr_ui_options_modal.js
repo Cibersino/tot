@@ -37,6 +37,7 @@
       ocrPresetGuidance,
       ocrTotalGuidance,
       ocrTotalDisclaimer,
+      ocrEtaNote,
     } = refs;
 
     // =============================================================================
@@ -202,6 +203,12 @@
         ocrTotalDisclaimer.textContent = t(
           'renderer.main.ocr_options.guidance_disclaimer',
           '(approximate, depends on document complexity and device performance)'
+        );
+      }
+      if (ocrEtaNote) {
+        ocrEtaNote.textContent = t(
+          'renderer.main.ocr_options.guidance_eta_note',
+          'ETA may rise during the first pages while per-page speed stabilizes.'
         );
       }
     }

@@ -213,7 +213,8 @@
         </div>
         <p id="ocrPresetGuidance" class="ocr-options-guidance">Fast ~45s/page · Balanced ~90s/page · High accuracy ~180s/page</p>
         <p id="ocrTotalGuidance" class="ocr-options-guidance">Estimated total: ~1m 30s</p>
-        <p id="ocrTotalDisclaimer" class="ocr-options-guidance">(approximate, depends on document complexity and device performance)</p>
+        <p id="ocrTotalDisclaimer" class="ocr-options-guidance">ETA is an approximation. In reality, it depends on file complexity and device performance.</p>
+        <p id="ocrEtaNote" class="ocr-options-guidance">ETA may rise during the first pages while per-page speed stabilizes.</p>
         <div class="ocr-options-actions">
           <button id="btnOcrOptionsStart" class="btn-standard">Start OCR</button>
           <button id="btnOcrOptionsAbort" class="btn-standard">Abort</button>
@@ -233,6 +234,7 @@
   <script src="./js/count.js"></script>
   <script src="./js/format.js"></script>
   <script src="./js/crono.js"></script>
+  <script src="./js/info_modal.js"></script>
   <script src="./js/info_modal_links.js"></script>
   <script src="./js/current_text_snapshots.js"></script>
   <script src="./js/import_ocr_ui_shared.js"></script>

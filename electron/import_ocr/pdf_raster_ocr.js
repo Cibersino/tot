@@ -1,4 +1,4 @@
-// electron/import_ocr/engine_v2.js
+// electron/import_ocr/pdf_raster_ocr.js
 'use strict';
 
 // =============================================================================
@@ -39,12 +39,12 @@ const {
 // Constants / config
 // =============================================================================
 
-const LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED = 'import_ocr_engine_v2.bridge.failed_ignored.isCancelRequested';
-const LOG_KEY_TMP_FILE_CLEANUP_FAILED = 'import_ocr_engine_v2.cleanup.remove_file_failed_ignored';
-const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_engine_v2.pdfjs.standard_fonts.fallback';
-const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_engine_v2.pdfjs.esm_fallback';
-const LOG_KEY_PDFJS_LOAD_FAILED = 'import_ocr_engine_v2.pdfjs.load_failed';
-const log = Log.get('import-ocr-engine-v2');
+const LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED = 'import_ocr_pdf_raster_ocr.bridge.failed_ignored.isCancelRequested';
+const LOG_KEY_TMP_FILE_CLEANUP_FAILED = 'import_ocr_pdf_raster_ocr.cleanup.remove_file_failed_ignored';
+const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_pdf_raster_ocr.pdfjs.standard_fonts.fallback';
+const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_pdf_raster_ocr.pdfjs.esm_fallback';
+const LOG_KEY_PDFJS_LOAD_FAILED = 'import_ocr_pdf_raster_ocr.pdfjs.load_failed';
+const log = Log.get('import-ocr-pdf-raster-ocr');
 
 // =============================================================================
 // Helpers (filesystem/temp cleanup)
@@ -202,7 +202,7 @@ function buildStallFail(stallMeta, stallTimeoutMs, extra = {}) {
 // OCR pipeline (PDF raster + per-page OCR)
 // =============================================================================
 
-async function runPdfRasterOcrV2(session, sidecar, options = {}) {
+async function runPdfRasterOcr(session, sidecar, options = {}) {
   const pdfPath = session && typeof session.filePath === 'string' ? session.filePath : '';
   if (!pdfPath || !ensurePathExists(pdfPath)) {
     return fail('OCR_EXEC_FAILED', 'OCR input PDF is missing.');
@@ -554,9 +554,9 @@ async function runPdfRasterOcrV2(session, sidecar, options = {}) {
 // =============================================================================
 
 module.exports = {
-  runPdfRasterOcrV2,
+  runPdfRasterOcr,
 };
 
 // =============================================================================
-// End of electron/import_ocr/engine_v2.js
+// End of electron/import_ocr/pdf_raster_ocr.js
 // =============================================================================

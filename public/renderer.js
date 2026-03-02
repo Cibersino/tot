@@ -141,6 +141,10 @@ if (wpmInput) {
 if (pasteRepeatInput) {
   pasteRepeatInput.min = '1';
   pasteRepeatInput.max = String(MAX_PASTE_REPEAT);
+  updatePasteRepeatWarningState(pasteRepeatInput.value);
+  pasteRepeatInput.addEventListener('input', () => {
+    updatePasteRepeatWarningState(pasteRepeatInput.value);
+  });
 }
 
 const realWpmDisplay = document.getElementById('realWpmDisplay');
@@ -348,11 +352,19 @@ function formatImportElapsedLabel(ms) {
   return `${minutes}m ${seconds}s`;
 }
 
+function updatePasteRepeatWarningState(rawValue) {
+  if (!pasteRepeatInput) return;
+  const numericValue = Number(rawValue);
+  const shouldWarn = Number.isFinite(numericValue) && numericValue > 1;
+  pasteRepeatInput.classList.toggle('paste-repeat-input--warning', shouldWarn);
+}
+
 function setMainPasteRepeatValue(rawValue) {
   const normalized = normalizePasteRepeat(rawValue);
   if (pasteRepeatInput) {
     pasteRepeatInput.value = String(normalized);
   }
+  updatePasteRepeatWarningState(normalized);
   return normalized;
 }
 
@@ -1723,292 +1735,36 @@ setupToggleModoPreciso();
 // =============================================================================
 // Info modal
 // =============================================================================
-  const infoModal = document.getElementById('infoModal');
-  const infoModalBackdrop = document.getElementById('infoModalBackdrop');
-  const infoModalClose = document.getElementById('infoModalClose');
-  const infoModalTitle = document.getElementById('infoModalTitle');
-  const infoModalContent = document.getElementById('infoModalContent');
-  const { bindInfoModalLinks } = window.InfoModalLinks || {};
-
-  function closeInfoModal() {
-    try {
-      if (!infoModal || !infoModalContent) return;
-      infoModal.setAttribute('aria-hidden', 'true');
-      infoModalContent.innerHTML = '<div class="info-loading">Cargando...</div>';
-    } catch (err) {
-      log.error('Error closing modal info:', err);
-    }
-  }
-
-  if (infoModalClose) infoModalClose.addEventListener('click', closeInfoModal);
-  if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', closeInfoModal);
-
-  window.addEventListener('keydown', (ev) => {
-    if (!infoModal) return;
-    if (ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') {
-      closeInfoModal();
-    }
+const infoModalModule = window.RendererInfoModal;
+let infoModalController = null;
+if (infoModalModule && typeof infoModalModule.createController === 'function') {
+  infoModalController = infoModalModule.createController({
+    tRenderer,
+    getIdiomaActual: () => idiomaActual,
+    getSettingsCache: () => settingsCache,
+    electronAPI: window.electronAPI
   });
-
-  async function fetchText(path) {
-    try {
-      const res = await fetch(path, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.text();
-    } catch (err) {
-      log.warnOnce('renderer:fetchText:failed', 'fetchText failed; info modal will fallback:', path, err);
-      return null;
-    }
+  if (infoModalController && typeof infoModalController.bind === 'function') {
+    infoModalController.bind();
   }
+} else {
+  log.warnOnce(
+    'renderer.info.modal.module.unavailable',
+    '[renderer] RendererInfoModal.createController unavailable; info modal actions disabled.'
+  );
+}
 
-  async function fetchTextWithFallback(paths) {
-    for (const path of paths) {
-      const html = await fetchText(path);
-      if (html !== null) return { html, path };
-    }
-    return { html: null, path: null };
-  }
-
-  // Translate HTML fragments using data-i18n and renderer.info.<key>.*
-  function translateInfoHtml(htmlString, key) {
-    // If no translation function is available, return the HTML unchanged.
-    if (!tRenderer) return htmlString;
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlString, 'text/html');
-      doc.querySelectorAll('[data-i18n]').forEach((el) => {
-        const dataKey = el.getAttribute('data-i18n');
-        if (!dataKey) return;
-        const tKey = `renderer.info.${key}.${dataKey}`;
-        const translated = tRenderer(tKey, el.textContent || '');
-        if (translated) el.textContent = translated;
-      });
-      return doc.body.innerHTML;
-    } catch (err) {
-      log.warn('translateInfoHtml failed:', err);
-      return htmlString;
-    }
-  }
-
-  function extractInfoBodyHtml(htmlString) {
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlString, 'text/html');
-      return doc.body.innerHTML;
-    } catch (err) {
-      log.warn('extractInfoBodyHtml failed:', err);
-      return htmlString;
-    }
-  }
-
-  async function hydrateAboutVersion(container) {
-    const versionEl = container ? container.querySelector('#appVersion') : null;
-    if (!versionEl) return;
-
-    if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
-      log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
-      versionEl.textContent = 'N/A';
-      return;
-    }
-
-    try {
-      const version = await window.electronAPI.getAppVersion();
-      const cleaned = typeof version === 'string' ? version.trim() : '';
-      if (!cleaned) {
-        log.warnOnce(
-          'renderer.info.acerca_de.version.empty',
-          'getAppVersion returned empty; About modal shows N/A.'
-        );
-        versionEl.textContent = 'N/A';
-        return;
-      }
-      versionEl.textContent = cleaned;
-    } catch (err) {
-      log.warn('getAppVersion failed; About modal shows N/A:', err);
-      versionEl.textContent = 'N/A';
-    }
-  }
-
-  async function hydrateAboutEnvironment(container) {
-    const envEl = container ? container.querySelector('#appEnv') : null;
-    if (!envEl) return;
-
-    if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
-      log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
-      envEl.textContent = 'N/A';
-      return;
-    }
-
-    try {
-      const info = await window.electronAPI.getAppRuntimeInfo();
-      const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
-      const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
-      const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
-      const osLabel = platformMap[platform] || platform;
-
-      if (!osLabel || !arch) {
-        log.warnOnce(
-          'renderer.info.acerca_de.env.missing_fields',
-          'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
-        );
-        envEl.textContent = 'N/A';
-        return;
-      }
-
-      envEl.textContent = `${osLabel} (${arch})`;
-    } catch (err) {
-      log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
-      envEl.textContent = 'N/A';
-    }
-  }
-
-  const normalizeLangTagSafe = (lang) => {
-    if (window.RendererI18n && typeof window.RendererI18n.normalizeLangTag === 'function') {
-      return window.RendererI18n.normalizeLangTag(lang);
-    }
+async function showInfoModal(key, opts = {}) {
+  if (!infoModalController || typeof infoModalController.show !== 'function') {
     log.warnOnce(
-      'renderer.info.normalizeLangTag.fallback',
-      'RendererI18n.normalizeLangTag unavailable; using local fallback normalization.'
+      'renderer.info.modal.controller.unavailable',
+      '[renderer] info modal controller unavailable; ignoring show request:',
+      key
     );
-    return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
-  };
-
-  const getLangBaseSafe = (lang) => {
-    if (window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function') {
-      return window.RendererI18n.getLangBase(lang);
-    }
-    log.warnOnce(
-      'renderer.info.getLangBase.fallback',
-      'RendererI18n.getLangBase unavailable; using local fallback language base.'
-    );
-    const normalized = normalizeLangTagSafe(lang);
-    if (!normalized) return '';
-    const idx = normalized.indexOf('-');
-    return idx > 0 ? normalized.slice(0, idx) : normalized;
-  };
-
-  function getManualFileCandidates(langTag) {
-    const candidates = [];
-    const normalized = normalizeLangTagSafe(langTag);
-    const base = getLangBaseSafe(normalized);
-    if (normalized) candidates.push(normalized);
-    if (base && base !== normalized) candidates.push(base);
-    const defaultLang = normalizeLangTagSafe(DEFAULT_LANG);
-    if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
-    return candidates.map(tag => `./info/instrucciones.${tag}.html`);
+    return;
   }
-
-  async function showInfoModal(key, opts = {}) {
-    // key: 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
-    const sectionTitles = {
-      instrucciones: 'Instrucciones completas',
-      guia_basica: 'Guia basica',
-      faq: 'Preguntas frecuentes (FAQ)',
-      acerca_de: 'Acerca de'
-    };
-
-    if (!infoModal || !infoModalTitle || !infoModalContent) return;
-
-    // Decide which file to load based on the key.
-    // Basic guide, instructions, and FAQ are served from localized manual HTML.
-    let fileToLoad = null;
-    let sectionId = null;
-    const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
-
-    if (key === 'acerca_de') {
-      fileToLoad = './info/acerca_de.html';
-    } else if (isManual) {
-      const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
-      fileToLoad = getManualFileCandidates(langTag);
-      // Map key to block ID within instructions.html
-      const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
-      sectionId = mapping[key] || 'instrucciones';
-    } else {
-      // Compatibility fallback for legacy standalone pages
-      fileToLoad = `./info/${key}.html`;
-    }
-
-    const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
-    // Manual uses a fixed title; other pages use i18n when available.
-    if (isManual) {
-      infoModalTitle.textContent = 'Manual de uso';
-    } else {
-      const defaultTitle = sectionTitles[key] || (opts.title || 'Información');
-      infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
-    }
-
-    // Open modal early so loading state is visible during fetch
-    infoModal.setAttribute('aria-hidden', 'false');
-
-    // Fetch HTML (manual pages use a language fallback list)
-    const tryHtml = Array.isArray(fileToLoad)
-      ? (await fetchTextWithFallback(fileToLoad)).html
-      : await fetchText(fileToLoad);
-    if (tryHtml === null) {
-      // Fallback: show a simple missing-content message
-      infoModalContent.innerHTML =
-        `<p>No hay contenido disponible para '${infoModalTitle.textContent}'.</p>`;
-      if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-      return;
-    }
-
-    // Translate non-manual pages; manual HTML is loaded as-is.
-    const renderedHtml = isManual
-      ? extractInfoBodyHtml(tryHtml)
-      : translateInfoHtml(tryHtml, translationKey);
-    infoModalContent.innerHTML = renderedHtml;
-    if (typeof bindInfoModalLinks === 'function') {
-      bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
-    } else {
-      log.warnOnce(
-        'renderer.info.bindInfoModalLinks.unavailable',
-        'InfoModalLinks.bindInfoModalLinks unavailable; modal links will use default behavior.'
-      );
-    }
-    if (key === 'acerca_de') {
-      await hydrateAboutVersion(infoModalContent);
-      await hydrateAboutEnvironment(infoModalContent);
-    }
-
-    // Ensure the panel starts at the top before scrolling
-    const panel = document.querySelector('.info-modal-panel');
-    if (panel) panel.scrollTop = 0;
-
-    // If a specific section was requested, scroll so it appears above the panel
-    if (sectionId) {
-      // Wait for the next frame so the parsed DOM is laid out
-      requestAnimationFrame(() => {
-        try {
-          const target = infoModalContent.querySelector(`#${sectionId}`);
-          if (!target) {
-            // If the ID does not exist, do nothing else
-            if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-            return;
-          }
-
-          try {
-            target.scrollIntoView({ behavior: 'auto', block: 'start' });
-          } catch {
-            // Defensive fallback: calculate relative top without compensating for header
-            const panelRect = panel.getBoundingClientRect();
-            const targetRect = target.getBoundingClientRect();
-            const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
-            const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
-            panel.scrollTo({ top: finalTop, behavior: 'auto' });
-          }
-
-          // Focus on the content so the reader can use the keyboard
-          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-        } catch (err) {
-          log.error('Error moving modal to section:', err);
-          if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-        }
-      });
-    } else {
-      // No section: focus the content for the whole document
-      if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
-    }
-  }
+  await infoModalController.show(key, opts);
+}
 
   // =============================================================================
   // Top bar menu actions
@@ -2273,6 +2029,7 @@ function getPasteRepeatCount() {
   if (!pasteRepeatInput) return 1;
   const normalized = normalizePasteRepeat(pasteRepeatInput.value);
   pasteRepeatInput.value = String(normalized);
+  updatePasteRepeatWarningState(normalized);
   return normalized;
 }
 

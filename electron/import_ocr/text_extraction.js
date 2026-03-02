@@ -1,10 +1,10 @@
-// electron/import_ocr/extract_phase_a.js
+// electron/import_ocr/text_extraction.js
 'use strict';
 
 // =============================================================================
 // Overview
 // =============================================================================
-// Phase A extraction module for text-based imports.
+// Text extraction module for non-OCR imports.
 // Responsibilities:
 // - Normalize extracted text line endings before returning results.
 // - Extract text from TXT, DOCX, and PDF files.
@@ -20,18 +20,18 @@ const fs = require('fs');
 const path = require('path');
 const Log = require('../log');
 
-const log = Log.get('import-ocr-extract-phase-a');
+const log = Log.get('import-ocr-text-extraction');
 
 // =============================================================================
 // Constants / config
 // =============================================================================
 
-const LOG_KEY_ICONV_MISSING = 'import_ocr_extract_phase_a.iconv.missing';
-const LOG_KEY_MAMMOTH_MISSING = 'import_ocr_extract_phase_a.mammoth.missing';
-const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_extract_phase_a.pdfjs.esm_fallback';
-const LOG_KEY_PDFJS_MISSING = 'import_ocr_extract_phase_a.pdfjs.missing';
-const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_extract_phase_a.pdfjs.standard_fonts.fallback';
-const LOG_KEY_PDFJS_DESTROY_FAILED = 'import_ocr_extract_phase_a.pdfjs.loadingTask.destroy_failed';
+const LOG_KEY_ICONV_MISSING = 'import_ocr_text_extraction.iconv.missing';
+const LOG_KEY_MAMMOTH_MISSING = 'import_ocr_text_extraction.mammoth.missing';
+const LOG_KEY_PDFJS_ESM_FALLBACK = 'import_ocr_text_extraction.pdfjs.esm_fallback';
+const LOG_KEY_PDFJS_MISSING = 'import_ocr_text_extraction.pdfjs.missing';
+const LOG_KEY_PDFJS_FONTS_DIR_FALLBACK = 'import_ocr_text_extraction.pdfjs.standard_fonts.fallback';
+const LOG_KEY_PDFJS_DESTROY_FAILED = 'import_ocr_text_extraction.pdfjs.loadingTask.destroy_failed';
 
 // =============================================================================
 // Helpers (shared result + normalization + decode)
@@ -323,7 +323,7 @@ async function extractPdf(filePath) {
 // Entry point
 // =============================================================================
 
-async function runPhaseAExtraction(session, options = {}) {
+async function runTextExtraction(session, options = {}) {
   const filePath = session && typeof session.filePath === 'string' ? session.filePath : '';
   const kind = session && typeof session.kind === 'string' ? session.kind : '';
   if (!filePath) {
@@ -341,7 +341,7 @@ async function runPhaseAExtraction(session, options = {}) {
     return extractPdf(filePath);
   }
 
-  return fail('IMPORT_UNSUPPORTED_KIND', 'Unsupported extractor kind for Phase A.', {
+  return fail('IMPORT_UNSUPPORTED_KIND', 'Unsupported extractor kind for text extraction.', {
     kind,
     ext,
   });
@@ -352,9 +352,9 @@ async function runPhaseAExtraction(session, options = {}) {
 // =============================================================================
 
 module.exports = {
-  runPhaseAExtraction,
+  runTextExtraction,
 };
 
 // =============================================================================
-// End of electron/import_ocr/extract_phase_a.js
+// End of electron/import_ocr/text_extraction.js
 // =============================================================================

@@ -16,7 +16,7 @@
         "task_load": "🗃️"
       },
       "tooltips": {
-        "import_extract": "Importar o extraer texto desde archivo",
+        "import_extract": "Importar o extraer texto desde un archivo",
         "cancel_ocr": "Cancelar OCR en ejecución",
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
         "append_clipboard": "Pegar portapapeles al final del texto actual (nueva línea)",
@@ -118,14 +118,15 @@
         "preprocess_aggressive": "Agresivo",
         "guidance_presets": "Rápido ~{fast}s/pág · Balanceado ~{balanced}s/pág · Alta precisión ~{high}s/pág",
         "guidance_total": "Estimación total: ~{total} para {pages} página(s)",
-        "guidance_disclaimer": "(aproximado, depende de la complejidad del documento y el rendimiento del dispositivo)",
+        "guidance_disclaimer": "La ETA es una aproximación. En realidad, depende de la complejidad del archivo y el rendimiento del dispositivo.",
+        "guidance_eta_note": "La ETA puede subir en las primeras páginas mientras se estabiliza el ritmo por página.",
         "start": "Iniciar OCR",
         "abort": "Abortar"
       },
       "import_progress": {
-        "pages": "páginas",
-        "elapsed": "transcurrido",
-        "eta": "ETA",
+        "pages": "páginas:",
+        "elapsed": "transcurrido:",
+        "eta": "ETA:",
         "stage_queued": "En cola",
         "stage_running": "En ejecución",
         "stage_extracting": "Extrayendo...",

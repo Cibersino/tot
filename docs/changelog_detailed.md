@@ -61,14 +61,18 @@ Reglas:
 ### Agregado
 
 - Botón `📥` de importación/extracción en ventana principal + entrada por **drag & drop** de archivos.
-- Nuevos módulos de renderer para la feature:
+- Nuevos módulos de renderer para la feature Import/OCR (split modular):
   - `public/js/import_entry.js` (entry unificado botón + drop)
-  - `public/js/import_ocr_ui.js` (modales/options/progreso/cancelación/apply)
+  - `public/js/import_ocr_ui.js` (fachada/orquestador UI)
+  - `public/js/import_ocr_ui_shared.js` (constantes/helpers compartidos)
+  - `public/js/import_ocr_ui_progress.js` (progreso/ETA/estado OCR)
+  - `public/js/import_ocr_ui_options_modal.js` (modal de opciones OCR)
+  - `public/js/import_ocr_ui_choice_modal.js` (modal de apply `Overwrite`/`Append`)
 - Nuevos módulos main para import/OCR:
   - `electron/import_ocr/orchestrator.js`
-  - `electron/import_ocr/extract_phase_a.js`
+  - `electron/import_ocr/text_extraction.js`
   - `electron/import_ocr/ocr_pipeline.js`
-  - `electron/import_ocr/engine_v2.js`
+  - `electron/import_ocr/pdf_raster_ocr.js`
   - `electron/import_ocr/ocr_runtime.js`
   - `electron/import_ocr/language_policy.js`
   - `electron/import_ocr/platform/{profile_registry,resolve_sidecar,process_control}.js`
@@ -117,6 +121,9 @@ Reglas:
   - normalización/whitelist de `meta.action`.
 - `settings` agrega persistencia de carpeta usada en importación (`last_import_dir`) para default del file picker.
 - `electron/preload.js` amplía bridge con métodos Import/OCR + estado del interaction gate + helper de path para archivos drop (`webUtils.getPathForFile`).
+- `public/renderer.js` delega la lógica del info modal a módulos dedicados:
+  - `public/js/info_modal.js` (controlador/ciclo de vida/carga de contenido)
+  - `public/js/info_modal_links.js` (binding de enlaces internos/externos/appdoc)
 - `package.json`/packaging:
   - añade `extraResources` para empaquetar `ocr/**` fuera de `app.asar`;
   - incluye `THIRD_PARTY_NOTICES.md` y `third_party_licenses/**` en artefacto;
@@ -179,6 +186,12 @@ Reglas:
   - `public/style.css`
   - `public/js/import_entry.js`
   - `public/js/import_ocr_ui.js`
+  - `public/js/import_ocr_ui_shared.js`
+  - `public/js/import_ocr_ui_progress.js`
+  - `public/js/import_ocr_ui_options_modal.js`
+  - `public/js/import_ocr_ui_choice_modal.js`
+  - `public/js/info_modal.js`
+  - `public/js/info_modal_links.js`
   - `i18n/*/renderer.json`
 - Runtime/packaging/legal:
   - `ocr/**`

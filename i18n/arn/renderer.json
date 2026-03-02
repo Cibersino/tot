@@ -4,6 +4,8 @@
       "selector_title": "Wünne ka afkechi trokiñ wirin:",
       "selector_empty": "(welli)",
       "buttons": {
+        "import_extract": "📥",
+        "cancel_ocr": "⛔",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +16,8 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Kintun tachi wirin weyel tati",
+        "cancel_ocr": "Katrütun OCR",
         "overwrite_clipboard": "Kangelu wirin tachi portapapeles mu",
         "append_clipboard": "Pültrün tachi portapapeles afkechi wirin mu (we ruka)",
         "paste_repeat_count": "Pültrün tachi portapapeles afkechi wirin mu (we ruka) ka repeat",
@@ -29,6 +33,21 @@
         "reset_presets": "Wiño elual presets",
         "help_button": "Pengelün kellu dungu",
         "flotante_window": "Ventana weñyefe"
+      },
+      "aria": {
+        "import_extract": "Kintun tachi wirin weyel tati",
+        "cancel_ocr": "Katrütun OCR",
+        "paste_repeat_count": "Pültrün tachi portapapeles afkechi wirin mu (we ruka)",
+        "wpm_input": "Dungu kiñe minuto mu (WPM)",
+        "wpm_slider": "Küzawtuwe dungu kiñe minuto mu",
+        "speed_presets": "Presets weyel tati",
+        "precise_mode_toggle": "Rüf rakiduam",
+        "crono_controls": "Üngümwe küzawtuwe",
+        "crono_display": "Display weyel tati",
+        "crono_toggle": "Yallupe/Chillkatun üngümwe",
+        "crono_reset": "Wiño üngümwe",
+        "floating_window_toggle": "Ventana weñyefe",
+        "floating_window_group": "Küzawtuwe ventana weñyefe"
       },
       "speed": {
         "title": "LEF CHILLKATUN",
@@ -60,7 +79,14 @@
         "title_with_elapsed": "Afpuy chi llowün. OCR wechupuy {elapsed} mew. Dullinge chumngechi amuleal:",
         "overwrite": "Vlkantun",
         "append": "Iñamtun",
+        "repeat_count": "Küza weyel tati",
         "ocr_running": "Amuley chi OCR..."
+      },
+      "pdf_selectable_choice": {
+        "title": "PDF we selekton wirin mew",
+        "message": "Rekomendación: Yalupe normal mew. Mewchi, afpuy chi OCR mew.",
+        "normal": "Normal",
+        "ocr": "OCR"
       },
       "ocr_options": {
         "title": "OCR ñi dullintun",
@@ -81,14 +107,15 @@
         "preprocess_aggressive": "Yafv",
         "guidance_presets": "Pürüm ~{fast}s/tapül · Rangi ~{balanced}s/tapül · Kume kintun ~{high}s/tapül",
         "guidance_total": "Tvfa mvten amuleay: ~{total} fey {pages} tapül mew",
-        "guidance_disclaimer": "(münefe, dokumentu komplexidad ka dispositivo rendimiento mew)",
+        "guidance_disclaimer": "ETA ka tvfa mvten amuleay mew petu afiy tachi fütra wirin, ka inchiñan ka chachay mew.",
+        "guidance_eta_note": "ETA ka müley rise fey tapül mew ka per-tapül speed stabilizes.",
         "start": "Yallupe OCR",
         "abort": "Katrütun"
       },
       "import_progress": {
-        "pages": "tapül",
-        "elapsed": "rupachi antü",
-        "eta": "müne antü",
+        "pages": "tapül:",
+        "elapsed": "rupachi antü:",
+        "eta": "müne antü:",
         "stage_queued": "Üngon mew",
         "stage_running": "Amuley",
         "stage_extracting": "Nentun mew...",
@@ -133,6 +160,7 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
         "select_snapshot": "Kintun snapshot",
         "clear_snapshot": "🗙",
         "cancel": "Katrüntun",
@@ -245,6 +273,51 @@
       "open_presets_unsupported": "Pewfala nülan presets faw.",
       "open_presets_error": "Welulkuy nülan mu presets. Kintunge consola.",
       "open_presets_fail": "Pewfala nülan presets ruka. Kintunge consola.",
+      "import_unavailable": "Ti 'importación/OCR' pepi nülangekelay faw chi mülen mu.",
+      "import_dep_missing_mammoth": "Duamfalley kellu wirintukun 'DOCX' tañi küdawael.",
+      "import_dep_missing_pdfjs": "Duamfalley kellu wirintukun 'PDF' tañi küdawael.",
+      "import_decode_failed": "Welungülley ti nülantun wirin. Dullunge kiñe ad-wirin llowngekelu.",
+      "import_text_binary_detected": "Tufa chi wirintukun nielu 'datos binarios' trokiñngey.",
+      "import_signature_mismatch": "Ti wirin nielu chillka trürkelay tañi üy mu.",
+      "import_unsupported_format": "Tufa chi ad-chillka llowngelay.",
+      "import_read_failed": "Pepi chillkatungelay ti chillka.",
+      "import_invalid_path": "Ti rüpü chillka welungülley.",
+      "import_invalid_payload": "Ti 'importación' feyentungelay.",
+      "import_session_not_found": "Pepi pe-ngelay ti 'sesión de importación'.",
+      "import_not_ready_to_apply": "Ti 'importación' petu pepi amulekelay.",
+      "import_apply_unavailable": "Pepi nülangekelay ti wirin faw chi mülen mu.",
+      "import_busy": "Ti 'importación' petu kudawmekey.",
+      "import_ocr_unavailable_platform": "OCR pepi nülangekelay tufa chi plataforma mu.",
+      "import_ocr_binary_missing": "Mülengelay pu chillka 'OCR' tañi küdawael.",
+      "import_ocr_exec_failed": "Welungülley ti 'OCR' tañi kudaw.",
+      "import_ocr_raster_failed": "Welungülley ti 'rasterización' PDF mu, petu 'OCR' ñi llowngen.",
+      "import_ocr_timeout_page": "Afy ti antü 'OCR' mu tufa chi ad-chillka mu.",
+      "import_ocr_timeout_job": "Afy ti antü 'OCR' mu, petu ñi amulenieel ti chillka.",
+      "import_ocr_lang_unsupported": "Ti dullungun 'OCR' llowngelay faw.",
+      "import_ocr_lang_unavailable": "Ti dungu 'OCR' mu nentungelay tufa chi runtime mu.",
+      "import_ocr_empty_result": "Afy ti 'OCR' welu pepi pe-ngelay wirin.",
+      "import_ocr_not_running": "Mülekelay 'OCR' petu kudawmekelu.",
+      "import_ocr_canceled": "Katrüngün ti 'OCR'.",
+      "import_ocr_cancel_timeout": "Pepi katrüngelay ti 'OCR' küme antü mu.",
+      "import_scanned_pdf_ocr_start_failed": "Pepi llowngelay 'OCR' feychi PDF 'escaneado' mu.",
+      "import_session_mapping_missing": "Afy ti 'importación' welu pepi pe-ngelay ti 'mapeo de sesión'.",
+      "import_truncated": "Ti wirin rume alün-nguey, feymew katrüngün.",
+      "import_apply_failed": "Pepi llowngelay ti wirin 'importación' mu.",
+      "import_cancel_request_failed": "Pepi katrüngelay ti 'OCR'.",
+      "import_ocr_precondition_cannot_start": "Pepi llowngekelay 'OCR' fanten mew.",
+      "import_ocr_precondition_close_secondary_windows": "Ngelay tufa chi nülantun (ventanas): {windows}.",
+      "import_ocr_precondition_close_all_secondary_windows": "Ngelay itrokom nülantun (ventanas).",
+      "import_ocr_precondition_pause_stopwatch": "Vatunge ti antü-fentun (cronómetro).",
+      "import_ocr_precondition_close_secondary_and_pause_stopwatch": "Ngelay itrokom nülantun ka vatunge ti antü-fentun.",
+      "import_ocr_precondition_window_editor": "Wirinkonlu",
+      "import_ocr_precondition_window_editor_find": "Kintun nülantun",
+      "import_ocr_precondition_window_preset": "Preset nülantun",
+      "import_ocr_precondition_window_task_editor": "Küdaw wirinkonlu",
+      "import_ocr_precondition_window_language": "Dungun nülantun",
+      "import_ocr_precondition_window_flotante": "Lebtun antü-fentun nülantun",
+      "import_ocr_precondition_window_secondary": "Ka nülantun",
+      "import_unexpected": "Welungülley ti 'importación' lladkün dungu mu.",
+      "import_failed_generic": "Welungülley ti 'importación'.",
       "wip_cargador_texto": "WIP: Faw nentual wirin chew müley wirin küpalechi version mu.",
       "wip_cargador_imagen": "WIP: Faw nentual wirin adentun mu küpalechi version mu.",
       "wip_test_velocidad": "WIP: Faw nülai test lef chillkatun küpalechi version mu.",
@@ -277,9 +350,25 @@
       "process_error": "Welulkuy küzaw preset mu."
     },
     "info": {
+      "external": {
+        "blocked": "Ruta wechun ka bloquechi",
+        "missing": "Ruta wechun ka weli",
+        "error": "Chem welulkuy wechun ruta mu"
+      },
+      "appdoc": {
+        "blocked": "Archivo wechun ka bloquechi",
+        "missing": "Archivo wechun ka weli",
+        "error": "Chem welulkuy wechun archivo mu"
+      },
       "acerca_de": {
         "app_name": "toT",
-        "title": "Dungu mu"
+        "title": "Dungu mu",
+        "version": {
+          "unavailable": "Versión nielay"
+        },
+        "env": {
+          "unavailable": "Entorno nielay"
+        }
       },
       "links_interes": {
         "app_name": "toT",

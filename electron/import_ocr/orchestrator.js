@@ -25,7 +25,7 @@ const { MAX_PASTE_REPEAT } = require('../constants_main');
 const { validateRegistry } = require('./platform/profile_registry');
 const { validateSidecarRuntime } = require('./platform/resolve_sidecar');
 const { buildAvailableUiLanguages } = require('./language_policy');
-const { runPhaseAExtraction } = require('./extract_phase_a');
+const { runTextExtraction } = require('./text_extraction');
 const { runOcrPipeline } = require('./ocr_pipeline');
 const { terminateWithEscalation } = require('./platform/process_control');
 
@@ -738,7 +738,7 @@ async function runJob(job) {
         },
       }));
     } else {
-      extractRes = await runPhaseAExtraction(session, job.options || {});
+      extractRes = await runTextExtraction(session, job.options || {});
     }
 
     if (!extractRes || extractRes.ok !== true) {
