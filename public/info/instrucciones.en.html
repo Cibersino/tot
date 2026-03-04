@@ -57,16 +57,12 @@
               <li>To get familiar with the app, choose a base WPM using a preset or the slider/input (a default preset
                 is fine to start).</li>
               <li>Press <strong>📥</strong> or drag/drop that photo onto the main window, choose OCR language, keep
-                <strong>Balanced</strong>, and press <strong>Start OCR</strong>. While dragging, a visual drop
-                highlight is shown.
+                <strong>Balanced</strong>, and press <strong>Start OCR</strong>.
               </li>
-              <li>If extraction succeeds, choose <strong>Overwrite</strong>. Open the <strong>Manual Editor</strong>
-                (⌨) to inspect how clean the extraction is.</li>
-              <li>Back in the main window, click the input to the right of <strong>📋+</strong>, enter
-                <code>(book total pages - 1)</code>, then click <strong>📋+</strong>.
-              </li>
-              <li>The app will iterate the model page to approximate total words/characters and estimated reading time
-                using your selected WPM.</li>
+              <li>When it finishes, in the final apply modal choose <strong>Overwrite</strong>, and in
+                <strong>Repetitions</strong> enter the book's total page count.</li>
+              <li>Confirm: the app will apply and iterate that model page to approximate total words/characters and
+                estimated reading time. Open the <strong>Manual Editor</strong> (⌨) to inspect the extracted result.</li>
             </ul>
           </li>
 
@@ -74,9 +70,11 @@
             <p><strong>Copy from clipboard</strong></p>
             <ul>
               <li>Use <strong>🗑</strong> to start from scratch.</li>
-              <li>From any source: copy the text and use <strong>📋↺</strong></li>
+              <li>From any source: copy the text and use <strong>📋↺</strong>.</li>
               <li>If you are assembling a text in parts: use <strong>📋+</strong> as many times as you need
               </li>
+              <li>To repeat the clipboard text in one click, set the number in <strong>Repetitions</strong> and then apply the
+                action: <strong>📋↺</strong> to overwrite or <strong>📋+</strong> to append.</li>
             </ul>
           </li>
 
@@ -217,10 +215,9 @@
             <strong>Extraction via OCR</strong> (recommendation: try it on normal first, it's much faster).</li>
           <li>If OCR path is used (image, scanned PDF, or manual OCR choice), configure options (OCR language + preset)
             and run <strong>Start OCR</strong>.</li>
-          <li>When text is ready, choose <strong>Overwrite</strong> or <strong>Append</strong>.</li>
-          <li>If you want to approximate a full book from one model page, use the input next to
-            <strong>📋+</strong> with <code>(total pages - 1)</code>, then click <strong>📋+</strong>.
-          </li>
+          <li>When text is ready, in the final apply modal choose <strong>Overwrite</strong> or <strong>Append</strong>.</li>
+          <li>If you want to approximate a full book from one model page, in that same modal set
+            <strong>Repetitions</strong> to the book's total page count and confirm.</li>
         </ol>
 
         <p><strong>Note:</strong> <em>toT</em> provides import, extraction, and OCR paths to reduce manual work.
@@ -469,8 +466,8 @@
 我喜欢读书因为它很有趣
 Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
-        <p>Remember that you can duplicate the text as many times as you want with <strong>📋+</strong>.
-        </p>
+        <p>Remember that you can duplicate text with <strong>Repetitions</strong>, either from the main selector
+          (<strong>📋↺</strong>/<strong>📋+</strong>) or from the import/OCR final apply modal.</p>
 
         <p><strong>What to see:</strong></p>
         <ul>
