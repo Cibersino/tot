@@ -104,23 +104,23 @@ Batch 1 scoped-lock declarations (change-controlled):
 * recorded in evidence before Batch 2
 * any change requires evidence update and re-run of Operation Compatibility Gate + affected quality checks
 
-## Preprocess CLI Contract
+## Preprocess Adapter Contract
 
-Required input args:
-* `--input <path>`
-* `--output <path>`
-* `--op-<operation_key> <off|auto|manual>` for scoped-lock operation keys.
-* `--param-<operation_key>-*` for `manual` mode (scoped-lock schema).
-* `--max-long-side`, `--max-pixels`, `--max-output-bytes`, optional timeout hint args.
+Required adapter input:
+* Canonical `preprocessConfig` payload (scoped-lock operation keys/order and bounded manual schema).
+* Input artifact path and output artifact target.
+* Safety/time policy inputs required by app guardrails (caps, timeout hints when applicable).
 
-Required output:
-* JSON with `ok`, `outputPath`, and structured stats.
+Required adapter output:
+* Structured result with `ok`, `outputPath`, and stats.
 * Per-operation stats: requested/effective mode, applied/skipped, params, duration.
 * Cap/upscale/resize effects.
 
-CLI failure categories (adapter input):
-* `ARG`, `UNAVAILABLE`, `FAILED`, `TIMEOUT`, `CANCELED` (or equivalent), mapped to app typed errors.
-* CLI categories are internal adapter inputs; mapping to app-level closed set (`OCR_PREPROCESS_*`) and `OCR_BINARY_MISSING` policy must be deterministic.
+Error mapping contract:
+* Adapter-native failures must map deterministically to app-level closed set (`OCR_PREPROCESS_*`) and `OCR_BINARY_MISSING` policy.
+
+Transport/protocol note:
+* Invocation protocol/argument shape is implementation-defined by selected candidate path (process CLI, wrapper/orchestration, or equivalent) as long as this canonical contract is satisfied.
 
 ## Operation Compatibility Gate (Mandatory Evidence)
 
@@ -385,14 +385,14 @@ Includes:
   * [ ] if missing, execute guided user download/install steps
   * [ ] rerun availability/version/path checks and record evidence
 * [ ] Record implementation-start evidence entries for Batch 1 setup checks.
-* [ ] Implement preprocess operation contract (`--op-*`, no profile arg anywhere).
+* [ ] Implement preprocess adapter contract (canonical `preprocessConfig` semantics; no legacy profile arg anywhere).
 * [ ] Implement preprocess runner JSON output with per-operation stats.
 * [ ] Implement strict backend `preprocessConfig` validation.
 
 ### Batch 2
 * [ ] Implement preprocess execution with deterministic temp outputs and safety caps.
 * [ ] If bundled-binary strategy is selected, establish runtime artifacts for `win32-x64` and verify paths under `ocr/<platform>-<arch>/preprocess/...`.
-* [ ] If (and only if) custom `.exe` path is selected by evidence, build preprocess artifact and verify runtime uses the required operation-arg contract.
+* [ ] If (and only if) custom `.exe` path is selected by evidence, build preprocess artifact and verify runtime satisfies the canonical preprocess adapter contract.
 * [ ] Record preprocess dependency/artifact provenance in evidence.
 * [ ] Pass Operation Compatibility Gate for each operation in issue scope with evidence entries.
 * [ ] Do not introduce compatibility bridge logic (no operation -> legacy profile mapping anywhere).
