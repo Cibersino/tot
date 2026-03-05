@@ -40,6 +40,9 @@ Important:
 - This is technical/product analysis, not legal advice.
 - `C5` is a risk signal pending legal/compliance review.
 
+Assumption applied for this revision:
+- `A1`: The project already runs a strong third-party compliance process in production (license notices, provenance tracking, release discipline). Under `A1`, `unpaper`-path `C5` is treated as managed risk, not default blocker.
+
 ---
 
 ## Repository Constraints (Current App State)
@@ -120,9 +123,9 @@ Format per candidate:
 - Evidence: libvips main docs, CLI docs, install docs, GitHub.
 
 `B04` unpaper CLI
-- Priority: `4.2 | 3.3 | 2.8`
-- Criteria: `3.4 | 3.2 | 3.0 | 3.8 | 2.2 | 4.4`
-- Notes: strong OCR cleanup upside; license/compliance and temp-artifact behavior require strict controls.
+- Priority: `4.2 | 3.3 | 3.5`
+- Criteria: `3.4 | 3.2 | 3.0 | 3.8 | 3.8 | 4.4`
+- Notes: strong OCR cleanup upside; with `A1`, compliance is treated as controlled operational work (still requires strict FFmpeg/unpaper provenance controls).
 - Evidence: unpaper repo, OCRmyPDF unpaper notes, Paperless config signals.
 
 `B05` G'MIC CLI
@@ -176,27 +179,27 @@ Format per candidate:
 ### Hybrid Candidates
 
 `H01` ImageMagick -> unpaper
-- Priority: `4.7 | 4.8 | 2.9`
-- Criteria: `4.8 | 3.4 | 3.6 | 4.2 | 2.2 | 4.8`
-- Notes: top bundled-hybrid quality hypothesis; high operational/legal diligence needed.
+- Priority: `4.7 | 4.8 | 3.5`
+- Criteria: `4.8 | 3.4 | 3.6 | 4.2 | 3.8 | 4.8`
+- Notes: top bundled-hybrid quality hypothesis; under `A1`, compliance burden is significant but manageable with disciplined release controls.
 - Evidence: ImageMagick + unpaper + OCRmyPDF unpaper behavior.
 
 `H02` libvips -> unpaper
-- Priority: `4.4 | 4.3 | 2.7`
-- Criteria: `4.3 | 3.1 | 3.4 | 4.0 | 2.1 | 4.6`
-- Notes: quality upside plus performance, but same unpaper burden and orchestration complexity.
+- Priority: `4.4 | 4.3 | 3.4`
+- Criteria: `4.3 | 3.1 | 3.4 | 4.0 | 3.7 | 4.6`
+- Notes: quality upside plus performance; under `A1`, compliance is manageable and main risk shifts to orchestration/runtime complexity.
 - Evidence: libvips + unpaper sources.
 
 `H03` GraphicsMagick -> unpaper
-- Priority: `4.2 | 4.1 | 2.8`
-- Criteria: `4.0 | 3.2 | 3.3 | 4.1 | 2.2 | 4.4`
+- Priority: `4.2 | 4.1 | 3.5`
+- Criteria: `4.0 | 3.2 | 3.3 | 4.1 | 3.8 | 4.4`
 - Notes: comparable hypothesis to H01/H02 but with weaker verified evidence on fine-grained operation parity.
 - Evidence: GraphicsMagick + unpaper sources.
 
 `H04` G'MIC -> unpaper
-- Priority: `4.1 | 4.4 | 2.4`
-- Criteria: `4.3 | 2.8 | 3.1 | 3.6 | 1.9 | 4.3`
-- Notes: high flexibility and potentially strong difficult-case behavior; highest complexity/compliance stack in hybrids.
+- Priority: `4.1 | 4.4 | 3.1`
+- Criteria: `4.3 | 2.8 | 3.1 | 3.6 | 3.4 | 4.3`
+- Notes: high flexibility and potentially strong difficult-case behavior; with `A1`, dominant risk is integration complexity more than licensing process.
 - Evidence: G'MIC + unpaper sources.
 
 `H05` ImageMagick -> Leptonica
@@ -305,7 +308,7 @@ Re-opened and retained as serious contenders:
 
 - True CER/robustness deltas on difficult families for frontier set (`C09`, `H01`, `H05`, `C02`, `C01`, `B01`).
 - Reliability under cancellation/timeouts for multi-step hybrid and Python-heavy candidates.
-- Compliance package viability for GPL/MPL/LGPL-mixed delivery scenarios.
+- Final provenance consistency checks for mixed-license delivery scenarios (especially exact FFmpeg build/profile controls in `unpaper` paths).
 - Final scoped-lock operation set/order can re-rank `Secondary` and `C1`.
 
 ---
