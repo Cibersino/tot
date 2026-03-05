@@ -1,391 +1,317 @@
 # Issue 139 - Pre-Implementation Decision Gate
 
-## Strict Criteria 1-6 Scoring Matrix Draft (Discovery Only, Unfrozen)
+## Criteria 1-6 Matrix Draft (Rigor Rebuild, Discovery Only, Unfrozen)
 
 Timestamp:
-- 2026-03-05 18:43:31 -03:00
+- 2026-03-05 19:33:49 -03:00
 
 Status:
-- This is a draft scoring artifact only.
-- Candidate list is not frozen.
-- No candidate selection is made here.
-- No implementation proof is attempted here.
-- No criteria 1-6 table is used (readability requirement).
-
-Primary issue anchors:
-- `docs/issues/Issue_139.md:135` (define bundled/custom lists before testing)
-- `docs/issues/Issue_139.md:140` (criteria 1-6 definitions)
-- `docs/issues/Issue_139.md:149` (pass condition: criteria 1-5)
-- `docs/issues/Issue_139.md:154` (criterion 6 mandatory input, non-hard-gate)
-- `docs/issues/Issue_139.md:26` (custom `.exe` only after capability-gap proof)
-
-Repository constraint anchors used for every candidate:
-- `electron/import_ocr/platform/profile_registry.js:19` (sidecar-per-target model)
-- `electron/import_ocr/platform/resolve_sidecar.js:96` (env/resource/app path resolution; no PATH discovery model)
-- `ocr/README.md:24` (sidecars launched from packaged target folders; no PATH lookup)
-- `electron/import_ocr/platform/process_control.js:57` (Windows process tree termination via `taskkill`)
-- `electron/import_ocr/ocr_runtime.js:205` (timeout/cancel capable subprocess wrapper)
-- `public/js/import_ocr_ui_shared.js:31` (legacy preprocess profile still present; migration still pending)
-
-Evidence commands executed in this discovery pass:
-- `Get-Content docs/issues/Issue_139.md`
-- `rg -n "preprocess|OCR_PREPROCESS|OCR_BINARY_MISSING|preprocessing" ...`
-- `Get-Content electron/import_ocr/platform/resolve_sidecar.js`
-- `Get-Content electron/import_ocr/platform/process_control.js`
-- `Get-Content electron/import_ocr/ocr_runtime.js`
-- `Get-Content electron/import_ocr/platform/profile_registry.js`
-- `Get-Content ocr/README.md`
+- Discovery only.
+- List is not frozen.
+- No candidate selected.
+- No implementation proof.
+- Existing file updated (no new matrix file).
 
 ---
 
-## Scoring Rules (Strict Draft)
+## Investigation Protocol (Applied in This Pass)
 
-Score scale for each criterion:
-- `0.0`: not realizable under current issue constraints.
-- `1.0`: major blockers; currently impractical.
-- `2.0`: significant unresolved gaps; likely fails gate.
-- `3.0`: plausible but with material risk/unknowns.
-- `4.0`: strong fit with manageable risk.
-- `5.0`: very strong fit with direct evidence and low integration risk.
+What changed for rigor:
+- Every scored candidate must be backed by sources opened and inspected in this session.
+- Claims with weak or unstable source access are marked `partial` and scored conservatively.
+- Priority ordering is explicit and controls readout:
+  - primary: expected extraction improvement and reliability (`Primary`)
+  - secondary: per-operation fidelity/control (`Secondary`)
+  - then: delivery/policy/compliance/maintenance (`Other`)
 
-Criteria (Issue_139 exact intent):
-- `C1` Contract realizability (`off|auto|manual`, bounded manual params, scoped-lock key/order).
-- `C2` Runtime-policy realizability (timeout/cancel/fail-fast/cleanup semantics).
-- `C3` Observability realizability (structured stats + deterministic typed mapping).
-- `C4` Cross-platform-ready architecture (future targets ready without shipping now).
-- `C5` Compliance viability (licensing/compliance for current and planned targets).
-- `C6` Quality potential signal (mandatory input, non-hard-gate).
+Scoring scales:
+- `Primary`, `Secondary`, `Other`: `0.0` to `5.0`.
+- Criteria `C1..C6`: `0.0` to `5.0`.
 
-Draft gate classification (strict interpretation for this draft):
-- `PASS_STRICT`: all `C1..C5 >= 4.0`.
-- `HOLD`: all `C1..C5 >= 3.0`, but at least one of `C1..C5` is `< 4.0`.
-- `FAIL`: any of `C1..C5 < 3.0`.
+Criteria mapping (Issue_139):
+- `C1`: contract realizability (`off|auto|manual`, bounded manual schema).
+- `C2`: runtime-policy realizability (timeout/cancel/fail-fast/cleanup).
+- `C3`: observability realizability (structured stats + typed mapping).
+- `C4`: cross-platform-ready architecture.
+- `C5`: compliance viability.
+- `C6`: quality potential signal.
 
-Policy overlay:
-- Any custom runner candidate (`C*`) remains `GAP_ONLY` until capability-gap evidence proves bundled paths cannot satisfy the gate (`docs/issues/Issue_139.md:26`).
-
----
-
-## Bundled Candidates
-
-### B01 - ImageMagick CLI (`magick`)
-- `C1`: `4.5`
-- `C2`: `4.0`
-- `C3`: `4.0`
-- `C4`: `4.5`
-- `C5`: `4.5`
-- `C6`: `4.5`
-- Gate status: `PASS_STRICT`
-- Confidence: `High`
-- Notes: broad operation surface maps cleanly to wrapper orchestration; strong fit to existing sidecar process pattern.
-- Evidence links:
-  - https://imagemagick.org/script/command-line-options.php
-  - https://imagemagick.org/script/security-policy.php
-  - https://imagemagick.org/license/
-  - https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html
-
-### B02 - GraphicsMagick CLI (`gm`)
-- `C1`: `3.5`
-- `C2`: `4.0`
-- `C3`: `3.5`
-- `C4`: `4.0`
-- `C5`: `4.5`
-- `C6`: `3.5`
-- Gate status: `HOLD`
-- Confidence: `Medium`
-- Notes: mature CLI path and permissive license; operation parity versus scoped-lock needs requires targeted probing.
-- Evidence links:
-  - https://www.graphicsmagick.org/
-  - https://www.graphicsmagick.org/GraphicsMagick.html
-  - https://graphicsmagick.sourceforge.io/Copyright.html
-
-### B03 - libvips CLI (`vips`)
-- `C1`: `3.5`
-- `C2`: `4.0`
-- `C3`: `4.0`
-- `C4`: `4.5`
-- `C5`: `3.0`
-- `C6`: `3.5`
-- Gate status: `HOLD`
-- Confidence: `Medium`
-- Notes: strong performance and broad ops, but compliance/packaging review is stricter because of LGPL and dependency chain.
-- Evidence links:
-  - https://www.libvips.org/
-  - https://www.libvips.org/install
-  - https://www.libvips.org/API/current/using-the-cli.html
-  - https://github.com/libvips/libvips
-
-### B04 - unpaper CLI
-- `C1`: `3.0`
-- `C2`: `3.5`
-- `C3`: `3.0`
-- `C4`: `4.0`
-- `C5`: `2.0`
-- `C6`: `4.0`
-- Gate status: `FAIL` (`C5 < 3.0`)
-- Confidence: `High`
-- Notes: strong OCR-focused processing potential, but license/compliance posture is a major blocker in current draft.
-- Evidence links:
-  - https://github.com/unpaper/unpaper
-  - https://manpages.ubuntu.com/manpages/lunar/man1/unpaper.1.html
-  - https://ocrmypdf.readthedocs.io/en/v16.0.1/advanced.html
-
-### B05 - G'MIC CLI (`gmic`)
-- `C1`: `4.0`
-- `C2`: `3.5`
-- `C3`: `3.0`
-- `C4`: `4.0`
-- `C5`: `2.5`
-- `C6`: `3.5`
-- Gate status: `FAIL` (`C5 < 3.0`)
-- Confidence: `Medium`
-- Notes: very broad filter language; stronger compliance and stability scrutiny needed for selected command subset.
-- Evidence links:
-  - https://gmic.eu/
-  - https://gmic.eu/reference/list_of_commands.html
-  - https://github.com/GreycLab/gmic
-
-### B06 - NAPS2 Console (`naps2.console`)
-- `C1`: `2.5`
-- `C2`: `3.0`
-- `C3`: `2.0`
-- `C4`: `3.5`
-- `C5`: `2.0`
-- `C6`: `3.0`
-- Gate status: `FAIL` (`C1`, `C3`, `C5 < 3.0`)
-- Confidence: `High`
-- Notes: good operational tooling, but weak fit to strict operation-by-operation adapter/observability contract; GPL app license is a major compliance concern for bundling this path as core preprocess engine.
-- Evidence links:
-  - https://www.naps2.com/doc/command-line
-  - https://github.com/cyanfish/naps2
-  - https://www.naps2.com/download
-
-### B07 - ScanTailor Advanced runtime path
-- `C1`: `1.0`
-- `C2`: `1.5`
-- `C3`: `1.0`
-- `C4`: `2.5`
-- `C5`: `2.0`
-- `C6`: `3.0`
-- Gate status: `FAIL`
-- Confidence: `Medium`
-- Notes: high-quality page processing reputation, but runtime automation and deterministic contract realization are weak for this gate.
-- Evidence links:
-  - https://github.com/4lex4/scantailor-advanced
-
-### B08 - Tesseract-internal-only preprocessing path
-- `C1`: `2.5`
-- `C2`: `4.5`
-- `C3`: `2.5`
-- `C4`: `5.0`
-- `C5`: `5.0`
-- `C6`: `2.5`
-- Gate status: `FAIL` (`C1`, `C3 < 3.0`)
-- Confidence: `Medium`
-- Notes: very low packaging risk but likely insufficient operation surface for scoped-lock contract ambition.
-- Evidence links:
-  - https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html
-
-### B09 - OCRmyPDF as preprocess runtime
-- `C1`: `1.5`
-- `C2`: `2.5`
-- `C3`: `2.0`
-- `C4`: `3.0`
-- `C5`: `2.5`
-- `C6`: `4.0`
-- Gate status: `FAIL`
-- Confidence: `High`
-- Notes: useful comparator/reference, but architecture is a full OCR pipeline tool, not a clean preprocess adapter fit for this issue.
-- Evidence links:
-  - https://github.com/ocrmypdf/OCRmyPDF
-  - https://ocrmypdf.readthedocs.io/en/v16.0.1/advanced.html
-  - https://docs.paperless-ngx.com/configuration/
+Important:
+- This is technical/product analysis, not legal advice.
+- `C5` is a risk signal pending legal/compliance review.
 
 ---
 
-## Hybrid Bundled Candidates
+## Repository Constraints (Current App State)
 
-### H01 - ImageMagick -> unpaper chain
-- `C1`: `4.5`
-- `C2`: `3.5`
-- `C3`: `3.5`
-- `C4`: `4.5`
-- `C5`: `2.0`
-- `C6`: `5.0`
-- Gate status: `FAIL` (`C5 < 3.0`)
-- Confidence: `High`
-- Notes: strongest quality-potential hypothesis among bundled chains, but compliance burden from unpaper blocks strict pass.
-- Evidence links:
-  - https://imagemagick.org/script/command-line-options.php
-  - https://github.com/unpaper/unpaper
-  - https://ocrmypdf.readthedocs.io/en/v16.0.1/advanced.html
-
-### H02 - libvips -> unpaper chain
-- `C1`: `4.0`
-- `C2`: `3.5`
-- `C3`: `3.5`
-- `C4`: `4.5`
-- `C5`: `2.0`
-- `C6`: `4.5`
-- Gate status: `FAIL` (`C5 < 3.0`)
-- Confidence: `Medium`
-- Notes: strong potential for speed plus OCR cleanup; same compliance blocker pattern as H01.
-- Evidence links:
-  - https://www.libvips.org/
-  - https://github.com/unpaper/unpaper
-
-### H03 - GraphicsMagick -> unpaper chain
-- `C1`: `4.0`
-- `C2`: `3.5`
-- `C3`: `3.5`
-- `C4`: `4.5`
-- `C5`: `2.0`
-- `C6`: `4.0`
-- Gate status: `FAIL` (`C5 < 3.0`)
-- Confidence: `Medium`
-- Notes: valid chain conceptually; same copyleft/compliance blocker from unpaper.
-- Evidence links:
-  - https://www.graphicsmagick.org/
-  - https://github.com/unpaper/unpaper
-
-### H04 - G'MIC -> unpaper chain
-- `C1`: `4.0`
-- `C2`: `3.0`
-- `C3`: `3.0`
-- `C4`: `4.0`
-- `C5`: `1.5`
-- `C6`: `4.0`
-- Gate status: `FAIL`
-- Confidence: `Low`
-- Notes: high flexibility, but highest complexity/compliance uncertainty among hybrids in this draft.
-- Evidence links:
-  - https://gmic.eu/
-  - https://github.com/GreycLab/gmic
-  - https://github.com/unpaper/unpaper
+Anchors used to avoid unrealistic candidates:
+- `electron/import_ocr/platform/profile_registry.js:19` (sidecar-by-target model under `ocr/<platform>-<arch>`).
+- `electron/import_ocr/platform/resolve_sidecar.js:96` and `ocr/README.md:7` (runtime resolution uses explicit/env/resources/app path, not PATH discovery).
+- `electron/import_ocr/ocr_pipeline.js:87` and `ocr/README.md:28` (`OCR_BINARY_MISSING` policy already central).
+- `electron/import_ocr/platform/process_control.js:57` and `electron/import_ocr/ocr_runtime.js:255` (timeout/cancel + forced terminate available).
+- `public/js/import_ocr_ui_shared.js:31` (legacy `basic|standard|aggressive` still present; migration pending).
 
 ---
 
-## Custom Candidates (Policy: GAP_ONLY until capability-gap is proven)
+## External Source Audit Ledger (This Session)
 
-### C01 - Custom OpenCV preprocess runner (`.exe`)
-- `C1`: `5.0`
-- `C2`: `4.0`
-- `C3`: `5.0`
-- `C4`: `4.0`
-- `C5`: `4.5`
-- `C6`: `4.5`
-- Gate status: `PASS_STRICT`
-- Policy state: `GAP_ONLY` (cannot be selected unless bundled capability-gap is proven)
-- Confidence: `High`
-- Notes: strongest control over contract/observability; higher build/distribution burden.
-- Evidence links:
-  - https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html
-  - https://docs.opencv.org/4.x/d9/d61/tutorial_py_morphological_ops.html
-  - https://opencv.org/license/
+Verified:
+- https://imagemagick.org/script/command-line-options.php
+- https://imagemagick.org/script/security-policy.php
+- https://imagemagick.org/license/
+- https://graphicsmagick.sourceforge.io/ (license/release baseline)
+- https://www.graphicsmagick.org/GraphicsMagick.html (partially unstable fetch; capability evidence treated as partial)
+- https://www.libvips.org/
+- https://www.libvips.org/API/current/using-the-cli.html
+- https://www.libvips.org/install
+- https://github.com/libvips/libvips
+- https://github.com/unpaper/unpaper
+- https://ocrmypdf.readthedocs.io/en/v16.0.1/advanced.html
+- https://docs.paperless-ngx.com/configuration/
+- https://github.com/GreycLab/gmic
+- https://gmic.eu/reference/list_of_commands.html
+- https://www.naps2.com/doc/command-line
+- https://github.com/cyanfish/naps2
+- https://github.com/4lex4/scantailor-advanced
+- https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html
+- https://github.com/ocrmypdf/OCRmyPDF
+- https://opencv.org/license/
+- https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html
+- https://docs.opencv.org/4.x/d9/d61/tutorial_py_morphological_ops.html
+- https://docs.opencv.org/4.x/df/d2d/group__ximgproc.html
+- https://github.com/DanBloomberg/leptonica
+- https://github.com/DanBloomberg/leptonica/blob/master/leptonica-license.txt
+- https://github.com/lovell/sharp
+- https://github.com/ocropus-archive/DUP-ocropy
+- https://github.com/mittagessen/kraken
 
-### C02 - Custom Leptonica preprocess runner (`.exe`)
-- `C1`: `4.5`
-- `C2`: `4.0`
-- `C3`: `5.0`
-- `C4`: `4.0`
-- `C5`: `4.5`
-- `C6`: `4.5`
-- Gate status: `PASS_STRICT`
-- Policy state: `GAP_ONLY`
-- Confidence: `Medium`
-- Notes: strong document-image operation fit; custom integration/testing work remains substantial.
-- Evidence links:
-  - https://www.leptonica.org/
-  - https://github.com/DanBloomberg/leptonica
-  - https://www.leptonica.org/download.html
-
-### C03 - Custom libvips preprocess runner (`.exe`)
-- `C1`: `4.5`
-- `C2`: `4.0`
-- `C3`: `5.0`
-- `C4`: `4.5`
-- `C5`: `3.0`
-- `C6`: `4.0`
-- Gate status: `HOLD`
-- Policy state: `GAP_ONLY`
-- Confidence: `Medium`
-- Notes: strong technical path, with compliance packaging review as main drag.
-- Evidence links:
-  - https://www.libvips.org/
-  - https://github.com/libvips/libvips
-
-### C04 - Custom .NET preprocess runner (e.g., NAPS2 images stack or equivalent)
-- `C1`: `4.0`
-- `C2`: `3.5`
-- `C3`: `5.0`
-- `C4`: `4.0`
-- `C5`: `2.5`
-- `C6`: `3.5`
-- Gate status: `FAIL` (`C5 < 3.0`)
-- Policy state: `GAP_ONLY`
-- Confidence: `Medium`
-- Notes: can satisfy contract/observability well, but licensing/package composition needs stricter clarification.
-- Evidence links:
-  - https://www.naps2.com/sdk/doc/api/
-  - https://github.com/cyanfish/naps2
-
-### C05 - In-process Node adapter via `sharp` (libvips-backed)
-- `C1`: `4.0`
-- `C2`: `2.5`
-- `C3`: `4.0`
-- `C4`: `4.0`
-- `C5`: `3.0`
-- `C6`: `3.5`
-- Gate status: `FAIL` (`C2 < 3.0`)
-- Policy state: `GAP_ONLY`
-- Confidence: `Medium`
-- Notes: technically capable image operations, but diverges from current subprocess sidecar policy and timeout/cancel model.
-- Evidence links:
-  - https://github.com/lovell/sharp
-  - https://sharp.pixelplumbing.com/
-  - https://www.libvips.org/
-
-### C06 - Python sidecar (`opencv`/`scikit-image` family)
-- `C1`: `5.0`
-- `C2`: `2.5`
-- `C3`: `5.0`
-- `C4`: `3.5`
-- `C5`: `3.0`
-- `C6`: `4.0`
-- Gate status: `FAIL` (`C2 < 3.0`)
-- Policy state: `GAP_ONLY`
-- Confidence: `Medium`
-- Notes: maximum algorithm flexibility; weakest runtime and packaging fit with current app model.
-- Evidence links:
-  - https://docs.opencv.org/4.x/
-  - https://opencv.org/license/
+Partial / blocked in this pass:
+- `unpaper` Ubuntu manpage URL intermittently inaccessible from tool.
+- SourceForge OCRopus command wiki inaccessible from tool.
+- GIMP batch docs inaccessible from tool.
 
 ---
 
-## Draft Readout (No Freeze)
+## Expanded Candidate Investigation (Revised)
 
-Observed `PASS_STRICT` in this draft:
-- `B01`
-- `C01` (`GAP_ONLY`)
-- `C02` (`GAP_ONLY`)
+Format per candidate:
+- `Priority`: `Primary | Secondary | Other`
+- `Criteria`: `C1 | C2 | C3 | C4 | C5 | C6`
+- `Evidence`: source set used in this pass
 
-Observed `HOLD` in this draft:
-- `B02`
-- `B03`
-- `C03` (`GAP_ONLY`)
+### Bundled Candidates
 
-Observed `FAIL` in this draft:
-- `B04`, `B05`, `B06`, `B07`, `B08`, `B09`
-- `H01`, `H02`, `H03`, `H04`
-- `C04`, `C05`, `C06`
+`B01` ImageMagick CLI
+- Priority: `4.5 | 4.6 | 4.2`
+- Criteria: `4.7 | 4.2 | 4.0 | 4.5 | 4.5 | 4.6`
+- Notes: strong operation coverage (`deskew`, `auto-threshold`, `morphology`, `despeckle`, `normalize`) + explicit security-policy limit controls.
+- Evidence: ImageMagick options/security/license, Tesseract ImproveQuality.
 
-Important interpretation constraints:
-- This draft is intentionally strict and conservative.
-- `C*` entries are not selection candidates unless bundled capability-gap is proven per issue policy.
-- `C6` is mandatory decision input but does not override `C1..C5` gate failures.
+`B02` GraphicsMagick CLI
+- Priority: `3.5 | 3.4 | 4.2`
+- Criteria: `3.3 | 4.0 | 3.5 | 4.3 | 4.7 | 3.4`
+- Notes: license/release posture is strong; command capability evidence is partially unstable due fetch issues, so fidelity is scored conservatively.
+- Evidence: GraphicsMagick site/release/license snippets.
 
-Open evidence gaps before any freeze:
-- Verify exact scoped-lock operation set and order (currently not frozen in this draft).
-- Run lightweight probe scripts for `B02` and `B03` to reduce `C1/C3` uncertainty.
-- Complete legal/compliance review packet for any candidate with non-permissive or mixed dependency licensing.
+`B03` libvips CLI
+- Priority: `3.9 | 3.8 | 3.6`
+- Criteria: `3.8 | 3.6 | 3.8 | 4.4 | 3.0 | 3.9`
+- Notes: very broad operations and low-memory profile; CLI chaining requires intermediate files (runtime complexity).
+- Evidence: libvips main docs, CLI docs, install docs, GitHub.
 
+`B04` unpaper CLI
+- Priority: `4.2 | 3.3 | 2.8`
+- Criteria: `3.4 | 3.2 | 3.0 | 3.8 | 2.2 | 4.4`
+- Notes: strong OCR cleanup upside; license/compliance and temp-artifact behavior require strict controls.
+- Evidence: unpaper repo, OCRmyPDF unpaper notes, Paperless config signals.
+
+`B05` G'MIC CLI
+- Priority: `3.8 | 4.2 | 2.9`
+- Criteria: `4.1 | 3.2 | 3.2 | 3.7 | 2.5 | 3.8`
+- Notes: very deep filter surface (including denoise/morphology families), but complexity/compliance overhead is higher.
+- Evidence: G'MIC repo + command reference.
+
+`B06` NAPS2 Console
+- Priority: `3.1 | 2.9 | 2.6`
+- Criteria: `2.8 | 3.0 | 2.5 | 3.4 | 2.0 | 3.2`
+- Notes: useful OCR command surface and component installer options, but weaker low-level preprocess adapter control and licensing complexity.
+- Evidence: NAPS2 CLI docs + GitHub licensing split.
+
+`B07` ScanTailor Advanced runtime path
+- Priority: `2.9 | 2.0 | 2.1`
+- Criteria: `1.9 | 2.6 | 2.0 | 2.4 | 2.0 | 3.0`
+- Notes: strong interactive page-processing features, but project explicitly scopes out OCR and is interactive-first.
+- Evidence: ScanTailor README/license.
+
+`B08` Tesseract-internal-only preprocessing
+- Priority: `2.9 | 2.6 | 4.7`
+- Criteria: `2.6 | 4.6 | 2.7 | 5.0 | 5.0 | 2.9`
+- Notes: excellent delivery fit, but likely insufficient control surface for Issue_139 operation contract and quality ambition.
+- Evidence: Tesseract ImproveQuality + repo runtime constraints.
+
+`B09` OCRmyPDF-as-runtime
+- Priority: `3.4 | 2.1 | 2.4`
+- Criteria: `2.0 | 2.6 | 2.7 | 3.0 | 3.2 | 3.7`
+- Notes: strong OCR ecosystem tool, but it is a full OCR pipeline and PATH-oriented binary discovery model, not a tight preprocess sidecar adapter.
+- Evidence: OCRmyPDF repo + advanced docs.
+
+`B10` Leptonica utility path
+- Priority: `4.1 | 3.8 | 4.0`
+- Criteria: `3.7 | 4.0 | 3.7 | 4.2 | 4.6 | 4.1`
+- Notes: document-image-native capabilities and permissive license terms; operational packaging specifics still need probing.
+- Evidence: Leptonica repo + license file.
+
+`B11` OCRopus CLI path
+- Priority: `3.8 | 3.6 | 2.7`
+- Criteria: `3.6 | 2.6 | 3.4 | 2.7 | 4.2 | 3.9`
+- Notes: command-line modularity and document-analysis scope are real, but Python/runtime operational burden is significant.
+- Evidence: OCRopus repo README/license.
+
+`B12` Kraken CLI path
+- Priority: `4.0 | 3.8 | 2.8`
+- Criteria: `3.7 | 2.7 | 3.6 | 2.8 | 4.3 | 4.1`
+- Notes: strong OCR capabilities for difficult scripts/documents; deployment model is Python/pip-centric and currently Linux/mac emphasized.
+- Evidence: Kraken repo README/license/install notes.
+
+### Hybrid Candidates
+
+`H01` ImageMagick -> unpaper
+- Priority: `4.7 | 4.8 | 2.9`
+- Criteria: `4.8 | 3.4 | 3.6 | 4.2 | 2.2 | 4.8`
+- Notes: top bundled-hybrid quality hypothesis; high operational/legal diligence needed.
+- Evidence: ImageMagick + unpaper + OCRmyPDF unpaper behavior.
+
+`H02` libvips -> unpaper
+- Priority: `4.4 | 4.3 | 2.7`
+- Criteria: `4.3 | 3.1 | 3.4 | 4.0 | 2.1 | 4.6`
+- Notes: quality upside plus performance, but same unpaper burden and orchestration complexity.
+- Evidence: libvips + unpaper sources.
+
+`H03` GraphicsMagick -> unpaper
+- Priority: `4.2 | 4.1 | 2.8`
+- Criteria: `4.0 | 3.2 | 3.3 | 4.1 | 2.2 | 4.4`
+- Notes: comparable hypothesis to H01/H02 but with weaker verified evidence on fine-grained operation parity.
+- Evidence: GraphicsMagick + unpaper sources.
+
+`H04` G'MIC -> unpaper
+- Priority: `4.1 | 4.4 | 2.4`
+- Criteria: `4.3 | 2.8 | 3.1 | 3.6 | 1.9 | 4.3`
+- Notes: high flexibility and potentially strong difficult-case behavior; highest complexity/compliance stack in hybrids.
+- Evidence: G'MIC + unpaper sources.
+
+`H05` ImageMagick -> Leptonica
+- Priority: `4.6 | 4.7 | 4.1`
+- Criteria: `4.7 | 4.0 | 4.0 | 4.4 | 4.4 | 4.7`
+- Notes: best high-upside hybrid that avoids unpaper licensing profile.
+- Evidence: ImageMagick + Leptonica + Tesseract quality guidance.
+
+`H06` OCRopus/Kraken front preprocessing -> Tesseract OCR
+- Priority: `4.0 | 4.1 | 2.5`
+- Criteria: `4.0 | 2.4 | 3.5 | 2.6 | 4.2 | 4.2`
+- Notes: quality upside plausible, but runtime reproducibility and packaging burden are major risks.
+- Evidence: OCRopus + Kraken sources.
+
+### Custom Candidates
+
+`C01` Custom OpenCV runner (`.exe`)
+- Priority: `4.5 | 5.0 | 4.2`
+- Criteria: `5.0 | 4.1 | 5.0 | 4.0 | 4.7 | 4.6`
+- Notes: strongest deterministic control for operation contract and typed observability.
+- Evidence: OpenCV threshold/morph/ximgproc + license.
+
+`C02` Custom Leptonica runner (`.exe`)
+- Priority: `4.6 | 4.8 | 4.3`
+- Criteria: `4.8 | 4.2 | 5.0 | 4.1 | 4.7 | 4.6`
+- Notes: strong document-image pipeline fit with robust utility surface.
+- Evidence: Leptonica capabilities + license.
+
+`C03` Custom libvips runner (`.exe`)
+- Priority: `4.2 | 4.6 | 3.8`
+- Criteria: `4.6 | 4.0 | 5.0 | 4.2 | 3.1 | 4.3`
+- Notes: high performance with strong wrapper control; compliance/dependency package still needs review.
+- Evidence: libvips docs and license.
+
+`C04` Custom .NET runner (NAPS2 SDK-family)
+- Priority: `4.0 | 4.3 | 3.2`
+- Criteria: `4.3 | 3.5 | 4.8 | 4.0 | 2.8 | 4.0`
+- Notes: candidate is technically plausible; licensing composition requires careful boundary definition.
+- Evidence: NAPS2 repo + licensing split (GPL app vs LGPL SDK/images).
+
+`C05` In-process Node path (`sharp`/libvips)
+- Priority: `3.7 | 4.1 | 3.3`
+- Criteria: `4.1 | 2.8 | 4.2 | 4.0 | 3.5 | 3.8`
+- Notes: strong transform performance but weaker process-isolation/kill semantics versus current OCR runner model.
+- Evidence: sharp repo + license + libvips dependency note.
+
+`C06` Python OpenCV/scikit-image sidecar
+- Priority: `4.0 | 4.9 | 2.8`
+- Criteria: `4.9 | 2.6 | 4.8 | 2.9 | 3.4 | 4.2`
+- Notes: high algorithm headroom; runtime reliability and packaging complexity are substantial.
+- Evidence: OpenCV docs/license + ecosystem practice.
+
+`C07` OCRopus custom sidecar pipeline
+- Priority: `3.9 | 4.3 | 2.6`
+- Criteria: `4.2 | 2.4 | 4.0 | 2.6 | 4.2 | 4.1`
+- Notes: modular command-line composition is attractive; old stack and ops burden reduce reliability confidence.
+- Evidence: OCRopus repo.
+
+`C08` Kraken custom sidecar pipeline
+- Priority: `4.1 | 4.4 | 2.7`
+- Criteria: `4.3 | 2.5 | 4.1 | 2.8 | 4.3 | 4.3`
+- Notes: strong difficult-document upside with modern model ecosystem; deployment/runtime complexity is high.
+- Evidence: Kraken repo.
+
+`C09` Custom OpenCV + Leptonica combined runner
+- Priority: `4.8 | 5.0 | 4.1`
+- Criteria: `5.0 | 4.2 | 5.0 | 4.0 | 4.6 | 4.9`
+- Notes: highest technical ceiling for quality + controllability among audited candidates.
+- Evidence: OpenCV + Leptonica sources.
+
+### Deferred (Not Scored in This Pass)
+
+`D01` GIMP batch preprocessing path
+- Reason: key batch documentation URL was inaccessible from the tool in this pass.
+- Action: keep as backlog candidate; do not score until source is inspected in-session.
+
+---
+
+## Revised Draft Readout (Priority-Ordered, No Freeze, No Selection)
+
+### Outcome Frontier (Primary then Secondary)
+
+Current top frontier:
+- `C09` Custom OpenCV+Leptonica
+- `H01` ImageMagick->unpaper
+- `H05` ImageMagick->Leptonica
+- `C02` Custom Leptonica
+- `C01` Custom OpenCV
+- `B01` ImageMagick CLI
+- `H02` libvips->unpaper
+- `B10` Leptonica utility path
+
+Interpretation:
+- The strongest product-outcome contenders include both bundled/hybrid and custom paths.
+- The previous rigid pass/fail posture would have hidden high-upside paths (`H01`, `C09`, `C02`).
+- Policy remains important (`docs/issues/Issue_139.md:26`) but does not erase product-signal visibility.
+
+### Revisited Candidates Previously Over-Constrained
+
+Re-opened and retained as serious contenders:
+- `H01`, `H02`, `H03`, `H04` (unpaper hybrids): kept because quality signal is strong; compliance/ops burden is explicit, not hidden.
+- `C01`, `C02`, `C09`: now surfaced clearly as top technical quality/control candidates.
+- `B11`, `B12`, `C07`, `C08`: retained as exploratory high-upside paths with lower runtime-confidence.
+
+### Highest Uncertainty Before Any Freeze
+
+- True CER/robustness deltas on difficult families for frontier set (`C09`, `H01`, `H05`, `C02`, `C01`, `B01`).
+- Reliability under cancellation/timeouts for multi-step hybrid and Python-heavy candidates.
+- Compliance package viability for GPL/MPL/LGPL-mixed delivery scenarios.
+- Final scoped-lock operation set/order can re-rank `Secondary` and `C1`.
+
+---
+
+## Conclusion (Draft Only)
+
+This matrix is now rebuilt with in-session evidence audit, expanded candidate coverage, and priority-first readout.
+
+No freeze and no selection are made here.
