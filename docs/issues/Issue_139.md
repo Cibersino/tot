@@ -456,6 +456,7 @@ Policy:
 * No silent fallback in preprocess/OCR flow.
 * Missing preprocess runtime maps to `OCR_BINARY_MISSING`.
 * Implementation strategy follows bundled-binary-first policy; custom preprocess `.exe` is allowed only with documented capability-gap justification.
+* Instructions HTML files are updated to reflect preprocess UX/behavior changes.
 
 Quality:
 * Product-level value requirement is closed: preprocessing shows clear net gain vs `all operations off` on photographed, scanned-PDF, and noisy/low-contrast challenging families.
