@@ -278,6 +278,147 @@ Format per candidate:
 
 ---
 
+## Comparator-App Adoption Audit (Tesseract/Poppler Context)
+
+Comparator set used in this pass:
+- `A1` Paperless-ngx setup/config docs: OCRmyPDF + Tesseract chain; `unpaper`; `imagemagick`; `poppler-utils`; `liblept5`.
+- `A2` OCRmyPDF docs/repo: OCR on scanned PDFs via Tesseract; explicit `unpaper` integration.
+- `A3` pdfsandwich manpage: wrapper using `convert` + `unpaper` + `tesseract` (and `pdfinfo`/`pdfunite` options).
+- `A4` gImageReader packaging/docs: front-end to Tesseract with Poppler dependencies.
+- `A5` NAPS2 docs/repo: OCR CLI options using Tesseract.
+- `A6` Tesseract docs: Tesseract uses Leptonica and does not read PDF directly.
+
+Per-candidate adoption check:
+
+`B01` ImageMagick CLI
+- Status: `direct`.
+- Examples: `A1` (`imagemagick` for PDF conversion), `A3` (`convert` in OCR wrapper chain).
+- Confidence: `high`.
+
+`B02` GraphicsMagick CLI
+- Status: `absent` (no verified comparator in `A1..A6` using it in chain).
+- Confidence: `medium`.
+
+`B03` libvips CLI
+- Status: `absent` (no verified comparator in `A1..A6` using it in chain).
+- Confidence: `medium`.
+
+`B04` unpaper CLI
+- Status: `direct`.
+- Examples: `A1` (`PAPERLESS_OCR_CLEAN` uses `unpaper` before Tesseract), `A2` (Control of `unpaper`), `A3` (`unpaper` in wrapper chain).
+- Confidence: `high`.
+
+`B05` G'MIC CLI
+- Status: `absent` (no verified comparator in `A1..A6` using it in chain).
+- Confidence: `medium`.
+
+`B06` NAPS2 Console
+- Status: `direct`.
+- Examples: `A5` (`--enableocr`, `--ocrlang`).
+- Confidence: `high`.
+
+`B07` ScanTailor Advanced runtime path
+- Status: `absent` (no verified comparator in `A1..A6` using it in automated OCR chain).
+- Confidence: `medium`.
+
+`B08` Tesseract-internal-only preprocessing
+- Status: `direct`.
+- Examples: `A1`, `A2`, `A3`, `A4`, `A5` are Tesseract-based OCR apps.
+- Confidence: `high`.
+
+`B09` OCRmyPDF-as-runtime
+- Status: `direct`.
+- Examples: `A1` explicitly states Paperless uses OCRmyPDF for OCR.
+- Confidence: `high`.
+
+`B10` Leptonica utility path
+- Status: `indirect-strong`.
+- Examples: `A6` (Tesseract uses Leptonica), `A1` setup includes `liblept5` in OCR stack dependencies.
+- Confidence: `high`.
+
+`B11` OCRopus CLI path
+- Status: `absent` (no verified comparator in `A1..A6` combining OCRopus with Tesseract/Poppler chain).
+- Confidence: `medium`.
+
+`B12` Kraken CLI path
+- Status: `absent` (no verified comparator in `A1..A6` combining Kraken with Tesseract/Poppler chain).
+- Confidence: `medium`.
+
+`H01` ImageMagick -> unpaper
+- Status: `direct`.
+- Examples: `A3` (convert + unpaper + tesseract wrapper chain), `A1` (both tools present in OCR stack).
+- Confidence: `high`.
+
+`H02` libvips -> unpaper
+- Status: `absent` (no verified comparator in `A1..A6`).
+- Confidence: `medium`.
+
+`H03` GraphicsMagick -> unpaper
+- Status: `absent` (no verified comparator in `A1..A6`).
+- Confidence: `medium`.
+
+`H04` G'MIC -> unpaper
+- Status: `absent` (no verified comparator in `A1..A6`).
+- Confidence: `medium`.
+
+`H05` ImageMagick -> Leptonica
+- Status: `partial`.
+- Examples: `A1` includes `imagemagick` and `liblept5`/`tesseract`; explicit sequential chain is not documented.
+- Confidence: `medium`.
+
+`H06` OCRopus/Kraken front preprocessing -> Tesseract OCR
+- Status: `absent` (no verified comparator in `A1..A6`).
+- Confidence: `low`.
+
+`C01` Custom OpenCV runner (`.exe`)
+- Status: `absent` (no verified off-the-shelf comparator in `A1..A6`).
+- Confidence: `medium`.
+
+`C02` Custom Leptonica runner (`.exe`)
+- Status: `indirect`.
+- Examples: `A6` confirms Leptonica in Tesseract stack, but no verified dedicated custom-Leptonica runner app in `A1..A6`.
+- Confidence: `medium`.
+
+`C03` Custom libvips runner (`.exe`)
+- Status: `absent` (no verified comparator in `A1..A6`).
+- Confidence: `medium`.
+
+`C04` Custom .NET runner (NAPS2 SDK-family)
+- Status: `direct-pattern`.
+- Examples: `A5` confirms production .NET OCR app (NAPS2) with Tesseract OCR controls.
+- Confidence: `high`.
+
+`C05` In-process Node path (`sharp`/libvips)
+- Status: `absent` (no verified comparator in `A1..A6`).
+- Confidence: `medium`.
+
+`C06` Python OpenCV/scikit-image sidecar
+- Status: `absent` (no verified comparator in `A1..A6`).
+- Confidence: `medium`.
+
+`C07` OCRopus custom sidecar pipeline
+- Status: `absent` (no verified comparator in `A1..A6`).
+- Confidence: `low`.
+
+`C08` Kraken custom sidecar pipeline
+- Status: `absent` (no verified comparator in `A1..A6`).
+- Confidence: `low`.
+
+`C09` Custom OpenCV + Leptonica combined runner
+- Status: `indirect`.
+- Examples: Leptonica-side usage is evidenced by `A6`; combined custom runner adoption not verified in `A1..A6`.
+- Confidence: `low`.
+
+`D01` GIMP batch preprocessing path
+- Status: `unverified`.
+- Reason: key docs unavailable in-session for reliable comparator mapping.
+
+How this affects interpretation:
+- Comparator adoption strengthens confidence for `B01`, `B04`, `B06`, `B08`, `B09`, `B10`, and `H01`.
+- Lack of comparator adoption does not invalidate candidates; it lowers confidence and raises proof burden for later gate stages.
+
+---
+
 ## Revised Draft Readout (Priority-Ordered, No Freeze, No Selection)
 
 ### Outcome Frontier (Primary then Secondary)
