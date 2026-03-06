@@ -37,6 +37,23 @@
       ocrTotalGuidance,
       ocrTotalDisclaimer,
       ocrEtaNote,
+      ocrPreprocessModeNormalizeContrast,
+      ocrPreprocessManualNormalizeContrast,
+      ocrPreprocessNormalizeContrastBlackClipInput,
+      ocrPreprocessNormalizeContrastWhiteClipInput,
+      ocrPreprocessModeBinarize,
+      ocrPreprocessManualBinarize,
+      ocrPreprocessBinarizeThresholdInput,
+      ocrPreprocessModeDenoise,
+      ocrPreprocessManualDenoise,
+      ocrPreprocessDenoisePassesInput,
+      ocrPreprocessModeDeskew,
+      ocrPreprocessManualDeskew,
+      ocrPreprocessDeskewRangeInput,
+      ocrPreprocessDeskewStepInput,
+      ocrPreprocessModePageCleanup,
+      ocrPreprocessManualPageCleanup,
+      ocrPreprocessPageCleanupLevelSelect,
     } = refs;
 
     // =============================================================================
@@ -110,6 +127,150 @@
         return;
       }
       applyPresetValuesToControls(preset);
+    }
+
+    const PREPROCESS_OPERATION_UI = Object.freeze({
+      normalize_contrast: Object.freeze({
+        modeSelect: ocrPreprocessModeNormalizeContrast,
+        manualContainer: ocrPreprocessManualNormalizeContrast,
+        manualFields: Object.freeze({
+          blackClipPct: ocrPreprocessNormalizeContrastBlackClipInput,
+          whiteClipPct: ocrPreprocessNormalizeContrastWhiteClipInput,
+        }),
+      }),
+      binarize: Object.freeze({
+        modeSelect: ocrPreprocessModeBinarize,
+        manualContainer: ocrPreprocessManualBinarize,
+        manualFields: Object.freeze({
+          thresholdPct: ocrPreprocessBinarizeThresholdInput,
+        }),
+      }),
+      denoise: Object.freeze({
+        modeSelect: ocrPreprocessModeDenoise,
+        manualContainer: ocrPreprocessManualDenoise,
+        manualFields: Object.freeze({
+          passes: ocrPreprocessDenoisePassesInput,
+        }),
+      }),
+      deskew: Object.freeze({
+        modeSelect: ocrPreprocessModeDeskew,
+        manualContainer: ocrPreprocessManualDeskew,
+        manualFields: Object.freeze({
+          scanRangeDeg: ocrPreprocessDeskewRangeInput,
+          scanStepDeg: ocrPreprocessDeskewStepInput,
+        }),
+      }),
+      page_cleanup: Object.freeze({
+        modeSelect: ocrPreprocessModePageCleanup,
+        manualContainer: ocrPreprocessManualPageCleanup,
+        manualFields: Object.freeze({
+          cleanLevel: ocrPreprocessPageCleanupLevelSelect,
+        }),
+      }),
+    });
+
+    function resetPreprocessControlsForNewRun() {
+      const defaults = shared.PREPROCESS_MANUAL_DEFAULTS || {};
+      (shared.PREPROCESS_OPERATION_ORDER || []).forEach((operationKey) => {
+        const operationUi = PREPROCESS_OPERATION_UI[operationKey];
+        if (!operationUi) return;
+        const modeSelect = operationUi.modeSelect;
+        if (modeSelect) modeSelect.value = 'off';
+        const manualDefaults = defaults[operationKey] || {};
+        const manualFields = operationUi.manualFields || {};
+        Object.keys(manualFields).forEach((fieldKey) => {
+          const fieldControl = manualFields[fieldKey];
+          if (!fieldControl) return;
+          const fallbackValue = manualDefaults[fieldKey];
+          if (fallbackValue === undefined || fallbackValue === null) return;
+          fieldControl.value = String(fallbackValue);
+        });
+      });
+      syncPreprocessControlState();
+    }
+
+    function setAllPreprocessOperationsOff() {
+      (shared.PREPROCESS_OPERATION_ORDER || []).forEach((operationKey) => {
+        const operationUi = PREPROCESS_OPERATION_UI[operationKey];
+        if (!operationUi || !operationUi.modeSelect) return;
+        operationUi.modeSelect.value = 'off';
+      });
+      syncPreprocessControlState();
+    }
+
+    function syncPreprocessControlState() {
+      (shared.PREPROCESS_OPERATION_ORDER || []).forEach((operationKey) => {
+        const operationUi = PREPROCESS_OPERATION_UI[operationKey];
+        if (!operationUi) return;
+        const modeSelect = operationUi.modeSelect;
+        const mode = shared.normalizePreprocessMode(modeSelect ? modeSelect.value : '', 'off');
+        const manualVisible = mode === 'manual';
+        const manualContainer = operationUi.manualContainer;
+        if (manualContainer) {
+          manualContainer.hidden = !manualVisible;
+        }
+        const manualFields = operationUi.manualFields || {};
+        Object.keys(manualFields).forEach((fieldKey) => {
+          const fieldControl = manualFields[fieldKey];
+          if (!fieldControl) return;
+          fieldControl.disabled = !manualVisible;
+        });
+      });
+    }
+
+    function normalizePreprocessControlValues() {
+      const manualRules = shared.PREPROCESS_OPERATION_MANUAL_RULES || {};
+      const manualDefaults = shared.PREPROCESS_MANUAL_DEFAULTS || {};
+      (shared.PREPROCESS_OPERATION_ORDER || []).forEach((operationKey) => {
+        const operationUi = PREPROCESS_OPERATION_UI[operationKey];
+        if (!operationUi) return;
+        const modeSelect = operationUi.modeSelect;
+        const mode = shared.normalizePreprocessMode(modeSelect ? modeSelect.value : '', 'off');
+        if (modeSelect) modeSelect.value = mode;
+        if (mode !== 'manual') return;
+
+        const operationRules = manualRules[operationKey] || {};
+        const operationDefaults = manualDefaults[operationKey] || {};
+        const manualFields = operationUi.manualFields || {};
+        Object.keys(operationRules).forEach((fieldKey) => {
+          const fieldControl = manualFields[fieldKey];
+          if (!fieldControl) return;
+          const normalizedValue = shared.normalizePreprocessManualField(
+            fieldControl.value,
+            operationRules[fieldKey],
+            operationDefaults[fieldKey]
+          );
+          fieldControl.value = String(normalizedValue);
+        });
+      });
+      syncPreprocessControlState();
+    }
+
+    function collectNormalizedPreprocessConfig() {
+      const rawOperations = {};
+      const manualRules = shared.PREPROCESS_OPERATION_MANUAL_RULES || {};
+      (shared.PREPROCESS_OPERATION_ORDER || []).forEach((operationKey) => {
+        const operationUi = PREPROCESS_OPERATION_UI[operationKey];
+        const mode = shared.normalizePreprocessMode(
+          operationUi && operationUi.modeSelect ? operationUi.modeSelect.value : '',
+          'off'
+        );
+        const opPayload = { mode };
+        if (mode === 'manual') {
+          const operationRules = manualRules[operationKey] || {};
+          const manualFields = operationUi && operationUi.manualFields ? operationUi.manualFields : {};
+          const manualPayload = {};
+          Object.keys(operationRules).forEach((fieldKey) => {
+            const fieldControl = manualFields[fieldKey];
+            manualPayload[fieldKey] = fieldControl ? fieldControl.value : undefined;
+          });
+          opPayload.manual = manualPayload;
+        }
+        rawOperations[operationKey] = opPayload;
+      });
+      return shared.normalizePreprocessConfig({
+        operations: rawOperations,
+      });
     }
 
     // =============================================================================
@@ -231,6 +392,7 @@
         languageTag: language,
         dpi,
         timeoutPerPageSec,
+        preprocessConfig: collectNormalizedPreprocessConfig(),
       };
     }
 
@@ -261,6 +423,7 @@
         return;
       }
       normalizeOcrControlValues();
+      normalizePreprocessControlValues();
       resolve({
         confirmed: true,
         options: collectNormalizedOcrOptions(),
@@ -303,6 +466,7 @@
             languageTag: preferredLanguage,
             dpi: shared.OCR_PRESET_VALUES.balanced.dpi,
             timeoutPerPageSec: shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
+            preprocessConfig: shared.buildDefaultPreprocessConfig(),
           },
         });
       }
@@ -327,6 +491,7 @@
       ocrTimeoutInput.value = String(shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec);
 
       syncOcrCustomControlState();
+      resetPreprocessControlsForNewRun();
       updateOcrOptionsContextText();
       updateOcrOptionsGuidanceText();
 
@@ -349,6 +514,11 @@
       normalizeOcrControlValues,
       updateOcrOptionsContextText,
       updateOcrOptionsGuidanceText,
+      resetPreprocessControlsForNewRun,
+      setAllPreprocessOperationsOff,
+      syncPreprocessControlState,
+      normalizePreprocessControlValues,
+      collectNormalizedPreprocessConfig,
     };
   }
 

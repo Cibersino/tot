@@ -535,11 +535,11 @@ Includes:
 * [x] Guarantee cleanup on success/failure/cancel.
 
 ### Batch 3
-* [ ] Add EN/ES preprocessing stage and error strings (required before smoke/gate to keep the app's i18n-first code pattern).
-* [ ] Implement OCR modal operation controls (per-operation `off|auto|manual`, bounded manual params, and explicit set-all-off action).
-* [ ] Implement bounded manual parameter wiring UI -> backend -> sidecar.
-* [ ] Verify default preprocess state is all operations `off` on each new import run.
-* [ ] Verify no preprocess config persistence across file change and app restart.
+* [x] Add EN/ES preprocessing stage and error strings (required before smoke/gate to keep the app's i18n-first code pattern).
+* [x] Implement OCR modal operation controls (per-operation `off|auto|manual`, bounded manual params, and explicit set-all-off action).
+* [x] Implement bounded manual parameter wiring UI -> backend -> sidecar.
+* [x] Verify default preprocess state is all operations `off` on each new import run.
+* [x] Verify no preprocess config persistence across file change and app restart.
 * [ ] Run in-app smoke and record evidence:
   * [ ] image OCR success
   * [ ] scanned PDF OCR success

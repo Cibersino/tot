@@ -788,6 +788,101 @@ select#presets {
   line-height: 1.35;
 }
 
+.ocr-preprocess-section {
+  margin-top: 10px;
+  border: 1px solid #e0d2b7;
+  border-radius: 6px;
+  background: #fffaf0;
+  padding: 8px;
+  text-align: left;
+}
+
+.ocr-preprocess-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ocr-preprocess-title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #222;
+}
+
+.ocr-preprocess-all-off {
+  min-height: 28px;
+  padding: 2px 8px;
+}
+
+.ocr-preprocess-hint {
+  margin: 6px 0 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #4a4a4a;
+}
+
+.ocr-preprocess-list {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.ocr-preprocess-row {
+  border: 1px solid #ebdfc8;
+  border-radius: 5px;
+  background: #fff;
+  padding: 6px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 8px;
+  row-gap: 6px;
+  align-items: center;
+}
+
+.ocr-preprocess-row > label {
+  font-size: 13px;
+  color: #2a2a2a;
+}
+
+.ocr-preprocess-mode {
+  min-width: 96px;
+  height: 30px;
+  border-radius: 5px;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  color: #222;
+  font-size: 14px;
+}
+
+.ocr-preprocess-manual {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 8px;
+  row-gap: 6px;
+  align-items: center;
+}
+
+.ocr-preprocess-manual label {
+  font-size: 12px;
+  color: #3a3a3a;
+}
+
+.ocr-preprocess-manual input,
+.ocr-preprocess-manual select {
+  height: 28px;
+  width: 140px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  color: #222;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
 #ocrTotalGuidance {
   font-weight: 600;
 }
@@ -916,5 +1011,24 @@ select#presets {
 
   .ocr-options-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ocr-preprocess-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ocr-preprocess-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ocr-preprocess-manual {
+    grid-template-columns: 1fr;
+  }
+
+  .ocr-preprocess-manual input,
+  .ocr-preprocess-manual select,
+  .ocr-preprocess-mode {
+    width: 100%;
   }
 }

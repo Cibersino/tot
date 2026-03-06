@@ -35,6 +35,87 @@
   const OCR_ESTIMATE_OCR_EXPONENT = 1.6;
   const OCR_ESTIMATE_MIN_RASTER_SEC_PER_PAGE = 1.8;
   const OCR_ESTIMATE_MIN_OCR_SEC_PER_PAGE = 2.3;
+  const PREPROCESS_MODE_VALUES = Object.freeze(['off', 'auto', 'manual']);
+  const PREPROCESS_OPERATION_ORDER = Object.freeze([
+    'normalize_contrast',
+    'binarize',
+    'denoise',
+    'deskew',
+    'page_cleanup',
+  ]);
+  const PREPROCESS_OPERATION_MANUAL_RULES = Object.freeze({
+    normalize_contrast: Object.freeze({
+      blackClipPct: Object.freeze({
+        type: 'number',
+        min: 0,
+        max: 20,
+        step: 0.5,
+      }),
+      whiteClipPct: Object.freeze({
+        type: 'number',
+        min: 0,
+        max: 20,
+        step: 0.5,
+      }),
+    }),
+    binarize: Object.freeze({
+      thresholdPct: Object.freeze({
+        type: 'number',
+        min: 0,
+        max: 100,
+        step: 1,
+      }),
+    }),
+    denoise: Object.freeze({
+      passes: Object.freeze({
+        type: 'integer',
+        min: 1,
+        max: 4,
+        step: 1,
+      }),
+    }),
+    deskew: Object.freeze({
+      scanRangeDeg: Object.freeze({
+        type: 'number',
+        min: 0.1,
+        max: 15,
+        step: 0.1,
+      }),
+      scanStepDeg: Object.freeze({
+        type: 'number',
+        min: 0.1,
+        max: 5,
+        step: 0.1,
+      }),
+    }),
+    page_cleanup: Object.freeze({
+      cleanLevel: Object.freeze({
+        type: 'integer',
+        min: 1,
+        max: 3,
+        step: 1,
+      }),
+    }),
+  });
+  const PREPROCESS_MANUAL_DEFAULTS = Object.freeze({
+    normalize_contrast: Object.freeze({
+      blackClipPct: 3,
+      whiteClipPct: 3,
+    }),
+    binarize: Object.freeze({
+      thresholdPct: 55,
+    }),
+    denoise: Object.freeze({
+      passes: 2,
+    }),
+    deskew: Object.freeze({
+      scanRangeDeg: 4,
+      scanStepDeg: 0.5,
+    }),
+    page_cleanup: Object.freeze({
+      cleanLevel: 2,
+    }),
+  });
 
   // =============================================================================
   // Helpers (normalization, shaping, estimates)
@@ -59,6 +140,29 @@
     if (!Number.isFinite(n)) return fallback;
     const stepped = Math.round((n - min) / step) * step + min;
     return Math.min(max, Math.max(min, Math.floor(stepped)));
+  }
+
+  function resolveStepDecimals(step) {
+    const text = String(step);
+    const dotIdx = text.indexOf('.');
+    if (dotIdx < 0) return 0;
+    return Math.max(0, Math.min(6, text.length - dotIdx - 1));
+  }
+
+  function clampToSteppedNumber(raw, { min, max, step, fallback, integer = false }) {
+    const n = Number(raw);
+    const fallbackNum = Number(fallback);
+    const inputValue = Number.isFinite(n)
+      ? n
+      : (Number.isFinite(fallbackNum) ? fallbackNum : min);
+    const stepValue = Number.isFinite(Number(step)) && Number(step) > 0
+      ? Number(step)
+      : 1;
+    const stepped = Math.round((inputValue - min) / stepValue) * stepValue + min;
+    const clamped = Math.min(max, Math.max(min, stepped));
+    if (integer) return Math.round(clamped);
+    const decimals = resolveStepDecimals(stepValue);
+    return Number(clamped.toFixed(decimals));
   }
 
   function getOcrPresetConfig(presetKey) {
@@ -106,6 +210,87 @@
       max: OCR_TIMEOUT_MAX,
       step: OCR_TIMEOUT_STEP,
       fallback: fallbackSec,
+    });
+  }
+
+  function normalizePreprocessMode(rawMode, fallback = 'off') {
+    const mode = String(rawMode || '').trim().toLowerCase();
+    if (PREPROCESS_MODE_VALUES.includes(mode)) return mode;
+    return fallback;
+  }
+
+  function normalizePreprocessManualField(rawValue, rule, fallbackValue) {
+    if (!rule || typeof rule !== 'object') {
+      return Number.isFinite(Number(fallbackValue)) ? Number(fallbackValue) : 0;
+    }
+    const integer = String(rule.type || '').trim().toLowerCase() === 'integer';
+    return clampToSteppedNumber(rawValue, {
+      min: Number(rule.min),
+      max: Number(rule.max),
+      step: Number(rule.step),
+      fallback: fallbackValue,
+      integer,
+    });
+  }
+
+  function buildDefaultPreprocessConfig() {
+    return {
+      operations: {
+        normalize_contrast: { mode: 'off' },
+        binarize: { mode: 'off' },
+        denoise: { mode: 'off' },
+        deskew: { mode: 'off' },
+        page_cleanup: { mode: 'off' },
+      },
+    };
+  }
+
+  function normalizePreprocessConfig(rawConfig) {
+    const rawOperations = rawConfig
+      && typeof rawConfig === 'object'
+      && rawConfig.operations
+      && typeof rawConfig.operations === 'object'
+      ? rawConfig.operations
+      : {};
+    const normalizedOperations = {};
+
+    PREPROCESS_OPERATION_ORDER.forEach((operationKey) => {
+      const rawOperation = rawOperations
+        && rawOperations[operationKey]
+        && typeof rawOperations[operationKey] === 'object'
+        ? rawOperations[operationKey]
+        : {};
+      const mode = normalizePreprocessMode(rawOperation.mode, 'off');
+      if (mode !== 'manual') {
+        normalizedOperations[operationKey] = { mode };
+        return;
+      }
+      const rules = PREPROCESS_OPERATION_MANUAL_RULES[operationKey] || {};
+      const defaults = PREPROCESS_MANUAL_DEFAULTS[operationKey] || {};
+      const rawManual = rawOperation.manual && typeof rawOperation.manual === 'object'
+        ? rawOperation.manual
+        : {};
+      const manual = {};
+      Object.keys(rules).forEach((fieldKey) => {
+        manual[fieldKey] = normalizePreprocessManualField(
+          rawManual[fieldKey],
+          rules[fieldKey],
+          defaults[fieldKey]
+        );
+      });
+      normalizedOperations[operationKey] = { mode, manual };
+    });
+
+    return {
+      operations: normalizedOperations,
+    };
+  }
+
+  function areAllPreprocessOperationsOff(preprocessConfig) {
+    const normalized = normalizePreprocessConfig(preprocessConfig);
+    return PREPROCESS_OPERATION_ORDER.every((operationKey) => {
+      const op = normalized.operations[operationKey];
+      return op && op.mode === 'off';
     });
   }
 
@@ -182,15 +367,25 @@
 
   window.ImportOcrUiShared = Object.freeze({
     OCR_PRESET_VALUES,
+    PREPROCESS_MODE_VALUES,
+    PREPROCESS_OPERATION_ORDER,
+    PREPROCESS_OPERATION_MANUAL_RULES,
+    PREPROCESS_MANUAL_DEFAULTS,
     normalizeLangBaseLocal,
     normalizeAvailableUiLanguages,
     clampToStep,
+    clampToSteppedNumber,
     getOcrPresetConfig,
     formatDurationFromSeconds,
     getSafeOcrPageCount,
     normalizePresetKey,
     normalizeDpiValue,
     normalizeTimeoutPerPageSec,
+    normalizePreprocessMode,
+    normalizePreprocessManualField,
+    buildDefaultPreprocessConfig,
+    normalizePreprocessConfig,
+    areAllPreprocessOperationsOff,
     buildQueuedJobMeta,
     estimateRasterSecPerPage,
     estimateOcrSecPerPage,

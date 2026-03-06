@@ -51,6 +51,41 @@
   const ocrEtaNote = document.getElementById('ocrEtaNote');
   const btnOcrOptionsStart = document.getElementById('btnOcrOptionsStart');
   const btnOcrOptionsAbort = document.getElementById('btnOcrOptionsAbort');
+  const ocrPreprocessTitle = document.getElementById('ocrPreprocessTitle');
+  const ocrPreprocessHint = document.getElementById('ocrPreprocessHint');
+  const btnOcrPreprocessAllOff = document.getElementById('btnOcrPreprocessAllOff');
+  const ocrPreprocessLabelNormalizeContrast = document.getElementById('ocrPreprocessLabelNormalizeContrast');
+  const ocrPreprocessModeNormalizeContrast = document.getElementById('ocrPreprocessModeNormalizeContrast');
+  const ocrPreprocessManualNormalizeContrast = document.getElementById('ocrPreprocessManualNormalizeContrast');
+  const ocrPreprocessNormalizeContrastBlackClipLabel = document.getElementById('ocrPreprocessNormalizeContrastBlackClipLabel');
+  const ocrPreprocessNormalizeContrastBlackClipInput = document.getElementById('ocrPreprocessNormalizeContrastBlackClipInput');
+  const ocrPreprocessNormalizeContrastWhiteClipLabel = document.getElementById('ocrPreprocessNormalizeContrastWhiteClipLabel');
+  const ocrPreprocessNormalizeContrastWhiteClipInput = document.getElementById('ocrPreprocessNormalizeContrastWhiteClipInput');
+  const ocrPreprocessLabelBinarize = document.getElementById('ocrPreprocessLabelBinarize');
+  const ocrPreprocessModeBinarize = document.getElementById('ocrPreprocessModeBinarize');
+  const ocrPreprocessManualBinarize = document.getElementById('ocrPreprocessManualBinarize');
+  const ocrPreprocessBinarizeThresholdLabel = document.getElementById('ocrPreprocessBinarizeThresholdLabel');
+  const ocrPreprocessBinarizeThresholdInput = document.getElementById('ocrPreprocessBinarizeThresholdInput');
+  const ocrPreprocessLabelDenoise = document.getElementById('ocrPreprocessLabelDenoise');
+  const ocrPreprocessModeDenoise = document.getElementById('ocrPreprocessModeDenoise');
+  const ocrPreprocessManualDenoise = document.getElementById('ocrPreprocessManualDenoise');
+  const ocrPreprocessDenoisePassesLabel = document.getElementById('ocrPreprocessDenoisePassesLabel');
+  const ocrPreprocessDenoisePassesInput = document.getElementById('ocrPreprocessDenoisePassesInput');
+  const ocrPreprocessLabelDeskew = document.getElementById('ocrPreprocessLabelDeskew');
+  const ocrPreprocessModeDeskew = document.getElementById('ocrPreprocessModeDeskew');
+  const ocrPreprocessManualDeskew = document.getElementById('ocrPreprocessManualDeskew');
+  const ocrPreprocessDeskewRangeLabel = document.getElementById('ocrPreprocessDeskewRangeLabel');
+  const ocrPreprocessDeskewRangeInput = document.getElementById('ocrPreprocessDeskewRangeInput');
+  const ocrPreprocessDeskewStepLabel = document.getElementById('ocrPreprocessDeskewStepLabel');
+  const ocrPreprocessDeskewStepInput = document.getElementById('ocrPreprocessDeskewStepInput');
+  const ocrPreprocessLabelPageCleanup = document.getElementById('ocrPreprocessLabelPageCleanup');
+  const ocrPreprocessModePageCleanup = document.getElementById('ocrPreprocessModePageCleanup');
+  const ocrPreprocessManualPageCleanup = document.getElementById('ocrPreprocessManualPageCleanup');
+  const ocrPreprocessPageCleanupLevelLabel = document.getElementById('ocrPreprocessPageCleanupLevelLabel');
+  const ocrPreprocessPageCleanupLevelSelect = document.getElementById('ocrPreprocessPageCleanupLevelSelect');
+  const ocrPreprocessPageCleanupLevelOption1 = document.getElementById('ocrPreprocessPageCleanupLevelOption1');
+  const ocrPreprocessPageCleanupLevelOption2 = document.getElementById('ocrPreprocessPageCleanupLevelOption2');
+  const ocrPreprocessPageCleanupLevelOption3 = document.getElementById('ocrPreprocessPageCleanupLevelOption3');
 
   // =============================================================================
   // Startup guards
@@ -255,6 +290,41 @@
     ocrEtaNote,
     btnOcrOptionsStart,
     btnOcrOptionsAbort,
+    ocrPreprocessTitle,
+    ocrPreprocessHint,
+    btnOcrPreprocessAllOff,
+    ocrPreprocessLabelNormalizeContrast,
+    ocrPreprocessModeNormalizeContrast,
+    ocrPreprocessManualNormalizeContrast,
+    ocrPreprocessNormalizeContrastBlackClipLabel,
+    ocrPreprocessNormalizeContrastBlackClipInput,
+    ocrPreprocessNormalizeContrastWhiteClipLabel,
+    ocrPreprocessNormalizeContrastWhiteClipInput,
+    ocrPreprocessLabelBinarize,
+    ocrPreprocessModeBinarize,
+    ocrPreprocessManualBinarize,
+    ocrPreprocessBinarizeThresholdLabel,
+    ocrPreprocessBinarizeThresholdInput,
+    ocrPreprocessLabelDenoise,
+    ocrPreprocessModeDenoise,
+    ocrPreprocessManualDenoise,
+    ocrPreprocessDenoisePassesLabel,
+    ocrPreprocessDenoisePassesInput,
+    ocrPreprocessLabelDeskew,
+    ocrPreprocessModeDeskew,
+    ocrPreprocessManualDeskew,
+    ocrPreprocessDeskewRangeLabel,
+    ocrPreprocessDeskewRangeInput,
+    ocrPreprocessDeskewStepLabel,
+    ocrPreprocessDeskewStepInput,
+    ocrPreprocessLabelPageCleanup,
+    ocrPreprocessModePageCleanup,
+    ocrPreprocessManualPageCleanup,
+    ocrPreprocessPageCleanupLevelLabel,
+    ocrPreprocessPageCleanupLevelSelect,
+    ocrPreprocessPageCleanupLevelOption1,
+    ocrPreprocessPageCleanupLevelOption2,
+    ocrPreprocessPageCleanupLevelOption3,
   };
 
   // =============================================================================
@@ -324,6 +394,41 @@
     if (ocrTimeoutLabel) ocrTimeoutLabel.textContent = t('renderer.main.ocr_options.timeout_label', ocrTimeoutLabel.textContent || '');
     if (btnOcrOptionsStart) btnOcrOptionsStart.textContent = t('renderer.main.ocr_options.start', btnOcrOptionsStart.textContent || '');
     if (btnOcrOptionsAbort) btnOcrOptionsAbort.textContent = t('renderer.main.ocr_options.abort', btnOcrOptionsAbort.textContent || '');
+    if (ocrPreprocessTitle) ocrPreprocessTitle.textContent = t('renderer.main.ocr_options.preprocess_title', ocrPreprocessTitle.textContent || '');
+    if (ocrPreprocessHint) ocrPreprocessHint.textContent = t('renderer.main.ocr_options.preprocess_hint', ocrPreprocessHint.textContent || '');
+    if (btnOcrPreprocessAllOff) btnOcrPreprocessAllOff.textContent = t('renderer.main.ocr_options.preprocess_set_all_off', btnOcrPreprocessAllOff.textContent || '');
+    if (ocrPreprocessLabelNormalizeContrast) ocrPreprocessLabelNormalizeContrast.textContent = t('renderer.main.ocr_options.preprocess_normalize_contrast', ocrPreprocessLabelNormalizeContrast.textContent || '');
+    if (ocrPreprocessLabelBinarize) ocrPreprocessLabelBinarize.textContent = t('renderer.main.ocr_options.preprocess_binarize', ocrPreprocessLabelBinarize.textContent || '');
+    if (ocrPreprocessLabelDenoise) ocrPreprocessLabelDenoise.textContent = t('renderer.main.ocr_options.preprocess_denoise', ocrPreprocessLabelDenoise.textContent || '');
+    if (ocrPreprocessLabelDeskew) ocrPreprocessLabelDeskew.textContent = t('renderer.main.ocr_options.preprocess_deskew', ocrPreprocessLabelDeskew.textContent || '');
+    if (ocrPreprocessLabelPageCleanup) ocrPreprocessLabelPageCleanup.textContent = t('renderer.main.ocr_options.preprocess_page_cleanup', ocrPreprocessLabelPageCleanup.textContent || '');
+    if (ocrPreprocessNormalizeContrastBlackClipLabel) ocrPreprocessNormalizeContrastBlackClipLabel.textContent = t('renderer.main.ocr_options.preprocess_black_clip_pct', ocrPreprocessNormalizeContrastBlackClipLabel.textContent || '');
+    if (ocrPreprocessNormalizeContrastWhiteClipLabel) ocrPreprocessNormalizeContrastWhiteClipLabel.textContent = t('renderer.main.ocr_options.preprocess_white_clip_pct', ocrPreprocessNormalizeContrastWhiteClipLabel.textContent || '');
+    if (ocrPreprocessBinarizeThresholdLabel) ocrPreprocessBinarizeThresholdLabel.textContent = t('renderer.main.ocr_options.preprocess_threshold_pct', ocrPreprocessBinarizeThresholdLabel.textContent || '');
+    if (ocrPreprocessDenoisePassesLabel) ocrPreprocessDenoisePassesLabel.textContent = t('renderer.main.ocr_options.preprocess_passes', ocrPreprocessDenoisePassesLabel.textContent || '');
+    if (ocrPreprocessDeskewRangeLabel) ocrPreprocessDeskewRangeLabel.textContent = t('renderer.main.ocr_options.preprocess_scan_range_deg', ocrPreprocessDeskewRangeLabel.textContent || '');
+    if (ocrPreprocessDeskewStepLabel) ocrPreprocessDeskewStepLabel.textContent = t('renderer.main.ocr_options.preprocess_scan_step_deg', ocrPreprocessDeskewStepLabel.textContent || '');
+    if (ocrPreprocessPageCleanupLevelLabel) ocrPreprocessPageCleanupLevelLabel.textContent = t('renderer.main.ocr_options.preprocess_clean_level', ocrPreprocessPageCleanupLevelLabel.textContent || '');
+    if (ocrPreprocessPageCleanupLevelOption1) ocrPreprocessPageCleanupLevelOption1.textContent = t('renderer.main.ocr_options.preprocess_clean_level_1', ocrPreprocessPageCleanupLevelOption1.textContent || '');
+    if (ocrPreprocessPageCleanupLevelOption2) ocrPreprocessPageCleanupLevelOption2.textContent = t('renderer.main.ocr_options.preprocess_clean_level_2', ocrPreprocessPageCleanupLevelOption2.textContent || '');
+    if (ocrPreprocessPageCleanupLevelOption3) ocrPreprocessPageCleanupLevelOption3.textContent = t('renderer.main.ocr_options.preprocess_clean_level_3', ocrPreprocessPageCleanupLevelOption3.textContent || '');
+
+    const preprocessModeSelects = [
+      ocrPreprocessModeNormalizeContrast,
+      ocrPreprocessModeBinarize,
+      ocrPreprocessModeDenoise,
+      ocrPreprocessModeDeskew,
+      ocrPreprocessModePageCleanup,
+    ];
+    preprocessModeSelects.forEach((modeSelect) => {
+      if (!modeSelect) return;
+      const optOff = modeSelect.querySelector('option[value="off"]');
+      const optAuto = modeSelect.querySelector('option[value="auto"]');
+      const optManual = modeSelect.querySelector('option[value="manual"]');
+      if (optOff) optOff.textContent = t('renderer.main.ocr_options.preprocess_mode_off', optOff.textContent || 'Off');
+      if (optAuto) optAuto.textContent = t('renderer.main.ocr_options.preprocess_mode_auto', optAuto.textContent || 'Auto');
+      if (optManual) optManual.textContent = t('renderer.main.ocr_options.preprocess_mode_manual', optManual.textContent || 'Manual');
+    });
 
     if (ocrPresetSelect) {
       const optFast = ocrPresetSelect.querySelector('option[value="fast"]');
@@ -340,6 +445,7 @@
     }
     optionsModalUi.updateOcrOptionsContextText();
     optionsModalUi.updateOcrOptionsGuidanceText();
+    optionsModalUi.syncPreprocessControlState();
   }
 
   function bindUiListeners() {
@@ -365,6 +471,42 @@
       ocrTimeoutInput.addEventListener('change', () => {
         optionsModalUi.normalizeOcrControlValues();
         optionsModalUi.updateOcrOptionsGuidanceText();
+      });
+    }
+
+    const preprocessModeControls = [
+      ocrPreprocessModeNormalizeContrast,
+      ocrPreprocessModeBinarize,
+      ocrPreprocessModeDenoise,
+      ocrPreprocessModeDeskew,
+      ocrPreprocessModePageCleanup,
+    ];
+    preprocessModeControls.forEach((modeControl) => {
+      if (!modeControl) return;
+      modeControl.addEventListener('change', () => {
+        optionsModalUi.normalizePreprocessControlValues();
+      });
+    });
+
+    const preprocessManualControls = [
+      ocrPreprocessNormalizeContrastBlackClipInput,
+      ocrPreprocessNormalizeContrastWhiteClipInput,
+      ocrPreprocessBinarizeThresholdInput,
+      ocrPreprocessDenoisePassesInput,
+      ocrPreprocessDeskewRangeInput,
+      ocrPreprocessDeskewStepInput,
+      ocrPreprocessPageCleanupLevelSelect,
+    ];
+    preprocessManualControls.forEach((manualControl) => {
+      if (!manualControl) return;
+      manualControl.addEventListener('change', () => {
+        optionsModalUi.normalizePreprocessControlValues();
+      });
+    });
+
+    if (btnOcrPreprocessAllOff) {
+      btnOcrPreprocessAllOff.addEventListener('click', () => {
+        optionsModalUi.setAllPreprocessOperationsOff();
       });
     }
 

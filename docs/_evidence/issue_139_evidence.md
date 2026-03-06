@@ -1,5 +1,44 @@
 # Issue 139 Evidence Log
 
+## 2026-03-06 - Batch 3 UI Controls + PreprocessConfig Wiring
+
+Entry `E139-B3-UI-003`
+- timestamp: `2026-03-06 15:55:18 -03:00`
+- command/test executed:
+  - syntax checks:
+    - `node --check public/js/import_ocr_ui_shared.js`
+    - `node --check public/js/import_ocr_ui_options_modal.js`
+    - `node --check public/js/import_ocr_ui.js`
+  - locale JSON parse checks:
+    - `Get-Content -Path i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null`
+    - `Get-Content -Path i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null`
+  - lint verification:
+    - `npm run lint`
+  - wiring/persistence scans:
+    - `rg -n "preprocessConfig|collectNormalizedPreprocessConfig|resetPreprocessControlsForNewRun|setAllPreprocessOperationsOff|normalizePreprocessControlValues" public/js/import_ocr_ui_options_modal.js public/js/import_ocr_ui.js public/js/import_entry.js`
+    - `rg -n "preprocessConfig" electron public/js public/renderer.js`
+    - `rg -n "preprocessConfig|preprocess" electron/settings.js electron/main.js public/renderer.js public/js/import_ocr_ui.js`
+- result:
+  - OCR options modal now exposes Batch 3 preprocess controls for all H01 operations (`normalize_contrast`, `binarize`, `denoise`, `deskew`, `page_cleanup`) with per-operation mode selector (`off|auto|manual`) and bounded manual fields.
+  - explicit `set all off` action is implemented in modal UI.
+  - modal now emits canonical `preprocessConfig` in OCR run options; backend integration path remains: renderer options -> `import-run` payload -> `ocr_pipeline` preprocess validation -> `preprocess_runtime` execution.
+  - preprocess default state is reset to all operations `off` on every new OCR options prompt via `resetPreprocessControlsForNewRun`.
+  - no preprocess persistence path was introduced in renderer/main settings flow (`settings` codepaths contain no preprocess config storage wiring).
+  - default-off and no-persistence checklist verification in this entry is code-path verification (not in-app restart/file-change smoke).
+  - EN/ES OCR options preprocess UI strings were added; preprocess stage + preprocess error strings remain present.
+- artifact/log reference:
+  - `public/index.html`
+  - `public/style.css`
+  - `public/js/import_ocr_ui_shared.js`
+  - `public/js/import_ocr_ui_options_modal.js`
+  - `public/js/import_ocr_ui.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `public/renderer.js`
+  - `electron/import_ocr/ocr_pipeline.js`
+  - `electron/import_ocr/preprocess_runtime.js`
+  - `docs/issues/Issue_139.md`
+
 ## 2026-03-06 - Batch 2 Runtime Artifacts + Operation Compatibility Gate (H01)
 
 Entry `E139-B2-GATE-002`
