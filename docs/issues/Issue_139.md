@@ -25,6 +25,7 @@ Out of scope:
 * Preprocess implementation pattern must mirror current raster/OCR model: prefer bundled binaries + app wrapper/orchestration.
 * Do not create/ship a custom preprocess `.exe` unless a documented capability-gap analysis proves bundled binaries cannot satisfy required contract/quality gates.
 * Active preprocess contract: operation-based `preprocessConfig`.
+* Implementation starts from a clean hard-cut base: no legacy preprocess paths/references/remnants/dead code before Batch 1 coding begins.
 * No legacy preprocess modality anywhere in code (`basic|standard|aggressive`).
 * No compatibility bridge mapping operation config to legacy profile semantics.
 * Missing preprocess binary/runtime files map to `OCR_BINARY_MISSING`.
@@ -216,7 +217,17 @@ User Setup Gate (Required Human Steps):
 * After candidate selection and before implementation, run local availability checks for the selected path prerequisites.
 * If prerequisites are missing, user performs guided download/install steps.
 * After install, rerun availability/version/path checks and record results in evidence.
-* Implementation continues only after User Setup Gate is marked complete.
+* Implementation proceeds to the Clean-Base Start Gate only after User Setup Gate is marked complete.
+
+## Clean-Base Start Gate (Required Before Batch 1 Coding)
+
+This gate is mandatory and blocks Batch 1 implementation work until complete.
+
+Required state:
+* Remove legacy preprocess model artifacts from app code (`preprocessProfile`, profile selector/options, legacy preprocess i18n keys).
+* Remove legacy preprocess references/remnants and dead code paths (including stale helpers/state/listeners no longer used after hard-cut).
+* No compatibility/coexistence stage is allowed between legacy preprocess shape and canonical `preprocessConfig`.
+* Record repository evidence proving zero legacy preprocess references in active code paths before Batch 1 coding starts.
 
 ## H01 Substrate Conditions (Carry-Forward Before Batch 1)
 
@@ -382,13 +393,21 @@ Docs/evidence:
 
 ## Execution Batches
 
-### Batch 1 - Contract Core + Setup
+### Setup Milestones (Completed Before Clean-Base Gate)
 
 Goal:
-* Deliver core operation contract + validation foundations and selected-path setup.
+* Preserve already-completed setup work as historical milestones, separate from Batch 1 implementation scope.
 
 Includes:
 * User Setup Gate completion for selected path prerequisites.
+* Setup-start evidence entries recorded.
+
+### Batch 1 - Contract Core
+
+Goal:
+* Deliver core operation contract + validation foundations after Clean-Base Start Gate closure.
+
+Includes:
 * Preprocess operation contract and JSON output foundations.
 * Backend `preprocessConfig` validation foundations.
 
@@ -401,7 +420,7 @@ Includes:
 * Runtime artifact establishment/build according to chosen path.
 * Image + scanned-PDF preprocess integration.
 * Timeout/cancel/error mapping + `preprocessing` progress stage wiring.
-* No-legacy cleanup (remove old preprocess modality remnants).
+* No-legacy verification only (clean hard-cut baseline was established before Batch 1 coding).
 
 ### Batch 3 - UI + Verification + Quality Gate
 
@@ -409,7 +428,7 @@ Goal:
 * Finalize user-facing controls, verify Batch 2 behavior end-to-end, and close mandatory quality gate.
 
 Includes:
-* OCR options modal migration to operation controls.
+* OCR options modal operation controls completion.
 * EN/ES user-facing preprocess strings (required before smoke/gate to keep the app's i18n-first code pattern).
 * Manual in-app smoke and evidence capture.
 * Mandatory quality-gate execution and closure immediately after smoke.
@@ -442,6 +461,7 @@ Includes:
 
 * Before checking any item, ensure `docs/_evidence/issue_139_evidence.md` exists.
 * For Pre-Implementation Decision Gate evidence, keep `docs/_evidence/issue_139_preimpl_candidate_matrix_draft.md` updated and aligned with checklist state.
+* Clean-Base Start Gate must be evidenced and closed before any Batch 1 implementation checklist item can be checked.
 * Every checked item must include evidence entry:
   * timestamp
   * command/test executed
@@ -463,12 +483,20 @@ Includes:
 * [x] Record implementation decision: bundled-binary strategy or custom `.exe` (only if capability-gap is proven).
 * [x] Record substrate carry-forward constraints in issue + evidence (license/compliance, artifact build+hosting, packaging path).
 
-### Batch 1
+### Setup Milestones
 * [x] Complete User Setup Gate for selected candidate (`H01`) (no full proof yet):
   * [x] run local availability checks for selected-path prerequisites
   * [x] if missing, execute guided user download/install steps
   * [x] rerun availability/version/path checks and record evidence
-* [x] Record implementation-start evidence entries for Batch 1 setup checks.
+* [x] Record setup-start evidence entries.
+
+### Clean-Base Start Gate
+* [ ] Remove all legacy preprocess artifacts from codebase (`preprocessProfile`, profile selector/options, legacy preprocess i18n keys).
+* [ ] Remove legacy preprocess remnants/dead code paths from active app flow (stale helpers/state/listeners and unreachable preprocess profile code).
+* [ ] Prove zero legacy preprocess references in active code paths with repository scan evidence.
+* [ ] Confirm Batch 1 implementation code changes began only after this gate was fully closed.
+
+### Batch 1
 * [ ] Implement H01 scoped-lock operation registry (keys, fixed order, tool ownership) per `H01 Batch 1 Scoped-Lock (Initial Implementable Cut)`.
 * [ ] Implement H01 bounded manual-schema validation (including unknown-field and out-of-bounds rejection).
 * [ ] Enforce H01 first-cut exclusions in adapter/validation layer (no extra operations, no geometry/layout controls, no free-form CLI passthrough).
@@ -483,7 +511,7 @@ Includes:
 * [ ] Record preprocess dependency/artifact provenance in evidence.
 * [ ] Pass Operation Compatibility Gate for each operation in issue scope with evidence entries.
 * [ ] Do not introduce compatibility bridge logic (no operation -> legacy profile mapping anywhere).
-* [ ] Remove all legacy preprocess artifacts from codebase (`preprocessProfile`, profile selector/options, legacy preprocess i18n keys).
+* [ ] Verify clean-base no-legacy invariant still holds after Batch 2 integration changes.
 * [ ] Integrate preprocess into image OCR route.
 * [ ] Integrate preprocess into scanned-PDF per-page route.
 * [ ] Reuse timeout/cancel/process-control pattern.
@@ -495,7 +523,7 @@ Includes:
 
 ### Batch 3
 * [ ] Add EN/ES preprocessing stage and error strings (required before smoke/gate to keep the app's i18n-first code pattern).
-* [ ] Replace OCR modal profile UI with operation controls (per-operation `off|auto|manual`, bounded manual params, and explicit set-all-off action).
+* [ ] Implement OCR modal operation controls (per-operation `off|auto|manual`, bounded manual params, and explicit set-all-off action).
 * [ ] Implement bounded manual parameter wiring UI -> backend -> sidecar.
 * [ ] Verify default preprocess state is all operations `off` on each new import run.
 * [ ] Verify no preprocess config persistence across file change and app restart.
