@@ -1,0 +1,4 @@
+file_id	family	input_path	transcript_path	notes
+photo_seed_001	photographed	docs/_evidence/issue_139_quality_gate/corpus/photographed/photo_seed_001.png	docs/_evidence/issue_139_quality_gate/reference_transcripts/photographed/photo_seed_001.txt	seed file for smoke; transcript pending ground truth
+scanned_seed_001	scanned_pdf	docs/_evidence/issue_139_quality_gate/corpus/scanned_pdf/scanned_seed_001.pdf	docs/_evidence/issue_139_quality_gate/reference_transcripts/scanned_pdf/scanned_seed_001.txt	seed file for smoke; transcript pending ground truth
+noisy_seed_001	noisy_low_contrast	docs/_evidence/issue_139_quality_gate/corpus/noisy_low_contrast/noisy_seed_001.png	docs/_evidence/issue_139_quality_gate/reference_transcripts/noisy_low_contrast/noisy_seed_001.txt	seed file for smoke; transcript pending ground truth

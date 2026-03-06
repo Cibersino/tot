@@ -1,0 +1,16 @@
+{
+  "generated_at": "",
+  "constants": {
+    "D": 30.0,
+    "M": 5.0,
+    "S": 33.0,
+    "N_min": 6
+  },
+  "families": {
+    "photographed": { "pass": false, "reason": "pending" },
+    "scanned_pdf": { "pass": false, "reason": "pending" },
+    "noisy_low_contrast": { "pass": false, "reason": "pending" }
+  },
+  "overall_pass": false,
+  "status": "pending"
+}

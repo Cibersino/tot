@@ -1,5 +1,88 @@
 # Issue 139 Evidence Log
 
+## 2026-03-06 - Smoke/Quality-Gate Preflight + Section 4 Artifact Scaffolding
+
+Entry `E139-SQG-SETUP-001`
+- timestamp: `2026-03-06 20:29:56 -03:00`
+- command/test executed:
+  - preflight commands (runbook Phase A):
+    - `npm run lint`
+    - `node --check public/js/import_ocr_ui.js`
+    - `node --check public/js/import_ocr_ui_options_modal.js`
+    - `node --check public/js/import_ocr_ui_progress.js`
+    - `node --check electron/import_ocr/orchestrator.js`
+    - `node --check electron/import_ocr/ocr_pipeline.js`
+    - `node --check electron/import_ocr/pdf_raster_ocr.js`
+    - `node --check electron/import_ocr/preprocess_runtime.js`
+  - section 4 audit:
+    - item-by-item existence check for `4.1` and `4.3` required files from `docs/issues/Issue_139_Batch_3_Verification_Guide.md`.
+  - section 4 scaffolding:
+    - created artifact directories:
+      - `docs/_evidence/issue_139_batch3_smoke/`
+      - `docs/_evidence/issue_139_quality_gate/corpus/{photographed,scanned_pdf,noisy_low_contrast}/`
+      - `docs/_evidence/issue_139_quality_gate/reference_transcripts/{photographed,scanned_pdf,noisy_low_contrast}/`
+    - created bootstrap files:
+      - `docs/_evidence/issue_139_quality_gate/quality_gate_constants.json`
+      - `docs/_evidence/issue_139_quality_gate/corpus_manifest.tsv`
+      - `docs/_evidence/issue_139_quality_gate/results_off.tsv`
+      - `docs/_evidence/issue_139_quality_gate/results_nonoff.tsv`
+      - `docs/_evidence/issue_139_quality_gate/cer_table_photographed.tsv`
+      - `docs/_evidence/issue_139_quality_gate/cer_table_scanned_pdf.tsv`
+      - `docs/_evidence/issue_139_quality_gate/cer_table_noisy_low_contrast.tsv`
+      - `docs/_evidence/issue_139_quality_gate/quality_gate_summary.json`
+- result:
+  - preflight commands passed.
+  - section `4.1` checklist prerequisites are present.
+  - section `4.3` scaffold files now exist, but family corpus inputs and transcript files are still pending population.
+  - smoke-subset selection (`4.2`) remains pending until manifest rows are populated with real file ids.
+- artifact/log reference:
+  - `docs/issues/Issue_139_Batch_3_Verification_Guide.md`
+  - `docs/_evidence/issue_139_evidence.md`
+  - `docs/_evidence/issue_139_batch3_smoke/`
+  - `docs/_evidence/issue_139_quality_gate/quality_gate_constants.json`
+  - `docs/_evidence/issue_139_quality_gate/corpus_manifest.tsv`
+  - `docs/_evidence/issue_139_quality_gate/results_off.tsv`
+  - `docs/_evidence/issue_139_quality_gate/results_nonoff.tsv`
+  - `docs/_evidence/issue_139_quality_gate/cer_table_photographed.tsv`
+  - `docs/_evidence/issue_139_quality_gate/cer_table_scanned_pdf.tsv`
+  - `docs/_evidence/issue_139_quality_gate/cer_table_noisy_low_contrast.tsv`
+  - `docs/_evidence/issue_139_quality_gate/quality_gate_summary.json`
+
+Entry `E139-SQG-SETUP-002`
+- timestamp: `2026-03-06 20:31:32 -03:00`
+- command/test executed:
+  - generated seed corpus files (one per family) from existing issue artifact:
+    - source: `docs/_evidence/issue_139_operation_gate/input_sample.png`
+    - output:
+      - `docs/_evidence/issue_139_quality_gate/corpus/photographed/photo_seed_001.png`
+      - `docs/_evidence/issue_139_quality_gate/corpus/noisy_low_contrast/noisy_seed_001.png` (ImageMagick low-contrast/noise transform)
+      - `docs/_evidence/issue_139_quality_gate/corpus/scanned_pdf/scanned_seed_001.pdf` (ImageMagick PNG -> PDF conversion)
+  - created transcript placeholders:
+    - `docs/_evidence/issue_139_quality_gate/reference_transcripts/photographed/photo_seed_001.txt`
+    - `docs/_evidence/issue_139_quality_gate/reference_transcripts/scanned_pdf/scanned_seed_001.txt`
+    - `docs/_evidence/issue_139_quality_gate/reference_transcripts/noisy_low_contrast/noisy_seed_001.txt`
+  - populated manifest with one file id per family:
+    - `photo_seed_001`
+    - `scanned_seed_001`
+    - `noisy_seed_001`
+    - file: `docs/_evidence/issue_139_quality_gate/corpus_manifest.tsv`
+  - normalized manifest delimiter format to real tab-separated columns (`5` columns per row).
+  - rechecked section 4 artifact existence:
+    - corpus + transcript globs now return `matches=1` per family.
+- result:
+  - runbook section 4 file/artifact checklist is now physically scaffolded and non-empty for all three families.
+  - smoke-subset preselection is now registered in manifest (`4.2` minimum one id per family).
+  - drift disclosure: transcript files are placeholders (`TODO`) and are not final ground-truth references; quality-gate scoring cannot be closed until these are replaced with fixed true transcripts and corpus is expanded to satisfy `N_min`.
+- artifact/log reference:
+  - `docs/_evidence/issue_139_operation_gate/input_sample.png`
+  - `docs/_evidence/issue_139_quality_gate/corpus/photographed/photo_seed_001.png`
+  - `docs/_evidence/issue_139_quality_gate/corpus/scanned_pdf/scanned_seed_001.pdf`
+  - `docs/_evidence/issue_139_quality_gate/corpus/noisy_low_contrast/noisy_seed_001.png`
+  - `docs/_evidence/issue_139_quality_gate/reference_transcripts/photographed/photo_seed_001.txt`
+  - `docs/_evidence/issue_139_quality_gate/reference_transcripts/scanned_pdf/scanned_seed_001.txt`
+  - `docs/_evidence/issue_139_quality_gate/reference_transcripts/noisy_low_contrast/noisy_seed_001.txt`
+  - `docs/_evidence/issue_139_quality_gate/corpus_manifest.tsv`
+
 ## 2026-03-06 - Batch 3 UI Controls + PreprocessConfig Wiring
 
 Entry `E139-B3-UI-003`

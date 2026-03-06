@@ -1,0 +1,8 @@
+{
+  "D": 30.0,
+  "M": 5.0,
+  "S": 33.0,
+  "N_min": 6,
+  "locked_at": "",
+  "notes": "Set locked_at before first benchmark run."
+}
