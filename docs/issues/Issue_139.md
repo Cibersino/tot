@@ -510,12 +510,12 @@ Includes:
 * [x] Confirm Batch 1 implementation code changes began only after this gate was fully closed.
 
 ### Batch 1
-* [ ] Implement H01 scoped-lock operation registry (keys, fixed order, tool ownership) per `H01 Batch 1 Scoped-Lock (Initial Implementable Cut)`.
-* [ ] Implement H01 bounded manual-schema validation (including unknown-field and out-of-bounds rejection).
-* [ ] Enforce H01 first-cut exclusions in adapter/validation layer (no extra operations, no geometry/layout controls, no free-form CLI passthrough).
-* [ ] Implement preprocess adapter contract (canonical `preprocessConfig` semantics; no legacy profile arg anywhere).
-* [ ] Implement preprocess runner JSON output with per-operation stats.
-* [ ] Implement strict backend `preprocessConfig` validation against the H01 Batch 1 scoped-lock declarations.
+* [x] Implement H01 scoped-lock operation registry (keys, fixed order, tool ownership) per `H01 Batch 1 Scoped-Lock (Initial Implementable Cut)`.
+* [x] Implement H01 bounded manual-schema validation (including unknown-field and out-of-bounds rejection).
+* [x] Enforce H01 first-cut exclusions in adapter/validation layer (no extra operations, no geometry/layout controls, no free-form CLI passthrough).
+* [x] Implement preprocess adapter contract (canonical `preprocessConfig` semantics; no legacy profile arg anywhere).
+* [x] Implement preprocess runner JSON output with per-operation stats.
+* [x] Implement strict backend `preprocessConfig` validation against the H01 Batch 1 scoped-lock declarations.
 
 ### Batch 2
 * [ ] Implement preprocess execution with deterministic temp outputs and safety caps.

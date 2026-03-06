@@ -1,5 +1,42 @@
 # Issue 139 Evidence Log
 
+## 2026-03-06 - Batch 1 Contract Core Closure (H01)
+
+Entry `E139-B1-CONTRACT-002`
+- timestamp: `2026-03-06 14:46:06 -03:00`
+- command/test executed:
+  - `node --check electron/import_ocr/preprocess_pipeline.js`
+  - `node --check electron/import_ocr/ocr_pipeline.js`
+  - contract sanity script (`preprocess_pipeline_sanity_ok`)
+  - exclusion checks script (`preprocess_pipeline_exclusions_ok`)
+  - `rg -n "preprocessProfile|ocrPreprocess|preprocess_basic|preprocess_standard|preprocess_aggressive|OCR_PREPROCESS_LIST|normalizePreprocessProfile" public electron i18n`
+- result:
+  - new Batch 1 preprocess contract module and OCR pipeline wiring pass syntax checks.
+  - manual-schema validation, strict unknown-key rejection, adapter input validation, and runner JSON output foundations behave as expected in scripted checks.
+  - first-cut exclusion constraints are enforced (`split`/extra operation keys rejected; free-form passthrough keys such as `cliArgs` rejected in adapter input).
+  - no legacy preprocess profile references detected in active app code paths.
+- artifact/log reference:
+  - `electron/import_ocr/preprocess_pipeline.js`
+  - `electron/import_ocr/ocr_pipeline.js`
+  - `docs/issues/Issue_139.md`
+
+Entry `E139-B1-CONTRACT-001`
+- timestamp: `2026-03-06 14:20:00 -03:00` to `2026-03-06 14:46:06 -03:00`
+- command/test executed:
+  - implemented H01 scoped-lock operation registry + fixed order + tool ownership.
+  - implemented strict `preprocessConfig` validation/normalization with bounded manual schemas and unknown-key rejection.
+  - implemented adapter contract foundation (`buildPreprocessAdapterInput`) with strict key enforcement.
+  - implemented runner JSON output foundation (`buildPreprocessRunnerJsonOutput`) with per-operation stats (`requestedMode`, `effectiveMode`, `applied`, `skipped`, `params`, `durationMs`).
+  - wired strict backend preprocess validation at OCR pipeline entry.
+- result:
+  - Batch 1 checklist items are now implemented and marked complete in issue checklist.
+  - default `preprocessConfig` now resolves to all operations `off` when omitted.
+  - low-impact assumption applied for manual bounds (not numerically specified in issue text): conservative initial bounds were defined in code constants and are centrally change-controlled for later evidence-driven tuning.
+- artifact/log reference:
+  - `docs/issues/Issue_139.md`
+  - `electron/import_ocr/preprocess_pipeline.js`
+  - `electron/import_ocr/ocr_pipeline.js`
+
 ## 2026-03-06 - Clean-Base Start Gate Closure
 
 Entry `E139-CLEANBASE-002`
