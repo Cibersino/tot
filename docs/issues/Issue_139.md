@@ -128,12 +128,17 @@ Transport/protocol note:
 * If any operation/mode fails, remove it from scoped-lock declarations + UI and re-run the gate.
 * If removals/changes occur, re-freeze keys/order/schema and re-run impacted checks before continuing.
 
-## Pre-Implementation Decision Gate (Open Decision)
+## Pre-Implementation Decision Gate (Decision Recorded)
 
 Candidate-set setup (required before testing):
 * Define bundled-candidate list.
 * Define custom-preprocess-candidate list.
 * Record/freeze evaluation order for both lists in evidence before execution.
+
+Current decision (2026-03-06):
+* Selected candidate path: `H01` (`ImageMagick -> unpaper`) under bundled-binary + app-wrapper strategy.
+* Strongest challenger path: `H05` (`ImageMagick -> Leptonica`).
+* Decision rationale (priority-ordered): highest current expected extraction improvement + reliability signal with direct comparator-chain evidence in Tesseract-centered OCR ecosystems; challenger retained for immediate fallback if selected path fails full proof.
 
 Evaluation criteria (apply to every candidate):
 1. Contract realizability (via wrapper/orchestration):
@@ -169,7 +174,7 @@ Candidate selection flow (after candidate pass/fail):
    * complexity/maintenance are part of the negative tradeoff side; they are weighed, but not treated as automatic blockers by default
 3. For non-selected candidates, keep evidence light (capability checks + rationale); no full implementation proof required.
 4. Perform full implementation proof only for the selected candidate.
-5. If selected candidate fails full proof, return to shortlist and reselect.
+5. If selected candidate fails full proof, return to shortlist and reselect (next challenger to evaluate first: `H05`).
 
 User Setup Gate (Required Human Steps):
 * After candidate selection and before implementation, run local availability checks for the selected path prerequisites.
@@ -370,17 +375,17 @@ Includes:
 ## Checklist
 
 ### Pre-Implementation Decision Gate
-* [ ] Define bundled/custom candidate lists and freeze evaluation order in evidence.
-* [ ] Evaluate candidates against decision-gate criteria and record per-candidate results:
-  * [ ] criteria 1-5 pass/fail
-  * [ ] criterion 6 quality-potential evidence + confidence notes (no full implementation proof)
-* [ ] Run capability-gap analysis from candidate results and record evidence.
-* [ ] Select one passing candidate using decision-gate priority order (primary quality/reliability, secondary operation fidelity, then remaining factors; complexity/maintenance weighed as negative-side factors, not automatic blockers by default).
-* [ ] Keep non-selected candidate evidence light (no full implementation proof).
-* [ ] Record implementation decision: bundled-binary strategy or custom `.exe` (only if capability-gap is proven).
+* [x] Define bundled/custom candidate lists and freeze evaluation order in evidence.
+* [x] Evaluate candidates against decision-gate criteria and record per-candidate results:
+  * [x] criteria 1-5 pass/fail
+  * [x] criterion 6 quality-potential evidence + confidence notes (no full implementation proof)
+* [x] Run capability-gap analysis from candidate results and record evidence.
+* [x] Select one passing candidate using decision-gate priority order (primary quality/reliability, secondary operation fidelity, then remaining factors; complexity/maintenance weighed as negative-side factors, not automatic blockers by default).
+* [x] Keep non-selected candidate evidence light (no full implementation proof).
+* [x] Record implementation decision: bundled-binary strategy or custom `.exe` (only if capability-gap is proven).
 
 ### Batch 1
-* [ ] Complete User Setup Gate for selected candidate (no full proof yet):
+* [ ] Complete User Setup Gate for selected candidate (`H01`) (no full proof yet):
   * [ ] run local availability checks for selected-path prerequisites
   * [ ] if missing, execute guided user download/install steps
   * [ ] rerun availability/version/path checks and record evidence

@@ -1,16 +1,66 @@
 # Issue 139 - Pre-Implementation Decision Gate
 
-## Criteria 1-6 Matrix Draft (Rigor Rebuild, Discovery Only, Unfrozen)
+## Criteria 1-6 Matrix (Gate-Closure Pass, Candidate Set Frozen)
 
 Timestamp:
-- 2026-03-05 19:33:49 -03:00
+- 2026-03-06 09:56:59 -03:00
 
 Status:
-- Discovery only.
-- List is not frozen.
-- No candidate selected.
-- No implementation proof.
+- Gate-closure decision pass completed (pre-implementation).
+- Candidate list frozen for Pre-Implementation Decision Gate scope only.
+- Selected candidate for implementation proof: `H01` (issue decision already recorded).
+- Strongest challenger retained: `H05`.
+- No full implementation proof executed for non-selected candidates.
 - Existing file updated (no new matrix file).
+
+---
+
+## Frozen Candidate Lists + Evaluation Order (Gate Checkbox 1)
+
+Freeze scope:
+- This freeze is for decision-gate closure only; implementation details remain change-controlled by Issue_139 scoped-lock rules.
+
+Bundled/hybrid candidate list and evaluation order (frozen):
+1. `B01` ImageMagick CLI
+2. `B02` GraphicsMagick CLI
+3. `B03` libvips CLI
+4. `B04` unpaper CLI
+5. `B05` G'MIC CLI
+6. `B06` NAPS2 Console
+7. `B07` ScanTailor Advanced runtime path
+8. `B08` Tesseract-internal-only preprocessing
+9. `B09` OCRmyPDF-as-runtime
+10. `B10` Leptonica utility path
+11. `B11` OCRopus CLI path
+12. `B12` Kraken CLI path
+13. `H01` ImageMagick -> unpaper
+14. `H02` libvips -> unpaper
+15. `H03` GraphicsMagick -> unpaper
+16. `H04` G'MIC -> unpaper
+17. `H05` ImageMagick -> Leptonica
+18. `H06` OCRopus/Kraken front preprocessing -> Tesseract OCR
+
+Custom-preprocess candidate list and evaluation order (frozen):
+1. `C01` Custom OpenCV runner (`.exe`)
+2. `C02` Custom Leptonica runner (`.exe`)
+3. `C03` Custom libvips runner (`.exe`)
+4. `C04` Custom .NET runner (NAPS2 SDK-family)
+5. `C05` In-process Node path (`sharp`/libvips)
+6. `C06` Python OpenCV/scikit-image sidecar
+7. `C07` OCRopus custom sidecar pipeline
+8. `C08` Kraken custom sidecar pipeline
+9. `C09` Custom OpenCV + Leptonica combined runner
+
+Deferred backlog (not scored in this gate closure):
+- `D01` GIMP batch preprocessing path
+
+---
+
+## Gate Rule Used for Criteria 1-5 Pass/Fail
+
+- `C1..C5` are marked `PASS` when score is `>= 3.0` and no blocker note contradicts Issue_139 constraints.
+- Any `C1..C5` below `3.0` marks candidate `FAIL` for gate pass condition.
+- `C6` is mandatory decision input with confidence notes; it is non-gating by Issue_139.
 
 ---
 
@@ -419,43 +469,110 @@ How this affects interpretation:
 
 ---
 
-## Revised Draft Readout (Priority-Ordered, No Freeze, No Selection)
+## Per-Candidate Gate Results (Gate Checkbox 2)
 
-### Outcome Frontier (Primary then Secondary)
+Passing candidates (`C1..C5` pass condition met):
+- `B01`: `PASS`; `C6=4.6`; confidence `high`; broad preprocess control and strong comparator-chain support.
+- `B02`: `PASS`; `C6=3.4`; confidence `medium`; passes gate but capability-source stability is partial.
+- `B03`: `PASS`; `C6=3.9`; confidence `medium`; passes gate with runtime-orchestration complexity risk.
+- `B04`: `PASS`; `C6=4.4`; confidence `high`; quality signal strong, compliance/packaging controls required.
+- `B10`: `PASS`; `C6=4.1`; confidence `high`; strong document-image fit and permissive licensing signal.
+- `H01`: `PASS`; `C6=4.8`; confidence `high`; strongest bundled/hybrid quality + reliability signal.
+- `H02`: `PASS`; `C6=4.6`; confidence `medium`; quality upside but runtime complexity is higher.
+- `H03`: `PASS`; `C6=4.4`; confidence `medium`; viable hybrid with weaker direct capability certainty vs `H01`.
+- `H05`: `PASS`; `C6=4.7`; confidence `medium`; strongest non-unpaper hybrid challenger.
+- `C01`: `PASS`; `C6=4.6`; confidence `medium`; very strong control/observability ceiling.
+- `C02`: `PASS`; `C6=4.6`; confidence `medium`; strong custom document-image path.
+- `C03`: `PASS`; `C6=4.3`; confidence `medium`; viable custom path with dependency/compliance packaging risk.
+- `C09`: `PASS`; `C6=4.9`; confidence `low`; highest technical ceiling with highest delivery complexity burden.
 
-Current top frontier:
-- `C09` Custom OpenCV+Leptonica
-- `H01` ImageMagick->unpaper
-- `H05` ImageMagick->Leptonica
-- `C02` Custom Leptonica
-- `C01` Custom OpenCV
-- `B01` ImageMagick CLI
-- `H02` libvips->unpaper
-- `B10` Leptonica utility path
+Non-passing candidates (`C1..C5` pass condition not met):
+- `B05`: `FAIL` (`C5`); `C6=3.8`; confidence `medium`; compliance viability too weak for this gate.
+- `B06`: `FAIL` (`C1`, `C3`, `C5`); `C6=3.2`; confidence `high`; control/observability mismatch.
+- `B07`: `FAIL` (`C1`, `C2`, `C3`, `C4`, `C5`); `C6=3.0`; confidence `medium`; interactive-first path.
+- `B08`: `FAIL` (`C1`, `C3`); `C6=2.9`; confidence `high`; insufficient operation-level control surface.
+- `B09`: `FAIL` (`C1`, `C2`, `C3`); `C6=3.7`; confidence `high`; full OCR pipeline model, not tight preprocess adapter.
+- `B11`: `FAIL` (`C2`, `C4`); `C6=3.9`; confidence `medium`; runtime/deployment reliability concerns.
+- `B12`: `FAIL` (`C2`, `C4`); `C6=4.1`; confidence `medium`; deployment model misaligned to current target path.
+- `H04`: `FAIL` (`C2`); `C6=4.3`; confidence `medium`; runtime-policy reliability below gate threshold.
+- `H06`: `FAIL` (`C2`, `C4`); `C6=4.2`; confidence `low`; high runtime and packaging risk.
+- `C04`: `FAIL` (`C5`); `C6=4.0`; confidence `high`; licensing composition not yet clean enough for gate pass.
+- `C05`: `FAIL` (`C2`); `C6=3.8`; confidence `medium`; in-process kill/cancel semantics weaker than current model.
+- `C06`: `FAIL` (`C2`, `C4`); `C6=4.2`; confidence `medium`; Python-side runtime reproducibility risk.
+- `C07`: `FAIL` (`C2`, `C4`); `C6=4.1`; confidence `low`; stack age + ops burden reduce reliability confidence.
+- `C08`: `FAIL` (`C2`, `C4`); `C6=4.3`; confidence `low`; deployment burden too high for current delivery path.
 
-Interpretation:
-- The strongest product-outcome contenders include both bundled/hybrid and custom paths.
-- The previous rigid pass/fail posture would have hidden high-upside paths (`H01`, `C09`, `C02`).
-- Policy remains important (`docs/issues/Issue_139.md:26`) but does not erase product-signal visibility.
+Deferred:
+- `D01`: not scored in this gate; source access was incomplete in-session.
 
-### Revisited Candidates Previously Over-Constrained
-
-Re-opened and retained as serious contenders:
-- `H01`, `H02`, `H03`, `H04` (unpaper hybrids): kept because quality signal is strong; compliance/ops burden is explicit, not hidden.
-- `C01`, `C02`, `C09`: now surfaced clearly as top technical quality/control candidates.
-- `B11`, `B12`, `C07`, `C08`: retained as exploratory high-upside paths with lower runtime-confidence.
-
-### Highest Uncertainty Before Any Freeze
-
-- True CER/robustness deltas on difficult families for frontier set (`C09`, `H01`, `H05`, `C02`, `C01`, `B01`).
-- Reliability under cancellation/timeouts for multi-step hybrid and Python-heavy candidates.
-- Final provenance consistency checks for mixed-license delivery scenarios (especially exact FFmpeg build/profile controls in `unpaper` paths).
-- Final scoped-lock operation set/order can re-rank `Secondary` and `C1`.
+Confidence basis:
+- Derived from source stability plus comparator-app adoption confidence in this file's audit sections.
 
 ---
 
-## Conclusion (Draft Only)
+## Capability-Gap Analysis from Candidate Results (Gate Checkbox 3)
 
-This matrix is now rebuilt with in-session evidence audit, expanded candidate coverage, and priority-first readout.
+Passing bundled/hybrid candidates:
+- `B01`, `B02`, `B03`, `B04`, `B10`, `H01`, `H02`, `H03`, `H05`
 
-No freeze and no selection are made here.
+Passing custom candidates:
+- `C01`, `C02`, `C03`, `C09`
+
+Gap conclusion:
+- A custom preprocess `.exe` is not justified at this gate because bundled/hybrid paths already pass `C1..C5`, including strong quality-potential contenders (`H01`, `H05`).
+- Therefore, Issue_139 bundled-binary-first policy remains satisfied without capability-gap escalation.
+
+Decision implication:
+- Keep implementation path at `H01`.
+- Keep `H05` as first re-selection challenger if `H01` fails full implementation proof.
+- Re-open custom shortlist only if both `H01` and `H05` fail proof or show structural inability to meet gate-quality outcomes.
+
+---
+
+## Non-Selected Candidate Evidence Scope (Gate Checkbox 4)
+
+Evidence scope rule applied:
+- Non-selected candidates retain capability/risk evidence only.
+- No full in-app implementation proof executed for non-selected candidates.
+- No production packaging artifacts produced for non-selected candidates.
+- No non-selected candidate progressed beyond decision-gate evidence depth.
+
+Non-selected set in this closure:
+- `B01`, `B02`, `B03`, `B04`, `B05`, `B06`, `B07`, `B08`, `B09`, `B10`, `B11`, `B12`
+- `H02`, `H03`, `H04`, `H05`, `H06`
+- `C01`, `C02`, `C03`, `C04`, `C05`, `C06`, `C07`, `C08`, `C09`
+- `D01` (deferred)
+
+---
+
+## Revised Readout (Priority-Ordered, Frozen Gate, Selection Active)
+
+Outcome frontier (quality/reliability first):
+- `H01` ImageMagick -> unpaper
+- `H05` ImageMagick -> Leptonica
+- `C09` Custom OpenCV + Leptonica
+- `C02` Custom Leptonica
+- `C01` Custom OpenCV
+- `B01` ImageMagick CLI
+
+Decision readout:
+- Selected now: `H01`.
+- Strongest challenger: `H05`.
+- Why: `H01` combines top quality signal, acceptable gate pass on `C1..C5`, and strong comparator-chain confidence in Tesseract/Poppler ecosystems.
+
+Main uncertainty carried into implementation proof:
+- Actual CER delta under Issue_139 challenging families.
+- Runtime robustness under timeout/cancel/fail-fast behavior at production-like load.
+- Final release-provenance discipline for mixed-license dependency chain.
+
+---
+
+## Conclusion (Gate Closure)
+
+Pre-Implementation Decision Gate evidence now includes:
+- Frozen bundled/custom lists with evaluation order.
+- Per-candidate `C1..C5` pass/fail and `C6` quality/confidence notes.
+- Capability-gap conclusion.
+- Explicit non-selected light-evidence scope.
+
+Gate selection remains `H01` with `H05` as first challenger.
