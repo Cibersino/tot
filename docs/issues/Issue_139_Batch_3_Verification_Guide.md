@@ -1,8 +1,8 @@
-# Issue 139 - Batch 3 Verification Guide (Smoke + Immediate Quality Gate)
+# Issue 139 - Smoke + Quality Gate Verification Guide
 
 ## 1) Purpose
 
-Close Batch 3 end-to-end from `docs/issues/Issue_139.md` using one integrated flow:
+Close the separated `Smoke test and quality gate` section from `docs/issues/Issue_139.md` using one integrated flow:
 
 1. run in-app smoke scenarios
 2. execute the mandatory quality gate immediately after smoke
@@ -12,7 +12,7 @@ This guide avoids duplicated work by reusing smoke outputs in quality-gate scori
 
 Scope boundary:
 
-- this guide is the execution runbook for the remaining Batch 3 verification closure items:
+- this guide is the execution runbook for the separated smoke/quality-gate closure items:
   - `Run in-app smoke and record evidence`
   - `Execute and pass mandatory quality gate immediately after smoke`
 - Batch 4/5 tasks remain out of scope for this runbook
@@ -35,7 +35,7 @@ Scope boundary:
 Run phases in order, without skipping:
 
 1. Phase A - Preflight
-2. Phase B - Batch 3 smoke scenarios
+2. Phase B - Smoke scenarios
 3. Phase C - Quality gate (immediately after smoke)
 4. Phase D - Evidence consolidation and checklist closure
 
@@ -350,11 +350,11 @@ When appending to `docs/_evidence/issue_139_evidence.md`, include:
 - runtime metrics per family/config
 - artifact file references
 
-## 11) Batch 3 Exit Condition
+## 11) Smoke/Quality Gate Exit Condition
 
-Batch 3 is complete only when both blocks are fully checked in `docs/issues/Issue_139.md`:
+The `Smoke test and quality gate` section is complete only when both blocks are fully checked in `docs/issues/Issue_139.md`:
 
 - smoke block complete
 - quality-gate block complete
 
-If any challenging family fails the quality gate thresholds, Batch 3 remains open.
+If any challenging family fails the quality gate thresholds, the smoke/quality-gate section remains open and Batch 4 stays blocked.

@@ -423,21 +423,31 @@ Includes:
 * Timeout/cancel/error mapping + `preprocessing` progress stage wiring.
 * No-legacy verification only (clean hard-cut baseline was established before Batch 1 coding).
 
-### Batch 3 - UI + Verification + Quality Gate
+### Batch 3 - UI Controls + Wiring
 
 Goal:
-* Finalize user-facing controls, verify Batch 2 behavior end-to-end, and close mandatory quality gate.
+* Finalize user-facing preprocessing controls and UI-to-backend wiring.
 
 Includes:
 * OCR options modal operation controls completion.
 * EN/ES user-facing preprocess strings (required before smoke/gate to keep the app's i18n-first code pattern).
+* Bounded manual parameter wiring UI -> backend -> sidecar.
+* Default preprocess state reset to all operations `off` on each new import run.
+* No preprocess config persistence across file change/app restart.
+
+### Smoke Test and Quality Gate (Post-Batch 3, Pre-Batch 4)
+
+Goal:
+* Verify in-app behavior end-to-end and close the mandatory quality gate before Batch 4 UX hardening.
+
+Includes:
 * Manual in-app smoke and evidence capture (runbook: `docs/issues/Issue_139_Batch_3_Verification_Guide.md`).
 * Mandatory quality-gate execution and closure immediately after smoke (runbook: `docs/issues/Issue_139_Batch_3_Verification_Guide.md`).
 
 ### Batch 4 - UX Controls + Hardening
 
 Goal:
-* UX hardening and UI refinement after Batch 3 quality-gate closure, with emphasis on OCR options modal usability.
+* UX hardening and UI refinement after smoke/quality-gate closure, with emphasis on OCR options modal usability.
 
 Includes:
 * OCR options modal refinement (post-gate): information architecture, operation grouping/order, labels/help text clarity.
