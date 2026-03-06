@@ -576,3 +576,41 @@ Pre-Implementation Decision Gate evidence now includes:
 - Explicit non-selected light-evidence scope.
 
 Gate selection remains `H01` with `H05` as first challenger.
+
+---
+
+## H01 Substrate Conditions Readout (Pre-Batch1 Clarification)
+
+This section defines the binding conditions introduced by the selected substrate path `H01` (`ImageMagick -> unpaper`) and how they must be handled in later batches.
+
+License/compliance conditions and limitations:
+- Source signal: ImageMagick publishes its own license terms and redistribution notices requirements (`https://imagemagick.org/license/`).
+- Source signal: unpaper repository declares project license as GNU GPL v2 (`https://github.com/unpaper/unpaper`), with additional per-file SPDX variations noted upstream.
+- Source signal: unpaper README declares hard dependency on FFmpeg for file input/output (`https://github.com/unpaper/unpaper`).
+- Practical limitation: H01 cannot be treated as "single-license/simple notice"; release evidence must track both direct tool licenses and package-chain/transitive runtime licensing.
+- Required handling: no preprocess release artifact can pass legal gate unless `THIRD_PARTY_NOTICES.md` and `third_party_licenses/**` fully cover ImageMagick, unpaper, and the exact package-chain dependencies bundled.
+
+Artifact construction + hosting conditions:
+- Repo model anchor: sidecars are packaged from `ocr/**` via `electron-builder.extraResources` (`package.json`).
+- Repo model anchor: runtime resolves sidecars from explicit/env/resources/app roots and does not use system `PATH` (`ocr/README.md`, `electron/import_ocr/platform/resolve_sidecar.js`).
+- Current-state check: `ocr/win32-x64/preprocess` exists but is currently empty (no preprocess runtime artifacts committed yet).
+- Binding output contract for active target:
+  - `ocr/win32-x64/preprocess/imagemagick/**`
+  - `ocr/win32-x64/preprocess/unpaper/**`
+- Hosting decision (this issue scope): keep preprocess runtime artifacts hosted in-repo under `ocr/**`, same as current OCR sidecar model; any hosting-model change requires issue + evidence update before merge.
+- Required evidence at artifact build time: upstream source URL/version, acquisition/build commands, source hashes, final shipped inventory + hashes.
+
+Packaging conditions (Windows in-scope, Linux/macOS availability path):
+- Scope anchor: Issue_139 ships preprocess sidecars only for `win32-x64` in this issue.
+- Architecture anchor: target registry already includes `win32-x64`, `linux-x64`, `darwin-x64`, `darwin-arm64` (`electron/import_ocr/platform/profile_registry.js`).
+- Binding requirement: preserve cross-target directory contract for preprocess bundles even when non-Windows artifacts are not shipped in this issue:
+  - `ocr/linux-x64/preprocess/`
+  - `ocr/darwin-x64/preprocess/`
+  - `ocr/darwin-arm64/preprocess/`
+- Runtime policy remains explicit: missing preprocess runtime maps to `OCR_BINARY_MISSING` and no silent fallback.
+- When Linux/macOS preprocess artifacts are introduced later, release packaging must include those bundles and attach cross-target smoke evidence (`docs/releases/ocr_cross_target_smoke_matrix.md`) per distributed target.
+
+Carry-forward execution mapping:
+- Batch 1: substrate constraints documented and evidenced (this section + issue + evidence log).
+- Batch 2: build and wire `win32-x64` preprocess artifacts under required layout; prove runtime mapping and missing-binary handling.
+- Batch 5: update notices/licenses and pass release legal/post-packaging gates with preprocess components included.

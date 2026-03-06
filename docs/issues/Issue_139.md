@@ -182,6 +182,34 @@ User Setup Gate (Required Human Steps):
 * After install, rerun availability/version/path checks and record results in evidence.
 * Implementation continues only after User Setup Gate is marked complete.
 
+## H01 Substrate Conditions (Carry-Forward Before Batch 1)
+
+The selected path (`H01`: `ImageMagick -> unpaper`) imposes the following binding conditions for later batches.
+
+License/compliance conditions:
+* `ImageMagick` redistribution must include license copy and attribution in notices.
+* `unpaper` redistribution must follow the upstream project licensing model (project under GNU GPL v2, with some files under MIT/Apache 2.0 as declared by upstream SPDX headers).
+* Upstream `unpaper` declares `ffmpeg` as a hard dependency for file input/output; preprocess runtime provenance must explicitly capture the actual FFmpeg/package chain used in distributed bundles.
+* Before releasing preprocess sidecars, `THIRD_PARTY_NOTICES.md` must add preprocess components with exact upstream source URLs, version/tag, and artifact provenance references.
+* Matching license/notice files for every redistributed preprocess component and package-chain dependency must exist under `third_party_licenses/**` and pass release legal baseline checks.
+
+Artifact construction + hosting conditions:
+* Preprocess sidecars must follow the existing OCR sidecar model: deterministic files under `ocr/<platform>-<arch>/preprocess/**`, packaged via `electron-builder.extraResources`.
+* Required layout for active target in this issue:
+  * `ocr/win32-x64/preprocess/imagemagick/**`
+  * `ocr/win32-x64/preprocess/unpaper/**`
+* Evidence must capture, per preprocess bundle: upstream source URL, version/tag, download/build command(s), source artifact hash, final shipped file inventory, and final binary hashes.
+* Hosting decision for this issue: preprocess runtime artifacts are hosted in-repo under `ocr/**` (same model as existing OCR sidecars). Any hosting-model change must be documented in issue + evidence before merge.
+
+Packaging conditions (active Windows scope + cross-target availability path):
+* Shipping scope in this issue remains `win32-x64`; preprocess sidecar shipment for `linux-x64`, `darwin-x64`, `darwin-arm64` stays out of scope for this issue.
+* Cross-target availability remains mandatory at architecture level: preserve registry-driven sidecar wiring for all target keys and reserve preprocess directory contract for future target bundles:
+  * `ocr/linux-x64/preprocess/`
+  * `ocr/darwin-x64/preprocess/`
+  * `ocr/darwin-arm64/preprocess/`
+* Runtime resolution remains explicit-root based (no system `PATH` lookup), and missing preprocess runtime must map to `OCR_BINARY_MISSING`.
+* When Linux/macOS preprocess bundles are introduced in a later release, packaging must include target-specific preprocess artifacts plus `docs/releases/ocr_cross_target_smoke_matrix.md` evidence for each distributed target.
+
 ## OCR Pipeline Integration
 
 Image OCR stage order:
@@ -383,6 +411,7 @@ Includes:
 * [x] Select one passing candidate using decision-gate priority order (primary quality/reliability, secondary operation fidelity, then remaining factors; complexity/maintenance weighed as negative-side factors, not automatic blockers by default).
 * [x] Keep non-selected candidate evidence light (no full implementation proof).
 * [x] Record implementation decision: bundled-binary strategy or custom `.exe` (only if capability-gap is proven).
+* [x] Record substrate carry-forward constraints in issue + evidence (license/compliance, artifact build+hosting, packaging path).
 
 ### Batch 1
 * [ ] Complete User Setup Gate for selected candidate (`H01`) (no full proof yet):
