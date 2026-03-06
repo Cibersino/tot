@@ -1,5 +1,62 @@
 # Issue 139 Evidence Log
 
+## 2026-03-06 - Batch 2 Runtime + Integration (H01)
+
+Entry `E139-B2-INTEGRATION-001`
+- timestamp: `2026-03-06 15:02:11 -03:00`
+- command/test executed:
+  - syntax checks:
+    - `node --check electron/import_ocr/preprocess_runtime.js`
+    - `node --check electron/import_ocr/ocr_pipeline.js`
+    - `node --check electron/import_ocr/pdf_raster_ocr.js`
+    - `node --check electron/import_ocr/platform/profile_registry.js`
+    - `node --check electron/import_ocr/platform/resolve_sidecar.js`
+    - `node --check electron/import_ocr/orchestrator.js`
+    - `node --check public/js/import_ocr_ui_progress.js`
+    - `node --check public/renderer.js`
+  - locale parse checks:
+    - `Get-Content -Path i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null`
+    - `Get-Content -Path i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null`
+    - `Get-Content -Path i18n/es/es-cl/renderer.json -Raw | ConvertFrom-Json | Out-Null`
+  - runtime/path sanity probes:
+    - `resolve_sidecar_preprocess_paths_ok` inline script (verifies `resolveSidecarPaths` emits preprocess binary paths for `win32-x64`)
+    - `preprocess_off_mode_smoke_ok` inline script (verifies all-operations-off preprocess path returns input unchanged and succeeds without preprocess binaries)
+  - no-legacy scan:
+    - `rg -n "preprocessProfile|ocrPreprocess|preprocess_basic|preprocess_standard|preprocess_aggressive|OCR_PREPROCESS_LIST|normalizePreprocessProfile" public electron i18n`
+- result:
+  - Batch 2 runtime integration is wired end-to-end:
+    - image OCR route now executes preprocessing stage before OCR and cleans temp artifacts on terminal states.
+    - scanned-PDF OCR now runs per-page preprocessing after rasterization and before Tesseract; failures are fail-fast with typed preprocess codes.
+    - preprocess sidecar paths are resolved explicitly from profile root (`preprocess/imagemagick`, `preprocess/unpaper`) with no `PATH` discovery.
+    - preprocess typed errors are mapped to renderer user-facing alerts, and `preprocessing` progress stage is visible in UI progress labels.
+    - `OCR_PREPROCESS_CANCELED` is treated as canceled terminal state in orchestrator/progress UI.
+  - clean-base invariant remains true (legacy preprocess-profile identifiers absent in active code paths).
+  - preprocess sidecar directory contract skeleton added for target keys:
+    - `ocr/win32-x64/preprocess/imagemagick/.gitkeep`
+    - `ocr/win32-x64/preprocess/unpaper/.gitkeep`
+    - `ocr/linux-x64/preprocess/.gitkeep`
+    - `ocr/darwin-x64/preprocess/.gitkeep`
+    - `ocr/darwin-arm64/preprocess/.gitkeep`
+- artifact/log reference:
+  - `electron/import_ocr/preprocess_runtime.js`
+  - `electron/import_ocr/ocr_pipeline.js`
+  - `electron/import_ocr/pdf_raster_ocr.js`
+  - `electron/import_ocr/orchestrator.js`
+  - `electron/import_ocr/platform/profile_registry.js`
+  - `electron/import_ocr/platform/resolve_sidecar.js`
+  - `public/js/import_ocr_ui_progress.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `i18n/es/es-cl/renderer.json`
+  - `ocr/README.md`
+  - `ocr/win32-x64/preprocess/imagemagick/.gitkeep`
+  - `ocr/win32-x64/preprocess/unpaper/.gitkeep`
+  - `ocr/linux-x64/preprocess/.gitkeep`
+  - `ocr/darwin-x64/preprocess/.gitkeep`
+  - `ocr/darwin-arm64/preprocess/.gitkeep`
+  - `docs/issues/Issue_139.md`
+
 ## 2026-03-06 - Batch 1 Contract Core Closure (H01)
 
 Entry `E139-B1-CONTRACT-002`

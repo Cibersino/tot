@@ -22,6 +22,7 @@ const Log = require('../log');
 const {
   terminateWithEscalation,
 } = require('./platform/process_control');
+const { runPreprocessForImage } = require('./preprocess_runtime');
 const {
   OCR_RASTER_STDOUT_LIMIT_CHARS,
   OCR_RASTER_STDERR_LIMIT_CHARS,
@@ -236,6 +237,12 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
   const langRes = resolveAndValidateOcrLanguage(requestedLang, sidecar.tessdataPath);
   if (!langRes.ok) return langRes;
   const { tesseractLang } = langRes;
+  const preprocessTimeoutPerPageSec = clampInt(
+    options.preprocessTimeoutPerPageSec,
+    5,
+    600,
+    timeoutPerPageSec
+  );
 
   const tempDir = createJobTempDir('tot-ocr-pdf-');
   const warnings = [];
@@ -441,6 +448,46 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
         });
       }
 
+      emitProgress('preprocessing', {
+        nextPageDone: pageDone,
+        nextPageTotal: pageTotal,
+        nextCurrentPage: pageNumber,
+      });
+
+      const preprocessRes = await runPreprocessForImage({
+        inputPath: pageImagePath,
+        preprocessConfig: options.preprocessConfig,
+        sidecar,
+        tempDir,
+        outputPrefix: `page-${String(pageNumber).padStart(6, '0')}-preprocess`,
+        safetyPolicy: {
+          preprocessTimeoutPerPageSec,
+          preprocessMaxLongSidePx: options.preprocessMaxLongSidePx,
+          preprocessMaxAreaPx: options.preprocessMaxAreaPx,
+          preprocessMaxOutputBytes: options.preprocessMaxOutputBytes,
+          preprocessMaxInputBytes: options.preprocessMaxInputBytes,
+          preprocessTempStorageCapBytes: options.preprocessTempStorageCapBytes,
+        },
+        onChildProcess,
+        isCancelRequested: options.isCancelRequested,
+      });
+      activeChild = null;
+      if (!preprocessRes.ok) {
+        removeFileIfExists(pageImagePath);
+        {
+          const stallFail = failIfStalled({
+            stage: 'preprocessing',
+          });
+          if (stallFail) return stallFail;
+        }
+        return Object.assign({}, preprocessRes, {
+          stage: 'preprocessing',
+          pageNumber,
+          pageDone,
+          pageTotal,
+        });
+      }
+
       emitProgress('ocr', {
         nextPageDone: pageDone,
         nextPageTotal: pageTotal,
@@ -450,7 +497,7 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
       const pageRes = await runProcessWithTimeout({
         executablePath: sidecar.tesseractPath,
         args: resolveTesseractArgs({
-          inputPath: pageImagePath,
+          inputPath: preprocessRes.outputPath,
           tesseractLang,
           tessdataPath: sidecar.tessdataPath,
         }),

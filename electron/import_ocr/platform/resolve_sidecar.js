@@ -138,6 +138,8 @@ function resolveSidecarPaths({
   const sidecarBaseDir = path.resolve(String(rootRes.baseDir || ''), profile.sidecarDir);
   const tesseractPath = path.join(sidecarBaseDir, profile.binaries.tesseract);
   const pdftoppmPath = path.join(sidecarBaseDir, profile.binaries.pdftoppm);
+  const preprocessImageMagickPath = path.join(sidecarBaseDir, profile.preprocessBinaries.imagemagick);
+  const preprocessUnpaperPath = path.join(sidecarBaseDir, profile.preprocessBinaries.unpaper);
   const tessdataPath = path.join(sidecarBaseDir, profile.tessdataDir);
 
   return {
@@ -149,6 +151,8 @@ function resolveSidecarPaths({
     sidecarBaseDir,
     tesseractPath,
     pdftoppmPath,
+    preprocessImageMagickPath,
+    preprocessUnpaperPath,
     tessdataPath,
   };
 }
@@ -250,6 +254,8 @@ function validateSidecarRuntime({
         sidecarBaseDir: resolved.sidecarBaseDir,
         tesseractPath: resolved.tesseractPath,
         pdftoppmPath: resolved.pdftoppmPath,
+        preprocessImageMagickPath: resolved.preprocessImageMagickPath,
+        preprocessUnpaperPath: resolved.preprocessUnpaperPath,
         tessdataPath: resolved.tessdataPath,
         languageFiles,
         missing,

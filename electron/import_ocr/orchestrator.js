@@ -39,6 +39,7 @@ const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 const LOG_KEY_PROFILE_REGISTRY_INVALID = 'import_ocr_orchestrator.profileRegistry.invalid';
 const LOG_KEY_TEXT_STATE_API_MISSING = 'import_ocr_orchestrator.textStateApi.missing';
 const LOG_KEY_OCR_EXEC_STATE_CB_MISSING = 'import_ocr_orchestrator.onOcrExecutionStateChange.missing';
+const OCR_CANCELED_CODES = new Set(['OCR_CANCELED', 'OCR_PREPROCESS_CANCELED']);
 
 const FILE_FILTERS = Object.freeze([
   { name: 'Supported files', extensions: ['txt', 'docx', 'pdf', 'png', 'jpg', 'jpeg', 'webp'] },
@@ -743,7 +744,7 @@ async function runJob(job) {
 
     if (!extractRes || extractRes.ok !== true) {
       const errRes = extractRes || fail('IMPORT_EXEC_FAILED', 'Import execution failed.');
-      const isCanceled = String(errRes.code || '') === 'OCR_CANCELED';
+      const isCanceled = OCR_CANCELED_CODES.has(String(errRes.code || '').trim().toUpperCase());
       const terminalStatus = isCanceled ? 'canceled' : 'failed';
       const errSummary = (errRes.summary && typeof errRes.summary === 'object')
         ? errRes.summary

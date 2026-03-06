@@ -15,10 +15,13 @@
 // =============================================================================
 // Imports / logger
 // =============================================================================
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const Log = require('../log');
 const { resolveSidecarPaths } = require('./platform/resolve_sidecar');
 const { validateAndNormalizePreprocessConfig } = require('./preprocess_pipeline');
+const { runPreprocessForImage } = require('./preprocess_runtime');
 const { runPdfRasterOcr } = require('./pdf_raster_ocr');
 const {
   fail,
@@ -93,6 +96,30 @@ function failMissingSidecarBinary(binary, targetPath, profileKey, message) {
   });
 }
 
+function ensureDir(dirPath) {
+  fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function removeDirIfExists(dirPath) {
+  if (!dirPath) return;
+  if (!ensurePathExists(dirPath)) return;
+  try {
+    if (typeof fs.rmSync === 'function') {
+      fs.rmSync(dirPath, { recursive: true, force: true });
+      return;
+    }
+    fs.rmdirSync(dirPath, { recursive: true });
+  } catch (err) {
+    log.warn('Temporary OCR directory cleanup failed (ignored):', dirPath, err);
+  }
+}
+
+function createJobTempDir(prefix = 'tot-ocr-image-') {
+  const baseDir = path.join(os.tmpdir(), prefix);
+  ensureDir(baseDir);
+  return fs.mkdtempSync(path.join(baseDir, 'job-'));
+}
+
 // =============================================================================
 // Image OCR path (single-page pipeline)
 // =============================================================================
@@ -108,6 +135,7 @@ async function runImageOcr(session, sidecar, options = {}) {
   const langRes = resolveAndValidateOcrLanguage(requestedLang, sidecar.tessdataPath);
   if (!langRes.ok) return langRes;
   const { tesseractLang } = langRes;
+  const tempDir = createJobTempDir('tot-ocr-image-');
 
   const emitProgress = (stage, pageDone) => {
     if (typeof options.onProgress !== 'function') return;
@@ -118,50 +146,74 @@ async function runImageOcr(session, sidecar, options = {}) {
     });
   };
 
-  emitProgress('ocr', 0);
-
-  const processRes = await runProcessWithTimeout({
-    executablePath: sidecar.tesseractPath,
-    args: resolveTesseractArgs({
+  try {
+    emitProgress('preprocessing', 0);
+    const preprocessRes = await runPreprocessForImage({
       inputPath: imagePath,
-      tesseractLang,
-      tessdataPath: sidecar.tessdataPath,
-    }),
-    workingDirectory: path.dirname(sidecar.tesseractPath),
-    timeoutMs,
-    onChildProcess: options.onChildProcess,
-    isCancelRequested: options.isCancelRequested,
-  });
-  if (!processRes.ok && processRes.code === 'OCR_TIMEOUT_PAGE') {
-    return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
-      timeoutPerPageSec,
-      stderr: processRes.stderr || '',
+      preprocessConfig: options.preprocessConfig,
+      sidecar,
+      tempDir,
+      outputPrefix: 'image_preprocess',
+      safetyPolicy: {
+        preprocessTimeoutPerPageSec: options.preprocessTimeoutPerPageSec || timeoutPerPageSec,
+        preprocessMaxLongSidePx: options.preprocessMaxLongSidePx,
+        preprocessMaxAreaPx: options.preprocessMaxAreaPx,
+        preprocessMaxOutputBytes: options.preprocessMaxOutputBytes,
+        preprocessMaxInputBytes: options.preprocessMaxInputBytes,
+        preprocessTempStorageCapBytes: options.preprocessTempStorageCapBytes,
+      },
+      onChildProcess: options.onChildProcess,
+      isCancelRequested: options.isCancelRequested,
     });
+    if (!preprocessRes.ok) return preprocessRes;
+
+    emitProgress('ocr', 0);
+
+    const processRes = await runProcessWithTimeout({
+      executablePath: sidecar.tesseractPath,
+      args: resolveTesseractArgs({
+        inputPath: preprocessRes.outputPath,
+        tesseractLang,
+        tessdataPath: sidecar.tessdataPath,
+      }),
+      workingDirectory: path.dirname(sidecar.tesseractPath),
+      timeoutMs,
+      onChildProcess: options.onChildProcess,
+      isCancelRequested: options.isCancelRequested,
+    });
+    if (!processRes.ok && processRes.code === 'OCR_TIMEOUT_PAGE') {
+      return fail('OCR_TIMEOUT_PAGE', 'OCR timed out for page/image.', {
+        timeoutPerPageSec,
+        stderr: processRes.stderr || '',
+      });
+    }
+    if (!processRes.ok) return processRes;
+
+    const text = normalizeMultiline(processRes.stdout);
+    if (!text) {
+      return fail('OCR_EMPTY_RESULT', 'OCR completed but produced no text.');
+    }
+
+    emitProgress('ocr', 1);
+    emitProgress('finalizing', 1);
+
+    const warnings = [];
+    if (processRes.stdoutTruncated) warnings.push('OCR stdout truncated in-memory.');
+    if (processRes.stderrTruncated) warnings.push('OCR stderr truncated in-memory.');
+
+    return {
+      ok: true,
+      text,
+      summary: {
+        pagesProcessed: 1,
+        pagesTotal: 1,
+        extractedChars: text.length,
+        warnings,
+      },
+    };
+  } finally {
+    removeDirIfExists(tempDir);
   }
-  if (!processRes.ok) return processRes;
-
-  const text = normalizeMultiline(processRes.stdout);
-  if (!text) {
-    return fail('OCR_EMPTY_RESULT', 'OCR completed but produced no text.');
-  }
-
-  emitProgress('ocr', 1);
-  emitProgress('finalizing', 1);
-
-  const warnings = [];
-  if (processRes.stdoutTruncated) warnings.push('OCR stdout truncated in-memory.');
-  if (processRes.stderrTruncated) warnings.push('OCR stderr truncated in-memory.');
-
-  return {
-    ok: true,
-    text,
-    summary: {
-      pagesProcessed: 1,
-      pagesTotal: 1,
-      extractedChars: text.length,
-      warnings,
-    },
-  };
 }
 
 // =============================================================================

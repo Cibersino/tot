@@ -518,21 +518,21 @@ Includes:
 * [x] Implement strict backend `preprocessConfig` validation against the H01 Batch 1 scoped-lock declarations.
 
 ### Batch 2
-* [ ] Implement preprocess execution with deterministic temp outputs and safety caps.
+* [x] Implement preprocess execution with deterministic temp outputs and safety caps.
 * [ ] If bundled-binary strategy is selected, establish runtime artifacts for `win32-x64` and verify paths under `ocr/<platform>-<arch>/preprocess/...`.
 * [ ] If (and only if) custom `.exe` path is selected by evidence, build preprocess artifact and verify runtime satisfies the canonical preprocess adapter contract.
 * [ ] Record preprocess dependency/artifact provenance in evidence.
 * [ ] Pass Operation Compatibility Gate for each operation in issue scope with evidence entries.
-* [ ] Do not introduce compatibility bridge logic (no operation -> legacy profile mapping anywhere).
-* [ ] Verify clean-base no-legacy invariant still holds after Batch 2 integration changes.
-* [ ] Integrate preprocess into image OCR route.
-* [ ] Integrate preprocess into scanned-PDF per-page route.
-* [ ] Reuse timeout/cancel/process-control pattern.
-* [ ] Emit and wire `preprocessing` stage.
-* [ ] Map preprocess typed errors to renderer and user-visible messages.
-* [ ] Keep missing-binary mapping to `OCR_BINARY_MISSING`.
-* [ ] Guarantee no text mutation on failure/cancel.
-* [ ] Guarantee cleanup on success/failure/cancel.
+* [x] Do not introduce compatibility bridge logic (no operation -> legacy profile mapping anywhere).
+* [x] Verify clean-base no-legacy invariant still holds after Batch 2 integration changes.
+* [x] Integrate preprocess into image OCR route.
+* [x] Integrate preprocess into scanned-PDF per-page route.
+* [x] Reuse timeout/cancel/process-control pattern.
+* [x] Emit and wire `preprocessing` stage.
+* [x] Map preprocess typed errors to renderer and user-visible messages.
+* [x] Keep missing-binary mapping to `OCR_BINARY_MISSING`.
+* [x] Guarantee no text mutation on failure/cancel.
+* [x] Guarantee cleanup on success/failure/cancel.
 
 ### Batch 3
 * [ ] Add EN/ES preprocessing stage and error strings (required before smoke/gate to keep the app's i18n-first code pattern).

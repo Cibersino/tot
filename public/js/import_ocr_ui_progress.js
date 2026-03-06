@@ -67,6 +67,7 @@
         || stageKey === 'ocr_running'
         || stageKey === 'extracting'
         || stageKey === 'preflight'
+        || stageKey === 'preprocessing'
         || stageKey === 'finalizing'
         || stageKey === 'completed'
         || stageKey === 'failed'
@@ -118,6 +119,7 @@
       if (normalized === 'extracting') return t('renderer.main.import_progress.stage_extracting', 'Extracting...');
       if (normalized === 'preflight') return t('renderer.main.import_progress.stage_preflight', 'Preparing...');
       if (normalized === 'rasterizing') return t('renderer.main.import_progress.stage_rasterizing', 'Rasterizing...');
+      if (normalized === 'preprocessing') return t('renderer.main.import_progress.stage_preprocessing', 'Preprocessing...');
       if (normalized === 'ocr') return t('renderer.main.import_progress.stage_ocr', 'OCR...');
       if (normalized === 'finalizing') return t('renderer.main.import_progress.stage_finalizing', 'Finalizing...');
       if (normalized === 'completed') return t('renderer.main.import_progress.stage_completed', 'Completed');
@@ -337,7 +339,10 @@
         setOcrProgressStage('completed');
         state.ocrProgressPageDone = Math.max(state.ocrProgressPageDone, state.ocrProgressPageTotal || 0);
       } else {
-        const nextStage = String(p.code || '').toUpperCase() === 'OCR_CANCELED' ? 'canceled' : 'failed';
+        const code = String(p.code || '').trim().toUpperCase();
+        const nextStage = (code === 'OCR_CANCELED' || code === 'OCR_PREPROCESS_CANCELED')
+          ? 'canceled'
+          : 'failed';
         setOcrProgressStage(nextStage);
       }
       state.ocrQueuedJobMetaById.delete(jobId);

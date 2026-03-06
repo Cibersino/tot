@@ -22,6 +22,10 @@ const TARGET_PROFILE_REGISTRY = Object.freeze({
       tesseract: 'tesseract/tesseract.exe',
       pdftoppm: 'poppler/pdftoppm.exe',
     }),
+    preprocessBinaries: Object.freeze({
+      imagemagick: 'preprocess/imagemagick/magick.exe',
+      unpaper: 'preprocess/unpaper/unpaper.exe',
+    }),
     tessdataDir: 'tesseract/tessdata',
   }),
   'linux-x64': Object.freeze({
@@ -29,6 +33,10 @@ const TARGET_PROFILE_REGISTRY = Object.freeze({
     binaries: Object.freeze({
       tesseract: 'tesseract',
       pdftoppm: 'pdftoppm',
+    }),
+    preprocessBinaries: Object.freeze({
+      imagemagick: 'preprocess/imagemagick/magick',
+      unpaper: 'preprocess/unpaper/unpaper',
     }),
     tessdataDir: 'tessdata',
   }),
@@ -38,6 +46,10 @@ const TARGET_PROFILE_REGISTRY = Object.freeze({
       tesseract: 'tesseract',
       pdftoppm: 'pdftoppm',
     }),
+    preprocessBinaries: Object.freeze({
+      imagemagick: 'preprocess/imagemagick/magick',
+      unpaper: 'preprocess/unpaper/unpaper',
+    }),
     tessdataDir: 'tessdata',
   }),
   'darwin-x64': Object.freeze({
@@ -45,6 +57,10 @@ const TARGET_PROFILE_REGISTRY = Object.freeze({
     binaries: Object.freeze({
       tesseract: 'tesseract',
       pdftoppm: 'pdftoppm',
+    }),
+    preprocessBinaries: Object.freeze({
+      imagemagick: 'preprocess/imagemagick/magick',
+      unpaper: 'preprocess/unpaper/unpaper',
     }),
     tessdataDir: 'tessdata',
   }),
@@ -124,6 +140,28 @@ function validateRegistry() {
       : '';
     if (!pdftoppmBin) {
       errors.push(`Profile '${key}' is missing binaries.pdftoppm.`);
+    }
+
+    const preprocessBinaries = profile.preprocessBinaries && typeof profile.preprocessBinaries === 'object'
+      ? profile.preprocessBinaries
+      : null;
+    if (!preprocessBinaries) {
+      errors.push(`Profile '${key}' is missing preprocessBinaries map.`);
+      return;
+    }
+
+    const magickBin = typeof preprocessBinaries.imagemagick === 'string'
+      ? preprocessBinaries.imagemagick.trim()
+      : '';
+    if (!magickBin) {
+      errors.push(`Profile '${key}' is missing preprocessBinaries.imagemagick.`);
+    }
+
+    const unpaperBin = typeof preprocessBinaries.unpaper === 'string'
+      ? preprocessBinaries.unpaper.trim()
+      : '';
+    if (!unpaperBin) {
+      errors.push(`Profile '${key}' is missing preprocessBinaries.unpaper.`);
     }
   });
 
