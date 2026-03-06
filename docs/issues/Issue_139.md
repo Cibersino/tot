@@ -464,11 +464,11 @@ Includes:
 * [x] Record substrate carry-forward constraints in issue + evidence (license/compliance, artifact build+hosting, packaging path).
 
 ### Batch 1
-* [ ] Complete User Setup Gate for selected candidate (`H01`) (no full proof yet):
-  * [ ] run local availability checks for selected-path prerequisites
-  * [ ] if missing, execute guided user download/install steps
-  * [ ] rerun availability/version/path checks and record evidence
-* [ ] Record implementation-start evidence entries for Batch 1 setup checks.
+* [x] Complete User Setup Gate for selected candidate (`H01`) (no full proof yet):
+  * [x] run local availability checks for selected-path prerequisites
+  * [x] if missing, execute guided user download/install steps
+  * [x] rerun availability/version/path checks and record evidence
+* [x] Record implementation-start evidence entries for Batch 1 setup checks.
 * [ ] Implement H01 scoped-lock operation registry (keys, fixed order, tool ownership) per `H01 Batch 1 Scoped-Lock (Initial Implementable Cut)`.
 * [ ] Implement H01 bounded manual-schema validation (including unknown-field and out-of-bounds rejection).
 * [ ] Enforce H01 first-cut exclusions in adapter/validation layer (no extra operations, no geometry/layout controls, no free-form CLI passthrough).

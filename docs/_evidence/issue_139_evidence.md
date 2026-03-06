@@ -1,5 +1,37 @@
 # Issue 139 Evidence Log
 
+## 2026-03-06 - Batch 1 User Setup Gate (H01) Completion
+
+Entry `E139-B1-SETUP-002`
+- timestamp: `2026-03-06 12:18:59 -03:00`
+- command/test executed:
+  - `Get-Command magick`
+  - `Get-Command unpaper`
+  - `magick -version`
+  - `unpaper --version`
+  - explicit binary/path checks:
+    - `C:\Program Files\ImageMagick-7.1.2-Q16-HDRI\magick.exe -version`
+    - `C:\ProgramData\chocolatey\lib\unpaper\tools\unpaper.exe --version`
+- result:
+  - `unpaper` is available on `PATH` via Chocolatey shim (`C:\ProgramData\chocolatey\bin\unpaper.exe`) and reports version `6.1`.
+  - `magick` is not available on `PATH` in this already-open shell session, but the installed binary exists and runs at:
+    - `C:\Program Files\ImageMagick-7.1.2-Q16-HDRI\magick.exe`
+    - version line: `ImageMagick 7.1.2-15 Q16-HDRI x64`.
+  - selected-path prerequisites (`ImageMagick`, `unpaper`) are now locally installed and version-verifiable.
+- artifact/log reference: `docs/issues/Issue_139.md` (Batch 1 User Setup Gate checklist), this session command output.
+
+Entry `E139-B1-SETUP-001`
+- timestamp: `2026-03-06 12:16:58 -03:00` to `2026-03-06 12:17:48 -03:00`
+- command/test executed (user-performed install step after initial missing-prerequisite check):
+  - `choco install imagemagick --yes`
+  - `choco install unpaper --yes`
+- result:
+  - Chocolatey reported successful install of:
+    - `imagemagick v7.1.2.1500` (deployed under `C:\Program Files\ImageMagick-7.1.2-Q16-HDRI\`)
+    - `unpaper v6.1.0` (deployed under `C:\ProgramData\chocolatey\lib\unpaper\tools`, shim created for `unpaper.exe`)
+  - User Setup Gate "if missing, execute guided user download/install steps" is satisfied.
+- artifact/log reference: user terminal transcript in this Issue 139 session; `C:\ProgramData\chocolatey\logs\chocolatey.log` (`The install of imagemagick.app was successful` at `12:16:58`, `The install of imagemagick was successful` at `12:16:59`, `The install of unpaper was successful` at `12:17:48`).
+
 ## 2026-03-06 - Pre-Implementation Decision Gate Closure Pass
 
 Entry `E139-SUBSTRATE-004`
