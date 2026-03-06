@@ -1,5 +1,69 @@
 # Issue 139 Evidence Log
 
+## 2026-03-06 - Clean-Base Start Gate Closure
+
+Entry `E139-CLEANBASE-002`
+- timestamp: `2026-03-06 13:52:58 -03:00`
+- command/test executed:
+  - `rg -n "preprocessProfile|ocrPreprocess|preprocess_label|preprocess_basic|preprocess_standard|preprocess_aggressive|normalizePreprocessProfile|OCR_PREPROCESS_LIST|preprocessConfig" public electron i18n`
+  - `node --check public/js/import_ocr_ui_shared.js`
+  - `node --check public/js/import_ocr_ui_options_modal.js`
+  - `node --check public/js/import_ocr_ui.js`
+  - `node --check public/js/import_ocr_ui_progress.js`
+  - `node --check public/js/import_entry.js`
+  - `node --check public/renderer.js`
+  - JSON parse verification for all locale files:
+    - `Get-ChildItem -Path i18n -Recurse -Filter renderer.json | ForEach-Object { Get-Content -Path $_.FullName -Raw | ConvertFrom-Json | Out-Null }`
+- result:
+  - legacy preprocess profile identifiers and selector/i18n keys return zero matches in active app code paths (`public`, `electron`, `i18n`).
+  - edited renderer-side JS modules pass syntax checks.
+  - all locale `renderer.json` files parse successfully after legacy-key removal.
+  - no Batch 1 preprocess-contract implementation (`preprocessConfig`) was introduced during Clean-Base closure.
+- artifact/log reference:
+  - `public/index.html`
+  - `public/js/import_ocr_ui_shared.js`
+  - `public/js/import_ocr_ui_options_modal.js`
+  - `public/js/import_ocr_ui.js`
+  - `public/js/import_ocr_ui_progress.js`
+  - `public/js/import_entry.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `i18n/es/es-cl/renderer.json`
+  - `i18n/de/renderer.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/renderer.json`
+  - `i18n/arn/renderer.json`
+
+Entry `E139-CLEANBASE-001`
+- timestamp: `2026-03-06 13:40:00 -03:00` to `2026-03-06 13:52:58 -03:00`
+- command/test executed:
+  - removed legacy preprocess profile selector/options from OCR modal markup.
+  - removed legacy `preprocessProfile` queue/progress payload wiring.
+  - removed legacy preprocess-normalization/estimation paths from shared OCR UI helpers.
+  - removed legacy preprocess i18n keys across all active locales.
+- result:
+  - Clean-Base hard-cut is now applied in renderer/UI paths (no `basic|standard|aggressive` preprocess profile model remains in active OCR flow).
+  - issue checklist Clean-Base gate items are updated to closed state.
+- artifact/log reference:
+  - `docs/issues/Issue_139.md`
+  - `public/index.html`
+  - `public/js/import_ocr_ui_shared.js`
+  - `public/js/import_ocr_ui_options_modal.js`
+  - `public/js/import_ocr_ui.js`
+  - `public/js/import_ocr_ui_progress.js`
+  - `public/js/import_entry.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `i18n/es/es-cl/renderer.json`
+  - `i18n/de/renderer.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/renderer.json`
+  - `i18n/arn/renderer.json`
+
 ## 2026-03-06 - Batch 1 User Setup Gate (H01) Completion
 
 Entry `E139-B1-SETUP-002`

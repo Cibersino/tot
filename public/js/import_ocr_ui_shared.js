@@ -18,9 +18,9 @@
   // =============================================================================
 
   const OCR_PRESET_VALUES = Object.freeze({
-    fast: Object.freeze({ dpi: 220, timeoutPerPageSec: 45, preprocess: 'basic' }),
-    balanced: Object.freeze({ dpi: 300, timeoutPerPageSec: 90, preprocess: 'standard' }),
-    high_accuracy: Object.freeze({ dpi: 400, timeoutPerPageSec: 180, preprocess: 'aggressive' }),
+    fast: Object.freeze({ dpi: 220, timeoutPerPageSec: 45 }),
+    balanced: Object.freeze({ dpi: 300, timeoutPerPageSec: 90 }),
+    high_accuracy: Object.freeze({ dpi: 400, timeoutPerPageSec: 180 }),
   });
   const OCR_DPI_MIN = 150;
   const OCR_DPI_MAX = 600;
@@ -28,7 +28,6 @@
   const OCR_TIMEOUT_MIN = 30;
   const OCR_TIMEOUT_MAX = 600;
   const OCR_TIMEOUT_STEP = 15;
-  const OCR_PREPROCESS_LIST = Object.freeze(['basic', 'standard', 'aggressive']);
   const OCR_ESTIMATE_BASE_DPI = 300;
   const OCR_ESTIMATE_BASE_RASTER_SEC_PER_PAGE = 3.0;
   const OCR_ESTIMATE_BASE_OCR_SEC_PER_PAGE = 3.6;
@@ -36,11 +35,6 @@
   const OCR_ESTIMATE_OCR_EXPONENT = 1.6;
   const OCR_ESTIMATE_MIN_RASTER_SEC_PER_PAGE = 1.8;
   const OCR_ESTIMATE_MIN_OCR_SEC_PER_PAGE = 2.3;
-  const OCR_PREPROCESS_ESTIMATE_FACTOR = Object.freeze({
-    basic: 1.0,
-    standard: 1.0,
-    aggressive: 1.0,
-  });
 
   // =============================================================================
   // Helpers (normalization, shaping, estimates)
@@ -97,12 +91,6 @@
     return fallback;
   }
 
-  function normalizePreprocessProfile(rawValue, fallback = 'standard') {
-    const value = String(rawValue || '').trim().toLowerCase();
-    if (OCR_PREPROCESS_LIST.includes(value)) return value;
-    return fallback;
-  }
-
   function normalizeDpiValue(rawDpi, fallbackDpi) {
     return clampToStep(rawDpi, {
       min: OCR_DPI_MIN,
@@ -126,19 +114,11 @@
     const presetCfg = getOcrPresetConfig(preset === 'custom' ? 'balanced' : preset);
     const fallbackDpi = presetCfg.dpi;
     const fallbackTimeout = presetCfg.timeoutPerPageSec;
-    const fallbackPreprocess = presetCfg.preprocess;
     return {
       preset,
       dpi: normalizeDpiValue(raw.dpi, fallbackDpi),
       timeoutPerPageSec: normalizeTimeoutPerPageSec(raw.timeoutPerPageSec, fallbackTimeout),
-      preprocessProfile: normalizePreprocessProfile(raw.preprocessProfile || raw.preprocess, fallbackPreprocess),
     };
-  }
-
-  function getEstimatePreprocessFactor(preprocessProfile) {
-    const normalized = normalizePreprocessProfile(preprocessProfile, 'standard');
-    const factor = OCR_PREPROCESS_ESTIMATE_FACTOR[normalized];
-    return Number.isFinite(factor) && factor > 0 ? factor : 1.0;
   }
 
   function getDpiEstimateRatio(rawDpi) {
@@ -147,31 +127,27 @@
     return Math.max(0.25, Math.min(3, ratio));
   }
 
-  function estimateRasterSecPerPage(dpi, preprocessProfile) {
+  function estimateRasterSecPerPage(dpi) {
     const ratio = getDpiEstimateRatio(dpi);
-    const profileFactor = getEstimatePreprocessFactor(preprocessProfile);
     const estimate = OCR_ESTIMATE_BASE_RASTER_SEC_PER_PAGE
-      * Math.pow(ratio, OCR_ESTIMATE_RASTER_EXPONENT)
-      * profileFactor;
+      * Math.pow(ratio, OCR_ESTIMATE_RASTER_EXPONENT);
     return Math.max(OCR_ESTIMATE_MIN_RASTER_SEC_PER_PAGE, estimate);
   }
 
-  function estimateOcrSecPerPage(dpi, preprocessProfile) {
+  function estimateOcrSecPerPage(dpi) {
     const ratio = getDpiEstimateRatio(dpi);
-    const profileFactor = getEstimatePreprocessFactor(preprocessProfile);
     const estimate = OCR_ESTIMATE_BASE_OCR_SEC_PER_PAGE
-      * Math.pow(ratio, OCR_ESTIMATE_OCR_EXPONENT)
-      * profileFactor;
+      * Math.pow(ratio, OCR_ESTIMATE_OCR_EXPONENT);
     return Math.max(OCR_ESTIMATE_MIN_OCR_SEC_PER_PAGE, estimate);
   }
 
-  function estimateTotalSecPerPage(dpi, preprocessProfile) {
-    return estimateRasterSecPerPage(dpi, preprocessProfile) + estimateOcrSecPerPage(dpi, preprocessProfile);
+  function estimateTotalSecPerPage(dpi) {
+    return estimateRasterSecPerPage(dpi) + estimateOcrSecPerPage(dpi);
   }
 
-  function estimateTotalSecForPages(pageCount, dpi, preprocessProfile) {
+  function estimateTotalSecForPages(pageCount, dpi) {
     const pages = getSafeOcrPageCount(pageCount);
-    return estimateTotalSecPerPage(dpi, preprocessProfile) * pages;
+    return estimateTotalSecPerPage(dpi) * pages;
   }
 
   function formatSecPerPageForGuidance(rawSec) {
@@ -206,7 +182,6 @@
 
   window.ImportOcrUiShared = Object.freeze({
     OCR_PRESET_VALUES,
-    OCR_PREPROCESS_LIST,
     normalizeLangBaseLocal,
     normalizeAvailableUiLanguages,
     clampToStep,
@@ -214,7 +189,6 @@
     formatDurationFromSeconds,
     getSafeOcrPageCount,
     normalizePresetKey,
-    normalizePreprocessProfile,
     normalizeDpiValue,
     normalizeTimeoutPerPageSec,
     buildQueuedJobMeta,

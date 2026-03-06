@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Build the OCR options modal controller for import_ocr_ui.js.
-// - Normalize OCR option inputs (preset, language, dpi, timeout, preprocess).
+// - Normalize OCR option inputs (preset, language, dpi, timeout).
 // - Render OCR context and guidance text for the current file and page count.
 // - Resolve dialog outcomes as { confirmed, options } for upstream orchestration.
 // - Expose window.createImportOcrUiOptionsModal for facade composition.
@@ -32,7 +32,6 @@
       ocrLanguageSelect,
       ocrDpiInput,
       ocrTimeoutInput,
-      ocrPreprocessSelect,
       ocrOptionsContext,
       ocrPresetGuidance,
       ocrTotalGuidance,
@@ -77,18 +76,10 @@
       return shared.normalizePresetKey(value, 'balanced');
     }
 
-    function getSelectedOcrPreprocess() {
-      const value = ocrPreprocessSelect && typeof ocrPreprocessSelect.value === 'string'
-        ? ocrPreprocessSelect.value
-        : '';
-      return shared.normalizePreprocessProfile(value, 'standard');
-    }
-
     function syncOcrCustomControlState() {
       const isCustom = getSelectedOcrPresetKey() === 'custom';
       if (ocrDpiInput) ocrDpiInput.disabled = !isCustom;
       if (ocrTimeoutInput) ocrTimeoutInput.disabled = !isCustom;
-      if (ocrPreprocessSelect) ocrPreprocessSelect.disabled = !isCustom;
     }
 
     function applyPresetValuesToControls(presetKey) {
@@ -100,7 +91,6 @@
       const cfg = shared.getOcrPresetConfig(key);
       if (ocrDpiInput) ocrDpiInput.value = String(cfg.dpi);
       if (ocrTimeoutInput) ocrTimeoutInput.value = String(cfg.timeoutPerPageSec);
-      if (ocrPreprocessSelect) ocrPreprocessSelect.value = cfg.preprocess;
       syncOcrCustomControlState();
     }
 
@@ -117,7 +107,6 @@
         );
         if (ocrDpiInput) ocrDpiInput.value = String(normalizedDpi);
         if (ocrTimeoutInput) ocrTimeoutInput.value = String(normalizedTimeout);
-        if (ocrPreprocessSelect) ocrPreprocessSelect.value = getSelectedOcrPreprocess();
         return;
       }
       applyPresetValuesToControls(preset);
@@ -155,12 +144,9 @@
 
     function updateOcrOptionsGuidanceText() {
       if (ocrPresetGuidance) {
-        const fastEstimate = shared.estimateTotalSecPerPage(shared.OCR_PRESET_VALUES.fast.dpi, shared.OCR_PRESET_VALUES.fast.preprocess);
-        const balancedEstimate = shared.estimateTotalSecPerPage(shared.OCR_PRESET_VALUES.balanced.dpi, shared.OCR_PRESET_VALUES.balanced.preprocess);
-        const highEstimate = shared.estimateTotalSecPerPage(
-          shared.OCR_PRESET_VALUES.high_accuracy.dpi,
-          shared.OCR_PRESET_VALUES.high_accuracy.preprocess
-        );
+        const fastEstimate = shared.estimateTotalSecPerPage(shared.OCR_PRESET_VALUES.fast.dpi);
+        const balancedEstimate = shared.estimateTotalSecPerPage(shared.OCR_PRESET_VALUES.balanced.dpi);
+        const highEstimate = shared.estimateTotalSecPerPage(shared.OCR_PRESET_VALUES.high_accuracy.dpi);
         ocrPresetGuidance.textContent = msg(
           'renderer.main.ocr_options.guidance_presets',
           {
@@ -174,21 +160,18 @@
 
       const preset = getSelectedOcrPresetKey();
       let estimateDpi = shared.OCR_PRESET_VALUES.balanced.dpi;
-      let estimatePreprocess = shared.OCR_PRESET_VALUES.balanced.preprocess;
       if (preset === 'custom') {
         estimateDpi = shared.normalizeDpiValue(
           ocrDpiInput ? ocrDpiInput.value : estimateDpi,
           estimateDpi
         );
-        estimatePreprocess = getSelectedOcrPreprocess();
       } else {
         const cfg = shared.getOcrPresetConfig(preset);
         estimateDpi = cfg.dpi;
-        estimatePreprocess = cfg.preprocess;
       }
 
       const pages = shared.getSafeOcrPageCount(state.ocrOptionsPageCount);
-      const totalSec = shared.estimateTotalSecForPages(pages, estimateDpi, estimatePreprocess);
+      const totalSec = shared.estimateTotalSecForPages(pages, estimateDpi);
       if (ocrTotalGuidance) {
         ocrTotalGuidance.textContent = msg(
           'renderer.main.ocr_options.guidance_total',
@@ -225,7 +208,6 @@
 
       let dpi = shared.OCR_PRESET_VALUES.balanced.dpi;
       let timeoutPerPageSec = shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec;
-      let preprocessProfile = shared.OCR_PRESET_VALUES.balanced.preprocess;
 
       if (preset === 'custom') {
         dpi = shared.normalizeDpiValue(
@@ -236,12 +218,10 @@
           ocrTimeoutInput ? ocrTimeoutInput.value : timeoutPerPageSec,
           timeoutPerPageSec
         );
-        preprocessProfile = getSelectedOcrPreprocess();
       } else {
         const cfg = shared.getOcrPresetConfig(preset);
         dpi = cfg.dpi;
         timeoutPerPageSec = cfg.timeoutPerPageSec;
-        preprocessProfile = cfg.preprocess;
       }
 
       return {
@@ -251,7 +231,6 @@
         languageTag: language,
         dpi,
         timeoutPerPageSec,
-        preprocessProfile,
       };
     }
 
@@ -301,7 +280,6 @@
         || !ocrLanguageSelect
         || !ocrDpiInput
         || !ocrTimeoutInput
-        || !ocrPreprocessSelect
         || !refs.btnOcrOptionsStart
         || !refs.btnOcrOptionsAbort
       ) {
@@ -325,7 +303,6 @@
             languageTag: preferredLanguage,
             dpi: shared.OCR_PRESET_VALUES.balanced.dpi,
             timeoutPerPageSec: shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
-            preprocessProfile: shared.OCR_PRESET_VALUES.balanced.preprocess,
           },
         });
       }
@@ -348,7 +325,6 @@
       ocrLanguageSelect.value = preferredLanguage;
       ocrDpiInput.value = String(shared.OCR_PRESET_VALUES.balanced.dpi);
       ocrTimeoutInput.value = String(shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec);
-      ocrPreprocessSelect.value = shared.OCR_PRESET_VALUES.balanced.preprocess;
 
       syncOcrCustomControlState();
       updateOcrOptionsContextText();
@@ -368,7 +344,6 @@
       promptOcrOptionsDialog,
       settleOcrOptions,
       getSelectedOcrPresetKey,
-      getSelectedOcrPreprocess,
       syncOcrCustomControlState,
       applyPresetValuesToControls,
       normalizeOcrControlValues,

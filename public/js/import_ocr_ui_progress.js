@@ -81,12 +81,8 @@
       const safeDone = Number.isFinite(pageDone) ? Math.max(0, Math.floor(pageDone)) : 0;
       const stage = shared.normalizeStageKey(state.ocrProgressStage || state.lockReason || 'ocr');
       const dpi = shared.normalizeDpiValue(state.ocrProgressMeta.dpi, shared.OCR_PRESET_VALUES.balanced.dpi);
-      const preprocess = shared.normalizePreprocessProfile(
-        state.ocrProgressMeta.preprocessProfile,
-        shared.OCR_PRESET_VALUES.balanced.preprocess
-      );
-      const rasterSecPerPage = shared.estimateRasterSecPerPage(dpi, preprocess);
-      const ocrSecPerPage = shared.estimateOcrSecPerPage(dpi, preprocess);
+      const rasterSecPerPage = shared.estimateRasterSecPerPage(dpi);
+      const ocrSecPerPage = shared.estimateOcrSecPerPage(dpi);
       const remainingPages = Math.max(0, knownTotal - Math.min(safeDone, knownTotal));
 
       if (remainingPages <= 0 || stage === 'completed') return 0;
@@ -199,7 +195,6 @@
         preset: 'balanced',
         dpi: shared.OCR_PRESET_VALUES.balanced.dpi,
         timeoutPerPageSec: shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
-        preprocessProfile: shared.OCR_PRESET_VALUES.balanced.preprocess,
       };
       setOcrProgressFallbackText(t('renderer.main.import_apply.ocr_running', 'OCR in progress...'));
     }

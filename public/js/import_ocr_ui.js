@@ -45,8 +45,6 @@
   const ocrDpiInput = document.getElementById('ocrDpiInput');
   const ocrTimeoutLabel = document.getElementById('ocrTimeoutLabel');
   const ocrTimeoutInput = document.getElementById('ocrTimeoutInput');
-  const ocrPreprocessLabel = document.getElementById('ocrPreprocessLabel');
-  const ocrPreprocessSelect = document.getElementById('ocrPreprocessSelect');
   const ocrPresetGuidance = document.getElementById('ocrPresetGuidance');
   const ocrTotalGuidance = document.getElementById('ocrTotalGuidance');
   const ocrTotalDisclaimer = document.getElementById('ocrTotalDisclaimer');
@@ -70,9 +68,6 @@
   }
   if (!Number.isFinite(Number(sharedBalancedPreset.timeoutPerPageSec))) {
     throw new Error('[import-ocr-ui] ImportOcrUiShared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec invalid; cannot continue');
-  }
-  if (typeof sharedBalancedPreset.preprocess !== 'string' || !sharedBalancedPreset.preprocess.trim()) {
-    throw new Error('[import-ocr-ui] ImportOcrUiShared.OCR_PRESET_VALUES.balanced.preprocess invalid; cannot continue');
   }
   if (typeof shared.normalizeLangBaseLocal !== 'function') {
     throw new Error('[import-ocr-ui] ImportOcrUiShared.normalizeLangBaseLocal unavailable; cannot continue');
@@ -121,7 +116,6 @@
       preset: 'balanced',
       dpi: shared.OCR_PRESET_VALUES.balanced.dpi,
       timeoutPerPageSec: shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
-      preprocessProfile: shared.OCR_PRESET_VALUES.balanced.preprocess,
     },
     ocrProgressEtaLabel: '--',
 
@@ -255,8 +249,6 @@
     ocrDpiInput,
     ocrTimeoutLabel,
     ocrTimeoutInput,
-    ocrPreprocessLabel,
-    ocrPreprocessSelect,
     ocrPresetGuidance,
     ocrTotalGuidance,
     ocrTotalDisclaimer,
@@ -330,7 +322,6 @@
     if (ocrLanguageLabel) ocrLanguageLabel.textContent = t('renderer.main.ocr_options.language_label', ocrLanguageLabel.textContent || '');
     if (ocrDpiLabel) ocrDpiLabel.textContent = t('renderer.main.ocr_options.dpi_label', ocrDpiLabel.textContent || '');
     if (ocrTimeoutLabel) ocrTimeoutLabel.textContent = t('renderer.main.ocr_options.timeout_label', ocrTimeoutLabel.textContent || '');
-    if (ocrPreprocessLabel) ocrPreprocessLabel.textContent = t('renderer.main.ocr_options.preprocess_label', ocrPreprocessLabel.textContent || '');
     if (btnOcrOptionsStart) btnOcrOptionsStart.textContent = t('renderer.main.ocr_options.start', btnOcrOptionsStart.textContent || '');
     if (btnOcrOptionsAbort) btnOcrOptionsAbort.textContent = t('renderer.main.ocr_options.abort', btnOcrOptionsAbort.textContent || '');
 
@@ -344,15 +335,6 @@
       if (optHigh) optHigh.textContent = t('renderer.main.ocr_options.preset_high_accuracy', optHigh.textContent || 'High accuracy');
       if (optCustom) optCustom.textContent = t('renderer.main.ocr_options.preset_custom', optCustom.textContent || 'Custom');
     }
-    if (ocrPreprocessSelect) {
-      const optBasic = ocrPreprocessSelect.querySelector('option[value="basic"]');
-      const optStandard = ocrPreprocessSelect.querySelector('option[value="standard"]');
-      const optAggressive = ocrPreprocessSelect.querySelector('option[value="aggressive"]');
-      if (optBasic) optBasic.textContent = t('renderer.main.ocr_options.preprocess_basic', optBasic.textContent || 'Basic');
-      if (optStandard) optStandard.textContent = t('renderer.main.ocr_options.preprocess_standard', optStandard.textContent || 'Standard');
-      if (optAggressive) optAggressive.textContent = t('renderer.main.ocr_options.preprocess_aggressive', optAggressive.textContent || 'Aggressive');
-    }
-
     if (!state.lockActive && ocrProgressText) {
       progressUi.setOcrProgressFallbackText(t('renderer.main.import_apply.ocr_running', 'OCR in progress...'));
     }
@@ -382,17 +364,6 @@
     if (ocrTimeoutInput) {
       ocrTimeoutInput.addEventListener('change', () => {
         optionsModalUi.normalizeOcrControlValues();
-        optionsModalUi.updateOcrOptionsGuidanceText();
-      });
-    }
-
-    if (ocrPreprocessSelect) {
-      ocrPreprocessSelect.addEventListener('change', () => {
-        if (optionsModalUi.getSelectedOcrPresetKey() !== 'custom') {
-          optionsModalUi.applyPresetValuesToControls(optionsModalUi.getSelectedOcrPresetKey());
-        } else {
-          ocrPreprocessSelect.value = optionsModalUi.getSelectedOcrPreprocess();
-        }
         optionsModalUi.updateOcrOptionsGuidanceText();
       });
     }

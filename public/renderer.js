@@ -830,7 +830,6 @@ async function startPdfOcrFromSession(sessionId, summary = {}) {
       preset: ocrRunOptions.preset || ocrRunOptions.qualityPreset || 'balanced',
       timeoutPerPageSec: ocrRunOptions.timeoutPerPageSec,
       dpi: ocrRunOptions.dpi,
-      preprocessProfile: ocrRunOptions.preprocessProfile,
     });
     return { ok: true };
   } catch (err) {

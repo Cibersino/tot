@@ -504,10 +504,10 @@ Includes:
 * [x] Record setup-start evidence entries.
 
 ### Clean-Base Start Gate
-* [ ] Remove all legacy preprocess artifacts from codebase (`preprocessProfile`, profile selector/options, legacy preprocess i18n keys).
-* [ ] Remove legacy preprocess remnants/dead code paths from active app flow (stale helpers/state/listeners and unreachable preprocess profile code).
-* [ ] Prove zero legacy preprocess references in active code paths with repository scan evidence.
-* [ ] Confirm Batch 1 implementation code changes began only after this gate was fully closed.
+* [x] Remove all legacy preprocess artifacts from codebase (`preprocessProfile`, profile selector/options, legacy preprocess i18n keys).
+* [x] Remove legacy preprocess remnants/dead code paths from active app flow (stale helpers/state/listeners and unreachable preprocess profile code).
+* [x] Prove zero legacy preprocess references in active code paths with repository scan evidence.
+* [x] Confirm Batch 1 implementation code changes began only after this gate was fully closed.
 
 ### Batch 1
 * [ ] Implement H01 scoped-lock operation registry (keys, fixed order, tool ownership) per `H01 Batch 1 Scoped-Lock (Initial Implementable Cut)`.

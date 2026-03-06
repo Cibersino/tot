@@ -414,7 +414,6 @@
             preset: runOptions.preset || runOptions.qualityPreset || 'balanced',
             timeoutPerPageSec: runOptions.timeoutPerPageSec,
             dpi: runOptions.dpi,
-            preprocessProfile: runOptions.preprocessProfile,
           });
         }
       }
