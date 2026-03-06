@@ -199,6 +199,7 @@ Evidence requirements:
 * Record criterion 6 quality-potential evidence and confidence notes for each candidate.
 * Record commands/artifacts used to determine each criterion result.
 * Record final implementation decision and rationale, linked to candidate results.
+* Keep decision-gate matrix/source-of-truth updated in `docs/_evidence/issue_139_preimpl_candidate_matrix_draft.md`, with cross-references logged in `docs/_evidence/issue_139_evidence.md`.
 
 Candidate selection flow (after candidate pass/fail):
 1. Build shortlist of passing candidates.
@@ -374,6 +375,7 @@ Packaging/compliance:
 
 Docs/evidence:
 * `docs/_evidence/issue_139_evidence.md`
+* `docs/_evidence/issue_139_preimpl_candidate_matrix_draft.md`
 * `docs/test_suite.md`
 * `docs/releases/release_checklist.md`
 * `docs/changelog_detailed.md`
@@ -439,6 +441,7 @@ Includes:
 ## Evidence Protocol
 
 * Before checking any item, ensure `docs/_evidence/issue_139_evidence.md` exists.
+* For Pre-Implementation Decision Gate evidence, keep `docs/_evidence/issue_139_preimpl_candidate_matrix_draft.md` updated and aligned with checklist state.
 * Every checked item must include evidence entry:
   * timestamp
   * command/test executed
