@@ -92,17 +92,52 @@ Payload shape:
 
 Validation rules:
 * Strict schema; `operations` required.
-* Operation keys and order come from Batch 1 scoped-lock declarations.
+* Operation keys and fixed execution order come from Batch 1 scoped-lock declarations.
 * Unknown keys and invalid modes are rejected.
-* `manual` params must match scoped-lock schema/bounds.
+* `manual` params must match scoped-lock schema/bounds; unknown manual fields are rejected.
 * Invalid payload returns typed preprocess error.
 
 Batch 1 scoped-lock declarations (change-controlled):
-* operation-key set
-* execution order
-* manual-parameter schema/bounds per operation
+* Selected-path concrete declarations are defined in `H01 Batch 1 Scoped-Lock (Initial Implementable Cut)`.
+* Locked set includes operation keys, fixed execution order, tool ownership, and bounded manual schema per operation.
 * recorded in evidence before Batch 2
 * any change requires evidence update and re-run of Operation Compatibility Gate + affected quality checks
+
+## H01 Batch 1 Scoped-Lock (Initial Implementable Cut)
+
+This is the concrete first-implementation cut for selected path `H01` (`ImageMagick -> unpaper`).
+
+Operation keys + tool ownership:
+* `normalize_contrast` -> `ImageMagick`
+* `binarize` -> `ImageMagick`
+* `denoise` -> `ImageMagick`
+* `deskew` -> `unpaper`
+* `page_cleanup` -> `unpaper`
+
+Fixed execution order:
+1. `normalize_contrast`
+2. `binarize`
+3. `denoise`
+4. `deskew`
+5. `page_cleanup`
+
+Mode surface (all scoped-lock operations):
+* `off` -> operation is skipped.
+* `auto` -> operation runs with fixed default preset for the selected tool.
+* `manual` -> operation runs with bounded manual schema only.
+
+Bounded manual-schema intent (Batch 1 concise lock):
+* `normalize_contrast.manual`: `blackClipPct`, `whiteClipPct` (bounded percentages).
+* `binarize.manual`: `thresholdPct` (bounded percentage).
+* `denoise.manual`: `passes` (bounded low integer pass count).
+* `deskew.manual`: `scanRangeDeg`, `scanStepDeg` (bounded range/step).
+* `page_cleanup.manual`: `cleanLevel` (bounded discrete cleanup aggressiveness level).
+
+First-implementation explicit exclusions:
+* Exclude operation families outside scoped-lock keys above.
+* Exclude geometry/layout-editing controls in this cut (`split`, `mask`, `wipe`, manual crop regions, border/layout transforms).
+* Exclude free-form CLI argument passthrough and unbounded manual numeric inputs.
+* Exclude runtime operation reordering and branching/parallel preprocess sub-pipelines.
 
 ## Preprocess Adapter Contract
 
@@ -431,9 +466,12 @@ Includes:
   * [ ] if missing, execute guided user download/install steps
   * [ ] rerun availability/version/path checks and record evidence
 * [ ] Record implementation-start evidence entries for Batch 1 setup checks.
+* [ ] Implement H01 scoped-lock operation registry (keys, fixed order, tool ownership) per `H01 Batch 1 Scoped-Lock (Initial Implementable Cut)`.
+* [ ] Implement H01 bounded manual-schema validation (including unknown-field and out-of-bounds rejection).
+* [ ] Enforce H01 first-cut exclusions in adapter/validation layer (no extra operations, no geometry/layout controls, no free-form CLI passthrough).
 * [ ] Implement preprocess adapter contract (canonical `preprocessConfig` semantics; no legacy profile arg anywhere).
 * [ ] Implement preprocess runner JSON output with per-operation stats.
-* [ ] Implement strict backend `preprocessConfig` validation.
+* [ ] Implement strict backend `preprocessConfig` validation against the H01 Batch 1 scoped-lock declarations.
 
 ### Batch 2
 * [ ] Implement preprocess execution with deterministic temp outputs and safety caps.
