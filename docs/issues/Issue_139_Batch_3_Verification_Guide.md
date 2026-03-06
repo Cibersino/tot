@@ -10,10 +10,18 @@ Close Batch 3 end-to-end from `docs/issues/Issue_139.md` using one integrated fl
 
 This guide avoids duplicated work by reusing smoke outputs in quality-gate scoring whenever the metric contract is satisfied.
 
+Scope boundary:
+
+- this guide is the execution runbook for the remaining Batch 3 verification closure items:
+  - `Run in-app smoke and record evidence`
+  - `Execute and pass mandatory quality gate immediately after smoke`
+- Batch 4/5 tasks remain out of scope for this runbook
+
 ## 2) Coordination Model
 
 - User:
   - executes app UI actions
+  - executes smoke manually in-app (code-level checks do not replace in-app smoke)
   - provides screenshots and observed outcomes
   - confirms when each scenario starts/ends
 - Codex:
@@ -108,6 +116,7 @@ Preflight pass condition:
 - all commands pass
 - sidecar preprocess binaries exist and are executable
 - smoke subset file ids are selected from `corpus_manifest.tsv` and recorded in evidence before running scenarios
+- required EN/ES preprocess UI strings are present in `i18n/en/renderer.json` and `i18n/es/renderer.json`
 
 ## 6) Phase B - Smoke Scenarios
 
@@ -148,6 +157,7 @@ Expected:
 - fail-fast abort for the job
 - no per-page continue after preprocess failure
 - explicit user-visible failure mapping
+- terminal code maps to `OCR_BINARY_MISSING` in this deterministic runtime-missing method
 
 Cleanup:
 
@@ -176,6 +186,7 @@ Expected:
 
 - explicit preprocess/runtime failure mapping
 - no text mutation
+- accepted terminal code for this deterministic method: `OCR_BINARY_MISSING`
 
 Note:
 
@@ -219,20 +230,43 @@ For each family:
 1. run baseline with all operations `off`
 2. classify difficult files where `CER_off >= D`
 3. ensure difficult subset size `>= N_min` (expand corpus if needed)
-4. run non-off config(s) (`auto` and/or bounded `manual`)
+4. run tested non-off config sets:
+   - `auto`
+   - at least one bounded `manual` config (unless exactly equivalent validated results are reused under section 7.6)
 5. compute per-file values:
    - `CER_off`
    - `CER_nonoff`
    - `deltaCER = CER_off - CER_nonoff`
    - improved (`deltaCER > 0`)
-6. compute family aggregates:
+6. compute family aggregates for each tested non-off config:
    - `median_improvement = median(deltaCER)`
    - `share_improved = % files with deltaCER > 0`
-7. family passes only if:
+7. family passes only if at least one tested non-off config satisfies:
    - `median_improvement >= M`
    - `share_improved >= S`
 
-### 7.5 Smoke-to-quality reuse rules
+### 7.5 Required per-family evidence table contract
+
+Each family table must include at minimum:
+
+- `file_id`
+- baseline config id (`off`)
+- tested non-off config id (`auto` or manual-id)
+- `CER_off`
+- `CER_nonoff`
+- `deltaCER`
+- `improved` (`yes|no`)
+- runtime (elapsed processing time for baseline/non-off run)
+- artifact/sample references (input file path + transcript path + run artifact path)
+
+Family closure row must include:
+
+- difficult subset size used for scoring
+- `median_improvement`
+- `share_improved`
+- pass/fail against requirement #5 (`median_improvement >= M` AND `share_improved >= S`)
+
+### 7.6 Smoke-to-quality reuse rules
 
 - reuse smoke runs when they satisfy the exact scoring pipeline and transcript requirements
 - do not re-run equivalent scenarios without added measurement value
@@ -265,8 +299,8 @@ Mandatory closure evidence:
 - [ ] constants file created before runs
 - [ ] reference transcripts present for all benchmark files
 - [ ] difficult-subset size evidence per family
-- [ ] per-file CER tables per family
-- [ ] pass/fail status per family
+- [ ] per-file CER tables per family (including runtime and artifact/sample references)
+- [ ] pass/fail status per family against requirement #5
 - [ ] consolidated summary JSON
 
 ### 8.3 Checklist sync in issue file
@@ -313,6 +347,7 @@ When appending to `docs/_evidence/issue_139_evidence.md`, include:
 - stage sequence and terminal result
 - text mutation result
 - CER metrics (for quality): per-file + family aggregates
+- runtime metrics per family/config
 - artifact file references
 
 ## 11) Batch 3 Exit Condition
