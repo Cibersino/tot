@@ -43,54 +43,58 @@ Run phases in order, without skipping:
 
 ### 4.1 Shared prerequisites (used by both Smoke and Quality Gate)
 
-- [ ] `docs/issues/Issue_139.md`
-- [ ] `docs/_evidence/issue_139_evidence.md`
-- [ ] `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`
-- [ ] `docs/_evidence/issue_139_operation_gate/operation_gate_report.json`
-- [ ] `public/index.html`
-- [ ] `public/style.css`
-- [ ] `public/js/import_ocr_ui.js`
-- [ ] `public/js/import_ocr_ui_options_modal.js`
-- [ ] `public/js/import_ocr_ui_shared.js`
-- [ ] `public/js/import_ocr_ui_progress.js`
-- [ ] `public/js/import_entry.js`
-- [ ] `public/renderer.js`
-- [ ] `electron/import_ocr/orchestrator.js`
-- [ ] `electron/import_ocr/ocr_pipeline.js`
-- [ ] `electron/import_ocr/pdf_raster_ocr.js`
-- [ ] `electron/import_ocr/preprocess_pipeline.js`
-- [ ] `electron/import_ocr/preprocess_runtime.js`
-- [ ] `i18n/en/renderer.json`
-- [ ] `i18n/es/renderer.json`
-- [ ] `i18n/es/es-cl/renderer.json`
-- [ ] `ocr/win32-x64/preprocess/imagemagick/magick.exe`
-- [ ] `ocr/win32-x64/preprocess/unpaper/unpaper.exe`
+- [x] `docs/issues/Issue_139.md`
+- [x] `docs/_evidence/issue_139_evidence.md`
+- [x] `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`
+- [x] `docs/_evidence/issue_139_operation_gate/operation_gate_report.json`
+- [x] `public/index.html`
+- [x] `public/style.css`
+- [x] `public/js/import_ocr_ui.js`
+- [x] `public/js/import_ocr_ui_options_modal.js`
+- [x] `public/js/import_ocr_ui_shared.js`
+- [x] `public/js/import_ocr_ui_progress.js`
+- [x] `public/js/import_entry.js`
+- [x] `public/renderer.js`
+- [x] `electron/import_ocr/orchestrator.js`
+- [x] `electron/import_ocr/ocr_pipeline.js`
+- [x] `electron/import_ocr/pdf_raster_ocr.js`
+- [x] `electron/import_ocr/preprocess_pipeline.js`
+- [x] `electron/import_ocr/preprocess_runtime.js`
+- [x] `i18n/en/renderer.json`
+- [x] `i18n/es/renderer.json`
+- [x] `i18n/es/es-cl/renderer.json`
+- [x] `ocr/win32-x64/preprocess/imagemagick/magick.exe`
+- [x] `ocr/win32-x64/preprocess/unpaper/unpaper.exe`
 
 ### 4.2 Smoke input selection (from shared quality corpus; no separate file list)
 
-- [ ] choose smoke inputs by selecting rows from `docs/_evidence/issue_139_quality_gate/corpus_manifest.tsv`
-- [ ] required smoke subset: at least 1 `photographed`, 1 `scanned_pdf`, and 1 `noisy_low_contrast` file id
-- [ ] selected smoke file ids must remain in the quality-gate benchmark set (reuse; no duplicate corpus)
-- [ ] optional aliases such as `sample_image.png` and `sample_scanned.pdf` are allowed only if they are already registered in the manifest
+- [x] choose smoke inputs by selecting rows from `docs/_evidence/issue_139_quality_gate/corpus_manifest.tsv`
+- [x] required smoke subset: at least 1 `photographed`, 1 `scanned_pdf`, and 1 `noisy_low_contrast` file id
+- [x] selected smoke file ids must remain in the quality-gate benchmark set (reuse; no duplicate corpus)
+- [x] optional aliases such as `sample_image.png` and `sample_scanned.pdf` are allowed only if they are already registered in the manifest (N/A in current seed set)
 
 ### 4.3 Quality-gate-specific required input and artifact files
 
 These files must exist before closing the quality gate. Create them if missing.
 
-- [ ] `docs/_evidence/issue_139_quality_gate/corpus/photographed/*` (real input files for photographed family)
-- [ ] `docs/_evidence/issue_139_quality_gate/corpus/scanned_pdf/*` (real scanned-PDF input files)
-- [ ] `docs/_evidence/issue_139_quality_gate/corpus/noisy_low_contrast/*` (real noisy/low-contrast input files)
-- [ ] `docs/_evidence/issue_139_quality_gate/quality_gate_constants.json`
-- [ ] `docs/_evidence/issue_139_quality_gate/corpus_manifest.tsv`
-- [ ] `docs/_evidence/issue_139_quality_gate/reference_transcripts/photographed/*.txt`
-- [ ] `docs/_evidence/issue_139_quality_gate/reference_transcripts/scanned_pdf/*.txt`
-- [ ] `docs/_evidence/issue_139_quality_gate/reference_transcripts/noisy_low_contrast/*.txt`
-- [ ] `docs/_evidence/issue_139_quality_gate/results_off.tsv`
-- [ ] `docs/_evidence/issue_139_quality_gate/results_nonoff.tsv`
-- [ ] `docs/_evidence/issue_139_quality_gate/cer_table_photographed.tsv`
-- [ ] `docs/_evidence/issue_139_quality_gate/cer_table_scanned_pdf.tsv`
-- [ ] `docs/_evidence/issue_139_quality_gate/cer_table_noisy_low_contrast.tsv`
-- [ ] `docs/_evidence/issue_139_quality_gate/quality_gate_summary.json`
+- [x] `docs/_evidence/issue_139_quality_gate/corpus/photographed/*` (real input files for photographed family)
+- [x] `docs/_evidence/issue_139_quality_gate/corpus/scanned_pdf/*` (real scanned-PDF input files)
+- [x] `docs/_evidence/issue_139_quality_gate/corpus/noisy_low_contrast/*` (real noisy/low-contrast input files)
+- [x] `docs/_evidence/issue_139_quality_gate/quality_gate_constants.json`
+- [x] `docs/_evidence/issue_139_quality_gate/corpus_manifest.tsv`
+- [x] `docs/_evidence/issue_139_quality_gate/reference_transcripts/photographed/*.txt`
+- [x] `docs/_evidence/issue_139_quality_gate/reference_transcripts/scanned_pdf/*.txt`
+- [x] `docs/_evidence/issue_139_quality_gate/reference_transcripts/noisy_low_contrast/*.txt`
+- [x] `docs/_evidence/issue_139_quality_gate/results_off.tsv`
+- [x] `docs/_evidence/issue_139_quality_gate/results_nonoff.tsv`
+- [x] `docs/_evidence/issue_139_quality_gate/cer_table_photographed.tsv`
+- [x] `docs/_evidence/issue_139_quality_gate/cer_table_scanned_pdf.tsv`
+- [x] `docs/_evidence/issue_139_quality_gate/cer_table_noisy_low_contrast.tsv`
+- [x] `docs/_evidence/issue_139_quality_gate/quality_gate_summary.json`
+
+Current status note:
+- transcript files currently contain placeholders and must be replaced with fixed ground truth before scoring.
+- corpus size is still below `N_min` per family and must be expanded before quality-gate closure.
 
 Manifest minimum contract:
 
