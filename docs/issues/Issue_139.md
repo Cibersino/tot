@@ -541,6 +541,8 @@ Includes:
 * [x] Implement bounded manual parameter wiring UI -> backend -> sidecar.
 * [x] Verify default preprocess state is all operations `off` on each new import run.
 * [x] Verify no preprocess config persistence across file change and app restart.
+
+### Smoke test and quality gate
 * [ ] Run in-app smoke and record evidence (follow `docs/issues/Issue_139_Batch_3_Verification_Guide.md`):
   * [ ] image OCR success
   * [ ] scanned PDF OCR success
