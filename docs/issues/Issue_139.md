@@ -307,7 +307,7 @@ OCR options modal must provide:
 
 Execution timing rule:
 * Run the mandatory full quality gate as soon as the feature has the minimum requirements to allow it.
-* Execution runbook (smoke + immediate quality gate): `docs/issues/Issue_139_Batch_3_Verification_Guide.md`.
+* Execution runbook (smoke + immediate quality gate): `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`.
 
 Baseline:
 * all operations `mode: off`.
@@ -441,8 +441,8 @@ Goal:
 * Verify in-app behavior end-to-end and close the mandatory quality gate before Batch 4 UX hardening.
 
 Includes:
-* Manual in-app smoke and evidence capture (runbook: `docs/issues/Issue_139_Batch_3_Verification_Guide.md`).
-* Mandatory quality-gate execution and closure immediately after smoke (runbook: `docs/issues/Issue_139_Batch_3_Verification_Guide.md`).
+* Manual in-app smoke and evidence capture (runbook: `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`).
+* Mandatory quality-gate execution and closure immediately after smoke (runbook: `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`).
 
 ### Batch 4 - UX Controls + Hardening
 
@@ -553,13 +553,13 @@ Includes:
 * [x] Verify no preprocess config persistence across file change and app restart.
 
 ### Smoke test and quality gate
-* [ ] Run in-app smoke and record evidence (follow `docs/issues/Issue_139_Batch_3_Verification_Guide.md`):
+* [ ] Run in-app smoke and record evidence (follow `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`):
   * [ ] image OCR success
   * [ ] scanned PDF OCR success
   * [ ] scanned PDF preprocess failure is fail-fast job abort (no per-page continue)
   * [ ] cancel during preprocessing
   * [ ] forced preprocess timeout/failure
-* [ ] Execute and pass mandatory quality gate immediately after smoke (follow `docs/issues/Issue_139_Batch_3_Verification_Guide.md`):
+* [ ] Execute and pass mandatory quality gate immediately after smoke (follow `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`):
   * [ ] photographed page challenging family
   * [ ] scanned PDF challenging family
   * [ ] noisy/low-contrast challenging family

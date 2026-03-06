@@ -45,7 +45,7 @@ Run phases in order, without skipping:
 
 - [ ] `docs/issues/Issue_139.md`
 - [ ] `docs/_evidence/issue_139_evidence.md`
-- [ ] `docs/issues/Issue_139_Batch_3_Verification_Guide.md`
+- [ ] `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`
 - [ ] `docs/_evidence/issue_139_operation_gate/operation_gate_report.json`
 - [ ] `public/index.html`
 - [ ] `public/style.css`
@@ -358,3 +358,4 @@ The `Smoke test and quality gate` section is complete only when both blocks are 
 - quality-gate block complete
 
 If any challenging family fails the quality gate thresholds, the smoke/quality-gate section remains open and Batch 4 stays blocked.
+

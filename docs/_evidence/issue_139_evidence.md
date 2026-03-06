@@ -15,7 +15,7 @@ Entry `E139-SQG-SETUP-001`
     - `node --check electron/import_ocr/pdf_raster_ocr.js`
     - `node --check electron/import_ocr/preprocess_runtime.js`
   - section 4 audit:
-    - item-by-item existence check for `4.1` and `4.3` required files from `docs/issues/Issue_139_Batch_3_Verification_Guide.md`.
+    - item-by-item existence check for `4.1` and `4.3` required files from `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`.
   - section 4 scaffolding:
     - created artifact directories:
       - `docs/_evidence/issue_139_batch3_smoke/`
@@ -36,7 +36,7 @@ Entry `E139-SQG-SETUP-001`
   - section `4.3` scaffold files now exist, but family corpus inputs and transcript files are still pending population.
   - smoke-subset selection (`4.2`) remains pending until manifest rows are populated with real file ids.
 - artifact/log reference:
-  - `docs/issues/Issue_139_Batch_3_Verification_Guide.md`
+  - `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`
   - `docs/_evidence/issue_139_evidence.md`
   - `docs/_evidence/issue_139_batch3_smoke/`
   - `docs/_evidence/issue_139_quality_gate/quality_gate_constants.json`
