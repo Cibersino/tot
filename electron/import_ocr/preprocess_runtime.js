@@ -267,28 +267,27 @@ function buildUnpaperOperationArgs(operationKey, operationCfg) {
 
   if (operationKey === 'page_cleanup') {
     if (operationCfg.mode === 'auto') {
-      return ['--layout', 'single', '--clean'];
+      return ['--layout', 'single', '--mask-scan-size', '50'];
     }
 
     const level = operationCfg.manual.cleanLevel;
     if (level === 1) {
-      return ['--layout', 'single', '--no-clean'];
+      return ['--layout', 'single', '--no-grayfilter', '--no-noisefilter', '--no-blackfilter'];
     }
     if (level === 2) {
-      return ['--layout', 'single', '--clean'];
+      return ['--layout', 'single', '--mask-scan-size', '50', '--grayfilter-size', '5', '--noisefilter-intensity', '4'];
     }
     return [
       '--layout',
       'single',
-      '--clean',
+      '--mask-scan-size',
+      '50',
       '--grayfilter-size',
       '5',
       '--noisefilter-intensity',
       '4',
       '--blackfilter-intensity',
       '20',
-      '--mask-scan-size',
-      '50',
       '--blurfilter-size',
       '5',
     ];
@@ -400,10 +399,11 @@ async function runPreprocessForImage({
     tempStorageCapBytes: policy.tempStorageCapBytes,
   };
 
-  function nextTempPath(label) {
+  function nextTempPath(label, extension = 'png') {
     stepIndex += 1;
     const safeLabel = String(label || 'step').replace(/[^A-Za-z0-9_-]/g, '_');
-    const fileName = `${outputPrefix}_${String(stepIndex).padStart(3, '0')}_${safeLabel}.png`;
+    const safeExt = String(extension || 'png').replace(/[^A-Za-z0-9]/g, '').toLowerCase() || 'png';
+    const fileName = `${outputPrefix}_${String(stepIndex).padStart(3, '0')}_${safeLabel}.${safeExt}`;
     return path.join(tempDir, fileName);
   }
 
@@ -542,14 +542,76 @@ async function runPreprocessForImage({
           tool,
         });
       }
+      const unpaperInputPath = nextTempPath(`${operationKey}_unpaper_input`, 'pgm');
+      const unpaperOutputPath = nextTempPath(`${operationKey}_unpaper_output`, 'pgm');
+
+      // unpaper expects PNM-like page inputs in this build; convert deterministically in/out.
+      const toUnpaperInputRes = await runProcessWithTimeout({
+        executablePath: runtimeRes.magickPath,
+        args: [currentPath, '-colorspace', 'Gray', '-depth', '8', unpaperInputPath],
+        workingDirectory: path.dirname(runtimeRes.magickPath),
+        timeoutMs,
+        onChildProcess,
+        isCancelRequested,
+      });
+      if (!toUnpaperInputRes.ok) {
+        return mapProcessFailureToPreprocessError(toUnpaperInputRes, {
+          operation: operationKey,
+          tool: 'ImageMagick',
+          phase: 'preprocess_unpaper_prepare_input',
+        });
+      }
+      const unpaperInputStorageRes = updateTempStorageUsage(unpaperInputPath, {
+        operation: operationKey,
+        tool: 'ImageMagick',
+        phase: 'preprocess_unpaper_prepare_input',
+      });
+      if (!unpaperInputStorageRes.ok) return unpaperInputStorageRes;
+
       processRes = await runProcessWithTimeout({
         executablePath: runtimeRes.unpaperPath,
-        args: [...opArgs, currentPath, outputPath],
+        args: [...opArgs, unpaperInputPath, unpaperOutputPath],
         workingDirectory: path.dirname(runtimeRes.unpaperPath),
         timeoutMs,
         onChildProcess,
         isCancelRequested,
       });
+      if (!processRes.ok) {
+        return mapProcessFailureToPreprocessError(processRes, {
+          operation: operationKey,
+          tool,
+        });
+      }
+
+      if (!ensurePathExists(unpaperOutputPath)) {
+        return failPreprocess('OCR_PREPROCESS_FAILED', 'Preprocess operation produced no unpaper output artifact.', {
+          operation: operationKey,
+          tool,
+          outputPath: unpaperOutputPath,
+        });
+      }
+      const unpaperOutputStorageRes = updateTempStorageUsage(unpaperOutputPath, {
+        operation: operationKey,
+        tool,
+        phase: 'preprocess_unpaper_output',
+      });
+      if (!unpaperOutputStorageRes.ok) return unpaperOutputStorageRes;
+
+      const fromUnpaperOutputRes = await runProcessWithTimeout({
+        executablePath: runtimeRes.magickPath,
+        args: [unpaperOutputPath, outputPath],
+        workingDirectory: path.dirname(runtimeRes.magickPath),
+        timeoutMs,
+        onChildProcess,
+        isCancelRequested,
+      });
+      if (!fromUnpaperOutputRes.ok) {
+        return mapProcessFailureToPreprocessError(fromUnpaperOutputRes, {
+          operation: operationKey,
+          tool: 'ImageMagick',
+          phase: 'preprocess_unpaper_finalize_output',
+        });
+      }
     } else {
       return failPreprocess('OCR_PREPROCESS_UNAVAILABLE', 'Unsupported preprocess operation tool.', {
         operation: operationKey,
@@ -557,12 +619,13 @@ async function runPreprocessForImage({
       });
     }
 
-    if (!processRes.ok) {
-      return mapProcessFailureToPreprocessError(processRes, {
+    if (!processRes || !processRes.ok) {
+      return mapProcessFailureToPreprocessError(processRes || {}, {
         operation: operationKey,
         tool,
       });
     }
+
     if (!ensurePathExists(outputPath)) {
       return failPreprocess('OCR_PREPROCESS_FAILED', 'Preprocess operation produced no output artifact.', {
         operation: operationKey,

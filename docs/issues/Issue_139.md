@@ -519,10 +519,10 @@ Includes:
 
 ### Batch 2
 * [x] Implement preprocess execution with deterministic temp outputs and safety caps.
-* [ ] If bundled-binary strategy is selected, establish runtime artifacts for `win32-x64` and verify paths under `ocr/<platform>-<arch>/preprocess/...`.
+* [x] If bundled-binary strategy is selected, establish runtime artifacts for `win32-x64` and verify paths under `ocr/<platform>-<arch>/preprocess/...`.
 * [ ] If (and only if) custom `.exe` path is selected by evidence, build preprocess artifact and verify runtime satisfies the canonical preprocess adapter contract.
-* [ ] Record preprocess dependency/artifact provenance in evidence.
-* [ ] Pass Operation Compatibility Gate for each operation in issue scope with evidence entries.
+* [x] Record preprocess dependency/artifact provenance in evidence.
+* [x] Pass Operation Compatibility Gate for each operation in issue scope with evidence entries.
 * [x] Do not introduce compatibility bridge logic (no operation -> legacy profile mapping anywhere).
 * [x] Verify clean-base no-legacy invariant still holds after Batch 2 integration changes.
 * [x] Integrate preprocess into image OCR route.

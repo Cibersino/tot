@@ -1,5 +1,55 @@
 # Issue 139 Evidence Log
 
+## 2026-03-06 - Batch 2 Runtime Artifacts + Operation Compatibility Gate (H01)
+
+Entry `E139-B2-GATE-002`
+- timestamp: `2026-03-06 15:32:36 -03:00`
+- command/test executed:
+  - copied selected preprocess runtime artifacts into sidecar paths:
+    - source `C:\Program Files\ImageMagick-7.1.2-Q16-HDRI\*` -> `ocr/win32-x64/preprocess/imagemagick/`
+    - source `C:\ProgramData\chocolatey\lib\unpaper\tools\{unpaper.exe,LIBBZ2-1.DLL,LIBWINPTHREAD-1.DLL,ZLIB1.DLL}` -> `ocr/win32-x64/preprocess/unpaper/`
+  - runtime verification:
+    - `ocr/win32-x64/preprocess/imagemagick/magick.exe -version`
+    - `ocr/win32-x64/preprocess/unpaper/unpaper.exe --version`
+    - inventory count/size check for copied sidecar trees
+  - compatibility-fix probe and runtime adjustment:
+    - identified unpaper runtime constraints (`unsupported pixel format` for default PNM conversion; unsupported `--clean` option)
+    - updated preprocess runtime to use grayscale 8-bit PGM in/out for unpaper operations and adjusted `page_cleanup` presets to supported unpaper options
+  - Operation Compatibility Gate execution:
+    - generated sample input artifact:
+      - `magick ... docs/_evidence/issue_139_operation_gate/input_sample.png`
+    - ran full gate script (all scoped operations) to verify:
+      - runtime availability
+      - `off|auto|manual` success per operation
+      - applied-proof via per-op stats + output hash change checks
+      - forced-failure mapping (`OCR_BINARY_MISSING`, `OCR_PREPROCESS_FAILED` via input-cap exceed, `OCR_PREPROCESS_CANCELED`)
+    - gate report artifact:
+      - `docs/_evidence/issue_139_operation_gate/operation_gate_report.json`
+      - summary: `runtimeAvailable=true`, `allModesSucceeded=true`, `appliedProofAutoManual=true`, `forcedFailureMappingsOk=true`
+  - provenance/hash capture:
+    - generated preprocess inventory + sha256 list:
+      - `docs/_evidence/issue_139_operation_gate/win32_preprocess_inventory.tsv`
+    - generated provenance hash snapshot:
+      - `docs/_evidence/issue_139_operation_gate/provenance_hash_snapshot.json`
+    - recorded provenance narrative and source-link/checksum chain:
+      - `docs/_evidence/issue_139_operation_gate/provenance.md`
+- result:
+  - bundled preprocess sidecar artifacts are now established under required active-target layout:
+    - `ocr/win32-x64/preprocess/imagemagick/**`
+    - `ocr/win32-x64/preprocess/unpaper/**`
+  - preprocess runtime compatibility gate passes for all H01 scoped operations and modes (`off|auto|manual`) with forced-failure mapping checks passing.
+  - issue checklist Batch 2 items for runtime artifact establishment, provenance recording, and compatibility gate are now closed.
+- artifact/log reference:
+  - `ocr/win32-x64/preprocess/imagemagick/magick.exe`
+  - `ocr/win32-x64/preprocess/unpaper/unpaper.exe`
+  - `electron/import_ocr/preprocess_runtime.js`
+  - `docs/_evidence/issue_139_operation_gate/input_sample.png`
+  - `docs/_evidence/issue_139_operation_gate/operation_gate_report.json`
+  - `docs/_evidence/issue_139_operation_gate/win32_preprocess_inventory.tsv`
+  - `docs/_evidence/issue_139_operation_gate/provenance_hash_snapshot.json`
+  - `docs/_evidence/issue_139_operation_gate/provenance.md`
+  - `docs/issues/Issue_139.md`
+
 ## 2026-03-06 - Batch 2 Runtime + Integration (H01)
 
 Entry `E139-B2-INTEGRATION-001`
