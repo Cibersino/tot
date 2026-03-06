@@ -567,6 +567,8 @@ Includes:
 * [ ] Polish preflight ETA estimations (initial ETA before first OCR page, stage-weight balancing, and recalibration after first processed pages) and record evidence.
 * [ ] Add remaining active locale strings (`de`, `fr`, `it`, `pt`, `arn`, `es-cl`) and ensure modal-copy consistency.
 * [ ] Run post-gate regression quality spot-check after UX/localization changes (non-gating) and record evidence.
+* [ ] Review logging in all files touched by Issue 139; enforce strict compliance with `electron/log.js` and `public/js/log.js` policy and preserve pre-issue app logging patterns; record evidence.
+* [ ] Run file-by-file cleanup on all files touched by Issue 139 using `docs/cleanup/cleanup_file_by_file.md`; record per-file cleanup evidence.
 
 ### Batch 5
 * [ ] Package preprocess sidecar in active target artifacts (`win32-x64`).
