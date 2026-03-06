@@ -186,6 +186,18 @@ User Setup Gate (Required Human Steps):
 
 The selected path (`H01`: `ImageMagick -> unpaper`) imposes the following binding conditions for later batches.
 
+Implementation non-negotiables (do not waive during implementation):
+* Keep implementation strategy as bundled-binaries + app-wrapper/orchestration (no custom preprocess `.exe` unless a new capability-gap is proven).
+* Treat compliance as multi-component (`ImageMagick` + `unpaper` + actual `ffmpeg`/package chain used by `unpaper`).
+* Do not ship preprocess artifacts without updating both `THIRD_PARTY_NOTICES.md` and `third_party_licenses/**` for preprocess components.
+* Build preprocess binaries only under deterministic sidecar paths: `ocr/<platform>-<arch>/preprocess/**`.
+* Active target layout required in this issue: `ocr/win32-x64/preprocess/imagemagick/**` and `ocr/win32-x64/preprocess/unpaper/**`.
+* Keep hosting model in-repo under `ocr/**` and packaged via `electron-builder.extraResources` unless a new decision is documented.
+* Keep runtime binary resolution explicit-root based (no `PATH` discovery).
+* Missing preprocess runtime must map to `OCR_BINARY_MISSING`; no silent fallback.
+* Keep cross-target-ready preprocess directory contract for `linux-x64`, `darwin-x64`, `darwin-arm64` (even though shipment is out-of-scope in this issue).
+* Record full provenance per preprocess bundle (source URL, version/tag, acquisition/build commands, inventory, hashes) and pass release legal/post-packaging gates before ship.
+
 License/compliance conditions:
 * `ImageMagick` redistribution must include license copy and attribution in notices.
 * `unpaper` redistribution must follow the upstream project licensing model (project under GNU GPL v2, with some files under MIT/Apache 2.0 as declared by upstream SPDX headers).

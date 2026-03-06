@@ -2,6 +2,14 @@
 
 ## 2026-03-06 - Pre-Implementation Decision Gate Closure Pass
 
+Entry `E139-SUBSTRATE-004`
+- timestamp: `2026-03-06 10:23:56 -03:00`
+- command/test executed: added explicit "non-negotiables" checklist in issue + matrix evidence for H01 carry-forward constraints.
+- result:
+  - issue now includes a compact implementation guardrail list under H01 substrate conditions.
+  - matrix evidence now includes a matching non-negotiables snapshot to prevent drift between issue and evidence wording.
+- artifact/log reference: `docs/issues/Issue_139.md:189`, `docs/_evidence/issue_139_preimpl_candidate_matrix_draft.md:586`.
+
 Entry `E139-SUBSTRATE-003`
 - timestamp: `2026-03-06 10:15:52 -03:00`
 - command/test executed: section-anchor verification in issue + matrix evidence docs (line-located checks).

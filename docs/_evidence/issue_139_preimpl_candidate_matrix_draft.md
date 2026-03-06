@@ -583,6 +583,18 @@ Gate selection remains `H01` with `H05` as first challenger.
 
 This section defines the binding conditions introduced by the selected substrate path `H01` (`ImageMagick -> unpaper`) and how they must be handled in later batches.
 
+Non-negotiables snapshot (implementation guardrail summary):
+- Keep bundled-binary + wrapper/orchestration model; no custom preprocess `.exe` unless new capability-gap evidence is produced.
+- Compliance is multi-component: ImageMagick + unpaper + actual FFmpeg/package chain used by unpaper.
+- No preprocess shipping without synchronized updates to `THIRD_PARTY_NOTICES.md` and `third_party_licenses/**`.
+- Preprocess artifacts must be built under deterministic sidecar paths `ocr/<platform>-<arch>/preprocess/**`.
+- Active issue-scope artifact targets are `ocr/win32-x64/preprocess/imagemagick/**` and `ocr/win32-x64/preprocess/unpaper/**`.
+- Hosting model stays in-repo under `ocr/**` and packaged through `electron-builder.extraResources`.
+- Runtime binary resolution remains explicit-root only (no `PATH` lookup).
+- Missing preprocess runtime must map to `OCR_BINARY_MISSING`; silent fallback is prohibited.
+- Cross-target preprocess directory contract must be preserved for `linux-x64`, `darwin-x64`, `darwin-arm64`.
+- Full provenance evidence (source/version/commands/inventory/hashes) is mandatory before release legal/post-packaging gate closure.
+
 License/compliance conditions and limitations:
 - Source signal: ImageMagick publishes its own license terms and redistribution notices requirements (`https://imagemagick.org/license/`).
 - Source signal: unpaper repository declares project license as GNU GPL v2 (`https://github.com/unpaper/unpaper`), with additional per-file SPDX variations noted upstream.
