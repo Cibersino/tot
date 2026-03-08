@@ -430,6 +430,7 @@ Goal:
 
 Includes:
 * OCR options modal operation controls completion.
+* OCR options accessibility hardening in the same modal-flow scope: preprocess controls split into a dedicated preprocess modal while keeping core OCR options in the main modal with preprocess summary/open action.
 * EN/ES user-facing preprocess strings (required before smoke/gate to keep the app's i18n-first code pattern).
 * Bounded manual parameter wiring UI -> backend -> sidecar.
 * Default preprocess state reset to all operations `off` on each new import run.
@@ -548,6 +549,7 @@ Includes:
 ### Batch 3
 * [x] Add EN/ES preprocessing stage and error strings (required before smoke/gate to keep the app's i18n-first code pattern).
 * [x] Implement OCR modal operation controls (per-operation `off|auto|manual`, bounded manual params, and explicit set-all-off action).
+* [x] Split preprocess controls into a dedicated preprocess modal while preserving canonical `preprocessConfig` wiring and a neutral preprocess summary/open action in the main OCR options modal.
 * [x] Implement bounded manual parameter wiring UI -> backend -> sidecar.
 * [x] Verify default preprocess state is all operations `off` on each new import run.
 * [x] Verify no preprocess config persistence across file change and app restart.

@@ -1,5 +1,42 @@
 # Issue 139 Evidence Log
 
+## 2026-03-07 - Batch 3 UI Accessibility Follow-up (Preprocess Modal Split)
+
+Entry `E139-B3-UI-004`
+- timestamp: `2026-03-07 22:05:30 -03:00`
+- command/test executed:
+  - implemented OCR options UI split within Batch 3 scope:
+    - core OCR options modal keeps core controls (`preset`, `language`, `dpi`, `timeout`) and adds preprocess summary/open action.
+    - preprocess controls moved to dedicated preprocess modal with explicit `Apply`/`Cancel` and `Set all off`.
+  - maintained canonical payload path by keeping `preprocessConfig` collection/normalization in modal controller and passing committed preprocess state at OCR run confirm.
+  - added EN/ES strings for preprocess summary/open and preprocess modal action labels.
+  - verification commands:
+    - `node --check public/js/import_ocr_ui_options_modal.js`
+    - `node --check public/js/import_ocr_ui.js`
+    - `node --check public/renderer.js`
+    - `node --check public/js/import_entry.js`
+    - `node --check public/js/import_ocr_ui_shared.js`
+    - `node --check public/js/import_ocr_ui_progress.js`
+    - `Get-Content -Path i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null`
+    - `Get-Content -Path i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null`
+    - `npm run lint`
+  - wiring verification scans:
+    - `rg -n "ocrPreprocessSummary|btnOcrPreprocessOpen|ocrPreprocessModal|btnOcrPreprocessApply|btnOcrPreprocessCancel|openPreprocessModal|applyPreprocessModalChanges|cancelPreprocessModalChanges|updatePreprocessSummaryText" public/index.html public/style.css public/js/import_ocr_ui.js public/js/import_ocr_ui_options_modal.js`
+- result:
+  - OCR options are now accessible without hiding controls outside viewport.
+  - preprocess controls are reachable via dedicated modal and preserve bounded operation controls (`off|auto|manual` + manual bounds).
+  - default preprocess state remains all operations `off` per new run; no preprocess persistence was introduced.
+  - smoke/quality-gate status remains unchanged and pending.
+- artifact/log reference:
+  - `public/index.html`
+  - `public/style.css`
+  - `public/js/import_ocr_ui.js`
+  - `public/js/import_ocr_ui_options_modal.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `docs/issues/Issue_139.md`
+  - `docs/_evidence/issue_139_evidence.md`
+
 ## 2026-03-06 - Smoke/Quality-Gate Preflight + Section 4 Artifact Scaffolding
 
 Entry `E139-SQG-SETUP-001`
