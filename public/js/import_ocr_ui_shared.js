@@ -38,8 +38,11 @@
   const PREPROCESS_MODE_VALUES = Object.freeze(['off', 'auto', 'manual']);
   const PREPROCESS_OPERATION_ORDER = Object.freeze([
     'normalize_contrast',
+    'local_illumination_correction',
+    'adaptive_contrast',
     'binarize',
     'denoise',
+    'text_sharpen',
     'deskew',
     'page_cleanup',
   ]);
@@ -58,6 +61,40 @@
         step: 0.5,
       }),
     }),
+    local_illumination_correction: Object.freeze({
+      windowPx: Object.freeze({
+        type: 'integer',
+        min: 9,
+        max: 101,
+        step: 2,
+      }),
+      offsetPct: Object.freeze({
+        type: 'number',
+        min: 1,
+        max: 30,
+        step: 1,
+      }),
+    }),
+    adaptive_contrast: Object.freeze({
+      tilePct: Object.freeze({
+        type: 'number',
+        min: 5,
+        max: 40,
+        step: 1,
+      }),
+      clipLimit: Object.freeze({
+        type: 'number',
+        min: 1,
+        max: 8,
+        step: 0.5,
+      }),
+      bins: Object.freeze({
+        type: 'integer',
+        min: 64,
+        max: 256,
+        step: 1,
+      }),
+    }),
     binarize: Object.freeze({
       thresholdPct: Object.freeze({
         type: 'number',
@@ -72,6 +109,32 @@
         min: 1,
         max: 4,
         step: 1,
+      }),
+    }),
+    text_sharpen: Object.freeze({
+      radiusPx: Object.freeze({
+        type: 'number',
+        min: 0,
+        max: 2,
+        step: 0.1,
+      }),
+      sigmaPx: Object.freeze({
+        type: 'number',
+        min: 0.3,
+        max: 3,
+        step: 0.1,
+      }),
+      amount: Object.freeze({
+        type: 'number',
+        min: 0.2,
+        max: 2,
+        step: 0.1,
+      }),
+      threshold: Object.freeze({
+        type: 'number',
+        min: 0,
+        max: 0.2,
+        step: 0.01,
       }),
     }),
     deskew: Object.freeze({
@@ -89,10 +152,34 @@
       }),
     }),
     page_cleanup: Object.freeze({
-      cleanLevel: Object.freeze({
+      maskScanSize: Object.freeze({
         type: 'integer',
-        min: 1,
-        max: 3,
+        min: 10,
+        max: 80,
+        step: 1,
+      }),
+      grayfilterSize: Object.freeze({
+        type: 'integer',
+        min: 0,
+        max: 12,
+        step: 1,
+      }),
+      noisefilterIntensity: Object.freeze({
+        type: 'integer',
+        min: 0,
+        max: 12,
+        step: 1,
+      }),
+      blackfilterIntensity: Object.freeze({
+        type: 'integer',
+        min: 0,
+        max: 32,
+        step: 1,
+      }),
+      blurfilterSize: Object.freeze({
+        type: 'integer',
+        min: 0,
+        max: 12,
         step: 1,
       }),
     }),
@@ -102,18 +189,37 @@
       blackClipPct: 3,
       whiteClipPct: 3,
     }),
+    local_illumination_correction: Object.freeze({
+      windowPx: 25,
+      offsetPct: 10,
+    }),
+    adaptive_contrast: Object.freeze({
+      tilePct: 25,
+      clipLimit: 3,
+      bins: 128,
+    }),
     binarize: Object.freeze({
       thresholdPct: 55,
     }),
     denoise: Object.freeze({
       passes: 2,
     }),
+    text_sharpen: Object.freeze({
+      radiusPx: 0.5,
+      sigmaPx: 1,
+      amount: 1,
+      threshold: 0,
+    }),
     deskew: Object.freeze({
       scanRangeDeg: 4,
       scanStepDeg: 0.5,
     }),
     page_cleanup: Object.freeze({
-      cleanLevel: 2,
+      maskScanSize: 50,
+      grayfilterSize: 5,
+      noisefilterIntensity: 4,
+      blackfilterIntensity: 20,
+      blurfilterSize: 5,
     }),
   });
 
@@ -237,8 +343,11 @@
     return {
       operations: {
         normalize_contrast: { mode: 'off' },
+        local_illumination_correction: { mode: 'off' },
+        adaptive_contrast: { mode: 'off' },
         binarize: { mode: 'off' },
         denoise: { mode: 'off' },
+        text_sharpen: { mode: 'off' },
         deskew: { mode: 'off' },
         page_cleanup: { mode: 'off' },
       },

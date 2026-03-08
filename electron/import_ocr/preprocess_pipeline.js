@@ -33,8 +33,11 @@ const RUNNER_OUTPUT_INPUT_ALLOWED_KEYS = Object.freeze([
 
 const H01_OPERATION_ORDER = Object.freeze([
   'normalize_contrast',
+  'local_illumination_correction',
+  'adaptive_contrast',
   'binarize',
   'denoise',
+  'text_sharpen',
   'deskew',
   'page_cleanup',
 ]);
@@ -52,6 +55,41 @@ const H01_OPERATION_REGISTRY = Object.freeze({
         type: 'number',
         min: 0,
         max: 20,
+      }),
+    }),
+  }),
+  local_illumination_correction: Object.freeze({
+    tool: 'ImageMagick',
+    manualSchema: Object.freeze({
+      windowPx: Object.freeze({
+        type: 'integer',
+        min: 9,
+        max: 101,
+      }),
+      offsetPct: Object.freeze({
+        type: 'number',
+        min: 1,
+        max: 30,
+      }),
+    }),
+  }),
+  adaptive_contrast: Object.freeze({
+    tool: 'ImageMagick',
+    manualSchema: Object.freeze({
+      tilePct: Object.freeze({
+        type: 'number',
+        min: 5,
+        max: 40,
+      }),
+      clipLimit: Object.freeze({
+        type: 'number',
+        min: 1,
+        max: 8,
+      }),
+      bins: Object.freeze({
+        type: 'integer',
+        min: 64,
+        max: 256,
       }),
     }),
   }),
@@ -75,6 +113,31 @@ const H01_OPERATION_REGISTRY = Object.freeze({
       }),
     }),
   }),
+  text_sharpen: Object.freeze({
+    tool: 'ImageMagick',
+    manualSchema: Object.freeze({
+      radiusPx: Object.freeze({
+        type: 'number',
+        min: 0,
+        max: 2,
+      }),
+      sigmaPx: Object.freeze({
+        type: 'number',
+        min: 0.3,
+        max: 3,
+      }),
+      amount: Object.freeze({
+        type: 'number',
+        min: 0.2,
+        max: 2,
+      }),
+      threshold: Object.freeze({
+        type: 'number',
+        min: 0,
+        max: 0.2,
+      }),
+    }),
+  }),
   deskew: Object.freeze({
     tool: 'unpaper',
     manualSchema: Object.freeze({
@@ -93,10 +156,30 @@ const H01_OPERATION_REGISTRY = Object.freeze({
   page_cleanup: Object.freeze({
     tool: 'unpaper',
     manualSchema: Object.freeze({
-      cleanLevel: Object.freeze({
+      maskScanSize: Object.freeze({
         type: 'integer',
-        min: 1,
-        max: 3,
+        min: 10,
+        max: 80,
+      }),
+      grayfilterSize: Object.freeze({
+        type: 'integer',
+        min: 0,
+        max: 12,
+      }),
+      noisefilterIntensity: Object.freeze({
+        type: 'integer',
+        min: 0,
+        max: 12,
+      }),
+      blackfilterIntensity: Object.freeze({
+        type: 'integer',
+        min: 0,
+        max: 32,
+      }),
+      blurfilterSize: Object.freeze({
+        type: 'integer',
+        min: 0,
+        max: 12,
       }),
     }),
   }),
@@ -151,8 +234,11 @@ function buildDefaultPreprocessConfig() {
   return {
     operations: {
       normalize_contrast: { mode: 'off' },
+      local_illumination_correction: { mode: 'off' },
+      adaptive_contrast: { mode: 'off' },
       binarize: { mode: 'off' },
       denoise: { mode: 'off' },
+      text_sharpen: { mode: 'off' },
       deskew: { mode: 'off' },
       page_cleanup: { mode: 'off' },
     },

@@ -237,6 +237,19 @@ function buildMagickOperationArgs(operationKey, operationCfg) {
     const white = operationCfg.manual.whiteClipPct;
     return ['-contrast-stretch', `${black}%x${white}%`];
   }
+  if (operationKey === 'local_illumination_correction') {
+    if (mode === 'auto') return ['-lat', '25x25+10%'];
+    const windowPx = operationCfg.manual.windowPx;
+    const offsetPct = operationCfg.manual.offsetPct;
+    return ['-lat', `${windowPx}x${windowPx}+${offsetPct}%`];
+  }
+  if (operationKey === 'adaptive_contrast') {
+    if (mode === 'auto') return ['-clahe', '25x25%+128+3'];
+    const tilePct = operationCfg.manual.tilePct;
+    const bins = operationCfg.manual.bins;
+    const clipLimit = operationCfg.manual.clipLimit;
+    return ['-clahe', `${tilePct}x${tilePct}%+${bins}+${clipLimit}`];
+  }
   if (operationKey === 'binarize') {
     if (mode === 'auto') return ['-auto-threshold', 'Otsu'];
     return ['-threshold', `${operationCfg.manual.thresholdPct}%`];
@@ -248,6 +261,14 @@ function buildMagickOperationArgs(operationKey, operationCfg) {
       args.push('-despeckle');
     }
     return args;
+  }
+  if (operationKey === 'text_sharpen') {
+    if (mode === 'auto') return ['-unsharp', '0x1+1+0'];
+    const radiusPx = operationCfg.manual.radiusPx;
+    const sigmaPx = operationCfg.manual.sigmaPx;
+    const amount = operationCfg.manual.amount;
+    const threshold = operationCfg.manual.threshold;
+    return ['-unsharp', `${radiusPx}x${sigmaPx}+${amount}+${threshold}`];
   }
   return null;
 }
@@ -269,28 +290,25 @@ function buildUnpaperOperationArgs(operationKey, operationCfg) {
     if (operationCfg.mode === 'auto') {
       return ['--layout', 'single', '--mask-scan-size', '50'];
     }
-
-    const level = operationCfg.manual.cleanLevel;
-    if (level === 1) {
-      return ['--layout', 'single', '--no-grayfilter', '--no-noisefilter', '--no-blackfilter'];
-    }
-    if (level === 2) {
-      return ['--layout', 'single', '--mask-scan-size', '50', '--grayfilter-size', '5', '--noisefilter-intensity', '4'];
-    }
-    return [
+    const args = [
       '--layout',
       'single',
       '--mask-scan-size',
-      '50',
-      '--grayfilter-size',
-      '5',
-      '--noisefilter-intensity',
-      '4',
-      '--blackfilter-intensity',
-      '20',
-      '--blurfilter-size',
-      '5',
+      String(operationCfg.manual.maskScanSize),
     ];
+    if (operationCfg.manual.grayfilterSize > 0) {
+      args.push('--grayfilter-size', String(operationCfg.manual.grayfilterSize));
+    }
+    if (operationCfg.manual.noisefilterIntensity > 0) {
+      args.push('--noisefilter-intensity', String(operationCfg.manual.noisefilterIntensity));
+    }
+    if (operationCfg.manual.blackfilterIntensity > 0) {
+      args.push('--blackfilter-intensity', String(operationCfg.manual.blackfilterIntensity));
+    }
+    if (operationCfg.manual.blurfilterSize > 0) {
+      args.push('--blurfilter-size', String(operationCfg.manual.blurfilterSize));
+    }
+    return args;
   }
 
   return null;

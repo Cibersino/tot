@@ -1,5 +1,79 @@
 # Issue 139 Evidence Log
 
+## 2026-03-08 - Preprocess Expansion Scoped-Lock Freeze (H01)
+
+Entry `E139-EXP-FREEZE-001`
+- timestamp: `2026-03-08 00:15:46 -03:00`
+- command/test executed:
+  - validated shipped runtime support for expansion operators:
+    - `ocr/win32-x64/preprocess/imagemagick/magick.exe -help | Select-String "-lat|-clahe|-unsharp"`
+    - probe executions on `docs/_evidence/issue_139_operation_gate/input_sample.png`:
+      - `-lat` (`auto` and manual-style arguments)
+      - `-clahe` (`auto` and manual-style arguments)
+      - `-unsharp` (`auto` and manual-style arguments)
+  - validated proposed `unpaper` bounded knob set:
+    - successful probe with `--mask-scan-size`, `--grayfilter-size`, `--noisefilter-intensity`, `--blackfilter-intensity`, `--blurfilter-size`
+    - confirmed explicit exclusions still unsupported:
+      - `unpaper.exe --clean` -> unknown option
+      - `unpaper.exe --split` -> unknown option
+  - applied scoped-lock freeze update in issue source-of-truth:
+    - expanded operation keys/order/manual schema in `docs/issues/Issue_139.md`
+- result:
+  - expansion plan runtime surface is feasible with shipped artifacts.
+  - scoped-lock declarations are now frozen for expansion implementation start.
+  - implementation may proceed to Batch A/B/C under updated scoped-lock.
+- artifact/log reference:
+  - `docs/issues/Issue_139.md`
+  - `docs/issues/Issue_139_Preprocess_Expansion_Plan.md`
+  - `docs/_evidence/issue_139_operation_gate/tmp_feasibility/`
+  - `ocr/win32-x64/preprocess/imagemagick/magick.exe`
+  - `ocr/win32-x64/preprocess/unpaper/unpaper.exe`
+
+Entry `E139-EXP-IMPL-002`
+- timestamp: `2026-03-08 00:23:08 -03:00`
+- command/test executed:
+  - implemented expansion Batch A/B/C surfaces:
+    - backend contract update (`H01_OPERATION_ORDER`, registry schemas/default-off):
+      - `electron/import_ocr/preprocess_pipeline.js`
+    - backend runtime mapping update:
+      - `electron/import_ocr/preprocess_runtime.js`
+      - added ImageMagick mappings for `local_illumination_correction` (`-lat`), `adaptive_contrast` (`-clahe`), `text_sharpen` (`-unsharp`)
+      - replaced `page_cleanup.manual.cleanLevel` mapping with direct bounded unpaper knobs
+    - renderer/UI update:
+      - `public/index.html`
+      - `public/js/import_ocr_ui_shared.js`
+      - `public/js/import_ocr_ui_options_modal.js`
+      - `public/js/import_ocr_ui.js`
+    - EN/ES i18n update for new operation labels/fields:
+      - `i18n/en/renderer.json`
+      - `i18n/es/renderer.json`
+  - verification commands:
+    - `node --check electron/import_ocr/preprocess_pipeline.js`
+    - `node --check electron/import_ocr/preprocess_runtime.js`
+    - `node --check public/js/import_ocr_ui_shared.js`
+    - `node --check public/js/import_ocr_ui_options_modal.js`
+    - `node --check public/js/import_ocr_ui.js`
+    - `Get-Content -Path i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null`
+    - `Get-Content -Path i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null`
+    - `npm run lint`
+- result:
+  - expansion contract is implemented end-to-end for new operations and revised `page_cleanup` manual schema.
+  - preprocess default remains all operations `off` for each run.
+  - strict unknown-key/manual-field rejection remains in place.
+  - operation compatibility gate re-run and smoke/quality-gate re-run are still pending (not executed in this entry).
+- artifact/log reference:
+  - `electron/import_ocr/preprocess_pipeline.js`
+  - `electron/import_ocr/preprocess_runtime.js`
+  - `public/index.html`
+  - `public/js/import_ocr_ui_shared.js`
+  - `public/js/import_ocr_ui_options_modal.js`
+  - `public/js/import_ocr_ui.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `docs/issues/Issue_139.md`
+  - `docs/issues/Issue_139_Preprocess_Expansion_Plan.md`
+  - `docs/_evidence/issue_139_evidence.md`
+
 ## 2026-03-07 - Batch 3 UI Accessibility Follow-up (Preprocess Modal Split)
 
 Entry `E139-B3-UI-004`

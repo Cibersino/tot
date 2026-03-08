@@ -69,6 +69,22 @@
   const ocrPreprocessNormalizeContrastBlackClipInput = document.getElementById('ocrPreprocessNormalizeContrastBlackClipInput');
   const ocrPreprocessNormalizeContrastWhiteClipLabel = document.getElementById('ocrPreprocessNormalizeContrastWhiteClipLabel');
   const ocrPreprocessNormalizeContrastWhiteClipInput = document.getElementById('ocrPreprocessNormalizeContrastWhiteClipInput');
+  const ocrPreprocessLabelLocalIlluminationCorrection = document.getElementById('ocrPreprocessLabelLocalIlluminationCorrection');
+  const ocrPreprocessModeLocalIlluminationCorrection = document.getElementById('ocrPreprocessModeLocalIlluminationCorrection');
+  const ocrPreprocessManualLocalIlluminationCorrection = document.getElementById('ocrPreprocessManualLocalIlluminationCorrection');
+  const ocrPreprocessLocalIlluminationWindowLabel = document.getElementById('ocrPreprocessLocalIlluminationWindowLabel');
+  const ocrPreprocessLocalIlluminationWindowInput = document.getElementById('ocrPreprocessLocalIlluminationWindowInput');
+  const ocrPreprocessLocalIlluminationOffsetLabel = document.getElementById('ocrPreprocessLocalIlluminationOffsetLabel');
+  const ocrPreprocessLocalIlluminationOffsetInput = document.getElementById('ocrPreprocessLocalIlluminationOffsetInput');
+  const ocrPreprocessLabelAdaptiveContrast = document.getElementById('ocrPreprocessLabelAdaptiveContrast');
+  const ocrPreprocessModeAdaptiveContrast = document.getElementById('ocrPreprocessModeAdaptiveContrast');
+  const ocrPreprocessManualAdaptiveContrast = document.getElementById('ocrPreprocessManualAdaptiveContrast');
+  const ocrPreprocessAdaptiveContrastTileLabel = document.getElementById('ocrPreprocessAdaptiveContrastTileLabel');
+  const ocrPreprocessAdaptiveContrastTileInput = document.getElementById('ocrPreprocessAdaptiveContrastTileInput');
+  const ocrPreprocessAdaptiveContrastClipLabel = document.getElementById('ocrPreprocessAdaptiveContrastClipLabel');
+  const ocrPreprocessAdaptiveContrastClipInput = document.getElementById('ocrPreprocessAdaptiveContrastClipInput');
+  const ocrPreprocessAdaptiveContrastBinsLabel = document.getElementById('ocrPreprocessAdaptiveContrastBinsLabel');
+  const ocrPreprocessAdaptiveContrastBinsInput = document.getElementById('ocrPreprocessAdaptiveContrastBinsInput');
   const ocrPreprocessLabelBinarize = document.getElementById('ocrPreprocessLabelBinarize');
   const ocrPreprocessModeBinarize = document.getElementById('ocrPreprocessModeBinarize');
   const ocrPreprocessManualBinarize = document.getElementById('ocrPreprocessManualBinarize');
@@ -79,6 +95,17 @@
   const ocrPreprocessManualDenoise = document.getElementById('ocrPreprocessManualDenoise');
   const ocrPreprocessDenoisePassesLabel = document.getElementById('ocrPreprocessDenoisePassesLabel');
   const ocrPreprocessDenoisePassesInput = document.getElementById('ocrPreprocessDenoisePassesInput');
+  const ocrPreprocessLabelTextSharpen = document.getElementById('ocrPreprocessLabelTextSharpen');
+  const ocrPreprocessModeTextSharpen = document.getElementById('ocrPreprocessModeTextSharpen');
+  const ocrPreprocessManualTextSharpen = document.getElementById('ocrPreprocessManualTextSharpen');
+  const ocrPreprocessTextSharpenRadiusLabel = document.getElementById('ocrPreprocessTextSharpenRadiusLabel');
+  const ocrPreprocessTextSharpenRadiusInput = document.getElementById('ocrPreprocessTextSharpenRadiusInput');
+  const ocrPreprocessTextSharpenSigmaLabel = document.getElementById('ocrPreprocessTextSharpenSigmaLabel');
+  const ocrPreprocessTextSharpenSigmaInput = document.getElementById('ocrPreprocessTextSharpenSigmaInput');
+  const ocrPreprocessTextSharpenAmountLabel = document.getElementById('ocrPreprocessTextSharpenAmountLabel');
+  const ocrPreprocessTextSharpenAmountInput = document.getElementById('ocrPreprocessTextSharpenAmountInput');
+  const ocrPreprocessTextSharpenThresholdLabel = document.getElementById('ocrPreprocessTextSharpenThresholdLabel');
+  const ocrPreprocessTextSharpenThresholdInput = document.getElementById('ocrPreprocessTextSharpenThresholdInput');
   const ocrPreprocessLabelDeskew = document.getElementById('ocrPreprocessLabelDeskew');
   const ocrPreprocessModeDeskew = document.getElementById('ocrPreprocessModeDeskew');
   const ocrPreprocessManualDeskew = document.getElementById('ocrPreprocessManualDeskew');
@@ -89,11 +116,16 @@
   const ocrPreprocessLabelPageCleanup = document.getElementById('ocrPreprocessLabelPageCleanup');
   const ocrPreprocessModePageCleanup = document.getElementById('ocrPreprocessModePageCleanup');
   const ocrPreprocessManualPageCleanup = document.getElementById('ocrPreprocessManualPageCleanup');
-  const ocrPreprocessPageCleanupLevelLabel = document.getElementById('ocrPreprocessPageCleanupLevelLabel');
-  const ocrPreprocessPageCleanupLevelSelect = document.getElementById('ocrPreprocessPageCleanupLevelSelect');
-  const ocrPreprocessPageCleanupLevelOption1 = document.getElementById('ocrPreprocessPageCleanupLevelOption1');
-  const ocrPreprocessPageCleanupLevelOption2 = document.getElementById('ocrPreprocessPageCleanupLevelOption2');
-  const ocrPreprocessPageCleanupLevelOption3 = document.getElementById('ocrPreprocessPageCleanupLevelOption3');
+  const ocrPreprocessPageCleanupMaskScanSizeLabel = document.getElementById('ocrPreprocessPageCleanupMaskScanSizeLabel');
+  const ocrPreprocessPageCleanupMaskScanSizeInput = document.getElementById('ocrPreprocessPageCleanupMaskScanSizeInput');
+  const ocrPreprocessPageCleanupGrayfilterSizeLabel = document.getElementById('ocrPreprocessPageCleanupGrayfilterSizeLabel');
+  const ocrPreprocessPageCleanupGrayfilterSizeInput = document.getElementById('ocrPreprocessPageCleanupGrayfilterSizeInput');
+  const ocrPreprocessPageCleanupNoisefilterIntensityLabel = document.getElementById('ocrPreprocessPageCleanupNoisefilterIntensityLabel');
+  const ocrPreprocessPageCleanupNoisefilterIntensityInput = document.getElementById('ocrPreprocessPageCleanupNoisefilterIntensityInput');
+  const ocrPreprocessPageCleanupBlackfilterIntensityLabel = document.getElementById('ocrPreprocessPageCleanupBlackfilterIntensityLabel');
+  const ocrPreprocessPageCleanupBlackfilterIntensityInput = document.getElementById('ocrPreprocessPageCleanupBlackfilterIntensityInput');
+  const ocrPreprocessPageCleanupBlurfilterSizeLabel = document.getElementById('ocrPreprocessPageCleanupBlurfilterSizeLabel');
+  const ocrPreprocessPageCleanupBlurfilterSizeInput = document.getElementById('ocrPreprocessPageCleanupBlurfilterSizeInput');
 
   // =============================================================================
   // Startup guards
@@ -316,6 +348,22 @@
     ocrPreprocessNormalizeContrastBlackClipInput,
     ocrPreprocessNormalizeContrastWhiteClipLabel,
     ocrPreprocessNormalizeContrastWhiteClipInput,
+    ocrPreprocessLabelLocalIlluminationCorrection,
+    ocrPreprocessModeLocalIlluminationCorrection,
+    ocrPreprocessManualLocalIlluminationCorrection,
+    ocrPreprocessLocalIlluminationWindowLabel,
+    ocrPreprocessLocalIlluminationWindowInput,
+    ocrPreprocessLocalIlluminationOffsetLabel,
+    ocrPreprocessLocalIlluminationOffsetInput,
+    ocrPreprocessLabelAdaptiveContrast,
+    ocrPreprocessModeAdaptiveContrast,
+    ocrPreprocessManualAdaptiveContrast,
+    ocrPreprocessAdaptiveContrastTileLabel,
+    ocrPreprocessAdaptiveContrastTileInput,
+    ocrPreprocessAdaptiveContrastClipLabel,
+    ocrPreprocessAdaptiveContrastClipInput,
+    ocrPreprocessAdaptiveContrastBinsLabel,
+    ocrPreprocessAdaptiveContrastBinsInput,
     ocrPreprocessLabelBinarize,
     ocrPreprocessModeBinarize,
     ocrPreprocessManualBinarize,
@@ -326,6 +374,17 @@
     ocrPreprocessManualDenoise,
     ocrPreprocessDenoisePassesLabel,
     ocrPreprocessDenoisePassesInput,
+    ocrPreprocessLabelTextSharpen,
+    ocrPreprocessModeTextSharpen,
+    ocrPreprocessManualTextSharpen,
+    ocrPreprocessTextSharpenRadiusLabel,
+    ocrPreprocessTextSharpenRadiusInput,
+    ocrPreprocessTextSharpenSigmaLabel,
+    ocrPreprocessTextSharpenSigmaInput,
+    ocrPreprocessTextSharpenAmountLabel,
+    ocrPreprocessTextSharpenAmountInput,
+    ocrPreprocessTextSharpenThresholdLabel,
+    ocrPreprocessTextSharpenThresholdInput,
     ocrPreprocessLabelDeskew,
     ocrPreprocessModeDeskew,
     ocrPreprocessManualDeskew,
@@ -336,11 +395,16 @@
     ocrPreprocessLabelPageCleanup,
     ocrPreprocessModePageCleanup,
     ocrPreprocessManualPageCleanup,
-    ocrPreprocessPageCleanupLevelLabel,
-    ocrPreprocessPageCleanupLevelSelect,
-    ocrPreprocessPageCleanupLevelOption1,
-    ocrPreprocessPageCleanupLevelOption2,
-    ocrPreprocessPageCleanupLevelOption3,
+    ocrPreprocessPageCleanupMaskScanSizeLabel,
+    ocrPreprocessPageCleanupMaskScanSizeInput,
+    ocrPreprocessPageCleanupGrayfilterSizeLabel,
+    ocrPreprocessPageCleanupGrayfilterSizeInput,
+    ocrPreprocessPageCleanupNoisefilterIntensityLabel,
+    ocrPreprocessPageCleanupNoisefilterIntensityInput,
+    ocrPreprocessPageCleanupBlackfilterIntensityLabel,
+    ocrPreprocessPageCleanupBlackfilterIntensityInput,
+    ocrPreprocessPageCleanupBlurfilterSizeLabel,
+    ocrPreprocessPageCleanupBlurfilterSizeInput,
   };
 
   // =============================================================================
@@ -419,25 +483,41 @@
     if (btnOcrPreprocessApply) btnOcrPreprocessApply.textContent = t('renderer.main.ocr_options.preprocess_modal_apply', btnOcrPreprocessApply.textContent || '');
     if (btnOcrPreprocessCancel) btnOcrPreprocessCancel.textContent = t('renderer.main.ocr_options.preprocess_modal_cancel', btnOcrPreprocessCancel.textContent || '');
     if (ocrPreprocessLabelNormalizeContrast) ocrPreprocessLabelNormalizeContrast.textContent = t('renderer.main.ocr_options.preprocess_normalize_contrast', ocrPreprocessLabelNormalizeContrast.textContent || '');
+    if (ocrPreprocessLabelLocalIlluminationCorrection) ocrPreprocessLabelLocalIlluminationCorrection.textContent = t('renderer.main.ocr_options.preprocess_local_illumination_correction', ocrPreprocessLabelLocalIlluminationCorrection.textContent || '');
+    if (ocrPreprocessLabelAdaptiveContrast) ocrPreprocessLabelAdaptiveContrast.textContent = t('renderer.main.ocr_options.preprocess_adaptive_contrast', ocrPreprocessLabelAdaptiveContrast.textContent || '');
     if (ocrPreprocessLabelBinarize) ocrPreprocessLabelBinarize.textContent = t('renderer.main.ocr_options.preprocess_binarize', ocrPreprocessLabelBinarize.textContent || '');
     if (ocrPreprocessLabelDenoise) ocrPreprocessLabelDenoise.textContent = t('renderer.main.ocr_options.preprocess_denoise', ocrPreprocessLabelDenoise.textContent || '');
+    if (ocrPreprocessLabelTextSharpen) ocrPreprocessLabelTextSharpen.textContent = t('renderer.main.ocr_options.preprocess_text_sharpen', ocrPreprocessLabelTextSharpen.textContent || '');
     if (ocrPreprocessLabelDeskew) ocrPreprocessLabelDeskew.textContent = t('renderer.main.ocr_options.preprocess_deskew', ocrPreprocessLabelDeskew.textContent || '');
     if (ocrPreprocessLabelPageCleanup) ocrPreprocessLabelPageCleanup.textContent = t('renderer.main.ocr_options.preprocess_page_cleanup', ocrPreprocessLabelPageCleanup.textContent || '');
     if (ocrPreprocessNormalizeContrastBlackClipLabel) ocrPreprocessNormalizeContrastBlackClipLabel.textContent = t('renderer.main.ocr_options.preprocess_black_clip_pct', ocrPreprocessNormalizeContrastBlackClipLabel.textContent || '');
     if (ocrPreprocessNormalizeContrastWhiteClipLabel) ocrPreprocessNormalizeContrastWhiteClipLabel.textContent = t('renderer.main.ocr_options.preprocess_white_clip_pct', ocrPreprocessNormalizeContrastWhiteClipLabel.textContent || '');
+    if (ocrPreprocessLocalIlluminationWindowLabel) ocrPreprocessLocalIlluminationWindowLabel.textContent = t('renderer.main.ocr_options.preprocess_local_illumination_window_px', ocrPreprocessLocalIlluminationWindowLabel.textContent || '');
+    if (ocrPreprocessLocalIlluminationOffsetLabel) ocrPreprocessLocalIlluminationOffsetLabel.textContent = t('renderer.main.ocr_options.preprocess_local_illumination_offset_pct', ocrPreprocessLocalIlluminationOffsetLabel.textContent || '');
+    if (ocrPreprocessAdaptiveContrastTileLabel) ocrPreprocessAdaptiveContrastTileLabel.textContent = t('renderer.main.ocr_options.preprocess_adaptive_contrast_tile_pct', ocrPreprocessAdaptiveContrastTileLabel.textContent || '');
+    if (ocrPreprocessAdaptiveContrastClipLabel) ocrPreprocessAdaptiveContrastClipLabel.textContent = t('renderer.main.ocr_options.preprocess_adaptive_contrast_clip_limit', ocrPreprocessAdaptiveContrastClipLabel.textContent || '');
+    if (ocrPreprocessAdaptiveContrastBinsLabel) ocrPreprocessAdaptiveContrastBinsLabel.textContent = t('renderer.main.ocr_options.preprocess_adaptive_contrast_bins', ocrPreprocessAdaptiveContrastBinsLabel.textContent || '');
     if (ocrPreprocessBinarizeThresholdLabel) ocrPreprocessBinarizeThresholdLabel.textContent = t('renderer.main.ocr_options.preprocess_threshold_pct', ocrPreprocessBinarizeThresholdLabel.textContent || '');
     if (ocrPreprocessDenoisePassesLabel) ocrPreprocessDenoisePassesLabel.textContent = t('renderer.main.ocr_options.preprocess_passes', ocrPreprocessDenoisePassesLabel.textContent || '');
+    if (ocrPreprocessTextSharpenRadiusLabel) ocrPreprocessTextSharpenRadiusLabel.textContent = t('renderer.main.ocr_options.preprocess_text_sharpen_radius_px', ocrPreprocessTextSharpenRadiusLabel.textContent || '');
+    if (ocrPreprocessTextSharpenSigmaLabel) ocrPreprocessTextSharpenSigmaLabel.textContent = t('renderer.main.ocr_options.preprocess_text_sharpen_sigma_px', ocrPreprocessTextSharpenSigmaLabel.textContent || '');
+    if (ocrPreprocessTextSharpenAmountLabel) ocrPreprocessTextSharpenAmountLabel.textContent = t('renderer.main.ocr_options.preprocess_text_sharpen_amount', ocrPreprocessTextSharpenAmountLabel.textContent || '');
+    if (ocrPreprocessTextSharpenThresholdLabel) ocrPreprocessTextSharpenThresholdLabel.textContent = t('renderer.main.ocr_options.preprocess_text_sharpen_threshold', ocrPreprocessTextSharpenThresholdLabel.textContent || '');
     if (ocrPreprocessDeskewRangeLabel) ocrPreprocessDeskewRangeLabel.textContent = t('renderer.main.ocr_options.preprocess_scan_range_deg', ocrPreprocessDeskewRangeLabel.textContent || '');
     if (ocrPreprocessDeskewStepLabel) ocrPreprocessDeskewStepLabel.textContent = t('renderer.main.ocr_options.preprocess_scan_step_deg', ocrPreprocessDeskewStepLabel.textContent || '');
-    if (ocrPreprocessPageCleanupLevelLabel) ocrPreprocessPageCleanupLevelLabel.textContent = t('renderer.main.ocr_options.preprocess_clean_level', ocrPreprocessPageCleanupLevelLabel.textContent || '');
-    if (ocrPreprocessPageCleanupLevelOption1) ocrPreprocessPageCleanupLevelOption1.textContent = t('renderer.main.ocr_options.preprocess_clean_level_1', ocrPreprocessPageCleanupLevelOption1.textContent || '');
-    if (ocrPreprocessPageCleanupLevelOption2) ocrPreprocessPageCleanupLevelOption2.textContent = t('renderer.main.ocr_options.preprocess_clean_level_2', ocrPreprocessPageCleanupLevelOption2.textContent || '');
-    if (ocrPreprocessPageCleanupLevelOption3) ocrPreprocessPageCleanupLevelOption3.textContent = t('renderer.main.ocr_options.preprocess_clean_level_3', ocrPreprocessPageCleanupLevelOption3.textContent || '');
+    if (ocrPreprocessPageCleanupMaskScanSizeLabel) ocrPreprocessPageCleanupMaskScanSizeLabel.textContent = t('renderer.main.ocr_options.preprocess_mask_scan_size', ocrPreprocessPageCleanupMaskScanSizeLabel.textContent || '');
+    if (ocrPreprocessPageCleanupGrayfilterSizeLabel) ocrPreprocessPageCleanupGrayfilterSizeLabel.textContent = t('renderer.main.ocr_options.preprocess_grayfilter_size', ocrPreprocessPageCleanupGrayfilterSizeLabel.textContent || '');
+    if (ocrPreprocessPageCleanupNoisefilterIntensityLabel) ocrPreprocessPageCleanupNoisefilterIntensityLabel.textContent = t('renderer.main.ocr_options.preprocess_noisefilter_intensity', ocrPreprocessPageCleanupNoisefilterIntensityLabel.textContent || '');
+    if (ocrPreprocessPageCleanupBlackfilterIntensityLabel) ocrPreprocessPageCleanupBlackfilterIntensityLabel.textContent = t('renderer.main.ocr_options.preprocess_blackfilter_intensity', ocrPreprocessPageCleanupBlackfilterIntensityLabel.textContent || '');
+    if (ocrPreprocessPageCleanupBlurfilterSizeLabel) ocrPreprocessPageCleanupBlurfilterSizeLabel.textContent = t('renderer.main.ocr_options.preprocess_blurfilter_size', ocrPreprocessPageCleanupBlurfilterSizeLabel.textContent || '');
 
     const preprocessModeSelects = [
       ocrPreprocessModeNormalizeContrast,
+      ocrPreprocessModeLocalIlluminationCorrection,
+      ocrPreprocessModeAdaptiveContrast,
       ocrPreprocessModeBinarize,
       ocrPreprocessModeDenoise,
+      ocrPreprocessModeTextSharpen,
       ocrPreprocessModeDeskew,
       ocrPreprocessModePageCleanup,
     ];
@@ -498,8 +578,11 @@
 
     const preprocessModeControls = [
       ocrPreprocessModeNormalizeContrast,
+      ocrPreprocessModeLocalIlluminationCorrection,
+      ocrPreprocessModeAdaptiveContrast,
       ocrPreprocessModeBinarize,
       ocrPreprocessModeDenoise,
+      ocrPreprocessModeTextSharpen,
       ocrPreprocessModeDeskew,
       ocrPreprocessModePageCleanup,
     ];
@@ -513,11 +596,24 @@
     const preprocessManualControls = [
       ocrPreprocessNormalizeContrastBlackClipInput,
       ocrPreprocessNormalizeContrastWhiteClipInput,
+      ocrPreprocessLocalIlluminationWindowInput,
+      ocrPreprocessLocalIlluminationOffsetInput,
+      ocrPreprocessAdaptiveContrastTileInput,
+      ocrPreprocessAdaptiveContrastClipInput,
+      ocrPreprocessAdaptiveContrastBinsInput,
       ocrPreprocessBinarizeThresholdInput,
       ocrPreprocessDenoisePassesInput,
+      ocrPreprocessTextSharpenRadiusInput,
+      ocrPreprocessTextSharpenSigmaInput,
+      ocrPreprocessTextSharpenAmountInput,
+      ocrPreprocessTextSharpenThresholdInput,
       ocrPreprocessDeskewRangeInput,
       ocrPreprocessDeskewStepInput,
-      ocrPreprocessPageCleanupLevelSelect,
+      ocrPreprocessPageCleanupMaskScanSizeInput,
+      ocrPreprocessPageCleanupGrayfilterSizeInput,
+      ocrPreprocessPageCleanupNoisefilterIntensityInput,
+      ocrPreprocessPageCleanupBlackfilterIntensityInput,
+      ocrPreprocessPageCleanupBlurfilterSizeInput,
     ];
     preprocessManualControls.forEach((manualControl) => {
       if (!manualControl) return;

@@ -107,20 +107,27 @@ Batch 1 scoped-lock declarations (change-controlled):
 ## H01 Batch 1 Scoped-Lock (Initial Implementable Cut)
 
 This is the concrete first-implementation cut for selected path `H01` (`ImageMagick -> unpaper`).
+Scoped-lock expansion freeze (2026-03-08) extends this cut with additional bounded operations while preserving strict contract guardrails.
 
 Operation keys + tool ownership:
 * `normalize_contrast` -> `ImageMagick`
+* `local_illumination_correction` -> `ImageMagick`
+* `adaptive_contrast` -> `ImageMagick`
 * `binarize` -> `ImageMagick`
 * `denoise` -> `ImageMagick`
+* `text_sharpen` -> `ImageMagick`
 * `deskew` -> `unpaper`
 * `page_cleanup` -> `unpaper`
 
 Fixed execution order:
 1. `normalize_contrast`
-2. `binarize`
-3. `denoise`
-4. `deskew`
-5. `page_cleanup`
+2. `local_illumination_correction`
+3. `adaptive_contrast`
+4. `binarize`
+5. `denoise`
+6. `text_sharpen`
+7. `deskew`
+8. `page_cleanup`
 
 Mode surface (all scoped-lock operations):
 * `off` -> operation is skipped.
@@ -129,10 +136,13 @@ Mode surface (all scoped-lock operations):
 
 Bounded manual-schema intent (Batch 1 concise lock):
 * `normalize_contrast.manual`: `blackClipPct`, `whiteClipPct` (bounded percentages).
+* `local_illumination_correction.manual`: `windowPx`, `offsetPct` (bounded window/offset).
+* `adaptive_contrast.manual`: `tilePct`, `clipLimit`, `bins` (bounded CLAHE parameters).
 * `binarize.manual`: `thresholdPct` (bounded percentage).
 * `denoise.manual`: `passes` (bounded low integer pass count).
+* `text_sharpen.manual`: `radiusPx`, `sigmaPx`, `amount`, `threshold` (bounded unsharp parameters).
 * `deskew.manual`: `scanRangeDeg`, `scanStepDeg` (bounded range/step).
-* `page_cleanup.manual`: `cleanLevel` (bounded discrete cleanup aggressiveness level).
+* `page_cleanup.manual`: `maskScanSize`, `grayfilterSize`, `noisefilterIntensity`, `blackfilterIntensity`, `blurfilterSize` (bounded cleanup controls).
 
 First-implementation explicit exclusions:
 * Exclude operation families outside scoped-lock keys above.
