@@ -722,7 +722,11 @@ select#presets {
   position: relative;
   z-index: 1111;
   width: min(620px, calc(100% - 24px));
-  text-align: center;
+  max-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-align: left;
   background: #fdf6e3;
   border: 1px solid #e8dbc2;
   border-radius: 8px;
@@ -736,6 +740,7 @@ select#presets {
   font-size: 16px;
   line-height: 1.2;
   color: #222;
+  text-align: center;
 }
 
 .ocr-options-context {
@@ -743,10 +748,17 @@ select#presets {
   font-size: 13px;
   color: #444;
   line-height: 1.35;
+  text-align: center;
+}
+
+.ocr-options-modal-body {
+  margin-top: 8px;
+  overflow-y: auto;
+  padding-right: 4px;
+  min-height: 0;
 }
 
 .ocr-options-grid {
-  margin-top: 10px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 12px;
@@ -779,6 +791,37 @@ select#presets {
 .ocr-options-grid input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.ocr-preprocess-summary-row {
+  margin-top: 10px;
+  border: 1px solid #e0d2b7;
+  border-radius: 6px;
+  background: #fffaf0;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.ocr-preprocess-summary-label {
+  font-size: 13px;
+  color: #2a2a2a;
+}
+
+.ocr-preprocess-summary-value {
+  font-size: 12px;
+  color: #4a4a4a;
+  border: 1px solid #ddd2ba;
+  border-radius: 999px;
+  background: #fff;
+  padding: 3px 8px;
+}
+
+.ocr-preprocess-open {
+  min-height: 28px;
+  padding: 2px 8px;
 }
 
 .ocr-options-guidance {
@@ -894,6 +937,73 @@ select#presets {
 
 .ocr-options-actions {
   margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e7dbc6;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ocr-preprocess-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1120;
+  align-items: center;
+  justify-content: center;
+}
+
+.ocr-preprocess-modal[aria-hidden="false"] {
+  display: flex;
+}
+
+.ocr-preprocess-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.ocr-preprocess-modal-panel {
+  position: relative;
+  z-index: 1121;
+  width: min(680px, calc(100% - 24px));
+  max-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-align: left;
+  background: #fdf6e3;
+  border: 1px solid #e8dbc2;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.ocr-preprocess-modal-title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #222;
+  text-align: center;
+}
+
+.ocr-preprocess-modal-body {
+  margin-top: 8px;
+  overflow-y: auto;
+  padding-right: 4px;
+  min-height: 0;
+}
+
+.ocr-preprocess-modal-body .ocr-preprocess-section {
+  margin-top: 0;
+}
+
+.ocr-preprocess-actions {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e7dbc6;
   display: flex;
   justify-content: center;
   gap: 8px;
@@ -1011,6 +1121,22 @@ select#presets {
 
   .ocr-options-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ocr-options-modal-panel,
+  .ocr-preprocess-modal-panel {
+    width: calc(100% - 12px);
+    max-height: calc(100vh - 12px);
+    padding: 10px;
+  }
+
+  .ocr-preprocess-summary-row {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+
+  .ocr-preprocess-summary-value {
+    justify-self: start;
   }
 
   .ocr-preprocess-header {

@@ -49,11 +49,19 @@
   const ocrTotalGuidance = document.getElementById('ocrTotalGuidance');
   const ocrTotalDisclaimer = document.getElementById('ocrTotalDisclaimer');
   const ocrEtaNote = document.getElementById('ocrEtaNote');
+  const ocrPreprocessSummaryLabel = document.getElementById('ocrPreprocessSummaryLabel');
+  const ocrPreprocessSummaryValue = document.getElementById('ocrPreprocessSummaryValue');
+  const btnOcrPreprocessOpen = document.getElementById('btnOcrPreprocessOpen');
   const btnOcrOptionsStart = document.getElementById('btnOcrOptionsStart');
   const btnOcrOptionsAbort = document.getElementById('btnOcrOptionsAbort');
+  const ocrPreprocessModal = document.getElementById('ocrPreprocessModal');
+  const ocrPreprocessBackdrop = document.getElementById('ocrPreprocessBackdrop');
+  const ocrPreprocessModalTitle = document.getElementById('ocrPreprocessModalTitle');
   const ocrPreprocessTitle = document.getElementById('ocrPreprocessTitle');
   const ocrPreprocessHint = document.getElementById('ocrPreprocessHint');
   const btnOcrPreprocessAllOff = document.getElementById('btnOcrPreprocessAllOff');
+  const btnOcrPreprocessApply = document.getElementById('btnOcrPreprocessApply');
+  const btnOcrPreprocessCancel = document.getElementById('btnOcrPreprocessCancel');
   const ocrPreprocessLabelNormalizeContrast = document.getElementById('ocrPreprocessLabelNormalizeContrast');
   const ocrPreprocessModeNormalizeContrast = document.getElementById('ocrPreprocessModeNormalizeContrast');
   const ocrPreprocessManualNormalizeContrast = document.getElementById('ocrPreprocessManualNormalizeContrast');
@@ -288,11 +296,19 @@
     ocrTotalGuidance,
     ocrTotalDisclaimer,
     ocrEtaNote,
+    ocrPreprocessSummaryLabel,
+    ocrPreprocessSummaryValue,
+    btnOcrPreprocessOpen,
     btnOcrOptionsStart,
     btnOcrOptionsAbort,
+    ocrPreprocessModal,
+    ocrPreprocessBackdrop,
+    ocrPreprocessModalTitle,
     ocrPreprocessTitle,
     ocrPreprocessHint,
     btnOcrPreprocessAllOff,
+    btnOcrPreprocessApply,
+    btnOcrPreprocessCancel,
     ocrPreprocessLabelNormalizeContrast,
     ocrPreprocessModeNormalizeContrast,
     ocrPreprocessManualNormalizeContrast,
@@ -392,11 +408,16 @@
     if (ocrLanguageLabel) ocrLanguageLabel.textContent = t('renderer.main.ocr_options.language_label', ocrLanguageLabel.textContent || '');
     if (ocrDpiLabel) ocrDpiLabel.textContent = t('renderer.main.ocr_options.dpi_label', ocrDpiLabel.textContent || '');
     if (ocrTimeoutLabel) ocrTimeoutLabel.textContent = t('renderer.main.ocr_options.timeout_label', ocrTimeoutLabel.textContent || '');
+    if (ocrPreprocessSummaryLabel) ocrPreprocessSummaryLabel.textContent = t('renderer.main.ocr_options.preprocess_summary_label', ocrPreprocessSummaryLabel.textContent || '');
+    if (btnOcrPreprocessOpen) btnOcrPreprocessOpen.textContent = t('renderer.main.ocr_options.preprocess_open', btnOcrPreprocessOpen.textContent || '');
     if (btnOcrOptionsStart) btnOcrOptionsStart.textContent = t('renderer.main.ocr_options.start', btnOcrOptionsStart.textContent || '');
     if (btnOcrOptionsAbort) btnOcrOptionsAbort.textContent = t('renderer.main.ocr_options.abort', btnOcrOptionsAbort.textContent || '');
+    if (ocrPreprocessModalTitle) ocrPreprocessModalTitle.textContent = t('renderer.main.ocr_options.preprocess_modal_title', ocrPreprocessModalTitle.textContent || '');
     if (ocrPreprocessTitle) ocrPreprocessTitle.textContent = t('renderer.main.ocr_options.preprocess_title', ocrPreprocessTitle.textContent || '');
     if (ocrPreprocessHint) ocrPreprocessHint.textContent = t('renderer.main.ocr_options.preprocess_hint', ocrPreprocessHint.textContent || '');
     if (btnOcrPreprocessAllOff) btnOcrPreprocessAllOff.textContent = t('renderer.main.ocr_options.preprocess_set_all_off', btnOcrPreprocessAllOff.textContent || '');
+    if (btnOcrPreprocessApply) btnOcrPreprocessApply.textContent = t('renderer.main.ocr_options.preprocess_modal_apply', btnOcrPreprocessApply.textContent || '');
+    if (btnOcrPreprocessCancel) btnOcrPreprocessCancel.textContent = t('renderer.main.ocr_options.preprocess_modal_cancel', btnOcrPreprocessCancel.textContent || '');
     if (ocrPreprocessLabelNormalizeContrast) ocrPreprocessLabelNormalizeContrast.textContent = t('renderer.main.ocr_options.preprocess_normalize_contrast', ocrPreprocessLabelNormalizeContrast.textContent || '');
     if (ocrPreprocessLabelBinarize) ocrPreprocessLabelBinarize.textContent = t('renderer.main.ocr_options.preprocess_binarize', ocrPreprocessLabelBinarize.textContent || '');
     if (ocrPreprocessLabelDenoise) ocrPreprocessLabelDenoise.textContent = t('renderer.main.ocr_options.preprocess_denoise', ocrPreprocessLabelDenoise.textContent || '');
@@ -446,6 +467,7 @@
     optionsModalUi.updateOcrOptionsContextText();
     optionsModalUi.updateOcrOptionsGuidanceText();
     optionsModalUi.syncPreprocessControlState();
+    optionsModalUi.updatePreprocessSummaryText();
   }
 
   function bindUiListeners() {
@@ -510,6 +532,30 @@
       });
     }
 
+    if (btnOcrPreprocessOpen) {
+      btnOcrPreprocessOpen.addEventListener('click', () => {
+        optionsModalUi.openPreprocessModal();
+      });
+    }
+
+    if (btnOcrPreprocessApply) {
+      btnOcrPreprocessApply.addEventListener('click', () => {
+        optionsModalUi.applyPreprocessModalChanges();
+      });
+    }
+
+    if (btnOcrPreprocessCancel) {
+      btnOcrPreprocessCancel.addEventListener('click', () => {
+        optionsModalUi.cancelPreprocessModalChanges();
+      });
+    }
+
+    if (ocrPreprocessBackdrop) {
+      ocrPreprocessBackdrop.addEventListener('click', () => {
+        optionsModalUi.cancelPreprocessModalChanges();
+      });
+    }
+
     if (btnOcrOptionsStart) {
       btnOcrOptionsStart.addEventListener('click', () => optionsModalUi.settleOcrOptions(true));
     }
@@ -551,6 +597,11 @@
 
     document.addEventListener('keydown', (event) => {
       if (!event || event.key !== 'Escape') return;
+      if (optionsModalUi.isPreprocessModalOpen()) {
+        event.preventDefault();
+        optionsModalUi.cancelPreprocessModalChanges();
+        return;
+      }
       if (ocrOptionsModal && ocrOptionsModal.getAttribute('aria-hidden') === 'false') {
         event.preventDefault();
         optionsModalUi.settleOcrOptions(false);

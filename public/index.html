@@ -182,113 +182,136 @@
       <div class="ocr-options-modal-panel" role="document">
         <h2 id="ocrOptionsTitle" class="ocr-options-title">OCR options</h2>
         <p id="ocrOptionsContext" class="ocr-options-context"></p>
-        <div class="ocr-options-grid">
-          <label id="ocrPresetLabel" for="ocrPresetSelect">Preset</label>
-          <select id="ocrPresetSelect">
-            <option value="fast">Fast</option>
-            <option value="balanced" selected>Balanced</option>
-            <option value="high_accuracy">High accuracy</option>
-            <option value="custom">Custom</option>
-          </select>
+        <div class="ocr-options-modal-body">
+          <div class="ocr-options-grid">
+            <label id="ocrPresetLabel" for="ocrPresetSelect">Preset</label>
+            <select id="ocrPresetSelect">
+              <option value="fast">Fast</option>
+              <option value="balanced" selected>Balanced</option>
+              <option value="high_accuracy">High accuracy</option>
+              <option value="custom">Custom</option>
+            </select>
 
-          <label id="ocrLanguageLabel" for="ocrLanguageSelect">Language</label>
-          <select id="ocrLanguageSelect">
-            <option value="es">es</option>
-            <option value="en">en</option>
-            <option value="es+en">es+en</option>
-          </select>
+            <label id="ocrLanguageLabel" for="ocrLanguageSelect">Language</label>
+            <select id="ocrLanguageSelect">
+              <option value="es">es</option>
+              <option value="en">en</option>
+              <option value="es+en">es+en</option>
+            </select>
 
-          <label id="ocrDpiLabel" for="ocrDpiInput">DPI / quality</label>
-          <input id="ocrDpiInput" type="number" min="150" max="600" step="25" value="300" />
+            <label id="ocrDpiLabel" for="ocrDpiInput">DPI / quality</label>
+            <input id="ocrDpiInput" type="number" min="150" max="600" step="25" value="300" />
 
-          <label id="ocrTimeoutLabel" for="ocrTimeoutInput">Timeout per page (s)</label>
-          <input id="ocrTimeoutInput" type="number" min="30" max="600" step="15" value="90" />
-
-        </div>
-        <div id="ocrPreprocessSection" class="ocr-preprocess-section">
-          <div class="ocr-preprocess-header">
-            <h3 id="ocrPreprocessTitle" class="ocr-preprocess-title">Preprocessing (optional)</h3>
-            <button id="btnOcrPreprocessAllOff" class="btn-standard ocr-preprocess-all-off" type="button">Set all off</button>
+            <label id="ocrTimeoutLabel" for="ocrTimeoutInput">Timeout per page (s)</label>
+            <input id="ocrTimeoutInput" type="number" min="30" max="600" step="15" value="90" />
           </div>
-          <p id="ocrPreprocessHint" class="ocr-preprocess-hint">Operations run in fixed order and use bounded manual values.</p>
-          <div class="ocr-preprocess-list">
-            <div class="ocr-preprocess-row">
-              <label id="ocrPreprocessLabelNormalizeContrast" for="ocrPreprocessModeNormalizeContrast">Normalize contrast</label>
-              <select id="ocrPreprocessModeNormalizeContrast" class="ocr-preprocess-mode">
-                <option value="off">Off</option>
-                <option value="auto">Auto</option>
-                <option value="manual">Manual</option>
-              </select>
-              <div id="ocrPreprocessManualNormalizeContrast" class="ocr-preprocess-manual" hidden>
-                <label id="ocrPreprocessNormalizeContrastBlackClipLabel" for="ocrPreprocessNormalizeContrastBlackClipInput">Black clip (%)</label>
-                <input id="ocrPreprocessNormalizeContrastBlackClipInput" type="number" min="0" max="20" step="0.5" value="3" />
-                <label id="ocrPreprocessNormalizeContrastWhiteClipLabel" for="ocrPreprocessNormalizeContrastWhiteClipInput">White clip (%)</label>
-                <input id="ocrPreprocessNormalizeContrastWhiteClipInput" type="number" min="0" max="20" step="0.5" value="3" />
-              </div>
-            </div>
-            <div class="ocr-preprocess-row">
-              <label id="ocrPreprocessLabelBinarize" for="ocrPreprocessModeBinarize">Binarize</label>
-              <select id="ocrPreprocessModeBinarize" class="ocr-preprocess-mode">
-                <option value="off">Off</option>
-                <option value="auto">Auto</option>
-                <option value="manual">Manual</option>
-              </select>
-              <div id="ocrPreprocessManualBinarize" class="ocr-preprocess-manual" hidden>
-                <label id="ocrPreprocessBinarizeThresholdLabel" for="ocrPreprocessBinarizeThresholdInput">Threshold (%)</label>
-                <input id="ocrPreprocessBinarizeThresholdInput" type="number" min="0" max="100" step="1" value="55" />
-              </div>
-            </div>
-            <div class="ocr-preprocess-row">
-              <label id="ocrPreprocessLabelDenoise" for="ocrPreprocessModeDenoise">Denoise</label>
-              <select id="ocrPreprocessModeDenoise" class="ocr-preprocess-mode">
-                <option value="off">Off</option>
-                <option value="auto">Auto</option>
-                <option value="manual">Manual</option>
-              </select>
-              <div id="ocrPreprocessManualDenoise" class="ocr-preprocess-manual" hidden>
-                <label id="ocrPreprocessDenoisePassesLabel" for="ocrPreprocessDenoisePassesInput">Passes</label>
-                <input id="ocrPreprocessDenoisePassesInput" type="number" min="1" max="4" step="1" value="2" />
-              </div>
-            </div>
-            <div class="ocr-preprocess-row">
-              <label id="ocrPreprocessLabelDeskew" for="ocrPreprocessModeDeskew">Deskew</label>
-              <select id="ocrPreprocessModeDeskew" class="ocr-preprocess-mode">
-                <option value="off">Off</option>
-                <option value="auto">Auto</option>
-                <option value="manual">Manual</option>
-              </select>
-              <div id="ocrPreprocessManualDeskew" class="ocr-preprocess-manual" hidden>
-                <label id="ocrPreprocessDeskewRangeLabel" for="ocrPreprocessDeskewRangeInput">Scan range (deg)</label>
-                <input id="ocrPreprocessDeskewRangeInput" type="number" min="0.1" max="15" step="0.1" value="4" />
-                <label id="ocrPreprocessDeskewStepLabel" for="ocrPreprocessDeskewStepInput">Scan step (deg)</label>
-                <input id="ocrPreprocessDeskewStepInput" type="number" min="0.1" max="5" step="0.1" value="0.5" />
-              </div>
-            </div>
-            <div class="ocr-preprocess-row">
-              <label id="ocrPreprocessLabelPageCleanup" for="ocrPreprocessModePageCleanup">Page cleanup</label>
-              <select id="ocrPreprocessModePageCleanup" class="ocr-preprocess-mode">
-                <option value="off">Off</option>
-                <option value="auto">Auto</option>
-                <option value="manual">Manual</option>
-              </select>
-              <div id="ocrPreprocessManualPageCleanup" class="ocr-preprocess-manual" hidden>
-                <label id="ocrPreprocessPageCleanupLevelLabel" for="ocrPreprocessPageCleanupLevelSelect">Clean level</label>
-                <select id="ocrPreprocessPageCleanupLevelSelect">
-                  <option id="ocrPreprocessPageCleanupLevelOption1" value="1">Level 1</option>
-                  <option id="ocrPreprocessPageCleanupLevelOption2" value="2">Level 2</option>
-                  <option id="ocrPreprocessPageCleanupLevelOption3" value="3">Level 3</option>
-                </select>
-              </div>
-            </div>
+
+          <div class="ocr-preprocess-summary-row">
+            <span id="ocrPreprocessSummaryLabel" class="ocr-preprocess-summary-label">Preprocessing</span>
+            <span id="ocrPreprocessSummaryValue" class="ocr-preprocess-summary-value">Off</span>
+            <button id="btnOcrPreprocessOpen" class="btn-standard ocr-preprocess-open" type="button">Preprocessing settings...</button>
           </div>
+
+          <p id="ocrPresetGuidance" class="ocr-options-guidance">Fast ~45s/page · Balanced ~90s/page · High accuracy ~180s/page</p>
+          <p id="ocrTotalGuidance" class="ocr-options-guidance">Estimated total: ~1m 30s</p>
+          <p id="ocrTotalDisclaimer" class="ocr-options-guidance">ETA is an approximation. In reality, it depends on file complexity and device performance.</p>
+          <p id="ocrEtaNote" class="ocr-options-guidance">ETA may rise during the first pages while per-page speed stabilizes.</p>
         </div>
-        <p id="ocrPresetGuidance" class="ocr-options-guidance">Fast ~45s/page · Balanced ~90s/page · High accuracy ~180s/page</p>
-        <p id="ocrTotalGuidance" class="ocr-options-guidance">Estimated total: ~1m 30s</p>
-        <p id="ocrTotalDisclaimer" class="ocr-options-guidance">ETA is an approximation. In reality, it depends on file complexity and device performance.</p>
-        <p id="ocrEtaNote" class="ocr-options-guidance">ETA may rise during the first pages while per-page speed stabilizes.</p>
         <div class="ocr-options-actions">
           <button id="btnOcrOptionsStart" class="btn-standard">Start OCR</button>
           <button id="btnOcrOptionsAbort" class="btn-standard">Abort</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREPROCESS OPTIONS MODAL -->
+    <div id="ocrPreprocessModal" class="ocr-preprocess-modal" aria-hidden="true" role="dialog" aria-labelledby="ocrPreprocessModalTitle"
+      aria-modal="true">
+      <div id="ocrPreprocessBackdrop" class="ocr-preprocess-modal-backdrop"></div>
+      <div class="ocr-preprocess-modal-panel" role="document">
+        <h3 id="ocrPreprocessModalTitle" class="ocr-preprocess-modal-title">Preprocessing settings</h3>
+        <div class="ocr-preprocess-modal-body">
+          <div id="ocrPreprocessSection" class="ocr-preprocess-section">
+            <div class="ocr-preprocess-header">
+              <h4 id="ocrPreprocessTitle" class="ocr-preprocess-title">Preprocessing (optional)</h4>
+              <button id="btnOcrPreprocessAllOff" class="btn-standard ocr-preprocess-all-off" type="button">Set all off</button>
+            </div>
+            <p id="ocrPreprocessHint" class="ocr-preprocess-hint">Operations run in fixed order and use bounded manual values.</p>
+            <div class="ocr-preprocess-list">
+              <div class="ocr-preprocess-row">
+                <label id="ocrPreprocessLabelNormalizeContrast" for="ocrPreprocessModeNormalizeContrast">Normalize contrast</label>
+                <select id="ocrPreprocessModeNormalizeContrast" class="ocr-preprocess-mode">
+                  <option value="off">Off</option>
+                  <option value="auto">Auto</option>
+                  <option value="manual">Manual</option>
+                </select>
+                <div id="ocrPreprocessManualNormalizeContrast" class="ocr-preprocess-manual" hidden>
+                  <label id="ocrPreprocessNormalizeContrastBlackClipLabel" for="ocrPreprocessNormalizeContrastBlackClipInput">Black clip (%)</label>
+                  <input id="ocrPreprocessNormalizeContrastBlackClipInput" type="number" min="0" max="20" step="0.5" value="3" />
+                  <label id="ocrPreprocessNormalizeContrastWhiteClipLabel" for="ocrPreprocessNormalizeContrastWhiteClipInput">White clip (%)</label>
+                  <input id="ocrPreprocessNormalizeContrastWhiteClipInput" type="number" min="0" max="20" step="0.5" value="3" />
+                </div>
+              </div>
+              <div class="ocr-preprocess-row">
+                <label id="ocrPreprocessLabelBinarize" for="ocrPreprocessModeBinarize">Binarize</label>
+                <select id="ocrPreprocessModeBinarize" class="ocr-preprocess-mode">
+                  <option value="off">Off</option>
+                  <option value="auto">Auto</option>
+                  <option value="manual">Manual</option>
+                </select>
+                <div id="ocrPreprocessManualBinarize" class="ocr-preprocess-manual" hidden>
+                  <label id="ocrPreprocessBinarizeThresholdLabel" for="ocrPreprocessBinarizeThresholdInput">Threshold (%)</label>
+                  <input id="ocrPreprocessBinarizeThresholdInput" type="number" min="0" max="100" step="1" value="55" />
+                </div>
+              </div>
+              <div class="ocr-preprocess-row">
+                <label id="ocrPreprocessLabelDenoise" for="ocrPreprocessModeDenoise">Denoise</label>
+                <select id="ocrPreprocessModeDenoise" class="ocr-preprocess-mode">
+                  <option value="off">Off</option>
+                  <option value="auto">Auto</option>
+                  <option value="manual">Manual</option>
+                </select>
+                <div id="ocrPreprocessManualDenoise" class="ocr-preprocess-manual" hidden>
+                  <label id="ocrPreprocessDenoisePassesLabel" for="ocrPreprocessDenoisePassesInput">Passes</label>
+                  <input id="ocrPreprocessDenoisePassesInput" type="number" min="1" max="4" step="1" value="2" />
+                </div>
+              </div>
+              <div class="ocr-preprocess-row">
+                <label id="ocrPreprocessLabelDeskew" for="ocrPreprocessModeDeskew">Deskew</label>
+                <select id="ocrPreprocessModeDeskew" class="ocr-preprocess-mode">
+                  <option value="off">Off</option>
+                  <option value="auto">Auto</option>
+                  <option value="manual">Manual</option>
+                </select>
+                <div id="ocrPreprocessManualDeskew" class="ocr-preprocess-manual" hidden>
+                  <label id="ocrPreprocessDeskewRangeLabel" for="ocrPreprocessDeskewRangeInput">Scan range (deg)</label>
+                  <input id="ocrPreprocessDeskewRangeInput" type="number" min="0.1" max="15" step="0.1" value="4" />
+                  <label id="ocrPreprocessDeskewStepLabel" for="ocrPreprocessDeskewStepInput">Scan step (deg)</label>
+                  <input id="ocrPreprocessDeskewStepInput" type="number" min="0.1" max="5" step="0.1" value="0.5" />
+                </div>
+              </div>
+              <div class="ocr-preprocess-row">
+                <label id="ocrPreprocessLabelPageCleanup" for="ocrPreprocessModePageCleanup">Page cleanup</label>
+                <select id="ocrPreprocessModePageCleanup" class="ocr-preprocess-mode">
+                  <option value="off">Off</option>
+                  <option value="auto">Auto</option>
+                  <option value="manual">Manual</option>
+                </select>
+                <div id="ocrPreprocessManualPageCleanup" class="ocr-preprocess-manual" hidden>
+                  <label id="ocrPreprocessPageCleanupLevelLabel" for="ocrPreprocessPageCleanupLevelSelect">Clean level</label>
+                  <select id="ocrPreprocessPageCleanupLevelSelect">
+                    <option id="ocrPreprocessPageCleanupLevelOption1" value="1">Level 1</option>
+                    <option id="ocrPreprocessPageCleanupLevelOption2" value="2">Level 2</option>
+                    <option id="ocrPreprocessPageCleanupLevelOption3" value="3">Level 3</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ocr-preprocess-actions">
+          <button id="btnOcrPreprocessApply" class="btn-standard" type="button">Apply</button>
+          <button id="btnOcrPreprocessCancel" class="btn-standard" type="button">Cancel</button>
         </div>
       </div>
     </div>
