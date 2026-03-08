@@ -45,6 +45,17 @@ Current strict guardrails to keep:
 4. Missing preprocess runtime maps to `OCR_BINARY_MISSING`.
 5. Preprocess failures map to typed `OCR_PREPROCESS_*`.
 
+## Pre-Coding Freeze Gate (Required)
+
+Before Batch A coding starts:
+
+1. Update scoped-lock declarations in `docs/issues/Issue_139.md` for:
+   1. new operation keys,
+   2. fixed operation order,
+   3. bounded manual schema updates (including `page_cleanup` knob replacement).
+2. Record freeze evidence in `docs/_evidence/issue_139_evidence.md` with timestamp + command/probe references.
+3. Start implementation only after the scoped-lock freeze entry is recorded.
+
 ## Proposed Contract Update
 
 ### New operation keys
@@ -162,9 +173,10 @@ Note:
    1. operation order,
    2. manual rules,
    3. defaults.
-2. Update modal control wiring in `public/js/import_ocr_ui_options_modal.js`.
-3. Add labels/help text in EN/ES for new operations + fields.
-4. Preserve all-operations-off default per run.
+2. Update preprocess modal markup in `public/index.html` for new operations and manual fields.
+3. Update modal control wiring in `public/js/import_ocr_ui_options_modal.js`.
+4. Add labels/help text in EN/ES for new operations + fields.
+5. Preserve all-operations-off default per run.
 
 ### Batch D - Evidence + Gates
 
@@ -192,17 +204,18 @@ Primary code:
 
 1. `electron/import_ocr/preprocess_pipeline.js`
 2. `electron/import_ocr/preprocess_runtime.js`
-3. `public/js/import_ocr_ui_shared.js`
-4. `public/js/import_ocr_ui_options_modal.js`
-5. `public/js/import_ocr_ui.js` (labels/help text wiring if needed)
-6. `electron/import_ocr/ocr_pipeline.js` (only if normalization path needs wiring updates)
+3. `public/index.html`
+4. `public/js/import_ocr_ui_shared.js`
+5. `public/js/import_ocr_ui_options_modal.js`
+6. `public/js/import_ocr_ui.js` (labels/help text wiring if needed)
+7. `electron/import_ocr/ocr_pipeline.js` (only if normalization path needs wiring updates)
 
 i18n/docs:
 
 1. `i18n/en/renderer.json`
 2. `i18n/es/renderer.json`
 3. `docs/_evidence/issue_139_evidence.md`
-4. `docs/issues/Issue_139.md` (scoped-lock update if this expansion is accepted)
+4. `docs/issues/Issue_139.md` (required scoped-lock freeze update before Batch A coding)
 
 ## Acceptance Criteria
 
@@ -223,13 +236,18 @@ Quality:
 1. At least one non-off configuration per challenging family meets Issue 139 gate thresholds (`M`, `S`) on difficult subsets.
 2. Evidence captures baseline vs non-off CER deltas for reproducibility.
 
+## Gate Status Note
+
+1. Parent Issue 139 smoke/quality-gate checklist is currently open.
+2. Expansion implementation may proceed after scoped-lock freeze, but Batch D verification is still mandatory before claiming readiness to move forward as ship-ready.
+
 ## Execution Sequence
 
 1. Approve this plan and freeze schema bounds/defaults.
-2. Implement Batch A + B.
-3. Implement Batch C.
-4. Run lint + syntax checks.
-5. Execute Operation Compatibility Gate.
-6. Execute smoke + quality gate and record evidence.
-7. Decide keep/tune/revert per-operation defaults based on measured CER outcomes.
-
+2. Apply and record scoped-lock freeze updates in `docs/issues/Issue_139.md` + `docs/_evidence/issue_139_evidence.md`.
+3. Implement Batch A + B.
+4. Implement Batch C.
+5. Run lint + syntax checks.
+6. Execute Operation Compatibility Gate.
+7. Execute smoke + mandatory quality gate and record evidence.
+8. Decide keep/tune/revert per-operation defaults based on measured CER outcomes.
