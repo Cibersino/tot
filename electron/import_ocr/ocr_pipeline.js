@@ -131,6 +131,7 @@ async function runImageOcr(session, sidecar, options = {}) {
 
   const timeoutPerPageSec = clampInt(options.timeoutPerPageSec, 30, 600, 90);
   const timeoutMs = timeoutPerPageSec * 1000;
+  const psm = options.psm ?? options.ocrPsm;
   const requestedLang = options.ocrLanguage || options.ocrLang || options.languageTag || options.lang || '';
   const langRes = resolveAndValidateOcrLanguage(requestedLang, sidecar.tessdataPath);
   if (!langRes.ok) return langRes;
@@ -175,6 +176,7 @@ async function runImageOcr(session, sidecar, options = {}) {
         inputPath: preprocessRes.outputPath,
         tesseractLang,
         tessdataPath: sidecar.tessdataPath,
+        psm,
       }),
       workingDirectory: path.dirname(sidecar.tesseractPath),
       timeoutMs,

@@ -45,6 +45,8 @@
   const ocrDpiInput = document.getElementById('ocrDpiInput');
   const ocrTimeoutLabel = document.getElementById('ocrTimeoutLabel');
   const ocrTimeoutInput = document.getElementById('ocrTimeoutInput');
+  const ocrPsmLabel = document.getElementById('ocrPsmLabel');
+  const ocrPsmSelect = document.getElementById('ocrPsmSelect');
   const ocrPresetGuidance = document.getElementById('ocrPresetGuidance');
   const ocrTotalGuidance = document.getElementById('ocrTotalGuidance');
   const ocrTotalDisclaimer = document.getElementById('ocrTotalDisclaimer');
@@ -324,6 +326,8 @@
     ocrDpiInput,
     ocrTimeoutLabel,
     ocrTimeoutInput,
+    ocrPsmLabel,
+    ocrPsmSelect,
     ocrPresetGuidance,
     ocrTotalGuidance,
     ocrTotalDisclaimer,
@@ -472,6 +476,7 @@
     if (ocrLanguageLabel) ocrLanguageLabel.textContent = t('renderer.main.ocr_options.language_label', ocrLanguageLabel.textContent || '');
     if (ocrDpiLabel) ocrDpiLabel.textContent = t('renderer.main.ocr_options.dpi_label', ocrDpiLabel.textContent || '');
     if (ocrTimeoutLabel) ocrTimeoutLabel.textContent = t('renderer.main.ocr_options.timeout_label', ocrTimeoutLabel.textContent || '');
+    if (ocrPsmLabel) ocrPsmLabel.textContent = t('renderer.main.ocr_options.psm_label', ocrPsmLabel.textContent || '');
     if (ocrPreprocessSummaryLabel) ocrPreprocessSummaryLabel.textContent = t('renderer.main.ocr_options.preprocess_summary_label', ocrPreprocessSummaryLabel.textContent || '');
     if (btnOcrPreprocessOpen) btnOcrPreprocessOpen.textContent = t('renderer.main.ocr_options.preprocess_open', btnOcrPreprocessOpen.textContent || '');
     if (btnOcrOptionsStart) btnOcrOptionsStart.textContent = t('renderer.main.ocr_options.start', btnOcrOptionsStart.textContent || '');
@@ -540,6 +545,16 @@
       if (optBalanced) optBalanced.textContent = t('renderer.main.ocr_options.preset_balanced', optBalanced.textContent || 'Balanced');
       if (optHigh) optHigh.textContent = t('renderer.main.ocr_options.preset_high_accuracy', optHigh.textContent || 'High accuracy');
       if (optCustom) optCustom.textContent = t('renderer.main.ocr_options.preset_custom', optCustom.textContent || 'Custom');
+    }
+    if (ocrPsmSelect) {
+      const optAuto = ocrPsmSelect.querySelector('option[value="3"]');
+      const optColumn = ocrPsmSelect.querySelector('option[value="4"]');
+      const optBlock = ocrPsmSelect.querySelector('option[value="6"]');
+      const optSparse = ocrPsmSelect.querySelector('option[value="11"]');
+      if (optAuto) optAuto.textContent = t('renderer.main.ocr_options.psm_option_3', optAuto.textContent || 'Auto (default)');
+      if (optColumn) optColumn.textContent = t('renderer.main.ocr_options.psm_option_4', optColumn.textContent || 'Single column');
+      if (optBlock) optBlock.textContent = t('renderer.main.ocr_options.psm_option_6', optBlock.textContent || 'Single block');
+      if (optSparse) optSparse.textContent = t('renderer.main.ocr_options.psm_option_11', optSparse.textContent || 'Sparse text');
     }
     if (!state.lockActive && ocrProgressText) {
       progressUi.setOcrProgressFallbackText(t('renderer.main.import_apply.ocr_running', 'OCR in progress...'));

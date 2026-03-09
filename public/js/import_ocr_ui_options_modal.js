@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Build the OCR options modal controller for import_ocr_ui.js.
-// - Normalize OCR option inputs (preset, language, dpi, timeout).
+// - Normalize OCR option inputs (preset, language, dpi, timeout, psm).
 // - Render OCR context and guidance text for the current file and page count.
 // - Resolve dialog outcomes as { confirmed, options } for upstream orchestration.
 // - Expose window.createImportOcrUiOptionsModal for facade composition.
@@ -32,6 +32,7 @@
       ocrLanguageSelect,
       ocrDpiInput,
       ocrTimeoutInput,
+      ocrPsmSelect,
       ocrOptionsContext,
       ocrPresetGuidance,
       ocrTotalGuidance,
@@ -136,6 +137,12 @@
     }
 
     function normalizeOcrControlValues() {
+      const normalizedPsm = shared.normalizeOcrPsmValue(
+        ocrPsmSelect ? ocrPsmSelect.value : shared.OCR_PSM_DEFAULT,
+        shared.OCR_PSM_DEFAULT
+      );
+      if (ocrPsmSelect) ocrPsmSelect.value = String(normalizedPsm);
+
       const preset = getSelectedOcrPresetKey();
       if (preset === 'custom') {
         const normalizedDpi = shared.normalizeDpiValue(
@@ -474,6 +481,10 @@
 
       let dpi = shared.OCR_PRESET_VALUES.balanced.dpi;
       let timeoutPerPageSec = shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec;
+      const psm = shared.normalizeOcrPsmValue(
+        ocrPsmSelect ? ocrPsmSelect.value : shared.OCR_PSM_DEFAULT,
+        shared.OCR_PSM_DEFAULT
+      );
 
       if (preset === 'custom') {
         dpi = shared.normalizeDpiValue(
@@ -497,6 +508,7 @@
         languageTag: language,
         dpi,
         timeoutPerPageSec,
+        psm,
         preprocessConfig: clonePreprocessConfig(committedPreprocessConfig),
       };
     }
@@ -592,6 +604,7 @@
         || !ocrLanguageSelect
         || !ocrDpiInput
         || !ocrTimeoutInput
+        || !ocrPsmSelect
         || !refs.btnOcrOptionsStart
         || !refs.btnOcrOptionsAbort
       ) {
@@ -615,6 +628,7 @@
             languageTag: preferredLanguage,
             dpi: shared.OCR_PRESET_VALUES.balanced.dpi,
             timeoutPerPageSec: shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec,
+            psm: shared.OCR_PSM_DEFAULT,
             preprocessConfig: shared.buildDefaultPreprocessConfig(),
           },
         });
@@ -638,6 +652,7 @@
       ocrLanguageSelect.value = preferredLanguage;
       ocrDpiInput.value = String(shared.OCR_PRESET_VALUES.balanced.dpi);
       ocrTimeoutInput.value = String(shared.OCR_PRESET_VALUES.balanced.timeoutPerPageSec);
+      ocrPsmSelect.value = String(shared.OCR_PSM_DEFAULT);
 
       hidePreprocessModal();
       syncOcrCustomControlState();

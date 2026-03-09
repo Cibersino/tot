@@ -28,6 +28,8 @@
   const OCR_TIMEOUT_MIN = 30;
   const OCR_TIMEOUT_MAX = 600;
   const OCR_TIMEOUT_STEP = 15;
+  const OCR_PSM_DEFAULT = 3;
+  const OCR_PSM_ALLOWED_VALUES = Object.freeze([3, 4, 6, 11]);
   const OCR_ESTIMATE_BASE_DPI = 300;
   const OCR_ESTIMATE_BASE_RASTER_SEC_PER_PAGE = 3.0;
   const OCR_ESTIMATE_BASE_OCR_SEC_PER_PAGE = 3.6;
@@ -319,6 +321,20 @@
     });
   }
 
+  function normalizeOcrPsmValue(rawPsm, fallback = OCR_PSM_DEFAULT) {
+    const fallbackNum = Number.isFinite(Number(fallback))
+      ? Math.floor(Number(fallback))
+      : OCR_PSM_DEFAULT;
+    const normalizedFallback = OCR_PSM_ALLOWED_VALUES.includes(fallbackNum)
+      ? fallbackNum
+      : OCR_PSM_DEFAULT;
+    const n = Number(rawPsm);
+    if (!Number.isFinite(n)) return normalizedFallback;
+    const candidate = Math.floor(n);
+    if (!OCR_PSM_ALLOWED_VALUES.includes(candidate)) return normalizedFallback;
+    return candidate;
+  }
+
   function normalizePreprocessMode(rawMode, fallback = 'off') {
     const mode = String(rawMode || '').trim().toLowerCase();
     if (PREPROCESS_MODE_VALUES.includes(mode)) return mode;
@@ -412,6 +428,7 @@
       preset,
       dpi: normalizeDpiValue(raw.dpi, fallbackDpi),
       timeoutPerPageSec: normalizeTimeoutPerPageSec(raw.timeoutPerPageSec, fallbackTimeout),
+      psm: normalizeOcrPsmValue(raw.psm, OCR_PSM_DEFAULT),
     };
   }
 
@@ -476,6 +493,8 @@
 
   window.ImportOcrUiShared = Object.freeze({
     OCR_PRESET_VALUES,
+    OCR_PSM_DEFAULT,
+    OCR_PSM_ALLOWED_VALUES,
     PREPROCESS_MODE_VALUES,
     PREPROCESS_OPERATION_ORDER,
     PREPROCESS_OPERATION_MANUAL_RULES,
@@ -490,6 +509,7 @@
     normalizePresetKey,
     normalizeDpiValue,
     normalizeTimeoutPerPageSec,
+    normalizeOcrPsmValue,
     normalizePreprocessMode,
     normalizePreprocessManualField,
     buildDefaultPreprocessConfig,

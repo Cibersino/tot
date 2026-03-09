@@ -219,6 +219,7 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
   const dpi = clampInt(options.dpi, 150, 600, 300);
   const timeoutPerPageSec = clampInt(options.timeoutPerPageSec, 30, 600, 90);
   const timeoutPerPageMs = timeoutPerPageSec * 1000;
+  const psm = options.psm ?? options.ocrPsm;
   const rasterTimeoutPerPageSec = clampInt(
     options.rasterTimeoutPerPageSec,
     30,
@@ -500,6 +501,7 @@ async function runPdfRasterOcr(session, sidecar, options = {}) {
           inputPath: preprocessRes.outputPath,
           tesseractLang,
           tessdataPath: sidecar.tessdataPath,
+          psm,
         }),
         workingDirectory: path.dirname(sidecar.tesseractPath),
         timeoutMs: timeoutPerPageMs,

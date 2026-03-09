@@ -204,6 +204,14 @@
 
             <label id="ocrTimeoutLabel" for="ocrTimeoutInput">Timeout per page (s)</label>
             <input id="ocrTimeoutInput" type="number" min="30" max="600" step="15" value="90" />
+
+            <label id="ocrPsmLabel" for="ocrPsmSelect">Page segmentation</label>
+            <select id="ocrPsmSelect">
+              <option value="3" selected>Auto (default)</option>
+              <option value="4">Single column</option>
+              <option value="6">Single block</option>
+              <option value="11">Sparse text</option>
+            </select>
           </div>
 
           <div class="ocr-preprocess-summary-row">

@@ -34,6 +34,9 @@ const OCR_PROCESS_STDOUT_LIMIT_DEFAULT_CHARS = 2_000_000; // Default cap for OCR
 const OCR_PROCESS_STDERR_LIMIT_DEFAULT_CHARS = 200_000; // Default cap for OCR process stderr capture when no per-call override is provided.
 const OCR_RASTER_STDOUT_LIMIT_CHARS = 200_000; // Raster (pdftoppm) override: stdout is not expected to carry main payload.
 const OCR_RASTER_STDERR_LIMIT_CHARS = 500_000; // Raster (pdftoppm) override: stderr can be verbose for diagnostics.
+const TESSERACT_PSM_DEFAULT = 3;
+const TESSERACT_PSM_MIN = 0;
+const TESSERACT_PSM_MAX = 13;
 const LOG_KEY_BRIDGE_CALLBACK_FAILED_BASE = 'import_ocr_runtime.bridge.failed_ignored.safeInvoke';
 const LOG_KEY_BRIDGE_IS_CANCEL_REQUESTED_FAILED = 'import_ocr_runtime.bridge.failed_ignored.isCancelRequested';
 const SAFE_INVOKE_LABEL_OTHER = 'other';
@@ -201,6 +204,16 @@ function normalizeMultiline(text) {
   return String(text || '').replace(/\r\n?/g, '\n').trim();
 }
 
+function normalizeTesseractPsm(rawPsm) {
+  const n = Number(rawPsm);
+  if (!Number.isFinite(n)) return TESSERACT_PSM_DEFAULT;
+  const candidate = Math.floor(n);
+  if (candidate < TESSERACT_PSM_MIN || candidate > TESSERACT_PSM_MAX) {
+    return TESSERACT_PSM_DEFAULT;
+  }
+  return candidate;
+}
+
 // =============================================================================
 // External process execution (timeout + cancellation)
 // =============================================================================
@@ -321,7 +334,8 @@ async function runProcessWithTimeout({
 // =============================================================================
 // OCR argument builders
 // =============================================================================
-function resolveTesseractArgs({ inputPath, tesseractLang, tessdataPath }) {
+function resolveTesseractArgs({ inputPath, tesseractLang, tessdataPath, psm }) {
+  const normalizedPsm = normalizeTesseractPsm(psm);
   return [
     inputPath,
     'stdout',
@@ -330,7 +344,7 @@ function resolveTesseractArgs({ inputPath, tesseractLang, tessdataPath }) {
     '--tessdata-dir',
     tessdataPath,
     '--psm',
-    '3',
+    String(normalizedPsm),
   ];
 }
 
@@ -348,6 +362,7 @@ module.exports = {
   resolveAndValidateOcrLanguage,
   runProcessWithTimeout,
   resolveTesseractArgs,
+  normalizeTesseractPsm,
   safeInvoke,
   normalizeMultiline,
 };
