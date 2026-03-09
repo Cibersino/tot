@@ -1,5 +1,51 @@
 # Issue 139 Evidence Log
 
+## 2026-03-09 - OCR Modal PSM Control + Backend Tesseract Wiring
+
+Entry `E139-B3-UI-PSM-005`
+- timestamp: `2026-03-09 17:38:27 -03:00`
+- command/test executed:
+  - implemented OCR options modal `psm` selector after timeout control, with bounded values (`3`, `4`, `6`, `11`) and default `3`.
+  - wired renderer normalization and run-options payload emission:
+    - `public/js/import_ocr_ui_shared.js`
+    - `public/js/import_ocr_ui_options_modal.js`
+    - `public/js/import_ocr_ui.js`
+  - wired backend propagation for both OCR routes and runtime argument build:
+    - `electron/import_ocr/ocr_pipeline.js`
+    - `electron/import_ocr/pdf_raster_ocr.js`
+    - `electron/import_ocr/ocr_runtime.js`
+  - updated EN/ES OCR options strings for `psm` label/options:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - verification commands:
+    - `node --check public/js/import_ocr_ui_shared.js`
+    - `node --check public/js/import_ocr_ui.js`
+    - `node --check public/js/import_ocr_ui_options_modal.js`
+    - `node --check electron/import_ocr/ocr_runtime.js`
+    - `node --check electron/import_ocr/ocr_pipeline.js`
+    - `node --check electron/import_ocr/pdf_raster_ocr.js`
+    - `Get-Content i18n/en/renderer.json | ConvertFrom-Json > $null; Get-Content i18n/es/renderer.json | ConvertFrom-Json > $null`
+    - `node -e "const m=require('./electron/import_ocr/ocr_runtime'); console.log(m.resolveTesseractArgs({inputPath:'in.png',tesseractLang:'spa',tessdataPath:'td',psm:6}).join(' ')); console.log(m.resolveTesseractArgs({inputPath:'in.png',tesseractLang:'spa',tessdataPath:'td',psm:99}).join(' '));"`
+- result:
+  - OCR options modal now exposes `psm` in core controls and keeps default `3` for each new prompt.
+  - OCR run payload now includes `psm`.
+  - backend now forwards `psm` to Tesseract args for image and scanned-PDF OCR.
+  - invalid `psm` input falls back safely to `3` in runtime arg builder.
+  - smoke/quality-gate checklist status is unchanged (still pending).
+- artifact/log reference:
+  - `public/index.html`
+  - `public/js/import_ocr_ui_shared.js`
+  - `public/js/import_ocr_ui_options_modal.js`
+  - `public/js/import_ocr_ui.js`
+  - `electron/import_ocr/ocr_runtime.js`
+  - `electron/import_ocr/ocr_pipeline.js`
+  - `electron/import_ocr/pdf_raster_ocr.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `docs/issues/Issue_139.md`
+  - `docs/issues/Issue_139_Smoke_Quality_Gate_Verification_Guide.md`
+  - `docs/_evidence/issue_139_evidence.md`
+
 ## 2026-03-09 - Operation Compatibility Gate Re-Run (Post-Expansion Scope Sync)
 
 Entry `E139-B2-GATE-003`

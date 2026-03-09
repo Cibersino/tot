@@ -309,6 +309,7 @@ OCR options modal must provide:
 * Per-operation mode control: `off|auto|manual`.
 * Bounded manual parameter inputs for operations in `manual`.
 * Explicit action to set all operations to `off` for baseline/disable behavior.
+* Bounded OCR page segmentation mode selector (`psm`) with safe default fallback (`3`) and backend wiring for image + scanned-PDF OCR.
 * Default state for each new import run: all operations `off`.
 * No preprocess config persistence across files or app sessions.
 * No legacy profile selector anywhere in code.
@@ -441,6 +442,7 @@ Goal:
 Includes:
 * OCR options modal operation controls completion.
 * OCR options accessibility hardening in the same modal-flow scope: preprocess controls split into a dedicated preprocess modal while keeping core OCR options in the main modal with preprocess summary/open action.
+* OCR options modal `psm` control wiring (`page segmentation`) in main modal with bounded allowed values and backend passthrough to Tesseract args.
 * EN/ES user-facing preprocess strings (required before smoke/gate to keep the app's i18n-first code pattern).
 * Bounded manual parameter wiring UI -> backend -> sidecar.
 * Default preprocess state reset to all operations `off` on each new import run.
@@ -560,6 +562,7 @@ Includes:
 * [x] Add EN/ES preprocessing stage and error strings (required before smoke/gate to keep the app's i18n-first code pattern).
 * [x] Implement OCR modal operation controls (per-operation `off|auto|manual`, bounded manual params, and explicit set-all-off action).
 * [x] Split preprocess controls into a dedicated preprocess modal while preserving canonical `preprocessConfig` wiring and a neutral preprocess summary/open action in the main OCR options modal.
+* [x] Add OCR `psm` selector to OCR options modal (placed after timeout) and wire end-to-end to backend Tesseract args for both image and scanned-PDF routes.
 * [x] Implement bounded manual parameter wiring UI -> backend -> sidecar.
 * [x] Verify default preprocess state is all operations `off` on each new import run.
 * [x] Verify no preprocess config persistence across file change and app restart.

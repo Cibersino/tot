@@ -348,6 +348,7 @@ When appending to `docs/_evidence/issue_139_evidence.md`, include:
 - scenario/family id
 - input file ids
 - preprocess config used
+- OCR core config used (`language`, `dpi`, `timeout`, `psm`)
 - stage sequence and terminal result
 - text mutation result
 - CER metrics (for quality): per-file + family aggregates
@@ -362,4 +363,3 @@ The `Smoke test and quality gate` section is complete only when both blocks are 
 - quality-gate block complete
 
 If any challenging family fails the quality gate thresholds, the smoke/quality-gate section remains open and Batch 4 stays blocked.
-
