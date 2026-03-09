@@ -1,5 +1,5 @@
 {
-  "generatedAtIso": "2026-03-06T18:30:11.131Z",
+  "generatedAtIso": "2026-03-09T17:59:39.957Z",
   "inputPath": "docs\\_evidence\\issue_139_operation_gate\\input_sample.png",
   "versions": {
     "imagemagick": "Version: ImageMagick 7.1.2-15 Q16-HDRI x64 b5fdb90:20260222 https://imagemagick.org",
@@ -55,10 +55,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\normalize_contrast-auto-kmqZnf\\normalize_contrast_auto_001_normalize_contrast.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\normalize_contrast-auto-Tzuf0w\\normalize_contrast_auto_001_normalize_contrast.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "7f0b500dcd42ce71e5b407ea25b6d3b7e94fd2eda4edccf69bf26d0e24143bb6",
+          "outputSha256": "85a5f00aa7748fc4c463b170c7601650fda0ec8a9c3913444c1eb9ec80249a07",
           "changedContent": true,
           "opStats": {
             "operation": "normalize_contrast",
@@ -68,7 +68,7 @@
             "applied": true,
             "skipped": false,
             "params": {},
-            "durationMs": 2227
+            "durationMs": 2231
           },
           "capEffects": {
             "resized": false,
@@ -91,10 +91,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\normalize_contrast-manual-E8KhwN\\normalize_contrast_manual_001_normalize_contrast.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\normalize_contrast-manual-DI86o6\\normalize_contrast_manual_001_normalize_contrast.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "7d2b7fded1995f6e530d1964acb2ed4c7c19792777361fe112afebc3b2b1842b",
+          "outputSha256": "c337de86b8257f4420e9fefd7b965b04172954e8803f637f7fb2ad2097e13509",
           "changedContent": true,
           "opStats": {
             "operation": "normalize_contrast",
@@ -107,7 +107,7 @@
               "blackClipPct": 3,
               "whiteClipPct": 3
             },
-            "durationMs": 2039
+            "durationMs": 1731
           },
           "capEffects": {
             "resized": false,
@@ -119,6 +119,317 @@
             "inputBytes": 22691482,
             "outputBytes": 25282816,
             "totalTempBytes": 25282816,
+            "maxInputBytes": 536870912,
+            "maxOutputBytes": 536870912,
+            "tempStorageCapBytes": 1073741824
+          },
+          "stderr": "",
+          "error": ""
+        }
+      },
+      "forcedFailures": {
+        "binaryMissing": {
+          "ok": false,
+          "code": "OCR_BINARY_MISSING",
+          "message": "Preprocess ImageMagick runtime binary not found.",
+          "outputPath": "",
+          "outputExists": false,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "",
+          "changedContent": false,
+          "opStats": null,
+          "capEffects": null,
+          "stderr": "",
+          "error": ""
+        },
+        "inputCapExceeded": {
+          "ok": false,
+          "code": "OCR_PREPROCESS_FAILED",
+          "message": "Input preprocess artifact file exceeds preprocess byte-size cap.",
+          "outputPath": "",
+          "outputExists": false,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "",
+          "changedContent": false,
+          "opStats": null,
+          "capEffects": null,
+          "stderr": "",
+          "error": ""
+        },
+        "canceled": {
+          "ok": false,
+          "code": "OCR_PREPROCESS_CANCELED",
+          "message": "Preprocessing canceled by user.",
+          "outputPath": "",
+          "outputExists": false,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "",
+          "changedContent": false,
+          "opStats": null,
+          "capEffects": null,
+          "stderr": "",
+          "error": ""
+        }
+      }
+    },
+    "local_illumination_correction": {
+      "tool": "ImageMagick",
+      "modes": {
+        "off": {
+          "ok": true,
+          "code": "",
+          "message": "",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\input_sample.png",
+          "outputExists": true,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "changedContent": false,
+          "opStats": {
+            "operation": "local_illumination_correction",
+            "tool": "ImageMagick",
+            "requestedMode": "off",
+            "effectiveMode": "off",
+            "applied": false,
+            "skipped": true,
+            "params": {},
+            "durationMs": 0
+          },
+          "capEffects": {
+            "resized": false,
+            "inputBytes": 22691482,
+            "outputBytes": 22691482,
+            "totalTempBytes": 0,
+            "maxInputBytes": 536870912,
+            "maxOutputBytes": 536870912,
+            "tempStorageCapBytes": 1073741824
+          },
+          "stderr": "",
+          "error": ""
+        },
+        "auto": {
+          "ok": true,
+          "code": "",
+          "message": "",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\local_illumination_correction-auto-mgYVDU\\local_illumination_correction_auto_001_local_illumination_correction.png",
+          "outputExists": true,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "a7d9b157bf9442e7d113abc57a0744ac4169edf2d1bf34607bf4763526b352e8",
+          "changedContent": true,
+          "opStats": {
+            "operation": "local_illumination_correction",
+            "tool": "ImageMagick",
+            "requestedMode": "auto",
+            "effectiveMode": "auto",
+            "applied": true,
+            "skipped": false,
+            "params": {},
+            "durationMs": 667
+          },
+          "capEffects": {
+            "resized": false,
+            "originalWidth": 1600,
+            "originalHeight": 2200,
+            "finalWidth": 1600,
+            "finalHeight": 2200,
+            "scaleApplied": 1,
+            "inputBytes": 22691482,
+            "outputBytes": 22238,
+            "totalTempBytes": 22238,
+            "maxInputBytes": 536870912,
+            "maxOutputBytes": 536870912,
+            "tempStorageCapBytes": 1073741824
+          },
+          "stderr": "",
+          "error": ""
+        },
+        "manual": {
+          "ok": true,
+          "code": "",
+          "message": "",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\local_illumination_correction-manual-RgOzMs\\local_illumination_correction_manual_001_local_illumination_correction.png",
+          "outputExists": true,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "9f7ff2da2202bee12da791423612c749e7a46d9e1b89f555118173cc4d3f3c0f",
+          "changedContent": true,
+          "opStats": {
+            "operation": "local_illumination_correction",
+            "tool": "ImageMagick",
+            "requestedMode": "manual",
+            "effectiveMode": "manual",
+            "applied": true,
+            "skipped": false,
+            "params": {
+              "windowPx": 25,
+              "offsetPct": 10
+            },
+            "durationMs": 719
+          },
+          "capEffects": {
+            "resized": false,
+            "originalWidth": 1600,
+            "originalHeight": 2200,
+            "finalWidth": 1600,
+            "finalHeight": 2200,
+            "scaleApplied": 1,
+            "inputBytes": 22691482,
+            "outputBytes": 22238,
+            "totalTempBytes": 22238,
+            "maxInputBytes": 536870912,
+            "maxOutputBytes": 536870912,
+            "tempStorageCapBytes": 1073741824
+          },
+          "stderr": "",
+          "error": ""
+        }
+      },
+      "forcedFailures": {
+        "binaryMissing": {
+          "ok": false,
+          "code": "OCR_BINARY_MISSING",
+          "message": "Preprocess ImageMagick runtime binary not found.",
+          "outputPath": "",
+          "outputExists": false,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "",
+          "changedContent": false,
+          "opStats": null,
+          "capEffects": null,
+          "stderr": "",
+          "error": ""
+        },
+        "inputCapExceeded": {
+          "ok": false,
+          "code": "OCR_PREPROCESS_FAILED",
+          "message": "Input preprocess artifact file exceeds preprocess byte-size cap.",
+          "outputPath": "",
+          "outputExists": false,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "",
+          "changedContent": false,
+          "opStats": null,
+          "capEffects": null,
+          "stderr": "",
+          "error": ""
+        },
+        "canceled": {
+          "ok": false,
+          "code": "OCR_PREPROCESS_CANCELED",
+          "message": "Preprocessing canceled by user.",
+          "outputPath": "",
+          "outputExists": false,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "",
+          "changedContent": false,
+          "opStats": null,
+          "capEffects": null,
+          "stderr": "",
+          "error": ""
+        }
+      }
+    },
+    "adaptive_contrast": {
+      "tool": "ImageMagick",
+      "modes": {
+        "off": {
+          "ok": true,
+          "code": "",
+          "message": "",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\input_sample.png",
+          "outputExists": true,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "changedContent": false,
+          "opStats": {
+            "operation": "adaptive_contrast",
+            "tool": "ImageMagick",
+            "requestedMode": "off",
+            "effectiveMode": "off",
+            "applied": false,
+            "skipped": true,
+            "params": {},
+            "durationMs": 0
+          },
+          "capEffects": {
+            "resized": false,
+            "inputBytes": 22691482,
+            "outputBytes": 22691482,
+            "totalTempBytes": 0,
+            "maxInputBytes": 536870912,
+            "maxOutputBytes": 536870912,
+            "tempStorageCapBytes": 1073741824
+          },
+          "stderr": "",
+          "error": ""
+        },
+        "auto": {
+          "ok": true,
+          "code": "",
+          "message": "",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\adaptive_contrast-auto-KUpMaP\\adaptive_contrast_auto_001_adaptive_contrast.png",
+          "outputExists": true,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "5e3fdd6dfa4391f2802b6fb887eccbc7567d5608c9d92d2f05d7e40d5a735e4c",
+          "changedContent": true,
+          "opStats": {
+            "operation": "adaptive_contrast",
+            "tool": "ImageMagick",
+            "requestedMode": "auto",
+            "effectiveMode": "auto",
+            "applied": true,
+            "skipped": false,
+            "params": {},
+            "durationMs": 2643
+          },
+          "capEffects": {
+            "resized": false,
+            "originalWidth": 1600,
+            "originalHeight": 2200,
+            "finalWidth": 1600,
+            "finalHeight": 2200,
+            "scaleApplied": 1,
+            "inputBytes": 22691482,
+            "outputBytes": 23869826,
+            "totalTempBytes": 23869826,
+            "maxInputBytes": 536870912,
+            "maxOutputBytes": 536870912,
+            "tempStorageCapBytes": 1073741824
+          },
+          "stderr": "",
+          "error": ""
+        },
+        "manual": {
+          "ok": true,
+          "code": "",
+          "message": "",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\adaptive_contrast-manual-3D1ltR\\adaptive_contrast_manual_001_adaptive_contrast.png",
+          "outputExists": true,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "beeb820f908ae8c2dbd6df11ae15b661c55c04c5ebade170d2573538b7db6e63",
+          "changedContent": true,
+          "opStats": {
+            "operation": "adaptive_contrast",
+            "tool": "ImageMagick",
+            "requestedMode": "manual",
+            "effectiveMode": "manual",
+            "applied": true,
+            "skipped": false,
+            "params": {
+              "tilePct": 25,
+              "clipLimit": 3,
+              "bins": 128
+            },
+            "durationMs": 2472
+          },
+          "capEffects": {
+            "resized": false,
+            "originalWidth": 1600,
+            "originalHeight": 2200,
+            "finalWidth": 1600,
+            "finalHeight": 2200,
+            "scaleApplied": 1,
+            "inputBytes": 22691482,
+            "outputBytes": 23869826,
+            "totalTempBytes": 23869826,
             "maxInputBytes": 536870912,
             "maxOutputBytes": 536870912,
             "tempStorageCapBytes": 1073741824
@@ -210,10 +521,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\binarize-auto-6lYs5g\\binarize_auto_001_binarize.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\binarize-auto-9v59pg\\binarize_auto_001_binarize.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "1a187d46544de05761bd8f35b7daa1705f486168e4a8a7dcae8a076b731a51a1",
+          "outputSha256": "677ac6e31be74f33306bf2b0cc5ad059b00eae0bddf80751be9ab4894b967f7c",
           "changedContent": true,
           "opStats": {
             "operation": "binarize",
@@ -223,7 +534,7 @@
             "applied": true,
             "skipped": false,
             "params": {},
-            "durationMs": 486
+            "durationMs": 609
           },
           "capEffects": {
             "resized": false,
@@ -246,10 +557,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\binarize-manual-QasHTX\\binarize_manual_001_binarize.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\binarize-manual-SNPyBr\\binarize_manual_001_binarize.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "5aca9c48b0b81812c51ead9004a3663cb79ca3edbabc5a28b95402bc7212c771",
+          "outputSha256": "99046ad8ad4a5df678a0ae1c4e67437deab148f6c021de670f683075a323a54e",
           "changedContent": true,
           "opStats": {
             "operation": "binarize",
@@ -261,7 +572,7 @@
             "params": {
               "thresholdPct": 55
             },
-            "durationMs": 410
+            "durationMs": 475
           },
           "capEffects": {
             "resized": false,
@@ -364,10 +675,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\denoise-auto-lAZyVV\\denoise_auto_001_denoise.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\denoise-auto-i8GCsJ\\denoise_auto_001_denoise.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "5d8cbedbccd11261de645aa1aac3faa1a3c19cf3fbfc8c931f7fc3dc6af4f8fe",
+          "outputSha256": "aab17d38322bfd7452a97b0557b151a12ad2005872918e74e5db0c20ecebe805",
           "changedContent": true,
           "opStats": {
             "operation": "denoise",
@@ -377,7 +688,7 @@
             "applied": true,
             "skipped": false,
             "params": {},
-            "durationMs": 3519
+            "durationMs": 3710
           },
           "capEffects": {
             "resized": false,
@@ -400,10 +711,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\denoise-manual-T2Sriv\\denoise_manual_001_denoise.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\denoise-manual-q2vnrw\\denoise_manual_001_denoise.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "80f04bca44b4dd37e5a27b0583801b31eeca658f61fecdf5590ec081b6ddb619",
+          "outputSha256": "6697971849726365f8782c30299a209c0b40d4f83383b1b859e415efa67fa641",
           "changedContent": true,
           "opStats": {
             "operation": "denoise",
@@ -415,7 +726,7 @@
             "params": {
               "passes": 2
             },
-            "durationMs": 3905
+            "durationMs": 4045
           },
           "capEffects": {
             "resized": false,
@@ -427,6 +738,163 @@
             "inputBytes": 22691482,
             "outputBytes": 19415103,
             "totalTempBytes": 19415103,
+            "maxInputBytes": 536870912,
+            "maxOutputBytes": 536870912,
+            "tempStorageCapBytes": 1073741824
+          },
+          "stderr": "",
+          "error": ""
+        }
+      },
+      "forcedFailures": {
+        "binaryMissing": {
+          "ok": false,
+          "code": "OCR_BINARY_MISSING",
+          "message": "Preprocess ImageMagick runtime binary not found.",
+          "outputPath": "",
+          "outputExists": false,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "",
+          "changedContent": false,
+          "opStats": null,
+          "capEffects": null,
+          "stderr": "",
+          "error": ""
+        },
+        "inputCapExceeded": {
+          "ok": false,
+          "code": "OCR_PREPROCESS_FAILED",
+          "message": "Input preprocess artifact file exceeds preprocess byte-size cap.",
+          "outputPath": "",
+          "outputExists": false,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "",
+          "changedContent": false,
+          "opStats": null,
+          "capEffects": null,
+          "stderr": "",
+          "error": ""
+        },
+        "canceled": {
+          "ok": false,
+          "code": "OCR_PREPROCESS_CANCELED",
+          "message": "Preprocessing canceled by user.",
+          "outputPath": "",
+          "outputExists": false,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "",
+          "changedContent": false,
+          "opStats": null,
+          "capEffects": null,
+          "stderr": "",
+          "error": ""
+        }
+      }
+    },
+    "text_sharpen": {
+      "tool": "ImageMagick",
+      "modes": {
+        "off": {
+          "ok": true,
+          "code": "",
+          "message": "",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\input_sample.png",
+          "outputExists": true,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "changedContent": false,
+          "opStats": {
+            "operation": "text_sharpen",
+            "tool": "ImageMagick",
+            "requestedMode": "off",
+            "effectiveMode": "off",
+            "applied": false,
+            "skipped": true,
+            "params": {},
+            "durationMs": 0
+          },
+          "capEffects": {
+            "resized": false,
+            "inputBytes": 22691482,
+            "outputBytes": 22691482,
+            "totalTempBytes": 0,
+            "maxInputBytes": 536870912,
+            "maxOutputBytes": 536870912,
+            "tempStorageCapBytes": 1073741824
+          },
+          "stderr": "",
+          "error": ""
+        },
+        "auto": {
+          "ok": true,
+          "code": "",
+          "message": "",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\text_sharpen-auto-i9hsPb\\text_sharpen_auto_001_text_sharpen.png",
+          "outputExists": true,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "32ab4051c77804aa1715017fdd4311df9b80b20d9b8acf75e0296d5191cdce32",
+          "changedContent": true,
+          "opStats": {
+            "operation": "text_sharpen",
+            "tool": "ImageMagick",
+            "requestedMode": "auto",
+            "effectiveMode": "auto",
+            "applied": true,
+            "skipped": false,
+            "params": {},
+            "durationMs": 3059
+          },
+          "capEffects": {
+            "resized": false,
+            "originalWidth": 1600,
+            "originalHeight": 2200,
+            "finalWidth": 1600,
+            "finalHeight": 2200,
+            "scaleApplied": 1,
+            "inputBytes": 22691482,
+            "outputBytes": 23662651,
+            "totalTempBytes": 23662651,
+            "maxInputBytes": 536870912,
+            "maxOutputBytes": 536870912,
+            "tempStorageCapBytes": 1073741824
+          },
+          "stderr": "",
+          "error": ""
+        },
+        "manual": {
+          "ok": true,
+          "code": "",
+          "message": "",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\text_sharpen-manual-maLw4i\\text_sharpen_manual_001_text_sharpen.png",
+          "outputExists": true,
+          "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
+          "outputSha256": "9234423b600935cdb7f2450377836cc245324dc65b4d389c67e7180c0aef8a74",
+          "changedContent": true,
+          "opStats": {
+            "operation": "text_sharpen",
+            "tool": "ImageMagick",
+            "requestedMode": "manual",
+            "effectiveMode": "manual",
+            "applied": true,
+            "skipped": false,
+            "params": {
+              "radiusPx": 0.5,
+              "sigmaPx": 1,
+              "amount": 1,
+              "threshold": 0
+            },
+            "durationMs": 2608
+          },
+          "capEffects": {
+            "resized": false,
+            "originalWidth": 1600,
+            "originalHeight": 2200,
+            "finalWidth": 1600,
+            "finalHeight": 2200,
+            "scaleApplied": 1,
+            "inputBytes": 22691482,
+            "outputBytes": 23639327,
+            "totalTempBytes": 23639327,
             "maxInputBytes": 536870912,
             "maxOutputBytes": 536870912,
             "tempStorageCapBytes": 1073741824
@@ -518,10 +986,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\deskew-auto-NSiCQO\\deskew_auto_001_deskew.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\deskew-auto-fRhNDL\\deskew_auto_001_deskew.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "ea18916343610941169879c23ae7311195c32fe9b48a043030f9e93f4144a2b2",
+          "outputSha256": "f629426e813e35277783a3d53485674f18e6c9f9a8d47cf5bcd958f723ec8ed5",
           "changedContent": true,
           "opStats": {
             "operation": "deskew",
@@ -531,7 +999,7 @@
             "applied": true,
             "skipped": false,
             "params": {},
-            "durationMs": 2175
+            "durationMs": 3283
           },
           "capEffects": {
             "resized": false,
@@ -554,10 +1022,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\deskew-manual-sZz7MU\\deskew_manual_001_deskew.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\deskew-manual-lHoGL3\\deskew_manual_001_deskew.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "bddcc99f39d9e09bf490b86fe54484937afcd12798d6701cd78aa2b29020f6f9",
+          "outputSha256": "568f8e3ae9199f7c72970b9bf1cc16d4d7e3b82b86bac2f1ed8c241a734d9b75",
           "changedContent": true,
           "opStats": {
             "operation": "deskew",
@@ -570,7 +1038,7 @@
               "scanRangeDeg": 4,
               "scanStepDeg": 0.5
             },
-            "durationMs": 1861
+            "durationMs": 2728
           },
           "capEffects": {
             "resized": false,
@@ -673,10 +1141,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\page_cleanup-auto-0Zj4jx\\page_cleanup_auto_001_page_cleanup.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\page_cleanup-auto-VEOgap\\page_cleanup_auto_001_page_cleanup.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "198c681d27d9b7e554fcedc232e5addadbe0bdddc597a18b5b4ffd8b2468de4f",
+          "outputSha256": "6938b676fda71197fade8e7e1dc9c9812383cabf40a6e8bfb6463288c9dafa49",
           "changedContent": true,
           "opStats": {
             "operation": "page_cleanup",
@@ -686,7 +1154,7 @@
             "applied": true,
             "skipped": false,
             "params": {},
-            "durationMs": 2072
+            "durationMs": 2092
           },
           "capEffects": {
             "resized": false,
@@ -709,10 +1177,10 @@
           "ok": true,
           "code": "",
           "message": "",
-          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\page_cleanup-manual-VgpTNB\\page_cleanup_manual_001_page_cleanup.png",
+          "outputPath": "C:\\Users\\manue\\Documents\\toT\\tot\\docs\\_evidence\\issue_139_operation_gate\\tmp_runs\\page_cleanup-manual-TGXMjK\\page_cleanup_manual_001_page_cleanup.png",
           "outputExists": true,
           "inputSha256": "33269c5ef6b86881251a577f3e101abd1f1f9d0fb0069491d08f3159df966c34",
-          "outputSha256": "709597618adc5d5f336f435446bd1a6047edfea245b1e6f8fe00e4ca8e8e8a87",
+          "outputSha256": "eb8040efce57e9d66354569e16d2e885bc34d06466054aaa8323eebd66fb3330",
           "changedContent": true,
           "opStats": {
             "operation": "page_cleanup",
@@ -722,9 +1190,13 @@
             "applied": true,
             "skipped": false,
             "params": {
-              "cleanLevel": 2
+              "maskScanSize": 50,
+              "grayfilterSize": 5,
+              "noisefilterIntensity": 4,
+              "blackfilterIntensity": 20,
+              "blurfilterSize": 5
             },
-            "durationMs": 1785
+            "durationMs": 1850
           },
           "capEffects": {
             "resized": false,
@@ -734,8 +1206,8 @@
             "finalHeight": 2200,
             "scaleApplied": 1,
             "inputBytes": 22691482,
-            "outputBytes": 233847,
-            "totalTempBytes": 7273881,
+            "outputBytes": 126688,
+            "totalTempBytes": 7166722,
             "maxInputBytes": 536870912,
             "maxOutputBytes": 536870912,
             "tempStorageCapBytes": 1073741824

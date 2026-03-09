@@ -544,7 +544,7 @@ Includes:
 * [x] If bundled-binary strategy is selected, establish runtime artifacts for `win32-x64` and verify paths under `ocr/<platform>-<arch>/preprocess/...`.
 * [ ] If (and only if) custom `.exe` path is selected by evidence, build preprocess artifact and verify runtime satisfies the canonical preprocess adapter contract.
 * [x] Record preprocess dependency/artifact provenance in evidence.
-* [x] Pass Operation Compatibility Gate for each operation in issue scope with evidence entries.
+* [x] Pass Operation Compatibility Gate for each operation in issue scope with evidence entries (post-expansion re-run completed 2026-03-09; see `docs/_evidence/issue_139_evidence.md` entry `E139-B2-GATE-003`).
 * [x] Do not introduce compatibility bridge logic (no operation -> legacy profile mapping anywhere).
 * [x] Verify clean-base no-legacy invariant still holds after Batch 2 integration changes.
 * [x] Integrate preprocess into image OCR route.

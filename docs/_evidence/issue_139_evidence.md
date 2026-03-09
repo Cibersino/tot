@@ -1,5 +1,35 @@
 # Issue 139 Evidence Log
 
+## 2026-03-09 - Operation Compatibility Gate Re-Run (Post-Expansion Scope Sync)
+
+Entry `E139-B2-GATE-003`
+- timestamp: `2026-03-09 15:00:55 -03:00`
+- command/test executed:
+  - executed a gate harness against current backend scope (`H01_OPERATION_ORDER` + `runPreprocessForImage`) covering:
+    - operations: `normalize_contrast`, `local_illumination_correction`, `adaptive_contrast`, `binarize`, `denoise`, `text_sharpen`, `deskew`, `page_cleanup`
+    - modes per operation: `off|auto|manual`
+    - forced-failure mapping checks per operation:
+      - runtime missing -> expected `OCR_BINARY_MISSING`
+      - input-cap exceeded -> expected `OCR_PREPROCESS_FAILED`
+      - cancellation -> expected `OCR_PREPROCESS_CANCELED`
+  - first attempt inside sandbox returned `spawn EPERM` for preprocess binary execution; reran outside sandbox to execute sidecar binaries and produce final report.
+  - wrote updated report:
+    - `docs/_evidence/issue_139_operation_gate/operation_gate_report.json`
+- result:
+  - gate summary in updated report:
+    - `runtimeAvailable=true`
+    - `allModesSucceeded=true`
+    - `appliedProofAutoManual=true`
+    - `forcedFailureMappingsOk=true`
+  - report now matches expanded scoped-lock (8 operations) and current `page_cleanup.manual` direct bounded fields (`maskScanSize`, `grayfilterSize`, `noisefilterIntensity`, `blackfilterIntensity`, `blurfilterSize`).
+  - previously logged pending status from `E139-EXP-IMPL-002` is now resolved by this re-run entry.
+- artifact/log reference:
+  - `docs/_evidence/issue_139_operation_gate/operation_gate_report.json`
+  - `electron/import_ocr/preprocess_pipeline.js`
+  - `electron/import_ocr/preprocess_runtime.js`
+  - `docs/issues/Issue_139.md`
+  - `docs/_evidence/issue_139_evidence.md`
+
 ## 2026-03-08 - Preprocess Expansion Scoped-Lock Freeze (H01)
 
 Entry `E139-EXP-FREEZE-001`
