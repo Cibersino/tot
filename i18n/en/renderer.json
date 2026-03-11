@@ -16,7 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Replace current text with clipboard",
         "append_clipboard": "Append clipboard at the end of current text (new line)",
-        "append_repeat_count": "Append repetitions (1-9999)",
+        "clipboard_repeat_count": "Clipboard repetitions",
         "edit": "Open full current text window",
         "clear": "Clear current text",
         "snapshot_load": "Load text snapshot",
@@ -31,7 +31,7 @@
         "flotante_window": "Floating window"
       },
       "aria": {
-        "append_repeat_count": "Paste repetitions",
+        "clipboard_repeat_count": "Paste repetitions",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words-per-minute slider",
         "speed_presets": "Speed presets",

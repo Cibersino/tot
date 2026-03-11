@@ -125,19 +125,20 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - If language picker does not appear automatically, it must be reachable via menu “Preferences → Language” (see REG-I18N-01).
 
 ### SM-03 Clipboard overwrite + automatic results
-**Goal:** overwrite-from-clipboard updates preview + counts + time.
+**Goal:** overwrite-from-clipboard (with repeat input) updates preview + counts + time.
 1. Copy text to clipboard.
-2. Click **📋↺**.
+2. Set repeat input (`clipboardRepeatInput`) to `2` and click **📋↺** once.
 3. Observe preview and results.
 
 **Expected:**
 - Preview shows start/end of the text (or full if short).
 - Words/chars/time update immediately.
+- With `N=2`, one click on **📋↺** writes two repeated clipboard blocks in a single overwrite.
 
 ### SM-04 Append clipboard (+ newline semantics + repeat input)
 **Goal:** append-from-clipboard adds new content with correct newline/repeat semantics and updates counts.
 1. Copy text to clipboard.
-2. Set repeat input (`appendRepeatInput`) to `1` and click **📋+**.
+2. Set repeat input (`clipboardRepeatInput`) to `1` and click **📋+**.
 3. Set repeat input to `2` and click **📋+** once.
 4. Observe preview and results.
 
@@ -306,16 +307,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - After cancel: current text remains `T2`.
 - After confirm: current text becomes `T1` and UI updates.
 
-#### REG-MAIN-05 Append repeat input normalization/clamp
-**Goal:** invalid/overflow values in append repeat input are normalized safely.
+#### REG-MAIN-05 Clipboard repeat input normalization/clamp
+**Goal:** invalid/overflow values in clipboard repeat input are normalized safely.
 1. Copy a short text to clipboard.
-2. Set repeat input to each value and click **📋+** once per case: `''`, `0`, `-3`, `3.7`, `abc`.
-3. Set repeat input to a very large value (e.g., `100000`) and click **📋+**.
+2. Set repeat input to each value and click **📋↺** once per case: `''`, `0`, `-3`, `3.7`, `abc`.
+3. Repeat step 2 with **📋+**.
+4. Set repeat input to a very large value (e.g., `100000`) and click **📋↺** and **📋+**.
 
 **Expected:**
 - Invalid values (`''`, `0`, `-3`, decimal, text) are treated as `N=1` (no crash, no broken flow).
-- Values above max are clamped to the app max (`MAX_APPEND_REPEAT` / UI max).
-- Append action still uses a single IPC write path (observable as normal success/failure behavior, not repeated dialog/error bursts).
+- Values above max are clamped to the app max (`MAX_CLIPBOARD_REPEAT` / UI max).
+- Both clipboard actions still use a single IPC write path (observable as normal success/failure behavior, not repeated dialog/error bursts).
 
 ---
 
