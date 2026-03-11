@@ -148,9 +148,18 @@ body {
   box-sizing: border-box;
 }
 
+.clipboard-repeat-input.is-repeat-active {
+  border-color: #c53a3a;
+  background: #fff2f2;
+}
+
 .clipboard-repeat-input:focus {
   outline: 2px solid rgb(30 130 230 / .22);
   outline-offset: 1px;
+}
+
+.clipboard-repeat-input.is-repeat-active:focus {
+  outline-color: rgb(197 58 58 / .35);
 }
 
 .controls-sep {
