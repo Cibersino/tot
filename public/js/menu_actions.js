@@ -38,7 +38,6 @@
             throw new Error('registerMenuAction: callback debe ser funcion');
         }
         registry.set(payload, callback);
-        log.debug(`menuActions: registered action -> ${payload}`);
     }
 
     function unregisterMenuAction(payload) {

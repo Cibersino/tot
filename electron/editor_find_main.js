@@ -21,6 +21,7 @@ const path = require('path');
 const Log = require('./log');
 
 const log = Log.get('editor-find-main');
+log.debug('Editor find main starting...');
 
 // =============================================================================
 // Constants / config (paths, window size)
