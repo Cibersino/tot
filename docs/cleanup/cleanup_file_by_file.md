@@ -469,7 +469,6 @@ Only if there is strong evidence of real pain that cannot be addressed in Levels
 Entry criteria (must be satisfied to change code):
 
 * Direct evidence in code OR a reproducible bug/issue:
-
   * point to exact call sites / usage patterns in the repo, OR
   * provide minimal repro steps that demonstrate the pain.
 * Explicit risk assessment: what could break and where.
@@ -478,25 +477,23 @@ Entry criteria (must be satisfied to change code):
 Process:
 
 1. Inspect the repo and identify whether `<TARGET_FILE>` has a real pain point that requires Level 4, e.g.:
-
    * duplicated responsibility across modules,
    * unstable/ambiguous contract (IPC payloads/returns),
    * sync/async mismatch causing issues,
    * multiple consumers depending on inconsistent semantics,
    * cross-module coupling causing bugs or maintenance pain.
-2. If NO strong evidence exists:
 
+2. If NO strong evidence exists:
    * Do NOT change code.
    * Output “Decision: NO CHANGE (no Level 4 justified)” and list the evidence you checked (file + identifier anchors).
+   
 3. If evidence DOES exist:
-
    * Apply the smallest possible Level 4 change that resolves it.
    * Update all affected consumers consistently (only if required by the change).
    * Avoid broad rewrites and unnecessary architecture.
 
 Anti “refactor that makes it worse” rule:
 If a change:
-
 * introduces more concepts than it removes;
 * increases indirection without reducing real pain;
 * forces readers to read more to understand the same behavior;
@@ -513,7 +510,6 @@ You may inspect the repo as needed. If you implement anything, ensure the repo b
 Output requirement:
 
 * The report must include:
-
   * Decision: CHANGED | NO CHANGE
   * If NO CHANGE: 3–10 bullets of evidence checked (anchors).
   * If CHANGED: list each non-trivial change with Evidence/Risk/Validation, and explicitly confirm the observable contract/timing were preserved (or state what contract changed and why it was required).
@@ -567,8 +563,12 @@ What to do:
 
 0.1) Enforce call-site style: remove any local log method aliases/wrappers and update call sites accordingly (no behavior/timing change).
 
-1) Audit every existing logging site AND every fallback / best-effort path that could be silent or misleading:
-   - payload shape normalization, defaulting, suspicious input acceptance,
+Definition (to avoid ambiguity):
+- “Fallback” here means substituting for a missing/failing intended action or capability (degraded behavior), not normal/contractual input normalization/clamping in pure helpers.
+- Do not add logs for purely contractual sanitization/defaulting unless it indicates a bug and the log site is not a hot path; prefer logging at the boundary where the invalid input/call is introduced.
+
+1) Audit every existing logging site AND every fallback / best-effort path (missing/failing action/capability) that could be silent or misleading:
+   - boundary-level payload shape issues (suspicious/invalid input acceptance that changes decisions),
    - send-to-window races (missing/destroyed windows),
    - optional I/O / parse / load steps with fallback behavior.
 
@@ -579,6 +579,7 @@ What to do:
    - debug: verbose diagnostics; do not add new debug logs unless they materially improve diagnosis.
 
 3) No silent fallbacks rule:
+   - Pure normalization/clamping defaults that are explicitly contractual are NOT considered “fallbacks” for this rule.
    - Any fallback MUST emit at least a warn (or warnOnce) unless the behavior is explicitly a no-op by contract (i.e., not a fallback).
    - If the fallback is BOOTSTRAP-only (pre-init), the message OR the explicit dedupe key MUST start with `BOOTSTRAP:` and that path must become unreachable after init. If it can happen after init, it is NOT bootstrap.
 
@@ -684,6 +685,7 @@ Output requirement:
   - If NO CHANGE: 3–8 bullets explaining why no meaningful comment improvements were warranted.
 - Do NOT output diffs.
 ```
+
 ---
 
 ## Nivel 7: Revision final
