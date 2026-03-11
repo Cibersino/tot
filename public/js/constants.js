@@ -12,7 +12,7 @@
     WPM_SLIDER_STEP: 0.1, // Internal slider resolution; displayed WPM remains integer.
     WPM_SLIDER_CURVE: 'exp', // WPM slider mapping curve ('linear' | 'exp').
     WPM_SLIDER_EXP_STRENGTH: 1.15, // Mild exponential strength for slider distribution.
-    MAX_APPEND_REPEAT: 9_999, // Maximum allowed repetitions for the clipboard append action.
+    MAX_CLIPBOARD_REPEAT: 9_999, // Maximum allowed repetitions for clipboard overwrite/append actions.
     PRESET_NAME_MAX: 20, // Max chars for preset names.
     PRESET_DESC_MAX: 120, // Max chars for preset descriptions.
     TASK_NAME_MAX_CHARS: 50, // Max chars for task list name. Must match electron/constants_main.js.

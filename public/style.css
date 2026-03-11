@@ -135,7 +135,7 @@ body {
   flex-wrap: wrap;
 }
 
-.append-repeat-input {
+.clipboard-repeat-input {
   width: 60px;
   height: 30px;
   padding: 4px 6px;
@@ -148,7 +148,7 @@ body {
   box-sizing: border-box;
 }
 
-.append-repeat-input:focus {
+.clipboard-repeat-input:focus {
   outline: 2px solid rgb(30 130 230 / .22);
   outline-offset: 1px;
 }
