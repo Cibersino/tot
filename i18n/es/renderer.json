@@ -16,7 +16,7 @@
       "tooltips": {
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
         "append_clipboard": "Pegar portapapeles al final del texto actual (nueva línea)",
-        "append_repeat_count": "Repeticiones del append (1-9999)",
+        "clipboard_repeat_count": "Repeticiones de pegado",
         "edit": "Abrir ventana del texto actual completo",
         "clear": "Vaciar texto actual",
         "snapshot_load": "Cargar snapshot de texto",
@@ -31,7 +31,7 @@
         "flotante_window": "Ventana flotante"
       },
       "aria": {
-        "append_repeat_count": "Repeticiones de pegado",
+        "clipboard_repeat_count": "Repeticiones de pegado",
         "wpm_input": "Palabras por minuto",
         "wpm_slider": "Deslizador de palabras por minuto",
         "speed_presets": "Presets de velocidad",
