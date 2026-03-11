@@ -128,6 +128,20 @@ if (clipboardRepeatInput) {
   clipboardRepeatInput.max = String(MAX_CLIPBOARD_REPEAT);
 }
 
+function updateClipboardRepeatVisualState(rawValue = '') {
+  if (!clipboardRepeatInput) return;
+  const numericValue = Number(rawValue);
+  const isRepeatActive = Number.isFinite(numericValue) && numericValue > 1;
+  clipboardRepeatInput.classList.toggle('is-repeat-active', isRepeatActive);
+}
+
+if (clipboardRepeatInput) {
+  updateClipboardRepeatVisualState(clipboardRepeatInput.value);
+  clipboardRepeatInput.addEventListener('input', () => {
+    updateClipboardRepeatVisualState(clipboardRepeatInput.value);
+  });
+}
+
 const realWpmDisplay = document.getElementById('realWpmDisplay');
 const selectorTitle = document.getElementById('selector-title');
 const velTitle = document.getElementById('vel-title');
@@ -1445,6 +1459,7 @@ function getClipboardRepeatCount() {
   if (!clipboardRepeatInput) return 1;
   const normalized = normalizeClipboardRepeat(clipboardRepeatInput.value);
   clipboardRepeatInput.value = String(normalized);
+  updateClipboardRepeatVisualState(normalized);
   return normalized;
 }
 
