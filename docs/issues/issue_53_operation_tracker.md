@@ -29,17 +29,6 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
-### OP-0002
-
-- Date/time: 2026-03-12 11:25:14 -03:00
-- Operation: Add concise native-extraction engineering decomposition to issue and plan docs.
-- Why: Capture engineering-level native-route work items without adding glossary/definition sections.
-- Changes made: Added one open-workstream bullet in `issue_53.md`; added one basic-implementation checklist item and one smoke-gate checklist item in `issue_53_implementation_plan.md`.
-- Checklist updates: Added 2 unchecked checklist items to the implementation plan.
-- Files touched: `docs/issues/issue_53.md`, `docs/issues/issue_53_implementation_plan.md`, `docs/issues/issue_53_operation_tracker.md`.
-- Evidence: New bullets/checklist items explicitly mention parser mapping, normalization, native-route errors, and fixture matrix.
-- Outcome / next step: Ready for your wording review.
-
 ### OP-0001
 
 - Date/time: 2026-03-12 10:55:25 -03:00
