@@ -197,6 +197,7 @@ Failure cases include:
 - missing substrate configuration
 - missing credentials
 - billing/auth issues
+- quota/budget/usage-limit issues
 - connectivity failure
 - platform/runtime setup failure
 
@@ -215,10 +216,25 @@ This epic does not treat Document AI as already chosen, but it must be evaluated
 
 ## Setup / billing / compliance
 
+This app is intended to be distributed to multiple users.
+
+Because of that, the epic must explicitly define the OCR access / billing / activation model for the chosen substrate.
+
+At minimum, this includes:
+- who pays for OCR usage
+- who owns the substrate account/project
+- where credentials live
+- whether OCR is vendor-managed, user-managed, or hybrid
+- whether each user can enable OCR with their own account/billing
+- whether OCR is enabled by default or requires explicit activation
+- whether usage restrictions/limits exist and how they are enforced
+- what happens when quota, budget, or usage limits are reached
+
 If the chosen substrate requires user-side setup, the feature must include:
 - setup guidance
 - credential onboarding
 - billing onboarding if required
+- activation guidance
 - validation/test flow
 - explicit failure handling for incomplete setup
 
@@ -317,7 +333,8 @@ Must log:
 - close during processing follows user-cancellation semantics
 - the first implementation works on Windows
 - the architecture remains viable for later macOS/Linux support
-- required setup/billing/compliance surfaces are defined for the chosen substrate
+- the OCR access / billing / activation model is explicitly chosen and documented for distributed app delivery
+- required setup/billing/compliance surfaces are defined for the chosen substrate and chosen access model
 
 ## Open workstreams
 
@@ -334,5 +351,6 @@ Must log:
 - overwrite/append/repetitions modal aligned with selector semantics
 - progress, ETA, explicit errors, abort, and structured observability
 - Windows packaging and future macOS/Linux boundaries
-- user setup/billing flow
+- access / billing / activation model for distributed app delivery
+- user setup/billing/activation flow where applicable
 - in-app license/compliance surfaces
