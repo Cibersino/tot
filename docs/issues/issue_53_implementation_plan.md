@@ -6,6 +6,7 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 ## Codex Operational Policy
 
 - All repository evidence presented in chat must be cited using relative repository paths.
+- `docs/issues/issue_53_operation_tracker.md` must be used as the operational log: create/update an `OP-XXXX` entry before and after each meaningful operation, including files touched and evidence.
 - Any operation that drifts, or may drift, from issue instructions must be explicitly disclosed in chat.
 - Drift disclosures must identify:
   - the instruction being diverged from
