@@ -69,9 +69,9 @@ A substrate may be viable under one access model and non-viable under another.
 ### Primary substrate candidate
 - Google Document AI
 
-### Access models under evaluation
+### Access / activation models under evaluation
 - vendor-managed
-- user-managed
+- user-managed + optional activation
 - hybrid/optional
 
 ### Additional substrate candidates
@@ -337,15 +337,13 @@ Notes:
 
 ### E. Setup / auth / activation burden (10)
 
-This criterion evaluates the operational burden of turning the substrate into a usable feature under the chosen access model.
+This criterion evaluates how much user/admin friction the pairing introduces.
 
 Evaluate at minimum:
 
-- developer setup
-- packaging implications
-- user setup
+- account creation requirements
+- billing setup requirements
 - credential onboarding
-- billing onboarding
 - activation flow
 - validation/test flow
 - incomplete setup failure modes
@@ -534,7 +532,7 @@ Each candidate section should include:
 - Evaluation date: `<date>`
 - Evaluator: `<name>`
 - Substrate: `<fill>`
-- Access model: `<vendor-managed | user-managed | hybrid>`
+- Access model: `<vendor-managed | user-managed | user-managed + optional activation | hybrid/optional>`
 - Version / product / API context: `<fill>`
 - Setup assumptions: `<fill>`
 
@@ -610,7 +608,7 @@ Each candidate section should include:
 | Substrate | Access model | Hard gates passed? | Total score | Decision status | Main reason |
 |---|---|---|---:|---|---|
 | Google Document AI | vendor-managed |  |  |  |  |
-| Google Document AI | user-managed |  |  |  |  |
+| Google Document AI | user-managed + optional activation |  |  |  |  |
 | Google Document AI | hybrid/optional |  |  |  |  |
 | Candidate A | `<fill>` |  |  |  |  |
 | Candidate B | `<fill>` |  |  |  |  |
@@ -633,6 +631,22 @@ Each candidate section should include:
 ### Rationale
 
 `<fill>`
+
+### Current recommendation baseline
+
+Based on the current document set and current scope assumptions, the working recommendation is:
+
+- Preferred current pairing: `Google Document AI + user-managed + optional activation`.
+- OCR should ship disabled by default in the packaged portable build.
+- OCR activation should be explicit from a dedicated `Settings > OCR` surface.
+- Each user should enable OCR using their own Document AI account/project/billing.
+- Credentials should live locally on the user side for that app instance and must not be embedded in the packaged app or shared across users by default.
+- Vendor-managed OCR access should be treated as out of current scope unless the product later accepts the operational, billing, and compliance burden explicitly.
+- If a managed path is reconsidered later, it should be evaluated as a separate pairing rather than assumed implicitly by the initial rollout.
+- `Disable OCR` and `Disconnect / remove local OCR configuration` should be treated as separate user actions.
+- Setup/auth/billing/quota failures must map to explicit user-visible states; no silent fallback is acceptable.
+
+This baseline is intentionally conservative. It preserves OCR as a real feature path while avoiding the need to ship shared vendor credentials or assume managed service operations from day one.
 
 ### Known constraints that propagate downstream
 
