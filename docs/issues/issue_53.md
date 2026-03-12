@@ -101,13 +101,16 @@ For this rule, "secondary window" means any non-main app window currently open.
 If processing is requested while any of those conditions is true, the app must:
 - refuse to start
 - explicitly tell the user to close the secondary windows and stop the stopwatch
+- log a structured `precondition_rejected` event with explicit reasons
+
+Precondition rejection is a blocked-start path, not an extraction failure.
 
 ## Processing UX
 
 While extraction is running:
-- the main window remains visible
 - progress must be shown
 - ETA must be shown and should be realistic
+- when the window is not minimized, progress and ETA are visible in the main window
 - the window and app menu must be blocked for normal interaction
 
 Allowed actions during processing:
@@ -156,6 +159,8 @@ This flow must reuse current semantics for:
 
 The user must be able to abort an in-flight extraction.
 
+A close-window request during processing is treated as user cancellation and must follow the same guarantees as abort.
+
 On abort:
 - processing stops as soon as safely possible
 - no extracted result is shown
@@ -163,10 +168,15 @@ On abort:
 - current text remains unchanged
 - no apply modal is shown
 - the app leaves processing mode cleanly
+- abort/cancellation is logged as a structured abort event
+
+User abort/cancellation is a controlled cancellation path, not an extraction failure.
 
 ## Error handling policy
 
-On any failure:
+This section applies to extraction failures after extraction has started.
+
+On any extraction failure:
 - show explicit user-visible error
 - log structured warn/error
 - do not modify current text
@@ -183,10 +193,6 @@ Failure cases include:
 - billing/auth issues
 - connectivity failure
 - platform/runtime setup failure
-- precondition failure
-- user abort
-
-User abort is a controlled cancellation path (not shown as extraction failure), but it must be logged as an abort event.
 
 ## Substrate
 
@@ -300,6 +306,8 @@ Must log:
 - MAX_TEXT_CHARS is enforced with explicit truncation notice
 - failed or aborted extraction never mutates current text
 - abort never shows partial extracted results
+- precondition rejection, extraction failure, and user cancellation are distinct states with distinct UX and logging
+- close during processing follows user-cancellation semantics
 - the first implementation works on Windows
 - the architecture remains viable for later macOS/Linux support
 - required setup/billing/compliance surfaces are defined for the chosen substrate
