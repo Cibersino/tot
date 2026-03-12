@@ -8,6 +8,43 @@ Scope: File text extraction epic (OCR + native extraction + route selection + ca
 This plan is ordered and gate-driven.  
 Gates 0 to 3 are blocking for substrate-dependent OCR delivery and release compliance.
 
+## Role Division
+
+### Codex
+- Draft technical artifacts and implementation docs.
+- Implement code changes across main/renderer/IPC/routes.
+- Add validation, logging, and failure handling behavior.
+- Prepare test evidence and acceptance checklists.
+- Recommend technical decisions with tradeoffs.
+
+### User
+- Approve substrate choice and fallback strategy.
+- Perform real provider setup, credentials, and billing onboarding.
+- Approve legal/privacy/compliance wording and release readiness.
+- Validate UX/behavior in real usage.
+- Make final go/no-go decisions at blocking gates and release.
+
+## Operational Guardrails (Execution Rules)
+
+These rules are mandatory during execution of this implementation plan.
+
+### Evidence and citation discipline
+- All repository evidence reported in chat must use relative repository paths.
+- Completion updates for each gate/milestone must include concrete evidence paths.
+
+### Drift control protocol
+- Any operation that drifts, or may drift, from issue/plan instructions must be explicitly disclosed in chat.
+- Drift disclosure must include:
+  - instruction being diverged from
+  - why divergence is necessary
+  - expected impact/risk
+  - whether execution paused for user confirmation or proceeded with rationale
+
+### Ambiguity and contradiction handling
+- Any doubt, ambiguity, or contradiction in instructions must be surfaced during operations.
+- High-impact or blocking ambiguity: pause and ask before performing the operation.
+- Low-impact ambiguity: proceed only with an explicit assumption and rationale stated immediately after the operation.
+
 ## Gate 0: Choose OCR Substrate (Blocking)
 
 ### Deliverables
@@ -214,4 +251,3 @@ Gates 0 to 3 are blocking for substrate-dependent OCR delivery and release compl
 
 ### Exit criteria
 - All acceptance criteria from `docs/issues/issue_53.md` pass.
-
