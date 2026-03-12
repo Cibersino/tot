@@ -50,12 +50,17 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
   - precondition rejected (blocked start)
   - extraction failure (after start)
   - user cancellation/abort
+- [ ] Lock processing-mode contract:
+  - processing lock is distinct from startup lock
+  - while processing, main window/app menu interactions are blocked except close/minimize/move/abort
+  - close-window request during processing follows cancellation semantics (same guarantees as abort)
 
 ## 4. Basic implementation
 
 - [ ] Add dedicated import/extract button in the text-selector row.
 - [ ] Implement file picker open behavior (default folder first, then persisted folder).
 - [ ] Implement precondition block (no start when secondary windows are open or stopwatch is running) with explicit user guidance.
+- [ ] Implement processing mode as a distinct lock state (not startup lock) and block normal main-window/menu interactions while active.
 - [ ] Implement OCR route.
 - [ ] Implement native extraction route.
 - [ ] Complete native extraction engineering slice (parser mapping by format, normalization pipeline, structured native-route errors).
@@ -68,26 +73,40 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
   - current text unchanged
   - no partial extraction surfaced
   - no apply modal shown after abort
+  - close-window during processing is treated as cancellation
 
 ## 5. Smoke test and quality gate for the basic
 
 - [ ] Build and run core smoke matrix (OCR, native, PDF triage, dual-route choice).
 - [ ] Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases).
 - [ ] Validate precondition rejection scenarios and explicit reason messaging.
+- [ ] Validate processing lock behavior:
+  - distinct from startup lock
+  - only close/minimize/move/abort remain available during processing
+- [ ] Validate close-window-during-processing cancellation path and invariants.
 - [ ] Validate failure/abort invariants and state separation.
 - [ ] Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice).
+- [ ] Validate observability coverage for required fields/events (routes, latency, apply/truncation, precondition/failure/cancel/setup paths).
 - [ ] Block progression until basic smoke/quality gate passes.
 
 ## 6. Processing progress and ETA implementation
 
 - [ ] Implement processing progress UX.
 - [ ] Implement ETA behavior and calibrate realism.
+- [ ] Keep progress + ETA visible in the main window whenever the window is not minimized.
 
 ## 7. Refinement
 
 - [ ] UI/UX refinement pass.
 - [ ] Fill missing `es`/`en` UI localization keys (no hardcoded language fallback logic).
-- [ ] Logging review for required observability fields/events and consistency.
+- [ ] Logging review for required observability fields/events and consistency:
+  - selected file type
+  - available/chosen/executed route
+  - OCR/native latency
+  - apply choice + repetition count
+  - truncation events
+  - setup/configuration failures
+  - precondition rejection and cancellation events
 - [ ] Code cleanup/refactor while preserving behavior.
 
 ## 8. Documentation and compliance closeout
