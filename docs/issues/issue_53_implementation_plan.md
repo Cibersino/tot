@@ -1,6 +1,7 @@
 # Issue 53 Implementation Plan
 
 Linked issue: `docs/issues/issue_53.md`
+Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 
 ## Codex Operational Policy
 
