@@ -2,6 +2,19 @@
 
 Linked issue: `docs/issues/issue_53.md`
 
+## Codex Operational Policy
+
+- All repository evidence presented in chat must be cited using relative repository paths.
+- Any operation that drifts, or may drift, from issue instructions must be explicitly disclosed in chat.
+- Drift disclosures must identify:
+  - the instruction being diverged from
+  - why the divergence is necessary
+  - expected impact/risk
+  - whether execution paused for user confirmation or proceeded with rationale
+- Any doubt, ambiguity, or contradiction in issue instructions must be surfaced to the user during operations.
+- For high-impact or blocking ambiguity, Codex must ask before performing the operation.
+- For low-impact ambiguity where operation proceeds, Codex must state the assumption and rationale immediately after the operation.
+
 ## 1. Substrate decision
 
 - [ ] Evaluate substrate options, starting with Google Document AI as the primary candidate.
