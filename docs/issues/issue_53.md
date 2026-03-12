@@ -19,13 +19,14 @@ The feature must preserve current text-application semantics:
 - explicit truncation notices
 - no silent fallback
 
-Initial language scope:
-- English
-- Spanish
+Extraction language scope:
+- text extraction must support text in any language, including Asian scripts
+- this applies to both OCR and native extraction routes
 
-The implementation must follow the existing app pattern:
+UI localization implementation must follow the existing app pattern:
 - trust the existence of `es` / `en`
 - avoid hardcoded language fallbacks
+- this UI localization rule does not limit extraction language coverage
 
 ## Implementation constraints
 
@@ -298,7 +299,8 @@ Must log:
 
 - extraction starts from the dedicated button in the text-selector button row
 - the native file picker uses default/persisted folder behavior
-- initial language scope is English and Spanish, following the app’s existing `es` / `en` pattern with no hardcoded fallbacks
+- extraction supports text in any language (including Asian scripts) across OCR and native routes
+- app UI localization continues to follow the existing `es` / `en` resource pattern with no hardcoded UI-language fallbacks
 - extraction cannot start while secondary windows are open or the stopwatch is running, and the user is explicitly told what to close/stop
 - files can be processed through OCR with visible progress, realistic ETA, and explicit failures
 - native-capable files can be processed without OCR
