@@ -10,6 +10,12 @@ This plan is ordered and gate-driven.
 Gates 0 to 3 are blocking for substrate-dependent OCR delivery and release compliance.
 Tasks and gates may evolve, but any structural edit must be logged in `docs/issues/issue_53_operation_tracker.md` before execution.
 
+## Cross-Cutting Language Requirement
+
+- Extraction capability is language-agnostic: extracted text must be supported for any language, including Asian scripts.
+- This requirement applies to both OCR and native extraction routes.
+- `en` / `es` constraints in this plan refer only to app UI localization resources, not to extraction-language capability.
+
 ## Role Division
 
 ### Codex
