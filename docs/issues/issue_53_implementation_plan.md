@@ -60,6 +60,7 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 - [ ] Add dedicated import/extract button in the text-selector row.
 - [ ] Implement file picker open behavior (default folder first, then persisted folder).
 - [ ] Implement precondition block (no start when secondary windows are open or stopwatch is running) with explicit user guidance.
+- [ ] Isolate Windows-specific implementation behind platform adapters so core extraction/apply orchestration remains OS-agnostic for future macOS/Linux support.
 - [ ] Implement processing mode as a distinct lock state (not startup lock) and block normal main-window/menu interactions while active.
 - [ ] Implement OCR route.
 - [ ] Implement native extraction route.
@@ -78,6 +79,7 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 ## 5. Smoke test and quality gate for the basic
 
 - [ ] Build and run core smoke matrix (OCR, native, PDF triage, dual-route choice).
+- [ ] Add multilingual smoke coverage across OCR + native routes (at least Latin, CJK, and RTL samples).
 - [ ] Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases).
 - [ ] Validate precondition rejection scenarios and explicit reason messaging.
 - [ ] Validate processing lock behavior:
