@@ -29,24 +29,13 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
-### OP-0002
-
-- Date/time: 2026-03-12 01:35:24 -03:00
-- Operation: Update tracker format to require date+time and newest-to-oldest ordering.
-- Why: Improve operational traceability and make execution timeline explicit.
-- Changes made: Added date/time rule, added newest-first rule, updated template, and reordered log entries.
-- Checklist updates: None.
-- Files touched: `docs/issues/issue_53_operation_tracker.md`.
-- Evidence: Rules and template now explicitly require date/time, and this entry is placed above OP-0001.
-- Outcome / next step: Continue logging each new operation at the top of this section.
-
 ### OP-0001
 
-- Date/time: 2026-03-12 01:20:17 -03:00
-- Operation: Convert the implementation plan into an operational checklist format and add a separate tracker file.
-- Why: Make execution trackable operation by operation while keeping plan/task flexibility controlled.
-- Changes made: Added checkboxes to executable bullets in the plan and added tracker linkage in the plan header.
-- Checklist updates: No gate/milestone completion toggled; bootstrap/document-structure update only.
+- Date/time: 2026-03-12 10:55:25 -03:00
+- Operation: Create initial implementation checklist document for Issue 53.
+- Why: Establish the operational execution plan requested by the user, aligned with the current `issue_53.md` scope and ordering decisions.
+- Changes made: Added `docs/issues/issue_53_implementation_plan.md` with 8 ordered checklist sections from substrate decision through documentation/compliance closeout.
+- Checklist updates: Initial checklist creation only; no checkbox state changes from unchecked.
 - Files touched: `docs/issues/issue_53_implementation_plan.md`, `docs/issues/issue_53_operation_tracker.md`.
-- Evidence: Plan now contains checkbox bullets under gates/milestones and references this tracker at the top.
-- Outcome / next step: Baseline tracking model established.
+- Evidence: New plan file now exists and is linked by this tracker.
+- Outcome / next step: Plan baseline is ready for review/adjustment before execution work begins.
