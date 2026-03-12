@@ -45,6 +45,12 @@ These rules are mandatory during execution of this implementation plan.
 - High-impact or blocking ambiguity: pause and ask before performing the operation.
 - Low-impact ambiguity: proceed only with an explicit assumption and rationale stated immediately after the operation.
 
+### Architecture and logging constraints
+- Respect the modularized style of the current app.
+- Avoid inflating `electron/main.js` and `public/renderer.js`; prefer feature modules with small integration seams.
+- Respect the current logging style and conventions.
+- Follow `electron/log.js`, `public/js/log.js`, and `docs/cleanup/bridge_failure_mode_convention.md`.
+
 ## Gate 0: Choose OCR Substrate (Blocking)
 
 ### Deliverables
