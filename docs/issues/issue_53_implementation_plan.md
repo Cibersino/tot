@@ -36,13 +36,14 @@ Linked issue: `docs/issues/issue_53.md`
   - extraction failure (after start)
   - user cancellation/abort
 
-## 4. Basic implementation (must be smoke-testable)
+## 4. Basic implementation
 
 - [ ] Add dedicated import/extract button in the text-selector row.
 - [ ] Implement file picker open behavior (default folder first, then persisted folder).
 - [ ] Implement precondition block (no start when secondary windows are open or stopwatch is running) with explicit user guidance.
 - [ ] Implement OCR route.
 - [ ] Implement native extraction route.
+- [ ] Complete native extraction engineering slice (parser mapping by format, normalization pipeline, structured native-route errors).
 - [ ] Implement PDF triage (`native only` / `OCR only` / `both`).
 - [ ] Implement explicit route-choice UX when both routes are viable.
 - [ ] Implement post-extraction apply modal with overwrite/append/repetitions.
@@ -56,12 +57,13 @@ Linked issue: `docs/issues/issue_53.md`
 ## 5. Smoke test and quality gate for the basic
 
 - [ ] Build and run core smoke matrix (OCR, native, PDF triage, dual-route choice).
+- [ ] Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases).
 - [ ] Validate precondition rejection scenarios and explicit reason messaging.
 - [ ] Validate failure/abort invariants and state separation.
 - [ ] Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice).
 - [ ] Block progression until basic smoke/quality gate passes.
 
-## 6. Non-basic implementation
+## 6. Processing progress and ETA implementation
 
 - [ ] Implement processing progress UX.
 - [ ] Implement ETA behavior and calibrate realism.

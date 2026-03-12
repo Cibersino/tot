@@ -329,6 +329,7 @@ Must log:
 - button entry point and picker behavior
 - OCR route
 - native extraction route
+- native extraction engineering decomposition (parser mapping by format, normalization pipeline, structured native-route errors, fixture matrix for quality gate)
 - route-choice UX when both routes are available
 - overwrite/append/repetitions modal aligned with selector semantics
 - progress, ETA, explicit errors, abort, and structured observability
