@@ -96,6 +96,8 @@ This includes, for example:
 - text editor window
 - task editor window
 
+For this rule, "secondary window" means any non-main app window currently open.
+
 If processing is requested while any of those conditions is true, the app must:
 - refuse to start
 - explicitly tell the user to close the secondary windows and stop the stopwatch
@@ -136,6 +138,7 @@ It must not be conflated with the startup lock.
 ## Post-extraction apply flow
 
 The post-extraction modal must mirror the current selector behavior.
+Extraction changes the text source only; apply semantics remain exactly the current app behavior.
 
 The user must be able to:
 - overwrite current text
@@ -147,7 +150,7 @@ This flow must reuse current semantics for:
 - repetitions behavior
 - MAX_TEXT_CHARS handling
 - truncation notices
-- related metadata behavior
+- existing canonical apply-path behavior
 
 ## Abort policy
 
@@ -182,6 +185,8 @@ Failure cases include:
 - platform/runtime setup failure
 - precondition failure
 - user abort
+
+User abort is a controlled cancellation path (not shown as extraction failure), but it must be logged as an abort event.
 
 ## Substrate
 
@@ -243,11 +248,22 @@ Must capture at least:
 - executed route
 - whether PDF triage occurred
 
-### Apply metadata
-Must remain aligned with current semantics:
-- source: import
-- action: overwrite | append
+### Apply behavior (reuse existing canonical path)
+This epic must reuse the current app's existing apply behavior.
+
+User-facing apply options after extraction:
+- overwrite
+- append
 - repetitions
+
+Implementation rule:
+- apply must go through the current canonical text-application path already used by the app
+- no new apply semantics, no parallel apply pipeline, and no alternative apply mode are introduced by this epic
+- existing MAX_TEXT_CHARS enforcement and explicit truncation notices remain unchanged
+
+Clarification:
+- repetitions are apply behavior and user choice
+- they do not require redefining or expanding text-state metadata fields in this epic
 
 ## Observability
 
@@ -273,13 +289,14 @@ Must log:
 - the native file picker uses default/persisted folder behavior
 - initial language scope is English and Spanish, following the app’s existing `es` / `en` pattern with no hardcoded fallbacks
 - extraction cannot start while secondary windows are open or the stopwatch is running, and the user is explicitly told what to close/stop
-- image files can be processed through OCR with visible progress, realistic ETA, and explicit failures
+- files can be processed through OCR with visible progress, realistic ETA, and explicit failures
 - native-capable files can be processed without OCR
 - when both OCR and native extraction are viable, the user can choose
 - PDFs are triaged correctly
 - while processing is active, the main window and menu are blocked except for basic window actions and abort
 - the processing lock is distinct from the startup lock
 - after successful extraction, the user can choose overwrite/append and repetitions in a modal aligned with the current selector behavior
+- post-extraction apply reuses the existing canonical apply path with no new apply semantics
 - MAX_TEXT_CHARS is enforced with explicit truncation notice
 - failed or aborted extraction never mutates current text
 - abort never shows partial extracted results
