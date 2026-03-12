@@ -56,10 +56,10 @@ These rules are mandatory during execution of this implementation plan.
 ## Gate 0: Choose OCR Substrate (Blocking)
 
 ### Deliverables
-- [ ] `docs/ocr/substrate_evaluation.md`
 - [ ] `docs/adr/adr_0053_ocr_substrate.md`
 
 ### Required content
+- [ ] Include substrate evaluation and comparison matrix in the ADR.
 - [ ] Evaluate Google Document AI first.
 - [ ] Comparison matrix including:
   - [ ] OCR quality for photographed book pages
