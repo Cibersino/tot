@@ -27,6 +27,11 @@ The implementation must follow the existing app pattern:
 - trust the existence of `es` / `en`
 - avoid hardcoded language fallbacks
 
+## Implementation constraints
+
+- Respect the modularized style of the current app. Avoid inflating `electron/main.js` and `public/renderer.js`.
+- Respect the logging style of the current app. Follow the `log.js` and bridge failure policies.
+
 ## Entry point
 
 - One dedicated import/extract button in the text-selector button row.
