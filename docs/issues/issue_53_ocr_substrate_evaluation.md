@@ -6,9 +6,9 @@ This document defines the evaluation method used to select the OCR substrate for
 
 It exists to answer one question before implementation proceeds:
 
-> Which OCR substrate should power the OCR route for Issue 53, given the product goal, platform constraints, compliance burden, and future architecture requirements?
+> Which OCR substrate and access / billing / activation model should power the OCR route for Issue 53, given the product goal, platform constraints, compliance burden, and future architecture requirements?
 
-This document is decision-oriented. It is not a generic survey of OCR tools.
+This document is decision-oriented. It is not a generic survey of OCR tools or commercial models.
 
 ## Source alignment
 
@@ -24,11 +24,13 @@ Key constraints carried into this document:
 - Initial delivery target is Windows.
 - Architecture must remain viable for later macOS/Linux support.
 - Platform-specific code must be isolated.
-- Setup, credential onboarding, billing onboarding, validation flow, and compliance/privacy surfaces may be required depending on the substrate.
+- This app is intended to be distributed to multiple users.
+- The OCR access / billing / activation model must be explicitly defined for the chosen substrate.
+- Setup, credential onboarding, billing onboarding, activation flow, and compliance/privacy surfaces may be required depending on the substrate and access model.
 
 ## Decision scope
 
-This document evaluates the OCR substrate only.
+This document evaluates the OCR substrate together with the access / billing / activation model that would make it shippable for this app.
 
 It does **not** decide:
 
@@ -37,9 +39,9 @@ It does **not** decide:
 - apply-modal behavior
 - processing lock behavior
 - progress/ETA implementation
-- PDF triage policy beyond what is necessary to evaluate OCR substrate suitability
+- PDF triage policy beyond what is necessary to evaluate OCR suitability
 
-Those items depend on, but are not equivalent to, the substrate decision.
+Those items depend on, but are not equivalent to, the substrate + access-model decision.
 
 ## Evaluation model
 
@@ -52,29 +54,44 @@ The decision model has two layers:
 
 This structure prevents a weak-but-convenient candidate from winning on administrative criteria while failing the actual OCR goal.
 
+### Evaluation unit
+
+The evaluation unit is not just a substrate in isolation.
+
+A serious candidate in this document is a **substrate + access model pairing**.
+
+A substrate may be viable under one access model and non-viable under another.
+
 ---
 
 ## 1. Candidates under evaluation
 
-### Primary candidate
+### Primary substrate candidate
 - Google Document AI
 
-### Additional candidates
+### Access models under evaluation
+- vendor-managed
+- user-managed
+- hybrid/optional
+
+### Additional substrate candidates
 - Candidate A: `<name>`
 - Candidate B: `<name>`
 - Candidate C: `<name>`
 
 Notes:
 - Google Document AI must be evaluated first.
-- Additional candidates should only be included if they are plausible enough to compete on product quality or materially reduce strategic risk.
+- Additional substrate candidates should only be included if they are plausible enough to compete on product quality or materially reduce strategic risk.
+- Each serious entry in the actual comparison should be a substrate + access-model pairing, not a substrate name alone.
 
 ---
 
 ## 2. Hard gates
 
-A candidate is rejected immediately if it fails any of the following.
+A candidate pairing is rejected immediately if it fails any of the following.
 
 ### HG-1. Photographed-page OCR viability
+
 The candidate must be plausibly capable of strong OCR performance on real photographed book/document pages.
 
 Failure examples:
@@ -90,6 +107,7 @@ Notes:
 - `<fill>`
 
 ### HG-2. Multilingual coverage
+
 The candidate must support text extraction in any language required by Issue 53, including Asian scripts.
 
 Failure examples:
@@ -105,6 +123,7 @@ Notes:
 - `<fill>`
 
 ### HG-3. PDF suitability
+
 The candidate must be usable for the PDF portion of the OCR route within the Issue 53 scope.
 
 Failure examples:
@@ -120,6 +139,7 @@ Notes:
 - `<fill>`
 
 ### HG-4. Architecture viability
+
 The candidate must fit a design that is Windows-first in delivery but remains viable for later macOS/Linux support.
 
 Failure examples:
@@ -135,12 +155,13 @@ Notes:
 - `<fill>`
 
 ### HG-5. Operational observability and explicit failure handling
+
 The candidate must allow explicit, user-visible error handling and must not force silent fallback behavior.
 
 Failure examples:
 - frequent ambiguous states that cannot be classified or surfaced well
 - opaque substrate failures that would degrade the UX into silent or misleading behavior
-- setup/auth/billing failures that cannot be clearly distinguished and reported
+- setup/auth/billing/quota/restriction failures that cannot be clearly distinguished and reported
 
 Pass / Fail:
 - [ ] Pass
@@ -149,12 +170,18 @@ Pass / Fail:
 Notes:
 - `<fill>`
 
-### HG-6. Setup/compliance feasibility
-The candidate must have a setup, auth, billing, privacy, and compliance burden that is realistic for this product.
+### HG-6. Access-model / setup / compliance feasibility
+
+The substrate + access-model pairing must have an access, billing, activation, privacy, and compliance burden that is realistic for this product.
 
 Failure examples:
-- excessive or brittle credential onboarding
-- billing model incompatible with product constraints
+- no clear answer to who pays for OCR usage
+- no clear answer to who owns the substrate account/project
+- no clear answer to where credentials live
+- user-managed onboarding too brittle for plausible product use
+- vendor-managed model would require operational control not realistic for the product
+- quota/budget/usage-limit behavior cannot be explained or surfaced clearly
+- usage restrictions cannot be enforced or documented as required
 - privacy or external-processing implications too heavy for acceptable UX/compliance handling
 - licensing/compliance surfaces too unclear to close responsibly
 
@@ -189,7 +216,7 @@ Use the following scale for every criterion:
 | A. OCR quality on photographed corpus | 35 |  |  |  |
 | B. Language and script coverage | 15 |  |  |  |
 | C. PDF support and file-family suitability | 15 |  |  |  |
-| D. Cost model and cost scalability | 10 |  |  |  |
+| D. Cost model and cost controllability | 10 |  |  |  |
 | E. Setup / auth / activation burden | 10 |  |  |  |
 | F. Cross-platform architectural viability | 10 |  |  |  |
 | G. Privacy / compliance / disclosure burden | 5 |  |  |  |
@@ -281,23 +308,26 @@ Score:
 Notes:
 - `<fill>`
 
-### D. Cost model and cost scalability (10)
+### D. Cost model and cost controllability (10)
 
-This criterion evaluates whether the substrate is economically compatible with the product.
+This criterion evaluates whether the substrate + access-model pairing is economically compatible with the product.
 
 Evaluate at minimum:
 
+- who pays for OCR usage
 - per-page or per-document cost
 - predictability of cost
 - free-tier usefulness, if any
 - sensitivity to retries/reprocessing
 - likely cost impact under realistic user behavior
+- ability to control or limit cost exposure
 
 Questions:
 
 - Is the cost understandable and controllable?
 - Is there a realistic path to shipping this without unacceptable cost ambiguity?
 - Does the cost model distort UX decisions or product scope?
+- Does the chosen access model create cost exposure that the product cannot safely manage?
 
 Score:
 - `<fill>`
@@ -307,7 +337,7 @@ Notes:
 
 ### E. Setup / auth / activation burden (10)
 
-This criterion evaluates the operational burden of turning the substrate into a usable feature.
+This criterion evaluates the operational burden of turning the substrate into a usable feature under the chosen access model.
 
 Evaluate at minimum:
 
@@ -316,15 +346,17 @@ Evaluate at minimum:
 - user setup
 - credential onboarding
 - billing onboarding
+- activation flow
 - validation/test flow
 - incomplete setup failure modes
 
 Questions:
 
 - Can the setup be explained clearly?
-- Are credential and billing steps manageable for real users?
+- Are credential, billing, and activation steps manageable for real users?
 - Can validation/test flow be made explicit and reliable?
 - Does the setup burden create a major trust problem?
+- Is the activation model acceptable for distributed desktop delivery?
 
 Score:
 - `<fill>`
@@ -342,6 +374,7 @@ Evaluate at minimum:
 - portability path
 - ease of isolating platform-specific code
 - impact on core routing/contracts/orchestration
+- impact of access-model boundaries on architecture
 - risk of platform debt becoming structural
 
 Questions:
@@ -349,6 +382,7 @@ Questions:
 - Can this be implemented Windows-first without becoming Windows-only by design?
 - Can platform-specific integration be isolated behind adapters?
 - Would later macOS/Linux support be incremental or near-rewrite?
+- Does the chosen access model force architecture that would age badly across platforms?
 
 Score:
 - `<fill>`
@@ -358,7 +392,7 @@ Notes:
 
 ### G. Privacy / compliance / disclosure burden (5)
 
-This criterion evaluates whether the substrate introduces acceptable legal/product disclosure work.
+This criterion evaluates whether the substrate + access-model pairing introduces acceptable legal/product disclosure work.
 
 Evaluate at minimum:
 
@@ -368,12 +402,14 @@ Evaluate at minimum:
 - attributions
 - license display requirements
 - clarity of the compliance story
+- access-model-specific disclosures
 
 Questions:
 
 - Can the privacy model be explained clearly in-app?
 - Are disclosure obligations straightforward or unusually heavy?
-- Would this substrate materially complicate release readiness?
+- Would this pairing materially complicate release readiness?
+- Does the chosen access model create additional compliance burden beyond the OCR engine itself?
 
 Score:
 - `<fill>`
@@ -383,7 +419,29 @@ Notes:
 
 ---
 
-## 5. Benchmark corpus requirements
+## 5. Access-model requirements
+
+For each candidate pairing, the access / billing / activation model must be made explicit.
+
+At minimum, record:
+
+- who pays for OCR usage
+- who owns the substrate account/project
+- where credentials live
+- whether the model is vendor-managed, user-managed, or hybrid
+- whether each user can enable OCR with their own account/billing
+- whether OCR is enabled by default or requires explicit activation
+- whether usage restrictions/limits exist
+- how restrictions/limits are enforced
+- what happens when quota, budget, or usage limits are reached
+- whether access can be revoked per user
+- what support burden the model creates
+
+This section exists because a substrate cannot be evaluated seriously for this epic without also evaluating the way distributed users would actually access and pay for it.
+
+---
+
+## 6. Benchmark corpus requirements
 
 This evaluation must use a benchmark corpus that reflects the actual product goal.
 
@@ -437,43 +495,60 @@ The goal is realistic decision-making, not staged success or staged failure.
 
 ---
 
-## 6. Evaluation procedure
+## 7. Evaluation procedure
 
-For each candidate:
+For each candidate pairing:
 
-1. Record candidate identity and version context.
-2. Record setup assumptions.
-3. Run hard-gate evaluation.
-4. If any hard gate fails, reject candidate and stop scoring.
-5. If all hard gates pass, complete weighted scoring.
-6. Record concrete strengths, weaknesses, and downstream constraints.
-7. Compare against other passing candidates.
+1. Record substrate identity and version context.
+2. Record access-model assumptions.
+3. Record setup/auth/billing/activation assumptions.
+4. Run hard-gate evaluation.
+5. If any hard gate fails, reject candidate and stop scoring.
+6. If all hard gates pass, complete weighted scoring.
+7. Record concrete strengths, weaknesses, and downstream constraints.
+8. Compare against other passing candidates.
 
-### Required evidence per candidate
+### Required evidence per candidate pairing
 
 Each candidate section should include:
 
-- candidate name
+- substrate name
+- access model
 - date of evaluation
 - evaluator
 - benchmark corpus used
 - explicit setup assumptions
+- explicit access-model assumptions
 - hard-gate outcomes
 - score table
 - final recommendation status
 
 ---
 
-## 7. Candidate evaluation template
+## 8. Candidate evaluation template
 
-## Candidate: `<name>`
+## Candidate: `<substrate + access model>`
 
 ### Metadata
 
 - Evaluation date: `<date>`
 - Evaluator: `<name>`
+- Substrate: `<fill>`
+- Access model: `<vendor-managed | user-managed | hybrid>`
 - Version / product / API context: `<fill>`
 - Setup assumptions: `<fill>`
+
+### Access-model profile
+
+- Who pays for OCR usage: `<fill>`
+- Who owns the substrate account/project: `<fill>`
+- Where credentials live: `<fill>`
+- Can each user enable OCR with their own account/billing?: `<fill>`
+- Is OCR enabled by default or manually activated?: `<fill>`
+- Usage restrictions/limits: `<fill>`
+- Restriction enforcement path: `<fill>`
+- Quota/budget/usage-limit behavior: `<fill>`
+- Per-user revocation possible?: `<fill>`
 
 ### Hard gates
 
@@ -484,7 +559,7 @@ Each candidate section should include:
 | HG-3 PDF suitability | Pass / Fail |  |
 | HG-4 Architecture viability | Pass / Fail |  |
 | HG-5 Observability / explicit failure handling | Pass / Fail |  |
-| HG-6 Setup/compliance feasibility | Pass / Fail |  |
+| HG-6 Access-model / setup / compliance feasibility | Pass / Fail |  |
 
 ### Weighted scoring
 
@@ -493,7 +568,7 @@ Each candidate section should include:
 | A. OCR quality on photographed corpus | 35 |  |  |  |
 | B. Language and script coverage | 15 |  |  |  |
 | C. PDF support and file-family suitability | 15 |  |  |  |
-| D. Cost model and cost scalability | 10 |  |  |  |
+| D. Cost model and cost controllability | 10 |  |  |  |
 | E. Setup / auth / activation burden | 10 |  |  |  |
 | F. Cross-platform architectural viability | 10 |  |  |  |
 | G. Privacy / compliance / disclosure burden | 5 |  |  |  |
@@ -511,7 +586,7 @@ Each candidate section should include:
 - `<fill>`
 - `<fill>`
 
-### Downstream implementation constraints introduced by this candidate
+### Downstream implementation constraints introduced by this candidate pairing
 
 - `<fill>`
 - `<fill>`
@@ -522,7 +597,7 @@ Each candidate section should include:
 - [ ] Reject
 - [ ] Keep as fallback candidate
 - [ ] Keep as serious contender
-- [ ] Select as preferred substrate
+- [ ] Select as preferred substrate + access-model pairing
 
 ### Recommendation notes
 
@@ -530,23 +605,28 @@ Each candidate section should include:
 
 ---
 
-## 8. Comparative summary
+## 9. Comparative summary
 
-| Candidate | Hard gates passed? | Total score | Decision status | Main reason |
-|---|---|---:|---|---|
-| Google Document AI |  |  |  |  |
-| Candidate A |  |  |  |  |
-| Candidate B |  |  |  |  |
-| Candidate C |  |  |  |  |
+| Substrate | Access model | Hard gates passed? | Total score | Decision status | Main reason |
+|---|---|---|---:|---|---|
+| Google Document AI | vendor-managed |  |  |  |  |
+| Google Document AI | user-managed |  |  |  |  |
+| Google Document AI | hybrid/optional |  |  |  |  |
+| Candidate A | `<fill>` |  |  |  |  |
+| Candidate B | `<fill>` |  |  |  |  |
+| Candidate C | `<fill>` |  |  |  |  |
 
 ---
 
-## 9. Final decision
+## 10. Final decision
 
 ### Chosen substrate
 - `<fill>`
 
-### Rejected candidates
+### Chosen access model
+- `<fill>`
+
+### Rejected candidates / pairings
 - `<fill>`
 - `<fill>`
 
@@ -558,9 +638,11 @@ Each candidate section should include:
 
 These constraints must be treated as implementation inputs, not post-hoc discoveries.
 
+- access-model constraints: `<fill>`
 - setup/onboarding constraints: `<fill>`
 - credential/auth constraints: `<fill>`
 - billing constraints: `<fill>`
+- restriction/quota constraints: `<fill>`
 - privacy/external-processing constraints: `<fill>`
 - platform adapter constraints: `<fill>`
 - PDF/latency/limits constraints: `<fill>`
@@ -568,13 +650,16 @@ These constraints must be treated as implementation inputs, not post-hoc discove
 
 ---
 
-## 10. Exit criteria for this document
+## 11. Exit criteria for this document
 
 This document is considered complete when:
 
-- at least one primary candidate and all serious alternatives have been evaluated
+- at least one primary substrate candidate and all serious alternatives have been evaluated
+- serious access-model pairings have been evaluated, not just substrate names
 - hard-gate results are explicit
 - weighted scores are filled
 - final recommendation is explicit
+- chosen substrate is explicit
+- chosen access / billing / activation model is explicit
 - downstream constraints are recorded clearly enough to guide architecture and UX work
 - the result is strong enough to justify moving from substrate evaluation into contract definition and implementation planning
