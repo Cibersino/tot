@@ -259,6 +259,3 @@ These rules are mandatory during execution of this implementation plan.
 
 ### Exit criteria
 - [ ] All acceptance criteria from `docs/issues/issue_53.md` pass.
-
-
-
