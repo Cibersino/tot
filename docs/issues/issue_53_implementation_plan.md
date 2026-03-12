@@ -17,17 +17,25 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 - For high-impact or blocking ambiguity, Codex must ask before performing the operation.
 - For low-impact ambiguity where operation proceeds, Codex must state the assumption and rationale immediately after the operation.
 
-## 1. Substrate decision
+## 1. Substrate and access-model decision
 
 - [ ] Evaluate substrate options, starting with Google Document AI as the primary candidate.
-- [ ] Compare OCR quality (especially photographed book pages), language coverage, PDF support, setup burden, cost, and Windows fit.
-- [ ] Decide substrate and record rationale + known constraints that will affect downstream implementation.
+- [ ] Compare OCR quality (especially photographed book pages), language coverage, PDF support, setup burden, cost, Windows-first delivery fit, and cross-platform architectural viability.
+- [ ] Evaluate the OCR access / billing / activation model for distributed app delivery alongside substrate evaluation:
+  - vendor-managed
+  - user-managed
+  - hybrid/optional
+- [ ] Decide substrate and access model, and record rationale + known constraints that will affect downstream implementation.
 
-## 2. Substrate setup and manual activation
+## 2. Substrate setup / billing / activation path
 
 - [ ] Complete developer-side installation/activation for the chosen substrate.
-- [ ] Configure credentials/secrets and required auth/billing setup.
-- [ ] Add setup validation flow and explicit user-visible errors for incomplete/missing setup.
+- [ ] Configure credentials/secrets and required auth/billing setup for the chosen substrate and chosen access model.
+- [ ] Define ownership/storage boundary for controlling credentials/configuration.
+- [ ] Define whether OCR is enabled by default or requires explicit activation, and how availability is determined.
+- [ ] Define usage restrictions/limits, if any, and how they are enforced.
+- [ ] Define quota/budget/usage-limit handling for the chosen model.
+- [ ] Add setup validation flow and explicit user-visible errors for incomplete/missing setup, missing credentials, billing/auth issues, and quota/budget/usage-limit issues.
 - [ ] Confirm setup path and failures follow current logging/bridge-failure policies.
 
 ## 3. Contracts before implementation
@@ -62,6 +70,7 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 - [ ] Implement precondition block (no start when secondary windows are open or stopwatch is running) with explicit user guidance.
 - [ ] Isolate Windows-specific implementation behind platform adapters so core extraction/apply orchestration remains OS-agnostic for future macOS/Linux support.
 - [ ] Implement processing mode as a distinct lock state (not startup lock) and block normal main-window/menu interactions while active.
+- [ ] Implement access/activation gate for the OCR route according to the chosen model, with explicit user-visible failures for unavailable/not-activated/restricted/quota-exhausted paths.
 - [ ] Implement OCR route.
 - [ ] Implement native extraction route.
 - [ ] Complete native extraction engineering slice (parser mapping by format, normalization pipeline, structured native-route errors).
@@ -87,6 +96,7 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
   - only close/minimize/move/abort remain available during processing
 - [ ] Validate close-window-during-processing cancellation path and invariants.
 - [ ] Validate failure/abort invariants and state separation.
+- [ ] Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures.
 - [ ] Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice).
 - [ ] Validate observability coverage for required fields/events (routes, latency, apply/truncation, precondition/failure/cancel/setup paths).
 - [ ] Block progression until basic smoke/quality gate passes.
@@ -108,6 +118,7 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
   - apply choice + repetition count
   - truncation events
   - setup/configuration failures
+  - activation/auth/billing/quota/restriction events
   - precondition rejection and cancellation events
 - [ ] Code cleanup/refactor while preserving behavior.
 
@@ -115,6 +126,6 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 
 - [ ] Add/update third-party notices, attributions, and license display surfaces.
 - [ ] Add/update privacy and external-processing disclosures for chosen substrate/dependencies.
-- [ ] Update setup/billing/onboarding instructions.
+- [ ] Update setup/billing/activation instructions for the chosen access model.
 - [ ] Update changelog/release notes and related documentation.
 - [ ] Verify all Issue 53 acceptance criteria are covered before closure.
