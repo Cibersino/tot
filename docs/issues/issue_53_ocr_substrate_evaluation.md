@@ -815,6 +815,70 @@ Each candidate section should include:
 - Must define temporary remote-artifact lifecycle explicitly, including best-effort deletion and explicit user-visible warning if cleanup fails.
 - Must document that OCR requires Google sign-in and that files are uploaded to Google for text extraction.
 
+### Production OAuth / publication requirements for a distributed public release
+
+This candidate pairing remains viable for private testing and narrow manual distribution with an unverified OAuth app, but that mode is not equivalent to a normal public product release.
+
+#### Private testing / narrow non-public distribution
+
+For private testing, the app can technically function before full production verification, but with important restrictions:
+
+- the OAuth app may show an unverified-app warning to users
+- Google testing/user-cap restrictions may apply
+- testing-mode token behavior may be less stable than production
+- this is acceptable for development and controlled testers, not as the intended release posture
+
+This means the pairing is implementable early, but that does not remove the publication/compliance work required for a real public rollout.
+
+#### Minimum production publication requirements
+
+If this app is distributed publicly as a normal external desktop app, the Google account connection flow must be treated as a production OAuth integration, not as an ad-hoc test setup.
+
+At minimum, the release story must include:
+
+- a Google Cloud project with an OAuth client registered for the correct installed-app / desktop flow
+- desktop OAuth using the system browser, not an embedded webview
+- minimum-scope design, with `drive.file` as the intended default unless a later requirement proves it insufficient
+- a publicly accessible application home page that clearly describes the app and the Google-connected OCR functionality
+- a publicly accessible privacy policy that explains how the app accesses, uses, stores, and deletes Google user data
+- app home page and privacy policy hosted on a verified domain under project ownership/control for production verification
+- OAuth consent-screen branding/support metadata aligned with the real app identity
+- submission for Google's basic/brand verification before treating this as a normal public release path
+
+#### What does not count as "done"
+
+The following should not be treated as sufficient production-readiness by themselves:
+
+- "the OAuth flow works locally"
+- "the app is usable by the developer personally"
+- "the code lives on GitHub"
+- "a GitHub repository exists"
+- "a GitHub profile or repository page is the only app presence"
+
+A repository can support development, but production OAuth publication requires a clearer and more formal public app identity/compliance surface.
+
+#### App-shape implication for this project
+
+For this project, that means the candidate is viable for a solo developer, but only if the project accepts that a real public rollout requires at least a minimal public web presence and policy surface.
+
+A minimal acceptable production shape would be something like:
+
+- simple public project home page
+- simple public privacy policy
+- verified domain ownership
+- OAuth consent-screen identity aligned with the same public app identity
+
+Without that, the pairing remains best understood as development/private-testing viable rather than cleanly public-release ready.
+
+#### Evaluation impact
+
+This does not force rejection of the candidate.
+
+However, it does narrow the recommendation:
+
+- Pass for distributed-public feasibility only if the release plan explicitly includes production OAuth verification work.
+- If the project is unwilling to add a minimal verified-domain homepage/privacy-policy surface, this candidate should be downgraded from "public-release preferred" to "private-testing preferred only".
+
 ### Recommendation status
 
 - [ ] Reject
@@ -824,7 +888,7 @@ Each candidate section should include:
 
 ### Recommendation notes
 
-`Select as the current preferred pairing. Under the one-route product constraint, the decisive advantage is that users do not need to create or fund a separate OCR service account/project. The pairing stays acceptable only if implemented with strict scope minimization, official APIs only, explicit sign-in activation, explicit privacy disclosure, and explicit temporary-artifact cleanup.`
+`Select as the current preferred pairing. Under the one-route product constraint, the decisive advantage is that users do not need to create or fund a separate OCR service account/project. The pairing stays acceptable only if implemented with strict scope minimization, official APIs only, explicit sign-in activation, explicit privacy disclosure, explicit temporary-artifact cleanup, and an explicit production OAuth publication plan for distributed public release. If the project is unwilling to add the minimal homepage/privacy-policy/verified-domain surface required for that publication path, the pairing should be treated as private-testing viable but not yet public-release ready.`
 
 ---
 
@@ -835,7 +899,7 @@ Each candidate section should include:
 | Google Document AI | vendor-managed | No | - | Reject | Operational/billing/compliance burden is too heavy for the current product. |
 | Google Document AI | user-managed + optional activation | Yes | 69 | Serious contender (second choice) | Probably stronger raw OCR, but user-side cloud onboarding is too heavy for the default one-route product. |
 | Google Document AI | hybrid/optional | No | - | Reject | Wrong shape for a one-route OCR feature; access-model ambiguity adds support and UX debt. |
-| Google Drive OCR via Google Docs conversion | user-managed + explicit sign-in activation | Yes | 70 | Preferred current pairing | Best fit for one OCR route with no separate OCR contracting/billing workflow. |
+| Google Drive OCR via Google Docs conversion | user-managed + explicit sign-in activation | Yes | 70 | Preferred current pairing | Best fit for one OCR route with no separate OCR contracting/billing workflow, subject to production OAuth publication work. |
 | Google Cloud Vision DOCUMENT_TEXT_DETECTION | user-managed + optional activation | Not evaluated in this revision | - | Deferred | Plausible alternative, but not needed to answer the current product decision. |
 | Azure AI Document Intelligence Read | user-managed + optional activation | Not evaluated in this revision | - | Deferred | Plausible alternative, but not needed to answer the current product decision. |
 
@@ -855,7 +919,7 @@ Each candidate section should include:
 
 ### Rationale
 
-`Given the current product constraint that the app should expose one OCR route rather than a menu of OCR providers, the decision is no longer just about which substrate might deliver the highest raw OCR quality. It is about which single route is most realistic for distributed desktop users. Google Drive OCR via Google Docs conversion now outranks the prior Document AI baseline because it removes the need for each user to create or fund a separate OCR service/project while still remaining implementable through official Google APIs. This is a narrower and more opinionated choice than the earlier conservative baseline. It accepts external upload and Google-account dependence as part of the product contract in exchange for a much lower user-side activation burden.`
+`Given the current product constraint that the app should expose one OCR route rather than a menu of OCR providers, the decision is no longer just about which substrate might deliver the highest raw OCR quality. It is about which single route is most realistic for distributed desktop users. Google Drive OCR via Google Docs conversion now outranks the prior Document AI baseline because it removes the need for each user to create or fund a separate OCR service/project while still remaining implementable through official Google APIs. This is a narrower and more opinionated choice than the earlier conservative baseline. It accepts external upload and Google-account dependence as part of the product contract in exchange for a much lower user-side activation burden. However, the pairing should only be treated as public-release ready if the project also commits to the minimum OAuth publication surface required for an external production app.`
 
 ### Current recommendation baseline
 
@@ -870,9 +934,13 @@ Based on the current document set, current product constraint of one OCR route, 
 - The app should start from local files selected in the app, upload them for OCR conversion, export the extracted text, and then attempt cleanup of the temporary remote artifact.
 - `Disconnect Google OCR` and `Disable OCR availability in this app instance` should be treated as separate user actions if the implementation keeps cached credentials/tokens.
 - Setup/auth/quota/export/delete failures must map to explicit user-visible states; no silent fallback is acceptable.
+- Public release should assume Google OAuth production verification work, not only local technical integration.
+- A normal public rollout requires a minimal public app identity surface: home page, privacy policy, and domain verification aligned with the OAuth consent screen.
+- A plain source repository is not sufficient by itself as the production publication/compliance surface for this pairing.
+- Until that publication surface exists, this pairing should be considered fully suitable for development/private testing but only conditionally suitable for broad public distribution.
 - If later benchmark evidence shows the Drive path materially misses the photographed-page quality target, the next reconsideration target should be `Google Document AI + user-managed + optional activation`, not a multi-provider chooser.
 
-This revised baseline is less conservative than the previous document state. It sacrifices substrate purity in favor of a more realistic single-route product story for distributed users.
+This revised baseline is less conservative than the previous document state. It sacrifices substrate purity in favor of a more realistic single-route product story for distributed users, while making the production OAuth publication burden explicit instead of leaving it implicit.
 
 ### Known constraints that propagate downstream
 
@@ -887,6 +955,8 @@ These constraints must be treated as implementation inputs, not post-hoc discove
 - platform adapter constraints: OAuth/browser-launch/callback handling must be isolated cleanly for Windows-first delivery and later macOS/Linux support.
 - PDF/latency/limits constraints: PDF/image conversion is remote and may be slower/less transparent than a dedicated OCR API; temporary Google Docs export limits apply; some image formats may need local normalization before upload.
 - observability/error-taxonomy constraints: the app must distinguish sign-in required, consent denied, upload failed, conversion failed, export failed, delete failed, quota-limited, and connectivity-failed states.
+- public-release publication constraints: if OCR is shipped as a Google-connected public feature, the release plan must include OAuth consent-screen publication readiness, public app identity, privacy-policy publication, and verified-domain ownership/control.
+- project-presence constraints: a repository-only project presence is insufficient for clean production OAuth rollout; at least a minimal dedicated public app/policy surface is required.
 
 ---
 
