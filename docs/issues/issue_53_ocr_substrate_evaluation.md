@@ -881,6 +881,63 @@ However, it does narrow the recommendation:
 - Pass for distributed-public feasibility only if the release plan explicitly includes production OAuth verification work.
 - If the project is unwilling to add a minimal verified-domain homepage/privacy-policy surface, this candidate should be downgraded from "public-release preferred" to "private-testing preferred only".
 
+### Development-vs-production implementation clarification
+
+This pairing can and should be developed first against a testing setup.
+
+That is not only acceptable, but operationally preferable. The current test-project / external-test-user mode is sufficient for implementing and validating the core OCR route inside the app, as long as the implementation is designed so that environment-specific publication details remain configuration concerns rather than deep logic concerns.
+
+#### What can be built safely in testing mode
+
+The following implementation work should be treated as stable and worth doing now, even before public production publication is completed:
+
+- desktop OAuth launched in the system browser
+- explicit sign-in / disconnect flow
+- minimum-scope authorization design
+- local file selection
+- upload -> convert -> export -> delete OCR flow
+- token storage / revocation handling
+- explicit OCR error taxonomy and user-visible failure states
+- disclosure/consent UX around external processing
+
+These are core product behaviors, not merely temporary test scaffolding.
+
+#### What should remain environment-specific
+
+The following pieces should be treated as environment/publication configuration, not as reasons to fork the OCR logic:
+
+- Google Cloud project identity
+- OAuth client identity
+- consent-screen publication state
+- test-user restrictions versus public production availability
+- branding/homepage/privacy-policy/domain-verification surfaces
+
+In other words, the code path for the OCR route should be kept as stable as possible across testing and future production rollout.
+
+#### Practical implementation consequence
+
+The app should be implemented so that:
+
+- test versus production differences are handled primarily through configuration and deployment inputs
+- the OCR route itself is not rewritten when moving from private testing to public release
+- environment-specific values are isolated from the core OCR orchestration logic
+
+If implemented this way, the later transition to production should mostly involve:
+- switching to the production Google project / OAuth client
+- completing OAuth publication/verification requirements
+- updating public app-identity/compliance surfaces
+
+It should not require major changes to the core OCR route itself.
+
+#### Recommendation impact
+
+This materially supports starting app-side implementation now against the testing setup.
+
+The testing setup should be treated as a legitimate development environment for the chosen OCR route, not as disposable throwaway work, provided that the implementation keeps:
+- environment configuration separated from route logic
+- OAuth/publication surfaces separated from OCR orchestration
+- project-specific credentials out of hardcoded app logic
+
 ### Empirical validation update
 
 Developer-side/manual validation was completed after the initial drafting of this evaluation.
@@ -979,6 +1036,7 @@ Based on the current document set, current product constraint of one OCR route, 
 - Until that publication surface exists, this pairing should be considered fully suitable for development/private testing but only conditionally suitable for broad public distribution.
 - Initial developer-side empirical validation has already been completed successfully for both a photographed-page image sample and a scanned PDF sample, with output quality judged strong enough for the intended product use case.
 - Further corpus expansion can still refine confidence later, but the Drive path should no longer be treated as merely speculative on OCR quality.
+- App-side implementation should proceed first against the testing setup, with test-versus-production differences isolated as configuration/publication concerns rather than changes to the core OCR route logic.
 
 This revised baseline is less conservative than the previous document state. It sacrifices substrate purity in favor of a more realistic single-route product story for distributed users, while making the production OAuth publication burden explicit instead of leaving it implicit.
 
@@ -997,6 +1055,7 @@ These constraints must be treated as implementation inputs, not post-hoc discove
 - observability/error-taxonomy constraints: the app must distinguish sign-in required, consent denied, upload failed, conversion failed, export failed, delete failed, quota-limited, and connectivity-failed states.
 - public-release publication constraints: if OCR is shipped as a Google-connected public feature, the release plan must include OAuth consent-screen publication readiness, public app identity, privacy-policy publication, and verified-domain ownership/control.
 - project-presence constraints: a repository-only project presence is insufficient for clean production OAuth rollout; at least a minimal dedicated public app/policy surface is required.
+- environment-separation constraints: test and production should use separate Google projects/clients, but the app should keep the OCR route logic stable across both environments and isolate environment differences as configuration/publication concerns.
 
 ---
 
