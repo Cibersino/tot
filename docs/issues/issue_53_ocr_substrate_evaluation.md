@@ -750,7 +750,7 @@ Each candidate section should include:
 - Evaluation date: `2026-03-12`
 - Evaluator: `ChatGPT`
 - Substrate: `Google Drive OCR via conversion to Google Docs, text export, and cleanup`
-- Access model: `user-managed + optional activation`
+- Access model: `user-managed + explicit sign-in activation`
 - Version / product / API context: `Google Drive API v3 upload/import + Google Docs export flow`
 - Setup assumptions:
   - User signs in with a Google account using official desktop OAuth in the system browser.
@@ -777,9 +777,9 @@ Each candidate section should include:
 
 | Hard gate | Result | Notes |
 |---|---|---|
-| HG-1 Photographed-page OCR viability | Pass (provisional) | Real product behavior is promising, but a benchmark corpus is still required before calling quality conclusively strong. |
-| HG-2 Multilingual coverage | Pass (provisional) | Google's documented conversion flow is language-detecting and broad enough to remain serious pending corpus confirmation. |
-| HG-3 PDF suitability | Pass (narrow) | Multipage PDF conversion exists, but this is a document-conversion workflow rather than a pure OCR API. |
+| HG-1 Photographed-page OCR viability | Pass | Developer-side validation on a real photographed-page image sample produced practically strong OCR output suitable for the product use case. |
+| HG-2 Multilingual coverage | Pass (provisional) | Spanish and English validation path is now practically supported by the successful test flow; broader multilingual coverage still remains to be expanded later. |
+| HG-3 PDF suitability | Pass | Developer-side validation on a scanned PDF sample produced practically strong OCR output suitable for the product use case. |
 | HG-4 Architecture viability | Pass | Official HTTPS/OAuth/API flow is cross-platform-friendly. |
 | HG-5 Observability / explicit failure handling | Pass (narrow) | Auth/quota/export/delete failures can be explicit, but OCR internals are more opaque than in a dedicated OCR API. |
 | HG-6 Access-model / setup / compliance feasibility | Pass | Viable if and only if the app uses official APIs, minimum scopes, explicit sign-in activation, and clear privacy/disclosure handling. |
@@ -788,26 +788,28 @@ Each candidate section should include:
 
 | Criterion | Weight | Score (0-5) | Weighted score | Notes |
 |---|---:|---:|---:|---|
-| A. OCR quality on photographed corpus | 35 | 3 | 21 | Promising enough to stay preferred provisionally, but still unbenchmarked in this document. |
-| B. Language and script coverage | 15 | 4 | 12 | Broad enough to remain viable for the issue target. |
-| C. PDF support and file-family suitability | 15 | 3 | 9 | Good enough for PDFs and common image types, but less clean than a dedicated OCR API and may need local normalization for some image formats. |
+| A. OCR quality on photographed corpus | 35 | 5 | 35 | Developer-side validation on a photographed-page image sample was strong enough for the intended product use case. |
+| B. Language and script coverage | 15 | 4 | 12 | Broad enough to remain viable for the issue target; broader multilingual validation can still grow later. |
+| C. PDF support and file-family suitability | 15 | 5 | 15 | Developer-side validation on a scanned PDF sample was strong enough for the intended product use case. |
 | D. Cost model and cost controllability | 10 | 5 | 10 | Its biggest advantage: no separate OCR billing workflow for the user. |
 | E. Setup / auth / activation burden | 10 | 4 | 8 | Sign-in consent is materially lighter than asking users to create cloud OCR projects/billing. |
 | F. Cross-platform architectural viability | 10 | 4 | 8 | Works as a normal OAuth/API integration across desktop platforms. |
 | G. Privacy / compliance / disclosure burden | 5 | 2 | 2 | External upload and temporary remote artifacts still require strong disclosure and cleanup policy. |
-| **Total** | **100** |  | **70** |  |
+| **Total** | **100** |  | **90** |  |
 
 ### Strengths
 
 - Best fit for a single OCR route that does not ask users to contract or configure a separate paid OCR service.
 - Uses a Google flow that users already recognize conceptually from Drive/Docs.
 - Official API path exists for conversion, export, and cleanup.
+- Has now been validated empirically in a real developer-side setup on both an image sample and a scanned PDF sample.
 
 ### Weaknesses
 
 - It is not a clean dedicated OCR API; it is a conversion workflow.
 - External upload/privacy burden is unavoidable.
 - Some desired file families may require local normalization to a supported upload format before conversion.
+- OCR internals are more opaque than in a dedicated structured OCR API.
 
 ### Downstream implementation constraints introduced by this candidate pairing
 
@@ -879,6 +881,43 @@ However, it does narrow the recommendation:
 - Pass for distributed-public feasibility only if the release plan explicitly includes production OAuth verification work.
 - If the project is unwilling to add a minimal verified-domain homepage/privacy-policy surface, this candidate should be downgraded from "public-release preferred" to "private-testing preferred only".
 
+### Empirical validation update
+
+Developer-side/manual validation was completed after the initial drafting of this evaluation.
+
+#### Validation scope executed
+- dedicated Google Cloud test project created for the Drive OCR route
+- Google Drive API enabled
+- desktop OAuth consent/client configured for external test usage
+- test users added
+- local credentials downloaded
+- official-style authentication path validated first through a Drive list-files test
+- local proof-of-concept OCR flow executed successfully:
+  - local file selection
+  - upload to Drive
+  - conversion to Google Docs
+  - export to `text/plain`
+  - deletion of the temporary Google Doc artifact
+
+#### Samples validated
+- one photographed-page image sample
+- one scanned PDF sample
+
+#### Observed outcome
+- authentication and consent flow worked successfully in the intended desktop/browser model
+- the full OCR route worked end-to-end for both tested file families
+- practical OCR quality on the photographed-page image was strong enough to satisfy the product goal
+- practical OCR quality on the scanned PDF was likewise strong enough and materially consistent with the image result
+- the main defects observed were post-processing/formatting defects (line breaks, hyphenation, spacing, cleanup), not major content-loss failures
+
+#### Interpretation
+This candidate is no longer only a theoretical or paper-viable favorite. It has now been validated empirically in a real developer-side setup and has demonstrated output quality that is acceptable for the intended product use case.
+
+This does not eliminate the need for broader corpus testing later, but it materially upgrades confidence in:
+- photographed-page OCR viability
+- scanned-PDF suitability
+- setup/activation realism for a user-managed test path
+
 ### Recommendation status
 
 - [ ] Reject
@@ -888,7 +927,7 @@ However, it does narrow the recommendation:
 
 ### Recommendation notes
 
-`Select as the current preferred pairing. Under the one-route product constraint, the decisive advantage is that users do not need to create or fund a separate OCR service account/project. The pairing stays acceptable only if implemented with strict scope minimization, official APIs only, explicit sign-in activation, explicit privacy disclosure, explicit temporary-artifact cleanup, and an explicit production OAuth publication plan for distributed public release. If the project is unwilling to add the minimal homepage/privacy-policy/verified-domain surface required for that publication path, the pairing should be treated as private-testing viable but not yet public-release ready.`
+`Select as the current preferred pairing. Under the one-route product constraint, the decisive advantage is that users do not need to create or fund a separate OCR service account/project. This pairing is no longer only theoretically attractive: it has also been validated empirically in a real developer-side setup on both a photographed-page image and a scanned PDF, with output quality judged strong enough for the intended product use case. The pairing stays acceptable only if implemented with strict scope minimization, official APIs only, explicit sign-in activation, explicit privacy disclosure, explicit temporary-artifact cleanup, and an explicit production OAuth publication plan for distributed public release. If the project is unwilling to add the minimal homepage/privacy-policy/verified-domain surface required for that publication path, the pairing should still be treated as private-testing/public-release-conditional rather than fully production-ready by default.`
 
 ---
 
@@ -899,7 +938,7 @@ However, it does narrow the recommendation:
 | Google Document AI | vendor-managed | No | - | Reject | Operational/billing/compliance burden is too heavy for the current product. |
 | Google Document AI | user-managed + optional activation | Yes | 69 | Serious contender (second choice) | Probably stronger raw OCR, but user-side cloud onboarding is too heavy for the default one-route product. |
 | Google Document AI | hybrid/optional | No | - | Reject | Wrong shape for a one-route OCR feature; access-model ambiguity adds support and UX debt. |
-| Google Drive OCR via Google Docs conversion | user-managed + explicit sign-in activation | Yes | 70 | Preferred current pairing | Best fit for one OCR route with no separate OCR contracting/billing workflow, subject to production OAuth publication work. |
+| Google Drive OCR via Google Docs conversion | user-managed + explicit sign-in activation | Yes | 90 | Preferred current pairing | Best fit for one OCR route with no separate OCR contracting/billing workflow; now also empirically validated in developer-side image + PDF testing. |
 | Google Cloud Vision DOCUMENT_TEXT_DETECTION | user-managed + optional activation | Not evaluated in this revision | - | Deferred | Plausible alternative, but not needed to answer the current product decision. |
 | Azure AI Document Intelligence Read | user-managed + optional activation | Not evaluated in this revision | - | Deferred | Plausible alternative, but not needed to answer the current product decision. |
 
@@ -919,7 +958,7 @@ However, it does narrow the recommendation:
 
 ### Rationale
 
-`Given the current product constraint that the app should expose one OCR route rather than a menu of OCR providers, the decision is no longer just about which substrate might deliver the highest raw OCR quality. It is about which single route is most realistic for distributed desktop users. Google Drive OCR via Google Docs conversion now outranks the prior Document AI baseline because it removes the need for each user to create or fund a separate OCR service/project while still remaining implementable through official Google APIs. This is a narrower and more opinionated choice than the earlier conservative baseline. It accepts external upload and Google-account dependence as part of the product contract in exchange for a much lower user-side activation burden. However, the pairing should only be treated as public-release ready if the project also commits to the minimum OAuth publication surface required for an external production app.`
+`Given the current product constraint that the app should expose one OCR route rather than a menu of OCR providers, the decision is no longer just about which substrate might deliver the highest raw OCR quality. It is about which single route is most realistic for distributed desktop users. Google Drive OCR via Google Docs conversion now outranks the prior Document AI baseline because it removes the need for each user to create or fund a separate OCR service/project while still remaining implementable through official Google APIs. This is a narrower and more opinionated choice than the earlier conservative baseline. It accepts external upload and Google-account dependence as part of the product contract in exchange for a much lower user-side activation burden. That product judgment is no longer based only on theory: developer-side empirical validation has already shown that the Drive OCR route can produce excellent practical results for both an image sample and a scanned PDF sample. However, the pairing should only be treated as public-release ready if the project also commits to the minimum OAuth publication surface required for an external production app.`
 
 ### Current recommendation baseline
 
@@ -938,7 +977,8 @@ Based on the current document set, current product constraint of one OCR route, 
 - A normal public rollout requires a minimal public app identity surface: home page, privacy policy, and domain verification aligned with the OAuth consent screen.
 - A plain source repository is not sufficient by itself as the production publication/compliance surface for this pairing.
 - Until that publication surface exists, this pairing should be considered fully suitable for development/private testing but only conditionally suitable for broad public distribution.
-- If later benchmark evidence shows the Drive path materially misses the photographed-page quality target, the next reconsideration target should be `Google Document AI + user-managed + optional activation`, not a multi-provider chooser.
+- Initial developer-side empirical validation has already been completed successfully for both a photographed-page image sample and a scanned PDF sample, with output quality judged strong enough for the intended product use case.
+- Further corpus expansion can still refine confidence later, but the Drive path should no longer be treated as merely speculative on OCR quality.
 
 This revised baseline is less conservative than the previous document state. It sacrifices substrate purity in favor of a more realistic single-route product story for distributed users, while making the production OAuth publication burden explicit instead of leaving it implicit.
 
