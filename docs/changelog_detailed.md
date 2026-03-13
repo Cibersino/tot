@@ -54,6 +54,7 @@ Reglas:
 ### Resumen
 
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
+- Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
 
 ### Cambiado
 
@@ -61,6 +62,14 @@ Reglas:
   - `set-current-text` ahora autoriza explícitamente el sender y acepta solo `mainWin`/`editorWin`; otros senders reciben `{ ok:false, error:'unauthorized' }`.
   - `meta.source` pasa a derivarse en main según sender (`editor` o `main-window`), evitando spoofing desde payload renderer.
   - `meta.action` pasa por allowlist blanda (`overwrite`, `append_newline`, `typing`, `typing_toggle_on`, `clear`, `paste`, `drop`, `set`); acciones desconocidas se normalizan a `set` con warning (sin reject duro).
+- `public/renderer.js`:
+  - Se generaliza la repetición del portapapeles para ambos botones (`overwrite` y `append`) usando helpers compartidos (`normalize/get/project/build`) y una sola semántica de `N`.
+  - Renombre de superficie local para reflejar semántica unificada: `appendRepeatInput` → `clipboardRepeatInput`; `MAX_APPEND_REPEAT` → `MAX_CLIPBOARD_REPEAT`.
+  - Se incorpora estado visual en vivo para el input de repeticiones (`.is-repeat-active`) cuando el valor efectivo es `> 1`, aplicado tanto en edición directa como tras normalización/clamp.
+- UI/i18n/documentación:
+  - `public/index.html` y `public/style.css`: renombre a `clipboard-repeat-input` y estilo de advertencia (borde/fondo rojo suave + foco rojo) para `N > 1`.
+  - i18n renderer: renombre de key `renderer.main.tooltips/aria.append_repeat*` a `renderer.main.tooltips/aria.clipboard_repeat_count` en todos los locales.
+  - `docs/test_suite.md` e instrucciones (`public/info/instrucciones.es.html`, `public/info/instrucciones.en.html`): actualización de casos y texto para dejar explícito que `N` aplica a `📋↺` y `📋+`.
 
 ### Arreglado
 
@@ -71,10 +80,29 @@ Reglas:
 - IPC `set-current-text` (failure-path):
   - se formaliza respuesta `unauthorized` para senders no autorizados.
 - Sin cambios en canal, shape healthy-path ni superficie de preload (`window.electronAPI.setCurrentText` / `window.editorAPI.setCurrentText` se mantienen).
+- UI/i18n (renderer):
+  - ID/clase de input de repetición renombrados a `clipboardRepeatInput` / `clipboard-repeat-input`.
+  - Keys i18n renombradas a `renderer.main.tooltips.clipboard_repeat_count` y `renderer.main.aria.clipboard_repeat_count`.
+  - Sin cambios de contratos IPC/storage asociados al flujo de repetición.
 
 ### Archivos
 
 - `electron/text_state.js`
+- `public/renderer.js`
+- `public/index.html`
+- `public/style.css`
+- `public/js/constants.js`
+- `i18n/arn/renderer.json`
+- `i18n/de/renderer.json`
+- `i18n/en/renderer.json`
+- `i18n/es/es-cl/renderer.json`
+- `i18n/es/renderer.json`
+- `i18n/fr/renderer.json`
+- `i18n/it/renderer.json`
+- `i18n/pt/renderer.json`
+- `docs/test_suite.md`
+- `public/info/instrucciones.es.html`
+- `public/info/instrucciones.en.html`
 
 ---
 
