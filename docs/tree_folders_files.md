@@ -121,7 +121,8 @@ tot/
 │ ├── flotante.css
 │ └── style.css
 ├── website/
-│ └── index.html
+│ └── public/
+│   └── index.html
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
 ├── .editorconfig
 ├── .eslintrc.cjs
