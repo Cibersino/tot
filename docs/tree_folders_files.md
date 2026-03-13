@@ -120,6 +120,8 @@ tot/
 │ ├── task_editor.css
 │ ├── flotante.css
 │ └── style.css
+├── website/
+│ └── index.html
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
 ├── .editorconfig
 ├── .eslintrc.cjs
