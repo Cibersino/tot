@@ -29,6 +29,46 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0009
+
+- Date/time: 2026-03-14 18:34:31 -03:00
+- Operation: Execute Section 2 checklist item 1 validation (`developer-side installation/activation`) using local Drive OAuth harness.
+- Why: User approved proceeding with Section 2 execution in checklist order.
+- Changes made:
+  - Ran local validation command in sandbox:
+    - `node index.js` (workdir: `tools_local/drive_ocr_test`)
+    - first attempt failed with `spawn EPERM` because OAuth helper needs to open a system browser.
+  - Re-ran `node index.js` with user-approved escalated execution:
+    - result: `No files found.` (successful OAuth/API access path; list may legitimately be empty).
+  - Ran OCR flow validation for image and PDF:
+    - `node ocr_test.js sample.jpg es`
+    - `node ocr_test.js sample.pdf es`
+    - first sandbox attempts failed with `spawn EPERM` for the same browser-open constraint.
+    - re-runs with user-approved escalated execution succeeded in both cases:
+      - upload -> convert -> export -> delete completed
+      - OCR text was exported to `tools_local/drive_ocr_test/ocr_output.txt`
+  - Manual-participation note:
+    - no fresh browser consent prompt was observed during these runs, likely due cached local OAuth token state.
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Complete developer-side installation/activation for the chosen substrate.`
+  - No other checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Successful escalated `node index.js` output: `No files found.`
+  - Successful escalated image OCR run:
+    - `1) Subiendo y convirtiendo a Google Docs... OK`
+    - `2) Exportando a texto plano... OK`
+    - `3) Borrando documento temporal... OK`
+  - Successful escalated PDF OCR run:
+    - `1) Subiendo y convirtiendo a Google Docs... OK`
+    - `2) Exportando a texto plano... OK`
+    - `3) Borrando documento temporal... OK`
+- Outcome / next step:
+  - Section 2 item 1 is complete with executable evidence. Next in checklist order is item 2 (`Configure credentials/secrets and required auth/billing setup`), including moving runtime credentials to a non-repo local path and documenting that boundary.
+
 ### OP-0008
 
 - Date/time: 2026-03-14 18:31:49 -03:00

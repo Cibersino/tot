@@ -30,7 +30,7 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
 
 ## 2. Substrate setup / billing / activation path
 
-- [ ] Complete developer-side installation/activation for the chosen substrate.
+- [x] Complete developer-side installation/activation for the chosen substrate.
   - Owner: `User manual` with Codex guidance.
   - Done when:
     - system-browser OAuth sign-in succeeds for the desktop client.
