@@ -122,6 +122,10 @@ tot/
 │ └── style.css
 ├── website/
 │ └── public/
+│   ├── en/
+│   │ └── index.html
+│   ├── es/
+│   │ └── index.html
 │   ├── index.html
 │   ├── favicon.svg
 │   ├── favicon.ico
