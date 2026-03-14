@@ -89,12 +89,17 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
     - validation checks credentials presence, activation status, and reachable API path.
     - each setup/auth/quota category has explicit user-visible failure handling.
     - failure categories are logged with structured details safe for logs.
+    - scope boundary for item 7:
+      - implement backend/IPC validation + explicit error taxonomy only.
+      - do not wire OCR UI triggers in this item.
+      - do not use legacy `cargador_*` menu paths.
 - [ ] Confirm setup path and failures follow current logging/bridge-failure policies.
   - Owner: `Codex`.
   - Done when:
     - setup and activation paths follow existing warn/error conventions in `log.js` style.
     - optional bridge failures are non-crashing and explicit; required-path failures are explicit and blocking.
     - evidence is captured in Issue 53 tracker before Section 4 coding starts.
+    - evidence confirms item 7/8 introduced no OCR UI trigger wiring outside Section 4 dedicated entrypoint tasks.
 
 ## 3. Contracts before implementation
 
@@ -102,6 +107,7 @@ Status note (authoritative):
 
 - Reopened by explicit user decision on 2026-03-14.
 - `docs/issues/issue_53_contracts.md` is retained as a draft baseline/reference, but Section 3 is currently treated as pending and must be revalidated before Section 4 coding.
+- Section 3 revalidation must consume finalized setup/auth/quota/logging semantics from Section 2 item 7/8.
 
 - [ ] Define shared extraction result contract for all routes:
   - success/failure
@@ -127,6 +133,12 @@ Status note (authoritative):
   - close-window request during processing follows cancellation semantics (same guarantees as abort)
 
 ## 4. Basic implementation
+
+Entrypoint guardrail:
+
+- Section 4 is the first allowed stage for OCR UI trigger wiring.
+- OCR trigger wiring must start from the dedicated import/extract entrypoint in this section.
+- Legacy `cargador_texto` / `cargador_imagen` menu paths are forbidden for Issue 53 OCR flow.
 
 - [ ] Add dedicated import/extract button in the text-selector row.
 - [ ] Implement file picker open behavior (default folder first, then persisted folder).

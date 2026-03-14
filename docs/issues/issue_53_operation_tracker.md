@@ -35,14 +35,54 @@ As of 2026-03-14:
 - Section 2 (`Substrate setup / billing / activation path`): in progress.
   - Items 1-6: complete.
   - Active next checklist item: item 7 (`Add setup validation flow and explicit user-visible errors...`), then item 8.
+  - Item 7/8 scope boundary: backend/IPC/logging work only; no OCR UI trigger wiring.
+  - Legacy `cargador_*` menu paths remain forbidden during item 7/8 execution.
 - Section 3 (`Contracts before implementation`): reopened by user decision.
   - Existing `docs/issues/issue_53_contracts.md` remains a draft baseline/reference, but Section 3 is not treated as closed.
   - Any earlier tracker statement implying Section 3 closure is superseded by this authoritative status.
+  - Section 3 revalidation must consume finalized semantics from Section 2 item 7/8.
 - Sections 4-8: not started.
+  - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0019
+
+- Date/time: 2026-03-14 20:32:33 -03:00
+- Operation: Integrate sequencing clarifications directly into plan checklist sections (not as a standalone top-level patch note).
+- Why: User rejected prior clarification style and requested a cleaner, properly integrated plan update.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` in-context (no standalone detached paragraph):
+    - Section 2 item 7 `Done when` now includes explicit scope boundary:
+      - backend/IPC validation + taxonomy only
+      - no OCR UI trigger wiring
+      - no legacy `cargador_*` path usage
+    - Section 2 item 8 `Done when` now requires evidence that item 7/8 introduced no OCR UI trigger wiring outside Section 4 dedicated entrypoint tasks.
+    - Section 3 status note now explicitly depends on finalized Section 2 item 7/8 semantics before revalidation.
+    - Section 4 now includes `Entrypoint guardrail` directly under the section header:
+      - first allowed stage for OCR UI trigger wiring
+      - wiring must start from dedicated import/extract entrypoint
+      - legacy `cargador_texto`/`cargador_imagen` paths forbidden
+  - Updated `docs/issues/issue_53_operation_tracker.md` `## Current Authoritative Status` to mirror the same integrated guardrails/dependency.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md`:
+    - item 7 now contains `scope boundary for item 7`
+    - item 8 now contains `evidence confirms item 7/8 introduced no OCR UI trigger wiring...`
+    - Section 3 status note includes dependency on Section 2 item 7/8 semantics
+    - Section 4 contains `Entrypoint guardrail`
+  - `docs/issues/issue_53_operation_tracker.md` `## Current Authoritative Status` now includes:
+    - item 7/8 scope boundary
+    - Section 3 dependency on item 7/8 semantics
+    - Section 4 first-allowed-wiring boundary
+- Outcome / next step:
+  - Clarifications are now integrated directly at execution points in the plan. Next step remains Section 2 item 7 implementation under these constraints.
 
 ### OP-0018
 
