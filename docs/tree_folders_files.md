@@ -122,6 +122,13 @@ tot/
 │ └── style.css
 ├── website/                       # {sitio web}
 │ └── public/
+│   ├── assets/
+│   │ └── social/
+│   │   ├── patreon.svg
+│   │   ├── instagram.svg
+│   │   ├── x.svg
+│   │   ├── youtube.svg
+│   │   └── twitch.svg
 │   ├── en/
 │   │ └── index.html
 │   ├── es/
@@ -253,9 +260,10 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 ### 6.1) Sitio web estático (website/public)
 
 - `website/public/index.html` — Landing neutral del sitio público (`https://totapp.org/`), usada como entrada x-default y selector explícito de idioma.
-- `website/public/es/index.html` — Versión en español (`https://totapp.org/es/`), con switch de idioma y CTA de descarga.
-- `website/public/en/index.html` — Versión en inglés (`https://totapp.org/en/`), con switch de idioma y CTA de descarga.
+- `website/public/es/index.html` — Versión en español (`https://totapp.org/es/`), con switch de idioma, CTA de descarga y bloque "Apoya y sigue a Cibersino".
+- `website/public/en/index.html` — Versión en inglés (`https://totapp.org/en/`), con switch de idioma, CTA de descarga y bloque "Support and follow Cibersino".
 - `website/public/styles.css` — Hoja de estilos compartida para las tres rutas.
+- `website/public/assets/social/*.svg` — Logos locales linkeables de redes/sponsor usados en `/es/` y `/en/`.
 - `website/public/_headers` — Políticas de headers para Cloudflare Pages (incluye noindex para dominios preview/versionados).
 - `website/public/robots.txt` — Reglas de robots para el dominio público.
 - `website/public/favicon.*` y `website/public/og-image.png` — Activos comunes de branding/preview social.
