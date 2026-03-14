@@ -29,6 +29,48 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0012
+
+- Date/time: 2026-03-14 19:01:30 -03:00
+- Operation: Execute Section 2 checklist item 4 (`Define OCR default activation + availability determination`) with explicit activation semantics.
+- Why: User confirmed default-disabled behavior and explicit-activation requirement.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 4 to lock and complete:
+    - default OCR disabled
+    - explicit activation required
+    - deterministic availability checks
+  - Added explicit availability baseline in `docs/issues/issue_53_contracts.md`:
+    - `setup_incomplete` when `credentials.json` is missing
+    - `ocr_activation_required` when `token.json` is missing
+    - route available only when both files exist under `app.getPath('userData')/config/ocr_google_drive/`
+  - Added code module for deterministic availability classification:
+    - `electron/import_extract_platform/ocr_google_drive_activation_state.js`
+    - exports `resolveGoogleDriveOcrAvailability({ credentialsPath, tokenPath })`
+    - returns explicit availability + error code mapping (`setup_incomplete` / `ocr_activation_required`)
+  - Low-impact assumption disclosure (proceeded):
+    - For this phase, activation is represented by token presence (`token.json`) plus credentials presence (`credentials.json`) in canonical storage.
+    - rationale: matches user requirement (first-time sign-in then reuse across sessions) and avoids introducing an additional activation toggle before UI wiring.
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Define whether OCR is enabled by default or requires explicit activation, and how availability is determined.`
+  - No other checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `electron/import_extract_platform/ocr_google_drive_activation_state.js`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` item 4 now marked `[x]` with explicit availability bullets.
+  - `docs/issues/issue_53_contracts.md` `Required policy` now includes `availability baseline`.
+  - `electron/import_extract_platform/ocr_google_drive_activation_state.js` contains:
+    - `resolveGoogleDriveOcrAvailability`
+    - `setup_incomplete` mapping for missing credentials
+    - `ocr_activation_required` mapping for missing token
+  - Validation:
+    - `node --check electron/import_extract_platform/ocr_google_drive_activation_state.js` passed.
+- Outcome / next step:
+  - Section 2 item 4 is complete. Next checklist item is Section 2 item 5 (`Define usage restrictions/limits, if any, and how they are enforced`).
+
 ### OP-0011
 
 - Date/time: 2026-03-14 18:57:47 -03:00

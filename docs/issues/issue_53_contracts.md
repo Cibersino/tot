@@ -194,6 +194,10 @@ Required policy:
 - explicit user disclosure that OCR uploads files to Google
 - explicit disconnect action and local token removal path
 - disconnect removes only local OAuth token state; app-side flows must not delete the local OAuth client credentials file
+- availability baseline:
+  - `setup_incomplete` when local `credentials.json` is missing
+  - `ocr_activation_required` when local `token.json` is missing
+  - route is available only when both files are present under `app.getPath('userData')/config/ocr_google_drive/`
 
 Error mapping minimum:
 
