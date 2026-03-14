@@ -51,6 +51,19 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 * [ ] `README.md`: verificar que no quede desactualizado.
 * [ ] `public/info/instrucciones.*.html`: verificar que no queden desactualizados.
 * [ ] `docs/tree_folders_files.md`: actualizar si cambió estructura/archivos (entry points, módulos, i18n, persistencia).
+* [ ] `website/public/`: verificar que el sitio público no quede desalineado con el release.
+
+### 2.3 Gate de alineación del sitio web (obligatorio en cada release)
+
+* [ ] Verificar `https://totapp.org/es/` y `https://totapp.org/en/` (o preview equivalente del commit):
+  * [ ] Carga correcta sin errores visibles.
+* [ ] Privacidad/Cookies del sitio:
+  * [ ] Rutas vigentes: `/privacy-cookies/`, `/es/privacy-cookies/`, `/en/privacy-cookies/`.
+* [ ] Descargas:
+  * [ ] CTA de Windows apunta al artefacto estable correcto del release vigente.
+  * [ ] Fallback manual a `https://github.com/Cibersino/tot/releases/latest` funciona.
+* [ ] Enlaces externos del sitio:
+  * [ ] Redes/social/support vigentes (Patreon, Instagram, X, YouTube, Twitch) y sin enlaces rotos.
 
 ## 3. Alinear la versión (freeze justo antes del empaquetado)
 
