@@ -126,6 +126,7 @@ tot/
 │   ├── favicon.svg
 │   ├── favicon.ico
 │   ├── og-image.png
+│   ├── robots.txt
 │   └── _headers
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
 ├── .editorconfig
