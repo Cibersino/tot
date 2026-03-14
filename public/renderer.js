@@ -1262,12 +1262,6 @@ setupToggleModoPreciso();
     registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
     registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
     registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
-    registerMenuActionGuarded('cargador_texto', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_cargador_texto'); // WIP
-    });
-    registerMenuActionGuarded('cargador_imagen', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_cargador_imagen'); // WIP
-    });
     registerMenuActionGuarded('test_velocidad', () => {
       window.Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP
     });

@@ -29,6 +29,51 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0017
+
+- Date/time: 2026-03-14 20:03:56 -03:00
+- Operation: Remove legacy `cargador_*` menu path completely (menu actions + i18n keys) per user direction.
+- Why: User explicitly rejected any Issue 53 dependency on legacy `cargador_*` menu flow and requested no remnants/dead code.
+- Changes made:
+  - Removed legacy menu entries from native menu template in `electron/menu_builder.js`:
+    - removed `cargador_texto` action and label lookup
+    - removed `cargador_imagen` action and label lookup
+  - Removed renderer menu-action handlers in `public/renderer.js`:
+    - removed `registerMenuActionGuarded('cargador_texto', ...)`
+    - removed `registerMenuActionGuarded('cargador_imagen', ...)`
+  - Removed unused i18n keys across all locale bundles:
+    - from `i18n/**/main.json`: `main.menu.cargador_texto`, `main.menu.cargador_imagen`
+    - from `i18n/**/renderer.json`: `renderer.alerts.wip_cargador_texto`, `renderer.alerts.wip_cargador_imagen`
+- Checklist updates:
+  - No Issue 53 checklist checkbox toggles in this operation.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/menu_builder.js`
+  - `public/renderer.js`
+  - `i18n/arn/main.json`
+  - `i18n/arn/renderer.json`
+  - `i18n/de/main.json`
+  - `i18n/de/renderer.json`
+  - `i18n/en/main.json`
+  - `i18n/en/renderer.json`
+  - `i18n/es/main.json`
+  - `i18n/es/renderer.json`
+  - `i18n/es/es-cl/main.json`
+  - `i18n/es/es-cl/renderer.json`
+  - `i18n/fr/main.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/main.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/main.json`
+  - `i18n/pt/renderer.json`
+- Evidence:
+  - `rg -n "cargador_texto|cargador_imagen|wip_cargador_texto|wip_cargador_imagen" -S .` now returns only historical documentation/changelog mentions (no runtime/menu/i18n code paths).
+  - `node --check electron/menu_builder.js` passed.
+  - `node --check public/renderer.js` passed.
+  - Full i18n JSON parse validation passed (`i18n-json-ok`).
+- Outcome / next step:
+  - Legacy `cargador_*` path is removed from runtime/menu/i18n code. Next step: continue Issue 53 work without any dependency on that menu flow.
+
 ### OP-0016
 
 - Date/time: 2026-03-14 19:43:29 -03:00
