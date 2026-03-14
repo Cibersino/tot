@@ -39,6 +39,17 @@
       <p>
         toT es una app de escritorio para convertir texto en tiempo de lectura, con análisis, conteo y herramientas OCR.
       </p>
+      <div class="download-panel">
+        <p id="os-message">Detectando sistema operativo...</p>
+        <p>
+          <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
+            Ver últimas versiones en GitHub
+          </a>
+        </p>
+        <p class="manual-fallback">
+          <a href="https://github.com/Cibersino/tot/releases/latest">Ver todas las versiones</a>
+        </p>
+      </div>
       <p class="muted">
         Esta página web está en construcción.
       </p>
@@ -47,6 +58,46 @@
 
   <script>
     (function () {
+      var windowsStableUrl = "https://github.com/Cibersino/tot/releases/download/v0.1.6/toT-0.1.6-win-x64.zip";
+      var releasesUrl = "https://github.com/Cibersino/tot/releases/latest";
+      var messageEl = document.getElementById("os-message");
+      var ctaEl = document.getElementById("primary-download");
+
+      function detectOs() {
+        var ua = (navigator.userAgent || "").toLowerCase();
+        var platform = (navigator.platform || "").toLowerCase();
+        var source = platform + " " + ua;
+
+        if (source.indexOf("win") !== -1) return "windows";
+        if (source.indexOf("mac") !== -1 && source.indexOf("iphone") === -1 && source.indexOf("ipad") === -1 && source.indexOf("ipod") === -1) return "macos";
+        if (source.indexOf("linux") !== -1 || source.indexOf("x11") !== -1) return "linux";
+        return "unknown";
+      }
+
+      var os = detectOs();
+
+      if (ctaEl) {
+        if (os === "windows") {
+          ctaEl.href = windowsStableUrl;
+          ctaEl.textContent = "Descargar para Windows (estable)";
+        } else {
+          ctaEl.href = releasesUrl;
+          ctaEl.textContent = "Ver últimas versiones en GitHub";
+        }
+      }
+
+      if (messageEl) {
+        if (os === "windows") {
+          messageEl.textContent = "Detectamos Windows. Descarga directa de la versión estable más reciente para Windows.";
+        } else if (os === "macos") {
+          messageEl.textContent = "Detectamos macOS. Aún no hay descarga directa estable para macOS. Revisa las últimas versiones en GitHub.";
+        } else if (os === "linux") {
+          messageEl.textContent = "Detectamos Linux. Aún no hay descarga directa estable para Linux. Revisa las últimas versiones en GitHub.";
+        } else {
+          messageEl.textContent = "No pudimos detectar tu sistema operativo. Revisa las últimas versiones en GitHub.";
+        }
+      }
+
       try {
         localStorage.setItem("tot-preferred-lang", "es");
       } catch (_) {

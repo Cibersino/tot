@@ -131,7 +131,8 @@ tot/
 │   ├── favicon.ico
 │   ├── og-image.png
 │   ├── robots.txt
-│   └── _headers
+│   ├── _headers
+│   └── styles.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
 ├── .editorconfig
 ├── .eslintrc.cjs
