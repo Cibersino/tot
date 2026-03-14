@@ -29,6 +29,34 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0013
+
+- Date/time: 2026-03-14 19:05:26 -03:00
+- Operation: Execute Section 2 checklist item 5 (`Define usage restrictions/limits`) with user-confirmed no-extra-limit policy.
+- Why: User confirmed no additional app-imposed restrictions/limits are necessary at this stage.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 5 to lock and complete:
+    - no additional app-imposed hard limits at this phase
+    - restrictions enforced through classification gates, activation/setup availability gates, and explicit provider/API runtime errors
+  - Updated `docs/issues/issue_53_contracts.md` `Required policy` with `restrictions/limits policy baseline` reflecting the same decision.
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Define usage restrictions/limits, if any, and how they are enforced.`
+  - No other checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` item 5 now marked `[x]` and includes:
+    - `policy decision: no additional app-imposed hard limits at this phase`
+    - enforcement sources list (classification/availability/provider constraints)
+  - `docs/issues/issue_53_contracts.md` now includes:
+    - `restrictions/limits policy baseline`
+    - `no additional app-imposed hard caps ... at this phase`
+- Outcome / next step:
+  - Section 2 item 5 is complete. Next checklist item is Section 2 item 6 (`Define quota/budget/usage-limit handling for the chosen model`).
+
 ### OP-0012
 
 - Date/time: 2026-03-14 19:01:30 -03:00
