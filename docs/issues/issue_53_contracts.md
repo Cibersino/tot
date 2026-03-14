@@ -198,6 +198,8 @@ Required policy:
   - `setup_incomplete` when local `credentials.json` is missing
   - `ocr_activation_required` when local `token.json` is missing
   - route is available only when both files are present under `app.getPath('userData')/config/ocr_google_drive/`
+  - first successful sign-in persists token state for reuse across files and app sessions for the same user
+  - browser re-auth is required only when token state is missing/invalid/revoked or scope requirements change
 - restrictions/limits policy baseline:
   - no additional app-imposed hard caps (for example file-size/page-count caps) at this phase
   - restrictions are enforced via:

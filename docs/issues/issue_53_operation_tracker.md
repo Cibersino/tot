@@ -29,6 +29,31 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0014
+
+- Date/time: 2026-03-14 19:10:10 -03:00
+- Operation: Add explicit “first sign-in only + token reuse across sessions” wording to Issue 53 docs.
+- Why: User requested an explicit, easily discoverable statement of the activation/reuse behavior.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 4 with explicit wording:
+    - first successful sign-in creates local token state for reuse
+    - subsequent files/sessions do not require browser re-auth unless token is missing/invalid/revoked or scope changes
+  - Updated `docs/issues/issue_53_contracts.md` availability baseline with equivalent explicit wording.
+- Checklist updates:
+  - No checkbox state changes.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` contains:
+    - `first successful sign-in creates local token state for reuse...`
+  - `docs/issues/issue_53_contracts.md` contains:
+    - `first successful sign-in persists token state for reuse across files and app sessions...`
+    - `browser re-auth is required only when token state is missing/invalid/revoked or scope requirements change`
+- Outcome / next step:
+  - Documentation now explicitly states first-sign-in reuse semantics in both plan and contracts.
+
 ### OP-0013
 
 - Date/time: 2026-03-14 19:05:26 -03:00

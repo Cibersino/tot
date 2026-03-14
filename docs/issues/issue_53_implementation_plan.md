@@ -60,6 +60,7 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
       - `setup_incomplete` when `credentials.json` is missing
       - `ocr_activation_required` when `token.json` is missing
       - available only when both files are present under `app.getPath('userData')/config/ocr_google_drive/`
+      - first successful sign-in creates local token state for reuse; subsequent files/sessions for the same user do not require re-auth unless token state is missing/invalid/revoked or scope changes
 - [x] Define usage restrictions/limits, if any, and how they are enforced.
   - Owner: `Codex` (implementation + docs).
   - Done when:
