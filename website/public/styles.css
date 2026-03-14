@@ -95,6 +95,38 @@ p {
   font-weight: 700;
 }
 
+.download-panel {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #8884;
+}
+
+.cta-button {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 14px;
+  border: 1px solid #2a8f6f;
+  border-radius: 10px;
+  background: #2a8f6f;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cta-button:hover,
+.cta-button:focus-visible {
+  background: #257f63;
+  border-color: #257f63;
+}
+
+.manual-fallback {
+  margin-top: 12px;
+}
+
+.manual-fallback a {
+  text-decoration: underline;
+}
+
 @media (max-width: 640px) {
   .wrap {
     padding: 32px 16px;
