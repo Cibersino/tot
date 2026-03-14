@@ -1,6 +1,6 @@
 :root {
   color-scheme: light dark;
-  --brand-logo-app-size: 64px;
+  --brand-logo-app-height: 64px;
   --brand-logo-dev-size: 24px;
 }
 
@@ -50,8 +50,8 @@ h1 {
 }
 
 .brand-logo--app {
-  width: var(--brand-logo-app-size);
-  height: var(--brand-logo-app-size);
+  height: var(--brand-logo-app-height);
+  width: auto;
 }
 
 .brand-logo--dev {
@@ -223,7 +223,7 @@ p {
 
 @media (max-width: 640px) {
   :root {
-    --brand-logo-app-size: 56px;
+    --brand-logo-app-height: 56px;
     --brand-logo-dev-size: 20px;
   }
 
