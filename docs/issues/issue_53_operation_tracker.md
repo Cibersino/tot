@@ -29,6 +29,51 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0010
+
+- Date/time: 2026-03-14 18:39:45 -03:00
+- Operation: Execute Section 2 checklist item 2 (`Configure credentials/secrets and required auth/billing setup`) and validate with local harness.
+- Why: User approved proceeding to the next checklist item in order.
+- Changes made:
+  - Updated local harness credential-loading defaults to non-repo local storage:
+    - `tools_local/drive_ocr_test/index.js`
+    - `tools_local/drive_ocr_test/ocr_test.js`
+  - Added default credentials path:
+    - `%APPDATA%\\toT\\drive_ocr_test\\credentials.json`
+  - Added optional override environment variable:
+    - `TOT_DRIVE_OCR_CREDENTIALS_PATH`
+  - Added explicit missing-credentials error messages in both harness files.
+  - Moved local credentials file out of repo path:
+    - from `tools_local/drive_ocr_test/credentials.json`
+    - to `C:\\Users\\manue\\AppData\\Roaming\\toT\\drive_ocr_test\\credentials.json`
+  - Re-ran validation after migration:
+    - `node index.js`
+    - `node ocr_test.js sample.jpg es`
+    - `node ocr_test.js sample.pdf es`
+    - all succeeded via user-approved escalated execution (required because system-browser auth open is blocked in sandbox and causes `spawn EPERM`).
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Configure credentials/secrets and required auth/billing setup for the chosen substrate and chosen access model.`
+  - No other checkbox toggles.
+- Files touched:
+  - `tools_local/drive_ocr_test/index.js`
+  - `tools_local/drive_ocr_test/ocr_test.js`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Path migration check:
+    - `src_exists=False` for `tools_local/drive_ocr_test/credentials.json`
+    - `dst_exists=True` for `C:\\Users\\manue\\AppData\\Roaming\\toT\\drive_ocr_test\\credentials.json`
+  - Post-migration validation command outputs:
+    - `node index.js` -> `No files found.`
+    - image OCR -> upload/export/delete all `OK`
+    - PDF OCR -> upload/export/delete all `OK`
+  - Syntax checks:
+    - `node --check tools_local/drive_ocr_test/index.js` passed
+    - `node --check tools_local/drive_ocr_test/ocr_test.js` passed
+- Outcome / next step:
+  - Section 2 item 2 is complete with credential-boundary evidence and executable validation. Next checklist item is Section 2 item 3 (`Define ownership/storage boundary for controlling credentials/configuration`).
+
 ### OP-0009
 
 - Date/time: 2026-03-14 18:34:31 -03:00

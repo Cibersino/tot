@@ -35,7 +35,7 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
   - Done when:
     - system-browser OAuth sign-in succeeds for the desktop client.
     - developer-side flow validates with local harness (`tools_local/drive_ocr_test/index.js`).
-- [ ] Configure credentials/secrets and required auth/billing setup for the chosen substrate and chosen access model.
+- [x] Configure credentials/secrets and required auth/billing setup for the chosen substrate and chosen access model.
   - Owner: `User manual` with Codex guidance.
   - Done when:
     - Google Drive API is enabled for the selected Google Cloud project.
