@@ -93,25 +93,25 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
 
 ## 3. Contracts before implementation
 
-- [x] Define shared extraction result contract for all routes:
+- [ ] Define shared extraction result contract for all routes:
   - success/failure
   - extracted text
   - executed route
   - warnings/summary
   - safe provenance metadata
   - structured error on failure
-- [x] Define route metadata contract:
+- [ ] Define route metadata contract:
   - detected file kind
   - available routes
   - chosen route
   - executed route
   - PDF triage status
-- [x] Lock apply contract: extraction post-apply must reuse the existing canonical overwrite/append/repetitions path (including MAX_TEXT_CHARS + explicit truncation behavior).
-- [x] Lock state taxonomy for behavior/logging distinction:
+- [ ] Lock apply contract: extraction post-apply must reuse the existing canonical overwrite/append/repetitions path (including MAX_TEXT_CHARS + explicit truncation behavior).
+- [ ] Lock state taxonomy for behavior/logging distinction:
   - precondition rejected (blocked start)
   - extraction failure (after start)
   - user cancellation/abort
-- [x] Lock processing-mode contract:
+- [ ] Lock processing-mode contract:
   - processing lock is distinct from startup lock
   - while processing, main window/app menu interactions are blocked except close/minimize/move/abort
   - close-window request during processing follows cancellation semantics (same guarantees as abort)
