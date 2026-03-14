@@ -191,10 +191,21 @@ p {
   border-color: #6668;
 }
 
-.social-link img {
+.social-link img,
+.social-link picture {
   width: 20px;
   height: 20px;
   display: block;
+  flex: 0 0 20px;
+}
+
+.social-link img {
+  object-fit: contain;
+}
+
+.social-link picture img {
+  width: 100%;
+  height: 100%;
 }
 
 .site-footer {
