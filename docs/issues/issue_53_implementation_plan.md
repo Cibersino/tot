@@ -98,6 +98,11 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
 
 ## 3. Contracts before implementation
 
+Status note (authoritative):
+
+- Reopened by explicit user decision on 2026-03-14.
+- `docs/issues/issue_53_contracts.md` is retained as a draft baseline/reference, but Section 3 is currently treated as pending and must be revalidated before Section 4 coding.
+
 - [ ] Define shared extraction result contract for all routes:
   - success/failure
   - extracted text

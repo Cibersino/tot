@@ -27,7 +27,52 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 - Evidence:
 - Outcome / next step:
 
+## Current Authoritative Status
+
+As of 2026-03-14:
+
+- Section 1 (`Substrate and access-model decision`): complete.
+- Section 2 (`Substrate setup / billing / activation path`): in progress.
+  - Items 1-6: complete.
+  - Active next checklist item: item 7 (`Add setup validation flow and explicit user-visible errors...`), then item 8.
+- Section 3 (`Contracts before implementation`): reopened by user decision.
+  - Existing `docs/issues/issue_53_contracts.md` remains a draft baseline/reference, but Section 3 is not treated as closed.
+  - Any earlier tracker statement implying Section 3 closure is superseded by this authoritative status.
+- Sections 4-8: not started.
+- Legacy menu path note:
+  - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
+
 ## Log
+
+### OP-0018
+
+- Date/time: 2026-03-14 20:14:14 -03:00
+- Operation: Normalize Issue 53 plan/tracker organization and lock authoritative status snapshot, including explicit Section 3 reopen state.
+- Why: User requested a structure review and approved normalization with Section 3 reopened.
+- Changes made:
+  - Added `## Current Authoritative Status` section near the top of this tracker to provide a single source of truth for:
+    - section-by-section status
+    - active next checklist item
+    - Section 3 reopened state
+    - `cargador_*` removal guardrail
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 3 header area with an explicit status note:
+    - Section 3 is reopened by user decision (2026-03-14)
+    - `docs/issues/issue_53_contracts.md` is retained as draft/reference and must be revalidated before Section 4 coding
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - `docs/issues/issue_53_operation_tracker.md` now contains `## Current Authoritative Status`.
+  - `docs/issues/issue_53_operation_tracker.md` explicitly states:
+    - Section 2 item 7 is the active next checklist item
+    - Section 3 is reopened and prior closure claims are superseded
+  - `docs/issues/issue_53_implementation_plan.md` under `## 3. Contracts before implementation` now contains:
+    - `Status note (authoritative):`
+    - `Reopened by explicit user decision on 2026-03-14.`
+- Outcome / next step:
+  - Plan/tracker organization is now normalized for execution clarity. Next step is to execute Section 2 item 7, then keep Section 3 in reopened/revalidation state until you explicitly close it again.
 
 ### OP-0017
 
