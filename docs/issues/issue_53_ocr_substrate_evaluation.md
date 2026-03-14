@@ -861,16 +861,16 @@ A repository can support development, but production OAuth publication requires 
 
 #### App-shape implication for this project
 
-For this project, that means the candidate is viable for a solo developer, but only if the project accepts that a real public rollout requires at least a minimal public web presence and policy surface.
+For this project, part of that minimum production shape is no longer hypothetical: the project already has a dedicated public domain and a public website surface. That materially reduces the publication-readiness gap for this candidate pairing, because a public web/app-identity surface is a real production OAuth requirement here, not a cosmetic extra.
 
-A minimal acceptable production shape would be something like:
+What still remains is to ensure that this existing public surface also serves as the compliance surface required for production publication. A minimal acceptable production shape for this pairing is therefore:
 
-- simple public project home page
-- simple public privacy policy
-- verified domain ownership
+- public project home page
+- public privacy policy
+- verified domain ownership/control
 - OAuth consent-screen identity aligned with the same public app identity
 
-Without that, the pairing remains best understood as development/private-testing viable rather than cleanly public-release ready.
+With that in place, the pairing is not blocked by lack of a domain or website; the remaining publication work is privacy-policy / consent-screen / verification alignment.
 
 #### Evaluation impact
 
@@ -879,7 +879,7 @@ This does not force rejection of the candidate.
 However, it does narrow the recommendation:
 
 - Pass for distributed-public feasibility only if the release plan explicitly includes production OAuth verification work.
-- If the project is unwilling to add a minimal verified-domain homepage/privacy-policy surface, this candidate should be downgraded from "public-release preferred" to "private-testing preferred only".
+- If the project does not complete privacy-policy / consent-screen / domain-verification alignment on that existing public surface, this candidate should be downgraded from "public-release preferred" to "private-testing preferred only".
 
 ### Development-vs-production implementation clarification
 
@@ -1033,7 +1033,7 @@ Based on the current document set, current product constraint of one OCR route, 
 - Public release should assume Google OAuth production verification work, not only local technical integration.
 - A normal public rollout requires a minimal public app identity surface: home page, privacy policy, and domain verification aligned with the OAuth consent screen.
 - A plain source repository is not sufficient by itself as the production publication/compliance surface for this pairing.
-- Until that publication surface exists, this pairing should be considered fully suitable for development/private testing but only conditionally suitable for broad public distribution.
+- The project already has a public domain and website surface, so the remaining gap is not basic web presence itself but completion of the privacy-policy / consent-screen / domain-verification publication surface.
 - Initial developer-side empirical validation has already been completed successfully for both a photographed-page image sample and a scanned PDF sample, with output quality judged strong enough for the intended product use case.
 - Further corpus expansion can still refine confidence later, but the Drive path should no longer be treated as merely speculative on OCR quality.
 - App-side implementation should proceed first against the testing setup, with test-versus-production differences isolated as configuration/publication concerns rather than changes to the core OCR route logic.

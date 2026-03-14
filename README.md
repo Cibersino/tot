@@ -70,6 +70,13 @@ Accesos rápidos visibles en la ventana principal:
 
 ---
 
+## Sitio web y contacto
+
+* Sitio: [https://totapp.org/es/](https://totapp.org/es/)
+* Contacto: [GitHub Issues](https://github.com/Cibersino/tot/issues) o [cibersino@gmail.com](mailto:cibersino@gmail.com)
+
+---
+
 ## Capturas de pantalla
 
 ![Ventana principal completa](public/assets/instrucciones/ventana-principal-completa.png)
@@ -219,6 +226,13 @@ Quick actions in the main window:
 * `⌨`: open full-text editor.
 * `💾` / `📂`: save/load current-text snapshot.
 * `📝` / `🗃️`: new task or load task.
+
+---
+
+## Website and contact
+
+* Website: [https://totapp.org/en/](https://totapp.org/en/)
+* Contact: [GitHub Issues](https://github.com/Cibersino/tot/issues) or [cibersino@gmail.com](mailto:cibersino@gmail.com)
 
 ---
 

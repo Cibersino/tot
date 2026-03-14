@@ -5,7 +5,7 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Gate external URL opens to an allowlist and https only.
+// - Gate external URL opens to a strict allowlist.
 // - Resolve and open app documentation files by docKey.
 // - Handle dev vs packaged doc locations and copy-to-temp cases.
 // - Register IPC handlers that return { ok: true } or { ok: false, reason }.
@@ -29,7 +29,10 @@ const ALLOWED_EXTERNAL_HOSTS = new Set([
   'api.github.com',
   'raw.githubusercontent.com',
   'doi.org',
+  'totapp.org',
+  'www.totapp.org',
 ]);
+const ALLOWED_MAILTO_ADDRESS = 'cibersino@gmail.com';
 const APP_DOC_FILES = Object.freeze({
   'license-app': 'LICENSE',
   'license-electron': 'LICENSE.electron.txt',
@@ -108,7 +111,15 @@ function registerLinkIpc({ ipcMain, app, shell }) {
         return { ok: false, reason: 'blocked' };
       }
 
-      if (parsed.protocol !== 'https:' || !ALLOWED_EXTERNAL_HOSTS.has(parsed.hostname)) {
+      const isAllowedHttps = parsed.protocol === 'https:' && ALLOWED_EXTERNAL_HOSTS.has(parsed.hostname);
+
+      const mailtoAddress = decodeURIComponent((parsed.pathname || '').trim()).toLowerCase();
+      const isAllowedMailto = parsed.protocol === 'mailto:'
+        && mailtoAddress === ALLOWED_MAILTO_ADDRESS
+        && !parsed.search
+        && !parsed.hash;
+
+      if (!isAllowedHttps && !isAllowedMailto) {
         log.warn('open-external-url blocked: disallowed URL:', parsed.toString());
         return { ok: false, reason: 'blocked' };
       }
