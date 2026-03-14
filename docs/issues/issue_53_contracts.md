@@ -198,6 +198,12 @@ Required policy:
   - `setup_incomplete` when local `credentials.json` is missing
   - `ocr_activation_required` when local `token.json` is missing
   - route is available only when both files are present under `app.getPath('userData')/config/ocr_google_drive/`
+- restrictions/limits policy baseline:
+  - no additional app-imposed hard caps (for example file-size/page-count caps) at this phase
+  - restrictions are enforced via:
+    - file-kind/route classification rules
+    - activation/setup availability gates
+    - provider/API runtime limits mapped to explicit errors (no silent fallback)
 
 Error mapping minimum:
 

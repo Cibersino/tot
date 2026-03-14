@@ -60,12 +60,17 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
       - `setup_incomplete` when `credentials.json` is missing
       - `ocr_activation_required` when `token.json` is missing
       - available only when both files are present under `app.getPath('userData')/config/ocr_google_drive/`
-- [ ] Define usage restrictions/limits, if any, and how they are enforced.
+- [x] Define usage restrictions/limits, if any, and how they are enforced.
   - Owner: `Codex` (implementation + docs).
   - Done when:
     - restrictions list is documented (format/routing/activation constraints).
     - enforcement points are defined (preflight and runtime).
     - restriction failures map to explicit user-visible states and logs.
+    - policy decision: no additional app-imposed hard limits at this phase (no custom max file-size/page-count caps yet).
+    - enforced restrictions currently come from:
+      - route/file-kind/format classification rules
+      - setup/activation availability gates
+      - provider/API runtime constraints surfaced explicitly (no silent fallback)
 - [ ] Define quota/budget/usage-limit handling for the chosen model.
   - Owner: `Codex` (implementation + docs).
   - Done when:
