@@ -148,6 +148,10 @@ Checklist:
   * Licencias/notices de fonts redistribuidas (ej. `public/fonts/LICENSE_Baskervville_OFL.txt`)
   * Notices adicionales si aplica (ej. `THIRD_PARTY_NOTICES.md`)
 * [PENDING] `public/info/acerca_de.html` (u otra UI equivalente) es consistente con el inventario legal anterior.
+* [PENDING] Sitio web público (`website/public`) alineado legal/comercialmente con el release:
+* [PENDING] Branding y marcas de terceros en sitio web inventariados cuando aplique:
+  * Uso intencional de logos/marks de plataformas externas (Patreon, Instagram, X, YouTube, Twitch u otras) revisado a nivel de cumplimiento básico de términos de marca.
+  * Si no hay cambios en logos/marks respecto al release anterior, registrar “no delta”.
 * [PENDING] Configuración de empaquetado usa allowlist/excludes coherentes para no arrastrar material no distribuible.
 * [PENDING] Confirmar ausencia de `tools_local/`, backups, dumps, `.env` y secretos en lo que se planea distribuir.
 
