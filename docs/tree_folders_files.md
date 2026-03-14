@@ -123,6 +123,8 @@ tot/
 ├── website/
 │ └── public/
 │   ├── index.html
+│   ├── favicon.svg
+│   ├── favicon.ico
 │   └── _headers
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
 ├── .editorconfig
