@@ -120,8 +120,15 @@ tot/
 │ ├── task_editor.css
 │ ├── flotante.css
 │ └── style.css
-├── website/
+├── website/                       # {sitio web}
 │ └── public/
+│   ├── assets/
+│   │ └── social/
+│   │   ├── patreon.svg
+│   │   ├── instagram.svg
+│   │   ├── x.svg
+│   │   ├── youtube.svg
+│   │   └── twitch.svg
 │   ├── en/
 │   │ └── index.html
 │   ├── es/
@@ -250,11 +257,23 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
 - `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, etc.).
 
+### 6.1) Sitio web estático (website/public)
+
+- `website/public/index.html` — Landing neutral del sitio público (`https://totapp.org/`), usada como entrada x-default y selector explícito de idioma.
+- `website/public/es/index.html` — Versión en español (`https://totapp.org/es/`), con switch de idioma, CTA de descarga y bloque "Apoya y sigue a Cibersino".
+- `website/public/en/index.html` — Versión en inglés (`https://totapp.org/en/`), con switch de idioma, CTA de descarga y bloque "Support and follow Cibersino".
+- `website/public/styles.css` — Hoja de estilos compartida para las tres rutas.
+- `website/public/assets/social/*.svg` — Logos locales linkeables de redes/sponsor usados en `/es/` y `/en/`.
+- `website/public/_headers` — Políticas de headers para Cloudflare Pages (incluye noindex para dominios preview/versionados).
+- `website/public/robots.txt` — Reglas de robots para el dominio público.
+- `website/public/favicon.*` y `website/public/og-image.png` — Activos comunes de branding/preview social.
+
 ### 7) Política de actualización de este archivo
 
 Actualizar `docs/tree_folders_files.md` cuando:
 - Se agreguen/renombren entry points (main/preloads/ventanas).
 - Se mueva o divida lógica en módulos principales (`electron/` o `public/js/`).
+- Cambie la estructura o responsabilidades del sitio estático en `website/public/` (rutas, assets compartidos, headers/robots).
 - Cambie la estructura de `i18n/`, `docs/` o el layout general del repo.
 - Se introduzca o elimine persistencia relevante en `config/`.
 
