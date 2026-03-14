@@ -1,7 +1,14 @@
 :root {
-  color-scheme: light dark;
   --brand-logo-app-height: 64px;
   --brand-logo-dev-size: 24px;
+  --site-bg: #fdf6e3;
+  --panel-bg: #f4ecd8;
+  --border-color: #e9e6de;
+  --border-strong: #d9d2c2;
+  --text-color: #222;
+  --muted-color: #444;
+  --accent-color: #2a8f6f;
+  --accent-hover-color: #257f63;
 }
 
 * {
@@ -12,6 +19,8 @@ body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   line-height: 1.5;
+  color: var(--text-color);
+  background: var(--site-bg);
 }
 
 a {
@@ -66,12 +75,14 @@ p {
 .box {
   margin-top: 24px;
   padding: 20px;
-  border: 1px solid #8884;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
 }
 
 .muted {
-  opacity: 0.8;
+  color: var(--muted-color);
+  opacity: 0.9;
   font-size: 0.95rem;
 }
 
@@ -85,7 +96,7 @@ p {
 .lang-link {
   display: inline-block;
   padding: 10px 14px;
-  border: 1px solid #8884;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   font-weight: 700;
   text-decoration: none;
@@ -93,11 +104,11 @@ p {
 
 .lang-link:hover,
 .lang-link:focus-visible {
-  border-color: #6668;
+  border-color: var(--border-strong);
 }
 
 .lang-link.recommended {
-  border-color: #2a8f6f;
+  border-color: var(--accent-color);
 }
 
 .lang-switch {
@@ -118,27 +129,27 @@ p {
 
 .lang-switch a:hover,
 .lang-switch a:focus-visible {
-  border-color: #8884;
+  border-color: var(--border-strong);
 }
 
 .lang-switch a[aria-current="page"] {
-  border-color: #8884;
+  border-color: var(--border-color);
   font-weight: 700;
 }
 
 .download-panel {
   margin-top: 20px;
   padding-top: 18px;
-  border-top: 1px solid #8884;
+  border-top: 1px solid var(--border-color);
 }
 
 .cta-button {
   display: inline-block;
   margin-top: 8px;
   padding: 10px 14px;
-  border: 1px solid #2a8f6f;
+  border: 1px solid var(--accent-color);
   border-radius: 10px;
-  background: #2a8f6f;
+  background: var(--accent-color);
   color: #fff;
   font-weight: 700;
   text-decoration: none;
@@ -146,8 +157,8 @@ p {
 
 .cta-button:hover,
 .cta-button:focus-visible {
-  background: #257f63;
-  border-color: #257f63;
+  background: var(--accent-hover-color);
+  border-color: var(--accent-hover-color);
 }
 
 .manual-fallback {
@@ -161,7 +172,7 @@ p {
 .social-panel {
   margin-top: 20px;
   padding-top: 18px;
-  border-top: 1px solid #8884;
+  border-top: 1px solid var(--border-color);
 }
 
 .social-title {
@@ -180,7 +191,7 @@ p {
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border: 1px solid #8884;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   font-weight: 700;
   text-decoration: none;
@@ -188,7 +199,7 @@ p {
 
 .social-link:hover,
 .social-link:focus-visible {
-  border-color: #6668;
+  border-color: var(--border-strong);
 }
 
 .social-link img,
@@ -211,7 +222,7 @@ p {
 .site-footer {
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 1px solid #8884;
+  border-top: 1px solid var(--border-color);
 }
 
 .site-footer p {
