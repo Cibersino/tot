@@ -38,6 +38,17 @@
       <p>
         toT is a desktop app to convert text into reading time, with analysis, counting, and OCR tools.
       </p>
+      <div class="download-panel">
+        <p id="os-message">Detecting your operating system...</p>
+        <p>
+          <a id="primary-download" class="cta-button" href="https://github.com/Cibersino/tot/releases/latest">
+            View Latest Releases on GitHub
+          </a>
+        </p>
+        <p class="manual-fallback">
+          <a href="https://github.com/Cibersino/tot/releases/latest">See all releases</a>
+        </p>
+      </div>
       <p class="muted">
         This website is under construction.
       </p>
@@ -46,6 +57,46 @@
 
   <script>
     (function () {
+      var windowsStableUrl = "https://github.com/Cibersino/tot/releases/download/v0.1.6/toT-0.1.6-win-x64.zip";
+      var releasesUrl = "https://github.com/Cibersino/tot/releases/latest";
+      var messageEl = document.getElementById("os-message");
+      var ctaEl = document.getElementById("primary-download");
+
+      function detectOs() {
+        var ua = (navigator.userAgent || "").toLowerCase();
+        var platform = (navigator.platform || "").toLowerCase();
+        var source = platform + " " + ua;
+
+        if (source.indexOf("win") !== -1) return "windows";
+        if (source.indexOf("mac") !== -1 && source.indexOf("iphone") === -1 && source.indexOf("ipad") === -1 && source.indexOf("ipod") === -1) return "macos";
+        if (source.indexOf("linux") !== -1 || source.indexOf("x11") !== -1) return "linux";
+        return "unknown";
+      }
+
+      var os = detectOs();
+
+      if (ctaEl) {
+        if (os === "windows") {
+          ctaEl.href = windowsStableUrl;
+          ctaEl.textContent = "Download for Windows (Stable)";
+        } else {
+          ctaEl.href = releasesUrl;
+          ctaEl.textContent = "View Latest Releases on GitHub";
+        }
+      }
+
+      if (messageEl) {
+        if (os === "windows") {
+          messageEl.textContent = "Windows detected. Download the latest stable Windows build directly.";
+        } else if (os === "macos") {
+          messageEl.textContent = "macOS detected. A stable direct download is not available yet for macOS. Check the latest releases on GitHub.";
+        } else if (os === "linux") {
+          messageEl.textContent = "Linux detected. A stable direct download is not available yet for Linux. Check the latest releases on GitHub.";
+        } else {
+          messageEl.textContent = "We could not detect your operating system. Check the latest releases on GitHub.";
+        }
+      }
+
       try {
         localStorage.setItem("tot-preferred-lang", "en");
       } catch (_) {
