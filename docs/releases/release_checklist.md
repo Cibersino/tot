@@ -57,6 +57,8 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 
 * [ ] Verificar `https://totapp.org/es/` y `https://totapp.org/en/` (o preview equivalente del commit):
   * [ ] Carga correcta sin errores visibles.
+* [ ] Privacidad/Cookies del sitio:
+  * [ ] Rutas vigentes: `/privacy-cookies/`, `/es/privacy-cookies/`, `/en/privacy-cookies/`.
 * [ ] Descargas:
   * [ ] CTA de Windows apunta al artefacto estable correcto del release vigente.
   * [ ] Fallback manual a `https://github.com/Cibersino/tot/releases/latest` funciona.
