@@ -316,14 +316,6 @@ function buildAppMenu(lang, opts = {}) {
             label: resolveMenuLabel(m, 'herramientas', 'Tools'),
             submenu: [
                 {
-                    label: resolveMenuLabel(m, 'cargador_texto', 'Text loader'),
-                    click: () => sendMenuClick('cargador_texto'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'cargador_imagen', 'Image loader'),
-                    click: () => sendMenuClick('cargador_imagen'),
-                },
-                {
                     label: resolveMenuLabel(m, 'test_velocidad', 'Speed test'),
                     click: () => sendMenuClick('test_velocidad'),
                 },

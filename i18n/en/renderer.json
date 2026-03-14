@@ -225,8 +225,6 @@
       "open_presets_unsupported": "Cannot open presets folder in this environment.",
       "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
       "open_presets_fail": "Could not open the default presets folder. Check console for details.",
-      "wip_cargador_texto": "WIP: In a future version, it will be possible to import text from text files here.",
-      "wip_cargador_imagen": "WIP: In a future version, it will be possible to import text from image files here.",
       "wip_test_velocidad": "WIP: The reading speed test will open here in a future version.",
       "wip_diseno_skins": "WIP: The skins selector will open here in a future version.",
       "wip_diseno_crono": "WIP: Floating stopwatch settings will open here in a future version.",
@@ -253,7 +251,7 @@
     "preset_alerts": {
       "name_empty": "Name cannot be empty.",
       "wpm_invalid": "WPM must be a number between 50 and 500.",
-      "create_error": "An error occurred while creating the preset. Check console.",      
+      "create_error": "An error occurred while creating the preset. Check console.",
       "edit_error": "An error occurred while editing the preset. Check console.",
       "process_error": "An error occurred while processing the preset. Check console."
     },
