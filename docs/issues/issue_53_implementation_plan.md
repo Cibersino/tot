@@ -41,12 +41,15 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
     - Google Drive API is enabled for the selected Google Cloud project.
     - desktop OAuth client credentials are downloaded and stored in a local non-repo path.
     - test-user / consent configuration allows successful sign-in for development validation.
-- [ ] Define ownership/storage boundary for controlling credentials/configuration.
+- [x] Define ownership/storage boundary for controlling credentials/configuration.
   - Owner: `Codex` (implementation + docs).
   - Done when:
     - app/client credentials are never embedded in tracked source files.
     - user OAuth tokens are stored locally and outside repository-tracked paths.
     - explicit disconnect/local-token-removal ownership is documented.
+    - canonical app runtime path is `app.getPath('userData')/config/ocr_google_drive/`:
+      - `credentials.json` (user-provided OAuth client credentials file; not deleted by app disconnect flows)
+      - `token.json` (user OAuth token state; removed on disconnect)
 - [ ] Define whether OCR is enabled by default or requires explicit activation, and how availability is determined.
   - Owner: `Codex` (implementation + docs).
   - Done when:
