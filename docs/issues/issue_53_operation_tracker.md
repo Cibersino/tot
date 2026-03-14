@@ -29,6 +29,51 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0011
+
+- Date/time: 2026-03-14 18:57:47 -03:00
+- Operation: Execute Section 2 checklist item 3 (`Define ownership/storage boundary`) with user-approved disconnect policy.
+- Why: User approved the boundary decision and explicitly chose: no credential deletion and no optional credential-removal action.
+- Changes made:
+  - Added canonical OCR storage path helpers in `electron/fs_storage.js` under app user-data config root:
+    - `getOcrGoogleDriveDir()` -> `.../config/ocr_google_drive/`
+    - `getOcrGoogleDriveCredentialsFile()` -> `.../config/ocr_google_drive/credentials.json`
+    - `getOcrGoogleDriveTokenFile()` -> `.../config/ocr_google_drive/token.json`
+    - `ensureOcrGoogleDriveDir()` for safe directory creation
+  - Exported these helpers from `electron/fs_storage.js` for future OCR integration use.
+  - Updated Section 2 item 3 acceptance criteria in `docs/issues/issue_53_implementation_plan.md` to lock:
+    - canonical runtime boundary path
+    - credentials file retention policy
+    - token-removal-on-disconnect policy
+  - Updated `docs/issues/issue_53_contracts.md` Section 7 required policy with explicit user-approved disconnect rule:
+    - disconnect removes token state only
+    - app flows do not delete local OAuth client credentials file
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Define ownership/storage boundary for controlling credentials/configuration.`
+  - No other checkbox toggles.
+- Files touched:
+  - `electron/fs_storage.js`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `electron/fs_storage.js` now contains:
+    - `getOcrGoogleDriveDir`
+    - `getOcrGoogleDriveCredentialsFile`
+    - `getOcrGoogleDriveTokenFile`
+    - `ensureOcrGoogleDriveDir`
+  - `docs/issues/issue_53_implementation_plan.md` item 3 now includes:
+    - canonical path `app.getPath('userData')/config/ocr_google_drive/`
+    - `credentials.json` retained on disconnect
+    - `token.json` removed on disconnect
+  - `docs/issues/issue_53_contracts.md` required policy includes:
+    - `disconnect removes only local OAuth token state; app-side flows must not delete the local OAuth client credentials file`
+  - Validation:
+    - `node --check electron/fs_storage.js` passed
+- Outcome / next step:
+  - Section 2 item 3 is complete and aligned with user-approved disconnect semantics. Next checklist item is Section 2 item 4 (`Define whether OCR is enabled by default or requires explicit activation, and how availability is determined`).
+
 ### OP-0010
 
 - Date/time: 2026-03-14 18:39:45 -03:00

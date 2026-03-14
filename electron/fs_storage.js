@@ -97,6 +97,18 @@ function getTaskEditorPositionFile() {
   return path.join(getTasksDir(), 'task_editor_position.json');
 }
 
+function getOcrGoogleDriveDir() {
+  return path.join(getConfigDir(), 'ocr_google_drive');
+}
+
+function getOcrGoogleDriveCredentialsFile() {
+  return path.join(getOcrGoogleDriveDir(), 'credentials.json');
+}
+
+function getOcrGoogleDriveTokenFile() {
+  return path.join(getOcrGoogleDriveDir(), 'token.json');
+}
+
 function ensureConfigDir() {
   try {
     const dir = getConfigDir();
@@ -140,6 +152,16 @@ function ensureTasksDirs() {
     if (!fs.existsSync(listsDir)) fs.mkdirSync(listsDir, { recursive: true });
   } catch (err) {
     log.error('ensureTasksDirs failed:', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', err);
+  }
+}
+
+function ensureOcrGoogleDriveDir() {
+  let ocrDir = null;
+  try {
+    ocrDir = getOcrGoogleDriveDir();
+    if (!fs.existsSync(ocrDir)) fs.mkdirSync(ocrDir, { recursive: true });
+  } catch (err) {
+    log.error('ensureOcrGoogleDriveDir failed:', ocrDir || '(uninitialized)', err);
   }
 }
 
@@ -244,10 +266,14 @@ module.exports = {
   getTasksAllowedHostsFile,
   getTasksColumnWidthsFile,
   getTaskEditorPositionFile,
+  getOcrGoogleDriveDir,
+  getOcrGoogleDriveCredentialsFile,
+  getOcrGoogleDriveTokenFile,
   ensureConfigDir,
   ensureConfigPresetsDir,
   ensureCurrentTextSnapshotsDir,
   ensureTasksDirs,
+  ensureOcrGoogleDriveDir,
   loadJson,
   saveJson,
 };

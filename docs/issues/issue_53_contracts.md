@@ -193,6 +193,7 @@ Required policy:
 - explicit sign-in required before OCR route is available
 - explicit user disclosure that OCR uploads files to Google
 - explicit disconnect action and local token removal path
+- disconnect removes only local OAuth token state; app-side flows must not delete the local OAuth client credentials file
 
 Error mapping minimum:
 
