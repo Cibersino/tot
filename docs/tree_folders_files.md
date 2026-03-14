@@ -122,7 +122,8 @@ tot/
 │ └── style.css
 ├── website/
 │ └── public/
-│   └── index.html
+│   ├── index.html
+│   └── _headers
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
 ├── .editorconfig
 ├── .eslintrc.cjs
