@@ -50,12 +50,16 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
     - canonical app runtime path is `app.getPath('userData')/config/ocr_google_drive/`:
       - `credentials.json` (user-provided OAuth client credentials file; not deleted by app disconnect flows)
       - `token.json` (user OAuth token state; removed on disconnect)
-- [ ] Define whether OCR is enabled by default or requires explicit activation, and how availability is determined.
+- [x] Define whether OCR is enabled by default or requires explicit activation, and how availability is determined.
   - Owner: `Codex` (implementation + docs).
   - Done when:
     - default state is OCR disabled.
     - availability requires explicit successful activation/sign-in.
     - unavailable/not-activated states are explicitly detectable and user-visible.
+    - baseline availability determination is locked:
+      - `setup_incomplete` when `credentials.json` is missing
+      - `ocr_activation_required` when `token.json` is missing
+      - available only when both files are present under `app.getPath('userData')/config/ocr_google_drive/`
 - [ ] Define usage restrictions/limits, if any, and how they are enforced.
   - Owner: `Codex` (implementation + docs).
   - Done when:
