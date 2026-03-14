@@ -127,6 +127,24 @@ p {
   text-decoration: underline;
 }
 
+.site-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #8884;
+}
+
+.site-footer p {
+  margin: 0 0 8px;
+}
+
+.site-footer p:last-child {
+  margin-bottom: 0;
+}
+
+.site-footer a {
+  text-decoration: underline;
+}
+
 @media (max-width: 640px) {
   .wrap {
     padding: 32px 16px;
