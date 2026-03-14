@@ -123,15 +123,27 @@ tot/
 ├── website/                       # {sitio web}
 │ └── public/
 │   ├── assets/
+│   │ ├── brand/
+│   │ │ ├── logo-cibersino.svg
+│   │ │ └── logo-tot.svg
 │   │ └── social/
-│   │   ├── patreon.svg
-│   │   ├── instagram.svg
-│   │   ├── x.svg
-│   │   ├── youtube.svg
-│   │   └── twitch.svg
+│   │   ├── instagram-black.svg
+│   │   ├── instagram-white.svg
+│   │   ├── patreon.png
+│   │   ├── SOURCES.md
+│   │   ├── twitch.svg
+│   │   ├── x-black.png
+│   │   ├── x-white.png
+│   │   └── youtube.png
 │   ├── en/
+│   │ ├── privacy-cookies/
+│   │ │ └── index.html
 │   │ └── index.html
 │   ├── es/
+│   │ ├── privacy-cookies/
+│   │ │ └── index.html
+│   │ └── index.html
+│   ├── privacy-cookies/
 │   │ └── index.html
 │   ├── index.html
 │   ├── favicon.svg
@@ -262,8 +274,13 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `website/public/index.html` — Landing neutral del sitio público (`https://totapp.org/`), usada como entrada x-default y selector explícito de idioma.
 - `website/public/es/index.html` — Versión en español (`https://totapp.org/es/`), con switch de idioma, CTA de descarga y bloque "Apoya y sigue a Cibersino".
 - `website/public/en/index.html` — Versión en inglés (`https://totapp.org/en/`), con switch de idioma, CTA de descarga y bloque "Support and follow Cibersino".
+- `website/public/privacy-cookies/index.html` — Entrada neutral para política mínima de privacidad/cookies (selector hacia versiones localizadas).
+- `website/public/es/privacy-cookies/index.html` — Política mínima de privacidad/cookies en español.
+- `website/public/en/privacy-cookies/index.html` — Política mínima de privacidad/cookies en inglés.
+- Footer de `index.html`, `es/index.html` y `en/index.html` — incluye enlaces visibles a la política de privacidad/cookies.
 - `website/public/styles.css` — Hoja de estilos compartida para las tres rutas.
-- `website/public/assets/social/*.svg` — Logos locales linkeables de redes/sponsor usados en `/es/` y `/en/`.
+- `website/public/assets/brand/*.svg` — Logos locales del proyecto/desarrollador usados en el header y footer (`logo-tot.svg`, `logo-cibersino.svg`).
+- `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Patreon, X light/dark, YouTube, Twitch) y `SOURCES.md` como trazabilidad de origen de assets.
 - `website/public/_headers` — Políticas de headers para Cloudflare Pages (incluye noindex para dominios preview/versionados).
 - `website/public/robots.txt` — Reglas de robots para el dominio público.
 - `website/public/favicon.*` y `website/public/og-image.png` — Activos comunes de branding/preview social.

@@ -246,6 +246,12 @@ Checklist:
   * Quedan fuera directorios no distribuibles (mínimo: `tools_local/` y equivalentes).
   * Excluye backups, evidence folders, scripts internos que no sean runtime.
 
+* [PENDING] External-link allowlist coherente con canales públicos:
+  * Si el release modifica enlaces públicos (sitio web, contacto, redes, docs in-app), verificar que `electron/link_openers.js` mantenga política de mínimo privilegio.
+  * `https` solo para hosts explícitamente allowlistados.
+  * `mailto` solo para direcciones explícitamente allowlistadas.
+  * Si no hay cambios de enlaces/hosts en el release, dejar evidencia breve de “no delta”.
+
 * [PENDING] DevTools / Debug hooks (política para build distribuible):
   * En build empaquetado: DevTools **no se abre automáticamente**.
   * En build empaquetado: no existe un menú/atajo propio de la app que abra DevTools salvo modo debug explícito y deliberado.
