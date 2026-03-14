@@ -2,6 +2,7 @@
 
 Linked issue: `docs/issues/issue_53.md`
 Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
+Linked contracts: `docs/issues/issue_53_contracts.md`
 
 ## Codex Operational Policy
 
@@ -19,13 +20,13 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 
 ## 1. Substrate and access-model decision
 
-- [ ] Evaluate substrate options, starting with Google Document AI as the primary candidate.
-- [ ] Compare OCR quality (especially photographed book pages), language coverage, PDF support, setup burden, cost, Windows-first delivery fit, and cross-platform architectural viability.
-- [ ] Evaluate the OCR access / billing / activation model for distributed app delivery alongside substrate evaluation:
+- [x] Evaluate substrate options, starting with Google Document AI as the primary candidate.
+- [x] Compare OCR quality (especially photographed book pages), language coverage, PDF support, setup burden, cost, Windows-first delivery fit, and cross-platform architectural viability.
+- [x] Evaluate the OCR access / billing / activation model for distributed app delivery alongside substrate evaluation:
   - vendor-managed
   - user-managed
   - hybrid/optional
-- [ ] Decide substrate and access model, and record rationale + known constraints that will affect downstream implementation.
+- [x] Decide substrate and access model, and record rationale + known constraints that will affect downstream implementation.
 
 ## 2. Substrate setup / billing / activation path
 
@@ -40,25 +41,25 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 
 ## 3. Contracts before implementation
 
-- [ ] Define shared extraction result contract for all routes:
+- [x] Define shared extraction result contract for all routes:
   - success/failure
   - extracted text
   - executed route
   - warnings/summary
   - safe provenance metadata
   - structured error on failure
-- [ ] Define route metadata contract:
+- [x] Define route metadata contract:
   - detected file kind
   - available routes
   - chosen route
   - executed route
   - PDF triage status
-- [ ] Lock apply contract: extraction post-apply must reuse the existing canonical overwrite/append/repetitions path (including MAX_TEXT_CHARS + explicit truncation behavior).
-- [ ] Lock state taxonomy for behavior/logging distinction:
+- [x] Lock apply contract: extraction post-apply must reuse the existing canonical overwrite/append/repetitions path (including MAX_TEXT_CHARS + explicit truncation behavior).
+- [x] Lock state taxonomy for behavior/logging distinction:
   - precondition rejected (blocked start)
   - extraction failure (after start)
   - user cancellation/abort
-- [ ] Lock processing-mode contract:
+- [x] Lock processing-mode contract:
   - processing lock is distinct from startup lock
   - while processing, main window/app menu interactions are blocked except close/minimize/move/abort
   - close-window request during processing follows cancellation semantics (same guarantees as abort)

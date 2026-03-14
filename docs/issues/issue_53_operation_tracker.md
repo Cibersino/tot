@@ -29,6 +29,56 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0004
+
+- Date/time: 2026-03-14 15:52:14 -03:00
+- Operation: Define and lock Issue 53 contracts with a substrate-aware adapter boundary, and reconcile plan status.
+- Why: Execute the agreed next phase after substrate decision: move into section 3 contract definition while keeping core behavior substrate-agnostic and only adapter behavior substrate-specific.
+- Changes made:
+  - Added `docs/issues/issue_53_contracts.md` as the contract baseline for Issue 53 implementation.
+  - Locked substrate-agnostic core contracts for:
+    - shared extraction result
+    - route metadata
+    - apply-path reuse
+    - state taxonomy
+    - processing mode
+  - Locked substrate-aware adapter boundary so core orchestration depends on an OCR adapter interface rather than Google-specific internals.
+  - Added current chosen-substrate adapter contract (`Google Drive OCR via Google Docs conversion`) with required flow and explicit error mapping.
+  - Updated `docs/issues/issue_53_implementation_plan.md` to:
+    - link the new contracts document
+    - mark section 1 (`Substrate and access-model decision`) complete
+    - mark section 3 (`Contracts before implementation`) complete
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 1:
+    - `[x] Evaluate substrate options, starting with Google Document AI as the primary candidate.`
+    - `[x] Compare OCR quality (especially photographed book pages), language coverage, PDF support, setup burden, cost, Windows-first delivery fit, and cross-platform architectural viability.`
+    - `[x] Evaluate the OCR access / billing / activation model for distributed app delivery alongside substrate evaluation.`
+    - `[x] Decide substrate and access model, and record rationale + known constraints that will affect downstream implementation.`
+  - `Issue 53 Implementation Plan` section 3:
+    - `[x] Define shared extraction result contract for all routes.`
+    - `[x] Define route metadata contract.`
+    - `[x] Lock apply contract.`
+    - `[x] Lock state taxonomy for behavior/logging distinction.`
+    - `[x] Lock processing-mode contract.`
+- Files touched:
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_contracts.md`:
+    - `## 1) Core extraction result contract (substrate-agnostic)`
+    - `## 2) Route metadata contract (substrate-agnostic)`
+    - `## 3) Apply contract (reuse existing canonical path)`
+    - `## 4) State taxonomy contract`
+    - `## 5) Processing-mode contract`
+    - `## 6) OCR adapter boundary (substrate-aware, not substrate-forced)`
+    - `## 7) Google Drive OCR adapter contract (current chosen substrate)`
+  - `docs/issues/issue_53_implementation_plan.md`:
+    - section 1 checkboxes now marked complete
+    - section 3 checkboxes now marked complete
+    - `Linked contracts: docs/issues/issue_53_contracts.md`
+- Outcome / next step: Contract-definition phase is now locked and documented. Next operation should start section 4 basic implementation from these contracts, beginning with route classification + metadata pipeline and processing-mode state machine skeleton.
+
 ### OP-0003
 
 - Date/time: 2026-03-14 15:38:30 -03:00
