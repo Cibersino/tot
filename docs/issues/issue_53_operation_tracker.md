@@ -29,6 +29,27 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0005
+
+- Date/time: 2026-03-14 18:14:12 -03:00
+- Operation: Remove `rtf`, `tiff`, and `gif` from Issue 53 file-family example lists.
+- Why: User requested narrowing the examples listed in Issue 53 documentation.
+- Changes made:
+  - Updated `docs/issues/issue_53.md`:
+    - removed `tiff` and `gif` from the `OCR-capable` examples list
+    - removed `rtf` from the `Native-extraction-capable` examples list
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53.md`:
+    - `### OCR-capable` now lists: `jpg`, `jpeg`, `png`, `webp`, `bmp`, `scanned PDFs`
+    - `### Native-extraction-capable` now lists: `txt`, `md`, `html`, `docx`, `PDFs with usable embedded/selectable text`
+- Outcome / next step:
+  - Requested documentation correction completed. Next step only if requested: align any downstream fixtures/tests/config that may still include these removed examples.
+
 ### OP-0004
 
 - Date/time: 2026-03-14 15:52:14 -03:00

@@ -66,8 +66,6 @@ Examples:
 - png
 - webp
 - bmp
-- tiff
-- gif
 - scanned PDFs
 
 ### Native-extraction-capable
@@ -75,7 +73,6 @@ Examples:
 - txt
 - md
 - html
-- rtf
 - docx
 - PDFs with usable embedded/selectable text
 
