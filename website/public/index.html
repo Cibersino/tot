@@ -1,78 +1,91 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>toT — de Texto a Tiempo</title>
+  <title>toT — Choose Language</title>
   <meta name="description"
-    content="toT es una app de escritorio para convertir texto en tiempo de lectura, con análisis, conteo y herramientas OCR.">
+    content="toT is a desktop app to convert text into reading time, with analysis, counting, and OCR tools. Choose Spanish or English.">
   <link rel="canonical" href="https://totapp.org/">
+  <link rel="alternate" hreflang="es" href="https://totapp.org/es/">
+  <link rel="alternate" hreflang="en" href="https://totapp.org/en/">
+  <link rel="alternate" hreflang="x-default" href="https://totapp.org/">
   <meta property="og:url" content="https://totapp.org/">
-  <meta property="og:title" content="toT — de Texto a Tiempo">
+  <meta property="og:title" content="toT — Choose Language">
   <meta property="og:description"
-    content="toT es una app de escritorio para convertir texto en tiempo de lectura, con análisis, conteo y herramientas OCR.">
+    content="toT is available in Spanish and English. Select your language to continue.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://totapp.org/og-image.png">
-  <meta property="og:image:alt"
-    content="Captura de la app toT mostrando su interfaz de estimación de tiempo de lectura">
+  <meta property="og:image:alt" content="Screenshot of the toT app reading-time estimation interface">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
   <link rel="icon" href="/favicon.ico">
-  <style>
-    :root {
-      color-scheme: light dark;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      line-height: 1.5;
-    }
-
-    .wrap {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 48px 20px;
-    }
-
-    h1 {
-      margin-top: 0;
-      font-size: 2.2rem;
-      line-height: 1.15;
-    }
-
-    p {
-      font-size: 1.05rem;
-    }
-
-    .box {
-      margin-top: 24px;
-      padding: 20px;
-      border: 1px solid #8884;
-      border-radius: 12px;
-    }
-
-    .muted {
-      opacity: 0.8;
-      font-size: 0.95rem;
-    }
-  </style>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body>
   <main class="wrap">
     <h1>toT</h1>
-    <p><strong>de Texto a Tiempo</strong></p>
+    <p><strong>de Texto a Tiempo / from Text to Time</strong></p>
 
     <div class="box">
-      <p>
-        toT es una app de escritorio para convertir texto en tiempo de lectura, con análisis, conteo y herramientas OCR.
-      </p>
-      <p class="muted">
-        Esta página web está en construcción.
-      </p>
+      <p>Elige tu idioma para continuar. Choose your language to continue.</p>
+
+      <nav class="lang-buttons" aria-label="Language selector">
+        <a class="lang-link" data-lang="es" href="/es/" lang="es">Español</a>
+        <a class="lang-link" data-lang="en" href="/en/" lang="en">English</a>
+      </nav>
+
+      <p id="lang-suggestion" class="muted" hidden></p>
     </div>
   </main>
+
+  <script>
+    (function () {
+      var key = "tot-preferred-lang";
+
+      function normalize(lang) {
+        if (!lang) return "";
+        var value = String(lang).toLowerCase();
+        if (value.indexOf("es") === 0) return "es";
+        if (value.indexOf("en") === 0) return "en";
+        return "";
+      }
+
+      var saved = "";
+      try {
+        saved = normalize(localStorage.getItem(key));
+      } catch (_) {
+        saved = "";
+      }
+
+      var browserLang = normalize((navigator.languages && navigator.languages[0]) || navigator.language);
+      var suggested = saved || browserLang || "en";
+      var links = document.querySelectorAll(".lang-link");
+      var suggestion = document.getElementById("lang-suggestion");
+      var recommendationText = suggested === "es" ? "Sugerencia del navegador: Español." : "Browser suggestion: English.";
+      var savedText = saved === "es" ? "Idioma guardado: Español." : "Saved language: English.";
+
+      if (suggestion) {
+        suggestion.hidden = false;
+        suggestion.textContent = saved ? savedText : recommendationText;
+      }
+
+      links.forEach(function (link) {
+        var linkLang = link.getAttribute("data-lang");
+        if (linkLang === suggested) {
+          link.classList.add("recommended");
+        }
+        link.addEventListener("click", function () {
+          try {
+            localStorage.setItem(key, linkLang);
+          } catch (_) {
+            // Ignore storage restrictions and continue navigation.
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 
 </html>
