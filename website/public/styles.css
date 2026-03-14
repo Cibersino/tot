@@ -127,6 +127,45 @@ p {
   text-decoration: underline;
 }
 
+.social-panel {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #8884;
+}
+
+.social-title {
+  margin: 0 0 12px;
+  font-weight: 700;
+}
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #8884;
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.social-link:hover,
+.social-link:focus-visible {
+  border-color: #6668;
+}
+
+.social-link img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .site-footer {
   margin-top: 24px;
   padding-top: 16px;
