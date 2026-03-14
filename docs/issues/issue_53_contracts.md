@@ -206,6 +206,14 @@ Required policy:
     - file-kind/route classification rules
     - activation/setup availability gates
     - provider/API runtime limits mapped to explicit errors (no silent fallback)
+  - no separate app-managed OCR billing-failure state is assumed for the current Drive route in this phase
+- quota/rate-limit handling baseline:
+  - temporary rate-limit responses (including HTTP `429`) use bounded exponential-backoff retries
+  - if retry window is exhausted, classify as `quota_or_rate_limited`
+  - explicit non-retryable provider limit responses classify as `quota_or_rate_limited` without a retry loop
+  - user guidance:
+    - wait and retry for temporary rate-limit failures
+    - reconnect action is reserved for auth/activation failures, not quota/rate-limit failures
 
 Error mapping minimum:
 

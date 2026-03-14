@@ -72,12 +72,17 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
       - route/file-kind/format classification rules
       - setup/activation availability gates
       - provider/API runtime constraints surfaced explicitly (no silent fallback)
-- [ ] Define quota/budget/usage-limit handling for the chosen model.
+- [x] Define quota/budget/usage-limit handling for the chosen model.
   - Owner: `Codex` (implementation + docs).
   - Done when:
     - quota/limit failures map to `quota_or_rate_limited` (or narrower mapped state with equivalent explicitness).
     - user guidance for retry/wait/reconnect actions is defined.
     - no quota/limit path degrades into silent fallback.
+    - policy lock for current Drive route:
+      - no additional app-imposed budget caps are introduced in this phase.
+      - temporary rate-limit responses (including HTTP `429`) use bounded exponential-backoff retry, then fail as `quota_or_rate_limited` if still unresolved.
+      - explicit non-retryable provider limit responses fail fast as `quota_or_rate_limited`.
+      - user guidance: wait + retry for temporary rate limits; reconnect is for auth/activation failures, not for quota/rate-limit failures.
 - [ ] Add setup validation flow and explicit user-visible errors for incomplete/missing setup, missing credentials, billing/auth issues, and quota/budget/usage-limit issues.
   - Owner: `Codex` + `User` (manual validation run).
   - Done when:

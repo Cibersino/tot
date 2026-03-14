@@ -29,6 +29,39 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0016
+
+- Date/time: 2026-03-14 19:43:29 -03:00
+- Operation: Execute Section 2 checklist item 6 (`Define quota/budget/usage-limit handling`) using user-approved Option 1 (`retry then fail`) for temporary rate-limit responses.
+- Why: User selected Option 1 after clarification of `429` semantics.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 6:
+    - marked item 6 complete (`[x]`)
+    - added locked policy text for temporary `429` handling via bounded exponential-backoff retry
+    - added explicit fail-fast handling for non-retryable provider limit responses
+    - added user guidance boundary: wait/retry for temporary rate limits; reconnect reserved for auth/activation failures
+  - Updated `docs/issues/issue_53_contracts.md` `Required policy`:
+    - added `quota/rate-limit handling baseline` with the same `retry then fail` + fail-fast semantics
+    - clarified no separate app-managed OCR billing-failure state is assumed for this Drive route phase
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Define quota/budget/usage-limit handling for the chosen model.`
+  - No other checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` contains:
+    - `temporary rate-limit responses (including HTTP 429) use bounded exponential-backoff retry...`
+    - `explicit non-retryable provider limit responses fail fast as quota_or_rate_limited`
+  - `docs/issues/issue_53_contracts.md` contains:
+    - `quota/rate-limit handling baseline`
+    - `temporary rate-limit responses (including HTTP 429) use bounded exponential-backoff retries`
+    - `explicit non-retryable provider limit responses classify as quota_or_rate_limited without a retry loop`
+- Outcome / next step:
+  - Section 2 item 6 is complete with user-approved semantics. Next checklist item is Section 2 item 7 (`Add setup validation flow and explicit user-visible errors...`).
+
 ### OP-0015
 
 - Date/time: 2026-03-14 19:35:01 -03:00
