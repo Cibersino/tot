@@ -29,6 +29,100 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0008
+
+- Date/time: 2026-03-14 18:31:49 -03:00
+- Operation: Normalize Section 2 plan structure to checklist-only format.
+- Why: User requested removal of the added Section 2 subsection because it was confusing.
+- Changes made:
+  - Executed structure change in `docs/issues/issue_53_implementation_plan.md`:
+    - removed `### Section 2 alignment gate (2026-03-14)`
+    - kept Section 2 as checklist-only format
+    - integrated alignment details directly into each Section 2 checkbox as:
+      - `Owner`
+      - `Done when` acceptance criteria
+  - Clarified manual vs Codex responsibility within the existing checklist instead of maintaining a parallel subsection.
+- Checklist updates:
+  - No checkbox state toggles; all Section 2 items remain unchecked.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md`:
+    - `Section 2 alignment gate (2026-03-14)` no longer present.
+    - each Section 2 checklist item now includes `Owner` + `Done when` criteria.
+    - explicit reference to local validation harness retained inside checklist criteria (`tools_local/drive_ocr_test/index.js`).
+- Outcome / next step:
+  - Plan structure is now simpler and checklist-first. Next step is to execute Section 2 checklist item 1 with user participation (manual OAuth validation), then proceed in checklist order.
+
+### OP-0007
+
+- Date/time: 2026-03-14 18:27:59 -03:00
+- Operation: Discover local developer-side OCR setup/validation assets to drive Section 2 manual participation.
+- Why: User requested guidance where manual download/install/setup actions are required.
+- Changes made:
+  - Read-only discovery in `tools_local` identified an existing Drive OCR test harness:
+    - `tools_local/drive_ocr_test/index.js` (OAuth + Drive list-files validation)
+    - `tools_local/drive_ocr_test/ocr_test.js` (upload -> convert -> export -> delete flow)
+    - `tools_local/drive_ocr_test/credentials.json` present locally (not tracked by git)
+  - Drift disclosure:
+    - this read-only discovery started before opening OP-0007.
+    - impact: no repository file was modified during the pre-entry read phase.
+    - handling: operation is explicitly logged here with evidence and no hidden edits.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - local harness files found under `tools_local/drive_ocr_test/`:
+    - `index.js`
+    - `ocr_test.js`
+    - `credentials.json`
+  - `git ls-files --error-unmatch tools_local/drive_ocr_test/credentials.json` -> `NOT_TRACKED`
+- Outcome / next step:
+  - Use this harness as the manual-participation path: user performs/approves required Google-side setup and OAuth sign-in, then Codex validates flow and proceeds with in-repo Section 2 implementation.
+
+### OP-0006
+
+- Date/time: 2026-03-14 18:25:14 -03:00
+- Operation: Execute Section 2 alignment gate and lock next actions, including manual-participation boundaries.
+- Why: User requested Section 2 execution and explicitly asked for guidance where manual downloading/installing/setup is required.
+- Changes made:
+  - Updated `docs/issues/issue_53.md` `## Substrate` to remove stale pre-decision wording and align it with the locked baseline:
+    - substrate: `Google Drive OCR via Google Docs conversion`
+    - access model: `user-managed + explicit sign-in activation`
+  - Added explicit implementation implications to `docs/issues/issue_53.md` for:
+    - explicit activation requirement
+    - system-browser OAuth policy
+    - minimum-scope baseline (`drive.file`)
+    - external-processing disclosure requirement
+    - explicit failure-state requirement (no silent fallback)
+  - Added `Section 2 alignment gate (2026-03-14)` to `docs/issues/issue_53_implementation_plan.md` defining:
+    - locked Section 2 substrate/access baseline
+    - manual-participation-required setup work
+    - Codex-executable setup work
+    - sequencing gate for Section 4 start
+  - Drift disclosure:
+    - read-only evidence collection for this gate started shortly before creating OP-0006.
+    - impact: no files were modified during that pre-entry read phase.
+    - handling: operation then continued with explicit OP logging before all document edits.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md` during this gate.
+- Files touched:
+  - `docs/issues/issue_53.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53.md`:
+    - `## Substrate` now states the selected baseline and implementation implications.
+  - `docs/issues/issue_53_implementation_plan.md`:
+    - new section `### Section 2 alignment gate (2026-03-14)`
+    - `Manual-participation-required setup work (user + Codex guidance)`
+    - `Codex-executable setup work (in-repo implementation/documentation)`
+    - `Gate decision for sequencing`
+- Outcome / next step:
+  - Section 2 is now explicitly aligned at policy/document level. Next step is to execute the manual setup checklist with user participation (Google Cloud OAuth/Drive enablement/credentials download), then implement the in-repo setup validation and activation gate work.
+
 ### OP-0005
 
 - Date/time: 2026-03-14 18:14:12 -03:00

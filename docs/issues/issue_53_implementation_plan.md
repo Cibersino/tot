@@ -31,13 +31,52 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
 ## 2. Substrate setup / billing / activation path
 
 - [ ] Complete developer-side installation/activation for the chosen substrate.
+  - Owner: `User manual` with Codex guidance.
+  - Done when:
+    - system-browser OAuth sign-in succeeds for the desktop client.
+    - developer-side flow validates with local harness (`tools_local/drive_ocr_test/index.js`).
 - [ ] Configure credentials/secrets and required auth/billing setup for the chosen substrate and chosen access model.
+  - Owner: `User manual` with Codex guidance.
+  - Done when:
+    - Google Drive API is enabled for the selected Google Cloud project.
+    - desktop OAuth client credentials are downloaded and stored in a local non-repo path.
+    - test-user / consent configuration allows successful sign-in for development validation.
 - [ ] Define ownership/storage boundary for controlling credentials/configuration.
+  - Owner: `Codex` (implementation + docs).
+  - Done when:
+    - app/client credentials are never embedded in tracked source files.
+    - user OAuth tokens are stored locally and outside repository-tracked paths.
+    - explicit disconnect/local-token-removal ownership is documented.
 - [ ] Define whether OCR is enabled by default or requires explicit activation, and how availability is determined.
+  - Owner: `Codex` (implementation + docs).
+  - Done when:
+    - default state is OCR disabled.
+    - availability requires explicit successful activation/sign-in.
+    - unavailable/not-activated states are explicitly detectable and user-visible.
 - [ ] Define usage restrictions/limits, if any, and how they are enforced.
+  - Owner: `Codex` (implementation + docs).
+  - Done when:
+    - restrictions list is documented (format/routing/activation constraints).
+    - enforcement points are defined (preflight and runtime).
+    - restriction failures map to explicit user-visible states and logs.
 - [ ] Define quota/budget/usage-limit handling for the chosen model.
+  - Owner: `Codex` (implementation + docs).
+  - Done when:
+    - quota/limit failures map to `billing_or_quota_limited` (or narrower mapped state with equivalent explicitness).
+    - user guidance for retry/wait/reconnect actions is defined.
+    - no quota/limit path degrades into silent fallback.
 - [ ] Add setup validation flow and explicit user-visible errors for incomplete/missing setup, missing credentials, billing/auth issues, and quota/budget/usage-limit issues.
+  - Owner: `Codex` + `User` (manual validation run).
+  - Done when:
+    - validation checks credentials presence, activation status, and reachable API path.
+    - each setup/auth/quota category has explicit user-visible failure handling.
+    - failure categories are logged with structured details safe for logs.
 - [ ] Confirm setup path and failures follow current logging/bridge-failure policies.
+  - Owner: `Codex`.
+  - Done when:
+    - setup and activation paths follow existing warn/error conventions in `log.js` style.
+    - optional bridge failures are non-crashing and explicit; required-path failures are explicit and blocking.
+    - evidence is captured in Issue 53 tracker before Section 4 coding starts.
 
 ## 3. Contracts before implementation
 
