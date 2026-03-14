@@ -29,6 +29,34 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Log
 
+### OP-0015
+
+- Date/time: 2026-03-14 19:35:01 -03:00
+- Operation: Rename Issue 53 quota-limit state token from `billing_or_quota_limited` to `quota_or_rate_limited`.
+- Why: User explicitly requested renaming for clarity because the chosen Drive route should not imply a separate billing-failure path in the state name.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 6 done-when criteria:
+    - `billing_or_quota_limited` -> `quota_or_rate_limited`
+  - Updated `docs/issues/issue_53_contracts.md` state taxonomy union:
+    - `billing_or_quota_limited` -> `quota_or_rate_limited`
+  - Updated `docs/issues/issue_53_contracts.md` error mapping minimum:
+    - `quota / rate / limit -> billing_or_quota_limited` -> `quota / rate / limit -> quota_or_rate_limited`
+- Checklist updates:
+  - No checkbox state changes.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` contains:
+    - `quota/limit failures map to quota_or_rate_limited`
+  - `docs/issues/issue_53_contracts.md` contains:
+    - union member: `quota_or_rate_limited`
+    - mapping line: `quota / rate / limit -> quota_or_rate_limited`
+  - Repo search confirms no remaining `billing_or_quota_limited` usage outside this historical tracker entry.
+- Outcome / next step:
+  - Rename is complete and aligned with user direction. Next step is to finish Section 2 item 6 semantics using the new token name.
+
 ### OP-0014
 
 - Date/time: 2026-03-14 19:10:10 -03:00

@@ -75,7 +75,7 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
 - [ ] Define quota/budget/usage-limit handling for the chosen model.
   - Owner: `Codex` (implementation + docs).
   - Done when:
-    - quota/limit failures map to `billing_or_quota_limited` (or narrower mapped state with equivalent explicitness).
+    - quota/limit failures map to `quota_or_rate_limited` (or narrower mapped state with equivalent explicitness).
     - user guidance for retry/wait/reconnect actions is defined.
     - no quota/limit path degrades into silent fallback.
 - [ ] Add setup validation flow and explicit user-visible errors for incomplete/missing setup, missing credentials, billing/auth issues, and quota/budget/usage-limit issues.

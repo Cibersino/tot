@@ -41,7 +41,7 @@ type ExtractionErrorCode =
   | "setup_incomplete"
   | "credentials_missing"
   | "auth_failed"
-  | "billing_or_quota_limited"
+  | "quota_or_rate_limited"
   | "connectivity_failed"
   | "platform_runtime_failed"
   | "native_extraction_failed"
@@ -214,7 +214,7 @@ Error mapping minimum:
 - conversion failure -> `ocr_conversion_failed`
 - export failure -> `ocr_export_failed`
 - cleanup failure -> `ocr_cleanup_failed` (warning-or-failure policy must be explicit)
-- quota / rate / limit -> `billing_or_quota_limited`
+- quota / rate / limit -> `quota_or_rate_limited`
 - network failure -> `connectivity_failed`
 
 Cleanup policy:
