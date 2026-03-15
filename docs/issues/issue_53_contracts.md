@@ -2,28 +2,35 @@
 
 Linked issue: `docs/issues/issue_53.md`  
 Linked plan: `docs/issues/issue_53_implementation_plan.md`  
-Linked substrate decision: `docs/issues/issue_53_ocr_substrate_evaluation.md`
+Linked substrate decision: `docs/issues/issue_53_ocr_substrate_evaluation.md`  
+Linked tracker: `docs/issues/issue_53_operation_tracker.md`
 
 ## Purpose
 
-Lock the Section 3 contracts for Issue 53 so implementation can proceed with:
+Revalidate and lock Section 3 contracts so implementation can proceed with:
 
 - substrate-agnostic core behavior
 - substrate-specific behavior isolated behind an adapter boundary
+- explicit setup/auth/quota/connectivity/runtime failures
 - no silent fallback
+
+Authoritative revalidation note:
+
+- Revalidated on `2026-03-14` after completion of Section 2 items 7/8.
+- This revision supersedes earlier draft wording where semantics were still pending.
 
 ## Decision baseline
 
-Chosen OCR pairing (already decided):
+Chosen OCR pairing:
 
 - substrate: `Google Drive OCR via Google Docs conversion`
 - access model: `user-managed + explicit sign-in activation`
 
-This document applies that decision without coupling core extraction/apply orchestration to Google-specific internals.
+This document applies that decision without coupling core extraction/apply orchestration to provider internals.
 
 ## 1) Core extraction result contract (substrate-agnostic)
 
-Every route (`native`, `ocr`) must return this shape.
+Every extraction route (`native`, `ocr`) must return this shape.
 
 ```ts
 type ExtractionRoute = "native" | "ocr";
@@ -78,24 +85,33 @@ interface ExtractionResult {
 Rules:
 
 - `state === "success"`:
-  - `text` must be non-empty (or explicitly allowed empty when source is truly empty and surfaced as warning).
+  - `text` must be non-empty (or explicitly allowed empty for truly empty sources, surfaced as warning).
   - `error` must be `null`.
 - `state !== "success"`:
   - `text` must be empty.
   - apply modal must not open.
   - current text must remain unchanged.
 - Never switch routes silently after failure.
+- Setup validation readiness is handled by Section 8 contract and must not be hidden as silent extraction fallback.
 
 ## 2) Route metadata contract (substrate-agnostic)
 
 ```ts
+type OcrSetupStateForRouting =
+  | "not_checked"
+  | "ready"
+  | "setup_incomplete"
+  | "ocr_activation_required"
+  | "failure";
+
 interface RouteAvailability {
   fileKind: "image" | "pdf" | "text_document" | "unknown";
   availableRoutes: Array<"native" | "ocr">;
-  chosenRoute: "native" | "ocr" | null; // null until user chooses or single-route auto-choice
+  chosenRoute: "native" | "ocr" | null;
   executedRoute: "native" | "ocr" | null;
   pdfTriage: "not_pdf" | "native_only" | "ocr_only" | "both";
   triageReason: string; // safe diagnostic explanation
+  ocrSetupState: OcrSetupStateForRouting; // setup gate status at route-decision time
 }
 ```
 
@@ -105,6 +121,7 @@ Rules:
 - If both routes are available, UI must ask user to choose.
 - `chosenRoute` and `executedRoute` must both be logged.
 - For non-PDF files: `pdfTriage = "not_pdf"`.
+- `ocrSetupState` must be logged whenever OCR route is unavailable due to setup/activation/runtime gating.
 
 ## 3) Apply contract (reuse existing canonical path)
 
@@ -123,7 +140,7 @@ Hard rules:
 
 ## 4) State taxonomy contract
 
-State separation is mandatory:
+Extraction state separation is mandatory:
 
 - `precondition_rejected`: blocked before extraction starts.
 - `failure`: extraction started and failed.
@@ -134,6 +151,10 @@ Behavior guarantees:
 - `precondition_rejected` is not an extraction failure.
 - `cancelled` is not an extraction failure.
 - none of these states may mutate current text.
+
+Clarification:
+
+- Setup-validation readiness (Section 8) is a separate contract from extraction-state taxonomy.
 
 ## 5) Processing-mode contract
 
@@ -171,7 +192,7 @@ interface OcrAdapter {
 
 Boundary rules:
 
-- Core layer only consumes `OcrAdapter` results/errors.
+- Core layer only consumes adapter contracts/results.
 - Adapter maps provider-specific failures into shared `ExtractionErrorCode`.
 - Adapter may add provider-specific details only in `detailsSafeForLogs`.
 - Replacing OCR substrate later must not require core contract changes.
@@ -197,23 +218,18 @@ Required policy:
 - availability baseline:
   - `setup_incomplete` when local `credentials.json` is missing
   - `ocr_activation_required` when local `token.json` is missing
-  - route is available only when both files are present under `app.getPath('userData')/config/ocr_google_drive/`
-  - first successful sign-in persists token state for reuse across files and app sessions for the same user
-  - browser re-auth is required only when token state is missing/invalid/revoked or scope requirements change
-- restrictions/limits policy baseline:
-  - no additional app-imposed hard caps (for example file-size/page-count caps) at this phase
-  - restrictions are enforced via:
-    - file-kind/route classification rules
-    - activation/setup availability gates
-    - provider/API runtime limits mapped to explicit errors (no silent fallback)
-  - no separate app-managed OCR billing-failure state is assumed for the current Drive route in this phase
-- quota/rate-limit handling baseline:
+  - route available only when both files are present under `app.getPath('userData')/config/ocr_google_drive/`
+  - first successful sign-in persists token state for reuse across files/sessions for the same user
+  - browser re-auth required only when token state is missing/invalid/revoked or scope requirements change
+- restrictions/limits baseline:
+  - no additional app-imposed hard caps at this phase (for example custom file-size/page-count caps)
+  - enforced restrictions come from route/file-kind rules, setup/activation gates, and provider/API runtime constraints
+  - no separate app-managed OCR billing-failure state is introduced in this phase
+- quota/rate-limit baseline:
   - temporary rate-limit responses (including HTTP `429`) use bounded exponential-backoff retries
-  - if retry window is exhausted, classify as `quota_or_rate_limited`
-  - explicit non-retryable provider limit responses classify as `quota_or_rate_limited` without a retry loop
-  - user guidance:
-    - wait and retry for temporary rate-limit failures
-    - reconnect action is reserved for auth/activation failures, not quota/rate-limit failures
+  - exhausted retry window => `quota_or_rate_limited`
+  - explicit non-retryable provider limit responses => `quota_or_rate_limited` (no retry loop)
+  - guidance: wait/retry for rate limits; reconnect is reserved for auth/activation failures
 
 Error mapping minimum:
 
@@ -222,7 +238,7 @@ Error mapping minimum:
 - conversion failure -> `ocr_conversion_failed`
 - export failure -> `ocr_export_failed`
 - cleanup failure -> `ocr_cleanup_failed` (warning-or-failure policy must be explicit)
-- quota / rate / limit -> `quota_or_rate_limited`
+- quota / rate / billing-limit style provider responses -> `quota_or_rate_limited`
 - network failure -> `connectivity_failed`
 
 Cleanup policy:
@@ -231,24 +247,103 @@ Cleanup policy:
 - if cleanup fails, surface explicit warning/error and log structured details
 - never silently hide cleanup failures
 
-## 8) Observability contract alignment
+## 8) Setup validation contract (Section 2 item 7/8)
+
+Setup validation runs in backend/IPC before OCR execution and must return explicit readiness/failure states.
+
+```ts
+type OcrSetupValidationState =
+  | "ready"
+  | "setup_incomplete"
+  | "ocr_activation_required"
+  | "failure";
+
+type OcrSetupIssueType =
+  | "setup"
+  | "credentials"
+  | "activation"
+  | "auth"
+  | "quota_or_rate"
+  | "connectivity"
+  | "platform_runtime"
+  | "unknown";
+
+interface OcrSetupValidationResult {
+  ok: boolean;
+  state: OcrSetupValidationState;
+  summary: string;
+  checks: {
+    credentialsPresent: boolean;
+    tokenPresent: boolean;
+    credentialsValid: boolean;
+    tokenValid: boolean;
+    tokenHasAccessToken: boolean;
+    tokenHasRefreshToken: boolean;
+    apiProbeAttempted: boolean;
+    apiReachable: boolean;
+    apiStatusCode: number | null;
+    apiReasonCode: string;
+    apiIssueSubtype: string;
+  };
+  error: null | {
+    code: ExtractionErrorCode;
+    issueType: OcrSetupIssueType;
+    userMessageKey: string;
+    userMessageFallback: string;
+    userActionKey: string;
+    detailsSafeForLogs: Record<string, string | number | boolean | null>;
+  };
+}
+```
+
+Rules:
+
+- Validation must check:
+  - credentials presence
+  - activation/token presence
+  - reachable API path (unless probe is explicitly disabled by caller)
+- Required mapping:
+  - missing credentials file -> `state=setup_incomplete`, `code=setup_incomplete`
+  - missing token file -> `state=ocr_activation_required`, `code=ocr_activation_required`
+  - invalid credentials shape -> `state=failure`, `code=credentials_missing`
+  - auth failures (including invalid token/access) -> `state=failure`, `code=auth_failed`
+  - quota/rate/billing-limit provider responses -> `state=failure`, `code=quota_or_rate_limited`
+  - network/timeout/connectivity failures -> `state=failure`, `code=connectivity_failed`
+  - IPC/runtime failures -> `state=failure`, `code=platform_runtime_failed`
+- Every non-ready result must be explicit user-visible and structured-loggable.
+- No setup-validation failure may trigger silent route fallback.
+
+## 9) Logging and bridge-failure policy alignment (Section 2 item 8)
+
+Required behavior:
+
+- Setup/activation/auth/quota/connectivity blocking outcomes must log explicit structured `warn`/`error`.
+- Required-path registration failures must be explicit and blocking (throw on missing required dependencies).
+- Handler/runtime failures must be explicit and non-crashing (return structured failure result).
+- Bridge failures must preserve no-silent-fallback policy.
+- Logging must remain consistent with `electron/log.js` conventions.
+
+## 10) Observability contract alignment
 
 At minimum log:
 
 - selected file type
 - available/chosen/executed route
 - extraction state
+- setup validation attempts/outcomes (`state`, `code`, `issueType`)
 - OCR/native latency
 - apply choice + repetition count
 - truncation events
 - setup/activation/auth/quota/restriction failures
 - precondition_rejected/failure/cancelled distinction
 
-## 9) Implementation sequencing after this contract lock
+## 11) Implementation sequencing after this contract revalidation
 
-1. Build route-classification + metadata pipeline.
-2. Build processing-mode state machine.
-3. Integrate OCR adapter behind interface boundary.
-4. Integrate native extraction route to same `ExtractionResult`.
-5. Wire post-extraction apply modal to canonical apply path.
-6. Add smoke tests for state separation and no-silent-fallback guarantees.
+1. Keep Section 2 semantics frozen (setup validation + bridge policy) as baseline.
+2. Start Section 4 from dedicated import/extract entrypoint guardrail.
+3. Build route-classification + metadata pipeline against this contract set.
+4. Build processing-mode state machine.
+5. Integrate OCR adapter behind interface boundary.
+6. Integrate native extraction route to shared `ExtractionResult`.
+7. Wire post-extraction apply modal to canonical apply path.
+8. Add smoke tests for state separation and no-silent-fallback guarantees.
