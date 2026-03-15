@@ -64,6 +64,57 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0051
+
+- Date/time: 2026-03-15 18:32:20 -03:00
+- Operation: Record Section 5 item 2 multilingual manual result `MLG-02` in the Section 5 evidence document.
+- Why: User requested documentation-first workflow, with Codex handling evidence documentation while user executes UI steps.
+- Changes made:
+  - Opened OP-0051 before documentation edits.
+  - Updated Section 5 coverage map for item 2 to `IN_PROGRESS` and listed evidence anchors:
+    - `SMK-01` (Latin/native)
+    - `SMK-02` (Latin/OCR)
+    - `MLG-02` (RTL/native)
+  - Added new multilingual evidence section in:
+    - `docs/issues/issue_53_section5_evidence.md`
+    - `## Section 5 Item 2: Multilingual Coverage`
+    - `### MLG-02 RTL + Native`
+  - Recorded full user-provided `MLG-02` expected/actual evidence:
+    - fixture: `tools_local/smoke/prueba_arabe_pdf.pdf`
+    - route-choice modal shown; user chose `native`
+    - apply modal shown; overwrite applied
+    - observed route metadata (`pdfTriage: 'both'`, `executedRoute: 'native'`, `state: 'success'`)
+    - processing-mode and renderer transition log excerpts
+- Checklist updates:
+  - None (Section 5 item 2 remains in progress; CJK/OCR case still pending).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:32:20 -03:00`
+  - `MLG-02` observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: yes`
+    - `route_chosen: native`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: none`
+  - `MLG-02` execution telemetry evidence (main process log):
+    - `routeKind: 'native'`
+    - `state: 'success'`
+    - `pdfTriage: 'both'`
+    - `triageReason: 'native_text_detected_and_ocr_ready_preferred_native'`
+    - `availableRoutes: [ 'native', 'ocr' ]`
+    - `chosenRoute: 'native'`
+    - `executedRoute: 'native'`
+    - `sourceFileExt: 'pdf'`
+    - `sourceFileKind: 'text_document'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:32:58 -03:00`
+- Outcome / next step:
+  - Completed documentation step for `MLG-02`. Next step is manual execution of remaining multilingual delta case: CJK/OCR (`MLG-03`).
+
 ### OP-0050
 
 - Date/time: 2026-03-15 16:31:20 -03:00
