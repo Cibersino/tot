@@ -148,7 +148,7 @@ Entrypoint guardrail:
 - [x] Implement access/activation gate for the OCR route according to the chosen model, with explicit user-visible failures for unavailable/not-activated/restricted/quota-exhausted paths.
 - [x] Implement OCR route.
 - [x] Implement native extraction route.
-- [ ] Complete native extraction engineering slice (parser mapping by format, normalization pipeline, structured native-route errors).
+- [x] Complete native extraction engineering slice (parser mapping by format, normalization pipeline, structured native-route errors).
 - [ ] Implement PDF triage (`native only` / `OCR only` / `both`).
 - [ ] Implement explicit route-choice UX when both routes are viable.
 - [ ] Implement post-extraction apply modal with overwrite/append/repetitions.

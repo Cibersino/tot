@@ -41,7 +41,7 @@ As of 2026-03-15:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-8 complete:
+  - Items 1-9 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
@@ -50,12 +50,65 @@ As of 2026-03-15:
     - OCR access/activation gate wired with explicit blocked outcomes (`unavailable` / `not-activated` / `restricted` / `quota_or_rate_limited`)
     - OCR route implemented and executed from backend-owned route runtime
     - native extraction route implemented and executed from backend-owned route runtime
-  - Active next checklist item: Section 4 item 9 (`Complete native extraction engineering slice...`).
+    - native extraction engineering slice completed (`docx` mapping + normalization pipeline + structured parser-stage errors)
+  - Active next checklist item: Section 4 item 10 (`Implement PDF triage...`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0027
+
+- Date/time: 2026-03-15 00:13:40 -03:00
+- Operation: Execute Section 4 item 9 (`Complete native extraction engineering slice`).
+- Why: Continue checklist execution after Section 4 items 7-8 completion.
+- Changes made:
+  - Expanded native parser mapping by format:
+    - `electron/import_extract_platform/native_extraction_route.js`
+    - added `docx` support using `mammoth`.
+    - parser map now includes: `txt`, `md`, `html`, `htm`, `docx`.
+  - Implemented explicit normalization pipeline for native outputs:
+    - newline normalization (`CRLF/CR -> LF`)
+    - BOM removal
+    - NBSP/zero-width cleanup
+    - trailing whitespace cleanup by line
+    - blank-line collapse
+  - Refined structured native-route errors:
+    - parser-stage metadata in `detailsSafeForLogs` (`stage`, `parserType`, `sourceFileExt`, `errorName`, `errorCode`, `errorMessage`)
+    - corrupt/unreadable parser failures map to `unreadable_or_corrupt`
+    - parser/runtime failures map to `native_extraction_failed`
+  - Added docx parser dependency:
+    - `package.json` + `package-lock.json`: `mammoth@1.11.0`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Complete native extraction engineering slice (parser mapping by format, normalization pipeline, structured native-route errors).`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/native_extraction_route.js`
+  - `package.json`
+  - `package-lock.json`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/native_extraction_route.js`
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check public/renderer.js`
+    - `node --check electron/main.js`
+    - `node --check electron/preload.js`
+  - Native route smoke checks:
+    - HTML sample -> `success` with normalized text output (`"Alpha\nBeta"`)
+    - generated valid docx sample -> `success` with extracted text (`"Hello docx native route"`)
+    - corrupt docx sample -> `failure / unreadable_or_corrupt` with parser metadata (`docx_text`)
+  - Diff summary:
+    - `electron/import_extract_platform/native_extraction_route.js` `+169 -28`
+    - `package.json` `+2 -1`
+    - `package-lock.json` `+161 -10`
+- Assumptions disclosed:
+  - No drift from item 9 scope: route-choice UX and PDF triage were intentionally left unchanged for items 10/11.
+  - Native output normalization in this item is text-centric and conservative; route-choice semantics and apply-flow semantics remain unchanged.
+- Outcome / next step:
+  - Section 4 item 9 is complete. Next checklist item is Section 4 item 10 (`Implement PDF triage...`).
 
 ### OP-0026
 

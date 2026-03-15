@@ -2,15 +2,35 @@
 
 const fs = require('fs');
 const path = require('path');
+const mammoth = require('mammoth');
 
 const NATIVE_PARSER_BY_EXT = Object.freeze({
   '.txt': 'plain_text',
-  '.md': 'markdown_as_text',
+  '.md': 'markdown_text',
   '.html': 'html_text',
   '.htm': 'html_text',
+  '.docx': 'docx_text',
 });
 
-function normalizeText(rawText) {
+function normalizeTextPipeline(rawText) {
+  const asString = typeof rawText === 'string' ? rawText : String(rawText || '');
+  const normalizedNewlines = asString
+    .replace(/^\uFEFF/, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+
+  const normalizedSpaces = normalizedNewlines
+    .replace(/\u00A0/g, ' ')
+    .replace(/[\u200B\u200C\u200D\uFEFF]/g, '')
+    .replace(/\t/g, ' ');
+
+  const lines = normalizedSpaces.split('\n').map((line) => line.replace(/[ \t]+$/g, ''));
+  return lines.join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function normalizeUtf8Text(rawText) {
   const asString = typeof rawText === 'string' ? rawText : String(rawText || '');
   return asString
     .replace(/^\uFEFF/, '')
@@ -39,9 +59,75 @@ function htmlToPlainText(htmlRaw) {
     .replace(/<[^>]+>/g, ' ');
   return decodeMinimalHtmlEntities(stripped)
     .replace(/[ \t]+\n/g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
     .replace(/[ \t]{2,}/g, ' ')
-    .trim();
+    .trimEnd();
+}
+
+function mapMammothWarnings(messages) {
+  if (!Array.isArray(messages)) return [];
+  const warnings = [];
+
+  messages.forEach((messageObj) => {
+    if (!messageObj || typeof messageObj !== 'object') return;
+    const type = typeof messageObj.type === 'string' ? messageObj.type.trim() : '';
+    const message = typeof messageObj.message === 'string' ? messageObj.message.trim() : '';
+    if (!message) return;
+    const safeType = type || 'info';
+    warnings.push(`docx_${safeType}:${message.slice(0, 160)}`);
+  });
+
+  return warnings;
+}
+
+function isCorruptOrUnreadableParserError(parserType, err) {
+  if (!err) return false;
+  const code = typeof err.code === 'string' ? err.code.trim() : '';
+  const message = String(err && err.message ? err.message : '').toLowerCase();
+
+  if (code === 'ENOENT' || code === 'EISDIR' || code === 'EACCES' || code === 'EPERM') {
+    return true;
+  }
+
+  if (parserType === 'docx_text') {
+    if (message.includes('end of central directory')
+      || message.includes('invalid signature')
+      || message.includes('cant find end of central directory')
+      || message.includes('could not find file')
+      || message.includes('invalid or unsupported zip')) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function runNativeParser(parserType, absPath) {
+  if (parserType === 'plain_text') {
+    const rawText = fs.readFileSync(absPath, 'utf8');
+    return { text: normalizeUtf8Text(rawText), warnings: [] };
+  }
+
+  if (parserType === 'markdown_text') {
+    const rawText = fs.readFileSync(absPath, 'utf8');
+    return { text: normalizeUtf8Text(rawText), warnings: [] };
+  }
+
+  if (parserType === 'html_text') {
+    const rawHtml = fs.readFileSync(absPath, 'utf8');
+    return { text: htmlToPlainText(rawHtml), warnings: [] };
+  }
+
+  if (parserType === 'docx_text') {
+    const extraction = await mammoth.extractRawText({ path: absPath });
+    return {
+      text: String(extraction && extraction.value ? extraction.value : ''),
+      warnings: mapMammothWarnings(extraction ? extraction.messages : []),
+    };
+  }
+
+  const parserError = new Error(`Unsupported native parser: ${parserType}`);
+  parserError.code = 'UNSUPPORTED_NATIVE_PARSER';
+  throw parserError;
 }
 
 function getSourceInfo(filePath) {
@@ -93,6 +179,37 @@ function ensureNotAborted(isAborted) {
   }
 }
 
+function buildFailureResultForError({
+  source,
+  parserType,
+  err,
+}) {
+  const corruptOrUnreadable = isCorruptOrUnreadableParserError(parserType, err);
+  const errorCode = corruptOrUnreadable ? 'unreadable_or_corrupt' : 'native_extraction_failed';
+  const errorMessage = corruptOrUnreadable
+    ? 'Selected file is unreadable or corrupt for native extraction.'
+    : 'Native extraction failed due to parser/runtime error.';
+  const summary = corruptOrUnreadable
+    ? 'Native extraction route failed: unreadable or corrupt source.'
+    : 'Native extraction route failed during parsing.';
+
+  return {
+    summary,
+    error: buildError(
+      errorCode,
+      errorMessage,
+      {
+        stage: 'parse',
+        parserType,
+        sourceFileExt: source.fileExt,
+        errorName: String(err && err.name ? err.name : 'Error'),
+        errorCode: String(err && err.code ? err.code : ''),
+        errorMessage: String(err && err.message ? err.message : err || ''),
+      }
+    ),
+  };
+}
+
 async function runNativeExtractionRoute({
   filePath,
   isAborted,
@@ -122,6 +239,38 @@ async function runNativeExtractionRoute({
     });
   }
 
+  try {
+    const stats = fs.statSync(source.absPath);
+    if (!stats.isFile()) {
+      return buildResult({
+        state: 'failure',
+        summary: 'Native route failed before parse: selected path is not a file.',
+        provenance,
+        error: buildError(
+          'unreadable_or_corrupt',
+          'Selected path is not a readable file.',
+          { stage: 'preflight', reason: 'not_a_file', sourceFileExt: source.fileExt }
+        ),
+      });
+    }
+  } catch (err) {
+    return buildResult({
+      state: 'failure',
+      summary: 'Native route failed before parse: file metadata check failed.',
+      provenance,
+      error: buildError(
+        'unreadable_or_corrupt',
+        'Selected file is missing or unreadable.',
+        {
+          stage: 'preflight',
+          reason: 'stat_failed',
+          errorName: String(err && err.name ? err.name : 'Error'),
+          errorCode: String(err && err.code ? err.code : ''),
+        }
+      ),
+    });
+  }
+
   if (!source.parserType) {
     return buildResult({
       state: 'failure',
@@ -141,24 +290,18 @@ async function runNativeExtractionRoute({
 
   try {
     ensureNotAborted(isAborted);
-
-    const raw = fs.readFileSync(source.absPath, 'utf8');
+    const parsed = await runNativeParser(source.parserType, source.absPath);
     ensureNotAborted(isAborted);
 
-    let text = '';
-    if (source.parserType === 'plain_text' || source.parserType === 'markdown_as_text') {
-      text = normalizeText(raw).trim();
-    } else if (source.parserType === 'html_text') {
-      text = htmlToPlainText(raw);
-    } else {
-      throw new Error(`Unsupported native parser: ${source.parserType}`);
-    }
+    const normalizedText = normalizeTextPipeline(parsed.text);
+    const warnings = Array.isArray(parsed.warnings) ? parsed.warnings.slice(0, 20) : [];
+    if (!normalizedText) warnings.push('native_empty_text');
 
     return buildResult({
       state: 'success',
-      text,
-      warnings: text ? [] : ['native_empty_text'],
-      summary: text
+      text: normalizedText,
+      warnings,
+      summary: normalizedText
         ? 'Native extraction route succeeded.'
         : 'Native extraction route succeeded with empty text output.',
       provenance,
@@ -183,23 +326,21 @@ async function runNativeExtractionRoute({
         sourceFileExt: source.fileExt,
         parserType: source.parserType,
         errorName: String(err && err.name ? err.name : 'Error'),
+        errorCode: String(err && err.code ? err.code : ''),
       });
     }
 
+    const failure = buildFailureResultForError({
+      source,
+      parserType: source.parserType,
+      err,
+    });
+
     return buildResult({
       state: 'failure',
-      summary: 'Native extraction route failed during parsing.',
+      summary: failure.summary,
       provenance,
-      error: buildError(
-        'native_extraction_failed',
-        'Native extraction failed due to parser/runtime error.',
-        {
-          stage: 'parse',
-          parserType: source.parserType,
-          errorName: String(err && err.name ? err.name : 'Error'),
-          errorMessage: String(err && err.message ? err.message : err || ''),
-        }
-      ),
+      error: failure.error,
     });
   }
 }
