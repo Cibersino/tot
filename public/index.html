@@ -141,6 +141,25 @@
       </div>
     </div>
 
+    <div id="importExtractRouteModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="importExtractRouteModalTitle" aria-modal="true">
+      <div id="importExtractRouteModalBackdrop" class="info-modal-backdrop"></div>
+      <div class="import-extract-route-modal-panel" role="document" aria-describedby="importExtractRouteModalMessage">
+        <header class="import-extract-route-modal-header">
+          <h2 id="importExtractRouteModalTitle">Choose extraction route</h2>
+          <button id="importExtractRouteModalClose" class="btn-standard" aria-label="Close">🗙</button>
+        </header>
+        <div class="import-extract-route-modal-body">
+          <p id="importExtractRouteModalMessage">Both extraction routes are available for this PDF. Choose one to continue.</p>
+          <div class="import-extract-route-modal-actions">
+            <button id="importExtractRouteModalNative" class="btn-standard">Use native</button>
+            <button id="importExtractRouteModalOcr" class="btn-standard">Use OCR</button>
+            <button id="importExtractRouteModalCancel" class="btn-standard">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="./js/log.js"></script>
@@ -155,6 +174,7 @@
   <script src="./js/crono.js"></script>
   <script src="./js/info_modal_links.js"></script>
   <script src="./js/current_text_snapshots.js"></script>
+  <script src="./js/import_extract_route_choice_modal.js"></script>
   <script src="renderer.js"></script>
 </body>
 

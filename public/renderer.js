@@ -1609,6 +1609,28 @@ function buildRepeatedClipboardText(baseText, clip, repeatCount) {
   return parts.join('');
 }
 
+async function promptImportExtractRouteChoice(execution) {
+  const routeChoiceModal = window.ImportExtractRouteChoiceModal;
+  if (!routeChoiceModal || typeof routeChoiceModal.promptRouteChoice !== 'function') {
+    log.warnOnce(
+      'renderer.importExtract.routeChoiceModal.unavailable',
+      'ImportExtractRouteChoiceModal.promptRouteChoice unavailable; route choice cannot continue.'
+    );
+    window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
+    return '';
+  }
+  try {
+    return await routeChoiceModal.promptRouteChoice({
+      execution,
+      tRenderer,
+    });
+  } catch (err) {
+    log.error('import/extract route-choice modal failed:', err);
+    window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
+    return '';
+  }
+}
+
 // =============================================================================
 // Import/extract entrypoint (Section 4 starts here; picker wiring follows in next step)
 // =============================================================================
@@ -1662,10 +1684,28 @@ if (btnImportExtract) {
         return;
       }
 
-      const execution = await runImportExtractSelectedFile({
+      const executionRequest = {
         filePath: picker.filePath || '',
         ocrLanguage: idiomaActual || '',
-      });
+      };
+      let execution = await runImportExtractSelectedFile(executionRequest);
+      if (execution && execution.ok === true && execution.requiresRouteChoice === true) {
+        const routePreference = await promptImportExtractRouteChoice(execution);
+        if (routePreference !== 'native' && routePreference !== 'ocr') {
+          log.info('import/extract route-choice cancelled by user.');
+          return;
+        }
+        execution = await runImportExtractSelectedFile({
+          ...executionRequest,
+          routePreference,
+        });
+      }
+      if (execution && execution.ok === true && execution.requiresRouteChoice === true) {
+        log.error('import/extract route choice remained unresolved:', execution);
+        window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
+        return;
+      }
+
       if (!execution || execution.ok !== true || !execution.result) {
         log.error('import/extract execution IPC failed:', execution);
         window.Notify.notifyMain('renderer.alerts.import_extract_error');

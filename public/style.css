@@ -615,6 +615,53 @@ select#presets {
   padding: 8px
 }
 
+.import-extract-route-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(520px, calc(100% - 32px));
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+
+.import-extract-route-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.import-extract-route-modal-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.import-extract-route-modal-body {
+  margin-top: 12px;
+}
+
+.import-extract-route-modal-body p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.import-extract-route-modal-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.import-extract-route-modal-actions .btn-standard {
+  min-width: 110px;
+}
+
 /* Loader for opening the manual editor */
 .editor-loader {
   position: absolute;

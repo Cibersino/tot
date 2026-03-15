@@ -13,9 +13,15 @@ const OCR_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'bmp']);
 
 function resolvePayload(payload) {
   const raw = payload && typeof payload === 'object' ? payload : {};
+  const routePreference = typeof raw.routePreference === 'string'
+    ? raw.routePreference.trim().toLowerCase()
+    : '';
   return {
     filePath: typeof raw.filePath === 'string' ? raw.filePath.trim() : '',
     ocrLanguage: typeof raw.ocrLanguage === 'string' ? raw.ocrLanguage.trim() : '',
+    routePreference: (routePreference === 'native' || routePreference === 'ocr')
+      ? routePreference
+      : '',
   };
 }
 
@@ -97,6 +103,7 @@ function resolveNonPdfRouteDecision(fileInfo) {
   const routeKind = OCR_IMAGE_EXTENSIONS.has(fileInfo.sourceFileExt) ? 'ocr' : 'native';
   return {
     routeKind,
+    requiresRouteChoice: false,
     routeMetadata: buildRouteMetadata({
       fileInfo,
       availableRoutes: [routeKind],
@@ -164,11 +171,11 @@ function buildOcrGateFailureResult(fileInfo, validationResult) {
 async function triagePdfRoutes({
   fileInfo,
   resolvePaths,
-  controller,
+  routePreference,
 }) {
   const nativeProbeResult = await runNativeExtractionRoute({
     filePath: fileInfo.filePath,
-    isAborted: () => !controller.isActive(),
+    isAborted: () => false,
     logger: log,
   });
   const nativeAvailable = hasUsableExtractedText(nativeProbeResult);
@@ -186,12 +193,20 @@ async function triagePdfRoutes({
   let triageReason = 'no_native_text_layer_detected';
   let availableRoutes = ['ocr'];
   let chosenRoute = 'ocr';
+  let requiresRouteChoice = false;
 
   if (nativeAvailable && ocrReady) {
     pdfTriage = 'both';
     triageReason = 'native_text_detected_and_ocr_ready';
     availableRoutes = ['native', 'ocr'];
-    chosenRoute = 'ocr';
+    if (routePreference === 'native' || routePreference === 'ocr') {
+      chosenRoute = routePreference;
+      triageReason = `native_text_detected_and_ocr_ready_preferred_${routePreference}`;
+    } else {
+      chosenRoute = null;
+      requiresRouteChoice = true;
+      triageReason = 'native_text_detected_and_ocr_ready_choice_required';
+    }
   } else if (nativeAvailable && !ocrReady) {
     pdfTriage = 'native_only';
     triageReason = 'native_text_detected_ocr_unavailable';
@@ -211,6 +226,7 @@ async function triagePdfRoutes({
 
   return {
     routeKind: chosenRoute,
+    requiresRouteChoice,
     routeMetadata: buildRouteMetadata({
       fileInfo,
       availableRoutes,
@@ -382,9 +398,28 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
       }
 
       const fileInfo = getFileInfo(request.filePath);
+      let routeDecision = fileInfo.sourceFileKind === 'pdf'
+        ? await triagePdfRoutes({
+          fileInfo,
+          resolvePaths,
+          routePreference: request.routePreference,
+        })
+        : resolveNonPdfRouteDecision(fileInfo);
+
+      if (routeDecision.requiresRouteChoice) {
+        return {
+          ok: true,
+          requiresRouteChoice: true,
+          routeMetadata: routeDecision.routeMetadata,
+          routeChoiceOptions: ['native', 'ocr'],
+          primaryAlertKey: 'renderer.alerts.import_extract_route_choice_required',
+          warningAlertKeys: [],
+        };
+      }
+
       const enterTransition = controller.enter({
         source: 'import_extract_execution',
-        reason: fileInfo.sourceFileKind === 'pdf' ? 'run_pdf_triage' : 'run_route',
+        reason: fileInfo.sourceFileKind === 'pdf' ? 'run_pdf_route' : 'run_route',
       });
       if (!enterTransition.changed && controller.isActive()) {
         return {
@@ -394,19 +429,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         };
       }
 
-      let routeDecision = null;
       let executionResult = null;
       try {
-        if (fileInfo.sourceFileKind === 'pdf') {
-          routeDecision = await triagePdfRoutes({
-            fileInfo,
-            resolvePaths,
-            controller,
-          });
-        } else {
-          routeDecision = resolveNonPdfRouteDecision(fileInfo);
-        }
-
         executionResult = await executeSelectedFile({
           routeDecision,
           fileInfo,
