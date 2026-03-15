@@ -41,7 +41,7 @@ As of 2026-03-15:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-14 complete:
+  - Items 1-15 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
@@ -56,12 +56,73 @@ As of 2026-03-15:
     - post-extraction apply modal implemented with overwrite/append/repetitions
     - extracted text routed through canonical apply path with unchanged semantics
     - no-silent-fallback observability enforced for route fallback paths in backend execution triage/packaging
-  - Active next checklist item: Section 4 item 15 (`Enforce failure/abort invariants`).
+    - failure/abort invariants enforced in backend execution/runtime boundary and main-window close cancellation path
+  - Active next checklist item: Section 5 item 1 (`Build and run core smoke matrix`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0033
+
+- Date/time: 2026-03-15 02:02:06 -03:00
+- Operation: Execute Section 4 item 15 (`Enforce failure/abort invariants`) with focused invariant audit and minimal corrections.
+- Why: Continue checklist order after item 14 completion and verify strict guarantees for failure/cancellation paths.
+- Changes made:
+  - Opened OP-0033 before meaningful edits (policy compliance step).
+  - Enforced backend result invariants for non-success and abort-race paths:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - added `enforceFailureAbortInvariants(...)` to guarantee:
+      - if cancellation was requested and route returns `success`, result is coerced to `cancelled` with empty text
+      - any non-success result carrying text is sanitized to empty text
+  - Applied invariant enforcement to both route branches:
+    - native branch (`safeNativeResult`)
+    - OCR blocked-result branch (`blockedResult`)
+    - OCR runtime branch (`safeOcrResult`)
+  - Mapped close-window-during-processing to explicit cancellation request:
+    - `electron/main.js`
+    - in `mainWin.on('close', ...)`, when processing mode is active:
+      - `event.preventDefault()`
+      - `importExtractProcessingModeController.requestAbort({ source: 'main_window', reason: 'close_during_processing' })`
+      - close action is consumed as cancellation request (same cancellation path as abort button).
+  - Confirmed renderer apply-modal gate remains success-only:
+    - `public/renderer.js` opens apply modal only when `resultState === 'success'`
+    - non-success/cancelled paths route to alert only (no apply modal).
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Enforce failure/abort invariants:`
+      - current text unchanged
+      - no partial extraction surfaced
+      - no apply modal shown after abort
+      - close-window during processing is treated as cancellation
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `electron/main.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 01:58:54 -03:00`
+    - `git status --short` -> clean working tree at operation start
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check electron/main.js`
+  - Lint checks passed:
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js electron/main.js`
+  - Invariant anchors:
+    - `enforceFailureAbortInvariants(...)`
+    - `import/extract success discarded after cancellation request`
+    - `import/extract non-success result carried text; output dropped to enforce invariant`
+    - `reason: 'close_during_processing'` in `mainWin.on('close', ...)`
+  - Success-only apply-modal gate anchor:
+    - `public/renderer.js`: `if (resultState === 'success') { ... promptImportExtractApplyChoice ... }`
+- Assumptions disclosed:
+  - close-during-processing now behaves as cancel-first: the close request is consumed to request cancellation, preserving abort guarantees before any subsequent close action.
+- Drift disclosures:
+  - None. Changes remained within Section 4 item 15 scope and contract boundaries.
+- Outcome / next step:
+  - Section 4 item 15 is complete. Next checklist step is Section 5 item 1 (`Build and run core smoke matrix`).
 
 ### OP-0032
 

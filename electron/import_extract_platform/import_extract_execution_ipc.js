@@ -302,6 +302,52 @@ function resolveExitReason(routeKind, result) {
   return `import_extract_${routeKind}_failed`;
 }
 
+function enforceFailureAbortInvariants({
+  routeKind,
+  fileInfo,
+  controller,
+  result,
+}) {
+  const safeResult = result && typeof result === 'object' ? { ...result } : null;
+  if (!safeResult) return result;
+
+  // If cancellation was requested while route work was in-flight, discard success output.
+  if (safeResult.state === 'success'
+    && controller
+    && typeof controller.isActive === 'function'
+    && !controller.isActive()) {
+    log.warn('import/extract success discarded after cancellation request:', {
+      routeKind,
+      sourceFileExt: fileInfo.sourceFileExt,
+      sourceFileKind: fileInfo.sourceFileKind,
+    });
+    safeResult.state = 'cancelled';
+    safeResult.text = '';
+    safeResult.summary = `Import/extract ${routeKind} route cancelled by user.`;
+    safeResult.error = {
+      code: 'aborted_by_user',
+      message: `Import/extract ${routeKind} route was cancelled by user.`,
+      detailsSafeForLogs: {
+        stage: 'post_route_result',
+        reason: 'processing_mode_inactive',
+      },
+    };
+    return safeResult;
+  }
+
+  if (safeResult.state !== 'success' && typeof safeResult.text === 'string' && safeResult.text.length > 0) {
+    log.warn('import/extract non-success result carried text; output dropped to enforce invariant:', {
+      routeKind,
+      state: safeResult.state,
+      sourceFileExt: fileInfo.sourceFileExt,
+      sourceFileKind: fileInfo.sourceFileKind,
+    });
+    safeResult.text = '';
+  }
+
+  return safeResult;
+}
+
 async function executeSelectedFile({
   routeDecision,
   fileInfo,
@@ -317,6 +363,12 @@ async function executeSelectedFile({
       isAborted: () => !controller.isActive(),
       logger: log,
     });
+    const safeNativeResult = enforceFailureAbortInvariants({
+      routeKind: 'native',
+      fileInfo,
+      controller,
+      result: nativeResult,
+    });
 
     const routeMetadata = {
       ...routeDecision.routeMetadata,
@@ -324,7 +376,7 @@ async function executeSelectedFile({
     };
     return {
       routeKind,
-      result: nativeResult,
+      result: safeNativeResult,
       routeMetadata,
     };
   }
@@ -342,7 +394,12 @@ async function executeSelectedFile({
   }
 
   if (!validation || validation.ok !== true) {
-    const blockedResult = buildOcrGateFailureResult(fileInfo, validation);
+    const blockedResult = enforceFailureAbortInvariants({
+      routeKind: 'ocr',
+      fileInfo,
+      controller,
+      result: buildOcrGateFailureResult(fileInfo, validation),
+    });
     const routeMetadata = {
       ...routeDecision.routeMetadata,
       executedRoute: 'ocr',
@@ -364,6 +421,12 @@ async function executeSelectedFile({
     logger: log,
     isAborted: () => !controller.isActive(),
   });
+  const safeOcrResult = enforceFailureAbortInvariants({
+    routeKind: 'ocr',
+    fileInfo,
+    controller,
+    result: ocrResult,
+  });
 
   const routeMetadata = {
     ...routeDecision.routeMetadata,
@@ -373,7 +436,7 @@ async function executeSelectedFile({
 
   return {
     routeKind,
-    result: ocrResult,
+    result: safeOcrResult,
     routeMetadata,
   };
 }

@@ -321,8 +321,22 @@ function createMainWindow() {
   maybeMarkMainInvariantsReady();
 
   // Best-effort shutdown: when the main window closes, try to close auxiliary windows too.
-  mainWin.on('close', () => {
+  mainWin.on('close', (event) => {
     try {
+      if (importExtractProcessingModeController.isActive()) {
+        if (event && typeof event.preventDefault === 'function') {
+          event.preventDefault();
+        }
+        const abortResult = importExtractProcessingModeController.requestAbort({
+          source: 'main_window',
+          reason: 'close_during_processing',
+        });
+        if (!abortResult || abortResult.ok !== true) {
+          log.warn('Main window close during processing could not request cancellation:', abortResult);
+        }
+        return;
+      }
+
       if (isAliveWindow(editorWin)) {
         try {
           editorWin.close();
