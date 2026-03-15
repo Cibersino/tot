@@ -1554,6 +1554,10 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
 }
 
 function normalizeClipboardRepeat(rawValue) {
+  const textApplyApi = window.TextApplyCanonical;
+  if (textApplyApi && typeof textApplyApi.normalizeRepeat === 'function') {
+    return textApplyApi.normalizeRepeat(rawValue, { maxRepeat: MAX_CLIPBOARD_REPEAT });
+  }
   const numericValue = Number(rawValue);
   if (!Number.isInteger(numericValue) || numericValue < 1) return 1;
   return Math.min(numericValue, MAX_CLIPBOARD_REPEAT);
@@ -1567,46 +1571,48 @@ function getClipboardRepeatCount() {
   return normalized;
 }
 
-function projectRepeatedClipboardLength(baseText, clip, repeatCount) {
-  const clipLength = clip.length;
-  const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
-  let projected = baseText.length;
-  let hasContent = baseText.length > 0;
-  let endsWithNewline = hasContent && (baseText.endsWith('\n') || baseText.endsWith('\r'));
-
-  for (let i = 0; i < repeatCount; i += 1) {
-    if (hasContent) {
-      projected += endsWithNewline ? 1 : 2;
-      endsWithNewline = true;
-    }
-    if (clipLength > 0) {
-      projected += clipLength;
-      hasContent = true;
-      endsWithNewline = clipEndsWithNewline;
-    }
+function getTextApplyCanonicalApi() {
+  const api = window.TextApplyCanonical;
+  if (!api || typeof api.applyTextWithMode !== 'function') {
+    log.warnOnce(
+      'renderer.textApplyCanonical.unavailable',
+      'TextApplyCanonical.applyTextWithMode unavailable; canonical apply flow cannot continue.'
+    );
+    return null;
   }
-  return projected;
+  return api;
 }
 
-function buildRepeatedClipboardText(baseText, clip, repeatCount) {
-  const clipLength = clip.length;
-  const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
-  const parts = [baseText];
-  let hasContent = baseText.length > 0;
-  let endsWithNewline = hasContent && (baseText.endsWith('\n') || baseText.endsWith('\r'));
+async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
+  const textApplyApi = getTextApplyCanonicalApi();
+  if (!textApplyApi) return { ok: false, code: 'APPLY_API_UNAVAILABLE' };
 
-  for (let i = 0; i < repeatCount; i += 1) {
-    if (hasContent) {
-      parts.push(endsWithNewline ? '\n' : '\n\n');
-      endsWithNewline = true;
-    }
-    if (clipLength > 0) {
-      parts.push(clip);
-      hasContent = true;
-      endsWithNewline = clipEndsWithNewline;
-    }
+  const setCurrentText = getOptionalElectronMethod('setCurrentText', {
+    dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
+    unavailableMessage: 'setCurrentText unavailable; text apply skipped.'
+  });
+  if (!setCurrentText) return { ok: false, code: 'SET_CURRENT_TEXT_UNAVAILABLE' };
+
+  let getCurrentText = null;
+  if (mode === 'append') {
+    getCurrentText = getOptionalElectronMethod('getCurrentText', {
+      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
+      unavailableMessage: 'getCurrentText unavailable; append apply skipped.'
+    });
+    if (!getCurrentText) return { ok: false, code: 'GET_CURRENT_TEXT_UNAVAILABLE' };
   }
-  return parts.join('');
+
+  return await textApplyApi.applyTextWithMode({
+    mode,
+    textToApply,
+    repeatCount,
+    maxRepeat: MAX_CLIPBOARD_REPEAT,
+    maxTextChars,
+    maxIpcChars,
+    getCurrentText,
+    setCurrentText,
+    source: 'main-window',
+  });
 }
 
 async function promptImportExtractRouteChoice(execution) {
@@ -1628,6 +1634,29 @@ async function promptImportExtractRouteChoice(execution) {
     log.error('import/extract route-choice modal failed:', err);
     window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
     return '';
+  }
+}
+
+async function promptImportExtractApplyChoice(defaultRepeat = 1) {
+  const applyModal = window.ImportExtractApplyModal;
+  if (!applyModal || typeof applyModal.promptApplyChoice !== 'function') {
+    log.warnOnce(
+      'renderer.importExtract.applyModal.unavailable',
+      'ImportExtractApplyModal.promptApplyChoice unavailable; apply flow cannot continue.'
+    );
+    window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
+    return null;
+  }
+  try {
+    return await applyModal.promptApplyChoice({
+      tRenderer,
+      defaultRepeat,
+      maxRepeat: MAX_CLIPBOARD_REPEAT,
+    });
+  } catch (err) {
+    log.error('import/extract apply modal failed:', err);
+    window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
+    return null;
   }
 }
 
@@ -1721,6 +1750,47 @@ if (btnImportExtract) {
         }
       });
 
+      const resultState = execution.result && typeof execution.result.state === 'string'
+        ? execution.result.state
+        : 'failure';
+      if (resultState === 'success') {
+        const defaultRepeat = getClipboardRepeatCount();
+        const applyChoice = await promptImportExtractApplyChoice(defaultRepeat);
+        if (!applyChoice) {
+          log.info('import/extract apply choice cancelled by user.');
+          return;
+        }
+
+        const applyResult = await applyTextViaCanonicalPath({
+          mode: applyChoice.mode,
+          textToApply: execution.result.text || '',
+          repeatCount: applyChoice.repetitions,
+        });
+        if (!applyResult || applyResult.ok !== true) {
+          if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+            window.Notify.notifyMain('renderer.alerts.import_extract_apply_too_large');
+          } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
+            window.Notify.notifyMain('renderer.alerts.import_extract_apply_text_limit');
+          } else {
+            window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
+          }
+          return;
+        }
+        if (!hasCurrentTextSubscription) {
+          throw new Error('current-text-updated subscription unavailable');
+        }
+
+        if (applyChoice.mode === 'append') {
+          window.Notify.notifyMain('renderer.alerts.import_extract_apply_success_append');
+        } else {
+          window.Notify.notifyMain('renderer.alerts.import_extract_apply_success_overwrite');
+        }
+        if (applyResult.truncated) {
+          window.Notify.notifyMain('renderer.alerts.import_extract_apply_truncated');
+        }
+        return;
+      }
+
       window.Notify.notifyMain(
         (typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
           ? execution.primaryAlertKey
@@ -1783,37 +1853,25 @@ btnOverwriteClipboard.addEventListener('click', async () => {
     if (!read.ok) return;
     const clip = read.text;
     const repeatCount = getClipboardRepeatCount();
-
-    const projectedLen = projectRepeatedClipboardLength('', clip, repeatCount);
-    if (projectedLen > maxIpcChars) {
-      window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
-      return;
-    }
-    const overwrittenText = buildRepeatedClipboardText('', clip, repeatCount);
-
-    // Send object with meta (overwrite)
-    const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-      dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
-      unavailableMessage: 'setCurrentText unavailable; clipboard overwrite skipped.'
+    const applyResult = await applyTextViaCanonicalPath({
+      mode: 'overwrite',
+      textToApply: clip,
+      repeatCount,
     });
-    if (!setCurrentText) {
-      window.Notify.notifyMain('renderer.alerts.clipboard_error');
+    if (!applyResult || applyResult.ok !== true) {
+      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+        window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
+      } else {
+        window.Notify.notifyMain('renderer.alerts.clipboard_error');
+      }
       return;
-    }
-    const resp = await setCurrentText({
-      text: overwrittenText,
-      meta: { source: 'main-window', action: 'overwrite' }
-    });
-
-    if (resp && resp.ok === false) {
-      throw new Error(resp.error || 'set-current-text failed');
     }
 
     // UI/state sync is authoritative via "current-text-updated" subscription.
     if (!hasCurrentTextSubscription) {
       throw new Error('current-text-updated subscription unavailable');
     }
-    if (resp && resp.truncated) {
+    if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
   } catch (err) {
@@ -1834,47 +1892,21 @@ btnAppendClipboard.addEventListener('click', async () => {
     });
     if (!read.ok) return;
     const clip = read.text;
-    const getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
-      unavailableMessage: 'getCurrentText unavailable; clipboard append skipped.'
-    });
-    if (!getCurrentText) {
-      window.Notify.notifyMain('renderer.alerts.append_error');
-      return;
-    }
-    const current = await getCurrentText() || '';
     const repeatCount = getClipboardRepeatCount();
-
-    const projectedLen = projectRepeatedClipboardLength(current, clip, repeatCount);
-    if (projectedLen > maxIpcChars) {
-      window.Notify.notifyMain('renderer.alerts.append_too_large');
-      return;
-    }
-
-    const available = maxTextChars - current.length;
-    if (available <= 0) {
-      window.Notify.notifyMain('renderer.alerts.text_limit');
-      return;
-    }
-
-    const newFull = buildRepeatedClipboardText(current, clip, repeatCount);
-
-    // Send object with meta (append_newline)
-    const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-      dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
-      unavailableMessage: 'setCurrentText unavailable; clipboard append skipped.'
+    const applyResult = await applyTextViaCanonicalPath({
+      mode: 'append',
+      textToApply: clip,
+      repeatCount,
     });
-    if (!setCurrentText) {
-      window.Notify.notifyMain('renderer.alerts.append_error');
+    if (!applyResult || applyResult.ok !== true) {
+      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+        window.Notify.notifyMain('renderer.alerts.append_too_large');
+      } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
+        window.Notify.notifyMain('renderer.alerts.text_limit');
+      } else {
+        window.Notify.notifyMain('renderer.alerts.append_error');
+      }
       return;
-    }
-    const resp = await setCurrentText({
-      text: newFull,
-      meta: { source: 'main-window', action: 'append_newline' }
-    });
-
-    if (resp && resp.ok === false) {
-      throw new Error(resp.error || 'set-current-text failed');
     }
 
     // UI/state sync is authoritative via "current-text-updated" subscription.
@@ -1883,7 +1915,7 @@ btnAppendClipboard.addEventListener('click', async () => {
     }
 
     // Notify truncation only if main confirms it
-    if (resp && resp.truncated) {
+    if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.alerts.append_overflow');
     }
   } catch (err) {
