@@ -154,7 +154,7 @@ Entrypoint guardrail:
 - [x] Implement post-extraction apply modal with overwrite/append/repetitions.
 - [x] Route extracted text through canonical apply path; keep existing semantics unchanged.
 - [x] Enforce no silent fallback between routes.
-- [ ] Enforce failure/abort invariants:
+- [x] Enforce failure/abort invariants:
   - current text unchanged
   - no partial extraction surfaced
   - no apply modal shown after abort
