@@ -37,8 +37,8 @@ Tracker policy for Section 5:
 - Evidence blocks: `SMK-01`, `SMK-02`, `SMK-03`, `SMK-04`, `SMK-05`
 
 2. Add multilingual smoke coverage across OCR + native routes (at least Latin, CJK, and RTL samples)
-- Status: `IN_PROGRESS`
-- Evidence blocks: `SMK-01` (Latin/native), `SMK-02` (Latin/OCR), `MLG-02` (RTL/native)
+- Status: `COMPLETED`
+- Evidence blocks: `SMK-01` (Latin/native), `SMK-02` (Latin/OCR), `MLG-02` (RTL/native), `MLG-03` (CJK/OCR)
 
 3. Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)
 - Status: `PENDING`
@@ -328,7 +328,7 @@ Coverage strategy:
   - OCR baseline: `SMK-02` (`tools_local/smoke/prueba_png.png`)
 - Add only missing-script deltas for item 2:
   - `MLG-02` RTL/native (this block)
-  - pending next case: CJK/OCR
+  - `MLG-03` CJK/OCR
 
 ### MLG-02 RTL + Native
 
@@ -380,6 +380,56 @@ Coverage strategy:
     - `{active: true, reason: 'run_pdf_route'}`
     - `{active: false, reason: 'import_extract_native_success'}`
 
+### MLG-03 CJK + OCR
+
+- Objective: Validate CJK script coverage through the OCR route.
+- Fixture: `tools_local/smoke/prueba_japones_webp.webp`
+- Preconditions:
+  - no secondary windows open
+  - stopwatch stopped
+- Steps:
+  - user started app with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+  - user selected `tools_local/smoke/prueba_japones_webp.webp` from import/extract picker
+  - no route-choice modal appeared
+  - apply modal appeared and user applied `Overwrite` with repetitions=`1`
+- Expected:
+  - extraction succeeds through OCR route with CJK text output
+  - no route-choice modal for image fixture
+  - apply modal appears and overwrite applies extracted text
+- Actual:
+  - preconditions ok: `yes`
+  - route-choice modal: `no`
+  - route chosen: `n/a`
+  - apply modal: `yes`
+  - overwrite applied: `yes`
+  - resulting text starts with:
+    - `________________`
+    - `0`
+    - `「忠」という漢字が作られ、 水や酒などの液体を容器にそそぎこむ動作を表す`
+    - `ために 「注」という漢字が作られました。 穀物がたわわに実ったことを神に感 謝するために 「豊」 という漢字が作られ`
+- Alerts/notifications observed: `none`
+- Route metadata observed:
+  - from main-process terminal logs:
+    - `routeKind: 'ocr'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'not_pdf'`
+    - `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'ocr' ]`
+    - `chosenRoute: 'ocr'`
+    - `executedRoute: 'ocr'`
+    - `sourceFileExt: 'webp'`
+    - `sourceFileKind: 'image'`
+- Result: `PASS`
+- Notes:
+  - user-provided processing-mode lifecycle evidence:
+    - `Processing mode enabled ... reason: 'run_route'`
+    - `Processing mode disabled ... reason: 'import_extract_ocr_success'`
+  - user-provided renderer logs confirm synchronized processing-mode transitions:
+    - `{active: true, reason: 'run_route'}`
+    - `{active: false, reason: 'import_extract_ocr_success'}`
+
 ## Drift Log
 
 - `SMK-01` used `TOT_LOG_LEVEL='debug'` instead of the initial planned `info`.
@@ -391,6 +441,7 @@ Coverage strategy:
 - `SMK-03` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `SMK-04` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `SMK-05` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `MLG-02` and `MLG-03` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.
