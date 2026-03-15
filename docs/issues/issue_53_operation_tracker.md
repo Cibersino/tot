@@ -57,12 +57,72 @@ As of 2026-03-15:
     - extracted text routed through canonical apply path with unchanged semantics
     - no-silent-fallback observability enforced for route fallback paths in backend execution triage/packaging
     - failure/abort invariants enforced in backend execution/runtime boundary and main-window close cancellation path
-  - Active next checklist item: Section 5 item 2 (`Add multilingual smoke coverage across OCR + native routes`).
+  - Section 5 item 2 (`Add multilingual smoke coverage across OCR + native routes`): complete.
+  - Active next checklist item: Section 5 item 3 (`Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0052
+
+- Date/time: 2026-03-15 18:38:52 -03:00
+- Operation: Document multilingual case `MLG-03` and finalize Section 5 item 2 evidence/checklist state.
+- Why: User provided manual CJK/OCR execution evidence and requested Codex to maintain documentation updates.
+- Changes made:
+  - Opened OP-0052 before documentation edits.
+  - Updated multilingual coverage map in `docs/issues/issue_53_section5_evidence.md`:
+    - Section 5 item 2 status -> `COMPLETED`
+    - evidence anchors now include `MLG-03`
+  - Appended detailed manual case block:
+    - `## Section 5 Item 2: Multilingual Coverage`
+    - `### MLG-03 CJK + OCR`
+    - fixture: `tools_local/smoke/prueba_japones_webp.webp`
+    - result: `PASS`
+    - route metadata: `routeKind: 'ocr'`, `state: 'success'`, `executedRoute: 'ocr'`, `sourceFileExt: 'webp'`
+  - Updated checklist in `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 2 as complete (`[x]`)
+  - Refreshed tracker authoritative status:
+    - Section 5 item 2 marked complete
+    - active next checklist item moved to Section 5 item 3
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Add multilingual smoke coverage across OCR + native routes (at least Latin, CJK, and RTL samples).`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:38:52 -03:00`
+  - `MLG-03` observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `route_chosen: n/a`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: none`
+  - `MLG-03` execution telemetry evidence (main process log):
+    - `routeKind: 'ocr'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'not_pdf'`
+    - `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'ocr' ]`
+    - `chosenRoute: 'ocr'`
+    - `executedRoute: 'ocr'`
+    - `sourceFileExt: 'webp'`
+    - `sourceFileKind: 'image'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:39:55 -03:00`
+- Assumptions disclosed:
+  - Section 5 item 2 completion uses delta coverage strategy:
+    - Latin coverage reused from existing Section 5 item 1 evidence (`SMK-01` native, `SMK-02` OCR).
+    - new executions for item 2 added missing script deltas (`MLG-02` RTL/native, `MLG-03` CJK/OCR).
+  - Impact/risk: low; no requirement text was skipped, and all required script families (Latin, CJK, RTL) are now evidenced across OCR + native routes.
+- Outcome / next step:
+  - Completed. Section 5 item 2 is evidence-backed and marked done. Next step is Section 5 item 3 (`Run native-route fixture matrix`).
 
 ### OP-0051
 
