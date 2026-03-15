@@ -1,25 +1,16 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 const { dialog, app, BrowserWindow } = require('electron');
 const Log = require('../log');
 const { getImportExtractStateFile, loadJson, saveJson } = require('../fs_storage');
+const { getImportExtractPlatformAdapter } = require('./import_extract_platform_adapter');
 
 const log = Log.get('import-extract-picker');
+const platformAdapter = getImportExtractPlatformAdapter(process.platform);
 
 const PICKER_STATE_FALLBACK = Object.freeze({
   lastDirectory: '',
 });
-
-function isExistingDirectory(candidatePath) {
-  if (typeof candidatePath !== 'string' || candidatePath.trim() === '') return false;
-  try {
-    return fs.existsSync(candidatePath) && fs.statSync(candidatePath).isDirectory();
-  } catch {
-    return false;
-  }
-}
 
 function normalizePickerState(rawState) {
   const state = rawState && typeof rawState === 'object' ? rawState : {};
@@ -32,27 +23,16 @@ function normalizePickerState(rawState) {
 }
 
 function resolveDefaultFolder() {
-  try {
-    const documents = app.getPath('documents');
-    if (isExistingDirectory(documents)) return documents;
-  } catch (err) {
-    log.warnOnce('import_extract_picker.default.documents', 'Unable to resolve documents path (falling back):', err);
-  }
-
-  try {
-    const home = app.getPath('home');
-    if (isExistingDirectory(home)) return home;
-  } catch (err) {
-    log.warnOnce('import_extract_picker.default.home', 'Unable to resolve home path (falling back):', err);
-  }
-
-  return process.cwd();
+  return platformAdapter.resolveDefaultPickerPath({
+    app,
+    cwd: process.cwd(),
+    log,
+  });
 }
 
 function resolvePickerDefaultPath(pickerState) {
-  if (isExistingDirectory(pickerState.lastDirectory)) {
-    return pickerState.lastDirectory;
-  }
+  const persisted = platformAdapter.normalizePersistedDirectory(pickerState.lastDirectory);
+  if (persisted) return persisted;
   return resolveDefaultFolder();
 }
 
@@ -144,7 +124,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: true, canceled: true };
       }
 
-      const selectedPath = String(dialogResult.filePaths[0] || '').trim();
+      const selectedPath = platformAdapter.normalizeSelectedFilePath(dialogResult.filePaths[0]);
       if (!selectedPath) {
         log.warnOnce(
           'import_extract_picker.empty_selection',
@@ -153,8 +133,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: true, canceled: true };
       }
 
-      const selectedDirectory = path.dirname(selectedPath);
-      if (isExistingDirectory(selectedDirectory)) {
+      const selectedDirectory = platformAdapter.normalizeSelectedDirectory(selectedPath);
+      if (selectedDirectory) {
         persistPickerState(stateInfo.statePath, { lastDirectory: selectedDirectory });
       }
 
