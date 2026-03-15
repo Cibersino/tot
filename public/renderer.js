@@ -40,6 +40,7 @@ const {
 // DOM references
 // =============================================================================
 const textPreview = document.getElementById('textPreview');
+const btnImportExtract = document.getElementById('btnImportExtract');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const clipboardRepeatInput = document.getElementById('clipboardRepeatInput');
@@ -299,6 +300,7 @@ function applyTranslations() {
     if (aria) el.setAttribute('aria-label', aria);
   };
   // Text selector buttons
+  if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
@@ -308,8 +310,10 @@ function applyTranslations() {
   if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new', btnNewTask.textContent || '');
   if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load', btnLoadTask.textContent || '');
   // Text selector tooltips
+  if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract', btnImportExtract.title || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
+  applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract');
   if (clipboardRepeatInput) {
     clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count', clipboardRepeatInput.title || '');
     applyAriaLabel(clipboardRepeatInput, 'renderer.main.aria.clipboard_repeat_count');
@@ -1497,6 +1501,61 @@ function buildRepeatedClipboardText(baseText, clip, repeatCount) {
     }
   }
   return parts.join('');
+}
+
+// =============================================================================
+// Import/extract entrypoint (Section 4 starts here; picker wiring follows in next step)
+// =============================================================================
+if (btnImportExtract) {
+  btnImportExtract.addEventListener('click', async () => {
+    if (!guardUserAction('import-extract-entrypoint')) return;
+    try {
+      const openImportExtractPicker = getOptionalElectronMethod('openImportExtractPicker', {
+        dedupeKey: 'renderer.ipc.openImportExtractPicker.unavailable',
+        unavailableMessage: 'openImportExtractPicker unavailable; import/extract entrypoint skipped.'
+      });
+      if (!openImportExtractPicker) {
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
+        return;
+      }
+
+      const picker = await openImportExtractPicker();
+      if (!picker || picker.ok === false) {
+        log.error('import/extract picker failed:', picker && picker.error ? picker.error : picker);
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
+        return;
+      }
+      if (picker.canceled) return;
+
+      const checkImportExtractPreconditions = getOptionalElectronMethod('checkImportExtractPreconditions', {
+        dedupeKey: 'renderer.ipc.checkImportExtractPreconditions.unavailable',
+        unavailableMessage: 'checkImportExtractPreconditions unavailable; import/extract precondition check skipped.'
+      });
+      if (!checkImportExtractPreconditions) {
+        window.Notify.notifyMain('renderer.alerts.import_extract_precondition_error');
+        return;
+      }
+
+      const preconditions = await checkImportExtractPreconditions();
+      if (!preconditions || preconditions.ok === false) {
+        log.error('import/extract precondition check failed:', preconditions);
+        window.Notify.notifyMain('renderer.alerts.import_extract_precondition_error');
+        return;
+      }
+      if (!preconditions.canStart) {
+        window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.alerts.import_extract_precondition_blocked');
+        return;
+      }
+
+      log.info('import/extract file selected (extraction pipeline pending):', {
+        filePath: picker.filePath || '',
+      });
+      window.Notify.notifyMain('renderer.alerts.import_extract_not_ready');
+    } catch (err) {
+      log.error('Error handling import/extract entrypoint click:', err);
+      window.Notify.notifyMain('renderer.alerts.import_extract_error');
+    }
+  });
 }
 
 // =============================================================================

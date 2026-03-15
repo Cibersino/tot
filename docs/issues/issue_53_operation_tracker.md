@@ -39,12 +39,120 @@ As of 2026-03-14:
 - Section 3 (`Contracts before implementation`): complete (revalidated).
   - Revalidated and relocked on 2026-03-14 after Section 2 item 7/8 completion.
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
-- Sections 4-8: not started.
+- Sections 4-8: in progress.
+  - Section 4 started.
+  - Items 1-3 complete:
+    - dedicated import/extract button added in selector row
+    - native file picker wired with default/persisted folder behavior
+    - precondition block added (secondary windows + stopwatch running)
+  - Active next checklist item: Section 4 item 4 (`Isolate Windows-specific implementation behind platform adapters...`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0022
+
+- Date/time: 2026-03-14 21:18:08 -03:00
+- Operation: Execute Section 4 items 1-3 (entrypoint button + file picker behavior + precondition block).
+- Why: Continue Issue 53 implementation in checklist order after Section 3 revalidation, incorporating user-provided placement clarification.
+- Changes made:
+  - Added dedicated import/extract button in `public/index.html` controls row (placement per user clarification):
+    - inserted `btnImportExtract` before `btnOverwriteClipboard`
+    - inserted explicit separator between import/extract and overwrite controls
+  - Added entrypoint renderer wiring in `public/renderer.js`:
+    - new DOM ref: `btnImportExtract`
+    - i18n wiring for button text/tooltip/aria
+    - explicit click path to backend picker IPC (`openImportExtractPicker`)
+    - explicit user-visible handling for canceled/error/pending-extraction outcomes (no silent no-op)
+  - Added backend picker IPC module:
+    - `electron/import_extract_platform/import_extract_file_picker_ipc.js`
+    - channel: `import-extract-open-picker`
+    - enforces sender authorization from main window
+    - default folder behavior: documents -> home -> cwd fallback
+    - persisted folder behavior: saves last selected directory to `import_extract_state.json`
+  - Added storage helper path for persisted picker state:
+    - `getImportExtractStateFile()` in `electron/fs_storage.js`
+  - Wired new picker IPC in main process:
+    - `electron/main.js` registers `importExtractFilePickerIpc`
+  - Added preload bridge for renderer access:
+    - `openImportExtractPicker` in `electron/preload.js`
+  - Added backend precondition-check IPC module:
+    - `electron/import_extract_platform/import_extract_preconditions_ipc.js`
+    - channel: `import-extract-check-preconditions`
+    - evaluates:
+      - open secondary windows (non-main windows)
+      - stopwatch running state
+    - returns explicit `precondition_rejected` + reasons/guidance when blocked
+    - logs structured `precondition_rejected` details
+  - Wired precondition checker in main process:
+    - `electron/main.js` registers `importExtractPreconditionsIpc`
+    - context includes `editor`, `editor_find`, `preset_modal`, `language_window`, `floating_stopwatch`, `task_editor`, and stopwatch state
+  - Added preload bridge for precondition checks:
+    - `checkImportExtractPreconditions` in `electron/preload.js`
+  - Updated renderer entrypoint flow:
+    - after file selection, calls precondition checker
+    - on blocked preconditions, shows explicit guidance and does not proceed
+  - Added/updated i18n keys in `es`/`en` bundles:
+    - `renderer.main.buttons.import_extract`
+    - `renderer.main.tooltips.import_extract`
+    - `renderer.main.aria.import_extract`
+    - `renderer.alerts.import_extract_error`
+    - `renderer.alerts.import_extract_precondition_blocked`
+    - `renderer.alerts.import_extract_precondition_error`
+    - `renderer.alerts.import_extract_not_ready`
+  - Updated plan checklist:
+    - marked Section 4 item 1 complete.
+    - marked Section 4 item 2 complete.
+    - marked Section 4 item 3 complete.
+  - Low-impact assumption disclosure (proceeded):
+    - Until extraction orchestration (later Section 4 items) is wired, successful file selection surfaces explicit `import_extract_not_ready` feedback instead of starting processing.
+    - Rationale: avoids silent behavior while preserving checklist order and keeping extraction semantics for subsequent items.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Add dedicated import/extract button in the text-selector row.`
+    - `[x] Implement file picker open behavior (default folder first, then persisted folder).`
+    - `[x] Implement precondition block (no start when secondary windows are open or stopwatch is running) with explicit user guidance.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/fs_storage.js`
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `electron/import_extract_platform/import_extract_file_picker_ipc.js`
+  - `electron/import_extract_platform/import_extract_preconditions_ipc.js`
+  - `public/index.html`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Selector row placement evidence:
+    - `public/index.html` now contains:
+      - `btnImportExtract`
+      - `controls-sep`
+      - `btnOverwriteClipboard`
+    - order confirms import/extract button is left of overwrite with separator.
+  - Renderer wiring evidence:
+    - `public/renderer.js` contains:
+      - `const btnImportExtract = document.getElementById('btnImportExtract');`
+      - translation bindings for `renderer.main.buttons/tooltips/aria.import_extract`
+      - click handler for `import-extract-entrypoint` with explicit user-visible notification.
+  - Localization evidence:
+    - `i18n/en/renderer.json` and `i18n/es/renderer.json` include new import/extract keys and alert key.
+  - Validation:
+    - precondition IPC functional check (mocked registration contexts):
+      - blocked case -> `{ state: 'precondition_rejected', reasons: ['secondary_windows_open', 'stopwatch_running'] }`
+      - ready case -> `{ state: 'ready', reasons: [] }`
+    - `node --check electron/import_extract_platform/import_extract_preconditions_ipc.js` passed
+    - `node --check electron/import_extract_platform/import_extract_file_picker_ipc.js` passed
+    - `node --check electron/main.js` passed
+    - `node --check electron/preload.js` passed
+    - `node --check electron/fs_storage.js` passed
+    - `node --check public/renderer.js` passed
+    - JSON parse checks for `i18n/en/renderer.json` and `i18n/es/renderer.json` passed (`json-ok`)
+- Outcome / next step:
+  - Section 4 items 1-3 are complete. Next step is Section 4 item 4: isolate Windows-specific implementation behind platform adapters while keeping core orchestration OS-agnostic.
 
 ### OP-0021
 

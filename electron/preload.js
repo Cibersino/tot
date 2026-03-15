@@ -18,6 +18,8 @@ const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {
 const api = {
     // Clipboard / editor / presets / settings (we preserve all existing settings)
     readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
+    openImportExtractPicker: () => ipcRenderer.invoke('import-extract-open-picker'),
+    checkImportExtractPreconditions: () => ipcRenderer.invoke('import-extract-check-preconditions'),
     openEditor: () => ipcRenderer.invoke('open-editor'),
     checkForUpdates: (manual = false) => ipcRenderer.invoke('check-for-updates', { manual }),
     // openPresetModal accepts an optional argument: number (wpm) or object { wpm, mode, preset }

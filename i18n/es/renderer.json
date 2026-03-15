@@ -4,6 +4,7 @@
       "selector_title": "Primera y última parte del texto analizado:",
       "selector_empty": "(vacío)",
       "buttons": {
+        "import_extract": "📥",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +15,7 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Importar/extraer texto desde archivo",
         "overwrite_clipboard": "Reemplazar texto actual con el portapapeles",
         "append_clipboard": "Pegar portapapeles al final del texto actual (nueva línea)",
         "clipboard_repeat_count": "Repeticiones de pegado",
@@ -31,6 +33,7 @@
         "flotante_window": "Ventana flotante"
       },
       "aria": {
+        "import_extract": "Importar o extraer texto desde archivo",
         "clipboard_repeat_count": "Repeticiones de pegado",
         "wpm_input": "Palabras por minuto",
         "wpm_slider": "Deslizador de palabras por minuto",
@@ -225,6 +228,10 @@
       "open_presets_unsupported": "No es posible abrir la carpeta de presets en este entorno.",
       "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.",
       "open_presets_fail": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.",
+      "import_extract_error": "Ocurrió un error al abrir el selector de archivos de importar/extraer. Revisa la consola.",
+      "import_extract_precondition_blocked": "Para iniciar importar/extraer, cierra todas las ventanas secundarias y detén el cronómetro.",
+      "import_extract_precondition_error": "Ocurrió un error al revisar las precondiciones de importar/extraer. Revisa la consola.",
+      "import_extract_not_ready": "La función de importar/extraer archivo aún no está disponible.",
       "wip_test_velocidad": "WIP: Aquí se abrirá el test de velocidad de lectura en una futura versión.",
       "wip_diseno_skins": "WIP: Aquí se abrirá el selector de skins en una futura versión.",
       "wip_diseno_crono": "WIP: Aquí se abrirá la configuración del cronómetro flotante en una futura versión.",

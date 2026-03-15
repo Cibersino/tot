@@ -140,9 +140,9 @@ Entrypoint guardrail:
 - OCR trigger wiring must start from the dedicated import/extract entrypoint in this section.
 - Legacy `cargador_texto` / `cargador_imagen` menu paths are forbidden for Issue 53 OCR flow.
 
-- [ ] Add dedicated import/extract button in the text-selector row.
-- [ ] Implement file picker open behavior (default folder first, then persisted folder).
-- [ ] Implement precondition block (no start when secondary windows are open or stopwatch is running) with explicit user guidance.
+- [x] Add dedicated import/extract button in the text-selector row.
+- [x] Implement file picker open behavior (default folder first, then persisted folder).
+- [x] Implement precondition block (no start when secondary windows are open or stopwatch is running) with explicit user guidance.
 - [ ] Isolate Windows-specific implementation behind platform adapters so core extraction/apply orchestration remains OS-agnostic for future macOS/Linux support.
 - [ ] Implement processing mode as a distinct lock state (not startup lock) and block normal main-window/menu interactions while active.
 - [ ] Implement access/activation gate for the OCR route according to the chosen model, with explicit user-visible failures for unavailable/not-activated/restricted/quota-exhausted paths.
