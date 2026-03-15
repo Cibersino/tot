@@ -64,6 +64,47 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0040
+
+- Date/time: 2026-03-15 04:40:23 -03:00
+- Operation: Implement minimal abort-notification timing change (immediate single toast on abort button path).
+- Why: User requested the cleanest minimal approach and explicitly accepted no completion-cancel toast for close-window cancellation path.
+- Changes made:
+  - Updated import/extract completion notification branch in `public/renderer.js`:
+    - computes `primaryAlertKey` once
+    - suppresses completion notifications when key is:
+      - `renderer.alerts.import_extract_native_cancelled`
+      - `renderer.alerts.import_extract_ocr_cancelled`
+  - Updated abort button success path in `public/renderer.js`:
+    - shows immediate cancellation notification:
+      - `renderer.alerts.import_extract_cancelled`
+  - Added generic cancellation i18n key:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (notification timing/noise behavior only).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:40:23 -03:00`
+  - Completion evidence:
+    - `node --check public/renderer.js` -> pass
+    - `npm run lint` -> pass
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json` -> pass
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json` -> pass
+    - `git diff -- public/renderer.js` shows only:
+      - completion cancel keys suppression branch
+      - immediate abort success cancel toast
+    - `git diff --stat -- public/renderer.js i18n/en/renderer.json i18n/es/renderer.json`
+      - `16 insertions(+), 5 deletions(-)` across functional files
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:41:21 -03:00`
+- Outcome / next step:
+  - Completed. Abort button shows immediate cancellation toast; delayed route-cancelled completion toasts are suppressed.
+
 ### OP-0039
 
 - Date/time: 2026-03-15 04:12:40 -03:00

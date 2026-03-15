@@ -240,6 +240,7 @@
       "import_extract_not_ready": "Import/extract file flow is not available yet.",
       "import_extract_processing_locked": "Import/extract is processing. Main-window interactions are locked until processing ends or you abort.",
       "import_extract_abort_error": "An error occurred while requesting import/extract abort. Check console.",
+      "import_extract_cancelled": "Import/extract was cancelled.",
       "import_extract_route_choice_required": "Route choice is required for this PDF before extraction can continue.",
       "import_extract_route_choice_title": "Choose extraction route",
       "import_extract_route_choice_message": "Both extraction routes are available for this PDF. Choose one to continue.",

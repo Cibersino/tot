@@ -1856,11 +1856,14 @@ if (btnImportExtract) {
         return;
       }
 
-      window.Notify.notifyMain(
-        (typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
-          ? execution.primaryAlertKey
-          : 'renderer.alerts.import_extract_error'
-      );
+      const primaryAlertKey = (typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
+        ? execution.primaryAlertKey
+        : 'renderer.alerts.import_extract_error';
+      if (primaryAlertKey === 'renderer.alerts.import_extract_native_cancelled'
+        || primaryAlertKey === 'renderer.alerts.import_extract_ocr_cancelled') {
+        return;
+      }
+      window.Notify.notifyMain(primaryAlertKey);
     } catch (err) {
       log.error('Error handling import/extract entrypoint click:', err);
       window.Notify.notifyMain('renderer.alerts.import_extract_error');
@@ -1898,6 +1901,7 @@ if (btnImportExtractAbort) {
       if (result.state) {
         applyProcessingModeState(result.state, { source: 'abort_response' });
       }
+      window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
     } catch (err) {
       log.error('Error handling import/extract abort:', err);
       window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');

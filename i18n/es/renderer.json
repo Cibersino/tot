@@ -240,6 +240,7 @@
       "import_extract_not_ready": "La función de importar/extraer archivo aún no está disponible.",
       "import_extract_processing_locked": "Importar/extraer está procesando. Las interacciones de la ventana principal están bloqueadas hasta que termine el procesamiento o abortes.",
       "import_extract_abort_error": "Ocurrió un error al solicitar el aborto de importar/extraer. Revisa la consola.",
+      "import_extract_cancelled": "Importar/extraer fue cancelado.",
       "import_extract_route_choice_required": "Se requiere elegir ruta para este PDF antes de continuar la extracción.",
       "import_extract_route_choice_title": "Elegir ruta de extracción",
       "import_extract_route_choice_message": "Este PDF tiene disponibles ambas rutas de extracción. Elige una para continuar.",
