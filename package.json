@@ -26,6 +26,10 @@
     "appId": "com.cibersino.tot",
     "productName": "toT",
     "asar": true,
+    "asarUnpack": [
+      "**/node_modules/sharp/**/*",
+      "**/node_modules/@img/**/*"
+    ],
     "directories": {
       "output": "build-output",
       "buildResources": "public/assets"
@@ -55,6 +59,7 @@
     "@google-cloud/local-auth": "^2.1.0",
     "googleapis": "^105.0.0",
     "mammoth": "^1.11.0",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.1",
+    "sharp": "^0.34.4"
   }
 }

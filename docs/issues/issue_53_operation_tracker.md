@@ -64,6 +64,56 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0050
+
+- Date/time: 2026-03-15 16:31:20 -03:00
+- Operation: Implement distribution-safe `.webp -> .png` normalization for OCR uploads using in-app `sharp` conversion in backend OCR route.
+- Why: `.webp` imports currently fail during OCR provider conversion path; fix must work across distributed multi-platform builds without external CLI/runtime dependencies.
+- Changes made:
+  - Opened OP-0050 before code/dependency operations.
+  - Added root runtime dependency:
+    - `sharp@0.34.4` in `package.json` + lockfile update.
+  - Added new OCR image normalization module:
+    - `electron/import_extract_platform/ocr_image_normalization.js`
+    - for `.webp` inputs, performs `sharp(...).rotate().png().toFile(temp)` conversion.
+    - returns upload metadata + cleanup hook; conversion failures are classified with explicit internal codes.
+  - Integrated normalization into OCR route:
+    - `electron/import_extract_platform/ocr_google_drive_route.js` now normalizes `.webp` before upload and uploads as `image/png`.
+    - added explicit failure mapping:
+      - `image_normalizer_unavailable` -> `platform_runtime_failed`
+      - `webp_to_png_conversion_failed` -> `unreadable_or_corrupt`
+    - preserved existing provider-stage error mapping (`ocr_conversion_failed`, `ocr_export_failed`, etc.).
+    - merged temp cleanup warnings into route `warnings` array.
+  - Updated packaging config for distributed builds:
+    - `package.json` `build.asarUnpack` now includes `sharp` and `@img` native assets for Electron builder/ASAR compatibility.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `electron/import_extract_platform/ocr_image_normalization.js`
+  - `electron/import_extract_platform/ocr_google_drive_route.js`
+  - `package.json`
+  - `package-lock.json`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 16:31:20 -03:00`
+  - Dependency installation:
+    - `npm install sharp@0.34.4 --save`
+  - Static validation:
+    - `node --check electron/import_extract_platform/ocr_image_normalization.js` -> pass
+    - `node --check electron/import_extract_platform/ocr_google_drive_route.js` -> pass
+    - `npx eslint electron/import_extract_platform/ocr_image_normalization.js electron/import_extract_platform/ocr_google_drive_route.js` -> pass
+  - Runtime normalization probe:
+    - inline node probe invoking `normalizeImageForOcrUpload(...)` with `tools_local/smoke/prueba_webp.webp` produced:
+      - `uploadMimeType: "image/png"`
+      - `exists: true`
+      - `size: 2691196`
+      - `warning: ""`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 16:36:38 -03:00`
+- Outcome / next step:
+  - Completed. Next step is manual import/extract rerun with `.webp` to confirm end-to-end OCR success and UI apply flow.
+
 ### OP-0049
 
 - Date/time: 2026-03-15 14:48:01 -03:00

@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
 const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
+const { normalizeImageForOcrUpload } = require('./ocr_image_normalization');
 
 const QUOTA_REASON_CODES = new Set([
   'dailyLimitExceeded',
@@ -398,19 +399,35 @@ async function runGoogleDriveOcrRoute({
   const drive = google.drive({ version: 'v3', auth: oauthClient });
   let tempDocumentId = '';
   let result = null;
-  let cleanupWarning = '';
+  const cleanupWarnings = [];
+  let uploadInput = null;
 
   try {
     ensureNotAborted(isAborted);
+    uploadInput = await normalizeImageForOcrUpload({ fileInfo });
+    if (uploadInput && uploadInput.metadataSafeForLogs && typeof uploadInput.metadataSafeForLogs === 'object') {
+      provenance.metadataSafeForLogs = {
+        ...provenance.metadataSafeForLogs,
+        ...uploadInput.metadataSafeForLogs,
+      };
+    }
 
     const createRequest = {
       requestBody: {
-        name: fileInfo.sourceFileName,
+        name: uploadInput && uploadInput.uploadFileName
+          ? uploadInput.uploadFileName
+          : fileInfo.sourceFileName,
         mimeType: 'application/vnd.google-apps.document',
       },
       media: {
-        mimeType: fileInfo.sourceMimeType,
-        body: fs.createReadStream(fileInfo.absoluteFilePath),
+        mimeType: uploadInput && uploadInput.uploadMimeType
+          ? uploadInput.uploadMimeType
+          : fileInfo.sourceMimeType,
+        body: fs.createReadStream(
+          uploadInput && uploadInput.uploadFilePath
+            ? uploadInput.uploadFilePath
+            : fileInfo.absoluteFilePath
+        ),
       },
       fields: 'id,name',
     };
@@ -478,6 +495,44 @@ async function runGoogleDriveOcrRoute({
           }
         ),
       });
+    } else if (String(err && err.code || '') === 'image_normalizer_unavailable') {
+      result = buildResult({
+        state: 'failure',
+        summary: 'OCR route failed before upload: image normalizer is unavailable.',
+        provenance,
+        error: buildError(
+          'platform_runtime_failed',
+          'OCR preprocessing runtime is unavailable in this app build.',
+          {
+            stage: 'preflight',
+            reason: 'image_normalizer_unavailable',
+            errorName: toSafeErrorName(err),
+            errorMessage: toSafeErrorMessage(err),
+            ...(err && err.detailsSafeForLogs && typeof err.detailsSafeForLogs === 'object'
+              ? err.detailsSafeForLogs
+              : {}),
+          }
+        ),
+      });
+    } else if (String(err && err.code || '') === 'webp_to_png_conversion_failed') {
+      result = buildResult({
+        state: 'failure',
+        summary: 'OCR route failed before upload: WEBP normalization failed.',
+        provenance,
+        error: buildError(
+          'unreadable_or_corrupt',
+          'Selected WEBP file could not be converted for OCR upload.',
+          {
+            stage: 'preflight',
+            reason: 'webp_to_png_conversion_failed',
+            errorName: toSafeErrorName(err),
+            errorMessage: toSafeErrorMessage(err),
+            ...(err && err.detailsSafeForLogs && typeof err.detailsSafeForLogs === 'object'
+              ? err.detailsSafeForLogs
+              : {}),
+          }
+        ),
+      });
     } else {
       const stage = tempDocumentId ? 'export' : 'upload_convert';
       const parsedFailure = parseProviderFailure(err);
@@ -500,17 +555,22 @@ async function runGoogleDriveOcrRoute({
       } catch (cleanupErr) {
         const parsedCleanupFailure = parseProviderFailure(cleanupErr);
         const cleanupCode = classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed';
-        cleanupWarning = `cleanup:${cleanupCode}`;
+        cleanupWarnings.push(`cleanup:${cleanupCode}`);
         if (logger && typeof logger.warn === 'function') {
           logger.warn('OCR cleanup failed:', {
             tempDocumentId,
-            warning: cleanupWarning,
+            warning: `cleanup:${cleanupCode}`,
             statusCode: parsedCleanupFailure.statusCode,
             reasonCode: parsedCleanupFailure.reasonCode,
             networkErrorCode: parsedCleanupFailure.networkErrorCode,
           });
         }
       }
+    }
+
+    if (uploadInput && typeof uploadInput.cleanup === 'function') {
+      const warning = uploadInput.cleanup();
+      if (warning) cleanupWarnings.push(String(warning));
     }
   }
 
@@ -530,9 +590,9 @@ async function runGoogleDriveOcrRoute({
     });
   }
 
-  if (cleanupWarning) {
+  if (cleanupWarnings.length > 0) {
     result.warnings = Array.isArray(result.warnings) ? result.warnings : [];
-    result.warnings.push(cleanupWarning);
+    result.warnings.push(...cleanupWarnings);
     if (result.state === 'success') {
       result.summary = 'OCR route succeeded with cleanup warning.';
     }
