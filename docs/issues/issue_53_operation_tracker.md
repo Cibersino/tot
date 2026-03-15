@@ -60,12 +60,71 @@ As of 2026-03-15:
   - Section 5 item 2 (`Add multilingual smoke coverage across OCR + native routes`): complete.
   - Section 5 item 3 (`Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)`): complete.
   - Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`): complete.
-  - Active next checklist item: Section 5 item 5 (`Validate processing lock behavior`).
+  - Active next checklist item: Section 5 item 5 (`Validate processing lock behavior`) with `PLK-01`/`PLK-02` evidence captured; closure pending expectation alignment for menu-lock toast behavior and post-cancel close semantics.
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0059
+
+- Date/time: 2026-03-15 20:40:39 -03:00
+- Operation: Record Section 5 processing-lock manual evidence (`PLK-01` + `PLK-02`) and keep checklist closure pending on behavior-intent ambiguities raised by user.
+- Why: User executed all assigned UI interactions for item 5 lock validation and close-during-processing behavior, then reported exact logs plus two expectation concerns.
+- Changes made:
+  - Opened OP-0059 before documentation edits.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - coverage map item 5 -> `IN_PROGRESS` with evidence block `PLK-01`
+    - coverage map item 6 -> `IN_PROGRESS` with evidence block `PLK-02`
+    - added `## Section 5 Item 5` case block `PLK-01`
+    - added `## Section 5 Item 6` case block `PLK-02`
+    - added drift-log entry for non-executable scripted clicks on hidden controls (`⌨` / `🗑`) under processing-row swap model
+  - Updated tracker `Current Authoritative Status` to reflect evidence-captured-but-not-closed state for item 5.
+- Checklist updates:
+  - None (no checkbox toggles; closure intentionally deferred pending expectation alignment).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:40:39 -03:00`
+  - `PLK-01` observed evidence (user-provided):
+    - processing started:
+      - `Processing mode enabled: { lockId: 1, source: 'import_extract_execution', reason: 'run_pdf_route' }`
+    - blocked menu actions:
+      - `Menu action ignored (processing-mode lock active): test_velocidad`
+      - `Menu action ignored (processing-mode lock active): menu.language`
+    - blocked renderer action:
+      - `Renderer action ignored (processing-mode lock active): wpm-slider`
+    - visible lock alert text:
+      - `Import/extract is processing. Main-window interactions are locked until processing ends or you abort.`
+    - abort path:
+      - `Processing abort requested: { lockId: 1, source: 'main_window', reason: 'user_abort_button' }`
+      - `Processing mode disabled: { lockId: 1, source: 'main_window', reason: 'user_abort_button' }`
+      - completion: `state: 'cancelled'`, `code: 'aborted_by_user'`
+  - `PLK-02` observed evidence (user-provided):
+    - processing started:
+      - `Processing mode enabled: { lockId: 2, source: 'import_extract_execution', reason: 'run_pdf_route' }`
+    - close-triggered cancellation:
+      - `Processing abort requested: { lockId: 2, source: 'main_window', reason: 'close_during_processing' }`
+      - `Processing mode disabled: { lockId: 2, source: 'main_window', reason: 'close_during_processing' }`
+      - completion: `state: 'cancelled'`, `code: 'aborted_by_user'`
+    - user-reported behavior:
+      - close `X` did not close the window immediately
+      - no apply modal shown
+      - no text applied
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:42:31 -03:00`
+- Assumptions disclosed:
+  - Item-5/item-6 checkbox closure is deferred despite passing runtime lock/cancel signals, because user raised expectation ambiguity on:
+    - lack of user-visible lock toast for blocked native-menu clicks
+    - whether window should auto-close after converting `X` into cancellation request
+  - Impact/risk: low-to-medium for checklist closure timing; no runtime code changes were made in this operation.
+- Outcome / next step:
+  - Evidence is documented and auditable. Next step is explicit expectation decision:
+    - if current behavior is accepted by Issue 53 contracts, close item 5 (and potentially item 6 with additional invariants evidence), or
+    - treat either ambiguity as defect and open a fix operation before closure.
 
 ### OP-0058
 
