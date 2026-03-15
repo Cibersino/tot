@@ -216,6 +216,7 @@ function getDialogTexts(lang) {
  * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Target window for 'menu-click'.
  * @param {Function} [opts.resolveMainWindow] - Resolver for the target window.
  * @param {Function} [opts.isMenuEnabled] - Returns whether menu actions should dispatch.
+ * @param {Function} [opts.getMenuBlockReason] - Optional reason provider when menu actions are blocked.
  * @param {Function} [opts.onOpenLanguage] - Callback that opens the language selection window.
  */
 function buildAppMenu(lang, opts = {}) {
@@ -234,11 +235,21 @@ function buildAppMenu(lang, opts = {}) {
             ? opts.isMenuEnabled
             : () => true;
 
+    const getMenuBlockReason =
+        typeof opts.getMenuBlockReason === 'function'
+            ? opts.getMenuBlockReason
+            : () => 'pre_ready';
+
     const canDispatchMenuAction = (actionId) => {
         if (isMenuEnabled()) return true;
+        const reasonRaw = String(getMenuBlockReason(actionId) || '').trim();
+        const reason = reasonRaw || 'interaction_locked';
+        const reasonLabel = reason === 'processing_mode'
+            ? 'processing-mode lock active'
+            : (reason === 'pre_ready' ? 'pre-READY' : `lock:${reason}`);
         log.warnOnce(
-            `menu_builder.inert:${actionId}`,
-            'Menu action ignored (pre-READY):',
+            `menu_builder.inert.${reason}:${actionId}`,
+            `Menu action ignored (${reasonLabel}):`,
             actionId
         );
         return false;

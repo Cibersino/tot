@@ -41,6 +41,7 @@ const {
 // =============================================================================
 const textPreview = document.getElementById('textPreview');
 const btnImportExtract = document.getElementById('btnImportExtract');
+const btnImportExtractAbort = document.getElementById('btnImportExtractAbort');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const clipboardRepeatInput = document.getElementById('clipboardRepeatInput');
@@ -164,18 +165,82 @@ const presetDescription = document.getElementById('presetDescription');
 // =============================================================================
 // Startup gating + handshake
 // =============================================================================
+const PROCESSING_LOCK_NOTICE_THROTTLE_MS = 1000;
+
 function isRendererReady() {
   return rendererReadyState === 'READY';
 }
 
-function guardUserAction(actionId) {
-  if (isRendererReady()) return true;
+function isProcessingModeActive() {
+  return !!(importExtractProcessingModeState && importExtractProcessingModeState.active);
+}
+
+function normalizeProcessingModeState(rawState) {
+  const state = rawState && typeof rawState === 'object' ? rawState : {};
+  const lockId = Number(state.lockId);
+  const sinceEpochMs = Number(state.sinceEpochMs);
+  return {
+    active: state.active === true,
+    lockId: Number.isFinite(lockId) && lockId >= 0 ? Math.floor(lockId) : 0,
+    sinceEpochMs: Number.isFinite(sinceEpochMs) && sinceEpochMs > 0 ? Math.floor(sinceEpochMs) : null,
+    source: typeof state.source === 'string' ? state.source.trim() : '',
+    reason: typeof state.reason === 'string' ? state.reason.trim() : '',
+  };
+}
+
+function applyProcessingModeState(rawState, { source = 'unknown' } = {}) {
+  const nextState = normalizeProcessingModeState(rawState);
+  const prevActive = isProcessingModeActive();
+  importExtractProcessingModeState = nextState;
+
+  if (btnImportExtractAbort) {
+    btnImportExtractAbort.hidden = !nextState.active;
+    btnImportExtractAbort.disabled = !nextState.active;
+    btnImportExtractAbort.setAttribute('aria-hidden', nextState.active ? 'false' : 'true');
+  }
+
+  if (prevActive !== nextState.active) {
+    log.info('import/extract processing-mode changed:', {
+      active: nextState.active,
+      lockId: nextState.lockId,
+      source,
+      reason: nextState.reason,
+    });
+  }
+}
+
+function maybeNotifyProcessingLock(actionId) {
+  const now = Date.now();
+  if ((now - lastProcessingLockNoticeAt) < PROCESSING_LOCK_NOTICE_THROTTLE_MS) return;
+  lastProcessingLockNoticeAt = now;
+  if (window.Notify && typeof window.Notify.notifyMain === 'function') {
+    window.Notify.notifyMain('renderer.alerts.import_extract_processing_locked');
+  }
   log.warnOnce(
-    `BOOTSTRAP:renderer.preReady.${actionId}`,
-    'Renderer action ignored (pre-READY):',
+    `renderer.processing_lock.${actionId}`,
+    'Renderer action ignored (processing-mode lock active):',
     actionId
   );
-  return false;
+}
+
+function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
+  const normalizedActionId = typeof actionId === 'string' ? actionId : 'unknown_action';
+  if (!isRendererReady()) {
+    log.warnOnce(
+      `BOOTSTRAP:renderer.preReady.${normalizedActionId}`,
+      'Renderer action ignored (pre-READY):',
+      normalizedActionId
+    );
+    return false;
+  }
+
+  const isAbortAction = normalizedActionId === 'import-extract-abort';
+  if (!allowDuringProcessing && !isAbortAction && isProcessingModeActive()) {
+    maybeNotifyProcessingLock(normalizedActionId);
+    return false;
+  }
+
+  return true;
 }
 
 function sendRendererCoreReady() {
@@ -265,6 +330,14 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
+let importExtractProcessingModeState = {
+  active: false,
+  lockId: 0,
+  sinceEpochMs: null,
+  source: '',
+  reason: '',
+};
+let lastProcessingLockNoticeAt = 0;
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
   const api = window.electronAPI;
@@ -301,6 +374,7 @@ function applyTranslations() {
   };
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
+  if (btnImportExtractAbort) btnImportExtractAbort.textContent = tRenderer('renderer.main.buttons.import_extract_abort', btnImportExtractAbort.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
@@ -311,9 +385,11 @@ function applyTranslations() {
   if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load', btnLoadTask.textContent || '');
   // Text selector tooltips
   if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract', btnImportExtract.title || '');
+  if (btnImportExtractAbort) btnImportExtractAbort.title = tRenderer('renderer.main.tooltips.import_extract_abort', btnImportExtractAbort.title || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
   applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract');
+  applyAriaLabel(btnImportExtractAbort, 'renderer.main.aria.import_extract_abort');
   if (clipboardRepeatInput) {
     clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count', clipboardRepeatInput.title || '');
     applyAriaLabel(clipboardRepeatInput, 'renderer.main.aria.clipboard_repeat_count');
@@ -768,6 +844,21 @@ function armIpcSubscriptions() {
       );
     }
 
+    if (typeof window.electronAPI.onImportExtractProcessingModeChanged === 'function') {
+      window.electronAPI.onImportExtractProcessingModeChanged((state) => {
+        try {
+          applyProcessingModeState(state, { source: 'ipc_event' });
+        } catch (err) {
+          log.error('Error handling import-extract-processing-mode-changed:', err);
+        }
+      });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onImportExtractProcessingModeChanged.unavailable',
+        'onImportExtractProcessingModeChanged unavailable; processing lock updates will not sync.'
+      );
+    }
+
     if (typeof window.electronAPI.onEditorReady === 'function') {
       window.electronAPI.onEditorReady(() => {
         if (!isRendererReady()) {
@@ -934,6 +1025,21 @@ async function runStartupOrchestrator() {
       }
     } else {
       installCurrentTextState('');
+    }
+
+    const getImportExtractProcessingMode = getOptionalElectronMethod('getImportExtractProcessingMode', {
+      dedupeKey: 'renderer.ipc.getImportExtractProcessingMode.unavailable',
+      unavailableMessage: 'getImportExtractProcessingMode unavailable; processing mode defaults to inactive.'
+    });
+    if (getImportExtractProcessingMode) {
+      try {
+        const processingMode = await getImportExtractProcessingMode();
+        if (processingMode && processingMode.ok === true) {
+          applyProcessingModeState(processingMode.state, { source: 'startup_query' });
+        }
+      } catch (err) {
+        log.warn('BOOTSTRAP: getImportExtractProcessingMode failed; keeping processing mode inactive:', err);
+      }
     }
 
     // Load presets and save them to the cache
@@ -1554,6 +1660,43 @@ if (btnImportExtract) {
     } catch (err) {
       log.error('Error handling import/extract entrypoint click:', err);
       window.Notify.notifyMain('renderer.alerts.import_extract_error');
+    }
+  });
+}
+
+if (btnImportExtractAbort) {
+  btnImportExtractAbort.addEventListener('click', async () => {
+    if (!guardUserAction('import-extract-abort', { allowDuringProcessing: true })) return;
+    try {
+      const requestImportExtractAbort = getOptionalElectronMethod('requestImportExtractAbort', {
+        dedupeKey: 'renderer.ipc.requestImportExtractAbort.unavailable',
+        unavailableMessage: 'requestImportExtractAbort unavailable; abort action skipped.'
+      });
+      if (!requestImportExtractAbort) {
+        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+        return;
+      }
+
+      const result = await requestImportExtractAbort({
+        source: 'main_window',
+        reason: 'user_abort_button',
+      });
+      if (!result || result.ok !== true) {
+        if (result && result.code === 'NOT_ACTIVE' && result.state) {
+          applyProcessingModeState(result.state, { source: 'abort_not_active' });
+          return;
+        }
+        log.error('import/extract abort failed:', result);
+        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+        return;
+      }
+
+      if (result.state) {
+        applyProcessingModeState(result.state, { source: 'abort_response' });
+      }
+    } catch (err) {
+      log.error('Error handling import/extract abort:', err);
+      window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
     }
   });
 }

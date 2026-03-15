@@ -135,6 +135,15 @@ body {
   flex-wrap: wrap;
 }
 
+#btnImportExtractAbort {
+  border-color: #c45858;
+  background: #fff1f1;
+}
+
+#btnImportExtractAbort:hover {
+  background: #ffe4e4;
+}
+
 .clipboard-repeat-input {
   width: 60px;
   height: 30px;

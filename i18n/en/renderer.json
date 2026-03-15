@@ -5,6 +5,7 @@
       "selector_empty": "(empty)",
       "buttons": {
         "import_extract": "📥",
+        "import_extract_abort": "⛔",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -16,6 +17,7 @@
       },
       "tooltips": {
         "import_extract": "Import/extract text from file",
+        "import_extract_abort": "Abort extraction",
         "overwrite_clipboard": "Replace current text with clipboard",
         "append_clipboard": "Append clipboard at the end of current text (new line)",
         "clipboard_repeat_count": "Clipboard repetitions",
@@ -34,6 +36,7 @@
       },
       "aria": {
         "import_extract": "Import or extract text from file",
+        "import_extract_abort": "Abort extraction",
         "clipboard_repeat_count": "Paste repetitions",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words-per-minute slider",
@@ -232,6 +235,8 @@
       "import_extract_precondition_blocked": "To start import/extract, close all secondary windows and stop the stopwatch.",
       "import_extract_precondition_error": "An error occurred while checking import/extract preconditions. Check console.",
       "import_extract_not_ready": "Import/extract file flow is not available yet.",
+      "import_extract_processing_locked": "Import/extract is processing. Main-window interactions are locked until processing ends or you abort.",
+      "import_extract_abort_error": "An error occurred while requesting import/extract abort. Check console.",
       "wip_test_velocidad": "WIP: The reading speed test will open here in a future version.",
       "wip_diseno_skins": "WIP: The skins selector will open here in a future version.",
       "wip_diseno_crono": "WIP: Floating stopwatch settings will open here in a future version.",
