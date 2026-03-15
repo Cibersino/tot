@@ -6,6 +6,7 @@ const { BrowserWindow, dialog } = require('electron');
 const { authenticate } = require('@google-cloud/local-auth');
 const Log = require('../log');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
+const { writeEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 
 const log = Log.get('import-extract-ocr-activation');
 
@@ -386,7 +387,10 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       }
 
       ensureParentDir(tokenPath);
-      fs.writeFileSync(tokenPath, JSON.stringify(serializableCredentials, null, 2), 'utf8');
+      writeEncryptedTokenFile({
+        tokenPath,
+        tokenPayload: serializableCredentials,
+      });
 
       const validation = await validateGoogleDriveOcrSetup({
         credentialsPath,

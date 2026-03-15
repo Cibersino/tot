@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
+const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 
 const QUOTA_REASON_CODES = new Set([
   'dailyLimitExceeded',
@@ -355,7 +356,7 @@ async function runGoogleDriveOcrRoute({
   }
 
   try {
-    tokenJson = readJsonFile(tokenPath);
+    tokenJson = readEncryptedTokenFile(tokenPath);
   } catch (err) {
     return buildResult({
       state: 'failure',
@@ -367,6 +368,7 @@ async function runGoogleDriveOcrRoute({
         {
           stage: 'preflight',
           reason: 'token_read_failed',
+          tokenReadCode: String(err && err.code ? err.code : ''),
           errorName: toSafeErrorName(err),
         }
       ),

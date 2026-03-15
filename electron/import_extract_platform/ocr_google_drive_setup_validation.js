@@ -4,6 +4,7 @@ const fs = require('fs');
 const https = require('https');
 
 const { resolveGoogleDriveOcrAvailability } = require('./ocr_google_drive_activation_state');
+const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 
 const DEFAULT_TIMEOUT_MS = 10000;
 const MAX_TIMEOUT_MS = 20000;
@@ -446,12 +447,32 @@ async function validateGoogleDriveOcrSetup({
   }
   checks.credentialsValid = true;
 
-  const tokenRead = safeReadJson(tokenPath);
+  let tokenRead = {
+    ok: false,
+    code: 'token_read_failed',
+    errorName: '',
+    data: null,
+  };
+  try {
+    tokenRead = {
+      ok: true,
+      code: '',
+      errorName: '',
+      data: readEncryptedTokenFile(tokenPath),
+    };
+  } catch (err) {
+    tokenRead = {
+      ok: false,
+      code: String(err && err.code ? err.code : 'token_read_failed'),
+      errorName: safeErrorName(err),
+      data: null,
+    };
+  }
   const tokenShape = parseTokenShape(tokenRead.data);
   if (!tokenRead.ok || !tokenShape.valid) {
     return buildFailureResult({
-      code: 'auth_failed',
-      summary: 'Google OCR token state is invalid.',
+      code: 'ocr_activation_required',
+      summary: 'Google OCR token state is missing/invalid or cannot be decrypted.',
       checks,
       detailsSafeForLogs: {
         tokenReadCode: tokenRead.code || 'invalid_shape',
