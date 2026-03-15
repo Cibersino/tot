@@ -64,6 +64,63 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0048
+
+- Date/time: 2026-03-15 14:40:28 -03:00
+- Operation: Execute Section 5 item 1 case `SMK-04` (`PDF triage both -> choose native`) with coordinated manual validation.
+- Why: Continue smoke matrix sequence after `SMK-03` pass.
+- Changes made:
+  - Opened OP-0048 before SMK-04 execution actions.
+  - Locked evidence target:
+    - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+- Checklist updates:
+  - None yet (SMK-04 execution in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:40:28 -03:00`
+- Outcome / next step:
+  - In progress. Execute SMK-04 and capture route-choice/triage evidence.
+
+### OP-0047
+
+- Date/time: 2026-03-15 14:29:39 -03:00
+- Operation: Execute Section 5 item 1 case `SMK-03` (`PDF triage ocr_only`) with coordinated manual validation.
+- Why: Continue the approved smoke matrix sequence after `SMK-02` pass.
+- Changes made:
+  - Opened OP-0047 before SMK-03 execution actions.
+  - Locked evidence target:
+    - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-03` (`PDF triage ocr_only`) with user-coordinated manual flow.
+  - Recorded full expected/actual evidence in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-03`)
+- Checklist updates:
+  - No plan checkbox toggles yet (Section 5 item 1 remains in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:29:39 -03:00`
+  - SMK-03 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: no`
+  - SMK-03 execution telemetry evidence (main process log):
+    - `routeKind: 'ocr'`, `state: 'success'`, `code: ''`
+    - `pdfTriage: 'ocr_only'`, `triageReason: 'no_native_text_layer_detected'`
+    - `availableRoutes: [ 'ocr' ]`, `chosenRoute: 'ocr'`, `executedRoute: 'ocr'`
+    - `sourceFileExt: 'pdf'`, `sourceFileKind: 'pdf'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:40:09 -03:00`
+- Outcome / next step:
+  - Completed. SMK-03 passed. Next step is opening `OP-0048` for SMK-04 (`PDF triage both -> choose native`).
+
 ### OP-0046
 
 - Date/time: 2026-03-15 13:56:51 -03:00
