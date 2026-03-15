@@ -27,8 +27,8 @@ Tracker policy for Section 5:
 - App version/commit: `0.1.6` / `dde9fd1`
 - Runtime command: ``$env:TOT_LOG_LEVEL='info'; npm start``
 - TOT_LOG_LEVEL: `info`
-- OCR credentials path: `%APPDATA%\\toT\\config\\ocr_google_drive\\credentials.json` (`exists=False` at start)
-- OCR token path: `%APPDATA%\\toT\\config\\ocr_google_drive\\token.json` (`exists=False` at start)
+- OCR credentials path: `%APPDATA%\\@cibersino\\tot\\config\\ocr_google_drive\\credentials.json`
+- OCR token path: `%APPDATA%\\@cibersino\\tot\\config\\ocr_google_drive\\token.json`
 
 ## Section 5 Checklist Coverage Map
 
@@ -134,20 +134,41 @@ Tracker policy for Section 5:
 - Fixture: `tools_local/smoke/prueba_png.png`
 - Preconditions: same as SMK-01
 - Steps:
-  - user selected `tools_local/smoke/prueba_png.png` from import/extract picker
-  - no route-choice modal appeared
-  - extraction exited in failure state before apply modal
+  - attempt 1:
+    - user selected `tools_local/smoke/prueba_png.png` from import/extract picker
+    - no route-choice modal appeared
+    - extraction exited in failure state before apply modal
+  - repair applied in `OP-0045`:
+    - extended OCR auto-recovery to treat `auth_failed` as recoverable
+  - rerun (attempt 2):
+    - user repeated OCR baseline flow
+    - activation flow was launched and completed in browser
+    - extraction retried automatically and succeeded
 - Expected: OCR path executes; apply modal appears after success.
 - Actual:
-  - preconditions ok: `yes`
-  - route-choice modal: `no`
-  - apply modal: `no`
-  - overwrite applied: `no`
-  - resulting text lines: `n/a` (no apply step reached)
+  - attempt 1:
+    - preconditions ok: `yes`
+    - route-choice modal: `no`
+    - apply modal: `no`
+    - overwrite applied: `no`
+    - resulting text lines: `n/a` (no apply step reached)
+  - attempt 2 (post-repair rerun):
+    - preconditions ok: `yes`
+    - route-choice modal: `no`
+    - apply modal: `yes`
+    - overwrite applied: `yes`
+    - resulting text starts with:
+      - `________________`
+      - `MATÍAS MAIELLO`
+      - `85`
 - Alerts/notifications observed:
-  - `OCR is unavailable. Check setup/auth status and try again.`
+  - attempt 1:
+    - `OCR is unavailable. Check setup/auth status and try again.`
+  - attempt 2:
+    - `Starting OCR activation. Complete sign-in in your browser to continue.`
+    - `OCR activation completed. Retrying extraction.`
 - Route metadata observed:
-  - from main-process terminal logs:
+  - attempt 1:
     - `routeKind: 'ocr'`
     - `state: 'failure'`
     - `code: 'auth_failed'`
@@ -158,13 +179,28 @@ Tracker policy for Section 5:
     - `executedRoute: 'ocr'`
     - `sourceFileExt: 'png'`
     - `sourceFileKind: 'image'`
-- Result: `BLOCKED`
+  - attempt 2:
+    - first pass in rerun:
+      - `routeKind: 'ocr'`
+      - `state: 'failure'`
+      - `code: 'ocr_activation_required'`
+      - `reason: import_extract_ocr_failed`
+    - activation status:
+      - `import/extract OCR activation completed: { ok: true, state: 'ready', code: '', importedCredentials: false }`
+    - retried pass:
+      - `routeKind: 'ocr'`
+      - `state: 'success'`
+      - `code: ''`
+      - `pdfTriage: 'not_pdf'`
+      - `triageReason: 'non_pdf'`
+      - `availableRoutes: [ 'ocr' ]`
+      - `chosenRoute: 'ocr'`
+      - `executedRoute: 'ocr'`
+      - `sourceFileKind: 'image'`
+- Result: `PASS`
 - Notes:
-  - processing mode lifecycle was correct (enabled -> disabled with `reason: 'import_extract_ocr_failed'`).
-  - observed behavior mismatch for recovery UX:
-    - OCR auto-recovery currently triggers only for `setup_incomplete` / `ocr_activation_required`.
-    - this failure was `auth_failed`, so activation/reconnect flow did not launch.
-  - repair required before continuing smoke matrix execution.
+  - processing mode lifecycle was correct across both attempts.
+  - rerun confirms repair effectiveness: `auth_failed` now reaches activation/reconnect flow and succeeds after one-shot retry.
 
 ### SMK-03 PDF Triage `ocr_only`
 
@@ -213,3 +249,6 @@ Tracker policy for Section 5:
   - Impact/risk: low; increased log verbosity only, no behavior change expected.
   - Handling: proceeded and recorded exact observed runtime context in evidence.
 - `SMK-02` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
+  - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
+  - Impact/risk: low, documentation-only correction.
