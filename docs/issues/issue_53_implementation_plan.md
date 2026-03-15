@@ -106,28 +106,28 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
 Status note (authoritative):
 
 - Reopened by explicit user decision on 2026-03-14.
-- `docs/issues/issue_53_contracts.md` is retained as a draft baseline/reference, but Section 3 is currently treated as pending and must be revalidated before Section 4 coding.
-- Section 3 revalidation must consume finalized setup/auth/quota/logging semantics from Section 2 item 7/8.
+- Revalidated and relocked on 2026-03-14 after Section 2 item 7/8 completion.
+- `docs/issues/issue_53_contracts.md` is now the authoritative Section 3 baseline for Section 4 implementation.
 
-- [ ] Define shared extraction result contract for all routes:
+- [x] Define shared extraction result contract for all routes:
   - success/failure
   - extracted text
   - executed route
   - warnings/summary
   - safe provenance metadata
   - structured error on failure
-- [ ] Define route metadata contract:
+- [x] Define route metadata contract:
   - detected file kind
   - available routes
   - chosen route
   - executed route
   - PDF triage status
-- [ ] Lock apply contract: extraction post-apply must reuse the existing canonical overwrite/append/repetitions path (including MAX_TEXT_CHARS + explicit truncation behavior).
-- [ ] Lock state taxonomy for behavior/logging distinction:
+- [x] Lock apply contract: extraction post-apply must reuse the existing canonical overwrite/append/repetitions path (including MAX_TEXT_CHARS + explicit truncation behavior).
+- [x] Lock state taxonomy for behavior/logging distinction:
   - precondition rejected (blocked start)
   - extraction failure (after start)
   - user cancellation/abort
-- [ ] Lock processing-mode contract:
+- [x] Lock processing-mode contract:
   - processing lock is distinct from startup lock
   - while processing, main window/app menu interactions are blocked except close/minimize/move/abort
   - close-window request during processing follows cancellation semantics (same guarantees as abort)

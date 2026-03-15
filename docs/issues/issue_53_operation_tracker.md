@@ -36,16 +36,63 @@ As of 2026-03-14:
   - Items 1-8: complete.
   - Item 7/8 execution respected scope boundary: backend/IPC/logging work only; no OCR UI trigger wiring.
   - Legacy `cargador_*` menu paths remain forbidden and were not reintroduced.
-- Section 3 (`Contracts before implementation`): reopened by user decision.
-  - Existing `docs/issues/issue_53_contracts.md` remains a draft baseline/reference, but Section 3 is not treated as closed.
-  - Any earlier tracker statement implying Section 3 closure is superseded by this authoritative status.
-  - Section 3 revalidation must consume finalized semantics from Section 2 item 7/8.
+- Section 3 (`Contracts before implementation`): complete (revalidated).
+  - Revalidated and relocked on 2026-03-14 after Section 2 item 7/8 completion.
+  - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: not started.
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0021
+
+- Date/time: 2026-03-14 21:09:17 -03:00
+- Operation: Revalidate and relock Section 3 contracts using finalized Section 2 item 7/8 semantics.
+- Why: User requested Section 3 revalidation with no assumptions carried from earlier draft state.
+- Changes made:
+  - Reworked and relocked `docs/issues/issue_53_contracts.md` as the authoritative Section 3 baseline:
+    - retained substrate-agnostic extraction/apply/processing contracts
+    - added explicit setup-validation contract aligned to Section 2 item 7 (`state`, checks, error surface, required mappings)
+    - added explicit logging/bridge-failure alignment section for Section 2 item 8
+    - aligned observability + sequencing sections to post-revalidation state
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 3 status note:
+    - pending/draft wording replaced with revalidated-and-authoritative wording
+  - Marked all Section 3 checklist items complete (`[x]`):
+    - shared extraction result contract
+    - route metadata contract
+    - apply contract lock
+    - state taxonomy lock
+    - processing-mode contract lock
+  - Updated tracker authoritative status:
+    - Section 3 now marked complete (revalidated).
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 3:
+    - `[x] Define shared extraction result contract for all routes.`
+    - `[x] Define route metadata contract.`
+    - `[x] Lock apply contract: extraction post-apply must reuse the existing canonical overwrite/append/repetitions path (including MAX_TEXT_CHARS + explicit truncation behavior).`
+    - `[x] Lock state taxonomy for behavior/logging distinction.`
+    - `[x] Lock processing-mode contract.`
+- Files touched:
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_contracts.md` contains new revalidation-specific sections:
+    - `## 8) Setup validation contract (Section 2 item 7/8)`
+    - `## 9) Logging and bridge-failure policy alignment (Section 2 item 8)`
+    - `## 10) Observability contract alignment`
+    - `## 11) Implementation sequencing after this contract revalidation`
+  - `docs/issues/issue_53_implementation_plan.md` now contains:
+    - `Revalidated and relocked on 2026-03-14 after Section 2 item 7/8 completion.`
+    - all Section 3 checklist items marked `[x]`
+  - Runtime code baseline remained syntactically valid after documentation revalidation:
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js`
+    - `node --check electron/main.js`
+- Outcome / next step:
+  - Section 3 is revalidated and relocked. Next step is Section 4 implementation starting from the dedicated import/extract entrypoint guardrail.
 
 ### OP-0020
 
