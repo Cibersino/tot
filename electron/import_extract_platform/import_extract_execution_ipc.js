@@ -10,7 +10,6 @@ const { runNativeExtractionRoute } = require('./native_extraction_route');
 const log = Log.get('import-extract-execution-ipc');
 
 const OCR_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'bmp']);
-const OCR_PRIMARY_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'bmp', 'pdf']);
 
 function resolvePayload(payload) {
   const raw = payload && typeof payload === 'object' ? payload : {};
@@ -58,11 +57,57 @@ function isAuthorizedSender(event, mainWin) {
   }
 }
 
-function resolveRouteKind(fileInfo) {
-  if (OCR_PRIMARY_EXTENSIONS.has(fileInfo.sourceFileExt)) {
-    return 'ocr';
-  }
-  return 'native';
+function resolveSetupState(validationResult) {
+  if (validationResult && validationResult.ok === true) return 'ready';
+  const state = validationResult && typeof validationResult.state === 'string'
+    ? validationResult.state
+    : 'failure';
+  if (state === 'setup_incomplete' || state === 'ocr_activation_required') return state;
+  return 'failure';
+}
+
+function hasUsableExtractedText(result) {
+  return !!(result
+    && result.state === 'success'
+    && typeof result.text === 'string'
+    && result.text.trim().length > 0);
+}
+
+function buildRouteMetadata({
+  fileInfo,
+  availableRoutes,
+  chosenRoute,
+  executedRoute = null,
+  pdfTriage = 'not_pdf',
+  triageReason = '',
+  ocrSetupState = 'not_checked',
+}) {
+  return {
+    fileKind: fileInfo.sourceFileKind,
+    availableRoutes: Array.isArray(availableRoutes) ? availableRoutes : [],
+    chosenRoute,
+    executedRoute,
+    pdfTriage,
+    triageReason,
+    ocrSetupState,
+  };
+}
+
+function resolveNonPdfRouteDecision(fileInfo) {
+  const routeKind = OCR_IMAGE_EXTENSIONS.has(fileInfo.sourceFileExt) ? 'ocr' : 'native';
+  return {
+    routeKind,
+    routeMetadata: buildRouteMetadata({
+      fileInfo,
+      availableRoutes: [routeKind],
+      chosenRoute: routeKind,
+      pdfTriage: 'not_pdf',
+      triageReason: 'non_pdf',
+      ocrSetupState: routeKind === 'ocr' ? 'not_checked' : 'not_checked',
+    }),
+    nativeProbeResult: null,
+    ocrValidation: null,
+  };
 }
 
 function buildOcrGateFailureResult(fileInfo, validationResult) {
@@ -116,6 +161,69 @@ function buildOcrGateFailureResult(fileInfo, validationResult) {
   };
 }
 
+async function triagePdfRoutes({
+  fileInfo,
+  resolvePaths,
+  controller,
+}) {
+  const nativeProbeResult = await runNativeExtractionRoute({
+    filePath: fileInfo.filePath,
+    isAborted: () => !controller.isActive(),
+    logger: log,
+  });
+  const nativeAvailable = hasUsableExtractedText(nativeProbeResult);
+
+  const paths = resolvePaths();
+  const ocrValidation = await validateGoogleDriveOcrSetup({
+    credentialsPath: paths.credentialsPath,
+    tokenPath: paths.tokenPath,
+    probeApiPath: true,
+  });
+  const ocrReady = !!(ocrValidation && ocrValidation.ok === true);
+  const ocrSetupState = resolveSetupState(ocrValidation);
+
+  let pdfTriage = 'ocr_only';
+  let triageReason = 'no_native_text_layer_detected';
+  let availableRoutes = ['ocr'];
+  let chosenRoute = 'ocr';
+
+  if (nativeAvailable && ocrReady) {
+    pdfTriage = 'both';
+    triageReason = 'native_text_detected_and_ocr_ready';
+    availableRoutes = ['native', 'ocr'];
+    chosenRoute = 'ocr';
+  } else if (nativeAvailable && !ocrReady) {
+    pdfTriage = 'native_only';
+    triageReason = 'native_text_detected_ocr_unavailable';
+    availableRoutes = ['native'];
+    chosenRoute = 'native';
+  } else if (!nativeAvailable && ocrReady) {
+    pdfTriage = 'ocr_only';
+    triageReason = 'no_native_text_layer_detected';
+    availableRoutes = ['ocr'];
+    chosenRoute = 'ocr';
+  } else {
+    pdfTriage = 'ocr_only';
+    triageReason = 'no_native_text_layer_and_ocr_unavailable';
+    availableRoutes = ['ocr'];
+    chosenRoute = 'ocr';
+  }
+
+  return {
+    routeKind: chosenRoute,
+    routeMetadata: buildRouteMetadata({
+      fileInfo,
+      availableRoutes,
+      chosenRoute,
+      pdfTriage,
+      triageReason,
+      ocrSetupState,
+    }),
+    nativeProbeResult,
+    ocrValidation,
+  };
+}
+
 function resolvePrimaryAlertKey(routeKind, result) {
   const state = result && typeof result.state === 'string' ? result.state : 'failure';
   const code = result && result.error && typeof result.error.code === 'string'
@@ -163,39 +271,59 @@ function resolveExitReason(routeKind, result) {
 }
 
 async function executeSelectedFile({
-  routeKind,
+  routeDecision,
   fileInfo,
   ocrLanguage,
   resolvePaths,
   controller,
 }) {
+  const routeKind = routeDecision.routeKind;
+
   if (routeKind === 'native') {
-    const nativeResult = await runNativeExtractionRoute({
+    const nativeResult = routeDecision.nativeProbeResult || await runNativeExtractionRoute({
       filePath: fileInfo.filePath,
       isAborted: () => !controller.isActive(),
       logger: log,
     });
+
+    const routeMetadata = {
+      ...routeDecision.routeMetadata,
+      executedRoute: 'native',
+    };
     return {
       routeKind,
       result: nativeResult,
+      routeMetadata,
+    };
+  }
+
+  let validation = routeDecision.ocrValidation || null;
+  let ocrSetupState = resolveSetupState(validation);
+  if (!validation) {
+    const paths = resolvePaths();
+    validation = await validateGoogleDriveOcrSetup({
+      credentialsPath: paths.credentialsPath,
+      tokenPath: paths.tokenPath,
+      probeApiPath: true,
+    });
+    ocrSetupState = resolveSetupState(validation);
+  }
+
+  if (!validation || validation.ok !== true) {
+    const blockedResult = buildOcrGateFailureResult(fileInfo, validation);
+    const routeMetadata = {
+      ...routeDecision.routeMetadata,
+      executedRoute: 'ocr',
+      ocrSetupState,
+    };
+    return {
+      routeKind,
+      result: blockedResult,
+      routeMetadata,
     };
   }
 
   const paths = resolvePaths();
-  const validation = await validateGoogleDriveOcrSetup({
-    credentialsPath: paths.credentialsPath,
-    tokenPath: paths.tokenPath,
-    probeApiPath: true,
-  });
-
-  if (!validation || validation.ok !== true) {
-    const blockedResult = buildOcrGateFailureResult(fileInfo, validation);
-    return {
-      routeKind,
-      result: blockedResult,
-    };
-  }
-
   const ocrResult = await runGoogleDriveOcrRoute({
     filePath: fileInfo.filePath,
     credentialsPath: paths.credentialsPath,
@@ -205,9 +333,16 @@ async function executeSelectedFile({
     isAborted: () => !controller.isActive(),
   });
 
+  const routeMetadata = {
+    ...routeDecision.routeMetadata,
+    executedRoute: 'ocr',
+    ocrSetupState: 'ready',
+  };
+
   return {
     routeKind,
     result: ocrResult,
+    routeMetadata,
   };
 }
 
@@ -247,11 +382,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
       }
 
       const fileInfo = getFileInfo(request.filePath);
-      const routeKind = resolveRouteKind(fileInfo);
-
       const enterTransition = controller.enter({
         source: 'import_extract_execution',
-        reason: `run_${routeKind}_route`,
+        reason: fileInfo.sourceFileKind === 'pdf' ? 'run_pdf_triage' : 'run_route',
       });
       if (!enterTransition.changed && controller.isActive()) {
         return {
@@ -261,10 +394,21 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         };
       }
 
+      let routeDecision = null;
       let executionResult = null;
       try {
+        if (fileInfo.sourceFileKind === 'pdf') {
+          routeDecision = await triagePdfRoutes({
+            fileInfo,
+            resolvePaths,
+            controller,
+          });
+        } else {
+          routeDecision = resolveNonPdfRouteDecision(fileInfo);
+        }
+
         executionResult = await executeSelectedFile({
-          routeKind,
+          routeDecision,
           fileInfo,
           ocrLanguage: request.ocrLanguage,
           resolvePaths,
@@ -273,10 +417,10 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
       } catch (err) {
         log.error('import/extract execution failed unexpectedly:', err);
         executionResult = {
-          routeKind,
+          routeKind: routeDecision && routeDecision.routeKind ? routeDecision.routeKind : 'native',
           result: {
             state: 'failure',
-            executedRoute: routeKind,
+            executedRoute: routeDecision && routeDecision.routeKind ? routeDecision.routeKind : 'native',
             text: '',
             warnings: [],
             summary: 'Import/extract route failed due to an unexpected runtime error.',
@@ -284,7 +428,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
               sourceFileName: fileInfo.fileName,
               sourceFileExt: fileInfo.sourceFileExt,
               sourceFileKind: fileInfo.sourceFileKind,
-              ocrProvider: routeKind === 'ocr' ? 'google_drive_docs_conversion' : null,
+              ocrProvider: routeDecision && routeDecision.routeKind === 'ocr'
+                ? 'google_drive_docs_conversion'
+                : null,
               metadataSafeForLogs: {},
             },
             error: {
@@ -295,12 +441,29 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
               },
             },
           },
+          routeMetadata: routeDecision
+            ? {
+              ...routeDecision.routeMetadata,
+              executedRoute: routeDecision.routeKind,
+            }
+            : buildRouteMetadata({
+              fileInfo,
+              availableRoutes: [],
+              chosenRoute: null,
+              executedRoute: null,
+              pdfTriage: fileInfo.sourceFileKind === 'pdf' ? 'ocr_only' : 'not_pdf',
+              triageReason: 'route_resolution_failed',
+              ocrSetupState: 'failure',
+            }),
         };
       } finally {
         if (controller.isActive()) {
           controller.exit({
             source: 'import_extract_execution',
-            reason: resolveExitReason(routeKind, executionResult ? executionResult.result : null),
+            reason: resolveExitReason(
+              executionResult && executionResult.routeKind ? executionResult.routeKind : 'native',
+              executionResult ? executionResult.result : null
+            ),
           });
         }
       }
@@ -318,6 +481,11 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         routeKind: executionResult.routeKind,
         state: executionResult.result && executionResult.result.state ? executionResult.result.state : '',
         code: executionResult.result && executionResult.result.error ? executionResult.result.error.code : '',
+        pdfTriage: executionResult.routeMetadata ? executionResult.routeMetadata.pdfTriage : 'not_pdf',
+        triageReason: executionResult.routeMetadata ? executionResult.routeMetadata.triageReason : '',
+        availableRoutes: executionResult.routeMetadata ? executionResult.routeMetadata.availableRoutes : [],
+        chosenRoute: executionResult.routeMetadata ? executionResult.routeMetadata.chosenRoute : null,
+        executedRoute: executionResult.routeMetadata ? executionResult.routeMetadata.executedRoute : null,
         sourceFileExt: executionResult.result && executionResult.result.provenance
           ? executionResult.result.provenance.sourceFileExt
           : '',
@@ -330,6 +498,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         ok: true,
         routeKind: executionResult.routeKind,
         result: executionResult.result,
+        routeMetadata: executionResult.routeMetadata || null,
         primaryAlertKey,
         warningAlertKeys,
       };

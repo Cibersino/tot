@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const mammoth = require('mammoth');
+const pdfParse = require('pdf-parse');
 
 const NATIVE_PARSER_BY_EXT = Object.freeze({
   '.txt': 'plain_text',
@@ -10,6 +11,7 @@ const NATIVE_PARSER_BY_EXT = Object.freeze({
   '.html': 'html_text',
   '.htm': 'html_text',
   '.docx': 'docx_text',
+  '.pdf': 'pdf_text_layer',
 });
 
 function normalizeTextPipeline(rawText) {
@@ -98,6 +100,17 @@ function isCorruptOrUnreadableParserError(parserType, err) {
     }
   }
 
+  if (parserType === 'pdf_text_layer') {
+    if (message.includes('invalid pdf')
+      || message.includes('bad xref')
+      || message.includes('unexpected response')
+      || message.includes('formaterror')
+      || message.includes('missing pdf')
+      || message.includes('password')) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -122,6 +135,19 @@ async function runNativeParser(parserType, absPath) {
     return {
       text: String(extraction && extraction.value ? extraction.value : ''),
       warnings: mapMammothWarnings(extraction ? extraction.messages : []),
+    };
+  }
+
+  if (parserType === 'pdf_text_layer') {
+    const pdfBuffer = fs.readFileSync(absPath);
+    const extraction = await pdfParse(pdfBuffer);
+    const warnings = [];
+    if (extraction && Number.isFinite(extraction.numpages) && extraction.numpages > 0) {
+      warnings.push(`pdf_pages:${extraction.numpages}`);
+    }
+    return {
+      text: String(extraction && extraction.text ? extraction.text : ''),
+      warnings,
     };
   }
 

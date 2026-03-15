@@ -41,7 +41,7 @@ As of 2026-03-15:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-9 complete:
+  - Items 1-10 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
@@ -51,12 +51,71 @@ As of 2026-03-15:
     - OCR route implemented and executed from backend-owned route runtime
     - native extraction route implemented and executed from backend-owned route runtime
     - native extraction engineering slice completed (`docx` mapping + normalization pipeline + structured parser-stage errors)
-  - Active next checklist item: Section 4 item 10 (`Implement PDF triage...`).
+    - PDF triage implemented in backend execution path (`native_only` / `ocr_only` / `both`)
+  - Active next checklist item: Section 4 item 11 (`Implement explicit route-choice UX...`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0028
+
+- Date/time: 2026-03-15 00:23:40 -03:00
+- Operation: Execute Section 4 item 10 (`Implement PDF triage`).
+- Why: Continue checklist execution after Section 4 item 9 completion.
+- Changes made:
+  - Added native PDF text-layer parser support:
+    - `electron/import_extract_platform/native_extraction_route.js`
+    - parser map now includes `.pdf -> pdf_text_layer` via `pdf-parse`.
+  - Implemented PDF triage logic in backend execution IPC:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - triage outcomes:
+      - `both` when native PDF text-layer is usable and OCR setup is ready
+      - `native_only` when native PDF text-layer is usable and OCR setup is unavailable
+      - `ocr_only` when native PDF text-layer is not usable
+    - route metadata now returned in execution response:
+      - `fileKind`
+      - `availableRoutes`
+      - `chosenRoute`
+      - `executedRoute`
+      - `pdfTriage`
+      - `triageReason`
+      - `ocrSetupState`
+  - Added dependency required for native PDF text-layer extraction:
+    - `package.json` + `package-lock.json`: `pdf-parse@1.1.1`
+  - Decision disclosed in chat and applied:
+    - when triage returns `both`, temporary default executed route remains OCR until Section 4 item 11 route-choice UX is implemented.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement PDF triage (`native only` / `OCR only` / `both`).`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `electron/import_extract_platform/native_extraction_route.js`
+  - `package.json`
+  - `package-lock.json`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/native_extraction_route.js`
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check electron/main.js`
+    - `node --check electron/preload.js`
+    - `node --check public/renderer.js`
+  - Native PDF parser smoke checks:
+    - sample PDF (`tools_local/drive_ocr_test/sample.pdf`) -> `success` with empty text + warnings (`pdf_pages:12`, `native_empty_text`)
+    - corrupt PDF fixture -> `failure / unreadable_or_corrupt` with parser type `pdf_text_layer`
+  - Diff summary:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js` changed
+    - `electron/import_extract_platform/native_extraction_route.js` changed
+    - `package.json` changed
+    - `package-lock.json` changed
+- Assumptions disclosed:
+  - Route-choice UX is still deferred to Section 4 item 11; therefore `pdfTriage=both` currently defaults to OCR execution as an explicit temporary behavior.
+  - OCR setup validation continues to be readiness-gated in backend before OCR execution; PDF triage does not bypass setup/auth restrictions.
+- Outcome / next step:
+  - Section 4 item 10 is complete. Next checklist item is Section 4 item 11 (`Implement explicit route-choice UX...`).
 
 ### OP-0027
 
