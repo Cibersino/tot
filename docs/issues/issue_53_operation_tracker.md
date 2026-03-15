@@ -64,6 +64,102 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0046
+
+- Date/time: 2026-03-15 13:56:51 -03:00
+- Operation: Re-run Section 5 item 1 case `SMK-02` after auth-recovery patch validation.
+- Why: Confirm that OCR `auth_failed` now triggers activation/reconnect recovery and unblocks OCR baseline smoke execution.
+- Changes made:
+  - Opened OP-0046 before rerun.
+  - Locked rerun evidence target:
+    - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal summary -> `docs/issues/issue_53_operation_tracker.md`
+- Checklist updates:
+  - None yet (SMK-02 rerun in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:56:51 -03:00`
+- Outcome / next step:
+  - In progress. Execute SMK-02 rerun and record expected/actual outcome.
+
+### OP-0045
+
+- Date/time: 2026-03-15 13:55:52 -03:00
+- Operation: Repair OCR recovery path so `auth_failed` can trigger activation/reconnect flow in import/extract.
+- Why: `SMK-02` blocked with OCR failure `code: auth_failed`; current auto-recovery only handles `setup_incomplete` / `ocr_activation_required`.
+- Changes made:
+  - Opened OP-0045 before code edits.
+  - Locked repair scope:
+    - extend recoverable OCR codes to include `auth_failed`
+    - preserve one-shot retry/no-loop behavior
+    - keep route-choice/apply orchestration unchanged
+  - Implemented minimal recovery extension:
+    - `public/js/import_extract_ocr_activation_recovery.js`
+    - `isRecoverableImportExtractOcrSetupCode(...)` now includes `auth_failed`
+- Checklist updates:
+  - No plan checkbox toggles (repair to unblock Section 5 execution).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_ocr_activation_recovery.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:55:52 -03:00`
+  - Blocking evidence reference:
+    - `docs/issues/issue_53_section5_evidence.md` -> `SMK-02` (`Result: BLOCKED`, `code: auth_failed`)
+  - Validation evidence:
+    - `node --check public/js/import_extract_ocr_activation_recovery.js` -> pass
+    - `npx eslint public/js/import_extract_ocr_activation_recovery.js` -> pass
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:56:33 -03:00`
+- Outcome / next step:
+  - Completed. Recovery path now treats OCR `auth_failed` as reconnect-recoverable; next step is opening `OP-0046` and rerunning `SMK-02`.
+
+### OP-0044
+
+- Date/time: 2026-03-15 13:43:34 -03:00
+- Operation: Execute Section 5 item 1 smoke matrix case `SMK-02` (OCR baseline) with coordinated manual validation.
+- Why: Continue the approved core smoke matrix sequence after `SMK-01` pass.
+- Changes made:
+  - Opened OP-0044 before any SMK-02 execution actions.
+  - Locked evidence target for this operation:
+    - detailed test evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-02` (OCR baseline) with user-coordinated manual flow.
+  - Captured full expected/actual evidence and runtime logs in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-02`)
+  - Performed read-only diagnosis for failure classification and runtime OCR path state.
+- Checklist updates:
+  - No plan checkbox toggles yet (Section 5 item 1 remains in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:43:34 -03:00`
+  - SMK-02 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: no`
+    - `overwrite_applied: no`
+    - alert shown:
+      - `OCR is unavailable. Check setup/auth status and try again.`
+  - SMK-02 execution telemetry evidence (main process log):
+    - `routeKind: 'ocr'`, `state: 'failure'`, `code: 'auth_failed'`
+    - `pdfTriage: 'not_pdf'`, `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'ocr' ]`, `chosenRoute: 'ocr'`, `executedRoute: 'ocr'`
+    - `sourceFileExt: 'png'`, `sourceFileKind: 'image'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:55:31 -03:00`
+- Drift disclosures:
+  - During read-only diagnosis, an initial local check targeted `%APPDATA%\\toT\\...` OCR paths.
+  - Observed runtime app storage root for this build is `%APPDATA%\\@cibersino\\tot\\...`.
+  - Impact/risk: low; diagnostic-only mismatch, no file changes from this mis-targeted check.
+  - Handling: corrected path in the same operation and continued diagnosis using the actual runtime path.
+- Outcome / next step:
+  - Completed with blocked outcome. `SMK-02` is `BLOCKED` due OCR `auth_failed`; next step is opening `OP-0045` to implement repair so auth-related OCR failures can trigger activation/reconnect recovery flow.
+
 ### OP-0043
 
 - Date/time: 2026-03-15 13:33:02 -03:00
@@ -74,17 +170,39 @@ As of 2026-03-15:
   - Locked evidence target for this operation:
     - detailed test evidence -> `docs/issues/issue_53_section5_evidence.md`
     - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-01` (native baseline) with user-coordinated manual flow.
+  - Recorded full expected/actual evidence, terminal logs, and renderer DevTools logs in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-01`)
+  - Logged low-impact runtime-context drift for this case:
+    - observed run command used `TOT_LOG_LEVEL='debug'` (instead of prefilled `info`).
 - Checklist updates:
-  - None yet (SMK-01 execution in progress).
+  - No plan checkbox toggles yet (Section 5 item 1 remains in progress until SMK-02..SMK-05 complete).
 - Files touched:
   - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
 - Evidence:
   - Operation open evidence:
     - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:33:02 -03:00`
   - Workspace-state evidence:
     - `git status --short` -> clean working tree before SMK-01 execution.
+  - SMK-01 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - resulting text starts with:
+      - `How many words do we read per minute?`
+      - `A review and meta-analysis of reading rate`
+    - `alerts_seen: none`
+  - SMK-01 execution telemetry evidence (main process log):
+    - `routeKind: 'native'`, `state: 'success'`
+    - `pdfTriage: 'not_pdf'`, `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'native' ]`, `chosenRoute: 'native'`, `executedRoute: 'native'`
+    - `sourceFileExt: 'docx'`, `sourceFileKind: 'text_document'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:43:01 -03:00`
 - Outcome / next step:
-  - In progress. Execute SMK-01 manual test and capture full expected/actual evidence in `docs/issues/issue_53_section5_evidence.md`.
+  - Completed. `SMK-01` passed and evidence is documented. Next step is opening `OP-0044` to execute `SMK-02` (OCR baseline).
 
 ### OP-0042
 

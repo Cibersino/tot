@@ -23,7 +23,9 @@
   }
 
   function isRecoverableImportExtractOcrSetupCode(code) {
-    return code === 'setup_incomplete' || code === 'ocr_activation_required';
+    return code === 'setup_incomplete'
+      || code === 'ocr_activation_required'
+      || code === 'auth_failed';
   }
 
   function safeNotify(notifyMain, alertKey) {
@@ -145,4 +147,3 @@
 // =============================================================================
 // End of public/js/import_extract_ocr_activation_recovery.js
 // =============================================================================
-
