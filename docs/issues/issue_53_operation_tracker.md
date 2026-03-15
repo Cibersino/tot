@@ -41,7 +41,7 @@ As of 2026-03-15:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-13 complete:
+  - Items 1-14 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
@@ -55,12 +55,55 @@ As of 2026-03-15:
     - explicit route-choice UX implemented for `pdfTriage=both` via custom modal module and explicit user-selected `native`/`ocr` handoff
     - post-extraction apply modal implemented with overwrite/append/repetitions
     - extracted text routed through canonical apply path with unchanged semantics
-  - Active next checklist item: Section 4 item 14 (`Enforce no silent fallback between routes`).
+    - no-silent-fallback observability enforced for route fallback paths in backend execution triage/packaging
+  - Active next checklist item: Section 4 item 15 (`Enforce failure/abort invariants`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0032
+
+- Date/time: 2026-03-15 01:55:59 -03:00
+- Operation: Redo Section 4 item 14 from scratch with minimal backend-only fallback observability.
+- Why: User reverted prior implementation and requested a strict, minimal re-execution of 4.14 without over-expansion.
+- Changes made:
+  - Opened OP-0032 before meaningful edits (policy compliance step).
+  - Updated backend route-triage fallback observability:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - when explicit `routePreference` cannot be honored and backend selects another route, operation now emits:
+      - `log.warn('import/extract route fallback applied:', { ...structured fields... })`
+      - `fallbackType: 'requested_route_unavailable'`
+  - Updated backend execution-error fallback observability:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - when unexpected error packaging uses default route fallback (`'native'`), operation now emits:
+      - `log.warn('import/extract route fallback applied:', { ...structured fields... })`
+      - `fallbackType: 'execution_error_default_route'`
+  - Kept behavior shape unchanged outside observability scope:
+    - no new helper modules
+    - no renderer/main edits
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Enforce no silent fallback between routes.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+- Evidence:
+  - Operation open evidence:
+    - `git status --short` -> clean working tree at operation start
+    - `docs/issues/issue_53_implementation_plan.md` showed item 14 unchecked before edit
+  - Syntax check passed:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+  - Lint check passed:
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js`
+  - Minimality evidence:
+    - `git diff --numstat -- electron/import_extract_platform/import_extract_execution_ipc.js` -> `30  3`
+- Drift disclosures:
+  - None. Scope stayed in Section 4 item 14 with backend-only observability updates.
+- Outcome / next step:
+  - Section 4 item 14 is complete. Next checklist item is Section 4 item 15 (`Enforce failure/abort invariants`).
 
 ### OP-0031
 
