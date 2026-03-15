@@ -62,6 +62,35 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0031
+
+- Date/time: 2026-03-15 01:26:47 -03:00
+- Operation: Run focused parity verification for clipboard overwrite/append behavior after shared canonical apply refactor.
+- Why: Validate that Section 4 item 12/13 shared helper integration introduced no behavior mismatch in existing clipboard paths.
+- Changes made:
+  - Captured baseline `a435ae7` renderer formulas via temporary snapshot:
+    - `git show a435ae7:public/renderer.js > temp_renderer_a435ae7.js`
+  - Executed deterministic parity vector harness comparing old inline formulas vs current shared helper formulas for:
+    - repeat normalization
+    - projected length
+    - repeated text build
+    - overwrite/append pre-apply gate decisions (`PAYLOAD_TOO_LARGE`, `TEXT_LIMIT`, success text payload)
+  - Removed temporary snapshot file after verification:
+    - `temp_renderer_a435ae7.js`
+- Checklist updates:
+  - None (verification-only operation).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Parity harness result:
+    - `PARITY_OK vectors= 18900`
+  - Cleanup evidence:
+    - `Test-Path temp_renderer_a435ae7.js` -> `False`
+- Assumptions disclosed:
+  - This verification is formula/decision parity only; it does not replace full UI smoke coverage.
+- Outcome / next step:
+  - No mismatch was detected in clipboard overwrite/append canonical composition/gating formulas across the tested vectors. Continue Section 4 execution at item 14.
+
 ### OP-0030
 
 - Date/time: 2026-03-15 01:19:36 -03:00
