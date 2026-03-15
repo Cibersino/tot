@@ -41,8 +41,8 @@ Tracker policy for Section 5:
 - Evidence blocks: `SMK-01` (Latin/native), `SMK-02` (Latin/OCR), `MLG-02` (RTL/native), `MLG-03` (CJK/OCR)
 
 3. Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `IN_PROGRESS`
+- Evidence blocks: `SMK-01` (docx success reuse), `SMK-04`/`MLG-02` (pdf success reuse), `NFM-A` (txt/md/html success), `NFM-B` (corrupt/encrypted UI batch; blocked for native execution)
 
 4. Validate precondition rejection scenarios and explicit reason messaging
 - Status: `PENDING`
@@ -430,6 +430,153 @@ Coverage strategy:
     - `{active: true, reason: 'run_route'}`
     - `{active: false, reason: 'import_extract_ocr_success'}`
 
+## Section 5 Item 3: Native Fixture Matrix
+
+Coverage strategy:
+- Reuse existing native success evidence to avoid duplicate reruns:
+  - `SMK-01` for `.docx` success
+  - `SMK-04` and `MLG-02` for `.pdf` with usable text layer (native selected + success)
+- Execute only missing matrix deltas:
+  - `NFM-A` for `.txt` + `.md` + `.html` success
+  - `NFM-B` for `corrupt` + `encrypted` fixture behavior in UI flow
+  - pending: explicit empty-text-layer native-matrix closure decision
+
+### NFM-A Native Success Batch (`txt` + `md` + `html`)
+
+- Objective: Validate remaining native success-format coverage without repeating already-covered `docx`/`pdf` success cases.
+- Fixtures:
+  - `tools_local/smoke/prueba_txt.txt`
+  - `tools_local/smoke/prueba_md.md`
+  - `tools_local/smoke/prueba_html.html`
+- Preconditions:
+  - no secondary windows open
+  - stopwatch stopped
+- Steps:
+  - user started app with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+  - user executed import/extract for all three fixtures in one session
+  - no route-choice modal appeared in the batch
+  - apply modal appeared and apply action(s) were executed for each run
+- Expected:
+  - all three files execute native route successfully
+  - no route-choice modal appears
+  - no silent fallback
+- Actual (batch-level, user-reported):
+  - preconditions ok: `yes`
+  - route-choice modal: `no`
+  - apply modal: `yes`
+  - overwrite applied: `yes`
+  - append applied: `yes`
+  - repetitions applied: `yes`
+  - alerts seen: `none`
+  - resulting text fragments include all three fixture families (`txt`, `md`, `html`) in output stream
+- Route metadata observed (main-process logs):
+  - run 1 (`prueba_txt.txt`):
+    - `routeKind: 'native'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'not_pdf'`
+    - `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'native' ]`
+    - `chosenRoute: 'native'`
+    - `executedRoute: 'native'`
+    - `sourceFileExt: 'txt'`
+    - `sourceFileKind: 'text_document'`
+  - run 2 (`prueba_md.md`):
+    - `routeKind: 'native'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'not_pdf'`
+    - `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'native' ]`
+    - `chosenRoute: 'native'`
+    - `executedRoute: 'native'`
+    - `sourceFileExt: 'md'`
+    - `sourceFileKind: 'text_document'`
+  - run 3 (`prueba_html.html`):
+    - `routeKind: 'native'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'not_pdf'`
+    - `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'native' ]`
+    - `chosenRoute: 'native'`
+    - `executedRoute: 'native'`
+    - `sourceFileExt: 'html'`
+    - `sourceFileKind: 'text_document'`
+- Result: `PASS`
+- Notes:
+  - user-provided renderer logs show three clean processing-mode cycles (`lockId: 1`, `2`, `3`) with `run_route -> import_extract_native_success`.
+  - batch report is aggregated by design; item-3 objective here is route/format coverage rather than apply-mode semantics (covered separately in item 9).
+
+### NFM-B Failure Batch (`corrupt` + `encrypted` PDFs)
+
+- Objective: Validate native fixture matrix failure coverage for corrupt/encrypted cases via manual UI flow.
+- Fixtures:
+  - `tools_local/smoke/prueba_pdf_corrupto.pdf`
+  - `tools_local/smoke/prueba_pdf_encriptado.pdf`
+- Preconditions:
+  - no secondary windows open
+  - stopwatch stopped
+- Steps:
+  - user started app with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+  - user executed import/extract for both fixtures
+  - no route-choice modal appeared in the batch
+  - apply modal did not appear
+- Expected:
+  - explicit failure handling for both fixtures
+  - no apply modal on failure
+  - no silent fallback
+- Actual (batch-level, user-reported):
+  - preconditions ok: `yes`
+  - route-choice modal: `no`
+  - apply modal: `no`
+  - alerts seen:
+    - corrupt fixture: `An OCR runtime error occurred during import/extract. Check console and retry.`
+    - encrypted fixture: `An OCR runtime error occurred during import/extract. Check console and retry.`
+  - resulting text: `n/a`
+- Route metadata observed (main-process logs):
+  - corrupt fixture:
+    - native parser warning:
+      - `errorName: 'InvalidPDFException'`
+      - `parserType: 'pdf_text_layer'`
+    - execution completion:
+      - `routeKind: 'ocr'`
+      - `state: 'failure'`
+      - `code: 'ocr_conversion_failed'`
+      - `pdfTriage: 'ocr_only'`
+      - `triageReason: 'no_native_text_layer_detected'`
+      - `availableRoutes: [ 'ocr' ]`
+      - `chosenRoute: 'ocr'`
+      - `executedRoute: 'ocr'`
+      - `sourceFileExt: 'pdf'`
+      - `sourceFileKind: 'pdf'`
+  - encrypted fixture:
+    - native parser warning:
+      - `errorName: 'PasswordException'`
+      - `parserType: 'pdf_text_layer'`
+      - `errorCode: '1'`
+    - execution completion:
+      - `routeKind: 'ocr'`
+      - `state: 'failure'`
+      - `code: 'ocr_conversion_failed'`
+      - `pdfTriage: 'ocr_only'`
+      - `triageReason: 'no_native_text_layer_detected'`
+      - `availableRoutes: [ 'ocr' ]`
+      - `chosenRoute: 'ocr'`
+      - `executedRoute: 'ocr'`
+      - `sourceFileExt: 'pdf'`
+      - `sourceFileKind: 'pdf'`
+- Result: `BLOCKED`
+- Notes:
+  - this batch did not execute native route in UI path; triage routed both fixtures to OCR after native text-layer probe failure.
+  - supplemental backend probe evidence from fixture-preparation operation (`OP-0053`) already confirms native-route direct behavior for these fixtures:
+    - `prueba_pdf_corrupto.pdf` -> `failure / unreadable_or_corrupt`
+    - `prueba_pdf_encriptado.pdf` -> `failure / unreadable_or_corrupt`
+  - user-provided renderer logs show failure processing-mode cycles:
+    - `run_pdf_route -> import_extract_ocr_failed` for both runs.
+
 ## Drift Log
 
 - `SMK-01` used `TOT_LOG_LEVEL='debug'` instead of the initial planned `info`.
@@ -442,6 +589,13 @@ Coverage strategy:
 - `SMK-04` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `SMK-05` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `MLG-02` and `MLG-03` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `NFM-A` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `NFM-B` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `NFM-B` expected native failure-path coverage for corrupt/encrypted PDFs, but observed UI execution path was OCR failure (`ocr_conversion_failed`) after triage.
+  - Drifted instruction/context: Section 5 item 3 is framed as native-route fixture matrix coverage.
+  - Why: current UI orchestration triages these PDFs to `ocr_only` when native text-layer probing fails (`InvalidPDFException` / `PasswordException`), so native route is not executed in the manual UI path.
+  - Impact/risk: medium for item-3 interpretation; manual UI path alone cannot prove native failure classification for these fixtures.
+  - Handling: proceeded, recorded exact observed UI behavior as `BLOCKED`, and linked supplemental direct-native probe evidence from `OP-0053`.
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.

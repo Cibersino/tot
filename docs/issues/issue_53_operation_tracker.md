@@ -65,6 +65,172 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0056
+
+- Date/time: 2026-03-15 19:29:01 -03:00
+- Operation: Patch PDF triage/routing so corrupt/encrypted native-probe failures do not fall through to OCR runtime errors.
+- Why: User approved fixing the root-cause ambiguity discovered in `NFM-B` where native probe failures were surfaced as OCR conversion failures.
+- Changes made:
+  - Opened OP-0056 before code edits.
+  - Added explicit native PDF parse-failure classification in native route:
+    - `electron/import_extract_platform/native_extraction_route.js`
+    - new code path maps password/encrypted parser errors to:
+      - `native_encrypted_or_password_protected`
+    - keeps corrupt/unreadable mapping as:
+      - `unreadable_or_corrupt`
+    - stores `nativeFailureType` in `detailsSafeForLogs`.
+  - Updated PDF triage routing behavior:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - when native probe fails with:
+      - `unreadable_or_corrupt`
+      - `native_encrypted_or_password_protected`
+    - route decision now stays on native path:
+      - `availableRoutes: ['native']`
+      - `chosenRoute: 'native'`
+      - no OCR execution fallback for these conditions.
+    - added native probe observability fields in route metadata/logging:
+      - `nativeProbeCode`
+      - `nativeProbeErrorName`
+      - `nativeProbeErrorCode`
+  - Updated native alert mapping and locale messages:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+      - `import_extract_native_unreadable_or_corrupt`
+      - `import_extract_native_encrypted_or_password_protected`
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - None (fix operation to unblock Section 5 item 3 evidence clarity).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/native_extraction_route.js`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:29:01 -03:00`
+  - Root-cause anchors (pre-fix):
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`:
+      - native availability requires `state=success` + non-empty text (`hasUsableExtractedText`)
+      - when native unavailable and OCR ready, triage forces `pdfTriage: 'ocr_only'` + `chosenRoute: 'ocr'`
+    - `NFM-B` evidence/logs:
+      - native probe errors (`InvalidPDFException` / `PasswordException`)
+      - final execution path logged as OCR failure (`code: 'ocr_conversion_failed'`)
+  - Validation:
+    - `node --check electron/import_extract_platform/native_extraction_route.js` -> pass
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js` -> pass
+    - `node -e "JSON.parse(...en...); JSON.parse(...es...)"` -> `json-ok`
+    - `npx eslint electron/import_extract_platform/native_extraction_route.js electron/import_extract_platform/import_extract_execution_ipc.js` -> pass
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:32:33 -03:00`
+- Assumptions disclosed:
+  - Kept `pdfTriage` top-level enum stable (`native_only` / `ocr_only` / `both`) and represented new special conditions via:
+    - `triageReason` (`native_pdf_corrupt_or_unreadable` / `native_pdf_password_protected`)
+    - `nativeProbe*` metadata fields
+  - Impact/risk: low; avoids contract/enumeration churn while still exposing explicit failure semantics and preventing OCR misclassification for these cases.
+- Outcome / next step:
+  - Completed patch and static validation. Next step is rerunning manual `NFM-B` to confirm native-route failure UX now shows explicit native errors with no OCR execution fallback.
+
+### OP-0055
+
+- Date/time: 2026-03-15 19:20:16 -03:00
+- Operation: Record Section 5 item 3 manual batch `NFM-B` (`corrupt` + `encrypted` fixtures) and document native-matrix drift/block condition.
+- Why: User completed the manual failure-batch execution and provided logs; documentation must capture the observed behavior exactly.
+- Changes made:
+  - Opened OP-0055 before documentation edits.
+  - Updated item-3 coverage map evidence anchors in:
+    - `docs/issues/issue_53_section5_evidence.md`
+    - added `NFM-B` as blocked UI batch for native failure fixtures.
+  - Added detailed batch block:
+    - `### NFM-B Failure Batch (corrupt + encrypted PDFs)`
+    - includes expected/actual behavior, alert text, and full route metadata for both files.
+  - Recorded explicit block/drift classification:
+    - manual UI flow routed both fixtures to `ocr` (`pdfTriage: 'ocr_only'`) and failed with `ocr_conversion_failed`
+    - item-3 native-route intent therefore remains partially blocked in UI-only execution.
+  - Linked supplemental direct-native probe evidence (from `OP-0053`) within the evidence notes.
+- Checklist updates:
+  - None (Section 5 item 3 remains in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:20:16 -03:00`
+  - `NFM-B` observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: no`
+    - alerts (both files):
+      - `An OCR runtime error occurred during import/extract. Check console and retry.`
+  - `NFM-B` execution telemetry evidence (main process log):
+    - corrupt fixture:
+      - native warning `InvalidPDFException`
+      - completion: `routeKind: 'ocr'`, `state: 'failure'`, `code: 'ocr_conversion_failed'`, `pdfTriage: 'ocr_only'`
+    - encrypted fixture:
+      - native warning `PasswordException`, `errorCode: '1'`
+      - completion: `routeKind: 'ocr'`, `state: 'failure'`, `code: 'ocr_conversion_failed'`, `pdfTriage: 'ocr_only'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:21:01 -03:00`
+- Drift disclosures:
+  - Manual UI execution for item-3 `corrupt`/`encrypted` fixtures did not exercise native final execution path.
+  - Instruction being stressed:
+    - Section 5 item 3 framing as native-route fixture matrix.
+  - Why:
+    - current triage/orchestration routes these PDFs to OCR-only when native text-layer probing fails.
+  - Impact/risk:
+    - medium for closure criteria; UI evidence alone cannot fully assert native failure-path coverage.
+  - Handling:
+    - proceeded with transparent `BLOCKED` documentation and retained supplemental direct-native probe evidence from OP-0053.
+- Outcome / next step:
+  - Completed documentation step for `NFM-B` with explicit block classification. Next step is deciding item-3 closure policy (accept mixed UI + direct-native probe evidence, or add additional dedicated native-path harness evidence in Section 5).
+
+### OP-0054
+
+- Date/time: 2026-03-15 19:11:18 -03:00
+- Operation: Record Section 5 item 3 manual batch `NFM-A` (native success formats: txt/md/html).
+- Why: User executed the batched manual UI pass and requested documentation-first updates before continuing to the next batch.
+- Changes made:
+  - Opened OP-0054 before documentation edits.
+  - Updated Section 5 coverage map for item 3 in `docs/issues/issue_53_section5_evidence.md`:
+    - status -> `IN_PROGRESS`
+    - evidence anchors include:
+      - reuse: `SMK-01` (`docx`), `SMK-04`/`MLG-02` (`pdf`)
+      - new batch: `NFM-A` (`txt`/`md`/`html`)
+  - Added new native-matrix section and `NFM-A` batch block:
+    - `## Section 5 Item 3: Native Fixture Matrix`
+    - `### NFM-A Native Success Batch (txt + md + html)`
+  - Recorded user-provided batch evidence:
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: yes`
+    - `alerts_seen: none`
+    - route metadata success for `txt`, `md`, and `html` native runs
+- Checklist updates:
+  - None (item 3 still in progress; failure/edge batch pending).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:11:18 -03:00`
+  - `NFM-A` observed outcome evidence (user-provided):
+    - native success logs for:
+      - `sourceFileExt: 'txt'`
+      - `sourceFileExt: 'md'`
+      - `sourceFileExt: 'html'`
+    - each run reported:
+      - `routeKind: 'native'`
+      - `state: 'success'`
+      - `availableRoutes: [ 'native' ]`
+      - `executedRoute: 'native'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:12:15 -03:00`
+- Assumptions disclosed:
+  - Batch report was provided in aggregated form (`NFM-A`) rather than one isolated apply-mode record per file.
+  - Impact/risk: low for item-3 objective (native route/format coverage); apply-mode semantics are validated in Section 5 item 9.
+- Outcome / next step:
+  - Completed documentation step for `NFM-A`. Next step is manual Batch B for `corrupt` + `encrypted` fixtures.
+
 ### OP-0053
 
 - Date/time: 2026-03-15 18:56:45 -03:00
