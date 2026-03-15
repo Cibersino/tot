@@ -41,7 +41,7 @@ As of 2026-03-15:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-10 complete:
+  - Items 1-11 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
@@ -52,12 +52,70 @@ As of 2026-03-15:
     - native extraction route implemented and executed from backend-owned route runtime
     - native extraction engineering slice completed (`docx` mapping + normalization pipeline + structured parser-stage errors)
     - PDF triage implemented in backend execution path (`native_only` / `ocr_only` / `both`)
-  - Active next checklist item: Section 4 item 11 (`Implement explicit route-choice UX...`).
+    - explicit route-choice UX implemented for `pdfTriage=both` via custom modal module and explicit user-selected `native`/`ocr` handoff
+  - Active next checklist item: Section 4 item 12 (`Implement post-extraction apply modal with overwrite/append/repetitions`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0029
+
+- Date/time: 2026-03-15 01:07:22 -03:00
+- Operation: Execute Section 4 item 11 (`Implement explicit route-choice UX when both routes are viable`) with custom in-window modal and modular renderer boundary.
+- Why: Continue checklist execution after Section 4 item 10 completion while enforcing no-rush rigor and avoiding `public/renderer.js` bloat.
+- Changes made:
+  - Implemented backend route-choice handshake:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - payload now accepts `routePreference` (`native` / `ocr`).
+    - PDF triage now returns `requiresRouteChoice=true` + `routeChoiceOptions=['native','ocr']` when both routes are viable and no preference is provided.
+    - route selection now resolves before entering processing mode.
+    - triage PDF native probe now uses `isAborted: () => false` in pre-processing triage phase.
+  - Added dedicated route-choice modal module:
+    - `public/js/import_extract_route_choice_modal.js`
+    - owns modal event wiring, localization binding, and user choice resolution (`native` / `ocr` / cancel).
+  - Added modal markup and script loading:
+    - `public/index.html`
+  - Added modal styles:
+    - `public/style.css`
+  - Kept `public/renderer.js` as thin orchestration:
+    - delegates choice UI to `window.ImportExtractRouteChoiceModal.promptRouteChoice(...)`
+    - handles one retry call with explicit `routePreference`.
+  - Added i18n keys for route-choice UX:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement explicit route-choice UX when both routes are viable.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/js/import_extract_route_choice_modal.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check public/renderer.js`
+    - `node --check public/js/import_extract_route_choice_modal.js`
+  - Localization parse checks passed:
+    - `node -e "const fs=require('fs'); JSON.parse(fs.readFileSync('i18n/en/renderer.json','utf8')); JSON.parse(fs.readFileSync('i18n/es/renderer.json','utf8'));"`
+  - Lint checks passed:
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js public/js/import_extract_route_choice_modal.js`
+  - Renderer growth boundary evidence:
+    - `git diff --stat public/renderer.js public/js/import_extract_route_choice_modal.js`
+    - `public/renderer.js`: `+42 -2`
+    - modal logic moved to dedicated `public/js/import_extract_route_choice_modal.js`.
+- Assumptions disclosed:
+  - Modal cancel/close/backdrop path stops execution without silent fallback and without forced extra alert.
+  - Backend `renderer.alerts.import_extract_route_choice_required` remains explicit fallback for unresolved choice or modal unavailability paths.
+- Outcome / next step:
+  - Section 4 item 11 is complete. Next checklist item is Section 4 item 12 (`Implement post-extraction apply modal with overwrite/append/repetitions`).
 
 ### OP-0028
 

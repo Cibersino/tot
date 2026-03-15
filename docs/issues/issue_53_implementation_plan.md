@@ -150,7 +150,7 @@ Entrypoint guardrail:
 - [x] Implement native extraction route.
 - [x] Complete native extraction engineering slice (parser mapping by format, normalization pipeline, structured native-route errors).
 - [x] Implement PDF triage (`native only` / `OCR only` / `both`).
-- [ ] Implement explicit route-choice UX when both routes are viable.
+- [x] Implement explicit route-choice UX when both routes are viable.
 - [ ] Implement post-extraction apply modal with overwrite/append/repetitions.
 - [ ] Route extracted text through canonical apply path; keep existing semantics unchanged.
 - [ ] Enforce no silent fallback between routes.
