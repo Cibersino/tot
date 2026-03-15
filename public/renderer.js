@@ -1679,6 +1679,45 @@ async function promptImportExtractApplyChoice(defaultRepeat = 1) {
   }
 }
 
+async function maybeRecoverImportExtractOcrSetupAndRetry({
+  execution,
+  executionRequest,
+  runImportExtractSelectedFile,
+}) {
+  const recoveryApi = window.ImportExtractOcrActivationRecovery;
+  if (!recoveryApi || typeof recoveryApi.recoverAfterSetupFailure !== 'function') {
+    log.warnOnce(
+      'renderer.importExtract.ocrActivationRecovery.unavailable',
+      'ImportExtractOcrActivationRecovery.recoverAfterSetupFailure unavailable; OCR setup auto-recovery disabled.'
+    );
+    return { execution, handled: false };
+  }
+
+  if (!window.Notify || typeof window.Notify.notifyMain !== 'function') {
+    log.warnOnce(
+      'renderer.importExtract.notify.unavailable',
+      'Notify.notifyMain unavailable; OCR setup auto-recovery notifications disabled.'
+    );
+    return { execution, handled: false };
+  }
+
+  try {
+    return await recoveryApi.recoverAfterSetupFailure({
+      execution,
+      executionRequest,
+      runImportExtractSelectedFile,
+      promptRouteChoice: async (pendingExecution) => {
+        return await promptImportExtractRouteChoice(pendingExecution);
+      },
+      getOptionalElectronMethod,
+      notifyMain: window.Notify.notifyMain.bind(window.Notify),
+    });
+  } catch (err) {
+    log.error('import/extract OCR setup recovery module failed unexpectedly:', err);
+    return { execution, handled: false };
+  }
+}
+
 // =============================================================================
 // Import/extract entrypoint (Section 4 starts here; picker wiring follows in next step)
 // =============================================================================
@@ -1752,6 +1791,18 @@ if (btnImportExtract) {
         log.error('import/extract route choice remained unresolved:', execution);
         window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
         return;
+      }
+
+      const recovery = await maybeRecoverImportExtractOcrSetupAndRetry({
+        execution,
+        executionRequest,
+        runImportExtractSelectedFile,
+      });
+      if (recovery && recovery.handled) {
+        return;
+      }
+      if (recovery && Object.prototype.hasOwnProperty.call(recovery, 'execution')) {
+        execution = recovery.execution;
       }
 
       if (!execution || execution.ok !== true || !execution.result) {

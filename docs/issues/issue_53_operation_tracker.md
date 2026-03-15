@@ -64,6 +64,141 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0037
+
+- Date/time: 2026-03-15 03:37:13 -03:00
+- Operation: Refactor OCR activation recovery logic out of `public/renderer.js` into a dedicated module.
+- Why: User requested reducing `renderer.js` growth and restoring modular boundaries after OP-0036 functional fix.
+- Changes made:
+  - Added dedicated OCR activation recovery module:
+    - `public/js/import_extract_ocr_activation_recovery.js`
+    - exports `window.ImportExtractOcrActivationRecovery.recoverAfterSetupFailure(...)`
+    - owns:
+      - recoverable-code detection (`setup_incomplete` / `ocr_activation_required`)
+      - activation IPC invocation + alert mapping
+      - one-shot retry + route-choice follow-up handling
+  - Wired module loading in main window HTML:
+    - `public/index.html`
+    - added `<script src="./js/import_extract_ocr_activation_recovery.js"></script>` before `renderer.js`
+  - Slimmed renderer orchestration:
+    - `public/renderer.js`
+    - removed in-file detailed activation-recovery workflow logic
+    - retained thin delegate function `maybeRecoverImportExtractOcrSetupAndRetry(...)` that calls module API
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (refactor-only operation preserving behavior).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_ocr_activation_recovery.js`
+  - `public/index.html`
+  - `public/renderer.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 03:37:13 -03:00`
+  - Modular boundary anchors:
+    - `public/js/import_extract_ocr_activation_recovery.js` contains:
+      - `window.ImportExtractOcrActivationRecovery`
+      - `recoverAfterSetupFailure`
+    - `public/renderer.js` now references:
+      - `window.ImportExtractOcrActivationRecovery`
+      - `recoveryApi.recoverAfterSetupFailure(...)`
+  - Script-order anchor:
+    - `public/index.html` now includes:
+      - `<script src="./js/import_extract_ocr_activation_recovery.js"></script>`
+      - immediately before `<script src="renderer.js"></script>`
+  - Validation:
+    - `node --check public/js/import_extract_ocr_activation_recovery.js` passed
+    - `node --check public/renderer.js` passed
+    - `npx eslint public/js/import_extract_ocr_activation_recovery.js public/renderer.js` passed
+  - Refactor scope evidence:
+    - `git diff --stat -- public/renderer.js public/js/import_extract_ocr_activation_recovery.js public/index.html` confirms refactor touched only renderer + script wiring path for this boundary shift.
+    - `git diff --numstat -- public/renderer.js` now reports smaller renderer delta than the OP-0036 implementation-phase growth.
+- Drift disclosures:
+  - Read-only inspection of existing modal/module patterns and script order occurred immediately before OP-0037 creation.
+  - Impact/risk: no code behavior changed before entry creation.
+  - Handling: explicitly disclosed here; refactor edits will proceed under this OP.
+- Outcome / next step:
+  - Completed. OCR activation recovery behavior remains intact while renderer orchestration is reduced and recovery logic is isolated in its own module.
+
+### OP-0036
+
+- Date/time: 2026-03-15 03:24:03 -03:00
+- Operation: Implement in-app OCR activation/onboarding path to resolve `setup_incomplete`/`ocr_activation_required` blockers during import/extract OCR usage.
+- Why: User-approved implementation after live failure diagnosis showed OCR gate blocking due missing app-scoped credentials/token files.
+- Changes made:
+  - Added new backend OCR activation IPC module:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+    - channel: `import-extract-activate-ocr`
+    - responsibilities:
+      - main-window sender authorization
+      - credentials onboarding when canonical `credentials.json` is missing (native file picker + validation + import)
+      - system-browser OAuth activation via `@google-cloud/local-auth`
+      - token persistence to canonical app path (`token.json`)
+      - setup validation pass after activation and explicit result/alert mapping
+  - Wired activation IPC in main startup:
+    - `electron/main.js` registers `importExtractOcrActivationIpc` with canonical OCR paths from `fs_storage`.
+  - Added preload bridge for renderer:
+    - `electron/preload.js`
+    - `activateImportExtractOcr(payload)`
+  - Added renderer recovery flow for OCR setup/activation failures:
+    - `public/renderer.js`
+    - new helper `maybeRecoverImportExtractOcrSetupAndRetry(...)`
+    - behavior:
+      - when OCR execution fails with `setup_incomplete` or `ocr_activation_required`, renderer invokes activation IPC once
+      - on activation success, extraction is retried once with existing route-choice/apply flow preserved
+      - on activation failure/cancel, explicit activation/setup alert is shown and flow ends without silent retry loops
+  - Added i18n alerts for activation/setup recovery UX:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Installed root runtime dependency required for system-browser OAuth activation:
+    - `@google-cloud/local-auth@2.1.0`
+    - files updated: `package.json`, `package-lock.json`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (bug-fix/behavior-completion operation inside existing Section 4 surface).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `package.json`
+  - `package-lock.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 03:24:03 -03:00`
+  - Dependency installation:
+    - `npm install @google-cloud/local-auth@2.1.0 --save` completed successfully.
+  - Wiring anchors:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` contains:
+      - `ipcMain.handle('import-extract-activate-ocr', ...)`
+      - credentials import + validation path
+      - OAuth activation path (`authenticate(...)`)
+      - token persistence + post-activation validation
+    - `electron/preload.js` contains:
+      - `activateImportExtractOcr: (payload) => ipcRenderer.invoke('import-extract-activate-ocr', payload)`
+    - `public/renderer.js` contains:
+      - `maybeRecoverImportExtractOcrSetupAndRetry(...)`
+      - `renderer.alerts.import_extract_ocr_activation_starting`
+      - one-time activation+retry invocation inside import/extract click flow
+  - Validation:
+    - `node --check electron/import_extract_platform/import_extract_ocr_activation_ipc.js` passed
+    - `node --check electron/main.js` passed
+    - `node --check electron/preload.js` passed
+    - `node --check public/renderer.js` passed
+    - i18n parse validation passed (`json-ok`) for:
+      - `i18n/en/renderer.json`
+      - `i18n/es/renderer.json`
+    - lint passed:
+      - `npx eslint electron/import_extract_platform/import_extract_ocr_activation_ipc.js electron/main.js electron/preload.js public/renderer.js`
+- Assumptions disclosed:
+  - Recovery policy is one-shot per import/extract attempt: if activation succeeds, renderer retries extraction once; repeated failures are surfaced explicitly and not looped.
+  - Credentials onboarding currently imports from a user-selected local `credentials.json` only when the canonical app credentials file is missing; existing credentials file is reused as-is.
+- Drift disclosures:
+  - None. Implementation stays within user-approved objective (fix non-working OCR feature by completing setup/activation path) and preserves no-silent-fallback behavior.
+- Outcome / next step:
+  - Completed. Import/extract now has an in-app OCR setup/activation recovery path instead of hard-failing with `setup_incomplete` when canonical OCR files are missing.
+
 ### OP-0035
 
 - Date/time: 2026-03-15 03:17:57 -03:00
