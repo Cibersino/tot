@@ -79,6 +79,23 @@ function hasUsableExtractedText(result) {
     && result.text.trim().length > 0);
 }
 
+function getNativeProbeFailure(nativeProbeResult) {
+  if (!nativeProbeResult || nativeProbeResult.state !== 'failure') return null;
+  const error = nativeProbeResult.error && typeof nativeProbeResult.error === 'object'
+    ? nativeProbeResult.error
+    : null;
+  if (!error) return null;
+  const details = error.detailsSafeForLogs && typeof error.detailsSafeForLogs === 'object'
+    ? error.detailsSafeForLogs
+    : {};
+
+  return {
+    code: typeof error.code === 'string' ? error.code : '',
+    errorName: typeof details.errorName === 'string' ? details.errorName : '',
+    errorCode: typeof details.errorCode === 'string' ? details.errorCode : '',
+  };
+}
+
 function buildRouteMetadata({
   fileInfo,
   availableRoutes,
@@ -87,6 +104,9 @@ function buildRouteMetadata({
   pdfTriage = 'not_pdf',
   triageReason = '',
   ocrSetupState = 'not_checked',
+  nativeProbeCode = '',
+  nativeProbeErrorName = '',
+  nativeProbeErrorCode = '',
 }) {
   return {
     fileKind: fileInfo.sourceFileKind,
@@ -96,6 +116,9 @@ function buildRouteMetadata({
     pdfTriage,
     triageReason,
     ocrSetupState,
+    nativeProbeCode,
+    nativeProbeErrorName,
+    nativeProbeErrorCode,
   };
 }
 
@@ -179,6 +202,35 @@ async function triagePdfRoutes({
     logger: log,
   });
   const nativeAvailable = hasUsableExtractedText(nativeProbeResult);
+  const nativeProbeFailure = getNativeProbeFailure(nativeProbeResult);
+
+  if (!nativeAvailable
+    && nativeProbeFailure
+    && (
+      nativeProbeFailure.code === 'unreadable_or_corrupt'
+      || nativeProbeFailure.code === 'native_encrypted_or_password_protected'
+    )) {
+    const triageReason = nativeProbeFailure.code === 'native_encrypted_or_password_protected'
+      ? 'native_pdf_password_protected'
+      : 'native_pdf_corrupt_or_unreadable';
+    return {
+      routeKind: 'native',
+      requiresRouteChoice: false,
+      routeMetadata: buildRouteMetadata({
+        fileInfo,
+        availableRoutes: ['native'],
+        chosenRoute: 'native',
+        pdfTriage: 'native_only',
+        triageReason,
+        ocrSetupState: 'not_checked',
+        nativeProbeCode: nativeProbeFailure.code,
+        nativeProbeErrorName: nativeProbeFailure.errorName,
+        nativeProbeErrorCode: nativeProbeFailure.errorCode,
+      }),
+      nativeProbeResult,
+      ocrValidation: null,
+    };
+  }
 
   const paths = resolvePaths();
   const ocrValidation = await validateGoogleDriveOcrSetup({
@@ -250,6 +302,9 @@ async function triagePdfRoutes({
       pdfTriage,
       triageReason,
       ocrSetupState,
+      nativeProbeCode: nativeProbeFailure ? nativeProbeFailure.code : '',
+      nativeProbeErrorName: nativeProbeFailure ? nativeProbeFailure.errorName : '',
+      nativeProbeErrorCode: nativeProbeFailure ? nativeProbeFailure.errorCode : '',
     }),
     nativeProbeResult,
     ocrValidation,
@@ -266,6 +321,10 @@ function resolvePrimaryAlertKey(routeKind, result) {
     if (state === 'success') return 'renderer.alerts.import_extract_native_apply_pending';
     if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.import_extract_native_cancelled';
     if (code === 'unsupported_format') return 'renderer.alerts.import_extract_native_unsupported_format';
+    if (code === 'native_encrypted_or_password_protected') {
+      return 'renderer.alerts.import_extract_native_encrypted_or_password_protected';
+    }
+    if (code === 'unreadable_or_corrupt') return 'renderer.alerts.import_extract_native_unreadable_or_corrupt';
     return 'renderer.alerts.import_extract_native_runtime_error';
   }
 
@@ -597,6 +656,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         code: executionResult.result && executionResult.result.error ? executionResult.result.error.code : '',
         pdfTriage: executionResult.routeMetadata ? executionResult.routeMetadata.pdfTriage : 'not_pdf',
         triageReason: executionResult.routeMetadata ? executionResult.routeMetadata.triageReason : '',
+        nativeProbeCode: executionResult.routeMetadata ? executionResult.routeMetadata.nativeProbeCode : '',
+        nativeProbeErrorName: executionResult.routeMetadata ? executionResult.routeMetadata.nativeProbeErrorName : '',
+        nativeProbeErrorCode: executionResult.routeMetadata ? executionResult.routeMetadata.nativeProbeErrorCode : '',
         availableRoutes: executionResult.routeMetadata ? executionResult.routeMetadata.availableRoutes : [],
         chosenRoute: executionResult.routeMetadata ? executionResult.routeMetadata.chosenRoute : null,
         executedRoute: executionResult.routeMetadata ? executionResult.routeMetadata.executedRoute : null,

@@ -273,6 +273,8 @@
       "import_extract_ocr_cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota. Reintenta o revisa estado de la cuenta.",
       "import_extract_ocr_apply_pending": "La extracción OCR terminó. El flujo de aplicar resultado posterior sigue pendiente de implementación.",
       "import_extract_native_runtime_error": "Ocurrió un error de ejecución de extracción nativa durante importar/extraer. Revisa consola y reintenta.",
+      "import_extract_native_unreadable_or_corrupt": "El archivo seleccionado es ilegible o está corrupto para extracción nativa.",
+      "import_extract_native_encrypted_or_password_protected": "El PDF seleccionado está encriptado o protegido por contraseña y no puede extraerse por ruta nativa.",
       "import_extract_native_cancelled": "La extracción nativa fue cancelada.",
       "import_extract_native_unsupported_format": "Este formato de archivo no está soportado por la ruta de extracción nativa.",
       "import_extract_native_apply_pending": "La extracción nativa terminó. El flujo de aplicar resultado posterior sigue pendiente de implementación.",

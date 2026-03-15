@@ -105,13 +105,27 @@ function isCorruptOrUnreadableParserError(parserType, err) {
       || message.includes('bad xref')
       || message.includes('unexpected response')
       || message.includes('formaterror')
-      || message.includes('missing pdf')
-      || message.includes('password')) {
+      || message.includes('missing pdf')) {
       return true;
     }
   }
 
   return false;
+}
+
+function isPdfPasswordProtectedParserError(err) {
+  if (!err) return false;
+  const name = String(err && err.name ? err.name : '').toLowerCase();
+  const message = String(err && err.message ? err.message : '').toLowerCase();
+  const code = String(err && err.code ? err.code : '').trim();
+
+  return (
+    name.includes('passwordexception')
+    || (name.includes('password') && name.includes('exception'))
+    || message.includes('password')
+    || message.includes('encrypted')
+    || code === '1'
+  );
 }
 
 async function runNativeParser(parserType, absPath) {
@@ -210,14 +224,24 @@ function buildFailureResultForError({
   parserType,
   err,
 }) {
+  const isPdfPasswordProtected = parserType === 'pdf_text_layer' && isPdfPasswordProtectedParserError(err);
   const corruptOrUnreadable = isCorruptOrUnreadableParserError(parserType, err);
-  const errorCode = corruptOrUnreadable ? 'unreadable_or_corrupt' : 'native_extraction_failed';
-  const errorMessage = corruptOrUnreadable
-    ? 'Selected file is unreadable or corrupt for native extraction.'
-    : 'Native extraction failed due to parser/runtime error.';
-  const summary = corruptOrUnreadable
-    ? 'Native extraction route failed: unreadable or corrupt source.'
-    : 'Native extraction route failed during parsing.';
+  let errorCode = 'native_extraction_failed';
+  let errorMessage = 'Native extraction failed due to parser/runtime error.';
+  let summary = 'Native extraction route failed during parsing.';
+  let nativeFailureType = 'parser_runtime_error';
+
+  if (isPdfPasswordProtected) {
+    errorCode = 'native_encrypted_or_password_protected';
+    errorMessage = 'Selected PDF is encrypted or password-protected for native extraction.';
+    summary = 'Native extraction route failed: encrypted/password-protected PDF.';
+    nativeFailureType = 'pdf_password_protected';
+  } else if (corruptOrUnreadable) {
+    errorCode = 'unreadable_or_corrupt';
+    errorMessage = 'Selected file is unreadable or corrupt for native extraction.';
+    summary = 'Native extraction route failed: unreadable or corrupt source.';
+    nativeFailureType = 'corrupt_or_unreadable';
+  }
 
   return {
     summary,
@@ -226,6 +250,7 @@ function buildFailureResultForError({
       errorMessage,
       {
         stage: 'parse',
+        nativeFailureType,
         parserType,
         sourceFileExt: source.fileExt,
         errorName: String(err && err.name ? err.name : 'Error'),
