@@ -33,7 +33,7 @@ Tracker policy for Section 5:
 ## Section 5 Checklist Coverage Map
 
 1. Build and run core smoke matrix (OCR, native, PDF triage, dual-route choice)
-- Status: `IN_PROGRESS`
+- Status: `COMPLETED`
 - Evidence blocks: `SMK-01`, `SMK-02`, `SMK-03`, `SMK-04`, `SMK-05`
 
 2. Add multilingual smoke coverage across OCR + native routes (at least Latin, CJK, and RTL samples)
@@ -245,26 +245,80 @@ Tracker policy for Section 5:
 - Objective: Verify explicit route-choice UX for dual-route PDF and native branch execution.
 - Fixture: `tools_local/smoke/prueba_pdf_original_12_paginas.pdf`
 - Preconditions: same as SMK-01 + OCR available for `both` outcome
-- Steps: pending
+- Steps:
+  - user selected `tools_local/smoke/prueba_pdf_original_12_paginas.pdf` from import/extract picker
+  - route-choice modal appeared
+  - user selected `native`
+  - extraction completed successfully
+  - apply modal was shown and user applied `Overwrite` with repetitions=`1`
 - Expected: route-choice modal appears; choosing `native` executes native route.
-- Actual: pending
-- Alerts/notifications observed: pending
-- Route metadata observed: pending
-- Result: `PENDING`
+- Actual:
+  - preconditions ok: `yes`
+  - route-choice modal: `yes`
+  - route chosen: `native`
+  - apply modal: `yes`
+  - overwrite applied: `yes`
+  - resulting text starts with:
+    - `1`
+    - `How many words do we read per minute?`
+    - `A review and meta-analysis of reading rate`
+- Alerts/notifications observed: `none`
+- Route metadata observed:
+  - from main-process terminal logs:
+    - `routeKind: 'native'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'both'`
+    - `triageReason: 'native_text_detected_and_ocr_ready_preferred_native'`
+    - `availableRoutes: [ 'native', 'ocr' ]`
+    - `chosenRoute: 'native'`
+    - `executedRoute: 'native'`
+    - `sourceFileExt: 'pdf'`
+    - `sourceFileKind: 'text_document'`
+- Result: `PASS`
 - Notes:
+  - route-choice UX behaved as expected for `pdfTriage=both`.
+  - observability note: completion log reports `sourceFileKind: 'text_document'` for this PDF native execution path.
 
 ### SMK-05 PDF Triage `both` -> choose `ocr`
 
 - Objective: Verify explicit route-choice UX for dual-route PDF and OCR branch execution.
 - Fixture: `tools_local/smoke/prueba_pdf_original_12_paginas.pdf`
 - Preconditions: same as SMK-04
-- Steps: pending
+- Steps:
+  - user selected `tools_local/smoke/prueba_pdf_original_12_paginas.pdf` from import/extract picker
+  - route-choice modal appeared
+  - user selected `ocr`
+  - extraction completed successfully
+  - apply modal was shown and user applied `Overwrite` with repetitions=`1`
 - Expected: route-choice modal appears; choosing `ocr` executes OCR route.
-- Actual: pending
-- Alerts/notifications observed: pending
-- Route metadata observed: pending
-- Result: `PENDING`
+- Actual:
+  - preconditions ok: `yes`
+  - route-choice modal: `yes`
+  - route chosen: `ocr`
+  - apply modal: `yes`
+  - overwrite applied: `yes`
+  - resulting text starts with:
+    - `How many words do we read per minute?`
+    - `A review and meta-analysis of reading rate`
+    - `Marc Brysbaert`
+- Alerts/notifications observed: `none`
+- Route metadata observed:
+  - from main-process terminal logs:
+    - `routeKind: 'ocr'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'both'`
+    - `triageReason: 'native_text_detected_and_ocr_ready_preferred_ocr'`
+    - `availableRoutes: [ 'native', 'ocr' ]`
+    - `chosenRoute: 'ocr'`
+    - `executedRoute: 'ocr'`
+    - `sourceFileExt: 'pdf'`
+    - `sourceFileKind: 'pdf'`
+- Result: `PASS`
 - Notes:
+  - route-choice UX behaved as expected for `pdfTriage=both`.
+  - processing mode transitions were correct (`run_pdf_route` -> `import_extract_ocr_success`).
 
 ## Drift Log
 
@@ -275,6 +329,8 @@ Tracker policy for Section 5:
   - Handling: proceeded and recorded exact observed runtime context in evidence.
 - `SMK-02` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `SMK-03` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `SMK-04` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `SMK-05` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.
