@@ -37,8 +37,8 @@ Tracker policy for Section 5:
 - Evidence blocks: `SMK-01`, `SMK-02`, `SMK-03`, `SMK-04`, `SMK-05`
 
 2. Add multilingual smoke coverage across OCR + native routes (at least Latin, CJK, and RTL samples)
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `IN_PROGRESS`
+- Evidence blocks: `SMK-01` (Latin/native), `SMK-02` (Latin/OCR), `MLG-02` (RTL/native)
 
 3. Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)
 - Status: `PENDING`
@@ -319,6 +319,66 @@ Tracker policy for Section 5:
 - Notes:
   - route-choice UX behaved as expected for `pdfTriage=both`.
   - processing mode transitions were correct (`run_pdf_route` -> `import_extract_ocr_success`).
+
+## Section 5 Item 2: Multilingual Coverage
+
+Coverage strategy:
+- Reuse validated Latin-script evidence from Section 5 item 1:
+  - native baseline: `SMK-01` (`tools_local/smoke/prueba_docx.docx`)
+  - OCR baseline: `SMK-02` (`tools_local/smoke/prueba_png.png`)
+- Add only missing-script deltas for item 2:
+  - `MLG-02` RTL/native (this block)
+  - pending next case: CJK/OCR
+
+### MLG-02 RTL + Native
+
+- Objective: Validate RTL script coverage through the native route.
+- Fixture: `tools_local/smoke/prueba_arabe_pdf.pdf`
+- Preconditions:
+  - no secondary windows open
+  - stopwatch stopped
+- Steps:
+  - user started app with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+  - user selected `tools_local/smoke/prueba_arabe_pdf.pdf` from import/extract picker
+  - route-choice modal appeared and user selected `native`
+  - apply modal appeared and user applied `Overwrite` with repetitions=`1`
+- Expected:
+  - extraction succeeds through native route with RTL text output
+  - explicit route choice honored with no silent fallback
+  - apply modal appears and overwrite applies extracted text
+- Actual:
+  - preconditions ok: `yes`
+  - route-choice modal: `yes`
+  - route chosen: `native`
+  - apply modal: `yes`
+  - overwrite applied: `yes`
+  - resulting text starts with:
+    - `4`
+    - `آہوقرس`
+    - `أراحابوقیںصدرهفوقالترابالندئ»فبدأتالأرض`
+    - `تخفقمنتحته:ضرياتقلبمتحبتطوففىذراتالرمل`
+- Alerts/notifications observed: `none`
+- Route metadata observed:
+  - from main-process terminal logs:
+    - `routeKind: 'native'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'both'`
+    - `triageReason: 'native_text_detected_and_ocr_ready_preferred_native'`
+    - `availableRoutes: [ 'native', 'ocr' ]`
+    - `chosenRoute: 'native'`
+    - `executedRoute: 'native'`
+    - `sourceFileExt: 'pdf'`
+    - `sourceFileKind: 'text_document'`
+- Result: `PASS`
+- Notes:
+  - user-provided processing-mode lifecycle evidence:
+    - `Processing mode enabled ... reason: 'run_pdf_route'`
+    - `Processing mode disabled ... reason: 'import_extract_native_success'`
+  - user-provided renderer logs confirm synchronized processing-mode transitions:
+    - `{active: true, reason: 'run_pdf_route'}`
+    - `{active: false, reason: 'import_extract_native_success'}`
 
 ## Drift Log
 
