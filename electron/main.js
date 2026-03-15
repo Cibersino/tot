@@ -47,9 +47,23 @@ const editorFindMain = require('./editor_find_main');
 const ocrGoogleDriveSetupValidationIpc = require('./import_extract_platform/ocr_google_drive_setup_validation_ipc');
 const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
 const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
+const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
+
+const importExtractProcessingModeController = importExtractProcessingModeIpc.createController({
+  onStateChanged: (state) => {
+    try {
+      const targetWin = resolveMainWindow();
+      if (targetWin) {
+        targetWin.webContents.send('import-extract-processing-mode-changed', state);
+      }
+    } catch (err) {
+      log.warn('Failed to broadcast processing-mode state (ignored):', err);
+    }
+  },
+});
 
 // =============================================================================
 // Constants / config (paths, defaults, limits)
@@ -83,20 +97,42 @@ function isMainInteractive() {
   return mainReadyState === 'READY' && menuEnabled;
 }
 
-function guardMainUserAction(actionId, message) {
-  if (isMainInteractive()) return true;
-  const rawMessage = typeof message === 'string' && message.trim()
-    ? message.trim()
-    : 'Main action ignored (pre-READY).';
-  const bootstrapMessage = rawMessage.startsWith('BOOTSTRAP:')
-    ? rawMessage
-    : `BOOTSTRAP: ${rawMessage}`;
-  log.warnOnce(
-    `BOOTSTRAP:main.preReady.${actionId}`,
-    bootstrapMessage,
-    actionId
-  );
-  return false;
+function isMainMenuInteractive() {
+  return isMainInteractive() && !importExtractProcessingModeController.isActive();
+}
+
+function getMainInteractionBlockReason() {
+  if (!isMainInteractive()) return 'pre_ready';
+  if (importExtractProcessingModeController.isActive()) return 'processing_mode';
+  return '';
+}
+
+function guardMainUserAction(actionId, message, { allowDuringProcessing = false } = {}) {
+  if (!isMainInteractive()) {
+    const rawMessage = typeof message === 'string' && message.trim()
+      ? message.trim()
+      : 'Main action ignored (pre-READY).';
+    const bootstrapMessage = rawMessage.startsWith('BOOTSTRAP:')
+      ? rawMessage
+      : `BOOTSTRAP: ${rawMessage}`;
+    log.warnOnce(
+      `BOOTSTRAP:main.preReady.${actionId}`,
+      bootstrapMessage,
+      actionId
+    );
+    return false;
+  }
+
+  if (!allowDuringProcessing && importExtractProcessingModeController.isActive()) {
+    log.warnOnce(
+      `main.processingLock.${actionId}`,
+      'Main action ignored (processing-mode lock active):',
+      actionId
+    );
+    return false;
+  }
+
+  return true;
 }
 
 function resolveMainWindow() {
@@ -168,7 +204,8 @@ function buildAppMenu(lang) {
   menuBuilder.buildAppMenu(effectiveLang, {
     resolveMainWindow,
     onOpenLanguage: () => createLanguageWindow(),
-    isMenuEnabled: () => (menuEnabled && mainReadyState === 'READY'),
+    isMenuEnabled: () => isMainMenuInteractive(),
+    getMenuBlockReason: () => getMainInteractionBlockReason(),
   });
   menuInstalled = true;
 }
@@ -254,6 +291,18 @@ function createMainWindow() {
   });
 
   mainWin.loadFile(path.join(__dirname, '../public/index.html'));
+
+  mainWin.webContents.on('did-finish-load', () => {
+    try {
+      if (!isAliveWindow(mainWin)) return;
+      mainWin.webContents.send(
+        'import-extract-processing-mode-changed',
+        importExtractProcessingModeController.getState()
+      );
+    } catch (err) {
+      log.warn('Failed to seed processing-mode state on renderer load (ignored):', err);
+    }
+  });
 
   // Dev-only shortcuts for inspection/reload.
   registerDevShortcuts();
@@ -1478,6 +1527,13 @@ app.whenReady().then(() => {
       credentialsPath: getOcrGoogleDriveCredentialsFile(),
       tokenPath: getOcrGoogleDriveTokenFile(),
     }),
+  });
+
+  importExtractProcessingModeIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    controller: importExtractProcessingModeController,
   });
 
   importExtractFilePickerIpc.registerIpc(ipcMain, {

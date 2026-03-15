@@ -41,17 +41,106 @@ As of 2026-03-14:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-4 complete:
+  - Items 1-5 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
     - platform adapter boundary isolated for picker/path behavior (`win32`/`darwin`/`linux`/fallback)
-  - Active next checklist item: Section 4 item 5 (`Implement processing mode as a distinct lock state...`).
+    - processing-mode lock added as distinct state from startup lock; normal main-window/menu actions are blocked while active
+  - Active next checklist item: Section 4 item 6 (`Implement access/activation gate for the OCR route...`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0024
+
+- Date/time: 2026-03-14 22:18:26 -03:00
+- Operation: Re-execute Section 4 item 5 with strict minimal scope (distinct processing-mode lock + main/menu interaction blocking).
+- Why: User requested Section 4 item 5 implementation again after reverting prior attempt due to overreach concerns.
+- Changes made:
+  - Added main-owned processing-mode controller + IPC module:
+    - `electron/import_extract_platform/import_extract_processing_mode_ipc.js`
+    - channels:
+      - `import-extract-get-processing-mode`
+      - `import-extract-request-abort`
+      - event `import-extract-processing-mode-changed`
+  - Wired processing-mode controller in main process:
+    - `electron/main.js`
+    - menu gating now uses:
+      - startup readiness (`isMainInteractive`)
+      - processing lock (`isMainMenuInteractive`)
+    - `guardMainUserAction(...)` now blocks normal main-window actions while processing mode is active.
+    - main renderer receives processing-mode state updates on change and on `did-finish-load` bootstrap.
+    - processing-mode IPC registration added in app startup.
+  - Updated menu logging for accurate blocked-reason context:
+    - `electron/menu_builder.js` supports optional `getMenuBlockReason` (`pre_ready` vs `processing_mode`) to avoid misleading pre-ready-only logs.
+  - Added preload bridge for processing-mode read/abort + state subscription:
+    - `electron/preload.js`
+    - `getImportExtractProcessingMode`
+    - `requestImportExtractAbort`
+    - `onImportExtractProcessingModeChanged`
+  - Added renderer-side processing-mode interaction blocking:
+    - `public/renderer.js`
+    - `guardUserAction(...)` now rejects normal actions when processing mode is active and shows explicit user guidance.
+    - renderer subscribes to `import-extract-processing-mode-changed`.
+    - renderer queries current processing-mode state during startup.
+  - Added explicit abort action control in text-selector row:
+    - `public/index.html` adds `btnImportExtractAbort` (hidden/disabled unless processing mode is active).
+    - `public/style.css` adds dedicated abort-button style.
+    - `public/renderer.js` wires abort button to `requestImportExtractAbort`.
+  - Added i18n keys for abort + processing lock feedback:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Low-impact assumption disclosure (proceeded):
+    - processing-mode entry (`enter`) is infrastructure-only at this stage and will be invoked by upcoming extraction orchestration steps; current placeholder `import_extract_not_ready` path does not auto-enter processing mode.
+    - Rationale: keeps processing-state semantics truthful and avoids fake processing activation before extraction route execution exists.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement processing mode as a distinct lock state (not startup lock) and block normal main-window/menu interactions while active.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/main.js`
+  - `electron/menu_builder.js`
+  - `electron/preload.js`
+  - `electron/import_extract_platform/import_extract_processing_mode_ipc.js`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Main/menu lock evidence:
+    - `electron/main.js` contains:
+      - `isMainInteractive()` startup gate
+      - `isMainMenuInteractive()` processing lock gate
+      - `guardMainUserAction(..., { allowDuringProcessing })` processing block
+    - `electron/menu_builder.js` now supports reasoned lock logging via `getMenuBlockReason`.
+  - Processing-mode IPC evidence:
+    - `electron/import_extract_platform/import_extract_processing_mode_ipc.js` exports:
+      - `createController`
+      - `registerIpc`
+    - registered channels include:
+      - `import-extract-get-processing-mode`
+      - `import-extract-request-abort`
+  - Renderer blocking evidence:
+    - `public/renderer.js` includes:
+      - `isProcessingModeActive`
+      - processing-aware `guardUserAction`
+      - startup fetch + event-subscription for processing mode
+      - abort button handler (`requestImportExtractAbort`)
+  - Validation:
+    - `node --check electron/main.js` passed
+    - `node --check electron/menu_builder.js` passed
+    - `node --check electron/preload.js` passed
+    - `node --check electron/import_extract_platform/import_extract_processing_mode_ipc.js` passed
+    - `node --check public/renderer.js` passed
+    - JSON parse checks for `i18n/en/renderer.json` and `i18n/es/renderer.json` passed (`json-ok`)
+    - controller smoke check passed (`processing-mode-controller-ok`)
+- Outcome / next step:
+  - Section 4 item 5 is complete. Next step is Section 4 item 6 (OCR access/activation gate in route decision path with explicit unavailable/not-activated/restricted/quota failures).
 
 ### OP-0023
 
