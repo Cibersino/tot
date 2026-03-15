@@ -1850,11 +1850,6 @@ if (btnImportExtract) {
           throw new Error('current-text-updated subscription unavailable');
         }
 
-        if (applyChoice.mode === 'append') {
-          window.Notify.notifyMain('renderer.alerts.import_extract_apply_success_append');
-        } else {
-          window.Notify.notifyMain('renderer.alerts.import_extract_apply_success_overwrite');
-        }
         if (applyResult.truncated) {
           window.Notify.notifyMain('renderer.alerts.import_extract_apply_truncated');
         }
