@@ -74,15 +74,44 @@ As of 2026-03-15:
   - Locked rerun evidence target:
     - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
     - minimal summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed SMK-02 rerun after OP-0045 patch.
+  - Updated detailed SMK-02 evidence block to include:
+    - initial blocked attempt (`auth_failed`)
+    - post-repair rerun (activation flow + successful retry)
+    - final SMK-02 outcome set to `PASS`
 - Checklist updates:
-  - None yet (SMK-02 rerun in progress).
+  - No plan checkbox toggles yet (Section 5 item 1 still in progress).
 - Files touched:
   - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
 - Evidence:
   - Operation open evidence:
     - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:56:51 -03:00`
+  - Rerun observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - activation alerts observed:
+      - `Starting OCR activation. Complete sign-in in your browser to continue.`
+      - `OCR activation completed. Retrying extraction.`
+  - Rerun execution telemetry evidence (main process log):
+    - first pass in rerun:
+      - `routeKind: 'ocr'`, `state: 'failure'`, `code: 'ocr_activation_required'`
+    - activation completed:
+      - `import/extract OCR activation completed: { ok: true, state: 'ready', code: '', importedCredentials: false }`
+    - retry pass:
+      - `routeKind: 'ocr'`, `state: 'success'`, `code: ''`
+      - `pdfTriage: 'not_pdf'`, `triageReason: 'non_pdf'`
+      - `availableRoutes: [ 'ocr' ]`, `chosenRoute: 'ocr'`, `executedRoute: 'ocr'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:11:01 -03:00`
+- Drift disclosures:
+  - Rerun plan fixture for SMK-02 was `prueba_png.png`, while rerun telemetry reports `sourceFileExt: 'jpg'`.
+  - Impact/risk: low for SMK-02 objective (OCR baseline route behavior is format-family equivalent for supported images).
+  - Handling: proceeded, recorded exact observed evidence, and retained this as a documented fixture variance.
 - Outcome / next step:
-  - In progress. Execute SMK-02 rerun and record expected/actual outcome.
+  - Completed. SMK-02 rerun passed after recovery patch. Next step is opening `OP-0047` to execute SMK-03 (`PDF triage ocr_only`).
 
 ### OP-0045
 
