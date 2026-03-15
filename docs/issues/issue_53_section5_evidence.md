@@ -95,26 +95,76 @@ Tracker policy for Section 5:
   - no route-choice modal appears
   - apply modal appears after extraction success
   - overwrite applies extracted text to current text
-- Actual: pending manual execution
-- Alerts/notifications observed: pending
-- Route metadata observed: pending
-- Result: `PENDING`
+- Actual:
+  - preconditions ok: `yes`
+  - route-choice modal shown: `no`
+  - apply modal shown: `yes`
+  - overwrite applied: `yes`
+  - resulting text starts with:
+    - `How many words do we read per minute?`
+    - `A review and meta-analysis of reading rate`
+- Alerts/notifications observed: `none`
+- Route metadata observed:
+  - from main-process terminal logs:
+    - `routeKind: 'native'`
+    - `state: 'success'`
+    - `pdfTriage: 'not_pdf'`
+    - `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'native' ]`
+    - `chosenRoute: 'native'`
+    - `executedRoute: 'native'`
+    - `sourceFileExt: 'docx'`
+    - `sourceFileKind: 'text_document'`
+- Result: `PASS`
 - Notes:
   - backend dry-run probe (pre-manual) indicates native parser readiness for this fixture:
     - `runNativeExtractionRoute('tools_local/smoke/prueba_docx.docx') -> state=success, len=130692`
+  - user-provided runtime evidence confirms processing-mode lock lifecycle for this case:
+    - `Processing mode enabled ... reason: 'run_route'`
+    - `Processing mode disabled ... reason: 'import_extract_native_success'`
+  - user-provided renderer DevTools evidence confirms synchronized processing-mode state transitions:
+    - `active: true` on start
+    - `active: false` on completion
+  - execution command observed:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
 
 ### SMK-02 OCR Baseline
 
 - Objective: Verify OCR route for image files with activation-aware behavior and post-extraction apply modal.
 - Fixture: `tools_local/smoke/prueba_png.png`
 - Preconditions: same as SMK-01
-- Steps: pending
+- Steps:
+  - user selected `tools_local/smoke/prueba_png.png` from import/extract picker
+  - no route-choice modal appeared
+  - extraction exited in failure state before apply modal
 - Expected: OCR path executes; apply modal appears after success.
-- Actual: pending
-- Alerts/notifications observed: pending
-- Route metadata observed: pending
-- Result: `PENDING`
+- Actual:
+  - preconditions ok: `yes`
+  - route-choice modal: `no`
+  - apply modal: `no`
+  - overwrite applied: `no`
+  - resulting text lines: `n/a` (no apply step reached)
+- Alerts/notifications observed:
+  - `OCR is unavailable. Check setup/auth status and try again.`
+- Route metadata observed:
+  - from main-process terminal logs:
+    - `routeKind: 'ocr'`
+    - `state: 'failure'`
+    - `code: 'auth_failed'`
+    - `pdfTriage: 'not_pdf'`
+    - `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'ocr' ]`
+    - `chosenRoute: 'ocr'`
+    - `executedRoute: 'ocr'`
+    - `sourceFileExt: 'png'`
+    - `sourceFileKind: 'image'`
+- Result: `BLOCKED`
 - Notes:
+  - processing mode lifecycle was correct (enabled -> disabled with `reason: 'import_extract_ocr_failed'`).
+  - observed behavior mismatch for recovery UX:
+    - OCR auto-recovery currently triggers only for `setup_incomplete` / `ocr_activation_required`.
+    - this failure was `auth_failed`, so activation/reconnect flow did not launch.
+  - repair required before continuing smoke matrix execution.
 
 ### SMK-03 PDF Triage `ocr_only`
 
@@ -157,4 +207,9 @@ Tracker policy for Section 5:
 
 ## Drift Log
 
-- None so far.
+- `SMK-01` used `TOT_LOG_LEVEL='debug'` instead of the initial planned `info`.
+  - Drifted instruction/context: Section 5 evidence prefill listed runtime command with `info`.
+  - Why: user executed with `debug` and provided richer logs.
+  - Impact/risk: low; increased log verbosity only, no behavior change expected.
+  - Handling: proceeded and recorded exact observed runtime context in evidence.
+- `SMK-02` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
