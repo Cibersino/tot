@@ -52,6 +52,7 @@
     "artifactName": "toT-${version}-win-${arch}.${ext}"
   },
   "dependencies": {
-    "googleapis": "^105.0.0"
+    "googleapis": "^105.0.0",
+    "mammoth": "^1.11.0"
   }
 }
