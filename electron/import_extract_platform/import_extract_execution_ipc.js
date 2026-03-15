@@ -224,6 +224,22 @@ async function triagePdfRoutes({
     chosenRoute = 'ocr';
   }
 
+  if ((routePreference === 'native' || routePreference === 'ocr')
+    && chosenRoute !== routePreference
+    && (chosenRoute === 'native' || chosenRoute === 'ocr')) {
+    log.warn('import/extract route fallback applied:', {
+      fallbackType: 'requested_route_unavailable',
+      requestedRoute: routePreference,
+      chosenRoute,
+      availableRoutes,
+      sourceFileKind: fileInfo.sourceFileKind,
+      sourceFileExt: fileInfo.sourceFileExt,
+      pdfTriage,
+      triageReason,
+      ocrSetupState,
+    });
+  }
+
   return {
     routeKind: chosenRoute,
     requiresRouteChoice,
@@ -440,11 +456,22 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         });
       } catch (err) {
         log.error('import/extract execution failed unexpectedly:', err);
+        const routeKindFallback = routeDecision && routeDecision.routeKind ? routeDecision.routeKind : 'native';
+        if (routeKindFallback === 'native'
+          && (!routeDecision || (routeDecision.routeKind !== 'native' && routeDecision.routeKind !== 'ocr'))) {
+          log.warn('import/extract route fallback applied:', {
+            fallbackType: 'execution_error_default_route',
+            requestedRoute: request.routePreference || null,
+            chosenRoute: routeKindFallback,
+            sourceFileKind: fileInfo.sourceFileKind,
+            sourceFileExt: fileInfo.sourceFileExt,
+          });
+        }
         executionResult = {
-          routeKind: routeDecision && routeDecision.routeKind ? routeDecision.routeKind : 'native',
+          routeKind: routeKindFallback,
           result: {
             state: 'failure',
-            executedRoute: routeDecision && routeDecision.routeKind ? routeDecision.routeKind : 'native',
+            executedRoute: routeKindFallback,
             text: '',
             warnings: [],
             summary: 'Import/extract route failed due to an unexpected runtime error.',
@@ -452,7 +479,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
               sourceFileName: fileInfo.fileName,
               sourceFileExt: fileInfo.sourceFileExt,
               sourceFileKind: fileInfo.sourceFileKind,
-              ocrProvider: routeDecision && routeDecision.routeKind === 'ocr'
+              ocrProvider: routeKindFallback === 'ocr'
                 ? 'google_drive_docs_conversion'
                 : null,
               metadataSafeForLogs: {},

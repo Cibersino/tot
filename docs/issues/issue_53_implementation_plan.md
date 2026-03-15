@@ -153,7 +153,7 @@ Entrypoint guardrail:
 - [x] Implement explicit route-choice UX when both routes are viable.
 - [x] Implement post-extraction apply modal with overwrite/append/repetitions.
 - [x] Route extracted text through canonical apply path; keep existing semantics unchanged.
-- [ ] Enforce no silent fallback between routes.
+- [x] Enforce no silent fallback between routes.
 - [ ] Enforce failure/abort invariants:
   - current text unchanged
   - no partial extraction surfaced
