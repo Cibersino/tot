@@ -64,6 +64,59 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0041
+
+- Date/time: 2026-03-15 05:04:48 -03:00
+- Operation: Encrypt Google OCR token persistence at rest using Electron `safeStorage` (no migration path).
+- Why: User approved secure token-at-rest implementation with practical cross-platform behavior, no migration logic, and unchanged session persistence UX.
+- Changes made:
+  - Added dedicated token storage helper:
+    - `electron/import_extract_platform/ocr_google_drive_token_storage.js`
+    - writes encrypted token envelopes `{ "enc": "<base64 ciphertext>" }` using:
+      - `safeStorage.encryptString(...)`
+      - `safeStorage.decryptString(...)`
+    - enforces `safeStorage.isEncryptionAvailable()`
+    - logs one warning on Linux when backend is `basic_text` (no UI popup)
+    - no legacy/plain-token migration logic implemented
+  - Replaced plaintext token persistence in OCR activation path:
+    - `import_extract_ocr_activation_ipc.js` now calls `writeEncryptedTokenFile(...)`
+  - Replaced token reads in OCR runtime route:
+    - `ocr_google_drive_route.js` now calls `readEncryptedTokenFile(...)`
+    - token read/decrypt failures continue mapping to `ocr_activation_required`
+  - Replaced token reads in OCR setup validation path:
+    - `ocr_google_drive_setup_validation.js` now calls `readEncryptedTokenFile(...)`
+    - token invalid/decrypt/read failures now map to `ocr_activation_required`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (security hardening change inside Section 4 implementation surface).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/ocr_google_drive_token_storage.js`
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+  - `electron/import_extract_platform/ocr_google_drive_route.js`
+  - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 05:04:48 -03:00`
+  - Capability evidence:
+    - `node_modules/electron/electron.d.ts` includes:
+      - `safeStorage.encryptString`
+      - `safeStorage.decryptString`
+      - `safeStorage.isEncryptionAvailable`
+      - `safeStorage.getSelectedStorageBackend`
+  - Completion evidence:
+    - `node --check electron/import_extract_platform/ocr_google_drive_token_storage.js` -> pass
+    - `node --check electron/import_extract_platform/import_extract_ocr_activation_ipc.js` -> pass
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation.js` -> pass
+    - `node --check electron/import_extract_platform/ocr_google_drive_route.js` -> pass
+    - `npm run lint` -> pass
+    - `rg -n "writeEncryptedTokenFile|readEncryptedTokenFile|safeStorage" electron/import_extract_platform -S`
+      - confirms encrypted token helper wiring in activation/validation/route paths
+    - `rg -n "writeFileSync\\(tokenPath" electron/import_extract_platform/import_extract_ocr_activation_ipc.js -S` -> no matches
+    - `Test-Path electron/import_extract_platform/ocr_google_drive_token_storage.js` -> `True`
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 05:07:17 -03:00`
+- Outcome / next step:
+  - Completed. New token writes are encrypted at rest with `safeStorage`; reads require encrypted format and failing reads trigger re-activation (`ocr_activation_required`).
+
 ### OP-0040
 
 - Date/time: 2026-03-15 04:40:23 -03:00
