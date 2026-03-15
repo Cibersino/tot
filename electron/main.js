@@ -49,6 +49,7 @@ const importExtractFilePickerIpc = require('./import_extract_platform/import_ext
 const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
 const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
 const importExtractOcrGateIpc = require('./import_extract_platform/import_extract_ocr_gate_ipc');
+const importExtractOcrActivationIpc = require('./import_extract_platform/import_extract_ocr_activation_ipc');
 const importExtractExecutionIpc = require('./import_extract_platform/import_extract_execution_ipc');
 
 const log = Log.get('main');
@@ -1581,6 +1582,16 @@ app.whenReady().then(() => {
   });
 
   importExtractOcrGateIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    resolvePaths: () => ({
+      credentialsPath: getOcrGoogleDriveCredentialsFile(),
+      tokenPath: getOcrGoogleDriveTokenFile(),
+    }),
+  });
+
+  importExtractOcrActivationIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),

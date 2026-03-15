@@ -52,6 +52,7 @@
     "artifactName": "toT-${version}-win-${arch}.${ext}"
   },
   "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
     "googleapis": "^105.0.0",
     "mammoth": "^1.11.0",
     "pdf-parse": "^1.1.1"
