@@ -1653,8 +1653,49 @@ if (btnImportExtract) {
         return;
       }
 
+      const evaluateImportExtractOcrGate = getOptionalElectronMethod('evaluateImportExtractOcrGate', {
+        dedupeKey: 'renderer.ipc.evaluateImportExtractOcrGate.unavailable',
+        unavailableMessage: 'evaluateImportExtractOcrGate unavailable; OCR gate cannot be evaluated.'
+      });
+      if (!evaluateImportExtractOcrGate) {
+        window.Notify.notifyMain('renderer.alerts.import_extract_ocr_unavailable');
+        return;
+      }
+
+      const ocrGate = await evaluateImportExtractOcrGate({
+        filePath: picker.filePath || '',
+      });
+      if (!ocrGate || ocrGate.ok !== true) {
+        log.error('import/extract OCR gate evaluation failed:', ocrGate);
+        window.Notify.notifyMain(
+          (ocrGate && typeof ocrGate.alertKey === 'string' && ocrGate.alertKey)
+            ? ocrGate.alertKey
+            : 'renderer.alerts.import_extract_ocr_unavailable'
+        );
+        return;
+      }
+      if (!ocrGate.canProceed) {
+        log.warn('import/extract OCR gate blocked:', {
+          ocrSetupState: ocrGate.ocrSetupState,
+          blockCategory: ocrGate.blockCategory,
+          code: ocrGate.code,
+          issueType: ocrGate.issueType,
+          sourceFileExt: ocrGate.sourceFileExt,
+          sourceFileKind: ocrGate.sourceFileKind,
+        });
+        window.Notify.notifyMain(
+          (typeof ocrGate.alertKey === 'string' && ocrGate.alertKey)
+            ? ocrGate.alertKey
+            : 'renderer.alerts.import_extract_ocr_unavailable'
+        );
+        return;
+      }
+
       log.info('import/extract file selected (extraction pipeline pending):', {
         filePath: picker.filePath || '',
+        ocrSetupState: ocrGate.ocrSetupState || 'ready',
+        sourceFileExt: ocrGate.sourceFileExt || '',
+        sourceFileKind: ocrGate.sourceFileKind || '',
       });
       window.Notify.notifyMain('renderer.alerts.import_extract_not_ready');
     } catch (err) {

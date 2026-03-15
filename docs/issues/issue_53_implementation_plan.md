@@ -145,7 +145,7 @@ Entrypoint guardrail:
 - [x] Implement precondition block (no start when secondary windows are open or stopwatch is running) with explicit user guidance.
 - [x] Isolate Windows-specific implementation behind platform adapters so core extraction/apply orchestration remains OS-agnostic for future macOS/Linux support.
 - [x] Implement processing mode as a distinct lock state (not startup lock) and block normal main-window/menu interactions while active.
-- [ ] Implement access/activation gate for the OCR route according to the chosen model, with explicit user-visible failures for unavailable/not-activated/restricted/quota-exhausted paths.
+- [x] Implement access/activation gate for the OCR route according to the chosen model, with explicit user-visible failures for unavailable/not-activated/restricted/quota-exhausted paths.
 - [ ] Implement OCR route.
 - [ ] Implement native extraction route.
 - [ ] Complete native extraction engineering slice (parser mapping by format, normalization pipeline, structured native-route errors).

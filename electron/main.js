@@ -48,6 +48,7 @@ const ocrGoogleDriveSetupValidationIpc = require('./import_extract_platform/ocr_
 const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
 const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
 const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
+const importExtractOcrGateIpc = require('./import_extract_platform/import_extract_ocr_gate_ipc');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -1562,6 +1563,16 @@ app.whenReady().then(() => {
         stopwatchRunning: !!(crono && crono.running),
       };
     },
+  });
+
+  importExtractOcrGateIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    resolvePaths: () => ({
+      credentialsPath: getOcrGoogleDriveCredentialsFile(),
+      tokenPath: getOcrGoogleDriveTokenFile(),
+    }),
   });
 
   // First run: show language picker before creating the main window.
