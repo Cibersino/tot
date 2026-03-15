@@ -41,18 +41,89 @@ As of 2026-03-14:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-5 complete:
+  - Items 1-6 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
     - platform adapter boundary isolated for picker/path behavior (`win32`/`darwin`/`linux`/fallback)
     - processing-mode lock added as distinct state from startup lock; normal main-window/menu actions are blocked while active
-  - Active next checklist item: Section 4 item 6 (`Implement access/activation gate for the OCR route...`).
+    - OCR access/activation gate wired with explicit blocked outcomes (`unavailable` / `not-activated` / `restricted` / `quota_or_rate_limited`)
+  - Active next checklist item: Section 4 item 7 (`Implement OCR route.`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0025
+
+- Date/time: 2026-03-14 22:51:37 -03:00
+- Operation: Execute Section 4 item 6 (OCR access/activation gate with explicit blocked outcomes).
+- Why: Continue Issue 53 in checklist order without changing plan structure.
+- Changes made:
+  - Added backend-owned OCR gate IPC module:
+    - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js`
+    - channel: `import-extract-evaluate-ocr-gate`
+    - responsibilities:
+      - file classification for OCR eligibility (`jpg/jpeg/png/webp/bmp/pdf`)
+      - explicit `restricted` blocking for non-OCR-eligible files
+      - setup-validation call via existing backend validator (`validateGoogleDriveOcrSetup`)
+      - explicit mapping to blocked categories:
+        - `not_activated` (`ocr_activation_required`)
+        - `quota_or_rate` (`quota_or_rate_limited`)
+        - `unavailable` (all other setup/runtime failures)
+      - structured gate logging (`ready`/`blocked`/unexpected failure)
+  - Wired gate IPC in main startup:
+    - `electron/main.js`
+    - registration includes main-window sender validation context and canonical OCR credentials/token paths.
+  - Added preload bridge for renderer:
+    - `electron/preload.js`
+    - `evaluateImportExtractOcrGate(payload)`
+  - Updated import/extract entrypoint to use backend gate result (thin renderer):
+    - `public/renderer.js`
+    - after picker + precondition pass, calls `evaluateImportExtractOcrGate({ filePath })`
+    - shows returned explicit alert key on blocked/failure
+    - logs gate telemetry fields (`ocrSetupState`, `blockCategory`, `code`, `issueType`, file ext/kind)
+  - Added user-visible i18n keys for gate outcomes:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement access/activation gate for the OCR route according to the chosen model, with explicit user-visible failures for unavailable/not-activated/restricted/quota-exhausted paths.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js`
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Backend gate ownership evidence:
+    - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js` contains:
+      - `classifyFileForOcr(...)`
+      - `mapValidationBlock(...)`
+      - `ipcMain.handle('import-extract-evaluate-ocr-gate', ...)`
+  - Thin renderer evidence:
+    - `public/renderer.js` import/extract handler calls `evaluateImportExtractOcrGate(...)` and does not embed local OCR taxonomies/classifier tables.
+  - Explicit user-visible outcomes evidence:
+    - `i18n/en/renderer.json` + `i18n/es/renderer.json` include:
+      - `renderer.alerts.import_extract_ocr_unavailable`
+      - `renderer.alerts.import_extract_ocr_activation_required`
+      - `renderer.alerts.import_extract_ocr_restricted`
+      - `renderer.alerts.import_extract_ocr_quota_or_rate_limited`
+  - Validation:
+    - `node --check electron/import_extract_platform/import_extract_ocr_gate_ipc.js` passed
+    - `node --check electron/main.js` passed
+    - `node --check electron/preload.js` passed
+    - `node --check public/renderer.js` passed
+    - JSON parse checks for `i18n/en/renderer.json` and `i18n/es/renderer.json` passed (`json-ok`)
+- Assumptions disclosed:
+  - `restricted` in this item is enforced as OCR format restriction (`jpg/jpeg/png/webp/bmp/pdf` eligible for OCR route gate).
+  - `setup_incomplete` and non-activation/non-quota setup/runtime failures are surfaced under explicit user-visible `unavailable`.
+- Outcome / next step:
+  - Section 4 item 6 is complete. Next checklist item is Section 4 item 7 (`Implement OCR route.`).
 
 ### OP-0024
 

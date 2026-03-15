@@ -20,6 +20,7 @@ const api = {
     readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
     openImportExtractPicker: () => ipcRenderer.invoke('import-extract-open-picker'),
     checkImportExtractPreconditions: () => ipcRenderer.invoke('import-extract-check-preconditions'),
+    evaluateImportExtractOcrGate: (payload) => ipcRenderer.invoke('import-extract-evaluate-ocr-gate', payload),
     getImportExtractProcessingMode: () => ipcRenderer.invoke('import-extract-get-processing-mode'),
     requestImportExtractAbort: (payload) => ipcRenderer.invoke('import-extract-request-abort', payload),
     openEditor: () => ipcRenderer.invoke('open-editor'),
