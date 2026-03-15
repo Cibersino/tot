@@ -64,6 +64,38 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0042
+
+- Date/time: 2026-03-15 13:29:44 -03:00
+- Operation: Establish Section 5 evidence architecture before executing checklist item 1 (`Build and run core smoke matrix`).
+- Why: User requested one dedicated evidence file for the entire Section 5 (smoke matrix + full quality gate), keeping the operation tracker minimal for this section.
+- Changes made:
+  - Opened OP-0042 before Section 5 execution work.
+  - Locked Section 5 evidence strategy:
+    - tracker entries remain concise
+    - detailed Section 5 evidence is recorded in a dedicated Section 5 evidence document
+  - Created canonical Section 5 evidence file:
+    - `docs/issues/issue_53_section5_evidence.md`
+    - includes:
+      - coverage map for all Section 5 checklist items
+      - dedicated smoke matrix case blocks (`SMK-01`..`SMK-05`)
+      - shared drift log for Section 5 execution
+- Checklist updates:
+  - None yet (Section 5 execution not started).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:29:44 -03:00`
+  - Active-next-item evidence:
+    - `docs/issues/issue_53_operation_tracker.md` (`Current Authoritative Status`) -> `Active next checklist item: Section 5 item 1`
+  - Completion evidence:
+    - `Test-Path docs/issues/issue_53_section5_evidence.md` -> `True`
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:30:50 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 now has a single detailed evidence document; next step is opening `OP-0043` to execute `SMK-01` and record detailed results in `docs/issues/issue_53_section5_evidence.md`.
+
 ### OP-0041
 
 - Date/time: 2026-03-15 05:04:48 -03:00
