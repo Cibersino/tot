@@ -64,6 +64,28 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0043
+
+- Date/time: 2026-03-15 13:33:02 -03:00
+- Operation: Execute Section 5 item 1 smoke matrix case `SMK-01` (native baseline) with coordinated manual validation.
+- Why: User approved starting Section 5 execution and requested strict, explicit evidence capture in the dedicated Section 5 evidence file.
+- Changes made:
+  - Opened OP-0043 before any SMK-01 execution actions.
+  - Locked evidence target for this operation:
+    - detailed test evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+- Checklist updates:
+  - None yet (SMK-01 execution in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:33:02 -03:00`
+  - Workspace-state evidence:
+    - `git status --short` -> clean working tree before SMK-01 execution.
+- Outcome / next step:
+  - In progress. Execute SMK-01 manual test and capture full expected/actual evidence in `docs/issues/issue_53_section5_evidence.md`.
+
 ### OP-0042
 
 - Date/time: 2026-03-15 13:29:44 -03:00
