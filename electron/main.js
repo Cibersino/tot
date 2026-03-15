@@ -45,6 +45,8 @@ const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
 const ocrGoogleDriveSetupValidationIpc = require('./import_extract_platform/ocr_google_drive_setup_validation_ipc');
+const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
+const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -1476,6 +1478,34 @@ app.whenReady().then(() => {
       credentialsPath: getOcrGoogleDriveCredentialsFile(),
       tokenPath: getOcrGoogleDriveTokenFile(),
     }),
+  });
+
+  importExtractFilePickerIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+  });
+
+  importExtractPreconditionsIpc.registerIpc(ipcMain, {
+    getPreconditionContext: () => {
+      const secondaryWindows = [
+        { id: 'editor', label: 'editor', ref: editorWin },
+        { id: 'editor_find', label: 'editor_find', ref: editorFindMain.getFindWindow() },
+        { id: 'preset_modal', label: 'preset_modal', ref: presetWin },
+        { id: 'language_window', label: 'language_window', ref: langWin },
+        { id: 'floating_stopwatch', label: 'floating_stopwatch', ref: flotanteWin },
+        { id: 'task_editor', label: 'task_editor', ref: taskEditorWin },
+      ];
+
+      return {
+        openSecondaryWindows: secondaryWindows.map((item) => ({
+          id: item.id,
+          label: item.label,
+          isOpen: isAliveWindow(item.ref),
+        })),
+        stopwatchRunning: !!(crono && crono.running),
+      };
+    },
   });
 
   // First run: show language picker before creating the main window.

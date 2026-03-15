@@ -97,6 +97,10 @@ function getTaskEditorPositionFile() {
   return path.join(getTasksDir(), 'task_editor_position.json');
 }
 
+function getImportExtractStateFile() {
+  return path.join(getConfigDir(), 'import_extract_state.json');
+}
+
 function getOcrGoogleDriveDir() {
   return path.join(getConfigDir(), 'ocr_google_drive');
 }
@@ -266,6 +270,7 @@ module.exports = {
   getTasksAllowedHostsFile,
   getTasksColumnWidthsFile,
   getTaskEditorPositionFile,
+  getImportExtractStateFile,
   getOcrGoogleDriveDir,
   getOcrGoogleDriveCredentialsFile,
   getOcrGoogleDriveTokenFile,

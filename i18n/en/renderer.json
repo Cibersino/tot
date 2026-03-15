@@ -4,6 +4,7 @@
       "selector_title": "First and last part of the analyzed text:",
       "selector_empty": "(empty)",
       "buttons": {
+        "import_extract": "📥",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +15,7 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Import/extract text from file",
         "overwrite_clipboard": "Replace current text with clipboard",
         "append_clipboard": "Append clipboard at the end of current text (new line)",
         "clipboard_repeat_count": "Clipboard repetitions",
@@ -31,6 +33,7 @@
         "flotante_window": "Floating window"
       },
       "aria": {
+        "import_extract": "Import or extract text from file",
         "clipboard_repeat_count": "Paste repetitions",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words-per-minute slider",
@@ -225,6 +228,10 @@
       "open_presets_unsupported": "Cannot open presets folder in this environment.",
       "open_presets_error": "An error occurred while trying to open the presets folder. Check console.",
       "open_presets_fail": "Could not open the default presets folder. Check console for details.",
+      "import_extract_error": "An error occurred while opening the import/extract file picker. Check console.",
+      "import_extract_precondition_blocked": "To start import/extract, close all secondary windows and stop the stopwatch.",
+      "import_extract_precondition_error": "An error occurred while checking import/extract preconditions. Check console.",
+      "import_extract_not_ready": "Import/extract file flow is not available yet.",
       "wip_test_velocidad": "WIP: The reading speed test will open here in a future version.",
       "wip_diseno_skins": "WIP: The skins selector will open here in a future version.",
       "wip_diseno_crono": "WIP: Floating stopwatch settings will open here in a future version.",
