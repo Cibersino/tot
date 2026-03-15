@@ -57,12 +57,55 @@ As of 2026-03-15:
     - extracted text routed through canonical apply path with unchanged semantics
     - no-silent-fallback observability enforced for route fallback paths in backend execution triage/packaging
     - failure/abort invariants enforced in backend execution/runtime boundary and main-window close cancellation path
-  - Active next checklist item: Section 5 item 1 (`Build and run core smoke matrix`).
+  - Active next checklist item: Section 5 item 2 (`Add multilingual smoke coverage across OCR + native routes`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0049
+
+- Date/time: 2026-03-15 14:48:01 -03:00
+- Operation: Execute Section 5 item 1 case `SMK-05` (`PDF triage both -> choose ocr`) with coordinated manual validation.
+- Why: Complete the approved core smoke matrix after `SMK-04` pass.
+- Changes made:
+  - Opened OP-0049 before SMK-05 execution actions.
+  - Locked evidence target:
+    - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-05` (`PDF triage both -> choose ocr`) with user-coordinated manual flow.
+  - Recorded full expected/actual evidence in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-05`)
+  - Updated Section 5 item 1 completion state:
+    - `docs/issues/issue_53_implementation_plan.md` now marks core smoke matrix item as complete (`[x]`)
+    - `docs/issues/issue_53_section5_evidence.md` now marks core smoke matrix coverage as `COMPLETED`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Build and run core smoke matrix (OCR, native, PDF triage, dual-route choice).`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:48:01 -03:00`
+  - SMK-05 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: yes`
+    - `route_chosen: ocr`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: no`
+  - SMK-05 execution telemetry evidence (main process log):
+    - `routeKind: 'ocr'`, `state: 'success'`, `code: ''`
+    - `pdfTriage: 'both'`, `triageReason: 'native_text_detected_and_ocr_ready_preferred_ocr'`
+    - `availableRoutes: [ 'native', 'ocr' ]`, `chosenRoute: 'ocr'`, `executedRoute: 'ocr'`
+    - `sourceFileExt: 'pdf'`, `sourceFileKind: 'pdf'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:53:57 -03:00`
+- Outcome / next step:
+  - Completed. Core smoke matrix (Section 5 item 1) is complete. Next step is Section 5 item 2 multilingual smoke coverage.
 
 ### OP-0048
 
@@ -74,15 +117,33 @@ As of 2026-03-15:
   - Locked evidence target:
     - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
     - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-04` (`PDF triage both -> choose native`) with user-coordinated manual flow.
+  - Recorded full expected/actual evidence in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-04`)
 - Checklist updates:
-  - None yet (SMK-04 execution in progress).
+  - No plan checkbox toggles yet (Section 5 item 1 remains in progress).
 - Files touched:
   - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
 - Evidence:
   - Operation open evidence:
     - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:40:28 -03:00`
+  - SMK-04 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: yes`
+    - `route_chosen: native`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: no`
+  - SMK-04 execution telemetry evidence (main process log):
+    - `routeKind: 'native'`, `state: 'success'`, `code: ''`
+    - `pdfTriage: 'both'`, `triageReason: 'native_text_detected_and_ocr_ready_preferred_native'`
+    - `availableRoutes: [ 'native', 'ocr' ]`, `chosenRoute: 'native'`, `executedRoute: 'native'`
+    - `sourceFileExt: 'pdf'`, `sourceFileKind: 'text_document'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:47:43 -03:00`
 - Outcome / next step:
-  - In progress. Execute SMK-04 and capture route-choice/triage evidence.
+  - Completed. SMK-04 passed. Next step is opening `OP-0049` for SMK-05 (`PDF triage both -> choose ocr`).
 
 ### OP-0047
 
