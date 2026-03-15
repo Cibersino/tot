@@ -58,12 +58,73 @@ As of 2026-03-15:
     - no-silent-fallback observability enforced for route fallback paths in backend execution triage/packaging
     - failure/abort invariants enforced in backend execution/runtime boundary and main-window close cancellation path
   - Section 5 item 2 (`Add multilingual smoke coverage across OCR + native routes`): complete.
-  - Active next checklist item: Section 5 item 3 (`Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)`).
+  - Section 5 item 3 (`Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)`): complete.
+  - Active next checklist item: Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0057
+
+- Date/time: 2026-03-15 19:38:07 -03:00
+- Operation: Record post-fix `NFM-B` rerun and close Section 5 item 3 with resolved native-route failure semantics.
+- Why: User executed rerun after OP-0056 patch and provided logs proving native-route failure paths for corrupt/encrypted PDFs.
+- Changes made:
+  - Opened OP-0057 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - rewrote `NFM-B` block as post-fix rerun result (`PASS`)
+    - replaced old OCR-fallback outcomes with observed native failure outcomes
+    - finalized item-3 coverage map (`Status: COMPLETED`) and anchors
+    - removed stale `NFM-B BLOCKED` drift entry now superseded by rerun evidence
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 3 complete (`[x] Run native-route fixture matrix ...`)
+  - Updated tracker authoritative status:
+    - Section 5 item 3 marked complete
+    - active next checklist item moved to Section 5 item 4 (precondition rejection scenarios)
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases).`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:38:07 -03:00`
+  - `NFM-B` rerun observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: no`
+    - alerts:
+      - corrupt: `The selected file is unreadable or corrupt for native extraction.`
+      - encrypted: `The selected PDF is encrypted or password-protected and cannot be extracted natively.`
+  - `NFM-B` rerun execution telemetry evidence (main process log):
+    - corrupt fixture:
+      - `routeKind: 'native'`
+      - `state: 'failure'`
+      - `code: 'unreadable_or_corrupt'`
+      - `pdfTriage: 'native_only'`
+      - `triageReason: 'native_pdf_corrupt_or_unreadable'`
+      - `executedRoute: 'native'`
+    - encrypted fixture:
+      - `routeKind: 'native'`
+      - `state: 'failure'`
+      - `code: 'native_encrypted_or_password_protected'`
+      - `pdfTriage: 'native_only'`
+      - `triageReason: 'native_pdf_password_protected'`
+      - `executedRoute: 'native'`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-3 block now contains:
+      - `Status: COMPLETED`
+      - `NFM-B` result: `PASS`
+    - `docs/issues/issue_53_implementation_plan.md` item 3 now marked `[x]`
+    - tracker `Current Authoritative Status` active-next now points to Section 5 item 4
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:39:16 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 3 is now evidence-backed and closed. Next step is Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`).
 
 ### OP-0056
 
