@@ -83,7 +83,7 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
       - temporary rate-limit responses (including HTTP `429`) use bounded exponential-backoff retry, then fail as `quota_or_rate_limited` if still unresolved.
       - explicit non-retryable provider limit responses fail fast as `quota_or_rate_limited`.
       - user guidance: wait + retry for temporary rate limits; reconnect is for auth/activation failures, not for quota/rate-limit failures.
-- [ ] Add setup validation flow and explicit user-visible errors for incomplete/missing setup, missing credentials, billing/auth issues, and quota/budget/usage-limit issues.
+- [x] Add setup validation flow and explicit user-visible errors for incomplete/missing setup, missing credentials, billing/auth issues, and quota/budget/usage-limit issues.
   - Owner: `Codex` + `User` (manual validation run).
   - Done when:
     - validation checks credentials presence, activation status, and reachable API path.
@@ -93,7 +93,7 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
       - implement backend/IPC validation + explicit error taxonomy only.
       - do not wire OCR UI triggers in this item.
       - do not use legacy `cargador_*` menu paths.
-- [ ] Confirm setup path and failures follow current logging/bridge-failure policies.
+- [x] Confirm setup path and failures follow current logging/bridge-failure policies.
   - Owner: `Codex`.
   - Done when:
     - setup and activation paths follow existing warn/error conventions in `log.js` style.

@@ -32,11 +32,10 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 As of 2026-03-14:
 
 - Section 1 (`Substrate and access-model decision`): complete.
-- Section 2 (`Substrate setup / billing / activation path`): in progress.
-  - Items 1-6: complete.
-  - Active next checklist item: item 7 (`Add setup validation flow and explicit user-visible errors...`), then item 8.
-  - Item 7/8 scope boundary: backend/IPC/logging work only; no OCR UI trigger wiring.
-  - Legacy `cargador_*` menu paths remain forbidden during item 7/8 execution.
+- Section 2 (`Substrate setup / billing / activation path`): complete.
+  - Items 1-8: complete.
+  - Item 7/8 execution respected scope boundary: backend/IPC/logging work only; no OCR UI trigger wiring.
+  - Legacy `cargador_*` menu paths remain forbidden and were not reintroduced.
 - Section 3 (`Contracts before implementation`): reopened by user decision.
   - Existing `docs/issues/issue_53_contracts.md` remains a draft baseline/reference, but Section 3 is not treated as closed.
   - Any earlier tracker statement implying Section 3 closure is superseded by this authoritative status.
@@ -47,6 +46,72 @@ As of 2026-03-14:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0020
+
+- Date/time: 2026-03-14 20:55:15 -03:00
+- Operation: Execute Section 2 items 7-8 backend/IPC setup-validation + logging/bridge-policy confirmation (no OCR UI wiring).
+- Why: Continue Issue 53 in checklist order under the user-approved guardrails and current authoritative status.
+- Changes made:
+  - Added backend validation engine:
+    - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+    - validates credentials presence/shape, activation token presence/shape, and Drive API reachability.
+    - maps explicit states/errors for:
+      - `setup_incomplete`
+      - `credentials_missing`
+      - `ocr_activation_required`
+      - `auth_failed`
+      - `quota_or_rate_limited`
+      - `connectivity_failed`
+      - `platform_runtime_failed`
+      - `unknown`
+    - returns explicit user-facing message/action keys and details safe for logs.
+  - Added dedicated IPC registration module:
+    - `electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js`
+    - channel: `ocr-google-drive-validate-setup`
+    - explicit required-path blocking (`registerIpc` throws when required dependencies are missing)
+    - non-crashing handler fallback for runtime exceptions (`platform_runtime_failed` response).
+  - Wired IPC module in main-process startup:
+    - updated `electron/main.js` imports for OCR credential/token paths
+    - registered setup-validation IPC with canonical runtime paths from `fs_storage`.
+  - Updated plan checklist completion:
+    - marked Section 2 item 7 complete
+    - marked Section 2 item 8 complete
+  - Updated tracker authoritative status:
+    - Section 2 now complete (items 1-8).
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 2:
+    - `[x] Add setup validation flow and explicit user-visible errors for incomplete/missing setup, missing credentials, billing/auth issues, and quota/budget/usage-limit issues.`
+    - `[x] Confirm setup path and failures follow current logging/bridge-failure policies.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/main.js`
+  - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+  - `electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js`
+    - `node --check electron/main.js`
+  - Validation matrix via injected probe stubs (temporary local script) produced explicit expected classifications:
+    - case 1 -> `setup_incomplete`
+    - case 2 -> `credentials_missing`
+    - case 3 -> `ocr_activation_required`
+    - case 4 -> `quota_or_rate_limited`
+    - case 5 -> `auth_failed`
+    - case 6 -> `connectivity_failed`
+    - case 7 -> `ready`
+  - Logging/bridge-failure policy checks:
+    - required-path blocking verified:
+      - `registerIpc({ handle })` without `resolvePaths` throws `[ocr-google-drive-setup-ipc] registerIpc requires resolvePaths()`
+    - non-crashing handler behavior verified:
+      - runtime exception in `resolvePaths` returns `{ ok:false, state:'failure', code:'platform_runtime_failed' }` and logs explicit error.
+  - Guardrail evidence (no OCR UI trigger wiring in item 7/8):
+    - `rg -n "ocr-google-drive-validate-setup|ocr_google_drive_setup_validation" public electron/menu_builder.js public/renderer.js i18n -S` -> `NO_MATCHES`
+    - `git status --short` shows only backend/docs paths changed (no renderer/menu/i18n OCR wiring edits).
+- Outcome / next step:
+  - Section 2 items 7-8 are complete and evidence-backed. Next step is Section 3 revalidation using finalized Section 2 semantics.
 
 ### OP-0019
 
