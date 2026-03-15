@@ -27,6 +27,8 @@ const {
   ensureConfigDir,
   getSettingsFile,
   getCurrentTextFile,
+  getOcrGoogleDriveCredentialsFile,
+  getOcrGoogleDriveTokenFile,
   loadJson,
   saveJson,
 } = require('./fs_storage');
@@ -42,6 +44,7 @@ const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
+const ocrGoogleDriveSetupValidationIpc = require('./import_extract_platform/ocr_google_drive_setup_validation_ipc');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -1466,6 +1469,13 @@ app.whenReady().then(() => {
   updater.registerIpc(ipcMain, {
     mainWinRef: () => mainWin,
     currentLanguageRef: () => getSelectedLanguage(),
+  });
+
+  ocrGoogleDriveSetupValidationIpc.registerIpc(ipcMain, {
+    resolvePaths: () => ({
+      credentialsPath: getOcrGoogleDriveCredentialsFile(),
+      tokenPath: getOcrGoogleDriveTokenFile(),
+    }),
   });
 
   // First run: show language picker before creating the main window.
