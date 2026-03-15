@@ -64,6 +64,47 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0035
+
+- Date/time: 2026-03-15 03:17:57 -03:00
+- Operation: Diagnose import/extract OCR failure path reported by user (`setup_incomplete` + `OCR unavailable` alert).
+- Why: User reported that selecting a JPG for OCR returns unavailable; requested explicit root-cause explanation.
+- Changes made:
+  - Performed read-only diagnostics across runtime OCR gate/execution files and current local app-data paths.
+  - Confirmed OCR route failure mapping chain:
+    - `setup_incomplete` gate/failure code
+    - mapped to `renderer.alerts.import_extract_ocr_unavailable`
+  - Verified current local state under `%APPDATA%`:
+    - `drive_ocr_test/credentials.json` exists
+    - `config/ocr_google_drive/credentials.json` missing
+    - `config/ocr_google_drive/token.json` missing
+  - Confirmed app runtime expects OCR files via:
+    - `app.getPath('userData')/config/ocr_google_drive/credentials.json`
+    - `app.getPath('userData')/config/ocr_google_drive/token.json`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (diagnosis-only operation).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Runtime failure evidence from user log:
+    - `state: 'failure'`
+    - `code: 'setup_incomplete'`
+    - `routeKind: 'ocr'`
+  - Local path checks:
+    - `%APPDATA%\\toT\\drive_ocr_test\\credentials.json` -> exists
+    - `%APPDATA%\\toT\\config\\ocr_google_drive\\credentials.json` -> missing
+    - `%APPDATA%\\toT\\config\\ocr_google_drive\\token.json` -> missing
+  - Mapping anchors:
+    - `electron/import_extract_platform/ocr_google_drive_activation_state.js` (`setup_incomplete` when credentials file missing)
+    - `electron/import_extract_platform/import_extract_execution_ipc.js` (`setup_incomplete` -> `renderer.alerts.import_extract_ocr_unavailable`)
+    - `electron/fs_storage.js` (`getOcrGoogleDriveCredentialsFile`, `getOcrGoogleDriveTokenFile`)
+- Drift disclosures:
+  - Read-only evidence collection started before OP-0035 entry was written.
+  - Impact/risk: no runtime/source behavior changed; documentation log ordering briefly lagged the actual read-only actions.
+  - Handling: disclosed here immediately; operation is now fully recorded with evidence.
+- Outcome / next step:
+  - Root cause identified: app-scoped OCR setup files are missing at the canonical runtime path, so OCR is intentionally blocked as `setup_incomplete`.
+
 ### OP-0034
 
 - Date/time: 2026-03-15 03:03:17 -03:00
