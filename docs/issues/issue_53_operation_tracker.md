@@ -64,6 +64,65 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0039
+
+- Date/time: 2026-03-15 04:12:40 -03:00
+- Operation: Remove dead i18n keys for import/extract apply success notifications.
+- Why: Follow-up cleanup after OP-0038; user flagged incomplete removal because locale keys remained unused.
+- Changes made:
+  - Removed dead keys from English locale:
+    - `renderer.alerts.import_extract_apply_success_overwrite`
+    - `renderer.alerts.import_extract_apply_success_append`
+  - Removed dead keys from Spanish locale:
+    - `renderer.alerts.import_extract_apply_success_overwrite`
+    - `renderer.alerts.import_extract_apply_success_append`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (locale cleanup only).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:12:40 -03:00`
+  - Remnant detection evidence:
+    - `rg -n "import_extract_apply_success_append|import_extract_apply_success_overwrite" .`
+      - matches in `i18n/en/renderer.json` and `i18n/es/renderer.json`
+  - Completion evidence:
+    - `rg -n "import_extract_apply_success_append|import_extract_apply_success_overwrite" public i18n electron` -> no matches
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json` -> pass
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json` -> pass
+    - `npm run lint` -> pass
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:13:31 -03:00`
+- Outcome / next step:
+  - Completed. Runtime calls and locale remnants for apply-success notifications are fully removed.
+
+### OP-0038
+
+- Date/time: 2026-03-15 04:10:30 -03:00
+- Operation: Remove post-apply success notifications for import/extract apply (`overwrite` / `append`) in main window.
+- Why: User requested removing these messages as noise after extracted text is applied.
+- Changes made:
+  - Removed success-notification branch from apply-success path in `public/renderer.js`:
+    - deleted `renderer.alerts.import_extract_apply_success_append`
+    - deleted `renderer.alerts.import_extract_apply_success_overwrite`
+  - Preserved existing error notifications and truncated warning notification.
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (notification-only UX adjustment).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/renderer.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:10:30 -03:00`
+  - Completion evidence:
+    - `rg -n "import_extract_apply_success_append|import_extract_apply_success_overwrite" public/renderer.js` -> no matches
+    - `node --check public/renderer.js` -> pass
+    - `npm run lint` -> pass
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:11:26 -03:00`
+- Outcome / next step:
+  - Completed. Success toasts after apply are removed; apply errors/truncation alerts remain active.
+
 ### OP-0037
 
 - Date/time: 2026-03-15 03:37:13 -03:00
