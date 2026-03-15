@@ -40,7 +40,10 @@ const {
 // DOM references
 // =============================================================================
 const textPreview = document.getElementById('textPreview');
+const selectorControlsNormal = document.getElementById('selectorControlsNormal');
+const selectorControlsProcessing = document.getElementById('selectorControlsProcessing');
 const btnImportExtract = document.getElementById('btnImportExtract');
+const importExtractProcessingLabel = document.getElementById('importExtractProcessingLabel');
 const btnImportExtractAbort = document.getElementById('btnImportExtractAbort');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
@@ -193,10 +196,20 @@ function applyProcessingModeState(rawState, { source = 'unknown' } = {}) {
   const prevActive = isProcessingModeActive();
   importExtractProcessingModeState = nextState;
 
+  if (selectorControlsNormal) {
+    selectorControlsNormal.hidden = nextState.active;
+    selectorControlsNormal.setAttribute('aria-hidden', nextState.active ? 'true' : 'false');
+  }
+  if (selectorControlsProcessing) {
+    selectorControlsProcessing.hidden = !nextState.active;
+    selectorControlsProcessing.setAttribute('aria-hidden', nextState.active ? 'false' : 'true');
+  }
+
   if (btnImportExtractAbort) {
     btnImportExtractAbort.hidden = !nextState.active;
     btnImportExtractAbort.disabled = !nextState.active;
     btnImportExtractAbort.setAttribute('aria-hidden', nextState.active ? 'false' : 'true');
+    btnImportExtractAbort.tabIndex = nextState.active ? 0 : -1;
   }
 
   if (prevActive !== nextState.active) {
@@ -372,6 +385,12 @@ function applyTranslations() {
     const aria = tRenderer(key, defaultValue);
     if (aria) el.setAttribute('aria-label', aria);
   };
+  if (importExtractProcessingLabel) {
+    importExtractProcessingLabel.textContent = tRenderer(
+      'renderer.main.processing.import_extract_placeholder',
+      importExtractProcessingLabel.textContent || ''
+    );
+  }
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnImportExtractAbort) btnImportExtractAbort.textContent = tRenderer('renderer.main.buttons.import_extract_abort', btnImportExtractAbort.textContent || '');

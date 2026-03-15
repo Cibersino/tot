@@ -33,25 +33,35 @@
       <h3 id="selector-title" class="section-title">Primera y última parte del texto analizado:</h3>
       <pre id="textPreview">(vacío)</pre>
       <div class="controls">
-        <button id="btnImportExtract" class="btn-standard"
-          title="Importar/extraer texto desde archivo">📥</button>
-        <button id="btnImportExtractAbort" class="btn-standard" hidden disabled
-          title="Abortar extracción">⛔</button>
-        <span class="controls-sep" aria-hidden="true"></span>
-        <button id="btnOverwriteClipboard" class="btn-standard"
-          title="Reemplazar texto con el portapapeles">📋↺</button>
-        <button id="btnAppendClipboard" class="btn-standard"
-          title="Pegar portapapeles al final del texto en nueva línea">📋+</button>
-        <input id="clipboardRepeatInput" class="clipboard-repeat-input" type="number" min="1" max="9999" step="1" value="1"
-          title="Repeticiones de pegado" aria-label="Repeticiones de pegado" />
-        <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto completo">⌨</button>
-        <button id="btnEmptyMain" class="btn-standard" title="Vaciar texto actual">🗑</button>
-        <span class="controls-sep" aria-hidden="true"></span>
-        <button id="btnLoadSnapshot" class="btn-standard" title="Cargar snapshot">📂</button>
-        <button id="btnSaveSnapshot" class="btn-standard" title="Guardar snapshot">💾</button>
-        <span class="controls-sep" aria-hidden="true"></span>
-        <button id="btnNewTask" class="btn-standard" title="Nueva tarea">📝</button>
-        <button id="btnLoadTask" class="btn-standard" title="Cargar tareas">🗃️</button>
+        <div id="selectorControlsNormal" class="controls-row">
+          <button id="btnImportExtract" class="btn-standard"
+            title="Importar/extraer texto desde archivo">📥</button>
+          <span class="controls-sep" aria-hidden="true"></span>
+          <button id="btnOverwriteClipboard" class="btn-standard"
+            title="Reemplazar texto con el portapapeles">📋↺</button>
+          <button id="btnAppendClipboard" class="btn-standard"
+            title="Pegar portapapeles al final del texto en nueva línea">📋+</button>
+          <input id="clipboardRepeatInput" class="clipboard-repeat-input" type="number" min="1" max="9999" step="1" value="1"
+            title="Repeticiones de pegado" aria-label="Repeticiones de pegado" />
+          <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto completo">⌨</button>
+          <button id="btnEmptyMain" class="btn-standard" title="Vaciar texto actual">🗑</button>
+          <span class="controls-sep" aria-hidden="true"></span>
+          <button id="btnLoadSnapshot" class="btn-standard" title="Cargar snapshot">📂</button>
+          <button id="btnSaveSnapshot" class="btn-standard" title="Guardar snapshot">💾</button>
+          <span class="controls-sep" aria-hidden="true"></span>
+          <button id="btnNewTask" class="btn-standard" title="Nueva tarea">📝</button>
+          <button id="btnLoadTask" class="btn-standard" title="Cargar tareas">🗃️</button>
+        </div>
+        <div id="selectorControlsProcessing" class="controls-processing" hidden aria-hidden="true">
+          <div class="import-extract-processing-bar" role="status" aria-live="polite">
+            <span id="importExtractProcessingLabel">Procesando extracción...</span>
+            <span class="import-extract-processing-placeholder-track" aria-hidden="true">
+              <span class="import-extract-processing-placeholder-fill"></span>
+            </span>
+            <button id="btnImportExtractAbort" class="btn-standard" hidden disabled
+              title="Abortar extracción">⛔</button>
+          </div>
+        </div>
       </div>
     </section>
 

@@ -64,6 +64,77 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0034
+
+- Date/time: 2026-03-15 03:03:17 -03:00
+- Operation: Refactor main-window import/extract processing controls to in-place processing bar model.
+- Why: User requested cleanup-first UI refactor where processing controls replace the selector button row and abort stays visible only during active processing.
+- Changes made:
+  - Opened OP-0034 before meaningful edits (policy compliance step).
+  - Removed obsolete abort-button CSS from previous model:
+    - deleted top-level selectors in `public/style.css`:
+      - `#btnImportExtractAbort { ... }`
+      - `#btnImportExtractAbort:hover { ... }`
+  - Reworked selector controls markup for in-place mode swap:
+    - `public/index.html`
+    - normal controls moved under `#selectorControlsNormal` (`.controls-row`)
+    - added processing-only row `#selectorControlsProcessing` with:
+      - placeholder processing bar (`.import-extract-processing-bar`)
+      - placeholder visual track/fill (no real progress/ETA)
+      - abort button at far right (`#btnImportExtractAbort`)
+  - Reworked selector controls styling for replacement bar model:
+    - `public/style.css`
+    - added `.controls-row` + `.controls-processing` visibility styles
+    - added processing bar/placeholder styles and placeholder animation
+    - moved abort-button appearance styles to processing-bar scope:
+      - `.import-extract-processing-bar #btnImportExtractAbort`
+  - Updated processing-state UI toggling in renderer:
+    - `public/renderer.js`
+    - `applyProcessingModeState(...)` now toggles:
+      - `#selectorControlsNormal` hidden while active
+      - `#selectorControlsProcessing` visible while active
+      - abort button hidden/disabled/tab-focus state based on processing active flag
+  - Added localization key for processing placeholder label:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+    - key: `renderer.main.processing.import_extract_placeholder`
+  - Updated renderer translation wiring for the processing placeholder label text.
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (UI cleanup/refactor operation only).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 03:03:17 -03:00`
+    - `git status --short` -> clean working tree at operation start
+  - Obsolete CSS deletion evidence:
+    - `public/style.css` no longer has top-level `#btnImportExtractAbort` block from old controls model.
+    - new scoped abort styles exist only under `.import-extract-processing-bar #btnImportExtractAbort`.
+  - Layout/model evidence:
+    - `public/index.html` contains:
+      - `#selectorControlsNormal`
+      - `#selectorControlsProcessing`
+      - `#importExtractProcessingLabel`
+    - processing row is hidden by default and becomes the active controls row during processing.
+  - Renderer-state wiring evidence:
+    - `public/renderer.js` `applyProcessingModeState(...)` toggles hidden/aria state for:
+      - `selectorControlsNormal`
+      - `selectorControlsProcessing`
+      - `btnImportExtractAbort`
+  - Validation:
+    - `node --check public/renderer.js` passed
+    - `node -e "JSON.parse(...en...); JSON.parse(...es...);"` -> `json-ok`
+    - `npx eslint public/renderer.js` passed
+- Drift disclosures:
+  - None. Changes stayed inside the user-requested main-window import/extract controls refactor.
+- Outcome / next step:
+  - Completed. Main selector controls now swap in place to a processing bar during active extraction, with abort visible only in processing mode and positioned at the far right; progress/ETA remains placeholder-only.
+
 ### OP-0033
 
 - Date/time: 2026-03-15 02:02:06 -03:00

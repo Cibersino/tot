@@ -129,19 +129,88 @@ body {
 
 /* Text selector controls */
 .controls {
+  position: relative;
+  min-height: 30px;
+}
+
+.controls-row {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
 }
 
-#btnImportExtractAbort {
+.controls-row[hidden] {
+  display: none;
+}
+
+.controls-processing {
+  width: 100%;
+}
+
+.controls-processing[hidden] {
+  display: none;
+}
+
+.import-extract-processing-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  border: 1px solid #b8ae9c;
+  border-radius: 5px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  background: #f5efdf;
+}
+
+#importExtractProcessingLabel {
+  font-size: 13px;
+  color: #2f2a20;
+  white-space: nowrap;
+}
+
+.import-extract-processing-placeholder-track {
+  flex: 1 1 auto;
+  min-width: 80px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ded3bc;
+  overflow: hidden;
+}
+
+.import-extract-processing-placeholder-fill {
+  display: block;
+  width: 34%;
+  height: 100%;
+  border-radius: 999px;
+  background: #a9976a;
+  animation: import-extract-processing-placeholder-slide 1.3s ease-in-out infinite;
+}
+
+.import-extract-processing-bar #btnImportExtractAbort {
+  margin-left: auto;
   border-color: #c45858;
   background: #fff1f1;
 }
 
-#btnImportExtractAbort:hover {
+.import-extract-processing-bar #btnImportExtractAbort:hover {
   background: #ffe4e4;
+}
+
+@keyframes import-extract-processing-placeholder-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  50% {
+    transform: translateX(180%);
+  }
+
+  100% {
+    transform: translateX(-120%);
+  }
 }
 
 .clipboard-repeat-input {
