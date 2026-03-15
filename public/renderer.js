@@ -1653,51 +1653,39 @@ if (btnImportExtract) {
         return;
       }
 
-      const evaluateImportExtractOcrGate = getOptionalElectronMethod('evaluateImportExtractOcrGate', {
-        dedupeKey: 'renderer.ipc.evaluateImportExtractOcrGate.unavailable',
-        unavailableMessage: 'evaluateImportExtractOcrGate unavailable; OCR gate cannot be evaluated.'
+      const runImportExtractSelectedFile = getOptionalElectronMethod('runImportExtractSelectedFile', {
+        dedupeKey: 'renderer.ipc.runImportExtractSelectedFile.unavailable',
+        unavailableMessage: 'runImportExtractSelectedFile unavailable; import/extract execution cannot continue.'
       });
-      if (!evaluateImportExtractOcrGate) {
-        window.Notify.notifyMain('renderer.alerts.import_extract_ocr_unavailable');
+      if (!runImportExtractSelectedFile) {
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
         return;
       }
 
-      const ocrGate = await evaluateImportExtractOcrGate({
+      const execution = await runImportExtractSelectedFile({
         filePath: picker.filePath || '',
+        ocrLanguage: idiomaActual || '',
       });
-      if (!ocrGate || ocrGate.ok !== true) {
-        log.error('import/extract OCR gate evaluation failed:', ocrGate);
-        window.Notify.notifyMain(
-          (ocrGate && typeof ocrGate.alertKey === 'string' && ocrGate.alertKey)
-            ? ocrGate.alertKey
-            : 'renderer.alerts.import_extract_ocr_unavailable'
-        );
-        return;
-      }
-      if (!ocrGate.canProceed) {
-        log.warn('import/extract OCR gate blocked:', {
-          ocrSetupState: ocrGate.ocrSetupState,
-          blockCategory: ocrGate.blockCategory,
-          code: ocrGate.code,
-          issueType: ocrGate.issueType,
-          sourceFileExt: ocrGate.sourceFileExt,
-          sourceFileKind: ocrGate.sourceFileKind,
-        });
-        window.Notify.notifyMain(
-          (typeof ocrGate.alertKey === 'string' && ocrGate.alertKey)
-            ? ocrGate.alertKey
-            : 'renderer.alerts.import_extract_ocr_unavailable'
-        );
+      if (!execution || execution.ok !== true || !execution.result) {
+        log.error('import/extract execution IPC failed:', execution);
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
         return;
       }
 
-      log.info('import/extract file selected (extraction pipeline pending):', {
-        filePath: picker.filePath || '',
-        ocrSetupState: ocrGate.ocrSetupState || 'ready',
-        sourceFileExt: ocrGate.sourceFileExt || '',
-        sourceFileKind: ocrGate.sourceFileKind || '',
+      const warningAlertKeys = Array.isArray(execution.warningAlertKeys)
+        ? execution.warningAlertKeys
+        : [];
+      warningAlertKeys.forEach((alertKey) => {
+        if (typeof alertKey === 'string' && alertKey.trim()) {
+          window.Notify.notifyMain(alertKey);
+        }
       });
-      window.Notify.notifyMain('renderer.alerts.import_extract_not_ready');
+
+      window.Notify.notifyMain(
+        (typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
+          ? execution.primaryAlertKey
+          : 'renderer.alerts.import_extract_error'
+      );
     } catch (err) {
       log.error('Error handling import/extract entrypoint click:', err);
       window.Notify.notifyMain('renderer.alerts.import_extract_error');
