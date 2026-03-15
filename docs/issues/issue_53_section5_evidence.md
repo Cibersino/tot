@@ -207,13 +207,38 @@ Tracker policy for Section 5:
 - Objective: Verify PDF triage chooses OCR-only path when native text layer is not usable.
 - Fixture: `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
 - Preconditions: same as SMK-01
-- Steps: pending
+- Steps:
+  - user selected `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf` from import/extract picker
+  - no route-choice modal appeared
+  - extraction completed successfully
+  - apply modal was shown and user applied `Overwrite` with repetitions=`1`
 - Expected: no route-choice modal; PDF triage resolves to `ocr_only`; OCR executes.
-- Actual: pending
-- Alerts/notifications observed: pending
-- Route metadata observed: pending
-- Result: `PENDING`
+- Actual:
+  - preconditions ok: `yes`
+  - route-choice modal: `no`
+  - apply modal: `yes`
+  - overwrite applied: `yes`
+  - resulting text starts with:
+    - `Introduction • 3`
+    - `Permanent revolution in the early writings of Marx and Engels ...`
+- Alerts/notifications observed: `none`
+- Route metadata observed:
+  - from main-process terminal logs:
+    - `routeKind: 'ocr'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'ocr_only'`
+    - `triageReason: 'no_native_text_layer_detected'`
+    - `availableRoutes: [ 'ocr' ]`
+    - `chosenRoute: 'ocr'`
+    - `executedRoute: 'ocr'`
+    - `sourceFileExt: 'pdf'`
+    - `sourceFileKind: 'pdf'`
+- Result: `PASS`
 - Notes:
+  - processing-mode lifecycle matched expectations for PDF OCR path:
+    - enabled with `reason: 'run_pdf_route'`
+    - disabled with `reason: 'import_extract_ocr_success'`
 
 ### SMK-04 PDF Triage `both` -> choose `native`
 
@@ -249,6 +274,7 @@ Tracker policy for Section 5:
   - Impact/risk: low; increased log verbosity only, no behavior change expected.
   - Handling: proceeded and recorded exact observed runtime context in evidence.
 - `SMK-02` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `SMK-03` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.
