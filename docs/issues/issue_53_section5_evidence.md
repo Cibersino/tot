@@ -49,12 +49,12 @@ Tracker policy for Section 5:
 - Evidence blocks: `PRC-01`
 
 5. Validate processing lock behavior (distinct from startup lock; only close/minimize/move/abort available)
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `IN_PROGRESS`
+- Evidence blocks: `PLK-01`
 
 6. Validate close-window-during-processing cancellation path and invariants
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `IN_PROGRESS`
+- Evidence blocks: `PLK-02`
 
 7. Validate failure/abort invariants and state separation
 - Status: `PENDING`
@@ -637,6 +637,123 @@ Coverage strategy:
 - Notes:
   - evidence confirms explicit precondition-rejection reason telemetry and explicit user guidance message for both gate conditions.
 
+## Section 5 Item 5: Processing Lock Behavior
+
+### PLK-01 Processing Lock During Active Extraction (`abort button` path)
+
+- Objective: Validate that processing lock is active during in-flight extraction, normal interactions are blocked, and allowed window actions remain usable.
+- Fixture: `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+- Preconditions:
+  - no secondary windows open
+  - stopwatch stopped
+- Steps:
+  - user started app with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+  - user started import/extract with the fixture above
+  - while processing mode was active:
+    - attempted blocked interactions:
+      - WPM slider input
+      - menu action `Tools -> Speed test`
+      - menu action `Preferences -> Language`
+    - verified window-level allowed actions:
+      - move window
+      - minimize/restore window
+    - clicked `Abort`
+- Expected:
+  - processing lock activates and blocks normal main interactions
+  - only close/minimize/move/abort remain available during processing
+  - abort cancels processing and exits processing mode
+- Actual (user-reported):
+  - processing lock activated: `yes`
+  - normal selector row state: `hidden while processing`
+  - processing row state: `visible while processing`
+  - `⌨` and `🗑` controls were not clickable because they were hidden with the normal row
+  - WPM slider:
+    - blocked: `yes`
+    - alert shown:
+      - `Import/extract is processing. Main-window interactions are locked until processing ends or you abort.`
+  - menu actions:
+    - blocked: `yes` (main-process warn logs)
+    - user-visible alert shown: `no`
+  - allowed window actions:
+    - move window: `yes`
+    - minimize/restore: `yes`
+  - abort action:
+    - clicked: `yes`
+    - processing cancelled: `yes`
+  - apply modal shown: `no`
+  - text applied: `no`
+- Telemetry observed:
+  - main-process logs:
+    - `Processing mode enabled`:
+      - `lockId: 1`
+      - `source: 'import_extract_execution'`
+      - `reason: 'run_pdf_route'`
+    - menu lock blocks:
+      - `Menu action ignored (processing-mode lock active): test_velocidad`
+      - `Menu action ignored (processing-mode lock active): menu.language`
+    - abort + exit:
+      - `Processing abort requested: { lockId: 1, source: 'main_window', reason: 'user_abort_button' }`
+      - `Processing mode disabled: { lockId: 1, source: 'main_window', reason: 'user_abort_button' }`
+    - execution completion:
+      - `routeKind: 'ocr'`
+      - `state: 'cancelled'`
+      - `code: 'aborted_by_user'`
+      - `pdfTriage: 'ocr_only'`
+      - `triageReason: 'no_native_text_layer_detected'`
+      - `executedRoute: 'ocr'`
+  - renderer logs:
+    - `import/extract processing-mode changed: {active: true, lockId: 1, source: 'ipc_event', reason: 'run_pdf_route'}`
+    - `Renderer action ignored (processing-mode lock active): wpm-slider`
+    - `import/extract processing-mode changed: {active: false, lockId: 1, source: 'ipc_event', reason: 'user_abort_button'}`
+- Result: `PASS`
+- Notes:
+  - lock behavior is functionally evidenced for blocked interactions and allowed window actions.
+  - item-5 closure is kept `IN_PROGRESS` pending expectation alignment on whether blocked native-menu actions must also surface a renderer toast.
+
+## Section 5 Item 6: Close During Processing Cancellation Path
+
+### PLK-02 Close Window `X` During Active Extraction
+
+- Objective: Validate close-window request behavior during processing and confirm cancellation-path execution.
+- Fixture: `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+- Preconditions:
+  - no secondary windows open
+  - stopwatch stopped
+- Steps:
+  - user started import/extract with fixture above
+  - while processing mode was active, user clicked main-window close (`X`)
+- Expected:
+  - close request is treated as cancellation trigger while processing is active
+  - processing exits cleanly with cancellation semantics
+- Actual (user-reported):
+  - close action triggered cancellation path: `yes`
+  - window closed immediately: `no`
+  - processing cancelled: `yes`
+  - apply modal shown: `no`
+  - text applied: `no`
+- Telemetry observed:
+  - main-process logs:
+    - `Processing mode enabled`:
+      - `lockId: 2`
+      - `source: 'import_extract_execution'`
+      - `reason: 'run_pdf_route'`
+    - close cancellation request:
+      - `Processing abort requested: { lockId: 2, source: 'main_window', reason: 'close_during_processing' }`
+    - exit:
+      - `Processing mode disabled: { lockId: 2, source: 'main_window', reason: 'close_during_processing' }`
+    - execution completion:
+      - `routeKind: 'ocr'`
+      - `state: 'cancelled'`
+      - `code: 'aborted_by_user'`
+      - `executedRoute: 'ocr'`
+  - renderer logs:
+    - `import/extract processing-mode changed: {active: true, lockId: 2, source: 'ipc_event', reason: 'run_pdf_route'}`
+    - `import/extract processing-mode changed: {active: false, lockId: 2, source: 'ipc_event', reason: 'close_during_processing'}`
+- Result: `PASS`
+- Notes:
+  - item-6 closure is kept `IN_PROGRESS` pending expectation alignment on post-cancel close behavior (current behavior keeps window open after converting `X` into cancellation request).
+
 ## Drift Log
 
 - `SMK-01` used `TOT_LOG_LEVEL='debug'` instead of the initial planned `info`.
@@ -652,6 +769,12 @@ Coverage strategy:
 - `NFM-A` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `NFM-B` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `PRC-01` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `PLK-01` scripted draft included clicks on `⌨` / `🗑` during processing.
+  - Drifted instruction/context: those controls are hidden because `#selectorControlsNormal` is swapped out while processing.
+  - Why: initial draft treated them as visible lock-block candidates before validating the current in-app processing-row model.
+  - Impact/risk: low; lock behavior was still validated through available blocked actions (`wpm-slider`, menu actions) and allowed actions (move/minimize/abort).
+  - Handling: recorded actual behavior explicitly and kept item closure pending for expectation alignment.
+- `PLK-01` and `PLK-02` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.
