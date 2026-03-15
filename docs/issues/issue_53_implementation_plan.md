@@ -165,7 +165,7 @@ Entrypoint guardrail:
 - [x] Build and run core smoke matrix (OCR, native, PDF triage, dual-route choice).
 - [x] Add multilingual smoke coverage across OCR + native routes (at least Latin, CJK, and RTL samples).
 - [x] Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases).
-- [ ] Validate precondition rejection scenarios and explicit reason messaging.
+- [x] Validate precondition rejection scenarios and explicit reason messaging.
 - [ ] Validate processing lock behavior:
   - distinct from startup lock
   - only close/minimize/move/abort remain available during processing

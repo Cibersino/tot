@@ -45,8 +45,8 @@ Tracker policy for Section 5:
 - Evidence blocks: `SMK-01` (docx success reuse), `SMK-04`/`MLG-02` (pdf success reuse), `NFM-A` (txt/md/html success), `NFM-B` (corrupt/encrypted native failure rerun pass), OP-0053 direct-native probes (supporting evidence)
 
 4. Validate precondition rejection scenarios and explicit reason messaging
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `COMPLETED`
+- Evidence blocks: `PRC-01`
 
 5. Validate processing lock behavior (distinct from startup lock; only close/minimize/move/abort available)
 - Status: `PENDING`
@@ -581,6 +581,62 @@ Coverage strategy:
   - user-provided renderer logs show failure processing-mode cycles on native path:
     - `run_pdf_route -> import_extract_native_failed` for both runs.
 
+## Section 5 Item 4: Precondition Rejection and Explicit Reason Messaging
+
+### PRC-01 Precondition Rejection (`secondary window open` + `stopwatch running`)
+
+- Objective: Validate that import/extract start is blocked when required preconditions are not met and user-facing reason messaging is explicit.
+- Fixtures: `n/a` (precondition gate executes before extraction route selection)
+- Preconditions:
+  - no secondary windows open + stopwatch stopped was validated before running this card
+  - attempt 1 state:
+    - secondary text editor window open
+    - stopwatch stopped
+  - attempt 2 state:
+    - no secondary windows open
+    - stopwatch running
+- Steps:
+  - user started app with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+  - user attempted import/extract while secondary editor window was open
+  - user then closed secondary window, started stopwatch, and attempted import/extract again
+- Expected:
+  - both attempts are blocked before route execution
+  - explicit alert guidance is shown in each blocked attempt
+  - no route-choice modal and no apply modal are shown
+- Actual (user-reported):
+  - preconditions ok: `yes`
+  - route-choice modal: `no`
+  - apply modal: `no`
+  - overwrite applied: `n/a`
+  - append applied: `n/a`
+  - repetitions applied: `n/a`
+  - secondary window open: `yes` (attempt 1)
+  - stopwatch running: `yes` (attempt 2)
+  - alerts seen:
+    - with text editor window open:
+      - `To start import/extract, close all secondary windows and stop the stopwatch.`
+    - with stopwatch running:
+      - `To start import/extract, close all secondary windows and stop the stopwatch.`
+  - resulting text: `n/a`
+- Preconditions telemetry observed (main-process logs):
+  - attempt 1:
+    - `import-extract precondition_rejected`
+    - `openSecondaryWindowIds: [ 'editor' ]`
+    - `openSecondaryWindowCount: 1`
+    - `stopwatchRunning: false`
+  - attempt 2:
+    - `import-extract precondition_rejected`
+    - `openSecondaryWindowIds: []`
+    - `openSecondaryWindowCount: 0`
+    - `stopwatchRunning: true`
+- Renderer evidence:
+  - renderer console contains startup/module logs only
+  - no processing-mode start/stop transitions were emitted during blocked attempts
+- Result: `PASS`
+- Notes:
+  - evidence confirms explicit precondition-rejection reason telemetry and explicit user guidance message for both gate conditions.
+
 ## Drift Log
 
 - `SMK-01` used `TOT_LOG_LEVEL='debug'` instead of the initial planned `info`.
@@ -595,6 +651,7 @@ Coverage strategy:
 - `MLG-02` and `MLG-03` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `NFM-A` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `NFM-B` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `PRC-01` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.

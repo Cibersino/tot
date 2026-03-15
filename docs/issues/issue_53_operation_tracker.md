@@ -59,12 +59,71 @@ As of 2026-03-15:
     - failure/abort invariants enforced in backend execution/runtime boundary and main-window close cancellation path
   - Section 5 item 2 (`Add multilingual smoke coverage across OCR + native routes`): complete.
   - Section 5 item 3 (`Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)`): complete.
-  - Active next checklist item: Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`).
+  - Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`): complete.
+  - Active next checklist item: Section 5 item 5 (`Validate processing lock behavior`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0058
+
+- Date/time: 2026-03-15 20:00:12 -03:00
+- Operation: Record `PRC-01` precondition-rejection evidence and close Section 5 item 4.
+- Why: User executed the manual precondition-gate scenarios and provided explicit UI/log evidence for both blocked-start reasons.
+- Changes made:
+  - Opened OP-0058 entry and completed documentation updates for item 4 closure.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 4 set to `COMPLETED`
+    - added `## Section 5 Item 4` with case block `PRC-01`
+    - added drift-log entry for `PRC-01` runtime level (`TOT_LOG_LEVEL='debug'`)
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 4 complete (`[x] Validate precondition rejection scenarios and explicit reason messaging.`)
+  - Updated tracker authoritative status:
+    - section 5 item 4 marked complete
+    - active next checklist item moved to section 5 item 5 (processing lock behavior)
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate precondition rejection scenarios and explicit reason messaging.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:00:12 -03:00`
+  - `PRC-01` observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: no`
+    - alerts (both attempts):
+      - `To start import/extract, close all secondary windows and stop the stopwatch.`
+  - `PRC-01` precondition telemetry evidence (main process log):
+    - attempt 1:
+      - `openSecondaryWindowIds: [ 'editor' ]`
+      - `openSecondaryWindowCount: 1`
+      - `stopwatchRunning: false`
+    - attempt 2:
+      - `openSecondaryWindowIds: []`
+      - `openSecondaryWindowCount: 0`
+      - `stopwatchRunning: true`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-4 block now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: PRC-01`
+    - `docs/issues/issue_53_implementation_plan.md` item 4 now marked `[x]`
+  - Drift disclosure:
+    - operation-order policy drift occurred in this step:
+      - `docs/issues/issue_53_section5_evidence.md` and `docs/issues/issue_53_implementation_plan.md` were edited before the `OP-0058` log block was written.
+    - impact/risk:
+      - low to artifact integrity (documentation-only changes, no code/runtime behavior affected), but tracker sequencing policy was violated.
+    - handling:
+      - drift is explicitly logged here; operation order has been corrected for subsequent steps.
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:01:59 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 4 is evidence-backed and closed. Next step is section 5 item 5 (`Validate processing lock behavior`).
 
 ### OP-0057
 
