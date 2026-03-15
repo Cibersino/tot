@@ -41,8 +41,8 @@ Tracker policy for Section 5:
 - Evidence blocks: `SMK-01` (Latin/native), `SMK-02` (Latin/OCR), `MLG-02` (RTL/native), `MLG-03` (CJK/OCR)
 
 3. Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)
-- Status: `IN_PROGRESS`
-- Evidence blocks: `SMK-01` (docx success reuse), `SMK-04`/`MLG-02` (pdf success reuse), `NFM-A` (txt/md/html success), `NFM-B` (corrupt/encrypted UI batch; blocked for native execution)
+- Status: `COMPLETED`
+- Evidence blocks: `SMK-01` (docx success reuse), `SMK-04`/`MLG-02` (pdf success reuse), `NFM-A` (txt/md/html success), `NFM-B` (corrupt/encrypted native failure rerun pass), OP-0053 direct-native probes (supporting evidence)
 
 4. Validate precondition rejection scenarios and explicit reason messaging
 - Status: `PENDING`
@@ -439,7 +439,8 @@ Coverage strategy:
 - Execute only missing matrix deltas:
   - `NFM-A` for `.txt` + `.md` + `.html` success
   - `NFM-B` for `corrupt` + `encrypted` fixture behavior in UI flow
-  - pending: explicit empty-text-layer native-matrix closure decision
+  - empty-text-layer coverage reuses existing evidence with native probe/warnings:
+    - `SMK-03` fixture family (`pdfTriage: ocr_only`) + `OP-0053` native direct probes for flattened/scanned PDFs (`native_empty_text`)
 
 ### NFM-A Native Success Batch (`txt` + `md` + `html`)
 
@@ -525,16 +526,16 @@ Coverage strategy:
   - no route-choice modal appeared in the batch
   - apply modal did not appear
 - Expected:
-  - explicit failure handling for both fixtures
+  - explicit native failure handling for both fixtures
   - no apply modal on failure
-  - no silent fallback
-- Actual (batch-level, user-reported):
+  - no OCR fallback execution
+- Actual (post-fix rerun, user-reported):
   - preconditions ok: `yes`
   - route-choice modal: `no`
   - apply modal: `no`
   - alerts seen:
-    - corrupt fixture: `An OCR runtime error occurred during import/extract. Check console and retry.`
-    - encrypted fixture: `An OCR runtime error occurred during import/extract. Check console and retry.`
+    - corrupt fixture: `The selected file is unreadable or corrupt for native extraction.`
+    - encrypted fixture: `The selected PDF is encrypted or password-protected and cannot be extracted natively.`
   - resulting text: `n/a`
 - Route metadata observed (main-process logs):
   - corrupt fixture:
@@ -542,40 +543,43 @@ Coverage strategy:
       - `errorName: 'InvalidPDFException'`
       - `parserType: 'pdf_text_layer'`
     - execution completion:
-      - `routeKind: 'ocr'`
+      - `routeKind: 'native'`
       - `state: 'failure'`
-      - `code: 'ocr_conversion_failed'`
-      - `pdfTriage: 'ocr_only'`
-      - `triageReason: 'no_native_text_layer_detected'`
-      - `availableRoutes: [ 'ocr' ]`
-      - `chosenRoute: 'ocr'`
-      - `executedRoute: 'ocr'`
+      - `code: 'unreadable_or_corrupt'`
+      - `pdfTriage: 'native_only'`
+      - `triageReason: 'native_pdf_corrupt_or_unreadable'`
+      - `nativeProbeCode: 'unreadable_or_corrupt'`
+      - `nativeProbeErrorName: 'InvalidPDFException'`
+      - `nativeProbeErrorCode: ''`
+      - `availableRoutes: [ 'native' ]`
+      - `chosenRoute: 'native'`
+      - `executedRoute: 'native'`
       - `sourceFileExt: 'pdf'`
-      - `sourceFileKind: 'pdf'`
+      - `sourceFileKind: 'text_document'`
   - encrypted fixture:
     - native parser warning:
       - `errorName: 'PasswordException'`
       - `parserType: 'pdf_text_layer'`
       - `errorCode: '1'`
     - execution completion:
-      - `routeKind: 'ocr'`
+      - `routeKind: 'native'`
       - `state: 'failure'`
-      - `code: 'ocr_conversion_failed'`
-      - `pdfTriage: 'ocr_only'`
-      - `triageReason: 'no_native_text_layer_detected'`
-      - `availableRoutes: [ 'ocr' ]`
-      - `chosenRoute: 'ocr'`
-      - `executedRoute: 'ocr'`
+      - `code: 'native_encrypted_or_password_protected'`
+      - `pdfTriage: 'native_only'`
+      - `triageReason: 'native_pdf_password_protected'`
+      - `nativeProbeCode: 'native_encrypted_or_password_protected'`
+      - `nativeProbeErrorName: 'PasswordException'`
+      - `nativeProbeErrorCode: '1'`
+      - `availableRoutes: [ 'native' ]`
+      - `chosenRoute: 'native'`
+      - `executedRoute: 'native'`
       - `sourceFileExt: 'pdf'`
-      - `sourceFileKind: 'pdf'`
-- Result: `BLOCKED`
+      - `sourceFileKind: 'text_document'`
+- Result: `PASS`
 - Notes:
-  - this batch did not execute native route in UI path; triage routed both fixtures to OCR after native text-layer probe failure.
-  - supplemental backend probe evidence from fixture-preparation operation (`OP-0053`) already confirms native-route direct behavior for these fixtures:
-    - `prueba_pdf_corrupto.pdf` -> `failure / unreadable_or_corrupt`
-    - `prueba_pdf_encriptado.pdf` -> `failure / unreadable_or_corrupt`
-  - user-provided renderer logs show failure processing-mode cycles:
-    - `run_pdf_route -> import_extract_ocr_failed` for both runs.
+  - post-fix rerun confirms route/error separation is now explicit and no OCR runtime misclassification is shown for these native failure fixtures.
+  - user-provided renderer logs show failure processing-mode cycles on native path:
+    - `run_pdf_route -> import_extract_native_failed` for both runs.
 
 ## Drift Log
 
@@ -591,11 +595,6 @@ Coverage strategy:
 - `MLG-02` and `MLG-03` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `NFM-A` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
 - `NFM-B` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
-- `NFM-B` expected native failure-path coverage for corrupt/encrypted PDFs, but observed UI execution path was OCR failure (`ocr_conversion_failed`) after triage.
-  - Drifted instruction/context: Section 5 item 3 is framed as native-route fixture matrix coverage.
-  - Why: current UI orchestration triages these PDFs to `ocr_only` when native text-layer probing fails (`InvalidPDFException` / `PasswordException`), so native route is not executed in the manual UI path.
-  - Impact/risk: medium for item-3 interpretation; manual UI path alone cannot prove native failure classification for these fixtures.
-  - Handling: proceeded, recorded exact observed UI behavior as `BLOCKED`, and linked supplemental direct-native probe evidence from `OP-0053`.
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.
