@@ -224,6 +224,7 @@ function buildAppMenu(lang, opts = {}) {
     const tr = loadMainTranslations(effectiveLang) || {};
     const tMain = tr.main || {};
     const m = tMain.menu || {};
+    const MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__';
 
     const resolveMainWindow =
         typeof opts.resolveMainWindow === 'function'
@@ -252,6 +253,20 @@ function buildAppMenu(lang, opts = {}) {
             `Menu action ignored (${reasonLabel}):`,
             actionId
         );
+        if (reason === 'processing_mode') {
+            const mainWindow = resolveMainWindow();
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                try {
+                    mainWindow.webContents.send('menu-click', MENU_PROCESSING_LOCK_NOTICE_ACTION);
+                } catch (err) {
+                    log.warnOnce(
+                        'menu_builder.processing_lock_notice.sendFailed',
+                        "webContents.send('menu-click') failed for processing lock notice (ignored):",
+                        err
+                    );
+                }
+            }
+        }
         return false;
     };
 

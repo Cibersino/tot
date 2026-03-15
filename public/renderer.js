@@ -1388,6 +1388,8 @@ setupToggleModoPreciso();
       });
     };
 
+    registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });
+
     registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
     registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
     registerMenuActionGuarded('faq', () => { showInfoModal('faq') });

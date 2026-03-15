@@ -67,6 +67,47 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0060
+
+- Date/time: 2026-03-15 20:45:00 -03:00
+- Operation: Implement user-visible lock toast for blocked menu actions during import/extract processing mode.
+- Why: User reported that menu actions are correctly blocked under processing lock, but unlike renderer-blocked controls they do not show the lock toast.
+- Changes made:
+  - Opened OP-0060 before code edits.
+  - Updated `electron/menu_builder.js`:
+    - added synthetic menu action payload constant: `__menu_processing_lock_notice__`
+    - when a menu action is blocked due to `processing_mode`, main now emits:
+      - `webContents.send('menu-click', '__menu_processing_lock_notice__')`
+    - preserves existing menu-action block (no functional unlock).
+  - Updated `public/renderer.js`:
+    - registered synthetic guarded action:
+      - `registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });`
+    - this routes blocked-menu notices through existing `guardUserAction(...)` lock path, reusing current toast throttling + telemetry.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/menu_builder.js`
+  - `public/renderer.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:45:00 -03:00`
+  - Wiring anchors:
+    - `electron/menu_builder.js`:
+      - `MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__'`
+      - processing-lock path sends synthetic `menu-click` payload
+    - `public/renderer.js`:
+      - `registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });`
+  - Validation:
+    - `node --check electron/menu_builder.js` -> pass
+    - `node --check public/renderer.js` -> pass
+    - `npx eslint electron/menu_builder.js public/renderer.js` -> pass
+    - `rg -n "__menu_processing_lock_notice__|processing_lock_notice" electron/menu_builder.js public/renderer.js -S`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:45:48 -03:00`
+- Outcome / next step:
+  - Completed implementation. Next step is user manual rerun of processing-lock menu attempts to verify toast now appears for blocked menu actions.
+
 ### OP-0059
 
 - Date/time: 2026-03-15 20:40:39 -03:00
