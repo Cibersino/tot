@@ -41,16 +41,77 @@ As of 2026-03-14:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-3 complete:
+  - Items 1-4 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
-  - Active next checklist item: Section 4 item 4 (`Isolate Windows-specific implementation behind platform adapters...`).
+    - platform adapter boundary isolated for picker/path behavior (`win32`/`darwin`/`linux`/fallback)
+  - Active next checklist item: Section 4 item 5 (`Implement processing mode as a distinct lock state...`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0023
+
+- Date/time: 2026-03-14 21:43:07 -03:00
+- Operation: Execute Section 4 item 4 by isolating import/extract platform behavior behind platform adapters.
+- Why: Continue Section 4 in checklist order and enforce OS-agnostic core orchestration boundaries.
+- Changes made:
+  - Added platform-adapter registry:
+    - `electron/import_extract_platform/import_extract_platform_adapter.js`
+    - maps `win32` / `darwin` / `linux` / fallback adapter resolution.
+  - Added adapter modules:
+    - `electron/import_extract_platform/platform_adapters/common.js`
+    - `electron/import_extract_platform/platform_adapters/windows.js`
+    - `electron/import_extract_platform/platform_adapters/darwin.js`
+    - `electron/import_extract_platform/platform_adapters/linux.js`
+    - `electron/import_extract_platform/platform_adapters/fallback.js`
+  - Moved picker-path behavior behind adapter methods:
+    - default-path resolution
+    - persisted-directory normalization
+    - selected-file normalization
+    - selected-directory derivation/normalization
+  - Refactored picker IPC to adapter-boundary usage only:
+    - removed direct `fs`/`path` directory logic from `electron/import_extract_platform/import_extract_file_picker_ipc.js`
+    - kept core flow OS-agnostic (`read state -> ask adapter -> show dialog -> normalize selection -> persist dir`)
+  - Low-impact assumption disclosure (proceeded):
+    - `darwin`/`linux` adapters currently share the same generic behavior profile as fallback for this stage.
+    - Rationale: establish explicit adapter seam now; behavior divergence can be added later without changing core orchestration.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Isolate Windows-specific implementation behind platform adapters so core extraction/apply orchestration remains OS-agnostic for future macOS/Linux support.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_file_picker_ipc.js`
+  - `electron/import_extract_platform/import_extract_platform_adapter.js`
+  - `electron/import_extract_platform/platform_adapters/common.js`
+  - `electron/import_extract_platform/platform_adapters/windows.js`
+  - `electron/import_extract_platform/platform_adapters/darwin.js`
+  - `electron/import_extract_platform/platform_adapters/linux.js`
+  - `electron/import_extract_platform/platform_adapters/fallback.js`
+- Evidence:
+  - Adapter boundary evidence:
+    - `electron/import_extract_platform/import_extract_platform_adapter.js` exports `getImportExtractPlatformAdapter(...)`.
+    - each platform adapter exports:
+      - `resolveDefaultPickerPath`
+      - `normalizePersistedDirectory`
+      - `normalizeSelectedFilePath`
+      - `normalizeSelectedDirectory`
+  - Core orchestration evidence:
+    - `electron/import_extract_platform/import_extract_file_picker_ipc.js` now uses `platformAdapter` for all path/default/persisted-selection operations and no longer imports `fs`/`path`.
+  - Validation:
+    - `node --check electron/import_extract_platform/import_extract_file_picker_ipc.js` passed
+    - `node --check electron/import_extract_platform/import_extract_platform_adapter.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/common.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/windows.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/darwin.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/linux.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/fallback.js` passed
+- Outcome / next step:
+  - Section 4 item 4 is complete. Next step is Section 4 item 5 (distinct processing-mode lock and interaction blocking).
 
 ### OP-0022
 
