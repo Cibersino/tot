@@ -662,6 +662,71 @@ select#presets {
   min-width: 110px;
 }
 
+.import-extract-apply-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(560px, calc(100% - 32px));
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+
+.import-extract-apply-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.import-extract-apply-modal-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.import-extract-apply-modal-body {
+  margin-top: 12px;
+}
+
+.import-extract-apply-modal-body p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.import-extract-apply-repeat-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.import-extract-apply-repeat-row label {
+  font-size: 0.95rem;
+}
+
+.import-extract-apply-repeat-row input {
+  width: 96px;
+  padding: 4px 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.import-extract-apply-modal-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.import-extract-apply-modal-actions .btn-standard {
+  min-width: 110px;
+}
+
 /* Loader for opening the manual editor */
 .editor-loader {
   position: absolute;

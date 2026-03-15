@@ -41,7 +41,7 @@ As of 2026-03-15:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-11 complete:
+  - Items 1-13 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
@@ -53,12 +53,72 @@ As of 2026-03-15:
     - native extraction engineering slice completed (`docx` mapping + normalization pipeline + structured parser-stage errors)
     - PDF triage implemented in backend execution path (`native_only` / `ocr_only` / `both`)
     - explicit route-choice UX implemented for `pdfTriage=both` via custom modal module and explicit user-selected `native`/`ocr` handoff
-  - Active next checklist item: Section 4 item 12 (`Implement post-extraction apply modal with overwrite/append/repetitions`).
+    - post-extraction apply modal implemented with overwrite/append/repetitions
+    - extracted text routed through canonical apply path with unchanged semantics
+  - Active next checklist item: Section 4 item 14 (`Enforce no silent fallback between routes`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0030
+
+- Date/time: 2026-03-15 01:19:36 -03:00
+- Operation: Execute Section 4 items 12-13 (`post-extraction apply modal` + `canonical apply-path integration`).
+- Why: Continue checklist execution after Section 4 item 11 completion while avoiding apply-logic duplication.
+- Changes made:
+  - Added shared canonical apply helper module:
+    - `public/js/text_apply_canonical.js`
+    - centralizes repeat normalization, repeated text projection/build, and canonical `setCurrentText` apply flow (`overwrite` / `append_newline`) with existing semantics.
+  - Added dedicated import/extract apply modal module:
+    - `public/js/import_extract_apply_modal.js`
+    - modal returns apply choice (`overwrite`/`append`) + repetitions.
+  - Added apply modal markup and script wiring:
+    - `public/index.html`
+  - Added apply modal styles:
+    - `public/style.css`
+  - Integrated import/extract success path with post-apply modal:
+    - `public/renderer.js`
+    - on extraction `success`: prompt apply modal -> apply via shared canonical helper.
+    - on extraction `failure`/`cancelled`: no apply modal is shown.
+  - Rewired clipboard overwrite/append handlers to reuse shared canonical helper:
+    - `public/renderer.js`
+    - removed duplicated local apply composition logic in renderer handlers.
+  - Added i18n keys for apply modal + apply outcomes:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement post-extraction apply modal with overwrite/append/repetitions.`
+    - `[x] Route extracted text through canonical apply path; keep existing semantics unchanged.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/renderer.js`
+  - `public/js/text_apply_canonical.js`
+  - `public/js/import_extract_apply_modal.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check public/renderer.js`
+    - `node --check public/js/text_apply_canonical.js`
+    - `node --check public/js/import_extract_apply_modal.js`
+  - Localization parse checks passed:
+    - `node -e "const fs=require('fs'); JSON.parse(fs.readFileSync('i18n/en/renderer.json','utf8')); JSON.parse(fs.readFileSync('i18n/es/renderer.json','utf8'));"`.
+  - Lint checks passed:
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js public/js/import_extract_route_choice_modal.js public/js/text_apply_canonical.js public/js/import_extract_apply_modal.js`
+  - Shared-logic reuse evidence:
+    - `public/renderer.js` clipboard overwrite/append and import/extract apply now call `applyTextViaCanonicalPath(...)`, which delegates to `window.TextApplyCanonical.applyTextWithMode(...)`.
+- Assumptions disclosed:
+  - Implementation will reuse canonical overwrite/append/repetitions semantics by introducing shared apply helpers consumed by both existing clipboard actions and new import/extract post-apply flow.
+  - Cancelling the post-extraction apply modal leaves current text unchanged and ends the flow without forcing an extra alert.
+- Outcome / next step:
+  - Section 4 items 12-13 are complete. Next checklist item is Section 4 item 14 (`Enforce no silent fallback between routes`).
 
 ### OP-0029
 
