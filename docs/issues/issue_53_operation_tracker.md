@@ -29,7 +29,7 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Current Authoritative Status
 
-As of 2026-03-14:
+As of 2026-03-15:
 
 - Section 1 (`Substrate and access-model decision`): complete.
 - Section 2 (`Substrate setup / billing / activation path`): complete.
@@ -41,19 +41,102 @@ As of 2026-03-14:
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
 - Sections 4-8: in progress.
   - Section 4 started.
-  - Items 1-6 complete:
+  - Items 1-8 complete:
     - dedicated import/extract button added in selector row
     - native file picker wired with default/persisted folder behavior
     - precondition block added (secondary windows + stopwatch running)
     - platform adapter boundary isolated for picker/path behavior (`win32`/`darwin`/`linux`/fallback)
     - processing-mode lock added as distinct state from startup lock; normal main-window/menu actions are blocked while active
     - OCR access/activation gate wired with explicit blocked outcomes (`unavailable` / `not-activated` / `restricted` / `quota_or_rate_limited`)
-  - Active next checklist item: Section 4 item 7 (`Implement OCR route.`).
+    - OCR route implemented and executed from backend-owned route runtime
+    - native extraction route implemented and executed from backend-owned route runtime
+  - Active next checklist item: Section 4 item 9 (`Complete native extraction engineering slice...`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0026
+
+- Date/time: 2026-03-15 00:03:47 -03:00
+- Operation: Execute Section 4 items 7-8 in one coherent backend-owned execution flow (`OCR route` + `native route`).
+- Why: User requested avoiding repeated partial 4.7 attempts and implementing 4.7/4.8 with import/extract execution ownership in backend modules instead of renderer-embedded route handling.
+- Changes made:
+  - Added OCR route runtime module:
+    - `electron/import_extract_platform/ocr_google_drive_route.js`
+    - preflight checks + OAuth bootstrap + Drive upload/convert/export + cleanup + bounded retry + explicit error mapping.
+  - Added native extraction route runtime module:
+    - `electron/import_extract_platform/native_extraction_route.js`
+    - parser coverage in this item: `txt`, `md`, `html`, `htm`.
+    - explicit native-route failure mapping (`unsupported_format`, `unreadable_or_corrupt`, `native_extraction_failed`, `aborted_by_user`).
+  - Added single backend execution IPC (route selection + execution + alert mapping):
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - channel: `import-extract-run-selected-file`
+    - responsibilities:
+      - main-window sender authorization
+      - backend route selection (`ocr` primary for `jpg/jpeg/png/webp/bmp/pdf`; otherwise `native`)
+      - OCR setup/activation validation gate before OCR execution
+      - processing-mode enter/exit lifecycle around execution
+      - primary/warning alert-key mapping returned to renderer
+  - Wired execution IPC in startup:
+    - `electron/main.js` registers `importExtractExecutionIpc`.
+  - Added preload bridge:
+    - `electron/preload.js`
+    - `runImportExtractSelectedFile(payload)`.
+  - Reduced renderer entrypoint to thin execution call:
+    - `public/renderer.js`
+    - flow: picker -> preconditions -> backend execution IPC -> alert display.
+    - removed renderer-owned OCR gate/route orchestration from click handler.
+  - Added alert keys for OCR/native route outcomes:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+    - OCR: runtime/cancelled/cleanup-warning/apply-pending
+    - native: runtime/cancelled/unsupported-format/apply-pending
+  - Added OCR route dependency in app root:
+    - `package.json` + `package-lock.json`: `googleapis@105.0.0`.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement OCR route.`
+    - `[x] Implement native extraction route.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `electron/import_extract_platform/ocr_google_drive_route.js`
+  - `electron/import_extract_platform/native_extraction_route.js`
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `package.json`
+  - `package-lock.json`
+- Evidence:
+  - Syntax validation passed:
+    - `node --check electron/import_extract_platform/ocr_google_drive_route.js`
+    - `node --check electron/import_extract_platform/native_extraction_route.js`
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check electron/main.js`
+    - `node --check electron/preload.js`
+    - `node --check public/renderer.js`
+  - JSON validation passed:
+    - `i18n/en/renderer.json` + `i18n/es/renderer.json` parsed successfully (`json-ok`).
+  - Smoke checks:
+    - OCR route missing file -> `failure / unreadable_or_corrupt`
+    - native route HTML sample -> `success` (`\"Hello world\"`)
+    - native route unsupported `.docx` -> `failure / unsupported_format`
+  - Renderer/main minimal bridge evidence:
+    - `git diff --numstat -- electron/main.js electron/preload.js public/renderer.js`
+      - `electron/main.js`: `12 0`
+      - `electron/preload.js`: `1 0`
+      - `public/renderer.js`: `23 35`
+- Assumptions disclosed:
+  - In this item, route selection is extension-based with OCR-primary for `jpg/jpeg/png/webp/bmp/pdf`; explicit user route-choice UX and PDF triage are deferred to later Section 4 items.
+  - In this item, native parser coverage is intentionally limited to `txt/md/html/htm`; deeper parser/normalization work remains for Section 4 item 9.
+  - Success outcomes in 4.7/4.8 intentionally remain apply-pending (`*_apply_pending`) until post-extraction apply flow/canonical apply integration items are implemented.
+- Outcome / next step:
+  - Section 4 items 7-8 are complete. Next checklist item is Section 4 item 9 (`Complete native extraction engineering slice...`).
 
 ### OP-0025
 

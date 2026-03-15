@@ -50,5 +50,8 @@
       ]
     },
     "artifactName": "toT-${version}-win-${arch}.${ext}"
+  },
+  "dependencies": {
+    "googleapis": "^105.0.0"
   }
 }
