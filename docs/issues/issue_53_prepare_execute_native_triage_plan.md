@@ -271,4 +271,4 @@ Must-pass checks:
 - No reintroduction of duplicated triage in renderer.
 - No hidden prepare-stage behavior.
 - No changes to canonical apply semantics.
-- No legacy model remnants, dead code or fallback to that old model. Final code should look like the old model was never there and this new implementation was there from the begining.
+- Important: No legacy model remnants, dead code or fallback to that old model. Final code should look like the old model was never there and this new implementation was there from the begining.
