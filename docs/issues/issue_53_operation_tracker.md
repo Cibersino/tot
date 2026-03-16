@@ -64,12 +64,182 @@ As of 2026-03-15:
   - Section 5 item 6 (`Validate close-window-during-processing cancellation path and invariants`): complete (`PLK-02` + `PLK-02R`).
   - Section 5 item 7 (`Validate failure/abort invariants and state separation`): complete (evidence reuse: `PRC-01` + `NFM-B` + `PLK-01/02/02R` + OP-0033 anchors).
   - Section 5 item 8 (`Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures`): complete (`SMK-02` + `AAM-01` + OP-0020 quota matrix).
-  - Active next checklist item: Section 5 item 9 (`Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice)`).
+  - Section 5 item 9 (`Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice)`): complete (`SMK-*` + `NFM-A` + `APL-01`).
+  - Section 5 item 10 (`Validate observability coverage for required fields/events (routes, latency, apply/truncation, precondition/failure/cancel/setup paths)`): complete (`OBS-10A` + `OBS-10B` + reused path evidence map).
+  - Section 5 item 11 (`Block progression until basic smoke/quality gate passes`): complete (`QG-01`).
+  - Section 5 is complete.
+  - Active next checklist item: Section 6 item 1 (`Implement processing progress UX`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0067
+
+- Date/time: 2026-03-15 21:35:25 -03:00
+- Operation: Close Section 5 items 10 and 11 using post-patch observability runs and quality-gate rollup.
+- Why: User completed the requested OBS runs after OP-0066 observability patch, enabling item-10 closure and final Section-5 gate decision.
+- Changes made:
+  - Opened OP-0067 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 10 -> `COMPLETED`
+    - section 5 coverage map item 11 -> `COMPLETED`
+    - added `## Section 5 Item 10`:
+      - `OBS-10A` (native/apply observability)
+      - `OBS-10B` (OCR/apply observability)
+      - required-field mapping across routes/latency/apply-truncation/precondition-failure-cancel-setup paths
+    - added `## Section 5 Item 11`:
+      - `QG-01` gate decision block
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 10 complete (`[x] Validate observability coverage ...`)
+    - marked item 11 complete (`[x] Block progression until basic smoke/quality gate passes.`)
+  - Updated tracker authoritative status:
+    - section 5 items 10/11 marked complete
+    - section 5 marked complete
+    - active next checklist item moved to section 6 item 1
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate observability coverage for required fields/events (routes, latency, apply/truncation, precondition/failure/cancel/setup paths).`
+    - `[x] Block progression until basic smoke/quality gate passes.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:35:25 -03:00`
+  - New user-provided OBS evidence:
+    - terminal (`OBS-10A` native):
+      - `executionLatencyMs: 104`
+      - `nativeLatencyMs: 104`
+      - route metadata fields (`availableRoutes/chosenRoute/executedRoute/sourceFileExt/sourceFileKind`)
+    - terminal (`OBS-10B` OCR):
+      - `executionLatencyMs: 5740`
+      - `ocrLatencyMs: 5740`
+      - route metadata fields (`availableRoutes/chosenRoute/executedRoute/sourceFileExt/sourceFileKind`)
+    - DevTools (`OBS-10A` + `OBS-10B`):
+      - `import/extract apply choice selected: { mode, repetitionCount, routeKind, sourceFileExt, sourceFileKind }`
+      - `import/extract apply completed: { mode, repetitionCount, truncated, resultingTextLength }`
+  - Reused evidence anchors for full item-10 field map:
+    - precondition: `PRC-01`
+    - failure: `NFM-B`
+    - cancellation: `PLK-01` / `PLK-02` / `PLK-02R`
+    - setup/activation/restriction/quota: `SMK-02` + `AAM-01` + OP-0020 case 4
+    - truncation event: `APL-01`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-10 and item-11 coverage now `COMPLETED`
+    - `docs/issues/issue_53_implementation_plan.md` item 10 and item 11 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:36:17 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 is fully closed (items 1-11). Next step is Section 6 item 1 (`Implement processing progress UX`).
+
+### OP-0066
+
+- Date/time: 2026-03-15 21:25:49 -03:00
+- Operation: Patch observability gaps for item 10 (`ocr/native latency`, `apply choice + repetition count`).
+- Why: Item-10 audit showed required observability fields were partially missing from structured logs.
+- Changes made:
+  - Opened OP-0066 before code edits.
+  - Updated `electron/import_extract_platform/import_extract_execution_ipc.js`:
+    - added `attachExecutionLatencyMetadata(...)` helper.
+    - execution handler now captures per-run latency (`executionLatencyMs`) and logs:
+      - `executionLatencyMs`
+      - `ocrLatencyMs`
+      - `nativeLatencyMs`
+    - latency metadata is attached to result provenance (`metadataSafeForLogs`) for downstream observability.
+  - Updated `public/renderer.js` import/extract apply path:
+    - added structured log on apply choice selection:
+      - `mode`
+      - `repetitionCount`
+      - route/file context
+    - added structured log on apply failure:
+      - `mode`
+      - `repetitionCount`
+      - failure `code`
+    - added structured log on apply completion:
+      - `mode`
+      - `repetitionCount`
+      - `truncated`
+      - `resultingTextLength`
+- Checklist updates:
+  - None (item-10 checkbox remains pending until runtime evidence capture).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `public/renderer.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:25:49 -03:00`
+  - Wiring anchors:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`:
+      - `attachExecutionLatencyMetadata`
+      - `executionLatencyMs`
+      - `ocrLatencyMs`
+      - `nativeLatencyMs`
+    - `public/renderer.js`:
+      - `import/extract apply choice selected`
+      - `import/extract apply failed`
+      - `import/extract apply completed`
+  - Validation:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js` -> pass
+    - `node --check public/renderer.js` -> pass
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js` -> pass
+    - `rg -n "attachExecutionLatencyMetadata|executionLatencyMs|ocrLatencyMs|nativeLatencyMs|import/extract apply choice selected|import/extract apply completed|import/extract apply failed" electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js -S`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:26:49 -03:00`
+- Outcome / next step:
+  - Completed implementation patch for missing observability fields. Next step is user manual runtime capture to validate item-10 coverage with live logs.
+
+### OP-0065
+
+- Date/time: 2026-03-15 21:22:44 -03:00
+- Operation: Close Section 5 item 9 using new truncation-cap evidence plus existing apply-mode evidence.
+- Why: User provided the missing MAX_TEXT_CHARS/truncation proof from a high-repetition import/apply run.
+- Changes made:
+  - Opened OP-0065 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 9 -> `COMPLETED`
+    - added `## Section 5 Item 9` with:
+      - `APL-01 Truncation and Hard-Cap Validation`
+      - mixed-evidence closure mapping for overwrite/append/repetitions + cap/truncation
+    - added drift-log note documenting focused delta run strategy
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 9 complete (`[x] Validate canonical apply behavior ...`)
+  - Updated tracker authoritative status:
+    - section 5 item 9 marked complete
+    - active next checklist item moved to section 5 item 10
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice).`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:22:44 -03:00`
+  - `APL-01` new evidence (user-provided):
+    - truncation alert text:
+      - `Applied extracted text exceeded the limit and was truncated.`
+    - terminal:
+      - `import/extract execution completed ... state: 'success' ... executedRoute: 'native'`
+      - `text_state.applyCurrentText.truncated ... hard cap of 10000000 chars`
+    - DevTools:
+      - `(await window.electronAPI.getCurrentText()).length` -> `10000000`
+  - Reused evidence anchors for mode coverage:
+    - overwrite: `SMK-01`, `SMK-04`, `SMK-05`
+    - append/repetitions: `NFM-A`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-9 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: SMK-01/04/05, NFM-A, APL-01`
+    - `docs/issues/issue_53_implementation_plan.md` item 9 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:23:19 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 9 is evidence-backed and closed. Next step is Section 5 item 10 (`Validate observability coverage for required fields/events ...`).
 
 ### OP-0064
 

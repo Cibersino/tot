@@ -65,16 +65,16 @@ Tracker policy for Section 5:
 - Evidence blocks: `SMK-02` (activation gating/recovery), `AAM-01` (restriction path), OP-0020 validation matrix case 4 (`quota_or_rate_limited`)
 
 9. Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice)
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `COMPLETED`
+- Evidence blocks: `SMK-01`/`SMK-04`/`SMK-05` (overwrite), `NFM-A` (append + repetitions), `APL-01` (MAX_TEXT_CHARS + truncation notice)
 
 10. Validate observability coverage for required fields/events
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `COMPLETED`
+- Evidence blocks: `OBS-10A`, `OBS-10B`, plus reused telemetry blocks (`PRC-01`, `NFM-B`, `PLK-01/02/02R`, `SMK-02`, `AAM-01`, `APL-01`)
 
 11. Block progression until basic smoke/quality gate passes
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `COMPLETED`
+- Evidence blocks: `QG-01` (Section 5 checklist rollup)
 
 ## Section 5 Item 1: Core Smoke Matrix
 
@@ -919,6 +919,142 @@ Coverage strategy:
   - item-8 closure uses combined runtime evidence + deterministic validator evidence.
   - live provider quota exhaustion was not newly reproduced in this section, but mapped behavior is already evidenced and contract-locked.
 
+## Section 5 Item 9: Canonical Apply Behavior
+
+### APL-01 Truncation and Hard-Cap Validation (`docx`, overwrite, repetitions=100)
+
+- Objective: Validate canonical apply path hard-cap behavior and explicit truncation notice on oversized applied text.
+- Fixture: `tools_local/smoke/prueba_docx.docx`
+- Preconditions:
+  - app started with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+- Steps:
+  - user executed import/extract for `prueba_docx.docx`
+  - apply modal selections:
+    - mode: `Overwrite`
+    - repetitions: `100`
+  - user captured:
+    - UI truncation alert text
+    - final `getCurrentText()` length in DevTools
+- Expected:
+  - apply succeeds through canonical apply path
+  - truncation notice is shown
+  - resulting text length is capped at `MAX_TEXT_CHARS`
+- Actual (user-provided):
+  - truncation alert shown:
+    - `Applied extracted text exceeded the limit and was truncated.`
+  - terminal runtime evidence:
+    - route execution success:
+      - `routeKind: 'native'`
+      - `state: 'success'`
+      - `executedRoute: 'native'`
+    - canonical text-state cap warning:
+      - `text_state.applyCurrentText.truncated applyCurrentText: entry truncated to effective hard cap of 10000000 chars.`
+  - DevTools verification:
+    - `(await window.electronAPI.getCurrentText()).length` -> `10000000`
+- Result: `PASS`
+
+### Item-9 Closure Mapping (mixed evidence)
+
+- overwrite behavior:
+  - reused `SMK-01`, `SMK-04`, `SMK-05`
+- append + repetitions behavior:
+  - reused `NFM-A` (batch evidence recorded with append and repetitions applied)
+- MAX_TEXT_CHARS + truncation notice:
+  - `APL-01` above
+- Result: `PASS`
+- Notes:
+  - item-9 closure combines prior validated apply-mode evidence with new hard-cap/truncation evidence.
+
+## Section 5 Item 10: Observability Coverage
+
+### OBS-10A Native Route + Apply Observability
+
+- Objective: Validate post-OP-0066 observability fields on native success/apply flow.
+- Fixture: `tools_local/smoke/prueba_docx.docx`
+- Steps:
+  - user executed import/extract for docx file
+  - apply modal selections:
+    - mode: `append`
+    - repetitions: `2`
+- Expected:
+  - execution completion logs include route metadata + native latency fields
+  - renderer logs include apply choice + repetition count + apply completion fields
+- Actual (user-provided):
+  - terminal execution log includes:
+    - `routeKind: 'native'`
+    - `state: 'success'`
+    - `availableRoutes: [ 'native' ]`
+    - `chosenRoute: 'native'`
+    - `executedRoute: 'native'`
+    - `sourceFileExt: 'docx'`
+    - `sourceFileKind: 'text_document'`
+    - `executionLatencyMs: 104`
+    - `ocrLatencyMs: null`
+    - `nativeLatencyMs: 104`
+  - DevTools apply logs include:
+    - `import/extract apply choice selected: { mode: 'append', repetitionCount: 2, routeKind: 'native', sourceFileExt: 'docx', sourceFileKind: 'text_document' }`
+    - `import/extract apply completed: { mode: 'append', repetitionCount: 2, truncated: false, resultingTextLength: 261386 }`
+- Result: `PASS`
+
+### OBS-10B OCR Route + Apply Observability
+
+- Objective: Validate post-OP-0066 observability fields on OCR success/apply flow.
+- Fixture: `tools_local/smoke/prueba_png.png`
+- Steps:
+  - user executed import/extract for png file (OCR route)
+  - apply modal selections:
+    - mode: `overwrite`
+    - repetitions: `1`
+- Expected:
+  - execution completion logs include OCR latency fields
+  - renderer logs include apply choice + repetition count + apply completion fields
+- Actual (user-provided):
+  - terminal execution log includes:
+    - `routeKind: 'ocr'`
+    - `state: 'success'`
+    - `availableRoutes: [ 'ocr' ]`
+    - `chosenRoute: 'ocr'`
+    - `executedRoute: 'ocr'`
+    - `sourceFileExt: 'png'`
+    - `sourceFileKind: 'image'`
+    - `executionLatencyMs: 5740`
+    - `ocrLatencyMs: 5740`
+    - `nativeLatencyMs: null`
+  - DevTools apply logs include:
+    - `import/extract apply choice selected: { mode: 'overwrite', repetitionCount: 1, routeKind: 'ocr', sourceFileExt: 'png', sourceFileKind: 'image' }`
+    - `import/extract apply completed: { mode: 'overwrite', repetitionCount: 1, truncated: false, resultingTextLength: 2434 }`
+- Result: `PASS`
+
+### Item-10 Coverage Mapping (required fields/events)
+
+- routes (selected/available/chosen/executed): covered by `OBS-10A`, `OBS-10B`, and prior `SMK-*`/`NFM-*` logs
+- latency (`OCR/native latency`): covered explicitly by `OBS-10A` (`nativeLatencyMs`) and `OBS-10B` (`ocrLatencyMs`)
+- apply/truncation:
+  - apply choice + repetition count: `OBS-10A`, `OBS-10B`
+  - truncation event: `APL-01` (`text_state.applyCurrentText.truncated`)
+- precondition/failure/cancel/setup paths:
+  - precondition: `PRC-01`
+  - failure: `NFM-B`
+  - cancellation: `PLK-01`, `PLK-02`, `PLK-02R`
+  - setup/activation/restriction/quota taxonomy: `SMK-02`, `AAM-01`, OP-0020 case 4
+- Result: `PASS`
+- Notes:
+  - OP-0066 introduced the missing structured latency/apply logs; OBS-10A/B confirm they are emitted at runtime.
+
+## Section 5 Item 11: Basic Quality Gate Progression Block
+
+### QG-01 Section 5 Gate Decision
+
+- Objective: Confirm progression is blocked until all Section 5 checklist items pass, then explicitly mark gate satisfied.
+- Evidence:
+  - items 1-10 status in this file are all `COMPLETED`
+  - corresponding implementation plan checkboxes for items 1-10 are all `[x]`
+- Decision:
+  - quality gate for Section 5 basic validation is `PASSED`
+  - progression block is lifted
+- Result: `PASS`
+
 ## Drift Log
 
 - `SMK-01` used `TOT_LOG_LEVEL='debug'` instead of the initial planned `info`.
@@ -950,6 +1086,16 @@ Coverage strategy:
   - Why: restriction-path coverage for OCR gate is explicit and deterministic via the gate API, with less redundant UI noise.
   - Impact/risk: low; this directly exercises the authoritative gate contract that owns restricted-path classification.
   - Handling: recorded terminal + DevTools artifacts and combined with existing button-flow activation evidence (`SMK-02`).
+- `APL-01` reused prior overwrite/append/repetitions coverage and executed a focused truncation-cap run only.
+  - Drifted instruction/context: a full apply matrix could be rerun per mode, but that would duplicate already validated runs.
+  - Why: item-9 missing delta was MAX_TEXT_CHARS + truncation notice, not base overwrite/append semantics.
+  - Impact/risk: low; closure mapping explicitly cites prior mode evidence and new cap evidence.
+  - Handling: recorded mapping and new hard-cap proof explicitly.
+- Item-10 closure required a code patch (`OP-0066`) before runtime capture.
+  - Drifted instruction/context: item 10 was initially expected to close via evidence mapping only.
+  - Why: audit found missing explicit structured fields (`ocr/native latency`, `apply choice + repetition count`) in logs.
+  - Impact/risk: low-to-medium; observability-only runtime logs changed, no user-facing behavior changes.
+  - Handling: patched minimally, then captured post-patch runtime evidence (`OBS-10A`, `OBS-10B`) before closure.
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.
