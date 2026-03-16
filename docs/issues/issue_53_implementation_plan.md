@@ -178,6 +178,7 @@ Entrypoint guardrail:
 
 ## 6. Processing progress and ETA implementation
 
+- [ ] Evaluate feasibility and tradeoffs for progress/ETA by route (`ocr`, `native`, `both`) and lock Section 6 scope before implementation.
 - [ ] Implement processing progress UX.
 - [ ] Implement ETA behavior and calibrate realism.
 - [ ] Keep progress + ETA visible in the main window whenever the window is not minimized.
