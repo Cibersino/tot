@@ -60,12 +60,100 @@ As of 2026-03-15:
   - Section 5 item 2 (`Add multilingual smoke coverage across OCR + native routes`): complete.
   - Section 5 item 3 (`Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)`): complete.
   - Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`): complete.
-  - Active next checklist item: Section 5 item 5 (`Validate processing lock behavior`) with `PLK-01`/`PLK-02` evidence captured; closure pending expectation alignment for menu-lock toast behavior and post-cancel close semantics.
+  - Section 5 item 5 (`Validate processing lock behavior`): complete (`PLK-01` + `PLK-01R`).
+  - Active next checklist item: Section 5 item 6 (`Validate close-window-during-processing cancellation path and invariants`) with `PLK-02` evidence captured and post-cancel-close fix implemented; manual rerun validation pending.
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0062
+
+- Date/time: 2026-03-15 20:53:02 -03:00
+- Operation: Implement close-window behavior refinement so `X` during processing cancels and then closes the main window.
+- Why: User explicitly requested this as a defect fix after item-5 validation, instead of keeping the window open after `close_during_processing`.
+- Changes made:
+  - Opened OP-0062 before code edits.
+  - Updated `electron/main.js`:
+    - added `pendingMainWindowCloseAfterProcessingAbort` state flag.
+    - when processing mode transitions to inactive and close-after-abort is pending, main now schedules `mainWin.close()` on the next tick.
+    - in `mainWin.on('close', ...)`, close during active processing now:
+      - `preventDefault()`
+      - sets close-after-abort pending flag
+      - requests abort with `reason: 'close_during_processing'`
+      - clears pending flag if abort request fails.
+  - Preserved cancellation semantics:
+    - close is still first converted into cancellation request while processing is active.
+    - no direct bypass of processing lock was introduced.
+- Checklist updates:
+  - None (awaiting manual validation before any item-6 toggle).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/main.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:53:02 -03:00`
+  - Wiring anchors:
+    - `pendingMainWindowCloseAfterProcessingAbort` declaration and usage in:
+      - processing-mode `onStateChanged`
+      - main-window `close` handler
+  - Validation:
+    - `node --check electron/main.js` -> pass
+    - `npx eslint electron/main.js` -> pass
+    - `rg -n "pendingMainWindowCloseAfterProcessingAbort|close_during_processing" electron/main.js -S`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:53:45 -03:00`
+- Outcome / next step:
+  - Completed implementation. Next step is user manual rerun of close-`X` during processing to verify cancel-then-close behavior and decide item-6 closure.
+
+### OP-0061
+
+- Date/time: 2026-03-15 20:51:09 -03:00
+- Operation: Record post-fix manual validation proving processing-lock toast now appears for blocked menu actions.
+- Why: User executed the requested rerun after OP-0060 and provided terminal + DevTools evidence for the exact lock-toast behavior.
+- Changes made:
+  - Opened OP-0061 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 5 -> `COMPLETED`
+    - added rerun case `PLK-01R` documenting post-OP-0060 menu-toast behavior
+    - retained `PLK-01` as pre-fix evidence and superseded the menu-toast gap with rerun proof
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 5 complete (`[x] Validate processing lock behavior ...`)
+  - Updated tracker authoritative status:
+    - section 5 item 5 marked complete
+    - active next checklist item moved to section 5 item 6
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate processing lock behavior:`
+      - distinct from startup lock
+      - only close/minimize/move/abort remain available during processing
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:51:09 -03:00`
+  - `PLK-01R` observed outcome evidence (user-provided):
+    - lock toast appears for blocked menu attempts: `yes`
+    - alert text:
+      - `Import/extract is processing. Main-window interactions are locked until processing ends or you abort.`
+  - Main-process lock telemetry evidence:
+    - `Menu action ignored (processing-mode lock active): test_velocidad`
+    - `Menu action ignored (processing-mode lock active): menu.language`
+  - Renderer telemetry evidence:
+    - `menu-click received (menu_actions.js): __menu_processing_lock_notice__`
+    - `Renderer action ignored (processing-mode lock active): menu.__menu_processing_lock_notice__`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-5 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: PLK-01, PLK-01R`
+    - `docs/issues/issue_53_implementation_plan.md` item 5 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:52:02 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 5 is now evidence-backed and closed. Next step is implementing the requested follow-up fix for close-window behavior during processing (item 6).
 
 ### OP-0060
 

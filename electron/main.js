@@ -62,6 +62,20 @@ const importExtractProcessingModeController = importExtractProcessingModeIpc.cre
       if (targetWin) {
         targetWin.webContents.send('import-extract-processing-mode-changed', state);
       }
+      if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
+        pendingMainWindowCloseAfterProcessingAbort = false;
+        if (targetWin && !targetWin.isDestroyed()) {
+          setTimeout(() => {
+            try {
+              if (targetWin && !targetWin.isDestroyed()) {
+                targetWin.close();
+              }
+            } catch (err) {
+              log.warn('Failed to close main window after processing cancellation (ignored):', err);
+            }
+          }, 0);
+        }
+      }
     } catch (err) {
       log.warn('Failed to broadcast processing-mode state (ignored):', err);
     }
@@ -154,6 +168,7 @@ let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating stopwatch window (flotante.html)
 let taskEditorWin = null; // Task editor window (task_editor.html)
 let taskEditorForceClose = false;
+let pendingMainWindowCloseAfterProcessingAbort = false;
 
 // =============================================================================
 // Startup readiness gates + handshake state
@@ -328,11 +343,13 @@ function createMainWindow() {
         if (event && typeof event.preventDefault === 'function') {
           event.preventDefault();
         }
+        pendingMainWindowCloseAfterProcessingAbort = true;
         const abortResult = importExtractProcessingModeController.requestAbort({
           source: 'main_window',
           reason: 'close_during_processing',
         });
         if (!abortResult || abortResult.ok !== true) {
+          pendingMainWindowCloseAfterProcessingAbort = false;
           log.warn('Main window close during processing could not request cancellation:', abortResult);
         }
         return;

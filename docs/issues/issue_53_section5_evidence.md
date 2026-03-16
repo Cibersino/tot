@@ -49,8 +49,8 @@ Tracker policy for Section 5:
 - Evidence blocks: `PRC-01`
 
 5. Validate processing lock behavior (distinct from startup lock; only close/minimize/move/abort available)
-- Status: `IN_PROGRESS`
-- Evidence blocks: `PLK-01`
+- Status: `COMPLETED`
+- Evidence blocks: `PLK-01`, `PLK-01R`
 
 6. Validate close-window-during-processing cancellation path and invariants
 - Status: `IN_PROGRESS`
@@ -709,7 +709,54 @@ Coverage strategy:
 - Result: `PASS`
 - Notes:
   - lock behavior is functionally evidenced for blocked interactions and allowed window actions.
-  - item-5 closure is kept `IN_PROGRESS` pending expectation alignment on whether blocked native-menu actions must also surface a renderer toast.
+  - this initial run exposed a UX gap: menu-lock attempts were blocked but did not show a user-visible lock toast.
+
+### PLK-01R Processing Lock Menu Toast Rerun (post-fix OP-0060)
+
+- Objective: Verify blocked menu actions now also surface the processing-lock toast after OP-0060.
+- Fixture: `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+- Preconditions:
+  - no secondary windows open
+  - stopwatch stopped
+- Steps:
+  - user started app with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+  - user started import/extract with fixture above
+  - while processing mode was active, user attempted:
+    - menu action `Tools -> Speed test`
+    - menu action `Preferences -> Language`
+  - user then clicked `Abort`
+- Expected:
+  - menu actions stay blocked by processing lock
+  - lock toast appears for blocked menu attempts
+- Actual (user-reported):
+  - menu actions blocked: `yes`
+  - lock toast appears for menu attempts: `yes`
+  - alert text:
+    - `Import/extract is processing. Main-window interactions are locked until processing ends or you abort.`
+  - abort cancellation path: `success`
+  - apply modal shown: `no`
+  - text applied: `no`
+- Telemetry observed:
+  - main-process logs:
+    - `Processing mode enabled: { lockId: 1, source: 'import_extract_execution', reason: 'run_pdf_route' }`
+    - `Menu action ignored (processing-mode lock active): test_velocidad`
+    - `Menu action ignored (processing-mode lock active): menu.language`
+    - `Processing abort requested: { lockId: 1, source: 'main_window', reason: 'user_abort_button' }`
+    - `Processing mode disabled: { lockId: 1, source: 'main_window', reason: 'user_abort_button' }`
+    - execution completion:
+      - `state: 'cancelled'`
+      - `code: 'aborted_by_user'`
+      - `executedRoute: 'ocr'`
+  - renderer logs:
+    - `menu-click received (menu_actions.js): __menu_processing_lock_notice__` (twice)
+    - `Renderer action ignored (processing-mode lock active): menu.__menu_processing_lock_notice__`
+    - processing state transitions:
+      - `active: true` on start
+      - `active: false` after abort
+- Result: `PASS`
+- Notes:
+  - this rerun closes the menu-lock toast gap raised after `PLK-01`.
 
 ## Section 5 Item 6: Close During Processing Cancellation Path
 
