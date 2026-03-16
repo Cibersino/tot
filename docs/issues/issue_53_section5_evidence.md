@@ -53,8 +53,8 @@ Tracker policy for Section 5:
 - Evidence blocks: `PLK-01`, `PLK-01R`
 
 6. Validate close-window-during-processing cancellation path and invariants
-- Status: `IN_PROGRESS`
-- Evidence blocks: `PLK-02`
+- Status: `COMPLETED`
+- Evidence blocks: `PLK-02`, `PLK-02R`
 
 7. Validate failure/abort invariants and state separation
 - Status: `PENDING`
@@ -799,7 +799,38 @@ Coverage strategy:
     - `import/extract processing-mode changed: {active: false, lockId: 2, source: 'ipc_event', reason: 'close_during_processing'}`
 - Result: `PASS`
 - Notes:
-  - item-6 closure is kept `IN_PROGRESS` pending expectation alignment on post-cancel close behavior (current behavior keeps window open after converting `X` into cancellation request).
+  - this initial run exposed a UX gap: close-triggered cancellation kept the window open instead of closing after cancellation.
+
+### PLK-02R Close Window `X` Rerun (post-fix OP-0062)
+
+- Objective: Verify close-window request during processing now follows cancel-then-close behavior.
+- Fixture: `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+- Preconditions:
+  - no secondary windows open
+  - stopwatch stopped
+- Steps:
+  - user started app with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+  - user started import/extract with fixture above
+  - while processing mode was active, user clicked main-window close (`X`) once
+- Expected:
+  - close request triggers cancellation path (`close_during_processing`)
+  - processing mode exits
+  - app window closes after cancellation request is processed
+- Actual (user-reported):
+  - close action triggered cancellation path: `yes`
+  - processing cancelled: `yes`
+  - app window closed after close request: `yes`
+  - renderer DevTools evidence: `unavailable` (window/app closed as part of expected behavior)
+- Telemetry observed (main-process logs):
+  - `Processing mode enabled: { lockId: 1, source: 'import_extract_execution', reason: 'run_pdf_route' }`
+  - `Processing abort requested: { lockId: 1, source: 'main_window', reason: 'close_during_processing' }`
+  - `Processing mode disabled: { lockId: 1, source: 'main_window', reason: 'close_during_processing' }`
+- Result: `PASS`
+- Notes:
+  - together, `PLK-02` + `PLK-02R` satisfy item-6 coverage:
+    - cancellation-path telemetry and no apply/text mutation evidence (`PLK-02`)
+    - post-fix close-after-cancel behavior (`PLK-02R`)
 
 ## Drift Log
 
@@ -822,6 +853,11 @@ Coverage strategy:
   - Impact/risk: low; lock behavior was still validated through available blocked actions (`wpm-slider`, menu actions) and allowed actions (move/minimize/abort).
   - Handling: recorded actual behavior explicitly and kept item closure pending for expectation alignment.
 - `PLK-01` and `PLK-02` also used `TOT_LOG_LEVEL='debug'` (same low-impact context drift as SMK-01).
+- `PLK-02R` could not include renderer DevTools logs because the expected behavior closes the app window.
+  - Drifted instruction/context: prior section-5 cards usually include both main-process and renderer snippets.
+  - Why: renderer console becomes unavailable immediately after successful close-after-cancel behavior.
+  - Impact/risk: low; close-path acceptance criteria are main-process lifecycle/telemetry-driven and were observed.
+  - Handling: recorded explicit limitation and relied on terminal evidence + user-observed close outcome.
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.

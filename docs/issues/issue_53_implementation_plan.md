@@ -169,7 +169,7 @@ Entrypoint guardrail:
 - [x] Validate processing lock behavior:
   - distinct from startup lock
   - only close/minimize/move/abort remain available during processing
-- [ ] Validate close-window-during-processing cancellation path and invariants.
+- [x] Validate close-window-during-processing cancellation path and invariants.
 - [ ] Validate failure/abort invariants and state separation.
 - [ ] Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures.
 - [ ] Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice).
