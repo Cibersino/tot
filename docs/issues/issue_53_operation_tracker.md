@@ -61,7 +61,8 @@ As of 2026-03-15:
   - Section 5 item 3 (`Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)`): complete.
   - Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`): complete.
   - Section 5 item 5 (`Validate processing lock behavior`): complete (`PLK-01` + `PLK-01R`).
-  - Active next checklist item: Section 5 item 6 (`Validate close-window-during-processing cancellation path and invariants`) with `PLK-02` evidence captured and post-cancel-close fix implemented; manual rerun validation pending.
+  - Section 5 item 6 (`Validate close-window-during-processing cancellation path and invariants`): complete (`PLK-02` + `PLK-02R`).
+  - Active next checklist item: Section 5 item 7 (`Validate failure/abort invariants and state separation`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
@@ -87,10 +88,13 @@ As of 2026-03-15:
     - close is still first converted into cancellation request while processing is active.
     - no direct bypass of processing lock was introduced.
 - Checklist updates:
-  - None (awaiting manual validation before any item-6 toggle).
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate close-window-during-processing cancellation path and invariants.`
 - Files touched:
   - `docs/issues/issue_53_operation_tracker.md`
   - `electron/main.js`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
 - Evidence:
   - Operation open evidence:
     - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:53:02 -03:00`
@@ -102,10 +106,21 @@ As of 2026-03-15:
     - `node --check electron/main.js` -> pass
     - `npx eslint electron/main.js` -> pass
     - `rg -n "pendingMainWindowCloseAfterProcessingAbort|close_during_processing" electron/main.js -S`
+  - Manual rerun evidence (user-provided):
+    - app closes after clicking `X` during active processing: `yes`
+    - main-process logs show close-cancel path:
+      - `Processing mode enabled: { lockId: 1, source: 'import_extract_execution', reason: 'run_pdf_route' }`
+      - `Processing abort requested: { lockId: 1, source: 'main_window', reason: 'close_during_processing' }`
+      - `Processing mode disabled: { lockId: 1, source: 'main_window', reason: 'close_during_processing' }`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-6 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: PLK-02, PLK-02R`
+    - `docs/issues/issue_53_implementation_plan.md` item 6 now marked `[x]`
   - Completion evidence:
-    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:53:45 -03:00`
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:03:45 -03:00`
 - Outcome / next step:
-  - Completed implementation. Next step is user manual rerun of close-`X` during processing to verify cancel-then-close behavior and decide item-6 closure.
+  - Completed implementation and validation. Section 5 item 6 is now evidence-backed and closed. Next step is Section 5 item 7 (`Validate failure/abort invariants and state separation`).
 
 ### OP-0061
 
