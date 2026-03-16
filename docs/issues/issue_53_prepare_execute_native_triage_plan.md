@@ -11,6 +11,7 @@ Implement Option 2 (`prepare` then `execute`) to fix both confirmed defects with
 
 - remove duplicated PDF triage/probe work in `pdfTriage=both`
 - remove hidden heavy pre-lock work by making pre-execution work explicit
+- perform a hard cutover to the new model with no legacy/fallback remnants
 
 Non-negotiable correctness for native triage:
 
@@ -40,6 +41,7 @@ In scope:
 - explicit pre-execution UI stage
 - one-time prepared payload/token lifecycle
 - logging and test updates
+- hard cleanup/removal of previous single-call model code paths
 
 Out of scope:
 
@@ -47,6 +49,7 @@ Out of scope:
 - changing OCR substrate/access model
 - changing Issue 53 acceptance criteria outside this defect family
 - page-sampled triage policy as final truth for native "no selectable text"
+- compatibility fallback to the legacy single-call execution model
 
 ## 4) Target Flow
 
@@ -264,6 +267,7 @@ Must-pass checks:
 8. Add tests/harness probes for duplicate-triage prevention.
 9. Run lint/syntax checks and manual validation matrix.
 10. Update operation tracker evidence and close with metrics.
+11. Remove superseded legacy execution model artifacts and dead i18n/bridge code.
 
 ## 13) Drift Guardrails
 
@@ -271,3 +275,32 @@ Must-pass checks:
 - No reintroduction of duplicated triage in renderer.
 - No hidden prepare-stage behavior.
 - No changes to canonical apply semantics.
+- No compatibility fallback to `import-extract-run-selected-file`.
+- No legacy "dual-call route-choice on one IPC" path retained behind flags.
+
+## 14) Hard Cutover Cleanup Requirements
+
+Non-negotiable cleanup requirement:
+
+- after migration, only prepare/execute channels remain for import/extract runtime flow.
+
+Must remove or refactor all legacy-model remnants:
+
+1. IPC and preload:
+- remove direct renderer usage of legacy single-call channel for import/extract runtime execution.
+- remove obsolete preload bridge entries tied only to the legacy runtime path.
+
+2. Backend execution path:
+- remove legacy route-choice handshake behavior that depends on returning `requiresRouteChoice` from the old single-call runtime endpoint.
+- remove dead triage/execute coupling branches that only existed to support the second legacy call.
+
+3. Renderer orchestration:
+- remove old two-call orchestration branches (`first call -> modal -> second call`) from active path.
+- keep only `prepare -> route choice (if required) -> execute`.
+
+4. Localization and alerts:
+- remove dead alert keys/messages that are only reachable from removed legacy paths.
+
+5. Verification gate before closure:
+- `rg` check confirms no active runtime references remain to the legacy single-call import/extract flow.
+- manual flow confirms no hidden fallback to old model occurs when prepare/execute path fails.
