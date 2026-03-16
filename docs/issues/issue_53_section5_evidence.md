@@ -57,8 +57,8 @@ Tracker policy for Section 5:
 - Evidence blocks: `PLK-02`, `PLK-02R`
 
 7. Validate failure/abort invariants and state separation
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `COMPLETED`
+- Evidence blocks: `PRC-01`, `NFM-B`, `PLK-01`, `PLK-02`, `PLK-02R` (plus OP-0033 invariant-enforcement implementation anchors)
 
 8. Validate access / billing / activation model behavior (activation gating, restriction paths, quota/budget/usage-limit failures)
 - Status: `PENDING`
@@ -831,6 +831,44 @@ Coverage strategy:
   - together, `PLK-02` + `PLK-02R` satisfy item-6 coverage:
     - cancellation-path telemetry and no apply/text mutation evidence (`PLK-02`)
     - post-fix close-after-cancel behavior (`PLK-02R`)
+
+## Section 5 Item 7: Failure/Abort Invariants and State Separation
+
+### INV-07 Evidence Reuse Matrix (no new run)
+
+- Objective: Validate item-7 invariants and taxonomy separation without redundant reruns by mapping already-completed Section 5 evidence.
+- Evidence reuse decision:
+  - user explicitly confirmed prior runs already demonstrate item-7 behavior and requested continuation without new UI executions.
+- Mapping:
+  - precondition-rejected is distinct from extraction failure/cancel:
+    - `PRC-01`:
+      - `state: precondition_rejected`
+      - no route execution
+      - no route-choice/apply modal
+  - extraction-failure is distinct from cancellation:
+    - `NFM-B`:
+      - `state: failure`
+      - explicit native failure codes (`unreadable_or_corrupt`, `native_encrypted_or_password_protected`)
+      - no apply modal
+      - no text apply
+  - cancellation is distinct from extraction-failure:
+    - `PLK-01` / `PLK-02` / `PLK-02R`:
+      - `state: cancelled`
+      - `code: aborted_by_user`
+      - reasons include `user_abort_button` and `close_during_processing`
+      - no apply modal
+      - no text apply
+  - invariants (no text mutation on failure/cancel):
+    - evidenced by failure/cancel cards above reporting:
+      - `apply modal: no`
+      - `text applied: no`
+    - supported by implementation anchors from OP-0033:
+      - backend `enforceFailureAbortInvariants(...)` drops text on non-success/cancel paths
+      - renderer opens apply modal only for `resultState === 'success'`
+- Result: `PASS`
+- Notes:
+  - closure is based on explicit evidence reuse, not a new manual run.
+  - residual risk is low: item-7 does not have an additional unexercised route/state combination after the mapped cards above.
 
 ## Drift Log
 

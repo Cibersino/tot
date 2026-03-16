@@ -62,12 +62,60 @@ As of 2026-03-15:
   - Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`): complete.
   - Section 5 item 5 (`Validate processing lock behavior`): complete (`PLK-01` + `PLK-01R`).
   - Section 5 item 6 (`Validate close-window-during-processing cancellation path and invariants`): complete (`PLK-02` + `PLK-02R`).
-  - Active next checklist item: Section 5 item 7 (`Validate failure/abort invariants and state separation`).
+  - Section 5 item 7 (`Validate failure/abort invariants and state separation`): complete (evidence reuse: `PRC-01` + `NFM-B` + `PLK-01/02/02R` + OP-0033 anchors).
+  - Active next checklist item: Section 5 item 8 (`Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0063
+
+- Date/time: 2026-03-15 21:09:34 -03:00
+- Operation: Close Section 5 item 7 using existing evidence reuse (no new manual runs).
+- Why: User confirmed prior runs already demonstrate failure/abort invariants and requested continuation without redundant reruns.
+- Changes made:
+  - Opened OP-0063 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 7 -> `COMPLETED`
+    - added `## Section 5 Item 7` with `INV-07 Evidence Reuse Matrix (no new run)`
+    - mapped item-7 closure to existing evidence blocks:
+      - `PRC-01`
+      - `NFM-B`
+      - `PLK-01`, `PLK-02`, `PLK-02R`
+      - OP-0033 implementation anchors (`enforceFailureAbortInvariants` + success-only apply modal gate)
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 7 complete (`[x] Validate failure/abort invariants and state separation.`)
+  - Updated tracker authoritative status:
+    - section 5 item 7 marked complete
+    - active next checklist item moved to section 5 item 8
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate failure/abort invariants and state separation.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:09:34 -03:00`
+  - Evidence-reuse closure anchors:
+    - `PRC-01` -> `precondition_rejected` with blocked-start/no apply flow
+    - `NFM-B` -> extraction `state: failure` with explicit native failure codes + no apply/text apply
+    - `PLK-01` / `PLK-02` / `PLK-02R` -> cancellation `state: cancelled`, `code: aborted_by_user`, no apply/text apply
+    - OP-0033 invariant-enforcement anchors:
+      - backend non-success text-drop and cancel-success coercion (`enforceFailureAbortInvariants(...)`)
+      - renderer apply modal opens only for `resultState === 'success'`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-7 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: PRC-01, NFM-B, PLK-01, PLK-02, PLK-02R`
+    - `docs/issues/issue_53_implementation_plan.md` item 7 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:10:08 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 7 is evidence-backed and closed using prior validated runs. Next step is Section 5 item 8 (`Validate access / billing / activation model behavior...`).
 
 ### OP-0062
 
