@@ -66,6 +66,7 @@ As of 2026-03-15:
   - Section 5 item 8 (`Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures`): complete (`SMK-02` + `AAM-01` + OP-0020 quota matrix).
   - Section 5 item 9 (`Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice)`): complete (`SMK-*` + `NFM-A` + `APL-01`).
   - Section 5 item 10 (`Validate observability coverage for required fields/events (routes, latency, apply/truncation, precondition/failure/cancel/setup paths)`): complete (`OBS-10A` + `OBS-10B` + reused path evidence map).
+    - Post-closure note: OP-0066 observability instrumentation was manually rolled back by the user after Section 5 closure; item-10 remains closed as historical evidence captured at runtime on 2026-03-15.
   - Section 5 item 11 (`Block progression until basic smoke/quality gate passes`): complete (`QG-01`).
   - Section 5 is complete.
   - Active next checklist item: Section 6 item 1 (`Implement processing progress UX`).
@@ -74,6 +75,34 @@ As of 2026-03-15:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0068
+
+- Date/time: 2026-03-15 22:31:39 -03:00
+- Operation: Record user-executed rollback of OP-0066 observability code and align tracker status with explicit historical-evidence interpretation.
+- Why: Enforce no-hidden-decisions policy after a manual post-closure code cleanup and remove ambiguity between historical Section-5 evidence and current HEAD code state.
+- Changes made:
+  - Opened OP-0068 before tracker updates.
+  - Updated `## Current Authoritative Status`:
+    - added a post-closure note under Section 5 item 10 clarifying that:
+      - OP-0066 observability fields/logs were manually removed by the user after closure
+      - item-10 closure remains valid as historical runtime evidence from 2026-03-15
+  - Added this OP-0068 entry documenting the rollback event and evidence.
+- Checklist updates:
+  - None. No checklist checkbox changes were made.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 22:31:39 -03:00`
+  - Workspace/code-state verification (user rollback confirmed):
+    - `git status --short` -> no output (clean working tree)
+    - `rg -n "attachExecutionLatencyMetadata|executionLatencyMs|ocrLatencyMs|nativeLatencyMs|import/extract apply choice selected|import/extract apply completed|import/extract apply failed" electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js -S` -> no matches
+    - `git rev-parse --short HEAD` -> `8d085bc`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 22:32:05 -03:00`
+- Outcome / next step:
+  - Completed. Tracker now explicitly records the manual rollback as a post-closure cleanup event while preserving Section 5 item-10 closure as historical evidence. Next step remains Section 6 item 1 (`Implement processing progress UX`).
 
 ### OP-0067
 
