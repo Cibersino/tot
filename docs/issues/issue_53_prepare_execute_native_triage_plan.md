@@ -7,11 +7,8 @@ Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 
 ## 1) Purpose
 
-Implement Option 2 (`prepare` then `execute`) to fix both confirmed defects without weakening triage correctness:
-
 - remove duplicated PDF triage/probe work in `pdfTriage=both`
 - remove hidden heavy pre-lock work by making pre-execution work explicit
-- perform a hard cutover to the new model with no legacy/fallback remnants
 
 Non-negotiable correctness for native triage:
 
@@ -36,14 +33,12 @@ In scope:
 - new backend split:
   - `prepareImportExtractSelectedFile`
   - `executePreparedImportExtract`
-- new native triage method (classification-only, not full extraction output)
+- new native triage method (real classification-only, not full extraction output)
 - renderer flow update to call prepare once and execute once
 - explicit pre-execution UI stage
-- explicit renderer prepare-state lifecycle (separate from processing-mode lock lifecycle)
 - one-time prepared payload/token lifecycle
 - logging and test updates
 - hard cleanup/removal of previous single-call model code paths
-- OCR activation recovery path migration to prepare/execute (no runtime fallback to legacy single-call path)
 
 Out of scope:
 
@@ -51,7 +46,6 @@ Out of scope:
 - changing OCR substrate/access model
 - changing Issue 53 acceptance criteria outside this defect family
 - page-sampled triage policy as final truth for native "no selectable text"
-- compatibility fallback to the legacy single-call execution model
 
 ## 4) Target Flow
 
@@ -59,11 +53,11 @@ Out of scope:
 2. Renderer calls `prepareImportExtractSelectedFile`.
 3. Backend performs route classification + PDF triage exactly once.
 4. Backend returns:
-- prepared id/token (`preparedId`)
+- prepared id/token
 - route metadata
 - route-choice requirement and options (if needed)
 5. Renderer prompts route choice only if required.
-6. Renderer calls `executePreparedImportExtract(preparedId, routePreference?)`.
+6. Renderer calls `executePreparedImportExtract(prepareId, routePreference?)`.
 7. Backend enters processing mode at execute start and runs chosen route once.
 8. Backend returns final extraction result for apply modal flow.
 
@@ -93,7 +87,7 @@ Required behavior:
 3. Selectable-text determination:
 - scan entire PDF for text-item presence
 - allow early positive short-circuit (stop at first page with non-empty text item)
-- negative is definitive only after full-page scan completes
+- negative is definitive only after full scan completes
 
 4. Output shape:
 - `state`: `success` or `failure`
@@ -124,7 +118,7 @@ Input:
 Output:
 
 - `ok`
-- `preparedId` (opaque, one-time token)
+- `prepareId` (opaque, one-time token)
 - `expiresAtEpochMs`
 - `routeMetadata`:
   - `fileKind`
@@ -152,7 +146,7 @@ Channel:
 
 Input:
 
-- `preparedId`
+- `prepareId`
 - `routePreference` (optional; required when `both`)
 
 Output:
@@ -163,7 +157,7 @@ Output:
 Execute-stage invariants:
 
 - consumes one prepared record exactly once
-- must fail explicitly on invalid/expired/reused `preparedId`
+- must fail explicitly on invalid/expired/reused `prepareId`
 - no triage recomputation
 - processing mode enters before route execution starts
 
@@ -175,7 +169,7 @@ Store:
 
 Record fields:
 
-- `preparedId`
+- `prepareId`
 - `createdAtEpochMs`
 - `expiresAtEpochMs`
 - `sourceFileFingerprint` (`path`, `size`, `mtimeMs`)
@@ -197,14 +191,11 @@ Renderer orchestration:
   - `prepareImportExtractSelectedFile`
   - optional route-choice modal
   - `executePreparedImportExtract`
-- migrate OCR activation recovery retry path to re-enter prepare/execute orchestration (no direct retry against legacy single-call runtime IPC)
 
 Prepare UI state:
 
 - explicit user-visible "preparing import/extract route" status
 - must not pretend execution is running
-- must use renderer-local prepare state and messaging, not processing-mode lock state
-- must not show processing lock/abort controls during prepare
 - must handle cancellation/close safely
 
 Execute UI state:
@@ -225,7 +216,7 @@ Add structured events:
 
 Required fields:
 
-- `preparedId` (or hashed/short id safe for logs)
+- `prepareId` (or hashed/short id safe for logs)
 - `sourceFileExt`, `sourceFileKind`
 - `pdfTriage`, `triageReason`
 - `availableRoutes`, `chosenRoute`, `executedRoute`
@@ -260,14 +251,6 @@ Must-pass checks:
 6. Logging:
 - required prepare/execute events and metadata present
 
-7. OCR activation recovery alignment:
-- when OCR activation succeeds after a prepare/execute failure path, retry must go through prepare/execute
-- no direct recovery retry call to legacy single-call runtime channel
-
-8. Prepare-state UX:
-- prepare stage is visible and distinct from processing lock stage
-- abort button semantics remain bound to execute/processing mode only
-
 ## 12) Implementation Sequence
 
 1. Add native triage probe module (`probeNativePdfSelectableText`).
@@ -278,12 +261,6 @@ Must-pass checks:
 6. Add explicit prepare-stage UI messaging.
 7. Add/adjust i18n keys for prepare-stage statuses/errors.
 8. Add tests/harness probes for duplicate-triage prevention.
-   - current repository baseline: no formal automated test suite is currently wired as a required gate; use focused checks + manual matrix evidence until a fuller harness is added
-   - minimum concrete strategy for this repository:
-     - add deterministic backend unit-style checks for prepare-record lifecycle (create/consume/expire/reuse rejection/fingerprint mismatch)
-     - add deterministic backend checks for "prepare triage once, execute no retriage" behavior
-     - add renderer-level orchestration checks for `prepare -> optional route choice -> execute` and prepare-stage UI messaging
-     - maintain manual smoke matrix evidence in operation tracker for end-to-end flows not yet covered by automated harness
 9. Run lint/syntax checks and manual validation matrix.
 10. Update operation tracker evidence and close with metrics.
 11. Remove superseded legacy execution model artifacts and dead i18n/bridge code.
@@ -294,34 +271,4 @@ Must-pass checks:
 - No reintroduction of duplicated triage in renderer.
 - No hidden prepare-stage behavior.
 - No changes to canonical apply semantics.
-- No compatibility fallback to `import-extract-run-selected-file`.
-- No legacy "dual-call route-choice on one IPC" path retained behind flags.
-
-## 14) Hard Cutover Cleanup Requirements
-
-Non-negotiable cleanup requirement:
-
-- after migration, only prepare/execute channels remain for import/extract runtime flow.
-
-Must remove or refactor all legacy-model remnants:
-
-1. IPC and preload:
-- remove direct renderer usage of legacy single-call channel for import/extract runtime execution.
-- remove obsolete preload bridge entries tied only to the legacy runtime path.
-
-2. Backend execution path:
-- remove legacy route-choice handshake behavior that depends on returning `requiresRouteChoice` from the old single-call runtime endpoint.
-- remove dead triage/execute coupling branches that only existed to support the second legacy call.
-
-3. Renderer orchestration:
-- remove old two-call orchestration branches (`first call -> modal -> second call`) from active path.
-- keep only `prepare -> route choice (if required) -> execute`.
-- remove legacy OCR setup recovery retry branches that call the single-call runtime endpoint directly.
-
-4. Localization and alerts:
-- remove dead alert keys/messages that are only reachable from removed legacy paths.
-- keep/add prepare-stage status keys required by the new prepare-state UI.
-
-5. Verification gate before closure:
-- `rg` check confirms no active runtime references remain to the legacy single-call import/extract flow.
-- manual flow confirms no hidden fallback to old model occurs when prepare/execute path fails.
+- No legacy model remnants, dead code or fallback to that old model. Final code should look like the old model was never there and this new implementation was there from the begining.
