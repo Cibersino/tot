@@ -61,8 +61,8 @@ Tracker policy for Section 5:
 - Evidence blocks: `PRC-01`, `NFM-B`, `PLK-01`, `PLK-02`, `PLK-02R` (plus OP-0033 invariant-enforcement implementation anchors)
 
 8. Validate access / billing / activation model behavior (activation gating, restriction paths, quota/budget/usage-limit failures)
-- Status: `PENDING`
-- Evidence blocks: none yet
+- Status: `COMPLETED`
+- Evidence blocks: `SMK-02` (activation gating/recovery), `AAM-01` (restriction path), OP-0020 validation matrix case 4 (`quota_or_rate_limited`)
 
 9. Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice)
 - Status: `PENDING`
@@ -870,6 +870,55 @@ Coverage strategy:
   - closure is based on explicit evidence reuse, not a new manual run.
   - residual risk is low: item-7 does not have an additional unexercised route/state combination after the mapped cards above.
 
+## Section 5 Item 8: Access / Billing / Activation Model Behavior
+
+### AAM-01 OCR Restriction Path Probe (`docx`)
+
+- Objective: Validate explicit restriction-path behavior for OCR gate when file is non-OCR-eligible.
+- Fixture: `tools_local/smoke/prueba_docx.docx`
+- Preconditions:
+  - app started with:
+    - ``$env:TOT_LOG_LEVEL='debug'; npm start``
+  - main-window DevTools available
+- Steps:
+  - user ran in DevTools:
+    - `await window.electronAPI.evaluateImportExtractOcrGate({ filePath: 'C:\\Users\\manue\\Documents\\toT\\tot\\tools_local\\smoke\\prueba_docx.docx' })`
+- Expected:
+  - gate returns blocked restricted result
+  - explicit restricted alert key is returned
+- Actual (user-provided):
+  - DevTools return object:
+    - `ok: true`
+    - `canProceed: false`
+    - `ocrSetupState: 'not_checked'`
+    - `blockCategory: 'restricted'`
+    - `alertKey: 'renderer.alerts.import_extract_ocr_restricted'`
+    - `code: 'ocr_unavailable'`
+    - `issueType: 'restriction'`
+    - `sourceFileExt: 'docx'`
+    - `sourceFileKind: 'text_document'`
+  - terminal gate log:
+    - `import/extract OCR gate blocked: { ... blockCategory: 'restricted', alertKey: 'renderer.alerts.import_extract_ocr_restricted', ... }`
+- Result: `PASS`
+
+### Item-8 Closure Mapping (mixed evidence)
+
+- Activation gating behavior:
+  - reused `SMK-02` evidence:
+    - first OCR attempt blocked (`auth_failed` / activation-required path)
+    - explicit activation guidance alerts shown
+    - post-activation retry succeeded
+- Restriction path behavior:
+  - `AAM-01` above (explicit restricted gate response + restricted alert key)
+- Quota/rate-limit behavior:
+  - reused OP-0020 setup-validation matrix evidence:
+    - deterministic classification case for `quota_or_rate_limited`
+    - explicit mapped blocked state + alert-taxonomy path
+- Result: `PASS`
+- Notes:
+  - item-8 closure uses combined runtime evidence + deterministic validator evidence.
+  - live provider quota exhaustion was not newly reproduced in this section, but mapped behavior is already evidenced and contract-locked.
+
 ## Drift Log
 
 - `SMK-01` used `TOT_LOG_LEVEL='debug'` instead of the initial planned `info`.
@@ -896,6 +945,11 @@ Coverage strategy:
   - Why: renderer console becomes unavailable immediately after successful close-after-cancel behavior.
   - Impact/risk: low; close-path acceptance criteria are main-process lifecycle/telemetry-driven and were observed.
   - Handling: recorded explicit limitation and relied on terminal evidence + user-observed close outcome.
+- `AAM-01` used direct DevTools IPC invocation (`evaluateImportExtractOcrGate`) instead of full button-entrypoint execution.
+  - Drifted instruction/context: many section-5 cards execute through the import/extract button flow.
+  - Why: restriction-path coverage for OCR gate is explicit and deterministic via the gate API, with less redundant UI noise.
+  - Impact/risk: low; this directly exercises the authoritative gate contract that owns restricted-path classification.
+  - Handling: recorded terminal + DevTools artifacts and combined with existing button-flow activation evidence (`SMK-02`).
 - Initial environment snapshot used `%APPDATA%\\toT\\...` OCR path in early notes.
   - Correct runtime path for this build is `%APPDATA%\\@cibersino\\tot\\...`.
   - Impact/risk: low, documentation-only correction.

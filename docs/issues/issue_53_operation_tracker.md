@@ -63,12 +63,65 @@ As of 2026-03-15:
   - Section 5 item 5 (`Validate processing lock behavior`): complete (`PLK-01` + `PLK-01R`).
   - Section 5 item 6 (`Validate close-window-during-processing cancellation path and invariants`): complete (`PLK-02` + `PLK-02R`).
   - Section 5 item 7 (`Validate failure/abort invariants and state separation`): complete (evidence reuse: `PRC-01` + `NFM-B` + `PLK-01/02/02R` + OP-0033 anchors).
-  - Active next checklist item: Section 5 item 8 (`Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures`).
+  - Section 5 item 8 (`Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures`): complete (`SMK-02` + `AAM-01` + OP-0020 quota matrix).
+  - Active next checklist item: Section 5 item 9 (`Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice)`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0064
+
+- Date/time: 2026-03-15 21:15:10 -03:00
+- Operation: Close Section 5 item 8 using mixed evidence (new restriction-path probe + existing activation/quota evidence).
+- Why: User provided the missing restriction-path runtime result (`blockCategory: restricted`), completing the item-8 evidence set.
+- Changes made:
+  - Opened OP-0064 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 8 -> `COMPLETED`
+    - added `## Section 5 Item 8` with:
+      - `AAM-01 OCR Restriction Path Probe (docx)`
+      - closure mapping for activation/restriction/quota evidence sources
+    - added drift-log note for direct DevTools gate invocation path
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 8 complete (`[x] Validate access / billing / activation model behavior ...`)
+  - Updated tracker authoritative status:
+    - section 5 item 8 marked complete
+    - active next checklist item moved to section 5 item 9
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:15:10 -03:00`
+  - `AAM-01` new evidence (user-provided):
+    - terminal:
+      - `import/extract OCR gate blocked: { ... blockCategory: 'restricted', alertKey: 'renderer.alerts.import_extract_ocr_restricted', sourceFileExt: 'docx', ... }`
+    - DevTools return:
+      - `ok: true`
+      - `canProceed: false`
+      - `ocrSetupState: 'not_checked'`
+      - `blockCategory: 'restricted'`
+      - `alertKey: 'renderer.alerts.import_extract_ocr_restricted'`
+      - `code: 'ocr_unavailable'`
+      - `issueType: 'restriction'`
+  - Reused evidence anchors for item-8 closure:
+    - activation gating/recovery: `SMK-02`
+    - quota/rate-limit classification: OP-0020 validation matrix case 4 (`quota_or_rate_limited`)
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-8 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: SMK-02, AAM-01, OP-0020 case 4`
+    - `docs/issues/issue_53_implementation_plan.md` item 8 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:15:52 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 8 is evidence-backed and closed. Next step is Section 5 item 9 (`Validate canonical apply behavior ...`).
 
 ### OP-0063
 
