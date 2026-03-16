@@ -69,12 +69,41 @@ As of 2026-03-15:
     - Post-closure note: OP-0066 observability instrumentation was manually rolled back by the user after Section 5 closure; item-10 remains closed as historical evidence captured at runtime on 2026-03-15.
   - Section 5 item 11 (`Block progression until basic smoke/quality gate passes`): complete (`QG-01`).
   - Section 5 is complete.
-  - Active next checklist item: Section 6 item 1 (`Implement processing progress UX`).
+  - Active next checklist item: Section 6 item 1 (`Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0069
+
+- Date/time: 2026-03-15 22:45:59 -03:00
+- Operation: Add a Section 6 feasibility/tradeoff gate item (unchecked) before progress/ETA implementation work.
+- Why: User requested to add only the feasibility gate item and keep it unchecked.
+- Changes made:
+  - Opened OP-0069 before documentation edits.
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 6 by inserting a new unchecked item:
+    - `Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation.`
+  - Updated `docs/issues/issue_53_operation_tracker.md` authoritative status:
+    - active next checklist item now points to the new Section 6 feasibility/tradeoff gate.
+  - Added this OP-0069 record.
+- Checklist updates:
+  - No checkbox toggles.
+  - Plan structure changed by adding one new unchecked checklist item in Section 6.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 22:45:59 -03:00`
+  - Plan evidence:
+    - Section 6 now starts with:
+      - `[ ] Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation.`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 22:46:31 -03:00`
+- Outcome / next step:
+  - Completed requested change scope (`only item 1`, unchecked). Next step remains executing the new Section 6 item 1 feasibility gate.
 
 ### OP-0068
 
