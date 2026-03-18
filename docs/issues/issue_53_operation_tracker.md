@@ -76,6 +76,45 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0084
+
+- Date/time: 2026-03-18 16:26:49 -03:00
+- Operation: Clarify Section 6 documentation scope and unresolved evaluation questions before any progress/ETA implementation work.
+- Why: User approved locking the agreed Section 6 clarifications now, while keeping the progress-model and ETA-model questions open for later evaluation.
+- Changes made:
+  - Opened OP-0084 before documentation edits.
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 6 with a locked scope note that now explicitly states:
+    - Section 6 starts only after `executePreparedImportExtract(...)`.
+    - `both` is a prepare-time dual-route outcome, not a third execute-stage route.
+    - fast successful paths must not be artificially delayed to display progress/ETA.
+    - OCR retries and OCR cleanup are in Section 6 scope.
+    - visibility requirement is limited to the main window when not minimized.
+    - live observability/instrumentation is required for Section 6 ETA calibration/closeout in current HEAD.
+  - Added an explicit open-questions block in Section 6 that intentionally leaves unresolved:
+    - progress-model shape (`determinate` / `staged` / `indeterminate` / mixed)
+    - ETA representation semantics for the later feasibility evaluation
+  - Kept the existing Section 6 checklist items unchanged and unchecked.
+- Checklist updates:
+  - No checkbox toggles.
+  - Plan structure changed by adding a Section 6 scope note plus an explicit open-questions block ahead of the existing unchecked checklist items.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:26:49 -03:00`
+  - Plan evidence:
+    - `docs/issues/issue_53_implementation_plan.md:181-198` now contains:
+      - locked Section 6 scope note
+      - explicit open questions left for item-1 feasibility evaluation
+    - `docs/issues/issue_53_implementation_plan.md:200-203` keeps the existing Section 6 checklist items unchanged and unchecked.
+  - Diff evidence:
+    - `git diff -- docs/issues/issue_53_implementation_plan.md docs/issues/issue_53_operation_tracker.md`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:27:47 -03:00`
+- Outcome / next step:
+  - Completed. Section 6 evaluation boundaries are now clearer without prematurely closing the progress-model and ETA-model design space. The next step remains Section 6 item 1 feasibility work against this clarified scope.
+
 ### OP-0083
 
 - Date/time: 2026-03-18 16:03:00 -03:00

@@ -178,6 +178,25 @@ Entrypoint guardrail:
 
 ## 6. Processing progress and ETA implementation
 
+Section 6 scope note (locked before item-1 feasibility evaluation):
+
+- Section 6 applies only after `executePreparedImportExtract(...)` starts.
+  - The prepare stage remains outside processing mode.
+  - The prepare stage may keep its lightweight prepare-status UI, but it is out of Section 6 progress/ETA scope.
+- In Section 6 wording, `both` refers to the dual-route PDF prepare outcome (`choice required`), not to a third execute-stage route.
+  - Once execution starts, the evaluated/executed route is `native` or `ocr`.
+- Fast successful routes must not be artificially delayed only to make progress/ETA visible.
+- OCR retries and OCR cleanup are in Section 6 scope and must be included in feasibility/tradeoff evaluation.
+- The visibility requirement for this section is limited to the main window when that window is not minimized.
+  - This section does not, by itself, require a separate OS/taskbar/native-shell progress surface.
+- ETA calibration/closeout for Section 6 requires minimal live observability/instrumentation in current HEAD.
+  - Historical Section 5 evidence remains useful context, but is not sufficient by itself for Section 6 calibration/closure.
+
+Questions intentionally left open for item-1 evaluation:
+
+- Whether route/phase progress may be determinate, staged, indeterminate, or mixed depending on route/runtime characteristics.
+- What concrete ETA representation satisfies `ETA should be realistic` without introducing misleading precision.
+
 - [ ] Evaluate feasibility and tradeoffs for progress/ETA by route (`ocr`, `native`, `both`) and lock Section 6 scope before implementation.
 - [ ] Implement processing progress UX.
 - [ ] Implement ETA behavior and calibrate realism.
