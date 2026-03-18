@@ -76,6 +76,71 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0079
+
+- Date/time: 2026-03-18 15:26:57 -03:00
+- Operation: Record post-implementation smoke-test evidence, explain and patch the remaining native-PDF provenance mismatch, and close the issue-53 prepare/execute cutover with corrected observability.
+- Why: After the successful user-run smoke test for the prepare/execute implementation, one remaining logging/provenance defect was identified and requested for patching.
+- Changes made:
+  - Opened OP-0079 before code edits.
+  - Recorded implementation continuity from `OP-0078` as the baseline for this post-implementation validation/patch step.
+  - Recorded user-run smoke-test evidence covering:
+    - non-PDF native success (`docx`, `txt`)
+    - non-PDF OCR success (`png`)
+    - PDF `ocr_only` success
+    - PDF `both` success for both route choices (`native`, `ocr`)
+    - prepare-stage failures for corrupt/encrypted PDFs
+    - user abort during OCR execution
+    - precondition rejection while stopwatch is running
+  - Patched `electron/import_extract_platform/native_extraction_route.js` so native provenance derives `sourceFileKind` from the real source extension instead of hardcoding `text_document`.
+  - Kept behavior unchanged outside observability/provenance:
+    - no prepare/execute contract change
+    - no renderer-flow change
+    - no route-selection change
+  - Drift disclosure:
+    - read-only diagnosis for this operation started shortly before creating OP-0079.
+    - instruction diverged from: `Create/update an OP-XXXX entry before and after each meaningful operation`.
+    - why the divergence was necessary: the mismatch had to be confirmed from current code/log anchors before opening the exact patch operation entry.
+    - expected impact/risk: low; no repository files were modified before the entry was created.
+    - execution paused for user confirmation or proceeded with rationale: proceeded with rationale because the pre-entry step was read-only and only served to verify the precise defect to patch.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/native_extraction_route.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:26:57 -03:00`
+  - Read-only diagnosis anchors collected before opening:
+    - `rg -n "sourceFileKind|runNativeExtractionRoute|provenance" electron/import_extract_platform/native_extraction_route.js`
+    - `git status --short` -> no output
+  - Implementation continuity:
+    - `OP-0078` records the prepare/execute implementation cutover as completed.
+  - User-provided smoke-test evidence:
+    - terminal logs show exactly one `import/extract prepare started` + one `import/extract prepare completed` + one `import/extract execute started` + one `import/extract execute completed` for normal success paths
+    - terminal logs show `pdfTriage: 'ocr_only'` for scanned PDF and `executedRoute: 'ocr'`
+    - terminal logs show `pdfTriage: 'both'` with one `prepare choice-required`, then exactly one execute for each explicit choice:
+      - `chosenRoute: 'native'` / `executedRoute: 'native'`
+      - `chosenRoute: 'ocr'` / `executedRoute: 'ocr'`
+    - terminal logs show prepare-stage failure for:
+      - corrupt PDF -> `nativeProbeCode: 'unreadable_or_corrupt'`
+      - encrypted PDF -> `nativeProbeCode: 'native_encrypted_or_password_protected'`
+    - terminal logs show abort path:
+      - processing mode disabled with `reason: 'user_abort_button'`
+      - execute completed with `state: 'cancelled'`, `code: 'aborted_by_user'`
+    - terminal logs show precondition rejection while stopwatch running:
+      - `import-extract precondition_rejected`
+    - diagnosis anchor from smoke logs:
+      - native-PDF success returned `sourceFileKind: 'text_document'` in `import/extract execute completed`, proving the provenance mismatch
+  - Patch verification:
+    - `git diff -- electron/import_extract_platform/native_extraction_route.js docs/issues/issue_53_operation_tracker.md`
+    - `node --check electron/import_extract_platform/native_extraction_route.js` -> passed
+    - `npm run lint` -> passed
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:28:13 -03:00`
+- Outcome / next step:
+  - Completed. Issue 53 implementation is now tracked in `OP-0078`, user smoke coverage is recorded here, and the remaining native-PDF provenance/logging mismatch is patched with no intended behavioral changes.
+
 ### OP-0078
 
 - Date/time: 2026-03-18 14:53:17 -03:00
