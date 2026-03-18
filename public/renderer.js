@@ -40,6 +40,11 @@ const {
 // DOM references
 // =============================================================================
 const textPreview = document.getElementById('textPreview');
+const selectorControlsNormal = document.getElementById('selectorControlsNormal');
+const selectorControlsProcessing = document.getElementById('selectorControlsProcessing');
+const btnImportExtract = document.getElementById('btnImportExtract');
+const importExtractProcessingLabel = document.getElementById('importExtractProcessingLabel');
+const btnImportExtractAbort = document.getElementById('btnImportExtractAbort');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const clipboardRepeatInput = document.getElementById('clipboardRepeatInput');
@@ -163,18 +168,92 @@ const presetDescription = document.getElementById('presetDescription');
 // =============================================================================
 // Startup gating + handshake
 // =============================================================================
+const PROCESSING_LOCK_NOTICE_THROTTLE_MS = 1000;
+
 function isRendererReady() {
   return rendererReadyState === 'READY';
 }
 
-function guardUserAction(actionId) {
-  if (isRendererReady()) return true;
+function isProcessingModeActive() {
+  return !!(importExtractProcessingModeState && importExtractProcessingModeState.active);
+}
+
+function normalizeProcessingModeState(rawState) {
+  const state = rawState && typeof rawState === 'object' ? rawState : {};
+  const lockId = Number(state.lockId);
+  const sinceEpochMs = Number(state.sinceEpochMs);
+  return {
+    active: state.active === true,
+    lockId: Number.isFinite(lockId) && lockId >= 0 ? Math.floor(lockId) : 0,
+    sinceEpochMs: Number.isFinite(sinceEpochMs) && sinceEpochMs > 0 ? Math.floor(sinceEpochMs) : null,
+    source: typeof state.source === 'string' ? state.source.trim() : '',
+    reason: typeof state.reason === 'string' ? state.reason.trim() : '',
+  };
+}
+
+function applyProcessingModeState(rawState, { source = 'unknown' } = {}) {
+  const nextState = normalizeProcessingModeState(rawState);
+  const prevActive = isProcessingModeActive();
+  importExtractProcessingModeState = nextState;
+
+  if (selectorControlsNormal) {
+    selectorControlsNormal.hidden = nextState.active;
+    selectorControlsNormal.setAttribute('aria-hidden', nextState.active ? 'true' : 'false');
+  }
+  if (selectorControlsProcessing) {
+    selectorControlsProcessing.hidden = !nextState.active;
+    selectorControlsProcessing.setAttribute('aria-hidden', nextState.active ? 'false' : 'true');
+  }
+
+  if (btnImportExtractAbort) {
+    btnImportExtractAbort.hidden = !nextState.active;
+    btnImportExtractAbort.disabled = !nextState.active;
+    btnImportExtractAbort.setAttribute('aria-hidden', nextState.active ? 'false' : 'true');
+    btnImportExtractAbort.tabIndex = nextState.active ? 0 : -1;
+  }
+
+  if (prevActive !== nextState.active) {
+    log.info('import/extract processing-mode changed:', {
+      active: nextState.active,
+      lockId: nextState.lockId,
+      source,
+      reason: nextState.reason,
+    });
+  }
+}
+
+function maybeNotifyProcessingLock(actionId) {
+  const now = Date.now();
+  if ((now - lastProcessingLockNoticeAt) < PROCESSING_LOCK_NOTICE_THROTTLE_MS) return;
+  lastProcessingLockNoticeAt = now;
+  if (window.Notify && typeof window.Notify.notifyMain === 'function') {
+    window.Notify.notifyMain('renderer.alerts.import_extract_processing_locked');
+  }
   log.warnOnce(
-    `BOOTSTRAP:renderer.preReady.${actionId}`,
-    'Renderer action ignored (pre-READY):',
+    `renderer.processing_lock.${actionId}`,
+    'Renderer action ignored (processing-mode lock active):',
     actionId
   );
-  return false;
+}
+
+function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
+  const normalizedActionId = typeof actionId === 'string' ? actionId : 'unknown_action';
+  if (!isRendererReady()) {
+    log.warnOnce(
+      `BOOTSTRAP:renderer.preReady.${normalizedActionId}`,
+      'Renderer action ignored (pre-READY):',
+      normalizedActionId
+    );
+    return false;
+  }
+
+  const isAbortAction = normalizedActionId === 'import-extract-abort';
+  if (!allowDuringProcessing && !isAbortAction && isProcessingModeActive()) {
+    maybeNotifyProcessingLock(normalizedActionId);
+    return false;
+  }
+
+  return true;
 }
 
 function sendRendererCoreReady() {
@@ -264,6 +343,14 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
+let importExtractProcessingModeState = {
+  active: false,
+  lockId: 0,
+  sinceEpochMs: null,
+  source: '',
+  reason: '',
+};
+let lastProcessingLockNoticeAt = 0;
 
 function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
   const api = window.electronAPI;
@@ -298,7 +385,15 @@ function applyTranslations() {
     const aria = tRenderer(key, defaultValue);
     if (aria) el.setAttribute('aria-label', aria);
   };
+  if (importExtractProcessingLabel) {
+    importExtractProcessingLabel.textContent = tRenderer(
+      'renderer.main.processing.import_extract_placeholder',
+      importExtractProcessingLabel.textContent || ''
+    );
+  }
   // Text selector buttons
+  if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
+  if (btnImportExtractAbort) btnImportExtractAbort.textContent = tRenderer('renderer.main.buttons.import_extract_abort', btnImportExtractAbort.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
@@ -308,8 +403,12 @@ function applyTranslations() {
   if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new', btnNewTask.textContent || '');
   if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load', btnLoadTask.textContent || '');
   // Text selector tooltips
+  if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract', btnImportExtract.title || '');
+  if (btnImportExtractAbort) btnImportExtractAbort.title = tRenderer('renderer.main.tooltips.import_extract_abort', btnImportExtractAbort.title || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
+  applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract');
+  applyAriaLabel(btnImportExtractAbort, 'renderer.main.aria.import_extract_abort');
   if (clipboardRepeatInput) {
     clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count', clipboardRepeatInput.title || '');
     applyAriaLabel(clipboardRepeatInput, 'renderer.main.aria.clipboard_repeat_count');
@@ -764,6 +863,21 @@ function armIpcSubscriptions() {
       );
     }
 
+    if (typeof window.electronAPI.onImportExtractProcessingModeChanged === 'function') {
+      window.electronAPI.onImportExtractProcessingModeChanged((state) => {
+        try {
+          applyProcessingModeState(state, { source: 'ipc_event' });
+        } catch (err) {
+          log.error('Error handling import-extract-processing-mode-changed:', err);
+        }
+      });
+    } else {
+      log.warnOnce(
+        'renderer.ipc.onImportExtractProcessingModeChanged.unavailable',
+        'onImportExtractProcessingModeChanged unavailable; processing lock updates will not sync.'
+      );
+    }
+
     if (typeof window.electronAPI.onEditorReady === 'function') {
       window.electronAPI.onEditorReady(() => {
         if (!isRendererReady()) {
@@ -930,6 +1044,21 @@ async function runStartupOrchestrator() {
       }
     } else {
       installCurrentTextState('');
+    }
+
+    const getImportExtractProcessingMode = getOptionalElectronMethod('getImportExtractProcessingMode', {
+      dedupeKey: 'renderer.ipc.getImportExtractProcessingMode.unavailable',
+      unavailableMessage: 'getImportExtractProcessingMode unavailable; processing mode defaults to inactive.'
+    });
+    if (getImportExtractProcessingMode) {
+      try {
+        const processingMode = await getImportExtractProcessingMode();
+        if (processingMode && processingMode.ok === true) {
+          applyProcessingModeState(processingMode.state, { source: 'startup_query' });
+        }
+      } catch (err) {
+        log.warn('BOOTSTRAP: getImportExtractProcessingMode failed; keeping processing mode inactive:', err);
+      }
     }
 
     // Load presets and save them to the cache
@@ -1259,15 +1388,11 @@ setupToggleModoPreciso();
       });
     };
 
+    registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });
+
     registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
     registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
     registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
-    registerMenuActionGuarded('cargador_texto', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_cargador_texto'); // WIP
-    });
-    registerMenuActionGuarded('cargador_imagen', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_cargador_imagen'); // WIP
-    });
     registerMenuActionGuarded('test_velocidad', () => {
       window.Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP
     });
@@ -1450,6 +1575,10 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
 }
 
 function normalizeClipboardRepeat(rawValue) {
+  const textApplyApi = window.TextApplyCanonical;
+  if (textApplyApi && typeof textApplyApi.normalizeRepeat === 'function') {
+    return textApplyApi.normalizeRepeat(rawValue, { maxRepeat: MAX_CLIPBOARD_REPEAT });
+  }
   const numericValue = Number(rawValue);
   if (!Number.isInteger(numericValue) || numericValue < 1) return 1;
   return Math.min(numericValue, MAX_CLIPBOARD_REPEAT);
@@ -1463,46 +1592,323 @@ function getClipboardRepeatCount() {
   return normalized;
 }
 
-function projectRepeatedClipboardLength(baseText, clip, repeatCount) {
-  const clipLength = clip.length;
-  const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
-  let projected = baseText.length;
-  let hasContent = baseText.length > 0;
-  let endsWithNewline = hasContent && (baseText.endsWith('\n') || baseText.endsWith('\r'));
-
-  for (let i = 0; i < repeatCount; i += 1) {
-    if (hasContent) {
-      projected += endsWithNewline ? 1 : 2;
-      endsWithNewline = true;
-    }
-    if (clipLength > 0) {
-      projected += clipLength;
-      hasContent = true;
-      endsWithNewline = clipEndsWithNewline;
-    }
+function getTextApplyCanonicalApi() {
+  const api = window.TextApplyCanonical;
+  if (!api || typeof api.applyTextWithMode !== 'function') {
+    log.warnOnce(
+      'renderer.textApplyCanonical.unavailable',
+      'TextApplyCanonical.applyTextWithMode unavailable; canonical apply flow cannot continue.'
+    );
+    return null;
   }
-  return projected;
+  return api;
 }
 
-function buildRepeatedClipboardText(baseText, clip, repeatCount) {
-  const clipLength = clip.length;
-  const clipEndsWithNewline = clipLength > 0 && (clip.endsWith('\n') || clip.endsWith('\r'));
-  const parts = [baseText];
-  let hasContent = baseText.length > 0;
-  let endsWithNewline = hasContent && (baseText.endsWith('\n') || baseText.endsWith('\r'));
+async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
+  const textApplyApi = getTextApplyCanonicalApi();
+  if (!textApplyApi) return { ok: false, code: 'APPLY_API_UNAVAILABLE' };
 
-  for (let i = 0; i < repeatCount; i += 1) {
-    if (hasContent) {
-      parts.push(endsWithNewline ? '\n' : '\n\n');
-      endsWithNewline = true;
-    }
-    if (clipLength > 0) {
-      parts.push(clip);
-      hasContent = true;
-      endsWithNewline = clipEndsWithNewline;
-    }
+  const setCurrentText = getOptionalElectronMethod('setCurrentText', {
+    dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
+    unavailableMessage: 'setCurrentText unavailable; text apply skipped.'
+  });
+  if (!setCurrentText) return { ok: false, code: 'SET_CURRENT_TEXT_UNAVAILABLE' };
+
+  let getCurrentText = null;
+  if (mode === 'append') {
+    getCurrentText = getOptionalElectronMethod('getCurrentText', {
+      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
+      unavailableMessage: 'getCurrentText unavailable; append apply skipped.'
+    });
+    if (!getCurrentText) return { ok: false, code: 'GET_CURRENT_TEXT_UNAVAILABLE' };
   }
-  return parts.join('');
+
+  return await textApplyApi.applyTextWithMode({
+    mode,
+    textToApply,
+    repeatCount,
+    maxRepeat: MAX_CLIPBOARD_REPEAT,
+    maxTextChars,
+    maxIpcChars,
+    getCurrentText,
+    setCurrentText,
+    source: 'main-window',
+  });
+}
+
+async function promptImportExtractRouteChoice(execution) {
+  const routeChoiceModal = window.ImportExtractRouteChoiceModal;
+  if (!routeChoiceModal || typeof routeChoiceModal.promptRouteChoice !== 'function') {
+    log.warnOnce(
+      'renderer.importExtract.routeChoiceModal.unavailable',
+      'ImportExtractRouteChoiceModal.promptRouteChoice unavailable; route choice cannot continue.'
+    );
+    window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
+    return '';
+  }
+  try {
+    return await routeChoiceModal.promptRouteChoice({
+      execution,
+      tRenderer,
+    });
+  } catch (err) {
+    log.error('import/extract route-choice modal failed:', err);
+    window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
+    return '';
+  }
+}
+
+async function promptImportExtractApplyChoice(defaultRepeat = 1) {
+  const applyModal = window.ImportExtractApplyModal;
+  if (!applyModal || typeof applyModal.promptApplyChoice !== 'function') {
+    log.warnOnce(
+      'renderer.importExtract.applyModal.unavailable',
+      'ImportExtractApplyModal.promptApplyChoice unavailable; apply flow cannot continue.'
+    );
+    window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
+    return null;
+  }
+  try {
+    return await applyModal.promptApplyChoice({
+      tRenderer,
+      defaultRepeat,
+      maxRepeat: MAX_CLIPBOARD_REPEAT,
+    });
+  } catch (err) {
+    log.error('import/extract apply modal failed:', err);
+    window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
+    return null;
+  }
+}
+
+async function maybeRecoverImportExtractOcrSetupAndRetry({
+  execution,
+  executionRequest,
+  runImportExtractSelectedFile,
+}) {
+  const recoveryApi = window.ImportExtractOcrActivationRecovery;
+  if (!recoveryApi || typeof recoveryApi.recoverAfterSetupFailure !== 'function') {
+    log.warnOnce(
+      'renderer.importExtract.ocrActivationRecovery.unavailable',
+      'ImportExtractOcrActivationRecovery.recoverAfterSetupFailure unavailable; OCR setup auto-recovery disabled.'
+    );
+    return { execution, handled: false };
+  }
+
+  if (!window.Notify || typeof window.Notify.notifyMain !== 'function') {
+    log.warnOnce(
+      'renderer.importExtract.notify.unavailable',
+      'Notify.notifyMain unavailable; OCR setup auto-recovery notifications disabled.'
+    );
+    return { execution, handled: false };
+  }
+
+  try {
+    return await recoveryApi.recoverAfterSetupFailure({
+      execution,
+      executionRequest,
+      runImportExtractSelectedFile,
+      promptRouteChoice: async (pendingExecution) => {
+        return await promptImportExtractRouteChoice(pendingExecution);
+      },
+      getOptionalElectronMethod,
+      notifyMain: window.Notify.notifyMain.bind(window.Notify),
+    });
+  } catch (err) {
+    log.error('import/extract OCR setup recovery module failed unexpectedly:', err);
+    return { execution, handled: false };
+  }
+}
+
+// =============================================================================
+// Import/extract entrypoint (Section 4 starts here; picker wiring follows in next step)
+// =============================================================================
+if (btnImportExtract) {
+  btnImportExtract.addEventListener('click', async () => {
+    if (!guardUserAction('import-extract-entrypoint')) return;
+    try {
+      const openImportExtractPicker = getOptionalElectronMethod('openImportExtractPicker', {
+        dedupeKey: 'renderer.ipc.openImportExtractPicker.unavailable',
+        unavailableMessage: 'openImportExtractPicker unavailable; import/extract entrypoint skipped.'
+      });
+      if (!openImportExtractPicker) {
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
+        return;
+      }
+
+      const picker = await openImportExtractPicker();
+      if (!picker || picker.ok === false) {
+        log.error('import/extract picker failed:', picker && picker.error ? picker.error : picker);
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
+        return;
+      }
+      if (picker.canceled) return;
+
+      const checkImportExtractPreconditions = getOptionalElectronMethod('checkImportExtractPreconditions', {
+        dedupeKey: 'renderer.ipc.checkImportExtractPreconditions.unavailable',
+        unavailableMessage: 'checkImportExtractPreconditions unavailable; import/extract precondition check skipped.'
+      });
+      if (!checkImportExtractPreconditions) {
+        window.Notify.notifyMain('renderer.alerts.import_extract_precondition_error');
+        return;
+      }
+
+      const preconditions = await checkImportExtractPreconditions();
+      if (!preconditions || preconditions.ok === false) {
+        log.error('import/extract precondition check failed:', preconditions);
+        window.Notify.notifyMain('renderer.alerts.import_extract_precondition_error');
+        return;
+      }
+      if (!preconditions.canStart) {
+        window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.alerts.import_extract_precondition_blocked');
+        return;
+      }
+
+      const runImportExtractSelectedFile = getOptionalElectronMethod('runImportExtractSelectedFile', {
+        dedupeKey: 'renderer.ipc.runImportExtractSelectedFile.unavailable',
+        unavailableMessage: 'runImportExtractSelectedFile unavailable; import/extract execution cannot continue.'
+      });
+      if (!runImportExtractSelectedFile) {
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
+        return;
+      }
+
+      const executionRequest = {
+        filePath: picker.filePath || '',
+        ocrLanguage: idiomaActual || '',
+      };
+      let execution = await runImportExtractSelectedFile(executionRequest);
+      if (execution && execution.ok === true && execution.requiresRouteChoice === true) {
+        const routePreference = await promptImportExtractRouteChoice(execution);
+        if (routePreference !== 'native' && routePreference !== 'ocr') {
+          log.info('import/extract route-choice cancelled by user.');
+          return;
+        }
+        execution = await runImportExtractSelectedFile({
+          ...executionRequest,
+          routePreference,
+        });
+      }
+      if (execution && execution.ok === true && execution.requiresRouteChoice === true) {
+        log.error('import/extract route choice remained unresolved:', execution);
+        window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
+        return;
+      }
+
+      const recovery = await maybeRecoverImportExtractOcrSetupAndRetry({
+        execution,
+        executionRequest,
+        runImportExtractSelectedFile,
+      });
+      if (recovery && recovery.handled) {
+        return;
+      }
+      if (recovery && Object.prototype.hasOwnProperty.call(recovery, 'execution')) {
+        execution = recovery.execution;
+      }
+
+      if (!execution || execution.ok !== true || !execution.result) {
+        log.error('import/extract execution IPC failed:', execution);
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
+        return;
+      }
+
+      const warningAlertKeys = Array.isArray(execution.warningAlertKeys)
+        ? execution.warningAlertKeys
+        : [];
+      warningAlertKeys.forEach((alertKey) => {
+        if (typeof alertKey === 'string' && alertKey.trim()) {
+          window.Notify.notifyMain(alertKey);
+        }
+      });
+
+      const resultState = execution.result && typeof execution.result.state === 'string'
+        ? execution.result.state
+        : 'failure';
+      if (resultState === 'success') {
+        const defaultRepeat = getClipboardRepeatCount();
+        const applyChoice = await promptImportExtractApplyChoice(defaultRepeat);
+        if (!applyChoice) {
+          log.info('import/extract apply choice cancelled by user.');
+          return;
+        }
+
+        const applyResult = await applyTextViaCanonicalPath({
+          mode: applyChoice.mode,
+          textToApply: execution.result.text || '',
+          repeatCount: applyChoice.repetitions,
+        });
+        if (!applyResult || applyResult.ok !== true) {
+          if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+            window.Notify.notifyMain('renderer.alerts.import_extract_apply_too_large');
+          } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
+            window.Notify.notifyMain('renderer.alerts.import_extract_apply_text_limit');
+          } else {
+            window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
+          }
+          return;
+        }
+        if (!hasCurrentTextSubscription) {
+          throw new Error('current-text-updated subscription unavailable');
+        }
+
+        if (applyResult.truncated) {
+          window.Notify.notifyMain('renderer.alerts.import_extract_apply_truncated');
+        }
+        return;
+      }
+
+      const primaryAlertKey = (typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
+        ? execution.primaryAlertKey
+        : 'renderer.alerts.import_extract_error';
+      if (primaryAlertKey === 'renderer.alerts.import_extract_native_cancelled'
+        || primaryAlertKey === 'renderer.alerts.import_extract_ocr_cancelled') {
+        return;
+      }
+      window.Notify.notifyMain(primaryAlertKey);
+    } catch (err) {
+      log.error('Error handling import/extract entrypoint click:', err);
+      window.Notify.notifyMain('renderer.alerts.import_extract_error');
+    }
+  });
+}
+
+if (btnImportExtractAbort) {
+  btnImportExtractAbort.addEventListener('click', async () => {
+    if (!guardUserAction('import-extract-abort', { allowDuringProcessing: true })) return;
+    try {
+      const requestImportExtractAbort = getOptionalElectronMethod('requestImportExtractAbort', {
+        dedupeKey: 'renderer.ipc.requestImportExtractAbort.unavailable',
+        unavailableMessage: 'requestImportExtractAbort unavailable; abort action skipped.'
+      });
+      if (!requestImportExtractAbort) {
+        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+        return;
+      }
+
+      const result = await requestImportExtractAbort({
+        source: 'main_window',
+        reason: 'user_abort_button',
+      });
+      if (!result || result.ok !== true) {
+        if (result && result.code === 'NOT_ACTIVE' && result.state) {
+          applyProcessingModeState(result.state, { source: 'abort_not_active' });
+          return;
+        }
+        log.error('import/extract abort failed:', result);
+        window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+        return;
+      }
+
+      if (result.state) {
+        applyProcessingModeState(result.state, { source: 'abort_response' });
+      }
+      window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
+    } catch (err) {
+      log.error('Error handling import/extract abort:', err);
+      window.Notify.notifyMain('renderer.alerts.import_extract_abort_error');
+    }
+  });
 }
 
 // =============================================================================
@@ -1518,37 +1924,25 @@ btnOverwriteClipboard.addEventListener('click', async () => {
     if (!read.ok) return;
     const clip = read.text;
     const repeatCount = getClipboardRepeatCount();
-
-    const projectedLen = projectRepeatedClipboardLength('', clip, repeatCount);
-    if (projectedLen > maxIpcChars) {
-      window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
-      return;
-    }
-    const overwrittenText = buildRepeatedClipboardText('', clip, repeatCount);
-
-    // Send object with meta (overwrite)
-    const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-      dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
-      unavailableMessage: 'setCurrentText unavailable; clipboard overwrite skipped.'
+    const applyResult = await applyTextViaCanonicalPath({
+      mode: 'overwrite',
+      textToApply: clip,
+      repeatCount,
     });
-    if (!setCurrentText) {
-      window.Notify.notifyMain('renderer.alerts.clipboard_error');
+    if (!applyResult || applyResult.ok !== true) {
+      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+        window.Notify.notifyMain('renderer.alerts.clipboard_too_large');
+      } else {
+        window.Notify.notifyMain('renderer.alerts.clipboard_error');
+      }
       return;
-    }
-    const resp = await setCurrentText({
-      text: overwrittenText,
-      meta: { source: 'main-window', action: 'overwrite' }
-    });
-
-    if (resp && resp.ok === false) {
-      throw new Error(resp.error || 'set-current-text failed');
     }
 
     // UI/state sync is authoritative via "current-text-updated" subscription.
     if (!hasCurrentTextSubscription) {
       throw new Error('current-text-updated subscription unavailable');
     }
-    if (resp && resp.truncated) {
+    if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.alerts.clipboard_overflow');
     }
   } catch (err) {
@@ -1569,47 +1963,21 @@ btnAppendClipboard.addEventListener('click', async () => {
     });
     if (!read.ok) return;
     const clip = read.text;
-    const getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
-      unavailableMessage: 'getCurrentText unavailable; clipboard append skipped.'
-    });
-    if (!getCurrentText) {
-      window.Notify.notifyMain('renderer.alerts.append_error');
-      return;
-    }
-    const current = await getCurrentText() || '';
     const repeatCount = getClipboardRepeatCount();
-
-    const projectedLen = projectRepeatedClipboardLength(current, clip, repeatCount);
-    if (projectedLen > maxIpcChars) {
-      window.Notify.notifyMain('renderer.alerts.append_too_large');
-      return;
-    }
-
-    const available = maxTextChars - current.length;
-    if (available <= 0) {
-      window.Notify.notifyMain('renderer.alerts.text_limit');
-      return;
-    }
-
-    const newFull = buildRepeatedClipboardText(current, clip, repeatCount);
-
-    // Send object with meta (append_newline)
-    const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-      dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
-      unavailableMessage: 'setCurrentText unavailable; clipboard append skipped.'
+    const applyResult = await applyTextViaCanonicalPath({
+      mode: 'append',
+      textToApply: clip,
+      repeatCount,
     });
-    if (!setCurrentText) {
-      window.Notify.notifyMain('renderer.alerts.append_error');
+    if (!applyResult || applyResult.ok !== true) {
+      if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
+        window.Notify.notifyMain('renderer.alerts.append_too_large');
+      } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
+        window.Notify.notifyMain('renderer.alerts.text_limit');
+      } else {
+        window.Notify.notifyMain('renderer.alerts.append_error');
+      }
       return;
-    }
-    const resp = await setCurrentText({
-      text: newFull,
-      meta: { source: 'main-window', action: 'append_newline' }
-    });
-
-    if (resp && resp.ok === false) {
-      throw new Error(resp.error || 'set-current-text failed');
     }
 
     // UI/state sync is authoritative via "current-text-updated" subscription.
@@ -1618,7 +1986,7 @@ btnAppendClipboard.addEventListener('click', async () => {
     }
 
     // Notify truncation only if main confirms it
-    if (resp && resp.truncated) {
+    if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.alerts.append_overflow');
     }
   } catch (err) {

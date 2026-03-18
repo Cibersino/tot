@@ -6,8 +6,6 @@
       "instrucciones_completas": "Full instructions",
       "faq": "Frequently asked questions (FAQ)",
       "herramientas": "Tools",
-      "cargador_texto": "Import text from text files",
-      "cargador_imagen": "Import text from images",
       "test_velocidad": "Reading speed test",
       "preferencias": "Preferences",
       "idioma": "Language",
@@ -64,4 +62,3 @@
     }
   }
 }
-

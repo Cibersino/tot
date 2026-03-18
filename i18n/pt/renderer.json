@@ -200,8 +200,6 @@
       "open_presets_unsupported": "A abertura de presets não é suportada neste ambiente.",
       "open_presets_error": "Ocorreu um erro ao abrir a pasta de presets. Verifique o console.",
       "open_presets_fail": "Não foi possível abrir a pasta padrão de presets. Verifique o console para mais detalhes.",
-      "wip_cargador_texto": "WIP: Em uma versão futura, será possível importar texto de arquivos de texto aqui.",
-      "wip_cargador_imagen": "WIP: Em uma versão futura, será possível importar texto de arquivos de imagem aqui.",
       "wip_test_velocidad": "WIP: O teste de velocidade de leitura será aberto aqui em uma versão futura.",
       "wip_diseno_skins": "WIP: O seletor de skins será aberto aqui em uma versão futura.",
       "wip_diseno_crono": "WIP: Os parâmetros do cronômetro flutuante serão abertos aqui em uma versão futura.",
@@ -244,4 +242,3 @@
     }
   }
 }
-

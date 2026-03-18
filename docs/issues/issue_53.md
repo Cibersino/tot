@@ -66,8 +66,6 @@ Examples:
 - png
 - webp
 - bmp
-- tiff
-- gif
 - scanned PDFs
 
 ### Native-extraction-capable
@@ -75,7 +73,6 @@ Examples:
 - txt
 - md
 - html
-- rtf
 - docx
 - PDFs with usable embedded/selectable text
 
@@ -203,16 +200,22 @@ Failure cases include:
 
 ## Substrate
 
-The OCR substrate is not fixed yet.
+The OCR substrate and access model are fixed for this epic.
 
-Current leading candidate:
-- Google Document AI
+Chosen baseline:
+- substrate: `Google Drive OCR via Google Docs conversion`
+- access model: `user-managed + explicit sign-in activation`
 
-Reason to evaluate it first:
-- likely best chance of approaching the OCR quality target for photographed pages and scanned PDFs
-- supports the core file families needed by this feature
+Decision references:
+- `docs/issues/issue_53_ocr_substrate_evaluation.md` (final decision + rationale)
+- `docs/issues/issue_53_contracts.md` (locked contract baseline)
 
-This epic does not treat Document AI as already chosen, but it must be evaluated as the primary candidate rather than just one option among many.
+Implementation implications:
+- OCR remains unavailable until explicit user sign-in/activation is completed.
+- Desktop OAuth must use the system browser (no embedded webview auth).
+- The route should request minimum practical scope (target baseline: `drive.file`).
+- OCR uploads selected files to Google for conversion; this must be explicitly disclosed.
+- Auth/setup/quota/export/cleanup failures must be explicit user-visible states; no silent fallback.
 
 ## Setup / billing / compliance
 

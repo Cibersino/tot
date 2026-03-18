@@ -200,8 +200,6 @@
       "open_presets_unsupported": "Das Öffnen von Presets wird in dieser Umgebung nicht unterstützt.",
       "open_presets_error": "Beim Öffnen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
       "open_presets_fail": "Konnte die Standard-Preset-Ordner nicht öffnen. Überprüfen Sie die Konsole für weitere Details.",
-      "wip_cargador_texto": "WIP: In einer zukünftigen Version, wird es möglich sein, Text aus Textdateien hier zu importieren.",
-      "wip_cargador_imagen": "WIP: In einer zukünftigen Version, wird es möglich sein, Text aus Bilddateien hier zu importieren.",
       "wip_test_velocidad": "WIP: Der Lesegeschwindigkeitstest wird hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_crono": "WIP: Die Einstellungen für die schwebende Stoppuhr werden hier in einer zukünftigen Version geöffnet.",
@@ -227,7 +225,7 @@
     "preset_alerts": {
       "name_empty": "Name darf nicht leer sein.",
       "wpm_invalid": "WPM muss eine Zahl zwischen 50 und 500 sein.",
-      "create_error": "Beim Erstellen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",      
+      "create_error": "Beim Erstellen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
       "edit_error": "Beim Bearbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
       "process_error": "Beim Verarbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
     },

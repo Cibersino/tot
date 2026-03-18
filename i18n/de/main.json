@@ -6,8 +6,6 @@
       "instrucciones_completas": "Vollständige Anweisungen",
       "faq": "Häufig gestellte Fragen (FAQ)",
       "herramientas": "Werkzeuge",
-      "cargador_texto": "Text aus Textdateien importieren",
-      "cargador_imagen": "Text aus Bildern importieren",
       "test_velocidad": "Lesegeschwindigkeitstest",
       "preferencias": "Einstellungen",
       "idioma": "Sprache",
@@ -56,4 +54,3 @@
     }
   }
 }
-

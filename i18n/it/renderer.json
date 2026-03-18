@@ -200,8 +200,6 @@
       "open_presets_unsupported": "L'apertura dei preset non è supportata in questo ambiente.",
       "open_presets_error": "Si è verificato un errore durante l'apertura dei preset. Controlla la console.",
       "open_presets_fail": "Impossibile aprire la cartella dei preset predefiniti. Controlla la console per ulteriori dettagli.",
-      "wip_cargador_texto": "WIP: In una versione futura, sarà possibile importare testo da file di testo qui.",
-      "wip_cargador_imagen": "WIP: In una versione futura, sarà possibile importare testo da file immagine qui.",
       "wip_test_velocidad": "WIP: Il test di velocità di lettura si aprirà qui in una versione futura.",
       "wip_diseno_skins": "WIP: Il selettore di skin si aprirà qui in una versione futura.",
       "wip_diseno_crono": "WIP: I parametri del cronometro fluttuante si apriranno qui in una versione futura.",
