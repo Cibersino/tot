@@ -76,6 +76,42 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0077
+
+- Date/time: 2026-03-18 14:42:47 -03:00
+- Operation: Clarify the prepare/execute implementation plan with execution phases, transport-contract preservation, lightweight prepare-stage race guards, and an explicit Codex Operational Policy.
+- Why: User approved the two-phase implementation approach and requested minimal clarifications that reduce regression risk without changing the intended behavior of keeping prepare outside processing mode.
+- Changes made:
+  - Opened OP-0077 before documentation edits.
+  - Updated `docs/issues/issue_53_prepare_execute_native_triage_plan.md` to add:
+    - `## Codex Operational Policy`
+    - explicit prepare invariant: no reuse of processing-mode lock/abort semantics
+    - explicit execute contract note preserving the current final IPC response envelope
+    - explicit lightweight prepare-stage stale-request/race guard
+    - explicit two-phase execution framing (`backend/core split`, then `renderer cutover + cleanup`)
+  - Closed OP-0077 with evidence after the documentation patch.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_prepare_execute_native_triage_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 14:42:47 -03:00`
+  - Plan anchors:
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md`:
+      - `## Codex Operational Policy`
+      - `no reuse of processing-mode lock/abort semantics for prepare`
+      - `same final outer IPC success/failure envelope currently used by the execution path for post-route handling`
+      - `use a lightweight prepare-stage race guard in renderer orchestration; do not reuse processing-mode locking for this`
+      - `Execution phases:`
+      - `Phase 1: backend/core split`
+      - `Phase 2: renderer cutover + cleanup`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 14:44:15 -03:00`
+- Outcome / next step:
+  - Completed. The prepare/execute plan now records the agreed implementation phases and the two safety clarifications needed for coding without reintroducing behavior ambiguity.
+
 ### OP-0076
 
 - Date/time: 2026-03-16 00:57:53 -03:00

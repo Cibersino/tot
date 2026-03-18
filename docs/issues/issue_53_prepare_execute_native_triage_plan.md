@@ -5,6 +5,20 @@ Linked implementation plan: `docs/issues/issue_53_implementation_plan.md`
 Linked contracts: `docs/issues/issue_53_contracts.md`  
 Linked operation tracker: `docs/issues/issue_53_operation_tracker.md`
 
+## Codex Operational Policy
+
+- All repository evidence presented in chat must be cited using relative repository paths.
+- `docs/issues/issue_53_operation_tracker.md` must be used as the operational log: create/update an `OP-XXXX` entry before and after each meaningful operation, including files touched and evidence.
+- Any operation that drifts, or may drift, from issue instructions must be explicitly disclosed in chat.
+- Drift disclosures must identify:
+  - the instruction being diverged from
+  - why the divergence is necessary
+  - expected impact/risk
+  - whether execution paused for user confirmation or proceeded with rationale
+- Any doubt, ambiguity, or contradiction in issue instructions must be surfaced to the user during operations.
+- For high-impact or blocking ambiguity, Codex must ask before performing the operation.
+- For low-impact ambiguity where operation proceeds, Codex must state the assumption and rationale immediately after the operation.
+
 ## 1) Purpose
 
 - remove duplicated PDF triage/probe work in `pdfTriage=both`
@@ -135,6 +149,7 @@ Output:
 Prepare-stage invariants:
 
 - no processing-mode enter/exit in prepare
+- no reuse of processing-mode lock/abort semantics for prepare
 - no extraction result text returned by prepare
 - no apply modal path from prepare
 
@@ -151,7 +166,9 @@ Input:
 
 Output:
 
-- same final extraction result contract currently used by execution path
+- same final outer IPC success/failure envelope currently used by the execution path for post-route handling
+  - preserve the current final-response transport shape (`ok`, `routeKind`, `result`, `routeMetadata`, `primaryAlertKey`, `warningAlertKeys`)
+  - execute must not return only the raw extraction result payload
 - route metadata with `executedRoute`
 
 Execute-stage invariants:
@@ -196,7 +213,15 @@ Prepare UI state:
 
 - explicit user-visible "preparing import/extract route" status
 - must not pretend execution is running
+- must remain outside processing mode and must not block the UI as if extraction/OCR execution were already active
 - must handle cancellation/close safely
+
+Prepare in-flight / stale-request guard:
+
+- use a lightweight prepare-stage race guard in renderer orchestration; do not reuse processing-mode locking for this
+- only the latest prepare attempt may continue to route-choice or execute
+- stale prepare completions must be ignored locally
+- after OCR activation recovery or any route-affecting state change, rerun prepare and discard any older prepared id
 
 Execute UI state:
 
@@ -252,6 +277,20 @@ Must-pass checks:
 - required prepare/execute events and metadata present
 
 ## 12) Implementation Sequence
+
+Execution phases:
+
+- Phase 1: backend/core split
+  - native triage probe
+  - prepared-record store
+  - prepare IPC
+  - execute IPC
+  - main/preload wiring
+- Phase 2: renderer cutover + cleanup
+  - renderer prepare -> route choice -> execute flow
+  - prepare-stage UI + stale-request guard
+  - OCR activation recovery adaptation
+  - removal of superseded single-call IPC/bridge/i18n code
 
 1. Add native triage probe module (`probeNativePdfSelectableText`).
 2. Add prepare IPC module + prepared-record store.
