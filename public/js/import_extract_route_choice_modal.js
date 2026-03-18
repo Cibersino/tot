@@ -36,9 +36,9 @@
       && btnClose);
   }
 
-  function hasDualRouteOptions(execution) {
-    const options = Array.isArray(execution && execution.routeChoiceOptions)
-      ? execution.routeChoiceOptions
+  function hasDualRouteOptions(preparation) {
+    const options = Array.isArray(preparation && preparation.routeChoiceOptions)
+      ? preparation.routeChoiceOptions
       : [];
     return options.includes('native') && options.includes('ocr');
   }
@@ -50,8 +50,8 @@
     return fallback;
   }
 
-  async function promptRouteChoice({ execution, tRenderer } = {}) {
-    if (!hasDualRouteOptions(execution)) {
+  async function promptRouteChoice({ preparation, tRenderer } = {}) {
+    if (!hasDualRouteOptions(preparation)) {
       return '';
     }
     if (!hasRequiredElements()) {

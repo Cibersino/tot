@@ -152,6 +152,16 @@ body {
   display: none;
 }
 
+.import-extract-prepare-status {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #5f5135;
+}
+
+.import-extract-prepare-status[hidden] {
+  display: none;
+}
+
 .import-extract-processing-bar {
   display: flex;
   align-items: center;

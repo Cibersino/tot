@@ -76,6 +76,252 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0082
+
+- Date/time: 2026-03-18 15:44:19 -03:00
+- Operation: Read-only clarification check to confirm whether `public/renderer.js` still contains execute-stage variables after the route-choice naming cleanup.
+- Why: User asked whether `public/renderer.js` now uses only `preparation` and no longer uses `execution`, and whether that would be correct.
+- Changes made:
+  - Recorded a read-only clarification check of `public/renderer.js`.
+  - Drift disclosure:
+    - read-only grep confirmation started just before this entry was created.
+    - instruction diverged from: `Create/update an OP-XXXX entry before and after each meaningful operation`.
+    - why the divergence was necessary: the answer depended on quickly confirming the current identifier set before writing the tracker note.
+    - expected impact/risk: none to runtime behavior; no repository files were modified before this entry.
+    - execution paused for user confirmation or proceeded with rationale: proceeded with rationale because the step was read-only and low-impact.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:44:19 -03:00`
+    - `rg -n "\\bpreparation\\b|\\bexecution\\b|promptImportExtractRouteChoice\\(" public/renderer.js -S`
+- Outcome / next step:
+  - Completed. Clarification evidence is recorded; no code change was needed for this check.
+
+### OP-0081
+
+- Date/time: 2026-03-18 15:40:49 -03:00
+- Operation: Remove the remaining route-choice naming residue so the UI code matches the prepare/execute model instead of carrying old execution-shaped parameter names.
+- Why: User approved the cleanup after the `OP-0080` audit found one low-impact naming residue that prevented full compliance with the strict “looks like the old model was never there” rule.
+- Changes made:
+  - Opened OP-0081 before code edits.
+  - Renamed the route-choice payload from `execution` to `preparation` in:
+    - `public/renderer.js`
+    - `public/js/import_extract_route_choice_modal.js`
+  - Kept scope narrow:
+    - no IPC contract changes
+    - no route-choice behavior changes
+    - no prepare/execute orchestration changes
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/renderer.js`
+  - `public/js/import_extract_route_choice_modal.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:40:49 -03:00`
+  - Pre-patch anchors:
+    - `public/renderer.js:1700`
+    - `public/js/import_extract_route_choice_modal.js:39`
+    - `public/js/import_extract_route_choice_modal.js:53`
+  - Post-patch anchors:
+    - `public/renderer.js:1700` -> `async function promptImportExtractRouteChoice(preparation)`
+    - `public/js/import_extract_route_choice_modal.js:39` -> `function hasDualRouteOptions(preparation)`
+    - `public/js/import_extract_route_choice_modal.js:53` -> `async function promptRouteChoice({ preparation, tRenderer } = {})`
+  - Verification:
+    - `node --check public/renderer.js` -> passed
+    - `node --check public/js/import_extract_route_choice_modal.js` -> passed
+    - `npm run lint` -> passed
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:41:33 -03:00`
+- Outcome / next step:
+  - Completed. The last prepare/execute naming residue identified in `OP-0080` is removed, so the strict hard-cleanup rule is now satisfied more cleanly in runtime code.
+
+### OP-0080
+
+- Date/time: 2026-03-18 15:31:26 -03:00
+- Operation: Audit whether the Issue 53 prepare/execute cutover fully satisfies the hard-cleanup rule forbidding legacy-model remnants, dead code, or fallback to the old single-call implementation.
+- Why: User asked for a careful verification of the final rule in `docs/issues/issue_53_prepare_execute_native_triage_plan.md` before treating the cutover as fully clean.
+- Changes made:
+  - Opened OP-0080 before the repository audit.
+  - Completed a read-only review across runtime code and adjacent resources (`electron`, `public`, `i18n`) to check for:
+    - old single-call IPC/channel remnants
+    - compatibility fallback paths
+    - dead bridge/UI/i18n code left behind by the cutover
+    - other code evidence that the old model still structurally leaks into the app
+  - Confirmed that the old runtime entry points are gone and that current runtime wiring uses only the prepare/execute model.
+  - Identified one low-impact naming residue in route-choice UI plumbing:
+    - `public/renderer.js` still names the route-choice payload parameter `execution`
+    - `public/js/import_extract_route_choice_modal.js` still uses `execution` for the same preparation payload
+  - No runtime behavior fallback to the old model was found.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:31:26 -03:00`
+  - Audit baseline:
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md`
+    - `git status --short`
+  - Legacy-runtime removal evidence:
+    - `Test-Path electron/import_extract_platform/import_extract_execution_ipc.js` -> `False`
+    - `rg -n "runImportExtractSelectedFile|import-extract-run-selected-file|import_extract_execution_ipc" electron public i18n -S` -> no matches
+  - Current runtime wiring evidence:
+    - `electron/preload.js:25-26` exposes only:
+      - `prepareImportExtractSelectedFile`
+      - `executePreparedImportExtract`
+    - `rg -n "prepareImportExtractSelectedFile|executePreparedImportExtract" electron/preload.js public/renderer.js electron/main.js -S`
+  - Low-impact naming residue evidence:
+    - `public/renderer.js:1700` -> `async function promptImportExtractRouteChoice(execution)`
+    - `public/renderer.js:1712` -> `execution`
+    - `public/js/import_extract_route_choice_modal.js:39` -> `function hasDualRouteOptions(execution)`
+    - `public/js/import_extract_route_choice_modal.js:53` -> `async function promptRouteChoice({ execution, tRenderer } = {})`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:33:20 -03:00`
+- Outcome / next step:
+  - Completed. The hard-cutover rule is satisfied at runtime/behavior level: no old single-call channel, bridge, module, or fallback path remains in `electron`, `public`, or `i18n`. One cosmetic naming residue remains in route-choice UI code, so the stricter “looks like the old model was never there” standard is not fully satisfied yet.
+
+### OP-0079
+
+- Date/time: 2026-03-18 15:26:57 -03:00
+- Operation: Record post-implementation smoke-test evidence, explain and patch the remaining native-PDF provenance mismatch, and close the issue-53 prepare/execute cutover with corrected observability.
+- Why: After the successful user-run smoke test for the prepare/execute implementation, one remaining logging/provenance defect was identified and requested for patching.
+- Changes made:
+  - Opened OP-0079 before code edits.
+  - Recorded implementation continuity from `OP-0078` as the baseline for this post-implementation validation/patch step.
+  - Recorded user-run smoke-test evidence covering:
+    - non-PDF native success (`docx`, `txt`)
+    - non-PDF OCR success (`png`)
+    - PDF `ocr_only` success
+    - PDF `both` success for both route choices (`native`, `ocr`)
+    - prepare-stage failures for corrupt/encrypted PDFs
+    - user abort during OCR execution
+    - precondition rejection while stopwatch is running
+  - Patched `electron/import_extract_platform/native_extraction_route.js` so native provenance derives `sourceFileKind` from the real source extension instead of hardcoding `text_document`.
+  - Kept behavior unchanged outside observability/provenance:
+    - no prepare/execute contract change
+    - no renderer-flow change
+    - no route-selection change
+  - Drift disclosure:
+    - read-only diagnosis for this operation started shortly before creating OP-0079.
+    - instruction diverged from: `Create/update an OP-XXXX entry before and after each meaningful operation`.
+    - why the divergence was necessary: the mismatch had to be confirmed from current code/log anchors before opening the exact patch operation entry.
+    - expected impact/risk: low; no repository files were modified before the entry was created.
+    - execution paused for user confirmation or proceeded with rationale: proceeded with rationale because the pre-entry step was read-only and only served to verify the precise defect to patch.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/native_extraction_route.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:26:57 -03:00`
+  - Read-only diagnosis anchors collected before opening:
+    - `rg -n "sourceFileKind|runNativeExtractionRoute|provenance" electron/import_extract_platform/native_extraction_route.js`
+    - `git status --short` -> no output
+  - Implementation continuity:
+    - `OP-0078` records the prepare/execute implementation cutover as completed.
+  - User-provided smoke-test evidence:
+    - terminal logs show exactly one `import/extract prepare started` + one `import/extract prepare completed` + one `import/extract execute started` + one `import/extract execute completed` for normal success paths
+    - terminal logs show `pdfTriage: 'ocr_only'` for scanned PDF and `executedRoute: 'ocr'`
+    - terminal logs show `pdfTriage: 'both'` with one `prepare choice-required`, then exactly one execute for each explicit choice:
+      - `chosenRoute: 'native'` / `executedRoute: 'native'`
+      - `chosenRoute: 'ocr'` / `executedRoute: 'ocr'`
+    - terminal logs show prepare-stage failure for:
+      - corrupt PDF -> `nativeProbeCode: 'unreadable_or_corrupt'`
+      - encrypted PDF -> `nativeProbeCode: 'native_encrypted_or_password_protected'`
+    - terminal logs show abort path:
+      - processing mode disabled with `reason: 'user_abort_button'`
+      - execute completed with `state: 'cancelled'`, `code: 'aborted_by_user'`
+    - terminal logs show precondition rejection while stopwatch running:
+      - `import-extract precondition_rejected`
+    - diagnosis anchor from smoke logs:
+      - native-PDF success returned `sourceFileKind: 'text_document'` in `import/extract execute completed`, proving the provenance mismatch
+  - Patch verification:
+    - `git diff -- electron/import_extract_platform/native_extraction_route.js docs/issues/issue_53_operation_tracker.md`
+    - `node --check electron/import_extract_platform/native_extraction_route.js` -> passed
+    - `npm run lint` -> passed
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:28:13 -03:00`
+- Outcome / next step:
+  - Completed. Issue 53 implementation is now tracked in `OP-0078`, user smoke coverage is recorded here, and the remaining native-PDF provenance/logging mismatch is patched with no intended behavioral changes.
+
+### OP-0078
+
+- Date/time: 2026-03-18 14:53:17 -03:00
+- Operation: Implement the Issue 53 prepare/execute + native triage cutover in two phases.
+- Why: User confirmed the plan is robust enough, approved the two-phase approach, and asked to proceed with implementation.
+- Changes made:
+  - Opened OP-0078 before code changes.
+  - Added Phase 1 backend/core split:
+    - `electron/import_extract_platform/native_pdf_selectable_text_probe.js`
+    - `electron/import_extract_platform/import_extract_prepared_store.js`
+    - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+    - `electron/import_extract_platform/import_extract_prepare_ipc.js`
+    - `electron/import_extract_platform/import_extract_execute_prepared_ipc.js`
+  - Rewired app registration/bridge to the new channels:
+    - `electron/main.js`
+    - `electron/preload.js`
+  - Added Phase 2 renderer cutover:
+    - replaced single-call flow with `prepare -> optional route choice -> execute`
+    - added lightweight stale-prepare guard
+    - adapted OCR activation recovery to rerun `prepare`
+    - added explicit non-blocking prepare-stage status UI
+  - Added/updated renderer i18n for prepare-stage status and invalid prepared-request failure.
+  - Deleted the superseded legacy single-call IPC module:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - Closed OP-0078 with verification evidence.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/native_pdf_selectable_text_probe.js`
+  - `electron/import_extract_platform/import_extract_prepared_store.js`
+  - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+  - `electron/import_extract_platform/import_extract_prepare_ipc.js`
+  - `electron/import_extract_platform/import_extract_execute_prepared_ipc.js`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js` (deleted)
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `public/js/import_extract_ocr_activation_recovery.js`
+  - `public/index.html`
+  - `public/style.css`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 14:53:17 -03:00`
+  - Preconditions:
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md` re-read and accepted as implementation baseline.
+    - `git status --short` -> no output (clean working tree before implementation).
+  - Syntax validation:
+    - `node --check electron/main.js`
+    - `node --check electron/preload.js`
+    - `node --check electron/import_extract_platform/native_pdf_selectable_text_probe.js`
+    - `node --check electron/import_extract_platform/import_extract_prepared_store.js`
+    - `node --check electron/import_extract_platform/import_extract_prepare_execute_core.js`
+    - `node --check electron/import_extract_platform/import_extract_prepare_ipc.js`
+    - `node --check electron/import_extract_platform/import_extract_execute_prepared_ipc.js`
+    - `node --check public/renderer.js`
+    - `node --check public/js/import_extract_ocr_activation_recovery.js`
+    - all passed
+  - Lint:
+    - `npm run lint` -> passed
+  - Legacy cutover verification:
+    - `rg -n "import-extract-run-selected-file|runImportExtractSelectedFile|import_extract_execution_ipc" public electron -S` -> no matches
+  - Post-change workspace summary:
+    - `git status --short`
+    - `git diff --stat`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:09:37 -03:00`
+- Outcome / next step:
+  - Completed. The runtime code now uses the prepare/execute model with a classification-only native PDF probe, no duplicated renderer triage pass, and no remaining single-call execution path in app code.
+
 ### OP-0077
 
 - Date/time: 2026-03-18 14:42:47 -03:00

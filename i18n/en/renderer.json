@@ -78,7 +78,8 @@
         }
       },
       "processing": {
-        "import_extract_placeholder": "Extracting text..."
+        "import_extract_placeholder": "Extracting text...",
+        "import_extract_preparing": "Preparing import/extract route..."
       },
       "crono": {
         "title": "STOPWATCH",
@@ -257,6 +258,7 @@
       "import_extract_apply_too_large": "The resulting text is too large to process. Reduce repetitions and try again.",
       "import_extract_apply_text_limit": "Cannot append extracted text: maximum size reached.",
       "import_extract_apply_truncated": "Applied extracted text exceeded the limit and was truncated.",
+      "import_extract_prepare_invalid": "The prepared import/extract request is no longer valid. Start the flow again.",
       "import_extract_ocr_unavailable": "OCR is unavailable. Check setup/auth status and try again.",
       "import_extract_ocr_activation_required": "OCR activation is required. Sign in to Google OCR and try again.",
       "import_extract_ocr_activation_starting": "Starting OCR activation. Complete sign-in in your browser to continue.",
