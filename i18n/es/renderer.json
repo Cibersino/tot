@@ -78,7 +78,8 @@
         }
       },
       "processing": {
-        "import_extract_placeholder": "Procesando extracción..."
+        "import_extract_placeholder": "Procesando extracción...",
+        "import_extract_preparing": "Preparando la ruta de importar/extraer..."
       },
       "crono": {
         "title": "CRONÓMETRO",
@@ -257,6 +258,7 @@
       "import_extract_apply_too_large": "El texto resultante es demasiado grande para procesarlo. Reduce repeticiones y reintenta.",
       "import_extract_apply_text_limit": "No se puede agregar el texto extraído: ya se alcanzó el tamaño máximo.",
       "import_extract_apply_truncated": "El texto extraído aplicado excedía el límite y fue truncado.",
+      "import_extract_prepare_invalid": "La solicitud preparada de importar/extraer ya no es válida. Inicia el flujo nuevamente.",
       "import_extract_ocr_unavailable": "OCR no está disponible. Revisa setup/auth y vuelve a intentarlo.",
       "import_extract_ocr_activation_required": "Se requiere activar OCR. Inicia sesión en Google OCR y vuelve a intentarlo.",
       "import_extract_ocr_activation_starting": "Iniciando activación OCR. Completa el inicio de sesión en tu navegador para continuar.",

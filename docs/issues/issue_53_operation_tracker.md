@@ -76,6 +76,78 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0078
+
+- Date/time: 2026-03-18 14:53:17 -03:00
+- Operation: Implement the Issue 53 prepare/execute + native triage cutover in two phases.
+- Why: User confirmed the plan is robust enough, approved the two-phase approach, and asked to proceed with implementation.
+- Changes made:
+  - Opened OP-0078 before code changes.
+  - Added Phase 1 backend/core split:
+    - `electron/import_extract_platform/native_pdf_selectable_text_probe.js`
+    - `electron/import_extract_platform/import_extract_prepared_store.js`
+    - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+    - `electron/import_extract_platform/import_extract_prepare_ipc.js`
+    - `electron/import_extract_platform/import_extract_execute_prepared_ipc.js`
+  - Rewired app registration/bridge to the new channels:
+    - `electron/main.js`
+    - `electron/preload.js`
+  - Added Phase 2 renderer cutover:
+    - replaced single-call flow with `prepare -> optional route choice -> execute`
+    - added lightweight stale-prepare guard
+    - adapted OCR activation recovery to rerun `prepare`
+    - added explicit non-blocking prepare-stage status UI
+  - Added/updated renderer i18n for prepare-stage status and invalid prepared-request failure.
+  - Deleted the superseded legacy single-call IPC module:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - Closed OP-0078 with verification evidence.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/native_pdf_selectable_text_probe.js`
+  - `electron/import_extract_platform/import_extract_prepared_store.js`
+  - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+  - `electron/import_extract_platform/import_extract_prepare_ipc.js`
+  - `electron/import_extract_platform/import_extract_execute_prepared_ipc.js`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js` (deleted)
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `public/js/import_extract_ocr_activation_recovery.js`
+  - `public/index.html`
+  - `public/style.css`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 14:53:17 -03:00`
+  - Preconditions:
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md` re-read and accepted as implementation baseline.
+    - `git status --short` -> no output (clean working tree before implementation).
+  - Syntax validation:
+    - `node --check electron/main.js`
+    - `node --check electron/preload.js`
+    - `node --check electron/import_extract_platform/native_pdf_selectable_text_probe.js`
+    - `node --check electron/import_extract_platform/import_extract_prepared_store.js`
+    - `node --check electron/import_extract_platform/import_extract_prepare_execute_core.js`
+    - `node --check electron/import_extract_platform/import_extract_prepare_ipc.js`
+    - `node --check electron/import_extract_platform/import_extract_execute_prepared_ipc.js`
+    - `node --check public/renderer.js`
+    - `node --check public/js/import_extract_ocr_activation_recovery.js`
+    - all passed
+  - Lint:
+    - `npm run lint` -> passed
+  - Legacy cutover verification:
+    - `rg -n "import-extract-run-selected-file|runImportExtractSelectedFile|import_extract_execution_ipc" public electron -S` -> no matches
+  - Post-change workspace summary:
+    - `git status --short`
+    - `git diff --stat`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:09:37 -03:00`
+- Outcome / next step:
+  - Completed. The runtime code now uses the prepare/execute model with a classification-only native PDF probe, no duplicated renderer triage pass, and no remaining single-call execution path in app code.
+
 ### OP-0077
 
 - Date/time: 2026-03-18 14:42:47 -03:00
