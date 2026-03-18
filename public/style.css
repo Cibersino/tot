@@ -129,10 +129,88 @@ body {
 
 /* Text selector controls */
 .controls {
+  position: relative;
+  min-height: 30px;
+}
+
+.controls-row {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
+}
+
+.controls-row[hidden] {
+  display: none;
+}
+
+.controls-processing {
+  width: 100%;
+}
+
+.controls-processing[hidden] {
+  display: none;
+}
+
+.import-extract-processing-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  border: 1px solid #b8ae9c;
+  border-radius: 5px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  background: #f5efdf;
+}
+
+#importExtractProcessingLabel {
+  font-size: 13px;
+  color: #2f2a20;
+  white-space: nowrap;
+}
+
+.import-extract-processing-placeholder-track {
+  flex: 1 1 auto;
+  min-width: 80px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ded3bc;
+  overflow: hidden;
+}
+
+.import-extract-processing-placeholder-fill {
+  display: block;
+  width: 34%;
+  height: 100%;
+  border-radius: 999px;
+  background: #a9976a;
+  animation: import-extract-processing-placeholder-slide 1.3s ease-in-out infinite;
+}
+
+.import-extract-processing-bar #btnImportExtractAbort {
+  margin-left: auto;
+  border-color: #c45858;
+  background: #fff1f1;
+}
+
+.import-extract-processing-bar #btnImportExtractAbort:hover {
+  background: #ffe4e4;
+}
+
+@keyframes import-extract-processing-placeholder-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  50% {
+    transform: translateX(180%);
+  }
+
+  100% {
+    transform: translateX(-120%);
+  }
 }
 
 .clipboard-repeat-input {
@@ -604,6 +682,118 @@ select#presets {
   color: #666;
   font-style: italic;
   padding: 8px
+}
+
+.import-extract-route-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(520px, calc(100% - 32px));
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+
+.import-extract-route-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.import-extract-route-modal-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.import-extract-route-modal-body {
+  margin-top: 12px;
+}
+
+.import-extract-route-modal-body p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.import-extract-route-modal-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.import-extract-route-modal-actions .btn-standard {
+  min-width: 110px;
+}
+
+.import-extract-apply-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(560px, calc(100% - 32px));
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+
+.import-extract-apply-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.import-extract-apply-modal-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.import-extract-apply-modal-body {
+  margin-top: 12px;
+}
+
+.import-extract-apply-modal-body p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.import-extract-apply-repeat-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.import-extract-apply-repeat-row label {
+  font-size: 0.95rem;
+}
+
+.import-extract-apply-repeat-row input {
+  width: 96px;
+  padding: 4px 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.import-extract-apply-modal-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.import-extract-apply-modal-actions .btn-standard {
+  min-width: 110px;
 }
 
 /* Loader for opening the manual editor */

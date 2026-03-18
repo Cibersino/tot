@@ -6,8 +6,6 @@
       "instrucciones_completas": "Instructions complètes",
       "faq": "Foire aux questions (FAQ)",
       "herramientas": "Outils",
-      "cargador_texto": "Importer du texte depuis des fichiers texte",
-      "cargador_imagen": "Importer du texte depuis des images",
       "test_velocidad": "Test de vitesse",
       "preferencias": "Préférences",
       "idioma": "Langue",
@@ -56,4 +54,3 @@
     }
   }
 }
-

@@ -27,6 +27,8 @@ const {
   ensureConfigDir,
   getSettingsFile,
   getCurrentTextFile,
+  getOcrGoogleDriveCredentialsFile,
+  getOcrGoogleDriveTokenFile,
   loadJson,
   saveJson,
 } = require('./fs_storage');
@@ -42,9 +44,43 @@ const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
+const ocrGoogleDriveSetupValidationIpc = require('./import_extract_platform/ocr_google_drive_setup_validation_ipc');
+const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
+const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
+const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
+const importExtractOcrGateIpc = require('./import_extract_platform/import_extract_ocr_gate_ipc');
+const importExtractOcrActivationIpc = require('./import_extract_platform/import_extract_ocr_activation_ipc');
+const importExtractExecutionIpc = require('./import_extract_platform/import_extract_execution_ipc');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
+
+const importExtractProcessingModeController = importExtractProcessingModeIpc.createController({
+  onStateChanged: (state) => {
+    try {
+      const targetWin = resolveMainWindow();
+      if (targetWin) {
+        targetWin.webContents.send('import-extract-processing-mode-changed', state);
+      }
+      if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
+        pendingMainWindowCloseAfterProcessingAbort = false;
+        if (targetWin && !targetWin.isDestroyed()) {
+          setTimeout(() => {
+            try {
+              if (targetWin && !targetWin.isDestroyed()) {
+                targetWin.close();
+              }
+            } catch (err) {
+              log.warn('Failed to close main window after processing cancellation (ignored):', err);
+            }
+          }, 0);
+        }
+      }
+    } catch (err) {
+      log.warn('Failed to broadcast processing-mode state (ignored):', err);
+    }
+  },
+});
 
 // =============================================================================
 // Constants / config (paths, defaults, limits)
@@ -78,20 +114,42 @@ function isMainInteractive() {
   return mainReadyState === 'READY' && menuEnabled;
 }
 
-function guardMainUserAction(actionId, message) {
-  if (isMainInteractive()) return true;
-  const rawMessage = typeof message === 'string' && message.trim()
-    ? message.trim()
-    : 'Main action ignored (pre-READY).';
-  const bootstrapMessage = rawMessage.startsWith('BOOTSTRAP:')
-    ? rawMessage
-    : `BOOTSTRAP: ${rawMessage}`;
-  log.warnOnce(
-    `BOOTSTRAP:main.preReady.${actionId}`,
-    bootstrapMessage,
-    actionId
-  );
-  return false;
+function isMainMenuInteractive() {
+  return isMainInteractive() && !importExtractProcessingModeController.isActive();
+}
+
+function getMainInteractionBlockReason() {
+  if (!isMainInteractive()) return 'pre_ready';
+  if (importExtractProcessingModeController.isActive()) return 'processing_mode';
+  return '';
+}
+
+function guardMainUserAction(actionId, message, { allowDuringProcessing = false } = {}) {
+  if (!isMainInteractive()) {
+    const rawMessage = typeof message === 'string' && message.trim()
+      ? message.trim()
+      : 'Main action ignored (pre-READY).';
+    const bootstrapMessage = rawMessage.startsWith('BOOTSTRAP:')
+      ? rawMessage
+      : `BOOTSTRAP: ${rawMessage}`;
+    log.warnOnce(
+      `BOOTSTRAP:main.preReady.${actionId}`,
+      bootstrapMessage,
+      actionId
+    );
+    return false;
+  }
+
+  if (!allowDuringProcessing && importExtractProcessingModeController.isActive()) {
+    log.warnOnce(
+      `main.processingLock.${actionId}`,
+      'Main action ignored (processing-mode lock active):',
+      actionId
+    );
+    return false;
+  }
+
+  return true;
 }
 
 function resolveMainWindow() {
@@ -110,6 +168,7 @@ let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating stopwatch window (flotante.html)
 let taskEditorWin = null; // Task editor window (task_editor.html)
 let taskEditorForceClose = false;
+let pendingMainWindowCloseAfterProcessingAbort = false;
 
 // =============================================================================
 // Startup readiness gates + handshake state
@@ -163,7 +222,8 @@ function buildAppMenu(lang) {
   menuBuilder.buildAppMenu(effectiveLang, {
     resolveMainWindow,
     onOpenLanguage: () => createLanguageWindow(),
-    isMenuEnabled: () => (menuEnabled && mainReadyState === 'READY'),
+    isMenuEnabled: () => isMainMenuInteractive(),
+    getMenuBlockReason: () => getMainInteractionBlockReason(),
   });
   menuInstalled = true;
 }
@@ -250,6 +310,18 @@ function createMainWindow() {
 
   mainWin.loadFile(path.join(__dirname, '../public/index.html'));
 
+  mainWin.webContents.on('did-finish-load', () => {
+    try {
+      if (!isAliveWindow(mainWin)) return;
+      mainWin.webContents.send(
+        'import-extract-processing-mode-changed',
+        importExtractProcessingModeController.getState()
+      );
+    } catch (err) {
+      log.warn('Failed to seed processing-mode state on renderer load (ignored):', err);
+    }
+  });
+
   // Dev-only shortcuts for inspection/reload.
   registerDevShortcuts();
 
@@ -265,8 +337,24 @@ function createMainWindow() {
   maybeMarkMainInvariantsReady();
 
   // Best-effort shutdown: when the main window closes, try to close auxiliary windows too.
-  mainWin.on('close', () => {
+  mainWin.on('close', (event) => {
     try {
+      if (importExtractProcessingModeController.isActive()) {
+        if (event && typeof event.preventDefault === 'function') {
+          event.preventDefault();
+        }
+        pendingMainWindowCloseAfterProcessingAbort = true;
+        const abortResult = importExtractProcessingModeController.requestAbort({
+          source: 'main_window',
+          reason: 'close_during_processing',
+        });
+        if (!abortResult || abortResult.ok !== true) {
+          pendingMainWindowCloseAfterProcessingAbort = false;
+          log.warn('Main window close during processing could not request cancellation:', abortResult);
+        }
+        return;
+      }
+
       if (isAliveWindow(editorWin)) {
         try {
           editorWin.close();
@@ -1466,6 +1554,79 @@ app.whenReady().then(() => {
   updater.registerIpc(ipcMain, {
     mainWinRef: () => mainWin,
     currentLanguageRef: () => getSelectedLanguage(),
+  });
+
+  ocrGoogleDriveSetupValidationIpc.registerIpc(ipcMain, {
+    resolvePaths: () => ({
+      credentialsPath: getOcrGoogleDriveCredentialsFile(),
+      tokenPath: getOcrGoogleDriveTokenFile(),
+    }),
+  });
+
+  importExtractProcessingModeIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    controller: importExtractProcessingModeController,
+  });
+
+  importExtractFilePickerIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+  });
+
+  importExtractPreconditionsIpc.registerIpc(ipcMain, {
+    getPreconditionContext: () => {
+      const secondaryWindows = [
+        { id: 'editor', label: 'editor', ref: editorWin },
+        { id: 'editor_find', label: 'editor_find', ref: editorFindMain.getFindWindow() },
+        { id: 'preset_modal', label: 'preset_modal', ref: presetWin },
+        { id: 'language_window', label: 'language_window', ref: langWin },
+        { id: 'floating_stopwatch', label: 'floating_stopwatch', ref: flotanteWin },
+        { id: 'task_editor', label: 'task_editor', ref: taskEditorWin },
+      ];
+
+      return {
+        openSecondaryWindows: secondaryWindows.map((item) => ({
+          id: item.id,
+          label: item.label,
+          isOpen: isAliveWindow(item.ref),
+        })),
+        stopwatchRunning: !!(crono && crono.running),
+      };
+    },
+  });
+
+  importExtractOcrGateIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    resolvePaths: () => ({
+      credentialsPath: getOcrGoogleDriveCredentialsFile(),
+      tokenPath: getOcrGoogleDriveTokenFile(),
+    }),
+  });
+
+  importExtractOcrActivationIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    resolvePaths: () => ({
+      credentialsPath: getOcrGoogleDriveCredentialsFile(),
+      tokenPath: getOcrGoogleDriveTokenFile(),
+    }),
+  });
+
+  importExtractExecutionIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    resolvePaths: () => ({
+      credentialsPath: getOcrGoogleDriveCredentialsFile(),
+      tokenPath: getOcrGoogleDriveTokenFile(),
+    }),
+    controller: importExtractProcessingModeController,
   });
 
   // First run: show language picker before creating the main window.

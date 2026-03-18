@@ -216,6 +216,7 @@ function getDialogTexts(lang) {
  * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Target window for 'menu-click'.
  * @param {Function} [opts.resolveMainWindow] - Resolver for the target window.
  * @param {Function} [opts.isMenuEnabled] - Returns whether menu actions should dispatch.
+ * @param {Function} [opts.getMenuBlockReason] - Optional reason provider when menu actions are blocked.
  * @param {Function} [opts.onOpenLanguage] - Callback that opens the language selection window.
  */
 function buildAppMenu(lang, opts = {}) {
@@ -223,6 +224,7 @@ function buildAppMenu(lang, opts = {}) {
     const tr = loadMainTranslations(effectiveLang) || {};
     const tMain = tr.main || {};
     const m = tMain.menu || {};
+    const MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__';
 
     const resolveMainWindow =
         typeof opts.resolveMainWindow === 'function'
@@ -234,13 +236,37 @@ function buildAppMenu(lang, opts = {}) {
             ? opts.isMenuEnabled
             : () => true;
 
+    const getMenuBlockReason =
+        typeof opts.getMenuBlockReason === 'function'
+            ? opts.getMenuBlockReason
+            : () => 'pre_ready';
+
     const canDispatchMenuAction = (actionId) => {
         if (isMenuEnabled()) return true;
+        const reasonRaw = String(getMenuBlockReason(actionId) || '').trim();
+        const reason = reasonRaw || 'interaction_locked';
+        const reasonLabel = reason === 'processing_mode'
+            ? 'processing-mode lock active'
+            : (reason === 'pre_ready' ? 'pre-READY' : `lock:${reason}`);
         log.warnOnce(
-            `menu_builder.inert:${actionId}`,
-            'Menu action ignored (pre-READY):',
+            `menu_builder.inert.${reason}:${actionId}`,
+            `Menu action ignored (${reasonLabel}):`,
             actionId
         );
+        if (reason === 'processing_mode') {
+            const mainWindow = resolveMainWindow();
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                try {
+                    mainWindow.webContents.send('menu-click', MENU_PROCESSING_LOCK_NOTICE_ACTION);
+                } catch (err) {
+                    log.warnOnce(
+                        'menu_builder.processing_lock_notice.sendFailed',
+                        "webContents.send('menu-click') failed for processing lock notice (ignored):",
+                        err
+                    );
+                }
+            }
+        }
         return false;
     };
 
@@ -315,14 +341,6 @@ function buildAppMenu(lang, opts = {}) {
         {
             label: resolveMenuLabel(m, 'herramientas', 'Tools'),
             submenu: [
-                {
-                    label: resolveMenuLabel(m, 'cargador_texto', 'Text loader'),
-                    click: () => sendMenuClick('cargador_texto'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'cargador_imagen', 'Image loader'),
-                    click: () => sendMenuClick('cargador_imagen'),
-                },
                 {
                     label: resolveMenuLabel(m, 'test_velocidad', 'Speed test'),
                     click: () => sendMenuClick('test_velocidad'),

@@ -6,8 +6,6 @@
       "instrucciones_completas": "Instrucciones completas",
       "faq": "Preguntas frecuentes (FAQ)",
       "herramientas": "Herramientas",
-      "cargador_texto": "Importar texto desde archivos de texto",
-      "cargador_imagen": "Importar texto desde imágenes",
       "test_velocidad": "Test de velocidad de lectura",
       "preferencias": "Preferencias",
       "idioma": "Idioma",
@@ -64,4 +62,3 @@
     }
   }
 }
-

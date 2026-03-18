@@ -27,7 +27,3318 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 - Evidence:
 - Outcome / next step:
 
+## Current Authoritative Status
+
+As of 2026-03-15:
+
+- Section 1 (`Substrate and access-model decision`): complete.
+- Section 2 (`Substrate setup / billing / activation path`): complete.
+  - Items 1-8: complete.
+  - Item 7/8 execution respected scope boundary: backend/IPC/logging work only; no OCR UI trigger wiring.
+  - Legacy `cargador_*` menu paths remain forbidden and were not reintroduced.
+- Section 3 (`Contracts before implementation`): complete (revalidated).
+  - Revalidated and relocked on 2026-03-14 after Section 2 item 7/8 completion.
+  - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
+- Sections 4-8: in progress.
+  - Section 4 started.
+  - Items 1-15 complete:
+    - dedicated import/extract button added in selector row
+    - native file picker wired with default/persisted folder behavior
+    - precondition block added (secondary windows + stopwatch running)
+    - platform adapter boundary isolated for picker/path behavior (`win32`/`darwin`/`linux`/fallback)
+    - processing-mode lock added as distinct state from startup lock; normal main-window/menu actions are blocked while active
+    - OCR access/activation gate wired with explicit blocked outcomes (`unavailable` / `not-activated` / `restricted` / `quota_or_rate_limited`)
+    - OCR route implemented and executed from backend-owned route runtime
+    - native extraction route implemented and executed from backend-owned route runtime
+    - native extraction engineering slice completed (`docx` mapping + normalization pipeline + structured parser-stage errors)
+    - PDF triage implemented in backend execution path (`native_only` / `ocr_only` / `both`)
+    - explicit route-choice UX implemented for `pdfTriage=both` via custom modal module and explicit user-selected `native`/`ocr` handoff
+    - post-extraction apply modal implemented with overwrite/append/repetitions
+    - extracted text routed through canonical apply path with unchanged semantics
+    - no-silent-fallback observability enforced for route fallback paths in backend execution triage/packaging
+    - failure/abort invariants enforced in backend execution/runtime boundary and main-window close cancellation path
+  - Section 5 item 2 (`Add multilingual smoke coverage across OCR + native routes`): complete.
+  - Section 5 item 3 (`Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases)`): complete.
+  - Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`): complete.
+  - Section 5 item 5 (`Validate processing lock behavior`): complete (`PLK-01` + `PLK-01R`).
+  - Section 5 item 6 (`Validate close-window-during-processing cancellation path and invariants`): complete (`PLK-02` + `PLK-02R`).
+  - Section 5 item 7 (`Validate failure/abort invariants and state separation`): complete (evidence reuse: `PRC-01` + `NFM-B` + `PLK-01/02/02R` + OP-0033 anchors).
+  - Section 5 item 8 (`Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures`): complete (`SMK-02` + `AAM-01` + OP-0020 quota matrix).
+  - Section 5 item 9 (`Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice)`): complete (`SMK-*` + `NFM-A` + `APL-01`).
+  - Section 5 item 10 (`Validate observability coverage for required fields/events (routes, latency, apply/truncation, precondition/failure/cancel/setup paths)`): complete (`OBS-10A` + `OBS-10B` + reused path evidence map).
+    - Post-closure note: OP-0066 observability instrumentation was manually rolled back by the user after Section 5 closure; item-10 remains closed as historical evidence captured at runtime on 2026-03-15.
+  - Section 5 item 11 (`Block progression until basic smoke/quality gate passes`): complete (`QG-01`).
+  - Section 5 is complete.
+  - Active next checklist item: Section 6 item 1 (`Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation`).
+  - Section 4 is the first allowed stage for OCR UI trigger wiring.
+- Legacy menu path note:
+  - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
+
 ## Log
+
+### OP-0077
+
+- Date/time: 2026-03-18 14:42:47 -03:00
+- Operation: Clarify the prepare/execute implementation plan with execution phases, transport-contract preservation, lightweight prepare-stage race guards, and an explicit Codex Operational Policy.
+- Why: User approved the two-phase implementation approach and requested minimal clarifications that reduce regression risk without changing the intended behavior of keeping prepare outside processing mode.
+- Changes made:
+  - Opened OP-0077 before documentation edits.
+  - Updated `docs/issues/issue_53_prepare_execute_native_triage_plan.md` to add:
+    - `## Codex Operational Policy`
+    - explicit prepare invariant: no reuse of processing-mode lock/abort semantics
+    - explicit execute contract note preserving the current final IPC response envelope
+    - explicit lightweight prepare-stage stale-request/race guard
+    - explicit two-phase execution framing (`backend/core split`, then `renderer cutover + cleanup`)
+  - Closed OP-0077 with evidence after the documentation patch.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_prepare_execute_native_triage_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 14:42:47 -03:00`
+  - Plan anchors:
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md`:
+      - `## Codex Operational Policy`
+      - `no reuse of processing-mode lock/abort semantics for prepare`
+      - `same final outer IPC success/failure envelope currently used by the execution path for post-route handling`
+      - `use a lightweight prepare-stage race guard in renderer orchestration; do not reuse processing-mode locking for this`
+      - `Execution phases:`
+      - `Phase 1: backend/core split`
+      - `Phase 2: renderer cutover + cleanup`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 14:44:15 -03:00`
+- Outcome / next step:
+  - Completed. The prepare/execute plan now records the agreed implementation phases and the two safety clarifications needed for coding without reintroducing behavior ambiguity.
+
+### OP-0076
+
+- Date/time: 2026-03-16 00:57:53 -03:00
+- Operation: Add hard-cutover cleanup requirement to the prepare/execute implementation plan.
+- Why: User requested no remnant/legacy/fallback behavior from the previous model and demanded full cleanup.
+- Changes made:
+  - Updated `docs/issues/issue_53_prepare_execute_native_triage_plan.md` to enforce:
+    - no compatibility fallback to old single-call execution model
+    - explicit cleanup/removal scope for legacy channels/branches
+    - verification criteria proving no legacy references remain
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_prepare_execute_native_triage_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-16 00:57:53 -03:00`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-16 01:07:06 -03:00`
+- Outcome / next step:
+  - Completed. Plan now includes explicit hard cutover and full-cleanup constraints before coding starts.
+
+### OP-0069
+
+- Date/time: 2026-03-15 22:45:59 -03:00
+- Operation: Add a Section 6 feasibility/tradeoff gate item (unchecked) before progress/ETA implementation work.
+- Why: User requested to add only the feasibility gate item and keep it unchecked.
+- Changes made:
+  - Opened OP-0069 before documentation edits.
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 6 by inserting a new unchecked item:
+    - `Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation.`
+  - Updated `docs/issues/issue_53_operation_tracker.md` authoritative status:
+    - active next checklist item now points to the new Section 6 feasibility/tradeoff gate.
+  - Added this OP-0069 record.
+- Checklist updates:
+  - No checkbox toggles.
+  - Plan structure changed by adding one new unchecked checklist item in Section 6.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 22:45:59 -03:00`
+  - Plan evidence:
+    - Section 6 now starts with:
+      - `[ ] Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation.`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 22:46:31 -03:00`
+- Outcome / next step:
+  - Completed requested change scope (`only item 1`, unchecked). Next step remains executing the new Section 6 item 1 feasibility gate.
+
+### OP-0068
+
+- Date/time: 2026-03-15 22:31:39 -03:00
+- Operation: Record user-executed rollback of OP-0066 observability code and align tracker status with explicit historical-evidence interpretation.
+- Why: Enforce no-hidden-decisions policy after a manual post-closure code cleanup and remove ambiguity between historical Section-5 evidence and current HEAD code state.
+- Changes made:
+  - Opened OP-0068 before tracker updates.
+  - Updated `## Current Authoritative Status`:
+    - added a post-closure note under Section 5 item 10 clarifying that:
+      - OP-0066 observability fields/logs were manually removed by the user after closure
+      - item-10 closure remains valid as historical runtime evidence from 2026-03-15
+  - Added this OP-0068 entry documenting the rollback event and evidence.
+- Checklist updates:
+  - None. No checklist checkbox changes were made.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 22:31:39 -03:00`
+  - Workspace/code-state verification (user rollback confirmed):
+    - `git status --short` -> no output (clean working tree)
+    - `rg -n "attachExecutionLatencyMetadata|executionLatencyMs|ocrLatencyMs|nativeLatencyMs|import/extract apply choice selected|import/extract apply completed|import/extract apply failed" electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js -S` -> no matches
+    - `git rev-parse --short HEAD` -> `8d085bc`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 22:32:05 -03:00`
+- Outcome / next step:
+  - Completed. Tracker now explicitly records the manual rollback as a post-closure cleanup event while preserving Section 5 item-10 closure as historical evidence. Next step remains Section 6 item 1 (`Implement processing progress UX`).
+
+### OP-0067
+
+- Date/time: 2026-03-15 21:35:25 -03:00
+- Operation: Close Section 5 items 10 and 11 using post-patch observability runs and quality-gate rollup.
+- Why: User completed the requested OBS runs after OP-0066 observability patch, enabling item-10 closure and final Section-5 gate decision.
+- Changes made:
+  - Opened OP-0067 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 10 -> `COMPLETED`
+    - section 5 coverage map item 11 -> `COMPLETED`
+    - added `## Section 5 Item 10`:
+      - `OBS-10A` (native/apply observability)
+      - `OBS-10B` (OCR/apply observability)
+      - required-field mapping across routes/latency/apply-truncation/precondition-failure-cancel-setup paths
+    - added `## Section 5 Item 11`:
+      - `QG-01` gate decision block
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 10 complete (`[x] Validate observability coverage ...`)
+    - marked item 11 complete (`[x] Block progression until basic smoke/quality gate passes.`)
+  - Updated tracker authoritative status:
+    - section 5 items 10/11 marked complete
+    - section 5 marked complete
+    - active next checklist item moved to section 6 item 1
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate observability coverage for required fields/events (routes, latency, apply/truncation, precondition/failure/cancel/setup paths).`
+    - `[x] Block progression until basic smoke/quality gate passes.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:35:25 -03:00`
+  - New user-provided OBS evidence:
+    - terminal (`OBS-10A` native):
+      - `executionLatencyMs: 104`
+      - `nativeLatencyMs: 104`
+      - route metadata fields (`availableRoutes/chosenRoute/executedRoute/sourceFileExt/sourceFileKind`)
+    - terminal (`OBS-10B` OCR):
+      - `executionLatencyMs: 5740`
+      - `ocrLatencyMs: 5740`
+      - route metadata fields (`availableRoutes/chosenRoute/executedRoute/sourceFileExt/sourceFileKind`)
+    - DevTools (`OBS-10A` + `OBS-10B`):
+      - `import/extract apply choice selected: { mode, repetitionCount, routeKind, sourceFileExt, sourceFileKind }`
+      - `import/extract apply completed: { mode, repetitionCount, truncated, resultingTextLength }`
+  - Reused evidence anchors for full item-10 field map:
+    - precondition: `PRC-01`
+    - failure: `NFM-B`
+    - cancellation: `PLK-01` / `PLK-02` / `PLK-02R`
+    - setup/activation/restriction/quota: `SMK-02` + `AAM-01` + OP-0020 case 4
+    - truncation event: `APL-01`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-10 and item-11 coverage now `COMPLETED`
+    - `docs/issues/issue_53_implementation_plan.md` item 10 and item 11 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:36:17 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 is fully closed (items 1-11). Next step is Section 6 item 1 (`Implement processing progress UX`).
+
+### OP-0066
+
+- Date/time: 2026-03-15 21:25:49 -03:00
+- Operation: Patch observability gaps for item 10 (`ocr/native latency`, `apply choice + repetition count`).
+- Why: Item-10 audit showed required observability fields were partially missing from structured logs.
+- Changes made:
+  - Opened OP-0066 before code edits.
+  - Updated `electron/import_extract_platform/import_extract_execution_ipc.js`:
+    - added `attachExecutionLatencyMetadata(...)` helper.
+    - execution handler now captures per-run latency (`executionLatencyMs`) and logs:
+      - `executionLatencyMs`
+      - `ocrLatencyMs`
+      - `nativeLatencyMs`
+    - latency metadata is attached to result provenance (`metadataSafeForLogs`) for downstream observability.
+  - Updated `public/renderer.js` import/extract apply path:
+    - added structured log on apply choice selection:
+      - `mode`
+      - `repetitionCount`
+      - route/file context
+    - added structured log on apply failure:
+      - `mode`
+      - `repetitionCount`
+      - failure `code`
+    - added structured log on apply completion:
+      - `mode`
+      - `repetitionCount`
+      - `truncated`
+      - `resultingTextLength`
+- Checklist updates:
+  - None (item-10 checkbox remains pending until runtime evidence capture).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `public/renderer.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:25:49 -03:00`
+  - Wiring anchors:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`:
+      - `attachExecutionLatencyMetadata`
+      - `executionLatencyMs`
+      - `ocrLatencyMs`
+      - `nativeLatencyMs`
+    - `public/renderer.js`:
+      - `import/extract apply choice selected`
+      - `import/extract apply failed`
+      - `import/extract apply completed`
+  - Validation:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js` -> pass
+    - `node --check public/renderer.js` -> pass
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js` -> pass
+    - `rg -n "attachExecutionLatencyMetadata|executionLatencyMs|ocrLatencyMs|nativeLatencyMs|import/extract apply choice selected|import/extract apply completed|import/extract apply failed" electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js -S`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:26:49 -03:00`
+- Outcome / next step:
+  - Completed implementation patch for missing observability fields. Next step is user manual runtime capture to validate item-10 coverage with live logs.
+
+### OP-0065
+
+- Date/time: 2026-03-15 21:22:44 -03:00
+- Operation: Close Section 5 item 9 using new truncation-cap evidence plus existing apply-mode evidence.
+- Why: User provided the missing MAX_TEXT_CHARS/truncation proof from a high-repetition import/apply run.
+- Changes made:
+  - Opened OP-0065 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 9 -> `COMPLETED`
+    - added `## Section 5 Item 9` with:
+      - `APL-01 Truncation and Hard-Cap Validation`
+      - mixed-evidence closure mapping for overwrite/append/repetitions + cap/truncation
+    - added drift-log note documenting focused delta run strategy
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 9 complete (`[x] Validate canonical apply behavior ...`)
+  - Updated tracker authoritative status:
+    - section 5 item 9 marked complete
+    - active next checklist item moved to section 5 item 10
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate canonical apply behavior (overwrite/append/repetitions, MAX_TEXT_CHARS, truncation notice).`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:22:44 -03:00`
+  - `APL-01` new evidence (user-provided):
+    - truncation alert text:
+      - `Applied extracted text exceeded the limit and was truncated.`
+    - terminal:
+      - `import/extract execution completed ... state: 'success' ... executedRoute: 'native'`
+      - `text_state.applyCurrentText.truncated ... hard cap of 10000000 chars`
+    - DevTools:
+      - `(await window.electronAPI.getCurrentText()).length` -> `10000000`
+  - Reused evidence anchors for mode coverage:
+    - overwrite: `SMK-01`, `SMK-04`, `SMK-05`
+    - append/repetitions: `NFM-A`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-9 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: SMK-01/04/05, NFM-A, APL-01`
+    - `docs/issues/issue_53_implementation_plan.md` item 9 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:23:19 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 9 is evidence-backed and closed. Next step is Section 5 item 10 (`Validate observability coverage for required fields/events ...`).
+
+### OP-0064
+
+- Date/time: 2026-03-15 21:15:10 -03:00
+- Operation: Close Section 5 item 8 using mixed evidence (new restriction-path probe + existing activation/quota evidence).
+- Why: User provided the missing restriction-path runtime result (`blockCategory: restricted`), completing the item-8 evidence set.
+- Changes made:
+  - Opened OP-0064 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 8 -> `COMPLETED`
+    - added `## Section 5 Item 8` with:
+      - `AAM-01 OCR Restriction Path Probe (docx)`
+      - closure mapping for activation/restriction/quota evidence sources
+    - added drift-log note for direct DevTools gate invocation path
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 8 complete (`[x] Validate access / billing / activation model behavior ...`)
+  - Updated tracker authoritative status:
+    - section 5 item 8 marked complete
+    - active next checklist item moved to section 5 item 9
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate access / billing / activation model behavior, including activation gating, restriction paths, and quota/budget/usage-limit failures.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:15:10 -03:00`
+  - `AAM-01` new evidence (user-provided):
+    - terminal:
+      - `import/extract OCR gate blocked: { ... blockCategory: 'restricted', alertKey: 'renderer.alerts.import_extract_ocr_restricted', sourceFileExt: 'docx', ... }`
+    - DevTools return:
+      - `ok: true`
+      - `canProceed: false`
+      - `ocrSetupState: 'not_checked'`
+      - `blockCategory: 'restricted'`
+      - `alertKey: 'renderer.alerts.import_extract_ocr_restricted'`
+      - `code: 'ocr_unavailable'`
+      - `issueType: 'restriction'`
+  - Reused evidence anchors for item-8 closure:
+    - activation gating/recovery: `SMK-02`
+    - quota/rate-limit classification: OP-0020 validation matrix case 4 (`quota_or_rate_limited`)
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-8 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: SMK-02, AAM-01, OP-0020 case 4`
+    - `docs/issues/issue_53_implementation_plan.md` item 8 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:15:52 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 8 is evidence-backed and closed. Next step is Section 5 item 9 (`Validate canonical apply behavior ...`).
+
+### OP-0063
+
+- Date/time: 2026-03-15 21:09:34 -03:00
+- Operation: Close Section 5 item 7 using existing evidence reuse (no new manual runs).
+- Why: User confirmed prior runs already demonstrate failure/abort invariants and requested continuation without redundant reruns.
+- Changes made:
+  - Opened OP-0063 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 7 -> `COMPLETED`
+    - added `## Section 5 Item 7` with `INV-07 Evidence Reuse Matrix (no new run)`
+    - mapped item-7 closure to existing evidence blocks:
+      - `PRC-01`
+      - `NFM-B`
+      - `PLK-01`, `PLK-02`, `PLK-02R`
+      - OP-0033 implementation anchors (`enforceFailureAbortInvariants` + success-only apply modal gate)
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 7 complete (`[x] Validate failure/abort invariants and state separation.`)
+  - Updated tracker authoritative status:
+    - section 5 item 7 marked complete
+    - active next checklist item moved to section 5 item 8
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate failure/abort invariants and state separation.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:09:34 -03:00`
+  - Evidence-reuse closure anchors:
+    - `PRC-01` -> `precondition_rejected` with blocked-start/no apply flow
+    - `NFM-B` -> extraction `state: failure` with explicit native failure codes + no apply/text apply
+    - `PLK-01` / `PLK-02` / `PLK-02R` -> cancellation `state: cancelled`, `code: aborted_by_user`, no apply/text apply
+    - OP-0033 invariant-enforcement anchors:
+      - backend non-success text-drop and cancel-success coercion (`enforceFailureAbortInvariants(...)`)
+      - renderer apply modal opens only for `resultState === 'success'`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-7 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: PRC-01, NFM-B, PLK-01, PLK-02, PLK-02R`
+    - `docs/issues/issue_53_implementation_plan.md` item 7 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:10:08 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 7 is evidence-backed and closed using prior validated runs. Next step is Section 5 item 8 (`Validate access / billing / activation model behavior...`).
+
+### OP-0062
+
+- Date/time: 2026-03-15 20:53:02 -03:00
+- Operation: Implement close-window behavior refinement so `X` during processing cancels and then closes the main window.
+- Why: User explicitly requested this as a defect fix after item-5 validation, instead of keeping the window open after `close_during_processing`.
+- Changes made:
+  - Opened OP-0062 before code edits.
+  - Updated `electron/main.js`:
+    - added `pendingMainWindowCloseAfterProcessingAbort` state flag.
+    - when processing mode transitions to inactive and close-after-abort is pending, main now schedules `mainWin.close()` on the next tick.
+    - in `mainWin.on('close', ...)`, close during active processing now:
+      - `preventDefault()`
+      - sets close-after-abort pending flag
+      - requests abort with `reason: 'close_during_processing'`
+      - clears pending flag if abort request fails.
+  - Preserved cancellation semantics:
+    - close is still first converted into cancellation request while processing is active.
+    - no direct bypass of processing lock was introduced.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate close-window-during-processing cancellation path and invariants.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/main.js`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:53:02 -03:00`
+  - Wiring anchors:
+    - `pendingMainWindowCloseAfterProcessingAbort` declaration and usage in:
+      - processing-mode `onStateChanged`
+      - main-window `close` handler
+  - Validation:
+    - `node --check electron/main.js` -> pass
+    - `npx eslint electron/main.js` -> pass
+    - `rg -n "pendingMainWindowCloseAfterProcessingAbort|close_during_processing" electron/main.js -S`
+  - Manual rerun evidence (user-provided):
+    - app closes after clicking `X` during active processing: `yes`
+    - main-process logs show close-cancel path:
+      - `Processing mode enabled: { lockId: 1, source: 'import_extract_execution', reason: 'run_pdf_route' }`
+      - `Processing abort requested: { lockId: 1, source: 'main_window', reason: 'close_during_processing' }`
+      - `Processing mode disabled: { lockId: 1, source: 'main_window', reason: 'close_during_processing' }`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-6 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: PLK-02, PLK-02R`
+    - `docs/issues/issue_53_implementation_plan.md` item 6 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 21:03:45 -03:00`
+- Outcome / next step:
+  - Completed implementation and validation. Section 5 item 6 is now evidence-backed and closed. Next step is Section 5 item 7 (`Validate failure/abort invariants and state separation`).
+
+### OP-0061
+
+- Date/time: 2026-03-15 20:51:09 -03:00
+- Operation: Record post-fix manual validation proving processing-lock toast now appears for blocked menu actions.
+- Why: User executed the requested rerun after OP-0060 and provided terminal + DevTools evidence for the exact lock-toast behavior.
+- Changes made:
+  - Opened OP-0061 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 5 -> `COMPLETED`
+    - added rerun case `PLK-01R` documenting post-OP-0060 menu-toast behavior
+    - retained `PLK-01` as pre-fix evidence and superseded the menu-toast gap with rerun proof
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 5 complete (`[x] Validate processing lock behavior ...`)
+  - Updated tracker authoritative status:
+    - section 5 item 5 marked complete
+    - active next checklist item moved to section 5 item 6
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate processing lock behavior:`
+      - distinct from startup lock
+      - only close/minimize/move/abort remain available during processing
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:51:09 -03:00`
+  - `PLK-01R` observed outcome evidence (user-provided):
+    - lock toast appears for blocked menu attempts: `yes`
+    - alert text:
+      - `Import/extract is processing. Main-window interactions are locked until processing ends or you abort.`
+  - Main-process lock telemetry evidence:
+    - `Menu action ignored (processing-mode lock active): test_velocidad`
+    - `Menu action ignored (processing-mode lock active): menu.language`
+  - Renderer telemetry evidence:
+    - `menu-click received (menu_actions.js): __menu_processing_lock_notice__`
+    - `Renderer action ignored (processing-mode lock active): menu.__menu_processing_lock_notice__`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-5 coverage now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: PLK-01, PLK-01R`
+    - `docs/issues/issue_53_implementation_plan.md` item 5 now marked `[x]`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:52:02 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 5 is now evidence-backed and closed. Next step is implementing the requested follow-up fix for close-window behavior during processing (item 6).
+
+### OP-0060
+
+- Date/time: 2026-03-15 20:45:00 -03:00
+- Operation: Implement user-visible lock toast for blocked menu actions during import/extract processing mode.
+- Why: User reported that menu actions are correctly blocked under processing lock, but unlike renderer-blocked controls they do not show the lock toast.
+- Changes made:
+  - Opened OP-0060 before code edits.
+  - Updated `electron/menu_builder.js`:
+    - added synthetic menu action payload constant: `__menu_processing_lock_notice__`
+    - when a menu action is blocked due to `processing_mode`, main now emits:
+      - `webContents.send('menu-click', '__menu_processing_lock_notice__')`
+    - preserves existing menu-action block (no functional unlock).
+  - Updated `public/renderer.js`:
+    - registered synthetic guarded action:
+      - `registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });`
+    - this routes blocked-menu notices through existing `guardUserAction(...)` lock path, reusing current toast throttling + telemetry.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/menu_builder.js`
+  - `public/renderer.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:45:00 -03:00`
+  - Wiring anchors:
+    - `electron/menu_builder.js`:
+      - `MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__'`
+      - processing-lock path sends synthetic `menu-click` payload
+    - `public/renderer.js`:
+      - `registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });`
+  - Validation:
+    - `node --check electron/menu_builder.js` -> pass
+    - `node --check public/renderer.js` -> pass
+    - `npx eslint electron/menu_builder.js public/renderer.js` -> pass
+    - `rg -n "__menu_processing_lock_notice__|processing_lock_notice" electron/menu_builder.js public/renderer.js -S`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:45:48 -03:00`
+- Outcome / next step:
+  - Completed implementation. Next step is user manual rerun of processing-lock menu attempts to verify toast now appears for blocked menu actions.
+
+### OP-0059
+
+- Date/time: 2026-03-15 20:40:39 -03:00
+- Operation: Record Section 5 processing-lock manual evidence (`PLK-01` + `PLK-02`) and keep checklist closure pending on behavior-intent ambiguities raised by user.
+- Why: User executed all assigned UI interactions for item 5 lock validation and close-during-processing behavior, then reported exact logs plus two expectation concerns.
+- Changes made:
+  - Opened OP-0059 before documentation edits.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - coverage map item 5 -> `IN_PROGRESS` with evidence block `PLK-01`
+    - coverage map item 6 -> `IN_PROGRESS` with evidence block `PLK-02`
+    - added `## Section 5 Item 5` case block `PLK-01`
+    - added `## Section 5 Item 6` case block `PLK-02`
+    - added drift-log entry for non-executable scripted clicks on hidden controls (`⌨` / `🗑`) under processing-row swap model
+  - Updated tracker `Current Authoritative Status` to reflect evidence-captured-but-not-closed state for item 5.
+- Checklist updates:
+  - None (no checkbox toggles; closure intentionally deferred pending expectation alignment).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:40:39 -03:00`
+  - `PLK-01` observed evidence (user-provided):
+    - processing started:
+      - `Processing mode enabled: { lockId: 1, source: 'import_extract_execution', reason: 'run_pdf_route' }`
+    - blocked menu actions:
+      - `Menu action ignored (processing-mode lock active): test_velocidad`
+      - `Menu action ignored (processing-mode lock active): menu.language`
+    - blocked renderer action:
+      - `Renderer action ignored (processing-mode lock active): wpm-slider`
+    - visible lock alert text:
+      - `Import/extract is processing. Main-window interactions are locked until processing ends or you abort.`
+    - abort path:
+      - `Processing abort requested: { lockId: 1, source: 'main_window', reason: 'user_abort_button' }`
+      - `Processing mode disabled: { lockId: 1, source: 'main_window', reason: 'user_abort_button' }`
+      - completion: `state: 'cancelled'`, `code: 'aborted_by_user'`
+  - `PLK-02` observed evidence (user-provided):
+    - processing started:
+      - `Processing mode enabled: { lockId: 2, source: 'import_extract_execution', reason: 'run_pdf_route' }`
+    - close-triggered cancellation:
+      - `Processing abort requested: { lockId: 2, source: 'main_window', reason: 'close_during_processing' }`
+      - `Processing mode disabled: { lockId: 2, source: 'main_window', reason: 'close_during_processing' }`
+      - completion: `state: 'cancelled'`, `code: 'aborted_by_user'`
+    - user-reported behavior:
+      - close `X` did not close the window immediately
+      - no apply modal shown
+      - no text applied
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:42:31 -03:00`
+- Assumptions disclosed:
+  - Item-5/item-6 checkbox closure is deferred despite passing runtime lock/cancel signals, because user raised expectation ambiguity on:
+    - lack of user-visible lock toast for blocked native-menu clicks
+    - whether window should auto-close after converting `X` into cancellation request
+  - Impact/risk: low-to-medium for checklist closure timing; no runtime code changes were made in this operation.
+- Outcome / next step:
+  - Evidence is documented and auditable. Next step is explicit expectation decision:
+    - if current behavior is accepted by Issue 53 contracts, close item 5 (and potentially item 6 with additional invariants evidence), or
+    - treat either ambiguity as defect and open a fix operation before closure.
+
+### OP-0058
+
+- Date/time: 2026-03-15 20:00:12 -03:00
+- Operation: Record `PRC-01` precondition-rejection evidence and close Section 5 item 4.
+- Why: User executed the manual precondition-gate scenarios and provided explicit UI/log evidence for both blocked-start reasons.
+- Changes made:
+  - Opened OP-0058 entry and completed documentation updates for item 4 closure.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - section 5 coverage map item 4 set to `COMPLETED`
+    - added `## Section 5 Item 4` with case block `PRC-01`
+    - added drift-log entry for `PRC-01` runtime level (`TOT_LOG_LEVEL='debug'`)
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 4 complete (`[x] Validate precondition rejection scenarios and explicit reason messaging.`)
+  - Updated tracker authoritative status:
+    - section 5 item 4 marked complete
+    - active next checklist item moved to section 5 item 5 (processing lock behavior)
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Validate precondition rejection scenarios and explicit reason messaging.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:00:12 -03:00`
+  - `PRC-01` observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: no`
+    - alerts (both attempts):
+      - `To start import/extract, close all secondary windows and stop the stopwatch.`
+  - `PRC-01` precondition telemetry evidence (main process log):
+    - attempt 1:
+      - `openSecondaryWindowIds: [ 'editor' ]`
+      - `openSecondaryWindowCount: 1`
+      - `stopwatchRunning: false`
+    - attempt 2:
+      - `openSecondaryWindowIds: []`
+      - `openSecondaryWindowCount: 0`
+      - `stopwatchRunning: true`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-4 block now contains:
+      - `Status: COMPLETED`
+      - `Evidence blocks: PRC-01`
+    - `docs/issues/issue_53_implementation_plan.md` item 4 now marked `[x]`
+  - Drift disclosure:
+    - operation-order policy drift occurred in this step:
+      - `docs/issues/issue_53_section5_evidence.md` and `docs/issues/issue_53_implementation_plan.md` were edited before the `OP-0058` log block was written.
+    - impact/risk:
+      - low to artifact integrity (documentation-only changes, no code/runtime behavior affected), but tracker sequencing policy was violated.
+    - handling:
+      - drift is explicitly logged here; operation order has been corrected for subsequent steps.
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 20:01:59 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 4 is evidence-backed and closed. Next step is section 5 item 5 (`Validate processing lock behavior`).
+
+### OP-0057
+
+- Date/time: 2026-03-15 19:38:07 -03:00
+- Operation: Record post-fix `NFM-B` rerun and close Section 5 item 3 with resolved native-route failure semantics.
+- Why: User executed rerun after OP-0056 patch and provided logs proving native-route failure paths for corrupt/encrypted PDFs.
+- Changes made:
+  - Opened OP-0057 before documentation updates.
+  - Updated `docs/issues/issue_53_section5_evidence.md`:
+    - rewrote `NFM-B` block as post-fix rerun result (`PASS`)
+    - replaced old OCR-fallback outcomes with observed native failure outcomes
+    - finalized item-3 coverage map (`Status: COMPLETED`) and anchors
+    - removed stale `NFM-B BLOCKED` drift entry now superseded by rerun evidence
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 3 complete (`[x] Run native-route fixture matrix ...`)
+  - Updated tracker authoritative status:
+    - Section 5 item 3 marked complete
+    - active next checklist item moved to Section 5 item 4 (precondition rejection scenarios)
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Run native-route fixture matrix (format coverage + corrupt/encrypted/empty-text-layer cases).`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:38:07 -03:00`
+  - `NFM-B` rerun observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: no`
+    - alerts:
+      - corrupt: `The selected file is unreadable or corrupt for native extraction.`
+      - encrypted: `The selected PDF is encrypted or password-protected and cannot be extracted natively.`
+  - `NFM-B` rerun execution telemetry evidence (main process log):
+    - corrupt fixture:
+      - `routeKind: 'native'`
+      - `state: 'failure'`
+      - `code: 'unreadable_or_corrupt'`
+      - `pdfTriage: 'native_only'`
+      - `triageReason: 'native_pdf_corrupt_or_unreadable'`
+      - `executedRoute: 'native'`
+    - encrypted fixture:
+      - `routeKind: 'native'`
+      - `state: 'failure'`
+      - `code: 'native_encrypted_or_password_protected'`
+      - `pdfTriage: 'native_only'`
+      - `triageReason: 'native_pdf_password_protected'`
+      - `executedRoute: 'native'`
+  - Continuity evidence:
+    - `docs/issues/issue_53_section5_evidence.md` item-3 block now contains:
+      - `Status: COMPLETED`
+      - `NFM-B` result: `PASS`
+    - `docs/issues/issue_53_implementation_plan.md` item 3 now marked `[x]`
+    - tracker `Current Authoritative Status` active-next now points to Section 5 item 4
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:39:16 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 item 3 is now evidence-backed and closed. Next step is Section 5 item 4 (`Validate precondition rejection scenarios and explicit reason messaging`).
+
+### OP-0056
+
+- Date/time: 2026-03-15 19:29:01 -03:00
+- Operation: Patch PDF triage/routing so corrupt/encrypted native-probe failures do not fall through to OCR runtime errors.
+- Why: User approved fixing the root-cause ambiguity discovered in `NFM-B` where native probe failures were surfaced as OCR conversion failures.
+- Changes made:
+  - Opened OP-0056 before code edits.
+  - Added explicit native PDF parse-failure classification in native route:
+    - `electron/import_extract_platform/native_extraction_route.js`
+    - new code path maps password/encrypted parser errors to:
+      - `native_encrypted_or_password_protected`
+    - keeps corrupt/unreadable mapping as:
+      - `unreadable_or_corrupt`
+    - stores `nativeFailureType` in `detailsSafeForLogs`.
+  - Updated PDF triage routing behavior:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - when native probe fails with:
+      - `unreadable_or_corrupt`
+      - `native_encrypted_or_password_protected`
+    - route decision now stays on native path:
+      - `availableRoutes: ['native']`
+      - `chosenRoute: 'native'`
+      - no OCR execution fallback for these conditions.
+    - added native probe observability fields in route metadata/logging:
+      - `nativeProbeCode`
+      - `nativeProbeErrorName`
+      - `nativeProbeErrorCode`
+  - Updated native alert mapping and locale messages:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+      - `import_extract_native_unreadable_or_corrupt`
+      - `import_extract_native_encrypted_or_password_protected`
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - None (fix operation to unblock Section 5 item 3 evidence clarity).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/native_extraction_route.js`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:29:01 -03:00`
+  - Root-cause anchors (pre-fix):
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`:
+      - native availability requires `state=success` + non-empty text (`hasUsableExtractedText`)
+      - when native unavailable and OCR ready, triage forces `pdfTriage: 'ocr_only'` + `chosenRoute: 'ocr'`
+    - `NFM-B` evidence/logs:
+      - native probe errors (`InvalidPDFException` / `PasswordException`)
+      - final execution path logged as OCR failure (`code: 'ocr_conversion_failed'`)
+  - Validation:
+    - `node --check electron/import_extract_platform/native_extraction_route.js` -> pass
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js` -> pass
+    - `node -e "JSON.parse(...en...); JSON.parse(...es...)"` -> `json-ok`
+    - `npx eslint electron/import_extract_platform/native_extraction_route.js electron/import_extract_platform/import_extract_execution_ipc.js` -> pass
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:32:33 -03:00`
+- Assumptions disclosed:
+  - Kept `pdfTriage` top-level enum stable (`native_only` / `ocr_only` / `both`) and represented new special conditions via:
+    - `triageReason` (`native_pdf_corrupt_or_unreadable` / `native_pdf_password_protected`)
+    - `nativeProbe*` metadata fields
+  - Impact/risk: low; avoids contract/enumeration churn while still exposing explicit failure semantics and preventing OCR misclassification for these cases.
+- Outcome / next step:
+  - Completed patch and static validation. Next step is rerunning manual `NFM-B` to confirm native-route failure UX now shows explicit native errors with no OCR execution fallback.
+
+### OP-0055
+
+- Date/time: 2026-03-15 19:20:16 -03:00
+- Operation: Record Section 5 item 3 manual batch `NFM-B` (`corrupt` + `encrypted` fixtures) and document native-matrix drift/block condition.
+- Why: User completed the manual failure-batch execution and provided logs; documentation must capture the observed behavior exactly.
+- Changes made:
+  - Opened OP-0055 before documentation edits.
+  - Updated item-3 coverage map evidence anchors in:
+    - `docs/issues/issue_53_section5_evidence.md`
+    - added `NFM-B` as blocked UI batch for native failure fixtures.
+  - Added detailed batch block:
+    - `### NFM-B Failure Batch (corrupt + encrypted PDFs)`
+    - includes expected/actual behavior, alert text, and full route metadata for both files.
+  - Recorded explicit block/drift classification:
+    - manual UI flow routed both fixtures to `ocr` (`pdfTriage: 'ocr_only'`) and failed with `ocr_conversion_failed`
+    - item-3 native-route intent therefore remains partially blocked in UI-only execution.
+  - Linked supplemental direct-native probe evidence (from `OP-0053`) within the evidence notes.
+- Checklist updates:
+  - None (Section 5 item 3 remains in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:20:16 -03:00`
+  - `NFM-B` observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: no`
+    - alerts (both files):
+      - `An OCR runtime error occurred during import/extract. Check console and retry.`
+  - `NFM-B` execution telemetry evidence (main process log):
+    - corrupt fixture:
+      - native warning `InvalidPDFException`
+      - completion: `routeKind: 'ocr'`, `state: 'failure'`, `code: 'ocr_conversion_failed'`, `pdfTriage: 'ocr_only'`
+    - encrypted fixture:
+      - native warning `PasswordException`, `errorCode: '1'`
+      - completion: `routeKind: 'ocr'`, `state: 'failure'`, `code: 'ocr_conversion_failed'`, `pdfTriage: 'ocr_only'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:21:01 -03:00`
+- Drift disclosures:
+  - Manual UI execution for item-3 `corrupt`/`encrypted` fixtures did not exercise native final execution path.
+  - Instruction being stressed:
+    - Section 5 item 3 framing as native-route fixture matrix.
+  - Why:
+    - current triage/orchestration routes these PDFs to OCR-only when native text-layer probing fails.
+  - Impact/risk:
+    - medium for closure criteria; UI evidence alone cannot fully assert native failure-path coverage.
+  - Handling:
+    - proceeded with transparent `BLOCKED` documentation and retained supplemental direct-native probe evidence from OP-0053.
+- Outcome / next step:
+  - Completed documentation step for `NFM-B` with explicit block classification. Next step is deciding item-3 closure policy (accept mixed UI + direct-native probe evidence, or add additional dedicated native-path harness evidence in Section 5).
+
+### OP-0054
+
+- Date/time: 2026-03-15 19:11:18 -03:00
+- Operation: Record Section 5 item 3 manual batch `NFM-A` (native success formats: txt/md/html).
+- Why: User executed the batched manual UI pass and requested documentation-first updates before continuing to the next batch.
+- Changes made:
+  - Opened OP-0054 before documentation edits.
+  - Updated Section 5 coverage map for item 3 in `docs/issues/issue_53_section5_evidence.md`:
+    - status -> `IN_PROGRESS`
+    - evidence anchors include:
+      - reuse: `SMK-01` (`docx`), `SMK-04`/`MLG-02` (`pdf`)
+      - new batch: `NFM-A` (`txt`/`md`/`html`)
+  - Added new native-matrix section and `NFM-A` batch block:
+    - `## Section 5 Item 3: Native Fixture Matrix`
+    - `### NFM-A Native Success Batch (txt + md + html)`
+  - Recorded user-provided batch evidence:
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: yes`
+    - `alerts_seen: none`
+    - route metadata success for `txt`, `md`, and `html` native runs
+- Checklist updates:
+  - None (item 3 still in progress; failure/edge batch pending).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:11:18 -03:00`
+  - `NFM-A` observed outcome evidence (user-provided):
+    - native success logs for:
+      - `sourceFileExt: 'txt'`
+      - `sourceFileExt: 'md'`
+      - `sourceFileExt: 'html'`
+    - each run reported:
+      - `routeKind: 'native'`
+      - `state: 'success'`
+      - `availableRoutes: [ 'native' ]`
+      - `executedRoute: 'native'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 19:12:15 -03:00`
+- Assumptions disclosed:
+  - Batch report was provided in aggregated form (`NFM-A`) rather than one isolated apply-mode record per file.
+  - Impact/risk: low for item-3 objective (native route/format coverage); apply-mode semantics are validated in Section 5 item 9.
+- Outcome / next step:
+  - Completed documentation step for `NFM-A`. Next step is manual Batch B for `corrupt` + `encrypted` fixtures.
+
+### OP-0053
+
+- Date/time: 2026-03-15 18:56:45 -03:00
+- Operation: Create missing Section 5 item 3 native-route fixture files in `tools_local/smoke` (md/html/corrupt-pdf/encrypted-pdf).
+- Why: User requested Codex to create the minimal missing fixtures from existing local files/conversions so the native fixture matrix can run fully.
+- Changes made:
+  - Opened OP-0053 before repository file-creation operations.
+  - Created new native format fixtures:
+    - `tools_local/smoke/prueba_md.md` (UTF-8 markdown sample)
+    - `tools_local/smoke/prueba_html.html` (UTF-8 HTML sample)
+  - Created corrupt PDF fixture by copying known-invalid local PDF payload:
+    - source: `tools_local/social_brand_tmp/twitch/__MACOSX/Twitch Brand/._Logo Usage Guidelines (Speedrun Edition).pdf`
+    - destination: `tools_local/smoke/prueba_pdf_corrupto.pdf`
+  - Created encrypted PDF fixture from existing smoke PDF using `pypdf`:
+    - source: `tools_local/smoke/prueba_pdf_original_12_paginas.pdf`
+    - destination: `tools_local/smoke/prueba_pdf_encriptado.pdf`
+    - password used for fixture generation: `tot123`
+  - Validated new fixtures with `runNativeExtractionRoute(...)`:
+    - `prueba_md.md` -> `success`
+    - `prueba_html.html` -> `success`
+    - `prueba_pdf_corrupto.pdf` -> `failure / unreadable_or_corrupt`
+    - `prueba_pdf_encriptado.pdf` -> `failure / unreadable_or_corrupt`
+- Checklist updates:
+  - None (fixture preparation only; Section 5 item 3 execution still pending).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `tools_local/smoke/prueba_md.md`
+  - `tools_local/smoke/prueba_html.html`
+  - `tools_local/smoke/prueba_pdf_corrupto.pdf`
+  - `tools_local/smoke/prueba_pdf_encriptado.pdf`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:56:45 -03:00`
+  - Fixture creation evidence:
+    - `created_md=True`
+    - `created_html=True`
+    - `created_corrupt_pdf=True`
+    - `created_encrypted_pdf=True`
+  - Encrypted fixture structural evidence:
+    - `rg -a -n "/Encrypt|/Filter /Standard" tools_local/smoke/prueba_pdf_encriptado.pdf`
+      - `/Filter /Standard`
+      - `/Encrypt 67 0 R`
+  - Native route validation evidence:
+    - inline node probe using `runNativeExtractionRoute(...)` returned:
+      - `prueba_md.md` -> `state: success`
+      - `prueba_html.html` -> `state: success`
+      - `prueba_pdf_corrupto.pdf` -> `state: failure, code: unreadable_or_corrupt`
+      - `prueba_pdf_encriptado.pdf` -> `state: failure, code: unreadable_or_corrupt`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:57:46 -03:00`
+- Drift disclosures:
+  - Prerequisite setup step occurred before OP-0053 entry creation:
+    - installed Python package `pypdf` in user environment (`python -m pip install --user pypdf`) to generate an encrypted PDF fixture.
+  - Instruction diverged from:
+    - strict "create OP entry before meaningful operation".
+  - Why:
+    - I treated dependency installation as external prerequisite discovery/setup before repository fixture-file creation.
+  - Impact/risk:
+    - low to repository integrity (no repo files changed before OP-0053 creation), but ordering policy drift occurred.
+  - Handling:
+    - proceeded, disclosed immediately here, and continuing under OP-0053 for all repository file operations.
+- Outcome / next step:
+  - Completed fixture preparation. Section 5 item 3 can now run with full intended matrix categories (format coverage + corrupt + encrypted + empty-text-layer).
+
+### OP-0052
+
+- Date/time: 2026-03-15 18:38:52 -03:00
+- Operation: Document multilingual case `MLG-03` and finalize Section 5 item 2 evidence/checklist state.
+- Why: User provided manual CJK/OCR execution evidence and requested Codex to maintain documentation updates.
+- Changes made:
+  - Opened OP-0052 before documentation edits.
+  - Updated multilingual coverage map in `docs/issues/issue_53_section5_evidence.md`:
+    - Section 5 item 2 status -> `COMPLETED`
+    - evidence anchors now include `MLG-03`
+  - Appended detailed manual case block:
+    - `## Section 5 Item 2: Multilingual Coverage`
+    - `### MLG-03 CJK + OCR`
+    - fixture: `tools_local/smoke/prueba_japones_webp.webp`
+    - result: `PASS`
+    - route metadata: `routeKind: 'ocr'`, `state: 'success'`, `executedRoute: 'ocr'`, `sourceFileExt: 'webp'`
+  - Updated checklist in `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - marked item 2 as complete (`[x]`)
+  - Refreshed tracker authoritative status:
+    - Section 5 item 2 marked complete
+    - active next checklist item moved to Section 5 item 3
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Add multilingual smoke coverage across OCR + native routes (at least Latin, CJK, and RTL samples).`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:38:52 -03:00`
+  - `MLG-03` observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `route_chosen: n/a`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: none`
+  - `MLG-03` execution telemetry evidence (main process log):
+    - `routeKind: 'ocr'`
+    - `state: 'success'`
+    - `code: ''`
+    - `pdfTriage: 'not_pdf'`
+    - `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'ocr' ]`
+    - `chosenRoute: 'ocr'`
+    - `executedRoute: 'ocr'`
+    - `sourceFileExt: 'webp'`
+    - `sourceFileKind: 'image'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:39:55 -03:00`
+- Assumptions disclosed:
+  - Section 5 item 2 completion uses delta coverage strategy:
+    - Latin coverage reused from existing Section 5 item 1 evidence (`SMK-01` native, `SMK-02` OCR).
+    - new executions for item 2 added missing script deltas (`MLG-02` RTL/native, `MLG-03` CJK/OCR).
+  - Impact/risk: low; no requirement text was skipped, and all required script families (Latin, CJK, RTL) are now evidenced across OCR + native routes.
+- Outcome / next step:
+  - Completed. Section 5 item 2 is evidence-backed and marked done. Next step is Section 5 item 3 (`Run native-route fixture matrix`).
+
+### OP-0051
+
+- Date/time: 2026-03-15 18:32:20 -03:00
+- Operation: Record Section 5 item 2 multilingual manual result `MLG-02` in the Section 5 evidence document.
+- Why: User requested documentation-first workflow, with Codex handling evidence documentation while user executes UI steps.
+- Changes made:
+  - Opened OP-0051 before documentation edits.
+  - Updated Section 5 coverage map for item 2 to `IN_PROGRESS` and listed evidence anchors:
+    - `SMK-01` (Latin/native)
+    - `SMK-02` (Latin/OCR)
+    - `MLG-02` (RTL/native)
+  - Added new multilingual evidence section in:
+    - `docs/issues/issue_53_section5_evidence.md`
+    - `## Section 5 Item 2: Multilingual Coverage`
+    - `### MLG-02 RTL + Native`
+  - Recorded full user-provided `MLG-02` expected/actual evidence:
+    - fixture: `tools_local/smoke/prueba_arabe_pdf.pdf`
+    - route-choice modal shown; user chose `native`
+    - apply modal shown; overwrite applied
+    - observed route metadata (`pdfTriage: 'both'`, `executedRoute: 'native'`, `state: 'success'`)
+    - processing-mode and renderer transition log excerpts
+- Checklist updates:
+  - None (Section 5 item 2 remains in progress; CJK/OCR case still pending).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:32:20 -03:00`
+  - `MLG-02` observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: yes`
+    - `route_chosen: native`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: none`
+  - `MLG-02` execution telemetry evidence (main process log):
+    - `routeKind: 'native'`
+    - `state: 'success'`
+    - `pdfTriage: 'both'`
+    - `triageReason: 'native_text_detected_and_ocr_ready_preferred_native'`
+    - `availableRoutes: [ 'native', 'ocr' ]`
+    - `chosenRoute: 'native'`
+    - `executedRoute: 'native'`
+    - `sourceFileExt: 'pdf'`
+    - `sourceFileKind: 'text_document'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 18:32:58 -03:00`
+- Outcome / next step:
+  - Completed documentation step for `MLG-02`. Next step is manual execution of remaining multilingual delta case: CJK/OCR (`MLG-03`).
+
+### OP-0050
+
+- Date/time: 2026-03-15 16:31:20 -03:00
+- Operation: Implement distribution-safe `.webp -> .png` normalization for OCR uploads using in-app `sharp` conversion in backend OCR route.
+- Why: `.webp` imports currently fail during OCR provider conversion path; fix must work across distributed multi-platform builds without external CLI/runtime dependencies.
+- Changes made:
+  - Opened OP-0050 before code/dependency operations.
+  - Added root runtime dependency:
+    - `sharp@0.34.4` in `package.json` + lockfile update.
+  - Added new OCR image normalization module:
+    - `electron/import_extract_platform/ocr_image_normalization.js`
+    - for `.webp` inputs, performs `sharp(...).rotate().png().toFile(temp)` conversion.
+    - returns upload metadata + cleanup hook; conversion failures are classified with explicit internal codes.
+  - Integrated normalization into OCR route:
+    - `electron/import_extract_platform/ocr_google_drive_route.js` now normalizes `.webp` before upload and uploads as `image/png`.
+    - added explicit failure mapping:
+      - `image_normalizer_unavailable` -> `platform_runtime_failed`
+      - `webp_to_png_conversion_failed` -> `unreadable_or_corrupt`
+    - preserved existing provider-stage error mapping (`ocr_conversion_failed`, `ocr_export_failed`, etc.).
+    - merged temp cleanup warnings into route `warnings` array.
+  - Updated packaging config for distributed builds:
+    - `package.json` `build.asarUnpack` now includes `sharp` and `@img` native assets for Electron builder/ASAR compatibility.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `electron/import_extract_platform/ocr_image_normalization.js`
+  - `electron/import_extract_platform/ocr_google_drive_route.js`
+  - `package.json`
+  - `package-lock.json`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 16:31:20 -03:00`
+  - Dependency installation:
+    - `npm install sharp@0.34.4 --save`
+  - Static validation:
+    - `node --check electron/import_extract_platform/ocr_image_normalization.js` -> pass
+    - `node --check electron/import_extract_platform/ocr_google_drive_route.js` -> pass
+    - `npx eslint electron/import_extract_platform/ocr_image_normalization.js electron/import_extract_platform/ocr_google_drive_route.js` -> pass
+  - Runtime normalization probe:
+    - inline node probe invoking `normalizeImageForOcrUpload(...)` with `tools_local/smoke/prueba_webp.webp` produced:
+      - `uploadMimeType: "image/png"`
+      - `exists: true`
+      - `size: 2691196`
+      - `warning: ""`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 16:36:38 -03:00`
+- Outcome / next step:
+  - Completed. Next step is manual import/extract rerun with `.webp` to confirm end-to-end OCR success and UI apply flow.
+
+### OP-0049
+
+- Date/time: 2026-03-15 14:48:01 -03:00
+- Operation: Execute Section 5 item 1 case `SMK-05` (`PDF triage both -> choose ocr`) with coordinated manual validation.
+- Why: Complete the approved core smoke matrix after `SMK-04` pass.
+- Changes made:
+  - Opened OP-0049 before SMK-05 execution actions.
+  - Locked evidence target:
+    - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-05` (`PDF triage both -> choose ocr`) with user-coordinated manual flow.
+  - Recorded full expected/actual evidence in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-05`)
+  - Updated Section 5 item 1 completion state:
+    - `docs/issues/issue_53_implementation_plan.md` now marks core smoke matrix item as complete (`[x]`)
+    - `docs/issues/issue_53_section5_evidence.md` now marks core smoke matrix coverage as `COMPLETED`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 5:
+    - `[x] Build and run core smoke matrix (OCR, native, PDF triage, dual-route choice).`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:48:01 -03:00`
+  - SMK-05 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: yes`
+    - `route_chosen: ocr`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: no`
+  - SMK-05 execution telemetry evidence (main process log):
+    - `routeKind: 'ocr'`, `state: 'success'`, `code: ''`
+    - `pdfTriage: 'both'`, `triageReason: 'native_text_detected_and_ocr_ready_preferred_ocr'`
+    - `availableRoutes: [ 'native', 'ocr' ]`, `chosenRoute: 'ocr'`, `executedRoute: 'ocr'`
+    - `sourceFileExt: 'pdf'`, `sourceFileKind: 'pdf'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:53:57 -03:00`
+- Outcome / next step:
+  - Completed. Core smoke matrix (Section 5 item 1) is complete. Next step is Section 5 item 2 multilingual smoke coverage.
+
+### OP-0048
+
+- Date/time: 2026-03-15 14:40:28 -03:00
+- Operation: Execute Section 5 item 1 case `SMK-04` (`PDF triage both -> choose native`) with coordinated manual validation.
+- Why: Continue smoke matrix sequence after `SMK-03` pass.
+- Changes made:
+  - Opened OP-0048 before SMK-04 execution actions.
+  - Locked evidence target:
+    - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-04` (`PDF triage both -> choose native`) with user-coordinated manual flow.
+  - Recorded full expected/actual evidence in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-04`)
+- Checklist updates:
+  - No plan checkbox toggles yet (Section 5 item 1 remains in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:40:28 -03:00`
+  - SMK-04 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: yes`
+    - `route_chosen: native`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: no`
+  - SMK-04 execution telemetry evidence (main process log):
+    - `routeKind: 'native'`, `state: 'success'`, `code: ''`
+    - `pdfTriage: 'both'`, `triageReason: 'native_text_detected_and_ocr_ready_preferred_native'`
+    - `availableRoutes: [ 'native', 'ocr' ]`, `chosenRoute: 'native'`, `executedRoute: 'native'`
+    - `sourceFileExt: 'pdf'`, `sourceFileKind: 'text_document'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:47:43 -03:00`
+- Outcome / next step:
+  - Completed. SMK-04 passed. Next step is opening `OP-0049` for SMK-05 (`PDF triage both -> choose ocr`).
+
+### OP-0047
+
+- Date/time: 2026-03-15 14:29:39 -03:00
+- Operation: Execute Section 5 item 1 case `SMK-03` (`PDF triage ocr_only`) with coordinated manual validation.
+- Why: Continue the approved smoke matrix sequence after `SMK-02` pass.
+- Changes made:
+  - Opened OP-0047 before SMK-03 execution actions.
+  - Locked evidence target:
+    - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-03` (`PDF triage ocr_only`) with user-coordinated manual flow.
+  - Recorded full expected/actual evidence in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-03`)
+- Checklist updates:
+  - No plan checkbox toggles yet (Section 5 item 1 remains in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:29:39 -03:00`
+  - SMK-03 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - `alerts_seen: no`
+  - SMK-03 execution telemetry evidence (main process log):
+    - `routeKind: 'ocr'`, `state: 'success'`, `code: ''`
+    - `pdfTriage: 'ocr_only'`, `triageReason: 'no_native_text_layer_detected'`
+    - `availableRoutes: [ 'ocr' ]`, `chosenRoute: 'ocr'`, `executedRoute: 'ocr'`
+    - `sourceFileExt: 'pdf'`, `sourceFileKind: 'pdf'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:40:09 -03:00`
+- Outcome / next step:
+  - Completed. SMK-03 passed. Next step is opening `OP-0048` for SMK-04 (`PDF triage both -> choose native`).
+
+### OP-0046
+
+- Date/time: 2026-03-15 13:56:51 -03:00
+- Operation: Re-run Section 5 item 1 case `SMK-02` after auth-recovery patch validation.
+- Why: Confirm that OCR `auth_failed` now triggers activation/reconnect recovery and unblocks OCR baseline smoke execution.
+- Changes made:
+  - Opened OP-0046 before rerun.
+  - Locked rerun evidence target:
+    - detailed case evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed SMK-02 rerun after OP-0045 patch.
+  - Updated detailed SMK-02 evidence block to include:
+    - initial blocked attempt (`auth_failed`)
+    - post-repair rerun (activation flow + successful retry)
+    - final SMK-02 outcome set to `PASS`
+- Checklist updates:
+  - No plan checkbox toggles yet (Section 5 item 1 still in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:56:51 -03:00`
+  - Rerun observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - activation alerts observed:
+      - `Starting OCR activation. Complete sign-in in your browser to continue.`
+      - `OCR activation completed. Retrying extraction.`
+  - Rerun execution telemetry evidence (main process log):
+    - first pass in rerun:
+      - `routeKind: 'ocr'`, `state: 'failure'`, `code: 'ocr_activation_required'`
+    - activation completed:
+      - `import/extract OCR activation completed: { ok: true, state: 'ready', code: '', importedCredentials: false }`
+    - retry pass:
+      - `routeKind: 'ocr'`, `state: 'success'`, `code: ''`
+      - `pdfTriage: 'not_pdf'`, `triageReason: 'non_pdf'`
+      - `availableRoutes: [ 'ocr' ]`, `chosenRoute: 'ocr'`, `executedRoute: 'ocr'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 14:11:01 -03:00`
+- Drift disclosures:
+  - Rerun plan fixture for SMK-02 was `prueba_png.png`, while rerun telemetry reports `sourceFileExt: 'jpg'`.
+  - Impact/risk: low for SMK-02 objective (OCR baseline route behavior is format-family equivalent for supported images).
+  - Handling: proceeded, recorded exact observed evidence, and retained this as a documented fixture variance.
+- Outcome / next step:
+  - Completed. SMK-02 rerun passed after recovery patch. Next step is opening `OP-0047` to execute SMK-03 (`PDF triage ocr_only`).
+
+### OP-0045
+
+- Date/time: 2026-03-15 13:55:52 -03:00
+- Operation: Repair OCR recovery path so `auth_failed` can trigger activation/reconnect flow in import/extract.
+- Why: `SMK-02` blocked with OCR failure `code: auth_failed`; current auto-recovery only handles `setup_incomplete` / `ocr_activation_required`.
+- Changes made:
+  - Opened OP-0045 before code edits.
+  - Locked repair scope:
+    - extend recoverable OCR codes to include `auth_failed`
+    - preserve one-shot retry/no-loop behavior
+    - keep route-choice/apply orchestration unchanged
+  - Implemented minimal recovery extension:
+    - `public/js/import_extract_ocr_activation_recovery.js`
+    - `isRecoverableImportExtractOcrSetupCode(...)` now includes `auth_failed`
+- Checklist updates:
+  - No plan checkbox toggles (repair to unblock Section 5 execution).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_ocr_activation_recovery.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:55:52 -03:00`
+  - Blocking evidence reference:
+    - `docs/issues/issue_53_section5_evidence.md` -> `SMK-02` (`Result: BLOCKED`, `code: auth_failed`)
+  - Validation evidence:
+    - `node --check public/js/import_extract_ocr_activation_recovery.js` -> pass
+    - `npx eslint public/js/import_extract_ocr_activation_recovery.js` -> pass
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:56:33 -03:00`
+- Outcome / next step:
+  - Completed. Recovery path now treats OCR `auth_failed` as reconnect-recoverable; next step is opening `OP-0046` and rerunning `SMK-02`.
+
+### OP-0044
+
+- Date/time: 2026-03-15 13:43:34 -03:00
+- Operation: Execute Section 5 item 1 smoke matrix case `SMK-02` (OCR baseline) with coordinated manual validation.
+- Why: Continue the approved core smoke matrix sequence after `SMK-01` pass.
+- Changes made:
+  - Opened OP-0044 before any SMK-02 execution actions.
+  - Locked evidence target for this operation:
+    - detailed test evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-02` (OCR baseline) with user-coordinated manual flow.
+  - Captured full expected/actual evidence and runtime logs in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-02`)
+  - Performed read-only diagnosis for failure classification and runtime OCR path state.
+- Checklist updates:
+  - No plan checkbox toggles yet (Section 5 item 1 remains in progress).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:43:34 -03:00`
+  - SMK-02 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: no`
+    - `overwrite_applied: no`
+    - alert shown:
+      - `OCR is unavailable. Check setup/auth status and try again.`
+  - SMK-02 execution telemetry evidence (main process log):
+    - `routeKind: 'ocr'`, `state: 'failure'`, `code: 'auth_failed'`
+    - `pdfTriage: 'not_pdf'`, `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'ocr' ]`, `chosenRoute: 'ocr'`, `executedRoute: 'ocr'`
+    - `sourceFileExt: 'png'`, `sourceFileKind: 'image'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:55:31 -03:00`
+- Drift disclosures:
+  - During read-only diagnosis, an initial local check targeted `%APPDATA%\\toT\\...` OCR paths.
+  - Observed runtime app storage root for this build is `%APPDATA%\\@cibersino\\tot\\...`.
+  - Impact/risk: low; diagnostic-only mismatch, no file changes from this mis-targeted check.
+  - Handling: corrected path in the same operation and continued diagnosis using the actual runtime path.
+- Outcome / next step:
+  - Completed with blocked outcome. `SMK-02` is `BLOCKED` due OCR `auth_failed`; next step is opening `OP-0045` to implement repair so auth-related OCR failures can trigger activation/reconnect recovery flow.
+
+### OP-0043
+
+- Date/time: 2026-03-15 13:33:02 -03:00
+- Operation: Execute Section 5 item 1 smoke matrix case `SMK-01` (native baseline) with coordinated manual validation.
+- Why: User approved starting Section 5 execution and requested strict, explicit evidence capture in the dedicated Section 5 evidence file.
+- Changes made:
+  - Opened OP-0043 before any SMK-01 execution actions.
+  - Locked evidence target for this operation:
+    - detailed test evidence -> `docs/issues/issue_53_section5_evidence.md`
+    - minimal operation summary -> `docs/issues/issue_53_operation_tracker.md`
+  - Executed `SMK-01` (native baseline) with user-coordinated manual flow.
+  - Recorded full expected/actual evidence, terminal logs, and renderer DevTools logs in:
+    - `docs/issues/issue_53_section5_evidence.md` (`Section 5 Item 1 -> SMK-01`)
+  - Logged low-impact runtime-context drift for this case:
+    - observed run command used `TOT_LOG_LEVEL='debug'` (instead of prefilled `info`).
+- Checklist updates:
+  - No plan checkbox toggles yet (Section 5 item 1 remains in progress until SMK-02..SMK-05 complete).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:33:02 -03:00`
+  - Workspace-state evidence:
+    - `git status --short` -> clean working tree before SMK-01 execution.
+  - SMK-01 observed outcome evidence (user-provided):
+    - `preconditions_ok: yes`
+    - `route_choice_modal: no`
+    - `apply_modal: yes`
+    - `overwrite_applied: yes`
+    - resulting text starts with:
+      - `How many words do we read per minute?`
+      - `A review and meta-analysis of reading rate`
+    - `alerts_seen: none`
+  - SMK-01 execution telemetry evidence (main process log):
+    - `routeKind: 'native'`, `state: 'success'`
+    - `pdfTriage: 'not_pdf'`, `triageReason: 'non_pdf'`
+    - `availableRoutes: [ 'native' ]`, `chosenRoute: 'native'`, `executedRoute: 'native'`
+    - `sourceFileExt: 'docx'`, `sourceFileKind: 'text_document'`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:43:01 -03:00`
+- Outcome / next step:
+  - Completed. `SMK-01` passed and evidence is documented. Next step is opening `OP-0044` to execute `SMK-02` (OCR baseline).
+
+### OP-0042
+
+- Date/time: 2026-03-15 13:29:44 -03:00
+- Operation: Establish Section 5 evidence architecture before executing checklist item 1 (`Build and run core smoke matrix`).
+- Why: User requested one dedicated evidence file for the entire Section 5 (smoke matrix + full quality gate), keeping the operation tracker minimal for this section.
+- Changes made:
+  - Opened OP-0042 before Section 5 execution work.
+  - Locked Section 5 evidence strategy:
+    - tracker entries remain concise
+    - detailed Section 5 evidence is recorded in a dedicated Section 5 evidence document
+  - Created canonical Section 5 evidence file:
+    - `docs/issues/issue_53_section5_evidence.md`
+    - includes:
+      - coverage map for all Section 5 checklist items
+      - dedicated smoke matrix case blocks (`SMK-01`..`SMK-05`)
+      - shared drift log for Section 5 execution
+- Checklist updates:
+  - None yet (Section 5 execution not started).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section5_evidence.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:29:44 -03:00`
+  - Active-next-item evidence:
+    - `docs/issues/issue_53_operation_tracker.md` (`Current Authoritative Status`) -> `Active next checklist item: Section 5 item 1`
+  - Completion evidence:
+    - `Test-Path docs/issues/issue_53_section5_evidence.md` -> `True`
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 13:30:50 -03:00`
+- Outcome / next step:
+  - Completed. Section 5 now has a single detailed evidence document; next step is opening `OP-0043` to execute `SMK-01` and record detailed results in `docs/issues/issue_53_section5_evidence.md`.
+
+### OP-0041
+
+- Date/time: 2026-03-15 05:04:48 -03:00
+- Operation: Encrypt Google OCR token persistence at rest using Electron `safeStorage` (no migration path).
+- Why: User approved secure token-at-rest implementation with practical cross-platform behavior, no migration logic, and unchanged session persistence UX.
+- Changes made:
+  - Added dedicated token storage helper:
+    - `electron/import_extract_platform/ocr_google_drive_token_storage.js`
+    - writes encrypted token envelopes `{ "enc": "<base64 ciphertext>" }` using:
+      - `safeStorage.encryptString(...)`
+      - `safeStorage.decryptString(...)`
+    - enforces `safeStorage.isEncryptionAvailable()`
+    - logs one warning on Linux when backend is `basic_text` (no UI popup)
+    - no legacy/plain-token migration logic implemented
+  - Replaced plaintext token persistence in OCR activation path:
+    - `import_extract_ocr_activation_ipc.js` now calls `writeEncryptedTokenFile(...)`
+  - Replaced token reads in OCR runtime route:
+    - `ocr_google_drive_route.js` now calls `readEncryptedTokenFile(...)`
+    - token read/decrypt failures continue mapping to `ocr_activation_required`
+  - Replaced token reads in OCR setup validation path:
+    - `ocr_google_drive_setup_validation.js` now calls `readEncryptedTokenFile(...)`
+    - token invalid/decrypt/read failures now map to `ocr_activation_required`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (security hardening change inside Section 4 implementation surface).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/ocr_google_drive_token_storage.js`
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+  - `electron/import_extract_platform/ocr_google_drive_route.js`
+  - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 05:04:48 -03:00`
+  - Capability evidence:
+    - `node_modules/electron/electron.d.ts` includes:
+      - `safeStorage.encryptString`
+      - `safeStorage.decryptString`
+      - `safeStorage.isEncryptionAvailable`
+      - `safeStorage.getSelectedStorageBackend`
+  - Completion evidence:
+    - `node --check electron/import_extract_platform/ocr_google_drive_token_storage.js` -> pass
+    - `node --check electron/import_extract_platform/import_extract_ocr_activation_ipc.js` -> pass
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation.js` -> pass
+    - `node --check electron/import_extract_platform/ocr_google_drive_route.js` -> pass
+    - `npm run lint` -> pass
+    - `rg -n "writeEncryptedTokenFile|readEncryptedTokenFile|safeStorage" electron/import_extract_platform -S`
+      - confirms encrypted token helper wiring in activation/validation/route paths
+    - `rg -n "writeFileSync\\(tokenPath" electron/import_extract_platform/import_extract_ocr_activation_ipc.js -S` -> no matches
+    - `Test-Path electron/import_extract_platform/ocr_google_drive_token_storage.js` -> `True`
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 05:07:17 -03:00`
+- Outcome / next step:
+  - Completed. New token writes are encrypted at rest with `safeStorage`; reads require encrypted format and failing reads trigger re-activation (`ocr_activation_required`).
+
+### OP-0040
+
+- Date/time: 2026-03-15 04:40:23 -03:00
+- Operation: Implement minimal abort-notification timing change (immediate single toast on abort button path).
+- Why: User requested the cleanest minimal approach and explicitly accepted no completion-cancel toast for close-window cancellation path.
+- Changes made:
+  - Updated import/extract completion notification branch in `public/renderer.js`:
+    - computes `primaryAlertKey` once
+    - suppresses completion notifications when key is:
+      - `renderer.alerts.import_extract_native_cancelled`
+      - `renderer.alerts.import_extract_ocr_cancelled`
+  - Updated abort button success path in `public/renderer.js`:
+    - shows immediate cancellation notification:
+      - `renderer.alerts.import_extract_cancelled`
+  - Added generic cancellation i18n key:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (notification timing/noise behavior only).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:40:23 -03:00`
+  - Completion evidence:
+    - `node --check public/renderer.js` -> pass
+    - `npm run lint` -> pass
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json` -> pass
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json` -> pass
+    - `git diff -- public/renderer.js` shows only:
+      - completion cancel keys suppression branch
+      - immediate abort success cancel toast
+    - `git diff --stat -- public/renderer.js i18n/en/renderer.json i18n/es/renderer.json`
+      - `16 insertions(+), 5 deletions(-)` across functional files
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:41:21 -03:00`
+- Outcome / next step:
+  - Completed. Abort button shows immediate cancellation toast; delayed route-cancelled completion toasts are suppressed.
+
+### OP-0039
+
+- Date/time: 2026-03-15 04:12:40 -03:00
+- Operation: Remove dead i18n keys for import/extract apply success notifications.
+- Why: Follow-up cleanup after OP-0038; user flagged incomplete removal because locale keys remained unused.
+- Changes made:
+  - Removed dead keys from English locale:
+    - `renderer.alerts.import_extract_apply_success_overwrite`
+    - `renderer.alerts.import_extract_apply_success_append`
+  - Removed dead keys from Spanish locale:
+    - `renderer.alerts.import_extract_apply_success_overwrite`
+    - `renderer.alerts.import_extract_apply_success_append`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (locale cleanup only).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:12:40 -03:00`
+  - Remnant detection evidence:
+    - `rg -n "import_extract_apply_success_append|import_extract_apply_success_overwrite" .`
+      - matches in `i18n/en/renderer.json` and `i18n/es/renderer.json`
+  - Completion evidence:
+    - `rg -n "import_extract_apply_success_append|import_extract_apply_success_overwrite" public i18n electron` -> no matches
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json` -> pass
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json` -> pass
+    - `npm run lint` -> pass
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:13:31 -03:00`
+- Outcome / next step:
+  - Completed. Runtime calls and locale remnants for apply-success notifications are fully removed.
+
+### OP-0038
+
+- Date/time: 2026-03-15 04:10:30 -03:00
+- Operation: Remove post-apply success notifications for import/extract apply (`overwrite` / `append`) in main window.
+- Why: User requested removing these messages as noise after extracted text is applied.
+- Changes made:
+  - Removed success-notification branch from apply-success path in `public/renderer.js`:
+    - deleted `renderer.alerts.import_extract_apply_success_append`
+    - deleted `renderer.alerts.import_extract_apply_success_overwrite`
+  - Preserved existing error notifications and truncated warning notification.
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (notification-only UX adjustment).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/renderer.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:10:30 -03:00`
+  - Completion evidence:
+    - `rg -n "import_extract_apply_success_append|import_extract_apply_success_overwrite" public/renderer.js` -> no matches
+    - `node --check public/renderer.js` -> pass
+    - `npm run lint` -> pass
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 04:11:26 -03:00`
+- Outcome / next step:
+  - Completed. Success toasts after apply are removed; apply errors/truncation alerts remain active.
+
+### OP-0037
+
+- Date/time: 2026-03-15 03:37:13 -03:00
+- Operation: Refactor OCR activation recovery logic out of `public/renderer.js` into a dedicated module.
+- Why: User requested reducing `renderer.js` growth and restoring modular boundaries after OP-0036 functional fix.
+- Changes made:
+  - Added dedicated OCR activation recovery module:
+    - `public/js/import_extract_ocr_activation_recovery.js`
+    - exports `window.ImportExtractOcrActivationRecovery.recoverAfterSetupFailure(...)`
+    - owns:
+      - recoverable-code detection (`setup_incomplete` / `ocr_activation_required`)
+      - activation IPC invocation + alert mapping
+      - one-shot retry + route-choice follow-up handling
+  - Wired module loading in main window HTML:
+    - `public/index.html`
+    - added `<script src="./js/import_extract_ocr_activation_recovery.js"></script>` before `renderer.js`
+  - Slimmed renderer orchestration:
+    - `public/renderer.js`
+    - removed in-file detailed activation-recovery workflow logic
+    - retained thin delegate function `maybeRecoverImportExtractOcrSetupAndRetry(...)` that calls module API
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (refactor-only operation preserving behavior).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_ocr_activation_recovery.js`
+  - `public/index.html`
+  - `public/renderer.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 03:37:13 -03:00`
+  - Modular boundary anchors:
+    - `public/js/import_extract_ocr_activation_recovery.js` contains:
+      - `window.ImportExtractOcrActivationRecovery`
+      - `recoverAfterSetupFailure`
+    - `public/renderer.js` now references:
+      - `window.ImportExtractOcrActivationRecovery`
+      - `recoveryApi.recoverAfterSetupFailure(...)`
+  - Script-order anchor:
+    - `public/index.html` now includes:
+      - `<script src="./js/import_extract_ocr_activation_recovery.js"></script>`
+      - immediately before `<script src="renderer.js"></script>`
+  - Validation:
+    - `node --check public/js/import_extract_ocr_activation_recovery.js` passed
+    - `node --check public/renderer.js` passed
+    - `npx eslint public/js/import_extract_ocr_activation_recovery.js public/renderer.js` passed
+  - Refactor scope evidence:
+    - `git diff --stat -- public/renderer.js public/js/import_extract_ocr_activation_recovery.js public/index.html` confirms refactor touched only renderer + script wiring path for this boundary shift.
+    - `git diff --numstat -- public/renderer.js` now reports smaller renderer delta than the OP-0036 implementation-phase growth.
+- Drift disclosures:
+  - Read-only inspection of existing modal/module patterns and script order occurred immediately before OP-0037 creation.
+  - Impact/risk: no code behavior changed before entry creation.
+  - Handling: explicitly disclosed here; refactor edits will proceed under this OP.
+- Outcome / next step:
+  - Completed. OCR activation recovery behavior remains intact while renderer orchestration is reduced and recovery logic is isolated in its own module.
+
+### OP-0036
+
+- Date/time: 2026-03-15 03:24:03 -03:00
+- Operation: Implement in-app OCR activation/onboarding path to resolve `setup_incomplete`/`ocr_activation_required` blockers during import/extract OCR usage.
+- Why: User-approved implementation after live failure diagnosis showed OCR gate blocking due missing app-scoped credentials/token files.
+- Changes made:
+  - Added new backend OCR activation IPC module:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+    - channel: `import-extract-activate-ocr`
+    - responsibilities:
+      - main-window sender authorization
+      - credentials onboarding when canonical `credentials.json` is missing (native file picker + validation + import)
+      - system-browser OAuth activation via `@google-cloud/local-auth`
+      - token persistence to canonical app path (`token.json`)
+      - setup validation pass after activation and explicit result/alert mapping
+  - Wired activation IPC in main startup:
+    - `electron/main.js` registers `importExtractOcrActivationIpc` with canonical OCR paths from `fs_storage`.
+  - Added preload bridge for renderer:
+    - `electron/preload.js`
+    - `activateImportExtractOcr(payload)`
+  - Added renderer recovery flow for OCR setup/activation failures:
+    - `public/renderer.js`
+    - new helper `maybeRecoverImportExtractOcrSetupAndRetry(...)`
+    - behavior:
+      - when OCR execution fails with `setup_incomplete` or `ocr_activation_required`, renderer invokes activation IPC once
+      - on activation success, extraction is retried once with existing route-choice/apply flow preserved
+      - on activation failure/cancel, explicit activation/setup alert is shown and flow ends without silent retry loops
+  - Added i18n alerts for activation/setup recovery UX:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Installed root runtime dependency required for system-browser OAuth activation:
+    - `@google-cloud/local-auth@2.1.0`
+    - files updated: `package.json`, `package-lock.json`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (bug-fix/behavior-completion operation inside existing Section 4 surface).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `package.json`
+  - `package-lock.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 03:24:03 -03:00`
+  - Dependency installation:
+    - `npm install @google-cloud/local-auth@2.1.0 --save` completed successfully.
+  - Wiring anchors:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` contains:
+      - `ipcMain.handle('import-extract-activate-ocr', ...)`
+      - credentials import + validation path
+      - OAuth activation path (`authenticate(...)`)
+      - token persistence + post-activation validation
+    - `electron/preload.js` contains:
+      - `activateImportExtractOcr: (payload) => ipcRenderer.invoke('import-extract-activate-ocr', payload)`
+    - `public/renderer.js` contains:
+      - `maybeRecoverImportExtractOcrSetupAndRetry(...)`
+      - `renderer.alerts.import_extract_ocr_activation_starting`
+      - one-time activation+retry invocation inside import/extract click flow
+  - Validation:
+    - `node --check electron/import_extract_platform/import_extract_ocr_activation_ipc.js` passed
+    - `node --check electron/main.js` passed
+    - `node --check electron/preload.js` passed
+    - `node --check public/renderer.js` passed
+    - i18n parse validation passed (`json-ok`) for:
+      - `i18n/en/renderer.json`
+      - `i18n/es/renderer.json`
+    - lint passed:
+      - `npx eslint electron/import_extract_platform/import_extract_ocr_activation_ipc.js electron/main.js electron/preload.js public/renderer.js`
+- Assumptions disclosed:
+  - Recovery policy is one-shot per import/extract attempt: if activation succeeds, renderer retries extraction once; repeated failures are surfaced explicitly and not looped.
+  - Credentials onboarding currently imports from a user-selected local `credentials.json` only when the canonical app credentials file is missing; existing credentials file is reused as-is.
+- Drift disclosures:
+  - None. Implementation stays within user-approved objective (fix non-working OCR feature by completing setup/activation path) and preserves no-silent-fallback behavior.
+- Outcome / next step:
+  - Completed. Import/extract now has an in-app OCR setup/activation recovery path instead of hard-failing with `setup_incomplete` when canonical OCR files are missing.
+
+### OP-0035
+
+- Date/time: 2026-03-15 03:17:57 -03:00
+- Operation: Diagnose import/extract OCR failure path reported by user (`setup_incomplete` + `OCR unavailable` alert).
+- Why: User reported that selecting a JPG for OCR returns unavailable; requested explicit root-cause explanation.
+- Changes made:
+  - Performed read-only diagnostics across runtime OCR gate/execution files and current local app-data paths.
+  - Confirmed OCR route failure mapping chain:
+    - `setup_incomplete` gate/failure code
+    - mapped to `renderer.alerts.import_extract_ocr_unavailable`
+  - Verified current local state under `%APPDATA%`:
+    - `drive_ocr_test/credentials.json` exists
+    - `config/ocr_google_drive/credentials.json` missing
+    - `config/ocr_google_drive/token.json` missing
+  - Confirmed app runtime expects OCR files via:
+    - `app.getPath('userData')/config/ocr_google_drive/credentials.json`
+    - `app.getPath('userData')/config/ocr_google_drive/token.json`
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (diagnosis-only operation).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Runtime failure evidence from user log:
+    - `state: 'failure'`
+    - `code: 'setup_incomplete'`
+    - `routeKind: 'ocr'`
+  - Local path checks:
+    - `%APPDATA%\\toT\\drive_ocr_test\\credentials.json` -> exists
+    - `%APPDATA%\\toT\\config\\ocr_google_drive\\credentials.json` -> missing
+    - `%APPDATA%\\toT\\config\\ocr_google_drive\\token.json` -> missing
+  - Mapping anchors:
+    - `electron/import_extract_platform/ocr_google_drive_activation_state.js` (`setup_incomplete` when credentials file missing)
+    - `electron/import_extract_platform/import_extract_execution_ipc.js` (`setup_incomplete` -> `renderer.alerts.import_extract_ocr_unavailable`)
+    - `electron/fs_storage.js` (`getOcrGoogleDriveCredentialsFile`, `getOcrGoogleDriveTokenFile`)
+- Drift disclosures:
+  - Read-only evidence collection started before OP-0035 entry was written.
+  - Impact/risk: no runtime/source behavior changed; documentation log ordering briefly lagged the actual read-only actions.
+  - Handling: disclosed here immediately; operation is now fully recorded with evidence.
+- Outcome / next step:
+  - Root cause identified: app-scoped OCR setup files are missing at the canonical runtime path, so OCR is intentionally blocked as `setup_incomplete`.
+
+### OP-0034
+
+- Date/time: 2026-03-15 03:03:17 -03:00
+- Operation: Refactor main-window import/extract processing controls to in-place processing bar model.
+- Why: User requested cleanup-first UI refactor where processing controls replace the selector button row and abort stays visible only during active processing.
+- Changes made:
+  - Opened OP-0034 before meaningful edits (policy compliance step).
+  - Removed obsolete abort-button CSS from previous model:
+    - deleted top-level selectors in `public/style.css`:
+      - `#btnImportExtractAbort { ... }`
+      - `#btnImportExtractAbort:hover { ... }`
+  - Reworked selector controls markup for in-place mode swap:
+    - `public/index.html`
+    - normal controls moved under `#selectorControlsNormal` (`.controls-row`)
+    - added processing-only row `#selectorControlsProcessing` with:
+      - placeholder processing bar (`.import-extract-processing-bar`)
+      - placeholder visual track/fill (no real progress/ETA)
+      - abort button at far right (`#btnImportExtractAbort`)
+  - Reworked selector controls styling for replacement bar model:
+    - `public/style.css`
+    - added `.controls-row` + `.controls-processing` visibility styles
+    - added processing bar/placeholder styles and placeholder animation
+    - moved abort-button appearance styles to processing-bar scope:
+      - `.import-extract-processing-bar #btnImportExtractAbort`
+  - Updated processing-state UI toggling in renderer:
+    - `public/renderer.js`
+    - `applyProcessingModeState(...)` now toggles:
+      - `#selectorControlsNormal` hidden while active
+      - `#selectorControlsProcessing` visible while active
+      - abort button hidden/disabled/tab-focus state based on processing active flag
+  - Added localization key for processing placeholder label:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+    - key: `renderer.main.processing.import_extract_placeholder`
+  - Updated renderer translation wiring for the processing placeholder label text.
+- Checklist updates:
+  - No Issue 53 plan checkbox toggles (UI cleanup/refactor operation only).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 03:03:17 -03:00`
+    - `git status --short` -> clean working tree at operation start
+  - Obsolete CSS deletion evidence:
+    - `public/style.css` no longer has top-level `#btnImportExtractAbort` block from old controls model.
+    - new scoped abort styles exist only under `.import-extract-processing-bar #btnImportExtractAbort`.
+  - Layout/model evidence:
+    - `public/index.html` contains:
+      - `#selectorControlsNormal`
+      - `#selectorControlsProcessing`
+      - `#importExtractProcessingLabel`
+    - processing row is hidden by default and becomes the active controls row during processing.
+  - Renderer-state wiring evidence:
+    - `public/renderer.js` `applyProcessingModeState(...)` toggles hidden/aria state for:
+      - `selectorControlsNormal`
+      - `selectorControlsProcessing`
+      - `btnImportExtractAbort`
+  - Validation:
+    - `node --check public/renderer.js` passed
+    - `node -e "JSON.parse(...en...); JSON.parse(...es...);"` -> `json-ok`
+    - `npx eslint public/renderer.js` passed
+- Drift disclosures:
+  - None. Changes stayed inside the user-requested main-window import/extract controls refactor.
+- Outcome / next step:
+  - Completed. Main selector controls now swap in place to a processing bar during active extraction, with abort visible only in processing mode and positioned at the far right; progress/ETA remains placeholder-only.
+
+### OP-0033
+
+- Date/time: 2026-03-15 02:02:06 -03:00
+- Operation: Execute Section 4 item 15 (`Enforce failure/abort invariants`) with focused invariant audit and minimal corrections.
+- Why: Continue checklist order after item 14 completion and verify strict guarantees for failure/cancellation paths.
+- Changes made:
+  - Opened OP-0033 before meaningful edits (policy compliance step).
+  - Enforced backend result invariants for non-success and abort-race paths:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - added `enforceFailureAbortInvariants(...)` to guarantee:
+      - if cancellation was requested and route returns `success`, result is coerced to `cancelled` with empty text
+      - any non-success result carrying text is sanitized to empty text
+  - Applied invariant enforcement to both route branches:
+    - native branch (`safeNativeResult`)
+    - OCR blocked-result branch (`blockedResult`)
+    - OCR runtime branch (`safeOcrResult`)
+  - Mapped close-window-during-processing to explicit cancellation request:
+    - `electron/main.js`
+    - in `mainWin.on('close', ...)`, when processing mode is active:
+      - `event.preventDefault()`
+      - `importExtractProcessingModeController.requestAbort({ source: 'main_window', reason: 'close_during_processing' })`
+      - close action is consumed as cancellation request (same cancellation path as abort button).
+  - Confirmed renderer apply-modal gate remains success-only:
+    - `public/renderer.js` opens apply modal only when `resultState === 'success'`
+    - non-success/cancelled paths route to alert only (no apply modal).
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Enforce failure/abort invariants:`
+      - current text unchanged
+      - no partial extraction surfaced
+      - no apply modal shown after abort
+      - close-window during processing is treated as cancellation
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `electron/main.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-15 01:58:54 -03:00`
+    - `git status --short` -> clean working tree at operation start
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check electron/main.js`
+  - Lint checks passed:
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js electron/main.js`
+  - Invariant anchors:
+    - `enforceFailureAbortInvariants(...)`
+    - `import/extract success discarded after cancellation request`
+    - `import/extract non-success result carried text; output dropped to enforce invariant`
+    - `reason: 'close_during_processing'` in `mainWin.on('close', ...)`
+  - Success-only apply-modal gate anchor:
+    - `public/renderer.js`: `if (resultState === 'success') { ... promptImportExtractApplyChoice ... }`
+- Assumptions disclosed:
+  - close-during-processing now behaves as cancel-first: the close request is consumed to request cancellation, preserving abort guarantees before any subsequent close action.
+- Drift disclosures:
+  - None. Changes remained within Section 4 item 15 scope and contract boundaries.
+- Outcome / next step:
+  - Section 4 item 15 is complete. Next checklist step is Section 5 item 1 (`Build and run core smoke matrix`).
+
+### OP-0032
+
+- Date/time: 2026-03-15 01:55:59 -03:00
+- Operation: Redo Section 4 item 14 from scratch with minimal backend-only fallback observability.
+- Why: User reverted prior implementation and requested a strict, minimal re-execution of 4.14 without over-expansion.
+- Changes made:
+  - Opened OP-0032 before meaningful edits (policy compliance step).
+  - Updated backend route-triage fallback observability:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - when explicit `routePreference` cannot be honored and backend selects another route, operation now emits:
+      - `log.warn('import/extract route fallback applied:', { ...structured fields... })`
+      - `fallbackType: 'requested_route_unavailable'`
+  - Updated backend execution-error fallback observability:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - when unexpected error packaging uses default route fallback (`'native'`), operation now emits:
+      - `log.warn('import/extract route fallback applied:', { ...structured fields... })`
+      - `fallbackType: 'execution_error_default_route'`
+  - Kept behavior shape unchanged outside observability scope:
+    - no new helper modules
+    - no renderer/main edits
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Enforce no silent fallback between routes.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+- Evidence:
+  - Operation open evidence:
+    - `git status --short` -> clean working tree at operation start
+    - `docs/issues/issue_53_implementation_plan.md` showed item 14 unchecked before edit
+  - Syntax check passed:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+  - Lint check passed:
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js`
+  - Minimality evidence:
+    - `git diff --numstat -- electron/import_extract_platform/import_extract_execution_ipc.js` -> `30  3`
+- Drift disclosures:
+  - None. Scope stayed in Section 4 item 14 with backend-only observability updates.
+- Outcome / next step:
+  - Section 4 item 14 is complete. Next checklist item is Section 4 item 15 (`Enforce failure/abort invariants`).
+
+### OP-0031
+
+- Date/time: 2026-03-15 01:26:47 -03:00
+- Operation: Run focused parity verification for clipboard overwrite/append behavior after shared canonical apply refactor.
+- Why: Validate that Section 4 item 12/13 shared helper integration introduced no behavior mismatch in existing clipboard paths.
+- Changes made:
+  - Captured baseline `a435ae7` renderer formulas via temporary snapshot:
+    - `git show a435ae7:public/renderer.js > temp_renderer_a435ae7.js`
+  - Executed deterministic parity vector harness comparing old inline formulas vs current shared helper formulas for:
+    - repeat normalization
+    - projected length
+    - repeated text build
+    - overwrite/append pre-apply gate decisions (`PAYLOAD_TOO_LARGE`, `TEXT_LIMIT`, success text payload)
+  - Removed temporary snapshot file after verification:
+    - `temp_renderer_a435ae7.js`
+- Checklist updates:
+  - None (verification-only operation).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Parity harness result:
+    - `PARITY_OK vectors= 18900`
+  - Cleanup evidence:
+    - `Test-Path temp_renderer_a435ae7.js` -> `False`
+- Assumptions disclosed:
+  - This verification is formula/decision parity only; it does not replace full UI smoke coverage.
+- Outcome / next step:
+  - No mismatch was detected in clipboard overwrite/append canonical composition/gating formulas across the tested vectors. Continue Section 4 execution at item 14.
+
+### OP-0030
+
+- Date/time: 2026-03-15 01:19:36 -03:00
+- Operation: Execute Section 4 items 12-13 (`post-extraction apply modal` + `canonical apply-path integration`).
+- Why: Continue checklist execution after Section 4 item 11 completion while avoiding apply-logic duplication.
+- Changes made:
+  - Added shared canonical apply helper module:
+    - `public/js/text_apply_canonical.js`
+    - centralizes repeat normalization, repeated text projection/build, and canonical `setCurrentText` apply flow (`overwrite` / `append_newline`) with existing semantics.
+  - Added dedicated import/extract apply modal module:
+    - `public/js/import_extract_apply_modal.js`
+    - modal returns apply choice (`overwrite`/`append`) + repetitions.
+  - Added apply modal markup and script wiring:
+    - `public/index.html`
+  - Added apply modal styles:
+    - `public/style.css`
+  - Integrated import/extract success path with post-apply modal:
+    - `public/renderer.js`
+    - on extraction `success`: prompt apply modal -> apply via shared canonical helper.
+    - on extraction `failure`/`cancelled`: no apply modal is shown.
+  - Rewired clipboard overwrite/append handlers to reuse shared canonical helper:
+    - `public/renderer.js`
+    - removed duplicated local apply composition logic in renderer handlers.
+  - Added i18n keys for apply modal + apply outcomes:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement post-extraction apply modal with overwrite/append/repetitions.`
+    - `[x] Route extracted text through canonical apply path; keep existing semantics unchanged.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/renderer.js`
+  - `public/js/text_apply_canonical.js`
+  - `public/js/import_extract_apply_modal.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check public/renderer.js`
+    - `node --check public/js/text_apply_canonical.js`
+    - `node --check public/js/import_extract_apply_modal.js`
+  - Localization parse checks passed:
+    - `node -e "const fs=require('fs'); JSON.parse(fs.readFileSync('i18n/en/renderer.json','utf8')); JSON.parse(fs.readFileSync('i18n/es/renderer.json','utf8'));"`.
+  - Lint checks passed:
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js public/js/import_extract_route_choice_modal.js public/js/text_apply_canonical.js public/js/import_extract_apply_modal.js`
+  - Shared-logic reuse evidence:
+    - `public/renderer.js` clipboard overwrite/append and import/extract apply now call `applyTextViaCanonicalPath(...)`, which delegates to `window.TextApplyCanonical.applyTextWithMode(...)`.
+- Assumptions disclosed:
+  - Implementation will reuse canonical overwrite/append/repetitions semantics by introducing shared apply helpers consumed by both existing clipboard actions and new import/extract post-apply flow.
+  - Cancelling the post-extraction apply modal leaves current text unchanged and ends the flow without forcing an extra alert.
+- Outcome / next step:
+  - Section 4 items 12-13 are complete. Next checklist item is Section 4 item 14 (`Enforce no silent fallback between routes`).
+
+### OP-0029
+
+- Date/time: 2026-03-15 01:07:22 -03:00
+- Operation: Execute Section 4 item 11 (`Implement explicit route-choice UX when both routes are viable`) with custom in-window modal and modular renderer boundary.
+- Why: Continue checklist execution after Section 4 item 10 completion while enforcing no-rush rigor and avoiding `public/renderer.js` bloat.
+- Changes made:
+  - Implemented backend route-choice handshake:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - payload now accepts `routePreference` (`native` / `ocr`).
+    - PDF triage now returns `requiresRouteChoice=true` + `routeChoiceOptions=['native','ocr']` when both routes are viable and no preference is provided.
+    - route selection now resolves before entering processing mode.
+    - triage PDF native probe now uses `isAborted: () => false` in pre-processing triage phase.
+  - Added dedicated route-choice modal module:
+    - `public/js/import_extract_route_choice_modal.js`
+    - owns modal event wiring, localization binding, and user choice resolution (`native` / `ocr` / cancel).
+  - Added modal markup and script loading:
+    - `public/index.html`
+  - Added modal styles:
+    - `public/style.css`
+  - Kept `public/renderer.js` as thin orchestration:
+    - delegates choice UI to `window.ImportExtractRouteChoiceModal.promptRouteChoice(...)`
+    - handles one retry call with explicit `routePreference`.
+  - Added i18n keys for route-choice UX:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement explicit route-choice UX when both routes are viable.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/js/import_extract_route_choice_modal.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check public/renderer.js`
+    - `node --check public/js/import_extract_route_choice_modal.js`
+  - Localization parse checks passed:
+    - `node -e "const fs=require('fs'); JSON.parse(fs.readFileSync('i18n/en/renderer.json','utf8')); JSON.parse(fs.readFileSync('i18n/es/renderer.json','utf8'));"`
+  - Lint checks passed:
+    - `npx eslint electron/import_extract_platform/import_extract_execution_ipc.js public/renderer.js public/js/import_extract_route_choice_modal.js`
+  - Renderer growth boundary evidence:
+    - `git diff --stat public/renderer.js public/js/import_extract_route_choice_modal.js`
+    - `public/renderer.js`: `+42 -2`
+    - modal logic moved to dedicated `public/js/import_extract_route_choice_modal.js`.
+- Assumptions disclosed:
+  - Modal cancel/close/backdrop path stops execution without silent fallback and without forced extra alert.
+  - Backend `renderer.alerts.import_extract_route_choice_required` remains explicit fallback for unresolved choice or modal unavailability paths.
+- Outcome / next step:
+  - Section 4 item 11 is complete. Next checklist item is Section 4 item 12 (`Implement post-extraction apply modal with overwrite/append/repetitions`).
+
+### OP-0028
+
+- Date/time: 2026-03-15 00:23:40 -03:00
+- Operation: Execute Section 4 item 10 (`Implement PDF triage`).
+- Why: Continue checklist execution after Section 4 item 9 completion.
+- Changes made:
+  - Added native PDF text-layer parser support:
+    - `electron/import_extract_platform/native_extraction_route.js`
+    - parser map now includes `.pdf -> pdf_text_layer` via `pdf-parse`.
+  - Implemented PDF triage logic in backend execution IPC:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - triage outcomes:
+      - `both` when native PDF text-layer is usable and OCR setup is ready
+      - `native_only` when native PDF text-layer is usable and OCR setup is unavailable
+      - `ocr_only` when native PDF text-layer is not usable
+    - route metadata now returned in execution response:
+      - `fileKind`
+      - `availableRoutes`
+      - `chosenRoute`
+      - `executedRoute`
+      - `pdfTriage`
+      - `triageReason`
+      - `ocrSetupState`
+  - Added dependency required for native PDF text-layer extraction:
+    - `package.json` + `package-lock.json`: `pdf-parse@1.1.1`
+  - Decision disclosed in chat and applied:
+    - when triage returns `both`, temporary default executed route remains OCR until Section 4 item 11 route-choice UX is implemented.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement PDF triage (`native only` / `OCR only` / `both`).`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `electron/import_extract_platform/native_extraction_route.js`
+  - `package.json`
+  - `package-lock.json`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/native_extraction_route.js`
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check electron/main.js`
+    - `node --check electron/preload.js`
+    - `node --check public/renderer.js`
+  - Native PDF parser smoke checks:
+    - sample PDF (`tools_local/drive_ocr_test/sample.pdf`) -> `success` with empty text + warnings (`pdf_pages:12`, `native_empty_text`)
+    - corrupt PDF fixture -> `failure / unreadable_or_corrupt` with parser type `pdf_text_layer`
+  - Diff summary:
+    - `electron/import_extract_platform/import_extract_execution_ipc.js` changed
+    - `electron/import_extract_platform/native_extraction_route.js` changed
+    - `package.json` changed
+    - `package-lock.json` changed
+- Assumptions disclosed:
+  - Route-choice UX is still deferred to Section 4 item 11; therefore `pdfTriage=both` currently defaults to OCR execution as an explicit temporary behavior.
+  - OCR setup validation continues to be readiness-gated in backend before OCR execution; PDF triage does not bypass setup/auth restrictions.
+- Outcome / next step:
+  - Section 4 item 10 is complete. Next checklist item is Section 4 item 11 (`Implement explicit route-choice UX...`).
+
+### OP-0027
+
+- Date/time: 2026-03-15 00:13:40 -03:00
+- Operation: Execute Section 4 item 9 (`Complete native extraction engineering slice`).
+- Why: Continue checklist execution after Section 4 items 7-8 completion.
+- Changes made:
+  - Expanded native parser mapping by format:
+    - `electron/import_extract_platform/native_extraction_route.js`
+    - added `docx` support using `mammoth`.
+    - parser map now includes: `txt`, `md`, `html`, `htm`, `docx`.
+  - Implemented explicit normalization pipeline for native outputs:
+    - newline normalization (`CRLF/CR -> LF`)
+    - BOM removal
+    - NBSP/zero-width cleanup
+    - trailing whitespace cleanup by line
+    - blank-line collapse
+  - Refined structured native-route errors:
+    - parser-stage metadata in `detailsSafeForLogs` (`stage`, `parserType`, `sourceFileExt`, `errorName`, `errorCode`, `errorMessage`)
+    - corrupt/unreadable parser failures map to `unreadable_or_corrupt`
+    - parser/runtime failures map to `native_extraction_failed`
+  - Added docx parser dependency:
+    - `package.json` + `package-lock.json`: `mammoth@1.11.0`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Complete native extraction engineering slice (parser mapping by format, normalization pipeline, structured native-route errors).`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/native_extraction_route.js`
+  - `package.json`
+  - `package-lock.json`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/native_extraction_route.js`
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check public/renderer.js`
+    - `node --check electron/main.js`
+    - `node --check electron/preload.js`
+  - Native route smoke checks:
+    - HTML sample -> `success` with normalized text output (`"Alpha\nBeta"`)
+    - generated valid docx sample -> `success` with extracted text (`"Hello docx native route"`)
+    - corrupt docx sample -> `failure / unreadable_or_corrupt` with parser metadata (`docx_text`)
+  - Diff summary:
+    - `electron/import_extract_platform/native_extraction_route.js` `+169 -28`
+    - `package.json` `+2 -1`
+    - `package-lock.json` `+161 -10`
+- Assumptions disclosed:
+  - No drift from item 9 scope: route-choice UX and PDF triage were intentionally left unchanged for items 10/11.
+  - Native output normalization in this item is text-centric and conservative; route-choice semantics and apply-flow semantics remain unchanged.
+- Outcome / next step:
+  - Section 4 item 9 is complete. Next checklist item is Section 4 item 10 (`Implement PDF triage...`).
+
+### OP-0026
+
+- Date/time: 2026-03-15 00:03:47 -03:00
+- Operation: Execute Section 4 items 7-8 in one coherent backend-owned execution flow (`OCR route` + `native route`).
+- Why: User requested avoiding repeated partial 4.7 attempts and implementing 4.7/4.8 with import/extract execution ownership in backend modules instead of renderer-embedded route handling.
+- Changes made:
+  - Added OCR route runtime module:
+    - `electron/import_extract_platform/ocr_google_drive_route.js`
+    - preflight checks + OAuth bootstrap + Drive upload/convert/export + cleanup + bounded retry + explicit error mapping.
+  - Added native extraction route runtime module:
+    - `electron/import_extract_platform/native_extraction_route.js`
+    - parser coverage in this item: `txt`, `md`, `html`, `htm`.
+    - explicit native-route failure mapping (`unsupported_format`, `unreadable_or_corrupt`, `native_extraction_failed`, `aborted_by_user`).
+  - Added single backend execution IPC (route selection + execution + alert mapping):
+    - `electron/import_extract_platform/import_extract_execution_ipc.js`
+    - channel: `import-extract-run-selected-file`
+    - responsibilities:
+      - main-window sender authorization
+      - backend route selection (`ocr` primary for `jpg/jpeg/png/webp/bmp/pdf`; otherwise `native`)
+      - OCR setup/activation validation gate before OCR execution
+      - processing-mode enter/exit lifecycle around execution
+      - primary/warning alert-key mapping returned to renderer
+  - Wired execution IPC in startup:
+    - `electron/main.js` registers `importExtractExecutionIpc`.
+  - Added preload bridge:
+    - `electron/preload.js`
+    - `runImportExtractSelectedFile(payload)`.
+  - Reduced renderer entrypoint to thin execution call:
+    - `public/renderer.js`
+    - flow: picker -> preconditions -> backend execution IPC -> alert display.
+    - removed renderer-owned OCR gate/route orchestration from click handler.
+  - Added alert keys for OCR/native route outcomes:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+    - OCR: runtime/cancelled/cleanup-warning/apply-pending
+    - native: runtime/cancelled/unsupported-format/apply-pending
+  - Added OCR route dependency in app root:
+    - `package.json` + `package-lock.json`: `googleapis@105.0.0`.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement OCR route.`
+    - `[x] Implement native extraction route.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_execution_ipc.js`
+  - `electron/import_extract_platform/ocr_google_drive_route.js`
+  - `electron/import_extract_platform/native_extraction_route.js`
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+  - `package.json`
+  - `package-lock.json`
+- Evidence:
+  - Syntax validation passed:
+    - `node --check electron/import_extract_platform/ocr_google_drive_route.js`
+    - `node --check electron/import_extract_platform/native_extraction_route.js`
+    - `node --check electron/import_extract_platform/import_extract_execution_ipc.js`
+    - `node --check electron/main.js`
+    - `node --check electron/preload.js`
+    - `node --check public/renderer.js`
+  - JSON validation passed:
+    - `i18n/en/renderer.json` + `i18n/es/renderer.json` parsed successfully (`json-ok`).
+  - Smoke checks:
+    - OCR route missing file -> `failure / unreadable_or_corrupt`
+    - native route HTML sample -> `success` (`\"Hello world\"`)
+    - native route unsupported `.docx` -> `failure / unsupported_format`
+  - Renderer/main minimal bridge evidence:
+    - `git diff --numstat -- electron/main.js electron/preload.js public/renderer.js`
+      - `electron/main.js`: `12 0`
+      - `electron/preload.js`: `1 0`
+      - `public/renderer.js`: `23 35`
+- Assumptions disclosed:
+  - In this item, route selection is extension-based with OCR-primary for `jpg/jpeg/png/webp/bmp/pdf`; explicit user route-choice UX and PDF triage are deferred to later Section 4 items.
+  - In this item, native parser coverage is intentionally limited to `txt/md/html/htm`; deeper parser/normalization work remains for Section 4 item 9.
+  - Success outcomes in 4.7/4.8 intentionally remain apply-pending (`*_apply_pending`) until post-extraction apply flow/canonical apply integration items are implemented.
+- Outcome / next step:
+  - Section 4 items 7-8 are complete. Next checklist item is Section 4 item 9 (`Complete native extraction engineering slice...`).
+
+### OP-0025
+
+- Date/time: 2026-03-14 22:51:37 -03:00
+- Operation: Execute Section 4 item 6 (OCR access/activation gate with explicit blocked outcomes).
+- Why: Continue Issue 53 in checklist order without changing plan structure.
+- Changes made:
+  - Added backend-owned OCR gate IPC module:
+    - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js`
+    - channel: `import-extract-evaluate-ocr-gate`
+    - responsibilities:
+      - file classification for OCR eligibility (`jpg/jpeg/png/webp/bmp/pdf`)
+      - explicit `restricted` blocking for non-OCR-eligible files
+      - setup-validation call via existing backend validator (`validateGoogleDriveOcrSetup`)
+      - explicit mapping to blocked categories:
+        - `not_activated` (`ocr_activation_required`)
+        - `quota_or_rate` (`quota_or_rate_limited`)
+        - `unavailable` (all other setup/runtime failures)
+      - structured gate logging (`ready`/`blocked`/unexpected failure)
+  - Wired gate IPC in main startup:
+    - `electron/main.js`
+    - registration includes main-window sender validation context and canonical OCR credentials/token paths.
+  - Added preload bridge for renderer:
+    - `electron/preload.js`
+    - `evaluateImportExtractOcrGate(payload)`
+  - Updated import/extract entrypoint to use backend gate result (thin renderer):
+    - `public/renderer.js`
+    - after picker + precondition pass, calls `evaluateImportExtractOcrGate({ filePath })`
+    - shows returned explicit alert key on blocked/failure
+    - logs gate telemetry fields (`ocrSetupState`, `blockCategory`, `code`, `issueType`, file ext/kind)
+  - Added user-visible i18n keys for gate outcomes:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement access/activation gate for the OCR route according to the chosen model, with explicit user-visible failures for unavailable/not-activated/restricted/quota-exhausted paths.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js`
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Backend gate ownership evidence:
+    - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js` contains:
+      - `classifyFileForOcr(...)`
+      - `mapValidationBlock(...)`
+      - `ipcMain.handle('import-extract-evaluate-ocr-gate', ...)`
+  - Thin renderer evidence:
+    - `public/renderer.js` import/extract handler calls `evaluateImportExtractOcrGate(...)` and does not embed local OCR taxonomies/classifier tables.
+  - Explicit user-visible outcomes evidence:
+    - `i18n/en/renderer.json` + `i18n/es/renderer.json` include:
+      - `renderer.alerts.import_extract_ocr_unavailable`
+      - `renderer.alerts.import_extract_ocr_activation_required`
+      - `renderer.alerts.import_extract_ocr_restricted`
+      - `renderer.alerts.import_extract_ocr_quota_or_rate_limited`
+  - Validation:
+    - `node --check electron/import_extract_platform/import_extract_ocr_gate_ipc.js` passed
+    - `node --check electron/main.js` passed
+    - `node --check electron/preload.js` passed
+    - `node --check public/renderer.js` passed
+    - JSON parse checks for `i18n/en/renderer.json` and `i18n/es/renderer.json` passed (`json-ok`)
+- Assumptions disclosed:
+  - `restricted` in this item is enforced as OCR format restriction (`jpg/jpeg/png/webp/bmp/pdf` eligible for OCR route gate).
+  - `setup_incomplete` and non-activation/non-quota setup/runtime failures are surfaced under explicit user-visible `unavailable`.
+- Outcome / next step:
+  - Section 4 item 6 is complete. Next checklist item is Section 4 item 7 (`Implement OCR route.`).
+
+### OP-0024
+
+- Date/time: 2026-03-14 22:18:26 -03:00
+- Operation: Re-execute Section 4 item 5 with strict minimal scope (distinct processing-mode lock + main/menu interaction blocking).
+- Why: User requested Section 4 item 5 implementation again after reverting prior attempt due to overreach concerns.
+- Changes made:
+  - Added main-owned processing-mode controller + IPC module:
+    - `electron/import_extract_platform/import_extract_processing_mode_ipc.js`
+    - channels:
+      - `import-extract-get-processing-mode`
+      - `import-extract-request-abort`
+      - event `import-extract-processing-mode-changed`
+  - Wired processing-mode controller in main process:
+    - `electron/main.js`
+    - menu gating now uses:
+      - startup readiness (`isMainInteractive`)
+      - processing lock (`isMainMenuInteractive`)
+    - `guardMainUserAction(...)` now blocks normal main-window actions while processing mode is active.
+    - main renderer receives processing-mode state updates on change and on `did-finish-load` bootstrap.
+    - processing-mode IPC registration added in app startup.
+  - Updated menu logging for accurate blocked-reason context:
+    - `electron/menu_builder.js` supports optional `getMenuBlockReason` (`pre_ready` vs `processing_mode`) to avoid misleading pre-ready-only logs.
+  - Added preload bridge for processing-mode read/abort + state subscription:
+    - `electron/preload.js`
+    - `getImportExtractProcessingMode`
+    - `requestImportExtractAbort`
+    - `onImportExtractProcessingModeChanged`
+  - Added renderer-side processing-mode interaction blocking:
+    - `public/renderer.js`
+    - `guardUserAction(...)` now rejects normal actions when processing mode is active and shows explicit user guidance.
+    - renderer subscribes to `import-extract-processing-mode-changed`.
+    - renderer queries current processing-mode state during startup.
+  - Added explicit abort action control in text-selector row:
+    - `public/index.html` adds `btnImportExtractAbort` (hidden/disabled unless processing mode is active).
+    - `public/style.css` adds dedicated abort-button style.
+    - `public/renderer.js` wires abort button to `requestImportExtractAbort`.
+  - Added i18n keys for abort + processing lock feedback:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Low-impact assumption disclosure (proceeded):
+    - processing-mode entry (`enter`) is infrastructure-only at this stage and will be invoked by upcoming extraction orchestration steps; current placeholder `import_extract_not_ready` path does not auto-enter processing mode.
+    - Rationale: keeps processing-state semantics truthful and avoids fake processing activation before extraction route execution exists.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Implement processing mode as a distinct lock state (not startup lock) and block normal main-window/menu interactions while active.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/main.js`
+  - `electron/menu_builder.js`
+  - `electron/preload.js`
+  - `electron/import_extract_platform/import_extract_processing_mode_ipc.js`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Main/menu lock evidence:
+    - `electron/main.js` contains:
+      - `isMainInteractive()` startup gate
+      - `isMainMenuInteractive()` processing lock gate
+      - `guardMainUserAction(..., { allowDuringProcessing })` processing block
+    - `electron/menu_builder.js` now supports reasoned lock logging via `getMenuBlockReason`.
+  - Processing-mode IPC evidence:
+    - `electron/import_extract_platform/import_extract_processing_mode_ipc.js` exports:
+      - `createController`
+      - `registerIpc`
+    - registered channels include:
+      - `import-extract-get-processing-mode`
+      - `import-extract-request-abort`
+  - Renderer blocking evidence:
+    - `public/renderer.js` includes:
+      - `isProcessingModeActive`
+      - processing-aware `guardUserAction`
+      - startup fetch + event-subscription for processing mode
+      - abort button handler (`requestImportExtractAbort`)
+  - Validation:
+    - `node --check electron/main.js` passed
+    - `node --check electron/menu_builder.js` passed
+    - `node --check electron/preload.js` passed
+    - `node --check electron/import_extract_platform/import_extract_processing_mode_ipc.js` passed
+    - `node --check public/renderer.js` passed
+    - JSON parse checks for `i18n/en/renderer.json` and `i18n/es/renderer.json` passed (`json-ok`)
+    - controller smoke check passed (`processing-mode-controller-ok`)
+- Outcome / next step:
+  - Section 4 item 5 is complete. Next step is Section 4 item 6 (OCR access/activation gate in route decision path with explicit unavailable/not-activated/restricted/quota failures).
+
+### OP-0023
+
+- Date/time: 2026-03-14 21:43:07 -03:00
+- Operation: Execute Section 4 item 4 by isolating import/extract platform behavior behind platform adapters.
+- Why: Continue Section 4 in checklist order and enforce OS-agnostic core orchestration boundaries.
+- Changes made:
+  - Added platform-adapter registry:
+    - `electron/import_extract_platform/import_extract_platform_adapter.js`
+    - maps `win32` / `darwin` / `linux` / fallback adapter resolution.
+  - Added adapter modules:
+    - `electron/import_extract_platform/platform_adapters/common.js`
+    - `electron/import_extract_platform/platform_adapters/windows.js`
+    - `electron/import_extract_platform/platform_adapters/darwin.js`
+    - `electron/import_extract_platform/platform_adapters/linux.js`
+    - `electron/import_extract_platform/platform_adapters/fallback.js`
+  - Moved picker-path behavior behind adapter methods:
+    - default-path resolution
+    - persisted-directory normalization
+    - selected-file normalization
+    - selected-directory derivation/normalization
+  - Refactored picker IPC to adapter-boundary usage only:
+    - removed direct `fs`/`path` directory logic from `electron/import_extract_platform/import_extract_file_picker_ipc.js`
+    - kept core flow OS-agnostic (`read state -> ask adapter -> show dialog -> normalize selection -> persist dir`)
+  - Low-impact assumption disclosure (proceeded):
+    - `darwin`/`linux` adapters currently share the same generic behavior profile as fallback for this stage.
+    - Rationale: establish explicit adapter seam now; behavior divergence can be added later without changing core orchestration.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Isolate Windows-specific implementation behind platform adapters so core extraction/apply orchestration remains OS-agnostic for future macOS/Linux support.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_file_picker_ipc.js`
+  - `electron/import_extract_platform/import_extract_platform_adapter.js`
+  - `electron/import_extract_platform/platform_adapters/common.js`
+  - `electron/import_extract_platform/platform_adapters/windows.js`
+  - `electron/import_extract_platform/platform_adapters/darwin.js`
+  - `electron/import_extract_platform/platform_adapters/linux.js`
+  - `electron/import_extract_platform/platform_adapters/fallback.js`
+- Evidence:
+  - Adapter boundary evidence:
+    - `electron/import_extract_platform/import_extract_platform_adapter.js` exports `getImportExtractPlatformAdapter(...)`.
+    - each platform adapter exports:
+      - `resolveDefaultPickerPath`
+      - `normalizePersistedDirectory`
+      - `normalizeSelectedFilePath`
+      - `normalizeSelectedDirectory`
+  - Core orchestration evidence:
+    - `electron/import_extract_platform/import_extract_file_picker_ipc.js` now uses `platformAdapter` for all path/default/persisted-selection operations and no longer imports `fs`/`path`.
+  - Validation:
+    - `node --check electron/import_extract_platform/import_extract_file_picker_ipc.js` passed
+    - `node --check electron/import_extract_platform/import_extract_platform_adapter.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/common.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/windows.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/darwin.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/linux.js` passed
+    - `node --check electron/import_extract_platform/platform_adapters/fallback.js` passed
+- Outcome / next step:
+  - Section 4 item 4 is complete. Next step is Section 4 item 5 (distinct processing-mode lock and interaction blocking).
+
+### OP-0022
+
+- Date/time: 2026-03-14 21:18:08 -03:00
+- Operation: Execute Section 4 items 1-3 (entrypoint button + file picker behavior + precondition block).
+- Why: Continue Issue 53 implementation in checklist order after Section 3 revalidation, incorporating user-provided placement clarification.
+- Changes made:
+  - Added dedicated import/extract button in `public/index.html` controls row (placement per user clarification):
+    - inserted `btnImportExtract` before `btnOverwriteClipboard`
+    - inserted explicit separator between import/extract and overwrite controls
+  - Added entrypoint renderer wiring in `public/renderer.js`:
+    - new DOM ref: `btnImportExtract`
+    - i18n wiring for button text/tooltip/aria
+    - explicit click path to backend picker IPC (`openImportExtractPicker`)
+    - explicit user-visible handling for canceled/error/pending-extraction outcomes (no silent no-op)
+  - Added backend picker IPC module:
+    - `electron/import_extract_platform/import_extract_file_picker_ipc.js`
+    - channel: `import-extract-open-picker`
+    - enforces sender authorization from main window
+    - default folder behavior: documents -> home -> cwd fallback
+    - persisted folder behavior: saves last selected directory to `import_extract_state.json`
+  - Added storage helper path for persisted picker state:
+    - `getImportExtractStateFile()` in `electron/fs_storage.js`
+  - Wired new picker IPC in main process:
+    - `electron/main.js` registers `importExtractFilePickerIpc`
+  - Added preload bridge for renderer access:
+    - `openImportExtractPicker` in `electron/preload.js`
+  - Added backend precondition-check IPC module:
+    - `electron/import_extract_platform/import_extract_preconditions_ipc.js`
+    - channel: `import-extract-check-preconditions`
+    - evaluates:
+      - open secondary windows (non-main windows)
+      - stopwatch running state
+    - returns explicit `precondition_rejected` + reasons/guidance when blocked
+    - logs structured `precondition_rejected` details
+  - Wired precondition checker in main process:
+    - `electron/main.js` registers `importExtractPreconditionsIpc`
+    - context includes `editor`, `editor_find`, `preset_modal`, `language_window`, `floating_stopwatch`, `task_editor`, and stopwatch state
+  - Added preload bridge for precondition checks:
+    - `checkImportExtractPreconditions` in `electron/preload.js`
+  - Updated renderer entrypoint flow:
+    - after file selection, calls precondition checker
+    - on blocked preconditions, shows explicit guidance and does not proceed
+  - Added/updated i18n keys in `es`/`en` bundles:
+    - `renderer.main.buttons.import_extract`
+    - `renderer.main.tooltips.import_extract`
+    - `renderer.main.aria.import_extract`
+    - `renderer.alerts.import_extract_error`
+    - `renderer.alerts.import_extract_precondition_blocked`
+    - `renderer.alerts.import_extract_precondition_error`
+    - `renderer.alerts.import_extract_not_ready`
+  - Updated plan checklist:
+    - marked Section 4 item 1 complete.
+    - marked Section 4 item 2 complete.
+    - marked Section 4 item 3 complete.
+  - Low-impact assumption disclosure (proceeded):
+    - Until extraction orchestration (later Section 4 items) is wired, successful file selection surfaces explicit `import_extract_not_ready` feedback instead of starting processing.
+    - Rationale: avoids silent behavior while preserving checklist order and keeping extraction semantics for subsequent items.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 4:
+    - `[x] Add dedicated import/extract button in the text-selector row.`
+    - `[x] Implement file picker open behavior (default folder first, then persisted folder).`
+    - `[x] Implement precondition block (no start when secondary windows are open or stopwatch is running) with explicit user guidance.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/fs_storage.js`
+  - `electron/main.js`
+  - `electron/preload.js`
+  - `electron/import_extract_platform/import_extract_file_picker_ipc.js`
+  - `electron/import_extract_platform/import_extract_preconditions_ipc.js`
+  - `public/index.html`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Selector row placement evidence:
+    - `public/index.html` now contains:
+      - `btnImportExtract`
+      - `controls-sep`
+      - `btnOverwriteClipboard`
+    - order confirms import/extract button is left of overwrite with separator.
+  - Renderer wiring evidence:
+    - `public/renderer.js` contains:
+      - `const btnImportExtract = document.getElementById('btnImportExtract');`
+      - translation bindings for `renderer.main.buttons/tooltips/aria.import_extract`
+      - click handler for `import-extract-entrypoint` with explicit user-visible notification.
+  - Localization evidence:
+    - `i18n/en/renderer.json` and `i18n/es/renderer.json` include new import/extract keys and alert key.
+  - Validation:
+    - precondition IPC functional check (mocked registration contexts):
+      - blocked case -> `{ state: 'precondition_rejected', reasons: ['secondary_windows_open', 'stopwatch_running'] }`
+      - ready case -> `{ state: 'ready', reasons: [] }`
+    - `node --check electron/import_extract_platform/import_extract_preconditions_ipc.js` passed
+    - `node --check electron/import_extract_platform/import_extract_file_picker_ipc.js` passed
+    - `node --check electron/main.js` passed
+    - `node --check electron/preload.js` passed
+    - `node --check electron/fs_storage.js` passed
+    - `node --check public/renderer.js` passed
+    - JSON parse checks for `i18n/en/renderer.json` and `i18n/es/renderer.json` passed (`json-ok`)
+- Outcome / next step:
+  - Section 4 items 1-3 are complete. Next step is Section 4 item 4: isolate Windows-specific implementation behind platform adapters while keeping core orchestration OS-agnostic.
+
+### OP-0021
+
+- Date/time: 2026-03-14 21:09:17 -03:00
+- Operation: Revalidate and relock Section 3 contracts using finalized Section 2 item 7/8 semantics.
+- Why: User requested Section 3 revalidation with no assumptions carried from earlier draft state.
+- Changes made:
+  - Reworked and relocked `docs/issues/issue_53_contracts.md` as the authoritative Section 3 baseline:
+    - retained substrate-agnostic extraction/apply/processing contracts
+    - added explicit setup-validation contract aligned to Section 2 item 7 (`state`, checks, error surface, required mappings)
+    - added explicit logging/bridge-failure alignment section for Section 2 item 8
+    - aligned observability + sequencing sections to post-revalidation state
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 3 status note:
+    - pending/draft wording replaced with revalidated-and-authoritative wording
+  - Marked all Section 3 checklist items complete (`[x]`):
+    - shared extraction result contract
+    - route metadata contract
+    - apply contract lock
+    - state taxonomy lock
+    - processing-mode contract lock
+  - Updated tracker authoritative status:
+    - Section 3 now marked complete (revalidated).
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 3:
+    - `[x] Define shared extraction result contract for all routes.`
+    - `[x] Define route metadata contract.`
+    - `[x] Lock apply contract: extraction post-apply must reuse the existing canonical overwrite/append/repetitions path (including MAX_TEXT_CHARS + explicit truncation behavior).`
+    - `[x] Lock state taxonomy for behavior/logging distinction.`
+    - `[x] Lock processing-mode contract.`
+- Files touched:
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_contracts.md` contains new revalidation-specific sections:
+    - `## 8) Setup validation contract (Section 2 item 7/8)`
+    - `## 9) Logging and bridge-failure policy alignment (Section 2 item 8)`
+    - `## 10) Observability contract alignment`
+    - `## 11) Implementation sequencing after this contract revalidation`
+  - `docs/issues/issue_53_implementation_plan.md` now contains:
+    - `Revalidated and relocked on 2026-03-14 after Section 2 item 7/8 completion.`
+    - all Section 3 checklist items marked `[x]`
+  - Runtime code baseline remained syntactically valid after documentation revalidation:
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js`
+    - `node --check electron/main.js`
+- Outcome / next step:
+  - Section 3 is revalidated and relocked. Next step is Section 4 implementation starting from the dedicated import/extract entrypoint guardrail.
+
+### OP-0020
+
+- Date/time: 2026-03-14 20:55:15 -03:00
+- Operation: Execute Section 2 items 7-8 backend/IPC setup-validation + logging/bridge-policy confirmation (no OCR UI wiring).
+- Why: Continue Issue 53 in checklist order under the user-approved guardrails and current authoritative status.
+- Changes made:
+  - Added backend validation engine:
+    - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+    - validates credentials presence/shape, activation token presence/shape, and Drive API reachability.
+    - maps explicit states/errors for:
+      - `setup_incomplete`
+      - `credentials_missing`
+      - `ocr_activation_required`
+      - `auth_failed`
+      - `quota_or_rate_limited`
+      - `connectivity_failed`
+      - `platform_runtime_failed`
+      - `unknown`
+    - returns explicit user-facing message/action keys and details safe for logs.
+  - Added dedicated IPC registration module:
+    - `electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js`
+    - channel: `ocr-google-drive-validate-setup`
+    - explicit required-path blocking (`registerIpc` throws when required dependencies are missing)
+    - non-crashing handler fallback for runtime exceptions (`platform_runtime_failed` response).
+  - Wired IPC module in main-process startup:
+    - updated `electron/main.js` imports for OCR credential/token paths
+    - registered setup-validation IPC with canonical runtime paths from `fs_storage`.
+  - Updated plan checklist completion:
+    - marked Section 2 item 7 complete
+    - marked Section 2 item 8 complete
+  - Updated tracker authoritative status:
+    - Section 2 now complete (items 1-8).
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md` Section 2:
+    - `[x] Add setup validation flow and explicit user-visible errors for incomplete/missing setup, missing credentials, billing/auth issues, and quota/budget/usage-limit issues.`
+    - `[x] Confirm setup path and failures follow current logging/bridge-failure policies.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/main.js`
+  - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+  - `electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js`
+- Evidence:
+  - Syntax checks passed:
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js`
+    - `node --check electron/main.js`
+  - Validation matrix via injected probe stubs (temporary local script) produced explicit expected classifications:
+    - case 1 -> `setup_incomplete`
+    - case 2 -> `credentials_missing`
+    - case 3 -> `ocr_activation_required`
+    - case 4 -> `quota_or_rate_limited`
+    - case 5 -> `auth_failed`
+    - case 6 -> `connectivity_failed`
+    - case 7 -> `ready`
+  - Logging/bridge-failure policy checks:
+    - required-path blocking verified:
+      - `registerIpc({ handle })` without `resolvePaths` throws `[ocr-google-drive-setup-ipc] registerIpc requires resolvePaths()`
+    - non-crashing handler behavior verified:
+      - runtime exception in `resolvePaths` returns `{ ok:false, state:'failure', code:'platform_runtime_failed' }` and logs explicit error.
+  - Guardrail evidence (no OCR UI trigger wiring in item 7/8):
+    - `rg -n "ocr-google-drive-validate-setup|ocr_google_drive_setup_validation" public electron/menu_builder.js public/renderer.js i18n -S` -> `NO_MATCHES`
+    - `git status --short` shows only backend/docs paths changed (no renderer/menu/i18n OCR wiring edits).
+- Outcome / next step:
+  - Section 2 items 7-8 are complete and evidence-backed. Next step is Section 3 revalidation using finalized Section 2 semantics.
+
+### OP-0019
+
+- Date/time: 2026-03-14 20:32:33 -03:00
+- Operation: Integrate sequencing clarifications directly into plan checklist sections (not as a standalone top-level patch note).
+- Why: User rejected prior clarification style and requested a cleaner, properly integrated plan update.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` in-context (no standalone detached paragraph):
+    - Section 2 item 7 `Done when` now includes explicit scope boundary:
+      - backend/IPC validation + taxonomy only
+      - no OCR UI trigger wiring
+      - no legacy `cargador_*` path usage
+    - Section 2 item 8 `Done when` now requires evidence that item 7/8 introduced no OCR UI trigger wiring outside Section 4 dedicated entrypoint tasks.
+    - Section 3 status note now explicitly depends on finalized Section 2 item 7/8 semantics before revalidation.
+    - Section 4 now includes `Entrypoint guardrail` directly under the section header:
+      - first allowed stage for OCR UI trigger wiring
+      - wiring must start from dedicated import/extract entrypoint
+      - legacy `cargador_texto`/`cargador_imagen` paths forbidden
+  - Updated `docs/issues/issue_53_operation_tracker.md` `## Current Authoritative Status` to mirror the same integrated guardrails/dependency.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md`:
+    - item 7 now contains `scope boundary for item 7`
+    - item 8 now contains `evidence confirms item 7/8 introduced no OCR UI trigger wiring...`
+    - Section 3 status note includes dependency on Section 2 item 7/8 semantics
+    - Section 4 contains `Entrypoint guardrail`
+  - `docs/issues/issue_53_operation_tracker.md` `## Current Authoritative Status` now includes:
+    - item 7/8 scope boundary
+    - Section 3 dependency on item 7/8 semantics
+    - Section 4 first-allowed-wiring boundary
+- Outcome / next step:
+  - Clarifications are now integrated directly at execution points in the plan. Next step remains Section 2 item 7 implementation under these constraints.
+
+### OP-0018
+
+- Date/time: 2026-03-14 20:14:14 -03:00
+- Operation: Normalize Issue 53 plan/tracker organization and lock authoritative status snapshot, including explicit Section 3 reopen state.
+- Why: User requested a structure review and approved normalization with Section 3 reopened.
+- Changes made:
+  - Added `## Current Authoritative Status` section near the top of this tracker to provide a single source of truth for:
+    - section-by-section status
+    - active next checklist item
+    - Section 3 reopened state
+    - `cargador_*` removal guardrail
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 3 header area with an explicit status note:
+    - Section 3 is reopened by user decision (2026-03-14)
+    - `docs/issues/issue_53_contracts.md` is retained as draft/reference and must be revalidated before Section 4 coding
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+- Evidence:
+  - `docs/issues/issue_53_operation_tracker.md` now contains `## Current Authoritative Status`.
+  - `docs/issues/issue_53_operation_tracker.md` explicitly states:
+    - Section 2 item 7 is the active next checklist item
+    - Section 3 is reopened and prior closure claims are superseded
+  - `docs/issues/issue_53_implementation_plan.md` under `## 3. Contracts before implementation` now contains:
+    - `Status note (authoritative):`
+    - `Reopened by explicit user decision on 2026-03-14.`
+- Outcome / next step:
+  - Plan/tracker organization is now normalized for execution clarity. Next step is to execute Section 2 item 7, then keep Section 3 in reopened/revalidation state until you explicitly close it again.
+
+### OP-0017
+
+- Date/time: 2026-03-14 20:03:56 -03:00
+- Operation: Remove legacy `cargador_*` menu path completely (menu actions + i18n keys) per user direction.
+- Why: User explicitly rejected any Issue 53 dependency on legacy `cargador_*` menu flow and requested no remnants/dead code.
+- Changes made:
+  - Removed legacy menu entries from native menu template in `electron/menu_builder.js`:
+    - removed `cargador_texto` action and label lookup
+    - removed `cargador_imagen` action and label lookup
+  - Removed renderer menu-action handlers in `public/renderer.js`:
+    - removed `registerMenuActionGuarded('cargador_texto', ...)`
+    - removed `registerMenuActionGuarded('cargador_imagen', ...)`
+  - Removed unused i18n keys across all locale bundles:
+    - from `i18n/**/main.json`: `main.menu.cargador_texto`, `main.menu.cargador_imagen`
+    - from `i18n/**/renderer.json`: `renderer.alerts.wip_cargador_texto`, `renderer.alerts.wip_cargador_imagen`
+- Checklist updates:
+  - No Issue 53 checklist checkbox toggles in this operation.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/menu_builder.js`
+  - `public/renderer.js`
+  - `i18n/arn/main.json`
+  - `i18n/arn/renderer.json`
+  - `i18n/de/main.json`
+  - `i18n/de/renderer.json`
+  - `i18n/en/main.json`
+  - `i18n/en/renderer.json`
+  - `i18n/es/main.json`
+  - `i18n/es/renderer.json`
+  - `i18n/es/es-cl/main.json`
+  - `i18n/es/es-cl/renderer.json`
+  - `i18n/fr/main.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/main.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/main.json`
+  - `i18n/pt/renderer.json`
+- Evidence:
+  - `rg -n "cargador_texto|cargador_imagen|wip_cargador_texto|wip_cargador_imagen" -S .` now returns only historical documentation/changelog mentions (no runtime/menu/i18n code paths).
+  - `node --check electron/menu_builder.js` passed.
+  - `node --check public/renderer.js` passed.
+  - Full i18n JSON parse validation passed (`i18n-json-ok`).
+- Outcome / next step:
+  - Legacy `cargador_*` path is removed from runtime/menu/i18n code. Next step: continue Issue 53 work without any dependency on that menu flow.
+
+### OP-0016
+
+- Date/time: 2026-03-14 19:43:29 -03:00
+- Operation: Execute Section 2 checklist item 6 (`Define quota/budget/usage-limit handling`) using user-approved Option 1 (`retry then fail`) for temporary rate-limit responses.
+- Why: User selected Option 1 after clarification of `429` semantics.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 6:
+    - marked item 6 complete (`[x]`)
+    - added locked policy text for temporary `429` handling via bounded exponential-backoff retry
+    - added explicit fail-fast handling for non-retryable provider limit responses
+    - added user guidance boundary: wait/retry for temporary rate limits; reconnect reserved for auth/activation failures
+  - Updated `docs/issues/issue_53_contracts.md` `Required policy`:
+    - added `quota/rate-limit handling baseline` with the same `retry then fail` + fail-fast semantics
+    - clarified no separate app-managed OCR billing-failure state is assumed for this Drive route phase
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Define quota/budget/usage-limit handling for the chosen model.`
+  - No other checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` contains:
+    - `temporary rate-limit responses (including HTTP 429) use bounded exponential-backoff retry...`
+    - `explicit non-retryable provider limit responses fail fast as quota_or_rate_limited`
+  - `docs/issues/issue_53_contracts.md` contains:
+    - `quota/rate-limit handling baseline`
+    - `temporary rate-limit responses (including HTTP 429) use bounded exponential-backoff retries`
+    - `explicit non-retryable provider limit responses classify as quota_or_rate_limited without a retry loop`
+- Outcome / next step:
+  - Section 2 item 6 is complete with user-approved semantics. Next checklist item is Section 2 item 7 (`Add setup validation flow and explicit user-visible errors...`).
+
+### OP-0015
+
+- Date/time: 2026-03-14 19:35:01 -03:00
+- Operation: Rename Issue 53 quota-limit state token from `billing_or_quota_limited` to `quota_or_rate_limited`.
+- Why: User explicitly requested renaming for clarity because the chosen Drive route should not imply a separate billing-failure path in the state name.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 6 done-when criteria:
+    - `billing_or_quota_limited` -> `quota_or_rate_limited`
+  - Updated `docs/issues/issue_53_contracts.md` state taxonomy union:
+    - `billing_or_quota_limited` -> `quota_or_rate_limited`
+  - Updated `docs/issues/issue_53_contracts.md` error mapping minimum:
+    - `quota / rate / limit -> billing_or_quota_limited` -> `quota / rate / limit -> quota_or_rate_limited`
+- Checklist updates:
+  - No checkbox state changes.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` contains:
+    - `quota/limit failures map to quota_or_rate_limited`
+  - `docs/issues/issue_53_contracts.md` contains:
+    - union member: `quota_or_rate_limited`
+    - mapping line: `quota / rate / limit -> quota_or_rate_limited`
+  - Repo search confirms no remaining `billing_or_quota_limited` usage outside this historical tracker entry.
+- Outcome / next step:
+  - Rename is complete and aligned with user direction. Next step is to finish Section 2 item 6 semantics using the new token name.
+
+### OP-0014
+
+- Date/time: 2026-03-14 19:10:10 -03:00
+- Operation: Add explicit “first sign-in only + token reuse across sessions” wording to Issue 53 docs.
+- Why: User requested an explicit, easily discoverable statement of the activation/reuse behavior.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 4 with explicit wording:
+    - first successful sign-in creates local token state for reuse
+    - subsequent files/sessions do not require browser re-auth unless token is missing/invalid/revoked or scope changes
+  - Updated `docs/issues/issue_53_contracts.md` availability baseline with equivalent explicit wording.
+- Checklist updates:
+  - No checkbox state changes.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` contains:
+    - `first successful sign-in creates local token state for reuse...`
+  - `docs/issues/issue_53_contracts.md` contains:
+    - `first successful sign-in persists token state for reuse across files and app sessions...`
+    - `browser re-auth is required only when token state is missing/invalid/revoked or scope requirements change`
+- Outcome / next step:
+  - Documentation now explicitly states first-sign-in reuse semantics in both plan and contracts.
+
+### OP-0013
+
+- Date/time: 2026-03-14 19:05:26 -03:00
+- Operation: Execute Section 2 checklist item 5 (`Define usage restrictions/limits`) with user-confirmed no-extra-limit policy.
+- Why: User confirmed no additional app-imposed restrictions/limits are necessary at this stage.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 5 to lock and complete:
+    - no additional app-imposed hard limits at this phase
+    - restrictions enforced through classification gates, activation/setup availability gates, and explicit provider/API runtime errors
+  - Updated `docs/issues/issue_53_contracts.md` `Required policy` with `restrictions/limits policy baseline` reflecting the same decision.
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Define usage restrictions/limits, if any, and how they are enforced.`
+  - No other checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` item 5 now marked `[x]` and includes:
+    - `policy decision: no additional app-imposed hard limits at this phase`
+    - enforcement sources list (classification/availability/provider constraints)
+  - `docs/issues/issue_53_contracts.md` now includes:
+    - `restrictions/limits policy baseline`
+    - `no additional app-imposed hard caps ... at this phase`
+- Outcome / next step:
+  - Section 2 item 5 is complete. Next checklist item is Section 2 item 6 (`Define quota/budget/usage-limit handling for the chosen model`).
+
+### OP-0012
+
+- Date/time: 2026-03-14 19:01:30 -03:00
+- Operation: Execute Section 2 checklist item 4 (`Define OCR default activation + availability determination`) with explicit activation semantics.
+- Why: User confirmed default-disabled behavior and explicit-activation requirement.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 2 item 4 to lock and complete:
+    - default OCR disabled
+    - explicit activation required
+    - deterministic availability checks
+  - Added explicit availability baseline in `docs/issues/issue_53_contracts.md`:
+    - `setup_incomplete` when `credentials.json` is missing
+    - `ocr_activation_required` when `token.json` is missing
+    - route available only when both files exist under `app.getPath('userData')/config/ocr_google_drive/`
+  - Added code module for deterministic availability classification:
+    - `electron/import_extract_platform/ocr_google_drive_activation_state.js`
+    - exports `resolveGoogleDriveOcrAvailability({ credentialsPath, tokenPath })`
+    - returns explicit availability + error code mapping (`setup_incomplete` / `ocr_activation_required`)
+  - Low-impact assumption disclosure (proceeded):
+    - For this phase, activation is represented by token presence (`token.json`) plus credentials presence (`credentials.json`) in canonical storage.
+    - rationale: matches user requirement (first-time sign-in then reuse across sessions) and avoids introducing an additional activation toggle before UI wiring.
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Define whether OCR is enabled by default or requires explicit activation, and how availability is determined.`
+  - No other checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_contracts.md`
+  - `electron/import_extract_platform/ocr_google_drive_activation_state.js`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md` item 4 now marked `[x]` with explicit availability bullets.
+  - `docs/issues/issue_53_contracts.md` `Required policy` now includes `availability baseline`.
+  - `electron/import_extract_platform/ocr_google_drive_activation_state.js` contains:
+    - `resolveGoogleDriveOcrAvailability`
+    - `setup_incomplete` mapping for missing credentials
+    - `ocr_activation_required` mapping for missing token
+  - Validation:
+    - `node --check electron/import_extract_platform/ocr_google_drive_activation_state.js` passed.
+- Outcome / next step:
+  - Section 2 item 4 is complete. Next checklist item is Section 2 item 5 (`Define usage restrictions/limits, if any, and how they are enforced`).
+
+### OP-0011
+
+- Date/time: 2026-03-14 18:57:47 -03:00
+- Operation: Execute Section 2 checklist item 3 (`Define ownership/storage boundary`) with user-approved disconnect policy.
+- Why: User approved the boundary decision and explicitly chose: no credential deletion and no optional credential-removal action.
+- Changes made:
+  - Added canonical OCR storage path helpers in `electron/fs_storage.js` under app user-data config root:
+    - `getOcrGoogleDriveDir()` -> `.../config/ocr_google_drive/`
+    - `getOcrGoogleDriveCredentialsFile()` -> `.../config/ocr_google_drive/credentials.json`
+    - `getOcrGoogleDriveTokenFile()` -> `.../config/ocr_google_drive/token.json`
+    - `ensureOcrGoogleDriveDir()` for safe directory creation
+  - Exported these helpers from `electron/fs_storage.js` for future OCR integration use.
+  - Updated Section 2 item 3 acceptance criteria in `docs/issues/issue_53_implementation_plan.md` to lock:
+    - canonical runtime boundary path
+    - credentials file retention policy
+    - token-removal-on-disconnect policy
+  - Updated `docs/issues/issue_53_contracts.md` Section 7 required policy with explicit user-approved disconnect rule:
+    - disconnect removes token state only
+    - app flows do not delete local OAuth client credentials file
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Define ownership/storage boundary for controlling credentials/configuration.`
+  - No other checkbox toggles.
+- Files touched:
+  - `electron/fs_storage.js`
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `electron/fs_storage.js` now contains:
+    - `getOcrGoogleDriveDir`
+    - `getOcrGoogleDriveCredentialsFile`
+    - `getOcrGoogleDriveTokenFile`
+    - `ensureOcrGoogleDriveDir`
+  - `docs/issues/issue_53_implementation_plan.md` item 3 now includes:
+    - canonical path `app.getPath('userData')/config/ocr_google_drive/`
+    - `credentials.json` retained on disconnect
+    - `token.json` removed on disconnect
+  - `docs/issues/issue_53_contracts.md` required policy includes:
+    - `disconnect removes only local OAuth token state; app-side flows must not delete the local OAuth client credentials file`
+  - Validation:
+    - `node --check electron/fs_storage.js` passed
+- Outcome / next step:
+  - Section 2 item 3 is complete and aligned with user-approved disconnect semantics. Next checklist item is Section 2 item 4 (`Define whether OCR is enabled by default or requires explicit activation, and how availability is determined`).
+
+### OP-0010
+
+- Date/time: 2026-03-14 18:39:45 -03:00
+- Operation: Execute Section 2 checklist item 2 (`Configure credentials/secrets and required auth/billing setup`) and validate with local harness.
+- Why: User approved proceeding to the next checklist item in order.
+- Changes made:
+  - Updated local harness credential-loading defaults to non-repo local storage:
+    - `tools_local/drive_ocr_test/index.js`
+    - `tools_local/drive_ocr_test/ocr_test.js`
+  - Added default credentials path:
+    - `%APPDATA%\\toT\\drive_ocr_test\\credentials.json`
+  - Added optional override environment variable:
+    - `TOT_DRIVE_OCR_CREDENTIALS_PATH`
+  - Added explicit missing-credentials error messages in both harness files.
+  - Moved local credentials file out of repo path:
+    - from `tools_local/drive_ocr_test/credentials.json`
+    - to `C:\\Users\\manue\\AppData\\Roaming\\toT\\drive_ocr_test\\credentials.json`
+  - Re-ran validation after migration:
+    - `node index.js`
+    - `node ocr_test.js sample.jpg es`
+    - `node ocr_test.js sample.pdf es`
+    - all succeeded via user-approved escalated execution (required because system-browser auth open is blocked in sandbox and causes `spawn EPERM`).
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Configure credentials/secrets and required auth/billing setup for the chosen substrate and chosen access model.`
+  - No other checkbox toggles.
+- Files touched:
+  - `tools_local/drive_ocr_test/index.js`
+  - `tools_local/drive_ocr_test/ocr_test.js`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Path migration check:
+    - `src_exists=False` for `tools_local/drive_ocr_test/credentials.json`
+    - `dst_exists=True` for `C:\\Users\\manue\\AppData\\Roaming\\toT\\drive_ocr_test\\credentials.json`
+  - Post-migration validation command outputs:
+    - `node index.js` -> `No files found.`
+    - image OCR -> upload/export/delete all `OK`
+    - PDF OCR -> upload/export/delete all `OK`
+  - Syntax checks:
+    - `node --check tools_local/drive_ocr_test/index.js` passed
+    - `node --check tools_local/drive_ocr_test/ocr_test.js` passed
+- Outcome / next step:
+  - Section 2 item 2 is complete with credential-boundary evidence and executable validation. Next checklist item is Section 2 item 3 (`Define ownership/storage boundary for controlling credentials/configuration`).
+
+### OP-0009
+
+- Date/time: 2026-03-14 18:34:31 -03:00
+- Operation: Execute Section 2 checklist item 1 validation (`developer-side installation/activation`) using local Drive OAuth harness.
+- Why: User approved proceeding with Section 2 execution in checklist order.
+- Changes made:
+  - Ran local validation command in sandbox:
+    - `node index.js` (workdir: `tools_local/drive_ocr_test`)
+    - first attempt failed with `spawn EPERM` because OAuth helper needs to open a system browser.
+  - Re-ran `node index.js` with user-approved escalated execution:
+    - result: `No files found.` (successful OAuth/API access path; list may legitimately be empty).
+  - Ran OCR flow validation for image and PDF:
+    - `node ocr_test.js sample.jpg es`
+    - `node ocr_test.js sample.pdf es`
+    - first sandbox attempts failed with `spawn EPERM` for the same browser-open constraint.
+    - re-runs with user-approved escalated execution succeeded in both cases:
+      - upload -> convert -> export -> delete completed
+      - OCR text was exported to `tools_local/drive_ocr_test/ocr_output.txt`
+  - Manual-participation note:
+    - no fresh browser consent prompt was observed during these runs, likely due cached local OAuth token state.
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 2:
+    - `[x] Complete developer-side installation/activation for the chosen substrate.`
+  - No other checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Successful escalated `node index.js` output: `No files found.`
+  - Successful escalated image OCR run:
+    - `1) Subiendo y convirtiendo a Google Docs... OK`
+    - `2) Exportando a texto plano... OK`
+    - `3) Borrando documento temporal... OK`
+  - Successful escalated PDF OCR run:
+    - `1) Subiendo y convirtiendo a Google Docs... OK`
+    - `2) Exportando a texto plano... OK`
+    - `3) Borrando documento temporal... OK`
+- Outcome / next step:
+  - Section 2 item 1 is complete with executable evidence. Next in checklist order is item 2 (`Configure credentials/secrets and required auth/billing setup`), including moving runtime credentials to a non-repo local path and documenting that boundary.
+
+### OP-0008
+
+- Date/time: 2026-03-14 18:31:49 -03:00
+- Operation: Normalize Section 2 plan structure to checklist-only format.
+- Why: User requested removal of the added Section 2 subsection because it was confusing.
+- Changes made:
+  - Executed structure change in `docs/issues/issue_53_implementation_plan.md`:
+    - removed `### Section 2 alignment gate (2026-03-14)`
+    - kept Section 2 as checklist-only format
+    - integrated alignment details directly into each Section 2 checkbox as:
+      - `Owner`
+      - `Done when` acceptance criteria
+  - Clarified manual vs Codex responsibility within the existing checklist instead of maintaining a parallel subsection.
+- Checklist updates:
+  - No checkbox state toggles; all Section 2 items remain unchecked.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_implementation_plan.md`:
+    - `Section 2 alignment gate (2026-03-14)` no longer present.
+    - each Section 2 checklist item now includes `Owner` + `Done when` criteria.
+    - explicit reference to local validation harness retained inside checklist criteria (`tools_local/drive_ocr_test/index.js`).
+- Outcome / next step:
+  - Plan structure is now simpler and checklist-first. Next step is to execute Section 2 checklist item 1 with user participation (manual OAuth validation), then proceed in checklist order.
+
+### OP-0007
+
+- Date/time: 2026-03-14 18:27:59 -03:00
+- Operation: Discover local developer-side OCR setup/validation assets to drive Section 2 manual participation.
+- Why: User requested guidance where manual download/install/setup actions are required.
+- Changes made:
+  - Read-only discovery in `tools_local` identified an existing Drive OCR test harness:
+    - `tools_local/drive_ocr_test/index.js` (OAuth + Drive list-files validation)
+    - `tools_local/drive_ocr_test/ocr_test.js` (upload -> convert -> export -> delete flow)
+    - `tools_local/drive_ocr_test/credentials.json` present locally (not tracked by git)
+  - Drift disclosure:
+    - this read-only discovery started before opening OP-0007.
+    - impact: no repository file was modified during the pre-entry read phase.
+    - handling: operation is explicitly logged here with evidence and no hidden edits.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - local harness files found under `tools_local/drive_ocr_test/`:
+    - `index.js`
+    - `ocr_test.js`
+    - `credentials.json`
+  - `git ls-files --error-unmatch tools_local/drive_ocr_test/credentials.json` -> `NOT_TRACKED`
+- Outcome / next step:
+  - Use this harness as the manual-participation path: user performs/approves required Google-side setup and OAuth sign-in, then Codex validates flow and proceeds with in-repo Section 2 implementation.
+
+### OP-0006
+
+- Date/time: 2026-03-14 18:25:14 -03:00
+- Operation: Execute Section 2 alignment gate and lock next actions, including manual-participation boundaries.
+- Why: User requested Section 2 execution and explicitly asked for guidance where manual downloading/installing/setup is required.
+- Changes made:
+  - Updated `docs/issues/issue_53.md` `## Substrate` to remove stale pre-decision wording and align it with the locked baseline:
+    - substrate: `Google Drive OCR via Google Docs conversion`
+    - access model: `user-managed + explicit sign-in activation`
+  - Added explicit implementation implications to `docs/issues/issue_53.md` for:
+    - explicit activation requirement
+    - system-browser OAuth policy
+    - minimum-scope baseline (`drive.file`)
+    - external-processing disclosure requirement
+    - explicit failure-state requirement (no silent fallback)
+  - Added `Section 2 alignment gate (2026-03-14)` to `docs/issues/issue_53_implementation_plan.md` defining:
+    - locked Section 2 substrate/access baseline
+    - manual-participation-required setup work
+    - Codex-executable setup work
+    - sequencing gate for Section 4 start
+  - Drift disclosure:
+    - read-only evidence collection for this gate started shortly before creating OP-0006.
+    - impact: no files were modified during that pre-entry read phase.
+    - handling: operation then continued with explicit OP logging before all document edits.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md` during this gate.
+- Files touched:
+  - `docs/issues/issue_53.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53.md`:
+    - `## Substrate` now states the selected baseline and implementation implications.
+  - `docs/issues/issue_53_implementation_plan.md`:
+    - new section `### Section 2 alignment gate (2026-03-14)`
+    - `Manual-participation-required setup work (user + Codex guidance)`
+    - `Codex-executable setup work (in-repo implementation/documentation)`
+    - `Gate decision for sequencing`
+- Outcome / next step:
+  - Section 2 is now explicitly aligned at policy/document level. Next step is to execute the manual setup checklist with user participation (Google Cloud OAuth/Drive enablement/credentials download), then implement the in-repo setup validation and activation gate work.
+
+### OP-0005
+
+- Date/time: 2026-03-14 18:14:12 -03:00
+- Operation: Remove `rtf`, `tiff`, and `gif` from Issue 53 file-family example lists.
+- Why: User requested narrowing the examples listed in Issue 53 documentation.
+- Changes made:
+  - Updated `docs/issues/issue_53.md`:
+    - removed `tiff` and `gif` from the `OCR-capable` examples list
+    - removed `rtf` from the `Native-extraction-capable` examples list
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53.md`:
+    - `### OCR-capable` now lists: `jpg`, `jpeg`, `png`, `webp`, `bmp`, `scanned PDFs`
+    - `### Native-extraction-capable` now lists: `txt`, `md`, `html`, `docx`, `PDFs with usable embedded/selectable text`
+- Outcome / next step:
+  - Requested documentation correction completed. Next step only if requested: align any downstream fixtures/tests/config that may still include these removed examples.
+
+### OP-0004
+
+- Date/time: 2026-03-14 15:52:14 -03:00
+- Operation: Define and lock Issue 53 contracts with a substrate-aware adapter boundary, and reconcile plan status.
+- Why: Execute the agreed next phase after substrate decision: move into section 3 contract definition while keeping core behavior substrate-agnostic and only adapter behavior substrate-specific.
+- Changes made:
+  - Added `docs/issues/issue_53_contracts.md` as the contract baseline for Issue 53 implementation.
+  - Locked substrate-agnostic core contracts for:
+    - shared extraction result
+    - route metadata
+    - apply-path reuse
+    - state taxonomy
+    - processing mode
+  - Locked substrate-aware adapter boundary so core orchestration depends on an OCR adapter interface rather than Google-specific internals.
+  - Added current chosen-substrate adapter contract (`Google Drive OCR via Google Docs conversion`) with required flow and explicit error mapping.
+  - Updated `docs/issues/issue_53_implementation_plan.md` to:
+    - link the new contracts document
+    - mark section 1 (`Substrate and access-model decision`) complete
+    - mark section 3 (`Contracts before implementation`) complete
+- Checklist updates:
+  - `Issue 53 Implementation Plan` section 1:
+    - `[x] Evaluate substrate options, starting with Google Document AI as the primary candidate.`
+    - `[x] Compare OCR quality (especially photographed book pages), language coverage, PDF support, setup burden, cost, Windows-first delivery fit, and cross-platform architectural viability.`
+    - `[x] Evaluate the OCR access / billing / activation model for distributed app delivery alongside substrate evaluation.`
+    - `[x] Decide substrate and access model, and record rationale + known constraints that will affect downstream implementation.`
+  - `Issue 53 Implementation Plan` section 3:
+    - `[x] Define shared extraction result contract for all routes.`
+    - `[x] Define route metadata contract.`
+    - `[x] Lock apply contract.`
+    - `[x] Lock state taxonomy for behavior/logging distinction.`
+    - `[x] Lock processing-mode contract.`
+- Files touched:
+  - `docs/issues/issue_53_contracts.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_contracts.md`:
+    - `## 1) Core extraction result contract (substrate-agnostic)`
+    - `## 2) Route metadata contract (substrate-agnostic)`
+    - `## 3) Apply contract (reuse existing canonical path)`
+    - `## 4) State taxonomy contract`
+    - `## 5) Processing-mode contract`
+    - `## 6) OCR adapter boundary (substrate-aware, not substrate-forced)`
+    - `## 7) Google Drive OCR adapter contract (current chosen substrate)`
+  - `docs/issues/issue_53_implementation_plan.md`:
+    - section 1 checkboxes now marked complete
+    - section 3 checkboxes now marked complete
+    - `Linked contracts: docs/issues/issue_53_contracts.md`
+- Outcome / next step: Contract-definition phase is now locked and documented. Next operation should start section 4 basic implementation from these contracts, beginning with route classification + metadata pipeline and processing-mode state machine skeleton.
+
+### OP-0003
+
+- Date/time: 2026-03-14 15:38:30 -03:00
+- Operation: Review all Issue 53 docs to determine whether substrate evaluation is still the active phase and identify the immediate next step.
+- Why: User requested a full read of `docs/issues` and an explicit phase check using the Issue 53 Codex Operational Policy.
+- Changes made:
+  - Read `docs/issues/issue_53.md` completely.
+  - Read `docs/issues/issue_53_implementation_plan.md` completely.
+  - Read `docs/issues/issue_53_ocr_substrate_evaluation.md` completely.
+  - Read `docs/issues/issue_53_operation_tracker.md` completely.
+  - Consolidated phase status evidence from those documents for user-facing recommendation.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md` during this operation.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_ocr_substrate_evaluation.md` section `10. Final decision` explicitly chooses `Google Drive OCR via Google Docs conversion + user-managed + explicit sign-in activation`.
+  - `docs/issues/issue_53_ocr_substrate_evaluation.md` section `11. Exit criteria for this document` states completion conditions and indicates readiness to move into contract definition and implementation planning.
+  - `docs/issues/issue_53_operation_tracker.md` entry `OP-0002` outcome already points to contract definition as the next phase.
+  - `docs/issues/issue_53_implementation_plan.md` keeps section 1 checkboxes unchecked, so checklist state is lagging behind the documented decision evidence.
+- Outcome / next step: Substrate evaluation appears complete at decision level; next operation should start contract-definition work for section 3 (shared extraction result, route metadata, apply contract, state taxonomy, processing lock contract), while reconciling section 1 checkbox state in the plan.
 
 ### OP-0002
 
