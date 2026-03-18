@@ -1697,7 +1697,7 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
   });
 }
 
-async function promptImportExtractRouteChoice(execution) {
+async function promptImportExtractRouteChoice(preparation) {
   const routeChoiceModal = window.ImportExtractRouteChoiceModal;
   if (!routeChoiceModal || typeof routeChoiceModal.promptRouteChoice !== 'function') {
     log.warnOnce(
@@ -1709,7 +1709,7 @@ async function promptImportExtractRouteChoice(execution) {
   }
   try {
     return await routeChoiceModal.promptRouteChoice({
-      execution,
+      preparation,
       tRenderer,
     });
   } catch (err) {

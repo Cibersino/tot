@@ -76,6 +76,115 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0082
+
+- Date/time: 2026-03-18 15:44:19 -03:00
+- Operation: Read-only clarification check to confirm whether `public/renderer.js` still contains execute-stage variables after the route-choice naming cleanup.
+- Why: User asked whether `public/renderer.js` now uses only `preparation` and no longer uses `execution`, and whether that would be correct.
+- Changes made:
+  - Recorded a read-only clarification check of `public/renderer.js`.
+  - Drift disclosure:
+    - read-only grep confirmation started just before this entry was created.
+    - instruction diverged from: `Create/update an OP-XXXX entry before and after each meaningful operation`.
+    - why the divergence was necessary: the answer depended on quickly confirming the current identifier set before writing the tracker note.
+    - expected impact/risk: none to runtime behavior; no repository files were modified before this entry.
+    - execution paused for user confirmation or proceeded with rationale: proceeded with rationale because the step was read-only and low-impact.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:44:19 -03:00`
+    - `rg -n "\\bpreparation\\b|\\bexecution\\b|promptImportExtractRouteChoice\\(" public/renderer.js -S`
+- Outcome / next step:
+  - Completed. Clarification evidence is recorded; no code change was needed for this check.
+
+### OP-0081
+
+- Date/time: 2026-03-18 15:40:49 -03:00
+- Operation: Remove the remaining route-choice naming residue so the UI code matches the prepare/execute model instead of carrying old execution-shaped parameter names.
+- Why: User approved the cleanup after the `OP-0080` audit found one low-impact naming residue that prevented full compliance with the strict “looks like the old model was never there” rule.
+- Changes made:
+  - Opened OP-0081 before code edits.
+  - Renamed the route-choice payload from `execution` to `preparation` in:
+    - `public/renderer.js`
+    - `public/js/import_extract_route_choice_modal.js`
+  - Kept scope narrow:
+    - no IPC contract changes
+    - no route-choice behavior changes
+    - no prepare/execute orchestration changes
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/renderer.js`
+  - `public/js/import_extract_route_choice_modal.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:40:49 -03:00`
+  - Pre-patch anchors:
+    - `public/renderer.js:1700`
+    - `public/js/import_extract_route_choice_modal.js:39`
+    - `public/js/import_extract_route_choice_modal.js:53`
+  - Post-patch anchors:
+    - `public/renderer.js:1700` -> `async function promptImportExtractRouteChoice(preparation)`
+    - `public/js/import_extract_route_choice_modal.js:39` -> `function hasDualRouteOptions(preparation)`
+    - `public/js/import_extract_route_choice_modal.js:53` -> `async function promptRouteChoice({ preparation, tRenderer } = {})`
+  - Verification:
+    - `node --check public/renderer.js` -> passed
+    - `node --check public/js/import_extract_route_choice_modal.js` -> passed
+    - `npm run lint` -> passed
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:41:33 -03:00`
+- Outcome / next step:
+  - Completed. The last prepare/execute naming residue identified in `OP-0080` is removed, so the strict hard-cleanup rule is now satisfied more cleanly in runtime code.
+
+### OP-0080
+
+- Date/time: 2026-03-18 15:31:26 -03:00
+- Operation: Audit whether the Issue 53 prepare/execute cutover fully satisfies the hard-cleanup rule forbidding legacy-model remnants, dead code, or fallback to the old single-call implementation.
+- Why: User asked for a careful verification of the final rule in `docs/issues/issue_53_prepare_execute_native_triage_plan.md` before treating the cutover as fully clean.
+- Changes made:
+  - Opened OP-0080 before the repository audit.
+  - Completed a read-only review across runtime code and adjacent resources (`electron`, `public`, `i18n`) to check for:
+    - old single-call IPC/channel remnants
+    - compatibility fallback paths
+    - dead bridge/UI/i18n code left behind by the cutover
+    - other code evidence that the old model still structurally leaks into the app
+  - Confirmed that the old runtime entry points are gone and that current runtime wiring uses only the prepare/execute model.
+  - Identified one low-impact naming residue in route-choice UI plumbing:
+    - `public/renderer.js` still names the route-choice payload parameter `execution`
+    - `public/js/import_extract_route_choice_modal.js` still uses `execution` for the same preparation payload
+  - No runtime behavior fallback to the old model was found.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:31:26 -03:00`
+  - Audit baseline:
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md`
+    - `git status --short`
+  - Legacy-runtime removal evidence:
+    - `Test-Path electron/import_extract_platform/import_extract_execution_ipc.js` -> `False`
+    - `rg -n "runImportExtractSelectedFile|import-extract-run-selected-file|import_extract_execution_ipc" electron public i18n -S` -> no matches
+  - Current runtime wiring evidence:
+    - `electron/preload.js:25-26` exposes only:
+      - `prepareImportExtractSelectedFile`
+      - `executePreparedImportExtract`
+    - `rg -n "prepareImportExtractSelectedFile|executePreparedImportExtract" electron/preload.js public/renderer.js electron/main.js -S`
+  - Low-impact naming residue evidence:
+    - `public/renderer.js:1700` -> `async function promptImportExtractRouteChoice(execution)`
+    - `public/renderer.js:1712` -> `execution`
+    - `public/js/import_extract_route_choice_modal.js:39` -> `function hasDualRouteOptions(execution)`
+    - `public/js/import_extract_route_choice_modal.js:53` -> `async function promptRouteChoice({ execution, tRenderer } = {})`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 15:33:20 -03:00`
+- Outcome / next step:
+  - Completed. The hard-cutover rule is satisfied at runtime/behavior level: no old single-call channel, bridge, module, or fallback path remains in `electron`, `public`, or `i18n`. One cosmetic naming residue remains in route-choice UI code, so the stricter “looks like the old model was never there” standard is not fully satisfied yet.
+
 ### OP-0079
 
 - Date/time: 2026-03-18 15:26:57 -03:00
