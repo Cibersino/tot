@@ -5,7 +5,7 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Recover import/extract OCR flow when setup/activation blocks OCR execution.
+// - Recover import/extract OCR flow when setup/activation blocks prepare-stage routing.
 // - Keep OCR activation retry logic out of renderer orchestration file.
 // =============================================================================
 
@@ -38,33 +38,30 @@
   }
 
   async function recoverAfterSetupFailure({
-    execution,
-    executionRequest,
-    runImportExtractSelectedFile,
-    promptRouteChoice,
+    preparation,
+    retryPrepare,
     getOptionalElectronMethod,
     notifyMain,
   } = {}) {
-    if (!execution || execution.ok !== true || !execution.result) {
-      return { execution, handled: false };
+    if (!preparation || preparation.ok !== true || preparation.prepareFailed !== true) {
+      return { preparation, handled: false };
     }
-    if (execution.routeKind !== 'ocr') {
-      return { execution, handled: false };
+    if (preparation.routeKind !== 'ocr') {
+      return { preparation, handled: false };
     }
-    if (typeof runImportExtractSelectedFile !== 'function') {
-      return { execution, handled: false };
+    if (typeof retryPrepare !== 'function') {
+      return { preparation, handled: false };
     }
     if (typeof getOptionalElectronMethod !== 'function') {
-      return { execution, handled: false };
+      return { preparation, handled: false };
     }
 
-    const failureCode = execution.result
-      && execution.result.error
-      && typeof execution.result.error.code === 'string'
-      ? execution.result.error.code
+    const failureCode = preparation.error
+      && typeof preparation.error.code === 'string'
+      ? preparation.error.code
       : '';
     if (!isRecoverableImportExtractOcrSetupCode(failureCode)) {
-      return { execution, handled: false };
+      return { preparation, handled: false };
     }
 
     const activateImportExtractOcr = getOptionalElectronMethod('activateImportExtractOcr', {
@@ -72,7 +69,7 @@
       unavailableMessage: 'activateImportExtractOcr unavailable; OCR setup recovery cannot continue.'
     });
     if (!activateImportExtractOcr) {
-      return { execution, handled: false };
+      return { preparation, handled: false };
     }
 
     safeNotify(notifyMain, 'renderer.alerts.import_extract_ocr_activation_starting');
@@ -86,7 +83,7 @@
     } catch (err) {
       log.error('import/extract OCR activation IPC failed:', err);
       safeNotify(notifyMain, 'renderer.alerts.import_extract_ocr_activation_failed');
-      return { execution, handled: true };
+      return { preparation, handled: true };
     }
 
     if (!activationResult || activationResult.ok !== true) {
@@ -100,7 +97,7 @@
         state: activationResult ? activationResult.state : '',
         code: activationResult ? activationResult.code : '',
       });
-      return { execution, handled: true };
+      return { preparation, handled: true };
     }
 
     safeNotify(
@@ -111,32 +108,13 @@
       )
     );
 
-    let retriedExecution = await runImportExtractSelectedFile(executionRequest);
-    if (retriedExecution && retriedExecution.ok === true && retriedExecution.requiresRouteChoice === true) {
-      if (typeof promptRouteChoice !== 'function') {
-        log.error('import/extract route-choice callback unavailable after OCR activation retry.');
-        safeNotify(notifyMain, 'renderer.alerts.import_extract_route_choice_required');
-        return { execution: retriedExecution, handled: true };
-      }
-
-      const routePreference = await promptRouteChoice(retriedExecution);
-      if (routePreference !== 'native' && routePreference !== 'ocr') {
-        log.info('import/extract route-choice cancelled by user after OCR activation retry.');
-        return { execution: retriedExecution, handled: true };
-      }
-      retriedExecution = await runImportExtractSelectedFile({
-        ...executionRequest,
-        routePreference,
-      });
+    const retriedPreparationRun = await retryPrepare();
+    if (retriedPreparationRun && retriedPreparationRun.stale === true) {
+      log.info('import/extract prepare retry became stale after OCR activation.');
+      return { preparationRun: retriedPreparationRun, handled: true };
     }
 
-    if (retriedExecution && retriedExecution.ok === true && retriedExecution.requiresRouteChoice === true) {
-      log.error('import/extract route choice remained unresolved after OCR activation retry:', retriedExecution);
-      safeNotify(notifyMain, 'renderer.alerts.import_extract_route_choice_required');
-      return { execution: retriedExecution, handled: true };
-    }
-
-    return { execution: retriedExecution, handled: false };
+    return { preparationRun: retriedPreparationRun, handled: false };
   }
 
   window.ImportExtractOcrActivationRecovery = {

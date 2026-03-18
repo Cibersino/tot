@@ -175,11 +175,13 @@ function getSourceInfo(filePath) {
   const fileName = path.basename(absPath);
   const fileExtWithDot = path.extname(absPath).toLowerCase();
   const fileExt = fileExtWithDot.replace('.', '');
+  const sourceFileKind = fileExtWithDot === '.pdf' ? 'pdf' : 'text_document';
   return {
     absPath,
     fileName,
     fileExt,
     fileExtWithDot,
+    sourceFileKind,
     parserType: NATIVE_PARSER_BY_EXT[fileExtWithDot] || '',
   };
 }
@@ -270,7 +272,7 @@ async function runNativeExtractionRoute({
   const provenance = {
     sourceFileName: source.fileName,
     sourceFileExt: source.fileExt,
-    sourceFileKind: 'text_document',
+    sourceFileKind: source.sourceFileKind,
     ocrProvider: null,
     metadataSafeForLogs: {
       parserType: source.parserType || 'none',
