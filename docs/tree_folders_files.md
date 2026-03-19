@@ -37,7 +37,8 @@ tot/
 │ │ ├── bridge_failure_mode_convention.md
 │ │ ├── cleanup_file_by_file.md
 │ │ ├── naming_convention.md
-│ │ └── no_silence.md
+│ │ ├── no_silence.md
+│ │ └── preload_listener_api_standard.md
 │ ├── issues/                      # {issues/epics con contratos, planes y evidencia operativa}
 │ ├── releases/                    # {con subcarpetas por release con docs de chequeo}
 │ │ ├── release_checklist.md
@@ -333,7 +334,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `docs/issues/` — Issues relevantes y actuales que requieren seguimiento en Github.
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
-- `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, etc.).
+- `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, `preload_listener_api_standard.md`, etc.).
 
 ### 6.1) Sitio web estático (website/public)
 
