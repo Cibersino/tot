@@ -102,6 +102,20 @@ function mapValidationBlock(validationResult, fileInfo) {
     };
   }
 
+  if (code === 'connectivity_failed') {
+    return {
+      ok: true,
+      canProceed: false,
+      ocrSetupState: state,
+      blockCategory: 'unavailable',
+      alertKey: 'renderer.alerts.import_extract_ocr_connectivity_failed',
+      sourceFileExt: fileInfo.sourceFileExt,
+      sourceFileKind: fileInfo.sourceFileKind,
+      code,
+      issueType,
+    };
+  }
+
   return {
     ok: true,
     canProceed: false,
