@@ -52,6 +52,21 @@ const btnNewTask = document.getElementById('btnNewTask');
 const btnLoadTask = document.getElementById('btnLoadTask');
 const btnHelp = document.getElementById('btnHelp');
 
+const importExtractEntry = window.ImportExtractEntry;
+if (!importExtractEntry
+  || typeof importExtractEntry.configure !== 'function'
+  || typeof importExtractEntry.startFromFilePath !== 'function'
+  || typeof importExtractEntry.startFromPicker !== 'function') {
+  throw new Error('[renderer] ImportExtractEntry unavailable; cannot continue');
+}
+
+const importExtractDragDrop = window.ImportExtractDragDrop;
+if (!importExtractDragDrop
+  || typeof importExtractDragDrop.applyTranslations !== 'function'
+  || typeof importExtractDragDrop.configure !== 'function') {
+  throw new Error('[renderer] ImportExtractDragDrop unavailable; cannot continue');
+}
+
 const importExtractStatusUi = window.ImportExtractStatusUi;
 if (!importExtractStatusUi
   || typeof importExtractStatusUi.applyProcessingModeState !== 'function'
@@ -196,6 +211,21 @@ function startImportExtractPrepareAttempt() {
 
 function isLatestImportExtractPrepareAttempt(attemptId) {
   return attemptId === importExtractPrepareAttemptId;
+}
+
+function isAriaHiddenElementVisible(elementId) {
+  const element = document.getElementById(elementId);
+  return !!(element && element.getAttribute('aria-hidden') === 'false');
+}
+
+function hasBlockingMainWindowModalOpen() {
+  return isAriaHiddenElementVisible('infoModal')
+    || isAriaHiddenElementVisible('importExtractRouteModal')
+    || isAriaHiddenElementVisible('importExtractApplyModal');
+}
+
+function canAcceptImportExtractDrop() {
+  return isRendererReady() && !isProcessingModeActive() && !hasBlockingMainWindowModalOpen();
 }
 
 async function requestPreparedImport({
@@ -374,6 +404,7 @@ function applyTranslations() {
     if (aria) el.setAttribute('aria-label', aria);
   };
   importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
+  importExtractDragDrop.applyTranslations({ tRenderer });
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
@@ -1705,213 +1736,66 @@ async function maybeRecoverImportExtractOcrSetupAndRetry({
   }
 }
 
+async function resolveDroppedFilePath(file) {
+  const getPathForFile = getOptionalElectronMethod('getPathForFile', {
+    dedupeKey: 'renderer.ipc.getPathForFile.unavailable',
+    unavailableMessage: 'getPathForFile unavailable; dropped file path cannot be resolved.'
+  });
+  if (getPathForFile) {
+    try {
+      const resolvedPath = getPathForFile(file);
+      if (typeof resolvedPath === 'string' && resolvedPath.trim()) {
+        return resolvedPath.trim();
+      }
+    } catch (err) {
+      log.error('Failed to resolve dropped file path via electronAPI.getPathForFile:', err);
+    }
+  }
+
+  const fallbackPath = file && typeof file.path === 'string'
+    ? file.path.trim()
+    : '';
+  return fallbackPath;
+}
+
+function configureImportExtractModules() {
+  const notifyMain = window.Notify && typeof window.Notify.notifyMain === 'function'
+    ? window.Notify.notifyMain.bind(window.Notify)
+    : null;
+
+  importExtractEntry.configure({
+    applyTextViaCanonicalPath,
+    getClipboardRepeatCount,
+    getOcrLanguage: () => idiomaActual || '',
+    getOptionalElectronMethod,
+    guardUserAction,
+    hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
+    hasCurrentTextSubscription: () => hasCurrentTextSubscription,
+    importExtractStatusUi,
+    isLatestImportExtractPrepareAttempt,
+    maybeRecoverImportExtractOcrSetupAndRetry,
+    notifyMain,
+    promptImportExtractApplyChoice,
+    promptImportExtractRouteChoice,
+    requestPreparedImport,
+  });
+
+  importExtractDragDrop.configure({
+    canAcceptDrop: canAcceptImportExtractDrop,
+    notifyMain,
+    resolveDroppedFilePath,
+    startFromFilePath: importExtractEntry.startFromFilePath,
+  });
+}
+
+configureImportExtractModules();
+
 // =============================================================================
-// Import/extract entrypoint (Section 4 starts here; picker wiring follows in next step)
+// Import/extract entrypoint wiring
 // =============================================================================
 if (btnImportExtract) {
   btnImportExtract.addEventListener('click', async () => {
-    if (!guardUserAction('import-extract-entrypoint')) return;
-    try {
-      const openImportExtractPicker = getOptionalElectronMethod('openImportExtractPicker', {
-        dedupeKey: 'renderer.ipc.openImportExtractPicker.unavailable',
-        unavailableMessage: 'openImportExtractPicker unavailable; import/extract entrypoint skipped.'
-      });
-      if (!openImportExtractPicker) {
-        window.Notify.notifyMain('renderer.alerts.import_extract_error');
-        return;
-      }
-
-      const picker = await openImportExtractPicker();
-      if (!picker || picker.ok === false) {
-        log.error('import/extract picker failed:', picker && picker.error ? picker.error : picker);
-        window.Notify.notifyMain('renderer.alerts.import_extract_error');
-        return;
-      }
-      if (picker.canceled) return;
-
-      const checkImportExtractPreconditions = getOptionalElectronMethod('checkImportExtractPreconditions', {
-        dedupeKey: 'renderer.ipc.checkImportExtractPreconditions.unavailable',
-        unavailableMessage: 'checkImportExtractPreconditions unavailable; import/extract precondition check skipped.'
-      });
-      if (!checkImportExtractPreconditions) {
-        window.Notify.notifyMain('renderer.alerts.import_extract_precondition_error');
-        return;
-      }
-
-      const preconditions = await checkImportExtractPreconditions();
-      if (!preconditions || preconditions.ok === false) {
-        log.error('import/extract precondition check failed:', preconditions);
-        window.Notify.notifyMain('renderer.alerts.import_extract_precondition_error');
-        return;
-      }
-      if (!preconditions.canStart) {
-        window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.alerts.import_extract_precondition_blocked');
-        return;
-      }
-
-      const prepareImportExtractSelectedFile = getOptionalElectronMethod('prepareImportExtractSelectedFile', {
-        dedupeKey: 'renderer.ipc.prepareImportExtractSelectedFile.unavailable',
-        unavailableMessage: 'prepareImportExtractSelectedFile unavailable; import/extract prepare cannot continue.'
-      });
-      const executePreparedImportExtract = getOptionalElectronMethod('executePreparedImportExtract', {
-        dedupeKey: 'renderer.ipc.executePreparedImportExtract.unavailable',
-        unavailableMessage: 'executePreparedImportExtract unavailable; import/extract execution cannot continue.'
-      });
-      if (!prepareImportExtractSelectedFile || !executePreparedImportExtract) {
-        window.Notify.notifyMain('renderer.alerts.import_extract_error');
-        return;
-      }
-
-      const preparationRequest = {
-        filePath: picker.filePath || '',
-        ocrLanguage: idiomaActual || '',
-      };
-      let preparationRun = await requestPreparedImport({
-        prepareImportExtractSelectedFile,
-        preparationRequest,
-      });
-      if (preparationRun && preparationRun.stale === true) {
-        log.info('import/extract prepare result ignored because a newer prepare attempt exists.');
-        return;
-      }
-
-      let preparation = preparationRun ? preparationRun.preparation : null;
-      const recovery = await maybeRecoverImportExtractOcrSetupAndRetry({
-        preparation,
-        preparationRequest,
-        prepareImportExtractSelectedFile,
-      });
-      if (recovery && recovery.handled) {
-        return;
-      }
-      if (recovery && Object.prototype.hasOwnProperty.call(recovery, 'preparationRun')) {
-        preparationRun = recovery.preparationRun;
-        if (preparationRun && preparationRun.stale === true) {
-          log.info('import/extract prepare retry ignored because a newer prepare attempt exists.');
-          return;
-        }
-        preparation = preparationRun ? preparationRun.preparation : null;
-      } else if (recovery && Object.prototype.hasOwnProperty.call(recovery, 'preparation')) {
-        preparation = recovery.preparation;
-      }
-
-      if (!preparation || preparation.ok !== true) {
-        log.error('import/extract prepare IPC failed:', preparation);
-        const primaryAlertKey = (preparation && typeof preparation.primaryAlertKey === 'string' && preparation.primaryAlertKey.trim())
-          ? preparation.primaryAlertKey
-          : 'renderer.alerts.import_extract_error';
-        window.Notify.notifyMain(primaryAlertKey);
-        return;
-      }
-
-      if (preparation.prepareFailed === true) {
-        const primaryAlertKey = (typeof preparation.primaryAlertKey === 'string' && preparation.primaryAlertKey.trim())
-          ? preparation.primaryAlertKey
-          : 'renderer.alerts.import_extract_error';
-        window.Notify.notifyMain(primaryAlertKey);
-        return;
-      }
-
-      const latestAttemptId = preparationRun ? preparationRun.attemptId : 0;
-      if (!isLatestImportExtractPrepareAttempt(latestAttemptId)) {
-        log.info('import/extract prepared result ignored because a newer prepare attempt exists.');
-        return;
-      }
-
-      let routePreference = '';
-      if (preparation.requiresRouteChoice === true) {
-        routePreference = await promptImportExtractRouteChoice(preparation);
-        if (!isLatestImportExtractPrepareAttempt(latestAttemptId)) {
-          log.info('import/extract route-choice result ignored because a newer prepare attempt exists.');
-          return;
-        }
-        if (routePreference !== 'native' && routePreference !== 'ocr') {
-          log.info('import/extract route-choice cancelled by user.');
-          return;
-        }
-      }
-
-      importExtractStatusUi.setPendingExecutionContext({
-        preparation,
-        routePreference,
-      });
-      const execution = await executePreparedImportExtract({
-        prepareId: preparation.prepareId,
-        routePreference,
-      });
-      if (!execution || execution.ok !== true || !execution.result) {
-        importExtractStatusUi.clearPendingExecutionContext();
-        if (execution && execution.code === 'ALREADY_ACTIVE' && execution.state) {
-          importExtractStatusUi.applyProcessingModeState(execution.state, { source: 'execute_already_active' });
-        }
-        log.error('import/extract execution IPC failed:', execution);
-        const primaryAlertKey = (execution && typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
-          ? execution.primaryAlertKey
-          : 'renderer.alerts.import_extract_error';
-        window.Notify.notifyMain(primaryAlertKey);
-        return;
-      }
-
-      const warningAlertKeys = Array.isArray(execution.warningAlertKeys)
-        ? execution.warningAlertKeys
-        : [];
-      warningAlertKeys.forEach((alertKey) => {
-        if (typeof alertKey === 'string' && alertKey.trim()) {
-          window.Notify.notifyMain(alertKey);
-        }
-      });
-
-      const resultState = execution.result && typeof execution.result.state === 'string'
-        ? execution.result.state
-        : 'failure';
-      if (resultState === 'success') {
-        const applyChoice = await promptImportExtractApplyChoice({
-          defaultRepeat: getClipboardRepeatCount(),
-          elapsedText: importExtractStatusUi.getFinalElapsedText(),
-        });
-        if (!applyChoice) {
-          log.info('import/extract apply choice cancelled by user.');
-          return;
-        }
-
-        const applyResult = await applyTextViaCanonicalPath({
-          mode: applyChoice.mode,
-          textToApply: execution.result.text || '',
-          repeatCount: applyChoice.repetitions,
-        });
-        if (!applyResult || applyResult.ok !== true) {
-          if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-            window.Notify.notifyMain('renderer.alerts.import_extract_apply_too_large');
-          } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-            window.Notify.notifyMain('renderer.alerts.import_extract_apply_text_limit');
-          } else {
-            window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
-          }
-          return;
-        }
-        if (!hasCurrentTextSubscription) {
-          throw new Error('current-text-updated subscription unavailable');
-        }
-
-        if (applyResult.truncated) {
-          window.Notify.notifyMain('renderer.alerts.import_extract_apply_truncated');
-        }
-        return;
-      }
-
-      const primaryAlertKey = (typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
-        ? execution.primaryAlertKey
-        : 'renderer.alerts.import_extract_error';
-      if (primaryAlertKey === 'renderer.alerts.import_extract_native_cancelled'
-        || primaryAlertKey === 'renderer.alerts.import_extract_ocr_cancelled') {
-        return;
-      }
-      window.Notify.notifyMain(primaryAlertKey);
-    } catch (err) {
-      importExtractStatusUi.clearPendingExecutionContext();
-      log.error('Error handling import/extract entrypoint click:', err);
-      window.Notify.notifyMain('renderer.alerts.import_extract_error');
-    }
+    await importExtractEntry.startFromPicker();
   });
 }
 

@@ -81,6 +81,108 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0110
+
+- Date/time: 2026-03-18 22:04:03 -03:00
+- Operation: Implement main-window drag-and-drop as an alternative import/extract entrypoint, using the same shared flow as the button path.
+- Why: User requested the first Section 7 UI/UX refinement so a file can be dropped anywhere on the main window instead of requiring the native picker, while preserving the existing import/extract behavior and keeping `public/renderer.js` thin.
+- Changes made:
+  - Added a preload bridge for Electron 39 dropped-file path resolution:
+    - `electron/preload.js` now exposes `getPathForFile(file)` via `webUtils.getPathForFile(...)`.
+  - Added a dedicated shared import/extract entry module:
+    - `public/js/import_extract_entry.js`
+    - owns the shared picker/drop entry flow
+    - reuses the existing prepare/execute/apply pipeline
+    - blocks entry while any full-window modal is open
+  - Added a dedicated drag/drop UX module:
+    - `public/js/import_extract_drag_drop.js`
+    - shows a full-window drag-over overlay
+    - accepts only one dropped local file
+    - prevents default file-drop navigation behavior even when the drop is rejected
+  - Updated `public/index.html` to load the new modules before `renderer.js`.
+  - Updated `public/style.css` with the drag-over overlay styles.
+  - Refactored `public/renderer.js` so:
+    - the button click delegates to `ImportExtractEntry.startFromPicker()`
+    - drag/drop is configured through the dedicated module
+    - modal-open and dropped-file-path helper logic stays in thin renderer wiring
+  - Updated `i18n/en/renderer.json` and `i18n/es/renderer.json`:
+    - generalized `renderer.alerts.import_extract_error` from picker-specific wording to start-flow wording
+    - added drag-over overlay copy
+    - added explicit drop alerts for invalid drop payloads
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/js/import_extract_entry.js`
+  - `public/js/import_extract_drag_drop.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - User-approved behavior lock before implementation:
+    - single file only
+    - same shared entry function as button flow
+    - block re-entry with existing guards
+    - visible drag-over feedback required
+    - drag/drop disabled while full-window modals are open
+  - Read-only verification completed before editing:
+    - `package.json` -> Electron `^39.2.2`
+    - `node_modules/electron/electron.d.ts` -> `webUtils.getPathForFile(file)` is available and supersedes `File.path`
+    - `electron/preload.js` -> no existing dropped-file-path helper yet
+    - `public/renderer.js` -> no current main-window drag/drop path
+    - `electron/main.js` -> no main-window `will-navigate` drag/drop guard; renderer must prevent default on drag/drop
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 22:14:50 -03:00`
+  - Implementation anchors:
+    - `electron/preload.js:22`
+      - `getPathForFile: (file) => webUtils.getPathForFile(file),`
+    - `public/js/import_extract_entry.js:355`
+      - shared entry module exported as `window.ImportExtractEntry`
+    - `public/js/import_extract_drag_drop.js:248`
+      - drag/drop module exported as `window.ImportExtractDragDrop`
+    - `public/index.html:220-221`
+      - new scripts loaded before `renderer.js`
+    - `public/style.css:240`
+      - drag-over overlay styles start at `.import-extract-drop-overlay`
+    - `public/renderer.js:221`
+      - `hasBlockingMainWindowModalOpen()`
+    - `public/renderer.js:1761`
+      - `configureImportExtractModules()`
+    - `public/renderer.js:1797`
+      - import/extract button now delegates to `importExtractEntry.startFromPicker()`
+  - Localization anchors:
+    - `i18n/en/renderer.json:243`
+      - generalized `renderer.alerts.import_extract_error`
+    - `i18n/en/renderer.json:249-250`
+      - added drop-specific alerts
+    - `i18n/en/renderer.json:86-87`
+      - added drag-over overlay copy
+    - `i18n/es/renderer.json:243`
+      - generalized `renderer.alerts.import_extract_error`
+    - `i18n/es/renderer.json:249-250`
+      - added drop-specific alerts
+    - `i18n/es/renderer.json:86-87`
+      - added drag-over overlay copy
+  - Static verification:
+    - `node --check electron/preload.js` -> exit `0`
+    - `node --check public/renderer.js` -> exit `0`
+    - `node --check public/js/import_extract_entry.js` -> exit `0`
+    - `node --check public/js/import_extract_drag_drop.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - Main-window import/extract now supports drag-and-drop anywhere in the window, reusing the same shared flow as the button path.
+  - No interactive app validation was run in this operation.
+  - Next step, if desired, is a focused manual validation pass for:
+    - normal drag-over feedback
+    - single-file drop success
+    - multi-file drop rejection
+    - drop rejection while a full-window modal is open
+
 ### OP-0109
 
 - Date/time: 2026-03-18 21:33:27 -03:00

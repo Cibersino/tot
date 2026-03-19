@@ -237,6 +237,52 @@ body {
   }
 }
 
+.import-extract-drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(79, 62, 28, 0.18);
+  backdrop-filter: blur(1.5px);
+  pointer-events: none;
+}
+
+.import-extract-drop-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+.import-extract-drop-overlay__panel {
+  width: min(420px, calc(100% - 36px));
+  padding: 20px 22px;
+  border: 2px dashed #8f7c56;
+  border-radius: 12px;
+  background: rgba(253, 246, 227, 0.97);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+  text-align: center;
+  color: #2f2a20;
+  box-sizing: border-box;
+}
+
+.import-extract-drop-overlay__title {
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.import-extract-drop-overlay__hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #6b5d43;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+body.import-extract-drop-active .app-container {
+  filter: saturate(0.92);
+}
+
 .clipboard-repeat-input {
   width: 60px;
   height: 30px;
