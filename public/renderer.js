@@ -8,7 +8,8 @@
 // - Bootstraps the renderer UI and pulls config/settings from main.
 // - Applies i18n labels and number formatting.
 // - Maintains text preview, counts, and time estimates.
-// - Wires presets, clipboard actions, editor, and help tips.
+// - Coordinates import/extract and OCR entry flows from the main window.
+// - Wires presets, clipboard actions, editor, tasks, and help tips.
 // - Hosts the info modal and top-bar menu actions.
 // - Integrates the stopwatch controller and floating window toggle.
 // =============================================================================
@@ -1574,7 +1575,7 @@ wpmInput.addEventListener('keydown', (e) => {
 });
 
 // =============================================================================
-// Clipboard helpers (shared by overwrite/append)
+// Clipboard and text-apply helpers
 // =============================================================================
 async function readClipboardText({ tooLargeKey, unavailableKey }) {
   const readClipboard = getOptionalElectronMethod('readClipboard', {
@@ -1660,6 +1661,9 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
   });
 }
 
+// =============================================================================
+// Import/extract integration helpers
+// =============================================================================
 async function promptImportExtractRouteChoice(preparation) {
   const routeChoiceModal = window.ImportExtractRouteChoiceModal;
   if (!routeChoiceModal || typeof routeChoiceModal.promptRouteChoice !== 'function') {
@@ -1771,6 +1775,8 @@ async function resolveDroppedFilePath(file) {
   return fallbackPath;
 }
 
+// renderer.js owns only app-level feature wiring here.
+// The shared import/extract flow stays in the delegated window modules.
 function configureImportExtractModules() {
   const notifyMain = window.Notify && typeof window.Notify.notifyMain === 'function'
     ? window.Notify.notifyMain.bind(window.Notify)
