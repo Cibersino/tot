@@ -607,6 +607,12 @@ async function updatePreviewAndResults(text) {
   resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
 }
 
+function startPreviewAndResultsUpdate(text, reason) {
+  updatePreviewAndResults(text).catch((err) => {
+    log.error(`Error updating preview/results after ${reason}:`, err);
+  });
+}
+
 function updateTimeOnlyFromStats() {
   if (!currentTextStats) {
     log.warnOnce(
@@ -629,7 +635,7 @@ function setCurrentTextAndUpdateUI(text, options = {}) {
   const previousText = currentText;
   const nextText = normalizeText(text);
   currentText = nextText;
-  updatePreviewAndResults(nextText);
+  startPreviewAndResultsUpdate(nextText, 'current-text update');
   if (options.applyRules) {
     if (cronoController && typeof cronoController.handleTextChange === 'function') {
       cronoController.handleTextChange(previousText, nextText);
@@ -750,7 +756,11 @@ const settingsChangeHandler = async (newSettings) => {
           err
         );
       }
-      applyTranslations();
+      try {
+        applyTranslations();
+      } catch (err) {
+        log.warn('applyTranslations failed after settings change (ignored):', err);
+      }
       try {
         await loadPresets({ settingsSnapshot: settingsCache });
       } catch (err) {
@@ -767,7 +777,7 @@ const settingsChangeHandler = async (newSettings) => {
       }
     }
     if (isRendererReady()) {
-      updatePreviewAndResults(currentText);
+      startPreviewAndResultsUpdate(currentText, 'settings change');
       if (modeChanged && cronoController && typeof cronoController.handleTextChange === 'function') {
         cronoController.handleTextChange(null, currentText);
       }
@@ -833,7 +843,7 @@ function armIpcSubscriptions() {
             if (selected) {
               currentPresetName = selected.name;
               wpm = syncWpmControls(selected.wpm);
-              updatePreviewAndResults(currentText);
+              startPreviewAndResultsUpdate(currentText, 'preset-created sync');
             }
           }
         }
@@ -935,7 +945,7 @@ function setupToggleModoPreciso() {
         toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
 
         // Immediate recount of the current text
-        updatePreviewAndResults(currentText);
+        startPreviewAndResultsUpdate(currentText, 'mode toggle');
         if (cronoController && typeof cronoController.handleTextChange === 'function') {
           cronoController.handleTextChange(null, currentText);
         }
@@ -1086,9 +1096,7 @@ async function runStartupOrchestrator() {
     markRendererInvariantsReady();
 
     // Final update after presets load in case WPM changed
-    updatePreviewAndResults(currentText).catch((err) => {
-      log.error('Error in startup preview/results kickoff:', err);
-    });
+    startPreviewAndResultsUpdate(currentText, 'startup kickoff');
   } catch (err) {
     log.error('Error initialazing renderer:', err);
   }
@@ -2212,7 +2220,7 @@ btnDeletePreset.addEventListener('click', async () => {
     if (res && res.ok) {
       // On success, reload presets and apply fallback selection if needed.
       await loadPresets({ settingsSnapshot: settingsCache || {} });
-      updatePreviewAndResults(currentText);
+      startPreviewAndResultsUpdate(currentText, 'preset delete');
       // No further UI dialog required; main already showed confirmation.
       return;
     } else {
@@ -2255,7 +2263,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
     if (res && res.ok) {
       // Reload presets to reflect restored defaults
       await loadPresets({ settingsSnapshot: settingsCache || {} });
-      updatePreviewAndResults(currentText);
+      startPreviewAndResultsUpdate(currentText, 'preset restore');
       return;
     } else {
       if (res && res.code === 'CANCELLED') {
