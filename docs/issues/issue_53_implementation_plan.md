@@ -209,8 +209,8 @@ Section 6 decision note (locked after item-1 feasibility + utility evaluation):
 
 ## 7. Refinement
 
-- [ ] UI/UX refinement pass.
-- [ ] Fill missing `es`/`en` UI localization keys (no hardcoded language fallback logic).
+- [x] UI/UX refinement pass.
+- [x] Fill missing `es`/`en` UI localization keys (no hardcoded language fallback logic).
 - [ ] Logging review for required observability fields/events and consistency:
   - selected file type
   - available/chosen/executed route
