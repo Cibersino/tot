@@ -83,6 +83,64 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0116
+
+- Date/time: 2026-03-19 00:10:43 -03:00
+- Operation: Fill remaining `main.json` / `renderer.json` localization key gaps for all existing non-`arn`, non-`es-cl` locales that already ship both files.
+- Why: User requested that the remaining existing language packs be brought up to date without creating new locale files and without touching `arn` or `es-cl`.
+- Changes made:
+  - Filled the missing `main.menu.*` development/language-list keys in:
+    - `i18n/de/main.json`
+    - `i18n/fr/main.json`
+    - `i18n/it/main.json`
+    - `i18n/pt/main.json`
+  - Filled the missing `renderer.*` keys in:
+    - `i18n/de/renderer.json`
+    - `i18n/fr/renderer.json`
+    - `i18n/it/renderer.json`
+    - `i18n/pt/renderer.json`
+  - Covered both the newer Issue 53 import/extract surfaces and older baseline gaps (ARIA, tips, external/appdoc info keys, and the legacy missing `renderer.tasks.columns.tiempo` key in `pt`).
+- Checklist updates:
+  - No checklist toggles in `docs/issues/issue_53_implementation_plan.md`.
+  - Active next checklist item remains unchanged: Section 7 item 3 (`Logging review for required observability fields/events and consistency`).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `i18n/de/main.json`
+  - `i18n/de/renderer.json`
+  - `i18n/fr/main.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/main.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/main.json`
+  - `i18n/pt/renderer.json`
+- Evidence:
+  - Scope lock:
+    - touched only locales that already had both `main.json` and `renderer.json`: `de`, `fr`, `it`, `pt`
+    - did not touch `arn`
+    - did not touch `es-cl`
+    - did not create any new locale files
+  - Pre-patch gap summary from baseline diff vs `i18n/en`:
+    - `main.json`: `de`, `fr`, `it`, `pt` each missing 6 keys
+    - `renderer.json`: `de`, `fr`, `it` each missing 91 keys; `pt` missing 92 keys because `renderer.tasks.columns.tiempo` was absent
+  - Post-patch completeness check:
+    - `FILE main.json` -> `de: ok`, `fr: ok`, `it: ok`, `pt: ok`
+    - `FILE renderer.json` -> `de: ok`, `fr: ok`, `it: ok`, `pt: ok`
+  - JSON validation:
+    - `Get-Content i18n\\de\\main.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\de\\renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\fr\\main.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\fr\\renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\it\\main.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\it\\renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\pt\\main.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\pt\\renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-19 00:22:09 -03:00`
+- Outcome / next step:
+  - Completed.
+  - Existing locale packs with both `main.json` and `renderer.json` are now aligned to the current `en` key baseline.
+  - Active next checklist item remains Section 7 item 3 (`Logging review for required observability fields/events and consistency`).
+
 ### OP-0115
 
 - Date/time: 2026-03-18 23:59:05 -03:00

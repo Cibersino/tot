@@ -23,7 +23,15 @@
       "colabora": "MITWIRKEN ($)",
       "ayuda": "?",
       "actualizar_version": "Aktualisieren auf die neueste Version",
-      "acerca_de": "Über"
+      "acerca_de": "Über",
+      "desarrollo": "Entwicklung",
+      "recargar": "Neu laden",
+      "forcereload": "Neuladen erzwingen",
+      "toggle_devtools": "DevTools umschalten",
+      "language": {
+        "empty": "Keine Sprachen verfügbar",
+        "invalid": "Ungültige Sprachliste"
+      }
     },
     "dialog": {
       "ok": "OK",
