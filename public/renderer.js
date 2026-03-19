@@ -40,12 +40,7 @@ const {
 // DOM references
 // =============================================================================
 const textPreview = document.getElementById('textPreview');
-const selectorControlsNormal = document.getElementById('selectorControlsNormal');
-const selectorControlsProcessing = document.getElementById('selectorControlsProcessing');
 const btnImportExtract = document.getElementById('btnImportExtract');
-const importExtractProcessingLabel = document.getElementById('importExtractProcessingLabel');
-const importExtractPrepareStatus = document.getElementById('importExtractPrepareStatus');
-const btnImportExtractAbort = document.getElementById('btnImportExtractAbort');
 const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const clipboardRepeatInput = document.getElementById('clipboardRepeatInput');
@@ -56,6 +51,21 @@ const btnSaveSnapshot = document.getElementById('btnSaveSnapshot');
 const btnNewTask = document.getElementById('btnNewTask');
 const btnLoadTask = document.getElementById('btnLoadTask');
 const btnHelp = document.getElementById('btnHelp');
+
+const importExtractStatusUi = window.ImportExtractStatusUi;
+if (!importExtractStatusUi
+  || typeof importExtractStatusUi.applyProcessingModeState !== 'function'
+  || typeof importExtractStatusUi.applyTranslations !== 'function'
+  || typeof importExtractStatusUi.beginPrepare !== 'function'
+  || typeof importExtractStatusUi.clearPendingExecutionContext !== 'function'
+  || typeof importExtractStatusUi.endPrepare !== 'function'
+  || typeof importExtractStatusUi.getAbortButton !== 'function'
+  || typeof importExtractStatusUi.getFinalElapsedText !== 'function'
+  || typeof importExtractStatusUi.isProcessingModeActive !== 'function'
+  || typeof importExtractStatusUi.setPendingExecutionContext !== 'function') {
+  throw new Error('[renderer] ImportExtractStatusUi unavailable; cannot continue');
+}
+const btnImportExtractAbort = importExtractStatusUi.getAbortButton();
 
 // =============================================================================
 // UI keys and static lists
@@ -176,76 +186,7 @@ function isRendererReady() {
 }
 
 function isProcessingModeActive() {
-  return !!(importExtractProcessingModeState && importExtractProcessingModeState.active);
-}
-
-function normalizeProcessingModeState(rawState) {
-  const state = rawState && typeof rawState === 'object' ? rawState : {};
-  const lockId = Number(state.lockId);
-  const sinceEpochMs = Number(state.sinceEpochMs);
-  return {
-    active: state.active === true,
-    lockId: Number.isFinite(lockId) && lockId >= 0 ? Math.floor(lockId) : 0,
-    sinceEpochMs: Number.isFinite(sinceEpochMs) && sinceEpochMs > 0 ? Math.floor(sinceEpochMs) : null,
-    source: typeof state.source === 'string' ? state.source.trim() : '',
-    reason: typeof state.reason === 'string' ? state.reason.trim() : '',
-  };
-}
-
-function applyProcessingModeState(rawState, { source = 'unknown' } = {}) {
-  const nextState = normalizeProcessingModeState(rawState);
-  const prevActive = isProcessingModeActive();
-  importExtractProcessingModeState = nextState;
-
-  if (selectorControlsNormal) {
-    selectorControlsNormal.hidden = nextState.active;
-    selectorControlsNormal.setAttribute('aria-hidden', nextState.active ? 'true' : 'false');
-  }
-  if (selectorControlsProcessing) {
-    selectorControlsProcessing.hidden = !nextState.active;
-    selectorControlsProcessing.setAttribute('aria-hidden', nextState.active ? 'false' : 'true');
-  }
-
-  if (btnImportExtractAbort) {
-    btnImportExtractAbort.hidden = !nextState.active;
-    btnImportExtractAbort.disabled = !nextState.active;
-    btnImportExtractAbort.setAttribute('aria-hidden', nextState.active ? 'false' : 'true');
-    btnImportExtractAbort.tabIndex = nextState.active ? 0 : -1;
-  }
-
-  if (prevActive !== nextState.active) {
-    log.info('import/extract processing-mode changed:', {
-      active: nextState.active,
-      lockId: nextState.lockId,
-      source,
-      reason: nextState.reason,
-    });
-  }
-}
-
-function syncImportExtractPrepareUi() {
-  if (!importExtractPrepareStatus) return;
-  const active = importExtractPrepareActiveCount > 0;
-  importExtractPrepareStatus.hidden = !active;
-  importExtractPrepareStatus.setAttribute('aria-hidden', active ? 'false' : 'true');
-  if (active) {
-    importExtractPrepareStatus.textContent = tRenderer(
-      'renderer.main.processing.import_extract_preparing',
-      importExtractPrepareStatus.textContent || ''
-    );
-  } else {
-    importExtractPrepareStatus.textContent = '';
-  }
-}
-
-function beginImportExtractPrepareUi() {
-  importExtractPrepareActiveCount += 1;
-  syncImportExtractPrepareUi();
-}
-
-function endImportExtractPrepareUi() {
-  importExtractPrepareActiveCount = Math.max(0, importExtractPrepareActiveCount - 1);
-  syncImportExtractPrepareUi();
+  return importExtractStatusUi.isProcessingModeActive();
 }
 
 function startImportExtractPrepareAttempt() {
@@ -262,7 +203,7 @@ async function requestPreparedImport({
   preparationRequest,
 }) {
   const attemptId = startImportExtractPrepareAttempt();
-  beginImportExtractPrepareUi();
+  importExtractStatusUi.beginPrepare();
   try {
     const preparation = await prepareImportExtractSelectedFile(preparationRequest);
     return {
@@ -271,7 +212,7 @@ async function requestPreparedImport({
       stale: !isLatestImportExtractPrepareAttempt(attemptId),
     };
   } finally {
-    endImportExtractPrepareUi();
+    importExtractStatusUi.endPrepare();
   }
 }
 
@@ -396,14 +337,6 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
-let importExtractProcessingModeState = {
-  active: false,
-  lockId: 0,
-  sinceEpochMs: null,
-  source: '',
-  reason: '',
-};
-let importExtractPrepareActiveCount = 0;
 let importExtractPrepareAttemptId = 0;
 let lastProcessingLockNoticeAt = 0;
 
@@ -440,21 +373,9 @@ function applyTranslations() {
     const aria = tRenderer(key, defaultValue);
     if (aria) el.setAttribute('aria-label', aria);
   };
-  if (importExtractProcessingLabel) {
-    importExtractProcessingLabel.textContent = tRenderer(
-      'renderer.main.processing.import_extract_placeholder',
-      importExtractProcessingLabel.textContent || ''
-    );
-  }
-  if (importExtractPrepareStatus && importExtractPrepareActiveCount > 0) {
-    importExtractPrepareStatus.textContent = tRenderer(
-      'renderer.main.processing.import_extract_preparing',
-      importExtractPrepareStatus.textContent || ''
-    );
-  }
+  importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
-  if (btnImportExtractAbort) btnImportExtractAbort.textContent = tRenderer('renderer.main.buttons.import_extract_abort', btnImportExtractAbort.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
@@ -465,11 +386,9 @@ function applyTranslations() {
   if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load', btnLoadTask.textContent || '');
   // Text selector tooltips
   if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract', btnImportExtract.title || '');
-  if (btnImportExtractAbort) btnImportExtractAbort.title = tRenderer('renderer.main.tooltips.import_extract_abort', btnImportExtractAbort.title || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
   applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract');
-  applyAriaLabel(btnImportExtractAbort, 'renderer.main.aria.import_extract_abort');
   if (clipboardRepeatInput) {
     clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count', clipboardRepeatInput.title || '');
     applyAriaLabel(clipboardRepeatInput, 'renderer.main.aria.clipboard_repeat_count');
@@ -927,7 +846,7 @@ function armIpcSubscriptions() {
     if (typeof window.electronAPI.onImportExtractProcessingModeChanged === 'function') {
       window.electronAPI.onImportExtractProcessingModeChanged((state) => {
         try {
-          applyProcessingModeState(state, { source: 'ipc_event' });
+          importExtractStatusUi.applyProcessingModeState(state, { source: 'ipc_event' });
         } catch (err) {
           log.error('Error handling import-extract-processing-mode-changed:', err);
         }
@@ -1115,7 +1034,7 @@ async function runStartupOrchestrator() {
       try {
         const processingMode = await getImportExtractProcessingMode();
         if (processingMode && processingMode.ok === true) {
-          applyProcessingModeState(processingMode.state, { source: 'startup_query' });
+          importExtractStatusUi.applyProcessingModeState(processingMode.state, { source: 'startup_query' });
         }
       } catch (err) {
         log.warn('BOOTSTRAP: getImportExtractProcessingMode failed; keeping processing mode inactive:', err);
@@ -1719,7 +1638,10 @@ async function promptImportExtractRouteChoice(preparation) {
   }
 }
 
-async function promptImportExtractApplyChoice(defaultRepeat = 1) {
+async function promptImportExtractApplyChoice({
+  defaultRepeat = 1,
+  elapsedText = '',
+} = {}) {
   const applyModal = window.ImportExtractApplyModal;
   if (!applyModal || typeof applyModal.promptApplyChoice !== 'function') {
     log.warnOnce(
@@ -1732,6 +1654,7 @@ async function promptImportExtractApplyChoice(defaultRepeat = 1) {
   try {
     return await applyModal.promptApplyChoice({
       tRenderer,
+      elapsedText,
       defaultRepeat,
       maxRepeat: MAX_CLIPBOARD_REPEAT,
     });
@@ -1908,13 +1831,18 @@ if (btnImportExtract) {
         }
       }
 
+      importExtractStatusUi.setPendingExecutionContext({
+        preparation,
+        routePreference,
+      });
       const execution = await executePreparedImportExtract({
         prepareId: preparation.prepareId,
         routePreference,
       });
       if (!execution || execution.ok !== true || !execution.result) {
+        importExtractStatusUi.clearPendingExecutionContext();
         if (execution && execution.code === 'ALREADY_ACTIVE' && execution.state) {
-          applyProcessingModeState(execution.state, { source: 'execute_already_active' });
+          importExtractStatusUi.applyProcessingModeState(execution.state, { source: 'execute_already_active' });
         }
         log.error('import/extract execution IPC failed:', execution);
         const primaryAlertKey = (execution && typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
@@ -1937,8 +1865,10 @@ if (btnImportExtract) {
         ? execution.result.state
         : 'failure';
       if (resultState === 'success') {
-        const defaultRepeat = getClipboardRepeatCount();
-        const applyChoice = await promptImportExtractApplyChoice(defaultRepeat);
+        const applyChoice = await promptImportExtractApplyChoice({
+          defaultRepeat: getClipboardRepeatCount(),
+          elapsedText: importExtractStatusUi.getFinalElapsedText(),
+        });
         if (!applyChoice) {
           log.info('import/extract apply choice cancelled by user.');
           return;
@@ -1978,6 +1908,7 @@ if (btnImportExtract) {
       }
       window.Notify.notifyMain(primaryAlertKey);
     } catch (err) {
+      importExtractStatusUi.clearPendingExecutionContext();
       log.error('Error handling import/extract entrypoint click:', err);
       window.Notify.notifyMain('renderer.alerts.import_extract_error');
     }
@@ -2003,7 +1934,7 @@ if (btnImportExtractAbort) {
       });
       if (!result || result.ok !== true) {
         if (result && result.code === 'NOT_ACTIVE' && result.state) {
-          applyProcessingModeState(result.state, { source: 'abort_not_active' });
+          importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_not_active' });
           return;
         }
         log.error('import/extract abort failed:', result);
@@ -2012,7 +1943,7 @@ if (btnImportExtractAbort) {
       }
 
       if (result.state) {
-        applyProcessingModeState(result.state, { source: 'abort_response' });
+        importExtractStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
       }
       window.Notify.notifyMain('renderer.alerts.import_extract_cancelled');
     } catch (err) {

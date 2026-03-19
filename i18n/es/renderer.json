@@ -79,7 +79,10 @@
       },
       "processing": {
         "import_extract_placeholder": "Procesando extracción...",
-        "import_extract_preparing": "Preparando la ruta de importar/extraer..."
+        "import_extract_preparing": "Preparando la ruta de importar/extraer...",
+        "import_extract_waiting_native": "Extrayendo texto del archivo...",
+        "import_extract_waiting_ocr": "Ejecutando extracción OCR...",
+        "import_extract_elapsed": "Transcurrido: {time}"
       },
       "crono": {
         "title": "CRONÓMETRO",
@@ -238,7 +241,6 @@
       "import_extract_error": "Ocurrió un error al abrir el selector de archivos de importar/extraer. Revisa la consola.",
       "import_extract_precondition_blocked": "Para iniciar importar/extraer, cierra todas las ventanas secundarias y detén el cronómetro.",
       "import_extract_precondition_error": "Ocurrió un error al revisar las precondiciones de importar/extraer. Revisa la consola.",
-      "import_extract_not_ready": "La función de importar/extraer archivo aún no está disponible.",
       "import_extract_processing_locked": "Importar/extraer está procesando. Las interacciones de la ventana principal están bloqueadas hasta que termine el procesamiento o abortes.",
       "import_extract_abort_error": "Ocurrió un error al solicitar el aborto de importar/extraer. Revisa la consola.",
       "import_extract_cancelled": "Importar/extraer fue cancelado.",
@@ -250,6 +252,7 @@
       "import_extract_route_choice_cancel_button": "Cancelar",
       "import_extract_apply_modal_title": "Aplicar texto extraído",
       "import_extract_apply_modal_message": "Elige cómo aplicar el texto extraído.",
+      "import_extract_apply_modal_elapsed": "Tiempo de ejecución: {time}",
       "import_extract_apply_modal_repeat_label": "Repeticiones",
       "import_extract_apply_modal_overwrite_button": "Sobrescribir",
       "import_extract_apply_modal_append_button": "Agregar",

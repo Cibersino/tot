@@ -20,6 +20,7 @@
   const backdrop = document.getElementById('importExtractApplyModalBackdrop');
   const title = document.getElementById('importExtractApplyModalTitle');
   const message = document.getElementById('importExtractApplyModalMessage');
+  const elapsed = document.getElementById('importExtractApplyModalElapsed');
   const repeatLabel = document.getElementById('importExtractApplyModalRepeatLabel');
   const repeatInput = document.getElementById('importExtractApplyModalRepeatInput');
   const btnOverwrite = document.getElementById('importExtractApplyModalOverwrite');
@@ -32,6 +33,7 @@
       && backdrop
       && title
       && message
+      && elapsed
       && repeatLabel
       && repeatInput
       && btnOverwrite
@@ -58,6 +60,7 @@
 
   async function promptApplyChoice({
     tRenderer,
+    elapsedText = '',
     defaultRepeat = 1,
     maxRepeat = 1,
   } = {}) {
@@ -104,6 +107,9 @@
 
     title.textContent = titleText;
     message.textContent = messageText;
+    elapsed.textContent = typeof elapsedText === 'string' ? elapsedText.trim() : '';
+    elapsed.hidden = !elapsed.textContent;
+    elapsed.setAttribute('aria-hidden', elapsed.hidden ? 'true' : 'false');
     repeatLabel.textContent = repeatLabelText;
     btnOverwrite.textContent = overwriteText;
     btnAppend.textContent = appendText;

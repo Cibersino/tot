@@ -79,7 +79,10 @@
       },
       "processing": {
         "import_extract_placeholder": "Extracting text...",
-        "import_extract_preparing": "Preparing import/extract route..."
+        "import_extract_preparing": "Preparing import/extract route...",
+        "import_extract_waiting_native": "Extracting text from file...",
+        "import_extract_waiting_ocr": "Running OCR extraction...",
+        "import_extract_elapsed": "Elapsed: {time}"
       },
       "crono": {
         "title": "STOPWATCH",
@@ -238,7 +241,6 @@
       "import_extract_error": "An error occurred while opening the import/extract file picker. Check console.",
       "import_extract_precondition_blocked": "To start import/extract, close all secondary windows and stop the stopwatch.",
       "import_extract_precondition_error": "An error occurred while checking import/extract preconditions. Check console.",
-      "import_extract_not_ready": "Import/extract file flow is not available yet.",
       "import_extract_processing_locked": "Import/extract is processing. Main-window interactions are locked until processing ends or you abort.",
       "import_extract_abort_error": "An error occurred while requesting import/extract abort. Check console.",
       "import_extract_cancelled": "Import/extract was cancelled.",
@@ -250,6 +252,7 @@
       "import_extract_route_choice_cancel_button": "Cancel",
       "import_extract_apply_modal_title": "Apply extracted text",
       "import_extract_apply_modal_message": "Choose how to apply the extracted text.",
+      "import_extract_apply_modal_elapsed": "Execution time: {time}",
       "import_extract_apply_modal_repeat_label": "Repetitions",
       "import_extract_apply_modal_overwrite_button": "Overwrite",
       "import_extract_apply_modal_append_button": "Append",
