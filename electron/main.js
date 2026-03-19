@@ -685,9 +685,6 @@ function maybeAuthorizeStartupReady() {
   if (startupReadySent) return;
   if (!mainInvariantsReady || !rendererCoreReady) return;
 
-  startupReadySent = true;
-  mainReadyState = 'READY';
-
   const targetWin = resolveMainWindow();
   if (!targetWin) {
     log.error('startup:ready emit failed: main window unavailable.');
@@ -696,6 +693,8 @@ function maybeAuthorizeStartupReady() {
 
   try {
     targetWin.webContents.send('startup:ready');
+    startupReadySent = true;
+    mainReadyState = 'READY';
   } catch (err) {
     log.error('Error emitting startup:ready to renderer:', err);
   }
