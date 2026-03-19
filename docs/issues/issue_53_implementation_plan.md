@@ -203,9 +203,9 @@ Section 6 decision note (locked after item-1 feasibility + utility evaluation):
   - No fake phases, percentages, or remaining-time promises.
 
 - [x] Evaluate feasibility and tradeoffs for progress/ETA by route (`ocr`, `native`, `both`) and lock Section 6 scope before implementation.
-- [ ] Implement honest waiting UX in the main window during execution.
-- [ ] Show elapsed processing time during execution and keep the waiting UX visible whenever the main window is not minimized.
-- [ ] Show final elapsed processing time in the success apply modal.
+- [x] Implement honest waiting UX in the main window during execution.
+- [x] Show elapsed processing time during execution and keep the waiting UX visible whenever the main window is not minimized.
+- [x] Show final elapsed processing time in the success apply modal.
 
 ## 7. Refinement
 
