@@ -104,6 +104,11 @@
       'renderer.alerts.import_extract_apply_modal_cancel_button',
       'Cancel'
     );
+    const closeAriaText = translate(
+      tRenderer,
+      'renderer.alerts.import_extract_apply_modal_close_aria',
+      'Close apply extracted text dialog'
+    );
 
     title.textContent = titleText;
     message.textContent = messageText;
@@ -114,7 +119,7 @@
     btnOverwrite.textContent = overwriteText;
     btnAppend.textContent = appendText;
     btnCancel.textContent = cancelText;
-    btnClose.setAttribute('aria-label', cancelText);
+    btnClose.setAttribute('aria-label', closeAriaText);
 
     repeatInput.min = '1';
     repeatInput.max = String(safeMaxRepeat);

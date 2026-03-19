@@ -74,12 +74,87 @@ As of 2026-03-18:
   - Section 6 item 3 (`Show elapsed processing time during execution and keep the waiting UX visible whenever the main window is not minimized`): complete.
   - Section 6 item 4 (`Show final elapsed processing time in the success apply modal`): complete.
   - Section 6 is complete.
-  - Active next checklist item: Section 7 item 1 (`UI/UX refinement pass`).
+  - Section 7 item 1 (`UI/UX refinement pass`): complete.
+  - Section 7 item 2 (`Fill missing es/en UI localization keys`): complete.
+  - Active next checklist item: Section 7 item 3 (`Logging review for required observability fields/events and consistency`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0115
+
+- Date/time: 2026-03-18 23:59:05 -03:00
+- Operation: Execute Section 7 item 2 by auditing and filling missing `es` / `en` localization coverage for the Issue 53 import/extract UI surfaces.
+- Why: User asked to move from the completed Section 7.1 UI/UX refinement pass to Section 7.2 (`Fill missing es/en UI localization keys (no hardcoded language fallback logic)`).
+- Changes made:
+  - Audited the Issue 53 import/extract UI surfaces for renderer key coverage and hardcoded issue-local copy usage.
+  - Added dedicated localized close-button aria-label keys for the two Issue 53 modals:
+    - `renderer.alerts.import_extract_route_choice_close_aria`
+    - `renderer.alerts.import_extract_apply_modal_close_aria`
+  - Updated:
+    - `public/js/import_extract_route_choice_modal.js`
+    - `public/js/import_extract_apply_modal.js`
+    so the modal close buttons now use those dedicated localized keys instead of reusing the cancel-button text.
+  - Updated `docs/issues/issue_53_implementation_plan.md`:
+    - marked Section 7 item 1 complete
+    - marked Section 7 item 2 complete
+  - Updated `docs/issues/issue_53_operation_tracker.md` current authoritative status:
+    - recorded Section 7 item 1 complete
+    - recorded Section 7 item 2 complete
+    - moved the active next checklist item to Section 7 item 3
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md`
+    - `[x] UI/UX refinement pass.`
+    - `[x] Fill missing es/en UI localization keys (no hardcoded language fallback logic).`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_route_choice_modal.js`
+  - `public/js/import_extract_apply_modal.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Current scope assumption:
+    - this operation is limited to the Issue 53 import/extract UI surfaces and related issue-local modules, not a repo-wide localization sweep
+  - Audit targets:
+    - `public/index.html`
+    - `public/renderer.js`
+    - `public/js/import_extract_*`
+    - `public/style.css` only if any user-visible text references are involved
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Audit result:
+    - import/extract processing/alert/modal action keys referenced by the issue-local modules are present in both locale files
+    - remaining concrete issue-local gap found was dedicated close-button aria-label localization for the route-choice and apply modals
+    - hidden modal/process markup in `public/index.html` still contains static placeholder text, but those surfaces are localized before becoming visible; no extra language-selection logic was added
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-19 00:02:40 -03:00`
+  - Localization anchors:
+    - `public/js/import_extract_route_choice_modal.js`
+      - close button now uses `renderer.alerts.import_extract_route_choice_close_aria`
+    - `public/js/import_extract_apply_modal.js`
+      - close button now uses `renderer.alerts.import_extract_apply_modal_close_aria`
+    - `i18n/en/renderer.json`
+      - `import_extract_route_choice_close_aria`
+      - `import_extract_apply_modal_close_aria`
+    - `i18n/es/renderer.json`
+      - `import_extract_route_choice_close_aria`
+      - `import_extract_apply_modal_close_aria`
+    - `docs/issues/issue_53_implementation_plan.md`
+      - Section 7 items 1 and 2 now checked
+    - `docs/issues/issue_53_operation_tracker.md`
+      - active next checklist item moved to Section 7 item 3
+  - Static verification:
+    - `node --check public/js/import_extract_route_choice_modal.js` -> exit `0`
+    - `node --check public/js/import_extract_apply_modal.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - Section 7 item 2 is complete for the Issue 53 import/extract surface area.
+  - Next step is Section 7 item 3 (`Logging review for required observability fields/events and consistency`).
 
 ### OP-0114
 
