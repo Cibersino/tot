@@ -82,7 +82,9 @@
         "import_extract_preparing": "Preparando la ruta de importar/extraer...",
         "import_extract_waiting_native": "Extrayendo texto del archivo...",
         "import_extract_waiting_ocr": "Ejecutando extracción OCR...",
-        "import_extract_elapsed": "Transcurrido: {time}"
+        "import_extract_elapsed": "Transcurrido: {time}",
+        "import_extract_drop_here": "Suelta el archivo para importar o extraer texto",
+        "import_extract_drop_hint": "Solo un archivo local"
       },
       "crono": {
         "title": "CRONÓMETRO",
@@ -238,12 +240,14 @@
       "open_presets_unsupported": "No es posible abrir la carpeta de presets en este entorno.",
       "open_presets_error": "Ocurrió un error al intentar abrir la carpeta de presets. Revisa la consola.",
       "open_presets_fail": "No se pudo abrir la carpeta de presets por defecto. Revisa la consola para más detalles.",
-      "import_extract_error": "Ocurrió un error al abrir el selector de archivos de importar/extraer. Revisa la consola.",
+      "import_extract_error": "Ocurrió un error al iniciar importar/extraer. Revisa la consola.",
       "import_extract_precondition_blocked": "Para iniciar importar/extraer, cierra todas las ventanas secundarias y detén el cronómetro.",
       "import_extract_precondition_error": "Ocurrió un error al revisar las precondiciones de importar/extraer. Revisa la consola.",
       "import_extract_processing_locked": "Importar/extraer está procesando. Las interacciones de la ventana principal están bloqueadas hasta que termine el procesamiento o abortes.",
       "import_extract_abort_error": "Ocurrió un error al solicitar el aborto de importar/extraer. Revisa la consola.",
       "import_extract_cancelled": "Importar/extraer fue cancelado.",
+      "import_extract_drop_single_file_only": "Suelta exactamente un archivo para iniciar importar/extraer.",
+      "import_extract_drop_invalid_file": "El elemento soltado no es un archivo local válido.",
       "import_extract_route_choice_required": "Se requiere elegir ruta para este PDF antes de continuar la extracción.",
       "import_extract_route_choice_title": "Elegir ruta de extracción",
       "import_extract_route_choice_message": "Este PDF tiene disponibles ambas rutas de extracción. Elige una para continuar.",
