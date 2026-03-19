@@ -46,7 +46,10 @@ const api = {
     saveCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-save'),
     loadCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-load'),
     onCurrentTextUpdated: (cb) => {
-        ipcRenderer.on('current-text-updated', (_e, text) => cb(text));
+        const listener = (_e, text) => {
+            try { cb(text); } catch (err) { console.error('current-text-updated callback error:', err); }
+        };
+        ipcRenderer.on('current-text-updated', listener);
     },
     onEditorReady: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
