@@ -39,7 +39,7 @@ As of 2026-03-18:
 - Section 3 (`Contracts before implementation`): complete (revalidated).
   - Revalidated and relocked on 2026-03-14 after Section 2 item 7/8 completion.
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
-- Sections 4-8: in progress.
+- Sections 4-9: in progress.
   - Section 4 started.
   - Items 1-15 complete:
     - dedicated import/extract button added in selector row
@@ -80,6 +80,103 @@ As of 2026-03-18:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0109
+
+- Date/time: 2026-03-18 21:33:27 -03:00
+- Operation: Add an explicit packaging/distribution validation stage to the Issue 53 implementation plan and reconcile the tracker’s authoritative status.
+- Why: User explicitly requested adding the missing packaging part. The prior inspection in `OP-0108` confirmed that packaging/distribution expectations exist in the issue docs but are not represented as explicit checklist work in the implementation plan.
+- Changes made:
+  - Added a new final `Section 9. Packaging and distribution validation` to `docs/issues/issue_53_implementation_plan.md`.
+  - Added explicit checklist items for:
+    - Windows packaged-build generation
+    - packaged-app smoke validation on Windows
+    - packaged-path OCR/runtime behavior
+    - installer/distribution artifact behavior
+    - release-posture confirmation for the chosen OAuth/publication model
+  - Updated `docs/issues/issue_53_operation_tracker.md` current authoritative status from `Sections 4-8: in progress` to `Sections 4-9: in progress`.
+  - Preserved the current active next checklist item as Section 7 item 1; no work-order reshuffle was introduced by the new final stage.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:33:27 -03:00`
+  - Plan-structure change disclosure:
+    - instruction being executed: add the missing packaging part to the implementation plan
+    - exact structure change to be made:
+      - keep current Section 8 as `Documentation and compliance closeout`
+      - add a new final `Section 9` for packaging/distribution validation
+      - update tracker authoritative status from `Sections 4-8: in progress` to `Sections 4-9: in progress`
+    - rationale:
+      - packaging/distribution is already required by `docs/issues/issue_53.md` and `docs/issues/issue_53_ocr_substrate_evaluation.md`
+      - a separate final stage makes the gap explicit without overloading Section 8 with runtime packaging validation work
+    - impact/risk:
+      - checklist numbering after Section 8 will expand, but no existing checkbox states need to be changed
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:34:19 -03:00`
+  - Plan anchors:
+    - `docs/issues/issue_53_implementation_plan.md:233`
+      - new section header `## 9. Packaging and distribution validation`
+    - `docs/issues/issue_53_implementation_plan.md:235-242`
+      - new packaging/distribution checklist items present
+  - Tracker anchors:
+    - `docs/issues/issue_53_operation_tracker.md:42`
+      - authoritative status now says `Sections 4-9: in progress`
+    - `docs/issues/issue_53_operation_tracker.md:77`
+      - active next checklist item remains `Section 7 item 1`
+- Outcome / next step:
+  - Completed.
+  - Issue 53 now has an explicit final packaging/distribution validation stage in the implementation plan.
+  - Next step remains unchanged: Section 7 item 1 (`UI/UX refinement pass`).
+
+### OP-0108
+
+- Date/time: 2026-03-18 21:29:47 -03:00
+- Operation: Inspect whether Issue 53 planning already covers packaging/build-distribution validation or whether that stage is missing from the implementation plan.
+- Why: User asked whether the implementation plan is missing the last packaging part before continuing.
+- Changes made:
+  - Inspected packaging/release-related references in:
+    - `docs/issues/issue_53.md`
+    - `docs/issues/issue_53_implementation_plan.md`
+    - `docs/issues/issue_53_ocr_substrate_evaluation.md`
+    - `package.json`
+  - Compared the issue-level expectations against the actual implementation-plan checklist coverage.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:29:47 -03:00`
+  - Drift disclosure:
+    - a read-only search for packaging/build/distribution terms across the repo started before this entry was written
+    - impact: no repository files were modified during that pre-entry read phase
+    - handling: the read-only search is explicitly recorded here before continuing with doc inspection
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:30:19 -03:00`
+  - Packaging/distribution evidence:
+    - `docs/issues/issue_53.md`
+      - open workstreams explicitly include `Windows packaging and future macOS/Linux boundaries`
+      - acceptance criteria include Windows-first delivery and future platform viability
+    - `docs/issues/issue_53_ocr_substrate_evaluation.md`
+      - repeatedly calls out production/public-release constraints, including OAuth publication requirements for distributed public release
+    - `package.json`
+      - packaged-build commands exist:
+        - `dist`
+        - `dist:win`
+    - `docs/issues/issue_53_implementation_plan.md`
+      - Section 8 covers documentation/compliance/release notes
+      - no explicit checklist item exists for packaged-build execution, packaged-app smoke validation, installer/distribution artifact validation, or release-path OAuth/publication readiness
+- Outcome / next step:
+  - Completed.
+  - Conclusion: yes, the implementation plan is currently missing an explicit packaging/distribution validation stage.
+  - The missing gap is not documentation-only; it is the absence of checklist items for:
+    - packaged-build generation/verification
+    - packaged-app runtime smoke validation
+    - release/distribution readiness items tied to the chosen OCR OAuth model
 
 ### OP-0107
 
