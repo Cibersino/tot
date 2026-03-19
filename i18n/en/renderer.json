@@ -268,6 +268,7 @@
       "import_extract_ocr_activation_success": "OCR activation completed. Retrying extraction.",
       "import_extract_ocr_activation_cancelled": "OCR activation was cancelled. Import/extract did not continue.",
       "import_extract_ocr_activation_failed": "OCR activation failed. Check setup/auth status and try again.",
+      "import_extract_ocr_connectivity_failed": "OCR requires an internet connection. Check your connection and try again.",
       "import_extract_ocr_setup_missing_credentials": "OCR setup is missing credentials.json. Select a valid Google OAuth credentials file and try again.",
       "import_extract_ocr_setup_invalid_credentials": "Selected credentials file is invalid for Google OAuth. Choose a valid credentials.json and retry.",
       "import_extract_ocr_setup_cancelled": "OCR setup was cancelled before selecting credentials.json.",

@@ -81,6 +81,107 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0107
+
+- Date/time: 2026-03-18 21:25:28 -03:00
+- Operation: Add a dedicated shared import/extract OCR connectivity alert and map existing connectivity failures to it.
+- Why: User requested an explicit alert when OCR fails because internet/connectivity is unavailable, instead of collapsing that case into generic OCR-unavailable or activation-failed messaging.
+- Changes made:
+  - Added a dedicated shared renderer alert key for OCR connectivity failures:
+    - `renderer.alerts.import_extract_ocr_connectivity_failed`
+  - Updated OCR prepare/execute mapping in `electron/import_extract_platform/import_extract_prepare_execute_core.js` so `connectivity_failed` now resolves to the dedicated alert key instead of generic OCR-unavailable.
+  - Updated OCR activation mapping in `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` so `connectivity_failed` now resolves to the dedicated alert key instead of generic OCR-activation-failed.
+  - Updated `electron/import_extract_platform/import_extract_ocr_gate_ipc.js` for consistency so any future/alternate OCR gate consumer also receives the same dedicated connectivity alert key.
+  - Added localized `en`/`es` renderer strings for the new alert key.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+  - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:25:28 -03:00`
+  - Drift disclosure:
+    - a narrow read-only search of the OCR connectivity-failure mapping sites started before this entry was written
+    - impact: no repository files were modified during that pre-entry read phase
+    - handling: the read-only search is explicitly recorded here before continuing with the implementation
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:26:59 -03:00`
+  - Static verification:
+    - `node --check electron/import_extract_platform/import_extract_prepare_execute_core.js` -> exit `0`
+    - `node --check electron/import_extract_platform/import_extract_ocr_activation_ipc.js` -> exit `0`
+    - `node --check electron/import_extract_platform/import_extract_ocr_gate_ipc.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+  - Mapping/reference verification:
+    - `rg -n "import_extract_ocr_connectivity_failed" electron public i18n -g "*.js" -g "*.json" -g "*.html"`
+      - confirms the new alert key exists in:
+        - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+        - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+        - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js`
+        - `i18n/en/renderer.json`
+        - `i18n/es/renderer.json`
+- Outcome / next step:
+  - Completed.
+  - The current import/extract OCR flow now surfaces connectivity loss with a dedicated user-visible alert.
+  - No interactive offline smoke test was run in this operation; next step, if desired, is a manual disconnect/retry validation of the new alert text in the app.
+
+### OP-0106
+
+- Date/time: 2026-03-18 21:20:14 -03:00
+- Operation: Inspect whether OCR internet/connectivity failures produce a user-visible notification in the current import/extract flow.
+- Why: User asked whether a connection failure alerts the user when OCR depends on the internet.
+- Changes made:
+  - Inspected OCR setup validation classification in `electron/import_extract_platform/ocr_google_drive_setup_validation.js`.
+  - Inspected OCR execution failure classification in `electron/import_extract_platform/ocr_google_drive_route.js`.
+  - Inspected import/extract alert-key mapping in `electron/import_extract_platform/import_extract_prepare_execute_core.js`.
+  - Inspected OCR activation alert-key mapping in `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`.
+  - Inspected renderer notification handoff in `public/renderer.js` and OCR activation recovery notifications in `public/js/import_extract_ocr_activation_recovery.js`.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:20:14 -03:00`
+  - Drift disclosure:
+    - a read-only search for connectivity/network/import-extract OCR failure symbols started before this entry was written
+    - impact: no repository files were modified during that pre-entry read phase
+    - handling: the read-only search and its findings are explicitly recorded here before continuing with deeper inspection
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:20:51 -03:00`
+  - Connectivity classification evidence:
+    - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+      - network/API reachability failures classify as `connectivity_failed`
+      - there is a connectivity-specific internal message key: `ocr.google_drive.validation.connectivity_failed`
+    - `electron/import_extract_platform/ocr_google_drive_route.js`
+      - runtime OCR provider failures map network/timeout/5xx conditions to `connectivity_failed`
+  - User-visible alert mapping evidence:
+    - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+      - import/extract prepare/execute maps `connectivity_failed` to `renderer.alerts.import_extract_ocr_unavailable`
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+      - activation flow produces `code: 'connectivity_failed'`, but `mapCodeToAlertKey(...)` falls back to `renderer.alerts.import_extract_ocr_activation_failed`
+    - `public/renderer.js`
+      - renderer shows the returned `primaryAlertKey` via `window.Notify.notifyMain(...)`
+    - `i18n/en/renderer.json` / `i18n/es/renderer.json`
+      - current import/extract OCR renderer alerts include generic keys such as:
+        - `import_extract_ocr_unavailable`
+        - `import_extract_ocr_activation_required`
+        - `import_extract_ocr_quota_or_rate_limited`
+        - `import_extract_ocr_runtime_error`
+      - no dedicated renderer alert key exists for import/extract OCR connectivity failure
+- Outcome / next step:
+  - Completed.
+  - Current behavior:
+    - Yes, the user is notified when OCR connectivity fails.
+    - No, that notification is not currently connection-specific in the import/extract UX.
+    - prepare/execute surface it as generic OCR unavailable
+    - activation surfaces it as generic OCR activation failed
+
 ### OP-0104
 
 - Date/time: 2026-03-18 21:13:20 -03:00
