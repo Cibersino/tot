@@ -26,6 +26,10 @@ tot/
 │ │ └── task_editor_position.json
 │ ├── current_text.json
 │ ├── editor_state.json
+│ ├── import_extract_state.json
+│ ├── ocr_google_drive/
+│ │ ├── credentials.json
+│ │ └── token.json
 │ └── user_settings.json
 ├── docs/
 │ ├── cleanup/
@@ -34,6 +38,7 @@ tot/
 │ │ ├── cleanup_file_by_file.md
 │ │ ├── naming_convention.md
 │ │ └── no_silence.md
+│ ├── issues/                      # {issues/epics con contratos, planes y evidencia operativa}
 │ ├── releases/                    # {con subcarpetas por release con docs de chequeo}
 │ │ ├── release_checklist.md
 │ │ ├── security_baseline.md
@@ -62,6 +67,31 @@ tot/
 │ ├── task_editor_position.js
 │ ├── editor_state.js
 │ ├── editor_find_main.js
+│ ├── import_extract_platform/
+│ │ ├── platform_adapters/
+│ │ │ ├── common.js
+│ │ │ ├── windows.js
+│ │ │ ├── darwin.js
+│ │ │ ├── linux.js
+│ │ │ └── fallback.js
+│ │ ├── import_extract_file_picker_ipc.js
+│ │ ├── import_extract_preconditions_ipc.js
+│ │ ├── import_extract_processing_mode_ipc.js
+│ │ ├── import_extract_ocr_gate_ipc.js
+│ │ ├── import_extract_ocr_activation_ipc.js
+│ │ ├── import_extract_prepare_execute_core.js
+│ │ ├── import_extract_prepare_ipc.js
+│ │ ├── import_extract_execute_prepared_ipc.js
+│ │ ├── import_extract_prepared_store.js
+│ │ ├── import_extract_platform_adapter.js
+│ │ ├── native_extraction_route.js
+│ │ ├── native_pdf_selectable_text_probe.js
+│ │ ├── ocr_google_drive_activation_state.js
+│ │ ├── ocr_google_drive_setup_validation.js
+│ │ ├── ocr_google_drive_setup_validation_ipc.js
+│ │ ├── ocr_google_drive_token_storage.js
+│ │ ├── ocr_google_drive_route.js
+│ │ └── ocr_image_normalization.js
 │ ├── presets_main.js
 │ ├── menu_builder.js
 │ ├── updater.js
@@ -100,6 +130,13 @@ tot/
 │ │ ├── wpm_curve.js
 │ │ ├── notify.js
 │ │ ├── info_modal_links.js
+│ │ ├── text_apply_canonical.js
+│ │ ├── import_extract_status_ui.js
+│ │ ├── import_extract_route_choice_modal.js
+│ │ ├── import_extract_apply_modal.js
+│ │ ├── import_extract_ocr_activation_recovery.js
+│ │ ├── import_extract_entry.js
+│ │ ├── import_extract_drag_drop.js
 │ │ └── log.js
 │ ├── renderer.js
 │ ├── language_window.js
@@ -194,7 +231,7 @@ tot/
 
 ### 2) Módulos del proceso principal (Electron)
 
-- `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`.
+- `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`, estado del picker import/extract y credenciales/tokens OCR.
 - `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset` y difunde cambios vía `settings-updated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`).
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): diálogos nativos, lectura/escritura JSON `{ "text": "<string>" }` bajo `config/saved_current_texts/` (incluye subcarpetas), confirmación de overwrite y chequeo de contención (realpath/relative) para evitar escapes fuera del árbol.
@@ -203,6 +240,24 @@ tot/
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
 - `electron/task_editor_position.js` — Persistencia de posición (x/y) de la ventana del editor de tareas.
+- `electron/import_extract_platform/import_extract_file_picker_ipc.js` — File picker nativo del flujo import/extract; resuelve carpeta por defecto/persistida y guarda la última carpeta usada.
+- `electron/import_extract_platform/import_extract_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.
+- `electron/import_extract_platform/import_extract_processing_mode_ipc.js` — Controlador/IPC del processing mode de import/extract: lock state, broadcast al renderer y solicitud de abort.
+- `electron/import_extract_platform/import_extract_ocr_gate_ipc.js` — Clasifica elegibilidad OCR por tipo de archivo y estado de disponibilidad/activación del OCR.
+- `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` — Activación OCR vía desktop OAuth en navegador del sistema; valida `credentials.json` y persiste el token local.
+- `electron/import_extract_platform/import_extract_prepare_execute_core.js` — Núcleo compartido del prepare/execute: clasificación de archivo, triage PDF, selección de ruta y ejecución.
+- `electron/import_extract_platform/import_extract_prepare_ipc.js` — Etapa prepare del archivo seleccionado: calcula metadata/rutas disponibles y crea el registro preparado.
+- `electron/import_extract_platform/import_extract_execute_prepared_ipc.js` — Etapa execute del flujo preparado: valida integridad del registro/fingerprint y corre la ruta elegida en processing mode.
+- `electron/import_extract_platform/import_extract_prepared_store.js` — Store efímero de requests preparadas con TTL y fingerprint del archivo fuente.
+- `electron/import_extract_platform/import_extract_platform_adapter.js` + `electron/import_extract_platform/platform_adapters/*.js` — Abstracción por plataforma para carpeta inicial del picker y normalización de paths (Windows-first, pero portable a macOS/Linux).
+- `electron/import_extract_platform/native_extraction_route.js` — Ruta de extracción nativa para `txt`, `md`, `html`, `docx` y PDFs con text layer; incluye pipeline de normalización.
+- `electron/import_extract_platform/native_pdf_selectable_text_probe.js` — Probe de PDF para detectar si existe texto seleccionable utilizable antes de decidir la ruta.
+- `electron/import_extract_platform/ocr_google_drive_activation_state.js` — Estado local de disponibilidad OCR (`setup_incomplete`, `ocr_activation_required`, `ready`) a partir de `credentials.json`/`token.json`.
+- `electron/import_extract_platform/ocr_google_drive_setup_validation.js` — Validación técnica del setup OCR (credenciales, token y reachability de Google Drive).
+- `electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js` — Handler IPC para consultar/diagnosticar el estado de setup OCR desde la UI.
+- `electron/import_extract_platform/ocr_google_drive_token_storage.js` — Lectura/escritura protegida del token OCR usando `safeStorage` de Electron.
+- `electron/import_extract_platform/ocr_google_drive_route.js` — Ruta OCR Google Drive/Docs: upload, conversión, export a texto, cleanup y taxonomía explícita de errores.
+- `electron/import_extract_platform/ocr_image_normalization.js` — Normalización local de imágenes para OCR antes del upload cuando el formato lo requiere.
 - `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
 - `electron/updater.js` — Lógica de actualización (comparación de versión, diálogos y apertura de URL de descarga).
 - `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
@@ -223,6 +278,13 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
+- `public/js/text_apply_canonical.js` — Helpers canónicos de aplicar texto (`overwrite` / `append` / repeticiones) reutilizados por clipboard e import/extract.
+- `public/js/import_extract_status_ui.js` — Superficie visual del flujo import/extract en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido y botón abort.
+- `public/js/import_extract_route_choice_modal.js` — Modal de elección de ruta (`native` / `ocr`) cuando un PDF soporta ambas.
+- `public/js/import_extract_apply_modal.js` — Modal post-extracción para decidir overwrite/append y repeticiones antes de aplicar el texto extraído.
+- `public/js/import_extract_ocr_activation_recovery.js` — Helpers de recuperación para activar OCR y reintentar el prepare cuando el bloqueo es de setup/auth.
+- `public/js/import_extract_entry.js` — Orquestador compartido del flujo import/extract desde picker o drag/drop.
+- `public/js/import_extract_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de archivos al entry flow compartido.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 
@@ -241,6 +303,9 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/user_settings.json` — Preferencias del usuario (idioma, modo de conteo, presets personalizados, etc.).
 - `config/current_text.json` — Texto vigente persistido.
 - `config/editor_state.json` — Estado persistido del editor (geometría/maximizado, etc.).
+- `config/import_extract_state.json` — Estado local del picker de import/extract (por ejemplo, última carpeta utilizada).
+- `config/ocr_google_drive/credentials.json` — Credenciales OAuth de Google aportadas por el usuario para habilitar OCR localmente.
+- `config/ocr_google_drive/token.json` — Token OAuth local del usuario para la ruta OCR de Google Drive/Docs.
 - `config/saved_current_texts/` — Carpeta runtime con snapshots del texto vigente (archivos JSON `{ "text": ... }`; puede contener subcarpetas).
 - `config/tasks/lists/*.json` — Listas de tareas guardadas por el usuario.
 - `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).
@@ -265,6 +330,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `docs/releases/release_checklist.md` — Checklist mecánico de release (fuentes de verdad, changelog, consistencia).
 - `docs/releases/<version>/` — Baselines y checklists versionados por release.
 - `docs/changelog_detailed.md` — Changelog detallado (técnico/narrativo; post-0.0.930 con formato mecánico).
+- `docs/issues/` — Issues relevantes y actuales que requieren seguimiento en Github.
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
 - `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, etc.).
