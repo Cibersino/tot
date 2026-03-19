@@ -1076,6 +1076,11 @@ async function runStartupOrchestrator() {
         const processingMode = await getImportExtractProcessingMode();
         if (processingMode && processingMode.ok === true) {
           importExtractStatusUi.applyProcessingModeState(processingMode.state, { source: 'startup_query' });
+        } else {
+          log.warn(
+            'BOOTSTRAP: getImportExtractProcessingMode returned non-ok result; keeping processing mode inactive:',
+            processingMode
+          );
         }
       } catch (err) {
         log.warn('BOOTSTRAP: getImportExtractProcessingMode failed; keeping processing mode inactive:', err);
