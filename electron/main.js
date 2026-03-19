@@ -56,6 +56,14 @@ const importExtractExecutePreparedIpc = require('./import_extract_platform/impor
 const log = Log.get('main');
 log.debug('Main process starting...');
 
+// =============================================================================
+// Import/extract orchestration (shared controller)
+// =============================================================================
+// main.js owns only the cross-window coordination for processing mode:
+// - broadcast state changes to the main renderer,
+// - block main-window interaction while processing is active,
+// - complete a deferred main-window close after an abort finishes.
+// Domain IPC and feature logic stay in the delegated import_extract_platform modules.
 const importExtractProcessingModeController = importExtractProcessingModeIpc.createController({
   onStateChanged: (state) => {
     try {
@@ -1556,6 +1564,7 @@ app.whenReady().then(() => {
     currentLanguageRef: () => getSelectedLanguage(),
   });
 
+  // Import/extract + OCR integration points.
   ocrGoogleDriveSetupValidationIpc.registerIpc(ipcMain, {
     resolvePaths: () => ({
       credentialsPath: getOcrGoogleDriveCredentialsFile(),
