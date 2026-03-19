@@ -77,6 +77,307 @@ As of 2026-03-15:
 
 ## Log
 
+### OP-0102
+
+- Date/time: 2026-03-18 21:03:19 -03:00
+- Operation: Remove the orphaned `renderer.alerts.import_extract_not_ready` i18n keys and re-run static checks.
+- Why: The deeper Section 6 audit confirmed those keys are dead remnants from an older placeholder path and should be removed rather than migrated.
+- Changes made:
+  - Removed `renderer.alerts.import_extract_not_ready` from:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Re-ran JSON parse checks for both renderer bundles.
+  - Re-ran a narrowed reference search to confirm the key no longer exists in `public`, `electron`, or `i18n`.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:03:19 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:03:51 -03:00`
+  - Static verification:
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+  - Narrowed absence check:
+    - `rg -n "import_extract_not_ready" public electron i18n -g "!*node_modules*"` -> exit `1`
+- Outcome / next step:
+  - Completed.
+  - The orphaned key has been removed cleanly from live code/i18n surfaces.
+  - Next step remains the same: interactive app-level validation of the Section 6 waiting UX before checklist closure.
+
+### OP-0101
+
+- Date/time: 2026-03-18 21:00:29 -03:00
+- Operation: Re-check the Section 6 migration for partial move symptoms after finding the orphaned `import_extract_not_ready` i18n key.
+- Why: User explicitly asked whether that orphaned key indicates an incomplete/partial migration and requested a deeper clean-move audit before deciding whether to remove or migrate it.
+- Changes made:
+  - Re-checked the Section 6 runtime-to-i18n ownership map for the full status-surface key set:
+    - `import_extract_placeholder`
+    - `import_extract_preparing`
+    - `import_extract_waiting_native`
+    - `import_extract_waiting_ocr`
+    - `import_extract_elapsed`
+    - `import_extract_apply_modal_elapsed`
+    - `import_extract_not_ready`
+  - Re-checked the renderer/module boundary to confirm all status-surface ownership moved cleanly into `public/js/import_extract_status_ui.js`.
+  - Conclusion:
+    - the new Section 6 keys are all live and owned in the expected places
+    - `import_extract_not_ready` is the only orphan in this cluster
+    - it belongs to an older pre-Section-4 placeholder path, not to the current Section 6 renderer-to-module migration
+    - therefore it should be removed, not migrated
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:00:29 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:01:14 -03:00`
+  - Runtime/i18n ownership audit:
+    - `rg -n "import_extract_(placeholder|preparing|waiting_native|waiting_ocr|elapsed|apply_modal_elapsed|not_ready)" i18n/en/renderer.json i18n/es/renderer.json public/js/import_extract_status_ui.js public/js/import_extract_apply_modal.js public/renderer.js`
+      - all Section 6 keys except `import_extract_not_ready` have live runtime references in the new module or apply modal path
+      - `import_extract_not_ready` appears only in `i18n/en/renderer.json` and `i18n/es/renderer.json`
+  - Corrected runtime absence check:
+    - `rg -n "import_extract_not_ready" public electron -g "*.js" -g "*.html"` -> exit `1` (no runtime matches)
+  - Boundary re-check:
+    - `public/renderer.js:55-68`
+      - renderer now depends on `ImportExtractStatusUi` instead of owning status-surface state directly
+    - `public/js/import_extract_status_ui.js:227-314`
+      - status module owns processing/prepare/apply-elapsed UI behavior
+- Outcome / next step:
+  - Completed.
+  - Deeper audit result:
+    - no evidence of a broader partial migration
+    - one isolated orphaned i18n key remains from an older path
+  - Recommended next step is to remove `renderer.alerts.import_extract_not_ready` from `i18n/en/renderer.json` and `i18n/es/renderer.json`, then re-run static checks.
+
+### OP-0100
+
+- Date/time: 2026-03-18 20:55:33 -03:00
+- Operation: Audit the Section 6 renderer-to-module migration for dead code, remnants, and unintended fallback/legacy paths before interactive validation.
+- Why: User requested an explicit double-check of the migration integrity before any further validation or checklist closure.
+- Changes made:
+  - Audited the current Section 6 file set for duplicate ownership after the renderer-to-module move.
+  - Audited runtime/menu/i18n paths for reintroduced legacy `cargador_*` references.
+  - Audited import/extract-specific runtime/i18n references for leftover unreachable keys or remnants.
+  - Findings:
+    - no duplicate ownership of processing-mode/prepare-status UI remains in `public/renderer.js`; that surface is now owned by `public/js/import_extract_status_ui.js`
+    - no legacy `cargador_*` runtime/menu/i18n path was reintroduced
+    - one remnant remains: `renderer.alerts.import_extract_not_ready` is now orphaned in `i18n/en/renderer.json` and `i18n/es/renderer.json`; it is no longer referenced by runtime code
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:55:33 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:56:41 -03:00`
+  - Duplicate-ownership audit:
+    - `rg -n "importExtractProcessingModeState|importExtractPrepareActiveCount|applyProcessingModeState\\(|normalizeProcessingModeState\\(|syncImportExtractPrepareUi|beginImportExtractPrepareUi|endImportExtractPrepareUi|selectorControlsProcessing|selectorControlsNormal|importExtractProcessingLabel|importExtractPrepareStatus" public/renderer.js public/js/import_extract_status_ui.js`
+      - matches exist only in `public/js/import_extract_status_ui.js` for the status-surface ownership
+      - `public/renderer.js` now references only module handoff sites:
+        - `public/renderer.js:849`
+        - `public/renderer.js:1037`
+        - `public/renderer.js:1845`
+        - `public/renderer.js:1937`
+        - `public/renderer.js:1946`
+  - Legacy-path audit:
+    - `rg -n "cargador_texto|cargador_imagen|wip_cargador" public electron i18n -g "!*node_modules*"` -> no runtime/menu/i18n matches
+  - Remnant audit:
+    - `rg -n "import_extract_not_ready" public electron i18n docs -g "!*node_modules*"`
+      - runtime code: no matches in `public` or `electron`
+      - remaining matches are only:
+        - historical tracker references
+        - `i18n/en/renderer.json`
+        - `i18n/es/renderer.json`
+- Outcome / next step:
+  - Completed.
+  - Migration audit result:
+    - no legacy-system fallback path found
+    - one dead i18n remnant found (`renderer.alerts.import_extract_not_ready`)
+  - Next step depends on user direction:
+    - remove the orphaned i18n remnant now, then re-run the static checks
+    - or leave code unchanged and move on to interactive validation planning
+
+### OP-0099
+
+- Date/time: 2026-03-18 20:52:42 -03:00
+- Operation: Verify the Section 6 implementation and close the checklist only if the touched files pass targeted checks.
+- Why: Section 6 touched renderer orchestration, a new issue-local UI module, modal behavior, markup, styles, and i18n keys. Verification must happen before checklist closure.
+- Changes made:
+  - Ran targeted syntax verification:
+    - `node --check public/renderer.js`
+    - `node --check public/js/import_extract_status_ui.js`
+    - `node --check public/js/import_extract_apply_modal.js`
+  - Parsed the touched i18n JSON files successfully:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Reviewed the final touched-file status and diff shape.
+  - Decision:
+    - static verification passed
+    - Section 6 checklist items were not toggled yet because no interactive app-level validation of the waiting UX was run in this operation
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:52:42 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:53:40 -03:00`
+  - Verification command results:
+    - `node --check public/renderer.js` -> exit `0`
+    - `node --check public/js/import_extract_status_ui.js` -> exit `0`
+    - `node --check public/js/import_extract_apply_modal.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+  - Workspace/diff review:
+    - `git status --short -- public/index.html public/style.css public/js/import_extract_status_ui.js public/js/import_extract_apply_modal.js public/renderer.js i18n/en/renderer.json i18n/es/renderer.json docs/issues/issue_53_implementation_plan.md docs/issues/issue_53_operation_tracker.md`
+      - confirms `public/js/import_extract_status_ui.js` is a new untracked file in the touched set
+    - `git diff --stat -- public/index.html public/style.css public/js/import_extract_status_ui.js public/js/import_extract_apply_modal.js public/renderer.js i18n/en/renderer.json i18n/es/renderer.json docs/issues/issue_53_implementation_plan.md docs/issues/issue_53_operation_tracker.md`
+      - `7 files changed, 236 insertions(+), 112 deletions(-)` for tracked-file diff view
+  - Checklist-state evidence:
+    - `docs/issues/issue_53_implementation_plan.md:206-208`
+      - Section 6 items 2-4 remain unchecked pending stronger runtime/UI evidence
+- Outcome / next step:
+  - Completed.
+  - Static verification passed.
+  - Next step is interactive app-level validation of the Section 6 waiting UX before checklist closure.
+
+### OP-0098
+
+- Date/time: 2026-03-18 20:44:51 -03:00
+- Operation: Implement Section 6 honest waiting UX with a dedicated issue-local import/extract status UI module.
+- Why: Section 6 requires nontrivial status-surface behavior. Per the resolved instruction tension, that behavior must move out of `public/renderer.js` so renderer remains orchestration-only.
+- Changes made:
+  - Extended the existing processing container in `public/index.html` with a dedicated elapsed-time slot.
+  - Extended the existing success apply modal in `public/index.html` with a dedicated final-elapsed-time slot.
+  - Added `public/js/import_extract_status_ui.js` as a focused issue-local module that now owns:
+    - prepare-status visibility/text
+    - processing-row visibility
+    - abort-button visibility/translation surface
+    - route-aware waiting copy
+    - live elapsed timer lifecycle
+    - final elapsed-time capture for the apply step
+  - Updated `public/js/import_extract_apply_modal.js` so the existing modal can render optional final elapsed text.
+  - Reduced `public/renderer.js` to orchestration handoffs for the Section 6 status surface:
+    - validates the status UI module
+    - delegates prepare begin/end
+    - delegates processing-mode state application
+    - delegates pending execute-route context
+    - passes final elapsed text into the apply modal
+  - Added the new Section 6 waiting/elapsed localization keys in `i18n/en/renderer.json` and `i18n/es/renderer.json`.
+  - Added supporting styles in `public/style.css` for the processing elapsed text and apply-modal elapsed text.
+- Checklist updates:
+  - No checkbox toggles yet.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/js/import_extract_status_ui.js`
+  - `public/js/import_extract_apply_modal.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:44:51 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:52:11 -03:00`
+  - Implementation anchors:
+    - `public/index.html:60`
+      - processing row now has a dedicated elapsed-time slot
+    - `public/index.html:187`
+      - apply modal now has a dedicated final-elapsed-time slot
+    - `public/index.html:216`
+      - issue-local status UI module is loaded before `renderer.js`
+    - `public/style.css:178-192`
+      - processing copy/elapsed styling added
+    - `public/style.css:793`
+      - apply-modal elapsed styling added
+    - `public/js/import_extract_status_ui.js:227-314`
+      - new module now owns status translations, processing-mode rendering, route context, live elapsed time, and final elapsed text
+    - `public/js/import_extract_apply_modal.js:23`
+    - `public/js/import_extract_apply_modal.js:63`
+    - `public/js/import_extract_apply_modal.js:110`
+      - apply modal now accepts/renders optional elapsed text
+    - `public/renderer.js:55-66`
+      - renderer validates the status UI module instead of owning that surface directly
+    - `public/renderer.js:1641-1659`
+      - apply modal orchestration now passes elapsed text
+    - `public/renderer.js:1834-1870`
+      - renderer delegates pending execution context and final elapsed retrieval to the status UI module
+    - `public/renderer.js:1911`
+      - renderer clears pending execution context on exception path
+    - `i18n/en/renderer.json:83-85`
+    - `i18n/en/renderer.json:256`
+    - `i18n/es/renderer.json:83-85`
+    - `i18n/es/renderer.json:256`
+- Outcome / next step:
+  - Completed.
+  - Next step is to open a separate verification operation, run syntax/parse checks, and then update Section 6 checklist status only if verification passes.
+
+### OP-0097
+
+- Date/time: 2026-03-18 20:38:16 -03:00
+- Operation: Restart Section 6 execution under the Codex Operational Policy and re-establish the exact implementation scope before editing.
+- Why: The previous Section 6 attempt was reverted by the user. A fresh execution must begin from the locked Section 6 scope, with explicit handling of any instruction tension before code changes.
+- Changes made:
+  - Re-read the locked Section 6 scope in `docs/issues/issue_53_implementation_plan.md`.
+  - Re-inspected the current reverted implementation surface in:
+    - `public/index.html`
+    - `public/style.css`
+    - `public/renderer.js`
+    - `public/js/import_extract_apply_modal.js`
+    - `public/js/import_extract_route_choice_modal.js`
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Inspection conclusion:
+    - the current reverted code only provides bare processing-mode swapping in `public/renderer.js`
+    - implementing live elapsed time + route-aware waiting copy directly in `public/renderer.js` would again inflate that file beyond orchestration
+    - to satisfy the explicit `keep public/renderer.js thin` instruction, a small dedicated import/extract processing UI module is necessary
+  - Drift/ambiguity handling:
+    - instruction tension identified before editing:
+      - `keep public/renderer.js thin; only orchestration should live there`
+      - `do not add a new module unless it is clearly necessary and you justify it first`
+    - resolution:
+      - a focused import/extract processing UI module is justified because Section 6 requires nontrivial UI behavior (elapsed timer lifecycle, waiting-copy rendering, processing-container updates) that should not live in `public/renderer.js`
+      - the planned module will remain issue-local and non-generic
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:38:16 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:39:15 -03:00`
+  - Scope anchors:
+    - `docs/issues/issue_53_implementation_plan.md:183-208`
+      - prepare remains outside processing mode; Section 6 requires honest waiting UX, live elapsed time, and final elapsed time in the success apply modal
+  - Current-code anchors:
+    - `public/index.html:55-63`
+      - processing row currently contains only the existing label, placeholder bar, and abort button
+    - `public/index.html:174-191`
+      - apply modal currently contains only message, repeat row, and action buttons
+    - `public/renderer.js:195-224`
+      - current processing-mode handling only swaps control rows and abort button visibility
+    - `public/renderer.js:1722-1738`
+      - apply modal orchestration currently passes only repeat-related inputs
+    - `public/js/import_extract_apply_modal.js:53-157`
+      - current apply modal module handles only message/repeat/apply choices
+    - `public/js/import_extract_route_choice_modal.js:1-127`
+      - repository already uses issue-local UI modules to keep renderer orchestration smaller
+- Outcome / next step:
+  - Completed.
+  - Next step is to present the exact implementation file plan, explicitly justify the new issue-local processing UI module, and then proceed with the Section 6 edit set if that architectural direction is acceptable.
+
 ### OP-0096
 
 - Date/time: 2026-03-18 19:25:47 -03:00

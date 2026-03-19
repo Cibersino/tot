@@ -175,10 +175,24 @@ body {
   background: #f5efdf;
 }
 
+.import-extract-processing-copy {
+  display: flex;
+  flex: 0 1 260px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+}
+
 #importExtractProcessingLabel {
   font-size: 13px;
   color: #2f2a20;
-  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.import-extract-processing-elapsed {
+  font-size: 12px;
+  color: #6c6049;
+  font-variant-numeric: tabular-nums;
 }
 
 .import-extract-processing-placeholder-track {
@@ -774,6 +788,13 @@ select#presets {
 .import-extract-apply-modal-body p {
   margin: 0;
   line-height: 1.4;
+}
+
+.import-extract-apply-modal-elapsed {
+  margin-top: 8px !important;
+  color: #5f5135;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .import-extract-apply-repeat-row {
