@@ -23,7 +23,15 @@
       "colabora": "COLABORE ($)",
       "ayuda": "?",
       "actualizar_version": "Atualizar para a última versão",
-      "acerca_de": "Sobre"
+      "acerca_de": "Sobre",
+      "desarrollo": "Desenvolvimento",
+      "recargar": "Recarregar",
+      "forcereload": "Forçar recarregamento",
+      "toggle_devtools": "Alternar DevTools",
+      "language": {
+        "empty": "Nenhum idioma disponível",
+        "invalid": "Lista de idiomas inválida"
+      }
     },
     "dialog": {
       "ok": "OK",

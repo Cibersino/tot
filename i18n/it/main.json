@@ -23,7 +23,15 @@
       "colabora": "CONTRIBUISCI ($)",
       "ayuda": "?",
       "actualizar_version": "Aggiorna versione",
-      "acerca_de": "Informazioni"
+      "acerca_de": "Informazioni",
+      "desarrollo": "Sviluppo",
+      "recargar": "Ricarica",
+      "forcereload": "Forza ricarica",
+      "toggle_devtools": "Attiva/disattiva DevTools",
+      "language": {
+        "empty": "Nessuna lingua disponibile",
+        "invalid": "Elenco lingue non valido"
+      }
     },
     "dialog": {
       "ok": "OK",
