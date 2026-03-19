@@ -229,3 +229,16 @@ Section 6 decision note (locked after item-1 feasibility + utility evaluation):
 - [ ] Update setup/billing/activation instructions for the chosen access model.
 - [ ] Update changelog/release notes and related documentation.
 - [ ] Verify all Issue 53 acceptance criteria are covered before closure.
+
+## 9. Packaging and distribution validation
+
+- [ ] Build the Windows packaged artifact(s) for the current release path and confirm the build completes with the required app assets/resources bundled.
+- [ ] Run a packaged-app smoke validation on Windows for the import/extract entrypoint and core routes (`native`, `ocr`, `pdf both`, abort).
+- [ ] Validate packaged-path behavior for the chosen OCR model:
+  - `app.getPath('userData')` credential/token locations
+  - system-browser OAuth activation launch
+  - packaged runtime access to required notices/disclosure/setup surfaces
+- [ ] Validate installer/distribution artifact behavior for the intended delivery mode (install/run, app identity, persistence, and upgrade-safe config/token handling).
+- [ ] Confirm release posture for the chosen OCR access model:
+  - private testing / narrow manual distribution vs public release
+  - if public release is intended, production OAuth publication requirements are explicitly tracked and not silently treated as already solved
