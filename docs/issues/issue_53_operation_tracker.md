@@ -29,7 +29,7 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Current Authoritative Status
 
-As of 2026-03-15:
+As of 2026-03-18:
 
 - Section 1 (`Substrate and access-model decision`): complete.
 - Section 2 (`Substrate setup / billing / activation path`): complete.
@@ -70,12 +70,117 @@ As of 2026-03-15:
   - Section 5 item 11 (`Block progression until basic smoke/quality gate passes`): complete (`QG-01`).
   - Section 5 is complete.
   - Section 6 item 1 (`Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation`): complete.
-  - Active next checklist item: Section 6 item 2 (`Implement honest waiting UX in the main window during execution`).
+  - Section 6 item 2 (`Implement honest waiting UX in the main window during execution`): complete.
+  - Section 6 item 3 (`Show elapsed processing time during execution and keep the waiting UX visible whenever the main window is not minimized`): complete.
+  - Section 6 item 4 (`Show final elapsed processing time in the success apply modal`): complete.
+  - Section 6 is complete.
+  - Active next checklist item: Section 7 item 1 (`UI/UX refinement pass`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0104
+
+- Date/time: 2026-03-18 21:13:20 -03:00
+- Operation: Record the user-provided interactive Section 6 validation evidence and, if it is sufficient, close Section 6 in the plan/tracker.
+- Why: Section 6 was intentionally left open after static validation. The user has now provided app-level main-window behavior evidence for the required waiting UX paths.
+- Changes made:
+  - Mapped the user-provided PowerShell runtime logs and main-window DevTools logs to the Section 6 acceptance items.
+  - Updated `docs/issues/issue_53_implementation_plan.md` to mark Section 6 items 2-4 complete.
+  - Updated `docs/issues/issue_53_operation_tracker.md` current authoritative status so it now reflects:
+    - Section 6 items 2-4 complete
+    - Section 6 complete
+    - active next checklist item moved to Section 7 item 1
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md`
+    - Section 6 item 2 (`Implement honest waiting UX in the main window during execution`) -> `[x]`
+    - Section 6 item 3 (`Show elapsed processing time during execution and keep the waiting UX visible whenever the main window is not minimized`) -> `[x]`
+    - Section 6 item 4 (`Show final elapsed processing time in the success apply modal`) -> `[x]`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:13:20 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:15:28 -03:00`
+  - User-provided interactive validation evidence in chat on `2026-03-18`:
+    - Native success run (`docx`):
+      - prepare completed before processing mode enable
+      - `import-extract-processing-mode` enabled with `reason: 'run_route'`
+      - disabled with `reason: 'import_extract_native_success'`
+      - execute completed with `routeKind: 'native'`, `state: 'success'`
+    - OCR image success run (`png`):
+      - first prepare failed with `code: 'auth_failed'`
+      - OCR activation then completed with `{ ok: true, state: 'ready' }`
+      - rerun prepare completed successfully
+      - processing mode enabled with `reason: 'run_route'`
+      - disabled with `reason: 'import_extract_ocr_success'`
+      - execute completed with `routeKind: 'ocr'`, `state: 'success'`
+      - interpretation: the first-run interruption was setup/auth activation, not a Section 6 waiting-UX regression
+    - Dual-route PDF run (`pdfTriage: 'both'`):
+      - prepare logged `choice-required` with `chosenRoute: null`
+      - execute started only after route selection with `chosenRoute: 'ocr'`
+      - processing mode enabled with `reason: 'run_pdf_route'`
+      - disabled with `reason: 'import_extract_ocr_success'`
+      - execute completed with `routeKind: 'ocr'`, `state: 'success'`
+      - interpretation: prepare/route choice remained outside processing mode as required
+    - Abort run (`ocr_only` PDF):
+      - processing mode enabled with `reason: 'run_pdf_route'`
+      - abort requested with `reason: 'user_abort_button'`
+      - processing mode disabled with `reason: 'user_abort_button'`
+      - no execute-success/apply-complete path was shown after abort
+    - Main-window DevTools console:
+      - `import-extract-status-ui` logged clean processing-mode state transitions for lockIds `1` through `4`
+      - transitions align with native success, OCR success, PDF choice->OCR success, and abort paths
+    - User statement in chat: `I think everything works as intended.`
+- Outcome / next step:
+  - Completed.
+  - Section 6 is now closed based on user-provided interactive runtime evidence plus prior static verification from `OP-0099`.
+  - Next step is Section 7 item 1 (`UI/UX refinement pass`).
+
+### OP-0103
+
+- Date/time: 2026-03-18 21:06:03 -03:00
+- Operation: Prepare a concrete interactive validation plan for Section 6 using the local smoke fixtures and prior Issue 53 evidence.
+- Why: User requested step-by-step guidance on what tests to run next. The guidance should be tied to the repository’s actual fixtures and expected behaviors.
+- Changes made:
+  - Inspected the local smoke fixture set under `tools_local/smoke/`.
+  - Reused the prior Section 5 evidence map in `docs/issues/issue_53_section5_evidence.md` to select the smallest run set that still covers Section 6:
+    - native success
+    - OCR success
+    - PDF route-choice before processing
+    - cancellation during processing
+  - Confirmed the concrete fixtures previously used for those paths:
+    - `prueba_docx.docx`
+    - `prueba_png.png`
+    - `prueba_pdf_original_12_paginas.pdf`
+    - `prueba_pdf_2_escaneado_12_paginas.pdf`
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:06:03 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:06:28 -03:00`
+  - Fixture inventory:
+    - `Get-ChildItem -Path tools_local\\smoke -Name | Sort-Object`
+  - Prior evidence anchors:
+    - `docs/issues/issue_53_section5_evidence.md:81-101`
+      - `SMK-01` native baseline uses `tools_local/smoke/prueba_docx.docx`
+    - `docs/issues/issue_53_section5_evidence.md:131-158`
+      - `SMK-02` OCR baseline uses `tools_local/smoke/prueba_png.png`
+    - `docs/issues/issue_53_section5_evidence.md:246-259`
+      - `SMK-04` dual-route PDF path uses `tools_local/smoke/prueba_pdf_original_12_paginas.pdf`
+    - `docs/issues/issue_53_section5_evidence.md:642-684`
+      - `PLK-01` processing lock / abort path uses `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+- Outcome / next step:
+  - Completed.
+  - Next step is to guide the user through the 4-run Section 6 interactive validation sequence using those fixtures.
 
 ### OP-0102
 
