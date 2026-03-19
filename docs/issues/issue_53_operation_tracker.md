@@ -81,6 +81,45 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0113
+
+- Date/time: 2026-03-18 23:43:00 -03:00
+- Operation: Refine the import/extract OCR activation-starting alert copy to explain the browser-open behavior and the narrow Google-processing disclosure more clearly.
+- Why: User requested replacing the current activation-starting alert with clearer, more user-friendly wording that explicitly mentions Google, explains that the browser will open, and states that only user-chosen OCR files are sent to Google.
+- Changes made:
+  - Updated `renderer.alerts.import_extract_ocr_activation_starting` in:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - New wording now:
+    - names Google directly
+    - explains that the browser will open
+    - states that only user-chosen OCR files are sent to Google
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - User-approved target wording direction:
+    - mention Google directly
+    - explain that the browser will open
+    - include narrow privacy/external-processing disclosure
+    - use the shorter variant, not broad reassurance language
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 23:43:26 -03:00`
+  - Localization anchors:
+    - `i18n/en/renderer.json:270`
+      - `toT OCR uses Google. Your browser will open so you can authorize your account. Only files you choose for OCR are sent to Google.`
+    - `i18n/es/renderer.json:270`
+      - `El OCR de toT usa Google. Se abrira el navegador para que autorices tu cuenta. Solo se envian a Google los archivos que eliges para OCR.`
+  - Static verification:
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - The OCR activation-starting alert now gives a clearer explanation of Google authorization and the narrow external-processing scope.
+
 ### OP-0112
 
 - Date/time: 2026-03-18 22:47:13 -03:00

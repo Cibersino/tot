@@ -267,7 +267,7 @@
       "import_extract_prepare_invalid": "The prepared import/extract request is no longer valid. Start the flow again.",
       "import_extract_ocr_unavailable": "OCR is unavailable. Check setup/auth status and try again.",
       "import_extract_ocr_activation_required": "OCR activation is required. Sign in to Google OCR and try again.",
-      "import_extract_ocr_activation_starting": "Starting OCR activation. Complete sign-in in your browser to continue.",
+      "import_extract_ocr_activation_starting": "toT OCR uses Google. Your browser will open so you can authorize your account. Only files you choose for OCR are sent to Google.",
       "import_extract_ocr_activation_success": "OCR activation completed. Retrying extraction.",
       "import_extract_ocr_activation_cancelled": "OCR activation was cancelled. Import/extract did not continue.",
       "import_extract_ocr_activation_failed": "OCR activation failed. Check setup/auth status and try again.",
