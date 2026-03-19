@@ -81,6 +81,53 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0111
+
+- Date/time: 2026-03-18 22:30:44 -03:00
+- Operation: Record user-executed interactive validation evidence for the new main-window import/extract drag-and-drop refinement.
+- Why: The user completed the requested app-level drag/drop validation pass after OP-0110. The Issue 53 tracker should capture that evidence and the resulting quality judgment.
+- Changes made:
+  - Recorded the user-provided interactive validation outcome for the drag/drop refinement.
+  - Recorded that the shared import/extract flow was exercised successfully through dropped files across:
+    - native route (`docx`)
+    - OCR route (`jpg` with auth recovery)
+    - dual-route PDF choice (`pdf both -> choose ocr`)
+    - failure path (`diff` unsupported native format)
+    - abort path (`pdf ocr_only` -> user abort)
+    - precondition block (`stopwatchRunning: true`)
+  - Recorded the observed residual note from DevTools:
+    - one Chromium performance warning for a long-running drop handler
+    - no functional failure or unexpected navigation/open-file behavior reported
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - User terminal evidence confirms dropped-file prepare/execute success through the shared flow:
+    - `import/extract prepare started: { sourceFileExt: 'docx', sourceFileKind: 'text_document' }`
+    - `import/extract execute completed: { ... routeKind: 'native', state: 'success', ... sourceFileExt: 'docx' ... }`
+    - `import/extract prepare failed: { ... sourceFileExt: 'jpg' ... code: 'auth_failed' }`
+    - `import/extract OCR activation completed: { ok: true, state: 'ready', code: '', importedCredentials: false }`
+    - `import/extract execute completed: { ... routeKind: 'ocr', state: 'success', ... sourceFileExt: 'jpg' ... }`
+    - `import/extract prepare choice-required: { ... sourceFileExt: 'pdf', pdfTriage: 'both', ... }`
+    - `import/extract execute completed: { ... routeKind: 'ocr', state: 'success', ... sourceFileExt: 'pdf', pdfTriage: 'both' ... }`
+    - `import/extract execute completed: { ... routeKind: 'native', state: 'failure', code: 'unsupported_format', sourceFileExt: 'diff' ... }`
+    - `Processing abort requested: { lockId: 5, source: 'main_window', reason: 'user_abort_button' }`
+    - `Processing abort requested: { lockId: 6, source: 'main_window', reason: 'user_abort_button' }`
+    - `import-extract precondition_rejected: { ... stopwatchRunning: true }`
+  - User DevTools evidence confirms the new modules loaded and processing-mode state still syncs:
+    - `[DEBUG][import-extract-entry] Import/extract shared entry starting...`
+    - `[DEBUG][import-extract-drag-drop] Import/extract drag/drop module starting...`
+    - repeated `import/extract processing-mode changed:` events for success and abort paths
+  - Residual note from DevTools:
+    - `import_extract_drag_drop.js:206 [Violation] 'drop' handler took 3329ms`
+    - no user-reported functional failure accompanied this warning
+- Outcome / next step:
+  - Completed.
+  - Interactive validation indicates the drag/drop refinement is functioning as intended.
+  - Residual follow-up, if desired:
+    - reduce the lifetime of the DOM `drop` handler so DevTools no longer reports a long-running event callback, without changing behavior.
+
 ### OP-0110
 
 - Date/time: 2026-03-18 22:04:03 -03:00
