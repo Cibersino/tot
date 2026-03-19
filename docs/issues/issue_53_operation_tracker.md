@@ -83,6 +83,78 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0118
+
+- Date/time: 2026-03-19 00:47:16 -03:00
+- Operation: Populate the `Faltan` slot in `docs/cleanup/cleanup_file_by_file.md` with the Issue 53 `.js` cleanup queue derived from base commit `b75dbc263d08041599f3bb97effebc2e3c3c688d`.
+- Why: User instructed that all `.js` files from the Issue 53 affected-file list be added there in relevancy order before cleanup work continues.
+- Changes made:
+  - Updated `docs/cleanup/cleanup_file_by_file.md` so the `Faltan` slot now contains the complete Issue 53 `.js` cleanup queue.
+  - Ordered the queue by cleanup relevance for Issue 53 work:
+    - top-level orchestrators first (`electron/main.js`, `public/renderer.js`, `electron/preload.js`, `electron/menu_builder.js`)
+    - import/extract orchestration and route execution next
+    - route/provider/storage/platform support after that
+    - renderer UI satellites last
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/cleanup/cleanup_file_by_file.md`
+- Evidence:
+  - `docs/cleanup/cleanup_file_by_file.md` line `9` now populates `Faltan (...)`.
+  - Inserted queue size:
+    - `35` `.js` paths
+  - Verification:
+    - `Get-Content -Path docs\\cleanup\\cleanup_file_by_file.md -TotalCount 12` shows the populated `Faltan` line
+    - backtick-pair count on line `9` confirms `35` listed paths
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-19 00:48:32 -03:00`
+- Outcome / next step:
+  - Completed.
+  - The Issue 53 `.js` cleanup queue is now staged in `docs/cleanup/cleanup_file_by_file.md` and ready for the first per-file cleanup pass.
+
+### OP-0117
+
+- Date/time: 2026-03-19 00:41:35 -03:00
+- Operation: Read the Issue 53 documentation set, align with the cleanup/bridge policies, and derive the initial file inventory from base commit `b75dbc263d08041599f3bb97effebc2e3c3c688d`.
+- Why: User requested a documentation-first restart for Section 7 work, with the affected-file list prepared before any cleanup pass begins.
+- Changes made:
+  - Read `docs/issues/issue_53.md`.
+  - Read `docs/issues/issue_53_implementation_plan.md` and aligned to its Codex Operational Policy.
+  - Read `docs/cleanup/cleanup_file_by_file.md`.
+  - Read `docs/cleanup/bridge_failure_mode_convention.md`.
+  - Read `docs/issues/issue_53_operation_tracker.md` to follow the required operation-log format.
+  - Derived the initial changed-file inventory with `git diff --name-only b75dbc263d08041599f3bb97effebc2e3c3c688d..HEAD`.
+  - Reviewed post-base history with `git log --oneline --decorate --no-merges b75dbc263d08041599f3bb97effebc2e3c3c688d..HEAD`.
+  - Drift disclosure:
+    - the read-only documentation review and diff/history inspection started before OP-0117 was written
+    - impact: no repository files were modified before the tracker entry was added
+    - handling: the operation is fully disclosed here before any cleanup/refactor work starts
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Base commit anchor:
+    - `git show --no-patch --oneline b75dbc263d08041599f3bb97effebc2e3c3c688d` -> `b75dbc2 2.3`
+  - Read set:
+    - `docs/issues/issue_53.md`
+    - `docs/issues/issue_53_implementation_plan.md`
+    - `docs/cleanup/cleanup_file_by_file.md`
+    - `docs/cleanup/bridge_failure_mode_convention.md`
+    - `docs/issues/issue_53_operation_tracker.md`
+  - Inventory scope from base commit:
+    - `git diff --name-only b75dbc263d08041599f3bb97effebc2e3c3c688d..HEAD` -> `60` changed paths
+    - grouped counts:
+      - `docs`: `5`
+      - `electron`: `27`
+      - `public`: `10`
+      - `i18n`: `16`
+      - `package`: `2`
+- Outcome / next step:
+  - Completed.
+  - Ready to present the affected-file list and surface any scope questions before starting the per-file cleanup pass for Section 7.
+
 ### OP-0116
 
 - Date/time: 2026-03-19 00:10:43 -03:00
