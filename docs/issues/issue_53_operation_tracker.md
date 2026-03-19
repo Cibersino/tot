@@ -81,6 +81,50 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0112
+
+- Date/time: 2026-03-18 22:47:13 -03:00
+- Operation: Refine the main-window import/extract drag-over overlay copy by removing the secondary "single local file only" hint.
+- Why: User requested keeping only the main drag-over message and removing the secondary hint line from the overlay.
+- Changes made:
+  - Removed the secondary hint node from `public/js/import_extract_drag_drop.js` so the drag-over overlay now renders only the main message line.
+  - Removed the unused hint style from `public/style.css`.
+  - Removed the dead `import_extract_drop_hint` localization keys from:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_drag_drop.js`
+  - `public/style.css`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - User-requested refinement target:
+    - keep only the main drag-over message
+    - remove the secondary hint copy from the overlay
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 22:48:02 -03:00`
+  - Implementation anchors:
+    - `public/js/import_extract_drag_drop.js:65`
+      - overlay markup now contains only `.import-extract-drop-overlay__title`
+    - `public/js/import_extract_drag_drop.js:78`
+      - only `renderer.main.processing.import_extract_drop_here` is translated for the overlay copy
+    - `public/style.css:268`
+      - retained title styling only; hint style removed
+    - `i18n/en/renderer.json:86`
+      - only `import_extract_drop_here` remains
+    - `i18n/es/renderer.json:86`
+      - only `import_extract_drop_here` remains
+  - Static verification:
+    - `node --check public/js/import_extract_drag_drop.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - The drag-over overlay now shows only the main drop message, with no secondary hint line.
+
 ### OP-0111
 
 - Date/time: 2026-03-18 22:30:44 -03:00

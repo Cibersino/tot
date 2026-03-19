@@ -83,8 +83,7 @@
         "import_extract_waiting_native": "Extracting text from file...",
         "import_extract_waiting_ocr": "Running OCR extraction...",
         "import_extract_elapsed": "Elapsed: {time}",
-        "import_extract_drop_here": "Drop file to import/extract text",
-        "import_extract_drop_hint": "Single local file only"
+        "import_extract_drop_here": "Drop file to import/extract text"
       },
       "crono": {
         "title": "STOPWATCH",
