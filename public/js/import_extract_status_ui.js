@@ -25,6 +25,7 @@
   const btnImportExtractAbort = document.getElementById('btnImportExtractAbort');
 
   const ELAPSED_TICK_MS = 250;
+  const OCR_WAITING_COPY_DELAY_MS = 12000;
 
   let processingModeState = {
     active: false,
@@ -131,6 +132,13 @@
       );
     }
     if (pendingExecutionRoute === 'ocr') {
+      const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
+      if (elapsedMs !== null && elapsedMs >= OCR_WAITING_COPY_DELAY_MS) {
+        return translate(
+          'renderer.main.processing.import_extract_waiting_ocr_delayed',
+          'Running OCR. Some files take longer.'
+        );
+      }
       return translate(
         'renderer.main.processing.import_extract_waiting_ocr',
         'Running OCR extraction...'

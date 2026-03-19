@@ -81,6 +81,54 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0114
+
+- Date/time: 2026-03-18 23:53:33 -03:00
+- Operation: Refine the OCR processing-bar copy so the main label switches once to a more patient waiting message after a short delay, without increasing the processing bar height.
+- Why: User requested a clearer waiting message during OCR processing, rejected adding a third line to the bar, and approved a one-time label replacement after 5 seconds rather than alternating copy.
+- Changes made:
+  - Updated `public/js/import_extract_status_ui.js` so the OCR processing label:
+    - starts with the current route label
+    - switches once after 5 seconds to a more patient message
+    - does not alternate/blink
+    - does not add any extra line to the processing bar
+  - Added localized delayed-copy key:
+    - `renderer.main.processing.import_extract_waiting_ocr_delayed`
+    - in `i18n/en/renderer.json`
+    - in `i18n/es/renderer.json`
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_status_ui.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - User-approved behavior lock:
+    - OCR only
+    - initial label remains the current route label
+    - after 5 seconds, replace the same label once
+    - no alternating/blinking copy
+    - no extra line added to the bar
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 23:54:10 -03:00`
+  - Implementation anchors:
+    - `public/js/import_extract_status_ui.js:28`
+      - `const OCR_WAITING_COPY_DELAY_MS = 5000;`
+    - `public/js/import_extract_status_ui.js:136-139`
+      - OCR label switches to `renderer.main.processing.import_extract_waiting_ocr_delayed` after the threshold
+    - `i18n/en/renderer.json:85`
+      - `Running OCR. Some files take longer.`
+    - `i18n/es/renderer.json:85`
+      - `Ejecutando OCR. Algunos archivos tardan más.`
+  - Static verification:
+    - `node --check public/js/import_extract_status_ui.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - OCR processing now starts with the original route label and switches once after 5 seconds to a more patient waiting message, without increasing processing-bar height.
+
 ### OP-0113
 
 - Date/time: 2026-03-18 23:43:00 -03:00

@@ -82,6 +82,7 @@
         "import_extract_preparing": "Preparando la ruta de importar/extraer...",
         "import_extract_waiting_native": "Extrayendo texto del archivo...",
         "import_extract_waiting_ocr": "Ejecutando extracción OCR...",
+        "import_extract_waiting_ocr_delayed": "Ejecutando OCR. Algunos archivos tardan más.",
         "import_extract_elapsed": "Transcurrido: {time}",
         "import_extract_drop_here": "Suelta el archivo para importar o extraer texto"
       },
