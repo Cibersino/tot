@@ -4,6 +4,8 @@
       "selector_title": "Erster und letzter Teil des analysierten Textes:",
       "selector_empty": "(leer)",
       "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +16,8 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Text aus Datei importieren/extrahieren",
+        "import_extract_abort": "Extraktion abbrechen",
         "overwrite_clipboard": "Aktuellen Text mit der Zwischenablage ersetzen",
         "append_clipboard": "Hängen Sie die Zwischenablage am Ende des aktuellen Textes an (neue Zeile)",
         "clipboard_repeat_count": "Wiederholungen beim Einfügen aus der Zwischenablage",
@@ -29,6 +33,21 @@
         "reset_presets": "Standard-Presets wiederherstellen",
         "help_button": "Zeigen Sie einen nützlichen Tipp an",
         "flotante_window": "Schwebendes Fenster"
+      },
+      "aria": {
+        "import_extract": "Text aus Datei importieren oder extrahieren",
+        "import_extract_abort": "Extraktion abbrechen",
+        "clipboard_repeat_count": "Einfügewiederholungen",
+        "wpm_input": "Wörter pro Minute",
+        "wpm_slider": "Regler für Wörter pro Minute",
+        "speed_presets": "Geschwindigkeits-Presets",
+        "precise_mode_toggle": "Präziser Modus",
+        "crono_controls": "Stoppuhr-Steuerelemente",
+        "crono_display": "Stoppuhr-Anzeige",
+        "crono_toggle": "Stoppuhr starten oder pausieren",
+        "crono_reset": "Stoppuhr zurücksetzen",
+        "floating_window_toggle": "Schwebendes Fenster",
+        "floating_window_group": "Steuerelemente für schwebendes Fenster"
       },
       "speed": {
         "title": "LESEGESCHWINDIGKEIT",
@@ -46,6 +65,15 @@
         "chars": "Zeichen: {n}",
         "precise_mode": "Präziser Modus",
         "precise_tooltip": "Basierend auf Intl.Segmenter"
+      },
+      "processing": {
+        "import_extract_placeholder": "Text wird extrahiert...",
+        "import_extract_preparing": "Import-/Extraktionsroute wird vorbereitet...",
+        "import_extract_waiting_native": "Text wird aus Datei extrahiert...",
+        "import_extract_waiting_ocr": "OCR-Extraktion wird ausgeführt...",
+        "import_extract_waiting_ocr_delayed": "OCR läuft. Einige Dateien dauern länger.",
+        "import_extract_elapsed": "Verstrichen: {time}",
+        "import_extract_drop_here": "Datei hier ablegen, um Text zu importieren/extrahieren"
       },
       "crono": {
         "title": "STOPPUHR",
@@ -88,6 +116,7 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
         "select_snapshot": "Snapshot auswählen",
         "clear_snapshot": "🗙",
         "cancel": "Abbrechen",
@@ -174,10 +203,10 @@
       "status_no_matches": "Keine Treffer",
       "status_empty_query": "Zum Suchen tippen"
     },
-    "alerts": {
-      "clipboard_too_large": "Der Text in der Zwischenablage ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
-      "append_too_large": "Der resultierende Text ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
-      "clipboard_overflow": "Der Text in der Zwischenablage überschreitet die maximal zulässige Länge und wurde gekürzt.",
+      "alerts": {
+        "clipboard_too_large": "Der Text in der Zwischenablage ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
+        "append_too_large": "Der resultierende Text ist zu groß, um verarbeitet zu werden. Reduzieren Sie ihn und versuchen Sie es erneut.",
+        "clipboard_overflow": "Der Text in der Zwischenablage überschreitet die maximal zulässige Länge und wurde gekürzt.",
       "append_overflow": "Der angehängte Text überschreitet die maximal zulässige Länge und wurde gekürzt.",
       "text_limit": "Kann Text nicht hinzufügen: Maximale Größe erreicht.",
       "clipboard_error": "Beim Einfügen aus der Zwischenablage ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
@@ -196,13 +225,63 @@
       "edit_unavailable": "Bearbeitungsfunktion nicht verfügbar.",
       "edit_error": "Beim Bearbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
       "delete_error": "Beim Löschen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-      "restore_error": "Beim Wiederherstellen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-      "open_presets_unsupported": "Das Öffnen von Presets wird in dieser Umgebung nicht unterstützt.",
-      "open_presets_error": "Beim Öffnen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-      "open_presets_fail": "Konnte die Standard-Preset-Ordner nicht öffnen. Überprüfen Sie die Konsole für weitere Details.",
-      "wip_test_velocidad": "WIP: Der Lesegeschwindigkeitstest wird hier in einer zukünftigen Version geöffnet.",
-      "wip_diseno_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",
-      "wip_diseno_crono": "WIP: Die Einstellungen für die schwebende Stoppuhr werden hier in einer zukünftigen Version geöffnet.",
+        "restore_error": "Beim Wiederherstellen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+        "open_presets_unsupported": "Das Öffnen von Presets wird in dieser Umgebung nicht unterstützt.",
+        "open_presets_error": "Beim Öffnen der Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+        "open_presets_fail": "Konnte die Standard-Preset-Ordner nicht öffnen. Überprüfen Sie die Konsole für weitere Details.",
+        "import_extract_error": "Beim Starten des Importierens/Extrahierens ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
+        "import_extract_precondition_blocked": "Um Importieren/Extrahieren zu starten, schließen Sie alle Nebenfenster und stoppen Sie die Stoppuhr.",
+        "import_extract_precondition_error": "Beim Prüfen der Voraussetzungen für Importieren/Extrahieren ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
+        "import_extract_processing_locked": "Importieren/Extrahieren wird verarbeitet. Interaktionen im Hauptfenster sind gesperrt, bis die Verarbeitung endet oder Sie abbrechen.",
+        "import_extract_abort_error": "Beim Anfordern des Abbruchs von Importieren/Extrahieren ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
+        "import_extract_cancelled": "Importieren/Extrahieren wurde abgebrochen.",
+        "import_extract_drop_single_file_only": "Legen Sie genau eine Datei ab, um Importieren/Extrahieren zu starten.",
+        "import_extract_drop_invalid_file": "Das abgelegte Element ist keine gültige lokale Datei.",
+        "import_extract_route_choice_required": "Für diese PDF ist eine Routenauswahl erforderlich, bevor die Extraktion fortgesetzt werden kann.",
+        "import_extract_route_choice_title": "Extraktionsroute wählen",
+        "import_extract_route_choice_message": "Für diese PDF sind beide Extraktionsrouten verfügbar. Wählen Sie eine aus, um fortzufahren.",
+        "import_extract_route_choice_native_button": "Nativ verwenden",
+        "import_extract_route_choice_ocr_button": "OCR verwenden",
+        "import_extract_route_choice_cancel_button": "Abbrechen",
+        "import_extract_route_choice_close_aria": "Dialog zur Auswahl der Extraktionsroute schließen",
+        "import_extract_apply_modal_title": "Extrahierten Text anwenden",
+        "import_extract_apply_modal_message": "Wählen Sie aus, wie der extrahierte Text angewendet werden soll.",
+        "import_extract_apply_modal_elapsed": "Ausführungszeit: {time}",
+        "import_extract_apply_modal_repeat_label": "Wiederholungen",
+        "import_extract_apply_modal_overwrite_button": "Überschreiben",
+        "import_extract_apply_modal_append_button": "Anhängen",
+        "import_extract_apply_modal_cancel_button": "Abbrechen",
+        "import_extract_apply_modal_close_aria": "Dialog zum Anwenden des extrahierten Textes schließen",
+        "import_extract_apply_error": "Beim Anwenden des extrahierten Textes ist ein Fehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
+        "import_extract_apply_too_large": "Der resultierende Text ist zu groß für die Verarbeitung. Reduzieren Sie die Wiederholungen und versuchen Sie es erneut.",
+        "import_extract_apply_text_limit": "Der extrahierte Text kann nicht angehängt werden: Maximale Größe erreicht.",
+        "import_extract_apply_truncated": "Der angewendete extrahierte Text hat das Limit überschritten und wurde gekürzt.",
+        "import_extract_prepare_invalid": "Die vorbereitete Import-/Extraktionsanfrage ist nicht mehr gültig. Starten Sie den Ablauf erneut.",
+        "import_extract_ocr_unavailable": "OCR ist nicht verfügbar. Prüfen Sie den Einrichtungs-/Authentifizierungsstatus und versuchen Sie es erneut.",
+        "import_extract_ocr_activation_required": "OCR-Aktivierung ist erforderlich. Melden Sie sich bei Google OCR an und versuchen Sie es erneut.",
+        "import_extract_ocr_activation_starting": "toT OCR verwendet Google. Ihr Browser wird geöffnet, damit Sie Ihr Konto autorisieren können. Nur Dateien, die Sie für OCR auswählen, werden an Google gesendet.",
+        "import_extract_ocr_activation_success": "OCR-Aktivierung abgeschlossen. Extraktion wird erneut versucht.",
+        "import_extract_ocr_activation_cancelled": "OCR-Aktivierung wurde abgebrochen. Importieren/Extrahieren wurde nicht fortgesetzt.",
+        "import_extract_ocr_activation_failed": "OCR-Aktivierung fehlgeschlagen. Prüfen Sie den Einrichtungs-/Authentifizierungsstatus und versuchen Sie es erneut.",
+        "import_extract_ocr_connectivity_failed": "OCR benötigt eine Internetverbindung. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "import_extract_ocr_setup_missing_credentials": "Für die OCR-Einrichtung fehlt credentials.json. Wählen Sie eine gültige Google-OAuth-Anmeldedatei aus und versuchen Sie es erneut.",
+        "import_extract_ocr_setup_invalid_credentials": "Die ausgewählte Anmeldedatei ist für Google OAuth ungültig. Wählen Sie eine gültige credentials.json und versuchen Sie es erneut.",
+        "import_extract_ocr_setup_cancelled": "Die OCR-Einrichtung wurde vor der Auswahl von credentials.json abgebrochen.",
+        "import_extract_ocr_restricted": "Die OCR-Route ist für diesen Dateityp eingeschränkt.",
+        "import_extract_ocr_quota_or_rate_limited": "OCR ist vorübergehend durch Quoten-/Ratenlimits blockiert. Warten Sie und versuchen Sie es erneut.",
+        "import_extract_ocr_runtime_error": "Während des Importierens/Extrahierens ist ein OCR-Laufzeitfehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
+        "import_extract_ocr_cancelled": "OCR-Importieren/Extrahieren wurde abgebrochen.",
+        "import_extract_ocr_cleanup_warning": "OCR wurde abgeschlossen, aber die temporäre Remote-Bereinigung ist fehlgeschlagen. Versuchen Sie es erneut oder prüfen Sie den Kontostatus.",
+        "import_extract_ocr_apply_pending": "Die OCR-Extraktion ist abgeschlossen. Die Anwendung des extrahierten Textes nach der Extraktion ist noch nicht implementiert.",
+        "import_extract_native_runtime_error": "Während des Importierens/Extrahierens ist ein Laufzeitfehler bei der nativen Extraktion aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
+        "import_extract_native_unreadable_or_corrupt": "Die ausgewählte Datei ist für die native Extraktion unlesbar oder beschädigt.",
+        "import_extract_native_encrypted_or_password_protected": "Die ausgewählte PDF ist verschlüsselt oder passwortgeschützt und kann nicht nativ extrahiert werden.",
+        "import_extract_native_cancelled": "Die native Extraktion wurde abgebrochen.",
+        "import_extract_native_unsupported_format": "Dieses Dateiformat wird von der nativen Extraktionsroute nicht unterstützt.",
+        "import_extract_native_apply_pending": "Die native Extraktion ist abgeschlossen. Die Anwendung des extrahierten Textes nach der Extraktion ist noch nicht implementiert.",
+        "wip_test_velocidad": "WIP: Der Lesegeschwindigkeitstest wird hier in einer zukünftigen Version geöffnet.",
+        "wip_diseno_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",
+        "wip_diseno_crono": "WIP: Die Einstellungen für die schwebende Stoppuhr werden hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_fuentes": "WIP: Der Schriftarten-Selektor wird hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_colores": "WIP: Der Farb-Selektor wird hier in einer zukünftigen Version geöffnet.",
       "wip_shortcuts": "WIP: Der Tastenkombinations-Selektor wird hier in einer zukünftigen Version geöffnet.",
@@ -210,17 +289,18 @@
       "wip_discord": "WIP: Der Discord-Link wird hier in einer zukünftigen Version geöffnet.",
       "wip_colabora": "WIP: Informationen zum Mitwirken werden hier in einer zukünftigen Version angezeigt."
     },
-    "editor_alerts": {
-      "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",
-      "drop_too_big": "Abgelegter Text ist zu groß. Verwenden Sie die Schaltflächen im Hauptfenster, um großen Text hinzuzufügen.",
-      "paste_no_text": "Die Zwischenablage enthält keinen reinen Text.",
-      "drop_no_text": "Ziehen und Ablegen: Kein reiner Text erkannt.",
-      "type_limit": "Kann nicht mehr Text tippen: Maximale Größe erreicht.",
-      "paste_limit": "Kann nicht mehr Text einfügen: Maximale Größe erreicht.",
-      "paste_truncated": "Eingefügter Text wurde gekürzt, um das Maximum zu vermeiden.",
-      "drop_truncated": "Abgelegter Text hat den verfügbaren Speicherplatz überschritten und wurde gekürzt.",
-      "text_truncated": "Text wurde gekürzt, um die Anwendungsgrenze zu passen.",
-      "calc_error": "Beim Berechnen ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
+      "editor_alerts": {
+        "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",
+        "drop_too_big": "Abgelegter Text ist zu groß. Verwenden Sie die Schaltflächen im Hauptfenster, um großen Text hinzuzufügen.",
+        "paste_no_text": "Die Zwischenablage enthält keinen reinen Text.",
+        "drop_no_text": "Ziehen und Ablegen: Kein reiner Text erkannt.",
+        "type_limit": "Kann nicht mehr Text tippen: Maximale Größe erreicht.",
+        "paste_limit": "Kann nicht mehr Text einfügen: Maximale Größe erreicht.",
+        "drop_limit": "Es kann nicht mehr Text abgelegt werden: Maximale Größe erreicht.",
+        "paste_truncated": "Eingefügter Text wurde gekürzt, um das Maximum zu vermeiden.",
+        "drop_truncated": "Abgelegter Text hat den verfügbaren Speicherplatz überschritten und wurde gekürzt.",
+        "text_truncated": "Text wurde gekürzt, um die Anwendungsgrenze zu passen.",
+        "calc_error": "Beim Berechnen ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
     },
     "preset_alerts": {
       "name_empty": "Name darf nicht leer sein.",
@@ -230,9 +310,25 @@
       "process_error": "Beim Verarbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
     },
     "info": {
+      "external": {
+        "blocked": "Link blockiert",
+        "missing": "Link nicht gefunden",
+        "error": "Fehler beim Öffnen des Links"
+      },
+      "appdoc": {
+        "blocked": "Dokument blockiert",
+        "missing": "Dokument nicht gefunden",
+        "error": "Fehler beim Öffnen des Dokuments"
+      },
       "acerca_de": {
         "app_name": "toT",
-        "title": "Über"
+        "title": "Über",
+        "version": {
+          "unavailable": "Nicht verfügbar"
+        },
+        "env": {
+          "unavailable": "Nicht verfügbar"
+        }
       },
       "links_interes": {
         "app_name": "toT",

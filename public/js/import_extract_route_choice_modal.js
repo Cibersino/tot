@@ -84,13 +84,18 @@
       'renderer.alerts.import_extract_route_choice_cancel_button',
       'Cancel'
     );
+    const closeAriaText = translate(
+      tRenderer,
+      'renderer.alerts.import_extract_route_choice_close_aria',
+      'Close extraction route dialog'
+    );
 
     title.textContent = titleText;
     message.textContent = messageText;
     btnNative.textContent = nativeText;
     btnOcr.textContent = ocrText;
     btnCancel.textContent = cancelText;
-    btnClose.setAttribute('aria-label', cancelText);
+    btnClose.setAttribute('aria-label', closeAriaText);
 
     return await new Promise((resolve) => {
       let settled = false;

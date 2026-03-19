@@ -18,6 +18,7 @@ Authoritative revalidation note:
 
 - Revalidated on `2026-03-14` after completion of Section 2 items 7/8.
 - This revision supersedes earlier draft wording where semantics were still pending.
+- Current runtime also includes a prepare/execute split; this document keeps the core contracts lean and defers detailed transport/lifecycle rules to `docs/issues/issue_53_prepare_execute_native_triage_plan.md`.
 
 ## Decision baseline
 
@@ -94,6 +95,11 @@ Rules:
 - Never switch routes silently after failure.
 - Setup validation readiness is handled by Section 8 contract and must not be hidden as silent extraction fallback.
 
+Clarification:
+
+- `ExtractionResult` is the execute-stage route result.
+- Prepare-stage responses do not return extracted text.
+
 ## 2) Route metadata contract (substrate-agnostic)
 
 ```ts
@@ -122,6 +128,22 @@ Rules:
 - `chosenRoute` and `executedRoute` must both be logged.
 - For non-PDF files: `pdfTriage = "not_pdf"`.
 - `ocrSetupState` must be logged whenever OCR route is unavailable due to setup/activation/runtime gating.
+
+## 2A) Prepare/Execute orchestration note
+
+Current runtime orchestration is:
+
+1. `prepare`
+2. optional route choice
+3. `execute`
+
+Rules:
+
+- `prepare` performs route classification and may fail before any `ExtractionResult` exists.
+- `execute` returns the final extraction outcome and is the stage that produces `ExtractionResult`.
+- `prepare` stays outside processing mode.
+- `execute` must use the prepared route decision and must not recompute triage.
+- Detailed prepare/execute transport, token, and lifecycle rules are governed by `docs/issues/issue_53_prepare_execute_native_triage_plan.md`.
 
 ## 3) Apply contract (reuse existing canonical path)
 
