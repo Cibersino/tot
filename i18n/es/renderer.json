@@ -83,8 +83,7 @@
         "import_extract_waiting_native": "Extrayendo texto del archivo...",
         "import_extract_waiting_ocr": "Ejecutando extracción OCR...",
         "import_extract_elapsed": "Transcurrido: {time}",
-        "import_extract_drop_here": "Suelta el archivo para importar o extraer texto",
-        "import_extract_drop_hint": "Solo un archivo local"
+        "import_extract_drop_here": "Suelta el archivo para importar o extraer texto"
       },
       "crono": {
         "title": "CRONÓMETRO",

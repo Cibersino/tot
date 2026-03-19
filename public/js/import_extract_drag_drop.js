@@ -21,7 +21,6 @@
   let listenersAttached = false;
   let overlay = null;
   let overlayTitle = null;
-  let overlayHint = null;
   let tRendererRef = null;
 
   function configure(nextDeps = {}) {
@@ -64,13 +63,11 @@
     overlay.innerHTML = [
       '<div class="import-extract-drop-overlay__panel" aria-hidden="true">',
       '  <div class="import-extract-drop-overlay__title"></div>',
-      '  <div class="import-extract-drop-overlay__hint"></div>',
       '</div>',
     ].join('');
     document.body.appendChild(overlay);
 
     overlayTitle = overlay.querySelector('.import-extract-drop-overlay__title');
-    overlayHint = overlay.querySelector('.import-extract-drop-overlay__hint');
     syncOverlayText();
   }
 
@@ -80,12 +77,6 @@
       overlayTitle.textContent = translate(
         'renderer.main.processing.import_extract_drop_here',
         'Drop file to import/extract text'
-      );
-    }
-    if (overlayHint) {
-      overlayHint.textContent = translate(
-        'renderer.main.processing.import_extract_drop_hint',
-        'Single local file only'
       );
     }
   }
