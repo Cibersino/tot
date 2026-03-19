@@ -1,7 +1,7 @@
 // electron/preload.js
 'use strict';
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 
 const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {
@@ -19,6 +19,7 @@ const api = {
     // Clipboard / editor / presets / settings (we preserve all existing settings)
     readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
     openImportExtractPicker: () => ipcRenderer.invoke('import-extract-open-picker'),
+    getPathForFile: (file) => webUtils.getPathForFile(file),
     checkImportExtractPreconditions: () => ipcRenderer.invoke('import-extract-check-preconditions'),
     evaluateImportExtractOcrGate: (payload) => ipcRenderer.invoke('import-extract-evaluate-ocr-gate', payload),
     activateImportExtractOcr: (payload) => ipcRenderer.invoke('import-extract-activate-ocr', payload),

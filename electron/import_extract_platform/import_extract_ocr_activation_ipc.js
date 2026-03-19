@@ -56,6 +56,9 @@ function mapCodeToAlertKey(code) {
   if (code === 'ocr_activation_required') {
     return 'renderer.alerts.import_extract_ocr_activation_cancelled';
   }
+  if (code === 'connectivity_failed') {
+    return 'renderer.alerts.import_extract_ocr_connectivity_failed';
+  }
   if (code === 'quota_or_rate_limited') {
     return 'renderer.alerts.import_extract_ocr_quota_or_rate_limited';
   }

@@ -176,17 +176,41 @@ Entrypoint guardrail:
 - [x] Validate observability coverage for required fields/events (routes, latency, apply/truncation, precondition/failure/cancel/setup paths).
 - [x] Block progression until basic smoke/quality gate passes.
 
-## 6. Processing progress and ETA implementation
+## 6. Honest waiting UX
 
-- [ ] Evaluate feasibility and tradeoffs for progress/ETA by route (`ocr`, `native`, `both`) and lock Section 6 scope before implementation.
-- [ ] Implement processing progress UX.
-- [ ] Implement ETA behavior and calibrate realism.
-- [ ] Keep progress + ETA visible in the main window whenever the window is not minimized.
+Section 6 decision note (locked after item-1 feasibility + utility evaluation):
+
+- Section 6 applies only after `executePreparedImportExtract(...)` starts.
+  - The prepare stage remains outside processing mode.
+  - The prepare stage may keep its lightweight prepare-status UI, but it is out of Section 6 waiting-UX scope.
+- In Section 6 wording, `both` refers to the dual-route PDF prepare outcome (`choice required`), not to a third execute-stage route.
+  - Once execution starts, the evaluated/executed route is `native` or `ocr`.
+- Fast successful routes must not be artificially delayed only to make waiting feedback visible.
+- OCR retries and OCR cleanup remain in scope because they affect what the user experiences while waiting.
+- The visibility requirement for this section is limited to the main window when that window is not minimized.
+  - This section does not, by itself, require a separate OS/taskbar/native-shell progress surface.
+- Section 6.1 conclusion:
+  - Dedicated progress will not be implemented for Issue 53.
+  - ETA will not be implemented for Issue 53.
+  - Native execution is too fast to justify dedicated progress/ETA UX.
+  - OCR execution is dominated by opaque provider-side conversion wait; measured determinate progress coverage was too low to be useful, and realistic ETA was not credible enough.
+  - Stage-only progress without meaningful remaining-time information was also judged too weak to justify separate implementation.
+- Replacement Section 6 UX scope:
+  - Keep an indeterminate waiting state in the existing processing container.
+  - Use clear route-aware processing copy where helpful, without pretending to know progress.
+  - Show elapsed processing time while execution is active.
+  - Show final elapsed processing time in the success apply modal.
+  - No fake phases, percentages, or remaining-time promises.
+
+- [x] Evaluate feasibility and tradeoffs for progress/ETA by route (`ocr`, `native`, `both`) and lock Section 6 scope before implementation.
+- [x] Implement honest waiting UX in the main window during execution.
+- [x] Show elapsed processing time during execution and keep the waiting UX visible whenever the main window is not minimized.
+- [x] Show final elapsed processing time in the success apply modal.
 
 ## 7. Refinement
 
-- [ ] UI/UX refinement pass.
-- [ ] Fill missing `es`/`en` UI localization keys (no hardcoded language fallback logic).
+- [x] UI/UX refinement pass.
+- [x] Fill missing `es`/`en` UI localization keys (no hardcoded language fallback logic).
 - [ ] Logging review for required observability fields/events and consistency:
   - selected file type
   - available/chosen/executed route
@@ -205,3 +229,16 @@ Entrypoint guardrail:
 - [ ] Update setup/billing/activation instructions for the chosen access model.
 - [ ] Update changelog/release notes and related documentation.
 - [ ] Verify all Issue 53 acceptance criteria are covered before closure.
+
+## 9. Packaging and distribution validation
+
+- [ ] Build the Windows packaged artifact(s) for the current release path and confirm the build completes with the required app assets/resources bundled.
+- [ ] Run a packaged-app smoke validation on Windows for the import/extract entrypoint and core routes (`native`, `ocr`, `pdf both`, abort).
+- [ ] Validate packaged-path behavior for the chosen OCR model:
+  - `app.getPath('userData')` credential/token locations
+  - system-browser OAuth activation launch
+  - packaged runtime access to required notices/disclosure/setup surfaces
+- [ ] Validate installer/distribution artifact behavior for the intended delivery mode (install/run, app identity, persistence, and upgrade-safe config/token handling).
+- [ ] Confirm release posture for the chosen OCR access model:
+  - private testing / narrow manual distribution vs public release
+  - if public release is intended, production OAuth publication requirements are explicitly tracked and not silently treated as already solved

@@ -187,6 +187,8 @@ function buildOcrPrepareFailure({
   let primaryAlertKey = 'renderer.alerts.import_extract_ocr_unavailable';
   if (state === 'ocr_activation_required' || code === 'ocr_activation_required') {
     primaryAlertKey = 'renderer.alerts.import_extract_ocr_activation_required';
+  } else if (code === 'connectivity_failed') {
+    primaryAlertKey = 'renderer.alerts.import_extract_ocr_connectivity_failed';
   } else if (code === 'quota_or_rate_limited') {
     primaryAlertKey = 'renderer.alerts.import_extract_ocr_quota_or_rate_limited';
   }
@@ -464,11 +466,11 @@ function resolvePrimaryAlertKey(routeKind, result) {
   if (state === 'success') return 'renderer.alerts.import_extract_ocr_apply_pending';
   if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.import_extract_ocr_cancelled';
   if (code === 'ocr_activation_required') return 'renderer.alerts.import_extract_ocr_activation_required';
+  if (code === 'connectivity_failed') return 'renderer.alerts.import_extract_ocr_connectivity_failed';
   if (code === 'quota_or_rate_limited') return 'renderer.alerts.import_extract_ocr_quota_or_rate_limited';
   if (code === 'setup_incomplete'
     || code === 'credentials_missing'
     || code === 'auth_failed'
-    || code === 'connectivity_failed'
     || code === 'platform_runtime_failed'
     || code === 'ocr_unavailable') {
     return 'renderer.alerts.import_extract_ocr_unavailable';

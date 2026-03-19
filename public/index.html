@@ -55,7 +55,10 @@
         <div id="importExtractPrepareStatus" class="import-extract-prepare-status" hidden aria-hidden="true" aria-live="polite"></div>
         <div id="selectorControlsProcessing" class="controls-processing" hidden aria-hidden="true">
           <div class="import-extract-processing-bar" role="status" aria-live="polite">
-            <span id="importExtractProcessingLabel">Procesando extracción...</span>
+            <div class="import-extract-processing-copy">
+              <span id="importExtractProcessingLabel">Procesando extracción...</span>
+              <span id="importExtractProcessingElapsed" class="import-extract-processing-elapsed" hidden aria-hidden="true"></span>
+            </div>
             <span class="import-extract-processing-placeholder-track" aria-hidden="true">
               <span class="import-extract-processing-placeholder-fill"></span>
             </span>
@@ -181,6 +184,7 @@
         </header>
         <div class="import-extract-apply-modal-body">
           <p id="importExtractApplyModalMessage">Choose how to apply the extracted text.</p>
+          <p id="importExtractApplyModalElapsed" class="import-extract-apply-modal-elapsed" hidden aria-hidden="true"></p>
           <div class="import-extract-apply-repeat-row">
             <label id="importExtractApplyModalRepeatLabel" for="importExtractApplyModalRepeatInput">Repetitions</label>
             <input id="importExtractApplyModalRepeatInput" type="number" min="1" step="1" value="1" />
@@ -209,9 +213,12 @@
   <script src="./js/info_modal_links.js"></script>
   <script src="./js/current_text_snapshots.js"></script>
   <script src="./js/text_apply_canonical.js"></script>
+  <script src="./js/import_extract_status_ui.js"></script>
   <script src="./js/import_extract_route_choice_modal.js"></script>
   <script src="./js/import_extract_apply_modal.js"></script>
   <script src="./js/import_extract_ocr_activation_recovery.js"></script>
+  <script src="./js/import_extract_entry.js"></script>
+  <script src="./js/import_extract_drag_drop.js"></script>
   <script src="renderer.js"></script>
 </body>
 

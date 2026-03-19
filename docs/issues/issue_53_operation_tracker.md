@@ -29,7 +29,7 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Current Authoritative Status
 
-As of 2026-03-15:
+As of 2026-03-18:
 
 - Section 1 (`Substrate and access-model decision`): complete.
 - Section 2 (`Substrate setup / billing / activation path`): complete.
@@ -39,7 +39,7 @@ As of 2026-03-15:
 - Section 3 (`Contracts before implementation`): complete (revalidated).
   - Revalidated and relocked on 2026-03-14 after Section 2 item 7/8 completion.
   - Authoritative contract baseline: `docs/issues/issue_53_contracts.md`.
-- Sections 4-8: in progress.
+- Sections 4-9: in progress.
   - Section 4 started.
   - Items 1-15 complete:
     - dedicated import/extract button added in selector row
@@ -69,12 +69,1855 @@ As of 2026-03-15:
     - Post-closure note: OP-0066 observability instrumentation was manually rolled back by the user after Section 5 closure; item-10 remains closed as historical evidence captured at runtime on 2026-03-15.
   - Section 5 item 11 (`Block progression until basic smoke/quality gate passes`): complete (`QG-01`).
   - Section 5 is complete.
-  - Active next checklist item: Section 6 item 1 (`Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation`).
+  - Section 6 item 1 (`Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation`): complete.
+  - Section 6 item 2 (`Implement honest waiting UX in the main window during execution`): complete.
+  - Section 6 item 3 (`Show elapsed processing time during execution and keep the waiting UX visible whenever the main window is not minimized`): complete.
+  - Section 6 item 4 (`Show final elapsed processing time in the success apply modal`): complete.
+  - Section 6 is complete.
+  - Section 7 item 1 (`UI/UX refinement pass`): complete.
+  - Section 7 item 2 (`Fill missing es/en UI localization keys`): complete.
+  - Active next checklist item: Section 7 item 3 (`Logging review for required observability fields/events and consistency`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0116
+
+- Date/time: 2026-03-19 00:10:43 -03:00
+- Operation: Fill remaining `main.json` / `renderer.json` localization key gaps for all existing non-`arn`, non-`es-cl` locales that already ship both files.
+- Why: User requested that the remaining existing language packs be brought up to date without creating new locale files and without touching `arn` or `es-cl`.
+- Changes made:
+  - Filled the missing `main.menu.*` development/language-list keys in:
+    - `i18n/de/main.json`
+    - `i18n/fr/main.json`
+    - `i18n/it/main.json`
+    - `i18n/pt/main.json`
+  - Filled the missing `renderer.*` keys in:
+    - `i18n/de/renderer.json`
+    - `i18n/fr/renderer.json`
+    - `i18n/it/renderer.json`
+    - `i18n/pt/renderer.json`
+  - Covered both the newer Issue 53 import/extract surfaces and older baseline gaps (ARIA, tips, external/appdoc info keys, and the legacy missing `renderer.tasks.columns.tiempo` key in `pt`).
+- Checklist updates:
+  - No checklist toggles in `docs/issues/issue_53_implementation_plan.md`.
+  - Active next checklist item remains unchanged: Section 7 item 3 (`Logging review for required observability fields/events and consistency`).
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `i18n/de/main.json`
+  - `i18n/de/renderer.json`
+  - `i18n/fr/main.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/main.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/main.json`
+  - `i18n/pt/renderer.json`
+- Evidence:
+  - Scope lock:
+    - touched only locales that already had both `main.json` and `renderer.json`: `de`, `fr`, `it`, `pt`
+    - did not touch `arn`
+    - did not touch `es-cl`
+    - did not create any new locale files
+  - Pre-patch gap summary from baseline diff vs `i18n/en`:
+    - `main.json`: `de`, `fr`, `it`, `pt` each missing 6 keys
+    - `renderer.json`: `de`, `fr`, `it` each missing 91 keys; `pt` missing 92 keys because `renderer.tasks.columns.tiempo` was absent
+  - Post-patch completeness check:
+    - `FILE main.json` -> `de: ok`, `fr: ok`, `it: ok`, `pt: ok`
+    - `FILE renderer.json` -> `de: ok`, `fr: ok`, `it: ok`, `pt: ok`
+  - JSON validation:
+    - `Get-Content i18n\\de\\main.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\de\\renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\fr\\main.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\fr\\renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\it\\main.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\it\\renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\pt\\main.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n\\pt\\renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-19 00:22:09 -03:00`
+- Outcome / next step:
+  - Completed.
+  - Existing locale packs with both `main.json` and `renderer.json` are now aligned to the current `en` key baseline.
+  - Active next checklist item remains Section 7 item 3 (`Logging review for required observability fields/events and consistency`).
+
+### OP-0115
+
+- Date/time: 2026-03-18 23:59:05 -03:00
+- Operation: Execute Section 7 item 2 by auditing and filling missing `es` / `en` localization coverage for the Issue 53 import/extract UI surfaces.
+- Why: User asked to move from the completed Section 7.1 UI/UX refinement pass to Section 7.2 (`Fill missing es/en UI localization keys (no hardcoded language fallback logic)`).
+- Changes made:
+  - Audited the Issue 53 import/extract UI surfaces for renderer key coverage and hardcoded issue-local copy usage.
+  - Added dedicated localized close-button aria-label keys for the two Issue 53 modals:
+    - `renderer.alerts.import_extract_route_choice_close_aria`
+    - `renderer.alerts.import_extract_apply_modal_close_aria`
+  - Updated:
+    - `public/js/import_extract_route_choice_modal.js`
+    - `public/js/import_extract_apply_modal.js`
+    so the modal close buttons now use those dedicated localized keys instead of reusing the cancel-button text.
+  - Updated `docs/issues/issue_53_implementation_plan.md`:
+    - marked Section 7 item 1 complete
+    - marked Section 7 item 2 complete
+  - Updated `docs/issues/issue_53_operation_tracker.md` current authoritative status:
+    - recorded Section 7 item 1 complete
+    - recorded Section 7 item 2 complete
+    - moved the active next checklist item to Section 7 item 3
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md`
+    - `[x] UI/UX refinement pass.`
+    - `[x] Fill missing es/en UI localization keys (no hardcoded language fallback logic).`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_route_choice_modal.js`
+  - `public/js/import_extract_apply_modal.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Current scope assumption:
+    - this operation is limited to the Issue 53 import/extract UI surfaces and related issue-local modules, not a repo-wide localization sweep
+  - Audit targets:
+    - `public/index.html`
+    - `public/renderer.js`
+    - `public/js/import_extract_*`
+    - `public/style.css` only if any user-visible text references are involved
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Audit result:
+    - import/extract processing/alert/modal action keys referenced by the issue-local modules are present in both locale files
+    - remaining concrete issue-local gap found was dedicated close-button aria-label localization for the route-choice and apply modals
+    - hidden modal/process markup in `public/index.html` still contains static placeholder text, but those surfaces are localized before becoming visible; no extra language-selection logic was added
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-19 00:02:40 -03:00`
+  - Localization anchors:
+    - `public/js/import_extract_route_choice_modal.js`
+      - close button now uses `renderer.alerts.import_extract_route_choice_close_aria`
+    - `public/js/import_extract_apply_modal.js`
+      - close button now uses `renderer.alerts.import_extract_apply_modal_close_aria`
+    - `i18n/en/renderer.json`
+      - `import_extract_route_choice_close_aria`
+      - `import_extract_apply_modal_close_aria`
+    - `i18n/es/renderer.json`
+      - `import_extract_route_choice_close_aria`
+      - `import_extract_apply_modal_close_aria`
+    - `docs/issues/issue_53_implementation_plan.md`
+      - Section 7 items 1 and 2 now checked
+    - `docs/issues/issue_53_operation_tracker.md`
+      - active next checklist item moved to Section 7 item 3
+  - Static verification:
+    - `node --check public/js/import_extract_route_choice_modal.js` -> exit `0`
+    - `node --check public/js/import_extract_apply_modal.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - Section 7 item 2 is complete for the Issue 53 import/extract surface area.
+  - Next step is Section 7 item 3 (`Logging review for required observability fields/events and consistency`).
+
+### OP-0114
+
+- Date/time: 2026-03-18 23:53:33 -03:00
+- Operation: Refine the OCR processing-bar copy so the main label switches once to a more patient waiting message after a short delay, without increasing the processing bar height.
+- Why: User requested a clearer waiting message during OCR processing, rejected adding a third line to the bar, and approved a one-time label replacement after 5 seconds rather than alternating copy.
+- Changes made:
+  - Updated `public/js/import_extract_status_ui.js` so the OCR processing label:
+    - starts with the current route label
+    - switches once after 5 seconds to a more patient message
+    - does not alternate/blink
+    - does not add any extra line to the processing bar
+  - Added localized delayed-copy key:
+    - `renderer.main.processing.import_extract_waiting_ocr_delayed`
+    - in `i18n/en/renderer.json`
+    - in `i18n/es/renderer.json`
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_status_ui.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - User-approved behavior lock:
+    - OCR only
+    - initial label remains the current route label
+    - after 5 seconds, replace the same label once
+    - no alternating/blinking copy
+    - no extra line added to the bar
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 23:54:10 -03:00`
+  - Implementation anchors:
+    - `public/js/import_extract_status_ui.js:28`
+      - `const OCR_WAITING_COPY_DELAY_MS = 5000;`
+    - `public/js/import_extract_status_ui.js:136-139`
+      - OCR label switches to `renderer.main.processing.import_extract_waiting_ocr_delayed` after the threshold
+    - `i18n/en/renderer.json:85`
+      - `Running OCR. Some files take longer.`
+    - `i18n/es/renderer.json:85`
+      - `Ejecutando OCR. Algunos archivos tardan más.`
+  - Static verification:
+    - `node --check public/js/import_extract_status_ui.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - OCR processing now starts with the original route label and switches once after 5 seconds to a more patient waiting message, without increasing processing-bar height.
+
+### OP-0113
+
+- Date/time: 2026-03-18 23:43:00 -03:00
+- Operation: Refine the import/extract OCR activation-starting alert copy to explain the browser-open behavior and the narrow Google-processing disclosure more clearly.
+- Why: User requested replacing the current activation-starting alert with clearer, more user-friendly wording that explicitly mentions Google, explains that the browser will open, and states that only user-chosen OCR files are sent to Google.
+- Changes made:
+  - Updated `renderer.alerts.import_extract_ocr_activation_starting` in:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - New wording now:
+    - names Google directly
+    - explains that the browser will open
+    - states that only user-chosen OCR files are sent to Google
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - User-approved target wording direction:
+    - mention Google directly
+    - explain that the browser will open
+    - include narrow privacy/external-processing disclosure
+    - use the shorter variant, not broad reassurance language
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 23:43:26 -03:00`
+  - Localization anchors:
+    - `i18n/en/renderer.json:270`
+      - `toT OCR uses Google. Your browser will open so you can authorize your account. Only files you choose for OCR are sent to Google.`
+    - `i18n/es/renderer.json:270`
+      - `El OCR de toT usa Google. Se abrira el navegador para que autorices tu cuenta. Solo se envian a Google los archivos que eliges para OCR.`
+  - Static verification:
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - The OCR activation-starting alert now gives a clearer explanation of Google authorization and the narrow external-processing scope.
+
+### OP-0112
+
+- Date/time: 2026-03-18 22:47:13 -03:00
+- Operation: Refine the main-window import/extract drag-over overlay copy by removing the secondary "single local file only" hint.
+- Why: User requested keeping only the main drag-over message and removing the secondary hint line from the overlay.
+- Changes made:
+  - Removed the secondary hint node from `public/js/import_extract_drag_drop.js` so the drag-over overlay now renders only the main message line.
+  - Removed the unused hint style from `public/style.css`.
+  - Removed the dead `import_extract_drop_hint` localization keys from:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/js/import_extract_drag_drop.js`
+  - `public/style.css`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - User-requested refinement target:
+    - keep only the main drag-over message
+    - remove the secondary hint copy from the overlay
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 22:48:02 -03:00`
+  - Implementation anchors:
+    - `public/js/import_extract_drag_drop.js:65`
+      - overlay markup now contains only `.import-extract-drop-overlay__title`
+    - `public/js/import_extract_drag_drop.js:78`
+      - only `renderer.main.processing.import_extract_drop_here` is translated for the overlay copy
+    - `public/style.css:268`
+      - retained title styling only; hint style removed
+    - `i18n/en/renderer.json:86`
+      - only `import_extract_drop_here` remains
+    - `i18n/es/renderer.json:86`
+      - only `import_extract_drop_here` remains
+  - Static verification:
+    - `node --check public/js/import_extract_drag_drop.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - The drag-over overlay now shows only the main drop message, with no secondary hint line.
+
+### OP-0111
+
+- Date/time: 2026-03-18 22:30:44 -03:00
+- Operation: Record user-executed interactive validation evidence for the new main-window import/extract drag-and-drop refinement.
+- Why: The user completed the requested app-level drag/drop validation pass after OP-0110. The Issue 53 tracker should capture that evidence and the resulting quality judgment.
+- Changes made:
+  - Recorded the user-provided interactive validation outcome for the drag/drop refinement.
+  - Recorded that the shared import/extract flow was exercised successfully through dropped files across:
+    - native route (`docx`)
+    - OCR route (`jpg` with auth recovery)
+    - dual-route PDF choice (`pdf both -> choose ocr`)
+    - failure path (`diff` unsupported native format)
+    - abort path (`pdf ocr_only` -> user abort)
+    - precondition block (`stopwatchRunning: true`)
+  - Recorded the observed residual note from DevTools:
+    - one Chromium performance warning for a long-running drop handler
+    - no functional failure or unexpected navigation/open-file behavior reported
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - User terminal evidence confirms dropped-file prepare/execute success through the shared flow:
+    - `import/extract prepare started: { sourceFileExt: 'docx', sourceFileKind: 'text_document' }`
+    - `import/extract execute completed: { ... routeKind: 'native', state: 'success', ... sourceFileExt: 'docx' ... }`
+    - `import/extract prepare failed: { ... sourceFileExt: 'jpg' ... code: 'auth_failed' }`
+    - `import/extract OCR activation completed: { ok: true, state: 'ready', code: '', importedCredentials: false }`
+    - `import/extract execute completed: { ... routeKind: 'ocr', state: 'success', ... sourceFileExt: 'jpg' ... }`
+    - `import/extract prepare choice-required: { ... sourceFileExt: 'pdf', pdfTriage: 'both', ... }`
+    - `import/extract execute completed: { ... routeKind: 'ocr', state: 'success', ... sourceFileExt: 'pdf', pdfTriage: 'both' ... }`
+    - `import/extract execute completed: { ... routeKind: 'native', state: 'failure', code: 'unsupported_format', sourceFileExt: 'diff' ... }`
+    - `Processing abort requested: { lockId: 5, source: 'main_window', reason: 'user_abort_button' }`
+    - `Processing abort requested: { lockId: 6, source: 'main_window', reason: 'user_abort_button' }`
+    - `import-extract precondition_rejected: { ... stopwatchRunning: true }`
+  - User DevTools evidence confirms the new modules loaded and processing-mode state still syncs:
+    - `[DEBUG][import-extract-entry] Import/extract shared entry starting...`
+    - `[DEBUG][import-extract-drag-drop] Import/extract drag/drop module starting...`
+    - repeated `import/extract processing-mode changed:` events for success and abort paths
+  - Residual note from DevTools:
+    - `import_extract_drag_drop.js:206 [Violation] 'drop' handler took 3329ms`
+    - no user-reported functional failure accompanied this warning
+- Outcome / next step:
+  - Completed.
+  - Interactive validation indicates the drag/drop refinement is functioning as intended.
+  - Residual follow-up, if desired:
+    - reduce the lifetime of the DOM `drop` handler so DevTools no longer reports a long-running event callback, without changing behavior.
+
+### OP-0110
+
+- Date/time: 2026-03-18 22:04:03 -03:00
+- Operation: Implement main-window drag-and-drop as an alternative import/extract entrypoint, using the same shared flow as the button path.
+- Why: User requested the first Section 7 UI/UX refinement so a file can be dropped anywhere on the main window instead of requiring the native picker, while preserving the existing import/extract behavior and keeping `public/renderer.js` thin.
+- Changes made:
+  - Added a preload bridge for Electron 39 dropped-file path resolution:
+    - `electron/preload.js` now exposes `getPathForFile(file)` via `webUtils.getPathForFile(...)`.
+  - Added a dedicated shared import/extract entry module:
+    - `public/js/import_extract_entry.js`
+    - owns the shared picker/drop entry flow
+    - reuses the existing prepare/execute/apply pipeline
+    - blocks entry while any full-window modal is open
+  - Added a dedicated drag/drop UX module:
+    - `public/js/import_extract_drag_drop.js`
+    - shows a full-window drag-over overlay
+    - accepts only one dropped local file
+    - prevents default file-drop navigation behavior even when the drop is rejected
+  - Updated `public/index.html` to load the new modules before `renderer.js`.
+  - Updated `public/style.css` with the drag-over overlay styles.
+  - Refactored `public/renderer.js` so:
+    - the button click delegates to `ImportExtractEntry.startFromPicker()`
+    - drag/drop is configured through the dedicated module
+    - modal-open and dropped-file-path helper logic stays in thin renderer wiring
+  - Updated `i18n/en/renderer.json` and `i18n/es/renderer.json`:
+    - generalized `renderer.alerts.import_extract_error` from picker-specific wording to start-flow wording
+    - added drag-over overlay copy
+    - added explicit drop alerts for invalid drop payloads
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/preload.js`
+  - `public/renderer.js`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/js/import_extract_entry.js`
+  - `public/js/import_extract_drag_drop.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - User-approved behavior lock before implementation:
+    - single file only
+    - same shared entry function as button flow
+    - block re-entry with existing guards
+    - visible drag-over feedback required
+    - drag/drop disabled while full-window modals are open
+  - Read-only verification completed before editing:
+    - `package.json` -> Electron `^39.2.2`
+    - `node_modules/electron/electron.d.ts` -> `webUtils.getPathForFile(file)` is available and supersedes `File.path`
+    - `electron/preload.js` -> no existing dropped-file-path helper yet
+    - `public/renderer.js` -> no current main-window drag/drop path
+    - `electron/main.js` -> no main-window `will-navigate` drag/drop guard; renderer must prevent default on drag/drop
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 22:14:50 -03:00`
+  - Implementation anchors:
+    - `electron/preload.js:22`
+      - `getPathForFile: (file) => webUtils.getPathForFile(file),`
+    - `public/js/import_extract_entry.js:355`
+      - shared entry module exported as `window.ImportExtractEntry`
+    - `public/js/import_extract_drag_drop.js:248`
+      - drag/drop module exported as `window.ImportExtractDragDrop`
+    - `public/index.html:220-221`
+      - new scripts loaded before `renderer.js`
+    - `public/style.css:240`
+      - drag-over overlay styles start at `.import-extract-drop-overlay`
+    - `public/renderer.js:221`
+      - `hasBlockingMainWindowModalOpen()`
+    - `public/renderer.js:1761`
+      - `configureImportExtractModules()`
+    - `public/renderer.js:1797`
+      - import/extract button now delegates to `importExtractEntry.startFromPicker()`
+  - Localization anchors:
+    - `i18n/en/renderer.json:243`
+      - generalized `renderer.alerts.import_extract_error`
+    - `i18n/en/renderer.json:249-250`
+      - added drop-specific alerts
+    - `i18n/en/renderer.json:86-87`
+      - added drag-over overlay copy
+    - `i18n/es/renderer.json:243`
+      - generalized `renderer.alerts.import_extract_error`
+    - `i18n/es/renderer.json:249-250`
+      - added drop-specific alerts
+    - `i18n/es/renderer.json:86-87`
+      - added drag-over overlay copy
+  - Static verification:
+    - `node --check electron/preload.js` -> exit `0`
+    - `node --check public/renderer.js` -> exit `0`
+    - `node --check public/js/import_extract_entry.js` -> exit `0`
+    - `node --check public/js/import_extract_drag_drop.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+- Outcome / next step:
+  - Completed.
+  - Main-window import/extract now supports drag-and-drop anywhere in the window, reusing the same shared flow as the button path.
+  - No interactive app validation was run in this operation.
+  - Next step, if desired, is a focused manual validation pass for:
+    - normal drag-over feedback
+    - single-file drop success
+    - multi-file drop rejection
+    - drop rejection while a full-window modal is open
+
+### OP-0109
+
+- Date/time: 2026-03-18 21:33:27 -03:00
+- Operation: Add an explicit packaging/distribution validation stage to the Issue 53 implementation plan and reconcile the tracker’s authoritative status.
+- Why: User explicitly requested adding the missing packaging part. The prior inspection in `OP-0108` confirmed that packaging/distribution expectations exist in the issue docs but are not represented as explicit checklist work in the implementation plan.
+- Changes made:
+  - Added a new final `Section 9. Packaging and distribution validation` to `docs/issues/issue_53_implementation_plan.md`.
+  - Added explicit checklist items for:
+    - Windows packaged-build generation
+    - packaged-app smoke validation on Windows
+    - packaged-path OCR/runtime behavior
+    - installer/distribution artifact behavior
+    - release-posture confirmation for the chosen OAuth/publication model
+  - Updated `docs/issues/issue_53_operation_tracker.md` current authoritative status from `Sections 4-8: in progress` to `Sections 4-9: in progress`.
+  - Preserved the current active next checklist item as Section 7 item 1; no work-order reshuffle was introduced by the new final stage.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:33:27 -03:00`
+  - Plan-structure change disclosure:
+    - instruction being executed: add the missing packaging part to the implementation plan
+    - exact structure change to be made:
+      - keep current Section 8 as `Documentation and compliance closeout`
+      - add a new final `Section 9` for packaging/distribution validation
+      - update tracker authoritative status from `Sections 4-8: in progress` to `Sections 4-9: in progress`
+    - rationale:
+      - packaging/distribution is already required by `docs/issues/issue_53.md` and `docs/issues/issue_53_ocr_substrate_evaluation.md`
+      - a separate final stage makes the gap explicit without overloading Section 8 with runtime packaging validation work
+    - impact/risk:
+      - checklist numbering after Section 8 will expand, but no existing checkbox states need to be changed
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:34:19 -03:00`
+  - Plan anchors:
+    - `docs/issues/issue_53_implementation_plan.md:233`
+      - new section header `## 9. Packaging and distribution validation`
+    - `docs/issues/issue_53_implementation_plan.md:235-242`
+      - new packaging/distribution checklist items present
+  - Tracker anchors:
+    - `docs/issues/issue_53_operation_tracker.md:42`
+      - authoritative status now says `Sections 4-9: in progress`
+    - `docs/issues/issue_53_operation_tracker.md:77`
+      - active next checklist item remains `Section 7 item 1`
+- Outcome / next step:
+  - Completed.
+  - Issue 53 now has an explicit final packaging/distribution validation stage in the implementation plan.
+  - Next step remains unchanged: Section 7 item 1 (`UI/UX refinement pass`).
+
+### OP-0108
+
+- Date/time: 2026-03-18 21:29:47 -03:00
+- Operation: Inspect whether Issue 53 planning already covers packaging/build-distribution validation or whether that stage is missing from the implementation plan.
+- Why: User asked whether the implementation plan is missing the last packaging part before continuing.
+- Changes made:
+  - Inspected packaging/release-related references in:
+    - `docs/issues/issue_53.md`
+    - `docs/issues/issue_53_implementation_plan.md`
+    - `docs/issues/issue_53_ocr_substrate_evaluation.md`
+    - `package.json`
+  - Compared the issue-level expectations against the actual implementation-plan checklist coverage.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:29:47 -03:00`
+  - Drift disclosure:
+    - a read-only search for packaging/build/distribution terms across the repo started before this entry was written
+    - impact: no repository files were modified during that pre-entry read phase
+    - handling: the read-only search is explicitly recorded here before continuing with doc inspection
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:30:19 -03:00`
+  - Packaging/distribution evidence:
+    - `docs/issues/issue_53.md`
+      - open workstreams explicitly include `Windows packaging and future macOS/Linux boundaries`
+      - acceptance criteria include Windows-first delivery and future platform viability
+    - `docs/issues/issue_53_ocr_substrate_evaluation.md`
+      - repeatedly calls out production/public-release constraints, including OAuth publication requirements for distributed public release
+    - `package.json`
+      - packaged-build commands exist:
+        - `dist`
+        - `dist:win`
+    - `docs/issues/issue_53_implementation_plan.md`
+      - Section 8 covers documentation/compliance/release notes
+      - no explicit checklist item exists for packaged-build execution, packaged-app smoke validation, installer/distribution artifact validation, or release-path OAuth/publication readiness
+- Outcome / next step:
+  - Completed.
+  - Conclusion: yes, the implementation plan is currently missing an explicit packaging/distribution validation stage.
+  - The missing gap is not documentation-only; it is the absence of checklist items for:
+    - packaged-build generation/verification
+    - packaged-app runtime smoke validation
+    - release/distribution readiness items tied to the chosen OCR OAuth model
+
+### OP-0107
+
+- Date/time: 2026-03-18 21:25:28 -03:00
+- Operation: Add a dedicated shared import/extract OCR connectivity alert and map existing connectivity failures to it.
+- Why: User requested an explicit alert when OCR fails because internet/connectivity is unavailable, instead of collapsing that case into generic OCR-unavailable or activation-failed messaging.
+- Changes made:
+  - Added a dedicated shared renderer alert key for OCR connectivity failures:
+    - `renderer.alerts.import_extract_ocr_connectivity_failed`
+  - Updated OCR prepare/execute mapping in `electron/import_extract_platform/import_extract_prepare_execute_core.js` so `connectivity_failed` now resolves to the dedicated alert key instead of generic OCR-unavailable.
+  - Updated OCR activation mapping in `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` so `connectivity_failed` now resolves to the dedicated alert key instead of generic OCR-activation-failed.
+  - Updated `electron/import_extract_platform/import_extract_ocr_gate_ipc.js` for consistency so any future/alternate OCR gate consumer also receives the same dedicated connectivity alert key.
+  - Added localized `en`/`es` renderer strings for the new alert key.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+  - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:25:28 -03:00`
+  - Drift disclosure:
+    - a narrow read-only search of the OCR connectivity-failure mapping sites started before this entry was written
+    - impact: no repository files were modified during that pre-entry read phase
+    - handling: the read-only search is explicitly recorded here before continuing with the implementation
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:26:59 -03:00`
+  - Static verification:
+    - `node --check electron/import_extract_platform/import_extract_prepare_execute_core.js` -> exit `0`
+    - `node --check electron/import_extract_platform/import_extract_ocr_activation_ipc.js` -> exit `0`
+    - `node --check electron/import_extract_platform/import_extract_ocr_gate_ipc.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+  - Mapping/reference verification:
+    - `rg -n "import_extract_ocr_connectivity_failed" electron public i18n -g "*.js" -g "*.json" -g "*.html"`
+      - confirms the new alert key exists in:
+        - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+        - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+        - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js`
+        - `i18n/en/renderer.json`
+        - `i18n/es/renderer.json`
+- Outcome / next step:
+  - Completed.
+  - The current import/extract OCR flow now surfaces connectivity loss with a dedicated user-visible alert.
+  - No interactive offline smoke test was run in this operation; next step, if desired, is a manual disconnect/retry validation of the new alert text in the app.
+
+### OP-0106
+
+- Date/time: 2026-03-18 21:20:14 -03:00
+- Operation: Inspect whether OCR internet/connectivity failures produce a user-visible notification in the current import/extract flow.
+- Why: User asked whether a connection failure alerts the user when OCR depends on the internet.
+- Changes made:
+  - Inspected OCR setup validation classification in `electron/import_extract_platform/ocr_google_drive_setup_validation.js`.
+  - Inspected OCR execution failure classification in `electron/import_extract_platform/ocr_google_drive_route.js`.
+  - Inspected import/extract alert-key mapping in `electron/import_extract_platform/import_extract_prepare_execute_core.js`.
+  - Inspected OCR activation alert-key mapping in `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`.
+  - Inspected renderer notification handoff in `public/renderer.js` and OCR activation recovery notifications in `public/js/import_extract_ocr_activation_recovery.js`.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:20:14 -03:00`
+  - Drift disclosure:
+    - a read-only search for connectivity/network/import-extract OCR failure symbols started before this entry was written
+    - impact: no repository files were modified during that pre-entry read phase
+    - handling: the read-only search and its findings are explicitly recorded here before continuing with deeper inspection
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:20:51 -03:00`
+  - Connectivity classification evidence:
+    - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+      - network/API reachability failures classify as `connectivity_failed`
+      - there is a connectivity-specific internal message key: `ocr.google_drive.validation.connectivity_failed`
+    - `electron/import_extract_platform/ocr_google_drive_route.js`
+      - runtime OCR provider failures map network/timeout/5xx conditions to `connectivity_failed`
+  - User-visible alert mapping evidence:
+    - `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+      - import/extract prepare/execute maps `connectivity_failed` to `renderer.alerts.import_extract_ocr_unavailable`
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+      - activation flow produces `code: 'connectivity_failed'`, but `mapCodeToAlertKey(...)` falls back to `renderer.alerts.import_extract_ocr_activation_failed`
+    - `public/renderer.js`
+      - renderer shows the returned `primaryAlertKey` via `window.Notify.notifyMain(...)`
+    - `i18n/en/renderer.json` / `i18n/es/renderer.json`
+      - current import/extract OCR renderer alerts include generic keys such as:
+        - `import_extract_ocr_unavailable`
+        - `import_extract_ocr_activation_required`
+        - `import_extract_ocr_quota_or_rate_limited`
+        - `import_extract_ocr_runtime_error`
+      - no dedicated renderer alert key exists for import/extract OCR connectivity failure
+- Outcome / next step:
+  - Completed.
+  - Current behavior:
+    - Yes, the user is notified when OCR connectivity fails.
+    - No, that notification is not currently connection-specific in the import/extract UX.
+    - prepare/execute surface it as generic OCR unavailable
+    - activation surfaces it as generic OCR activation failed
+
+### OP-0104
+
+- Date/time: 2026-03-18 21:13:20 -03:00
+- Operation: Record the user-provided interactive Section 6 validation evidence and, if it is sufficient, close Section 6 in the plan/tracker.
+- Why: Section 6 was intentionally left open after static validation. The user has now provided app-level main-window behavior evidence for the required waiting UX paths.
+- Changes made:
+  - Mapped the user-provided PowerShell runtime logs and main-window DevTools logs to the Section 6 acceptance items.
+  - Updated `docs/issues/issue_53_implementation_plan.md` to mark Section 6 items 2-4 complete.
+  - Updated `docs/issues/issue_53_operation_tracker.md` current authoritative status so it now reflects:
+    - Section 6 items 2-4 complete
+    - Section 6 complete
+    - active next checklist item moved to Section 7 item 1
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md`
+    - Section 6 item 2 (`Implement honest waiting UX in the main window during execution`) -> `[x]`
+    - Section 6 item 3 (`Show elapsed processing time during execution and keep the waiting UX visible whenever the main window is not minimized`) -> `[x]`
+    - Section 6 item 4 (`Show final elapsed processing time in the success apply modal`) -> `[x]`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:13:20 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:15:28 -03:00`
+  - User-provided interactive validation evidence in chat on `2026-03-18`:
+    - Native success run (`docx`):
+      - prepare completed before processing mode enable
+      - `import-extract-processing-mode` enabled with `reason: 'run_route'`
+      - disabled with `reason: 'import_extract_native_success'`
+      - execute completed with `routeKind: 'native'`, `state: 'success'`
+    - OCR image success run (`png`):
+      - first prepare failed with `code: 'auth_failed'`
+      - OCR activation then completed with `{ ok: true, state: 'ready' }`
+      - rerun prepare completed successfully
+      - processing mode enabled with `reason: 'run_route'`
+      - disabled with `reason: 'import_extract_ocr_success'`
+      - execute completed with `routeKind: 'ocr'`, `state: 'success'`
+      - interpretation: the first-run interruption was setup/auth activation, not a Section 6 waiting-UX regression
+    - Dual-route PDF run (`pdfTriage: 'both'`):
+      - prepare logged `choice-required` with `chosenRoute: null`
+      - execute started only after route selection with `chosenRoute: 'ocr'`
+      - processing mode enabled with `reason: 'run_pdf_route'`
+      - disabled with `reason: 'import_extract_ocr_success'`
+      - execute completed with `routeKind: 'ocr'`, `state: 'success'`
+      - interpretation: prepare/route choice remained outside processing mode as required
+    - Abort run (`ocr_only` PDF):
+      - processing mode enabled with `reason: 'run_pdf_route'`
+      - abort requested with `reason: 'user_abort_button'`
+      - processing mode disabled with `reason: 'user_abort_button'`
+      - no execute-success/apply-complete path was shown after abort
+    - Main-window DevTools console:
+      - `import-extract-status-ui` logged clean processing-mode state transitions for lockIds `1` through `4`
+      - transitions align with native success, OCR success, PDF choice->OCR success, and abort paths
+    - User statement in chat: `I think everything works as intended.`
+- Outcome / next step:
+  - Completed.
+  - Section 6 is now closed based on user-provided interactive runtime evidence plus prior static verification from `OP-0099`.
+  - Next step is Section 7 item 1 (`UI/UX refinement pass`).
+
+### OP-0103
+
+- Date/time: 2026-03-18 21:06:03 -03:00
+- Operation: Prepare a concrete interactive validation plan for Section 6 using the local smoke fixtures and prior Issue 53 evidence.
+- Why: User requested step-by-step guidance on what tests to run next. The guidance should be tied to the repository’s actual fixtures and expected behaviors.
+- Changes made:
+  - Inspected the local smoke fixture set under `tools_local/smoke/`.
+  - Reused the prior Section 5 evidence map in `docs/issues/issue_53_section5_evidence.md` to select the smallest run set that still covers Section 6:
+    - native success
+    - OCR success
+    - PDF route-choice before processing
+    - cancellation during processing
+  - Confirmed the concrete fixtures previously used for those paths:
+    - `prueba_docx.docx`
+    - `prueba_png.png`
+    - `prueba_pdf_original_12_paginas.pdf`
+    - `prueba_pdf_2_escaneado_12_paginas.pdf`
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:06:03 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:06:28 -03:00`
+  - Fixture inventory:
+    - `Get-ChildItem -Path tools_local\\smoke -Name | Sort-Object`
+  - Prior evidence anchors:
+    - `docs/issues/issue_53_section5_evidence.md:81-101`
+      - `SMK-01` native baseline uses `tools_local/smoke/prueba_docx.docx`
+    - `docs/issues/issue_53_section5_evidence.md:131-158`
+      - `SMK-02` OCR baseline uses `tools_local/smoke/prueba_png.png`
+    - `docs/issues/issue_53_section5_evidence.md:246-259`
+      - `SMK-04` dual-route PDF path uses `tools_local/smoke/prueba_pdf_original_12_paginas.pdf`
+    - `docs/issues/issue_53_section5_evidence.md:642-684`
+      - `PLK-01` processing lock / abort path uses `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+- Outcome / next step:
+  - Completed.
+  - Next step is to guide the user through the 4-run Section 6 interactive validation sequence using those fixtures.
+
+### OP-0102
+
+- Date/time: 2026-03-18 21:03:19 -03:00
+- Operation: Remove the orphaned `renderer.alerts.import_extract_not_ready` i18n keys and re-run static checks.
+- Why: The deeper Section 6 audit confirmed those keys are dead remnants from an older placeholder path and should be removed rather than migrated.
+- Changes made:
+  - Removed `renderer.alerts.import_extract_not_ready` from:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Re-ran JSON parse checks for both renderer bundles.
+  - Re-ran a narrowed reference search to confirm the key no longer exists in `public`, `electron`, or `i18n`.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:03:19 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:03:51 -03:00`
+  - Static verification:
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+  - Narrowed absence check:
+    - `rg -n "import_extract_not_ready" public electron i18n -g "!*node_modules*"` -> exit `1`
+- Outcome / next step:
+  - Completed.
+  - The orphaned key has been removed cleanly from live code/i18n surfaces.
+  - Next step remains the same: interactive app-level validation of the Section 6 waiting UX before checklist closure.
+
+### OP-0101
+
+- Date/time: 2026-03-18 21:00:29 -03:00
+- Operation: Re-check the Section 6 migration for partial move symptoms after finding the orphaned `import_extract_not_ready` i18n key.
+- Why: User explicitly asked whether that orphaned key indicates an incomplete/partial migration and requested a deeper clean-move audit before deciding whether to remove or migrate it.
+- Changes made:
+  - Re-checked the Section 6 runtime-to-i18n ownership map for the full status-surface key set:
+    - `import_extract_placeholder`
+    - `import_extract_preparing`
+    - `import_extract_waiting_native`
+    - `import_extract_waiting_ocr`
+    - `import_extract_elapsed`
+    - `import_extract_apply_modal_elapsed`
+    - `import_extract_not_ready`
+  - Re-checked the renderer/module boundary to confirm all status-surface ownership moved cleanly into `public/js/import_extract_status_ui.js`.
+  - Conclusion:
+    - the new Section 6 keys are all live and owned in the expected places
+    - `import_extract_not_ready` is the only orphan in this cluster
+    - it belongs to an older pre-Section-4 placeholder path, not to the current Section 6 renderer-to-module migration
+    - therefore it should be removed, not migrated
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:00:29 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 21:01:14 -03:00`
+  - Runtime/i18n ownership audit:
+    - `rg -n "import_extract_(placeholder|preparing|waiting_native|waiting_ocr|elapsed|apply_modal_elapsed|not_ready)" i18n/en/renderer.json i18n/es/renderer.json public/js/import_extract_status_ui.js public/js/import_extract_apply_modal.js public/renderer.js`
+      - all Section 6 keys except `import_extract_not_ready` have live runtime references in the new module or apply modal path
+      - `import_extract_not_ready` appears only in `i18n/en/renderer.json` and `i18n/es/renderer.json`
+  - Corrected runtime absence check:
+    - `rg -n "import_extract_not_ready" public electron -g "*.js" -g "*.html"` -> exit `1` (no runtime matches)
+  - Boundary re-check:
+    - `public/renderer.js:55-68`
+      - renderer now depends on `ImportExtractStatusUi` instead of owning status-surface state directly
+    - `public/js/import_extract_status_ui.js:227-314`
+      - status module owns processing/prepare/apply-elapsed UI behavior
+- Outcome / next step:
+  - Completed.
+  - Deeper audit result:
+    - no evidence of a broader partial migration
+    - one isolated orphaned i18n key remains from an older path
+  - Recommended next step is to remove `renderer.alerts.import_extract_not_ready` from `i18n/en/renderer.json` and `i18n/es/renderer.json`, then re-run static checks.
+
+### OP-0100
+
+- Date/time: 2026-03-18 20:55:33 -03:00
+- Operation: Audit the Section 6 renderer-to-module migration for dead code, remnants, and unintended fallback/legacy paths before interactive validation.
+- Why: User requested an explicit double-check of the migration integrity before any further validation or checklist closure.
+- Changes made:
+  - Audited the current Section 6 file set for duplicate ownership after the renderer-to-module move.
+  - Audited runtime/menu/i18n paths for reintroduced legacy `cargador_*` references.
+  - Audited import/extract-specific runtime/i18n references for leftover unreachable keys or remnants.
+  - Findings:
+    - no duplicate ownership of processing-mode/prepare-status UI remains in `public/renderer.js`; that surface is now owned by `public/js/import_extract_status_ui.js`
+    - no legacy `cargador_*` runtime/menu/i18n path was reintroduced
+    - one remnant remains: `renderer.alerts.import_extract_not_ready` is now orphaned in `i18n/en/renderer.json` and `i18n/es/renderer.json`; it is no longer referenced by runtime code
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:55:33 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:56:41 -03:00`
+  - Duplicate-ownership audit:
+    - `rg -n "importExtractProcessingModeState|importExtractPrepareActiveCount|applyProcessingModeState\\(|normalizeProcessingModeState\\(|syncImportExtractPrepareUi|beginImportExtractPrepareUi|endImportExtractPrepareUi|selectorControlsProcessing|selectorControlsNormal|importExtractProcessingLabel|importExtractPrepareStatus" public/renderer.js public/js/import_extract_status_ui.js`
+      - matches exist only in `public/js/import_extract_status_ui.js` for the status-surface ownership
+      - `public/renderer.js` now references only module handoff sites:
+        - `public/renderer.js:849`
+        - `public/renderer.js:1037`
+        - `public/renderer.js:1845`
+        - `public/renderer.js:1937`
+        - `public/renderer.js:1946`
+  - Legacy-path audit:
+    - `rg -n "cargador_texto|cargador_imagen|wip_cargador" public electron i18n -g "!*node_modules*"` -> no runtime/menu/i18n matches
+  - Remnant audit:
+    - `rg -n "import_extract_not_ready" public electron i18n docs -g "!*node_modules*"`
+      - runtime code: no matches in `public` or `electron`
+      - remaining matches are only:
+        - historical tracker references
+        - `i18n/en/renderer.json`
+        - `i18n/es/renderer.json`
+- Outcome / next step:
+  - Completed.
+  - Migration audit result:
+    - no legacy-system fallback path found
+    - one dead i18n remnant found (`renderer.alerts.import_extract_not_ready`)
+  - Next step depends on user direction:
+    - remove the orphaned i18n remnant now, then re-run the static checks
+    - or leave code unchanged and move on to interactive validation planning
+
+### OP-0099
+
+- Date/time: 2026-03-18 20:52:42 -03:00
+- Operation: Verify the Section 6 implementation and close the checklist only if the touched files pass targeted checks.
+- Why: Section 6 touched renderer orchestration, a new issue-local UI module, modal behavior, markup, styles, and i18n keys. Verification must happen before checklist closure.
+- Changes made:
+  - Ran targeted syntax verification:
+    - `node --check public/renderer.js`
+    - `node --check public/js/import_extract_status_ui.js`
+    - `node --check public/js/import_extract_apply_modal.js`
+  - Parsed the touched i18n JSON files successfully:
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Reviewed the final touched-file status and diff shape.
+  - Decision:
+    - static verification passed
+    - Section 6 checklist items were not toggled yet because no interactive app-level validation of the waiting UX was run in this operation
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:52:42 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:53:40 -03:00`
+  - Verification command results:
+    - `node --check public/renderer.js` -> exit `0`
+    - `node --check public/js/import_extract_status_ui.js` -> exit `0`
+    - `node --check public/js/import_extract_apply_modal.js` -> exit `0`
+    - `Get-Content i18n/en/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+    - `Get-Content i18n/es/renderer.json -Raw | ConvertFrom-Json | Out-Null` -> exit `0`
+  - Workspace/diff review:
+    - `git status --short -- public/index.html public/style.css public/js/import_extract_status_ui.js public/js/import_extract_apply_modal.js public/renderer.js i18n/en/renderer.json i18n/es/renderer.json docs/issues/issue_53_implementation_plan.md docs/issues/issue_53_operation_tracker.md`
+      - confirms `public/js/import_extract_status_ui.js` is a new untracked file in the touched set
+    - `git diff --stat -- public/index.html public/style.css public/js/import_extract_status_ui.js public/js/import_extract_apply_modal.js public/renderer.js i18n/en/renderer.json i18n/es/renderer.json docs/issues/issue_53_implementation_plan.md docs/issues/issue_53_operation_tracker.md`
+      - `7 files changed, 236 insertions(+), 112 deletions(-)` for tracked-file diff view
+  - Checklist-state evidence:
+    - `docs/issues/issue_53_implementation_plan.md:206-208`
+      - Section 6 items 2-4 remain unchecked pending stronger runtime/UI evidence
+- Outcome / next step:
+  - Completed.
+  - Static verification passed.
+  - Next step is interactive app-level validation of the Section 6 waiting UX before checklist closure.
+
+### OP-0098
+
+- Date/time: 2026-03-18 20:44:51 -03:00
+- Operation: Implement Section 6 honest waiting UX with a dedicated issue-local import/extract status UI module.
+- Why: Section 6 requires nontrivial status-surface behavior. Per the resolved instruction tension, that behavior must move out of `public/renderer.js` so renderer remains orchestration-only.
+- Changes made:
+  - Extended the existing processing container in `public/index.html` with a dedicated elapsed-time slot.
+  - Extended the existing success apply modal in `public/index.html` with a dedicated final-elapsed-time slot.
+  - Added `public/js/import_extract_status_ui.js` as a focused issue-local module that now owns:
+    - prepare-status visibility/text
+    - processing-row visibility
+    - abort-button visibility/translation surface
+    - route-aware waiting copy
+    - live elapsed timer lifecycle
+    - final elapsed-time capture for the apply step
+  - Updated `public/js/import_extract_apply_modal.js` so the existing modal can render optional final elapsed text.
+  - Reduced `public/renderer.js` to orchestration handoffs for the Section 6 status surface:
+    - validates the status UI module
+    - delegates prepare begin/end
+    - delegates processing-mode state application
+    - delegates pending execute-route context
+    - passes final elapsed text into the apply modal
+  - Added the new Section 6 waiting/elapsed localization keys in `i18n/en/renderer.json` and `i18n/es/renderer.json`.
+  - Added supporting styles in `public/style.css` for the processing elapsed text and apply-modal elapsed text.
+- Checklist updates:
+  - No checkbox toggles yet.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/index.html`
+  - `public/style.css`
+  - `public/js/import_extract_status_ui.js`
+  - `public/js/import_extract_apply_modal.js`
+  - `public/renderer.js`
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:44:51 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:52:11 -03:00`
+  - Implementation anchors:
+    - `public/index.html:60`
+      - processing row now has a dedicated elapsed-time slot
+    - `public/index.html:187`
+      - apply modal now has a dedicated final-elapsed-time slot
+    - `public/index.html:216`
+      - issue-local status UI module is loaded before `renderer.js`
+    - `public/style.css:178-192`
+      - processing copy/elapsed styling added
+    - `public/style.css:793`
+      - apply-modal elapsed styling added
+    - `public/js/import_extract_status_ui.js:227-314`
+      - new module now owns status translations, processing-mode rendering, route context, live elapsed time, and final elapsed text
+    - `public/js/import_extract_apply_modal.js:23`
+    - `public/js/import_extract_apply_modal.js:63`
+    - `public/js/import_extract_apply_modal.js:110`
+      - apply modal now accepts/renders optional elapsed text
+    - `public/renderer.js:55-66`
+      - renderer validates the status UI module instead of owning that surface directly
+    - `public/renderer.js:1641-1659`
+      - apply modal orchestration now passes elapsed text
+    - `public/renderer.js:1834-1870`
+      - renderer delegates pending execution context and final elapsed retrieval to the status UI module
+    - `public/renderer.js:1911`
+      - renderer clears pending execution context on exception path
+    - `i18n/en/renderer.json:83-85`
+    - `i18n/en/renderer.json:256`
+    - `i18n/es/renderer.json:83-85`
+    - `i18n/es/renderer.json:256`
+- Outcome / next step:
+  - Completed.
+  - Next step is to open a separate verification operation, run syntax/parse checks, and then update Section 6 checklist status only if verification passes.
+
+### OP-0097
+
+- Date/time: 2026-03-18 20:38:16 -03:00
+- Operation: Restart Section 6 execution under the Codex Operational Policy and re-establish the exact implementation scope before editing.
+- Why: The previous Section 6 attempt was reverted by the user. A fresh execution must begin from the locked Section 6 scope, with explicit handling of any instruction tension before code changes.
+- Changes made:
+  - Re-read the locked Section 6 scope in `docs/issues/issue_53_implementation_plan.md`.
+  - Re-inspected the current reverted implementation surface in:
+    - `public/index.html`
+    - `public/style.css`
+    - `public/renderer.js`
+    - `public/js/import_extract_apply_modal.js`
+    - `public/js/import_extract_route_choice_modal.js`
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+  - Inspection conclusion:
+    - the current reverted code only provides bare processing-mode swapping in `public/renderer.js`
+    - implementing live elapsed time + route-aware waiting copy directly in `public/renderer.js` would again inflate that file beyond orchestration
+    - to satisfy the explicit `keep public/renderer.js thin` instruction, a small dedicated import/extract processing UI module is necessary
+  - Drift/ambiguity handling:
+    - instruction tension identified before editing:
+      - `keep public/renderer.js thin; only orchestration should live there`
+      - `do not add a new module unless it is clearly necessary and you justify it first`
+    - resolution:
+      - a focused import/extract processing UI module is justified because Section 6 requires nontrivial UI behavior (elapsed timer lifecycle, waiting-copy rendering, processing-container updates) that should not live in `public/renderer.js`
+      - the planned module will remain issue-local and non-generic
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:38:16 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 20:39:15 -03:00`
+  - Scope anchors:
+    - `docs/issues/issue_53_implementation_plan.md:183-208`
+      - prepare remains outside processing mode; Section 6 requires honest waiting UX, live elapsed time, and final elapsed time in the success apply modal
+  - Current-code anchors:
+    - `public/index.html:55-63`
+      - processing row currently contains only the existing label, placeholder bar, and abort button
+    - `public/index.html:174-191`
+      - apply modal currently contains only message, repeat row, and action buttons
+    - `public/renderer.js:195-224`
+      - current processing-mode handling only swaps control rows and abort button visibility
+    - `public/renderer.js:1722-1738`
+      - apply modal orchestration currently passes only repeat-related inputs
+    - `public/js/import_extract_apply_modal.js:53-157`
+      - current apply modal module handles only message/repeat/apply choices
+    - `public/js/import_extract_route_choice_modal.js:1-127`
+      - repository already uses issue-local UI modules to keep renderer orchestration smaller
+- Outcome / next step:
+  - Completed.
+  - Next step is to present the exact implementation file plan, explicitly justify the new issue-local processing UI module, and then proceed with the Section 6 edit set if that architectural direction is acceptable.
+
+### OP-0096
+
+- Date/time: 2026-03-18 19:25:47 -03:00
+- Operation: Record the Section 6.1 decision in the implementation plan and restructure Section 6 around honest waiting UX instead of progress/ETA.
+- Why: User decided that progress and ETA are not worth implementing for Issue 53 after feasibility + utility evaluation. The plan must now reflect the agreed execution direction rather than preserving obsolete progress/ETA work items.
+- Changes made:
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 6:
+    - renamed the section from `Processing progress and ETA implementation` to `Honest waiting UX`
+    - replaced the pre-evaluation open-question block with a locked Section 6.1 conclusion
+    - recorded the decision that Issue 53 will not implement dedicated progress or ETA
+    - recorded the replacement UX scope:
+      - indeterminate waiting state
+      - clear route-aware processing copy
+      - elapsed processing time during execution
+      - final elapsed processing time in the success apply modal
+      - no fake phases/percentages/remaining-time promises
+    - marked Section 6 item 1 complete
+    - replaced the old progress/ETA implementation items with the new waiting-UX checklist items
+  - Updated `docs/issues/issue_53_operation_tracker.md` current authoritative status so the active next checklist item now points to Section 6 item 2.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md`
+    - `[x] Evaluate feasibility and tradeoffs for progress/ETA by route (ocr/native/both) and lock Section 6 scope before implementation.`
+    - replaced the obsolete pending items:
+      - `Implement processing progress UX.`
+      - `Implement ETA behavior and calibrate realism.`
+      - `Keep progress + ETA visible in the main window whenever the window is not minimized.`
+    - new pending items:
+      - `Implement honest waiting UX in the main window during execution.`
+      - `Show elapsed processing time during execution and keep the waiting UX visible whenever the main window is not minimized.`
+      - `Show final elapsed processing time in the success apply modal.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 19:25:47 -03:00`
+  - Plan patch anchors:
+    - `docs/issues/issue_53_implementation_plan.md`
+      - Section 6 now records the no-progress/no-ETA decision and the replacement honest-waiting UX scope
+  - Decision basis reused:
+    - `OP-0094`
+      - determinate progress coverage on the heavy OCR fixtures was too low to justify progress-first UX
+    - `OP-0095`
+      - current main-window processing placeholder already provides a suitable base for an honest waiting state
+- Outcome / next step:
+  - Completed.
+  - Active next checklist item is now Section 6 item 2: implement the honest waiting UX in the main window during execution.
+
+### OP-0095
+
+- Date/time: 2026-03-18 19:14:34 -03:00
+- Operation: Review the current main-window processing placeholder UX and prepare a concrete non-progress/non-ETA closeout recommendation for Section 6.
+- Why: User indicated that progress and ETA both appear not worth implementing, but asked for an alternative that improves the current waiting UX honestly rather than leaving only the bare placeholder.
+- Changes made:
+  - Reviewed the current main-window processing placeholder structure in:
+    - `public/index.html`
+    - `public/style.css`
+    - `public/renderer.js`
+  - Confirmed that the current UI already has the right baseline slots for an honest-waiting implementation:
+    - dedicated processing container
+    - text label
+    - animated placeholder bar
+    - abort button
+    - separate prepare-status text outside processing mode
+  - Prepared a non-progress/non-ETA recommendation that improves the waiting UX without pretending to know progress.
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress pending user decision on the alternative closeout direction.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 19:14:34 -03:00`
+  - Read-only UI review anchors:
+    - `public/index.html:55-64`
+      - processing placeholder already includes a label, animated bar slot, and abort button
+    - `public/style.css:165-224`
+      - processing placeholder already renders as an indeterminate animated bar
+    - `public/renderer.js:195-224`
+      - processing-mode toggling already swaps normal controls vs processing container
+- Outcome / next step:
+  - Completed the read-only review.
+  - Next step is user discussion/decision on whether Section 6 should pivot from `progress + ETA` toward a smaller honest-waiting UX improvement built on the existing placeholder container.
+
+### OP-0094
+
+- Date/time: 2026-03-18 18:45:17 -03:00
+- Operation: Narrow Section 6.1 measurement scope to two heavy OCR fixtures and evaluate whether the asymmetric `upload %` / stage-only export model is useful enough to remain a real option.
+- Why: User explicitly rejected assuming that `upload %` without `download %` is inherently acceptable. The next evidence step must measure not just feasibility, but how much of the total OCR time would actually be covered by honest determinate progress in that asymmetric model.
+- Changes made:
+  - Extended `tools_local/issue_53_export_progress_probe.js` to capture:
+    - export request-to-first-byte timing
+    - export transfer timing
+    - condensed per-run visibility coverage for:
+      - Option A: `upload % + stage-only export`
+      - Option B: `upload % + raw-export %`
+  - Temporarily re-added a gated startup path in `electron/main.js` so the narrower probe could run inside the real Electron main-process runtime, then removed that gate again after the evidence run.
+  - Executed the narrower repeated probe against the two selected heavy fixtures in alternating order, three runs each:
+    - `tools_local/smoke/prueba_foto_pagina_libro.jpg`
+    - `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `tools_local/issue_53_export_progress_probe.js`
+  - `electron/main.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 18:45:17 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 18:52:51 -03:00`
+  - Syntax verification:
+    - `node --check tools_local/issue_53_export_progress_probe.js` -> exit `0`
+    - `node --check electron/main.js` -> exit `0`
+  - Live runtime evidence:
+    - command:
+      - `Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; & node_modules\.bin\electron.cmd . --issue53-export-progress-probe tools_local\smoke\prueba_foto_pagina_libro.jpg tools_local\smoke\prueba_pdf_2_escaneado_12_paginas.pdf tools_local\smoke\prueba_foto_pagina_libro.jpg tools_local\smoke\prueba_pdf_2_escaneado_12_paginas.pdf tools_local\smoke\prueba_foto_pagina_libro.jpg tools_local\smoke\prueba_pdf_2_escaneado_12_paginas.pdf`
+    - condensed timing summary from the repeated run:
+      - `prueba_foto_pagina_libro.jpg`
+        - run 1: `optionAVisibleShare=0.2530`, `optionBVisibleShare=0.2541`, `uploadTransferMs=1798`, `opaqueConversionWaitMs=4578`, `rawExportTransferMs=4`
+        - run 2: `optionAVisibleShare=0.1638`, `optionBVisibleShare=0.1668`, `uploadTransferMs=868`, `opaqueConversionWaitMs=3805`, `rawExportTransferMs=1`
+        - run 3: `optionAVisibleShare=0.2304`, `optionBVisibleShare=0.2295`, `uploadTransferMs=1384`, `opaqueConversionWaitMs=4025`, `rawExportTransferMs=1`
+      - `prueba_pdf_2_escaneado_12_paginas.pdf`
+        - run 1: `optionAVisibleShare=0.0390`, `optionBVisibleShare=0.0394`, `uploadTransferMs=2043`, `opaqueConversionWaitMs=48945`, `rawExportTransferMs=11`
+        - run 2: `optionAVisibleShare=0.0299`, `optionBVisibleShare=0.0300`, `uploadTransferMs=1767`, `opaqueConversionWaitMs=55723`, `rawExportTransferMs=8`
+        - run 3: `optionAVisibleShare=0.0360`, `optionBVisibleShare=0.0364`, `uploadTransferMs=2124`, `opaqueConversionWaitMs=55149`, `rawExportTransferMs=18`
+    - conclusions from the repeated heavy-fixture run:
+      - on the large photographed image, determinate progress coverage was only about `16%` to `25%` of the measured create+export time
+      - on the large scanned PDF, determinate progress coverage was only about `3%` to `4%`
+      - adding raw-export percent changed visibility coverage only marginally in these tests because export transfer time was tiny compared with opaque conversion wait
+      - the dominant UX fact remained the same: most user wait time sits in the opaque `drive.files.create(...)` conversion window, not in observable upload/download transfer
+- Outcome / next step:
+  - Completed this narrower usefulness-focused evidence pass.
+  - This operation materially changed the 6.1 discussion:
+    - Option A is not merely “asymmetric but maybe acceptable”; on the tested heavy fixtures it covers only a small fraction of the total user wait, especially for the scanned PDF
+    - Option B improves technical completeness, but in these two heavy cases it barely improves visible coverage because export transfer time is too small relative to opaque conversion wait
+  - Next step should be to discuss the product implication of this evidence:
+    - whether either percent-bearing OCR model is worth shipping in this phase
+    - or whether Section 6 should pivot toward stage/status + ETA strategy instead of percent as the primary UX investment
+
+### OP-0093
+
+- Date/time: 2026-03-18 18:32:06 -03:00
+- Operation: Compare the realistic OCR progress-model options for Section 6.1 using the current route shape and the newly gathered transport/timing evidence, with explicit risks/tradeoffs and no scope lock.
+- Why: User asked for the actual decision comparison rather than more premature closure language. The remaining work in 6.1 is now mainly evaluating whether the richer OCR progress model is worth its additional implementation ownership and UX risk.
+- Changes made:
+  - Consolidated the current Section 6.1 evidence into an explicit option comparison:
+    - `upload % + conversion stage + export stage`
+    - `upload % + conversion stage + raw-export %`
+  - Tied the comparison back to the current OCR route structure (`upload_convert`, `export_text`, retry/backoff, cleanup) and to the broadened probe results.
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 18:32:06 -03:00`
+  - Current route anchors:
+    - `electron/import_extract_platform/ocr_google_drive_route.js:438-465`
+      - current execute route still treats upload/convert as one `drive.files.create(...)` call and export as one `drive.files.export(...)` call
+    - `electron/import_extract_platform/ocr_google_drive_route.js:190-220`
+      - retry/backoff currently wraps provider operations
+    - `electron/import_extract_platform/ocr_google_drive_route.js:547-573`
+      - cleanup delete and local cleanup warnings remain part of the route contract
+  - Current evidence anchors:
+    - `docs/issues/issue_53_operation_tracker.md`
+      - `OP-0092` upload-event shape + create timing split + export-path robustness
+      - `OP-0091` metadata/files.download evidence
+      - `OP-0090` raw authenticated `files.export` evidence
+- Outcome / next step:
+  - Comparison prepared for user discussion.
+  - Next step depends on the decision:
+    - conservative OCR progress scope
+    - richer OCR progress scope with raw authenticated export percent
+    - or additional evidence if one of the remaining tradeoffs still feels too assumption-heavy
+
+### OP-0092
+
+- Date/time: 2026-03-18 18:13:16 -03:00
+- Operation: Continue Section 6 item 1 in evidence-only mode by measuring `drive.files.create(...)` timing structure and running a broader OCR export-path probe matrix across representative fixtures.
+- Why: User explicitly clarified that 6.1 must remain open until the factual ambiguities are exhausted, especially around upload-vs-conversion timing and the robustness of export-percent feasibility across more than the initial tested cases.
+- Changes made:
+  - Extended `tools_local/issue_53_export_progress_probe.js` so the local probe can:
+    - run multiple fixtures in one Electron session
+    - capture the actual `onUploadProgress` event shape
+    - measure `drive.files.create(...)` timing split (`preFirstUploadWaitMs`, `uploadObservedSpanMs`, `postUploadWaitMs`)
+    - compare those values against local source file size
+  - Temporarily re-added a gated startup path in `electron/main.js` so the expanded probe could run inside the real Electron main-process runtime, then removed that gate again after the evidence run.
+  - Executed the broadened live probe matrix on six representative OCR fixtures:
+    - `tools_local/smoke/prueba_png.png`
+    - `tools_local/smoke/prueba_foto_pagina_libro.jpg`
+    - `tools_local/smoke/prueba_arabe_jpg.jpg`
+    - `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+    - `tools_local/smoke/prueba_arabe_pdf.pdf`
+    - `tools_local/smoke/prueba_japones_pdf.pdf`
+  - Ran a narrower PDF-only follow-up probe to capture the long-case `drive.files.create(...)` timing and export details cleanly for:
+    - `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+    - `tools_local/smoke/prueba_arabe_pdf.pdf`
+    - `tools_local/smoke/prueba_japones_pdf.pdf`
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress; this operation closed several factual transport/timing ambiguities but did not lock scope or mark 6.1 complete.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `tools_local/issue_53_export_progress_probe.js`
+  - `electron/main.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 18:13:16 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 18:26:08 -03:00`
+  - Syntax verification:
+    - `node --check tools_local/issue_53_export_progress_probe.js` -> exit `0`
+    - `node --check electron/main.js` -> exit `0`
+  - Local client/runtime evidence for upload progress shape:
+    - `rg -n "onUploadProgress|bytesRead|totalBytes|progress" node_modules/googleapis-common/build/src/apirequest.js node_modules/gaxios/build/src -S`
+      - `googleapis-common` emits only `{ bytesRead }` from the multipart upload stream in Node
+      - no typed `onDownloadProgress` surface was found in the local `gaxios` request options
+  - Live runtime evidence: broader six-fixture matrix
+    - command:
+      - `Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; & node_modules\.bin\electron.cmd . --issue53-export-progress-probe tools_local\smoke\prueba_png.png tools_local\smoke\prueba_foto_pagina_libro.jpg tools_local\smoke\prueba_arabe_jpg.jpg tools_local\smoke\prueba_pdf_2_escaneado_12_paginas.pdf tools_local\smoke\prueba_arabe_pdf.pdf tools_local\smoke\prueba_japones_pdf.pdf`
+    - upload-event shape:
+      - all six fixtures reported `observedKeys: ["bytesRead"]`
+      - all six fixtures reported `hasProgressField: false`, `hasTotalBytesField: false`, `hasTotalField: false`
+      - all six fixtures ended with `finalBytesReadMinusSourceFileBytes: 0`
+      - conclusion: in the tested current multipart helper path, upload progress emits bytes read only, but those bytes matched the local upload payload size exactly on all six tested fixtures
+    - `drive.files.create(...)` timing split:
+      - `prueba_png.png`: `createTotalMs=3492`, `uploadObservedSpanMs=491`, `postUploadWaitMs=2871`, `postUploadWaitShare=0.8222`
+      - `prueba_foto_pagina_libro.jpg`: `createTotalMs=6268`, `uploadObservedSpanMs=1532`, `postUploadWaitMs=4734`, `postUploadWaitShare=0.7553`
+      - `prueba_arabe_jpg.jpg`: `createTotalMs=3203`, `uploadObservedSpanMs=6`, `postUploadWaitMs=3185`, `postUploadWaitShare=0.9944`
+      - `prueba_pdf_2_escaneado_12_paginas.pdf`: long-case follow-up `createTotalMs=57659`, `uploadObservedSpanMs=1279`, `postUploadWaitMs=56329`, `postUploadWaitShare=0.9769`
+      - `prueba_arabe_pdf.pdf`: follow-up `createTotalMs=9591`, `uploadObservedSpanMs=916`, `postUploadWaitMs=8670`, `postUploadWaitShare=0.9040`
+      - `prueba_japones_pdf.pdf`: follow-up `createTotalMs=2901`, `uploadObservedSpanMs=9`, `postUploadWaitMs=2888`, `postUploadWaitShare=0.9955`
+      - conclusion: across the representative matrix, `drive.files.create(...)` is dominated by post-upload/provider wait rather than local upload
+    - export-path robustness across the same matrix:
+      - current `googleapis` streamed export path:
+        - all tested fixtures returned `content-length: null`
+        - all tested fixtures returned `transfer-encoding: chunked`
+        - all tested fixtures returned `content-encoding: gzip`
+        - conclusion: this helper path is still not percent-ready across the broader matrix
+      - raw authenticated `files.export` request:
+        - all tested fixtures returned usable `content-length`
+        - all tested fixtures ended with `bytesMatchHeader: true`
+        - examples:
+          - `prueba_png.png` -> `content-length: 2448`
+          - `prueba_foto_pagina_libro.jpg` -> `content-length: 3326`
+          - `prueba_arabe_jpg.jpg` -> `content-length: 1592`
+          - `prueba_pdf_2_escaneado_12_paginas.pdf` -> `content-length: 27673`
+          - `prueba_arabe_pdf.pdf` -> `content-length: 31506`
+          - `prueba_japones_pdf.pdf` -> `content-length: 14033`
+        - `Accept-Encoding: identity` produced the same effective result in the tested matrix
+        - conclusion: export percent remained robust on the raw authenticated `files.export` path across the expanded fixture set
+      - official `files.download` LRO path:
+        - all tested fixtures returned `initialDone: true` and `downloadUriPresent: true`
+        - final redirected download remained `content-length: null` with `transfer-encoding: chunked` on the tested fixtures
+        - conclusion: the official LRO path stayed operational but still not percent-ready in the broadened matrix
+    - temporary Google Docs metadata:
+      - all fixtures in this matrix still reported `capabilities.canDownload: true`
+      - `size` stayed unusable as an export-percent denominator in the tested cases (`"1"` throughout this matrix)
+- Outcome / next step:
+  - Completed this evidence-only probe round without closing 6.1.
+  - The main factual ambiguities reduced by this operation are:
+    - upload progress in the current multipart helper path is bytes-only, but in the tested matrix the bytes matched local source file size exactly
+    - `drive.files.create(...)` time is overwhelmingly opaque post-upload/provider wait on the tested OCR inputs
+    - export percent remains robust only on the raw authenticated `files.export` path, not on the current `googleapis` helper path and not on the tested `files.download` LRO path
+  - Next step should be the actual 6.1 evaluation against these facts:
+    - weigh whether upload percent + indeterminate conversion wait + optional raw-export percent is worth the added implementation ownership/risk
+    - keep 6.1 open while making that tradeoff explicit instead of adding more speculative fallback assumptions
+
+### OP-0091
+
+- Date/time: 2026-03-18 17:54:09 -03:00
+- Operation: Continue Section 6 item 1 with a stronger Drive export/download feasibility check by testing whether official Drive metadata or newer documented download surfaces can provide a safer basis for export percent progress than the previously observed raw-request path alone.
+- Why: User explicitly rejected closing 6.1 while export-progress feasibility still depended on ambiguous wording or hypothetical fallback behavior. The remaining question is whether there is a more official, less assumption-heavy basis for export percent progress within the same Drive substrate.
+- Changes made:
+  - Opened OP-0091 before extending the probe or re-evaluating the plan.
+  - Extended `tools_local/issue_53_export_progress_probe.js` to add three stronger checks:
+    - temporary Google Docs metadata (`size`, `capabilities.canDownload`)
+    - official `files.download` long-running-operation start call
+    - redirected `downloadUri` fetch with OAuth headers
+  - Temporarily re-added a gated startup path in `electron/main.js` so the stronger probe could run inside the real Electron main-process runtime, then removed that gate again after the evidence run.
+  - Executed the stronger probe on the same two representative OCR fixtures:
+    - `tools_local/smoke/prueba_png.png`
+    - `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+  - Captured the updated 6.1 evidence:
+    - Google Docs metadata `size` is not a trustworthy denominator for exported plain-text size
+    - official `files.download` long-running operations are real and immediately usable in the current substrate, but their final redirected download still arrived chunked without usable total size in the tested cases
+    - the only tested path that consistently produced usable total size for export percent remained the direct raw authenticated `files.export` request, not the `googleapis` helper path and not the tested `files.download` LRO path
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress; this operation reduced ambiguity further but did not close the remaining product-level tradeoff around whether the raw `files.export` path is acceptable for implementation scope.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `tools_local/issue_53_export_progress_probe.js`
+  - `electron/main.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 17:54:09 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 17:58:55 -03:00`
+  - Syntax verification:
+    - `node --check tools_local/issue_53_export_progress_probe.js` -> exit `0`
+    - `node --check electron/main.js` -> exit `0`
+  - Official documentation context reviewed:
+    - `https://developers.google.com/workspace/drive/api/reference/rest/v3/files`
+      - confirms `files.download` exists as an official method
+      - confirms Google Workspace files expose a `size` field
+    - `https://developers.google.com/workspace/drive/api/reference/rest/v3/files/download`
+      - confirms `files.download` is the official long-running-operation download surface
+  - Local client/runtime evidence:
+    - local `googleapis@105` package did not expose a generated `files.download` helper in the inspected `drive/v3` client sources, so probe execution used raw HTTPS requests for this surface
+  - Live runtime evidence: PNG fixture (`tools_local/smoke/prueba_png.png`)
+    - command:
+      - `Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; & node_modules\.bin\electron.cmd . --issue53-export-progress-probe --lang es`
+    - metadata:
+      - `capabilities.canDownload: true`
+      - `size: "1"` in one run and `size: "1827"` in another run, while exported text size was `2448`
+      - conclusion: metadata `size` is not a reliable exported-text denominator
+    - official `files.download` LRO:
+      - initial operation returned `200`
+      - `done: true`
+      - `downloadUriPresent: true`
+      - fetching the `downloadUri` with OAuth headers followed a `307` redirect and ended at `200`
+      - final download response still had:
+        - `content-length: null`
+        - `transfer-encoding: chunked`
+        - `bytesRead: 2448`
+      - conclusion: this official path worked, but did not provide percent-ready total size in the tested case
+  - Live runtime evidence: scanned PDF fixture (`tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`)
+    - command:
+      - `Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; & node_modules\.bin\electron.cmd . --issue53-export-progress-probe tools_local\smoke\prueba_pdf_2_escaneado_12_paginas.pdf --lang es`
+    - metadata:
+      - `capabilities.canDownload: true`
+      - `size: "1"` while exported text size was `27673`
+      - conclusion: metadata `size` again failed as exported-text denominator
+    - official `files.download` LRO:
+      - initial operation returned `200`
+      - `done: true`
+      - `downloadUriPresent: true`
+      - fetching the `downloadUri` with OAuth headers followed a `307` redirect and ended at `200`
+      - final download response still had:
+        - `content-length: null`
+        - `transfer-encoding: chunked`
+        - `bytesRead: 27673`
+      - conclusion: this official path also worked but still did not provide percent-ready total size in the larger tested case
+  - Cross-operation evidence basis:
+    - `OP-0090`
+      - raw authenticated `files.export` request returned usable `content-length` and byte-matching totals on both tested fixtures
+- Outcome / next step:
+  - Completed this stronger feasibility check.
+  - Current evidence-backed state is now:
+    - `googleapis` helper export path: no percent-ready total size in tested cases
+    - Google Docs metadata `size`: not reliable for exported-text percent
+    - official `files.download` LRO path: operational, but still no percent-ready total size in tested cases
+    - direct raw authenticated `files.export` request: percent-ready total size present in both tested cases
+  - The remaining 6.1 ambiguity is now narrower and product-level rather than factual:
+    - whether Section 6 should accept the direct raw authenticated `files.export` request as an acceptable implementation path for OCR export percent progress
+    - or deliberately treat export percent as out-of-scope for this phase despite the positive raw-request evidence
+
+### OP-0090
+
+- Date/time: 2026-03-18 17:23:22 -03:00
+- Operation: Expand the OCR export-progress spike to compare the current `googleapis` export path with a raw authenticated Drive export request, including an `Accept-Encoding: identity` check, so Section 6.1 can distinguish “not possible” from “not shown by the first client path.”
+- Why: User asked for stronger evidence because the prior conclusion could still be interpreted as “not possible with current code” rather than “not presently supported by the available request paths without changing substrate.”
+- Changes made:
+  - Opened OP-0090 before extending the probe and rerunning the live checks.
+  - Extended `tools_local/issue_53_export_progress_probe.js` to compare three export paths against the same temporary converted Google Docs artifact:
+    - current `googleapis` streamed export
+    - raw authenticated HTTPS Drive export with default headers
+    - raw authenticated HTTPS Drive export with `Accept-Encoding: identity`
+  - Temporarily re-added a gated startup path in `electron/main.js` so the expanded probe could run inside the real Electron main-process runtime, then removed that gate again after the evidence run so the app runtime was not left with spike-only behavior.
+  - Reran the live probe on two representative OCR fixtures:
+    - `tools_local/smoke/prueba_png.png`
+    - `tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`
+  - Captured the decisive updated conclusion for Section 6.1:
+    - export percent progress is feasible on the existing Google Drive substrate
+    - the limitation is specifically the current `googleapis` export path tested first, which returns gzipped/chunked streamed responses without a usable total-size header
+    - a raw authenticated Drive export request in the same runtime returned `content-length` and byte counts that matched the header on both tested fixtures
+    - `Accept-Encoding: identity` was not required in the tested cases because the raw request already returned an uncompressed response with `content-length`
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress; this operation resolved the export-progress ambiguity enough to materially narrow the remaining design space, but did not complete the item.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `tools_local/issue_53_export_progress_probe.js`
+  - `electron/main.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 17:23:22 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 17:38:57 -03:00`
+  - Syntax verification:
+    - `node --check tools_local/issue_53_export_progress_probe.js` -> exit `0`
+    - `node --check electron/main.js` -> exit `0`
+  - Probe implementation evidence:
+    - `tools_local/issue_53_export_progress_probe.js`
+      - raw HTTPS export comparison added alongside the current `googleapis` export stream
+    - `electron/main.js`
+      - temporary probe gate reintroduced for execution and then removed after the spike
+  - Live runtime evidence: PNG fixture (`tools_local/smoke/prueba_png.png`)
+    - command:
+      - `Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; & node_modules\.bin\electron.cmd . --issue53-export-progress-probe --lang es`
+    - upload evidence:
+      - `uploadProgressEvents: 26`
+      - `uploadBytesRead: 1684230`
+    - current `googleapis` export path:
+      - `content-length: null`
+      - `transfer-encoding: chunked`
+      - `content-encoding: gzip`
+      - `bytesRead: 2448`
+      - `totalBytesHeaderUsable: false`
+    - raw HTTPS export, default headers:
+      - `content-length: 2448`
+      - `transfer-encoding: null`
+      - `content-encoding: null`
+      - `bytesRead: 2448`
+      - `bytesMatchHeader: true`
+      - checkpoints reported concrete percentages (`35.5%`, `92.3%`, `100.0%`)
+    - raw HTTPS export, `Accept-Encoding: identity`:
+      - same effective result as raw HTTPS default headers
+  - Live runtime evidence: scanned PDF fixture (`tools_local/smoke/prueba_pdf_2_escaneado_12_paginas.pdf`)
+    - command:
+      - `Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; & node_modules\.bin\electron.cmd . --issue53-export-progress-probe tools_local\smoke\prueba_pdf_2_escaneado_12_paginas.pdf --lang es`
+    - upload evidence:
+      - `uploadProgressEvents: 117`
+      - `uploadBytesRead: 7609017`
+    - current `googleapis` export path:
+      - `content-length: null`
+      - `transfer-encoding: chunked`
+      - `content-encoding: gzip`
+      - `bytesRead: 27673`
+      - `chunkCount: 10`
+      - `totalBytesHeaderUsable: false`
+    - raw HTTPS export, default headers:
+      - `content-length: 27673`
+      - `transfer-encoding: null`
+      - `content-encoding: null`
+      - `bytesRead: 27673`
+      - `bytesMatchHeader: true`
+      - percentage checkpoints advanced from `3.1%` to `94.1%` in the captured subset
+    - raw HTTPS export, `Accept-Encoding: identity`:
+      - same effective result as raw HTTPS default headers
+- Outcome / next step:
+  - Completed this comparison probe.
+  - Prior Section 6.1 wording should be corrected:
+    - `export percent progress is not reliable in the current googleapis export path`
+    - `export percent progress is feasible without changing substrate if the app uses a raw authenticated Drive export request or an equivalent Node request path that preserves a usable content-length`
+  - Next step is to fold this corrected conclusion into the Section 6.1 feasibility write-up and then finish the remaining route-level tradeoff decision.
+
+### OP-0089
+
+- Date/time: 2026-03-18 17:07:41 -03:00
+- Operation: Create and run a narrow runtime probe for OCR export/download progress feasibility in the current Node/Electron stack by streaming `files.export` for a temporary Google Docs conversion artifact.
+- Why: User agreed with the proposed next step to verify, in the actual app dependency/runtime shape, whether `files.export` responses provide enough information to support meaningful download progress rather than only theoretical discussion from docs.
+- Changes made:
+  - Opened OP-0089 before creating the probe script and running the runtime check.
+  - Added a local probe helper at `tools_local/issue_53_export_progress_probe.js` that:
+    - reuses the app's Google OCR credentials/token paths
+    - uploads a local OCR fixture
+    - streams `files.export`
+    - records upload progress events plus export response headers/chunk counts/received bytes
+  - Added a gated startup path in `electron/main.js` so the probe can run inside the real Electron main-process runtime with the same `safeStorage`-backed token access as the app.
+  - Verified syntax for the probe helper and the gated main-process path.
+  - Executed the live probe against the current Google Drive OCR setup and captured the decisive result for Section 6.1:
+    - upload progress is concretely available in the current app stack
+    - streamed export is concretely readable in the current app stack
+    - exported text response did not provide a usable total size header
+    - export arrived with `transfer-encoding: chunked`, so byte-received tracking is possible but percent-complete download progress is not currently reliable from this path
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress; this operation resolved the export-progress uncertainty enough to narrow the remaining design space, but did not finish the item.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `tools_local/issue_53_export_progress_probe.js`
+  - `electron/main.js`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 17:07:41 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 17:17:23 -03:00`
+  - Probe helper and gated runtime path:
+    - `tools_local/issue_53_export_progress_probe.js`
+    - `electron/main.js`
+  - Syntax verification:
+    - `node --check tools_local/issue_53_export_progress_probe.js` -> exit `0`
+    - `node --check electron/main.js` -> exit `0`
+  - Runtime execution:
+    - escalated command:
+      - `Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; & node_modules\.bin\electron.cmd . --issue53-export-progress-probe --lang es`
+    - probe fixture/context observed:
+      - input: `tools_local/smoke/prueba_png.png`
+      - credentials path: `C:\Users\manue\AppData\Roaming\@cibersino\tot\config\ocr_google_drive\credentials.json`
+      - token path: `C:\Users\manue\AppData\Roaming\@cibersino\tot\config\ocr_google_drive\token.json`
+    - decisive probe output:
+      - upload phase reported `26` progress events and final `uploadBytesRead: 1684230`
+      - export response status `200`
+      - export headers included:
+        - `content-type: text/plain`
+        - `transfer-encoding: chunked`
+        - `content-disposition: attachment`
+        - `content-length: null`
+      - export stream observed:
+        - `bytesRead: 2448`
+        - `chunkCount: 2`
+        - `totalBytesHeaderUsable: false`
+        - `bytesMatchHeader: null`
+- Outcome / next step:
+  - Completed this runtime probe.
+  - Next step is to update the Section 6.1 evaluation conclusion to reflect that:
+    - OCR upload progress is a real implementation option now
+    - Google conversion/OCR progress remains opaque
+    - export download progress is only viable as bytes-received/status, not as a reliable percent-complete bar in the current Node/Drive path
+
+### OP-0088
+
+- Date/time: 2026-03-18 17:01:55 -03:00
+- Operation: Perform a read-only follow-up check on whether OCR export/download progress could rely on a documented total-size signal from Google Drive, specifically for `files.export`.
+- Why: User asked whether download progress is a real option only if the response includes a reliable total size, and whether that can be verified before using it as part of the Section 6.1 evaluation.
+- Changes made:
+  - Reviewed official Drive export/download documentation for any documented response-size/`Content-Length` guarantee on `files.export`.
+  - Reviewed official Drive download/export guide examples across client libraries to see whether Google documents progress reporting for export/download in any supported client.
+  - Rechecked the installed client/runtime shape to confirm what download-side hooks are or are not exposed in the current `googleapis`/`gaxios` stack.
+  - Captured 6.1 evaluation conclusions for chat/reporting:
+    - `files.export` is documented as returning byte content, but no official `Content-Length` guarantee was identified in the docs reviewed
+    - official Google Drive guides do show export/download progress reporting in some client libraries (`MediaIoBaseDownload.status.progress()` in Python and `MediaDownloader.ProgressChanged` in .NET), so download/export progress is a real capability in Google's ecosystem
+    - the installed local client stack exposes upload-progress support, but no parallel `onDownloadProgress` request option was identified
+    - download-byte counting remains technically possible only with a code change that switches export to streaming and counts bytes manually
+    - for this app specifically, absent a documented total-size guarantee or a Node helper with built-in export progress, percent-complete download progress should be treated as unproven until verified with a real runtime response
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress; this operation narrowed the confidence level for export/download progress feasibility but did not complete the item.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 17:01:55 -03:00`
+  - Official documentation reviewed:
+    - `https://developers.google.com/workspace/drive/api/reference/rest/v3/files/export`
+      - `files.export` documents byte-content export but no explicit response-header contract for total size was identified during review
+    - `https://developers.google.com/workspace/drive/api/guides/download-files`
+      - download/export guide reviewed for response-size guarantees; none were identified for the current need
+      - guide examples show progress-reporting download/export helpers in Python and .NET
+  - Local client/runtime evidence reviewed:
+    - `node_modules/gaxios/build/src/common.d.ts:56-60`
+      - `onUploadProgress` present; no `onDownloadProgress` surfaced in the current request-options block
+    - `electron/import_extract_platform/ocr_google_drive_route.js:454-464`
+      - current OCR export path uses `responseType: 'arraybuffer'`, not streaming
+- Outcome / next step:
+  - Completed this follow-up check.
+  - Next step is to treat download progress as a possible experiment, not a stable assumption in the current Node implementation: if Section 6.1 wants to consider it seriously, the app would need a runtime probe that either streams `files.export` and records whether real responses consistently expose a usable total size, or identifies a supported Node-side chunked export path equivalent to the official Python/.NET helpers.
+
+### OP-0087
+
+- Date/time: 2026-03-18 16:53:35 -03:00
+- Operation: Perform a read-only capability check on Google Drive upload/conversion APIs and the installed Node client stack to determine whether the current OCR `upload/convert` phase can be split into more honest progress sub-phases.
+- Why: User asked whether Section 6.1 should first verify if `upload/convert` can be divided further and whether Google exposes any provider-side progress/status that could reduce the current opacity before adding live timing instrumentation.
+- Changes made:
+  - Reviewed official Google Drive documentation for:
+    - `files.create` response shape
+    - Drive upload types (`multipart` / `resumable`)
+    - Drive long-running operation coverage
+    - file resource shape
+  - Reviewed the installed `googleapis` / `googleapis-common` / `gaxios` packages in the current workspace to confirm whether upload progress hooks are available in the Node runtime used by this app.
+  - Captured 6.1 evaluation conclusions for chat/reporting:
+    - current Google Drive docs support splitting local upload progress from the rest of the call because upload modes and client-side upload progress hooks exist
+    - current `googleapis-common` implementation in this workspace supports `onUploadProgress` for multipart media uploads in Node by emitting `bytesRead`
+    - official Drive docs for `files.create` show a `File` response, not a long-running operation, and current Drive LRO docs are documented for `files.download`, not upload/create conversion
+    - no documented provider-side conversion/OCR progress field or conversion-status endpoint was found for the `files.create` import path
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress; this operation narrowed the realistic design space for the OCR `upload/convert` phase but did not complete the item.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:53:35 -03:00`
+  - Official Google Drive docs reviewed:
+    - `https://developers.google.com/workspace/drive/api/reference/rest/v3/files/create`
+      - `files.create` supports `media`, `multipart`, and `resumable` upload types and returns a `File` resource on success
+    - `https://developers.google.com/workspace/drive/api/guides/manage-uploads`
+      - Drive documents multipart/resumable uploads and notes special behavior for conversions to Google Workspace formats
+    - `https://developers.google.com/workspace/drive/api/guides/long-running-operations`
+      - Drive long-running operations are documented for `download`, not for the `files.create` upload/import path
+    - `https://developers.google.com/workspace/drive/api/reference/rest/v3/files`
+      - reviewed file-resource shape; no conversion-progress field was identified for the current import path
+  - Installed client/runtime evidence reviewed:
+    - `node_modules/gaxios/build/src/common.d.ts:55-60`
+      - current workspace dependency exposes `onUploadProgress`
+    - `node_modules/googleapis-common/build/src/apirequest.js:157-176`
+      - current workspace dependency emits upload progress in Node for multipart uploads by reporting `bytesRead`
+    - `package.json:60`
+      - current workspace depends on `googleapis` `^105.0.0`
+- Outcome / next step:
+  - Completed this capability check.
+  - Next step is to decide whether Section 6.1 should evaluate an OCR model that splits `upload/convert` into:
+    - observable local upload progress
+    - opaque provider conversion wait
+  - If yes, the remaining open question is whether that split is useful enough for UX given that the provider-side conversion tail still appears undocumented and opaque.
+
+### OP-0086
+
+- Date/time: 2026-03-18 16:43:01 -03:00
+- Operation: Continue Section 6 item 1 as a deeper read-only OCR phase/divisibility analysis after the initial native-vs-OCR feasibility pass.
+- Why: User explicitly clarified that 6.1 should be treated as started but not complete, and asked for a more detailed analysis of the current OCR stage phases, whether any stage can be subdivided for better progress tracking, and what tradeoffs that would introduce.
+- Changes made:
+  - Opened OP-0086 before the deeper OCR-phase analysis.
+  - Completed a read-only OCR-route phase analysis across:
+    - OCR preflight/setup checks
+    - optional local normalization
+    - provider upload/conversion
+    - provider text export
+    - provider cleanup/delete
+    - retry/backoff behavior around provider calls
+  - Captured 6.1 evaluation conclusions for chat/reporting:
+    - current OCR execute path exposes only coarse stage boundaries, not page-level or provider-internal units
+    - the most obvious subdividable candidate is local upload-byte progress during `drive.files.create(...)`, but that would still leave the remote conversion tail opaque
+    - optional WEBP normalization can technically be instrumented further only by adding lower-level image-processing hooks, which would add complexity for a rare path
+    - export and cleanup are single provider calls with little honest internal progress available from the current substrate
+    - the best near-term 6.1 conclusion remains: stage-status/progress is feasible for OCR; meaningful fine-grained progress or precise ETA is not yet justified without live stage timing evidence in current HEAD
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 remains in progress; this operation deepened the OCR feasibility analysis but did not complete the item.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:43:01 -03:00`
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:44:31 -03:00`
+  - OCR route phase structure reviewed:
+    - `electron/import_extract_platform/ocr_google_drive_route.js:304-397`
+      - preflight/setup failures handled before provider work
+    - `electron/import_extract_platform/ocr_google_drive_route.js:405-443`
+      - optional normalization plus provider upload/conversion request
+    - `electron/import_extract_platform/ocr_google_drive_route.js:454-469`
+      - export converted document as plain text
+    - `electron/import_extract_platform/ocr_google_drive_route.js:546-575`
+      - cleanup delete + local temp cleanup
+    - `electron/import_extract_platform/ocr_google_drive_route.js:190-220`
+      - retry/backoff wrapper around provider operations
+  - OCR normalization helper reviewed:
+    - `electron/import_extract_platform/ocr_image_normalization.js:52-118`
+      - only WEBP currently performs real conversion work; other OCR-supported inputs are passthrough
+  - Historical timing anchor reused:
+    - `docs/issues/issue_53_section5_evidence.md:1013-1023`
+      - observed OCR success sample at `executionLatencyMs: 5740` / `ocrLatencyMs: 5740`
+- Outcome / next step:
+  - Completed this OCR-phase/divisibility analysis slice.
+  - Next step is to decide whether Section 6 item 1 should explicitly narrow implementation evaluation to OCR stage-status/progress first, then add minimal live stage timing instrumentation in current HEAD before any ETA policy is chosen.
+
+### OP-0085
+
+- Date/time: 2026-03-18 16:34:33 -03:00
+- Operation: Execute Section 6 item 1 feasibility/tradeoff evaluation for processing progress and ETA, focusing on native versus OCR route practicality under the clarified Section 6 scope.
+- Why: User asked to proceed with 6.1 and raised route-specific concerns about whether native progress/ETA is worthwhile at all and whether OCR timing structure is granular enough to justify progress/ETA.
+- Changes made:
+  - Opened OP-0085 before starting the evaluation work.
+  - Completed a read-only feasibility review across:
+    - current native route runtime
+    - current OCR route runtime
+    - prepare/execute boundary
+    - existing historical timing evidence from Section 5
+  - Evaluation conclusion captured for chat/reporting:
+    - native execute-stage progress/ETA has low practical value and low technical leverage in current architecture
+    - OCR progress is feasible only at coarse stage level with current provider/runtime shape
+    - OCR ETA is not safely calibratable yet without restoring/adding live per-stage timing instrumentation in current HEAD
+    - a likely next scope-lock candidate is:
+      - no dedicated progress/ETA implementation for native execute-stage paths in this phase
+      - focus Section 6 implementation on OCR stage-status/progress first
+      - decide ETA semantics only after observing stage timing distribution in current HEAD
+- Checklist updates:
+  - No checkbox toggles.
+  - Section 6 item 1 evaluation work was executed, but the plan checkbox was not marked complete because the final scope lock/recommendation has not yet been accepted into the planning docs.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:34:33 -03:00`
+  - Native versus OCR timing evidence reviewed:
+    - `docs/issues/issue_53_section5_evidence.md:992-994`
+      - native docx sample observed `executionLatencyMs: 104`
+    - `docs/issues/issue_53_section5_evidence.md:1021-1023`
+      - OCR png sample observed `executionLatencyMs: 5740`
+  - Current native execute-shape evidence reviewed:
+    - `electron/import_extract_platform/native_extraction_route.js:131-166`
+    - `electron/import_extract_platform/native_extraction_route.js:344-399`
+    - conclusion: current native execute path is dominated by one-shot parser calls plus normalization, with no built-in granular progress units exposed to the renderer
+  - Current OCR execute-shape evidence reviewed:
+    - `electron/import_extract_platform/ocr_google_drive_route.js:190-220`
+    - `electron/import_extract_platform/ocr_google_drive_route.js:407-465`
+    - `electron/import_extract_platform/ocr_google_drive_route.js:547-575`
+    - conclusion: current OCR execute path has coarse stages (`normalize` when needed, `upload/convert`, `export`, `cleanup`) but the dominant remote work is hidden inside opaque provider calls, especially `drive.files.create(...)`
+  - Prepare/execute boundary evidence reviewed:
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md:39-41`
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md:214-216`
+    - `electron/import_extract_platform/native_pdf_selectable_text_probe.js:178-216`
+    - conclusion: prepare-stage PDF probing has page-level metadata, but it is explicitly outside processing mode and therefore outside current Section 6 scope
+  - Observability precondition evidence reviewed:
+    - `docs/issues/issue_53_operation_tracker.md:68-69`
+    - `docs/issues/issue_53_operation_tracker.md:416-439`
+    - conclusion: historical latency evidence exists, but the earlier live observability patch was rolled back from current HEAD, so fresh ETA calibration cannot rely on historical numbers alone
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:35:36 -03:00`
+- Outcome / next step:
+  - Completed as a feasibility analysis. The next step is to agree or reject the recommended Section 6 scope lock based on this analysis before any progress/ETA implementation starts.
+
+### OP-0084
+
+- Date/time: 2026-03-18 16:26:49 -03:00
+- Operation: Clarify Section 6 documentation scope and unresolved evaluation questions before any progress/ETA implementation work.
+- Why: User approved locking the agreed Section 6 clarifications now, while keeping the progress-model and ETA-model questions open for later evaluation.
+- Changes made:
+  - Opened OP-0084 before documentation edits.
+  - Updated `docs/issues/issue_53_implementation_plan.md` Section 6 with a locked scope note that now explicitly states:
+    - Section 6 starts only after `executePreparedImportExtract(...)`.
+    - `both` is a prepare-time dual-route outcome, not a third execute-stage route.
+    - fast successful paths must not be artificially delayed to display progress/ETA.
+    - OCR retries and OCR cleanup are in Section 6 scope.
+    - visibility requirement is limited to the main window when not minimized.
+    - live observability/instrumentation is required for Section 6 ETA calibration/closeout in current HEAD.
+  - Added an explicit open-questions block in Section 6 that intentionally leaves unresolved:
+    - progress-model shape (`determinate` / `staged` / `indeterminate` / mixed)
+    - ETA representation semantics for the later feasibility evaluation
+  - Kept the existing Section 6 checklist items unchanged and unchecked.
+- Checklist updates:
+  - No checkbox toggles.
+  - Plan structure changed by adding a Section 6 scope note plus an explicit open-questions block ahead of the existing unchecked checklist items.
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:26:49 -03:00`
+  - Plan evidence:
+    - `docs/issues/issue_53_implementation_plan.md:181-198` now contains:
+      - locked Section 6 scope note
+      - explicit open questions left for item-1 feasibility evaluation
+    - `docs/issues/issue_53_implementation_plan.md:200-203` keeps the existing Section 6 checklist items unchanged and unchecked.
+  - Diff evidence:
+    - `git diff -- docs/issues/issue_53_implementation_plan.md docs/issues/issue_53_operation_tracker.md`
+  - Completion evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:27:47 -03:00`
+- Outcome / next step:
+  - Completed. Section 6 evaluation boundaries are now clearer without prematurely closing the progress-model and ETA-model design space. The next step remains Section 6 item 1 feasibility work against this clarified scope.
+
+### OP-0083
+
+- Date/time: 2026-03-18 16:03:00 -03:00
+- Operation: Perform a read-only full-context review for Issue 53 focused on Section 6 readiness, constraints, and current implementation state before any progress/ETA coding.
+- Why: User explicitly requested a full Issue 53 context review before implementation work and asked whether Section 6 can now be approached safely, which assumptions/ambiguities remain, and what the next step should be.
+- Changes made:
+  - Opened OP-0083 to record this read-only review and evidence trail.
+  - Reviewed the authoritative Issue 53 docs and status sources:
+    - `docs/issues/issue_53.md`
+    - `docs/issues/issue_53_implementation_plan.md`
+    - `docs/issues/issue_53_contracts.md`
+    - `docs/issues/issue_53_operation_tracker.md`
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md`
+    - `docs/issues/issue_53_section5_evidence.md`
+    - `docs/issues/issue_53_ocr_substrate_evaluation.md`
+  - Reviewed the current implementation surfaces relevant to Section 6 feasibility:
+    - renderer/main-window processing UI and prepare/execute flow
+    - preload/main IPC wiring
+    - processing-mode controller
+    - prepare/execute core and prepared-record store
+    - OCR/native route runtimes and PDF selectable-text probe
+  - Drift disclosure:
+    - the read-only document/code review began before this OP entry was created.
+    - instruction diverged from: `Create the next OP-XXXX entry before starting a meaningful operation.`
+    - why the divergence was necessary: the user asked for a synthesized readiness judgment, which required first collecting the exact current-state evidence from docs and code before naming the operation precisely in the tracker.
+    - expected impact/risk: none to runtime behavior; no repository files were modified before this entry.
+    - execution paused for user confirmation or proceeded with rationale: proceeded with rationale because the work was read-only and low-impact.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation open evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-18 16:03:00 -03:00`
+    - `git status --short` -> no output
+  - Mandatory Section 6 requirement anchors reviewed:
+    - `docs/issues/issue_53.md:111-117`
+    - `docs/issues/issue_53.md:299-315`
+    - `docs/issues/issue_53_implementation_plan.md:179-184`
+    - `docs/issues/issue_53_contracts.md:159-169`
+  - Prepare/execute boundary anchors reviewed:
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md:39-41`
+    - `docs/issues/issue_53_prepare_execute_native_triage_plan.md:212-216`
+  - Current authoritative-status anchors reviewed:
+    - `docs/issues/issue_53_operation_tracker.md:68-72`
+    - `docs/issues/issue_53_operation_tracker.md:386-411`
+    - `docs/issues/issue_53_operation_tracker.md:416-439`
+    - `docs/issues/issue_53_operation_tracker.md:2074-2132`
+  - Current implementation anchors reviewed:
+    - `public/index.html:55-64`
+    - `public/style.css:155-224`
+    - `public/renderer.js:195-224`
+    - `public/renderer.js:226-275`
+    - `public/renderer.js:927-934`
+    - `public/renderer.js:1788-1979`
+    - `electron/preload.js:21-28`
+    - `electron/preload.js:56-65`
+    - `electron/main.js:59-84`
+    - `electron/main.js:314-323`
+    - `electron/main.js:341-356`
+    - `electron/import_extract_platform/import_extract_processing_mode_ipc.js:15-88`
+    - `electron/import_extract_platform/import_extract_prepare_ipc.js:50-155`
+    - `electron/import_extract_platform/import_extract_execute_prepared_ipc.js:74-185`
+    - `electron/import_extract_platform/import_extract_prepare_execute_core.js:325-416`
+    - `electron/import_extract_platform/import_extract_prepare_execute_core.js:605-727`
+    - `electron/import_extract_platform/import_extract_prepared_store.js:7-57`
+    - `electron/import_extract_platform/import_extract_prepared_store.js:60-94`
+    - `electron/import_extract_platform/native_pdf_selectable_text_probe.js:104-216`
+    - `electron/import_extract_platform/native_extraction_route.js:131-166`
+    - `electron/import_extract_platform/native_extraction_route.js:266-399`
+    - `electron/import_extract_platform/ocr_image_normalization.js:52-118`
+    - `electron/import_extract_platform/ocr_google_drive_route.js:190-220`
+    - `electron/import_extract_platform/ocr_google_drive_route.js:287-601`
+    - `i18n/en/renderer.json:80-83`
+    - `i18n/es/renderer.json:80-83`
+- Outcome / next step:
+  - Completed. The repository now has enough reviewed context to give a safe Section 6 readiness assessment, but not to skip the explicit Section 6 feasibility/scope gate. The immediate next step is to report the route-by-route feasibility judgment and, if the user approves, lock a small Section 6 scope/contract before any implementation work.
 
 ### OP-0082
 

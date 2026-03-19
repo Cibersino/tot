@@ -20,6 +20,7 @@
   const backdrop = document.getElementById('importExtractApplyModalBackdrop');
   const title = document.getElementById('importExtractApplyModalTitle');
   const message = document.getElementById('importExtractApplyModalMessage');
+  const elapsed = document.getElementById('importExtractApplyModalElapsed');
   const repeatLabel = document.getElementById('importExtractApplyModalRepeatLabel');
   const repeatInput = document.getElementById('importExtractApplyModalRepeatInput');
   const btnOverwrite = document.getElementById('importExtractApplyModalOverwrite');
@@ -32,6 +33,7 @@
       && backdrop
       && title
       && message
+      && elapsed
       && repeatLabel
       && repeatInput
       && btnOverwrite
@@ -58,6 +60,7 @@
 
   async function promptApplyChoice({
     tRenderer,
+    elapsedText = '',
     defaultRepeat = 1,
     maxRepeat = 1,
   } = {}) {
@@ -101,14 +104,22 @@
       'renderer.alerts.import_extract_apply_modal_cancel_button',
       'Cancel'
     );
+    const closeAriaText = translate(
+      tRenderer,
+      'renderer.alerts.import_extract_apply_modal_close_aria',
+      'Close apply extracted text dialog'
+    );
 
     title.textContent = titleText;
     message.textContent = messageText;
+    elapsed.textContent = typeof elapsedText === 'string' ? elapsedText.trim() : '';
+    elapsed.hidden = !elapsed.textContent;
+    elapsed.setAttribute('aria-hidden', elapsed.hidden ? 'true' : 'false');
     repeatLabel.textContent = repeatLabelText;
     btnOverwrite.textContent = overwriteText;
     btnAppend.textContent = appendText;
     btnCancel.textContent = cancelText;
-    btnClose.setAttribute('aria-label', cancelText);
+    btnClose.setAttribute('aria-label', closeAriaText);
 
     repeatInput.min = '1';
     repeatInput.max = String(safeMaxRepeat);

@@ -4,6 +4,8 @@
       "selector_title": "Primeira e última parte do texto analisado:",
       "selector_empty": "(vazio)",
       "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +16,8 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Importar/extrair texto de arquivo",
+        "import_extract_abort": "Abortar extração",
         "overwrite_clipboard": "Substituir o texto atual pelo conteúdo da área de transferência",
         "append_clipboard": "Adicionar o conteúdo da área de transferência ao final do texto atual (nova linha)",
         "clipboard_repeat_count": "Número de repetições da colagem",
@@ -29,6 +33,21 @@
         "reset_presets": "Restaurar presets padrão",
         "help_button": "Mostrar dica útil",
         "flotante_window": "Janela flutuante"
+      },
+      "aria": {
+        "import_extract": "Importar ou extrair texto de arquivo",
+        "import_extract_abort": "Abortar extração",
+        "clipboard_repeat_count": "Repetições da colagem",
+        "wpm_input": "Palavras por minuto",
+        "wpm_slider": "Controle deslizante de palavras por minuto",
+        "speed_presets": "Presets de velocidade",
+        "precise_mode_toggle": "Modo preciso",
+        "crono_controls": "Controles do cronômetro",
+        "crono_display": "Exibição do cronômetro",
+        "crono_toggle": "Iniciar ou pausar cronômetro",
+        "crono_reset": "Redefinir cronômetro",
+        "floating_window_toggle": "Janela flutuante",
+        "floating_window_group": "Controles da janela flutuante"
       },
       "speed": {
         "title": "VELOCIDADE DE LEITURA",
@@ -46,6 +65,15 @@
         "chars": "Caracteres: {n}",
         "precise_mode": "Modo preciso",
         "precise_tooltip": "Baseado em Intl.Segmenter"
+      },
+      "processing": {
+        "import_extract_placeholder": "Extraindo texto...",
+        "import_extract_preparing": "Preparando rota de importação/extração...",
+        "import_extract_waiting_native": "Extraindo texto do arquivo...",
+        "import_extract_waiting_ocr": "Executando extração OCR...",
+        "import_extract_waiting_ocr_delayed": "OCR em execução. Alguns arquivos demoram mais.",
+        "import_extract_elapsed": "Tempo decorrido: {time}",
+        "import_extract_drop_here": "Solte um arquivo para importar/extrair texto"
       },
       "crono": {
         "title": "CRONÔMETRO",
@@ -67,6 +95,7 @@
       },
       "columns": {
         "texto": "Texto",
+        "tiempo": "Tempo",
         "tempo": "Tempo",
         "percent": "%",
         "falta": "F",
@@ -88,6 +117,7 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
         "select_snapshot": "Selecionar snapshot",
         "clear_snapshot": "🗙",
         "cancel": "Cancelar",
@@ -174,10 +204,10 @@
       "status_no_matches": "Sem correspondencias",
       "status_empty_query": "Digite para buscar"
     },
-    "alerts": {
-      "clipboard_too_large": "O texto da área de transferência é muito grande para processar. Reduza-o e tente novamente.",
-      "append_too_large": "O texto resultante é muito grande para processar. Reduza-o e tente novamente.",
-      "clipboard_overflow": "O texto da área de transferência excedeu o limite permitido e foi truncado.",
+      "alerts": {
+        "clipboard_too_large": "O texto da área de transferência é muito grande para processar. Reduza-o e tente novamente.",
+        "append_too_large": "O texto resultante é muito grande para processar. Reduza-o e tente novamente.",
+        "clipboard_overflow": "O texto da área de transferência excedeu o limite permitido e foi truncado.",
       "append_overflow": "O texto adicionado excedeu o limite permitido e foi truncado.",
       "text_limit": "Não é possível adicionar mais texto: tamanho máximo atingido.",
       "clipboard_error": "Ocorreu um erro ao colar a partir da área de transferência. Verifique o console.",
@@ -196,13 +226,63 @@
       "edit_unavailable": "Funcionalidade de edição indisponível.",
       "edit_error": "Ocorreu um erro ao editar o preset. Verifique o console.",
       "delete_error": "Ocorreu um erro ao excluir o preset. Verifique o console.",
-      "restore_error": "Ocorreu um erro ao restaurar os presets. Verifique o console.",
-      "open_presets_unsupported": "A abertura de presets não é suportada neste ambiente.",
-      "open_presets_error": "Ocorreu um erro ao abrir a pasta de presets. Verifique o console.",
-      "open_presets_fail": "Não foi possível abrir a pasta padrão de presets. Verifique o console para mais detalhes.",
-      "wip_test_velocidad": "WIP: O teste de velocidade de leitura será aberto aqui em uma versão futura.",
-      "wip_diseno_skins": "WIP: O seletor de skins será aberto aqui em uma versão futura.",
-      "wip_diseno_crono": "WIP: Os parâmetros do cronômetro flutuante serão abertos aqui em uma versão futura.",
+        "restore_error": "Ocorreu um erro ao restaurar os presets. Verifique o console.",
+        "open_presets_unsupported": "A abertura de presets não é suportada neste ambiente.",
+        "open_presets_error": "Ocorreu um erro ao abrir a pasta de presets. Verifique o console.",
+        "open_presets_fail": "Não foi possível abrir a pasta padrão de presets. Verifique o console para mais detalhes.",
+        "import_extract_error": "Ocorreu um erro ao iniciar a importação/extração. Verifique o console.",
+        "import_extract_precondition_blocked": "Para iniciar a importação/extração, feche todas as janelas secundárias e pare o cronômetro.",
+        "import_extract_precondition_error": "Ocorreu um erro ao verificar as precondições da importação/extração. Verifique o console.",
+        "import_extract_processing_locked": "A importação/extração está em processamento. As interações na janela principal ficam bloqueadas até o processamento terminar ou você abortar.",
+        "import_extract_abort_error": "Ocorreu um erro ao solicitar o cancelamento da importação/extração. Verifique o console.",
+        "import_extract_cancelled": "A importação/extração foi cancelada.",
+        "import_extract_drop_single_file_only": "Solte exatamente um arquivo para iniciar a importação/extração.",
+        "import_extract_drop_invalid_file": "O item solto não é um arquivo local válido.",
+        "import_extract_route_choice_required": "É necessário escolher a rota para este PDF antes que a extração continue.",
+        "import_extract_route_choice_title": "Escolher rota de extração",
+        "import_extract_route_choice_message": "As duas rotas de extração estão disponíveis para este PDF. Escolha uma para continuar.",
+        "import_extract_route_choice_native_button": "Usar nativo",
+        "import_extract_route_choice_ocr_button": "Usar OCR",
+        "import_extract_route_choice_cancel_button": "Cancelar",
+        "import_extract_route_choice_close_aria": "Fechar diálogo de rota de extração",
+        "import_extract_apply_modal_title": "Aplicar texto extraído",
+        "import_extract_apply_modal_message": "Escolha como aplicar o texto extraído.",
+        "import_extract_apply_modal_elapsed": "Tempo de execução: {time}",
+        "import_extract_apply_modal_repeat_label": "Repetições",
+        "import_extract_apply_modal_overwrite_button": "Sobrescrever",
+        "import_extract_apply_modal_append_button": "Anexar",
+        "import_extract_apply_modal_cancel_button": "Cancelar",
+        "import_extract_apply_modal_close_aria": "Fechar diálogo de aplicação do texto extraído",
+        "import_extract_apply_error": "Ocorreu um erro ao aplicar o texto extraído. Verifique o console e tente novamente.",
+        "import_extract_apply_too_large": "O texto resultante é grande demais para ser processado. Reduza as repetições e tente novamente.",
+        "import_extract_apply_text_limit": "Não é possível anexar o texto extraído: tamanho máximo atingido.",
+        "import_extract_apply_truncated": "O texto extraído aplicado excedeu o limite e foi truncado.",
+        "import_extract_prepare_invalid": "A solicitação preparada de importação/extração não é mais válida. Inicie o fluxo novamente.",
+        "import_extract_ocr_unavailable": "O OCR não está disponível. Verifique o status de configuração/autenticação e tente novamente.",
+        "import_extract_ocr_activation_required": "A ativação do OCR é obrigatória. Entre no Google OCR e tente novamente.",
+        "import_extract_ocr_activation_starting": "toT OCR usa Google. Seu navegador será aberto para que você possa autorizar sua conta. Somente os arquivos que você escolher para OCR são enviados ao Google.",
+        "import_extract_ocr_activation_success": "A ativação do OCR foi concluída. Tentando a extração novamente.",
+        "import_extract_ocr_activation_cancelled": "A ativação do OCR foi cancelada. A importação/extração não continuou.",
+        "import_extract_ocr_activation_failed": "A ativação do OCR falhou. Verifique o status de configuração/autenticação e tente novamente.",
+        "import_extract_ocr_connectivity_failed": "O OCR exige conexão com a internet. Verifique sua conexão e tente novamente.",
+        "import_extract_ocr_setup_missing_credentials": "Falta credentials.json na configuração do OCR. Selecione um arquivo válido de credenciais do Google OAuth e tente novamente.",
+        "import_extract_ocr_setup_invalid_credentials": "O arquivo de credenciais selecionado é inválido para o Google OAuth. Escolha um credentials.json válido e tente novamente.",
+        "import_extract_ocr_setup_cancelled": "A configuração do OCR foi cancelada antes da seleção de credentials.json.",
+        "import_extract_ocr_restricted": "A rota OCR é restrita para este tipo de arquivo.",
+        "import_extract_ocr_quota_or_rate_limited": "O OCR está temporariamente bloqueado por limites de cota/taxa. Aguarde e tente novamente.",
+        "import_extract_ocr_runtime_error": "Ocorreu um erro de execução do OCR durante a importação/extração. Verifique o console e tente novamente.",
+        "import_extract_ocr_cancelled": "A importação/extração OCR foi cancelada.",
+        "import_extract_ocr_cleanup_warning": "O OCR terminou, mas a limpeza remota temporária falhou. Tente novamente ou verifique o status da conta.",
+        "import_extract_ocr_apply_pending": "A extração OCR foi concluída. O fluxo de aplicação pós-extração ainda não foi implementado.",
+        "import_extract_native_runtime_error": "Ocorreu um erro de execução da extração nativa durante a importação/extração. Verifique o console e tente novamente.",
+        "import_extract_native_unreadable_or_corrupt": "O arquivo selecionado está ilegível ou corrompido para a extração nativa.",
+        "import_extract_native_encrypted_or_password_protected": "O PDF selecionado está criptografado ou protegido por senha e não pode ser extraído nativamente.",
+        "import_extract_native_cancelled": "A extração nativa foi cancelada.",
+        "import_extract_native_unsupported_format": "Este formato de arquivo não é compatível com a rota de extração nativa.",
+        "import_extract_native_apply_pending": "A extração nativa foi concluída. O fluxo de aplicação pós-extração ainda não foi implementado.",
+        "wip_test_velocidad": "WIP: O teste de velocidade de leitura será aberto aqui em uma versão futura.",
+        "wip_diseno_skins": "WIP: O seletor de skins será aberto aqui em uma versão futura.",
+        "wip_diseno_crono": "WIP: Os parâmetros do cronômetro flutuante serão abertos aqui em uma versão futura.",
       "wip_diseno_fuentes": "WIP: O seletor de fontes será aberto aqui em uma versão futura.",
       "wip_diseno_colores": "WIP: O seletor de cores será aberto aqui em uma versão futura.",
       "wip_shortcuts": "WIP: O seletor de atalhos de teclado será aberto aqui em uma versão futura.",
@@ -210,17 +290,18 @@
       "wip_discord": "WIP: O link do Discord será aberto aqui em uma versão futura.",
       "wip_colabora": "WIP: As informações sobre colaboração aparecerão aqui em uma versão futura."
     },
-    "editor_alerts": {
-      "paste_too_big": "Texto muito grande para colar diretamente. Use os botões da janela principal.",
-      "drop_too_big": "Texto arrastado muito grande. Use os botões da janela principal.",
-      "paste_no_text": "A área de transferência não contém texto simples.",
-      "drop_no_text": "Arrastar e soltar: nenhum texto simples detectado.",
-      "type_limit": "Não é possível digitar mais texto: tamanho máximo atingido.",
-      "paste_limit": "Não é possível colar mais texto: tamanho máximo atingido.",
-      "paste_truncated": "O texto colado foi truncado para evitar exceder o limite máximo.",
-      "drop_truncated": "O texto arrastado excedeu o espaço disponível e foi truncado.",
-      "text_truncated": "O texto foi truncado para adequar-se ao limite máximo da aplicação.",
-      "calc_error": "Ocorreu um erro ao calcular. Verifique o console."
+      "editor_alerts": {
+        "paste_too_big": "Texto muito grande para colar diretamente. Use os botões da janela principal.",
+        "drop_too_big": "Texto arrastado muito grande. Use os botões da janela principal.",
+        "paste_no_text": "A área de transferência não contém texto simples.",
+        "drop_no_text": "Arrastar e soltar: nenhum texto simples detectado.",
+        "type_limit": "Não é possível digitar mais texto: tamanho máximo atingido.",
+        "paste_limit": "Não é possível colar mais texto: tamanho máximo atingido.",
+        "drop_limit": "Não é possível soltar mais texto: tamanho máximo atingido.",
+        "paste_truncated": "O texto colado foi truncado para evitar exceder o limite máximo.",
+        "drop_truncated": "O texto arrastado excedeu o espaço disponível e foi truncado.",
+        "text_truncated": "O texto foi truncado para adequar-se ao limite máximo da aplicação.",
+        "calc_error": "Ocorreu um erro ao calcular. Verifique o console."
     },
     "preset_alerts": {
       "name_empty": "O nome não pode estar vazio.",
@@ -230,9 +311,25 @@
       "process_error": "Ocorreu um erro ao processar o preset. Verifique o console."
     },
     "info": {
+      "external": {
+        "blocked": "Link bloqueado",
+        "missing": "Link não encontrado",
+        "error": "Erro ao abrir link"
+      },
+      "appdoc": {
+        "blocked": "Documento bloqueado",
+        "missing": "Documento não encontrado",
+        "error": "Erro ao abrir documento"
+      },
       "acerca_de": {
         "app_name": "toT",
-        "title": "Sobre"
+        "title": "Sobre",
+        "version": {
+          "unavailable": "Indisponível"
+        },
+        "env": {
+          "unavailable": "Indisponível"
+        }
       },
       "links_interes": {
         "app_name": "toT",
