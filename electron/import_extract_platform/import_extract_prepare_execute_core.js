@@ -1,4 +1,20 @@
+// electron/import_extract_platform/import_extract_prepare_execute_core.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Shared import/extract prepare + execute core for main-process IPC wrappers.
+// Responsibilities:
+// - Normalize prepare/execute payloads and derive source-file metadata.
+// - Classify prepare-time route availability for native vs OCR execution.
+// - Build stable prepare-failure and execution-result surfaces for renderer consumers.
+// - Enforce execution invariants around cancellation and non-success text output.
+// - Keep route-selection and alert-key policy centralized for delegated IPC modules.
+
+// =============================================================================
+// Imports
+// =============================================================================
 
 const path = require('path');
 const { BrowserWindow } = require('electron');
@@ -8,7 +24,15 @@ const { runGoogleDriveOcrRoute } = require('./ocr_google_drive_route');
 const { runNativeExtractionRoute } = require('./native_extraction_route');
 const { probeNativePdfSelectableText } = require('./native_pdf_selectable_text_probe');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const OCR_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'bmp']);
+
+// =============================================================================
+// Boundary normalization + shared metadata helpers
+// =============================================================================
 
 function resolvePreparePayload(payload) {
   const raw = payload && typeof payload === 'object' ? payload : {};
@@ -77,6 +101,10 @@ function resolveSetupState(validationResult) {
   if (state === 'setup_incomplete' || state === 'ocr_activation_required') return state;
   return 'failure';
 }
+
+// =============================================================================
+// Prepare/build helpers
+// =============================================================================
 
 function getProbeFailureDetails(probeResult) {
   if (!probeResult || probeResult.state !== 'failure') return null;
@@ -259,6 +287,9 @@ function buildOcrSetupValidationRuntimeFailure(err) {
   };
 }
 
+// Keep unexpected resolvePaths()/validation exceptions on the same structured
+// OCR-unavailable prepare path instead of letting prepare IPC fall through to
+// a generic handler failure.
 async function validateOcrSetup(resolvePaths, log) {
   try {
     const paths = resolvePaths();
@@ -463,6 +494,10 @@ async function prepareSelectedFile({
   return resolveNonPdfNativePreparation(fileInfo, ocrLanguage);
 }
 
+// =============================================================================
+// Execute/result helpers
+// =============================================================================
+
 function resolvePrimaryAlertKey(routeKind, result) {
   const state = result && typeof result.state === 'string' ? result.state : 'failure';
   const code = result && result.error && typeof result.error.code === 'string'
@@ -621,6 +656,10 @@ function buildUnexpectedRuntimeResult(fileInfo, routeKind, routeMetadata, err) {
   };
 }
 
+// =============================================================================
+// Execute entrypoint
+// =============================================================================
+
 async function executePreparedImport({
   preparedRecord,
   routePreference,
@@ -746,6 +785,10 @@ async function executePreparedImport({
   };
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   buildRouteMetadata,
   executePreparedImport,
@@ -756,3 +799,7 @@ module.exports = {
   resolveExecutePayload,
   resolvePreparePayload,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_prepare_execute_core.js
+// =============================================================================
