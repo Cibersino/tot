@@ -4,6 +4,30 @@ const Log = require('../log');
 
 const log = Log.get('import-extract-preconditions');
 
+function assertValidPreconditionContext(context) {
+  if (!context || typeof context !== 'object') {
+    throw new Error('import-extract precondition context invalid');
+  }
+  if (!Array.isArray(context.openSecondaryWindows)) {
+    throw new Error('import-extract precondition context missing openSecondaryWindows array');
+  }
+  if (typeof context.stopwatchRunning !== 'boolean') {
+    throw new Error('import-extract precondition context missing stopwatchRunning boolean');
+  }
+
+  for (const item of context.openSecondaryWindows) {
+    if (!item || typeof item !== 'object') {
+      throw new Error('import-extract precondition window entry invalid');
+    }
+    if (typeof item.id !== 'string' || !item.id.trim()) {
+      throw new Error('import-extract precondition window entry missing id');
+    }
+    if (typeof item.isOpen !== 'boolean') {
+      throw new Error('import-extract precondition window entry missing isOpen boolean');
+    }
+  }
+}
+
 function normalizeWindowEntries(rawWindows) {
   const list = Array.isArray(rawWindows) ? rawWindows : [];
   const normalized = [];
@@ -64,9 +88,10 @@ function registerIpc(ipcMain, { getPreconditionContext } = {}) {
 
   ipcMain.handle('import-extract-check-preconditions', async () => {
     try {
-      const context = getPreconditionContext() || {};
+      const context = getPreconditionContext();
+      assertValidPreconditionContext(context);
       const openSecondaryWindows = normalizeWindowEntries(context.openSecondaryWindows);
-      const stopwatchRunning = !!context.stopwatchRunning;
+      const stopwatchRunning = context.stopwatchRunning;
 
       if (openSecondaryWindows.length > 0 || stopwatchRunning) {
         const blocked = buildBlockedResult({
