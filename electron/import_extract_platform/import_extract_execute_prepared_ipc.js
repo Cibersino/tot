@@ -60,6 +60,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_execute_prepared_ipc] registerIpc requires ipcMain');
   }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_execute_prepared_ipc] registerIpc requires getWindows()');
+  }
   if (typeof resolvePaths !== 'function') {
     throw new Error('[import_extract_execute_prepared_ipc] registerIpc requires resolvePaths()');
   }
@@ -72,11 +75,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-execute-prepared', async (event, payload = {}) => {
