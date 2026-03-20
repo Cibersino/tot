@@ -1,14 +1,37 @@
 // electron/import_extract_platform/import_extract_ocr_gate_ipc.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process OCR gate IPC for pre-flight OCR availability checks.
+// Responsibilities:
+// - Classify the selected file into OCR-eligible and restricted categories.
+// - Authorize the request to the main window sender before evaluating OCR state.
+// - Validate Google Drive OCR setup using the configured credential/token paths.
+// - Map OCR setup failures into renderer-facing gate results and alert keys.
+// - Return a structured ready, blocked, or failure result for OCR entry flows.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const { BrowserWindow } = require('electron');
 const Log = require('../log');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
 
 const log = Log.get('import-extract-ocr-gate');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const OCR_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'bmp']);
 const OCR_ELIGIBLE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'bmp', 'pdf']);
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function getFileExtensionLowercase(filePath) {
   const normalizedPath = typeof filePath === 'string' ? filePath.trim() : '';
@@ -164,6 +187,10 @@ function isAuthorizedSender(event, mainWin) {
   }
 }
 
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
+
 function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_ocr_gate] registerIpc requires ipcMain');
@@ -245,6 +272,14 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   });
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_ocr_gate_ipc.js
+// =============================================================================
