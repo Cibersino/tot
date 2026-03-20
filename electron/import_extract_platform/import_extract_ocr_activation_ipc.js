@@ -1,6 +1,21 @@
 // electron/import_extract_platform/import_extract_ocr_activation_ipc.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process OCR activation IPC for Google Drive OCR setup and token bootstrap.
+// Responsibilities:
+// - Authorize OCR activation requests to the main window sender.
+// - Import and validate OAuth credentials JSON when local credentials are missing.
+// - Run the local-auth browser flow and classify activation/authentication failures.
+// - Persist encrypted token material for later OCR setup validation.
+// - Return a structured activation result for OCR recovery and setup flows.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const fs = require('fs');
 const path = require('path');
 const { BrowserWindow, dialog } = require('electron');
@@ -11,7 +26,15 @@ const { writeEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 
 const log = Log.get('import-extract-ocr-activation');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const OCR_SCOPES = Object.freeze(['https://www.googleapis.com/auth/drive.file']);
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function safeErrorName(err) {
   return String(err && err.name ? err.name : 'Error');
@@ -287,6 +310,10 @@ function extractSerializableCredentials(authClient) {
   return { ...candidate };
 }
 
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
+
 function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_ocr_activation] registerIpc requires ipcMain');
@@ -467,6 +494,14 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   });
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_ocr_activation_ipc.js
+// =============================================================================
