@@ -1,6 +1,21 @@
 // electron/import_extract_platform/import_extract_file_picker_ipc.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process IPC module for the import/extract file picker.
+// Responsibilities:
+// - Register the 'import-extract-open-picker' IPC handler.
+// - Enforce that only the main window can invoke the picker.
+// - Resolve the initial picker directory from persisted state or platform defaults.
+// - Persist the last selected directory when a valid file is chosen.
+// - Normalize picker output before returning it to the renderer.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const { dialog, app, BrowserWindow } = require('electron');
 const Log = require('../log');
 const { getImportExtractStateFile, loadJson, saveJson } = require('../fs_storage');
@@ -9,9 +24,17 @@ const { getImportExtractPlatformAdapter } = require('./import_extract_platform_a
 const log = Log.get('import-extract-picker');
 const platformAdapter = getImportExtractPlatformAdapter(process.platform);
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const PICKER_STATE_FALLBACK = Object.freeze({
   lastDirectory: '',
 });
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function normalizePickerState(rawState) {
   const state = rawState && typeof rawState === 'object' ? rawState : {};
@@ -81,6 +104,10 @@ function isAuthorizedSender(event, mainWin) {
     return false;
   }
 }
+
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
 
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -152,6 +179,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_file_picker_ipc.js
+// =============================================================================
