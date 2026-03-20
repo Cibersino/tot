@@ -10,12 +10,18 @@
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Logger bootstrap
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-extract-entry] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('import-extract-entry');
   log.debug('Import/extract shared entry starting...');
 
+  // =============================================================================
+  // Shared state + configuration
+  // =============================================================================
   let deps = null;
 
   function configure(nextDeps = {}) {
@@ -38,6 +44,9 @@
     };
   }
 
+  // =============================================================================
+  // Local helpers
+  // =============================================================================
   function requireConfiguredDeps() {
     if (!deps) {
       throw new Error('[import-extract-entry] configure() must run before using the shared entry flow');
@@ -97,6 +106,9 @@
       : 'renderer.alerts.import_extract_error';
   }
 
+  // =============================================================================
+  // Shared import/extract flow
+  // =============================================================================
   async function runSharedFlow({
     filePath,
     source = 'unknown',
@@ -323,6 +335,9 @@
     }
   }
 
+  // =============================================================================
+  // Public entrypoints
+  // =============================================================================
   async function startFromPicker() {
     const { guardUserAction } = requireConfiguredDeps();
 
@@ -373,6 +388,9 @@
     });
   }
 
+  // =============================================================================
+  // Module surface
+  // =============================================================================
   window.ImportExtractEntry = {
     configure,
     startFromFilePath,
