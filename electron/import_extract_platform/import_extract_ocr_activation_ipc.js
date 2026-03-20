@@ -322,6 +322,11 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       const credentialsPath = String(paths && paths.credentialsPath ? paths.credentialsPath : '');
       const tokenPath = String(paths && paths.tokenPath ? paths.tokenPath : '');
       if (!credentialsPath || !tokenPath) {
+        log.error('import/extract OCR activation runtime paths unavailable:', {
+          stage: 'resolve_paths',
+          credentialsPathPresent: !!credentialsPath,
+          tokenPathPresent: !!tokenPath,
+        });
         return buildFailure({
           state: 'failure',
           code: 'platform_runtime_failed',
@@ -339,6 +344,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         if (!sourcePath) {
           const pick = await promptCredentialsFile(mainWin);
           if (!pick.ok) {
+            log.info('import/extract OCR activation cancelled while selecting credentials file.');
             return buildFailure({
               state: 'setup_incomplete',
               code: 'setup_incomplete',
@@ -357,6 +363,12 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           targetPath: credentialsPath,
         });
         if (!importResult.ok) {
+          log.warn('import/extract OCR activation blocked during credentials import:', {
+            state: importResult.state,
+            code: importResult.code,
+            sourcePathProvided: !!selectedCredentialsPath,
+            detailsSafeForLogs: importResult.detailsSafeForLogs,
+          });
           return {
             ...importResult,
             detailsSafeForLogs: {
@@ -375,11 +387,29 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           keyfilePath: credentialsPath,
         });
       } catch (authErr) {
-        return mapAuthenticateError(authErr);
+        const authFailure = mapAuthenticateError(authErr);
+        if (authFailure.code === 'ocr_activation_required') {
+          log.info('import/extract OCR activation cancelled during authentication:', {
+            state: authFailure.state,
+            code: authFailure.code,
+            detailsSafeForLogs: authFailure.detailsSafeForLogs,
+          });
+        } else {
+          log.warn('import/extract OCR activation blocked during authentication:', {
+            state: authFailure.state,
+            code: authFailure.code,
+            detailsSafeForLogs: authFailure.detailsSafeForLogs,
+          });
+        }
+        return authFailure;
       }
 
       const serializableCredentials = extractSerializableCredentials(authClient);
       if (!serializableCredentials) {
+        log.warn('import/extract OCR activation returned no serializable credentials:', {
+          stage: 'token_serialize',
+          reason: 'missing_access_and_refresh_token',
+        });
         return buildFailure({
           state: 'failure',
           code: 'auth_failed',
