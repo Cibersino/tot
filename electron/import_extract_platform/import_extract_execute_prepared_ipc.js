@@ -48,6 +48,14 @@ function buildInvalidPreparedIdResponse(reason) {
   };
 }
 
+function buildInvalidPreparedIdLogFields(prepareId, reason, extraFields = {}) {
+  return {
+    prepareId: shortPrepareId(prepareId),
+    reason,
+    ...extraFields,
+  };
+}
+
 function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_execute_prepared_ipc] registerIpc requires ipcMain');
@@ -85,11 +93,11 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
 
       const preparedLookup = peekPreparedRecord(request.prepareId);
       if (!preparedLookup.ok || !preparedLookup.record) {
+        const invalidReason = preparedLookup.reason || 'invalid_or_expired';
         log.warn('import/extract prepared id invalid/expired/reused:', {
-          prepareId: shortPrepareId(request.prepareId),
-          reason: preparedLookup.reason || 'invalid_or_expired',
+          ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
         });
-        return buildInvalidPreparedIdResponse(preparedLookup.reason || 'invalid_or_expired');
+        return buildInvalidPreparedIdResponse(invalidReason);
       }
 
       const preparedRecord = preparedLookup.record;
@@ -109,17 +117,16 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         currentFingerprint = readSourceFileFingerprint(preparedRecord.fileInfo.filePath);
       } catch (err) {
         log.warn('import/extract prepared id invalid/expired/reused:', {
-          prepareId: shortPrepareId(request.prepareId),
-          reason: 'fingerprint_read_failed',
-          errorMessage: String(err && err.message ? err.message : err || ''),
+          ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_read_failed', {
+            errorMessage: String(err && err.message ? err.message : err || ''),
+          }),
         });
         return buildInvalidPreparedIdResponse('fingerprint_read_failed');
       }
 
       if (!fingerprintsMatch(preparedRecord.sourceFileFingerprint, currentFingerprint)) {
         log.warn('import/extract prepared id invalid/expired/reused:', {
-          prepareId: shortPrepareId(request.prepareId),
-          reason: 'fingerprint_mismatch',
+          ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_mismatch'),
         });
         return buildInvalidPreparedIdResponse('fingerprint_mismatch');
       }
@@ -134,11 +141,11 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
 
       const consumeResult = consumePreparedRecord(request.prepareId);
       if (!consumeResult.ok || !consumeResult.record) {
+        const invalidReason = consumeResult.reason || 'invalid_or_expired';
         log.warn('import/extract prepared id invalid/expired/reused:', {
-          prepareId: shortPrepareId(request.prepareId),
-          reason: consumeResult.reason || 'invalid_or_expired',
+          ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
         });
-        return buildInvalidPreparedIdResponse(consumeResult.reason || 'invalid_or_expired');
+        return buildInvalidPreparedIdResponse(invalidReason);
       }
 
       log.info('import/extract execute started:', {
