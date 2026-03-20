@@ -29,7 +29,13 @@ function createController({ onStateChanged } = {}) {
   });
 
   const notifyStateChanged = () => {
-    if (typeof onStateChanged !== 'function') return;
+    if (typeof onStateChanged !== 'function') {
+      log.warnOnce(
+        'import_extract_processing_mode.onStateChanged.unavailable',
+        'Processing-mode onStateChanged callback unavailable; state change notification skipped.'
+      );
+      return;
+    }
     try {
       onStateChanged(getState());
     } catch (err) {
@@ -112,16 +118,16 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_processing_mode] registerIpc requires ipcMain');
   }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_processing_mode] registerIpc requires getWindows()');
+  }
   if (!controller || typeof controller.getState !== 'function' || typeof controller.requestAbort !== 'function') {
     throw new Error('[import_extract_processing_mode] registerIpc requires controller');
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-get-processing-mode', async (event) => {
