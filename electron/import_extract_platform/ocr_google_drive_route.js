@@ -187,7 +187,7 @@ function ensureNotAborted(isAborted) {
   }
 }
 
-async function runWithRateLimitRetry({ operationName, logger, isAborted, fn }) {
+async function runWithRateLimitRetry({ operationName, log, isAborted, fn }) {
   let attempt = 0;
 
   while (attempt < MAX_RATE_LIMIT_ATTEMPTS) {
@@ -201,8 +201,8 @@ async function runWithRateLimitRetry({ operationName, logger, isAborted, fn }) {
       const retryable = isRetryableRateLimit(parsedFailure);
       if (retryable && attempt < MAX_RATE_LIMIT_ATTEMPTS) {
         const waitMs = Math.min(MAX_RETRY_DELAY_MS, BASE_RETRY_DELAY_MS * (2 ** (attempt - 1)));
-        if (logger && typeof logger.warn === 'function') {
-          logger.warn('Retrying OCR operation after rate-limit response:', {
+        if (log && typeof log.warn === 'function') {
+          log.warn('Retrying OCR operation after rate-limit response:', {
             operationName,
             attempt,
             nextAttemptInMs: waitMs,
@@ -289,7 +289,7 @@ async function runGoogleDriveOcrRoute({
   credentialsPath,
   tokenPath,
   ocrLanguage = '',
-  logger,
+  log,
   isAborted,
 } = {}) {
   const fileInfo = getFileInfo(filePath);
@@ -437,7 +437,7 @@ async function runGoogleDriveOcrRoute({
 
     const createResponse = await runWithRateLimitRetry({
       operationName: 'upload_convert',
-      logger,
+      log,
       isAborted,
       fn: async () => drive.files.create(createRequest),
     });
@@ -453,7 +453,7 @@ async function runGoogleDriveOcrRoute({
 
     const exportResponse = await runWithRateLimitRetry({
       operationName: 'export_text',
-      logger,
+      log,
       isAborted,
       fn: async () => drive.files.export(
         {
@@ -548,7 +548,7 @@ async function runGoogleDriveOcrRoute({
       try {
         await runWithRateLimitRetry({
           operationName: 'cleanup_delete_temp_doc',
-          logger,
+          log,
           isAborted: () => false,
           fn: async () => drive.files.delete({ fileId: tempDocumentId }),
         });
@@ -556,8 +556,8 @@ async function runGoogleDriveOcrRoute({
         const parsedCleanupFailure = parseProviderFailure(cleanupErr);
         const cleanupCode = classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed';
         cleanupWarnings.push(`cleanup:${cleanupCode}`);
-        if (logger && typeof logger.warn === 'function') {
-          logger.warn('OCR cleanup failed:', {
+        if (log && typeof log.warn === 'function') {
+          log.warn('OCR cleanup failed:', {
             tempDocumentId,
             warning: `cleanup:${cleanupCode}`,
             statusCode: parsedCleanupFailure.statusCode,

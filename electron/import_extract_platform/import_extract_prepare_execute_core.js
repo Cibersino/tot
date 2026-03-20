@@ -319,9 +319,9 @@ async function resolveNonPdfOcrPreparation({
   fileInfo,
   ocrLanguage,
   resolvePaths,
-  logger,
+  log,
 }) {
-  const validation = await validateOcrSetup(resolvePaths, logger);
+  const validation = await validateOcrSetup(resolvePaths, log);
   if (!validation || validation.ok !== true) {
     return buildOcrPrepareFailure({
       fileInfo,
@@ -351,12 +351,12 @@ async function resolvePdfPreparation({
   fileInfo,
   ocrLanguage,
   resolvePaths,
-  logger,
+  log,
 }) {
   const nativeProbeResult = await probeNativePdfSelectableText({
     filePath: fileInfo.filePath,
     isAborted: () => false,
-    logger,
+    log,
   });
 
   const nativeProbeFailure = getProbeFailureDetails(nativeProbeResult);
@@ -377,7 +377,7 @@ async function resolvePdfPreparation({
   const nativeProbeSuccess = getProbeSuccessDetails(nativeProbeResult);
   const nativeAvailable = !!(nativeProbeSuccess && nativeProbeSuccess.selectableText === 'present');
 
-  const ocrValidation = await validateOcrSetup(resolvePaths, logger);
+  const ocrValidation = await validateOcrSetup(resolvePaths, log);
   const ocrReady = !!(ocrValidation && ocrValidation.ok === true);
   const ocrSetupState = resolveSetupState(ocrValidation);
 
@@ -438,7 +438,7 @@ async function prepareSelectedFile({
   filePath,
   ocrLanguage,
   resolvePaths,
-  logger,
+  log,
 }) {
   const fileInfo = getFileInfo(filePath);
 
@@ -447,7 +447,7 @@ async function prepareSelectedFile({
       fileInfo,
       ocrLanguage,
       resolvePaths,
-      logger,
+      log,
     });
   }
 
@@ -456,7 +456,7 @@ async function prepareSelectedFile({
       fileInfo,
       ocrLanguage,
       resolvePaths,
-      logger,
+      log,
     });
   }
 
@@ -661,7 +661,7 @@ async function executePreparedImport({
       const nativeResult = await runNativeExtractionRoute({
         filePath: fileInfo.filePath,
         isAborted: () => !controller.isActive(),
-        logger: log,
+        log,
       });
       const safeNativeResult = enforceFailureAbortInvariants({
         routeKind: 'native',
@@ -686,7 +686,7 @@ async function executePreparedImport({
         credentialsPath: paths.credentialsPath,
         tokenPath: paths.tokenPath,
         ocrLanguage: preparedRecord.ocrLanguage,
-        logger: log,
+        log,
         isAborted: () => !controller.isActive(),
       });
       const safeOcrResult = enforceFailureAbortInvariants({

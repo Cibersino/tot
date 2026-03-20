@@ -69,7 +69,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         filePath: request.filePath,
         ocrLanguage: request.ocrLanguage,
         resolvePaths,
-        logger: log,
+        log,
       });
 
       if (preparation && preparation.ok === true && preparation.prepareFailed === true) {
