@@ -81,6 +81,12 @@
     return importExtractStatusUi;
   }
 
+  function resolvePrimaryAlertKey(resultLike) {
+    return (resultLike && typeof resultLike.primaryAlertKey === 'string' && resultLike.primaryAlertKey.trim())
+      ? resultLike.primaryAlertKey
+      : 'renderer.alerts.import_extract_error';
+  }
+
   async function runSharedFlow({
     filePath,
     source = 'unknown',
@@ -102,9 +108,7 @@
     const importExtractStatusUi = getStatusUi();
     const normalizedFilePath = normalizeFilePath(filePath);
 
-    if (!skipGuard) {
-      if (typeof guardUserAction !== 'function' || !guardUserAction(actionId)) return;
-    }
+    if (!skipGuard && (typeof guardUserAction !== 'function' || !guardUserAction(actionId))) return;
     if (hasBlockingModalOpen()) {
       log.info('import/extract entry blocked because a main-window modal is open:', { source });
       return;
@@ -184,18 +188,12 @@
 
       if (!preparation || preparation.ok !== true) {
         log.error('import/extract prepare IPC failed:', preparation);
-        const primaryAlertKey = (preparation && typeof preparation.primaryAlertKey === 'string' && preparation.primaryAlertKey.trim())
-          ? preparation.primaryAlertKey
-          : 'renderer.alerts.import_extract_error';
-        notifyMain(primaryAlertKey);
+        notifyMain(resolvePrimaryAlertKey(preparation));
         return;
       }
 
       if (preparation.prepareFailed === true) {
-        const primaryAlertKey = (typeof preparation.primaryAlertKey === 'string' && preparation.primaryAlertKey.trim())
-          ? preparation.primaryAlertKey
-          : 'renderer.alerts.import_extract_error';
-        notifyMain(primaryAlertKey);
+        notifyMain(resolvePrimaryAlertKey(preparation));
         return;
       }
 
@@ -234,10 +232,7 @@
           importExtractStatusUi.applyProcessingModeState(execution.state, { source: 'execute_already_active' });
         }
         log.error('import/extract execution IPC failed:', execution);
-        const primaryAlertKey = (execution && typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
-          ? execution.primaryAlertKey
-          : 'renderer.alerts.import_extract_error';
-        notifyMain(primaryAlertKey);
+        notifyMain(resolvePrimaryAlertKey(execution));
         return;
       }
 
@@ -291,9 +286,7 @@
         return;
       }
 
-      const primaryAlertKey = (typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
-        ? execution.primaryAlertKey
-        : 'renderer.alerts.import_extract_error';
+      const primaryAlertKey = resolvePrimaryAlertKey(execution);
       if (primaryAlertKey === 'renderer.alerts.import_extract_native_cancelled'
         || primaryAlertKey === 'renderer.alerts.import_extract_ocr_cancelled') {
         return;
