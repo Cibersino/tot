@@ -31,6 +31,19 @@ function getNativeProbeLogFields(routeMetadata) {
   };
 }
 
+function buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFallback = 'not_checked' } = {}) {
+  return {
+    sourceFileExt: fileInfo.sourceFileExt,
+    sourceFileKind: fileInfo.sourceFileKind,
+    pdfTriage: routeMetadata ? routeMetadata.pdfTriage : 'not_pdf',
+    triageReason: routeMetadata ? routeMetadata.triageReason : '',
+    availableRoutes: routeMetadata ? routeMetadata.availableRoutes : [],
+    chosenRoute: routeMetadata ? routeMetadata.chosenRoute : null,
+    ocrSetupState: routeMetadata ? routeMetadata.ocrSetupState : ocrSetupStateFallback,
+    ...getNativeProbeLogFields(routeMetadata),
+  };
+}
+
 function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_prepare_ipc] registerIpc requires ipcMain');
@@ -75,14 +88,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       if (preparation && preparation.ok === true && preparation.prepareFailed === true) {
         const routeMetadata = preparation.routeMetadata || null;
         log.warn('import/extract prepare failed:', {
-          sourceFileExt: fileInfo.sourceFileExt,
-          sourceFileKind: fileInfo.sourceFileKind,
-          pdfTriage: routeMetadata ? routeMetadata.pdfTriage : 'not_pdf',
-          triageReason: routeMetadata ? routeMetadata.triageReason : '',
-          availableRoutes: routeMetadata ? routeMetadata.availableRoutes : [],
-          chosenRoute: routeMetadata ? routeMetadata.chosenRoute : null,
-          ocrSetupState: routeMetadata ? routeMetadata.ocrSetupState : 'failure',
-          ...getNativeProbeLogFields(routeMetadata),
+          ...buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFallback: 'failure' }),
           code: preparation.error && preparation.error.code ? preparation.error.code : '',
         });
         return preparation;
@@ -127,14 +133,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       const routeMetadata = preparation.routeMetadata || null;
       const logPayload = {
         prepareId: shortPrepareId(preparedRecord.prepareId),
-        sourceFileExt: fileInfo.sourceFileExt,
-        sourceFileKind: fileInfo.sourceFileKind,
-        pdfTriage: routeMetadata ? routeMetadata.pdfTriage : 'not_pdf',
-        triageReason: routeMetadata ? routeMetadata.triageReason : '',
-        availableRoutes: routeMetadata ? routeMetadata.availableRoutes : [],
-        chosenRoute: routeMetadata ? routeMetadata.chosenRoute : null,
-        ocrSetupState: routeMetadata ? routeMetadata.ocrSetupState : 'not_checked',
-        ...getNativeProbeLogFields(routeMetadata),
+        ...buildPrepareRouteLogFields(fileInfo, routeMetadata),
       };
 
       if (preparation.requiresRouteChoice === true) {
