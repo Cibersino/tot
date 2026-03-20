@@ -51,9 +51,15 @@
 
   function notifyMain(alertKey) {
     const { notifyMain: notify } = requireConfiguredDeps();
-    if (typeof notify === 'function') {
-      notify(alertKey);
+    if (typeof notify !== 'function') {
+      log.warnOnce(
+        'importExtractEntry.notifyMain.unavailable',
+        'notifyMain dependency unavailable; alert notification skipped:',
+        alertKey
+      );
+      return;
     }
+    notify(alertKey);
   }
 
   function hasBlockingModalOpen() {
@@ -276,7 +282,7 @@
           }
           return;
         }
-        if (typeof hasCurrentTextSubscription === 'function' && !hasCurrentTextSubscription()) {
+        if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
           throw new Error('current-text-updated subscription unavailable');
         }
 
