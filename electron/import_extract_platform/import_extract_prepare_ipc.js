@@ -1,4 +1,20 @@
+// electron/import_extract_platform/import_extract_prepare_ipc.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process IPC wrapper for import/extract prepare requests.
+// Responsibilities:
+// - Register the 'import-extract-prepare-selected-file' IPC handler.
+// - Authorize the sender against the current main window before preparing work.
+// - Delegate prepare policy and route analysis to import_extract_prepare_execute_core.js.
+// - Persist prepared-record fingerprints needed by the later execute step.
+// - Keep prepare telemetry and failure shaping stable for renderer consumers.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const Log = require('../log');
 const {
@@ -14,6 +30,10 @@ const {
 } = require('./import_extract_prepare_execute_core');
 
 const log = Log.get('import-extract-prepare-ipc');
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function getNativeProbeLogFields(routeMetadata) {
   const metadata = routeMetadata && routeMetadata.nativeProbeMetadata && typeof routeMetadata.nativeProbeMetadata === 'object'
@@ -43,6 +63,10 @@ function buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFall
     ...getNativeProbeLogFields(routeMetadata),
   };
 }
+
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
 
 function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -106,6 +130,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       try {
         sourceFileFingerprint = readSourceFileFingerprint(request.filePath);
       } catch (err) {
+        // Fingerprint loss invalidates execute-time freshness checks, so degrade
+        // to a structured prepare failure instead of exposing a prepared ID.
         log.error('import/extract prepare fingerprint read failed:', err);
         return {
           ok: true,
@@ -163,6 +189,14 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   });
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_prepare_ipc.js
+// =============================================================================
