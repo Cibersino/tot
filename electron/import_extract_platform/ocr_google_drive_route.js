@@ -1,11 +1,30 @@
 // electron/import_extract_platform/ocr_google_drive_route.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Google Drive OCR execution route for import/extract.
+// Responsibilities:
+// - Read source-file metadata and reject unsupported OCR inputs.
+// - Build Google OAuth and Drive clients from stored credentials and token data.
+// - Upload/convert source files, export extracted text, and retry rate-limited steps.
+// - Classify provider/runtime failures into stable route result codes.
+// - Clean up temporary provider and local normalization artifacts after execution.
+
+// =============================================================================
+// Imports
+// =============================================================================
+
 const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
 const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 const { normalizeImageForOcrUpload } = require('./ocr_image_normalization');
+
+// =============================================================================
+// Constants / config
+// =============================================================================
 
 const QUOTA_REASON_CODES = new Set([
   'dailyLimitExceeded',
@@ -53,6 +72,10 @@ const SOURCE_MIME_BY_EXT = Object.freeze({
 const MAX_RATE_LIMIT_ATTEMPTS = 3;
 const BASE_RETRY_DELAY_MS = 300;
 const MAX_RETRY_DELAY_MS = 1500;
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function toSafeErrorMessage(err) {
   return String(err && err.message ? err.message : err || '');
@@ -284,6 +307,10 @@ function buildFailureResult({ stage, provenance, parsedFailure, error }) {
     ),
   });
 }
+
+// =============================================================================
+// Route execution
+// =============================================================================
 
 async function runGoogleDriveOcrRoute({
   filePath,
@@ -609,6 +636,14 @@ async function runGoogleDriveOcrRoute({
   return result;
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   runGoogleDriveOcrRoute,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/ocr_google_drive_route.js
+// =============================================================================
