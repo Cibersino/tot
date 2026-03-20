@@ -259,7 +259,7 @@ function buildOcrSetupValidationRuntimeFailure(err) {
   };
 }
 
-async function validateOcrSetup(resolvePaths) {
+async function validateOcrSetup(resolvePaths, log) {
   try {
     const paths = resolvePaths();
     return validateGoogleDriveOcrSetup({
@@ -268,6 +268,9 @@ async function validateOcrSetup(resolvePaths) {
       probeApiPath: true,
     });
   } catch (err) {
+    if (log && typeof log.error === 'function') {
+      log.error('Google OCR setup validation failed unexpectedly:', err);
+    }
     return buildOcrSetupValidationRuntimeFailure(err);
   }
 }
@@ -316,8 +319,9 @@ async function resolveNonPdfOcrPreparation({
   fileInfo,
   ocrLanguage,
   resolvePaths,
+  logger,
 }) {
-  const validation = await validateOcrSetup(resolvePaths);
+  const validation = await validateOcrSetup(resolvePaths, logger);
   if (!validation || validation.ok !== true) {
     return buildOcrPrepareFailure({
       fileInfo,
@@ -373,7 +377,7 @@ async function resolvePdfPreparation({
   const nativeProbeSuccess = getProbeSuccessDetails(nativeProbeResult);
   const nativeAvailable = !!(nativeProbeSuccess && nativeProbeSuccess.selectableText === 'present');
 
-  const ocrValidation = await validateOcrSetup(resolvePaths);
+  const ocrValidation = await validateOcrSetup(resolvePaths, logger);
   const ocrReady = !!(ocrValidation && ocrValidation.ok === true);
   const ocrSetupState = resolveSetupState(ocrValidation);
 
@@ -452,6 +456,7 @@ async function prepareSelectedFile({
       fileInfo,
       ocrLanguage,
       resolvePaths,
+      logger,
     });
   }
 
