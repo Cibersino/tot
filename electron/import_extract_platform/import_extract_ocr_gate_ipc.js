@@ -168,16 +168,16 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_ocr_gate] registerIpc requires ipcMain');
   }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_ocr_gate] registerIpc requires getWindows()');
+  }
   if (typeof resolvePaths !== 'function') {
     throw new Error('[import_extract_ocr_gate] registerIpc requires resolvePaths()');
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-evaluate-ocr-gate', async (event, payload = {}) => {
