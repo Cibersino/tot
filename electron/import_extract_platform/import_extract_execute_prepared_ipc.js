@@ -1,4 +1,20 @@
+// electron/import_extract_platform/import_extract_execute_prepared_ipc.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process IPC wrapper for executing a previously prepared import/extract run.
+// Responsibilities:
+// - Validate registration dependencies for the execute IPC path.
+// - Authorize the sender against the main window before execution starts.
+// - Re-check prepared-record freshness before consuming the prepared ID.
+// - Log execute start/completion with route and probe metadata for diagnosis.
+// - Delegate the actual route execution to import_extract_prepare_execute_core.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const Log = require('../log');
 const {
@@ -15,6 +31,10 @@ const {
 } = require('./import_extract_prepare_execute_core');
 
 const log = Log.get('import-extract-execute-prepared-ipc');
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function getNativeProbeLogFields(routeMetadata) {
   const metadata = routeMetadata && routeMetadata.nativeProbeMetadata && typeof routeMetadata.nativeProbeMetadata === 'object'
@@ -55,6 +75,10 @@ function buildInvalidPreparedIdLogFields(prepareId, reason, extraFields = {}) {
     ...extraFields,
   };
 }
+
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
 
 function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -201,6 +225,14 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
   });
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_execute_prepared_ipc.js
+// =============================================================================
