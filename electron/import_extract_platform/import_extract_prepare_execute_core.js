@@ -244,13 +244,32 @@ function buildNativePrepareFailure({
   });
 }
 
+function buildOcrSetupValidationRuntimeFailure(err) {
+  return {
+    ok: false,
+    state: 'failure',
+    summary: 'Google OCR setup validation failed due to a platform/runtime error.',
+    error: {
+      code: 'platform_runtime_failed',
+      message: 'Google OCR setup validation failed due to a platform/runtime error.',
+      detailsSafeForLogs: {
+        errorMessage: String(err && err.message ? err.message : err || ''),
+      },
+    },
+  };
+}
+
 async function validateOcrSetup(resolvePaths) {
-  const paths = resolvePaths();
-  return validateGoogleDriveOcrSetup({
-    credentialsPath: paths.credentialsPath,
-    tokenPath: paths.tokenPath,
-    probeApiPath: true,
-  });
+  try {
+    const paths = resolvePaths();
+    return validateGoogleDriveOcrSetup({
+      credentialsPath: paths.credentialsPath,
+      tokenPath: paths.tokenPath,
+      probeApiPath: true,
+    });
+  } catch (err) {
+    return buildOcrSetupValidationRuntimeFailure(err);
+  }
 }
 
 function buildPrepareReadyResult({
