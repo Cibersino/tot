@@ -291,16 +291,16 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_ocr_activation] registerIpc requires ipcMain');
   }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_ocr_activation] registerIpc requires getWindows()');
+  }
   if (typeof resolvePaths !== 'function') {
     throw new Error('[import_extract_ocr_activation] registerIpc requires resolvePaths()');
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-activate-ocr', async (event, payload = {}) => {
