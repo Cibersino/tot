@@ -104,7 +104,7 @@ function buildFailure(selectableText, metadataSafeForLogs, error) {
 async function probeNativePdfSelectableText({
   filePath,
   isAborted,
-  logger,
+  log,
 } = {}) {
   const source = getSourceInfo(filePath);
   const startedAt = Date.now();
@@ -230,8 +230,8 @@ async function probeNativePdfSelectableText({
       );
     }
 
-    if (logger && typeof logger.warn === 'function') {
-      logger.warn('Native PDF selectable-text probe failed:', {
+    if (log && typeof log.warn === 'function') {
+      log.warn('Native PDF selectable-text probe failed:', {
         sourceFileExt: source.fileExt,
         errorName: String(err && err.name ? err.name : 'Error'),
         errorCode: String(err && err.code ? err.code : ''),
@@ -276,8 +276,8 @@ async function probeNativePdfSelectableText({
       try {
         documentHandle.destroy();
       } catch (err) {
-        if (logger && typeof logger.warn === 'function') {
-          logger.warn('Native PDF selectable-text probe cleanup failed (ignored):', {
+        if (log && typeof log.warn === 'function') {
+          log.warn('Native PDF selectable-text probe cleanup failed (ignored):', {
             sourceFileExt: source.fileExt,
             errorName: String(err && err.name ? err.name : 'Error'),
           });

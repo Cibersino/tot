@@ -266,7 +266,7 @@ function buildFailureResultForError({
 async function runNativeExtractionRoute({
   filePath,
   isAborted,
-  logger,
+  log,
 } = {}) {
   const source = getSourceInfo(filePath);
   const provenance = {
@@ -374,8 +374,8 @@ async function runNativeExtractionRoute({
       });
     }
 
-    if (logger && typeof logger.warn === 'function') {
-      logger.warn('Native extraction route failed:', {
+    if (log && typeof log.warn === 'function') {
+      log.warn('Native extraction route failed:', {
         sourceFileExt: source.fileExt,
         parserType: source.parserType,
         errorName: String(err && err.name ? err.name : 'Error'),
