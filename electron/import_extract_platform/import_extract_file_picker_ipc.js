@@ -86,13 +86,13 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_picker] registerIpc requires ipcMain');
   }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_picker] registerIpc requires getWindows');
+  }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-open-picker', async (event) => {
