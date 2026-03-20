@@ -1,8 +1,28 @@
+// electron/import_extract_platform/import_extract_preconditions_ipc.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process IPC wrapper for import/extract start preconditions.
+// Responsibilities:
+// - Validate registration dependencies for the precondition IPC path.
+// - Validate the shape of the injected precondition context before decisions.
+// - Normalize open secondary-window entries into the log/result surface.
+// - Return a structured ready, blocked, or failure result for the renderer.
+// - Keep precondition rejection diagnostics local to this IPC boundary.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const Log = require('../log');
 
 const log = Log.get('import-extract-preconditions');
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function assertValidPreconditionContext(context) {
   if (!context || typeof context !== 'object') {
@@ -78,6 +98,10 @@ function buildReadyResult() {
   };
 }
 
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
+
 function registerIpc(ipcMain, { getPreconditionContext } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_preconditions] registerIpc requires ipcMain');
@@ -120,6 +144,14 @@ function registerIpc(ipcMain, { getPreconditionContext } = {}) {
   });
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_preconditions_ipc.js
+// =============================================================================
