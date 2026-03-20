@@ -253,6 +253,29 @@ async function validateOcrSetup(resolvePaths) {
   });
 }
 
+function buildPrepareReadyResult({
+  fileInfo,
+  ocrLanguage,
+  routeMetadata,
+  requiresRouteChoice = false,
+  routeChoiceOptions = [],
+}) {
+  return {
+    ok: true,
+    prepareReady: true,
+    preparedPayload: {
+      fileInfo,
+      ocrLanguage,
+      routeMetadata,
+      requiresRouteChoice,
+      routeChoiceOptions,
+    },
+    routeMetadata,
+    requiresRouteChoice,
+    routeChoiceOptions,
+  };
+}
+
 function resolveNonPdfNativePreparation(fileInfo, ocrLanguage) {
   const routeMetadata = buildRouteMetadata({
     fileInfo,
@@ -263,20 +286,11 @@ function resolveNonPdfNativePreparation(fileInfo, ocrLanguage) {
     ocrSetupState: 'not_checked',
   });
 
-  return {
-    ok: true,
-    prepareReady: true,
-    preparedPayload: {
-      fileInfo,
-      ocrLanguage,
-      routeMetadata,
-      requiresRouteChoice: false,
-      routeChoiceOptions: [],
-    },
+  return buildPrepareReadyResult({
+    fileInfo,
+    ocrLanguage,
     routeMetadata,
-    requiresRouteChoice: false,
-    routeChoiceOptions: [],
-  };
+  });
 }
 
 async function resolveNonPdfOcrPreparation({
@@ -303,20 +317,11 @@ async function resolveNonPdfOcrPreparation({
     ocrSetupState: 'ready',
   });
 
-  return {
-    ok: true,
-    prepareReady: true,
-    preparedPayload: {
-      fileInfo,
-      ocrLanguage,
-      routeMetadata,
-      requiresRouteChoice: false,
-      routeChoiceOptions: [],
-    },
+  return buildPrepareReadyResult({
+    fileInfo,
+    ocrLanguage,
     routeMetadata,
-    requiresRouteChoice: false,
-    routeChoiceOptions: [],
-  };
+  });
 }
 
 async function resolvePdfPreparation({
@@ -397,20 +402,13 @@ async function resolvePdfPreparation({
     nativeProbeMetadata: nativeProbeSuccess ? nativeProbeSuccess.metadataSafeForLogs : null,
   });
 
-  return {
-    ok: true,
-    prepareReady: true,
-    preparedPayload: {
-      fileInfo,
-      ocrLanguage,
-      routeMetadata,
-      requiresRouteChoice,
-      routeChoiceOptions,
-    },
+  return buildPrepareReadyResult({
+    fileInfo,
+    ocrLanguage,
     routeMetadata,
     requiresRouteChoice,
     routeChoiceOptions,
-  };
+  });
 }
 
 async function prepareSelectedFile({
