@@ -1,3 +1,4 @@
+// electron/import_extract_platform/import_extract_ocr_activation_ipc.js
 'use strict';
 
 const fs = require('fs');
