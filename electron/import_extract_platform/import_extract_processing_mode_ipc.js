@@ -39,7 +39,7 @@ function createController({ onStateChanged } = {}) {
     try {
       onStateChanged(getState());
     } catch (err) {
-      log.error('Processing-mode state change callback failed:', err);
+      log.warn('Processing-mode state change callback failed (ignored):', err);
     }
   };
 
