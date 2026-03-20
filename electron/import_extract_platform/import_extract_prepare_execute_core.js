@@ -254,31 +254,26 @@ async function validateOcrSetup(resolvePaths) {
 }
 
 function resolveNonPdfNativePreparation(fileInfo, ocrLanguage) {
+  const routeMetadata = buildRouteMetadata({
+    fileInfo,
+    availableRoutes: ['native'],
+    chosenRoute: 'native',
+    pdfTriage: 'not_pdf',
+    triageReason: 'non_pdf',
+    ocrSetupState: 'not_checked',
+  });
+
   return {
     ok: true,
     prepareReady: true,
     preparedPayload: {
       fileInfo,
       ocrLanguage,
-      routeMetadata: buildRouteMetadata({
-        fileInfo,
-        availableRoutes: ['native'],
-        chosenRoute: 'native',
-        pdfTriage: 'not_pdf',
-        triageReason: 'non_pdf',
-        ocrSetupState: 'not_checked',
-      }),
+      routeMetadata,
       requiresRouteChoice: false,
       routeChoiceOptions: [],
     },
-    routeMetadata: buildRouteMetadata({
-      fileInfo,
-      availableRoutes: ['native'],
-      chosenRoute: 'native',
-      pdfTriage: 'not_pdf',
-      triageReason: 'non_pdf',
-      ocrSetupState: 'not_checked',
-    }),
+    routeMetadata,
     requiresRouteChoice: false,
     routeChoiceOptions: [],
   };
