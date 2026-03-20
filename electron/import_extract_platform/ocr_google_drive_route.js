@@ -571,7 +571,14 @@ async function runGoogleDriveOcrRoute({
 
     if (uploadInput && typeof uploadInput.cleanup === 'function') {
       const warning = uploadInput.cleanup();
-      if (warning) cleanupWarnings.push(String(warning));
+      if (warning) {
+        cleanupWarnings.push(String(warning));
+        if (log && typeof log.warn === 'function') {
+          log.warn('OCR upload cleanup failed (ignored):', {
+            warning: String(warning),
+          });
+        }
+      }
     }
   }
 
