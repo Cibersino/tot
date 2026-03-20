@@ -64,7 +64,11 @@
 
   function hasBlockingModalOpen() {
     const { hasBlockingModalOpen: predicate } = requireConfiguredDeps();
-    return typeof predicate === 'function' && predicate() === true;
+    if (typeof predicate !== 'function') {
+      log.warn('hasBlockingModalOpen dependency unavailable; proceeding without modal-open guard.');
+      return false;
+    }
+    return predicate() === true;
   }
 
   function getOptionalElectronMethod(methodName, options) {
@@ -114,7 +118,13 @@
     const importExtractStatusUi = getStatusUi();
     const normalizedFilePath = normalizeFilePath(filePath);
 
-    if (!skipGuard && (typeof guardUserAction !== 'function' || !guardUserAction(actionId))) return;
+    if (!skipGuard) {
+      if (typeof guardUserAction !== 'function') {
+        log.error('guardUserAction dependency missing; import/extract action blocked:', actionId);
+        return;
+      }
+      if (!guardUserAction(actionId)) return;
+    }
     if (hasBlockingModalOpen()) {
       log.info('import/extract entry blocked because a main-window modal is open:', { source });
       return;
@@ -159,6 +169,9 @@
         return;
       }
 
+      if (typeof getOcrLanguage !== 'function') {
+        log.warn('getOcrLanguage dependency unavailable; using empty OCR language fallback.');
+      }
       const preparationRequest = {
         filePath: normalizedFilePath,
         ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
@@ -204,8 +217,11 @@
       }
 
       const latestAttemptId = preparationRun ? preparationRun.attemptId : 0;
-      if (typeof isLatestImportExtractPrepareAttempt === 'function'
-        && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
+      const hasAttemptFreshnessGuard = typeof isLatestImportExtractPrepareAttempt === 'function';
+      if (!hasAttemptFreshnessGuard) {
+        log.warn('isLatestImportExtractPrepareAttempt dependency unavailable; stale prepare protection disabled.');
+      }
+      if (hasAttemptFreshnessGuard && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
         log.info('import/extract prepared result ignored because a newer prepare attempt exists.');
         return;
       }
@@ -213,8 +229,7 @@
       let routePreference = '';
       if (preparation.requiresRouteChoice === true) {
         routePreference = await promptImportExtractRouteChoice(preparation);
-        if (typeof isLatestImportExtractPrepareAttempt === 'function'
-          && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
+        if (hasAttemptFreshnessGuard && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
           log.info('import/extract route-choice result ignored because a newer prepare attempt exists.');
           return;
         }
@@ -255,6 +270,9 @@
         ? execution.result.state
         : 'failure';
       if (resultState === 'success') {
+        if (typeof getClipboardRepeatCount !== 'function') {
+          log.warn('getClipboardRepeatCount dependency unavailable; using default repeat count fallback.');
+        }
         const defaultRepeat = typeof getClipboardRepeatCount === 'function'
           ? getClipboardRepeatCount()
           : 1;
@@ -308,7 +326,11 @@
   async function startFromPicker() {
     const { guardUserAction } = requireConfiguredDeps();
 
-    if (typeof guardUserAction !== 'function' || !guardUserAction('import-extract-entrypoint')) return;
+    if (typeof guardUserAction !== 'function') {
+      log.error('guardUserAction dependency missing; picker entrypoint blocked.');
+      return;
+    }
+    if (!guardUserAction('import-extract-entrypoint')) return;
     if (hasBlockingModalOpen()) {
       log.info('import/extract picker entry blocked because a main-window modal is open.');
       return;
