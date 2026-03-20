@@ -1,14 +1,41 @@
 // electron/import_extract_platform/import_extract_prepared_store.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// In-memory store for prepared import/extract records.
+// Responsibilities:
+// - Create short-lived prepared records with generated prepare IDs.
+// - Track prepared records separately from consumed records.
+// - Expire stale records from both in-memory maps.
+// - Provide non-consuming and consuming lookup helpers for execute-time flows.
+// - Read source-file fingerprints used to validate prepared-record freshness.
+
+// =============================================================================
+// Imports
+// =============================================================================
+
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const DEFAULT_TTL_MS = 2 * 60 * 1000;
+
+// =============================================================================
+// Shared state
+// =============================================================================
 
 const preparedRecords = new Map();
 const consumedRecords = new Map();
+
+// =============================================================================
+// Helpers / store operations
+// =============================================================================
 
 function readSourceFileFingerprint(filePath) {
   const resolvedPath = path.resolve(String(filePath || ''));
@@ -95,6 +122,10 @@ function consumePreparedRecord(prepareId) {
   return { ok: true, record: preparedRecord };
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   cleanupExpiredRecords,
   consumePreparedRecord,
@@ -103,3 +134,7 @@ module.exports = {
   readSourceFileFingerprint,
   shortPrepareId,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_prepared_store.js
+// =============================================================================
