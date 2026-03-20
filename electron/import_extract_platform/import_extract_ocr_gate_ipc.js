@@ -1,3 +1,4 @@
+// electron/import_extract_platform/import_extract_ocr_gate_ipc.js
 'use strict';
 
 const { BrowserWindow } = require('electron');
