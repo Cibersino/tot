@@ -91,6 +91,27 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0133
+
+- Date/time: 2026-03-21 14:54:15 -03:00
+- Operation: Review official Google provider-side obligations relevant to the app’s OCR flow.
+- Why: Package-license coverage is separate from Google’s service/OAuth/API obligations. The app still needs a provider-obligations pass to determine what Section 8.2 and 8.3 must cover.
+- Changes made:
+  - Opened a read-only compliance review against official Google sources only.
+  - Scope locked to:
+    - Google APIs / API Services terms
+    - OAuth / user-data policy obligations
+    - any official Google requirements materially affecting app privacy, disclosure, setup, or user-facing instructions for the Drive/Docs OCR route
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation initiated from current Issue 53 Section 8 closeout state after license/notices inventory work.
+- Outcome / next step:
+  - In progress.
+  - Next step is to extract the concrete obligations from official Google sources and map them to app docs/UI requirements.
+
 ### OP-0132
 
 - Date/time: 2026-03-21 14:47:28 -03:00
