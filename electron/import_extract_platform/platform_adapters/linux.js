@@ -1,3 +1,4 @@
+// electron/import_extract_platform/platform_adapters/linux.js
 'use strict';
 
 const {
@@ -11,7 +12,7 @@ const {
 function resolveDefaultPickerPath({ app, cwd, log }) {
   const home = safeGetSystemPath(app, 'home', log, 'import_extract_picker.default.linux.home');
   const documents = safeGetSystemPath(app, 'documents', log, 'import_extract_picker.default.linux.documents');
-  return resolveExistingDirectory([home, documents], cwd);
+  return resolveExistingDirectory([home, documents], cwd, log, 'import_extract_picker.default.linux');
 }
 
 function normalizePersistedDirectory(rawDirectory) {

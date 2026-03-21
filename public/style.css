@@ -177,7 +177,7 @@ body {
 
 .import-extract-processing-copy {
   display: flex;
-  flex: 0 1 260px;
+  flex: 0 0 auto;
   flex-direction: column;
   gap: 2px;
   min-width: 150px;
@@ -187,6 +187,7 @@ body {
   font-size: 13px;
   color: #2f2a20;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .import-extract-processing-elapsed {

@@ -4,15 +4,13 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// File system helpers for the Electron main process.
-//
+// Main-process file system storage helpers.
 // Responsibilities:
-// - Resolve the app's config paths under app.getPath('userData') plus the 'config' subfolder.
-// - Ensure required config folders exist before reading/writing files.
-// - Read/write small JSON state files (settings, current text, etc.) safely.
-//
-// Notes:
-// - This module is intentionally synchronous (main process only).
+// - Initialize the config root under app.getPath('userData') once Electron is ready.
+// - Resolve stable paths for settings, current text, editor state, presets, current-text snapshots, task files, and import/extract + OCR storage.
+// - Ensure required storage directories exist before reads and writes.
+// - Read and write small JSON files with recoverable fallback handling.
+// - Stay synchronous because it is used only from the Electron main process.
 
 // =============================================================================
 // Imports / logger
@@ -26,13 +24,13 @@ const log = Log.get('fs-storage');
 log.debug('FS storage starting...');
 
 // =============================================================================
-// Config paths
+// Shared state
 // =============================================================================
 
 let CONFIG_DIR = null;
 
 // =============================================================================
-// Directory helpers
+// Storage initialization
 // =============================================================================
 
 function initStorage(app) {
@@ -53,6 +51,10 @@ function getConfigDir() {
   return CONFIG_DIR;
 }
 
+// =============================================================================
+// Path helpers: core config files
+// =============================================================================
+
 function getConfigPresetsDir() {
   return path.join(getConfigDir(), 'presets_defaults');
 }
@@ -72,6 +74,10 @@ function getCurrentTextFile() {
 function getEditorStateFile() {
   return path.join(getConfigDir(), 'editor_state.json');
 }
+
+// =============================================================================
+// Path helpers: tasks
+// =============================================================================
 
 function getTasksDir() {
   return path.join(getConfigDir(), 'tasks');
@@ -97,6 +103,10 @@ function getTaskEditorPositionFile() {
   return path.join(getTasksDir(), 'task_editor_position.json');
 }
 
+// =============================================================================
+// Path helpers: import/extract + OCR
+// =============================================================================
+
 function getImportExtractStateFile() {
   return path.join(getConfigDir(), 'import_extract_state.json');
 }
@@ -112,6 +122,10 @@ function getOcrGoogleDriveCredentialsFile() {
 function getOcrGoogleDriveTokenFile() {
   return path.join(getOcrGoogleDriveDir(), 'token.json');
 }
+
+// =============================================================================
+// Directory ensure helpers
+// =============================================================================
 
 function ensureConfigDir() {
   try {
@@ -253,32 +267,37 @@ function saveJson(filePath, obj) {
 }
 
 // =============================================================================
-// Exports
+// Exports / module surface
 // =============================================================================
 
 module.exports = {
   initStorage,
   getConfigDir,
+
   getConfigPresetsDir,
   getCurrentTextSnapshotsDir,
   getSettingsFile,
   getCurrentTextFile,
   getEditorStateFile,
+
   getTasksDir,
   getTasksListsDir,
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
   getTasksColumnWidthsFile,
   getTaskEditorPositionFile,
+
   getImportExtractStateFile,
   getOcrGoogleDriveDir,
   getOcrGoogleDriveCredentialsFile,
   getOcrGoogleDriveTokenFile,
+
   ensureConfigDir,
   ensureConfigPresetsDir,
   ensureCurrentTextSnapshotsDir,
   ensureTasksDirs,
   ensureOcrGoogleDriveDir,
+
   loadJson,
   saveJson,
 };

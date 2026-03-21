@@ -1,4 +1,20 @@
+// electron/import_extract_platform/import_extract_file_picker_ipc.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process IPC module for the import/extract file picker.
+// Responsibilities:
+// - Register the 'import-extract-open-picker' IPC handler.
+// - Enforce that only the main window can invoke the picker.
+// - Resolve the initial picker directory from persisted state or platform defaults.
+// - Persist the last selected directory when a valid file is chosen.
+// - Normalize picker output before returning it to the renderer.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const { dialog, app, BrowserWindow } = require('electron');
 const Log = require('../log');
@@ -8,9 +24,17 @@ const { getImportExtractPlatformAdapter } = require('./import_extract_platform_a
 const log = Log.get('import-extract-picker');
 const platformAdapter = getImportExtractPlatformAdapter(process.platform);
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const PICKER_STATE_FALLBACK = Object.freeze({
   lastDirectory: '',
 });
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function normalizePickerState(rawState) {
   const state = rawState && typeof rawState === 'object' ? rawState : {};
@@ -81,17 +105,21 @@ function isAuthorizedSender(event, mainWin) {
   }
 }
 
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
+
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_picker] registerIpc requires ipcMain');
   }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_picker] registerIpc requires getWindows');
+  }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-open-picker', async (event) => {
@@ -151,6 +179,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_file_picker_ipc.js
+// =============================================================================

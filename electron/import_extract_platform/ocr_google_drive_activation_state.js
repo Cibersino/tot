@@ -1,10 +1,33 @@
+// electron/import_extract_platform/ocr_google_drive_activation_state.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Presence-only availability check for Google Drive OCR activation artifacts.
+// Responsibilities:
+// - Check whether credentials and token paths resolve to existing files.
+// - Derive the coarse availability state used before deeper validation runs.
+// - Distinguish missing credentials from missing token material.
+// - Return a small availability/checks surface for higher-level validators.
+
+// =============================================================================
+// Imports
+// =============================================================================
+
 const fs = require('fs');
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function hasFile(filePath) {
   return typeof filePath === 'string' && filePath.trim() !== '' && fs.existsSync(filePath);
 }
+
+// =============================================================================
+// Availability resolution
+// =============================================================================
 
 function resolveGoogleDriveOcrAvailability({ credentialsPath, tokenPath } = {}) {
   const credentialsPresent = hasFile(credentialsPath);
@@ -36,7 +59,14 @@ function resolveGoogleDriveOcrAvailability({ credentialsPath, tokenPath } = {}) 
   };
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   resolveGoogleDriveOcrAvailability,
 };
 
+// =============================================================================
+// End of electron/import_extract_platform/ocr_google_drive_activation_state.js
+// =============================================================================

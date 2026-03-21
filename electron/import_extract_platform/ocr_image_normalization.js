@@ -1,8 +1,27 @@
+// electron/import_extract_platform/ocr_image_normalization.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// OCR upload image normalization helper.
+// Responsibilities:
+// - Pass through already upload-ready image inputs without rewriting them.
+// - Convert WEBP inputs into temporary PNG files for OCR upload compatibility.
+// - Surface normalization/runtime failures through typed errors for the OCR route.
+// - Return upload metadata plus a caller-owned cleanup callback for temp artifacts.
+
+// =============================================================================
+// Imports
+// =============================================================================
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+
+// =============================================================================
+// Error and filesystem helpers
+// =============================================================================
 
 function toSafeErrorName(err) {
   return String(err && err.name ? err.name : 'Error');
@@ -39,6 +58,10 @@ function cleanupTempDir(tempDirPath) {
   }
 }
 
+// =============================================================================
+// Upload result shaping
+// =============================================================================
+
 function passthroughUpload(fileInfo) {
   return {
     uploadFilePath: fileInfo.absoluteFilePath,
@@ -48,6 +71,10 @@ function passthroughUpload(fileInfo) {
     cleanup: () => '',
   };
 }
+
+// =============================================================================
+// Normalization entrypoint
+// =============================================================================
 
 async function normalizeImageForOcrUpload({ fileInfo } = {}) {
   if (!fileInfo || typeof fileInfo !== 'object') {
@@ -118,6 +145,14 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
   };
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   normalizeImageForOcrUpload,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/ocr_image_normalization.js
+// =============================================================================

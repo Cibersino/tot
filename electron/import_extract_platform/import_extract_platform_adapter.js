@@ -1,3 +1,4 @@
+// electron/import_extract_platform/import_extract_platform_adapter.js
 'use strict';
 
 const windowsAdapter = require('./platform_adapters/windows');

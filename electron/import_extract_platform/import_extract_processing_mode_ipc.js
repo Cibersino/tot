@@ -1,16 +1,44 @@
+// electron/import_extract_platform/import_extract_processing_mode_ipc.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process processing-mode controller and IPC surface for import/extract flows.
+// Responsibilities:
+// - Own the processing-mode controller state transitions used by main and IPC.
+// - Sanitize caller-provided metadata that is persisted in controller state.
+// - Guard processing-mode IPC to the main window sender only.
+// - Expose current processing-mode state to the renderer.
+// - Expose abort requests that translate into controller state transitions.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const { BrowserWindow } = require('electron');
 const Log = require('../log');
 
 const log = Log.get('import-extract-processing-mode');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const MAX_META_CHARS = 160;
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function sanitizeMeta(rawValue) {
   if (typeof rawValue !== 'string') return '';
   return rawValue.trim().slice(0, MAX_META_CHARS);
 }
+
+// =============================================================================
+// Shared state controller
+// =============================================================================
 
 function createController({ onStateChanged } = {}) {
   let active = false;
@@ -28,11 +56,17 @@ function createController({ onStateChanged } = {}) {
   });
 
   const notifyStateChanged = () => {
-    if (typeof onStateChanged !== 'function') return;
+    if (typeof onStateChanged !== 'function') {
+      log.warnOnce(
+        'import_extract_processing_mode.onStateChanged.unavailable',
+        'Processing-mode onStateChanged callback unavailable; state change notification skipped.'
+      );
+      return;
+    }
     try {
       onStateChanged(getState());
     } catch (err) {
-      log.error('Processing-mode state change callback failed:', err);
+      log.warn('Processing-mode state change callback failed (ignored):', err);
     }
   };
 
@@ -88,6 +122,10 @@ function createController({ onStateChanged } = {}) {
   };
 }
 
+// =============================================================================
+// IPC registration / handlers
+// =============================================================================
+
 function isAuthorizedSender(event, mainWin) {
   try {
     const senderWin = event && event.sender
@@ -111,16 +149,16 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_processing_mode] registerIpc requires ipcMain');
   }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_processing_mode] registerIpc requires getWindows()');
+  }
   if (!controller || typeof controller.getState !== 'function' || typeof controller.requestAbort !== 'function') {
     throw new Error('[import_extract_processing_mode] registerIpc requires controller');
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-get-processing-mode', async (event) => {
@@ -152,7 +190,15 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
   });
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   createController,
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_processing_mode_ipc.js
+// =============================================================================

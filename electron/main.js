@@ -56,6 +56,14 @@ const importExtractExecutePreparedIpc = require('./import_extract_platform/impor
 const log = Log.get('main');
 log.debug('Main process starting...');
 
+// =============================================================================
+// Import/extract orchestration (shared controller)
+// =============================================================================
+// main.js owns only the cross-window coordination for processing mode:
+// - broadcast state changes to the main renderer,
+// - block main-window interaction while processing is active,
+// - complete a deferred main-window close after an abort finishes.
+// Domain IPC and feature logic stay in the delegated import_extract_platform modules.
 const importExtractProcessingModeController = importExtractProcessingModeIpc.createController({
   onStateChanged: (state) => {
     try {
@@ -685,9 +693,6 @@ function maybeAuthorizeStartupReady() {
   if (startupReadySent) return;
   if (!mainInvariantsReady || !rendererCoreReady) return;
 
-  startupReadySent = true;
-  mainReadyState = 'READY';
-
   const targetWin = resolveMainWindow();
   if (!targetWin) {
     log.error('startup:ready emit failed: main window unavailable.');
@@ -696,6 +701,8 @@ function maybeAuthorizeStartupReady() {
 
   try {
     targetWin.webContents.send('startup:ready');
+    startupReadySent = true;
+    mainReadyState = 'READY';
   } catch (err) {
     log.error('Error emitting startup:ready to renderer:', err);
   }
@@ -1557,6 +1564,7 @@ app.whenReady().then(() => {
     currentLanguageRef: () => getSelectedLanguage(),
   });
 
+  // Import/extract + OCR integration points.
   ocrGoogleDriveSetupValidationIpc.registerIpc(ipcMain, {
     resolvePaths: () => ({
       credentialsPath: getOcrGoogleDriveCredentialsFile(),

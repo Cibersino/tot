@@ -1,9 +1,29 @@
+// electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process IPC wrapper for Google Drive OCR setup validation.
+// Responsibilities:
+// - Register the 'ocr-google-drive-validate-setup' IPC handler.
+// - Resolve credential/token paths from main-owned path providers.
+// - Normalize per-request validation options before delegating validation work.
+// - Log ready vs blocked/runtime validation outcomes with bounded telemetry.
+// - Return a structured fallback result when the IPC handler fails unexpectedly.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const Log = require('../log');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
 
 const log = Log.get('ocr-google-drive-setup-ipc');
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function buildUnexpectedFailureResult() {
   return {
@@ -44,6 +64,10 @@ function resolvePayloadOptions(payload) {
     timeoutMs: raw.timeoutMs,
   };
 }
+
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
 
 function registerIpc(ipcMain, { resolvePaths } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -95,6 +119,14 @@ function registerIpc(ipcMain, { resolvePaths } = {}) {
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js
+// =============================================================================

@@ -16,8 +16,7 @@ const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {
 };
 
 const api = {
-    // Clipboard / editor / presets / settings (we preserve all existing settings)
-    readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
+    // Import/extract
     openImportExtractPicker: () => ipcRenderer.invoke('import-extract-open-picker'),
     getPathForFile: (file) => webUtils.getPathForFile(file),
     checkImportExtractPreconditions: () => ipcRenderer.invoke('import-extract-check-preconditions'),
@@ -27,33 +26,6 @@ const api = {
     executePreparedImportExtract: (payload) => ipcRenderer.invoke('import-extract-execute-prepared', payload),
     getImportExtractProcessingMode: () => ipcRenderer.invoke('import-extract-get-processing-mode'),
     requestImportExtractAbort: (payload) => ipcRenderer.invoke('import-extract-request-abort', payload),
-    openEditor: () => ipcRenderer.invoke('open-editor'),
-    checkForUpdates: (manual = false) => ipcRenderer.invoke('check-for-updates', { manual }),
-    // openPresetModal accepts an optional argument: number (wpm) or object { wpm, mode, preset }
-    openPresetModal: (payload) => ipcRenderer.invoke('open-preset-modal', payload),
-    openDefaultPresetsFolder: () => ipcRenderer.invoke('open-default-presets-folder'),
-    getCurrentText: () => ipcRenderer.invoke('get-current-text'),
-    setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
-    saveCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-save'),
-    loadCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-load'),
-    getAppConfig: () => ipcRenderer.invoke('get-app-config'),
-    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
-    getAppRuntimeInfo: () => ipcRenderer.invoke('get-app-runtime-info'),
-    openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url),
-    openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey),
-    openTaskEditor: (mode) => ipcRenderer.invoke('open-task-editor', { mode }),
-    onCurrentTextUpdated: (cb) => {
-        ipcRenderer.on('current-text-updated', (_e, text) => cb(text));
-    },
-
-    // Centralized: request settings to the main process (reads from disk in the main)
-    getSettings: () => ipcRenderer.invoke('get-settings'),
-
-    // Listening to created presets (notification from main)
-    onPresetCreated: (cb) => {
-        ipcRenderer.on('preset-created', (_e, preset) => cb(preset));
-    },
-
     onImportExtractProcessingModeChanged: (cb) => {
         const listener = (_e, state) => {
             try { cb(state); } catch (err) { console.error('import-extract processing-mode callback error:', err); }
@@ -65,35 +37,31 @@ const api = {
         );
     },
 
-    // Get default presets from main (electron/presets/*.js)
-    getDefaultPresets: () => ipcRenderer.invoke('get-default-presets'),
-
-    // Persist selected preset per language (settings)
-    setSelectedPreset: (name) => ipcRenderer.invoke('set-selected-preset', name),
-
-    // Request preset deletion (main will show native dialogs and perform persistence)
-    requestDeletePreset: (name) => ipcRenderer.invoke('request-delete-preset', name),
-
-    // Request restoration of default presets (main will show native dialog and perform persistence)
-    requestRestoreDefaults: () => ipcRenderer.invoke('request-restore-defaults'),
-
-    // Notify renderer -> main to show 'no selection to edit' dialog
-    notifyNoSelectionEdit: () => ipcRenderer.invoke('notify-no-selection-edit'),
-
-    // Force clear editor (invoked by renderer when user presses 'Empty' in the main screen)
+    // Text / clipboard / editor
+    readClipboard: () => ipcRenderer.invoke('clipboard-read-text'),
+    openEditor: () => ipcRenderer.invoke('open-editor'),
     forceClearEditor: () => ipcRenderer.invoke('force-clear-editor'),
-
-    // ======================= Stable listener for top bar =======================
-    onMenuClick: (cb) => {
-        const wrapper = (_e, payload) => {
-            try { cb(payload); } catch (err) { console.error('menuAPI callback error:', err); }
+    getCurrentText: () => ipcRenderer.invoke('get-current-text'),
+    setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
+    saveCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-save'),
+    loadCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-load'),
+    onCurrentTextUpdated: (cb) => {
+        const listener = (_e, text) => {
+            try { cb(text); } catch (err) { console.error('current-text-updated callback error:', err); }
         };
-        // return an unsubscribe function
-        return subscribeWithUnsub('menu-click', wrapper, 'Error removing menu listener:');
+        ipcRenderer.on('current-text-updated', listener);
+    },
+    onEditorReady: (cb) => {
+        const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
+        return subscribeWithUnsub('editor-ready', listener, 'removeListener error (editor-ready):');
     },
 
+    // Settings / app info
+    getSettings: () => ipcRenderer.invoke('get-settings'),
     setModeConteo: (mode) => ipcRenderer.invoke('set-mode-conteo', mode),
-
+    getAppConfig: () => ipcRenderer.invoke('get-app-config'),
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    getAppRuntimeInfo: () => ipcRenderer.invoke('get-app-runtime-info'),
     onSettingsChanged: (cb) => {
         const listener = (ev, newSettings) => {
             try { cb(newSettings); } catch (err) { console.error('settings callback error:', err); }
@@ -102,7 +70,35 @@ const api = {
         return subscribeWithUnsub('settings-updated', listener, 'removeListener error:');
     },
 
-    // Central Crono API (renderer <-> main)
+    // Presets
+    // openPresetModal accepts an optional argument: number (wpm) or object { wpm, mode, preset }
+    openPresetModal: (payload) => ipcRenderer.invoke('open-preset-modal', payload),
+    openDefaultPresetsFolder: () => ipcRenderer.invoke('open-default-presets-folder'),
+    getDefaultPresets: () => ipcRenderer.invoke('get-default-presets'),
+    setSelectedPreset: (name) => ipcRenderer.invoke('set-selected-preset', name),
+    requestDeletePreset: (name) => ipcRenderer.invoke('request-delete-preset', name),
+    requestRestoreDefaults: () => ipcRenderer.invoke('request-restore-defaults'),
+    notifyNoSelectionEdit: () => ipcRenderer.invoke('notify-no-selection-edit'),
+    onPresetCreated: (cb) => {
+        ipcRenderer.on('preset-created', (_e, preset) => cb(preset));
+    },
+
+    // Task editor
+    openTaskEditor: (mode) => ipcRenderer.invoke('open-task-editor', { mode }),
+
+    // Menu / external links / updates
+    onMenuClick: (cb) => {
+        const wrapper = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('menuAPI callback error:', err); }
+        };
+        // return an unsubscribe function
+        return subscribeWithUnsub('menu-click', wrapper, 'Error removing menu listener:');
+    },
+    openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url),
+    openAppDoc: (docKey) => ipcRenderer.invoke('open-app-doc', docKey),
+    checkForUpdates: (manual = false) => ipcRenderer.invoke('check-for-updates', { manual }),
+
+    // Crono
     sendCronoToggle: () => ipcRenderer.send('crono-toggle'),
     sendCronoReset: () => ipcRenderer.send('crono-reset'),
     setCronoElapsed: (ms) => ipcRenderer.send('crono-set-elapsed', ms),
@@ -112,27 +108,19 @@ const api = {
         return subscribeWithUnsub('crono-state', wrapper, 'removeListener error (crono-state):');
     },
 
-    // ------------------ APIs for the floating window (updated) ------------------
+    // Floating window
     openFlotanteWindow: async () => {
         return ipcRenderer.invoke('flotante-open');
     },
     closeFlotanteWindow: async () => {
         return ipcRenderer.invoke('flotante-close');
     },
-
-    // Hold listener to notify that the flotante was closed (main emits 'flotante-closed')
     onFlotanteClosed: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('flotante closed callback error:', err); } };
         return subscribeWithUnsub('flotante-closed', listener, 'removeListener error:');
     },
 
-    // editor ready (to hide loader in main window)
-    onEditorReady: (cb) => {
-        const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
-        return subscribeWithUnsub('editor-ready', listener, 'removeListener error (editor-ready):');
-    },
-
-    // Startup handshake (renderer <-> main)
+    // Startup handshake
     sendStartupRendererCoreReady: () => ipcRenderer.send('startup:renderer-core-ready'),
     onStartupReady: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('startup:ready callback error:', err); } };

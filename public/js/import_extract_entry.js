@@ -1,3 +1,4 @@
+// public/js/import_extract_entry.js
 'use strict';
 
 // =============================================================================
@@ -10,12 +11,18 @@
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Logger bootstrap
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-extract-entry] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('import-extract-entry');
   log.debug('Import/extract shared entry starting...');
 
+  // =============================================================================
+  // Shared state + configuration
+  // =============================================================================
   let deps = null;
 
   function configure(nextDeps = {}) {
@@ -38,6 +45,9 @@
     };
   }
 
+  // =============================================================================
+  // Local helpers
+  // =============================================================================
   function requireConfiguredDeps() {
     if (!deps) {
       throw new Error('[import-extract-entry] configure() must run before using the shared entry flow');
@@ -51,14 +61,24 @@
 
   function notifyMain(alertKey) {
     const { notifyMain: notify } = requireConfiguredDeps();
-    if (typeof notify === 'function') {
-      notify(alertKey);
+    if (typeof notify !== 'function') {
+      log.warnOnce(
+        'importExtractEntry.notifyMain.unavailable',
+        'notifyMain dependency unavailable; alert notification skipped:',
+        alertKey
+      );
+      return;
     }
+    notify(alertKey);
   }
 
   function hasBlockingModalOpen() {
     const { hasBlockingModalOpen: predicate } = requireConfiguredDeps();
-    return typeof predicate === 'function' && predicate() === true;
+    if (typeof predicate !== 'function') {
+      log.warn('hasBlockingModalOpen dependency unavailable; proceeding without modal-open guard.');
+      return false;
+    }
+    return predicate() === true;
   }
 
   function getOptionalElectronMethod(methodName, options) {
@@ -81,6 +101,15 @@
     return importExtractStatusUi;
   }
 
+  function resolvePrimaryAlertKey(resultLike) {
+    return (resultLike && typeof resultLike.primaryAlertKey === 'string' && resultLike.primaryAlertKey.trim())
+      ? resultLike.primaryAlertKey
+      : 'renderer.alerts.import_extract_error';
+  }
+
+  // =============================================================================
+  // Shared import/extract flow
+  // =============================================================================
   async function runSharedFlow({
     filePath,
     source = 'unknown',
@@ -103,7 +132,11 @@
     const normalizedFilePath = normalizeFilePath(filePath);
 
     if (!skipGuard) {
-      if (typeof guardUserAction !== 'function' || !guardUserAction(actionId)) return;
+      if (typeof guardUserAction !== 'function') {
+        log.error('guardUserAction dependency missing; import/extract action blocked:', actionId);
+        return;
+      }
+      if (!guardUserAction(actionId)) return;
     }
     if (hasBlockingModalOpen()) {
       log.info('import/extract entry blocked because a main-window modal is open:', { source });
@@ -149,6 +182,9 @@
         return;
       }
 
+      if (typeof getOcrLanguage !== 'function') {
+        log.warn('getOcrLanguage dependency unavailable; using empty OCR language fallback.');
+      }
       const preparationRequest = {
         filePath: normalizedFilePath,
         ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
@@ -184,24 +220,21 @@
 
       if (!preparation || preparation.ok !== true) {
         log.error('import/extract prepare IPC failed:', preparation);
-        const primaryAlertKey = (preparation && typeof preparation.primaryAlertKey === 'string' && preparation.primaryAlertKey.trim())
-          ? preparation.primaryAlertKey
-          : 'renderer.alerts.import_extract_error';
-        notifyMain(primaryAlertKey);
+        notifyMain(resolvePrimaryAlertKey(preparation));
         return;
       }
 
       if (preparation.prepareFailed === true) {
-        const primaryAlertKey = (typeof preparation.primaryAlertKey === 'string' && preparation.primaryAlertKey.trim())
-          ? preparation.primaryAlertKey
-          : 'renderer.alerts.import_extract_error';
-        notifyMain(primaryAlertKey);
+        notifyMain(resolvePrimaryAlertKey(preparation));
         return;
       }
 
       const latestAttemptId = preparationRun ? preparationRun.attemptId : 0;
-      if (typeof isLatestImportExtractPrepareAttempt === 'function'
-        && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
+      const hasAttemptFreshnessGuard = typeof isLatestImportExtractPrepareAttempt === 'function';
+      if (!hasAttemptFreshnessGuard) {
+        log.warn('isLatestImportExtractPrepareAttempt dependency unavailable; stale prepare protection disabled.');
+      }
+      if (hasAttemptFreshnessGuard && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
         log.info('import/extract prepared result ignored because a newer prepare attempt exists.');
         return;
       }
@@ -209,8 +242,7 @@
       let routePreference = '';
       if (preparation.requiresRouteChoice === true) {
         routePreference = await promptImportExtractRouteChoice(preparation);
-        if (typeof isLatestImportExtractPrepareAttempt === 'function'
-          && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
+        if (hasAttemptFreshnessGuard && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
           log.info('import/extract route-choice result ignored because a newer prepare attempt exists.');
           return;
         }
@@ -234,10 +266,7 @@
           importExtractStatusUi.applyProcessingModeState(execution.state, { source: 'execute_already_active' });
         }
         log.error('import/extract execution IPC failed:', execution);
-        const primaryAlertKey = (execution && typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
-          ? execution.primaryAlertKey
-          : 'renderer.alerts.import_extract_error';
-        notifyMain(primaryAlertKey);
+        notifyMain(resolvePrimaryAlertKey(execution));
         return;
       }
 
@@ -254,6 +283,9 @@
         ? execution.result.state
         : 'failure';
       if (resultState === 'success') {
+        if (typeof getClipboardRepeatCount !== 'function') {
+          log.warn('getClipboardRepeatCount dependency unavailable; using default repeat count fallback.');
+        }
         const defaultRepeat = typeof getClipboardRepeatCount === 'function'
           ? getClipboardRepeatCount()
           : 1;
@@ -281,7 +313,7 @@
           }
           return;
         }
-        if (typeof hasCurrentTextSubscription === 'function' && !hasCurrentTextSubscription()) {
+        if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
           throw new Error('current-text-updated subscription unavailable');
         }
 
@@ -291,9 +323,7 @@
         return;
       }
 
-      const primaryAlertKey = (typeof execution.primaryAlertKey === 'string' && execution.primaryAlertKey.trim())
-        ? execution.primaryAlertKey
-        : 'renderer.alerts.import_extract_error';
+      const primaryAlertKey = resolvePrimaryAlertKey(execution);
       if (primaryAlertKey === 'renderer.alerts.import_extract_native_cancelled'
         || primaryAlertKey === 'renderer.alerts.import_extract_ocr_cancelled') {
         return;
@@ -306,10 +336,17 @@
     }
   }
 
+  // =============================================================================
+  // Public entrypoints
+  // =============================================================================
   async function startFromPicker() {
     const { guardUserAction } = requireConfiguredDeps();
 
-    if (typeof guardUserAction !== 'function' || !guardUserAction('import-extract-entrypoint')) return;
+    if (typeof guardUserAction !== 'function') {
+      log.error('guardUserAction dependency missing; picker entrypoint blocked.');
+      return;
+    }
+    if (!guardUserAction('import-extract-entrypoint')) return;
     if (hasBlockingModalOpen()) {
       log.info('import/extract picker entry blocked because a main-window modal is open.');
       return;
@@ -352,6 +389,9 @@
     });
   }
 
+  // =============================================================================
+  // Module surface
+  // =============================================================================
   window.ImportExtractEntry = {
     configure,
     startFromFilePath,
