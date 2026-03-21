@@ -1,11 +1,30 @@
 // electron/import_extract_platform/ocr_google_drive_token_storage.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Encrypted token storage helpers for Google Drive OCR activation.
+// Responsibilities:
+// - Check whether Electron safeStorage encryption is available before token I/O.
+// - Warn when Linux falls back to the weaker basic_text safeStorage backend.
+// - Read and validate the token envelope persisted on disk.
+// - Decrypt token JSON payloads into plain objects for OCR setup/runtime flows.
+// - Encrypt and persist token payloads back to disk with a stable envelope shape.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const fs = require('fs');
 const { safeStorage } = require('electron');
 const Log = require('../log');
 
 const log = Log.get('ocr-google-drive-token-storage');
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function safeErrorName(err) {
   return String(err && err.name ? err.name : 'Error');
@@ -96,6 +115,10 @@ function decodeEncryptedBufferFromEnvelope(envelope) {
   return encryptedBuffer;
 }
 
+// =============================================================================
+// Read / write entrypoints
+// =============================================================================
+
 function readEncryptedTokenFile(tokenPath) {
   assertEncryptionAvailable();
   warnWeakLinuxBackendIfNeeded();
@@ -166,7 +189,15 @@ function writeEncryptedTokenFile({ tokenPath, tokenPayload }) {
   }
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   readEncryptedTokenFile,
   writeEncryptedTokenFile,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/ocr_google_drive_token_storage.js
+// =============================================================================
