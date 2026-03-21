@@ -198,6 +198,34 @@
       </div>
     </div>
 
+    <div id="importExtractOcrActivationDisclosureModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="importExtractOcrActivationDisclosureTitle"
+      aria-describedby="importExtractOcrActivationDisclosureBody" aria-modal="true">
+      <div id="importExtractOcrActivationDisclosureBackdrop" class="info-modal-backdrop"></div>
+      <div class="import-extract-ocr-activation-disclosure-panel" role="document">
+        <header class="import-extract-ocr-activation-disclosure-header">
+          <h2 id="importExtractOcrActivationDisclosureTitle">Review Google OCR activation</h2>
+          <button id="importExtractOcrActivationDisclosureClose" class="btn-standard" type="button" aria-label="Close">🗙</button>
+        </header>
+        <div id="importExtractOcrActivationDisclosureBody" class="import-extract-ocr-activation-disclosure-body">
+          <p id="importExtractOcrActivationDisclosureIntro">toT uses Google services for OCR. Continuing will open your browser so you can authorize this app.</p>
+          <ul class="import-extract-ocr-activation-disclosure-list">
+            <li id="importExtractOcrActivationDisclosureSelectedFiles">Only files you choose for OCR are sent to Google.</li>
+            <li id="importExtractOcrActivationDisclosureLocalStorage">This app stores a local credentials.json file and local Google token state in this app instance.</li>
+            <li id="importExtractOcrActivationDisclosureRemoteCleanup">After export, the app attempts to remove the temporary Google document from your Google Drive.</li>
+            <li id="importExtractOcrActivationDisclosureDisconnect">You can later disconnect via Preferences &gt; Disconnect Google OCR.</li>
+          </ul>
+          <div class="import-extract-ocr-activation-disclosure-actions">
+            <a id="importExtractOcrActivationDisclosurePrivacy" class="import-extract-ocr-activation-disclosure-link" href="#">Open privacy policy</a>
+            <div class="import-extract-ocr-activation-disclosure-buttons">
+              <button id="importExtractOcrActivationDisclosureProceed" class="btn-standard" type="button">Continue to Google</button>
+              <button id="importExtractOcrActivationDisclosureCancel" class="btn-standard" type="button">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="./js/log.js"></script>
@@ -216,6 +244,7 @@
   <script src="./js/import_extract_status_ui.js"></script>
   <script src="./js/import_extract_route_choice_modal.js"></script>
   <script src="./js/import_extract_apply_modal.js"></script>
+  <script src="./js/import_extract_ocr_activation_disclosure_modal.js"></script>
   <script src="./js/import_extract_ocr_activation_recovery.js"></script>
   <script src="./js/import_extract_ocr_disconnect.js"></script>
   <script src="./js/import_extract_entry.js"></script>

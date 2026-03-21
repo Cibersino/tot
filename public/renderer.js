@@ -223,7 +223,8 @@ function isAriaHiddenElementVisible(elementId) {
 function hasBlockingMainWindowModalOpen() {
   return isAriaHiddenElementVisible('infoModal')
     || isAriaHiddenElementVisible('importExtractRouteModal')
-    || isAriaHiddenElementVisible('importExtractApplyModal');
+    || isAriaHiddenElementVisible('importExtractApplyModal')
+    || isAriaHiddenElementVisible('importExtractOcrActivationDisclosureModal');
 }
 
 function canAcceptImportExtractDrop() {
