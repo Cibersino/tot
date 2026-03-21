@@ -108,6 +108,47 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0135
+
+- Date/time: 2026-03-21 20:36:53 -03:00
+- Operation: Refresh the Section 8 Google compliance issue doc so it matches the implemented OCR disclosure work and exposes progress as an explicit checklist.
+- Why: User requested the next Section 8 step directly from `docs/issues/issue_53_section8_google_compliance.md` and asked for checkbox-style tracking so current position is obvious at a glance.
+- Changes made:
+  - Updated `docs/issues/issue_53_section8_google_compliance.md` to remove stale pre-implementation wording that still described the OCR activation disclosure gap as open.
+  - Added an explicit status snapshot/checklist in the Section 8 compliance doc covering:
+    - provider-policy baseline
+    - flow/surface inventory
+    - disconnect/local token-removal minimum
+    - activation-consent UX fix
+    - user-facing privacy/help/setup gap
+    - release-posture documentation gap
+    - Issue 53 closeout reconciliation
+  - Reframed the doc’s current-state sections so they distinguish:
+    - what is now aligned in runtime/docs
+    - what remains open as release-posture/documentation work
+  - Read-only review of the current compliance doc and tracker started immediately before this OP entry.
+    - impact: no files were modified during that pre-entry read phase.
+    - handling: the operation is logged here with the pre-entry read phase disclosed explicitly.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+  - Added checkbox tracking inside `docs/issues/issue_53_section8_google_compliance.md` itself for easier local status reading.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_google_compliance.md`
+- Evidence:
+  - Current tracker status already records Section 8 items 1-4 as materially advanced and items 5-6 as pending.
+  - Runtime/doc surfaces already present:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+    - `public/js/import_extract_ocr_activation_disclosure_modal.js`
+    - `public/js/import_extract_ocr_activation_recovery.js`
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+- Outcome / next step:
+  - Section 8 compliance doc now serves as a current-state status artifact instead of only a stale gap statement.
+  - Remaining open work should stay focused on release-posture documentation and final Issue 53 closeout reconciliation.
+
 ### OP-0134
 
 - Date/time: 2026-03-21 20:26:34 -03:00
