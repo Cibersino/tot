@@ -6,17 +6,25 @@
 // =============================================================================
 // Responsibilities:
 // - Own the main-window import/extract status surface.
-// - Keep prepare UI separate from processing-mode UI.
-// - Render honest waiting copy + live elapsed time during execution.
+// - Keep prepare UI state separate from processing-mode UI state.
+// - Render route-aware waiting copy and live elapsed time during execution.
 // - Capture final elapsed time for the post-success apply modal.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
+
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-extract-status-ui] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('import-extract-status-ui');
   log.debug('Import/extract status UI starting...');
+
+  // =============================================================================
+  // UI elements
+  // =============================================================================
 
   const selectorControlsNormal = document.getElementById('selectorControlsNormal');
   const selectorControlsProcessing = document.getElementById('selectorControlsProcessing');
@@ -25,8 +33,16 @@
   const importExtractProcessingElapsed = document.getElementById('importExtractProcessingElapsed');
   const btnImportExtractAbort = document.getElementById('btnImportExtractAbort');
 
+  // =============================================================================
+  // Constants / config
+  // =============================================================================
+
   const ELAPSED_TICK_MS = 250;
   const OCR_WAITING_COPY_DELAY_MS = 12000;
+
+  // =============================================================================
+  // Shared state
+  // =============================================================================
 
   let processingModeState = {
     active: false,
@@ -41,6 +57,10 @@
   let elapsedTimerId = null;
   let tRendererRef = null;
   let msgRendererRef = null;
+
+  // =============================================================================
+  // Helpers
+  // =============================================================================
 
   function translate(key, fallback) {
     if (typeof tRendererRef === 'function') {
@@ -233,6 +253,10 @@
     }, ELAPSED_TICK_MS);
   }
 
+  // =============================================================================
+  // Public entrypoints
+  // =============================================================================
+
   function applyTranslations({ tRenderer, msgRenderer } = {}) {
     tRendererRef = typeof tRenderer === 'function' ? tRenderer : null;
     msgRendererRef = typeof msgRenderer === 'function' ? msgRenderer : null;
@@ -310,6 +334,10 @@
   function getAbortButton() {
     return btnImportExtractAbort;
   }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
 
   window.ImportExtractStatusUi = {
     applyProcessingModeState,
