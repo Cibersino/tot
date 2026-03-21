@@ -732,17 +732,23 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>Saved tasks</strong> (task lists, task library and link allowlist).</li>
             </ul>
           </li>
-          <li><strong>Internet:</strong> the app may require connection <strong>only</strong> when you execute actions
-            that open external resources, such as:
+          <li><strong>Internet:</strong> the app may require connection when you execute actions that use external
+            resources, such as:
             <ul>
-              <li>open external links clicked by the user (including links opened from Tasks),</li>
-              <li>check/open update information (e.g. on GitHub).</li>
+              <li>open external links clicked by the user (including links opened from info pages and links opened from
+                Tasks),</li>
+              <li>check/open update information (e.g. on GitHub),</li>
+              <li>if you choose to use OCR: authorize Google in the system browser and send the files you explicitly
+                selected for OCR processing.</li>
             </ul>
           </li>
         </ul>
-        <p>Practical implication: although <em>toT</em> does not “upload your text", any action that opens an external
-          site exposes to that service your IP address and normal connection metadata (as in any browser). If you want
-          to remove all locally stored data, see Step 9 (“Total cleanup”).</p>
+        <p>Practical implication: ordinary pasted/typed text handling in <em>toT</em> remains local. However, actions
+          that open an external site expose to that service your IP address and normal connection metadata (as in any
+          browser). In addition, if you choose to use OCR, the files you explicitly select for OCR are sent to Google
+          for that operation; they are not sent to the developers or to other third parties as part of the OCR flow. The
+          app also attempts immediate remote cleanup of the temporary converted Google document after export. If you want to remove all locally stored data,
+          see Step 9 (“Total cleanup”).</p>
 
         <hr />
 
