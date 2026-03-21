@@ -136,36 +136,31 @@
     window.addEventListener('drop', onDrop);
   }
 
-  function onDragEnter(event) {
-    if (!hasFilePayload(event)) return;
+  function prepareFileDrag(event) {
+    if (!hasFilePayload(event)) return false;
     event.preventDefault();
 
     if (!canAcceptDrop()) {
       resetDragState();
       setDropEffect(event, 'none');
-      return;
+      return false;
     }
 
-    dragDepth += 1;
     setDropEffect(event, 'copy');
     setOverlayVisible(true);
+    return true;
+  }
+
+  function onDragEnter(event) {
+    if (!prepareFileDrag(event)) return;
+    dragDepth += 1;
   }
 
   function onDragOver(event) {
-    if (!hasFilePayload(event)) return;
-    event.preventDefault();
-
-    if (!canAcceptDrop()) {
-      resetDragState();
-      setDropEffect(event, 'none');
-      return;
-    }
-
+    if (!prepareFileDrag(event)) return;
     if (dragDepth === 0) {
       dragDepth = 1;
     }
-    setDropEffect(event, 'copy');
-    setOverlayVisible(true);
   }
 
   function onDragLeave(event) {
