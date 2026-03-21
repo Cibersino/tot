@@ -1,3 +1,4 @@
+// electron/import_extract_platform/ocr_image_normalization.js
 'use strict';
 
 const fs = require('fs');
