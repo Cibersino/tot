@@ -43,7 +43,7 @@ La app puede abrir enlaces externos cuando el usuario lo solicita explícitament
 - En el módulo de tareas, solo se permiten enlaces HTTPS y puede requerirse confirmación.
 - En todos los casos, la navegación ocurre en el navegador externo del sistema.
 
-### 3.3 OCR opcional conectado con Google
+### 3.3 OCR conectado con Google
 
 Si el usuario decide activar o usar OCR para extraer texto de archivos, la app puede conectarse con servicios de Google para procesar estos archivos seleccionados por el propio usuario con fines de OCR.
 
