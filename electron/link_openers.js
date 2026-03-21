@@ -89,6 +89,9 @@ const IMAGE_PROCESSING_RUNTIME_DOC_KEYS = new Set([
   'license-import-extract-image-processing-runtime',
   'license-import-extract-image-processing-win32',
 ]);
+const IMAGE_PROCESSING_RUNTIME_NOTICE_DOC_KEYS = new Set([
+  'notice-import-extract-image-processing-runtime',
+]);
 const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
   win32: {
     relativePath: path.join(
@@ -97,6 +100,16 @@ const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
       'LICENSE_@img_sharp-win32-x64_0.34.4.txt'
     ),
     tempName: 'tot_LICENSE_@img_sharp-win32-x64_0.34.4.txt',
+  },
+});
+const IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES = Object.freeze({
+  win32: {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'NOTICE_@img_sharp-win32-x64_0.34.4.txt'
+    ),
+    tempName: 'tot_NOTICE_@img_sharp-win32-x64_0.34.4.txt',
   },
 });
 
@@ -161,6 +174,13 @@ function getImageProcessingRuntimePublicDoc(platform = process.platform) {
     return null;
   }
   return IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES[platform] || null;
+}
+
+function getImageProcessingRuntimeNoticePublicDoc(platform = process.platform) {
+  if (!platform || typeof platform !== 'string') {
+    return null;
+  }
+  return IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES[platform] || null;
 }
 
 // =============================================================================
@@ -256,6 +276,22 @@ function registerLinkIpc({ ipcMain, app, shell }) {
           rawKey,
           runtimeDoc.relativePath,
           runtimeDoc.tempName
+        );
+      }
+
+      if (IMAGE_PROCESSING_RUNTIME_NOTICE_DOC_KEYS.has(rawKey)) {
+        const runtimeNoticeDoc = getImageProcessingRuntimeNoticePublicDoc(process.platform);
+        if (!runtimeNoticeDoc) {
+          log.warn('open-app-doc not available on current platform:', rawKey, process.platform);
+          return { ok: false, reason: 'not_available_on_platform' };
+        }
+
+        return openBundledPublicDoc(
+          app,
+          shell,
+          rawKey,
+          runtimeNoticeDoc.relativePath,
+          runtimeNoticeDoc.tempName
         );
       }
 
