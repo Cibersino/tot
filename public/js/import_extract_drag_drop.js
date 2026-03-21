@@ -24,23 +24,6 @@
   let overlayTitle = null;
   let tRendererRef = null;
 
-  function configure(nextDeps = {}) {
-    deps = {
-      canAcceptDrop: null,
-      notifyMain: null,
-      resolveDroppedFilePath: null,
-      startFromFilePath: null,
-      ...nextDeps,
-    };
-    ensureOverlay();
-    attachListeners();
-  }
-
-  function applyTranslations({ tRenderer } = {}) {
-    tRendererRef = typeof tRenderer === 'function' ? tRenderer : null;
-    syncOverlayText();
-  }
-
   function requireConfiguredDeps() {
     if (!deps) {
       throw new Error('[import-extract-drag-drop] configure() must run before drag/drop handling');
@@ -235,6 +218,23 @@
       log.error('Dropped import/extract flow failed unexpectedly:', err);
       notifyMain('renderer.alerts.import_extract_error');
     }
+  }
+
+  function configure(nextDeps = {}) {
+    deps = {
+      canAcceptDrop: null,
+      notifyMain: null,
+      resolveDroppedFilePath: null,
+      startFromFilePath: null,
+      ...nextDeps,
+    };
+    ensureOverlay();
+    attachListeners();
+  }
+
+  function applyTranslations({ tRenderer } = {}) {
+    tRendererRef = typeof tRenderer === 'function' ? tRenderer : null;
+    syncOverlayText();
   }
 
   window.ImportExtractDragDrop = {
