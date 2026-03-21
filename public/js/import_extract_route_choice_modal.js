@@ -6,15 +6,24 @@
 // =============================================================================
 // Responsibilities:
 // - Host import/extract route-choice modal behavior.
+// - Prompt only when both `native` and `ocr` routes are available for the prepared file.
 // - Resolve user route selection (`native` / `ocr`) without renderer orchestration bloat.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
+
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-extract-route-choice-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('import-extract-route-choice-modal');
   log.debug('Import/extract route-choice modal starting...');
+
+  // =============================================================================
+  // UI elements
+  // =============================================================================
 
   const modal = document.getElementById('importExtractRouteModal');
   const backdrop = document.getElementById('importExtractRouteModalBackdrop');
@@ -24,6 +33,10 @@
   const btnOcr = document.getElementById('importExtractRouteModalOcr');
   const btnCancel = document.getElementById('importExtractRouteModalCancel');
   const btnClose = document.getElementById('importExtractRouteModalClose');
+
+  // =============================================================================
+  // Helpers
+  // =============================================================================
 
   function hasRequiredElements() {
     return !!(modal
@@ -49,6 +62,10 @@
     }
     return fallback;
   }
+
+  // =============================================================================
+  // Public entrypoints
+  // =============================================================================
 
   async function promptRouteChoice({ preparation, tRenderer } = {}) {
     if (!hasDualRouteOptions(preparation)) {
@@ -139,6 +156,10 @@
       btnNative.focus();
     });
   }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
 
   window.ImportExtractRouteChoiceModal = {
     promptRouteChoice,
