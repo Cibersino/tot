@@ -80,6 +80,7 @@ tot/
 │ │ ├── import_extract_processing_mode_ipc.js
 │ │ ├── import_extract_ocr_gate_ipc.js
 │ │ ├── import_extract_ocr_activation_ipc.js
+│ │ ├── import_extract_ocr_disconnect_ipc.js
 │ │ ├── import_extract_prepare_execute_core.js
 │ │ ├── import_extract_prepare_ipc.js
 │ │ ├── import_extract_execute_prepared_ipc.js
@@ -88,6 +89,7 @@ tot/
 │ │ ├── native_extraction_route.js
 │ │ ├── native_pdf_selectable_text_probe.js
 │ │ ├── ocr_google_drive_activation_state.js
+│ │ ├── ocr_google_drive_oauth_client.js
 │ │ ├── ocr_google_drive_setup_validation.js
 │ │ ├── ocr_google_drive_setup_validation_ipc.js
 │ │ ├── ocr_google_drive_token_storage.js
@@ -136,6 +138,7 @@ tot/
 │ │ ├── import_extract_route_choice_modal.js
 │ │ ├── import_extract_apply_modal.js
 │ │ ├── import_extract_ocr_activation_recovery.js
+│ │ ├── import_extract_ocr_disconnect.js
 │ │ ├── import_extract_entry.js
 │ │ ├── import_extract_drag_drop.js
 │ │ └── log.js
@@ -246,6 +249,7 @@ tot/
 - `electron/import_extract_platform/import_extract_processing_mode_ipc.js` — Controlador/IPC del processing mode de import/extract: lock state, broadcast al renderer y solicitud de abort.
 - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js` — Clasifica elegibilidad OCR por tipo de archivo y estado de disponibilidad/activación del OCR.
 - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` — Activación OCR vía desktop OAuth en navegador del sistema; valida `credentials.json` y persiste el token local.
+- `electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js` — Desconexión OCR desde menú: confirmación nativa, revocación del token OAuth guardado y borrado del token local tras revocación exitosa.
 - `electron/import_extract_platform/import_extract_prepare_execute_core.js` — Núcleo compartido del prepare/execute: clasificación de archivo, triage PDF, selección de ruta y ejecución.
 - `electron/import_extract_platform/import_extract_prepare_ipc.js` — Etapa prepare del archivo seleccionado: calcula metadata/rutas disponibles y crea el registro preparado.
 - `electron/import_extract_platform/import_extract_execute_prepared_ipc.js` — Etapa execute del flujo preparado: valida integridad del registro/fingerprint y corre la ruta elegida en processing mode.
@@ -254,9 +258,10 @@ tot/
 - `electron/import_extract_platform/native_extraction_route.js` — Ruta de extracción nativa para `txt`, `md`, `html`, `docx` y PDFs con text layer; incluye pipeline de normalización.
 - `electron/import_extract_platform/native_pdf_selectable_text_probe.js` — Probe de PDF para detectar si existe texto seleccionable utilizable antes de decidir la ruta.
 - `electron/import_extract_platform/ocr_google_drive_activation_state.js` — Estado local de disponibilidad OCR (`setup_incomplete`, `ocr_activation_required`, `ready`) a partir de `credentials.json`/`token.json`.
+- `electron/import_extract_platform/ocr_google_drive_oauth_client.js` — Helpers compartidos OAuth para OCR: lectura de `credentials.json`, construcción del cliente OAuth2 y selección del token preferido para revocación.
 - `electron/import_extract_platform/ocr_google_drive_setup_validation.js` — Validación técnica del setup OCR (credenciales, token y reachability de Google Drive).
 - `electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js` — Handler IPC para consultar/diagnosticar el estado de setup OCR desde la UI.
-- `electron/import_extract_platform/ocr_google_drive_token_storage.js` — Lectura/escritura protegida del token OCR usando `safeStorage` de Electron.
+- `electron/import_extract_platform/ocr_google_drive_token_storage.js` — Lectura/escritura/borrado protegido del token OCR usando `safeStorage` de Electron.
 - `electron/import_extract_platform/ocr_google_drive_route.js` — Ruta OCR Google Drive/Docs: upload, conversión, export a texto, cleanup y taxonomía explícita de errores.
 - `electron/import_extract_platform/ocr_image_normalization.js` — Normalización local de imágenes para OCR antes del upload cuando el formato lo requiere.
 - `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
@@ -284,6 +289,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/import_extract_route_choice_modal.js` — Modal de elección de ruta (`native` / `ocr`) cuando un PDF soporta ambas.
 - `public/js/import_extract_apply_modal.js` — Modal post-extracción para decidir overwrite/append y repeticiones antes de aplicar el texto extraído.
 - `public/js/import_extract_ocr_activation_recovery.js` — Helpers de recuperación para activar OCR y reintentar el prepare cuando el bloqueo es de setup/auth.
+- `public/js/import_extract_ocr_disconnect.js` — Handler del renderer para `Disconnect Google OCR`: solicita la desconexión al main y muestra feedback de éxito/fallo/not-connected.
 - `public/js/import_extract_entry.js` — Orquestador compartido del flujo import/extract desde picker o drag/drop.
 - `public/js/import_extract_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de archivos al entry flow compartido.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
@@ -305,8 +311,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/current_text.json` — Texto vigente persistido.
 - `config/editor_state.json` — Estado persistido del editor (geometría/maximizado, etc.).
 - `config/import_extract_state.json` — Estado local del picker de import/extract (por ejemplo, última carpeta utilizada).
-- `config/ocr_google_drive/credentials.json` — Credenciales OAuth de Google aportadas por el usuario para habilitar OCR localmente.
-- `config/ocr_google_drive/token.json` — Token OAuth local del usuario para la ruta OCR de Google Drive/Docs.
+- `config/ocr_google_drive/credentials.json` — Credenciales OAuth de Google aportadas por el usuario para habilitar OCR localmente; se conservan al desconectar Google OCR.
+- `config/ocr_google_drive/token.json` — Token OAuth local del usuario para la ruta OCR de Google Drive/Docs; se elimina al desconectar Google OCR tras revocación exitosa.
 - `config/saved_current_texts/` — Carpeta runtime con snapshots del texto vigente (archivos JSON `{ "text": ... }`; puede contener subcarpetas).
 - `config/tasks/lists/*.json` — Listas de tareas guardadas por el usuario.
 - `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).

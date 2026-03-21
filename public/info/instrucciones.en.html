@@ -595,6 +595,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Saved text snapshots</strong> (optional library under <code>config/saved_current_texts/</code>).
           </li>
           <li><strong>Configuration</strong> (e.g. language, current WPM, counting mode).</li>
+          <li><strong>Google OCR setup state</strong>: local <code>credentials.json</code> and, when OCR is connected,
+            the local Google OCR token state.</li>
           <li><strong>Presets</strong> (custom and default preset status).</li>
           <li><strong>Status of windows</strong> (e.g. size/position of the editor).</li>
           <li><strong>Tasks</strong>: task lists, task library, link allowlist, and Task Editor UI state (position and
@@ -605,6 +607,12 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ul>
           <li>If you work with sensitive text, use <strong>🗑</strong> at the end and consider total cleanup.</li>
         </ul>
+
+        <p>If you only want to disconnect Google OCR without deleting the rest of the app configuration, use
+          <strong>Menu &gt; Preferences &gt; Disconnect Google OCR</strong>. On success, the app revokes the saved Google token and
+          deletes the local OCR token file, but keeps the local <code>credentials.json</code> file so you can reconnect later.
+          As an external fallback/control, you can also revoke the app's access from your Google Account
+          permissions/security controls.</p>
 
         <h4>8.2 Total cleanup (clean reinstallation) — with paths per system</h4>
 
@@ -729,6 +737,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>Saved text snapshots</strong> (optional library under
                 <code>config/saved_current_texts/</code>).
               </li>
+              <li><strong>Google OCR setup state</strong>: local <code>credentials.json</code> and, when OCR is connected,
+                the local Google OCR token state.</li>
               <li><strong>Saved tasks</strong> (task lists, task library and link allowlist).</li>
             </ul>
           </li>
@@ -747,8 +757,12 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           that open an external site expose to that service your IP address and normal connection metadata (as in any
           browser). In addition, if you choose to use OCR, the files you explicitly select for OCR are sent to Google
           for that operation; they are not sent to the developers or to other third parties as part of the OCR flow. The
-          app also attempts immediate remote cleanup of the temporary converted Google document after export. If you want to remove all locally stored data,
-          see Step 9 (“Total cleanup”).</p>
+          app also attempts immediate remote cleanup of the temporary converted Google document after export. If you want
+          to disconnect Google OCR only, use <strong>Menu &gt; Preferences &gt; Disconnect Google OCR</strong>. On success, the app
+          revokes the saved Google token and deletes the local OCR token file, but keeps <code>credentials.json</code> so
+          you can reconnect later. If you also want to remove the app's access from Google's side, revoke it from your
+          Google Account permissions/security controls. If you want to remove all locally stored data, see Step 8
+          (“Local saving, cleaning and “clean” reinstallation”).</p>
 
         <hr />
 
