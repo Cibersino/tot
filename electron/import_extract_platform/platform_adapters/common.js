@@ -1,3 +1,4 @@
+// electron/import_extract_platform/platform_adapters/common.js
 'use strict';
 
 const fs = require('fs');
