@@ -10,17 +10,18 @@ Issue 53 introduced a Google-connected OCR route based on Google Drive OCR via G
 
 This issue is about separate provider-side obligations that come from using Google OAuth and Google APIs in the distributed app.
 
-The current repo state is only partially aligned:
+The current repo state is now materially aligned, but not fully closed:
 
-- the app already uses a minimum practical scope
-- the app already uses system-browser OAuth
-- the app already discloses Google-connected OCR in privacy/help text
+- the app uses a minimum practical scope
+- the app uses system-browser OAuth
+- the app now presents an explicit in-app OCR activation disclosure immediately before Google consent
+- the app has a real disconnect / local token-removal path
+- privacy/help text documents Google-connected OCR behavior, local token state, disconnect behavior, and Google Account-side revocation fallback
 
-But there are still concrete gaps:
+The remaining concrete gaps are now narrower:
 
-- the current OCR activation UX does not yet provide a strong enough in-app disclosure immediately before Google consent
-- the app must verify and, if needed, add an explicit disconnect / local token-removal path, then document it clearly
-- public-release OAuth verification requirements must be documented as release blockers, not left implicit
+- public-release OAuth verification requirements still need explicit release-facing documentation
+- final reconciliation back into Issue 53 Section 8 / Section 9 closeout is still pending
 
 ## Why
 
@@ -34,28 +35,47 @@ If this is left vague, the repo risks shipping a Google-connected feature with:
 
 This issue should close that gap deliberately and with official Google-source grounding.
 
+## Status snapshot
+
+- [x] Provider-policy baseline confirmed and frozen from official Google sources.
+- [x] Current OCR activation flow and affected user-facing surfaces inventoried.
+- [x] Disconnect / local token-removal minimum implemented and documented.
+- [x] Activation-consent UX fix implemented.
+- [x] User-facing privacy/help/setup gap materially closed.
+- [ ] Release-posture documentation gap closed.
+- [ ] Work fully reconciled back into Issue 53 closeout / Section 9 release blockers.
+
 ## Confirmed current repo state
 
 ### Already aligned
 
 - Minimum scope is currently limited to `drive.file` in [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js).
 - The app uses desktop/system-browser OAuth flow through `@google-cloud/local-auth`, not an embedded auth webview, in [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js).
+- OCR activation now uses an explicit pre-consent disclosure step immediately before OAuth launch:
+  - split activation bridge in [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
+  - renderer disclosure modal in [`public/js/import_extract_ocr_activation_disclosure_modal.js`](../../public/js/import_extract_ocr_activation_disclosure_modal.js)
+  - renderer recovery orchestration in [`public/js/import_extract_ocr_activation_recovery.js`](../../public/js/import_extract_ocr_activation_recovery.js)
 - The OCR route explicitly uploads the selected file to Google, exports text, and attempts remote cleanup of the temporary converted Google document in [`electron/import_extract_platform/ocr_google_drive_route.js`](../../electron/import_extract_platform/ocr_google_drive_route.js).
+- The app has an explicit disconnect path that revokes the saved Google token and removes the local OCR token state while preserving `credentials.json`:
+  - runtime path in [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`](../../electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js)
+  - user-facing trigger wording in [`public/info/acerca_de.html`](../../public/info/acerca_de.html), [`public/info/instrucciones.en.html`](../../public/info/instrucciones.en.html), [`public/info/instrucciones.es.html`](../../public/info/instrucciones.es.html), and [`PRIVACY.md`](../../PRIVACY.md)
 - The app privacy/help text already states that OCR uses Google, only user-selected OCR files are sent, activation opens the system browser, and temporary Google cleanup is attempted:
   - [`PRIVACY.md`](../../PRIVACY.md)
   - [`public/info/acerca_de.html`](../../public/info/acerca_de.html)
   - [`public/info/instrucciones.en.html`](../../public/info/instrucciones.en.html)
   - [`public/info/instrucciones.es.html`](../../public/info/instrucciones.es.html)
 
-### Confirmed gap
+### Remaining gap
 
-The current OCR activation path still relies on a notification-style message and then immediately launches Google auth:
-
-- recovery trigger in [`public/js/import_extract_ocr_activation_recovery.js`](../../public/js/import_extract_ocr_activation_recovery.js)
-- current user-facing message string in [`i18n/en/renderer.json`](../../i18n/en/renderer.json) and [`i18n/es/renderer.json`](../../i18n/es/renderer.json)
-- notification delivery is toast-style in [`public/js/notify.js`](../../public/js/notify.js)
-
-That is weaker than a dedicated in-app disclosure step that immediately precedes the OAuth consent request and requires explicit affirmative action.
+- The repo still does not have an explicit release-facing document that records:
+  - `drive.file` as the locked scope baseline for this OCR model
+  - system-browser OAuth as the locked auth direction
+  - that public homepage/privacy-policy verification material is still required before public release
+  - that local in-app privacy/help pages are not sufficient for Google OAuth public verification by themselves
+- The work is only partially reconciled back into Issue 53 closeout:
+  - the tracker reflects the current state
+  - Section 8 item 5 / item 6 in [`docs/issues/issue_53_implementation_plan.md`](./issue_53_implementation_plan.md) are still pending
+  - remaining public-release-only blockers still need to be isolated explicitly under Section 9.5
 
 ## Official source basis
 
@@ -160,46 +180,46 @@ In scope:
 
 ## Work plan
 
-1. Confirm and freeze the provider-policy baseline from official Google sources:
-   - `drive.file` scope remains the baseline
-   - system-browser OAuth remains the baseline
-   - in-app disclosure is treated as a distinct requirement, not as a privacy-doc substitute
-   - public-release verification requirements are recorded separately from local app docs
+- [x] Confirm and freeze the provider-policy baseline from official Google sources:
+  - `drive.file` scope remains the baseline
+  - system-browser OAuth remains the baseline
+  - in-app disclosure is treated as a distinct requirement, not as a privacy-doc substitute
+  - public-release verification requirements are recorded separately from local app docs
 
-2. Inventory the exact current app flow and user-facing surfaces affected by those requirements:
-   - prepare failure -> recovery -> OAuth launch
-   - activation/recovery notifications
-   - privacy docs
-   - About/legal info page
-   - instructions/help pages
-   - any current disconnect / local token-removal surface
+- [x] Inventory the exact current app flow and user-facing surfaces affected by those requirements:
+  - prepare failure -> recovery -> OAuth launch
+  - activation/recovery notifications
+  - privacy docs
+  - About/legal info page
+  - instructions/help pages
+  - any current disconnect / local token-removal surface
 
-3. Implement the disconnect / local token-removal minimum:
-   - implement at least the minimum compliance target defined in section 3
+- [x] Implement the disconnect / local token-removal minimum:
+  - implement at least the minimum compliance target defined in section 3
 
-4. Implement the activation-consent UX fix:
-   - design a dedicated pre-consent OCR activation modal/dialog for the main app window
-   - ensure it appears immediately before Google OAuth launch
-   - replace the current toast-only disclosure at activation start with that deliberate consent step
-   - keep the copy aligned with actual runtime behavior and current scope/model constraints
+- [x] Implement the activation-consent UX fix:
+  - design a dedicated pre-consent OCR activation modal/dialog for the main app window
+  - ensure it appears immediately before Google OAuth launch
+  - replace the current toast-only disclosure at activation start with that deliberate consent step
+  - keep the copy aligned with actual runtime behavior and current scope/model constraints
 
-5. Close the user-facing documentation/help gap:
-   - update privacy/external-processing wording where needed
-   - update setup / billing / activation instructions for the current user-managed model
-   - document the implemented disconnect posture from section 3 explicitly
-   - explain Google Account-side removal/revocation
-   - ensure help text distinguishes local storage, Google processing, and cleanup behavior clearly
+- [x] Close the user-facing documentation/help gap:
+  - update privacy/external-processing wording where needed
+  - update setup / billing / activation instructions for the current user-managed model
+  - document the implemented disconnect posture from section 3 explicitly
+  - explain Google Account-side removal/revocation
+  - ensure help text distinguishes local storage, Google processing, and cleanup behavior clearly
 
-6. Close the release-posture documentation gap:
-   - add release-facing documentation that records the `drive.file` scope baseline
-   - record the system-browser OAuth policy lock
-   - record that public homepage/privacy-policy verification material is still required before public release
-   - make clear that local in-app docs do not satisfy Google public verification by themselves
+- [ ] Close the release-posture documentation gap:
+  - add release-facing documentation that records the `drive.file` scope baseline
+  - record the system-browser OAuth policy lock
+  - record that public homepage/privacy-policy verification material is still required before public release
+  - make clear that local in-app docs do not satisfy Google public verification by themselves
 
-7. Reconcile the work back into Issue 53 closeout:
-   - map completed changes to Section 8.2 and 8.3 of [`docs/issues/issue_53_implementation_plan.md`](./issue_53_implementation_plan.md)
-   - identify any remaining release-only blockers for Section 9.5 instead of burying them in Section 8
-   - leave a concise evidence trail with official sources for future release decisions
+- [ ] Reconcile the work back into Issue 53 closeout:
+  - map completed changes to Section 8.2 and 8.3 of [`docs/issues/issue_53_implementation_plan.md`](./issue_53_implementation_plan.md)
+  - identify any remaining release-only blockers for Section 9.5 instead of burying them in Section 8
+  - leave a concise evidence trail with official sources for future release decisions
 
 ## Acceptance criteria
 
