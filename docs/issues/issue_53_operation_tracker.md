@@ -29,7 +29,7 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Current Authoritative Status
 
-As of 2026-03-18:
+As of 2026-03-21:
 
 - Section 1 (`Substrate and access-model decision`): complete.
 - Section 2 (`Substrate setup / billing / activation path`): complete.
@@ -84,12 +84,97 @@ As of 2026-03-18:
     - Closure basis:
       - `docs/cleanup/cleanup_file_by_file.md` now shows `Archivos ya ordenados y limpiados (35)` and `Faltan: none`
   - Section 7 is complete.
-  - Active next checklist item: Section 8 item 1 (`Add/update third-party notices, attributions, and license display surfaces`).
+  - Section 8 started.
+    - Item 1 (`Add/update third-party notices, attributions, and license display surfaces`): materially advanced.
+      - About/legal surface now includes OCR dependency/legal pointers.
+      - Neutral runtime legal link mapping for image-processing runtime is implemented.
+      - Missing bundled runtime notice for `@img/sharp-win32-x64@0.34.4` was added.
+    - Item 2 (`Add/update privacy and external-processing disclosures for chosen substrate/dependencies`): materially advanced.
+      - `PRIVACY.md`, `public/info/acerca_de.html`, `public/info/instrucciones.en.html`, and `public/info/instrucciones.es.html` now describe Google-connected OCR behavior, local credential/token posture, disconnect behavior, and Google Account-side revocation fallback.
+      - Pre-consent OCR activation disclosure is implemented as a dedicated renderer modal immediately before Google OAuth launch.
+    - Item 3 (`Update setup/billing/activation instructions for the chosen access model`): materially advanced.
+      - User-facing setup/activation/disconnect instructions now reflect the current user-managed OAuth model and local token-removal behavior.
+      - Public-release OAuth verification posture remains a release/documentation concern and is not yet closed.
+    - Item 4 (`Update instructions and assets`): materially advanced.
+      - OCR activation disclosure modal DOM/module/styles/copy were added in the main window and localized across renderer locales.
+      - Supporting contract doc for this slice exists at `docs/issues/issue_53_ocr_activation_disclosure_plan.md`.
+    - Item 5 (`Update changelog/release notes and related documentation`): pending.
+    - Item 6 (`Verify all Issue 53 acceptance criteria are covered before closure`): pending.
+  - Active next checklist item: Section 8 item 5 (`Update changelog/release notes and related documentation`).
+  - Section 9 not started.
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0134
+
+- Date/time: 2026-03-21 20:26:34 -03:00
+- Operation: Reconcile the Issue 53 tracker with the implementation and documentation work introduced after commit baseline `dd1724ec92fc45c3a4fece2b56b7d2a81ac6a64e`.
+- Why: User requested that the tracker reflect the Issue 53 changes made since that baseline, including the OCR activation disclosure slice and related Section 8 closeout work.
+- Changes made:
+  - Reviewed descendant commit history from the requested baseline through current `HEAD`:
+    - `445d912 documentation`
+    - `5d62339 ocr activation plan`
+    - `e89531d activation disclosure`
+    - `b5b15e9 cleaning up`
+    - `4fd08eb clean up`
+  - Updated `## Current Authoritative Status` to reflect actual post-baseline Issue 53 progress:
+    - Section 8 is now in progress.
+    - Section 8 items 1-4 are materially advanced by implemented legal-surface, privacy/help, activation-disclosure, and cleanup work.
+    - Section 8 items 5-6 remain pending.
+    - Section 9 remains not started.
+  - Recorded that the OCR activation disclosure implementation is now present in runtime code and no longer only planned:
+    - split activation bridge (`prepareImportExtractOcrActivation` / `launchImportExtractOcrActivation`)
+    - dedicated renderer disclosure modal
+    - removal of the old activation-starting toast path
+    - localized disclosure copy across renderer locales
+  - Recorded that the post-implementation smoke test evidence on 2026-03-21 matched the disclosure contract:
+    - modal decline stayed quiet and did not open the browser
+    - browser-side cancel remained distinct from modal decline
+    - successful activation retried prepare and completed OCR execution
+    - reconnect showed the disclosure again
+    - already-connected OCR use skipped disclosure
+    - missing-credentials path completed credentials import before disclosure
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+  - Tracker-only reconciliation of status/evidence.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Commit/stat evidence from the requested baseline:
+    - `445d912 documentation`
+    - `5d62339 ocr activation plan`
+    - `e89531d activation disclosure`
+    - `b5b15e9 cleaning up`
+    - `4fd08eb clean up`
+  - Documentation surfaces updated after the baseline:
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+    - `docs/issues/issue_53_ocr_activation_disclosure_plan.md`
+  - Runtime implementation surfaces added/updated after the baseline:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+    - `electron/preload.js`
+    - `public/js/import_extract_ocr_activation_recovery.js`
+    - `public/js/import_extract_ocr_activation_disclosure_modal.js`
+    - `public/index.html`
+    - `public/renderer.js`
+    - `public/style.css`
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+    - `i18n/de/renderer.json`
+    - `i18n/fr/renderer.json`
+    - `i18n/it/renderer.json`
+    - `i18n/pt/renderer.json`
+  - Smoke-test evidence reviewed from 2026-03-21 user run:
+    - main-process logs showed `import/extract OCR activation prepare completed`, `launch completed`, retry-prepare success, disconnect success, reconnect success, and imported-credentials success path
+    - renderer logs showed explicit modal-decline handling with `ocr_activation_disclosure_declined`
+- Outcome / next step:
+  - Tracker is now aligned with the post-`dd1724ec92fc45c3a4fece2b56b7d2a81ac6a64e` Issue 53 changes.
+  - Next documentation closeout step is Section 8 item 5 (`Update changelog/release notes and related documentation`), followed by Section 8 item 6 acceptance-criteria reconciliation.
 
 ### OP-0133
 
