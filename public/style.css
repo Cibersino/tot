@@ -898,6 +898,7 @@ select#presets {
 
 .import-extract-ocr-activation-disclosure-body p {
   margin: 0;
+  font-size: 0.92rem;
   line-height: 1.45;
 }
 
@@ -906,6 +907,7 @@ select#presets {
   padding: 0;
   display: grid;
   gap: 8px;
+  font-size: 0.92rem;
   line-height: 1.4;
 }
 
