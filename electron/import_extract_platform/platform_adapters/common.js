@@ -35,7 +35,7 @@ function resolveExistingDirectory(candidates, fallbackPath, log, warnPrefix) {
   }
 
   const fallback = normalizeAbsolutePath(fallbackPath);
-  if (log && typeof log.warnOnce === 'function' && warnPrefix) {
+  if (warnPrefix) {
     log.warnOnce(
       `${warnPrefix}.fallback`,
       'Default picker directory candidates unavailable; using fallback directory.'
@@ -64,7 +64,7 @@ function normalizeSelectedDirectoryFromFilePath(rawFilePath) {
 
 function safeGetSystemPath(app, key, log, onceKey) {
   if (!app || typeof app.getPath !== 'function') {
-    if (log && typeof log.warnOnce === 'function' && onceKey) {
+    if (onceKey) {
       log.warnOnce(
         `${onceKey}.missing`,
         `app.getPath('${key}') unavailable; using fallback path resolution.`
@@ -75,7 +75,7 @@ function safeGetSystemPath(app, key, log, onceKey) {
   try {
     return app.getPath(key);
   } catch (err) {
-    if (log && typeof log.warnOnce === 'function' && onceKey) {
+    if (onceKey) {
       log.warnOnce(
         `${onceKey}.failed`,
         `app.getPath('${key}') failed; using fallback path resolution:`,

@@ -266,13 +266,11 @@ async function probeNativePdfSelectableText({
       );
     }
 
-    if (log && typeof log.warn === 'function') {
-      log.warn('Native PDF selectable-text probe failed:', {
-        sourceFileExt: source.fileExt,
-        errorName: String(err && err.name ? err.name : 'Error'),
-        errorCode: String(err && err.code ? err.code : ''),
-      });
-    }
+    log.warn('Native PDF selectable-text probe failed:', {
+      sourceFileExt: source.fileExt,
+      errorName: String(err && err.name ? err.name : 'Error'),
+      errorCode: String(err && err.code ? err.code : ''),
+    });
 
     let errorCode = 'native_extraction_failed';
     let errorMessage = 'Native PDF probe failed due to parser/runtime error.';
@@ -312,12 +310,10 @@ async function probeNativePdfSelectableText({
       try {
         documentHandle.destroy();
       } catch (err) {
-        if (log && typeof log.warn === 'function') {
-          log.warn('Native PDF selectable-text probe cleanup failed (ignored):', {
-            sourceFileExt: source.fileExt,
-            errorName: String(err && err.name ? err.name : 'Error'),
-          });
-        }
+        log.warn('Native PDF selectable-text probe cleanup failed (ignored):', {
+          sourceFileExt: source.fileExt,
+          errorName: String(err && err.name ? err.name : 'Error'),
+        });
       }
     }
   }

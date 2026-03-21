@@ -225,15 +225,13 @@ async function runWithRateLimitRetry({ operationName, log, isAborted, fn }) {
       const retryable = isRetryableRateLimit(parsedFailure);
       if (retryable && attempt < MAX_RATE_LIMIT_ATTEMPTS) {
         const waitMs = Math.min(MAX_RETRY_DELAY_MS, BASE_RETRY_DELAY_MS * (2 ** (attempt - 1)));
-        if (log && typeof log.warn === 'function') {
-          log.warn('Retrying OCR operation after rate-limit response:', {
-            operationName,
-            attempt,
-            nextAttemptInMs: waitMs,
-            statusCode: parsedFailure.statusCode,
-            reasonCode: parsedFailure.reasonCode,
-          });
-        }
+        log.warn('Retrying OCR operation after rate-limit response:', {
+          operationName,
+          attempt,
+          nextAttemptInMs: waitMs,
+          statusCode: parsedFailure.statusCode,
+          reasonCode: parsedFailure.reasonCode,
+        });
         await sleep(waitMs);
         continue;
       }
@@ -584,15 +582,13 @@ async function runGoogleDriveOcrRoute({
         const parsedCleanupFailure = parseProviderFailure(cleanupErr);
         const cleanupCode = classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed';
         cleanupWarnings.push(`cleanup:${cleanupCode}`);
-        if (log && typeof log.warn === 'function') {
-          log.warn('OCR cleanup failed:', {
-            tempDocumentId,
-            warning: `cleanup:${cleanupCode}`,
-            statusCode: parsedCleanupFailure.statusCode,
-            reasonCode: parsedCleanupFailure.reasonCode,
-            networkErrorCode: parsedCleanupFailure.networkErrorCode,
-          });
-        }
+        log.warn('OCR cleanup failed:', {
+          tempDocumentId,
+          warning: `cleanup:${cleanupCode}`,
+          statusCode: parsedCleanupFailure.statusCode,
+          reasonCode: parsedCleanupFailure.reasonCode,
+          networkErrorCode: parsedCleanupFailure.networkErrorCode,
+        });
       }
     }
 
@@ -600,11 +596,9 @@ async function runGoogleDriveOcrRoute({
       const warning = uploadInput.cleanup();
       if (warning) {
         cleanupWarnings.push(String(warning));
-        if (log && typeof log.warn === 'function') {
-          log.warn('OCR upload cleanup failed (ignored):', {
-            warning: String(warning),
-          });
-        }
+        log.warn('OCR upload cleanup failed (ignored):', {
+          warning: String(warning),
+        });
       }
     }
   }
