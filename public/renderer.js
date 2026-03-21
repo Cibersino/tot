@@ -8,7 +8,8 @@
 // - Bootstraps the renderer UI and pulls config/settings from main.
 // - Applies i18n labels and number formatting.
 // - Maintains text preview, counts, and time estimates.
-// - Wires presets, clipboard actions, editor, and help tips.
+// - Coordinates import/extract and OCR entry flows from the main window.
+// - Wires presets, clipboard actions, editor, tasks, and help tips.
 // - Hosts the info modal and top-bar menu actions.
 // - Integrates the stopwatch controller and floating window toggle.
 // =============================================================================
@@ -607,6 +608,12 @@ async function updatePreviewAndResults(text) {
   resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
 }
 
+function startPreviewAndResultsUpdate(text, reason) {
+  updatePreviewAndResults(text).catch((err) => {
+    log.error(`Error updating preview/results after ${reason}:`, err);
+  });
+}
+
 function updateTimeOnlyFromStats() {
   if (!currentTextStats) {
     log.warnOnce(
@@ -629,7 +636,7 @@ function setCurrentTextAndUpdateUI(text, options = {}) {
   const previousText = currentText;
   const nextText = normalizeText(text);
   currentText = nextText;
-  updatePreviewAndResults(nextText);
+  startPreviewAndResultsUpdate(nextText, 'current-text update');
   if (options.applyRules) {
     if (cronoController && typeof cronoController.handleTextChange === 'function') {
       cronoController.handleTextChange(previousText, nextText);
@@ -750,7 +757,11 @@ const settingsChangeHandler = async (newSettings) => {
           err
         );
       }
-      applyTranslations();
+      try {
+        applyTranslations();
+      } catch (err) {
+        log.warn('applyTranslations failed after settings change (ignored):', err);
+      }
       try {
         await loadPresets({ settingsSnapshot: settingsCache });
       } catch (err) {
@@ -767,7 +778,7 @@ const settingsChangeHandler = async (newSettings) => {
       }
     }
     if (isRendererReady()) {
-      updatePreviewAndResults(currentText);
+      startPreviewAndResultsUpdate(currentText, 'settings change');
       if (modeChanged && cronoController && typeof cronoController.handleTextChange === 'function') {
         cronoController.handleTextChange(null, currentText);
       }
@@ -833,7 +844,7 @@ function armIpcSubscriptions() {
             if (selected) {
               currentPresetName = selected.name;
               wpm = syncWpmControls(selected.wpm);
-              updatePreviewAndResults(currentText);
+              startPreviewAndResultsUpdate(currentText, 'preset-created sync');
             }
           }
         }
@@ -935,7 +946,7 @@ function setupToggleModoPreciso() {
         toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
 
         // Immediate recount of the current text
-        updatePreviewAndResults(currentText);
+        startPreviewAndResultsUpdate(currentText, 'mode toggle');
         if (cronoController && typeof cronoController.handleTextChange === 'function') {
           cronoController.handleTextChange(null, currentText);
         }
@@ -1066,6 +1077,11 @@ async function runStartupOrchestrator() {
         const processingMode = await getImportExtractProcessingMode();
         if (processingMode && processingMode.ok === true) {
           importExtractStatusUi.applyProcessingModeState(processingMode.state, { source: 'startup_query' });
+        } else {
+          log.warn(
+            'BOOTSTRAP: getImportExtractProcessingMode returned non-ok result; keeping processing mode inactive:',
+            processingMode
+          );
         }
       } catch (err) {
         log.warn('BOOTSTRAP: getImportExtractProcessingMode failed; keeping processing mode inactive:', err);
@@ -1086,9 +1102,7 @@ async function runStartupOrchestrator() {
     markRendererInvariantsReady();
 
     // Final update after presets load in case WPM changed
-    updatePreviewAndResults(currentText).catch((err) => {
-      log.error('Error in startup preview/results kickoff:', err);
-    });
+    startPreviewAndResultsUpdate(currentText, 'startup kickoff');
   } catch (err) {
     log.error('Error initialazing renderer:', err);
   }
@@ -1561,7 +1575,7 @@ wpmInput.addEventListener('keydown', (e) => {
 });
 
 // =============================================================================
-// Clipboard helpers (shared by overwrite/append)
+// Clipboard and text-apply helpers
 // =============================================================================
 async function readClipboardText({ tooLargeKey, unavailableKey }) {
   const readClipboard = getOptionalElectronMethod('readClipboard', {
@@ -1647,6 +1661,9 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
   });
 }
 
+// =============================================================================
+// Import/extract integration helpers
+// =============================================================================
 async function promptImportExtractRouteChoice(preparation) {
   const routeChoiceModal = window.ImportExtractRouteChoiceModal;
   if (!routeChoiceModal || typeof routeChoiceModal.promptRouteChoice !== 'function') {
@@ -1758,6 +1775,8 @@ async function resolveDroppedFilePath(file) {
   return fallbackPath;
 }
 
+// renderer.js owns only app-level feature wiring here.
+// The shared import/extract flow stays in the delegated window modules.
 function configureImportExtractModules() {
   const notifyMain = window.Notify && typeof window.Notify.notifyMain === 'function'
     ? window.Notify.notifyMain.bind(window.Notify)
@@ -2212,7 +2231,7 @@ btnDeletePreset.addEventListener('click', async () => {
     if (res && res.ok) {
       // On success, reload presets and apply fallback selection if needed.
       await loadPresets({ settingsSnapshot: settingsCache || {} });
-      updatePreviewAndResults(currentText);
+      startPreviewAndResultsUpdate(currentText, 'preset delete');
       // No further UI dialog required; main already showed confirmation.
       return;
     } else {
@@ -2255,7 +2274,7 @@ btnResetDefaultPresets.addEventListener('click', async () => {
     if (res && res.ok) {
       // Reload presets to reflect restored defaults
       await loadPresets({ settingsSnapshot: settingsCache || {} });
-      updatePreviewAndResults(currentText);
+      startPreviewAndResultsUpdate(currentText, 'preset restore');
       return;
     } else {
       if (res && res.code === 'CANCELLED') {

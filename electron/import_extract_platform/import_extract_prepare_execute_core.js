@@ -1,4 +1,20 @@
+// electron/import_extract_platform/import_extract_prepare_execute_core.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Shared import/extract prepare + execute core for main-process IPC wrappers.
+// Responsibilities:
+// - Normalize prepare/execute payloads and derive source-file metadata.
+// - Classify prepare-time route availability for native vs OCR execution.
+// - Build stable prepare-failure and execution-result surfaces for renderer consumers.
+// - Enforce execution invariants around cancellation and non-success text output.
+// - Keep route-selection and alert-key policy centralized for delegated IPC modules.
+
+// =============================================================================
+// Imports
+// =============================================================================
 
 const path = require('path');
 const { BrowserWindow } = require('electron');
@@ -8,7 +24,15 @@ const { runGoogleDriveOcrRoute } = require('./ocr_google_drive_route');
 const { runNativeExtractionRoute } = require('./native_extraction_route');
 const { probeNativePdfSelectableText } = require('./native_pdf_selectable_text_probe');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const OCR_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'bmp']);
+
+// =============================================================================
+// Boundary normalization + shared metadata helpers
+// =============================================================================
 
 function resolvePreparePayload(payload) {
   const raw = payload && typeof payload === 'object' ? payload : {};
@@ -77,6 +101,10 @@ function resolveSetupState(validationResult) {
   if (state === 'setup_incomplete' || state === 'ocr_activation_required') return state;
   return 'failure';
 }
+
+// =============================================================================
+// Prepare/build helpers
+// =============================================================================
 
 function getProbeFailureDetails(probeResult) {
   if (!probeResult || probeResult.state !== 'failure') return null;
@@ -244,52 +272,85 @@ function buildNativePrepareFailure({
   });
 }
 
-async function validateOcrSetup(resolvePaths) {
-  const paths = resolvePaths();
-  return validateGoogleDriveOcrSetup({
-    credentialsPath: paths.credentialsPath,
-    tokenPath: paths.tokenPath,
-    probeApiPath: true,
-  });
+function buildOcrSetupValidationRuntimeFailure(err) {
+  return {
+    ok: false,
+    state: 'failure',
+    summary: 'Google OCR setup validation failed due to a platform/runtime error.',
+    error: {
+      code: 'platform_runtime_failed',
+      message: 'Google OCR setup validation failed due to a platform/runtime error.',
+      detailsSafeForLogs: {
+        errorMessage: String(err && err.message ? err.message : err || ''),
+      },
+    },
+  };
 }
 
-function resolveNonPdfNativePreparation(fileInfo, ocrLanguage) {
+// Keep unexpected resolvePaths()/validation exceptions on the same structured
+// OCR-unavailable prepare path instead of letting prepare IPC fall through to
+// a generic handler failure.
+async function validateOcrSetup(resolvePaths, log) {
+  try {
+    const paths = resolvePaths();
+    return validateGoogleDriveOcrSetup({
+      credentialsPath: paths.credentialsPath,
+      tokenPath: paths.tokenPath,
+      probeApiPath: true,
+    });
+  } catch (err) {
+    log.error('Google OCR setup validation failed unexpectedly:', err);
+    return buildOcrSetupValidationRuntimeFailure(err);
+  }
+}
+
+function buildPrepareReadyResult({
+  fileInfo,
+  ocrLanguage,
+  routeMetadata,
+  requiresRouteChoice = false,
+  routeChoiceOptions = [],
+}) {
   return {
     ok: true,
     prepareReady: true,
     preparedPayload: {
       fileInfo,
       ocrLanguage,
-      routeMetadata: buildRouteMetadata({
-        fileInfo,
-        availableRoutes: ['native'],
-        chosenRoute: 'native',
-        pdfTriage: 'not_pdf',
-        triageReason: 'non_pdf',
-        ocrSetupState: 'not_checked',
-      }),
-      requiresRouteChoice: false,
-      routeChoiceOptions: [],
+      routeMetadata,
+      requiresRouteChoice,
+      routeChoiceOptions,
     },
-    routeMetadata: buildRouteMetadata({
-      fileInfo,
-      availableRoutes: ['native'],
-      chosenRoute: 'native',
-      pdfTriage: 'not_pdf',
-      triageReason: 'non_pdf',
-      ocrSetupState: 'not_checked',
-    }),
-    requiresRouteChoice: false,
-    routeChoiceOptions: [],
+    routeMetadata,
+    requiresRouteChoice,
+    routeChoiceOptions,
   };
+}
+
+function resolveNonPdfNativePreparation(fileInfo, ocrLanguage) {
+  const routeMetadata = buildRouteMetadata({
+    fileInfo,
+    availableRoutes: ['native'],
+    chosenRoute: 'native',
+    pdfTriage: 'not_pdf',
+    triageReason: 'non_pdf',
+    ocrSetupState: 'not_checked',
+  });
+
+  return buildPrepareReadyResult({
+    fileInfo,
+    ocrLanguage,
+    routeMetadata,
+  });
 }
 
 async function resolveNonPdfOcrPreparation({
   fileInfo,
   ocrLanguage,
   resolvePaths,
+  log,
 }) {
-  const validation = await validateOcrSetup(resolvePaths);
+  const validation = await validateOcrSetup(resolvePaths, log);
   if (!validation || validation.ok !== true) {
     return buildOcrPrepareFailure({
       fileInfo,
@@ -308,32 +369,23 @@ async function resolveNonPdfOcrPreparation({
     ocrSetupState: 'ready',
   });
 
-  return {
-    ok: true,
-    prepareReady: true,
-    preparedPayload: {
-      fileInfo,
-      ocrLanguage,
-      routeMetadata,
-      requiresRouteChoice: false,
-      routeChoiceOptions: [],
-    },
+  return buildPrepareReadyResult({
+    fileInfo,
+    ocrLanguage,
     routeMetadata,
-    requiresRouteChoice: false,
-    routeChoiceOptions: [],
-  };
+  });
 }
 
 async function resolvePdfPreparation({
   fileInfo,
   ocrLanguage,
   resolvePaths,
-  logger,
+  log,
 }) {
   const nativeProbeResult = await probeNativePdfSelectableText({
     filePath: fileInfo.filePath,
     isAborted: () => false,
-    logger,
+    log,
   });
 
   const nativeProbeFailure = getProbeFailureDetails(nativeProbeResult);
@@ -354,7 +406,7 @@ async function resolvePdfPreparation({
   const nativeProbeSuccess = getProbeSuccessDetails(nativeProbeResult);
   const nativeAvailable = !!(nativeProbeSuccess && nativeProbeSuccess.selectableText === 'present');
 
-  const ocrValidation = await validateOcrSetup(resolvePaths);
+  const ocrValidation = await validateOcrSetup(resolvePaths, log);
   const ocrReady = !!(ocrValidation && ocrValidation.ok === true);
   const ocrSetupState = resolveSetupState(ocrValidation);
 
@@ -402,27 +454,20 @@ async function resolvePdfPreparation({
     nativeProbeMetadata: nativeProbeSuccess ? nativeProbeSuccess.metadataSafeForLogs : null,
   });
 
-  return {
-    ok: true,
-    prepareReady: true,
-    preparedPayload: {
-      fileInfo,
-      ocrLanguage,
-      routeMetadata,
-      requiresRouteChoice,
-      routeChoiceOptions,
-    },
+  return buildPrepareReadyResult({
+    fileInfo,
+    ocrLanguage,
     routeMetadata,
     requiresRouteChoice,
     routeChoiceOptions,
-  };
+  });
 }
 
 async function prepareSelectedFile({
   filePath,
   ocrLanguage,
   resolvePaths,
-  logger,
+  log,
 }) {
   const fileInfo = getFileInfo(filePath);
 
@@ -431,7 +476,7 @@ async function prepareSelectedFile({
       fileInfo,
       ocrLanguage,
       resolvePaths,
-      logger,
+      log,
     });
   }
 
@@ -440,11 +485,16 @@ async function prepareSelectedFile({
       fileInfo,
       ocrLanguage,
       resolvePaths,
+      log,
     });
   }
 
   return resolveNonPdfNativePreparation(fileInfo, ocrLanguage);
 }
+
+// =============================================================================
+// Execute/result helpers
+// =============================================================================
 
 function resolvePrimaryAlertKey(routeKind, result) {
   const state = result && typeof result.state === 'string' ? result.state : 'failure';
@@ -604,6 +654,10 @@ function buildUnexpectedRuntimeResult(fileInfo, routeKind, routeMetadata, err) {
   };
 }
 
+// =============================================================================
+// Execute entrypoint
+// =============================================================================
+
 async function executePreparedImport({
   preparedRecord,
   routePreference,
@@ -644,7 +698,7 @@ async function executePreparedImport({
       const nativeResult = await runNativeExtractionRoute({
         filePath: fileInfo.filePath,
         isAborted: () => !controller.isActive(),
-        logger: log,
+        log,
       });
       const safeNativeResult = enforceFailureAbortInvariants({
         routeKind: 'native',
@@ -669,7 +723,7 @@ async function executePreparedImport({
         credentialsPath: paths.credentialsPath,
         tokenPath: paths.tokenPath,
         ocrLanguage: preparedRecord.ocrLanguage,
-        logger: log,
+        log,
         isAborted: () => !controller.isActive(),
       });
       const safeOcrResult = enforceFailureAbortInvariants({
@@ -729,6 +783,10 @@ async function executePreparedImport({
   };
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   buildRouteMetadata,
   executePreparedImport,
@@ -739,3 +797,7 @@ module.exports = {
   resolveExecutePayload,
   resolvePreparePayload,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_prepare_execute_core.js
+// =============================================================================

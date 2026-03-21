@@ -1,3 +1,4 @@
+// electron/import_extract_platform/platform_adapters/fallback.js
 'use strict';
 
 const {
@@ -11,7 +12,7 @@ const {
 function resolveDefaultPickerPath({ app, cwd, log }) {
   const documents = safeGetSystemPath(app, 'documents', log, 'import_extract_picker.default.fallback.documents');
   const home = safeGetSystemPath(app, 'home', log, 'import_extract_picker.default.fallback.home');
-  return resolveExistingDirectory([documents, home], cwd);
+  return resolveExistingDirectory([documents, home], cwd, log, 'import_extract_picker.default.fallback');
 }
 
 function normalizePersistedDirectory(rawDirectory) {

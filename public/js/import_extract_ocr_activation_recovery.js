@@ -6,15 +6,24 @@
 // =============================================================================
 // Responsibilities:
 // - Recover import/extract OCR flow when setup/activation blocks prepare-stage routing.
-// - Keep OCR activation retry logic out of renderer orchestration file.
+// - Trigger OCR activation when recoverable setup failures block OCR preparation.
+// - Retry preparation after successful OCR activation without bloating renderer orchestration.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
+
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-extract-ocr-activation-recovery] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('import-extract-ocr-activation-recovery');
   log.debug('Import/extract OCR activation recovery helpers starting...');
+
+  // =============================================================================
+  // Helpers
+  // =============================================================================
 
   function resolveImportExtractAlertKey(rawKey, fallbackKey) {
     const normalized = typeof rawKey === 'string' ? rawKey.trim() : '';
@@ -36,6 +45,10 @@
       log.error('Failed to notify OCR recovery alert:', alertKey, err);
     }
   }
+
+  // =============================================================================
+  // Public entrypoints
+  // =============================================================================
 
   async function recoverAfterSetupFailure({
     preparation,
@@ -116,6 +129,10 @@
 
     return { preparationRun: retriedPreparationRun, handled: false };
   }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
 
   window.ImportExtractOcrActivationRecovery = {
     recoverAfterSetupFailure,

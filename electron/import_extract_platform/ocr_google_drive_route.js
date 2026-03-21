@@ -1,10 +1,30 @@
+// electron/import_extract_platform/ocr_google_drive_route.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Google Drive OCR execution route for import/extract.
+// Responsibilities:
+// - Read source-file metadata and reject unsupported OCR inputs.
+// - Build Google OAuth and Drive clients from stored credentials and token data.
+// - Upload/convert source files, export extracted text, and retry rate-limited steps.
+// - Classify provider/runtime failures into stable route result codes.
+// - Clean up temporary provider and local normalization artifacts after execution.
+
+// =============================================================================
+// Imports
+// =============================================================================
 
 const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
 const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 const { normalizeImageForOcrUpload } = require('./ocr_image_normalization');
+
+// =============================================================================
+// Constants / config
+// =============================================================================
 
 const QUOTA_REASON_CODES = new Set([
   'dailyLimitExceeded',
@@ -52,6 +72,10 @@ const SOURCE_MIME_BY_EXT = Object.freeze({
 const MAX_RATE_LIMIT_ATTEMPTS = 3;
 const BASE_RETRY_DELAY_MS = 300;
 const MAX_RETRY_DELAY_MS = 1500;
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function toSafeErrorMessage(err) {
   return String(err && err.message ? err.message : err || '');
@@ -187,7 +211,7 @@ function ensureNotAborted(isAborted) {
   }
 }
 
-async function runWithRateLimitRetry({ operationName, logger, isAborted, fn }) {
+async function runWithRateLimitRetry({ operationName, log, isAborted, fn }) {
   let attempt = 0;
 
   while (attempt < MAX_RATE_LIMIT_ATTEMPTS) {
@@ -201,15 +225,13 @@ async function runWithRateLimitRetry({ operationName, logger, isAborted, fn }) {
       const retryable = isRetryableRateLimit(parsedFailure);
       if (retryable && attempt < MAX_RATE_LIMIT_ATTEMPTS) {
         const waitMs = Math.min(MAX_RETRY_DELAY_MS, BASE_RETRY_DELAY_MS * (2 ** (attempt - 1)));
-        if (logger && typeof logger.warn === 'function') {
-          logger.warn('Retrying OCR operation after rate-limit response:', {
-            operationName,
-            attempt,
-            nextAttemptInMs: waitMs,
-            statusCode: parsedFailure.statusCode,
-            reasonCode: parsedFailure.reasonCode,
-          });
-        }
+        log.warn('Retrying OCR operation after rate-limit response:', {
+          operationName,
+          attempt,
+          nextAttemptInMs: waitMs,
+          statusCode: parsedFailure.statusCode,
+          reasonCode: parsedFailure.reasonCode,
+        });
         await sleep(waitMs);
         continue;
       }
@@ -284,12 +306,16 @@ function buildFailureResult({ stage, provenance, parsedFailure, error }) {
   });
 }
 
+// =============================================================================
+// Route execution
+// =============================================================================
+
 async function runGoogleDriveOcrRoute({
   filePath,
   credentialsPath,
   tokenPath,
   ocrLanguage = '',
-  logger,
+  log,
   isAborted,
 } = {}) {
   const fileInfo = getFileInfo(filePath);
@@ -437,7 +463,7 @@ async function runGoogleDriveOcrRoute({
 
     const createResponse = await runWithRateLimitRetry({
       operationName: 'upload_convert',
-      logger,
+      log,
       isAborted,
       fn: async () => drive.files.create(createRequest),
     });
@@ -453,7 +479,7 @@ async function runGoogleDriveOcrRoute({
 
     const exportResponse = await runWithRateLimitRetry({
       operationName: 'export_text',
-      logger,
+      log,
       isAborted,
       fn: async () => drive.files.export(
         {
@@ -548,7 +574,7 @@ async function runGoogleDriveOcrRoute({
       try {
         await runWithRateLimitRetry({
           operationName: 'cleanup_delete_temp_doc',
-          logger,
+          log,
           isAborted: () => false,
           fn: async () => drive.files.delete({ fileId: tempDocumentId }),
         });
@@ -556,21 +582,24 @@ async function runGoogleDriveOcrRoute({
         const parsedCleanupFailure = parseProviderFailure(cleanupErr);
         const cleanupCode = classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed';
         cleanupWarnings.push(`cleanup:${cleanupCode}`);
-        if (logger && typeof logger.warn === 'function') {
-          logger.warn('OCR cleanup failed:', {
-            tempDocumentId,
-            warning: `cleanup:${cleanupCode}`,
-            statusCode: parsedCleanupFailure.statusCode,
-            reasonCode: parsedCleanupFailure.reasonCode,
-            networkErrorCode: parsedCleanupFailure.networkErrorCode,
-          });
-        }
+        log.warn('OCR cleanup failed:', {
+          tempDocumentId,
+          warning: `cleanup:${cleanupCode}`,
+          statusCode: parsedCleanupFailure.statusCode,
+          reasonCode: parsedCleanupFailure.reasonCode,
+          networkErrorCode: parsedCleanupFailure.networkErrorCode,
+        });
       }
     }
 
     if (uploadInput && typeof uploadInput.cleanup === 'function') {
       const warning = uploadInput.cleanup();
-      if (warning) cleanupWarnings.push(String(warning));
+      if (warning) {
+        cleanupWarnings.push(String(warning));
+        log.warn('OCR upload cleanup failed (ignored):', {
+          warning: String(warning),
+        });
+      }
     }
   }
 
@@ -601,6 +630,14 @@ async function runGoogleDriveOcrRoute({
   return result;
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   runGoogleDriveOcrRoute,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/ocr_google_drive_route.js
+// =============================================================================

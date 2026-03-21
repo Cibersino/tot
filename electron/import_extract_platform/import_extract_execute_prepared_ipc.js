@@ -1,4 +1,20 @@
+// electron/import_extract_platform/import_extract_execute_prepared_ipc.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process IPC wrapper for executing a previously prepared import/extract run.
+// Responsibilities:
+// - Validate registration dependencies for the execute IPC path.
+// - Authorize the sender against the main window before execution starts.
+// - Re-check prepared-record freshness before consuming the prepared ID.
+// - Log execute start/completion with route and probe metadata for diagnosis.
+// - Delegate the actual route execution to import_extract_prepare_execute_core.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const Log = require('../log');
 const {
@@ -15,6 +31,10 @@ const {
 } = require('./import_extract_prepare_execute_core');
 
 const log = Log.get('import-extract-execute-prepared-ipc');
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function getNativeProbeLogFields(routeMetadata) {
   const metadata = routeMetadata && routeMetadata.nativeProbeMetadata && typeof routeMetadata.nativeProbeMetadata === 'object'
@@ -48,9 +68,24 @@ function buildInvalidPreparedIdResponse(reason) {
   };
 }
 
+function buildInvalidPreparedIdLogFields(prepareId, reason, extraFields = {}) {
+  return {
+    prepareId: shortPrepareId(prepareId),
+    reason,
+    ...extraFields,
+  };
+}
+
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
+
 function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_execute_prepared_ipc] registerIpc requires ipcMain');
+  }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_execute_prepared_ipc] registerIpc requires getWindows()');
   }
   if (typeof resolvePaths !== 'function') {
     throw new Error('[import_extract_execute_prepared_ipc] registerIpc requires resolvePaths()');
@@ -64,11 +99,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-execute-prepared', async (event, payload = {}) => {
@@ -85,11 +117,11 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
 
       const preparedLookup = peekPreparedRecord(request.prepareId);
       if (!preparedLookup.ok || !preparedLookup.record) {
+        const invalidReason = preparedLookup.reason || 'invalid_or_expired';
         log.warn('import/extract prepared id invalid/expired/reused:', {
-          prepareId: shortPrepareId(request.prepareId),
-          reason: preparedLookup.reason || 'invalid_or_expired',
+          ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
         });
-        return buildInvalidPreparedIdResponse(preparedLookup.reason || 'invalid_or_expired');
+        return buildInvalidPreparedIdResponse(invalidReason);
       }
 
       const preparedRecord = preparedLookup.record;
@@ -109,17 +141,16 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         currentFingerprint = readSourceFileFingerprint(preparedRecord.fileInfo.filePath);
       } catch (err) {
         log.warn('import/extract prepared id invalid/expired/reused:', {
-          prepareId: shortPrepareId(request.prepareId),
-          reason: 'fingerprint_read_failed',
-          errorMessage: String(err && err.message ? err.message : err || ''),
+          ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_read_failed', {
+            errorMessage: String(err && err.message ? err.message : err || ''),
+          }),
         });
         return buildInvalidPreparedIdResponse('fingerprint_read_failed');
       }
 
       if (!fingerprintsMatch(preparedRecord.sourceFileFingerprint, currentFingerprint)) {
         log.warn('import/extract prepared id invalid/expired/reused:', {
-          prepareId: shortPrepareId(request.prepareId),
-          reason: 'fingerprint_mismatch',
+          ...buildInvalidPreparedIdLogFields(request.prepareId, 'fingerprint_mismatch'),
         });
         return buildInvalidPreparedIdResponse('fingerprint_mismatch');
       }
@@ -134,11 +165,11 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
 
       const consumeResult = consumePreparedRecord(request.prepareId);
       if (!consumeResult.ok || !consumeResult.record) {
+        const invalidReason = consumeResult.reason || 'invalid_or_expired';
         log.warn('import/extract prepared id invalid/expired/reused:', {
-          prepareId: shortPrepareId(request.prepareId),
-          reason: consumeResult.reason || 'invalid_or_expired',
+          ...buildInvalidPreparedIdLogFields(request.prepareId, invalidReason),
         });
-        return buildInvalidPreparedIdResponse(consumeResult.reason || 'invalid_or_expired');
+        return buildInvalidPreparedIdResponse(invalidReason);
       }
 
       log.info('import/extract execute started:', {
@@ -194,6 +225,14 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
   });
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_execute_prepared_ipc.js
+// =============================================================================

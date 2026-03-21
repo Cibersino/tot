@@ -1,3 +1,4 @@
+// public/js/import_extract_drag_drop.js
 'use strict';
 
 // =============================================================================
@@ -7,15 +8,22 @@
 // - Own main-window drag/drop affordance for import/extract.
 // - Show a visible full-window drop target while a valid file drag is active.
 // - Forward accepted single-file drops into the shared import/extract entry flow.
+// - Keep drag/drop availability aligned with renderer-level interaction guards.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-extract-drag-drop] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('import-extract-drag-drop');
   log.debug('Import/extract drag/drop module starting...');
 
+  // =============================================================================
+  // Shared state
+  // =============================================================================
   let deps = null;
   let dragDepth = 0;
   let listenersAttached = false;
@@ -23,23 +31,9 @@
   let overlayTitle = null;
   let tRendererRef = null;
 
-  function configure(nextDeps = {}) {
-    deps = {
-      canAcceptDrop: null,
-      notifyMain: null,
-      resolveDroppedFilePath: null,
-      startFromFilePath: null,
-      ...nextDeps,
-    };
-    ensureOverlay();
-    attachListeners();
-  }
-
-  function applyTranslations({ tRenderer } = {}) {
-    tRendererRef = typeof tRenderer === 'function' ? tRenderer : null;
-    syncOverlayText();
-  }
-
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function requireConfiguredDeps() {
     if (!deps) {
       throw new Error('[import-extract-drag-drop] configure() must run before drag/drop handling');
@@ -96,14 +90,26 @@
 
   function canAcceptDrop() {
     const { canAcceptDrop: predicate } = requireConfiguredDeps();
-    return typeof predicate === 'function' && predicate() === true;
+    if (typeof predicate !== 'function') {
+      log.warnOnce(
+        'importExtractDragDrop.canAcceptDrop.missing',
+        'canAcceptDrop dependency missing; drag/drop disabled.'
+      );
+      return false;
+    }
+    return predicate() === true;
   }
 
   function notifyMain(alertKey) {
     const { notifyMain: notify } = requireConfiguredDeps();
-    if (typeof notify === 'function') {
-      notify(alertKey);
+    if (typeof notify !== 'function') {
+      log.warn(
+        'notifyMain dependency missing; drag/drop alert skipped.',
+        alertKey
+      );
+      return;
     }
+    notify(alertKey);
   }
 
   function setDropEffect(event, effect) {
@@ -134,7 +140,12 @@
 
   async function resolveDroppedFilePath(file) {
     const { resolveDroppedFilePath: resolver } = requireConfiguredDeps();
-    if (typeof resolver !== 'function') return '';
+    if (typeof resolver !== 'function') {
+      log.warn(
+        'resolveDroppedFilePath dependency missing; dropped file path cannot be resolved.'
+      );
+      return '';
+    }
     try {
       return String(await resolver(file) || '').trim();
     } catch (err) {
@@ -143,6 +154,9 @@
     }
   }
 
+  // =============================================================================
+  // Window wiring
+  // =============================================================================
   function attachListeners() {
     if (listenersAttached) return;
     listenersAttached = true;
@@ -152,36 +166,31 @@
     window.addEventListener('drop', onDrop);
   }
 
-  function onDragEnter(event) {
-    if (!hasFilePayload(event)) return;
+  function prepareFileDrag(event) {
+    if (!hasFilePayload(event)) return false;
     event.preventDefault();
 
     if (!canAcceptDrop()) {
       resetDragState();
       setDropEffect(event, 'none');
-      return;
+      return false;
     }
 
-    dragDepth += 1;
     setDropEffect(event, 'copy');
     setOverlayVisible(true);
+    return true;
+  }
+
+  function onDragEnter(event) {
+    if (!prepareFileDrag(event)) return;
+    dragDepth += 1;
   }
 
   function onDragOver(event) {
-    if (!hasFilePayload(event)) return;
-    event.preventDefault();
-
-    if (!canAcceptDrop()) {
-      resetDragState();
-      setDropEffect(event, 'none');
-      return;
-    }
-
+    if (!prepareFileDrag(event)) return;
     if (dragDepth === 0) {
       dragDepth = 1;
     }
-    setDropEffect(event, 'copy');
-    setOverlayVisible(true);
   }
 
   function onDragLeave(event) {
@@ -236,6 +245,29 @@
     }
   }
 
+  // =============================================================================
+  // Public entrypoints
+  // =============================================================================
+  function configure(nextDeps = {}) {
+    deps = {
+      canAcceptDrop: null,
+      notifyMain: null,
+      resolveDroppedFilePath: null,
+      startFromFilePath: null,
+      ...nextDeps,
+    };
+    ensureOverlay();
+    attachListeners();
+  }
+
+  function applyTranslations({ tRenderer } = {}) {
+    tRendererRef = typeof tRenderer === 'function' ? tRenderer : null;
+    syncOverlayText();
+  }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.ImportExtractDragDrop = {
     applyTranslations,
     configure,

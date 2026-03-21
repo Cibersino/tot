@@ -6,15 +6,24 @@
 // =============================================================================
 // Responsibilities:
 // - Host import/extract post-extraction apply modal behavior.
-// - Return user apply intent (`overwrite`/`append`) + repetitions.
+// - Populate modal copy, elapsed text, and repeat limits before prompting the user.
+// - Normalize the final repeat count before returning apply intent (`overwrite`/`append`).
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
+
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-extract-apply-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('import-extract-apply-modal');
   log.debug('Import/extract apply modal starting...');
+
+  // =============================================================================
+  // UI elements
+  // =============================================================================
 
   const modal = document.getElementById('importExtractApplyModal');
   const backdrop = document.getElementById('importExtractApplyModalBackdrop');
@@ -27,6 +36,10 @@
   const btnAppend = document.getElementById('importExtractApplyModalAppend');
   const btnCancel = document.getElementById('importExtractApplyModalCancel');
   const btnClose = document.getElementById('importExtractApplyModalClose');
+
+  // =============================================================================
+  // Helpers
+  // =============================================================================
 
   function hasRequiredElements() {
     return !!(modal
@@ -57,6 +70,10 @@
     if (!Number.isInteger(numeric) || numeric < 1) return 1;
     return Math.min(numeric, maxRepeat);
   }
+
+  // =============================================================================
+  // Public entrypoints
+  // =============================================================================
 
   async function promptApplyChoice({
     tRenderer,
@@ -180,6 +197,10 @@
       repeatInput.select();
     });
   }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
 
   window.ImportExtractApplyModal = {
     promptApplyChoice,

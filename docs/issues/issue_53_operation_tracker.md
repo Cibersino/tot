@@ -76,12 +76,131 @@ As of 2026-03-18:
   - Section 6 is complete.
   - Section 7 item 1 (`UI/UX refinement pass`): complete.
   - Section 7 item 2 (`Fill missing es/en UI localization keys`): complete.
-  - Active next checklist item: Section 7 item 3 (`Logging review for required observability fields/events and consistency`).
+  - Section 7 item 3 (`Logging review for required observability fields/events and consistency`): complete.
+    - Closure basis:
+      - existing historical observability evidence already captured in Section 5 item 10 (`OBS-10A` + `OBS-10B` + reused path evidence map)
+      - post-closure note remains authoritative even though OP-0066 runtime instrumentation was later manually rolled back by the user
+  - Section 7 item 4 (`Code cleanup/refactor while preserving behavior`): complete.
+    - Closure basis:
+      - `docs/cleanup/cleanup_file_by_file.md` now shows `Archivos ya ordenados y limpiados (35)` and `Faltan: none`
+  - Section 7 is complete.
+  - Active next checklist item: Section 8 item 1 (`Add/update third-party notices, attributions, and license display surfaces`).
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0119
+
+- Date/time: 2026-03-21 03:18:17 -03:00
+- Operation: Close Section 7 item 3 (`Logging review for required observability fields/events and consistency`) and item 4 (`Code cleanup/refactor while preserving behavior`) using existing evidence.
+- Why: User clarified that Issue 53 already has the evidence needed for Section 7 closeout and that no new runtime instrumentation should be added.
+- Changes made:
+  - Revalidated Section 7 item 3 against existing Issue 53 evidence instead of adding new logging instrumentation.
+  - Revalidated Section 7 item 4 against the file-by-file cleanup ledger instead of reopening completed cleanup passes.
+  - Updated `docs/issues/issue_53_implementation_plan.md`:
+    - marked Section 7 item 3 complete
+    - marked Section 7 item 4 complete
+  - Updated `docs/issues/issue_53_operation_tracker.md` current authoritative status:
+    - recorded Section 7 items 3 and 4 complete
+    - marked Section 7 complete
+    - moved the active next checklist item to Section 8 item 1
+  - Drift disclosure:
+    - a short read-only audit started before OP-0119 was written
+    - impact: no repository files were modified before the tracker entry
+    - handling: the pre-entry read is explicitly disclosed here and no runtime code changes were kept
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md`
+    - `[x] Logging review for required observability fields/events and consistency.`
+    - `[x] Code cleanup/refactor while preserving behavior.`
+- Files touched:
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Section 7 item 3 closure basis:
+    - `docs/issues/issue_53_operation_tracker.md` current authoritative status already marks Section 5 item 10 complete with `OBS-10A` + `OBS-10B` + reused path evidence map
+    - `docs/issues/issue_53_operation_tracker.md` post-closure note states that Section 5 item 10 remains closed as historical evidence even after OP-0066 runtime instrumentation rollback
+  - Section 7 item 4 closure basis:
+    - `docs/cleanup/cleanup_file_by_file.md` shows `Archivos ya ordenados y limpiados (35)`
+    - `docs/cleanup/cleanup_file_by_file.md` shows `Faltan: none`
+  - No runtime code changes were required for this closeout.
+- Outcome / next step:
+  - Completed.
+  - Section 7 is now closed in the implementation plan and tracker.
+  - Next checklist item is Section 8 item 1 (`Add/update third-party notices, attributions, and license display surfaces`).
+
+### OP-0118
+
+- Date/time: 2026-03-19 00:47:16 -03:00
+- Operation: Populate the `Faltan` slot in `docs/cleanup/cleanup_file_by_file.md` with the Issue 53 `.js` cleanup queue derived from base commit `b75dbc263d08041599f3bb97effebc2e3c3c688d`.
+- Why: User instructed that all `.js` files from the Issue 53 affected-file list be added there in relevancy order before cleanup work continues.
+- Changes made:
+  - Updated `docs/cleanup/cleanup_file_by_file.md` so the `Faltan` slot now contains the complete Issue 53 `.js` cleanup queue.
+  - Ordered the queue by cleanup relevance for Issue 53 work:
+    - top-level orchestrators first (`electron/main.js`, `public/renderer.js`, `electron/preload.js`, `electron/menu_builder.js`)
+    - import/extract orchestration and route execution next
+    - route/provider/storage/platform support after that
+    - renderer UI satellites last
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/cleanup/cleanup_file_by_file.md`
+- Evidence:
+  - `docs/cleanup/cleanup_file_by_file.md` line `9` now populates `Faltan (...)`.
+  - Inserted queue size:
+    - `35` `.js` paths
+  - Verification:
+    - `Get-Content -Path docs\\cleanup\\cleanup_file_by_file.md -TotalCount 12` shows the populated `Faltan` line
+    - backtick-pair count on line `9` confirms `35` listed paths
+  - Operation close evidence:
+    - `Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"` -> `2026-03-19 00:48:32 -03:00`
+- Outcome / next step:
+  - Completed.
+  - The Issue 53 `.js` cleanup queue is now staged in `docs/cleanup/cleanup_file_by_file.md` and ready for the first per-file cleanup pass.
+
+### OP-0117
+
+- Date/time: 2026-03-19 00:41:35 -03:00
+- Operation: Read the Issue 53 documentation set, align with the cleanup/bridge policies, and derive the initial file inventory from base commit `b75dbc263d08041599f3bb97effebc2e3c3c688d`.
+- Why: User requested a documentation-first restart for Section 7 work, with the affected-file list prepared before any cleanup pass begins.
+- Changes made:
+  - Read `docs/issues/issue_53.md`.
+  - Read `docs/issues/issue_53_implementation_plan.md` and aligned to its Codex Operational Policy.
+  - Read `docs/cleanup/cleanup_file_by_file.md`.
+  - Read `docs/cleanup/bridge_failure_mode_convention.md`.
+  - Read `docs/issues/issue_53_operation_tracker.md` to follow the required operation-log format.
+  - Derived the initial changed-file inventory with `git diff --name-only b75dbc263d08041599f3bb97effebc2e3c3c688d..HEAD`.
+  - Reviewed post-base history with `git log --oneline --decorate --no-merges b75dbc263d08041599f3bb97effebc2e3c3c688d..HEAD`.
+  - Drift disclosure:
+    - the read-only documentation review and diff/history inspection started before OP-0117 was written
+    - impact: no repository files were modified before the tracker entry was added
+    - handling: the operation is fully disclosed here before any cleanup/refactor work starts
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Base commit anchor:
+    - `git show --no-patch --oneline b75dbc263d08041599f3bb97effebc2e3c3c688d` -> `b75dbc2 2.3`
+  - Read set:
+    - `docs/issues/issue_53.md`
+    - `docs/issues/issue_53_implementation_plan.md`
+    - `docs/cleanup/cleanup_file_by_file.md`
+    - `docs/cleanup/bridge_failure_mode_convention.md`
+    - `docs/issues/issue_53_operation_tracker.md`
+  - Inventory scope from base commit:
+    - `git diff --name-only b75dbc263d08041599f3bb97effebc2e3c3c688d..HEAD` -> `60` changed paths
+    - grouped counts:
+      - `docs`: `5`
+      - `electron`: `27`
+      - `public`: `10`
+      - `i18n`: `16`
+      - `package`: `2`
+- Outcome / next step:
+  - Completed.
+  - Ready to present the affected-file list and surface any scope questions before starting the per-file cleanup pass for Section 7.
 
 ### OP-0116
 

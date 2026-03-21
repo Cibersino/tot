@@ -1,3 +1,4 @@
+// electron/import_extract_platform/platform_adapters/common.js
 'use strict';
 
 const fs = require('fs');
@@ -27,13 +28,20 @@ function normalizeAbsolutePath(rawPath) {
   }
 }
 
-function resolveExistingDirectory(candidates, fallbackPath) {
+function resolveExistingDirectory(candidates, fallbackPath, log, warnPrefix) {
   for (const candidate of candidates) {
     const normalized = normalizeAbsolutePath(candidate);
     if (isExistingDirectory(normalized)) return normalized;
   }
 
   const fallback = normalizeAbsolutePath(fallbackPath);
+  if (warnPrefix) {
+    log.warnOnce(
+      `${warnPrefix}.fallback`,
+      'Default picker directory candidates unavailable; using fallback directory.'
+    );
+  }
+
   if (isExistingDirectory(fallback)) return fallback;
   return process.cwd();
 }
@@ -55,14 +63,22 @@ function normalizeSelectedDirectoryFromFilePath(rawFilePath) {
 }
 
 function safeGetSystemPath(app, key, log, onceKey) {
-  if (!app || typeof app.getPath !== 'function') return '';
+  if (!app || typeof app.getPath !== 'function') {
+    if (onceKey) {
+      log.warnOnce(
+        `${onceKey}.missing`,
+        `app.getPath('${key}') unavailable; using fallback path resolution.`
+      );
+    }
+    return '';
+  }
   try {
     return app.getPath(key);
   } catch (err) {
-    if (log && typeof log.warnOnce === 'function') {
+    if (onceKey) {
       log.warnOnce(
-        onceKey,
-        `Unable to resolve app.getPath('${key}') (falling back):`,
+        `${onceKey}.failed`,
+        `app.getPath('${key}') failed; using fallback path resolution:`,
         err
       );
     }

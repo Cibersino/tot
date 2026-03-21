@@ -1,4 +1,20 @@
+// electron/import_extract_platform/import_extract_ocr_activation_ipc.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process OCR activation IPC for Google Drive OCR setup and token bootstrap.
+// Responsibilities:
+// - Authorize OCR activation requests to the main window sender.
+// - Import and validate OAuth credentials JSON when local credentials are missing.
+// - Run the local-auth browser flow and classify activation/authentication failures.
+// - Persist encrypted token material for later OCR setup validation.
+// - Return a structured activation result for OCR recovery and setup flows.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const fs = require('fs');
 const path = require('path');
@@ -10,7 +26,15 @@ const { writeEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 
 const log = Log.get('import-extract-ocr-activation');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const OCR_SCOPES = Object.freeze(['https://www.googleapis.com/auth/drive.file']);
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function safeErrorName(err) {
   return String(err && err.name ? err.name : 'Error');
@@ -286,20 +310,24 @@ function extractSerializableCredentials(authClient) {
   return { ...candidate };
 }
 
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
+
 function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_ocr_activation] registerIpc requires ipcMain');
+  }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_ocr_activation] registerIpc requires getWindows()');
   }
   if (typeof resolvePaths !== 'function') {
     throw new Error('[import_extract_ocr_activation] registerIpc requires resolvePaths()');
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-activate-ocr', async (event, payload = {}) => {
@@ -321,6 +349,11 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       const credentialsPath = String(paths && paths.credentialsPath ? paths.credentialsPath : '');
       const tokenPath = String(paths && paths.tokenPath ? paths.tokenPath : '');
       if (!credentialsPath || !tokenPath) {
+        log.error('import/extract OCR activation runtime paths unavailable:', {
+          stage: 'resolve_paths',
+          credentialsPathPresent: !!credentialsPath,
+          tokenPathPresent: !!tokenPath,
+        });
         return buildFailure({
           state: 'failure',
           code: 'platform_runtime_failed',
@@ -338,6 +371,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         if (!sourcePath) {
           const pick = await promptCredentialsFile(mainWin);
           if (!pick.ok) {
+            log.info('import/extract OCR activation cancelled while selecting credentials file.');
             return buildFailure({
               state: 'setup_incomplete',
               code: 'setup_incomplete',
@@ -356,6 +390,12 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           targetPath: credentialsPath,
         });
         if (!importResult.ok) {
+          log.warn('import/extract OCR activation blocked during credentials import:', {
+            state: importResult.state,
+            code: importResult.code,
+            sourcePathProvided: !!selectedCredentialsPath,
+            detailsSafeForLogs: importResult.detailsSafeForLogs,
+          });
           return {
             ...importResult,
             detailsSafeForLogs: {
@@ -374,11 +414,29 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           keyfilePath: credentialsPath,
         });
       } catch (authErr) {
-        return mapAuthenticateError(authErr);
+        const authFailure = mapAuthenticateError(authErr);
+        if (authFailure.code === 'ocr_activation_required') {
+          log.info('import/extract OCR activation cancelled during authentication:', {
+            state: authFailure.state,
+            code: authFailure.code,
+            detailsSafeForLogs: authFailure.detailsSafeForLogs,
+          });
+        } else {
+          log.warn('import/extract OCR activation blocked during authentication:', {
+            state: authFailure.state,
+            code: authFailure.code,
+            detailsSafeForLogs: authFailure.detailsSafeForLogs,
+          });
+        }
+        return authFailure;
       }
 
       const serializableCredentials = extractSerializableCredentials(authClient);
       if (!serializableCredentials) {
+        log.warn('import/extract OCR activation returned no serializable credentials:', {
+          stage: 'token_serialize',
+          reason: 'missing_access_and_refresh_token',
+        });
         return buildFailure({
           state: 'failure',
           code: 'auth_failed',
@@ -436,6 +494,14 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   });
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_ocr_activation_ipc.js
+// =============================================================================

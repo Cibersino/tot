@@ -1,4 +1,20 @@
+// electron/import_extract_platform/import_extract_prepare_ipc.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process IPC wrapper for import/extract prepare requests.
+// Responsibilities:
+// - Register the 'import-extract-prepare-selected-file' IPC handler.
+// - Authorize the sender against the current main window before preparing work.
+// - Delegate prepare policy and route analysis to import_extract_prepare_execute_core.js.
+// - Persist prepared-record fingerprints needed by the later execute step.
+// - Keep prepare telemetry and failure shaping stable for renderer consumers.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
 
 const Log = require('../log');
 const {
@@ -14,6 +30,10 @@ const {
 } = require('./import_extract_prepare_execute_core');
 
 const log = Log.get('import-extract-prepare-ipc');
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function getNativeProbeLogFields(routeMetadata) {
   const metadata = routeMetadata && routeMetadata.nativeProbeMetadata && typeof routeMetadata.nativeProbeMetadata === 'object'
@@ -31,20 +51,37 @@ function getNativeProbeLogFields(routeMetadata) {
   };
 }
 
+function buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFallback = 'not_checked' } = {}) {
+  return {
+    sourceFileExt: fileInfo.sourceFileExt,
+    sourceFileKind: fileInfo.sourceFileKind,
+    pdfTriage: routeMetadata ? routeMetadata.pdfTriage : 'not_pdf',
+    triageReason: routeMetadata ? routeMetadata.triageReason : '',
+    availableRoutes: routeMetadata ? routeMetadata.availableRoutes : [],
+    chosenRoute: routeMetadata ? routeMetadata.chosenRoute : null,
+    ocrSetupState: routeMetadata ? routeMetadata.ocrSetupState : ocrSetupStateFallback,
+    ...getNativeProbeLogFields(routeMetadata),
+  };
+}
+
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
+
 function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_prepare_ipc] registerIpc requires ipcMain');
+  }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_prepare_ipc] registerIpc requires getWindows()');
   }
   if (typeof resolvePaths !== 'function') {
     throw new Error('[import_extract_prepare_ipc] registerIpc requires resolvePaths()');
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const windows = getWindows() || {};
-      return windows.mainWin || null;
-    }
-    return null;
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
   };
 
   ipcMain.handle('import-extract-prepare-selected-file', async (event, payload = {}) => {
@@ -69,20 +106,13 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         filePath: request.filePath,
         ocrLanguage: request.ocrLanguage,
         resolvePaths,
-        logger: log,
+        log,
       });
 
       if (preparation && preparation.ok === true && preparation.prepareFailed === true) {
         const routeMetadata = preparation.routeMetadata || null;
         log.warn('import/extract prepare failed:', {
-          sourceFileExt: fileInfo.sourceFileExt,
-          sourceFileKind: fileInfo.sourceFileKind,
-          pdfTriage: routeMetadata ? routeMetadata.pdfTriage : 'not_pdf',
-          triageReason: routeMetadata ? routeMetadata.triageReason : '',
-          availableRoutes: routeMetadata ? routeMetadata.availableRoutes : [],
-          chosenRoute: routeMetadata ? routeMetadata.chosenRoute : null,
-          ocrSetupState: routeMetadata ? routeMetadata.ocrSetupState : 'failure',
-          ...getNativeProbeLogFields(routeMetadata),
+          ...buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFallback: 'failure' }),
           code: preparation.error && preparation.error.code ? preparation.error.code : '',
         });
         return preparation;
@@ -100,6 +130,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       try {
         sourceFileFingerprint = readSourceFileFingerprint(request.filePath);
       } catch (err) {
+        // Fingerprint loss invalidates execute-time freshness checks, so degrade
+        // to a structured prepare failure instead of exposing a prepared ID.
         log.error('import/extract prepare fingerprint read failed:', err);
         return {
           ok: true,
@@ -127,14 +159,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       const routeMetadata = preparation.routeMetadata || null;
       const logPayload = {
         prepareId: shortPrepareId(preparedRecord.prepareId),
-        sourceFileExt: fileInfo.sourceFileExt,
-        sourceFileKind: fileInfo.sourceFileKind,
-        pdfTriage: routeMetadata ? routeMetadata.pdfTriage : 'not_pdf',
-        triageReason: routeMetadata ? routeMetadata.triageReason : '',
-        availableRoutes: routeMetadata ? routeMetadata.availableRoutes : [],
-        chosenRoute: routeMetadata ? routeMetadata.chosenRoute : null,
-        ocrSetupState: routeMetadata ? routeMetadata.ocrSetupState : 'not_checked',
-        ...getNativeProbeLogFields(routeMetadata),
+        ...buildPrepareRouteLogFields(fileInfo, routeMetadata),
       };
 
       if (preparation.requiresRouteChoice === true) {
@@ -164,6 +189,14 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   });
 }
 
+// =============================================================================
+// Module surface
+// =============================================================================
+
 module.exports = {
   registerIpc,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/import_extract_prepare_ipc.js
+// =============================================================================

@@ -1,9 +1,33 @@
+// electron/import_extract_platform/native_pdf_selectable_text_probe.js
 'use strict';
+
+// =============================================================================
+// Overview
+// =============================================================================
+// Native PDF text-layer probe used during route preparation.
+// Responsibilities:
+// - Lazily load the PDF.js parser used for selectable-text detection.
+// - Probe PDF pages for visible text items without extracting full document text.
+// - Return a structured probe result for native-vs-OCR route triage.
+// - Classify parser failures into the probe error contract used by import/extract.
+// - Release the PDF document handle on exit, with best-effort cleanup logging.
+
+// =============================================================================
+// Imports
+// =============================================================================
 
 const fs = require('fs');
 const path = require('path');
 
+// =============================================================================
+// Module-level parser state
+// =============================================================================
+
 let PDFJS = null;
+
+// =============================================================================
+// Parser loading
+// =============================================================================
 
 function getPdfJs() {
   if (!PDFJS) {
@@ -12,6 +36,10 @@ function getPdfJs() {
   }
   return PDFJS;
 }
+
+// =============================================================================
+// Source and error helpers
+// =============================================================================
 
 function buildError(code, message, detailsSafeForLogs = {}) {
   return {
@@ -70,6 +98,10 @@ function isPdfPasswordProtectedParserError(err) {
   );
 }
 
+// =============================================================================
+// Probe flow helpers
+// =============================================================================
+
 function ensureNotAborted(isAborted) {
   if (typeof isAborted === 'function' && isAborted()) {
     const abortError = new Error('Native PDF probe cancelled by user.');
@@ -101,10 +133,14 @@ function buildFailure(selectableText, metadataSafeForLogs, error) {
   };
 }
 
+// =============================================================================
+// Probe entrypoint
+// =============================================================================
+
 async function probeNativePdfSelectableText({
   filePath,
   isAborted,
-  logger,
+  log,
 } = {}) {
   const source = getSourceInfo(filePath);
   const startedAt = Date.now();
@@ -230,13 +266,11 @@ async function probeNativePdfSelectableText({
       );
     }
 
-    if (logger && typeof logger.warn === 'function') {
-      logger.warn('Native PDF selectable-text probe failed:', {
-        sourceFileExt: source.fileExt,
-        errorName: String(err && err.name ? err.name : 'Error'),
-        errorCode: String(err && err.code ? err.code : ''),
-      });
-    }
+    log.warn('Native PDF selectable-text probe failed:', {
+      sourceFileExt: source.fileExt,
+      errorName: String(err && err.name ? err.name : 'Error'),
+      errorCode: String(err && err.code ? err.code : ''),
+    });
 
     let errorCode = 'native_extraction_failed';
     let errorMessage = 'Native PDF probe failed due to parser/runtime error.';
@@ -276,17 +310,23 @@ async function probeNativePdfSelectableText({
       try {
         documentHandle.destroy();
       } catch (err) {
-        if (logger && typeof logger.warn === 'function') {
-          logger.warn('Native PDF selectable-text probe cleanup failed (ignored):', {
-            sourceFileExt: source.fileExt,
-            errorName: String(err && err.name ? err.name : 'Error'),
-          });
-        }
+        log.warn('Native PDF selectable-text probe cleanup failed (ignored):', {
+          sourceFileExt: source.fileExt,
+          errorName: String(err && err.name ? err.name : 'Error'),
+        });
       }
     }
   }
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   probeNativePdfSelectableText,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/native_pdf_selectable_text_probe.js
+// =============================================================================
