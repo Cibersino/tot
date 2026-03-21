@@ -21,6 +21,9 @@ const path = require('path');
 const { google } = require('googleapis');
 const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 const { normalizeImageForOcrUpload } = require('./ocr_image_normalization');
+const {
+  buildGoogleOAuthClient,
+} = require('./ocr_google_drive_oauth_client');
 
 // =============================================================================
 // Constants / config
@@ -242,31 +245,6 @@ async function runWithRateLimitRetry({ operationName, log, isAborted, fn }) {
   throw new Error(`OCR operation retries exhausted: ${operationName}`);
 }
 
-function buildOAuthClient(credentialsJson, tokenJson) {
-  const root = credentialsJson && typeof credentialsJson === 'object'
-    ? (credentialsJson.installed || credentialsJson.web || null)
-    : null;
-
-  if (!root || typeof root !== 'object') {
-    throw new Error('Invalid Google credentials shape.');
-  }
-  if (!root.client_id || !root.client_secret) {
-    throw new Error('Google credentials missing client_id/client_secret.');
-  }
-
-  const redirectUri = Array.isArray(root.redirect_uris) && root.redirect_uris.length
-    ? String(root.redirect_uris[0] || '')
-    : '';
-
-  const oauthClient = new google.auth.OAuth2(
-    String(root.client_id),
-    String(root.client_secret),
-    redirectUri
-  );
-  oauthClient.setCredentials(tokenJson && typeof tokenJson === 'object' ? tokenJson : {});
-  return oauthClient;
-}
-
 function buildFailureResult({ stage, provenance, parsedFailure, error }) {
   const commonCode = classifyCommonFailure(parsedFailure);
   if (commonCode) {
@@ -404,7 +382,7 @@ async function runGoogleDriveOcrRoute({
 
   let oauthClient = null;
   try {
-    oauthClient = buildOAuthClient(credentialsJson, tokenJson);
+    oauthClient = buildGoogleOAuthClient(credentialsJson, tokenJson);
   } catch (err) {
     return buildResult({
       state: 'failure',

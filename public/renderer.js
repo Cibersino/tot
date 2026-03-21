@@ -82,6 +82,7 @@ if (!importExtractStatusUi
   throw new Error('[renderer] ImportExtractStatusUi unavailable; cannot continue');
 }
 const btnImportExtractAbort = importExtractStatusUi.getAbortButton();
+const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
 
 // =============================================================================
 // UI keys and static lists
@@ -1463,6 +1464,19 @@ setupToggleModoPreciso();
         window.Notify.notifyMain('renderer.alerts.open_presets_error');
       }
     });
+    registerMenuActionGuarded('disconnect_google_ocr', async () => {
+      if (!importExtractOcrDisconnect
+        || typeof importExtractOcrDisconnect.startFromPreferencesMenu !== 'function') {
+        log.warnOnce(
+          'renderer.importExtract.ocrDisconnect.entrypoint.unavailable',
+          'ImportExtractOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.'
+        );
+        window.Notify.notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
+        return;
+      }
+
+      await importExtractOcrDisconnect.startFromPreferencesMenu();
+    });
 
     registerMenuActionGuarded('avisos', () => {
       window.Notify.notifyMain('renderer.alerts.wip_avisos'); // WIP
@@ -1805,6 +1819,19 @@ function configureImportExtractModules() {
     resolveDroppedFilePath,
     startFromFilePath: importExtractEntry.startFromFilePath,
   });
+
+  if (importExtractOcrDisconnect
+    && typeof importExtractOcrDisconnect.configure === 'function') {
+    importExtractOcrDisconnect.configure({
+      getOptionalElectronMethod,
+      notifyMain,
+    });
+  } else {
+    log.warnOnce(
+      'renderer.importExtract.ocrDisconnect.unavailable',
+      'ImportExtractOcrDisconnect.configure unavailable; Preferences > Disconnect Google OCR will be disabled.'
+    );
+  }
 }
 
 configureImportExtractModules();
