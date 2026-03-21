@@ -32,7 +32,7 @@ log.debug('FS storage starting...');
 let CONFIG_DIR = null;
 
 // =============================================================================
-// Directory helpers
+// Storage initialization
 // =============================================================================
 
 function initStorage(app) {
@@ -53,6 +53,10 @@ function getConfigDir() {
   return CONFIG_DIR;
 }
 
+// =============================================================================
+// Path helpers: core config files
+// =============================================================================
+
 function getConfigPresetsDir() {
   return path.join(getConfigDir(), 'presets_defaults');
 }
@@ -72,6 +76,10 @@ function getCurrentTextFile() {
 function getEditorStateFile() {
   return path.join(getConfigDir(), 'editor_state.json');
 }
+
+// =============================================================================
+// Path helpers: tasks
+// =============================================================================
 
 function getTasksDir() {
   return path.join(getConfigDir(), 'tasks');
@@ -97,6 +105,10 @@ function getTaskEditorPositionFile() {
   return path.join(getTasksDir(), 'task_editor_position.json');
 }
 
+// =============================================================================
+// Path helpers: import/extract + OCR
+// =============================================================================
+
 function getImportExtractStateFile() {
   return path.join(getConfigDir(), 'import_extract_state.json');
 }
@@ -112,6 +124,10 @@ function getOcrGoogleDriveCredentialsFile() {
 function getOcrGoogleDriveTokenFile() {
   return path.join(getOcrGoogleDriveDir(), 'token.json');
 }
+
+// =============================================================================
+// Directory ensure helpers
+// =============================================================================
 
 function ensureConfigDir() {
   try {
@@ -259,26 +275,31 @@ function saveJson(filePath, obj) {
 module.exports = {
   initStorage,
   getConfigDir,
+
   getConfigPresetsDir,
   getCurrentTextSnapshotsDir,
   getSettingsFile,
   getCurrentTextFile,
   getEditorStateFile,
+
   getTasksDir,
   getTasksListsDir,
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
   getTasksColumnWidthsFile,
   getTaskEditorPositionFile,
+
   getImportExtractStateFile,
   getOcrGoogleDriveDir,
   getOcrGoogleDriveCredentialsFile,
   getOcrGoogleDriveTokenFile,
+
   ensureConfigDir,
   ensureConfigPresetsDir,
   ensureCurrentTextSnapshotsDir,
   ensureTasksDirs,
   ensureOcrGoogleDriveDir,
+
   loadJson,
   saveJson,
 };
