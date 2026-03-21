@@ -299,9 +299,7 @@ async function validateOcrSetup(resolvePaths, log) {
       probeApiPath: true,
     });
   } catch (err) {
-    if (log && typeof log.error === 'function') {
-      log.error('Google OCR setup validation failed unexpectedly:', err);
-    }
+    log.error('Google OCR setup validation failed unexpectedly:', err);
     return buildOcrSetupValidationRuntimeFailure(err);
   }
 }

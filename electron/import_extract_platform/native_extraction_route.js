@@ -414,14 +414,12 @@ async function runNativeExtractionRoute({
       });
     }
 
-    if (log && typeof log.warn === 'function') {
-      log.warn('Native extraction route failed:', {
-        sourceFileExt: source.fileExt,
-        parserType: source.parserType,
-        errorName: String(err && err.name ? err.name : 'Error'),
-        errorCode: String(err && err.code ? err.code : ''),
-      });
-    }
+    log.warn('Native extraction route failed:', {
+      sourceFileExt: source.fileExt,
+      parserType: source.parserType,
+      errorName: String(err && err.name ? err.name : 'Error'),
+      errorCode: String(err && err.code ? err.code : ''),
+    });
 
     const failure = buildFailureResultForError({
       source,
