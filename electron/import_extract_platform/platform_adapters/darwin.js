@@ -1,3 +1,4 @@
+// electron/import_extract_platform/platform_adapters/darwin.js
 'use strict';
 
 const {
