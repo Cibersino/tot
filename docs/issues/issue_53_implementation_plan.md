@@ -211,7 +211,7 @@ Section 6 decision note (locked after item-1 feasibility + utility evaluation):
 
 - [x] UI/UX refinement pass.
 - [x] Fill missing `es`/`en` UI localization keys (no hardcoded language fallback logic).
-- [ ] Logging review for required observability fields/events and consistency:
+- [x] Logging review for required observability fields/events and consistency:
   - selected file type
   - available/chosen/executed route
   - OCR/native latency
@@ -220,7 +220,7 @@ Section 6 decision note (locked after item-1 feasibility + utility evaluation):
   - setup/configuration failures
   - activation/auth/billing/quota/restriction events
   - precondition rejection and cancellation events
-- [ ] Code cleanup/refactor while preserving behavior.
+- [x] Code cleanup/refactor while preserving behavior.
 
 ## 8. Documentation and compliance closeout
 
