@@ -566,8 +566,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
     }
   });
 
-  ipcMain.handle(LAUNCH_CHANNEL, async (event, payload = {}) => {
-    resolvePayload(payload);
+  ipcMain.handle(LAUNCH_CHANNEL, async (event) => {
     const mainWin = resolveMainWin();
     try {
       if (!isAuthorizedSender(event, mainWin, {

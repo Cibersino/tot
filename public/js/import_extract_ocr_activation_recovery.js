@@ -108,10 +108,7 @@
 
     let prepareResult = null;
     try {
-      prepareResult = await prepareImportExtractOcrActivation({
-        source: 'import_extract_entrypoint',
-        reason: `ocr_blocked_${failureCode}`,
-      });
+      prepareResult = await prepareImportExtractOcrActivation();
     } catch (err) {
       log.error('import/extract OCR activation prepare IPC failed:', err);
       safeNotify(notifyMain, 'renderer.alerts.import_extract_ocr_activation_failed');
@@ -155,10 +152,7 @@
 
     let activationResult = null;
     try {
-      activationResult = await launchImportExtractOcrActivation({
-        source: 'import_extract_entrypoint',
-        reason: `ocr_blocked_${failureCode}`,
-      });
+      activationResult = await launchImportExtractOcrActivation();
     } catch (err) {
       log.error('import/extract OCR activation launch IPC failed:', err);
       safeNotify(notifyMain, 'renderer.alerts.import_extract_ocr_activation_failed');
@@ -166,13 +160,6 @@
     }
 
     if (!activationResult || activationResult.ok !== true) {
-      if (activationResult && activationResult.cancelled === true) {
-        log.info('import/extract OCR activation launch returned a quiet cancelled result:', {
-          code: activationResult.code || '',
-        });
-        return { preparation, handled: true, activationResult };
-      }
-
       const failureAlertKey = resolveImportExtractAlertKey(
         activationResult && activationResult.alertKey,
         'renderer.alerts.import_extract_ocr_activation_failed'
