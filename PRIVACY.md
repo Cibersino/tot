@@ -9,7 +9,7 @@ Versión app: `0.1.6`
 - El **texto que ingresas/pegas** se procesa **localmente** y **no se envía a Internet** ni a servidores de los desarrolladores.
 - La app guarda **configuración y estado** en el equipo del usuario (almacenamiento local).
 - La única conectividad prevista no dependiente de acciones del usuario es la **verificación de actualizaciones en GitHub**. La app **no descarga ni instala** actualizaciones automáticamente.
-- El resto de las operaciones de conectividad solo ocurre por acciones explícitas del usuario (por ejemplo, al abrir enlaces externos desde la app).
+- El resto de las operaciones de conectividad solo ocurre por acciones explícitas del usuario (por ejemplo, al abrir enlaces externos desde la app al activar/usar OCR conectado con Google).
 
 ## 2. Datos que la app procesa
 
@@ -43,7 +43,17 @@ La app puede abrir enlaces externos cuando el usuario lo solicita explícitament
 - En el módulo de tareas, solo se permiten enlaces HTTPS y puede requerirse confirmación.
 - En todos los casos, la navegación ocurre en el navegador externo del sistema.
 
-### 3.3 Sin otros servicios externos
+### 3.3 OCR opcional conectado con Google
+
+Si el usuario decide activar o usar OCR para extraer texto de archivos, la app puede conectarse con servicios de Google para procesar estos archivos seleccionados por el propio usuario con fines de OCR.
+
+- La activación abre el navegador externo del sistema para realizar autorización/sign-in de Google.
+- Solo los archivos que el usuario elige explícitamente para OCR se envían a Google para esa operación.
+- Como parte de una operación OCR, ni los archivos, ni el texto extraído, ni la información específica de esa operación se envían a terceros distintos de Google. Los desarrolladores no reciben esos datos ni quedan notificados de esas operaciones.
+- Tras exportar el texto extraído, la app intenta borrar de inmediato el documento temporal creado en Google para esa conversión OCR. Si esa limpieza remota falla, la app lo trata como advertencia explícita.
+- Las credenciales/tokens locales de esa integración se almacenan localmente en la instancia de la app.
+
+### 3.4 Sin otros servicios externos
 
 La app no integra servicios de analítica, publicidad, seguimiento, ni SDKs de telemetría.
 

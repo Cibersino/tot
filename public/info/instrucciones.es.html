@@ -197,7 +197,8 @@
             <ul>
               <li><strong>📋↺</strong>: reemplaza completamente el texto actual por el portapapeles.</li>
               <li><strong>📋+</strong>: añade el portapapeles al final del texto actual.</li>
-              <li><strong>Input de repeticiones</strong> (junto a <strong>📋↺</strong> y <strong>📋+</strong>): define cuántas veces se repite el pegado en un solo clic.</li>
+              <li><strong>Input de repeticiones</strong> (junto a <strong>📋↺</strong> y <strong>📋+</strong>): define
+                cuántas veces se repite el pegado en un solo clic.</li>
             </ul>
           </li>
         </ol>
@@ -737,18 +738,25 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
                 permitidos).</li>
             </ul>
           </li>
-          <li><strong>Internet:</strong> la app puede requerir conexión <strong>solo</strong> cuando tú ejecutas
-            acciones que abren recursos externos, como:
+          <li><strong>Internet:</strong> la app puede requerir conexión cuando tú ejecutas acciones que usan recursos
+            externos, como:
             <ul>
-              <li>abrir enlaces externos en los que el usuario hizo clic (incluidos los enlaces abiertos desde Tareas),
+              <li>abrir enlaces externos en los que el usuario hizo clic (incluidos los enlaces abiertos desde páginas
+                informativas y desde Tareas),
               </li>
-              <li>comprobar/abrir información de actualización (por ejemplo, en GitHub).</li>
+              <li>comprobar/abrir información de actualización (por ejemplo, en GitHub),</li>
+              <li>si decides usar OCR: autorizar Google en el navegador del sistema y enviar los archivos que elegiste
+                explícitamente para el procesamiento OCR.</li>
             </ul>
           </li>
         </ul>
-        <p>Implicación práctica: aunque <em>toT</em> no “sube tu texto”, cualquier acción que abra un sitio externo
-          expone a ese servicio tu dirección IP y metadatos normales de conexión (como en cualquier navegador). Si
-          quieres eliminar todos los datos almacenados localmente, ve al paso 9 (“Limpieza total”).</p>
+        <p>Implicación práctica: el manejo ordinario del texto que pegas/escribes en <em>toT</em> sigue siendo local.
+          Sin embargo, cualquier acción que abra un sitio externo expone a ese servicio tu dirección IP y metadatos
+          normales de conexión (como en cualquier navegador). Además, si decides usar OCR, los archivos que seleccionas
+          explícitamente para OCR se envían a Google para esa operación; no se envían a los desarrolladores ni a otros
+          terceros como parte del flujo OCR. La app también intenta limpiar de inmediato el documento temporal
+          convertido en Google tras la exportación. Si quieres eliminar todos los datos almacenados localmente, ve al
+          paso 9 (“Limpieza total”).</p>
 
         <hr />
 
