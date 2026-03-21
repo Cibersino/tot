@@ -80,14 +80,26 @@
 
   function canAcceptDrop() {
     const { canAcceptDrop: predicate } = requireConfiguredDeps();
-    return typeof predicate === 'function' && predicate() === true;
+    if (typeof predicate !== 'function') {
+      log.warnOnce(
+        'importExtractDragDrop.canAcceptDrop.missing',
+        'canAcceptDrop dependency missing; drag/drop disabled.'
+      );
+      return false;
+    }
+    return predicate() === true;
   }
 
   function notifyMain(alertKey) {
     const { notifyMain: notify } = requireConfiguredDeps();
-    if (typeof notify === 'function') {
-      notify(alertKey);
+    if (typeof notify !== 'function') {
+      log.warn(
+        'notifyMain dependency missing; drag/drop alert skipped.',
+        alertKey
+      );
+      return;
     }
+    notify(alertKey);
   }
 
   function setDropEffect(event, effect) {
@@ -118,7 +130,12 @@
 
   async function resolveDroppedFilePath(file) {
     const { resolveDroppedFilePath: resolver } = requireConfiguredDeps();
-    if (typeof resolver !== 'function') return '';
+    if (typeof resolver !== 'function') {
+      log.warn(
+        'resolveDroppedFilePath dependency missing; dropped file path cannot be resolved.'
+      );
+      return '';
+    }
     try {
       return String(await resolver(file) || '').trim();
     } catch (err) {
