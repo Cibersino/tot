@@ -137,6 +137,7 @@ tot/
 │ │ ├── import_extract_status_ui.js
 │ │ ├── import_extract_route_choice_modal.js
 │ │ ├── import_extract_apply_modal.js
+│ │ ├── import_extract_ocr_activation_disclosure_modal.js
 │ │ ├── import_extract_ocr_activation_recovery.js
 │ │ ├── import_extract_ocr_disconnect.js
 │ │ ├── import_extract_entry.js
@@ -248,7 +249,7 @@ tot/
 - `electron/import_extract_platform/import_extract_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.
 - `electron/import_extract_platform/import_extract_processing_mode_ipc.js` — Controlador/IPC del processing mode de import/extract: lock state, broadcast al renderer y solicitud de abort.
 - `electron/import_extract_platform/import_extract_ocr_gate_ipc.js` — Clasifica elegibilidad OCR por tipo de archivo y estado de disponibilidad/activación del OCR.
-- `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` — Activación OCR vía desktop OAuth en navegador del sistema; valida `credentials.json` y persiste el token local.
+- `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` — Activación OCR Google vía navegador del sistema, separada en dos fases IPC: preparación de credenciales (`prepareImportExtractOcrActivation`, sin abrir navegador) y lanzamiento OAuth (`launchImportExtractOcrActivation`, persiste el token local y valida el setup).
 - `electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js` — Desconexión OCR desde menú: confirmación nativa, revocación del token OAuth guardado y borrado del token local tras revocación exitosa.
 - `electron/import_extract_platform/import_extract_prepare_execute_core.js` — Núcleo compartido del prepare/execute: clasificación de archivo, triage PDF, selección de ruta y ejecución.
 - `electron/import_extract_platform/import_extract_prepare_ipc.js` — Etapa prepare del archivo seleccionado: calcula metadata/rutas disponibles y crea el registro preparado.
@@ -288,7 +289,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/import_extract_status_ui.js` — Superficie visual del flujo import/extract en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido y botón abort.
 - `public/js/import_extract_route_choice_modal.js` — Modal de elección de ruta (`native` / `ocr`) cuando un PDF soporta ambas.
 - `public/js/import_extract_apply_modal.js` — Modal post-extracción para decidir overwrite/append y repeticiones antes de aplicar el texto extraído.
-- `public/js/import_extract_ocr_activation_recovery.js` — Helpers de recuperación para activar OCR y reintentar el prepare cuando el bloqueo es de setup/auth.
+- `public/js/import_extract_ocr_activation_disclosure_modal.js` — Modal renderer de preconsentimiento para OCR Google: muestra la divulgación inmediatamente antes del OAuth, enlaza a `privacy-policy` mediante `openAppDoc(...)` y exige acción afirmativa del usuario.
+- `public/js/import_extract_ocr_activation_recovery.js` — Helpers de recuperación para OCR: completan preparación de credenciales, muestran el modal de divulgación y lanzan OAuth solo tras aceptación, antes de reintentar el prepare.
 - `public/js/import_extract_ocr_disconnect.js` — Handler del renderer para `Disconnect Google OCR`: solicita la desconexión al main y muestra feedback de éxito/fallo/not-connected.
 - `public/js/import_extract_entry.js` — Orquestador compartido del flujo import/extract desde picker o drag/drop.
 - `public/js/import_extract_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de archivos al entry flow compartido.
