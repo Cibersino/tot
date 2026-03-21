@@ -146,7 +146,6 @@
       return {
         preparation,
         handled: true,
-        activationResult: declineResult,
       };
     }
 
