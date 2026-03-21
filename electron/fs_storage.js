@@ -4,15 +4,13 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// File system helpers for the Electron main process.
-//
+// Main-process file system storage helpers.
 // Responsibilities:
-// - Resolve the app's config paths under app.getPath('userData') plus the 'config' subfolder.
-// - Ensure required config folders exist before reading/writing files.
-// - Read/write small JSON state files (settings, current text, etc.) safely.
-//
-// Notes:
-// - This module is intentionally synchronous (main process only).
+// - Initialize the config root under app.getPath('userData') once Electron is ready.
+// - Resolve stable paths for settings, current text, editor state, presets, current-text snapshots, task files, and import/extract + OCR storage.
+// - Ensure required storage directories exist before reads and writes.
+// - Read and write small JSON files with recoverable fallback handling.
+// - Stay synchronous because it is used only from the Electron main process.
 
 // =============================================================================
 // Imports / logger
@@ -26,7 +24,7 @@ const log = Log.get('fs-storage');
 log.debug('FS storage starting...');
 
 // =============================================================================
-// Config paths
+// Shared state
 // =============================================================================
 
 let CONFIG_DIR = null;
@@ -269,7 +267,7 @@ function saveJson(filePath, obj) {
 }
 
 // =============================================================================
-// Exports
+// Exports / module surface
 // =============================================================================
 
 module.exports = {
