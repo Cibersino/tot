@@ -8,15 +8,22 @@
 // - Own main-window drag/drop affordance for import/extract.
 // - Show a visible full-window drop target while a valid file drag is active.
 // - Forward accepted single-file drops into the shared import/extract entry flow.
+// - Keep drag/drop availability aligned with renderer-level interaction guards.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[import-extract-drag-drop] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('import-extract-drag-drop');
   log.debug('Import/extract drag/drop module starting...');
 
+  // =============================================================================
+  // Shared state
+  // =============================================================================
   let deps = null;
   let dragDepth = 0;
   let listenersAttached = false;
@@ -24,6 +31,9 @@
   let overlayTitle = null;
   let tRendererRef = null;
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function requireConfiguredDeps() {
     if (!deps) {
       throw new Error('[import-extract-drag-drop] configure() must run before drag/drop handling');
@@ -144,6 +154,9 @@
     }
   }
 
+  // =============================================================================
+  // Window wiring
+  // =============================================================================
   function attachListeners() {
     if (listenersAttached) return;
     listenersAttached = true;
@@ -232,6 +245,9 @@
     }
   }
 
+  // =============================================================================
+  // Public entrypoints
+  // =============================================================================
   function configure(nextDeps = {}) {
     deps = {
       canAcceptDrop: null,
@@ -249,6 +265,9 @@
     syncOverlayText();
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.ImportExtractDragDrop = {
     applyTranslations,
     configure,
