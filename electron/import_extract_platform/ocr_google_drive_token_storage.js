@@ -189,11 +189,29 @@ function writeEncryptedTokenFile({ tokenPath, tokenPayload }) {
   }
 }
 
+function deleteEncryptedTokenFile(tokenPath) {
+  if (typeof tokenPath !== 'string' || !tokenPath.trim()) {
+    throw buildStorageError('invalid_token_path', 'Token path is invalid.');
+  }
+
+  try {
+    fs.unlinkSync(tokenPath);
+  } catch (err) {
+    if (err && err.code === 'ENOENT') {
+      throw buildStorageError('missing_file', 'Token file is missing.');
+    }
+    throw buildStorageError('delete_failed', 'Token file delete failed.', {
+      errorName: safeErrorName(err),
+    });
+  }
+}
+
 // =============================================================================
 // Exports / module surface
 // =============================================================================
 
 module.exports = {
+  deleteEncryptedTokenFile,
   readEncryptedTokenFile,
   writeEncryptedTokenFile,
 };
