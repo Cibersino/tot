@@ -1,10 +1,29 @@
 // electron/import_extract_platform/native_extraction_route.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Native extraction route for text-like local files.
+// Responsibilities:
+// - Map supported file extensions to the native parser used for that source.
+// - Normalize extracted text into a stable apply-ready representation.
+// - Convert parser warnings into bounded warning codes for callers.
+// - Classify parser failures into the route error contract used by import/extract.
+// - Return a structured route result without owning orchestration or IPC.
+
+// =============================================================================
+// Imports
+// =============================================================================
+
 const fs = require('fs');
 const path = require('path');
 const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
+
+// =============================================================================
+// Constants / parser selection
+// =============================================================================
 
 const NATIVE_PARSER_BY_EXT = Object.freeze({
   '.txt': 'plain_text',
@@ -14,6 +33,10 @@ const NATIVE_PARSER_BY_EXT = Object.freeze({
   '.docx': 'docx_text',
   '.pdf': 'pdf_text_layer',
 });
+
+// =============================================================================
+// Text normalization helpers
+// =============================================================================
 
 function normalizeTextPipeline(rawText) {
   const asString = typeof rawText === 'string' ? rawText : String(rawText || '');
@@ -65,6 +88,10 @@ function htmlToPlainText(htmlRaw) {
     .replace(/[ \t]{2,}/g, ' ')
     .trimEnd();
 }
+
+// =============================================================================
+// Parser warnings / failure classification helpers
+// =============================================================================
 
 function mapMammothWarnings(messages) {
   if (!Array.isArray(messages)) return [];
@@ -129,6 +156,10 @@ function isPdfPasswordProtectedParserError(err) {
   );
 }
 
+// =============================================================================
+// Native parser execution
+// =============================================================================
+
 async function runNativeParser(parserType, absPath) {
   if (parserType === 'plain_text') {
     const rawText = fs.readFileSync(absPath, 'utf8');
@@ -170,6 +201,10 @@ async function runNativeParser(parserType, absPath) {
   parserError.code = 'UNSUPPORTED_NATIVE_PARSER';
   throw parserError;
 }
+
+// =============================================================================
+// Source and result shaping helpers
+// =============================================================================
 
 function getSourceInfo(filePath) {
   const absPath = path.resolve(String(filePath || ''));
@@ -263,6 +298,10 @@ function buildFailureResultForError({
     ),
   };
 }
+
+// =============================================================================
+// Route entrypoint
+// =============================================================================
 
 async function runNativeExtractionRoute({
   filePath,
@@ -399,6 +438,14 @@ async function runNativeExtractionRoute({
   }
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   runNativeExtractionRoute,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/native_extraction_route.js
+// =============================================================================
