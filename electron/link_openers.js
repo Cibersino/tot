@@ -39,7 +39,60 @@ const APP_DOC_FILES = Object.freeze({
   'licenses-chromium': 'LICENSES.chromium.html',
   'privacy-policy': 'PRIVACY.md',
 });
-const APP_DOC_BASKERVVILLE = 'license-baskervville';
+const APP_DOC_PUBLIC_FILES = Object.freeze({
+  'license-baskervville': {
+    relativePath: path.join('public', 'fonts', 'LICENSE_Baskervville_OFL.txt'),
+    tempName: 'tot_LICENSE_Baskervville_OFL.txt',
+  },
+  'license-import-extract-google-auth': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'LICENSE_@google-cloud_local-auth_2.1.0.txt'
+    ),
+    tempName: 'tot_LICENSE_@google-cloud_local-auth_2.1.0.txt',
+  },
+  'license-import-extract-google-apis': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'LICENSE_googleapis_105.0.0.txt'
+    ),
+    tempName: 'tot_LICENSE_googleapis_105.0.0.txt',
+  },
+  'license-import-extract-docx': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'LICENSE_mammoth_1.11.0.txt'
+    ),
+    tempName: 'tot_LICENSE_mammoth_1.11.0.txt',
+  },
+  'license-import-extract-pdf': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'LICENSE_pdf-parse_1.1.1.txt'
+    ),
+    tempName: 'tot_LICENSE_pdf-parse_1.1.1.txt',
+  },
+  'license-import-extract-image-processing': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'LICENSE_sharp_0.34.4.txt'
+    ),
+    tempName: 'tot_LICENSE_sharp_0.34.4.txt',
+  },
+  'license-import-extract-image-processing-win32': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'LICENSE_@img_sharp-win32-x64_0.34.4.txt'
+    ),
+    tempName: 'tot_LICENSE_@img_sharp-win32-x64_0.34.4.txt',
+  },
+});
 
 const log = Log.get('link-openers');
 log.debug('Link openers starting...');
@@ -84,6 +137,17 @@ async function openPathWithLog(shell, rawKey, filePath) {
     return { ok: false, reason: 'open_failed' };
   }
   return { ok: true };
+}
+
+async function openBundledPublicDoc(app, shell, rawKey, relativePath, tempName) {
+  const srcPath = path.join(app.getAppPath(), relativePath);
+  if (!(await fileExists(srcPath))) {
+    log.warn('open-app-doc not found:', rawKey);
+    return { ok: false, reason: 'not_found' };
+  }
+
+  const tempPath = await copyToTemp(app, srcPath, tempName);
+  return openPathWithLog(shell, rawKey, tempPath);
 }
 
 // =============================================================================
@@ -166,15 +230,15 @@ function registerLinkIpc({ ipcMain, app, shell }) {
         return { ok: false, reason: 'not_found' };
       }
 
-      if (rawKey === APP_DOC_BASKERVVILLE) {
-        const srcPath = path.join(app.getAppPath(), 'public', 'fonts', 'LICENSE_Baskervville_OFL.txt');
-        if (!(await fileExists(srcPath))) {
-          log.warn('open-app-doc not found:', rawKey);
-          return { ok: false, reason: 'not_found' };
-        }
-
-        const tempPath = await copyToTemp(app, srcPath, 'tot_LICENSE_Baskervville_OFL.txt');
-        return openPathWithLog(shell, rawKey, tempPath);
+      if (Object.prototype.hasOwnProperty.call(APP_DOC_PUBLIC_FILES, rawKey)) {
+        const publicDoc = APP_DOC_PUBLIC_FILES[rawKey];
+        return openBundledPublicDoc(
+          app,
+          shell,
+          rawKey,
+          publicDoc.relativePath,
+          publicDoc.tempName
+        );
       }
 
       if (!Object.prototype.hasOwnProperty.call(APP_DOC_FILES, rawKey)) {

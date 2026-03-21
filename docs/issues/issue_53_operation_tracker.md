@@ -91,6 +91,305 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0127
+
+- Date/time: 2026-03-21 13:48:01 -03:00
+- Operation: Re-implement the Issue 53 extraction-feature license wiring after the user manually rolled back the first attempt.
+- Why: The previous wiring did not match the repo’s standard. Specifically:
+  - `electron/link_openers.js` did not follow the file’s existing style.
+  - `public/info/acerca_de.html` exposed raw package/file links without human-facing context.
+- Changes made:
+  - Verified current state before retrying:
+    - `electron/link_openers.js` is back to the pre-wiring state.
+    - `public/info/acerca_de.html` is back to the pre-wiring state.
+    - `public/extraction_feature_licenses/` still contains the imported exact-version license files.
+  - Locked the replacement approach:
+    - keep the files under `public/extraction_feature_licenses/`
+    - add the new docs in `electron/link_openers.js` in a cleaner, style-matching way
+    - present the new licenses in `public/info/acerca_de.html` with human-facing labels rather than raw dependency/file names
+  - Updated `electron/link_openers.js`:
+    - introduced `APP_DOC_PUBLIC_FILES` as the dedicated mapping for public-bundled legal docs
+    - folded Baskervville and the new extraction-feature license docs into that one public-doc mapping
+    - added `openBundledPublicDoc(...)` helper so public-bundled docs are handled through one consistent path
+    - added deliberate `appdoc` ids for the new extraction-feature license docs:
+      - `license-import-extract-google-auth`
+      - `license-import-extract-google-apis`
+      - `license-import-extract-docx`
+      - `license-import-extract-pdf`
+      - `license-import-extract-image-processing`
+      - `license-import-extract-image-processing-win32`
+  - Updated `public/info/acerca_de.html`:
+    - added one human-facing legal entry for the file import/extraction feature
+    - linked the six exact-version license files through descriptive labels rather than raw package/file names
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/link_openers.js`
+  - `public/info/acerca_de.html`
+- Evidence:
+  - `git status --short electron\\link_openers.js public\\info\\acerca_de.html public\\extraction_feature_licenses docs\\issues\\issue_53_operation_tracker.md`
+    shows only:
+    - modified tracker
+    - new `public/extraction_feature_licenses/`
+  - Read-back confirms the earlier wiring is absent from:
+    - `electron/link_openers.js`
+    - `public/info/acerca_de.html`
+    before this retry
+  - Post-patch key/helper verification via `rg`:
+    - `APP_DOC_PUBLIC_FILES`
+    - `openBundledPublicDoc`
+    - `license-import-extract-google-auth`
+    - `license-import-extract-google-apis`
+    - `license-import-extract-docx`
+    - `license-import-extract-pdf`
+    - `license-import-extract-image-processing`
+    - `license-import-extract-image-processing-win32`
+  - Syntax validation:
+    - `node --check electron\\link_openers.js` passed
+- Outcome / next step:
+  - Completed.
+  - The extraction-feature license files are now exposed through a cleaner repo-style surface.
+  - Next step is to review any remaining Issue 53 compliance wording that still needs adjustment after the new license surface is in place.
+
+### OP-0125
+
+- Date/time: 2026-03-21 13:39:32 -03:00
+- Operation: Rename the newly added Issue 53 dependency-license folder to a feature-scoped name before any appdoc/UI wiring.
+- Why: User correctly identified that `public/licenses/` was misleading in this repo, because other legal/license files already live outside that folder (for example app root docs and the Baskervville font license under `public/fonts/`). The folder name must not imply a repo-wide legal-file home that does not exist.
+- Changes made:
+  - Locked the naming correction:
+    - from `public/licenses/`
+    - to `public/extraction_feature_licenses/`
+  - This keeps the directory semantically scoped to the new Issue 53 feature/license batch rather than suggesting all licenses in the app live there.
+  - Renamed the directory accordingly.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/extraction_feature_licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
+  - `public/extraction_feature_licenses/LICENSE_googleapis_105.0.0.txt`
+  - `public/extraction_feature_licenses/LICENSE_mammoth_1.11.0.txt`
+  - `public/extraction_feature_licenses/LICENSE_pdf-parse_1.1.1.txt`
+  - `public/extraction_feature_licenses/LICENSE_sharp_0.34.4.txt`
+  - `public/extraction_feature_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+- Evidence:
+  - Existing legal files outside `public/licenses/`:
+    - repo root `LICENSE`
+    - repo root `PRIVACY.md`
+    - `public/fonts/LICENSE_Baskervville_OFL.txt`
+  - Destination verification:
+    - `Get-ChildItem -Path public\\extraction_feature_licenses -File | Sort-Object Name` returned the six expected files
+  - `git status --short public\\extraction_feature_licenses docs\\issues\\issue_53_operation_tracker.md` shows:
+    - modified tracker file
+    - new `public/extraction_feature_licenses/` directory
+- Outcome / next step:
+  - Completed.
+  - Next step is to wire `public/extraction_feature_licenses/` into the app’s legal surface:
+    - add individual `appdoc` keys in `electron/link_openers.js`
+    - list the new files individually in `public/info/acerca_de.html`
+
+### OP-0124
+
+- Date/time: 2026-03-21 13:36:40 -03:00
+- Operation: Import the exact-version upstream license files staged by the user for the Issue 53 runtime dependency set into a repo-tracked shipped location under `public/`.
+- Why: Section 8 next work is to obtain and stage the new Issue 53 dependency license files following the app’s existing per-file legal-document pattern. The user has already prepared the exact-version source files in `tools_local/extraction_ocr_feature_licenses`.
+- Changes made:
+  - Read the staged user-prepared license file inventory from `tools_local/extraction_ocr_feature_licenses`.
+  - Created repo-tracked shipped directory:
+    - `public/licenses/`
+  - Copied the six exact-version staged license files into `public/licenses/` without editing their contents.
+  - Imported destination files:
+    - `public/licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
+    - `public/licenses/LICENSE_googleapis_105.0.0.txt`
+    - `public/licenses/LICENSE_mammoth_1.11.0.txt`
+    - `public/licenses/LICENSE_pdf-parse_1.1.1.txt`
+    - `public/licenses/LICENSE_sharp_0.34.4.txt`
+    - `public/licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
+  - `public/licenses/LICENSE_googleapis_105.0.0.txt`
+  - `public/licenses/LICENSE_mammoth_1.11.0.txt`
+  - `public/licenses/LICENSE_pdf-parse_1.1.1.txt`
+  - `public/licenses/LICENSE_sharp_0.34.4.txt`
+  - `public/licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+- Evidence:
+  - Source staging inventory:
+    - `Get-ChildItem -Path tools_local\\extraction_ocr_feature_licenses -File` returned the six expected staged files
+  - Destination verification:
+    - `Get-ChildItem -Path public\\licenses -File | Sort-Object Name` returned:
+      - `LICENSE_@google-cloud_local-auth_2.1.0.txt`
+      - `LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+      - `LICENSE_googleapis_105.0.0.txt`
+      - `LICENSE_mammoth_1.11.0.txt`
+      - `LICENSE_pdf-parse_1.1.1.txt`
+      - `LICENSE_sharp_0.34.4.txt`
+  - `git status --short public\\licenses docs\\issues\\issue_53_operation_tracker.md` shows:
+    - modified tracker file
+    - new `public/licenses/` directory
+- Outcome / next step:
+  - Completed.
+  - The next Section 8 step is to wire these new individual license files into the app’s existing legal surface:
+    - add `appdoc` keys in `electron/link_openers.js`
+    - update `public/info/acerca_de.html` to list them individually
+    - ensure packaging still includes them through the existing `public/**` build rule
+
+### OP-0123
+
+- Date/time: 2026-03-21 12:58:45 -03:00
+- Operation: Record the exact-version license-source rule for the upcoming Issue 53 Section 8 license-file collection step.
+- Why: User explicitly clarified that the license artifacts must correspond to the exact dependency versions actually shipped, and this requirement must be preserved in the Issue 53 audit trail rather than left only in chat.
+- Changes made:
+  - Recorded the source-of-truth rule for the next Section 8 operation:
+    - use the license files that ship with the exact installed dependency versions in the current runtime tree
+    - do not substitute generic license texts from other sources or from different package versions
+  - Locked the currently observed exact-version targets from the installed runtime tree:
+    - `@google-cloud/local-auth@2.1.0`
+    - `googleapis@105.0.0`
+    - `mammoth@1.11.0`
+    - `pdf-parse@1.1.1`
+    - `sharp@0.34.4`
+    - `@img/sharp-win32-x64@0.34.4`
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `package.json` runtime dependency versions:
+    - `@google-cloud/local-auth`: `^2.1.0`
+    - `googleapis`: `^105.0.0`
+    - `mammoth`: `^1.11.0`
+    - `pdf-parse`: `^1.1.1`
+    - `sharp`: `^0.34.4`
+  - Installed runtime tree observed via `npm ls --omit=dev --depth=0`:
+    - `@google-cloud/local-auth@2.1.0`
+    - `googleapis@105.0.0`
+    - `mammoth@1.11.0`
+    - `pdf-parse@1.1.1`
+    - `sharp@0.34.4`
+  - Installed Windows `sharp` binary package observed locally:
+    - `@img/sharp-win32-x64@0.34.4`
+- Outcome / next step:
+  - Completed.
+  - The next implementation operation must collect the exact-version upstream license files from the installed dependency tree into a repo-tracked shipped location.
+
+### OP-0122
+
+- Date/time: 2026-03-21 12:52:12 -03:00
+- Operation: Re-audit the repository’s existing legal/credits delivery pattern before answering the user’s legal-file question again.
+- Why: User explicitly objected that the previous answer did not respect the app’s established pattern for handling licenses and credits, and asked for a repo-pattern-based answer.
+- Changes made:
+  - Opened a new read-only audit focused on the app’s established license/credits pattern across shipped docs, appdoc surfaces, and prior release legal baselines.
+  - Inspected the existing repo pattern in:
+    - `electron/link_openers.js`
+    - `public/info/acerca_de.html`
+    - `docs/releases/0.1.3/legal_baseline_0_1_3.md`
+    - `docs/releases/0.1.6/legal_baseline_0_1_6.md`
+    - `docs/changelog_detailed.md`
+  - Reached the corrected pattern-based conclusion:
+    - this app does not currently treat third-party license coverage as a single hidden summary by default
+    - instead, it ships exact license/notice files as first-class artifacts and exposes them individually via `appdoc:` links and the About page
+    - for Issue 53, the first compliance step should therefore be to obtain the exact upstream license files for the new shipped runtime dependencies, not to defer immediately to a legal-baseline rewrite or to collapse them first into a generic consolidated summary
+  - Drift disclosure:
+    - the user-facing disagreement arrived before this OP entry was created
+    - no repository files other than this tracker entry were modified before logging the operation
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Exact-file + individual-link pattern in app surfaces:
+    - `electron/link_openers.js` defines dedicated `appdoc` keys for individual legal docs:
+      - `license-app` -> `LICENSE`
+      - `license-electron` -> `LICENSE.electron.txt`
+      - `licenses-chromium` -> `LICENSES.chromium.html`
+      - separate special-case `license-baskervville` -> `public/fonts/LICENSE_Baskervville_OFL.txt`
+    - `public/info/acerca_de.html` lists those documents individually in the `Licencias y avisos` section
+  - Changelog evidence that this pattern is intentional:
+    - `docs/changelog_detailed.md` records the allowlisted `appdoc:*` mapping and separately names `LICENSE`, `PRIVACY.md`, `LICENSE_Baskervville_OFL.txt`, `LICENSE.electron.txt`, and `LICENSES.chromium.html`
+  - Prior release legal-baseline pattern:
+    - `docs/releases/0.1.3/legal_baseline_0_1_3.md` and `docs/releases/0.1.6/legal_baseline_0_1_6.md` both treat shipped legal docs as an explicit per-file inventory
+    - those baselines also say that if runtime `node_modules` exist, they must be listed with `licencia/notice en repo`
+  - Pattern-based implication for Issue 53:
+    - new shipped runtime dependencies should first obtain exact repo-tracked license files before later baseline/release closure work
+- Outcome / next step:
+  - Completed.
+  - Corrected answer to user: following the app’s existing pattern, yes, the next step is to obtain the exact upstream license files for the new Issue 53 shipped runtime dependencies as repo-tracked deliverables, then wire them into the existing per-file legal surface.
+
+### OP-0120
+
+- Date/time: 2026-03-21 12:37:52 -03:00
+- Operation: Perform a read-only Section 8 compliance-inventory audit focused on the actual Issue 53 feature delta and identify the first required documentation/legal artifacts to create or update.
+- Why: User corrected that the next-step framing had drifted away from Issue 53 itself. The audit needed to center on the new import/extract feature, new runtime dependencies, and the new Google-connected OCR compliance surface before proposing any implementation work.
+- Changes made:
+  - Audited the current runtime dependency footprint introduced by Issue 53 using:
+    - `package.json`
+    - `npm ls --omit=dev --depth=0`
+    - top-level runtime package manifests for:
+      - `@google-cloud/local-auth`
+      - `googleapis`
+      - `mammoth`
+      - `pdf-parse`
+      - `sharp`
+  - Audited current release/legal/documentation surfaces against that feature delta:
+    - `docs/releases/legal_baseline.md`
+    - `docs/releases/0.1.6/legal_baseline_0_1_6.md`
+    - `docs/releases/release_checklist.md`
+    - `PRIVACY.md`
+    - `README.md`
+    - `CHANGELOG.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.es.html`
+    - `public/info/instrucciones.en.html`
+  - Determined that the key missing compliance work is not Electron/Chromium runtime notices, but the new Issue 53 feature/documentation delta:
+    - the release legal baseline for the next release must be rebuilt around a runtime-dependency model that now includes OCR/native-extraction packages
+    - the release legal inventory must explicitly cover the Google OCR external-service path
+    - the release docs must stop claiming a pure no-cloud/no-runtime-deps posture now that OCR is an optional connected feature and runtime parsers/providers were added
+  - Drift disclosure:
+    - read-only review and user-facing reasoning on Section 8 began before OP-0120 was recorded
+    - impact: no repository files were modified before this tracker entry
+    - handling: the pre-entry read-only work is disclosed here; this operation remains documentation-only and does not change implementation state
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - New Issue 53 runtime dependency set now present in `package.json` and `npm ls --omit=dev --depth=0`:
+    - `@google-cloud/local-auth@2.1.0`
+    - `googleapis@105.0.0`
+    - `mammoth@1.11.0`
+    - `pdf-parse@1.1.1`
+    - `sharp@0.34.4`
+  - License metadata observed in top-level runtime package manifests:
+    - `@google-cloud/local-auth` -> `Apache-2.0`
+    - `googleapis` -> `Apache-2.0`
+    - `mammoth` -> `BSD-2-Clause`
+    - `pdf-parse` -> `MIT`
+    - `sharp` -> `Apache-2.0`
+  - Stale prior-release assumption:
+    - `docs/releases/0.1.6/legal_baseline_0_1_6.md` section 5 still marks the release as having no runtime `node_modules`
+    - that assumption is no longer valid after Issue 53
+  - Stale release-doc wording:
+    - `README.md` still says settings/state are stored locally with `no cloud service dependency`
+    - that is no longer an accurate release-level statement once optional Google OCR exists
+  - Existing app-side OCR privacy disclosure already exists in:
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.es.html`
+    - `public/info/instrucciones.en.html`
+    - but those existing files do not eliminate the need for updated release/legal inventory and notice coverage for the new dependency/service set
+- Outcome / next step:
+  - Completed.
+  - The first Section 8 implementation operation should be a documentation/compliance artifact pass with this target set:
+    - create a consolidated third-party/runtime notice artifact for the new Issue 53 runtime dependency set
+    - update `docs/releases/legal_baseline.md` for the new runtime/service model
+    - prepare the next release-specific legal baseline from that updated baseline
+    - update `README.md` to remove the now-inaccurate no-cloud-dependency claim and describe optional connected OCR accurately
+  - Electron/Chromium runtime notice files remain packaging-validation concerns, not the first missing Issue 53 compliance artifact.
+
 ### OP-0119
 
 - Date/time: 2026-03-21 03:18:17 -03:00
