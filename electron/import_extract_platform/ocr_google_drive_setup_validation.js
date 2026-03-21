@@ -1,11 +1,30 @@
 // electron/import_extract_platform/ocr_google_drive_setup_validation.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Google Drive OCR setup validator for main-process consumers.
+// Responsibilities:
+// - Check credentials/token file presence before deeper validation runs.
+// - Validate credentials and token payload shapes needed for Google OCR use.
+// - Optionally probe the Drive API path with a bounded timeout.
+// - Classify validation failures into stable setup/auth/quota/connectivity codes.
+// - Return a structured validation surface shared by IPC and prepare/activation flows.
+
+// =============================================================================
+// Imports
+// =============================================================================
+
 const fs = require('fs');
 const https = require('https');
 
 const { resolveGoogleDriveOcrAvailability } = require('./ocr_google_drive_activation_state');
 const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
+
+// =============================================================================
+// Constants / config
+// =============================================================================
 
 const DEFAULT_TIMEOUT_MS = 10000;
 const MAX_TIMEOUT_MS = 20000;
@@ -97,6 +116,10 @@ const ERROR_SURFACE = {
     userActionKey: 'ocr.google_drive.validation.retry',
   },
 };
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function clampTimeoutMs(input) {
   const parsed = Number(input);
@@ -299,6 +322,10 @@ function buildFailureResult({
   };
 }
 
+// =============================================================================
+// API probe helper
+// =============================================================================
+
 function probeGoogleDriveApiPath({ accessToken, timeoutMs = DEFAULT_TIMEOUT_MS }) {
   const effectiveTimeoutMs = clampTimeoutMs(timeoutMs);
 
@@ -396,6 +423,10 @@ function probeGoogleDriveApiPath({ accessToken, timeoutMs = DEFAULT_TIMEOUT_MS }
     req.end();
   });
 }
+
+// =============================================================================
+// Validation entrypoint
+// =============================================================================
 
 async function validateGoogleDriveOcrSetup({
   credentialsPath,
@@ -561,7 +592,15 @@ async function validateGoogleDriveOcrSetup({
   });
 }
 
+// =============================================================================
+// Exports / module surface
+// =============================================================================
+
 module.exports = {
   validateGoogleDriveOcrSetup,
   probeGoogleDriveApiPath,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/ocr_google_drive_setup_validation.js
+// =============================================================================
