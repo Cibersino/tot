@@ -45,9 +45,7 @@
   } catch {
     // Defensive fallback (older JS engines): ASCII only.
     RE_ALNUM_ONLY = /^[A-Za-z0-9]+$/;
-    if (log && typeof log.warn === 'function') {
-      log.warn('Unicode property escapes unsupported; using ASCII alnum fallback.');
-    }
+    log.warn('Unicode property escapes unsupported; using ASCII alnum fallback.');
   }
 
   // =============================================================================
@@ -133,11 +131,7 @@
   function contarTextoPreciso(texto, language) {
     // If Intl.Segmenter is missing, fall back to a best-effort approximation.
     if (!hasIntlSegmenter()) {
-      if (log && typeof log.warnOnce === 'function') {
-        log.warnOnce('count.intl-segmenter-missing', 'Intl.Segmenter unavailable; using fallback segmentation.');
-      } else if (log && typeof log.warn === 'function') {
-        log.warn('Intl.Segmenter unavailable; using fallback segmentation.');
-      }
+      log.warnOnce('count.intl-segmenter-missing', 'Intl.Segmenter unavailable; using fallback segmentation.');
       return contarTextoPrecisoFallback(texto);
     }
 
