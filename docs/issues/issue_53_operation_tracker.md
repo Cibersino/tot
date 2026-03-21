@@ -91,6 +91,36 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0132
+
+- Date/time: 2026-03-21 14:47:28 -03:00
+- Operation: Re-add the missing native image-processing runtime notice with a cross-platform-safe app surface.
+- Why: The prior notice attempt was reverted because it exposed a Windows-specific filename/artifact in shared app UI. The remaining inventory gap for `@img/sharp-win32-x64@0.34.4` still needs closure, but the surface must stay platform-neutral.
+- Changes made:
+  - Added exact-version notice file for the current Windows runtime package:
+    - `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
+  - Updated `electron/link_openers.js`:
+    - added a neutral runtime-notice doc key
+    - resolved it internally through a platform-specific mapping
+  - Updated `public/info/acerca_de.html`:
+    - added a neutral user-facing link label for the runtime bundled-components notice
+    - avoided Windows-specific wording and avoided exposing the platform-specific filename
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/link_openers.js`
+  - `public/info/acerca_de.html`
+  - `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
+- Evidence:
+  - Notice source imported from the exact-version `## Licensing` section in:
+    - `node_modules/@img/sharp-win32-x64/README.md`
+  - `public/info/acerca_de.html` now references the notice through neutral copy only.
+  - `node --check electron/link_openers.js` passed.
+- Outcome / next step:
+  - Completed.
+  - The previously incomplete `@img/sharp-win32-x64` inventory item now has a bundled-components notice represented in the app legal surface without leaking a Windows-specific label into shared UI.
+
 ### OP-0130
 
 - Date/time: 2026-03-21 14:32:18 -03:00
