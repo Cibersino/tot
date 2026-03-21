@@ -7,14 +7,23 @@
 // Responsibilities:
 // - Keep canonical overwrite/append/repetitions text-apply helpers in one place.
 // - Avoid duplicated apply semantics across clipboard and import/extract flows.
+// - Return structured apply results instead of scattering write-path decisions across callers.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
+
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text-apply-canonical] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-apply-canonical');
   log.debug('Text apply canonical helpers starting...');
+
+  // =============================================================================
+  // Helpers
+  // =============================================================================
 
   function normalizeRepeat(rawValue, { maxRepeat } = {}) {
     const numericValue = Number(rawValue);
@@ -68,6 +77,10 @@
     }
     return parts.join('');
   }
+
+  // =============================================================================
+  // Public entrypoints
+  // =============================================================================
 
   async function applyTextWithMode({
     mode,
@@ -149,6 +162,10 @@
       return { ok: false, code: 'SET_CURRENT_TEXT_FAILED', error: String(err) };
     }
   }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
 
   window.TextApplyCanonical = {
     normalizeRepeat,
