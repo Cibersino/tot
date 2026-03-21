@@ -84,7 +84,13 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     ),
     tempName: 'tot_LICENSE_sharp_0.34.4.txt',
   },
-  'license-import-extract-image-processing-win32': {
+});
+const IMAGE_PROCESSING_RUNTIME_DOC_KEYS = new Set([
+  'license-import-extract-image-processing-runtime',
+  'license-import-extract-image-processing-win32',
+]);
+const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
+  win32: {
     relativePath: path.join(
       'public',
       'extraction_feature_licenses',
@@ -148,6 +154,13 @@ async function openBundledPublicDoc(app, shell, rawKey, relativePath, tempName) 
 
   const tempPath = await copyToTemp(app, srcPath, tempName);
   return openPathWithLog(shell, rawKey, tempPath);
+}
+
+function getImageProcessingRuntimePublicDoc(platform = process.platform) {
+  if (!platform || typeof platform !== 'string') {
+    return null;
+  }
+  return IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES[platform] || null;
 }
 
 // =============================================================================
@@ -228,6 +241,22 @@ function registerLinkIpc({ ipcMain, app, shell }) {
 
         log.warn('open-app-doc not found (dev doc):', rawKey, fileName);
         return { ok: false, reason: 'not_found' };
+      }
+
+      if (IMAGE_PROCESSING_RUNTIME_DOC_KEYS.has(rawKey)) {
+        const runtimeDoc = getImageProcessingRuntimePublicDoc(process.platform);
+        if (!runtimeDoc) {
+          log.warn('open-app-doc not available on current platform:', rawKey, process.platform);
+          return { ok: false, reason: 'not_available_on_platform' };
+        }
+
+        return openBundledPublicDoc(
+          app,
+          shell,
+          rawKey,
+          runtimeDoc.relativePath,
+          runtimeDoc.tempName
+        );
       }
 
       if (Object.prototype.hasOwnProperty.call(APP_DOC_PUBLIC_FILES, rawKey)) {
