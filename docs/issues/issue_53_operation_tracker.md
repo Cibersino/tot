@@ -91,6 +91,38 @@ As of 2026-03-18:
 
 ## Log
 
+### OP-0130
+
+- Date/time: 2026-03-21 14:32:18 -03:00
+- Operation: Neutralize the About/legal surface for the native image-processing runtime so it no longer presents a Windows-only implementation detail as app-wide UI copy.
+- Why: The current About page exposed a Windows-specific runtime artifact directly (`binario Windows de procesamiento de imágenes`), which is the wrong public/legal surface for an app designed with cross-platform boundaries.
+- Changes made:
+  - Updated `public/info/acerca_de.html`:
+    - replaced the Windows-specific visible label with `runtime nativo de procesamiento de imágenes`
+    - changed the linked key to the neutral `appdoc:license-import-extract-image-processing-runtime`
+  - Updated `electron/link_openers.js`:
+    - added `IMAGE_PROCESSING_RUNTIME_DOC_KEYS`
+    - added `IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES`
+    - added `getImageProcessingRuntimePublicDoc(...)`
+    - neutral runtime doc key now resolves internally to the current platform’s concrete bundled legal file
+    - legacy Windows-specific key remains accepted as a compatibility alias
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/link_openers.js`
+  - `public/info/acerca_de.html`
+- Evidence:
+  - `public/info/acerca_de.html` now shows:
+    - `appdoc:license-import-extract-image-processing-runtime`
+    - visible text `runtime nativo de procesamiento de imágenes`
+  - `electron/link_openers.js` now resolves that neutral key through platform-specific mapping.
+  - `node --check electron/link_openers.js` passed.
+- Outcome / next step:
+  - Completed.
+  - The user-facing legal surface no longer hardcodes a Windows-only artifact as app-wide copy.
+  - Next Section 8.1 step remains the narrow notice audit for the native image-processing runtime package itself.
+
 ### OP-0127
 
 - Date/time: 2026-03-21 13:48:01 -03:00
