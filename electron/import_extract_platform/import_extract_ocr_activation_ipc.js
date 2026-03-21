@@ -7,10 +7,10 @@
 // Main-process OCR activation IPC for Google Drive OCR setup and token bootstrap.
 // Responsibilities:
 // - Authorize OCR activation requests to the main window sender.
-// - Import and validate OAuth credentials JSON when local credentials are missing.
-// - Run the local-auth browser flow and classify activation/authentication failures.
+// - Prepare credentials readiness without launching the OAuth browser flow.
+// - Launch the OAuth browser flow only after renderer-side disclosure consent.
 // - Persist encrypted token material for later OCR setup validation.
-// - Return a structured activation result for OCR recovery and setup flows.
+// - Return structured readiness/activation results for OCR recovery and setup flows.
 
 // =============================================================================
 // Imports / logger
@@ -31,6 +31,8 @@ const log = Log.get('import-extract-ocr-activation');
 // =============================================================================
 
 const OCR_SCOPES = Object.freeze(['https://www.googleapis.com/auth/drive.file']);
+const PREPARE_CHANNEL = 'import-extract-prepare-ocr-activation';
+const LAUNCH_CHANNEL = 'import-extract-launch-ocr-activation';
 
 // =============================================================================
 // Helpers
@@ -96,6 +98,7 @@ function mapValidationToActivationResult(validationResult) {
       state: 'ready',
       code: '',
       alertKey: 'renderer.alerts.import_extract_ocr_activation_success',
+      detailsSafeForLogs: {},
     };
   }
 
@@ -113,6 +116,7 @@ function mapValidationToActivationResult(validationResult) {
     state,
     code,
     alertKey: mapCodeToAlertKey(code),
+    detailsSafeForLogs: {},
   };
 }
 
@@ -129,6 +133,43 @@ function buildFailure({
     alertKey: alertKey || mapCodeToAlertKey(code),
     detailsSafeForLogs,
   };
+}
+
+function buildPrepareFailure({
+  code = 'platform_runtime_failed',
+  alertKey = '',
+  detailsSafeForLogs = {},
+} = {}) {
+  return {
+    ok: false,
+    ready: false,
+    code,
+    alertKey: alertKey || mapCodeToAlertKey(code),
+    detailsSafeForLogs,
+  };
+}
+
+function buildPrepareSuccess({ importedCredentials = false } = {}) {
+  return {
+    ok: true,
+    ready: true,
+    code: '',
+    alertKey: '',
+    detailsSafeForLogs: {
+      importedCredentials: !!importedCredentials,
+    },
+  };
+}
+
+function toPrepareFailure(failure) {
+  if (!failure || failure.ok === true) {
+    return buildPrepareFailure();
+  }
+  return buildPrepareFailure({
+    code: failure.code || 'platform_runtime_failed',
+    alertKey: failure.alertKey || '',
+    detailsSafeForLogs: failure.detailsSafeForLogs || {},
+  });
 }
 
 function mapAuthenticateError(err) {
@@ -251,7 +292,7 @@ function importCredentialsFile({ sourcePath, targetPath }) {
       alertKey: '',
       detailsSafeForLogs: {
         stage: 'credentials_import',
-        imported: true,
+        importedCredentials: true,
       },
     };
   } catch (err) {
@@ -269,21 +310,130 @@ function importCredentialsFile({ sourcePath, targetPath }) {
   }
 }
 
-function isAuthorizedSender(event, mainWin) {
+function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_validate' } = {}) {
+  if (!hasFile(credentialsPath)) {
+    return buildFailure({
+      state: 'setup_incomplete',
+      code: 'setup_incomplete',
+      detailsSafeForLogs: {
+        stage,
+        reason: 'credentials_missing',
+      },
+    });
+  }
+
+  let parsed = null;
+  try {
+    parsed = readJsonFileStrict(credentialsPath);
+  } catch (err) {
+    return buildFailure({
+      state: 'setup_incomplete',
+      code: 'credentials_missing',
+      alertKey: 'renderer.alerts.import_extract_ocr_setup_invalid_credentials',
+      detailsSafeForLogs: {
+        stage,
+        reason: 'read_failed',
+        errorName: safeErrorName(err),
+        errorMessage: safeErrorMessage(err),
+      },
+    });
+  }
+
+  if (!hasValidCredentialsShape(parsed)) {
+    return buildFailure({
+      state: 'setup_incomplete',
+      code: 'credentials_missing',
+      alertKey: 'renderer.alerts.import_extract_ocr_setup_invalid_credentials',
+      detailsSafeForLogs: {
+        stage,
+        reason: 'invalid_credentials_shape',
+      },
+    });
+  }
+
+  return {
+    ok: true,
+    parsed,
+  };
+}
+
+async function ensureCredentialsReady({
+  mainWin,
+  request,
+  credentialsPath,
+} = {}) {
+  let importedCredentials = false;
+
+  if (!hasFile(credentialsPath)) {
+    const selectedCredentialsPath = request && request.credentialsSourcePath
+      ? request.credentialsSourcePath
+      : '';
+    let sourcePath = selectedCredentialsPath;
+    if (!sourcePath) {
+      const pick = await promptCredentialsFile(mainWin);
+      if (!pick.ok) {
+        return buildFailure({
+          state: 'setup_incomplete',
+          code: 'setup_incomplete',
+          alertKey: 'renderer.alerts.import_extract_ocr_setup_cancelled',
+          detailsSafeForLogs: {
+            stage: 'credentials_pick',
+            cancelled: true,
+          },
+        });
+      }
+      sourcePath = pick.filePath;
+    }
+
+    const importResult = importCredentialsFile({
+      sourcePath,
+      targetPath: credentialsPath,
+    });
+    if (!importResult.ok) {
+      return {
+        ...importResult,
+        detailsSafeForLogs: {
+          ...importResult.detailsSafeForLogs,
+          sourcePathProvided: !!selectedCredentialsPath,
+        },
+      };
+    }
+    importedCredentials = true;
+  }
+
+  const credentialsValidation = validateStoredCredentialsFile({
+    credentialsPath,
+    stage: 'credentials_validate',
+  });
+  if (!credentialsValidation.ok) {
+    return credentialsValidation;
+  }
+
+  return {
+    ok: true,
+    importedCredentials,
+  };
+}
+
+function isAuthorizedSender(event, mainWin, {
+  warnKey,
+  unauthorizedMessage,
+  senderValidationMessage,
+} = {}) {
   try {
     const senderWin = event && event.sender
       ? BrowserWindow.fromWebContents(event.sender)
       : null;
     if (!mainWin || senderWin !== mainWin) {
       log.warnOnce(
-        'import_extract_ocr_activation.unauthorized',
-        'import-extract-activate-ocr unauthorized (ignored).'
+        warnKey,
+        unauthorizedMessage
       );
       return false;
     }
     return true;
   } catch (err) {
-    log.warn('import-extract-activate-ocr sender validation failed:', err);
+    log.warn(senderValidationMessage, err);
     return false;
   }
 }
@@ -310,6 +460,14 @@ function extractSerializableCredentials(authClient) {
   return { ...candidate };
 }
 
+function resolveRuntimePaths(resolvePaths) {
+  const paths = resolvePaths();
+  return {
+    credentialsPath: String(paths && paths.credentialsPath ? paths.credentialsPath : ''),
+    tokenPath: String(paths && paths.tokenPath ? paths.tokenPath : ''),
+  };
+}
+
 // =============================================================================
 // IPC registration / handler
 // =============================================================================
@@ -330,11 +488,93 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
     return windows.mainWin || null;
   };
 
-  ipcMain.handle('import-extract-activate-ocr', async (event, payload = {}) => {
+  ipcMain.handle(PREPARE_CHANNEL, async (event, payload = {}) => {
     const request = resolvePayload(payload);
     const mainWin = resolveMainWin();
     try {
-      if (!isAuthorizedSender(event, mainWin)) {
+      if (!isAuthorizedSender(event, mainWin, {
+        warnKey: 'import_extract_ocr_activation.prepare.unauthorized',
+        unauthorizedMessage: `${PREPARE_CHANNEL} unauthorized (ignored).`,
+        senderValidationMessage: `${PREPARE_CHANNEL} sender validation failed:`,
+      })) {
+        return buildPrepareFailure({
+          code: 'platform_runtime_failed',
+          detailsSafeForLogs: {
+            stage: 'authorization',
+            reason: 'unauthorized_sender',
+          },
+        });
+      }
+
+      const { credentialsPath, tokenPath } = resolveRuntimePaths(resolvePaths);
+      if (!credentialsPath || !tokenPath) {
+        log.error('import/extract OCR activation prepare runtime paths unavailable:', {
+          stage: 'resolve_paths',
+          credentialsPathPresent: !!credentialsPath,
+          tokenPathPresent: !!tokenPath,
+        });
+        return buildPrepareFailure({
+          code: 'platform_runtime_failed',
+          detailsSafeForLogs: {
+            stage: 'resolve_paths',
+            reason: 'missing_runtime_paths',
+          },
+        });
+      }
+
+      const readiness = await ensureCredentialsReady({
+        mainWin,
+        request,
+        credentialsPath,
+      });
+      if (!readiness.ok) {
+        const safeFailure = toPrepareFailure(readiness);
+        if (safeFailure.alertKey === 'renderer.alerts.import_extract_ocr_setup_cancelled') {
+          log.info('import/extract OCR activation prepare cancelled during credentials setup:', {
+            code: safeFailure.code,
+            detailsSafeForLogs: safeFailure.detailsSafeForLogs,
+          });
+        } else {
+          log.warn('import/extract OCR activation prepare blocked during credentials readiness:', {
+            code: safeFailure.code,
+            detailsSafeForLogs: safeFailure.detailsSafeForLogs,
+          });
+        }
+        return safeFailure;
+      }
+
+      const result = buildPrepareSuccess({
+        importedCredentials: readiness.importedCredentials,
+      });
+      log.info('import/extract OCR activation prepare completed:', {
+        ok: result.ok,
+        ready: result.ready,
+        importedCredentials: readiness.importedCredentials,
+      });
+      return result;
+    } catch (err) {
+      const failure = buildPrepareFailure({
+        code: 'platform_runtime_failed',
+        detailsSafeForLogs: {
+          stage: 'ipc_prepare_handler_failure',
+          errorName: safeErrorName(err),
+          errorMessage: safeErrorMessage(err),
+        },
+      });
+      log.error(`${PREPARE_CHANNEL} failed unexpectedly:`, failure.detailsSafeForLogs);
+      return failure;
+    }
+  });
+
+  ipcMain.handle(LAUNCH_CHANNEL, async (event, payload = {}) => {
+    resolvePayload(payload);
+    const mainWin = resolveMainWin();
+    try {
+      if (!isAuthorizedSender(event, mainWin, {
+        warnKey: 'import_extract_ocr_activation.launch.unauthorized',
+        unauthorizedMessage: `${LAUNCH_CHANNEL} unauthorized (ignored).`,
+        senderValidationMessage: `${LAUNCH_CHANNEL} sender validation failed:`,
+      })) {
         return buildFailure({
           state: 'failure',
           code: 'platform_runtime_failed',
@@ -345,11 +585,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         });
       }
 
-      const paths = resolvePaths();
-      const credentialsPath = String(paths && paths.credentialsPath ? paths.credentialsPath : '');
-      const tokenPath = String(paths && paths.tokenPath ? paths.tokenPath : '');
+      const { credentialsPath, tokenPath } = resolveRuntimePaths(resolvePaths);
       if (!credentialsPath || !tokenPath) {
-        log.error('import/extract OCR activation runtime paths unavailable:', {
+        log.error('import/extract OCR activation launch runtime paths unavailable:', {
           stage: 'resolve_paths',
           credentialsPathPresent: !!credentialsPath,
           tokenPathPresent: !!tokenPath,
@@ -364,47 +602,17 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         });
       }
 
-      let importedCredentials = false;
-      if (!hasFile(credentialsPath)) {
-        const selectedCredentialsPath = request.credentialsSourcePath || '';
-        let sourcePath = selectedCredentialsPath;
-        if (!sourcePath) {
-          const pick = await promptCredentialsFile(mainWin);
-          if (!pick.ok) {
-            log.info('import/extract OCR activation cancelled while selecting credentials file.');
-            return buildFailure({
-              state: 'setup_incomplete',
-              code: 'setup_incomplete',
-              alertKey: 'renderer.alerts.import_extract_ocr_setup_cancelled',
-              detailsSafeForLogs: {
-                stage: 'credentials_pick',
-                cancelled: true,
-              },
-            });
-          }
-          sourcePath = pick.filePath;
-        }
-
-        const importResult = importCredentialsFile({
-          sourcePath,
-          targetPath: credentialsPath,
+      const credentialsValidation = validateStoredCredentialsFile({
+        credentialsPath,
+        stage: 'credentials_launch_validate',
+      });
+      if (!credentialsValidation.ok) {
+        log.warn('import/extract OCR activation launch blocked because credentials are not ready:', {
+          state: credentialsValidation.state,
+          code: credentialsValidation.code,
+          detailsSafeForLogs: credentialsValidation.detailsSafeForLogs,
         });
-        if (!importResult.ok) {
-          log.warn('import/extract OCR activation blocked during credentials import:', {
-            state: importResult.state,
-            code: importResult.code,
-            sourcePathProvided: !!selectedCredentialsPath,
-            detailsSafeForLogs: importResult.detailsSafeForLogs,
-          });
-          return {
-            ...importResult,
-            detailsSafeForLogs: {
-              ...importResult.detailsSafeForLogs,
-              sourcePathProvided: !!selectedCredentialsPath,
-            },
-          };
-        }
-        importedCredentials = true;
+        return credentialsValidation;
       }
 
       let authClient = null;
@@ -463,32 +671,26 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         ok: mapped.ok,
         state: mapped.state,
         code: mapped.code,
-        importedCredentials,
       };
 
       if (mapped.ok) {
-        log.info('import/extract OCR activation completed:', telemetry);
+        log.info('import/extract OCR activation launch completed:', telemetry);
       } else {
-        log.warn('import/extract OCR activation completed but setup is not ready:', telemetry);
+        log.warn('import/extract OCR activation launch completed but setup is not ready:', telemetry);
       }
 
-      return {
-        ...mapped,
-        detailsSafeForLogs: {
-          importedCredentials,
-        },
-      };
+      return mapped;
     } catch (err) {
       const failure = buildFailure({
         state: 'failure',
         code: 'platform_runtime_failed',
         detailsSafeForLogs: {
-          stage: 'ipc_handler_failure',
+          stage: 'ipc_launch_handler_failure',
           errorName: safeErrorName(err),
           errorMessage: safeErrorMessage(err),
         },
       });
-      log.error('import-extract-activate-ocr failed unexpectedly:', failure.detailsSafeForLogs);
+      log.error(`${LAUNCH_CHANNEL} failed unexpectedly:`, failure.detailsSafeForLogs);
       return failure;
     }
   });
