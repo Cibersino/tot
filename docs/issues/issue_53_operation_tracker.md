@@ -106,6 +106,30 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0153
+
+- Date/time: 2026-03-22 01:53:16 -03:00
+- Operation: Clarify timing and prerequisite meaning in the testing-to-production transition plan.
+- Why: The transition doc still risked implying that Google manually approves desktop OAuth client creation or the `In production` publishing-state change before they take effect.
+- Changes made:
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md`.
+  - Added a dedicated timing clarification section.
+  - Clarified that:
+    - desktop OAuth client creation is effectively immediate
+    - changing the Google OAuth project to `In production` is effectively immediate
+    - later review time belongs to verification workflows, not to the basic client-creation or publishing-state actions themselves
+  - Clarified that the domain/homepage/privacy-policy preconditions exist for the intended compliant external production posture, not because they block the console button itself.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - The revised plan now explicitly separates immediate Google Console actions from later verification-dependent work.
+  - The revised prerequisites note now explains why public pages/domain readiness still matters even though `Publish app` is not a multi-day approval step.
+- Outcome / next step:
+  - The production-transition plan now reflects the distinction between immediate OAuth project state changes and later verification/compliance work more clearly.
+
 ### OP-0151
 
 - Date/time: 2026-03-22 00:57:43 -03:00
