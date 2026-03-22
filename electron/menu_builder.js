@@ -402,6 +402,10 @@ function buildAppMenu(lang, opts = {}) {
                     label: resolveMenuLabel(m, 'presets_por_defecto', 'Default presets'),
                     click: () => sendMenuClick('presets_por_defecto'),
                 },
+                {
+                    label: resolveMenuLabel(m, 'disconnect_google_ocr', 'Disconnect Google OCR'),
+                    click: () => sendMenuClick('disconnect_google_ocr'),
+                },
             ],
         },
         {

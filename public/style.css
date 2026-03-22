@@ -866,6 +866,87 @@ select#presets {
   min-width: 110px;
 }
 
+.import-extract-ocr-activation-disclosure-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(640px, calc(100% - 32px));
+  background: var(--bg-color);
+  color: #2f2a20;
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+
+.import-extract-ocr-activation-disclosure-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.import-extract-ocr-activation-disclosure-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.import-extract-ocr-activation-disclosure-body {
+  margin-top: 12px;
+}
+
+.import-extract-ocr-activation-disclosure-body p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.import-extract-ocr-activation-disclosure-list {
+  margin: 12px 0 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.import-extract-ocr-activation-disclosure-actions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.import-extract-ocr-activation-disclosure-link {
+  color: #245b89;
+  font-size: 0.95rem;
+  text-decoration: underline;
+}
+
+.import-extract-ocr-activation-disclosure-link:hover {
+  color: #163b5a;
+}
+
+.import-extract-ocr-activation-disclosure-link:focus {
+  outline: 3px solid rgb(30 130 230 / .12);
+  outline-offset: 2px;
+}
+
+.import-extract-ocr-activation-disclosure-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.import-extract-ocr-activation-disclosure-buttons .btn-standard {
+  min-width: 130px;
+}
+
 /* Loader for opening the manual editor */
 .editor-loader {
   position: absolute;

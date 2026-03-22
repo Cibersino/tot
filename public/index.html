@@ -38,19 +38,19 @@
             title="Importar/extraer texto desde archivo">📥</button>
           <span class="controls-sep" aria-hidden="true"></span>
           <button id="btnOverwriteClipboard" class="btn-standard"
-            title="Reemplazar texto con el portapapeles">📋↺</button>
+            title="Reemplazar texto actual con el portapapeles">📋↺</button>
           <button id="btnAppendClipboard" class="btn-standard"
-            title="Pegar portapapeles al final del texto en nueva línea">📋+</button>
+            title="Pegar portapapeles al final del texto actual (nueva línea)">📋+</button>
           <input id="clipboardRepeatInput" class="clipboard-repeat-input" type="number" min="1" max="9999" step="1" value="1"
             title="Repeticiones de pegado" aria-label="Repeticiones de pegado" />
-          <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto completo">⌨</button>
+          <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto actual completo">⌨</button>
           <button id="btnEmptyMain" class="btn-standard" title="Vaciar texto actual">🗑</button>
           <span class="controls-sep" aria-hidden="true"></span>
-          <button id="btnLoadSnapshot" class="btn-standard" title="Cargar snapshot">📂</button>
-          <button id="btnSaveSnapshot" class="btn-standard" title="Guardar snapshot">💾</button>
+          <button id="btnLoadSnapshot" class="btn-standard" title="Cargar snapshot de texto">📂</button>
+          <button id="btnSaveSnapshot" class="btn-standard" title="Guardar el texto actual en un snapshot">💾</button>
           <span class="controls-sep" aria-hidden="true"></span>
           <button id="btnNewTask" class="btn-standard" title="Nueva tarea">📝</button>
-          <button id="btnLoadTask" class="btn-standard" title="Cargar tareas">🗃️</button>
+          <button id="btnLoadTask" class="btn-standard" title="Cargar tarea">🗃️</button>
         </div>
         <div id="importExtractPrepareStatus" class="import-extract-prepare-status" hidden aria-hidden="true" aria-live="polite"></div>
         <div id="selectorControlsProcessing" class="controls-processing" hidden aria-hidden="true">
@@ -99,7 +99,7 @@
         <div class="result-list">
           <div id="resWords">Palabras: 0</div>
           <div id="resChars">Caracteres: 0</div>
-          <div id="resCharsNoSpace">Caracteres (sin espacio): 0</div>
+          <div id="resCharsNoSpace">Caracteres (sin espacios): 0</div>
         </div>
         <div class="toggle-wrapper" aria-hidden="false">
           <label class="toggle-label" for="toggleModoPreciso">Modo preciso</label>
@@ -110,7 +110,7 @@
         </div>
       </div>
       <div class="help-row">
-        <button id="btnHelp" class="btn-standard" title="Información (pendiente)">?</button>
+        <button id="btnHelp" class="btn-standard" title="Mostrar consejo útil">?</button>
       </div>
     </aside>
 
@@ -160,15 +160,15 @@
       <div id="importExtractRouteModalBackdrop" class="info-modal-backdrop"></div>
       <div class="import-extract-route-modal-panel" role="document" aria-describedby="importExtractRouteModalMessage">
         <header class="import-extract-route-modal-header">
-          <h2 id="importExtractRouteModalTitle">Choose extraction route</h2>
-          <button id="importExtractRouteModalClose" class="btn-standard" aria-label="Close">🗙</button>
+          <h2 id="importExtractRouteModalTitle">Elegir ruta de extracción</h2>
+          <button id="importExtractRouteModalClose" class="btn-standard" aria-label="Cerrar diálogo de ruta de extracción">🗙</button>
         </header>
         <div class="import-extract-route-modal-body">
-          <p id="importExtractRouteModalMessage">Both extraction routes are available for this PDF. Choose one to continue.</p>
+          <p id="importExtractRouteModalMessage">Este PDF tiene disponibles ambas rutas de extracción. Elige una para continuar.</p>
           <div class="import-extract-route-modal-actions">
-            <button id="importExtractRouteModalNative" class="btn-standard">Use native</button>
-            <button id="importExtractRouteModalOcr" class="btn-standard">Use OCR</button>
-            <button id="importExtractRouteModalCancel" class="btn-standard">Cancel</button>
+            <button id="importExtractRouteModalNative" class="btn-standard">Usar nativa</button>
+            <button id="importExtractRouteModalOcr" class="btn-standard">Usar OCR</button>
+            <button id="importExtractRouteModalCancel" class="btn-standard">Cancelar</button>
           </div>
         </div>
       </div>
@@ -179,20 +179,48 @@
       <div id="importExtractApplyModalBackdrop" class="info-modal-backdrop"></div>
       <div class="import-extract-apply-modal-panel" role="document" aria-describedby="importExtractApplyModalMessage">
         <header class="import-extract-apply-modal-header">
-          <h2 id="importExtractApplyModalTitle">Apply extracted text</h2>
-          <button id="importExtractApplyModalClose" class="btn-standard" aria-label="Close">🗙</button>
+          <h2 id="importExtractApplyModalTitle">Aplicar texto extraído</h2>
+          <button id="importExtractApplyModalClose" class="btn-standard" aria-label="Cerrar diálogo para aplicar texto extraído">🗙</button>
         </header>
         <div class="import-extract-apply-modal-body">
-          <p id="importExtractApplyModalMessage">Choose how to apply the extracted text.</p>
+          <p id="importExtractApplyModalMessage">Elige cómo aplicar el texto extraído.</p>
           <p id="importExtractApplyModalElapsed" class="import-extract-apply-modal-elapsed" hidden aria-hidden="true"></p>
           <div class="import-extract-apply-repeat-row">
-            <label id="importExtractApplyModalRepeatLabel" for="importExtractApplyModalRepeatInput">Repetitions</label>
+            <label id="importExtractApplyModalRepeatLabel" for="importExtractApplyModalRepeatInput">Repeticiones</label>
             <input id="importExtractApplyModalRepeatInput" type="number" min="1" step="1" value="1" />
           </div>
           <div class="import-extract-apply-modal-actions">
-            <button id="importExtractApplyModalOverwrite" class="btn-standard">Overwrite</button>
-            <button id="importExtractApplyModalAppend" class="btn-standard">Append</button>
-            <button id="importExtractApplyModalCancel" class="btn-standard">Cancel</button>
+            <button id="importExtractApplyModalOverwrite" class="btn-standard">Sobrescribir</button>
+            <button id="importExtractApplyModalAppend" class="btn-standard">Agregar</button>
+            <button id="importExtractApplyModalCancel" class="btn-standard">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="importExtractOcrActivationDisclosureModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="importExtractOcrActivationDisclosureTitle"
+      aria-describedby="importExtractOcrActivationDisclosureBody" aria-modal="true">
+      <div id="importExtractOcrActivationDisclosureBackdrop" class="info-modal-backdrop"></div>
+      <div class="import-extract-ocr-activation-disclosure-panel" role="document">
+        <header class="import-extract-ocr-activation-disclosure-header">
+          <h2 id="importExtractOcrActivationDisclosureTitle">Revisar activación de Google OCR</h2>
+          <button id="importExtractOcrActivationDisclosureClose" class="btn-standard" type="button" aria-label="Cerrar diálogo de activación de Google OCR">🗙</button>
+        </header>
+        <div id="importExtractOcrActivationDisclosureBody" class="import-extract-ocr-activation-disclosure-body">
+          <p id="importExtractOcrActivationDisclosureIntro">toT usa servicios de Google para OCR. Si continúas, se abrirá el navegador para que autorices esta app.</p>
+          <ul class="import-extract-ocr-activation-disclosure-list">
+            <li id="importExtractOcrActivationDisclosureSelectedFiles">Solo se envían a Google los archivos que eliges para OCR.</li>
+            <li id="importExtractOcrActivationDisclosureLocalStorage">Esta app guarda un archivo local credentials.json y el estado local del token de Google en esta instancia.</li>
+            <li id="importExtractOcrActivationDisclosureRemoteCleanup">Después de exportar, la app intenta eliminar el documento temporal de Google de tu Google Drive.</li>
+            <li id="importExtractOcrActivationDisclosureDisconnect">Más tarde puedes desconectar esta conexión desde Preferencias &gt; Desconectar Google OCR.</li>
+          </ul>
+          <div class="import-extract-ocr-activation-disclosure-actions">
+            <a id="importExtractOcrActivationDisclosurePrivacy" class="import-extract-ocr-activation-disclosure-link" href="#">Abrir política de privacidad</a>
+            <div class="import-extract-ocr-activation-disclosure-buttons">
+              <button id="importExtractOcrActivationDisclosureProceed" class="btn-standard" type="button">Continuar con Google</button>
+              <button id="importExtractOcrActivationDisclosureCancel" class="btn-standard" type="button">Cancelar</button>
+            </div>
           </div>
         </div>
       </div>
@@ -216,7 +244,9 @@
   <script src="./js/import_extract_status_ui.js"></script>
   <script src="./js/import_extract_route_choice_modal.js"></script>
   <script src="./js/import_extract_apply_modal.js"></script>
+  <script src="./js/import_extract_ocr_activation_disclosure_modal.js"></script>
   <script src="./js/import_extract_ocr_activation_recovery.js"></script>
+  <script src="./js/import_extract_ocr_disconnect.js"></script>
   <script src="./js/import_extract_entry.js"></script>
   <script src="./js/import_extract_drag_drop.js"></script>
   <script src="renderer.js"></script>
