@@ -25,3 +25,23 @@ The remaining problem is:
 - what exactly must change, if anything, in the chosen access model when moving from the current testing posture toward a production posture
 
 This document should answer that question without re-deciding the already chosen OCR substrate.
+
+## Working dimensions
+
+The current access-model discussion will use these working dimensions:
+
+1. Google-side asset ownership
+
+- Who owns and controls the Google Cloud project, OAuth consent configuration, and OAuth client used by the app path under discussion.
+
+2. Runtime credential / configuration delivery
+
+- How the app instance gets the Google-side credential/configuration material it needs at runtime.
+
+3. Runtime Google identity used for OCR
+
+- Which actor's Google identity/account is actually used during normal OCR operation.
+
+4. Usage-cost / quota responsibility
+
+- Who bears the normal quota/cost exposure of OCR use.
