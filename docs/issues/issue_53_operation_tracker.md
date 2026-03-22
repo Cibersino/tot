@@ -106,6 +106,26 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0148
+
+- Date/time: 2026-03-22 00:15:48 -03:00
+- Operation: Add the next decision axis to the access-model document.
+- Why: After choosing `app-owner-owned` for Google-side asset ownership, the next practical question is how the runtime receives that owner-provided Google-side configuration.
+- Changes made:
+  - Added `Second axis to decide` to `docs/issues/issue_53_access_model_options.md`.
+  - Set that axis to `Runtime credential / configuration delivery`.
+  - Added the plain decision question for that axis only.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now contains the next active decision axis without yet listing values.
+- Outcome / next step:
+  - The next axis is established.
+  - Next step is to define its possible values before choosing one.
+
 ### OP-0147
 
 - Date/time: 2026-03-21 23:39:21 -03:00
