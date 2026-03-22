@@ -106,6 +106,37 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0143
+
+- Date/time: 2026-03-21 22:56:25 -03:00
+- Operation: Recreate the access-model working document from zero using a stricter method.
+- Why: The previous attempt was reverted by the user because the option set drifted. The document must now start by freezing the governing dimensions before deriving any option set.
+- Changes made:
+  - Recreated `docs/issues/issue_53_access_model_options.md` from zero.
+  - Added a method section that fixes the document sequence:
+    - freeze dimensions
+    - derive theoretical options
+    - reduce by realistic/objective constraints
+    - reduce by explicit project decisions
+  - Added six governing dimensions only:
+    - OAuth publication ownership
+    - Google project/client ownership
+    - usage-cost/quota responsibility
+    - operational responsibility
+    - setup responsibility
+    - end-user activation burden
+  - Added a rule that no option set should be written unless it is expressible as a combination of those fixed dimensions.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now exists again and contains only the method and fixed dimensions.
+- Outcome / next step:
+  - Stable base created.
+  - Next step, if requested, is to derive the theoretical option set from these fixed dimensions without changing the dimensions themselves.
+
 ### OP-0142
 
 - Date/time: 2026-03-21 22:10:47 -03:00
