@@ -106,6 +106,36 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0146
+
+- Date/time: 2026-03-21 23:37:16 -03:00
+- Operation: Rebuild the access-model working document as a factual baseline.
+- Why: The file is currently empty. The safest useful restart is to record only the settled facts already established by existing Issue 53 documents.
+- Changes made:
+  - Recreated `docs/issues/issue_53_access_model_options.md` with a factual baseline only.
+  - Added:
+    - purpose
+    - core question
+    - current settled baseline from existing Issue 53 docs
+    - the open production-transition question
+  - Did not add dimensions, options, or decisions beyond what is already fixed elsewhere.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53.md` records:
+    - substrate: `Google Drive OCR via Google Docs conversion`
+    - access model: `user-managed + explicit sign-in activation`
+  - `docs/issues/issue_53_ocr_substrate_evaluation.md` records:
+    - development should proceed first against the testing setup
+    - test vs production differences should be handled primarily through configuration and publication inputs
+    - later production transition should mostly involve switching to the production Google project / OAuth client
+- Outcome / next step:
+  - Working document restored on a grounded baseline.
+  - Next step should identify the first real production-transition decision that is still open.
+
 ### OP-0145
 
 - Date/time: 2026-03-21 23:27:21 -03:00
