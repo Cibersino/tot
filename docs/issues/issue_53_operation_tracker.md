@@ -106,6 +106,30 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0147
+
+- Date/time: 2026-03-21 23:39:21 -03:00
+- Operation: Add the first working dimension set to the access-model document.
+- Why: The document now has a factual baseline. The next step is to introduce a minimal set of concrete axes that can actually change the OCR access model.
+- Changes made:
+  - Added a `Working dimensions` section to `docs/issues/issue_53_access_model_options.md`.
+  - Kept the set minimal and concrete:
+    - Google-side asset ownership
+    - runtime credential/configuration delivery
+    - runtime Google identity used for OCR
+    - usage-cost/quota responsibility
+  - Did not add evaluative or clearly derived categories.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now contains the factual baseline plus the first working dimension set.
+- Outcome / next step:
+  - Minimal dimension set established.
+  - Next step is to choose the first value on one of these four axes.
+
 ### OP-0146
 
 - Date/time: 2026-03-21 23:37:16 -03:00
