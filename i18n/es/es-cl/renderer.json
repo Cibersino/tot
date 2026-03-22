@@ -4,6 +4,8 @@
       "selector_title": "El principio y el final del coso:",
       "selector_empty": "(pelao)",
       "buttons": {
+        "import_extract": "📥",
+        "import_extract_abort": "⛔",
         "overwrite_clipboard": "📋↺",
         "append_clipboard": "📋+",
         "edit": "⌨",
@@ -14,6 +16,8 @@
         "task_load": "🗃️"
       },
       "tooltips": {
+        "import_extract": "Traerse o sacarle texto a un archivo",
+        "import_extract_abort": "Parar la sacadera",
         "overwrite_clipboard": "Pitiarse todo y pegar lo que tenís copiao",
         "append_clipboard": "Pegar lo copiao en la línea de abajo",
         "clipboard_repeat_count": "Cantidad de veces que te repetís el plato",
@@ -29,6 +33,21 @@
         "reset_presets": "Dejar los presets como venían",
         "help_button": "Informeishon",
         "flotante_window": "Ventanita porfiada"
+      },
+      "aria": {
+        "import_extract": "Importar o extraer texto desde archivo",
+        "import_extract_abort": "Abortar extracción",
+        "clipboard_repeat_count": "Repeticiones del portapapeles",
+        "wpm_input": "Palabras por minuto",
+        "wpm_slider": "Deslizador de palabras por minuto",
+        "speed_presets": "Presets de velocidad",
+        "precise_mode_toggle": "Modo preciso",
+        "crono_controls": "Controles del cronómetro",
+        "crono_display": "Display del cronómetro",
+        "crono_toggle": "Iniciar o pausar cronómetro",
+        "crono_reset": "Reiniciar cronómetro",
+        "floating_window_toggle": "Ventana flotante",
+        "floating_window_group": "Grupo de controles de ventana flotante"
       },
       "speed": {
         "title": "QUÉ TAN RÁPIDO LEÍS",
@@ -46,6 +65,15 @@
         "chars": "Letras totales: {n}",
         "precise_mode": "Modo fino",
         "precise_tooltip": "Contar de forma pulenta y elegante"
+      },
+      "processing": {
+        "import_extract_placeholder": "Sacando texto...",
+        "import_extract_preparing": "Preparando importar/extraer...",
+        "import_extract_waiting_native": "Sacando texto del archivo...",
+        "import_extract_waiting_ocr": "Corriendo OCR...",
+        "import_extract_waiting_ocr_delayed": "Corriendo OCR. Algunas custiones se demoran más.",
+        "import_extract_elapsed": "Tiempo corrido: {time}",
+        "import_extract_drop_here": "Suelta el archivo pa importar o sacarle texto"
       },
       "crono": {
         "title": "CRONÓMETRO DE LUJO",
@@ -88,6 +116,7 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
         "select_snapshot": "Seleccionar coso",
         "clear_snapshot": "🗙",
         "cancel": "Cancelar",
@@ -200,6 +229,68 @@
       "open_presets_unsupported": "No se puede abrir la carpeta aquí, hno.",
       "open_presets_error": "Drama al intentar abrir la carpeta. Lorea la consola.",
       "open_presets_fail": "No pudimos abrir la carpeta de presets. Lorea la consola.",
+      "import_extract_error": "Cagó la custión al partir importar/extraer. Lorea la consola.",
+      "import_extract_precondition_blocked": "Pa' partir importar/extraer, cierra toas las ventanas chicas y para el cronómetro.",
+      "import_extract_precondition_error": "Cagó la revisión de precondiciones de importar/extraer. Lorea la consola.",
+      "import_extract_processing_locked": "Importar/extraer está andando. La ventana principal queda bloqueada hasta que termine la cosa o la abortís.",
+      "import_extract_abort_error": "Cagó la custión al pedir el aborto de importar/extraer. Lorea la consola.",
+      "import_extract_cancelled": "Importar/extraer quedó cancelado.",
+      "import_extract_drop_single_file_only": "Tira exactamente un archivo pa' partir importar/extraer.",
+      "import_extract_drop_invalid_file": "La custión que soltaste no es un archivo local válido.",
+      "import_extract_route_choice_required": "Hay que elegir una ruta pa' este PDF antes de seguir con la extracción.",
+      "import_extract_route_choice_title": "Elegir la ruta de extracción",
+      "import_extract_route_choice_message": "Este PDF trae las dos rutas de extracción. Elige una y seguimos.",
+      "import_extract_route_choice_native_button": "Irse por la nativa",
+      "import_extract_route_choice_ocr_button": "Irse por OCR",
+      "import_extract_route_choice_cancel_button": "Cancelar",
+      "import_extract_route_choice_close_aria": "Cerrar diálogo de ruta de extracción",
+      "import_extract_apply_modal_title": "Aplicar el texto que salió",
+      "import_extract_apply_modal_message": "Elige cómo querís meter el texto extraído.",
+      "import_extract_apply_modal_elapsed": "Tiempo corrido: {time}",
+      "import_extract_apply_modal_repeat_label": "Cuántas veces",
+      "import_extract_apply_modal_overwrite_button": "Pitiarse lo de ahora",
+      "import_extract_apply_modal_append_button": "Sumarlo al final",
+      "import_extract_apply_modal_cancel_button": "Cancelar",
+      "import_extract_apply_modal_close_aria": "Cerrar diálogo pa' aplicar texto extraído",
+      "import_extract_apply_error": "Cagó la custión al aplicar el texto extraído. Lorea la consola y prueba otra vez.",
+      "import_extract_apply_too_large": "El texto que queda armado es demasiado grande pa' procesarlo. Bájale las repeticiones y prueba otra vez.",
+      "import_extract_apply_text_limit": "No se puede agregar el texto extraído: ya se llenó la custión.",
+      "import_extract_apply_truncated": "El texto extraído se pasó de largo y lo mochamos pa' que cupiera.",
+      "import_extract_prepare_invalid": "La solicitud preparada de importar/extraer ya no sirve. Parte la movida de nuevo.",
+      "import_extract_ocr_unavailable": "OCR no está disponible. Revisa setup/auth y prueba otra vez.",
+      "import_extract_ocr_activation_required": "Hay que activar OCR. Inicia sesión en Google OCR y prueba de nuevo.",
+      "import_extract_ocr_activation_disclosure_title": "Revisar activación de Google OCR",
+      "import_extract_ocr_activation_disclosure_intro": "toT usa servicios de Google pa' OCR. Si seguís, se va a abrir el navegador pa' que autoricís esta app.",
+      "import_extract_ocr_activation_disclosure_selected_files": "A Google solo se mandan los archivos que tú elijai pa' OCR.",
+      "import_extract_ocr_activation_disclosure_local_storage": "Esta app guarda un archivo local credentials.json y el estado local del token de Google en esta instancia.",
+      "import_extract_ocr_activation_disclosure_remote_cleanup": "Después de exportar, la app intenta borrar el documento temporal de Google de tu Google Drive.",
+      "import_extract_ocr_activation_disclosure_disconnect": "Después podís cortar esta conexión desde Preferencias > Desconectar Google OCR.",
+      "import_extract_ocr_activation_disclosure_proceed_button": "Seguir con Google",
+      "import_extract_ocr_activation_disclosure_cancel_button": "Cancelar",
+      "import_extract_ocr_activation_disclosure_privacy_link": "Abrir política de privacidad",
+      "import_extract_ocr_activation_disclosure_close_aria": "Cerrar diálogo de activación de Google OCR",
+      "import_extract_ocr_activation_success": "La activación OCR quedó lista. Reintentando la extracción.",
+      "import_extract_ocr_activation_cancelled": "La activación OCR quedó cancelada. Importar/extraer no siguió.",
+      "import_extract_ocr_activation_failed": "Falló la activación OCR. Revisa setup/auth y prueba otra vez.",
+      "import_extract_ocr_disconnect_success": "Google OCR quedó desconectado. Se revocó el token guardado de Google y se borró el estado local de inicio de sesión.",
+      "import_extract_ocr_disconnect_not_connected": "Google OCR no está conectado en esta instancia de la app.",
+      "import_extract_ocr_disconnect_failed": "Falló la desconexión de Google OCR. El estado guardado de inicio de sesión no se borró.",
+      "import_extract_ocr_connectivity_failed": "OCR necesita internet. Revisa la conexión y prueba otra vez.",
+      "import_extract_ocr_setup_missing_credentials": "Falta credentials.json pa' OCR. Elige un archivo válido de credenciales OAuth de Google y prueba otra vez.",
+      "import_extract_ocr_setup_invalid_credentials": "El archivo de credenciales elegido no sirve pa' Google OAuth. Elige un credentials.json válido y prueba de nuevo.",
+      "import_extract_ocr_setup_cancelled": "El setup de OCR se canceló antes de elegir credentials.json.",
+      "import_extract_ocr_restricted": "La ruta OCR está restringida pa' este tipo de archivo.",
+      "import_extract_ocr_quota_or_rate_limited": "OCR quedó bloqueado por cuota o rate limit. Espera un rato y prueba otra vez.",
+      "import_extract_ocr_runtime_error": "Hubo un cagazo en la ejecución OCR durante importar/extraer. Lorea la consola y prueba otra vez.",
+      "import_extract_ocr_cancelled": "La extracción OCR quedó cancelada.",
+      "import_extract_ocr_cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota. Prueba otra vez o revisa la cuenta.",
+      "import_extract_ocr_apply_pending": "La extracción OCR terminó, pero la parte de aplicar el resultado después todavía está pendiente.",
+      "import_extract_native_runtime_error": "Hubo un cagazo en la extracción nativa durante importar/extraer. Lorea la consola y prueba otra vez.",
+      "import_extract_native_unreadable_or_corrupt": "El archivo elegido no se puede leer o está hecho bolsa pa' extracción nativa.",
+      "import_extract_native_encrypted_or_password_protected": "El PDF elegido viene encriptado o con contraseña, así que no se puede sacar por la ruta nativa.",
+      "import_extract_native_cancelled": "La extracción nativa quedó cancelada.",
+      "import_extract_native_unsupported_format": "Ese formato de archivo no está soportado por la ruta nativa.",
+      "import_extract_native_apply_pending": "La extracción nativa terminó, pero la parte de aplicar el resultado después todavía está pendiente.",
       "wip_test_velocidad": "WIP: Aquí se viene el test de los víos.",
       "wip_diseno_skins": "WIP: Aquí vamos a cambiar las pilchas.",
       "wip_diseno_crono": "WIP: Aquí vamos a arreglar el reloj porfiado.",
@@ -217,6 +308,7 @@
       "drop_no_text": "Lo que tiraste no tiene niuna letra.",
       "type_limit": "Ya no podís escribir más, se llenó.",
       "paste_limit": "Ya no podís pegar más, se llenó.",
+      "drop_limit": "Ya no podís soltar más texto, se llenó.",
       "paste_truncated": "Se cortó el texto pa' que cupiera.",
       "drop_truncated": "Lo que tiraste estaba muy largo y lo mochamos.",
       "text_truncated": "Mochamos el texto pa' que entre en la aplicación.",
@@ -230,9 +322,25 @@
       "process_error": "Drama al procesar el preset. Lorea la consola."
     },
     "info": {
+      "external": {
+        "blocked": "Enlace bloqueado",
+        "missing": "Enlace perdido",
+        "error": "Error al abrir el enlace"
+      },
+      "appdoc": {
+        "blocked": "Documento bloqueado",
+        "missing": "Documento perdido",
+        "error": "Error al abrir el documento"
+      },
       "acerca_de": {
         "app_name": "toT",
-        "title": "La ficha"
+        "title": "La ficha",
+        "version": {
+          "unavailable": "No pillado"
+        },
+        "env": {
+          "unavailable": "No pillado"
+        }
       },
       "links_interes": {
         "app_name": "toT",
