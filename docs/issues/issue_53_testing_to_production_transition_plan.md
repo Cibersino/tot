@@ -126,7 +126,7 @@ After this transition:
 - [ ] `Mandatory (Google)` If the target audience is `External`, the app owner can verify that domain for Google OAuth branding/authorization purposes.
 - [ ] `Mandatory (Project)` The desktop packaging/distribution path can carry owner-provided OCR client/configuration material for the production model.
 
-### 2. Create and configure the Google production project
+### 2. Immediate Google Console actions
 
 - [ ] `Mandatory (Google)` Create a separate production Google Cloud project rather than reusing the current testing project.
   - Why: Google production-readiness guidance requires separate testing and production projects.
@@ -164,7 +164,7 @@ After this transition:
   - Why: Google verification/setup guidance mentions billing only when prompted; this is not a universal requirement for this repo's current Drive-only route.
   - Source: [Submitting your app for verification](https://support.google.com/cloud/answer/13461325?hl=en)
 
-### 3. Prepare the OAuth consent / branding surface for production
+### 3. Verification-dependent Google work
 
 - [ ] `Mandatory (Google)` Configure accurate consent-screen metadata for the production project:
   - app name
@@ -205,7 +205,7 @@ After this transition:
     - app screenshots
     - review-ready summary of current scopes and why they are minimal
 
-### 4. Change the app from testing-style credential onboarding to the chosen production model
+### 4. App/runtime changes
 
 - [ ] `Mandatory (Project)` Remove manual end-user `credentials.json` import as the normal production onboarding path.
   - Why: the current runtime still supports manual import, but the chosen production target is `app-owner-owned` plus `bundled with the app`.
@@ -235,7 +235,7 @@ After this transition:
   - end-user Google account at runtime
   - disconnect / revoke flow
 
-### 5. Update user-facing instructions for the production model
+### 5. Documentation changes
 
 - [ ] `Mandatory (Project)` Remove testing-path instructions that imply ordinary users must supply or import `credentials.json` themselves.
 
@@ -257,7 +257,7 @@ After this transition:
 
 - [ ] `Optional` Add release-note language that explicitly says the OCR path has moved from testing posture to production posture.
 
-### 6. Verification submission and publication decision
+### 6. Publication / verification decision record
 
 - [ ] `Conditional (Google)` If the production Google OAuth project remains `External` and uses production branding, complete brand verification.
   - Source: [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
