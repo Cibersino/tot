@@ -1,13 +1,14 @@
 # Issue 53 Access-model options
 
-Purpose: working document for evaluating the possible access models for moving OCR from the current testing posture toward a production posture.
+Purpose: working document for building, one dimension at a time, the access model for moving OCR from the current testing posture toward a production posture.
 
-Method used in this document:
+Working method used in this document:
 
-- first freeze the governing dimensions
-- then derive the theoretical option set from those fixed dimensions
-- then reduce that set with realistic and objective constraints
-- then reduce it further with explicit project decisions
+- keep the governing dimensions separate
+- choose one dimension at a time
+- record the chosen value for that dimension
+- continue with the next dimension in light of the previous choices
+- build one candidate model progressively
 
 At this stage, this document only freezes the governing dimensions.
 
@@ -41,4 +42,8 @@ The access-model discussion must keep these dimensions separate:
 
 ## Current rule
 
-No option set should be written in this document unless it can be expressed as a combination of the fixed dimensions above.
+This document does not need a prior taxonomy of named options.
+
+The dimensions are the decision axes.
+
+The candidate model should be built progressively by choosing values on those axes one by one.
