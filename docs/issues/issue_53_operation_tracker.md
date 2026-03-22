@@ -106,6 +106,31 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0144
+
+- Date/time: 2026-03-21 23:12:40 -03:00
+- Operation: Correct the access-model document so it uses the sequential dimension-by-dimension method instead of the old combination-first method.
+- Why: User identified that the document still encoded the wrong method and requested correcting it before continuing.
+- Changes made:
+  - Updated `docs/issues/issue_53_access_model_options.md` so the purpose and method now use sequential construction instead of combination-first exploration.
+  - Replaced the old method bullets with:
+    - keep the dimensions separate
+    - choose one dimension at a time
+    - record the chosen value
+    - continue with the next dimension in light of prior choices
+    - build one candidate model progressively
+  - Replaced the old rule text with explicit guidance that the document does not need a prior taxonomy of named options.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` no longer describes a theoretical-option/combinations-first method.
+- Outcome / next step:
+  - Method corrected.
+  - Next step is to choose the first dimension and record its value.
+
 ### OP-0143
 
 - Date/time: 2026-03-21 22:56:25 -03:00
