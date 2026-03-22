@@ -106,6 +106,34 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0142
+
+- Date/time: 2026-03-21 22:10:47 -03:00
+- Operation: Rewrite the `Project scope` side of the Section 8 Google-vs-project note from scratch.
+- Why: User requested a direct rewrite after the old project-side content was removed as reductive and misleading.
+- Changes made:
+  - Replaced the placeholder `Project scope` area in `docs/issues/issue_53_section8_google_vs_project_scope.md` with broader Section 8 project-side documentation scope.
+  - Reframed the project-side content around Issue 53 as a full user-facing import/extract feature, including:
+    - feature entrypoint and basic flow
+    - feature coverage
+    - route choice and post-extraction apply choices
+    - key operational constraints
+    - the chosen OCR model as part of feature behavior
+    - user-facing setup/failure states where they materially affect usability
+    - broader instructional surfaces/assets needed for coherent feature documentation
+  - Replaced the old placeholder status basis with a new `Project scope: not satisfied` basis grounded in the broader feature documentation gaps.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+- Evidence:
+  - Broader issue-scope basis reused from:
+    - `docs/issues/issue_53.md`
+    - `docs/issues/issue_53_implementation_plan.md`
+- Outcome / next step:
+  - The Section 8 note now distinguishes Google-backed minimums from broader Issue 53 feature-documentation scope without collapsing the project side into the OCR activation slice.
+
 ### OP-0141
 
 - Date/time: 2026-03-21 22:07:05 -03:00

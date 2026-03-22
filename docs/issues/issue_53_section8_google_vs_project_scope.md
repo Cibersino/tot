@@ -82,6 +82,48 @@ Unless an official source specifically requires those extra surfaces, repetition
 - Required user-facing help surfaces must state that the user can also revoke the app's access from their Google Account as an external control.
   - Why: this is part of user control over connected access.
 
+### Project scope
+
+Section 8 still requires more than the Google-backed minimum.
+
+Under Issue 53, the project-side documentation scope is the user-facing documentation needed to make the shipped import/extract feature understandable and usable as a real app feature, not only as a compliant Google-connected OCR integration.
+
+That project scope includes, at minimum:
+
+- explain the feature entrypoint and basic user flow:
+  - the dedicated import/extract button
+  - native file picker flow
+  - selection of a source file for extraction
+
+- explain the feature coverage:
+  - supported file families at a user-facing level
+  - OCR route vs native extraction route
+  - that some files may expose one route or both
+
+- explain the main user decisions in the flow:
+  - route choice when both OCR and native are available
+  - post-extraction apply choices such as overwrite/append/repetitions
+
+- explain the main operational constraints that affect normal use:
+  - extraction cannot start while secondary windows are open
+  - extraction cannot start while the stopwatch is running
+  - processing/abort behavior at a user-facing level where relevant
+
+- explain the chosen OCR model as part of the product's actual behavior:
+  - OCR is not always available automatically
+  - OCR may require user-side setup/activation
+  - OCR uses the chosen Google-based model when that route is used
+
+- explain the main user-facing failure/setup states where they materially affect feature usability:
+  - setup incomplete
+  - activation required
+  - route unavailable/restricted
+  - quota/rate-limit or connectivity cases at a user-facing level where relevant
+
+- update the instructional surfaces and assets needed so the current shipped feature is documented coherently, not only disclosed legally.
+
+This project scope is not derived from Google policy. It is derived from the repo's own Issue 53 scope, user-flow design, and documentation expectations for a distributed end-user feature.
+
 ## Practical implication for Section 8
 
 Section 8 blends two kinds of requirements:
@@ -135,9 +177,19 @@ The current repo already contains the required minimum content on current user-f
   - `public/info/instrucciones.en.html`
   - `public/info/instrucciones.es.html`
 
-### Basis for `Project scope: pending rewrite`
+### Basis for `Project scope: not satisfied`
 
-The previous `Project scope` content was removed intentionally and is pending rewrite from scratch.
+The project-side content is not yet satisfied because the current repo still does not document the broader import/extract feature coherently at the level described above.
+
+In particular, the current user-facing docs are still light or missing on:
+
+- the import/extract feature flow as a whole
+- route coverage and route choice behavior
+- apply-flow behavior after extraction
+- normal-use constraints such as blocked starts
+- the broader feature-level instructional surfaces/assets needed for this shipped feature
+
+The previous project-side content was removed because it reduced Section 8 too narrowly to the Google/OCR activation slice.
 
 This status note is descriptive only. It does not, by itself, change the checkbox state in `docs/issues/issue_53_implementation_plan.md`.
 
