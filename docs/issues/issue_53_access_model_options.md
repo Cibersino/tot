@@ -241,3 +241,17 @@ Why this value is currently preferred:
 - it matches the already chosen direction of a real product path for ordinary users of this app
 - app-owner-owned Google-side setup does not require OCR to run under the app owner's own Google account
 - this keeps the model closer to the Issue 53 baseline and avoids drifting into a heavier managed-service shape
+
+## Fourth axis to decide
+
+### Usage-cost / quota responsibility
+
+Chosen value:
+
+- the end user's Google account / Google-side usage context
+
+Why this value is currently preferred:
+
+- it follows naturally from the already chosen runtime Google identity
+- it keeps the model closer to the current Issue 53 baseline instead of drifting into a vendor-paid managed-service shape
+- it avoids creating a hidden central usage pool owned by the app owner
