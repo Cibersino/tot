@@ -142,3 +142,88 @@ Why this value is currently preferred:
 Decision question:
 
 - If the Google-side OCR setup is app-owner-owned, how does the app runtime receive the Google-side credential/configuration material it needs?
+
+Possible values:
+
+- `manual local file delivery`
+- `bundled with the app`
+- `owner-controlled remote delivery`
+
+Elements needed to decide:
+
+- what users must do during installation or first use
+- what the app owner must do to distribute and update the configuration
+- what happens if the configuration changes later
+- what support burden each value creates
+- what mismatch risk each value creates between testing and production
+
+#### What each value means in practice
+
+`manual local file delivery`
+
+What users must do:
+
+- obtain the Google-side credential/configuration file
+- place it where the app expects it, or pick/import it into the app
+
+What the app owner must do:
+
+- distribute that file to users by some separate path
+- explain how users install or replace it
+
+What this means for the production path:
+
+- the app-owner-owned setup still exists, but users are doing a manual installation step
+- configuration updates later are also likely to require a manual user action
+- support burden rises because configuration mistakes become user-facing installation problems
+
+`bundled with the app`
+
+What users must do:
+
+- nothing special beyond installing and using the app
+
+What the app owner must do:
+
+- package the needed Google-side credential/configuration material with the app
+- update the packaged app only if that client/configuration material itself must be replaced
+
+What this means for the production path:
+
+- the production path is simpler for ordinary users
+- installation and first use are cleaner
+- configuration changes later are handled through app packaging/distribution rather than user file handling
+
+Clarification:
+
+- this does not mean the bundled client/configuration normally expires during ordinary use
+- the thing that usually changes during normal use is user token state, not the bundled client/configuration itself
+- the bundled app would only need updating if the owner decides or needs to replace that Google-side client/configuration
+
+`owner-controlled remote delivery`
+
+What users must do:
+
+- use the app while it retrieves or receives the owner-provided configuration by an owner-controlled path
+
+What the app owner must do:
+
+- maintain the delivery service or retrieval path
+- handle availability, update behavior, and failure handling for that delivery mechanism
+
+What this means for the production path:
+
+- users avoid manual file handling
+- but the app now depends on an additional owner-controlled delivery mechanism
+- operational complexity is higher than either manual local file delivery or bundling
+
+#### Chosen value
+
+- `bundled with the app`
+
+Why this value is currently preferred:
+
+- it gives ordinary users the cleanest production path
+- it avoids manual file handling and related installation mistakes
+- it avoids introducing an additional owner-controlled remote delivery mechanism
+- it fits the Issue 53 direction of keeping the OCR route logic stable while changing the Google-side production setup
