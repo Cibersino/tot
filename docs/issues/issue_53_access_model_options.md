@@ -124,3 +124,13 @@ What Google does define is the Google-side structure behind this axis:
 - production publication / verification requirements attach to the Google-side project, OAuth consent screen, and related owned-domain / branding setup
 
 For this document, the three values above are plain-language ways to describe who is expected to provide and control that Google-side setup for users of this app.
+
+#### Chosen value
+
+- `app-owner-owned`
+
+Why this value is currently preferred:
+
+- the goal is a real production path for ordinary users of this app
+- it avoids forcing ordinary users to bring their own Google-side OCR setup
+- it matches the production direction already implied by the Issue 53 baseline: keep the OCR route logic stable, but move the Google-side setup from testing to a proper production project/client path
