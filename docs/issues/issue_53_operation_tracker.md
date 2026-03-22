@@ -108,6 +108,43 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0137
+
+- Date/time: 2026-03-21 21:21:21 -03:00
+- Operation: Create a dedicated Issue 53 doc that separates Google obligations from project-chosen documentation scope for Section 8 item 3.
+- Why: User requested a doc-based, source-backed separation so Section 8 item 3 can be judged by authority instead of by blended interpretation.
+- Changes made:
+  - Added `docs/issues/issue_53_section8_item3_google_vs_project.md`.
+  - Documented a strict two-label classification rule for Section 8 item 3:
+    - `Google obligation`
+    - `Project choice`
+  - Tightened the doc language so `Google obligation` is framed only as required content on required user-facing surfaces, not as extra docs that describe those surfaces.
+  - Recorded the official Google source basis used for classification:
+    - Google API Services User Data Policy
+    - Google Workspace API User Data and Developer Policy
+    - OAuth 2.0 / brand-verification guidance (release-posture only)
+  - Classified item-3 subtopics explicitly:
+    - Google-backed minimum explanation of connected OCR behavior and user-control/removal paths
+    - project-chosen tutorial depth such as setup walkthroughs, billing docs, screenshots, and detailed troubleshooting
+  - Read-only review of the current Section 8 wording and current user-facing OCR docs started immediately before this OP entry.
+    - impact: no files were modified during that pre-entry read phase.
+    - handling: the pre-entry read phase is disclosed here explicitly.
+- Checklist updates:
+  - No checkbox toggles yet.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_item3_google_vs_project.md`
+- Evidence:
+  - Current Section 8 item 3 wording in `docs/issues/issue_53_implementation_plan.md` blends setup/billing/activation guidance without separating Google-backed obligations from project-chosen documentation depth.
+  - User-facing OCR docs reviewed for current state:
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+- Outcome / next step:
+  - The new authority-split doc is now available as the basis for future closure discussion on Section 8 item 3.
+  - Next step, if requested, is to evaluate current repo surfaces against that stricter surface/content framing.
+
 ### OP-0135
 
 - Date/time: 2026-03-21 20:36:53 -03:00
