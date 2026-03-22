@@ -227,3 +227,17 @@ Why this value is currently preferred:
 - it avoids manual file handling and related installation mistakes
 - it avoids introducing an additional owner-controlled remote delivery mechanism
 - it fits the Issue 53 direction of keeping the OCR route logic stable while changing the Google-side production setup
+
+## Third axis to decide
+
+### Runtime Google identity used for OCR
+
+Chosen value:
+
+- the end user's Google account
+
+Why this value is currently preferred:
+
+- it matches the already chosen direction of a real product path for ordinary users of this app
+- app-owner-owned Google-side setup does not require OCR to run under the app owner's own Google account
+- this keeps the model closer to the Issue 53 baseline and avoids drifting into a heavier managed-service shape
