@@ -134,3 +134,11 @@ Why this value is currently preferred:
 - the goal is a real production path for ordinary users of this app
 - it avoids forcing ordinary users to bring their own Google-side OCR setup
 - it matches the production direction already implied by the Issue 53 baseline: keep the OCR route logic stable, but move the Google-side setup from testing to a proper production project/client path
+
+## Second axis to decide
+
+### Runtime credential / configuration delivery
+
+Decision question:
+
+- If the Google-side OCR setup is app-owner-owned, how does the app runtime receive the Google-side credential/configuration material it needs?
