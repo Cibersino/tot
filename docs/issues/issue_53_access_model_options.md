@@ -12,33 +12,41 @@ Working method used in this document:
 
 At this stage, this document only freezes the governing dimensions.
 
+## What counts as a valid dimension here
+
+A dimension is admissible in this document only if it is:
+
+- factual rather than evaluative
+- materially independent from the other dimensions
+- decision-driving rather than merely descriptive after the fact
+- not just a consequence of other choices
+- concrete enough that its value can be stated without vague interpretation
+
+Dimensions that are overlapping, abstract, or derivative should not be used as governing dimensions here.
+
 ## Governing dimensions
 
 The access-model discussion must keep these dimensions separate:
 
-1. OAuth publication ownership
+1. Google-side asset ownership
 
-- Who owns and publishes the OAuth app/surface presented to users.
+- Who owns and controls the Google Cloud project, OAuth consent configuration, and OAuth client used by the app path under discussion.
 
-2. Google project / client ownership
+2. Runtime credential / configuration source
 
-- Who owns the Google Cloud project and OAuth client used by the app path under discussion.
+- What runtime Google-side material the app instance depends on, and who supplies that material to the app instance.
 
 3. Usage-cost / quota responsibility
 
 - Who carries the economic and quota exposure of normal OCR usage.
 
-4. Operational responsibility
+4. Google-side setup / maintenance responsibility
 
-- Who is the effective operator of the OCR access model in normal use.
+- Who must perform and maintain the Google-side setup over time so the OCR path keeps working.
 
-5. Setup responsibility
+5. Runtime Google identity used for normal OCR operation
 
-- Who must perform the Google-side setup needed before OCR can be used.
-
-6. End-user activation burden
-
-- What the normal end user must still do before OCR becomes available in the app.
+- Which actor's Google identity/account is actually used during normal OCR operation in the shipped model.
 
 ## Current rule
 

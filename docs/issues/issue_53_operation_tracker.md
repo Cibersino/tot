@@ -106,6 +106,31 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0145
+
+- Date/time: 2026-03-21 23:27:21 -03:00
+- Operation: Reset the access-model dimension framework to a stricter standard.
+- Why: The previous dimension set was not reliable enough. It mixed overlap, abstraction, and derived/evaluative ideas. A defensible base needs explicit admissibility criteria and a tighter dimension set.
+- Changes made:
+  - Added an admissibility section to `docs/issues/issue_53_access_model_options.md` defining what qualifies as a governing dimension.
+  - Replaced the old six-dimension set with a stricter five-dimension set:
+    - Google-side asset ownership
+    - runtime credential/configuration source
+    - usage-cost/quota responsibility
+    - Google-side setup/maintenance responsibility
+    - runtime Google identity used for normal OCR operation
+  - Removed the earlier weak dimensions that were overlapping, abstract, or derivative (`OAuth publication ownership`, separate `Google project / client ownership`, `Operational responsibility`, `End-user activation burden`).
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now contains an explicit admissibility rule and the revised five-dimension set.
+- Outcome / next step:
+  - Dimension framework reset on a stricter basis.
+  - Next step is to choose the first value on the revised axes.
+
 ### OP-0144
 
 - Date/time: 2026-03-21 23:12:40 -03:00
