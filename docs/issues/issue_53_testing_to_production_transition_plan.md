@@ -76,6 +76,7 @@ After this transition:
    - Testing mode is limited to up to 100 listed test users.
    - Test-user authorizations expire after 7 days; refresh tokens also expire in that testing case.
    - `In production` is the publishing status of the Google OAuth project after selecting the `Publish app` button in the Google Auth Platform.
+   - This publishing-state change is a console action, not a documented multi-day approval workflow by itself.
    - Source: [Manage App Audience](https://support.google.com/cloud/answer/15549945?hl=en)
 
 3. Narrowest scope and `drive.file`
@@ -91,6 +92,7 @@ After this transition:
 
 5. Brand verification
    - Google states an external app that wants to display its logo or display name on the OAuth consent screen requires brand verification.
+   - Google also states that brand verification typically takes 2-3 business days after submission.
    - Source: [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
 
 6. Verification submission flow / production publishing step
@@ -101,6 +103,19 @@ After this transition:
 7. Non-sensitive scope verification posture
    - Google states apps using only non-sensitive scopes do not need full scope verification, though brand verification may still apply.
    - Source: [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073?hl=en)
+
+## Timing clarification
+
+- Creating a desktop OAuth client is effectively immediate in Google Cloud Console.
+  - Google states that after creating the OAuth client, you receive the client ID and, where applicable, the client secret.
+  - Source: [Manage OAuth Clients](https://support.google.com/cloud/answer/15549257?hl=en)
+- Changing the Google OAuth project from `Testing` to `In production` is also effectively immediate at the publishing-status level.
+  - Source: [Manage App Audience](https://support.google.com/cloud/answer/15549945?hl=en)
+- What may take review time is not the creation of the desktop OAuth client nor the `In production` state change itself, but later Google verification workflows if they apply.
+  - In the current Issue 53 scope, the relevant likely review path is brand verification for an external production app.
+  - Source: [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
+- Because the current planned scope stays on `drive.file`, sensitive-scope verification is not the expected path unless the scope set changes.
+  - Source: [Choose Google Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
 
 ## Work plan
 
@@ -124,6 +139,7 @@ After this transition:
 
 - [ ] `Mandatory (Google)` Change the production Google OAuth project's publishing status to `In production` when it is ready for real-user rollout.
   - Why: testing mode is limited to listed test users and test-user authorizations expire after 7 days.
+  - Clarification: this is an immediate publishing-status change in Google Console, not the same thing as later verification review.
   - Source: [Manage App Audience](https://support.google.com/cloud/answer/15549945?hl=en)
 
 - [ ] `Mandatory (Google)` Enable the Google Drive API in the production project.
