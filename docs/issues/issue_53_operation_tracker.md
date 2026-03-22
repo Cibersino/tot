@@ -106,6 +106,33 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0150
+
+- Date/time: 2026-03-22 00:34:25 -03:00
+- Operation: Clarify the main Issue 53 docs so they reflect the refined production-target access model instead of only the old coarse shorthand.
+- Why: The repo docs still mixed the historical shorthand `user-managed + explicit sign-in activation` with the newer, more precise production-target interpretation.
+- Changes made:
+  - Updated `docs/issues/issue_53.md`.
+  - Updated `docs/issues/issue_53_implementation_plan.md`.
+  - Updated `docs/issues/issue_53_section8_google_compliance.md`.
+  - Updated `docs/issues/issue_53_section8_google_vs_project_scope.md`.
+  - Aligned those docs to the clarified production-target model recorded in `docs/issues/issue_53_access_model_options.md`.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_section8_google_compliance.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - The four docs now distinguish between:
+    - the historical implementation/testing baseline
+    - the refined preferred production-target model
+- Outcome / next step:
+  - The main Issue 53 docs are now aligned at the documentation level.
+  - Next work should use this clarified model wherever remaining Section 8/Section 9 wording still depends on the older coarse shorthand.
+
 ### OP-0149
 
 - Date/time: 2026-03-22 00:34:25 -03:00
