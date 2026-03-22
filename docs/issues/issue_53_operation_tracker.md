@@ -92,15 +92,13 @@ As of 2026-03-21:
     - Item 2 (`Add/update privacy and external-processing disclosures for chosen substrate/dependencies`): materially advanced.
       - `PRIVACY.md`, `public/info/acerca_de.html`, `public/info/instrucciones.en.html`, and `public/info/instrucciones.es.html` now describe Google-connected OCR behavior, local credential/token posture, disconnect behavior, and Google Account-side revocation fallback.
       - Pre-consent OCR activation disclosure is implemented as a dedicated renderer modal immediately before Google OAuth launch.
-    - Item 3 (`Update setup/billing/activation instructions for the chosen access model`): materially advanced.
-      - User-facing setup/activation/disconnect instructions now reflect the current user-managed OAuth model and local token-removal behavior.
-      - Public-release OAuth verification posture remains a release/documentation concern and is not yet closed.
-    - Item 4 (`Update instructions and assets`): materially advanced.
+    - Item 3 (`Update instructions and assets`): materially advanced.
       - OCR activation disclosure modal DOM/module/styles/copy were added in the main window and localized across renderer locales.
       - Supporting contract doc for this slice exists at `docs/issues/issue_53_ocr_activation_disclosure_plan.md`.
-    - Item 5 (`Update changelog/release notes and related documentation`): pending.
-    - Item 6 (`Verify all Issue 53 acceptance criteria are covered before closure`): pending.
-  - Active next checklist item: Section 8 item 5 (`Update changelog/release notes and related documentation`).
+      - Broader instruction/setup/access-model documentation scope remains open under the current Section 8 structure.
+    - Item 4 (`Update changelog/release notes and related documentation`): pending.
+    - Item 5 (`Verify all Issue 53 acceptance criteria are covered before closure`): pending.
+  - Active next checklist item: Section 8 item 4 (`Update changelog/release notes and related documentation`).
   - Section 9 not started.
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
@@ -108,16 +106,47 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0140
+
+- Date/time: 2026-03-21 21:58:23 -03:00
+- Operation: Restructure Section 8 to remove the overlapping old item 3, renumber downstream items, and reframe the supporting Google-vs-project note so it no longer depends on a deleted checklist slot.
+- Why: User decided to eliminate old Section 8 item 3 because the overlap between old 8.3 and 8.4 was causing structural confusion. The renumbering and supporting-doc reframe must happen together.
+- Changes made:
+  - Removed the overlapping old Section 8 item 3 from `docs/issues/issue_53_implementation_plan.md`.
+  - Renumbered old 8.4/8.5/8.6 to new 8.3/8.4/8.5 in the implementation plan.
+  - Renamed and reframed the supporting note:
+    - from `docs/issues/issue_53_section8_item3_google_vs_project.md`
+    - to `docs/issues/issue_53_section8_google_vs_project_scope.md`
+  - Reframed the supporting note so it no longer depends on a deleted checklist slot and now covers broader Section 8 Google-vs-project scope.
+  - Reconciled current-state and pending-item references in the Issue 53 docs/tracker to match the new Section 8 numbering.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md`
+    - removed old Section 8 item 3 (`Update setup/billing/activation instructions for the chosen access model.`)
+    - old item 4 -> new item 3
+    - old item 5 -> new item 4
+    - old item 6 -> new item 5
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_section8_google_compliance.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+- Evidence:
+  - The implementation plan now shows the simplified Section 8 structure with five items instead of six.
+  - The supporting note now exists at `docs/issues/issue_53_section8_google_vs_project_scope.md` and no longer depends on old item numbering.
+- Outcome / next step:
+  - Section 8 structure is simplified and renumbered.
+  - Active next checklist item is now Section 8 item 4 (`Update changelog/release notes and related documentation`).
+
 ### OP-0138
 
 - Date/time: 2026-03-21 21:42:17 -03:00
-- Operation: Update the Section 8 item-3 authority-split doc to record that the current repo satisfies the Google-obligation subset.
+- Operation: Update the Section 8 Google-vs-project scope note to record that the current repo satisfies the Google-obligation subset.
 - Why: User requested that the doc state the current closure result for the Google-obligation side explicitly.
 - Changes made:
-  - Updated `docs/issues/issue_53_section8_item3_google_vs_project.md` with an explicit `## Current repo status` section.
+  - Updated `docs/issues/issue_53_section8_google_vs_project_scope.md` with an explicit `## Current repo status` section.
   - Recorded the current result as:
     - `Google obligation: satisfied`
-    - `Project choice: not satisfied`
+    - `Project scope: not satisfied`
   - Added the concrete basis for the satisfied Google-obligation subset across the current user-facing surfaces.
   - Added an explicit note that this doc update does not, by itself, toggle the checkbox state in `docs/issues/issue_53_implementation_plan.md`.
   - Read-only review of the authority-split doc and the current OCR/privacy/help surfaces started immediately before this OP entry.
@@ -127,7 +156,7 @@ As of 2026-03-21:
   - No checkbox toggles.
 - Files touched:
   - `docs/issues/issue_53_operation_tracker.md`
-  - `docs/issues/issue_53_section8_item3_google_vs_project.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
 - Evidence:
   - Current reviewed surfaces already show the Google-obligation subset content in:
     - `PRIVACY.md`
@@ -137,18 +166,18 @@ As of 2026-03-21:
     - `public/index.html`
 - Outcome / next step:
   - The authority-split doc now records that the Google-obligation subset is satisfied.
-  - Next step, if requested, is to decide whether Section 8 item 3 should be closed on that basis or kept open for repo-chosen `Project choice` depth.
+  - Next step, if requested, is to decide how that current-status note should be used under the simplified Section 8 structure.
 
 ### OP-0137
 
 - Date/time: 2026-03-21 21:21:21 -03:00
-- Operation: Create a dedicated Issue 53 doc that separates Google obligations from project-chosen documentation scope for Section 8 item 3.
-- Why: User requested a doc-based, source-backed separation so Section 8 item 3 can be judged by authority instead of by blended interpretation.
+- Operation: Create a dedicated Issue 53 doc that separates Google obligations from project-chosen documentation scope for Section 8.
+- Why: User requested a doc-based, source-backed separation so Section 8 documentation work can be judged by authority instead of by blended interpretation.
 - Changes made:
-  - Added `docs/issues/issue_53_section8_item3_google_vs_project.md`.
-  - Documented a strict two-label classification rule for Section 8 item 3:
+  - Added `docs/issues/issue_53_section8_google_vs_project_scope.md`.
+  - Documented a strict two-label classification rule for Section 8:
     - `Google obligation`
-    - `Project choice`
+    - `Project scope`
   - Tightened the doc language so `Google obligation` is framed only as required content on required user-facing surfaces, not as extra docs that describe those surfaces.
   - Recorded the official Google source basis used for classification:
     - Google API Services User Data Policy
@@ -164,16 +193,16 @@ As of 2026-03-21:
   - No checkbox toggles yet.
 - Files touched:
   - `docs/issues/issue_53_operation_tracker.md`
-  - `docs/issues/issue_53_section8_item3_google_vs_project.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
 - Evidence:
-  - Current Section 8 item 3 wording in `docs/issues/issue_53_implementation_plan.md` blends setup/billing/activation guidance without separating Google-backed obligations from project-chosen documentation depth.
+  - Current Section 8 wording blends Google-backed obligations with project-chosen documentation depth unless they are separated explicitly.
   - User-facing OCR docs reviewed for current state:
     - `PRIVACY.md`
     - `public/info/acerca_de.html`
     - `public/info/instrucciones.en.html`
     - `public/info/instrucciones.es.html`
 - Outcome / next step:
-  - The new authority-split doc is now available as the basis for future closure discussion on Section 8 item 3.
+  - The new authority-split doc is now available as a basis for future closure discussion on Section 8.
   - Next step, if requested, is to evaluate current repo surfaces against that stricter surface/content framing.
 
 ### OP-0135
@@ -283,7 +312,7 @@ As of 2026-03-21:
     - renderer logs showed explicit modal-decline handling with `ocr_activation_disclosure_declined`
 - Outcome / next step:
   - Tracker is now aligned with the post-`dd1724ec92fc45c3a4fece2b56b7d2a81ac6a64e` Issue 53 changes.
-  - Next documentation closeout step is Section 8 item 5 (`Update changelog/release notes and related documentation`), followed by Section 8 item 6 acceptance-criteria reconciliation.
+  - Next documentation closeout step is Section 8 item 4 (`Update changelog/release notes and related documentation`), followed by Section 8 item 5 acceptance-criteria reconciliation.
 
 ### OP-0133
 

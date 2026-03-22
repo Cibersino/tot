@@ -1,17 +1,16 @@
-# Issue 53 Section 8 Item 3: Google obligations vs project choices
+# Issue 53 Section 8: Google obligations vs project scope
 
-Purpose: separate what Section 8 item 3 requires because of official Google policy/guidance from what the repo may still choose to document for product/help quality.
+Purpose: separate what Section 8 requires because of official Google policy/guidance from what Section 8 still requires because of the repo's own chosen Issue 53 scope.
 
-Linked plan item:
+Linked plan section:
 
-- `docs/issues/issue_53_implementation_plan.md` Section 8 item 3:
-  - `Update setup/billing/activation instructions for the chosen access model.`
+- `docs/issues/issue_53_implementation_plan.md` Section 8
 
-This note does not, by itself, close Section 8 item 3. Its role is narrower:
+This note does not, by itself, close Section 8. Its role is narrower:
 
 - identify the authority behind each expected content requirement
 - prevent overclaiming Google requirements
-- prevent mixing Google-backed surface/content obligations with repo-chosen documentation depth
+- prevent mixing Google-backed surface/content obligations with repo-chosen documentation scope
 
 ## Classification rule
 
@@ -20,8 +19,9 @@ Use only two labels:
 - `Google obligation`
   - Use this label only when the requirement can be grounded in an official Google source.
   - In this note, this means: required content on required user-facing surfaces.
-- `Project choice`
-  - Use this label when the repo wants additional docs, tutorials, walkthroughs, assets, or explanatory depth, but the requirement is not directly grounded in an official Google source currently cited for Issue 53.
+- `Project scope`
+  - Use this label when the requirement comes from the repo's own Issue 53 scope/plan rather than from an official Google source currently cited for Issue 53.
+  - In this note, `Project scope` does not mean optional. It means the authority is the project/issue scope, not Google.
 
 No hybrid or hedge label should be used here.
 
@@ -42,14 +42,14 @@ No hybrid or hedge label should be used here.
 3. OAuth 2.0 policy / production-readiness guidance
    - https://developers.google.com/identity/protocols/oauth2/policies
    - https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification
-   - Used here only for public-release/verification posture, not for current item-3 tutorial depth
+   - Used here only for public-release/verification posture, not for general Section 8 instructional depth
 
 ## Surface rule
 
 This note distinguishes between:
 
 - required content on required user-facing surfaces
-- additional repo-chosen docs or instructional surfaces
+- additional project-required documentation scope
 
 What Google may require here is not "documentation about documentation."
 
@@ -61,9 +61,9 @@ This note therefore does not assume that:
 - a separate instructions page must explain that a help page exists
 - every fact disclosed in one required surface must also be repeated in other docs
 
-Unless an official source specifically requires those extra surfaces, repetition across additional docs is treated as `Project choice`.
+Unless an official source specifically requires those extra surfaces, repetition across additional docs is treated here as `Project scope`, not as `Google obligation`.
 
-## Item-3 content classified by authority
+## Section 8 content classified by authority
 
 ### Google obligation
 
@@ -82,45 +82,66 @@ Unless an official source specifically requires those extra surfaces, repetition
 - Required user-facing help surfaces must state that the user can also revoke the app's access from their Google Account as an external control.
   - Why: this is part of user control over connected access.
 
-### Project choice
+### Project scope
 
-- A separate step-by-step tutorial for obtaining Google OAuth credentials.
+- Explain the chosen OCR access model for real users in the distributed app:
+  - OCR uses the chosen `user-managed + explicit sign-in activation` model
+  - OCR is not enabled by default
+  - OCR availability depends on local setup/activation state
 
-- A separate step-by-step tutorial for importing `credentials.json`.
+- Explain ownership and control boundaries for the chosen model:
+  - who provides the Google OAuth credentials/project
+  - who controls the Google-side account/project used for OCR
+  - where local credentials/token state live
+  - what the app owns vs what the user owns
+  - what disconnect removes and what it keeps
 
-- A separate step-by-step walkthrough of first activation/recovery screens.
+- Explain the setup / onboarding path required by the chosen model:
+  - what the user must have before OCR can work
+  - credential onboarding
+  - activation/sign-in path
+  - validation/check flow where applicable
 
-- Billing instructions in user-manual form.
+- Explain the billing / access posture of the chosen model where applicable:
+  - who pays for OCR usage
+  - whether billing is user-side
+  - whether billing/setup is part of the chosen model
 
-- Screenshots/assets for the setup or activation flow.
+- Explain the availability and failure model in user-facing terms where the issue scope requires it:
+  - OCR unavailable until explicit activation
+  - missing credentials
+  - activation required
+  - auth failure
+  - quota/rate-limit failure
+  - connectivity/setup failure
 
-- Detailed troubleshooting playbooks beyond the minimum user-control / access-model explanation.
+- Explain the chosen model consistently with the issue's distributed-delivery scope, not only with the narrow activation modal/runtime disclosure slice.
 
-- Repeating required disclosure/help content across additional manuals, walkthroughs, or instructional pages.
+- Add any walkthroughs, screenshots, assets, or broader instruction-pass updates that the project chooses to require under Section 8.
 
-These may still be required by the repo if desired, but in this note they are classified as `Project choice`, not as Google-backed obligations.
+These may still be mandatory for Issue 53 because they are part of the repo's chosen scope, but in this note they are classified as `Project scope`, not as Google-backed obligations.
 
-## Practical implication for Section 8 item 3
+## Practical implication for Section 8
 
-The current item-3 wording blends two kinds of requirements:
+Section 8 blends two kinds of requirements:
 
 - Google-backed content obligations on user-facing surfaces
-- repo-chosen tutorial/help depth or extra documentation surfaces
+- project-scoped documentation requirements for the chosen distributed-delivery model
 
-That means item 3 should not be judged by a single blurred standard.
+That means Section 8 documentation work should not be judged by a single blurred standard.
 
 For future closure discussion, the clean method is:
 
-1. Decide whether item 3 is meant to close only the `Google obligation` subset or both subsets.
+1. Decide which pending Section 8 work is grounded in `Google obligation` and which is grounded in `Project scope`.
 2. Evaluate current docs against each subset separately.
-3. Mark the plan item complete only after the intended subset(s) are satisfied.
+3. Mark the relevant plan item(s) complete only after the intended subset(s) are satisfied.
 
 ## Current repo status
 
 As of 2026-03-21:
 
 - `Google obligation`: satisfied
-- `Project choice`: not satisfied
+- `Project scope`: not satisfied
 
 ### Basis for `Google obligation: satisfied`
 
@@ -153,14 +174,15 @@ The current repo already contains the required minimum content on current user-f
   - `public/info/instrucciones.en.html`
   - `public/info/instrucciones.es.html`
 
-### Basis for `Project choice: not satisfied`
+### Basis for `Project scope: not satisfied`
 
-The repo does not currently contain the broader optional/tutorial depth listed above as `Project choice`, such as:
+The repo does not currently contain the broader project-scoped documentation depth listed above, such as:
 
-- a separate setup walkthrough for obtaining/importing `credentials.json`
-- a separate activation-flow tutorial
-- billing instructions in user-manual form
-- dedicated setup/activation screenshots or instructional assets
+- a clear user-facing explanation of the chosen `user-managed + explicit sign-in activation` model as such
+- a clear user-facing explanation of ownership/control boundaries for credentials/project/account
+- broader setup/credential onboarding guidance for the chosen model
+- broader billing/access-model guidance where applicable
+- broader user-facing explanation of the chosen availability/failure model
 
 This status note is descriptive only. It does not, by itself, change the checkbox state in `docs/issues/issue_53_implementation_plan.md`.
 
@@ -174,4 +196,4 @@ This note does not claim that Google requires:
 - a separate manual explaining that disclosure/help surfaces exist
 - repetition of the same required content across every instructional surface
 
-If later work wants those things, they should be justified as `Project choice` unless a new official Google source is added.
+If later work wants those things, they should be justified as `Project scope` unless a new official Google source is added.

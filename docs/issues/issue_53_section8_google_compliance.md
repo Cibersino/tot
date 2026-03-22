@@ -74,7 +74,7 @@ This issue should close that gap deliberately and with official Google-source gr
   - that local in-app privacy/help pages are not sufficient for Google OAuth public verification by themselves
 - The work is only partially reconciled back into Issue 53 closeout:
   - the tracker reflects the current state
-  - Section 8 item 5 / item 6 in [`docs/issues/issue_53_implementation_plan.md`](./issue_53_implementation_plan.md) are still pending
+  - Section 8 item 4 / item 5 in [`docs/issues/issue_53_implementation_plan.md`](./issue_53_implementation_plan.md) are still pending
   - remaining public-release-only blockers still need to be isolated explicitly under Section 9.5
 
 ## Official source basis
