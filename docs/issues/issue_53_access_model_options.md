@@ -255,3 +255,31 @@ Why this value is currently preferred:
 - it follows naturally from the already chosen runtime Google identity
 - it keeps the model closer to the current Issue 53 baseline instead of drifting into a vendor-paid managed-service shape
 - it avoids creating a hidden central usage pool owned by the app owner
+
+## Current preferred production-target model
+
+For this document, the current preferred production-target model is:
+
+- Google-side asset ownership: `app-owner-owned`
+- runtime credential / configuration delivery: `bundled with the app`
+- runtime Google identity used for OCR: `the end user's Google account`
+- usage-cost / quota responsibility: `the end user's Google account / Google-side usage context`
+
+## Practical consequence
+
+What changes from the testing posture:
+
+- the Google-side setup moves from a testing project/client to a production project/client owned by the app owner
+- the production client/configuration is bundled with the app instead of being handled as a user-provided file
+
+What stays the same:
+
+- the OCR route itself stays the same chosen route
+- the runtime Google identity for OCR remains the end user's Google account
+- the normal usage/quota context remains tied to that end-user account rather than to a central app-owner usage pool
+
+What this document does not settle by itself:
+
+- the exact packaging implementation details
+- the exact Google OAuth/publication/compliance rollout steps
+- the final user-facing wording/instructions that must be updated to match this chosen model
