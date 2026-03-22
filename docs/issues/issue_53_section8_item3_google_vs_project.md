@@ -115,6 +115,55 @@ For future closure discussion, the clean method is:
 2. Evaluate current docs against each subset separately.
 3. Mark the plan item complete only after the intended subset(s) are satisfied.
 
+## Current repo status
+
+As of 2026-03-21:
+
+- `Google obligation`: satisfied
+- `Project choice`: not satisfied
+
+### Basis for `Google obligation: satisfied`
+
+The current repo already contains the required minimum content on current user-facing surfaces:
+
+- OCR uses Google services:
+  - `PRIVACY.md`
+  - `public/info/acerca_de.html`
+  - `public/index.html`
+
+- activation/authorization opens the system browser:
+  - `PRIVACY.md`
+  - `public/index.html`
+
+- local OCR sign-in state is stored locally:
+  - `PRIVACY.md`
+  - `public/info/instrucciones.en.html`
+  - `public/info/instrucciones.es.html`
+  - `public/index.html`
+
+- users can disconnect Google OCR from inside the app:
+  - `PRIVACY.md`
+  - `public/info/acerca_de.html`
+  - `public/info/instrucciones.en.html`
+  - `public/info/instrucciones.es.html`
+  - `public/index.html`
+
+- users can also revoke the app's access from their Google Account:
+  - `PRIVACY.md`
+  - `public/info/instrucciones.en.html`
+  - `public/info/instrucciones.es.html`
+
+### Basis for `Project choice: not satisfied`
+
+The repo does not currently contain the broader optional/tutorial depth listed above as `Project choice`, such as:
+
+- a separate setup walkthrough for obtaining/importing `credentials.json`
+- a separate activation-flow tutorial
+- billing instructions in user-manual form
+- dedicated setup/activation screenshots or instructional assets
+
+This status note is descriptive only. It does not, by itself, change the checkbox state in `docs/issues/issue_53_implementation_plan.md`.
+
 ## Non-claims
 
 This note does not claim that Google requires:

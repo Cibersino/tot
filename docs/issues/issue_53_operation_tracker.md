@@ -108,6 +108,37 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0138
+
+- Date/time: 2026-03-21 21:42:17 -03:00
+- Operation: Update the Section 8 item-3 authority-split doc to record that the current repo satisfies the Google-obligation subset.
+- Why: User requested that the doc state the current closure result for the Google-obligation side explicitly.
+- Changes made:
+  - Updated `docs/issues/issue_53_section8_item3_google_vs_project.md` with an explicit `## Current repo status` section.
+  - Recorded the current result as:
+    - `Google obligation: satisfied`
+    - `Project choice: not satisfied`
+  - Added the concrete basis for the satisfied Google-obligation subset across the current user-facing surfaces.
+  - Added an explicit note that this doc update does not, by itself, toggle the checkbox state in `docs/issues/issue_53_implementation_plan.md`.
+  - Read-only review of the authority-split doc and the current OCR/privacy/help surfaces started immediately before this OP entry.
+    - impact: no files were modified during that pre-entry read phase.
+    - handling: the pre-entry read phase is disclosed here explicitly.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_item3_google_vs_project.md`
+- Evidence:
+  - Current reviewed surfaces already show the Google-obligation subset content in:
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+    - `public/index.html`
+- Outcome / next step:
+  - The authority-split doc now records that the Google-obligation subset is satisfied.
+  - Next step, if requested, is to decide whether Section 8 item 3 should be closed on that basis or kept open for repo-chosen `Project choice` depth.
+
 ### OP-0137
 
 - Date/time: 2026-03-21 21:21:21 -03:00
