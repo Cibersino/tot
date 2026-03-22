@@ -106,6 +106,38 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0151
+
+- Date/time: 2026-03-22 00:57:43 -03:00
+- Operation: Add a dedicated Issue 53 testing-to-production transition plan for the Google OCR path.
+- Why: The current repo now distinguishes between the testing baseline and the intended production target, but it still needed one operational document that states the exact transition steps, preconditions, and mandatory vs optional work using official Google documentation plus current repo evidence.
+- Changes made:
+  - Added `docs/issues/issue_53_testing_to_production_transition_plan.md`.
+  - Recorded:
+    - current repo-state evidence
+    - official Google source basis for testing vs production posture
+    - preconditions
+    - checkbox work plan
+    - mandatory / conditional / optional classification
+    - app-side consequences for the current runtime and user instructions
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53.md` and `docs/issues/issue_53_access_model_options.md` now provide the repo-side basis for the production target used by the plan.
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` still shows testing-oriented manual `credentials.json` import support, which the new plan calls out as a required app-side transition point.
+  - Official Google sources cited in the new document cover:
+    - separate testing vs production projects
+    - testing-mode audience limitations
+    - `drive.file` non-sensitive scope posture
+    - production homepage/privacy requirements
+    - brand verification conditions
+- Outcome / next step:
+  - Issue 53 now has a dedicated production-transition plan anchored in both current repo evidence and official Google documentation.
+  - Next work can execute directly from that plan instead of inferring production steps piecemeal from multiple docs.
+
 ### OP-0150
 
 - Date/time: 2026-03-22 00:34:25 -03:00
