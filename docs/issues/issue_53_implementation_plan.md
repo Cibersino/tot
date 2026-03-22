@@ -20,6 +20,11 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
 
 ## 1. Substrate and access-model decision
 
+Clarification note:
+
+- The historical evaluation labels in Section 1 (`vendor-managed`, `user-managed`, `hybrid/optional`) are retained as decision-history shorthand.
+- The refined preferred production-target interpretation for the chosen route now lives in `docs/issues/issue_53_access_model_options.md`.
+
 - [x] Evaluate substrate options, starting with Google Document AI as the primary candidate.
 - [x] Compare OCR quality (especially photographed book pages), language coverage, PDF support, setup burden, cost, Windows-first delivery fit, and cross-platform architectural viability.
 - [x] Evaluate the OCR access / billing / activation model for distributed app delivery alongside substrate evaluation:
@@ -29,6 +34,16 @@ Linked contracts: `docs/issues/issue_53_contracts.md`
 - [x] Decide substrate and access model, and record rationale + known constraints that will affect downstream implementation.
 
 ## 2. Substrate setup / billing / activation path
+
+Clarification note:
+
+- Section 2 records the current implemented/testing baseline and the constraints needed to build the route.
+- The preferred production-target model is now more specific than the older shorthand:
+  - Google-side assets: app-owner-owned
+  - runtime credential/configuration delivery: bundled with the app
+  - runtime Google identity: end user's Google account
+  - usage-cost/quota context: end user's Google-side usage context
+- Until the production transition is actually implemented, the historical testing/runtime constraints in this section remain valid evidence of the current repo behavior.
 
 - [x] Complete developer-side installation/activation for the chosen substrate.
   - Owner: `User manual` with Codex guidance.

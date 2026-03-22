@@ -204,11 +204,18 @@ The OCR substrate and access model are fixed for this epic.
 
 Chosen baseline:
 - substrate: `Google Drive OCR via Google Docs conversion`
-- access model: `user-managed + explicit sign-in activation`
+- implementation/testing baseline: `user-managed + explicit sign-in activation`
+
+Production-target clarification:
+- Google-side asset ownership: `app-owner-owned`
+- runtime credential / configuration delivery: `bundled with the app`
+- runtime Google identity used for OCR: `the end user's Google account`
+- usage-cost / quota responsibility: `the end user's Google account / Google-side usage context`
 
 Decision references:
 - `docs/issues/issue_53_ocr_substrate_evaluation.md` (final decision + rationale)
 - `docs/issues/issue_53_contracts.md` (locked contract baseline)
+- `docs/issues/issue_53_access_model_options.md` (refined production-target interpretation)
 
 Implementation implications:
 - OCR remains unavailable until explicit user sign-in/activation is completed.
@@ -225,10 +232,11 @@ Because of that, the epic must explicitly define the OCR access / billing / acti
 
 At minimum, this includes:
 - who pays for OCR usage
-- who owns the substrate account/project
+- who owns the Google-side assets used for OCR
 - where credentials live
-- whether OCR is vendor-managed, user-managed, or hybrid
-- whether each user can enable OCR with their own account/billing
+- how runtime credential/configuration is delivered
+- whose Google account is used during normal OCR operation
+- who bears the normal Google-side usage/quota context
 - whether OCR is enabled by default or requires explicit activation
 - whether usage restrictions/limits exist and how they are enforced
 - what happens when quota, budget, or usage limits are reached

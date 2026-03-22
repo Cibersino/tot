@@ -174,7 +174,7 @@ In scope:
 
 - Do not change OCR substrate.
 - Do not widen OAuth scopes.
-- Do not replace the current user-managed activation model.
+- Do not change the chosen OCR route or drift into a central vendor-operated OCR service model.
 - Do not treat dependency-license inventory as part of this issue.
 - Do not force website implementation work here unless a separate release task explicitly chooses to do so.
 
@@ -205,7 +205,7 @@ In scope:
 
 - [x] Close the user-facing documentation/help gap:
   - update privacy/external-processing wording where needed
-  - update setup / billing / activation instructions for the current user-managed model
+  - update setup / billing / activation instructions for the currently chosen model, using the refined production-target interpretation in `docs/issues/issue_53_access_model_options.md`
   - document the implemented disconnect posture from section 3 explicitly
   - explain Google Account-side removal/revocation
   - ensure help text distinguishes local storage, Google processing, and cleanup behavior clearly
@@ -230,7 +230,7 @@ In scope:
 - The implemented/documented disconnect posture meets at least the minimum compliance target recorded in section 3.
 - Privacy/help/setup surfaces are updated consistently, not just the activation UI.
 - User-facing docs explicitly describe disconnect / local token-removal behavior for Google OCR.
-- User-facing docs explicitly describe the current user-managed setup/activation model and what is sent to Google for OCR.
+- User-facing docs explicitly describe the current chosen setup/activation model and what is sent to Google for OCR.
 - Release documentation explicitly records the Google OAuth public-release verification requirement.
 - Release documentation explicitly records that local in-app privacy/help pages are not sufficient for public OAuth verification.
 - Section 8.2 and 8.3 closure for Issue 53 can cite this issue directly, with remaining public-release-only work isolated to Section 9.

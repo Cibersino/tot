@@ -111,7 +111,8 @@ That project scope includes, at minimum:
 
 - explain the chosen OCR model as part of the product's actual behavior:
   - OCR is not always available automatically
-  - OCR may require user-side setup/activation
+  - OCR setup is moving toward an app-owner-provided Google-side configuration for production delivery
+  - OCR may still require user-side activation/sign-in with the user's own Google account
   - OCR uses the chosen Google-based model when that route is used
 
 - explain the main user-facing failure/setup states where they materially affect feature usability:
@@ -188,6 +189,13 @@ In particular, the current user-facing docs are still light or missing on:
 - apply-flow behavior after extraction
 - normal-use constraints such as blocked starts
 - the broader feature-level instructional surfaces/assets needed for this shipped feature
+
+It is also still missing a clean user-facing explanation of the refined production-target OCR model now recorded in `docs/issues/issue_53_access_model_options.md`, especially:
+
+- app-owner-provided Google-side setup
+- bundled runtime client/configuration
+- end-user Google account used at runtime
+- end-user Google-side usage/quota context
 
 The previous project-side content was removed because it reduced Section 8 too narrowly to the Google/OCR activation slice.
 
