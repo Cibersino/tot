@@ -106,6 +106,28 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0149
+
+- Date/time: 2026-03-22 00:34:25 -03:00
+- Operation: Finish the access-model document by consolidating the chosen axes into one explicit production-target model.
+- Why: The chosen values are already in the document. It still needs a concise closeout that states the resulting model and what that does and does not change.
+- Changes made:
+  - Added a `Current preferred production-target model` section to `docs/issues/issue_53_access_model_options.md`.
+  - Added a short `Practical consequence` section summarizing:
+    - what changes from testing to production
+    - what stays the same
+    - what remains outside this access-model decision
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now states the chosen model in one place and closes with a short practical summary.
+- Outcome / next step:
+  - Access-model document is now internally complete for the current decision slice.
+  - Next work should use this chosen model to update the related Issue 53 docs and implementation assumptions if needed.
+
 ### OP-0148
 
 - Date/time: 2026-03-22 00:15:48 -03:00
