@@ -16,6 +16,7 @@
       "colores": "Los matices del barrio",
       "shortcuts": "La movía rápida del teclado",
       "presets_por_defecto": "Lo que viene de fábrica",
+      "disconnect_google_ocr": "Desenchufar Google OCR",
       "comunidad": "El barrio",
       "discord": "Discord",
       "avisos": "Chismesitos",
@@ -27,7 +28,11 @@
       "desarrollo": "La cocina",
       "recargar": "Dárselo de nuevo",
       "forcereload": "Reiniciar a la mala",
-      "toggle_devtools": "Mirar las tripas (DevTools)"
+      "toggle_devtools": "Mirar las tripas (DevTools)",
+      "language": {
+        "empty": "No hay niun idioma pa' elegir",
+        "invalid": "La lista de idiomas salió chueca"
+      }
     },
     "dialog": {
       "ok": "Ya era",
@@ -42,6 +47,9 @@
       "task_link_confirm": "¿Querís abrir ese link trucho?",
       "task_link_trust_host": "¿Le creís a este host?",
       "task_path_confirm": "¿Querís abrir esa cochinada?",
+      "disconnect_google_ocr_title": "Desenchufar Google OCR",
+      "disconnect_google_ocr_confirm": "¿Querís desenchufar Google OCR?",
+      "disconnect_google_ocr_detail": "Esto le corta el permiso al token guardado de Google OCR y borra el archivo local del token de esta app. El credentials.json se queda ahí pa' que podai reconectarte después.",
       "delete_preset_confirm": "¿Querís pitiarte el preset \"{name}\"?",
       "delete_preset_none": "No habís marcao niuna custión pa' borrar, pajarón",
       "restore_defaults_confirm": "¿Querí dejar todo como estaba al principio? Se va a borrar toda la mano que le metiste a los presets del \"{lang}\".",

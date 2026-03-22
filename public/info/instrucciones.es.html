@@ -197,7 +197,8 @@
             <ul>
               <li><strong>📋↺</strong>: reemplaza completamente el texto actual por el portapapeles.</li>
               <li><strong>📋+</strong>: añade el portapapeles al final del texto actual.</li>
-              <li><strong>Input de repeticiones</strong> (junto a <strong>📋↺</strong> y <strong>📋+</strong>): define cuántas veces se repite el pegado en un solo clic.</li>
+              <li><strong>Input de repeticiones</strong> (junto a <strong>📋↺</strong> y <strong>📋+</strong>): define
+                cuántas veces se repite el pegado en un solo clic.</li>
             </ul>
           </li>
         </ol>
@@ -600,6 +601,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Texto actual</strong> (estado del texto).</li>
           <li><strong>Snapshots guardados</strong> (librería opcional en <code>config/saved_current_texts/</code>).</li>
           <li><strong>Configuración</strong> (por ejemplo: idioma, WPM actual, modo de conteo).</li>
+          <li><strong>Estado de OCR con Google</strong>: el archivo local <code>credentials.json</code> y,
+            cuando OCR está conectado, el estado local del token de Google OCR.</li>
           <li><strong>Presets</strong> (personalizados y estado de presets por defecto).</li>
           <li><strong>Estado de ventanas</strong> (por ejemplo: tamaño/posición del editor).</li>
           <li><strong>Tareas</strong>: listas de tareas, biblioteca de tareas, lista de enlaces permitidos y estado de
@@ -610,6 +613,12 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ul>
           <li>Si trabajas con texto sensible, usa <strong>🗑</strong> al terminar y considera limpieza total.</li>
         </ul>
+
+        <p>Si solo quieres desconectar Google OCR sin borrar el resto de la configuración de la app, usa
+          <strong>Menú &gt; Preferencias &gt; Desconectar Google OCR</strong>. Cuando eso resulta exitoso, la app revoca el token
+          guardado de Google y elimina el archivo local del token OCR, pero conserva el archivo local
+          <code>credentials.json</code> para que puedas reconectarte más adelante. Como control externo adicional,
+          también puedes revocar el acceso de la app desde los controles de seguridad/permisos de tu Cuenta de Google.</p>
 
         <h4>8.2 Limpieza total (reinstalación limpia) — con rutas por sistema</h4>
 
@@ -724,7 +733,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <h3>“¿La app protege mi privacidad?”</h3>
         <p>Esencialmente, <em>toT</em> opera <strong>localmente</strong>. El texto que pegas o escribes se procesa en tu
           equipo para contarlo/estimarlo.</p>
-        <p><strong>Things to distinguish:</strong></p>
+        <p><strong>Aspectos a distinguir:</strong></p>
         <ul>
           <li><strong>Almacenamiento local:</strong> la aplicación guarda datos localmente (para persistencia entre
             sesiones). Esto incluye:
@@ -733,22 +742,35 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>Snapshots de texto guardados</strong> (biblioteca opcional bajo
                 <code>config/saved_current_texts/</code>).
               </li>
+              <li><strong>Estado de OCR con Google</strong>: el archivo local <code>credentials.json</code> y,
+                cuando OCR está conectado, el estado local del token de Google OCR.</li>
               <li><strong>Tareas guardadas</strong> (listas de tareas, biblioteca de tareas y lista de enlaces
                 permitidos).</li>
             </ul>
           </li>
-          <li><strong>Internet:</strong> la app puede requerir conexión <strong>solo</strong> cuando tú ejecutas
-            acciones que abren recursos externos, como:
+          <li><strong>Internet:</strong> la app puede requerir conexión cuando tú ejecutas acciones que usan recursos
+            externos, como:
             <ul>
-              <li>abrir enlaces externos en los que el usuario hizo clic (incluidos los enlaces abiertos desde Tareas),
+              <li>abrir enlaces externos en los que el usuario hizo clic (incluidos los enlaces abiertos desde páginas
+                informativas y desde Tareas),
               </li>
-              <li>comprobar/abrir información de actualización (por ejemplo, en GitHub).</li>
+              <li>comprobar/abrir información de actualización (por ejemplo, en GitHub),</li>
+              <li>si decides usar OCR: autorizar Google en el navegador del sistema y enviar los archivos que elegiste
+                explícitamente para el procesamiento OCR.</li>
             </ul>
           </li>
         </ul>
-        <p>Implicación práctica: aunque <em>toT</em> no “sube tu texto”, cualquier acción que abra un sitio externo
-          expone a ese servicio tu dirección IP y metadatos normales de conexión (como en cualquier navegador). Si
-          quieres eliminar todos los datos almacenados localmente, ve al paso 9 (“Limpieza total”).</p>
+        <p>Implicación práctica: el manejo ordinario del texto que pegas/escribes en <em>toT</em> sigue siendo local.
+          Sin embargo, cualquier acción que abra un sitio externo expone a ese servicio tu dirección IP y metadatos
+          normales de conexión (como en cualquier navegador). Además, si decides usar OCR, los archivos que seleccionas
+          explícitamente para OCR se envían a Google para esa operación; no se envían a los desarrolladores ni a otros
+          terceros como parte del flujo OCR. La app también intenta limpiar de inmediato el documento temporal
+          convertido en Google tras la exportación. Si quieres desconectar solo Google OCR, usa
+          <strong>Menú &gt; Preferencias &gt; Desconectar Google OCR</strong>. Cuando eso resulta exitoso, la app revoca el token
+          guardado de Google y elimina el archivo local del token OCR, pero conserva <code>credentials.json</code> para
+          que puedas reconectarte más adelante. Si además quieres quitar el acceso del lado de Google, revócalo desde
+          los controles de seguridad/permisos de tu Cuenta de Google. Si quieres eliminar todos los datos almacenados
+          localmente, ve al paso 8 (“Guardado local, limpieza y reinstalación “limpia””).</p>
 
         <hr />
 

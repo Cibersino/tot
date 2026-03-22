@@ -29,7 +29,7 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Current Authoritative Status
 
-As of 2026-03-18:
+As of 2026-03-21:
 
 - Section 1 (`Substrate and access-model decision`): complete.
 - Section 2 (`Substrate setup / billing / activation path`): complete.
@@ -84,12 +84,926 @@ As of 2026-03-18:
     - Closure basis:
       - `docs/cleanup/cleanup_file_by_file.md` now shows `Archivos ya ordenados y limpiados (35)` and `Faltan: none`
   - Section 7 is complete.
-  - Active next checklist item: Section 8 item 1 (`Add/update third-party notices, attributions, and license display surfaces`).
+  - Section 8 started.
+    - Item 1 (`Add/update third-party notices, attributions, and license display surfaces`): materially advanced.
+      - About/legal surface now includes OCR dependency/legal pointers.
+      - Neutral runtime legal link mapping for image-processing runtime is implemented.
+      - Missing bundled runtime notice for `@img/sharp-win32-x64@0.34.4` was added.
+    - Item 2 (`Add/update privacy and external-processing disclosures for chosen substrate/dependencies`): materially advanced.
+      - `PRIVACY.md`, `public/info/acerca_de.html`, `public/info/instrucciones.en.html`, and `public/info/instrucciones.es.html` now describe Google-connected OCR behavior, local credential/token posture, disconnect behavior, and Google Account-side revocation fallback.
+      - Pre-consent OCR activation disclosure is implemented as a dedicated renderer modal immediately before Google OAuth launch.
+    - Item 3 (`Update instructions and assets`): materially advanced.
+      - OCR activation disclosure modal DOM/module/styles/copy were added in the main window and localized across renderer locales.
+      - Supporting contract doc for this slice exists at `docs/issues/issue_53_ocr_activation_disclosure_plan.md`.
+      - Broader instruction/setup/access-model documentation scope remains open under the current Section 8 structure.
+    - Item 4 (`Update changelog/release notes and related documentation`): pending.
+    - Item 5 (`Verify all Issue 53 acceptance criteria are covered before closure`): pending.
+  - Active next checklist item: Section 8 item 4 (`Update changelog/release notes and related documentation`).
+  - Section 9 not started.
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0153
+
+- Date/time: 2026-03-22 01:53:16 -03:00
+- Operation: Clarify timing and prerequisite meaning in the testing-to-production transition plan.
+- Why: The transition doc still risked implying that Google manually approves desktop OAuth client creation or the `In production` publishing-state change before they take effect.
+- Changes made:
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md`.
+  - Added a dedicated timing clarification section.
+  - Clarified that:
+    - desktop OAuth client creation is effectively immediate
+    - changing the Google OAuth project to `In production` is effectively immediate
+    - later review time belongs to verification workflows, not to the basic client-creation or publishing-state actions themselves
+  - Clarified that the domain/homepage/privacy-policy preconditions exist for the intended compliant external production posture, not because they block the console button itself.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - The revised plan now explicitly separates immediate Google Console actions from later verification-dependent work.
+  - The revised prerequisites note now explains why public pages/domain readiness still matters even though `Publish app` is not a multi-day approval step.
+- Outcome / next step:
+  - The production-transition plan now reflects the distinction between immediate OAuth project state changes and later verification/compliance work more clearly.
+
+### OP-0151
+
+- Date/time: 2026-03-22 00:57:43 -03:00
+- Operation: Add a dedicated Issue 53 testing-to-production transition plan for the Google OCR path.
+- Why: The current repo now distinguishes between the testing baseline and the intended production target, but it still needed one operational document that states the exact transition steps, preconditions, and mandatory vs optional work using official Google documentation plus current repo evidence.
+- Changes made:
+  - Added `docs/issues/issue_53_testing_to_production_transition_plan.md`.
+  - Recorded:
+    - current repo-state evidence
+    - official Google source basis for testing vs production posture
+    - preconditions
+    - checkbox work plan
+    - mandatory / conditional / optional classification
+    - app-side consequences for the current runtime and user instructions
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53.md` and `docs/issues/issue_53_access_model_options.md` now provide the repo-side basis for the production target used by the plan.
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` still shows testing-oriented manual `credentials.json` import support, which the new plan calls out as a required app-side transition point.
+  - Official Google sources cited in the new document cover:
+    - separate testing vs production projects
+    - testing-mode audience limitations
+    - `drive.file` non-sensitive scope posture
+    - production homepage/privacy requirements
+    - brand verification conditions
+- Outcome / next step:
+  - Issue 53 now has a dedicated production-transition plan anchored in both current repo evidence and official Google documentation.
+  - Next work can execute directly from that plan instead of inferring production steps piecemeal from multiple docs.
+
+### OP-0150
+
+- Date/time: 2026-03-22 00:34:25 -03:00
+- Operation: Clarify the main Issue 53 docs so they reflect the refined production-target access model instead of only the old coarse shorthand.
+- Why: The repo docs still mixed the historical shorthand `user-managed + explicit sign-in activation` with the newer, more precise production-target interpretation.
+- Changes made:
+  - Updated `docs/issues/issue_53.md`.
+  - Updated `docs/issues/issue_53_implementation_plan.md`.
+  - Updated `docs/issues/issue_53_section8_google_compliance.md`.
+  - Updated `docs/issues/issue_53_section8_google_vs_project_scope.md`.
+  - Aligned those docs to the clarified production-target model recorded in `docs/issues/issue_53_access_model_options.md`.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_section8_google_compliance.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - The four docs now distinguish between:
+    - the historical implementation/testing baseline
+    - the refined preferred production-target model
+- Outcome / next step:
+  - The main Issue 53 docs are now aligned at the documentation level.
+  - Next work should use this clarified model wherever remaining Section 8/Section 9 wording still depends on the older coarse shorthand.
+
+### OP-0149
+
+- Date/time: 2026-03-22 00:34:25 -03:00
+- Operation: Finish the access-model document by consolidating the chosen axes into one explicit production-target model.
+- Why: The chosen values are already in the document. It still needs a concise closeout that states the resulting model and what that does and does not change.
+- Changes made:
+  - Added a `Current preferred production-target model` section to `docs/issues/issue_53_access_model_options.md`.
+  - Added a short `Practical consequence` section summarizing:
+    - what changes from testing to production
+    - what stays the same
+    - what remains outside this access-model decision
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now states the chosen model in one place and closes with a short practical summary.
+- Outcome / next step:
+  - Access-model document is now internally complete for the current decision slice.
+  - Next work should use this chosen model to update the related Issue 53 docs and implementation assumptions if needed.
+
+### OP-0148
+
+- Date/time: 2026-03-22 00:15:48 -03:00
+- Operation: Add the next decision axis to the access-model document.
+- Why: After choosing `app-owner-owned` for Google-side asset ownership, the next practical question is how the runtime receives that owner-provided Google-side configuration.
+- Changes made:
+  - Added `Second axis to decide` to `docs/issues/issue_53_access_model_options.md`.
+  - Set that axis to `Runtime credential / configuration delivery`.
+  - Added the plain decision question for that axis only.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now contains the next active decision axis without yet listing values.
+- Outcome / next step:
+  - The next axis is established.
+  - Next step is to define its possible values before choosing one.
+
+### OP-0147
+
+- Date/time: 2026-03-21 23:39:21 -03:00
+- Operation: Add the first working dimension set to the access-model document.
+- Why: The document now has a factual baseline. The next step is to introduce a minimal set of concrete axes that can actually change the OCR access model.
+- Changes made:
+  - Added a `Working dimensions` section to `docs/issues/issue_53_access_model_options.md`.
+  - Kept the set minimal and concrete:
+    - Google-side asset ownership
+    - runtime credential/configuration delivery
+    - runtime Google identity used for OCR
+    - usage-cost/quota responsibility
+  - Did not add evaluative or clearly derived categories.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now contains the factual baseline plus the first working dimension set.
+- Outcome / next step:
+  - Minimal dimension set established.
+  - Next step is to choose the first value on one of these four axes.
+
+### OP-0146
+
+- Date/time: 2026-03-21 23:37:16 -03:00
+- Operation: Rebuild the access-model working document as a factual baseline.
+- Why: The file is currently empty. The safest useful restart is to record only the settled facts already established by existing Issue 53 documents.
+- Changes made:
+  - Recreated `docs/issues/issue_53_access_model_options.md` with a factual baseline only.
+  - Added:
+    - purpose
+    - core question
+    - current settled baseline from existing Issue 53 docs
+    - the open production-transition question
+  - Did not add dimensions, options, or decisions beyond what is already fixed elsewhere.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53.md` records:
+    - substrate: `Google Drive OCR via Google Docs conversion`
+    - access model: `user-managed + explicit sign-in activation`
+  - `docs/issues/issue_53_ocr_substrate_evaluation.md` records:
+    - development should proceed first against the testing setup
+    - test vs production differences should be handled primarily through configuration and publication inputs
+    - later production transition should mostly involve switching to the production Google project / OAuth client
+- Outcome / next step:
+  - Working document restored on a grounded baseline.
+  - Next step should identify the first real production-transition decision that is still open.
+
+### OP-0145
+
+- Date/time: 2026-03-21 23:27:21 -03:00
+- Operation: Reset the access-model dimension framework to a stricter standard.
+- Why: The previous dimension set was not reliable enough. It mixed overlap, abstraction, and derived/evaluative ideas. A defensible base needs explicit admissibility criteria and a tighter dimension set.
+- Changes made:
+  - Added an admissibility section to `docs/issues/issue_53_access_model_options.md` defining what qualifies as a governing dimension.
+  - Replaced the old six-dimension set with a stricter five-dimension set:
+    - Google-side asset ownership
+    - runtime credential/configuration source
+    - usage-cost/quota responsibility
+    - Google-side setup/maintenance responsibility
+    - runtime Google identity used for normal OCR operation
+  - Removed the earlier weak dimensions that were overlapping, abstract, or derivative (`OAuth publication ownership`, separate `Google project / client ownership`, `Operational responsibility`, `End-user activation burden`).
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now contains an explicit admissibility rule and the revised five-dimension set.
+- Outcome / next step:
+  - Dimension framework reset on a stricter basis.
+  - Next step is to choose the first value on the revised axes.
+
+### OP-0144
+
+- Date/time: 2026-03-21 23:12:40 -03:00
+- Operation: Correct the access-model document so it uses the sequential dimension-by-dimension method instead of the old combination-first method.
+- Why: User identified that the document still encoded the wrong method and requested correcting it before continuing.
+- Changes made:
+  - Updated `docs/issues/issue_53_access_model_options.md` so the purpose and method now use sequential construction instead of combination-first exploration.
+  - Replaced the old method bullets with:
+    - keep the dimensions separate
+    - choose one dimension at a time
+    - record the chosen value
+    - continue with the next dimension in light of prior choices
+    - build one candidate model progressively
+  - Replaced the old rule text with explicit guidance that the document does not need a prior taxonomy of named options.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` no longer describes a theoretical-option/combinations-first method.
+- Outcome / next step:
+  - Method corrected.
+  - Next step is to choose the first dimension and record its value.
+
+### OP-0143
+
+- Date/time: 2026-03-21 22:56:25 -03:00
+- Operation: Recreate the access-model working document from zero using a stricter method.
+- Why: The previous attempt was reverted by the user because the option set drifted. The document must now start by freezing the governing dimensions before deriving any option set.
+- Changes made:
+  - Recreated `docs/issues/issue_53_access_model_options.md` from zero.
+  - Added a method section that fixes the document sequence:
+    - freeze dimensions
+    - derive theoretical options
+    - reduce by realistic/objective constraints
+    - reduce by explicit project decisions
+  - Added six governing dimensions only:
+    - OAuth publication ownership
+    - Google project/client ownership
+    - usage-cost/quota responsibility
+    - operational responsibility
+    - setup responsibility
+    - end-user activation burden
+  - Added a rule that no option set should be written unless it is expressible as a combination of those fixed dimensions.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `docs/issues/issue_53_access_model_options.md` now exists again and contains only the method and fixed dimensions.
+- Outcome / next step:
+  - Stable base created.
+  - Next step, if requested, is to derive the theoretical option set from these fixed dimensions without changing the dimensions themselves.
+
+### OP-0142
+
+- Date/time: 2026-03-21 22:10:47 -03:00
+- Operation: Rewrite the `Project scope` side of the Section 8 Google-vs-project note from scratch.
+- Why: User requested a direct rewrite after the old project-side content was removed as reductive and misleading.
+- Changes made:
+  - Replaced the placeholder `Project scope` area in `docs/issues/issue_53_section8_google_vs_project_scope.md` with broader Section 8 project-side documentation scope.
+  - Reframed the project-side content around Issue 53 as a full user-facing import/extract feature, including:
+    - feature entrypoint and basic flow
+    - feature coverage
+    - route choice and post-extraction apply choices
+    - key operational constraints
+    - the chosen OCR model as part of feature behavior
+    - user-facing setup/failure states where they materially affect usability
+    - broader instructional surfaces/assets needed for coherent feature documentation
+  - Replaced the old placeholder status basis with a new `Project scope: not satisfied` basis grounded in the broader feature documentation gaps.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+- Evidence:
+  - Broader issue-scope basis reused from:
+    - `docs/issues/issue_53.md`
+    - `docs/issues/issue_53_implementation_plan.md`
+- Outcome / next step:
+  - The Section 8 note now distinguishes Google-backed minimums from broader Issue 53 feature-documentation scope without collapsing the project side into the OCR activation slice.
+
+### OP-0141
+
+- Date/time: 2026-03-21 22:07:05 -03:00
+- Operation: Remove the current `Project scope` content from the Section 8 Google-vs-project note so it can be rewritten cleanly from scratch.
+- Why: User judged the current `Project scope` content in `docs/issues/issue_53_section8_google_vs_project_scope.md` to be reductive and misleading for Issue 53.
+- Changes made:
+  - Removed the existing `### Project scope` section from `docs/issues/issue_53_section8_google_vs_project_scope.md`.
+  - Removed the old project-side "not satisfied" basis list that depended on that deleted content.
+  - Left the Google-obligation side intact.
+  - Replaced the project-side status with a neutral placeholder:
+    - `Project scope: pending rewrite`
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+- Evidence:
+  - The note now keeps only the Google-obligation content plus a placeholder that the project-side content is pending rewrite.
+- Outcome / next step:
+  - The note is now cleared for a from-scratch rewrite of the project-side content.
+
+### OP-0140
+
+- Date/time: 2026-03-21 21:58:23 -03:00
+- Operation: Restructure Section 8 to remove the overlapping old item 3, renumber downstream items, and reframe the supporting Google-vs-project note so it no longer depends on a deleted checklist slot.
+- Why: User decided to eliminate old Section 8 item 3 because the overlap between old 8.3 and 8.4 was causing structural confusion. The renumbering and supporting-doc reframe must happen together.
+- Changes made:
+  - Removed the overlapping old Section 8 item 3 from `docs/issues/issue_53_implementation_plan.md`.
+  - Renumbered old 8.4/8.5/8.6 to new 8.3/8.4/8.5 in the implementation plan.
+  - Renamed and reframed the supporting note:
+    - from `docs/issues/issue_53_section8_item3_google_vs_project.md`
+    - to `docs/issues/issue_53_section8_google_vs_project_scope.md`
+  - Reframed the supporting note so it no longer depends on a deleted checklist slot and now covers broader Section 8 Google-vs-project scope.
+  - Reconciled current-state and pending-item references in the Issue 53 docs/tracker to match the new Section 8 numbering.
+- Checklist updates:
+  - `docs/issues/issue_53_implementation_plan.md`
+    - removed old Section 8 item 3 (`Update setup/billing/activation instructions for the chosen access model.`)
+    - old item 4 -> new item 3
+    - old item 5 -> new item 4
+    - old item 6 -> new item 5
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_section8_google_compliance.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+- Evidence:
+  - The implementation plan now shows the simplified Section 8 structure with five items instead of six.
+  - The supporting note now exists at `docs/issues/issue_53_section8_google_vs_project_scope.md` and no longer depends on old item numbering.
+- Outcome / next step:
+  - Section 8 structure is simplified and renumbered.
+  - Active next checklist item is now Section 8 item 4 (`Update changelog/release notes and related documentation`).
+
+### OP-0138
+
+- Date/time: 2026-03-21 21:42:17 -03:00
+- Operation: Update the Section 8 Google-vs-project scope note to record that the current repo satisfies the Google-obligation subset.
+- Why: User requested that the doc state the current closure result for the Google-obligation side explicitly.
+- Changes made:
+  - Updated `docs/issues/issue_53_section8_google_vs_project_scope.md` with an explicit `## Current repo status` section.
+  - Recorded the current result as:
+    - `Google obligation: satisfied`
+    - `Project scope: not satisfied`
+  - Added the concrete basis for the satisfied Google-obligation subset across the current user-facing surfaces.
+  - Added an explicit note that this doc update does not, by itself, toggle the checkbox state in `docs/issues/issue_53_implementation_plan.md`.
+  - Read-only review of the authority-split doc and the current OCR/privacy/help surfaces started immediately before this OP entry.
+    - impact: no files were modified during that pre-entry read phase.
+    - handling: the pre-entry read phase is disclosed here explicitly.
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+- Evidence:
+  - Current reviewed surfaces already show the Google-obligation subset content in:
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+    - `public/index.html`
+- Outcome / next step:
+  - The authority-split doc now records that the Google-obligation subset is satisfied.
+  - Next step, if requested, is to decide how that current-status note should be used under the simplified Section 8 structure.
+
+### OP-0137
+
+- Date/time: 2026-03-21 21:21:21 -03:00
+- Operation: Create a dedicated Issue 53 doc that separates Google obligations from project-chosen documentation scope for Section 8.
+- Why: User requested a doc-based, source-backed separation so Section 8 documentation work can be judged by authority instead of by blended interpretation.
+- Changes made:
+  - Added `docs/issues/issue_53_section8_google_vs_project_scope.md`.
+  - Documented a strict two-label classification rule for Section 8:
+    - `Google obligation`
+    - `Project scope`
+  - Tightened the doc language so `Google obligation` is framed only as required content on required user-facing surfaces, not as extra docs that describe those surfaces.
+  - Recorded the official Google source basis used for classification:
+    - Google API Services User Data Policy
+    - Google Workspace API User Data and Developer Policy
+    - OAuth 2.0 / brand-verification guidance (release-posture only)
+  - Classified item-3 subtopics explicitly:
+    - Google-backed minimum explanation of connected OCR behavior and user-control/removal paths
+    - project-chosen tutorial depth such as setup walkthroughs, billing docs, screenshots, and detailed troubleshooting
+  - Read-only review of the current Section 8 wording and current user-facing OCR docs started immediately before this OP entry.
+    - impact: no files were modified during that pre-entry read phase.
+    - handling: the pre-entry read phase is disclosed here explicitly.
+- Checklist updates:
+  - No checkbox toggles yet.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+- Evidence:
+  - Current Section 8 wording blends Google-backed obligations with project-chosen documentation depth unless they are separated explicitly.
+  - User-facing OCR docs reviewed for current state:
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+- Outcome / next step:
+  - The new authority-split doc is now available as a basis for future closure discussion on Section 8.
+  - Next step, if requested, is to evaluate current repo surfaces against that stricter surface/content framing.
+
+### OP-0135
+
+- Date/time: 2026-03-21 20:36:53 -03:00
+- Operation: Refresh the Section 8 Google compliance issue doc so it matches the implemented OCR disclosure work and exposes progress as an explicit checklist.
+- Why: User requested the next Section 8 step directly from `docs/issues/issue_53_section8_google_compliance.md` and asked for checkbox-style tracking so current position is obvious at a glance.
+- Changes made:
+  - Updated `docs/issues/issue_53_section8_google_compliance.md` to remove stale pre-implementation wording that still described the OCR activation disclosure gap as open.
+  - Added an explicit status snapshot/checklist in the Section 8 compliance doc covering:
+    - provider-policy baseline
+    - flow/surface inventory
+    - disconnect/local token-removal minimum
+    - activation-consent UX fix
+    - user-facing privacy/help/setup gap
+    - release-posture documentation gap
+    - Issue 53 closeout reconciliation
+  - Reframed the doc’s current-state sections so they distinguish:
+    - what is now aligned in runtime/docs
+    - what remains open as release-posture/documentation work
+  - Read-only review of the current compliance doc and tracker started immediately before this OP entry.
+    - impact: no files were modified during that pre-entry read phase.
+    - handling: the operation is logged here with the pre-entry read phase disclosed explicitly.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+  - Added checkbox tracking inside `docs/issues/issue_53_section8_google_compliance.md` itself for easier local status reading.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_google_compliance.md`
+- Evidence:
+  - Current tracker status already records Section 8 items 1-4 as materially advanced and items 5-6 as pending.
+  - Runtime/doc surfaces already present:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+    - `public/js/import_extract_ocr_activation_disclosure_modal.js`
+    - `public/js/import_extract_ocr_activation_recovery.js`
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+- Outcome / next step:
+  - Section 8 compliance doc now serves as a current-state status artifact instead of only a stale gap statement.
+  - Remaining open work should stay focused on release-posture documentation and final Issue 53 closeout reconciliation.
+
+### OP-0134
+
+- Date/time: 2026-03-21 20:26:34 -03:00
+- Operation: Reconcile the Issue 53 tracker with the implementation and documentation work introduced after commit baseline `dd1724ec92fc45c3a4fece2b56b7d2a81ac6a64e`.
+- Why: User requested that the tracker reflect the Issue 53 changes made since that baseline, including the OCR activation disclosure slice and related Section 8 closeout work.
+- Changes made:
+  - Reviewed descendant commit history from the requested baseline through current `HEAD`:
+    - `445d912 documentation`
+    - `5d62339 ocr activation plan`
+    - `e89531d activation disclosure`
+    - `b5b15e9 cleaning up`
+    - `4fd08eb clean up`
+  - Updated `## Current Authoritative Status` to reflect actual post-baseline Issue 53 progress:
+    - Section 8 is now in progress.
+    - Section 8 items 1-4 are materially advanced by implemented legal-surface, privacy/help, activation-disclosure, and cleanup work.
+    - Section 8 items 5-6 remain pending.
+    - Section 9 remains not started.
+  - Recorded that the OCR activation disclosure implementation is now present in runtime code and no longer only planned:
+    - split activation bridge (`prepareImportExtractOcrActivation` / `launchImportExtractOcrActivation`)
+    - dedicated renderer disclosure modal
+    - removal of the old activation-starting toast path
+    - localized disclosure copy across renderer locales
+  - Recorded that the post-implementation smoke test evidence on 2026-03-21 matched the disclosure contract:
+    - modal decline stayed quiet and did not open the browser
+    - browser-side cancel remained distinct from modal decline
+    - successful activation retried prepare and completed OCR execution
+    - reconnect showed the disclosure again
+    - already-connected OCR use skipped disclosure
+    - missing-credentials path completed credentials import before disclosure
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+  - Tracker-only reconciliation of status/evidence.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Commit/stat evidence from the requested baseline:
+    - `445d912 documentation`
+    - `5d62339 ocr activation plan`
+    - `e89531d activation disclosure`
+    - `b5b15e9 cleaning up`
+    - `4fd08eb clean up`
+  - Documentation surfaces updated after the baseline:
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+    - `docs/issues/issue_53_ocr_activation_disclosure_plan.md`
+  - Runtime implementation surfaces added/updated after the baseline:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+    - `electron/preload.js`
+    - `public/js/import_extract_ocr_activation_recovery.js`
+    - `public/js/import_extract_ocr_activation_disclosure_modal.js`
+    - `public/index.html`
+    - `public/renderer.js`
+    - `public/style.css`
+    - `i18n/en/renderer.json`
+    - `i18n/es/renderer.json`
+    - `i18n/de/renderer.json`
+    - `i18n/fr/renderer.json`
+    - `i18n/it/renderer.json`
+    - `i18n/pt/renderer.json`
+  - Smoke-test evidence reviewed from 2026-03-21 user run:
+    - main-process logs showed `import/extract OCR activation prepare completed`, `launch completed`, retry-prepare success, disconnect success, reconnect success, and imported-credentials success path
+    - renderer logs showed explicit modal-decline handling with `ocr_activation_disclosure_declined`
+- Outcome / next step:
+  - Tracker is now aligned with the post-`dd1724ec92fc45c3a4fece2b56b7d2a81ac6a64e` Issue 53 changes.
+  - Next documentation closeout step is Section 8 item 4 (`Update changelog/release notes and related documentation`), followed by Section 8 item 5 acceptance-criteria reconciliation.
+
+### OP-0133
+
+- Date/time: 2026-03-21 14:54:15 -03:00
+- Operation: Review official Google provider-side obligations relevant to the app’s OCR flow.
+- Why: Package-license coverage is separate from Google’s service/OAuth/API obligations. The app still needs a provider-obligations pass to determine what Section 8.2 and 8.3 must cover.
+- Changes made:
+  - Opened a read-only compliance review against official Google sources only.
+  - Scope locked to:
+    - Google APIs / API Services terms
+    - OAuth / user-data policy obligations
+    - any official Google requirements materially affecting app privacy, disclosure, setup, or user-facing instructions for the Drive/Docs OCR route
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Operation initiated from current Issue 53 Section 8 closeout state after license/notices inventory work.
+- Outcome / next step:
+  - In progress.
+  - Next step is to extract the concrete obligations from official Google sources and map them to app docs/UI requirements.
+
+### OP-0132
+
+- Date/time: 2026-03-21 14:47:28 -03:00
+- Operation: Re-add the missing native image-processing runtime notice with a cross-platform-safe app surface.
+- Why: The prior notice attempt was reverted because it exposed a Windows-specific filename/artifact in shared app UI. The remaining inventory gap for `@img/sharp-win32-x64@0.34.4` still needs closure, but the surface must stay platform-neutral.
+- Changes made:
+  - Added exact-version notice file for the current Windows runtime package:
+    - `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
+  - Updated `electron/link_openers.js`:
+    - added a neutral runtime-notice doc key
+    - resolved it internally through a platform-specific mapping
+  - Updated `public/info/acerca_de.html`:
+    - added a neutral user-facing link label for the runtime bundled-components notice
+    - avoided Windows-specific wording and avoided exposing the platform-specific filename
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/link_openers.js`
+  - `public/info/acerca_de.html`
+  - `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
+- Evidence:
+  - Notice source imported from the exact-version `## Licensing` section in:
+    - `node_modules/@img/sharp-win32-x64/README.md`
+  - `public/info/acerca_de.html` now references the notice through neutral copy only.
+  - `node --check electron/link_openers.js` passed.
+- Outcome / next step:
+  - Completed.
+  - The previously incomplete `@img/sharp-win32-x64` inventory item now has a bundled-components notice represented in the app legal surface without leaking a Windows-specific label into shared UI.
+
+### OP-0130
+
+- Date/time: 2026-03-21 14:32:18 -03:00
+- Operation: Neutralize the About/legal surface for the native image-processing runtime so it no longer presents a Windows-only implementation detail as app-wide UI copy.
+- Why: The current About page exposed a Windows-specific runtime artifact directly (`binario Windows de procesamiento de imágenes`), which is the wrong public/legal surface for an app designed with cross-platform boundaries.
+- Changes made:
+  - Updated `public/info/acerca_de.html`:
+    - replaced the Windows-specific visible label with `runtime nativo de procesamiento de imágenes`
+    - changed the linked key to the neutral `appdoc:license-import-extract-image-processing-runtime`
+  - Updated `electron/link_openers.js`:
+    - added `IMAGE_PROCESSING_RUNTIME_DOC_KEYS`
+    - added `IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES`
+    - added `getImageProcessingRuntimePublicDoc(...)`
+    - neutral runtime doc key now resolves internally to the current platform’s concrete bundled legal file
+    - legacy Windows-specific key remains accepted as a compatibility alias
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/link_openers.js`
+  - `public/info/acerca_de.html`
+- Evidence:
+  - `public/info/acerca_de.html` now shows:
+    - `appdoc:license-import-extract-image-processing-runtime`
+    - visible text `runtime nativo de procesamiento de imágenes`
+  - `electron/link_openers.js` now resolves that neutral key through platform-specific mapping.
+  - `node --check electron/link_openers.js` passed.
+- Outcome / next step:
+  - Completed.
+  - The user-facing legal surface no longer hardcodes a Windows-only artifact as app-wide copy.
+  - Next Section 8.1 step remains the narrow notice audit for the native image-processing runtime package itself.
+
+### OP-0127
+
+- Date/time: 2026-03-21 13:48:01 -03:00
+- Operation: Re-implement the Issue 53 extraction-feature license wiring after the user manually rolled back the first attempt.
+- Why: The previous wiring did not match the repo’s standard. Specifically:
+  - `electron/link_openers.js` did not follow the file’s existing style.
+  - `public/info/acerca_de.html` exposed raw package/file links without human-facing context.
+- Changes made:
+  - Verified current state before retrying:
+    - `electron/link_openers.js` is back to the pre-wiring state.
+    - `public/info/acerca_de.html` is back to the pre-wiring state.
+    - `public/extraction_feature_licenses/` still contains the imported exact-version license files.
+  - Locked the replacement approach:
+    - keep the files under `public/extraction_feature_licenses/`
+    - add the new docs in `electron/link_openers.js` in a cleaner, style-matching way
+    - present the new licenses in `public/info/acerca_de.html` with human-facing labels rather than raw dependency/file names
+  - Updated `electron/link_openers.js`:
+    - introduced `APP_DOC_PUBLIC_FILES` as the dedicated mapping for public-bundled legal docs
+    - folded Baskervville and the new extraction-feature license docs into that one public-doc mapping
+    - added `openBundledPublicDoc(...)` helper so public-bundled docs are handled through one consistent path
+    - added deliberate `appdoc` ids for the new extraction-feature license docs:
+      - `license-import-extract-google-auth`
+      - `license-import-extract-google-apis`
+      - `license-import-extract-docx`
+      - `license-import-extract-pdf`
+      - `license-import-extract-image-processing`
+      - `license-import-extract-image-processing-win32`
+  - Updated `public/info/acerca_de.html`:
+    - added one human-facing legal entry for the file import/extraction feature
+    - linked the six exact-version license files through descriptive labels rather than raw package/file names
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `electron/link_openers.js`
+  - `public/info/acerca_de.html`
+- Evidence:
+  - `git status --short electron\\link_openers.js public\\info\\acerca_de.html public\\extraction_feature_licenses docs\\issues\\issue_53_operation_tracker.md`
+    shows only:
+    - modified tracker
+    - new `public/extraction_feature_licenses/`
+  - Read-back confirms the earlier wiring is absent from:
+    - `electron/link_openers.js`
+    - `public/info/acerca_de.html`
+    before this retry
+  - Post-patch key/helper verification via `rg`:
+    - `APP_DOC_PUBLIC_FILES`
+    - `openBundledPublicDoc`
+    - `license-import-extract-google-auth`
+    - `license-import-extract-google-apis`
+    - `license-import-extract-docx`
+    - `license-import-extract-pdf`
+    - `license-import-extract-image-processing`
+    - `license-import-extract-image-processing-win32`
+  - Syntax validation:
+    - `node --check electron\\link_openers.js` passed
+- Outcome / next step:
+  - Completed.
+  - The extraction-feature license files are now exposed through a cleaner repo-style surface.
+  - Next step is to review any remaining Issue 53 compliance wording that still needs adjustment after the new license surface is in place.
+
+### OP-0125
+
+- Date/time: 2026-03-21 13:39:32 -03:00
+- Operation: Rename the newly added Issue 53 dependency-license folder to a feature-scoped name before any appdoc/UI wiring.
+- Why: User correctly identified that `public/licenses/` was misleading in this repo, because other legal/license files already live outside that folder (for example app root docs and the Baskervville font license under `public/fonts/`). The folder name must not imply a repo-wide legal-file home that does not exist.
+- Changes made:
+  - Locked the naming correction:
+    - from `public/licenses/`
+    - to `public/extraction_feature_licenses/`
+  - This keeps the directory semantically scoped to the new Issue 53 feature/license batch rather than suggesting all licenses in the app live there.
+  - Renamed the directory accordingly.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/extraction_feature_licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
+  - `public/extraction_feature_licenses/LICENSE_googleapis_105.0.0.txt`
+  - `public/extraction_feature_licenses/LICENSE_mammoth_1.11.0.txt`
+  - `public/extraction_feature_licenses/LICENSE_pdf-parse_1.1.1.txt`
+  - `public/extraction_feature_licenses/LICENSE_sharp_0.34.4.txt`
+  - `public/extraction_feature_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+- Evidence:
+  - Existing legal files outside `public/licenses/`:
+    - repo root `LICENSE`
+    - repo root `PRIVACY.md`
+    - `public/fonts/LICENSE_Baskervville_OFL.txt`
+  - Destination verification:
+    - `Get-ChildItem -Path public\\extraction_feature_licenses -File | Sort-Object Name` returned the six expected files
+  - `git status --short public\\extraction_feature_licenses docs\\issues\\issue_53_operation_tracker.md` shows:
+    - modified tracker file
+    - new `public/extraction_feature_licenses/` directory
+- Outcome / next step:
+  - Completed.
+  - Next step is to wire `public/extraction_feature_licenses/` into the app’s legal surface:
+    - add individual `appdoc` keys in `electron/link_openers.js`
+    - list the new files individually in `public/info/acerca_de.html`
+
+### OP-0124
+
+- Date/time: 2026-03-21 13:36:40 -03:00
+- Operation: Import the exact-version upstream license files staged by the user for the Issue 53 runtime dependency set into a repo-tracked shipped location under `public/`.
+- Why: Section 8 next work is to obtain and stage the new Issue 53 dependency license files following the app’s existing per-file legal-document pattern. The user has already prepared the exact-version source files in `tools_local/extraction_ocr_feature_licenses`.
+- Changes made:
+  - Read the staged user-prepared license file inventory from `tools_local/extraction_ocr_feature_licenses`.
+  - Created repo-tracked shipped directory:
+    - `public/licenses/`
+  - Copied the six exact-version staged license files into `public/licenses/` without editing their contents.
+  - Imported destination files:
+    - `public/licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
+    - `public/licenses/LICENSE_googleapis_105.0.0.txt`
+    - `public/licenses/LICENSE_mammoth_1.11.0.txt`
+    - `public/licenses/LICENSE_pdf-parse_1.1.1.txt`
+    - `public/licenses/LICENSE_sharp_0.34.4.txt`
+    - `public/licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
+  - `public/licenses/LICENSE_googleapis_105.0.0.txt`
+  - `public/licenses/LICENSE_mammoth_1.11.0.txt`
+  - `public/licenses/LICENSE_pdf-parse_1.1.1.txt`
+  - `public/licenses/LICENSE_sharp_0.34.4.txt`
+  - `public/licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+- Evidence:
+  - Source staging inventory:
+    - `Get-ChildItem -Path tools_local\\extraction_ocr_feature_licenses -File` returned the six expected staged files
+  - Destination verification:
+    - `Get-ChildItem -Path public\\licenses -File | Sort-Object Name` returned:
+      - `LICENSE_@google-cloud_local-auth_2.1.0.txt`
+      - `LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+      - `LICENSE_googleapis_105.0.0.txt`
+      - `LICENSE_mammoth_1.11.0.txt`
+      - `LICENSE_pdf-parse_1.1.1.txt`
+      - `LICENSE_sharp_0.34.4.txt`
+  - `git status --short public\\licenses docs\\issues\\issue_53_operation_tracker.md` shows:
+    - modified tracker file
+    - new `public/licenses/` directory
+- Outcome / next step:
+  - Completed.
+  - The next Section 8 step is to wire these new individual license files into the app’s existing legal surface:
+    - add `appdoc` keys in `electron/link_openers.js`
+    - update `public/info/acerca_de.html` to list them individually
+    - ensure packaging still includes them through the existing `public/**` build rule
+
+### OP-0123
+
+- Date/time: 2026-03-21 12:58:45 -03:00
+- Operation: Record the exact-version license-source rule for the upcoming Issue 53 Section 8 license-file collection step.
+- Why: User explicitly clarified that the license artifacts must correspond to the exact dependency versions actually shipped, and this requirement must be preserved in the Issue 53 audit trail rather than left only in chat.
+- Changes made:
+  - Recorded the source-of-truth rule for the next Section 8 operation:
+    - use the license files that ship with the exact installed dependency versions in the current runtime tree
+    - do not substitute generic license texts from other sources or from different package versions
+  - Locked the currently observed exact-version targets from the installed runtime tree:
+    - `@google-cloud/local-auth@2.1.0`
+    - `googleapis@105.0.0`
+    - `mammoth@1.11.0`
+    - `pdf-parse@1.1.1`
+    - `sharp@0.34.4`
+    - `@img/sharp-win32-x64@0.34.4`
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `package.json` runtime dependency versions:
+    - `@google-cloud/local-auth`: `^2.1.0`
+    - `googleapis`: `^105.0.0`
+    - `mammoth`: `^1.11.0`
+    - `pdf-parse`: `^1.1.1`
+    - `sharp`: `^0.34.4`
+  - Installed runtime tree observed via `npm ls --omit=dev --depth=0`:
+    - `@google-cloud/local-auth@2.1.0`
+    - `googleapis@105.0.0`
+    - `mammoth@1.11.0`
+    - `pdf-parse@1.1.1`
+    - `sharp@0.34.4`
+  - Installed Windows `sharp` binary package observed locally:
+    - `@img/sharp-win32-x64@0.34.4`
+- Outcome / next step:
+  - Completed.
+  - The next implementation operation must collect the exact-version upstream license files from the installed dependency tree into a repo-tracked shipped location.
+
+### OP-0122
+
+- Date/time: 2026-03-21 12:52:12 -03:00
+- Operation: Re-audit the repository’s existing legal/credits delivery pattern before answering the user’s legal-file question again.
+- Why: User explicitly objected that the previous answer did not respect the app’s established pattern for handling licenses and credits, and asked for a repo-pattern-based answer.
+- Changes made:
+  - Opened a new read-only audit focused on the app’s established license/credits pattern across shipped docs, appdoc surfaces, and prior release legal baselines.
+  - Inspected the existing repo pattern in:
+    - `electron/link_openers.js`
+    - `public/info/acerca_de.html`
+    - `docs/releases/0.1.3/legal_baseline_0_1_3.md`
+    - `docs/releases/0.1.6/legal_baseline_0_1_6.md`
+    - `docs/changelog_detailed.md`
+  - Reached the corrected pattern-based conclusion:
+    - this app does not currently treat third-party license coverage as a single hidden summary by default
+    - instead, it ships exact license/notice files as first-class artifacts and exposes them individually via `appdoc:` links and the About page
+    - for Issue 53, the first compliance step should therefore be to obtain the exact upstream license files for the new shipped runtime dependencies, not to defer immediately to a legal-baseline rewrite or to collapse them first into a generic consolidated summary
+  - Drift disclosure:
+    - the user-facing disagreement arrived before this OP entry was created
+    - no repository files other than this tracker entry were modified before logging the operation
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Exact-file + individual-link pattern in app surfaces:
+    - `electron/link_openers.js` defines dedicated `appdoc` keys for individual legal docs:
+      - `license-app` -> `LICENSE`
+      - `license-electron` -> `LICENSE.electron.txt`
+      - `licenses-chromium` -> `LICENSES.chromium.html`
+      - separate special-case `license-baskervville` -> `public/fonts/LICENSE_Baskervville_OFL.txt`
+    - `public/info/acerca_de.html` lists those documents individually in the `Licencias y avisos` section
+  - Changelog evidence that this pattern is intentional:
+    - `docs/changelog_detailed.md` records the allowlisted `appdoc:*` mapping and separately names `LICENSE`, `PRIVACY.md`, `LICENSE_Baskervville_OFL.txt`, `LICENSE.electron.txt`, and `LICENSES.chromium.html`
+  - Prior release legal-baseline pattern:
+    - `docs/releases/0.1.3/legal_baseline_0_1_3.md` and `docs/releases/0.1.6/legal_baseline_0_1_6.md` both treat shipped legal docs as an explicit per-file inventory
+    - those baselines also say that if runtime `node_modules` exist, they must be listed with `licencia/notice en repo`
+  - Pattern-based implication for Issue 53:
+    - new shipped runtime dependencies should first obtain exact repo-tracked license files before later baseline/release closure work
+- Outcome / next step:
+  - Completed.
+  - Corrected answer to user: following the app’s existing pattern, yes, the next step is to obtain the exact upstream license files for the new Issue 53 shipped runtime dependencies as repo-tracked deliverables, then wire them into the existing per-file legal surface.
+
+### OP-0120
+
+- Date/time: 2026-03-21 12:37:52 -03:00
+- Operation: Perform a read-only Section 8 compliance-inventory audit focused on the actual Issue 53 feature delta and identify the first required documentation/legal artifacts to create or update.
+- Why: User corrected that the next-step framing had drifted away from Issue 53 itself. The audit needed to center on the new import/extract feature, new runtime dependencies, and the new Google-connected OCR compliance surface before proposing any implementation work.
+- Changes made:
+  - Audited the current runtime dependency footprint introduced by Issue 53 using:
+    - `package.json`
+    - `npm ls --omit=dev --depth=0`
+    - top-level runtime package manifests for:
+      - `@google-cloud/local-auth`
+      - `googleapis`
+      - `mammoth`
+      - `pdf-parse`
+      - `sharp`
+  - Audited current release/legal/documentation surfaces against that feature delta:
+    - `docs/releases/legal_baseline.md`
+    - `docs/releases/0.1.6/legal_baseline_0_1_6.md`
+    - `docs/releases/release_checklist.md`
+    - `PRIVACY.md`
+    - `README.md`
+    - `CHANGELOG.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.es.html`
+    - `public/info/instrucciones.en.html`
+  - Determined that the key missing compliance work is not Electron/Chromium runtime notices, but the new Issue 53 feature/documentation delta:
+    - the release legal baseline for the next release must be rebuilt around a runtime-dependency model that now includes OCR/native-extraction packages
+    - the release legal inventory must explicitly cover the Google OCR external-service path
+    - the release docs must stop claiming a pure no-cloud/no-runtime-deps posture now that OCR is an optional connected feature and runtime parsers/providers were added
+  - Drift disclosure:
+    - read-only review and user-facing reasoning on Section 8 began before OP-0120 was recorded
+    - impact: no repository files were modified before this tracker entry
+    - handling: the pre-entry read-only work is disclosed here; this operation remains documentation-only and does not change implementation state
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - New Issue 53 runtime dependency set now present in `package.json` and `npm ls --omit=dev --depth=0`:
+    - `@google-cloud/local-auth@2.1.0`
+    - `googleapis@105.0.0`
+    - `mammoth@1.11.0`
+    - `pdf-parse@1.1.1`
+    - `sharp@0.34.4`
+  - License metadata observed in top-level runtime package manifests:
+    - `@google-cloud/local-auth` -> `Apache-2.0`
+    - `googleapis` -> `Apache-2.0`
+    - `mammoth` -> `BSD-2-Clause`
+    - `pdf-parse` -> `MIT`
+    - `sharp` -> `Apache-2.0`
+  - Stale prior-release assumption:
+    - `docs/releases/0.1.6/legal_baseline_0_1_6.md` section 5 still marks the release as having no runtime `node_modules`
+    - that assumption is no longer valid after Issue 53
+  - Stale release-doc wording:
+    - `README.md` still says settings/state are stored locally with `no cloud service dependency`
+    - that is no longer an accurate release-level statement once optional Google OCR exists
+  - Existing app-side OCR privacy disclosure already exists in:
+    - `PRIVACY.md`
+    - `public/info/acerca_de.html`
+    - `public/info/instrucciones.es.html`
+    - `public/info/instrucciones.en.html`
+    - but those existing files do not eliminate the need for updated release/legal inventory and notice coverage for the new dependency/service set
+- Outcome / next step:
+  - Completed.
+  - The first Section 8 implementation operation should be a documentation/compliance artifact pass with this target set:
+    - create a consolidated third-party/runtime notice artifact for the new Issue 53 runtime dependency set
+    - update `docs/releases/legal_baseline.md` for the new runtime/service model
+    - prepare the next release-specific legal baseline from that updated baseline
+    - update `README.md` to remove the now-inaccurate no-cloud-dependency claim and describe optional connected OCR accurately
+  - Electron/Chromium runtime notice files remain packaging-validation concerns, not the first missing Issue 53 compliance artifact.
 
 ### OP-0119
 

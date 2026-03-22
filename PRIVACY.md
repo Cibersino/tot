@@ -1,6 +1,6 @@
 # Política de privacidad — toT
 
-Fecha de vigencia: `2026-02-20`  
+Fecha de vigencia: `2026-03-21`  
 Versión app: `0.1.6`
 
 ## 1. Resumen
@@ -9,7 +9,7 @@ Versión app: `0.1.6`
 - El **texto que ingresas/pegas** se procesa **localmente** y **no se envía a Internet** ni a servidores de los desarrolladores.
 - La app guarda **configuración y estado** en el equipo del usuario (almacenamiento local).
 - La única conectividad prevista no dependiente de acciones del usuario es la **verificación de actualizaciones en GitHub**. La app **no descarga ni instala** actualizaciones automáticamente.
-- El resto de las operaciones de conectividad solo ocurre por acciones explícitas del usuario (por ejemplo, al abrir enlaces externos desde la app).
+- El resto de las operaciones de conectividad solo ocurre por acciones explícitas del usuario (por ejemplo, al abrir enlaces externos desde la app al activar/usar OCR conectado con Google).
 
 ## 2. Datos que la app procesa
 
@@ -43,7 +43,19 @@ La app puede abrir enlaces externos cuando el usuario lo solicita explícitament
 - En el módulo de tareas, solo se permiten enlaces HTTPS y puede requerirse confirmación.
 - En todos los casos, la navegación ocurre en el navegador externo del sistema.
 
-### 3.3 Sin otros servicios externos
+### 3.3 OCR conectado con Google
+
+Si el usuario decide activar o usar OCR para extraer texto de archivos, la app puede conectarse con servicios de Google para procesar estos archivos seleccionados por el propio usuario con fines de OCR.
+
+- La activación abre el navegador externo del sistema para realizar autorización/sign-in de Google.
+- Solo los archivos que el usuario elige explícitamente para OCR se envían a Google para esa operación.
+- Como parte de una operación OCR, ni los archivos, ni el texto extraído, ni la información específica de esa operación se envían a terceros distintos de Google. Los desarrolladores no reciben esos datos ni quedan notificados de esas operaciones.
+- Tras exportar el texto extraído, la app intenta borrar de inmediato el documento temporal creado en Google para esa conversión OCR. Si esa limpieza remota falla, la app lo trata como advertencia explícita.
+- Las credenciales/tokens locales de esa integración se almacenan localmente en la instancia de la app.
+- Si el usuario elige `Menú > Preferencias > Desconectar Google OCR`, la app intenta revocar el token guardado de Google y, si eso resulta exitoso, elimina el archivo de token local de OCR. La app conserva el archivo local `credentials.json` para que el usuario pueda reconectar OCR más adelante.
+- Como control externo adicional, el usuario también puede revocar el acceso de la app desde los controles de seguridad/permisos de su Cuenta de Google.
+
+### 3.4 Sin otros servicios externos
 
 La app no integra servicios de analítica, publicidad, seguimiento, ni SDKs de telemetría.
 
@@ -53,6 +65,7 @@ La app no solicita permisos especiales del sistema para enviar datos de uso. El 
 ## 5. Retención y control por el usuario
 
 - Los datos persistidos por la app se almacenan localmente.
+- Si solo quieres desconectar Google OCR, usa `Menú > Preferencias > Desconectar Google OCR`.
 - Puedes eliminar esos datos borrando la configuración/estado local de la app (según el sistema operativo) o desinstalando la app y eliminando sus archivos de configuración.
 
 ## 6. Cambios a esta política
