@@ -82,51 +82,12 @@ Unless an official source specifically requires those extra surfaces, repetition
 - Required user-facing help surfaces must state that the user can also revoke the app's access from their Google Account as an external control.
   - Why: this is part of user control over connected access.
 
-### Project scope
-
-- Explain the chosen OCR access model for real users in the distributed app:
-  - OCR uses the chosen `user-managed + explicit sign-in activation` model
-  - OCR is not enabled by default
-  - OCR availability depends on local setup/activation state
-
-- Explain ownership and control boundaries for the chosen model:
-  - who provides the Google OAuth credentials/project
-  - who controls the Google-side account/project used for OCR
-  - where local credentials/token state live
-  - what the app owns vs what the user owns
-  - what disconnect removes and what it keeps
-
-- Explain the setup / onboarding path required by the chosen model:
-  - what the user must have before OCR can work
-  - credential onboarding
-  - activation/sign-in path
-  - validation/check flow where applicable
-
-- Explain the billing / access posture of the chosen model where applicable:
-  - who pays for OCR usage
-  - whether billing is user-side
-  - whether billing/setup is part of the chosen model
-
-- Explain the availability and failure model in user-facing terms where the issue scope requires it:
-  - OCR unavailable until explicit activation
-  - missing credentials
-  - activation required
-  - auth failure
-  - quota/rate-limit failure
-  - connectivity/setup failure
-
-- Explain the chosen model consistently with the issue's distributed-delivery scope, not only with the narrow activation modal/runtime disclosure slice.
-
-- Add any walkthroughs, screenshots, assets, or broader instruction-pass updates that the project chooses to require under Section 8.
-
-These may still be mandatory for Issue 53 because they are part of the repo's chosen scope, but in this note they are classified as `Project scope`, not as Google-backed obligations.
-
 ## Practical implication for Section 8
 
 Section 8 blends two kinds of requirements:
 
 - Google-backed content obligations on user-facing surfaces
-- project-scoped documentation requirements for the chosen distributed-delivery model
+- project-scoped documentation requirements
 
 That means Section 8 documentation work should not be judged by a single blurred standard.
 
@@ -141,7 +102,7 @@ For future closure discussion, the clean method is:
 As of 2026-03-21:
 
 - `Google obligation`: satisfied
-- `Project scope`: not satisfied
+- `Project scope`: pending rewrite
 
 ### Basis for `Google obligation: satisfied`
 
@@ -174,15 +135,9 @@ The current repo already contains the required minimum content on current user-f
   - `public/info/instrucciones.en.html`
   - `public/info/instrucciones.es.html`
 
-### Basis for `Project scope: not satisfied`
+### Basis for `Project scope: pending rewrite`
 
-The repo does not currently contain the broader project-scoped documentation depth listed above, such as:
-
-- a clear user-facing explanation of the chosen `user-managed + explicit sign-in activation` model as such
-- a clear user-facing explanation of ownership/control boundaries for credentials/project/account
-- broader setup/credential onboarding guidance for the chosen model
-- broader billing/access-model guidance where applicable
-- broader user-facing explanation of the chosen availability/failure model
+The previous `Project scope` content was removed intentionally and is pending rewrite from scratch.
 
 This status note is descriptive only. It does not, by itself, change the checkbox state in `docs/issues/issue_53_implementation_plan.md`.
 

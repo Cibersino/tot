@@ -106,6 +106,27 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0141
+
+- Date/time: 2026-03-21 22:07:05 -03:00
+- Operation: Remove the current `Project scope` content from the Section 8 Google-vs-project note so it can be rewritten cleanly from scratch.
+- Why: User judged the current `Project scope` content in `docs/issues/issue_53_section8_google_vs_project_scope.md` to be reductive and misleading for Issue 53.
+- Changes made:
+  - Removed the existing `### Project scope` section from `docs/issues/issue_53_section8_google_vs_project_scope.md`.
+  - Removed the old project-side "not satisfied" basis list that depended on that deleted content.
+  - Left the Google-obligation side intact.
+  - Replaced the project-side status with a neutral placeholder:
+    - `Project scope: pending rewrite`
+- Checklist updates:
+  - No checkbox toggles.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_section8_google_vs_project_scope.md`
+- Evidence:
+  - The note now keeps only the Google-obligation content plus a placeholder that the project-side content is pending rewrite.
+- Outcome / next step:
+  - The note is now cleared for a from-scratch rewrite of the project-side content.
+
 ### OP-0140
 
 - Date/time: 2026-03-21 21:58:23 -03:00
