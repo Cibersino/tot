@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>toT - Privacidad de Google OCR</title>
+  <meta name="description" content="Informacion de privacidad especifica de Google OCR para la app de escritorio toT.">
+  <link rel="canonical" href="https://totapp.org/es/app-privacy/google-ocr/">
+  <link rel="alternate" hreflang="es" href="https://totapp.org/es/app-privacy/google-ocr/">
+  <link rel="alternate" hreflang="en" href="https://totapp.org/en/app-privacy/google-ocr/">
+  <link rel="alternate" hreflang="x-default" href="https://totapp.org/es/app-privacy/google-ocr/">
+  <meta property="og:url" content="https://totapp.org/es/app-privacy/google-ocr/">
+  <meta property="og:title" content="toT - Privacidad de Google OCR">
+  <meta property="og:description"
+    content="Informacion de privacidad especifica de Google OCR para la app de escritorio toT.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://totapp.org/og-image.png">
+  <meta property="og:image:alt" content="Captura de la interfaz de estimacion de tiempo de lectura de toT">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+  <main class="wrap">
+    <nav class="lang-switch" aria-label="Selector de idioma">
+      <a href="/es/app-privacy/google-ocr/" lang="es" aria-current="page">ES</a>
+      <a href="/en/app-privacy/google-ocr/" lang="en">EN</a>
+      <a href="/">/</a>
+    </nav>
+
+    <header class="brand-header">
+      <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="Logo de toT">
+      <div class="brand-copy">
+        <h1>toT</h1>
+        <p><strong>Privacidad de Google OCR</strong></p>
+      </div>
+    </header>
+
+    <div class="box">
+      <p>Esta pagina cubre la ruta de Google OCR en la <strong>app de escritorio toT</strong>. No cubre cookies del
+        sitio web ni los terminos generales de hosting/privacidad del sitio.</p>
+      <p>Google OCR solo aplica cuando eliges esa ruta OCR dentro de la app.</p>
+      <ul>
+        <li><strong>Autorizacion:</strong> la app abre el navegador del sistema para que autorices por ti mismo el
+          acceso de Google.</li>
+        <li><strong>Archivos enviados a Google:</strong> solo se envian a Google los archivos que eliges explicitamente
+          para OCR en esa operacion.</li>
+        <li><strong>Artefacto temporal del lado de Google:</strong> despues de exportar el texto, la app intenta
+          eliminar el documento temporal convertido que se crea para el flujo OCR.</li>
+        <li><strong>Cuenta de Google usada para OCR:</strong> la ruta OCR se ejecuta bajo la Cuenta de Google del usuario final.</li>
+        <li><strong>Permiso de Google Drive solicitado:</strong> la app solicita el permiso minimo practico de Drive,
+          <code>drive.file</code>.</li>
+      </ul>
+      <p>toT usa un proyecto de Google Cloud y un cliente OAuth proporcionados por el propietario de la app y distribuidos con la app. Los usuarios normales no necesitan obtener ni importar manualmente credenciales de cliente OAuth.</p>
+      <p>La app guarda estado local de conexion/token OCR en el dispositivo para poder reutilizar la conexion OCR. Si
+        desconectas Google OCR dentro de la app, se espera que la app revoque el token guardado y elimine el estado
+        local del token OCR. Tambien puedes revocar el acceso de la app desde los controles de permisos/seguridad de tu
+        Cuenta de Google.</p>
+      <p>Los archivos OCR que seleccionas para procesar no se envian a los desarrolladores como parte del flujo OCR.
+        Google puede procesar esos archivos seleccionados bajo sus propios servicios y politicas para prestar la
+        operacion OCR.</p>
+      <p class="muted">Ultima actualizacion: 25 de marzo de 2026.</p>
+    </div>
+
+    <footer class="site-footer" aria-label="Informacion del operador y contacto">
+      <p class="muted">
+        Contacto: <a href="https://github.com/Cibersino/tot/issues">GitHub Issues</a> o
+        <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.
+      </p>
+      <p class="muted">
+        <a href="/es/app-privacy/">Privacidad de la app</a>
+        ·
+        <a href="/es/privacy-cookies/">Privacidad / Cookies del sitio</a>
+        ·
+        <a href="/es/">Volver</a>
+      </p>
+    </footer>
+  </main>
+</body>
+
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>toT - Google OCR Privacy</title>
+  <meta name="description" content="Google OCR-specific privacy information for the toT desktop app.">
+  <link rel="canonical" href="https://totapp.org/en/app-privacy/google-ocr/">
+  <link rel="alternate" hreflang="es" href="https://totapp.org/es/app-privacy/google-ocr/">
+  <link rel="alternate" hreflang="en" href="https://totapp.org/en/app-privacy/google-ocr/">
+  <link rel="alternate" hreflang="x-default" href="https://totapp.org/en/app-privacy/google-ocr/">
+  <meta property="og:url" content="https://totapp.org/en/app-privacy/google-ocr/">
+  <meta property="og:title" content="toT - Google OCR Privacy">
+  <meta property="og:description" content="Google OCR-specific privacy information for the toT desktop app.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://totapp.org/og-image.png">
+  <meta property="og:image:alt" content="Screenshot of the toT app reading-time estimation interface">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+  <main class="wrap">
+    <nav class="lang-switch" aria-label="Language selector">
+      <a href="/es/app-privacy/google-ocr/" lang="es">ES</a>
+      <a href="/en/app-privacy/google-ocr/" lang="en" aria-current="page">EN</a>
+      <a href="/">/</a>
+    </nav>
+
+    <header class="brand-header">
+      <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="toT logo">
+      <div class="brand-copy">
+        <h1>toT</h1>
+        <p><strong>Google OCR Privacy</strong></p>
+      </div>
+    </header>
+
+    <div class="box">
+      <p>This page covers the Google OCR route in the <strong>toT desktop app</strong>. It does not cover website
+        cookies or general website hosting/privacy terms.</p>
+      <p>Google OCR applies only when you choose that OCR route inside the app.</p>
+      <ul>
+        <li><strong>Authorization:</strong> the app launches the system browser so you can authorize Google access
+          yourself.</li>
+        <li><strong>Files sent to Google:</strong> only the files you explicitly choose for OCR are sent to Google for
+          that OCR operation.</li>
+        <li><strong>Temporary Google-side artifact:</strong> after text export, the app attempts to delete the temporary
+          converted Google document created for the OCR flow.</li>
+        <li><strong>Google account used for OCR:</strong> the OCR route runs under the end user's Google account.</li>
+        <li><strong>Google Drive permission requested:</strong> the app requests the minimum practical Drive
+          permission, <code>drive.file</code>.</li>
+      </ul>
+      <p>toT uses an owner-provided Google Cloud project and OAuth client distributed with the app. Ordinary users do
+        not need to manually obtain or import OAuth client credentials.</p>
+      <p>The app stores local OCR connection/token state on the device so the OCR connection can be reused. If you
+        disconnect Google OCR inside the app, the app is expected to revoke the saved token and remove the local OCR
+        token state. You can also revoke the app's Google access from your Google Account permissions/security controls.
+      </p>
+      <p>The OCR files you select for processing are not sent to the developers as part of the OCR flow. Google may
+        process those selected files under Google's own services and policies in order to provide the OCR operation.</p>
+      <p class="muted">Last updated: March 25, 2026.</p>
+    </div>
+
+    <footer class="site-footer" aria-label="Operator and contact">
+      <p class="muted">
+        Contact: <a href="https://github.com/Cibersino/tot/issues">GitHub Issues</a> or
+        <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.
+      </p>
+      <p class="muted">
+        <a href="/en/app-privacy/">App Privacy</a>
+        ·
+        <a href="/en/privacy-cookies/">Website Privacy / Cookies</a>
+        ·
+        <a href="/en/">Back</a>
+      </p>
+    </footer>
+  </main>
+</body>
+
+</html>
