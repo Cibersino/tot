@@ -6,6 +6,22 @@ Purpose: define the concrete work needed to move the current OCR path from the p
 
 This document is operational. It is not only about Google Console setup. For Issue 53, the transition also includes app changes and user-documentation changes because the current app still reflects a testing-oriented credential model in some runtime paths.
 
+## Codex Policy For This File
+
+- When this file is the active working document, Codex must treat it as the controlling source for scope, sequencing, and interpretation unless the user explicitly directs otherwise.
+- Codex must follow this file as written and must not skip, reorder, narrow, reinterpret, optimize, or replace parts of it based on Codex's own judgment.
+- Steps in this file are not optional merely because they are non-code, administrative, or appear trivial.
+- Codex must distinguish explicitly between:
+  - what this file requires
+  - what the current repo state shows
+  - what Codex is inferring
+- Any deviation, or potential deviation, caused by Codex's own judgment must be reported before acting.
+  - The report must state:
+    - what instruction, requirement, or order would be deviated from
+    - why Codex thinks deviation may help
+    - impact/risk
+    - whether execution paused for user confirmation or proceeded with rationale
+
 ## Current repo state
 
 Current settled baseline in Issue 53:
@@ -121,12 +137,12 @@ After this transition:
 
 ### 1. Preconditions
 
-- [ ] `Mandatory (Project)` The app owner has access to the Google account / organization that will own the production Google Cloud project and OAuth configuration.
-- [ ] `Mandatory (Google)` If the target audience is `External`, the app owner controls a public web domain that can host the application's home page and privacy policy.
-- [ ] `Mandatory (Google)` If the target audience is `External`, the app owner can verify that domain for Google OAuth branding/authorization purposes.
-- [ ] `Mandatory (Project)` The desktop packaging/distribution path can carry owner-provided OCR client/configuration material for the production model.
+- [x] `Mandatory (Project)` The app owner has access to the Google account / organization that will own the production Google Cloud project and OAuth configuration.
+- [x] `Mandatory (Google)` If the target audience is `External`, the app owner controls a public web domain that can host the application's home page and privacy policy.
+- [x] `Mandatory (Google)` If the target audience is `External`, the app owner can verify that domain for Google OAuth branding/authorization purposes.
+- [x] `Mandatory (Project)` The desktop packaging/distribution path can carry owner-provided OCR client/configuration material for the production model.
 
-### 2. Immediate Google Console actions
+### 2. Google project and OAuth setup
 
 - [ ] `Mandatory (Google)` Create a separate production Google Cloud project rather than reusing the current testing project.
   - Why: Google production-readiness guidance requires separate testing and production projects.
@@ -135,11 +151,6 @@ After this transition:
 - [ ] `Mandatory (Google)` Choose the correct audience for the production project.
   - Use `External` if the app is meant for users outside one Google Workspace organization.
   - Use `Internal` only if the app is truly limited to one Workspace organization.
-  - Source: [Manage App Audience](https://support.google.com/cloud/answer/15549945?hl=en)
-
-- [ ] `Mandatory (Google)` Change the production Google OAuth project's publishing status to `In production` when it is ready for real-user rollout.
-  - Why: testing mode is limited to listed test users and test-user authorizations expire after 7 days.
-  - Clarification: this is an immediate publishing-status change in Google Console, not the same thing as later verification review.
   - Source: [Manage App Audience](https://support.google.com/cloud/answer/15549945?hl=en)
 
 - [ ] `Mandatory (Google)` Enable the Google Drive API in the production project.
@@ -160,18 +171,14 @@ After this transition:
     - [Choose Google Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
     - [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
 
-- [ ] `Conditional (Google)` Enable billing only if the Google Cloud console or selected API configuration explicitly requires it.
-  - Why: Google verification/setup guidance mentions billing only when prompted; this is not a universal requirement for this repo's current Drive-only route.
-  - Source: [Submitting your app for verification](https://support.google.com/cloud/answer/13461325?hl=en)
-
-### 3. Verification-dependent Google work
-
 - [ ] `Mandatory (Google)` Configure accurate consent-screen metadata for the production project:
   - app name
   - user support email
   - developer contact information
-  - declared scopes
+  - declared scopes, aligned with the `drive.file` baseline above unless a separately justified change is approved
   - Source: [Submitting your app for verification](https://support.google.com/cloud/answer/13461325?hl=en)
+
+### 3. Google publication readiness / verification work
 
 - [ ] `Mandatory (Google)` Provide a publicly accessible application home page for the production app.
   - Why: Google states every production OAuth app must have a publicly accessible application home page.
@@ -188,13 +195,6 @@ After this transition:
 - [ ] `Mandatory (Google)` Verify ownership of the authorized domain(s) used by the production app's home page and privacy policy.
   - Source: [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
 
-- [ ] `Conditional (Google)` Submit for brand verification if the production Google OAuth project is `External` and should display the application's real name/logo on the OAuth consent screen.
-  - Why: Google states that an external app that wants logo or display name on the consent screen requires brand verification.
-  - Clarification: this does not require owning a paid trademark; it requires accurate app identity and control of the relevant authorized domains.
-  - Sources:
-    - [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
-    - [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073?hl=en)
-
 - [ ] `Optional` Provide terms of service if the production distribution posture needs it.
   - Why: Google says terms are optional on the production home page requirements page.
   - Source: [Comply with OAuth 2.0 policies](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance)
@@ -204,6 +204,22 @@ After this transition:
     - internal explainer of the OAuth flow
     - app screenshots
     - review-ready summary of current scopes and why they are minimal
+
+- [ ] `Conditional (Google)` Enable billing only if the Google Cloud console or selected API configuration explicitly requires it.
+  - Why: Google verification/setup guidance mentions billing only when prompted; this is not a universal requirement for this repo's current Drive-only route.
+  - Source: [Submitting your app for verification](https://support.google.com/cloud/answer/13461325?hl=en)
+
+- [ ] `Conditional (Google)` Submit for brand verification if the production Google OAuth project is `External` and should display the application's real name/logo on the OAuth consent screen.
+  - Why: Google states that an external app that wants logo or display name on the consent screen requires brand verification.
+  - Clarification: this does not require owning a paid trademark; it requires accurate app identity and control of the relevant authorized domains.
+  - Sources:
+    - [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
+    - [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073?hl=en)
+
+- [ ] `Mandatory (Google)` Change the production Google OAuth project's publishing status to `In production` when it is ready for real-user rollout.
+  - Why: testing mode is limited to listed test users and test-user authorizations expire after 7 days.
+  - Clarification: this is an immediate publishing-status change in Google Console, not the same thing as later verification review.
+  - Source: [Manage App Audience](https://support.google.com/cloud/answer/15549945?hl=en)
 
 ### 4. App/runtime changes
 
@@ -259,7 +275,7 @@ After this transition:
 
 ### 6. Publication / verification decision record
 
-- [ ] `Conditional (Google)` If the production Google OAuth project remains `External` and uses production branding, complete brand verification.
+- [ ] `Conditional (Google)` If the production Google OAuth project remains `External` and uses production branding, ensure brand verification is completed and recorded.
   - Source: [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
 
 - [ ] `Mandatory (Google)` Do not submit for sensitive or restricted scope verification unless the scope set expands beyond the current non-sensitive baseline.

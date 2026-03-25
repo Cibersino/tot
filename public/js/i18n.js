@@ -211,6 +211,11 @@
     return str;
   }
 
+  function getRendererValue(path) {
+    if (!rendererTranslations) return undefined;
+    return getPath(rendererTranslations, path);
+  }
+
   // =============================================================================
   // Exports / module surface
   // =============================================================================
@@ -218,6 +223,7 @@
     loadRendererTranslations,
     tRenderer,
     msgRenderer,
+    getRendererValue,
     normalizeLangTag,
     getLangBase
   };
