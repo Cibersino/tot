@@ -106,6 +106,72 @@ As of 2026-03-21:
 
 ## Log
 
+### OP-0155
+
+- Date/time: 2026-03-25 18:29:27 -03:00
+- Operation: Refine the public app privacy wording so the website reads as a production policy rather than a transition memo.
+- Why: The user identified confusing public wording on the website privacy pages, specifically phrases like `Scope posture` and `intended production Google OCR path`, which read like internal planning language instead of user-facing production policy text.
+- Changes made:
+  - Updated:
+    - `website/public/en/app-privacy/index.html`
+    - `website/public/es/app-privacy/index.html`
+    - `website/public/en/app-privacy/google-ocr/index.html`
+    - `website/public/es/app-privacy/google-ocr/index.html`
+  - Replaced internal planning phrases with plain production-facing wording.
+  - Removed the public transition-rollout disclaimer from the Google OCR privacy pages.
+  - Clarified the Google Drive permission line as a direct user-facing statement about the requested permission (`drive.file`).
+  - Clarified the owner-provided OAuth client statement as an existing product fact rather than an intended future path.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `website/public/en/app-privacy/index.html`
+  - `website/public/es/app-privacy/index.html`
+  - `website/public/en/app-privacy/google-ocr/index.html`
+  - `website/public/es/app-privacy/google-ocr/index.html`
+- Evidence:
+  - `website/public/en/app-privacy/google-ocr/index.html` now says `Google Drive permission requested` instead of `Scope posture`.
+  - `website/public/en/app-privacy/google-ocr/index.html` now says `toT uses an owner-provided Google Cloud project and OAuth client distributed with the app`.
+  - The English and Spanish Google OCR pages no longer describe the website as if production were still only an intended future state.
+- Outcome / next step:
+  - The public privacy pages now read more like production website policy text and less like internal transition planning.
+  - Next step if requested: continue refining wording nuance or align the in-app disclosures to the same production model.
+
+### OP-0154
+
+- Date/time: 2026-03-25 18:20:00 -03:00
+- Operation: Add language-specific app privacy pages and place the app privacy link directly under the website download CTA.
+- Why: The user rejected the earlier footer placement and clarified that the app privacy policy should live on the download pages themselves, directly below the download link, and should point to the corresponding language's app privacy page.
+- Changes made:
+  - Updated:
+    - `website/public/en/index.html`
+    - `website/public/es/index.html`
+  - Added:
+    - `website/public/en/app-privacy/index.html`
+    - `website/public/es/app-privacy/index.html`
+    - `website/public/en/app-privacy/google-ocr/index.html`
+    - `website/public/es/app-privacy/google-ocr/index.html`
+  - Placed the app privacy links immediately below the download CTA on the English and Spanish download pages.
+  - Kept the footer privacy links website-only (`privacy-cookies`) and did not place app privacy links in the footer.
+- Checklist updates:
+  - None.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `website/public/en/index.html`
+  - `website/public/es/index.html`
+  - `website/public/en/app-privacy/index.html`
+  - `website/public/es/app-privacy/index.html`
+  - `website/public/en/app-privacy/google-ocr/index.html`
+  - `website/public/es/app-privacy/google-ocr/index.html`
+- Evidence:
+  - `website/public/en/index.html` now links to `/en/app-privacy/` directly below the download CTA.
+  - `website/public/es/index.html` now links to `/es/app-privacy/` directly below the download CTA.
+  - `website/public/en/app-privacy/index.html` and `website/public/es/app-privacy/index.html` now exist and each link to the nested Google OCR privacy page.
+  - Footer wording on both download pages now keeps `privacy-cookies` clearly website-only.
+- Outcome / next step:
+  - The download pages now surface the app privacy policy in the placement requested by the user.
+  - Next step if requested: refine the actual privacy copy against the final production OCR runtime once the bundled-client implementation is locked.
+
 ### OP-0153
 
 - Date/time: 2026-03-22 01:53:16 -03:00
