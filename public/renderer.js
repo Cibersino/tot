@@ -87,12 +87,6 @@ const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
 // =============================================================================
 // UI keys and static lists
 // =============================================================================
-const HELP_TIP_KEY_LIST = Object.freeze([
-  'renderer.main.tips.results_help.tip1',
-  'renderer.main.tips.results_help.tip2',
-  'renderer.main.tips.results_help.tip3',
-  'renderer.main.tips.results_help.tip4'
-]);
 let lastHelpTipIdx = -1;
 
 const resChars = document.getElementById('resChars');
@@ -388,9 +382,23 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
 // =============================================================================
 // i18n wiring
 // =============================================================================
-const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
+const { loadRendererTranslations, tRenderer, msgRenderer, getRendererValue } = window.RendererI18n || {};
+if (!loadRendererTranslations || !tRenderer || !msgRenderer || !getRendererValue) {
   throw new Error('[renderer] RendererI18n unavailable; cannot continue');
+}
+
+function getHelpTipKeyList() {
+  const tips = getRendererValue('renderer.main.tips.results_help');
+  if (!tips || typeof tips !== 'object' || Array.isArray(tips)) return [];
+  return Object.keys(tips)
+    .map((key) => {
+      const match = /^tip(\d+)$/.exec(key);
+      if (!match) return null;
+      return { key, order: Number(match[1]) };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.order - b.order || a.key.localeCompare(b.key))
+    .map(({ key }) => `renderer.main.tips.results_help.${key}`);
 }
 
 const getCronoLabels = () => ({
@@ -2128,7 +2136,8 @@ if (btnLoadTask) {
 if (btnHelp) {
   btnHelp.addEventListener('click', () => {
     if (!guardUserAction('help-tip')) return;
-    const tipCount = HELP_TIP_KEY_LIST.length;
+    const helpTipKeys = getHelpTipKeyList();
+    const tipCount = helpTipKeys.length;
     if (!tipCount) {
       log.error('Help tip list is empty.');
       if (typeof window.Notify?.notifyMain === 'function') {
@@ -2144,7 +2153,7 @@ if (btnHelp) {
     }
     lastHelpTipIdx = idx;
 
-    const tipKey = HELP_TIP_KEY_LIST[idx];
+    const tipKey = helpTipKeys[idx];
 
     try {
       if (typeof window.Notify?.toastMain === 'function') {

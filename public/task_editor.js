@@ -781,7 +781,7 @@ async function saveTask() {
   const res = await api.saveTaskList(payload);
   if (!res || res.ok === false) {
     const code = res && res.code ? res.code : 'WRITE_FAILED';
-    if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+    if (code === 'CANCELLED') return;
     if (code === 'PATH_OUTSIDE_TASKS') {
       showEditorNotice('renderer.tasks.alerts.task_path_outside');
       return;
