@@ -138,9 +138,9 @@ After this transition:
 ### 1. Preconditions
 
 - [x] `Mandatory (Project)` The app owner has access to the Google account / organization that will own the production Google Cloud project and OAuth configuration.
-- [ ] `Mandatory (Google)` If the target audience is `External`, the app owner controls a public web domain that can host the application's home page and privacy policy.
-- [ ] `Mandatory (Google)` If the target audience is `External`, the app owner can verify that domain for Google OAuth branding/authorization purposes.
-- [ ] `Mandatory (Project)` The desktop packaging/distribution path can carry owner-provided OCR client/configuration material for the production model.
+- [x] `Mandatory (Google)` If the target audience is `External`, the app owner controls a public web domain that can host the application's home page and privacy policy.
+- [x] `Mandatory (Google)` If the target audience is `External`, the app owner can verify that domain for Google OAuth branding/authorization purposes.
+- [x] `Mandatory (Project)` The desktop packaging/distribution path can carry owner-provided OCR client/configuration material for the production model.
 
 ### 2. Immediate Google Console actions
 
