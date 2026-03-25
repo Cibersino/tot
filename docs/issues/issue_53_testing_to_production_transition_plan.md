@@ -6,6 +6,22 @@ Purpose: define the concrete work needed to move the current OCR path from the p
 
 This document is operational. It is not only about Google Console setup. For Issue 53, the transition also includes app changes and user-documentation changes because the current app still reflects a testing-oriented credential model in some runtime paths.
 
+## Codex Policy For This File
+
+- When this file is the active working document, Codex must treat it as the controlling source for scope, sequencing, and interpretation unless the user explicitly directs otherwise.
+- Codex must follow this file as written and must not skip, reorder, narrow, reinterpret, optimize, or replace parts of it based on Codex's own judgment.
+- Steps in this file are not optional merely because they are non-code, administrative, or appear trivial.
+- Codex must distinguish explicitly between:
+  - what this file requires
+  - what the current repo state shows
+  - what Codex is inferring
+- Any deviation, or potential deviation, caused by Codex's own judgment must be reported before acting.
+  - The report must state:
+    - what instruction, requirement, or order would be deviated from
+    - why Codex thinks deviation may help
+    - impact/risk
+    - whether execution paused for user confirmation or proceeded with rationale
+
 ## Current repo state
 
 Current settled baseline in Issue 53:
