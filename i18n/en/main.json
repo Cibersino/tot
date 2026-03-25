@@ -40,7 +40,6 @@
       "no": "No, cancel",
       "snapshot_overwrite_save": "Overwrite existing snapshot file?",
       "snapshot_overwrite_load": "Replace current text with the selected snapshot \"{name}\"?",
-      "task_overwrite_save": "Overwrite existing task list file?",
       "task_delete_confirm": "Delete the task list \"{name}\"?",
       "task_library_row_save_overwrite": "An entry named \"{name}\" already exists in the library. Overwrite?",
       "task_library_row_delete": "Delete \"{name}\" from the library?",

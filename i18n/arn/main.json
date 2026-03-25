@@ -40,7 +40,6 @@
       "no": "No, katrüntun",
       "snapshot_overwrite_save": "¿Küpal we snapshot chumgechi?",
       "snapshot_overwrite_load": "¿Wiño eluael tachi wirin, tachi snapshot \"{name}\" mew?",
-      "task_overwrite_save": "¿Küpal we lista de tareas chumgechi?",
       "task_delete_confirm": "¿Ñamümual tachi lista de tareas \"{name}\"?",
       "task_library_row_save_overwrite": "Biblioteca mew müley \"{name}\". ¿Küpal we chumgechi?",
       "task_library_row_delete": "¿Ñamümual tachi \"{name}\" biblioteca mew?",
