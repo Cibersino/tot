@@ -27,6 +27,7 @@ const {
   ensureConfigDir,
   getSettingsFile,
   getCurrentTextFile,
+  getBundledOcrGoogleDriveCredentialsFile,
   getOcrGoogleDriveCredentialsFile,
   getOcrGoogleDriveTokenFile,
   loadJson,
@@ -53,6 +54,9 @@ const importExtractOcrActivationIpc = require('./import_extract_platform/import_
 const importExtractOcrDisconnectIpc = require('./import_extract_platform/import_extract_ocr_disconnect_ipc');
 const importExtractPrepareIpc = require('./import_extract_platform/import_extract_prepare_ipc');
 const importExtractExecutePreparedIpc = require('./import_extract_platform/import_extract_execute_prepared_ipc');
+const {
+  materializeBundledCredentials,
+} = require('./import_extract_platform/ocr_google_drive_bundled_credentials');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -164,6 +168,22 @@ function guardMainUserAction(actionId, message, { allowDuringProcessing = false 
 
 function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
+}
+
+function resolveGoogleDriveOcrRuntimePaths() {
+  const credentialsPath = getOcrGoogleDriveCredentialsFile();
+  const tokenPath = getOcrGoogleDriveTokenFile();
+  const bundledCredentialsPath = getBundledOcrGoogleDriveCredentialsFile();
+
+  materializeBundledCredentials({
+    runtimeCredentialsPath: credentialsPath,
+    bundledCredentialsPath,
+  });
+
+  return {
+    credentialsPath,
+    tokenPath,
+  };
 }
 
 // =============================================================================
@@ -1567,10 +1587,7 @@ app.whenReady().then(() => {
 
   // Import/extract + OCR integration points.
   ocrGoogleDriveSetupValidationIpc.registerIpc(ipcMain, {
-    resolvePaths: () => ({
-      credentialsPath: getOcrGoogleDriveCredentialsFile(),
-      tokenPath: getOcrGoogleDriveTokenFile(),
-    }),
+    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
   });
 
   importExtractProcessingModeIpc.registerIpc(ipcMain, {
@@ -1612,50 +1629,35 @@ app.whenReady().then(() => {
     getWindows: () => ({
       mainWin,
     }),
-    resolvePaths: () => ({
-      credentialsPath: getOcrGoogleDriveCredentialsFile(),
-      tokenPath: getOcrGoogleDriveTokenFile(),
-    }),
+    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
   });
 
   importExtractOcrActivationIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    resolvePaths: () => ({
-      credentialsPath: getOcrGoogleDriveCredentialsFile(),
-      tokenPath: getOcrGoogleDriveTokenFile(),
-    }),
+    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
   });
 
   importExtractOcrDisconnectIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    resolvePaths: () => ({
-      credentialsPath: getOcrGoogleDriveCredentialsFile(),
-      tokenPath: getOcrGoogleDriveTokenFile(),
-    }),
+    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
   });
 
   importExtractPrepareIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    resolvePaths: () => ({
-      credentialsPath: getOcrGoogleDriveCredentialsFile(),
-      tokenPath: getOcrGoogleDriveTokenFile(),
-    }),
+    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
   });
 
   importExtractExecutePreparedIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
     }),
-    resolvePaths: () => ({
-      credentialsPath: getOcrGoogleDriveCredentialsFile(),
-      tokenPath: getOcrGoogleDriveTokenFile(),
-    }),
+    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
     controller: importExtractProcessingModeController,
   });
 
