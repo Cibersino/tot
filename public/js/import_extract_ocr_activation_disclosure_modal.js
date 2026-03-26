@@ -100,7 +100,7 @@
     );
     itemLocalStorage.textContent = translate(
       'renderer.alerts.import_extract_ocr_activation_disclosure_local_storage',
-      'This app stores a local credentials.json file and local Google token state in this app instance.'
+      'This app stores app-managed Google OAuth credentials for OCR and local Google token state in this app instance.'
     );
     itemRemoteCleanup.textContent = translate(
       'renderer.alerts.import_extract_ocr_activation_disclosure_remote_cleanup',

@@ -48,7 +48,7 @@
       "task_path_confirm": "Open this local file?",
       "disconnect_google_ocr_title": "Disconnect Google OCR",
       "disconnect_google_ocr_confirm": "Disconnect Google OCR?",
-      "disconnect_google_ocr_detail": "This revokes the saved Google OCR sign-in token and deletes the local token file from this app. credentials.json will be kept so you can reconnect later.",
+      "disconnect_google_ocr_detail": "This revokes the saved Google OCR sign-in token and deletes the local token file from this app. App-managed local Google OAuth credentials may remain so OCR can reconnect later.",
       "delete_preset_confirm": "Delete preset \"{name}\"?",
       "delete_preset_none": "No preset selected to delete.",
       "restore_defaults_confirm": "Restore default presets (general and language \"{lang}\") to original? This will revert removals and changes to default presets for the active language.",
