@@ -270,7 +270,7 @@ After this transition:
     - [import_extract_ocr_disconnect_ipc.js](../../electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js)
     - [PRIVACY.md](../../PRIVACY.md)
 
-- [ ] `Mandatory (Project)` Keep these behaviors unchanged unless separately re-decided:
+- [x] `Mandatory (Project)` Keep these behaviors unchanged unless separately re-decided:
   - system-browser OAuth
   - loopback callback + PKCE
   - pre-consent disclosure immediately before OAuth
