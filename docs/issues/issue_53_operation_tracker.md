@@ -29,7 +29,7 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Current Authoritative Status
 
-As of 2026-03-21:
+As of 2026-03-26:
 
 - Section 1 (`Substrate and access-model decision`): complete.
 - Section 2 (`Substrate setup / billing / activation path`): complete.
@@ -101,10 +101,51 @@ As of 2026-03-21:
   - Active next checklist item: Section 8 item 4 (`Update changelog/release notes and related documentation`).
   - Section 9 not started.
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
+- Production-transition clarification:
+  - The preferred Issue 53 production model remains `app-owner-owned` + `bundled with the app` + end-user Google account at runtime.
+  - The runtime auth contract is now explicitly locked as desktop OAuth client + system browser + loopback callback + PKCE + bundled `client_secret`.
+  - The previously attempted no-secret bundled desktop variant is rejected for this project after live token exchange returned `client_secret is missing.`
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0156
+
+- Date/time: 2026-03-26 15:43:26 -03:00
+- Operation: Lock the replacement Issue 53 production OAuth model in the docs after rejecting the no-secret bundled desktop variant.
+- Why: The user chose to keep the bundled app-owner-owned desktop flow, but to replace the failed no-secret refinement with a bundled desktop OAuth contract that includes `client_secret`.
+- Changes made:
+  - Updated `docs/issues/issue_53_access_model_options.md` to keep the same preferred four-axis model while explicitly clarifying the runtime auth contract:
+    - desktop OAuth client
+    - system browser
+    - loopback callback
+    - PKCE
+    - bundled `client_secret`
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md` so the production target and Section 4 runtime checklist now point to that contract instead of the rejected no-secret variant.
+  - Updated `docs/issues/issue_53.md` and `docs/issues/issue_53_implementation_plan.md` so the concise Issue 53 summaries use the same production-contract clarification.
+  - Updated tracker `Current Authoritative Status` with the same production-transition clarification.
+- Checklist updates:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+    - retained the existing transition structure
+    - replaced the no-secret contract wording with the bundled desktop-client contract that includes `client_secret`
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `docs/issues/issue_53.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Live transition testing under the no-secret variant returned:
+    - `error: invalid_request`
+    - `error_description: client_secret is missing.`
+  - Current restored runtime evidence continues to show the testing-state secret-bearing desktop flow in:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+    - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+    - `electron/import_extract_platform/ocr_google_drive_oauth_client.js`
+- Outcome / next step:
+  - The Issue 53 docs now lock a concrete replacement production runtime contract instead of leaving the failed no-secret variant ambiguous.
+  - Next step if requested: resume Section 4 transition planning/implementation from that locked bundled desktop-client contract.
 
 ### OP-0155
 
