@@ -144,34 +144,34 @@ After this transition:
 
 ### 2. Google project and OAuth setup
 
-- [ ] `Mandatory (Google)` Create a separate production Google Cloud project rather than reusing the current testing project.
+- [x] `Mandatory (Google)` Create a separate production Google Cloud project rather than reusing the current testing project.
   - Why: Google production-readiness guidance requires separate testing and production projects.
   - Source: [Comply with OAuth 2.0 policies](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance)
 
-- [ ] `Mandatory (Google)` Choose the correct audience for the production project.
+- [x] `Mandatory (Google)` Choose the correct audience for the production project.
   - Use `External` if the app is meant for users outside one Google Workspace organization.
   - Use `Internal` only if the app is truly limited to one Workspace organization.
   - Source: [Manage App Audience](https://support.google.com/cloud/answer/15549945?hl=en)
 
-- [ ] `Mandatory (Google)` Enable the Google Drive API in the production project.
+- [x] `Mandatory (Google)` Enable the Google Drive API in the production project.
   - Why: the current OCR route uses Drive API calls for upload/convert/export.
   - Sources:
     - [Submitting your app for verification](https://support.google.com/cloud/answer/13461325?hl=en)
     - [ocr_google_drive_route.js](../../electron/import_extract_platform/ocr_google_drive_route.js)
 
-- [ ] `Mandatory (Google)` Create a new desktop OAuth client in the production project.
+- [x] `Mandatory (Google)` Create a new desktop OAuth client in the production project.
   - Why: the app uses a desktop/system-browser OAuth flow and production should not reuse the testing client.
   - Sources:
     - [Submitting your app for verification](https://support.google.com/cloud/answer/13461325?hl=en)
     - [Desktop client creation example](https://developers.google.com/workspace/meet/api/guides/quickstart/nodejs)
 
-- [ ] `Mandatory (Google)` Keep the declared OAuth scope at `drive.file` unless a separately justified change is approved.
+- [x] `Mandatory (Google)` Keep the declared OAuth scope at `drive.file` unless a separately justified change is approved.
   - Why: current code already uses `drive.file`, and Google classifies it as recommended and non-sensitive.
   - Sources:
     - [Choose Google Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
     - [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
 
-- [ ] `Mandatory (Google)` Configure accurate consent-screen metadata for the production project:
+- [x] `Mandatory (Google)` Configure accurate consent-screen metadata for the production project:
   - app name
   - user support email
   - developer contact information
@@ -180,19 +180,19 @@ After this transition:
 
 ### 3. Google publication readiness / verification work
 
-- [ ] `Mandatory (Google)` Provide a publicly accessible application home page for the production app.
+- [x] `Mandatory (Google)` Provide a publicly accessible application home page for the production app.
   - Why: Google states every production OAuth app must have a publicly accessible application home page.
   - Meaning here: this page is about the desktop application/product that is requesting Google OAuth, not about the web page itself as a product.
   - Source: [Comply with OAuth 2.0 policies](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance)
 
-- [ ] `Mandatory (Google)` Provide a privacy-policy URL for the production app and keep it aligned with actual OCR behavior.
+- [x] `Mandatory (Google)` Provide a privacy-policy URL for the production app and keep it aligned with actual OCR behavior.
   - Why: Google requires an application privacy policy for production identity/verification posture.
   - Meaning here: this is the privacy policy of the application/product, not Google's privacy policy and not just a privacy note about the website itself.
   - Sources:
     - [Comply with OAuth 2.0 policies](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance)
     - [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
 
-- [ ] `Mandatory (Google)` Verify ownership of the authorized domain(s) used by the production app's home page and privacy policy.
+- [x] `Mandatory (Google)` Verify ownership of the authorized domain(s) used by the production app's home page and privacy policy.
   - Source: [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
 
 - [ ] `Optional` Provide terms of service if the production distribution posture needs it.
@@ -216,7 +216,7 @@ After this transition:
     - [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
     - [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073?hl=en)
 
-- [ ] `Mandatory (Google)` Change the production Google OAuth project's publishing status to `In production` when it is ready for real-user rollout.
+- [x] `Mandatory (Google)` Change the production Google OAuth project's publishing status to `In production` when it is ready for real-user rollout.
   - Why: testing mode is limited to listed test users and test-user authorizations expire after 7 days.
   - Clarification: this is an immediate publishing-status change in Google Console, not the same thing as later verification review.
   - Source: [Manage App Audience](https://support.google.com/cloud/answer/15549945?hl=en)
