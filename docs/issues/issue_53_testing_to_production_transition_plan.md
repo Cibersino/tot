@@ -239,7 +239,7 @@ After this transition:
 
 ### 4. App/runtime changes
 
-- [ ] `Mandatory (Project)` Remove manual end-user `credentials.json` import as the normal production onboarding path.
+- [x] `Mandatory (Project)` Remove manual end-user `credentials.json` import as the normal production onboarding path.
   - Why: the current runtime still supports manual import, but the chosen production target is `app-owner-owned` plus `bundled with the app`.
   - Clarification for this document: ordinary users are no longer expected to provide or import runtime OAuth client material themselves, even though the bundled production desktop client configuration includes `client_secret`.
   - Additional clarification: if the implementation materializes an app-managed runtime copy of the bundled production desktop client/configuration under the canonical runtime path, that local file is still not user-provided onboarding material.
@@ -257,12 +257,12 @@ After this transition:
   - For this document, the chosen production runtime contract is the direct desktop OAuth client shape actually used by the shipped app: system browser + loopback callback + PKCE + bundled `client_secret`.
   - Therefore, the bundled runtime material must match that desktop OAuth contract, not the previously attempted no-secret variant that failed in live testing for this project.
 
-- [ ] `Mandatory (Project)` Update the OCR readiness/activation flow so production setup failures match the new bundled-client model.
+- [x] `Mandatory (Project)` Update the OCR readiness/activation flow so production setup failures match the new bundled-client model.
   - Example: "missing bundled production client/configuration" is a packaging/config problem, not a normal end-user onboarding step.
   - Example: "the app failed to materialize the bundled production client/configuration into the canonical runtime path" is a packaging/bootstrap problem, not a normal end-user onboarding step.
   - Example: "bundled config is missing required desktop OAuth fields such as `client_secret`" is a packaging/implementation contract problem, not a user setup step.
 
-- [ ] `Mandatory (Project)` Re-review disconnect behavior and wording against the new production client/configuration delivery model.
+- [x] `Mandatory (Project)` Re-review disconnect behavior and wording against the new production client/configuration delivery model.
   - Current wording says the app keeps `credentials.json` so the user can reconnect later.
   - Under the packaging shape chosen above, that wording may remain technically true only as a statement about an app-managed runtime mirror/copy used by the app itself.
   - It must stop implying that the user owns or provides the normal production client file, even though the bundled production configuration itself includes `client_secret`.

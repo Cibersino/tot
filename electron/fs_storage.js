@@ -28,6 +28,7 @@ log.debug('FS storage starting...');
 // =============================================================================
 
 let CONFIG_DIR = null;
+let APP_ROOT_DIR = null;
 
 // =============================================================================
 // Storage initialization
@@ -42,6 +43,7 @@ function initStorage(app) {
   }
 
   CONFIG_DIR = path.join(app.getPath('userData'), 'config');
+  APP_ROOT_DIR = app.getAppPath();
 }
 
 function getConfigDir() {
@@ -49,6 +51,13 @@ function getConfigDir() {
     throw new Error('[fs_storage] CONFIG_DIR is not initialized');
   }
   return CONFIG_DIR;
+}
+
+function getAppRootDir() {
+  if (!APP_ROOT_DIR) {
+    throw new Error('[fs_storage] APP_ROOT_DIR is not initialized');
+  }
+  return APP_ROOT_DIR;
 }
 
 // =============================================================================
@@ -121,6 +130,10 @@ function getOcrGoogleDriveCredentialsFile() {
 
 function getOcrGoogleDriveTokenFile() {
   return path.join(getOcrGoogleDriveDir(), 'token.json');
+}
+
+function getBundledOcrGoogleDriveCredentialsFile() {
+  return path.join(getAppRootDir(), 'electron', 'assets', 'ocr_google_drive', 'credentials.json');
 }
 
 // =============================================================================
@@ -273,6 +286,7 @@ function saveJson(filePath, obj) {
 module.exports = {
   initStorage,
   getConfigDir,
+  getAppRootDir,
 
   getConfigPresetsDir,
   getCurrentTextSnapshotsDir,
@@ -291,6 +305,7 @@ module.exports = {
   getOcrGoogleDriveDir,
   getOcrGoogleDriveCredentialsFile,
   getOcrGoogleDriveTokenFile,
+  getBundledOcrGoogleDriveCredentialsFile,
 
   ensureConfigDir,
   ensureConfigPresetsDir,

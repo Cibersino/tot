@@ -110,6 +110,80 @@ As of 2026-03-26:
 
 ## Log
 
+### OP-0157
+
+- Date/time: 2026-03-26 18:05:05 -03:00
+- Operation: Implement the section 4 bundled-production OAuth runtime bootstrap and remove manual end-user `credentials.json` onboarding from the normal OCR path.
+- Why: The production-transition document now locks the packaging shape as app-owner-provided bundled desktop OAuth material, with any canonical runtime `credentials.json` treated only as an app-managed execution mirror.
+- Changes made:
+  - Added bundled-credentials bootstrap support so OCR runtime paths now auto-materialize or repair the canonical runtime `credentials.json` from app-owned bundled credentials under `electron/assets/ocr_google_drive/credentials.json`.
+  - Kept the canonical runtime path unchanged:
+    - `app.getPath('userData')/config/ocr_google_drive/credentials.json`
+    - `app.getPath('userData')/config/ocr_google_drive/token.json`
+  - Removed the manual credentials-picker / user-import path from `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`.
+  - Updated setup-validation fallback wording from user-import language to bundled-build / packaging language.
+  - Updated disconnect/disclosure/privacy/help/i18n wording so the app no longer implies that ordinary users provide `credentials.json`.
+  - Added `electron/assets/ocr_google_drive/README.md` and `.gitignore` protection for the real bundled `credentials.json`.
+  - Marked the corresponding section 4 items complete in `docs/issues/issue_53_testing_to_production_transition_plan.md`:
+    - remove manual end-user `credentials.json` onboarding
+    - update readiness/activation flow for the bundled-client model
+    - re-review disconnect wording for the bundled-client model
+- Checklist updates:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md` section 4:
+    - `[x] Remove manual end-user credentials.json import as the normal production onboarding path.`
+    - `[x] Update the OCR readiness/activation flow so production setup failures match the new bundled-client model.`
+    - `[x] Re-review disconnect behavior and wording against the new production client/configuration delivery model.`
+- Files touched:
+  - `.gitignore`
+  - `PRIVACY.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `electron/assets/ocr_google_drive/README.md`
+  - `electron/fs_storage.js`
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+  - `electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`
+  - `electron/import_extract_platform/ocr_google_drive_bundled_credentials.js`
+  - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+  - `electron/main.js`
+  - `i18n/arn/main.json`
+  - `i18n/arn/renderer.json`
+  - `i18n/de/main.json`
+  - `i18n/de/renderer.json`
+  - `i18n/en/main.json`
+  - `i18n/en/renderer.json`
+  - `i18n/es/es-cl/main.json`
+  - `i18n/es/es-cl/renderer.json`
+  - `i18n/es/main.json`
+  - `i18n/es/renderer.json`
+  - `i18n/fr/main.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/main.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/main.json`
+  - `i18n/pt/renderer.json`
+  - `public/info/instrucciones.en.html`
+  - `public/info/instrucciones.es.html`
+  - `public/js/import_extract_ocr_activation_disclosure_modal.js`
+- Evidence:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md` now locks:
+    - bundled owner-provided production desktop OAuth `credentials.json`
+    - optional app-managed runtime copy under `app.getPath('userData')/config/ocr_google_drive/credentials.json`
+    - no normal end-user `credentials.json` obtain/install/select/browse flow
+  - `electron/main.js` now routes OCR path resolution through `resolveGoogleDriveOcrRuntimePaths()`, which materializes bundled credentials before delegated OCR IPC modules use the canonical runtime path.
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` no longer contains the native file-picker / manual credentials-import branch.
+  - `electron/assets/ocr_google_drive/README.md` documents the expected bundled file location and runtime contract.
+  - Verification:
+    - `npm run lint` -> passed
+    - `node --check electron/main.js` -> passed
+    - `node --check electron/import_extract_platform/ocr_google_drive_bundled_credentials.js` -> passed
+    - `node --check electron/import_extract_platform/import_extract_ocr_activation_ipc.js` -> passed
+    - `node --check electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js` -> passed
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation.js` -> passed
+    - `node --check public/js/import_extract_ocr_activation_disclosure_modal.js` -> passed
+- Outcome / next step:
+  - Runtime/bootstrap/user-facing wording now match the locked bundled-production contract.
+  - Next validation step: place the real owner-provided `credentials.json` at `electron/assets/ocr_google_drive/credentials.json`, build a Windows package, and run packaged OCR activation/disconnect smoke validation against the new bundled bootstrap path.
+
 ### OP-0156
 
 - Date/time: 2026-03-26 15:43:26 -03:00

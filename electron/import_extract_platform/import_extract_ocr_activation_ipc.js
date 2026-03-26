@@ -7,7 +7,7 @@
 // Main-process OCR activation IPC for Google Drive OCR setup and token bootstrap.
 // Responsibilities:
 // - Authorize OCR activation requests to the main window sender.
-// - Prepare credentials readiness without launching the OAuth browser flow.
+// - Prepare bundled credentials readiness without launching the OAuth browser flow.
 // - Launch the OAuth browser flow only after renderer-side disclosure consent.
 // - Persist encrypted token material for later OCR setup validation.
 // - Return structured readiness/activation results for OCR recovery and setup flows.
@@ -18,7 +18,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { BrowserWindow, dialog } = require('electron');
+const { BrowserWindow } = require('electron');
 const { authenticate } = require('@google-cloud/local-auth');
 const Log = require('../log');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
@@ -149,15 +149,13 @@ function buildPrepareFailure({
   };
 }
 
-function buildPrepareSuccess({ importedCredentials = false } = {}) {
+function buildPrepareSuccess() {
   return {
     ok: true,
     ready: true,
     code: '',
     alertKey: '',
-    detailsSafeForLogs: {
-      importedCredentials: !!importedCredentials,
-    },
+    detailsSafeForLogs: {},
   };
 }
 
@@ -236,80 +234,6 @@ function mapAuthenticateError(err) {
   });
 }
 
-async function promptCredentialsFile(mainWin) {
-  const result = await dialog.showOpenDialog(mainWin || undefined, {
-    properties: ['openFile'],
-    filters: [{ name: 'JSON', extensions: ['json'] }],
-  });
-
-  if (!result || result.canceled || !Array.isArray(result.filePaths) || !result.filePaths[0]) {
-    return {
-      ok: false,
-      cancelled: true,
-      filePath: '',
-    };
-  }
-
-  return {
-    ok: true,
-    cancelled: false,
-    filePath: String(result.filePaths[0]),
-  };
-}
-
-function importCredentialsFile({ sourcePath, targetPath }) {
-  try {
-    if (!hasFile(sourcePath)) {
-      return buildFailure({
-        state: 'setup_incomplete',
-        code: 'setup_incomplete',
-        detailsSafeForLogs: {
-          stage: 'credentials_import',
-          reason: 'source_missing',
-        },
-      });
-    }
-
-    const parsed = readJsonFileStrict(sourcePath);
-    if (!hasValidCredentialsShape(parsed)) {
-      return buildFailure({
-        state: 'setup_incomplete',
-        code: 'credentials_missing',
-        alertKey: 'renderer.alerts.import_extract_ocr_setup_invalid_credentials',
-        detailsSafeForLogs: {
-          stage: 'credentials_import',
-          reason: 'invalid_credentials_shape',
-        },
-      });
-    }
-
-    ensureParentDir(targetPath);
-    fs.writeFileSync(targetPath, JSON.stringify(parsed, null, 2), 'utf8');
-    return {
-      ok: true,
-      state: 'ready',
-      code: '',
-      alertKey: '',
-      detailsSafeForLogs: {
-        stage: 'credentials_import',
-        importedCredentials: true,
-      },
-    };
-  } catch (err) {
-    return buildFailure({
-      state: 'setup_incomplete',
-      code: 'credentials_missing',
-      alertKey: 'renderer.alerts.import_extract_ocr_setup_invalid_credentials',
-      detailsSafeForLogs: {
-        stage: 'credentials_import',
-        reason: 'import_failed',
-        errorName: safeErrorName(err),
-        errorMessage: safeErrorMessage(err),
-      },
-    });
-  }
-}
-
 function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_validate' } = {}) {
   if (!hasFile(credentialsPath)) {
     return buildFailure({
@@ -357,64 +281,6 @@ function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_v
   };
 }
 
-async function ensureCredentialsReady({
-  mainWin,
-  request,
-  credentialsPath,
-} = {}) {
-  let importedCredentials = false;
-
-  if (!hasFile(credentialsPath)) {
-    const selectedCredentialsPath = request && request.credentialsSourcePath
-      ? request.credentialsSourcePath
-      : '';
-    let sourcePath = selectedCredentialsPath;
-    if (!sourcePath) {
-      const pick = await promptCredentialsFile(mainWin);
-      if (!pick.ok) {
-        return buildFailure({
-          state: 'setup_incomplete',
-          code: 'setup_incomplete',
-          alertKey: 'renderer.alerts.import_extract_ocr_setup_cancelled',
-          detailsSafeForLogs: {
-            stage: 'credentials_pick',
-            cancelled: true,
-          },
-        });
-      }
-      sourcePath = pick.filePath;
-    }
-
-    const importResult = importCredentialsFile({
-      sourcePath,
-      targetPath: credentialsPath,
-    });
-    if (!importResult.ok) {
-      return {
-        ...importResult,
-        detailsSafeForLogs: {
-          ...importResult.detailsSafeForLogs,
-          sourcePathProvided: !!selectedCredentialsPath,
-        },
-      };
-    }
-    importedCredentials = true;
-  }
-
-  const credentialsValidation = validateStoredCredentialsFile({
-    credentialsPath,
-    stage: 'credentials_validate',
-  });
-  if (!credentialsValidation.ok) {
-    return credentialsValidation;
-  }
-
-  return {
-    ok: true,
-    importedCredentials,
-  };
-}
-
 function isAuthorizedSender(event, mainWin, {
   warnKey,
   unauthorizedMessage,
@@ -436,15 +302,6 @@ function isAuthorizedSender(event, mainWin, {
     log.warn(senderValidationMessage, err);
     return false;
   }
-}
-
-function resolvePayload(payload) {
-  const raw = payload && typeof payload === 'object' ? payload : {};
-  return {
-    credentialsSourcePath: typeof raw.credentialsSourcePath === 'string'
-      ? raw.credentialsSourcePath.trim()
-      : '',
-  };
 }
 
 function extractSerializableCredentials(authClient) {
@@ -488,8 +345,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
     return windows.mainWin || null;
   };
 
-  ipcMain.handle(PREPARE_CHANNEL, async (event, payload = {}) => {
-    const request = resolvePayload(payload);
+  ipcMain.handle(PREPARE_CHANNEL, async (event) => {
     const mainWin = resolveMainWin();
     try {
       if (!isAuthorizedSender(event, mainWin, {
@@ -522,34 +378,24 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         });
       }
 
-      const readiness = await ensureCredentialsReady({
-        mainWin,
-        request,
+      const readiness = validateStoredCredentialsFile({
         credentialsPath,
+        stage: 'credentials_prepare_validate',
       });
       if (!readiness.ok) {
         const safeFailure = toPrepareFailure(readiness);
-        if (safeFailure.alertKey === 'renderer.alerts.import_extract_ocr_setup_cancelled') {
-          log.info('import/extract OCR activation prepare cancelled during credentials setup:', {
-            code: safeFailure.code,
-            detailsSafeForLogs: safeFailure.detailsSafeForLogs,
-          });
-        } else {
-          log.warn('import/extract OCR activation prepare blocked during credentials readiness:', {
-            code: safeFailure.code,
-            detailsSafeForLogs: safeFailure.detailsSafeForLogs,
-          });
-        }
+        log.warn('import/extract OCR activation prepare blocked during bundled credentials readiness:', {
+          code: safeFailure.code,
+          detailsSafeForLogs: safeFailure.detailsSafeForLogs,
+        });
         return safeFailure;
       }
 
-      const result = buildPrepareSuccess({
-        importedCredentials: readiness.importedCredentials,
-      });
+      const result = buildPrepareSuccess();
       log.info('import/extract OCR activation prepare completed:', {
         ok: result.ok,
         ready: result.ready,
-        importedCredentials: readiness.importedCredentials,
+        bundledCredentialsReady: true,
       });
       return result;
     } catch (err) {
