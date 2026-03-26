@@ -48,6 +48,10 @@ tot/
 │ ├── test_suite.md
 │ └── tree_folders_files.md
 ├── electron/
+│ ├── assets/
+│ │ └── ocr_google_drive/         # {credenciales OAuth desktop empaquetadas para OCR Google}
+│ │   ├── credentials.json        # {ignorado por git; material real provisto por el owner para builds de producción}
+│ │   └── README.md
 │ ├── presets/                     # {presets para restauración de fábrica}
 │ │ ├── defaults_presets.json
 │ │ ├── defaults_presets_en.json
@@ -89,6 +93,7 @@ tot/
 │ │ ├── native_extraction_route.js
 │ │ ├── native_pdf_selectable_text_probe.js
 │ │ ├── ocr_google_drive_activation_state.js
+│ │ ├── ocr_google_drive_bundled_credentials.js
 │ │ ├── ocr_google_drive_oauth_client.js
 │ │ ├── ocr_google_drive_setup_validation.js
 │ │ ├── ocr_google_drive_setup_validation_ipc.js
@@ -178,20 +183,27 @@ tot/
 │   │   ├── x-white.png
 │   │   └── youtube.png
 │   ├── en/
+│   │ ├── app-privacy/
+│   │ │ ├── google-ocr/
+│   │ │ │ └── index.html
+│   │ │ └── index.html
 │   │ ├── privacy-cookies/
 │   │ │ └── index.html
 │   │ └── index.html
 │   ├── es/
+│   │ ├── app-privacy/
+│   │ │ ├── google-ocr/
+│   │ │ │ └── index.html
+│   │ │ └── index.html
 │   │ ├── privacy-cookies/
 │   │ │ └── index.html
-│   │ └── index.html
-│   ├── privacy-cookies/
 │   │ └── index.html
 │   ├── index.html
 │   ├── favicon.svg
 │   ├── favicon.ico
 │   ├── og-image.png
 │   ├── robots.txt
+│   ├── site-language.js
 │   ├── _headers
 │   └── styles.css
 ├── tools_local/                   # {carpeta ignorada por git} {taller trasero}
@@ -236,7 +248,7 @@ tot/
 
 ### 2) Módulos del proceso principal (Electron)
 
-- `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`, estado del picker import/extract y credenciales/tokens OCR.
+- `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`, estado del picker import/extract, credenciales/tokens OCR runtime y ruta de credenciales OCR empaquetadas en `electron/assets/ocr_google_drive/credentials.json`.
 - `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset` y difunde cambios vía `settings-updated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`).
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): diálogos nativos, lectura/escritura JSON `{ "text": "<string>" }` bajo `config/saved_current_texts/` (incluye subcarpetas), confirmación de overwrite y chequeo de contención (realpath/relative) para evitar escapes fuera del árbol.
@@ -259,6 +271,7 @@ tot/
 - `electron/import_extract_platform/native_extraction_route.js` — Ruta de extracción nativa para `txt`, `md`, `html`, `docx` y PDFs con text layer; incluye pipeline de normalización.
 - `electron/import_extract_platform/native_pdf_selectable_text_probe.js` — Probe de PDF para detectar si existe texto seleccionable utilizable antes de decidir la ruta.
 - `electron/import_extract_platform/ocr_google_drive_activation_state.js` — Estado local de disponibilidad OCR (`setup_incomplete`, `ocr_activation_required`, `ready`) a partir de `credentials.json`/`token.json`.
+- `electron/import_extract_platform/ocr_google_drive_bundled_credentials.js` — Bootstrap del modelo OCR de producción: valida las credenciales OAuth desktop empaquetadas y materializa/repara el espejo runtime bajo `config/ocr_google_drive/credentials.json` sin pedir importación manual al usuario.
 - `electron/import_extract_platform/ocr_google_drive_oauth_client.js` — Helpers compartidos OAuth para OCR: lectura de `credentials.json`, construcción del cliente OAuth2 y selección del token preferido para revocación.
 - `electron/import_extract_platform/ocr_google_drive_setup_validation.js` — Validación técnica del setup OCR (credenciales, token y reachability de Google Drive).
 - `electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js` — Handler IPC para consultar/diagnosticar el estado de setup OCR desde la UI.
@@ -313,8 +326,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/current_text.json` — Texto vigente persistido.
 - `config/editor_state.json` — Estado persistido del editor (geometría/maximizado, etc.).
 - `config/import_extract_state.json` — Estado local del picker de import/extract (por ejemplo, última carpeta utilizada).
-- `config/ocr_google_drive/credentials.json` — Credenciales OAuth de Google aportadas por el usuario para habilitar OCR localmente; se conservan al desconectar Google OCR.
-- `config/ocr_google_drive/token.json` — Token OAuth local del usuario para la ruta OCR de Google Drive/Docs; se elimina al desconectar Google OCR tras revocación exitosa.
+- `config/ocr_google_drive/credentials.json` — Espejo/copia runtime gestionado por la app para la configuración OAuth de Google OCR; en el modelo actual se materializa desde credenciales empaquetadas de la app y no forma parte del onboarding manual del usuario.
+- `config/ocr_google_drive/token.json` — Estado local del token OAuth del usuario final para la ruta OCR de Google Drive/Docs; se elimina al desconectar Google OCR tras revocación exitosa.
 - `config/saved_current_texts/` — Carpeta runtime con snapshots del texto vigente (archivos JSON `{ "text": ... }`; puede contener subcarpetas).
 - `config/tasks/lists/*.json` — Listas de tareas guardadas por el usuario.
 - `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).
@@ -322,7 +335,12 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/tasks/column_widths.json` — Persistencia de anchos de columnas del editor de tareas.
 - `config/tasks/task_editor_position.json` — Última posición (x/y) de la ventana del editor de tareas.
 
-#### 5.1) Presets por defecto (dos capas)
+### 5.1) Material OCR empaquetado
+
+- `electron/assets/ocr_google_drive/credentials.json` — Credenciales desktop OAuth de Google OCR provistas por el owner para builds de producción; no forman parte del setup manual del usuario final y deben permanecer fuera de git.
+- `electron/assets/ocr_google_drive/README.md` — Contrato operativo para ese material empaquetado: nombre esperado del archivo, ubicación, protección `.gitignore` y relación con el espejo runtime bajo `config/ocr_google_drive/credentials.json`.
+
+#### 5.2) Presets por defecto (dos capas)
 
 - **Defaults de instalación (versionados):** `electron/presets/*.json`  
   Fuente “empaquetada” / base. Debe existir en el repo y viaja con la app.
@@ -349,10 +367,14 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `website/public/index.html` — Landing neutral del sitio público (`https://totapp.org/`), usada como entrada x-default y selector explícito de idioma.
 - `website/public/es/index.html` — Versión en español (`https://totapp.org/es/`), con switch de idioma, CTA de descarga y bloque "Apoya y sigue a Cibersino".
 - `website/public/en/index.html` — Versión en inglés (`https://totapp.org/en/`), con switch de idioma, CTA de descarga y bloque "Support and follow Cibersino".
-- `website/public/privacy-cookies/index.html` — Entrada neutral para política mínima de privacidad/cookies (selector hacia versiones localizadas).
+- `website/public/es/app-privacy/index.html` — Política de privacidad pública de la app en español.
+- `website/public/en/app-privacy/index.html` — Política de privacidad pública de la app en inglés.
+- `website/public/es/app-privacy/google-ocr/index.html` — Página pública específica de privacidad para Google OCR en español.
+- `website/public/en/app-privacy/google-ocr/index.html` — Página pública específica de privacidad para Google OCR en inglés.
 - `website/public/es/privacy-cookies/index.html` — Política mínima de privacidad/cookies en español.
 - `website/public/en/privacy-cookies/index.html` — Política mínima de privacidad/cookies en inglés.
-- Footer de `index.html`, `es/index.html` y `en/index.html` — incluye enlaces visibles a la política de privacidad/cookies.
+- Footer de `index.html`, `es/index.html` y `en/index.html` — incluye enlaces visibles a la política pública de privacidad de la app y/o a la política del sitio, según corresponda.
+- `website/public/site-language.js` — Helper compartido del sitio estático para detectar/persistir idioma preferido y soportar la redirección desde `/`.
 - `website/public/styles.css` — Hoja de estilos compartida para las tres rutas.
 - `website/public/assets/brand/*.svg` — Logos locales del proyecto/desarrollador usados en el header y footer (`logo-tot.svg`, `logo-cibersino.svg`).
 - `website/public/assets/social/` — Íconos sociales usados en `/es/` y `/en/` (Instagram light/dark, Patreon, X light/dark, YouTube, Twitch) y `SOURCES.md` como trazabilidad de origen de assets.

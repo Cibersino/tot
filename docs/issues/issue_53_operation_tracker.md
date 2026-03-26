@@ -110,6 +110,52 @@ As of 2026-03-26:
 
 ## Log
 
+### OP-0158
+
+- Date/time: 2026-03-26 20:11:52 -03:00
+- Operation: Reconcile the Issue 53 production-transition documentation status after section 4 completion and section 5 wording review.
+- Why:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md` still described one stale runtime fact (`manual credentials import`) and still showed section 5 as open even though the current repo surfaces now reflect the production bundled-credentials model.
+  - `docs/tree_folders_files.md` still described runtime OCR credentials as user-provided and still listed outdated website structure.
+- Changes made:
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md` to:
+    - switch the introductory historical wording to past-tense where needed
+    - replace the stale current-runtime note about manual `credentials.json` import with the current bundled/app-managed runtime model
+    - mark the mandatory section 5 documentation items complete
+    - cite the current repo surfaces that satisfy those section 5 items
+  - Updated `docs/tree_folders_files.md` to:
+    - describe `config/ocr_google_drive/credentials.json` as an app-managed runtime mirror rather than user-provided onboarding material
+    - describe `token.json` as end-user local token state
+    - replace the outdated website tree/guide entries with the current `app-privacy` and `google-ocr` public pages
+  - Left the optional section 5 release-note item untouched per user direction; no `docs/changelog_detailed.md` changes were made.
+- Checklist updates:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md` section 5:
+    - `[x] Remove testing-path instructions that imply ordinary users must supply or import credentials.json themselves.`
+    - `[x] Add production-path instructions that explain the real shipped user flow.`
+    - `[x] Update any wording that still describes the testing posture rather than the production posture.`
+    - `[x] Update the production-homepage / privacy-policy content so it matches the real shipped OCR model and does not contradict the app's in-app disclosures.`
+    - optional release-note item intentionally left open
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `docs/tree_folders_files.md`
+- Evidence:
+  - Current app/privacy/help surfaces already reflect the production OCR flow:
+    - `PRIVACY.md`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+    - `public/info/acerca_de.html`
+  - Current public website/privacy surfaces already reflect the production OCR flow:
+    - `website/public/es/index.html`
+    - `website/public/en/index.html`
+    - `website/public/es/app-privacy/index.html`
+    - `website/public/en/app-privacy/index.html`
+    - `website/public/es/app-privacy/google-ocr/index.html`
+    - `website/public/en/app-privacy/google-ocr/index.html`
+- Outcome / next step:
+  - The transition-plan documentation status now matches the current repo state for section 5.
+  - Next step remains section 7 packaged-build validation with the real bundled production `credentials.json`.
+
 ### OP-0157
 
 - Date/time: 2026-03-26 18:05:05 -03:00

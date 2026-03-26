@@ -4,7 +4,7 @@ Date: 2026-03-22
 
 Purpose: define the concrete work needed to move the current OCR path from the present testing posture to the intended production posture, using both the current repo state and official Google documentation as evidence.
 
-This document is operational. It is not only about Google Console setup. For Issue 53, the transition also includes app changes and user-documentation changes because the current app still reflects a testing-oriented credential model in some runtime paths.
+This document is operational. It is not only about Google Console setup. For Issue 53, the transition also included app changes and user-documentation changes because the app previously reflected a testing-oriented credential model in some runtime paths.
 
 ## Codex Policy For This File
 
@@ -43,8 +43,10 @@ Current settled baseline in Issue 53:
 
 Current runtime evidence:
 
-- The OCR activation code still supports manual user import of `credentials.json` when credentials are missing.
-  - Source: [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
+- The OCR activation code no longer supports ordinary end-user import of `credentials.json` as the normal OCR onboarding path; runtime credentials are now expected from app-managed bundled material, with canonical runtime materialization when needed.
+  - Sources:
+    - [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
+    - [ocr_google_drive_bundled_credentials.js](../../electron/import_extract_platform/ocr_google_drive_bundled_credentials.js)
 - The current activation/runtime validation helpers still require `client_secret` in the local credentials material.
   - Sources:
     - [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
@@ -280,23 +282,38 @@ After this transition:
 
 ### 5. Documentation changes
 
-- [ ] `Mandatory (Project)` Remove testing-path instructions that imply ordinary users must supply or import `credentials.json` themselves.
+- [x] `Mandatory (Project)` Remove testing-path instructions that imply ordinary users must supply or import `credentials.json` themselves.
+  - Current repo evidence:
+    - [PRIVACY.md](../../PRIVACY.md)
+    - [instrucciones.en.html](../../public/info/instrucciones.en.html)
+    - [instrucciones.es.html](../../public/info/instrucciones.es.html)
 
-- [ ] `Mandatory (Project)` Add production-path instructions that explain the real shipped user flow:
+- [x] `Mandatory (Project)` Add production-path instructions that explain the real shipped user flow:
   - OCR is available in the app
   - activation still requires explicit user consent/sign-in in the system browser
   - the app uses Google services for OCR when the OCR route is chosen
   - disconnect remains available in the app
-
-- [ ] `Mandatory (Project)` Update any wording that still describes the testing posture rather than the production posture.
-  - Current repo state already documents the current behavior, but those docs must be reconciled when the credential model changes.
-  - Candidate surfaces:
+  - Current repo evidence:
     - [PRIVACY.md](../../PRIVACY.md)
     - [instrucciones.en.html](../../public/info/instrucciones.en.html)
     - [instrucciones.es.html](../../public/info/instrucciones.es.html)
     - [acerca_de.html](../../public/info/acerca_de.html)
 
-- [ ] `Mandatory (Project)` Update the production-homepage / privacy-policy content so it matches the real shipped OCR model and does not contradict the app's in-app disclosures.
+- [x] `Mandatory (Project)` Update any wording that still describes the testing posture rather than the production posture.
+  - Reconciled user-facing surfaces in the current repo state:
+    - [PRIVACY.md](../../PRIVACY.md)
+    - [instrucciones.en.html](../../public/info/instrucciones.en.html)
+    - [instrucciones.es.html](../../public/info/instrucciones.es.html)
+    - [acerca_de.html](../../public/info/acerca_de.html)
+
+- [x] `Mandatory (Project)` Update the production-homepage / privacy-policy content so it matches the real shipped OCR model and does not contradict the app's in-app disclosures.
+  - Current repo evidence:
+    - [website/public/es/index.html](../../website/public/es/index.html)
+    - [website/public/en/index.html](../../website/public/en/index.html)
+    - [website/public/es/app-privacy/index.html](../../website/public/es/app-privacy/index.html)
+    - [website/public/en/app-privacy/index.html](../../website/public/en/app-privacy/index.html)
+    - [website/public/es/app-privacy/google-ocr/index.html](../../website/public/es/app-privacy/google-ocr/index.html)
+    - [website/public/en/app-privacy/google-ocr/index.html](../../website/public/en/app-privacy/google-ocr/index.html)
 
 - [ ] `Optional` Add release-note language that explicitly says the OCR path has moved from testing posture to production posture.
 
