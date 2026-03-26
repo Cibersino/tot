@@ -29,7 +29,7 @@ Purpose: keep an auditable operation history for Issue 53 execution and prevent 
 
 ## Current Authoritative Status
 
-As of 2026-03-21:
+As of 2026-03-26:
 
 - Section 1 (`Substrate and access-model decision`): complete.
 - Section 2 (`Substrate setup / billing / activation path`): complete.
@@ -101,10 +101,213 @@ As of 2026-03-21:
   - Active next checklist item: Section 8 item 4 (`Update changelog/release notes and related documentation`).
   - Section 9 not started.
   - Section 4 is the first allowed stage for OCR UI trigger wiring.
+- Production-transition clarification:
+  - The preferred Issue 53 production model remains `app-owner-owned` + `bundled with the app` + end-user Google account at runtime.
+  - The runtime auth contract is now explicitly locked as desktop OAuth client + system browser + loopback callback + PKCE + bundled `client_secret`.
+  - The previously attempted no-secret bundled desktop variant is rejected for this project after live token exchange returned `client_secret is missing.`
+  - Publication decision record now states:
+    - posture: `public-release website/verification readiness`
+    - audience: `External`
+    - brand verification: `submitted and waiting for approval`
+    - scope lock: `drive.file` only
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0159
+
+- Date/time: 2026-03-26 20:30:38 -03:00
+- Operation: Record the Issue 53 section 6 publication/verification decision inputs from the user in the transition plan.
+- Why:
+  - Section 6 requires an explicit decision record for publication posture, verification posture, and scope posture.
+  - Those values could not be inferred safely without direct user confirmation.
+- Changes made:
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md` section 3 to mark the brand-verification submission step complete because the production app is `External` and the submission has already been made.
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md` section 6 to record:
+    - public release posture
+    - `External` OAuth audience
+    - brand verification submitted / awaiting approval
+    - scope locked to `drive.file`
+  - Kept the section 6 brand-verification-completion item open because approval is still pending.
+  - Updated tracker `Current Authoritative Status` production-transition clarification with the same decision record.
+- Checklist updates:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+    - section 3:
+      - `[x] Submit for brand verification if the production Google OAuth project is External and should display the application's real name/logo on the OAuth consent screen.`
+    - section 6:
+      - `[x] Do not submit for sensitive or restricted scope verification unless the scope set expands beyond the current non-sensitive baseline.`
+      - `[x] Record the final publication posture explicitly.`
+      - kept open: `If the production Google OAuth project remains External and uses production branding, ensure brand verification is completed and recorded.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+- Evidence:
+  - User confirmed:
+    - rollout posture: public
+    - OAuth audience: `External`
+    - brand verification status: submitted and waiting for approval
+    - scope lock: `drive.file` only
+- Outcome / next step:
+  - Section 6 now has an explicit decision record.
+  - Next transition-plan step is section 7 packaged Windows validation, while the brand-verification completion record remains pending Google approval.
+
+### OP-0158
+
+- Date/time: 2026-03-26 20:11:52 -03:00
+- Operation: Reconcile the Issue 53 production-transition documentation status after section 4 completion and section 5 wording review.
+- Why:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md` still described one stale runtime fact (`manual credentials import`) and still showed section 5 as open even though the current repo surfaces now reflect the production bundled-credentials model.
+  - `docs/tree_folders_files.md` still described runtime OCR credentials as user-provided and still listed outdated website structure.
+- Changes made:
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md` to:
+    - switch the introductory historical wording to past-tense where needed
+    - replace the stale current-runtime note about manual `credentials.json` import with the current bundled/app-managed runtime model
+    - mark the mandatory section 5 documentation items complete
+    - cite the current repo surfaces that satisfy those section 5 items
+  - Updated `docs/tree_folders_files.md` to:
+    - describe `config/ocr_google_drive/credentials.json` as an app-managed runtime mirror rather than user-provided onboarding material
+    - describe `token.json` as end-user local token state
+    - replace the outdated website tree/guide entries with the current `app-privacy` and `google-ocr` public pages
+  - Left the optional section 5 release-note item untouched per user direction; no `docs/changelog_detailed.md` changes were made.
+- Checklist updates:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md` section 5:
+    - `[x] Remove testing-path instructions that imply ordinary users must supply or import credentials.json themselves.`
+    - `[x] Add production-path instructions that explain the real shipped user flow.`
+    - `[x] Update any wording that still describes the testing posture rather than the production posture.`
+    - `[x] Update the production-homepage / privacy-policy content so it matches the real shipped OCR model and does not contradict the app's in-app disclosures.`
+    - optional release-note item intentionally left open
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `docs/tree_folders_files.md`
+- Evidence:
+  - Current app/privacy/help surfaces already reflect the production OCR flow:
+    - `PRIVACY.md`
+    - `public/info/instrucciones.en.html`
+    - `public/info/instrucciones.es.html`
+    - `public/info/acerca_de.html`
+  - Current public website/privacy surfaces already reflect the production OCR flow:
+    - `website/public/es/index.html`
+    - `website/public/en/index.html`
+    - `website/public/es/app-privacy/index.html`
+    - `website/public/en/app-privacy/index.html`
+    - `website/public/es/app-privacy/google-ocr/index.html`
+    - `website/public/en/app-privacy/google-ocr/index.html`
+- Outcome / next step:
+  - The transition-plan documentation status now matches the current repo state for section 5.
+  - Next step remains section 7 packaged-build validation with the real bundled production `credentials.json`.
+
+### OP-0157
+
+- Date/time: 2026-03-26 18:05:05 -03:00
+- Operation: Implement the section 4 bundled-production OAuth runtime bootstrap and remove manual end-user `credentials.json` onboarding from the normal OCR path.
+- Why: The production-transition document now locks the packaging shape as app-owner-provided bundled desktop OAuth material, with any canonical runtime `credentials.json` treated only as an app-managed execution mirror.
+- Changes made:
+  - Added bundled-credentials bootstrap support so OCR runtime paths now auto-materialize or repair the canonical runtime `credentials.json` from app-owned bundled credentials under `electron/assets/ocr_google_drive/credentials.json`.
+  - Kept the canonical runtime path unchanged:
+    - `app.getPath('userData')/config/ocr_google_drive/credentials.json`
+    - `app.getPath('userData')/config/ocr_google_drive/token.json`
+  - Removed the manual credentials-picker / user-import path from `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`.
+  - Updated setup-validation fallback wording from user-import language to bundled-build / packaging language.
+  - Updated disconnect/disclosure/privacy/help/i18n wording so the app no longer implies that ordinary users provide `credentials.json`.
+  - Added `electron/assets/ocr_google_drive/README.md` and `.gitignore` protection for the real bundled `credentials.json`.
+  - Marked the corresponding section 4 items complete in `docs/issues/issue_53_testing_to_production_transition_plan.md`:
+    - remove manual end-user `credentials.json` onboarding
+    - update readiness/activation flow for the bundled-client model
+    - re-review disconnect wording for the bundled-client model
+- Checklist updates:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md` section 4:
+    - `[x] Remove manual end-user credentials.json import as the normal production onboarding path.`
+    - `[x] Update the OCR readiness/activation flow so production setup failures match the new bundled-client model.`
+    - `[x] Re-review disconnect behavior and wording against the new production client/configuration delivery model.`
+- Files touched:
+  - `.gitignore`
+  - `PRIVACY.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `electron/assets/ocr_google_drive/README.md`
+  - `electron/fs_storage.js`
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+  - `electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`
+  - `electron/import_extract_platform/ocr_google_drive_bundled_credentials.js`
+  - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+  - `electron/main.js`
+  - `i18n/arn/main.json`
+  - `i18n/arn/renderer.json`
+  - `i18n/de/main.json`
+  - `i18n/de/renderer.json`
+  - `i18n/en/main.json`
+  - `i18n/en/renderer.json`
+  - `i18n/es/es-cl/main.json`
+  - `i18n/es/es-cl/renderer.json`
+  - `i18n/es/main.json`
+  - `i18n/es/renderer.json`
+  - `i18n/fr/main.json`
+  - `i18n/fr/renderer.json`
+  - `i18n/it/main.json`
+  - `i18n/it/renderer.json`
+  - `i18n/pt/main.json`
+  - `i18n/pt/renderer.json`
+  - `public/info/instrucciones.en.html`
+  - `public/info/instrucciones.es.html`
+  - `public/js/import_extract_ocr_activation_disclosure_modal.js`
+- Evidence:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md` now locks:
+    - bundled owner-provided production desktop OAuth `credentials.json`
+    - optional app-managed runtime copy under `app.getPath('userData')/config/ocr_google_drive/credentials.json`
+    - no normal end-user `credentials.json` obtain/install/select/browse flow
+  - `electron/main.js` now routes OCR path resolution through `resolveGoogleDriveOcrRuntimePaths()`, which materializes bundled credentials before delegated OCR IPC modules use the canonical runtime path.
+  - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` no longer contains the native file-picker / manual credentials-import branch.
+  - `electron/assets/ocr_google_drive/README.md` documents the expected bundled file location and runtime contract.
+  - Verification:
+    - `npm run lint` -> passed
+    - `node --check electron/main.js` -> passed
+    - `node --check electron/import_extract_platform/ocr_google_drive_bundled_credentials.js` -> passed
+    - `node --check electron/import_extract_platform/import_extract_ocr_activation_ipc.js` -> passed
+    - `node --check electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js` -> passed
+    - `node --check electron/import_extract_platform/ocr_google_drive_setup_validation.js` -> passed
+    - `node --check public/js/import_extract_ocr_activation_disclosure_modal.js` -> passed
+- Outcome / next step:
+  - Runtime/bootstrap/user-facing wording now match the locked bundled-production contract.
+  - Next validation step: place the real owner-provided `credentials.json` at `electron/assets/ocr_google_drive/credentials.json`, build a Windows package, and run packaged OCR activation/disconnect smoke validation against the new bundled bootstrap path.
+
+### OP-0156
+
+- Date/time: 2026-03-26 15:43:26 -03:00
+- Operation: Lock the replacement Issue 53 production OAuth model in the docs after rejecting the no-secret bundled desktop variant.
+- Why: The user chose to keep the bundled app-owner-owned desktop flow, but to replace the failed no-secret refinement with a bundled desktop OAuth contract that includes `client_secret`.
+- Changes made:
+  - Updated `docs/issues/issue_53_access_model_options.md` to keep the same preferred four-axis model while explicitly clarifying the runtime auth contract:
+    - desktop OAuth client
+    - system browser
+    - loopback callback
+    - PKCE
+    - bundled `client_secret`
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md` so the production target and Section 4 runtime checklist now point to that contract instead of the rejected no-secret variant.
+  - Updated `docs/issues/issue_53.md` and `docs/issues/issue_53_implementation_plan.md` so the concise Issue 53 summaries use the same production-contract clarification.
+  - Updated tracker `Current Authoritative Status` with the same production-transition clarification.
+- Checklist updates:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+    - retained the existing transition structure
+    - replaced the no-secret contract wording with the bundled desktop-client contract that includes `client_secret`
+- Files touched:
+  - `docs/issues/issue_53_access_model_options.md`
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+  - `docs/issues/issue_53.md`
+  - `docs/issues/issue_53_implementation_plan.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Live transition testing under the no-secret variant returned:
+    - `error: invalid_request`
+    - `error_description: client_secret is missing.`
+  - Current restored runtime evidence continues to show the testing-state secret-bearing desktop flow in:
+    - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js`
+    - `electron/import_extract_platform/ocr_google_drive_setup_validation.js`
+    - `electron/import_extract_platform/ocr_google_drive_oauth_client.js`
+- Outcome / next step:
+  - The Issue 53 docs now lock a concrete replacement production runtime contract instead of leaving the failed no-secret variant ambiguous.
+  - Next step if requested: resume Section 4 transition planning/implementation from that locked bundled desktop-client contract.
 
 ### OP-0155
 

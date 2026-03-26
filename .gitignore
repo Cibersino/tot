@@ -24,6 +24,7 @@ Thumbs.db
 
 # Electron / app user config (no versionear datos de usuario)
 config/
+electron/assets/ocr_google_drive/credentials.json
 
 # Logs
 *.log

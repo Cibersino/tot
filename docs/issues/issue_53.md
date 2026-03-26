@@ -211,6 +211,12 @@ Production-target clarification:
 - runtime credential / configuration delivery: `bundled with the app`
 - runtime Google identity used for OCR: `the end user's Google account`
 - usage-cost / quota responsibility: `the end user's Google account / Google-side usage context`
+- auth/runtime contract clarification:
+  - desktop OAuth client
+  - system browser
+  - loopback callback + PKCE
+  - bundled runtime configuration includes `client_secret`
+  - the previously considered no-secret variant is rejected for this project because live token exchange returned `client_secret is missing.`
 
 Decision references:
 - `docs/issues/issue_53_ocr_substrate_evaluation.md` (final decision + rationale)

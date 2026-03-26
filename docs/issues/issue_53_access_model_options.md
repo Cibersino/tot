@@ -265,12 +265,29 @@ For this document, the current preferred production-target model is:
 - runtime Google identity used for OCR: `the end user's Google account`
 - usage-cost / quota responsibility: `the end user's Google account / Google-side usage context`
 
+Runtime auth-contract clarification for this preferred model:
+
+- the app uses the system browser
+- the OAuth client remains a desktop OAuth client
+- the callback remains a loopback desktop callback
+- PKCE remains part of the auth flow
+- the bundled runtime configuration includes `client_secret`
+
+Why this clarification is now required:
+
+- the previously considered no-secret refinement was tested and did not hold in this project
+- during live token exchange, Google returned:
+  - `error: invalid_request`
+  - `error_description: client_secret is missing.`
+- therefore, this project should not treat the no-secret variant as the reliable production contract for the chosen bundled desktop model
+
 ## Practical consequence
 
 What changes from the testing posture:
 
 - the Google-side setup moves from a testing project/client to a production project/client owned by the app owner
 - the production client/configuration is bundled with the app instead of being handled as a user-provided file
+- the bundled runtime material must match the desktop OAuth client contract that actually works in this project, including `client_secret`
 
 What stays the same:
 

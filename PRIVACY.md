@@ -51,8 +51,8 @@ Si el usuario decide activar o usar OCR para extraer texto de archivos, la app p
 - Solo los archivos que el usuario elige explícitamente para OCR se envían a Google para esa operación.
 - Como parte de una operación OCR, ni los archivos, ni el texto extraído, ni la información específica de esa operación se envían a terceros distintos de Google. Los desarrolladores no reciben esos datos ni quedan notificados de esas operaciones.
 - Tras exportar el texto extraído, la app intenta borrar de inmediato el documento temporal creado en Google para esa conversión OCR. Si esa limpieza remota falla, la app lo trata como advertencia explícita.
-- Las credenciales/tokens locales de esa integración se almacenan localmente en la instancia de la app.
-- Si el usuario elige `Menú > Preferencias > Desconectar Google OCR`, la app intenta revocar el token guardado de Google y, si eso resulta exitoso, elimina el archivo de token local de OCR. La app conserva el archivo local `credentials.json` para que el usuario pueda reconectar OCR más adelante.
+- Las credenciales OAuth de Google gestionadas por la app para OCR y los tokens locales de esa integración se almacenan localmente en la instancia de la app.
+- Si el usuario elige `Menú > Preferencias > Desconectar Google OCR`, la app intenta revocar el token guardado de Google y, si eso resulta exitoso, elimina el archivo de token local de OCR. Las credenciales OAuth de Google locales gestionadas por la app pueden mantenerse para que OCR pueda reconectarse más adelante.
 - Como control externo adicional, el usuario también puede revocar el acceso de la app desde los controles de seguridad/permisos de su Cuenta de Google.
 
 ### 3.4 Sin otros servicios externos

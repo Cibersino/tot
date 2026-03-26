@@ -20,7 +20,7 @@ The current repo state is now materially aligned, but not fully closed:
 
 The remaining concrete gaps are now narrower:
 
-- public-release OAuth verification requirements still need explicit release-facing documentation
+- public-release verification work is still not fully complete where the current project record says external branding approval is pending
 - final reconciliation back into Issue 53 Section 8 / Section 9 closeout is still pending
 
 ## Why
@@ -42,7 +42,7 @@ This issue should close that gap deliberately and with official Google-source gr
 - [x] Disconnect / local token-removal minimum implemented and documented.
 - [x] Activation-consent UX fix implemented.
 - [x] User-facing privacy/help/setup gap materially closed.
-- [ ] Release-posture documentation gap closed.
+- [x] Release-posture documentation gap closed.
 - [ ] Work fully reconciled back into Issue 53 closeout / Section 9 release blockers.
 
 ## Confirmed current repo state
@@ -67,15 +67,24 @@ This issue should close that gap deliberately and with official Google-source gr
 
 ### Remaining gap
 
-- The repo still does not have an explicit release-facing document that records:
+- The repo now does have an explicit release-facing document that records:
   - `drive.file` as the locked scope baseline for this OCR model
   - system-browser OAuth as the locked auth direction
-  - that public homepage/privacy-policy verification material is still required before public release
+  - that public homepage/privacy-policy verification material is required for public release posture
   - that local in-app privacy/help pages are not sufficient for Google OAuth public verification by themselves
+  - current publication posture and current verification status
+  - current repo evidence:
+    - [`docs/issues/issue_53_testing_to_production_transition_plan.md`](./issue_53_testing_to_production_transition_plan.md)
+    - [`website/public/en/index.html`](../../website/public/en/index.html)
+    - [`website/public/es/index.html`](../../website/public/es/index.html)
+    - [`website/public/en/app-privacy/index.html`](../../website/public/en/app-privacy/index.html)
+    - [`website/public/es/app-privacy/index.html`](../../website/public/es/app-privacy/index.html)
+    - [`website/public/en/app-privacy/google-ocr/index.html`](../../website/public/en/app-privacy/google-ocr/index.html)
+    - [`website/public/es/app-privacy/google-ocr/index.html`](../../website/public/es/app-privacy/google-ocr/index.html)
 - The work is only partially reconciled back into Issue 53 closeout:
   - the tracker reflects the current state
-  - Section 8 item 4 / item 5 in [`docs/issues/issue_53_implementation_plan.md`](./issue_53_implementation_plan.md) are still pending
-  - remaining public-release-only blockers still need to be isolated explicitly under Section 9.5
+  - the main implementation checklist still shows unresolved Section 8 / Section 9 closeout items in [`docs/issues/issue_53_implementation_plan.md`](./issue_53_implementation_plan.md)
+  - the transition plan still records open publication items such as pending brand-verification completion / recording where applicable
 
 ## Official source basis
 
@@ -210,11 +219,12 @@ In scope:
   - explain Google Account-side removal/revocation
   - ensure help text distinguishes local storage, Google processing, and cleanup behavior clearly
 
-- [ ] Close the release-posture documentation gap:
+- [x] Close the release-posture documentation gap:
   - add release-facing documentation that records the `drive.file` scope baseline
   - record the system-browser OAuth policy lock
   - record that public homepage/privacy-policy verification material is still required before public release
   - make clear that local in-app docs do not satisfy Google public verification by themselves
+  - Status update: this repo gap is now materially closed by [`docs/issues/issue_53_testing_to_production_transition_plan.md`](./issue_53_testing_to_production_transition_plan.md) plus the current public app homepage/privacy surfaces under `website/public/`
 
 - [ ] Reconcile the work back into Issue 53 closeout:
   - map completed changes to Section 8.2 and 8.3 of [`docs/issues/issue_53_implementation_plan.md`](./issue_53_implementation_plan.md)
