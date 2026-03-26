@@ -345,16 +345,16 @@ After this transition:
 
 ### 7. Validation before calling the transition complete
 
-- [ ] `Mandatory (Project)` Validate a packaged Windows build with the owner-provided production client/configuration included.
-- [ ] `Mandatory (Project)` Validate first OCR use in a packaged build:
+- [x] `Mandatory (Project)` Validate a packaged Windows build with the owner-provided production client/configuration included.
+- [x] `Mandatory (Project)` Validate first OCR use in a packaged build:
   - no manual credentials import
   - disclosure modal still appears before OAuth
   - system browser still launches
   - sign-in succeeds and OCR retries correctly
-- [ ] `Mandatory (Project)` Validate disconnect/reconnect in a packaged build under the production model.
-- [ ] `Mandatory (Project)` Validate that user-facing docs and consent-screen/public URLs are mutually consistent.
-- [ ] `Mandatory (Project)` Validate that no code path widens scope beyond `drive.file`.
-- [ ] `Mandatory (Project)` Validate that no code path reintroduces embedded OAuth/webview auth.
+- [x] `Mandatory (Project)` Validate disconnect/reconnect in a packaged build under the production model.
+- [x] `Mandatory (Project)` Validate that user-facing docs and consent-screen/public URLs are mutually consistent.
+- [x] `Mandatory (Project)` Validate that no code path widens scope beyond `drive.file`.
+- [x] `Mandatory (Project)` Validate that no code path reintroduces embedded OAuth/webview auth.
 
 ## What will change in user instructions
 
