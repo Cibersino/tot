@@ -227,9 +227,10 @@ After this transition:
   - Why: Google verification/setup guidance mentions billing only when prompted; this is not a universal requirement for this repo's current Drive-only route.
   - Source: [Submitting your app for verification](https://support.google.com/cloud/answer/13461325?hl=en)
 
-- [ ] `Conditional (Google)` Submit for brand verification if the production Google OAuth project is `External` and should display the application's real name/logo on the OAuth consent screen.
+- [x] `Conditional (Google)` Submit for brand verification if the production Google OAuth project is `External` and should display the application's real name/logo on the OAuth consent screen.
   - Why: Google states that an external app that wants logo or display name on the consent screen requires brand verification.
   - Clarification: this does not require owning a paid trademark; it requires accurate app identity and control of the relevant authorized domains.
+  - Current project record: the production project is `External`, the app is intended for public release, and brand verification has been submitted and is waiting for approval.
   - Sources:
     - [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
     - [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073?hl=en)
@@ -320,19 +321,27 @@ After this transition:
 ### 6. Publication / verification decision record
 
 - [ ] `Conditional (Google)` If the production Google OAuth project remains `External` and uses production branding, ensure brand verification is completed and recorded.
+  - Current project record: the production Google OAuth project remains `External`, uses production branding, and the brand-verification submission is pending approval.
+  - Therefore, this item remains open until Google approval is completed and recorded.
   - Source: [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
 
-- [ ] `Mandatory (Google)` Do not submit for sensitive or restricted scope verification unless the scope set expands beyond the current non-sensitive baseline.
+- [x] `Mandatory (Google)` Do not submit for sensitive or restricted scope verification unless the scope set expands beyond the current non-sensitive baseline.
   - Why: current intended baseline is `drive.file`, which Google classifies as non-sensitive.
+  - Current project record: the production OCR scope remains only `drive.file`; no sensitive or restricted scopes are planned for the current posture.
   - Sources:
     - [Choose Google Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
     - [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073?hl=en)
 
-- [ ] `Mandatory (Project)` Record the final publication posture explicitly:
+- [x] `Mandatory (Project)` Record the final publication posture explicitly:
   - narrow private distribution
   - broader external production rollout
   - public-release website/verification readiness
   - This decision should stay explicit in Issue 53 docs and not be inferred implicitly from partial setup work.
+  - Final decision record for the current posture:
+    - publication posture: `public-release website/verification readiness`
+    - OAuth audience: `External`
+    - brand verification status: `submitted and waiting for approval`
+    - scope lock: `drive.file` only
 
 ### 7. Validation before calling the transition complete
 
