@@ -105,10 +105,52 @@ As of 2026-03-26:
   - The preferred Issue 53 production model remains `app-owner-owned` + `bundled with the app` + end-user Google account at runtime.
   - The runtime auth contract is now explicitly locked as desktop OAuth client + system browser + loopback callback + PKCE + bundled `client_secret`.
   - The previously attempted no-secret bundled desktop variant is rejected for this project after live token exchange returned `client_secret is missing.`
+  - Publication decision record now states:
+    - posture: `public-release website/verification readiness`
+    - audience: `External`
+    - brand verification: `submitted and waiting for approval`
+    - scope lock: `drive.file` only
 - Legacy menu path note:
   - `cargador_texto` / `cargador_imagen` runtime/menu/i18n path removed and must not be reintroduced for Issue 53 execution.
 
 ## Log
+
+### OP-0159
+
+- Date/time: 2026-03-26 20:30:38 -03:00
+- Operation: Record the Issue 53 section 6 publication/verification decision inputs from the user in the transition plan.
+- Why:
+  - Section 6 requires an explicit decision record for publication posture, verification posture, and scope posture.
+  - Those values could not be inferred safely without direct user confirmation.
+- Changes made:
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md` section 3 to mark the brand-verification submission step complete because the production app is `External` and the submission has already been made.
+  - Updated `docs/issues/issue_53_testing_to_production_transition_plan.md` section 6 to record:
+    - public release posture
+    - `External` OAuth audience
+    - brand verification submitted / awaiting approval
+    - scope locked to `drive.file`
+  - Kept the section 6 brand-verification-completion item open because approval is still pending.
+  - Updated tracker `Current Authoritative Status` production-transition clarification with the same decision record.
+- Checklist updates:
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+    - section 3:
+      - `[x] Submit for brand verification if the production Google OAuth project is External and should display the application's real name/logo on the OAuth consent screen.`
+    - section 6:
+      - `[x] Do not submit for sensitive or restricted scope verification unless the scope set expands beyond the current non-sensitive baseline.`
+      - `[x] Record the final publication posture explicitly.`
+      - kept open: `If the production Google OAuth project remains External and uses production branding, ensure brand verification is completed and recorded.`
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `docs/issues/issue_53_testing_to_production_transition_plan.md`
+- Evidence:
+  - User confirmed:
+    - rollout posture: public
+    - OAuth audience: `External`
+    - brand verification status: submitted and waiting for approval
+    - scope lock: `drive.file` only
+- Outcome / next step:
+  - Section 6 now has an explicit decision record.
+  - Next transition-plan step is section 7 packaged Windows validation, while the brand-verification completion record remains pending Google approval.
 
 ### OP-0158
 
