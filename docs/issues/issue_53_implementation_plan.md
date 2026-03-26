@@ -43,6 +43,7 @@ Clarification note:
   - runtime credential/configuration delivery: bundled with the app
   - runtime Google identity: end user's Google account
   - usage-cost/quota context: end user's Google-side usage context
+  - auth/runtime contract: desktop OAuth client + system browser + loopback callback + PKCE + bundled `client_secret`
 - Until the production transition is actually implemented, the historical testing/runtime constraints in this section remain valid evidence of the current repo behavior.
 
 - [x] Complete developer-side installation/activation for the chosen substrate.

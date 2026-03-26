@@ -4,7 +4,7 @@ Date: 2026-03-22
 
 Purpose: define the concrete work needed to move the current OCR path from the present testing posture to the intended production posture, using both the current repo state and official Google documentation as evidence.
 
-This document is operational. It is not only about Google Console setup. For Issue 53, the transition also includes app changes and user-documentation changes because the current app still reflects a testing-oriented credential model in some runtime paths.
+This document is operational. It is not only about Google Console setup. For Issue 53, the transition also included app changes and user-documentation changes because the app previously reflected a testing-oriented credential model in some runtime paths.
 
 ## Codex Policy For This File
 
@@ -35,17 +35,33 @@ Current settled baseline in Issue 53:
   - runtime Google identity used for OCR: `the end user's Google account`
   - usage-cost / quota responsibility: `the end user's Google account / Google-side usage context`
   - Sources: [issue_53.md](./issue_53.md), [issue_53_access_model_options.md](./issue_53_access_model_options.md)
+- Additional production-contract clarification for this document:
+  - the bundled production OAuth client/configuration is treated as a direct desktop OAuth runtime contract
+  - the production auth path remains system-browser desktop OAuth with loopback callback + PKCE
+  - the bundled production runtime contract includes `client_secret`
+  - ordinary end users are still not expected to provide or manage that runtime configuration themselves
 
 Current runtime evidence:
 
-- The OCR activation code still supports manual user import of `credentials.json` when credentials are missing.
-  - Source: [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
+- The OCR activation code no longer supports ordinary end-user import of `credentials.json` as the normal OCR onboarding path; runtime credentials are now expected from app-managed bundled material, with canonical runtime materialization when needed.
+  - Sources:
+    - [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
+    - [ocr_google_drive_bundled_credentials.js](../../electron/import_extract_platform/ocr_google_drive_bundled_credentials.js)
+- The current activation/runtime validation helpers still require `client_secret` in the local credentials material.
+  - Sources:
+    - [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
+    - [ocr_google_drive_setup_validation.js](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js)
+    - [ocr_google_drive_oauth_client.js](../../electron/import_extract_platform/ocr_google_drive_oauth_client.js)
 - The current OAuth scope is still locked to `drive.file`.
   - Source: [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
 - The current OCR route uses the Google Drive API path (`files.create` with Google Docs conversion + `files.export`) and does not call the Docs API directly.
   - Source: [ocr_google_drive_route.js](../../electron/import_extract_platform/ocr_google_drive_route.js)
 - The app already uses system-browser desktop OAuth and already has the pre-consent disclosure modal and disconnect flow implemented.
   - Sources: [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js), [import_extract_ocr_activation_disclosure_modal.js](../../public/js/import_extract_ocr_activation_disclosure_modal.js), [import_extract_ocr_disconnect_ipc.js](../../electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js)
+- Live testing against the previously attempted no-secret variant failed during token exchange:
+  - token endpoint `error: invalid_request`
+  - token endpoint `error_description: client_secret is missing.`
+  - Therefore, this plan no longer treats the no-secret bundled desktop variant as the active production contract for this project.
 
 ## Terminology used in this document
 
@@ -65,6 +81,8 @@ After this transition:
 
 - the app no longer depends on ordinary end users manually providing `credentials.json` as the normal OCR onboarding path
 - the app uses an app-owner-controlled production Google Cloud project and production desktop OAuth client
+- the bundled production runtime contract includes the owner-provided desktop OAuth client material the app needs at runtime, including `client_secret`
+- the production auth path remains direct desktop/system-browser OAuth with loopback callback + PKCE
 - the app still uses system-browser OAuth
 - the app still requests only `drive.file`
 - the app still uses the end user's Google account at runtime for OCR authorization
@@ -209,9 +227,10 @@ After this transition:
   - Why: Google verification/setup guidance mentions billing only when prompted; this is not a universal requirement for this repo's current Drive-only route.
   - Source: [Submitting your app for verification](https://support.google.com/cloud/answer/13461325?hl=en)
 
-- [ ] `Conditional (Google)` Submit for brand verification if the production Google OAuth project is `External` and should display the application's real name/logo on the OAuth consent screen.
+- [x] `Conditional (Google)` Submit for brand verification if the production Google OAuth project is `External` and should display the application's real name/logo on the OAuth consent screen.
   - Why: Google states that an external app that wants logo or display name on the consent screen requires brand verification.
   - Clarification: this does not require owning a paid trademark; it requires accurate app identity and control of the relevant authorized domains.
+  - Current project record: the production project is `External`, the app is intended for public release, and brand verification has been submitted and is waiting for approval.
   - Sources:
     - [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
     - [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073?hl=en)
@@ -223,29 +242,40 @@ After this transition:
 
 ### 4. App/runtime changes
 
-- [ ] `Mandatory (Project)` Remove manual end-user `credentials.json` import as the normal production onboarding path.
+- [x] `Mandatory (Project)` Remove manual end-user `credentials.json` import as the normal production onboarding path.
   - Why: the current runtime still supports manual import, but the chosen production target is `app-owner-owned` plus `bundled with the app`.
+  - Clarification for this document: ordinary users are no longer expected to provide or import runtime OAuth client material themselves, even though the bundled production desktop client configuration includes `client_secret`.
+  - Additional clarification: if the implementation materializes an app-managed runtime copy of the bundled production desktop client/configuration under the canonical runtime path, that local file is still not user-provided onboarding material.
   - Sources:
     - [issue_53.md](./issue_53.md)
     - [issue_53_access_model_options.md](./issue_53_access_model_options.md)
     - [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
 
-- [ ] `Mandatory (Project)` Decide the packaging shape for the production client/configuration.
-  - The repo must settle where the owner-provided client/configuration lives at runtime in production.
-  - At minimum, the implementation must avoid making ordinary users obtain, install, or browse for `credentials.json`.
+- [x] `Mandatory (Project)` Decide the packaging shape for the production client/configuration.
+  - Decision for this document: the owner-provided production desktop OAuth `credentials.json` is bundled with the app as packaged app-owned runtime material.
+  - Runtime execution detail for this document: the app may materialize or copy that bundled production desktop client/configuration into the canonical runtime path `app.getPath('userData')/config/ocr_google_drive/credentials.json` when needed for execution.
+  - Clarification: if that canonical runtime file exists in production, it is an app-managed execution mirror of the bundled production client/configuration, not user-provided onboarding material.
+  - Therefore, ordinary users must not obtain, install, select, or browse for `credentials.json` as part of normal OCR onboarding.
+  - The per-user mutable OCR artifact remains local token state (`token.json`) in the same runtime directory.
+  - For this document, the chosen production runtime contract is the direct desktop OAuth client shape actually used by the shipped app: system browser + loopback callback + PKCE + bundled `client_secret`.
+  - Therefore, the bundled runtime material must match that desktop OAuth contract, not the previously attempted no-secret variant that failed in live testing for this project.
 
-- [ ] `Mandatory (Project)` Update the OCR readiness/activation flow so production setup failures match the new bundled-client model.
+- [x] `Mandatory (Project)` Update the OCR readiness/activation flow so production setup failures match the new bundled-client model.
   - Example: "missing bundled production client/configuration" is a packaging/config problem, not a normal end-user onboarding step.
+  - Example: "the app failed to materialize the bundled production client/configuration into the canonical runtime path" is a packaging/bootstrap problem, not a normal end-user onboarding step.
+  - Example: "bundled config is missing required desktop OAuth fields such as `client_secret`" is a packaging/implementation contract problem, not a user setup step.
 
-- [ ] `Mandatory (Project)` Re-review disconnect behavior and wording against the new production client/configuration delivery model.
+- [x] `Mandatory (Project)` Re-review disconnect behavior and wording against the new production client/configuration delivery model.
   - Current wording says the app keeps `credentials.json` so the user can reconnect later.
-  - That wording may remain technically true in some implementation shapes, but it must stop implying that the user owns or provides the normal production client file.
+  - Under the packaging shape chosen above, that wording may remain technically true only as a statement about an app-managed runtime mirror/copy used by the app itself.
+  - It must stop implying that the user owns or provides the normal production client file, even though the bundled production configuration itself includes `client_secret`.
   - Sources:
     - [import_extract_ocr_disconnect_ipc.js](../../electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js)
     - [PRIVACY.md](../../PRIVACY.md)
 
-- [ ] `Mandatory (Project)` Keep these behaviors unchanged unless separately re-decided:
+- [x] `Mandatory (Project)` Keep these behaviors unchanged unless separately re-decided:
   - system-browser OAuth
+  - loopback callback + PKCE
   - pre-consent disclosure immediately before OAuth
   - minimum practical scope (`drive.file`)
   - end-user Google account at runtime
@@ -253,55 +283,78 @@ After this transition:
 
 ### 5. Documentation changes
 
-- [ ] `Mandatory (Project)` Remove testing-path instructions that imply ordinary users must supply or import `credentials.json` themselves.
+- [x] `Mandatory (Project)` Remove testing-path instructions that imply ordinary users must supply or import `credentials.json` themselves.
+  - Current repo evidence:
+    - [PRIVACY.md](../../PRIVACY.md)
+    - [instrucciones.en.html](../../public/info/instrucciones.en.html)
+    - [instrucciones.es.html](../../public/info/instrucciones.es.html)
 
-- [ ] `Mandatory (Project)` Add production-path instructions that explain the real shipped user flow:
+- [x] `Mandatory (Project)` Add production-path instructions that explain the real shipped user flow:
   - OCR is available in the app
   - activation still requires explicit user consent/sign-in in the system browser
   - the app uses Google services for OCR when the OCR route is chosen
   - disconnect remains available in the app
-
-- [ ] `Mandatory (Project)` Update any wording that still describes the testing posture rather than the production posture.
-  - Current repo state already documents the current behavior, but those docs must be reconciled when the credential model changes.
-  - Candidate surfaces:
+  - Current repo evidence:
     - [PRIVACY.md](../../PRIVACY.md)
     - [instrucciones.en.html](../../public/info/instrucciones.en.html)
     - [instrucciones.es.html](../../public/info/instrucciones.es.html)
     - [acerca_de.html](../../public/info/acerca_de.html)
 
-- [ ] `Mandatory (Project)` Update the production-homepage / privacy-policy content so it matches the real shipped OCR model and does not contradict the app's in-app disclosures.
+- [x] `Mandatory (Project)` Update any wording that still describes the testing posture rather than the production posture.
+  - Reconciled user-facing surfaces in the current repo state:
+    - [PRIVACY.md](../../PRIVACY.md)
+    - [instrucciones.en.html](../../public/info/instrucciones.en.html)
+    - [instrucciones.es.html](../../public/info/instrucciones.es.html)
+    - [acerca_de.html](../../public/info/acerca_de.html)
+
+- [x] `Mandatory (Project)` Update the production-homepage / privacy-policy content so it matches the real shipped OCR model and does not contradict the app's in-app disclosures.
+  - Current repo evidence:
+    - [website/public/es/index.html](../../website/public/es/index.html)
+    - [website/public/en/index.html](../../website/public/en/index.html)
+    - [website/public/es/app-privacy/index.html](../../website/public/es/app-privacy/index.html)
+    - [website/public/en/app-privacy/index.html](../../website/public/en/app-privacy/index.html)
+    - [website/public/es/app-privacy/google-ocr/index.html](../../website/public/es/app-privacy/google-ocr/index.html)
+    - [website/public/en/app-privacy/google-ocr/index.html](../../website/public/en/app-privacy/google-ocr/index.html)
 
 - [ ] `Optional` Add release-note language that explicitly says the OCR path has moved from testing posture to production posture.
 
 ### 6. Publication / verification decision record
 
 - [ ] `Conditional (Google)` If the production Google OAuth project remains `External` and uses production branding, ensure brand verification is completed and recorded.
+  - Current project record: the production Google OAuth project remains `External`, uses production branding, and the brand-verification submission is pending approval.
+  - Therefore, this item remains open until Google approval is completed and recorded.
   - Source: [Submit for brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)
 
-- [ ] `Mandatory (Google)` Do not submit for sensitive or restricted scope verification unless the scope set expands beyond the current non-sensitive baseline.
+- [x] `Mandatory (Google)` Do not submit for sensitive or restricted scope verification unless the scope set expands beyond the current non-sensitive baseline.
   - Why: current intended baseline is `drive.file`, which Google classifies as non-sensitive.
+  - Current project record: the production OCR scope remains only `drive.file`; no sensitive or restricted scopes are planned for the current posture.
   - Sources:
     - [Choose Google Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
     - [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073?hl=en)
 
-- [ ] `Mandatory (Project)` Record the final publication posture explicitly:
+- [x] `Mandatory (Project)` Record the final publication posture explicitly:
   - narrow private distribution
   - broader external production rollout
   - public-release website/verification readiness
   - This decision should stay explicit in Issue 53 docs and not be inferred implicitly from partial setup work.
+  - Final decision record for the current posture:
+    - publication posture: `public-release website/verification readiness`
+    - OAuth audience: `External`
+    - brand verification status: `submitted and waiting for approval`
+    - scope lock: `drive.file` only
 
 ### 7. Validation before calling the transition complete
 
-- [ ] `Mandatory (Project)` Validate a packaged Windows build with the owner-provided production client/configuration included.
-- [ ] `Mandatory (Project)` Validate first OCR use in a packaged build:
+- [x] `Mandatory (Project)` Validate a packaged Windows build with the owner-provided production client/configuration included.
+- [x] `Mandatory (Project)` Validate first OCR use in a packaged build:
   - no manual credentials import
   - disclosure modal still appears before OAuth
   - system browser still launches
   - sign-in succeeds and OCR retries correctly
-- [ ] `Mandatory (Project)` Validate disconnect/reconnect in a packaged build under the production model.
-- [ ] `Mandatory (Project)` Validate that user-facing docs and consent-screen/public URLs are mutually consistent.
-- [ ] `Mandatory (Project)` Validate that no code path widens scope beyond `drive.file`.
-- [ ] `Mandatory (Project)` Validate that no code path reintroduces embedded OAuth/webview auth.
+- [x] `Mandatory (Project)` Validate disconnect/reconnect in a packaged build under the production model.
+- [x] `Mandatory (Project)` Validate that user-facing docs and consent-screen/public URLs are mutually consistent.
+- [x] `Mandatory (Project)` Validate that no code path widens scope beyond `drive.file`.
+- [x] `Mandatory (Project)` Validate that no code path reintroduces embedded OAuth/webview auth.
 
 ## What will change in user instructions
 
@@ -314,6 +367,8 @@ Current testing-oriented path:
 Target production path:
 
 - the app already contains the owner-provided client/configuration
+- the bundled runtime contract includes the owner-provided desktop OAuth client/configuration, including `client_secret`
+- the user does not provide `credentials.json` or manually manage runtime OAuth client material
 - the user accepts the disclosure
 - the user authorizes in the system browser
 

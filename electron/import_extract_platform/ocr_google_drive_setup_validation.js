@@ -64,15 +64,15 @@ const ERROR_SURFACE = {
     issueType: 'setup',
     userMessageKey: 'ocr.google_drive.validation.setup_incomplete',
     userMessageFallback:
-      'Google OCR setup is incomplete. Add credentials and verify the Drive API setup.',
-    userActionKey: 'ocr.google_drive.validation.open_setup_guide',
+      'Google OCR is unavailable because this app build is missing bundled Google OAuth credentials.',
+    userActionKey: 'ocr.google_drive.validation.check_app_build',
   },
   credentials_missing: {
     issueType: 'credentials',
     userMessageKey: 'ocr.google_drive.validation.credentials_missing',
     userMessageFallback:
-      'Google OCR credentials are missing or invalid in this app instance.',
-    userActionKey: 'ocr.google_drive.validation.replace_credentials',
+      'Google OCR is unavailable because the bundled Google OAuth credentials are missing or invalid in this app instance.',
+    userActionKey: 'ocr.google_drive.validation.check_app_build',
   },
   ocr_activation_required: {
     issueType: 'activation',
