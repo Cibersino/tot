@@ -29,7 +29,6 @@
     <nav class="lang-switch" aria-label="Selector de idioma">
       <a href="/es/" lang="es" aria-current="page">ES</a>
       <a href="/en/" lang="en">EN</a>
-      <a href="/">/</a>
     </nav>
 
     <header class="brand-header">
@@ -103,6 +102,7 @@
     </footer>
   </main>
 
+  <script src="/site-language.js"></script>
   <script>
     (function () {
       var windowsStableUrl = "https://github.com/Cibersino/tot/releases/download/v0.1.6/toT-0.1.6-win-x64.zip";
@@ -143,12 +143,6 @@
         } else {
           messageEl.textContent = "No pudimos detectar tu sistema operativo. Revisa las últimas versiones en GitHub.";
         }
-      }
-
-      try {
-        localStorage.setItem("tot-preferred-lang", "es");
-      } catch (_) {
-        // Ignore storage restrictions.
       }
     })();
   </script>
