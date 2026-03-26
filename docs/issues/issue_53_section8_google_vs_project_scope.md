@@ -142,7 +142,7 @@ For future closure discussion, the clean method is:
 
 ## Current repo status
 
-As of 2026-03-21:
+As of 2026-03-26:
 
 - `Google obligation`: satisfied
 - `Project scope`: pending rewrite
@@ -190,12 +190,21 @@ In particular, the current user-facing docs are still light or missing on:
 - normal-use constraints such as blocked starts
 - the broader feature-level instructional surfaces/assets needed for this shipped feature
 
-It is also still missing a clean user-facing explanation of the refined production-target OCR model now recorded in `docs/issues/issue_53_access_model_options.md`, especially:
+The previous note also said the repo was still missing a clean user-facing explanation of the refined production-target OCR model recorded in `docs/issues/issue_53_access_model_options.md`. That part is now outdated.
 
-- app-owner-provided Google-side setup
-- bundled runtime client/configuration
-- end-user Google account used at runtime
-- end-user Google-side usage/quota context
+The current repo does contain that explanation on public user-facing privacy surfaces, including:
+
+- `website/public/en/app-privacy/google-ocr/index.html`
+- `website/public/es/app-privacy/google-ocr/index.html`
+
+Those pages now state, in user-facing terms, that:
+
+- the Google Cloud project / OAuth client is owner-provided
+- that client/configuration is distributed with the app rather than manually imported by ordinary users
+- OCR runs under the end user's Google account
+- the requested Drive permission is `drive.file`
+
+So the remaining `Project scope` gap is the broader import/extract feature documentation, not the absence of a user-facing explanation of the refined OCR ownership/runtime model itself.
 
 The previous project-side content was removed because it reduced Section 8 too narrowly to the Google/OCR activation slice.
 
