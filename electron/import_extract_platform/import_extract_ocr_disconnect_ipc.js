@@ -137,7 +137,7 @@ async function confirmDisconnect(mainWin) {
   const detail = resolveDialogText(
     dialogTexts,
     'disconnect_google_ocr_detail',
-    'This revokes the saved Google OCR sign-in token and deletes the local token file from this app. credentials.json will be kept so you can reconnect later.'
+    'This revokes the saved Google OCR sign-in token and deletes the local token file from this app. App-managed local Google OAuth credentials may remain so OCR can reconnect later.'
   );
 
   const result = await dialog.showMessageBox(mainWin || null, {
