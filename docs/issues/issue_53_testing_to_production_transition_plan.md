@@ -36,8 +36,10 @@ Current settled baseline in Issue 53:
   - usage-cost / quota responsibility: `the end user's Google account / Google-side usage context`
   - Sources: [issue_53.md](./issue_53.md), [issue_53_access_model_options.md](./issue_53_access_model_options.md)
 - Additional production-contract clarification for this document:
-  - the bundled production OAuth client/configuration is treated as a direct desktop public-client PKCE runtime contract
-  - the production runtime contract does **not** require `client_secret`
+  - the bundled production OAuth client/configuration is treated as a direct desktop OAuth runtime contract
+  - the production auth path remains system-browser desktop OAuth with loopback callback + PKCE
+  - the bundled production runtime contract includes `client_secret`
+  - ordinary end users are still not expected to provide or manage that runtime configuration themselves
 
 Current runtime evidence:
 
@@ -54,6 +56,10 @@ Current runtime evidence:
   - Source: [ocr_google_drive_route.js](../../electron/import_extract_platform/ocr_google_drive_route.js)
 - The app already uses system-browser desktop OAuth and already has the pre-consent disclosure modal and disconnect flow implemented.
   - Sources: [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js), [import_extract_ocr_activation_disclosure_modal.js](../../public/js/import_extract_ocr_activation_disclosure_modal.js), [import_extract_ocr_disconnect_ipc.js](../../electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js)
+- Live testing against the previously attempted no-secret variant failed during token exchange:
+  - token endpoint `error: invalid_request`
+  - token endpoint `error_description: client_secret is missing.`
+  - Therefore, this plan no longer treats the no-secret bundled desktop variant as the active production contract for this project.
 
 ## Terminology used in this document
 
@@ -73,8 +79,8 @@ After this transition:
 
 - the app no longer depends on ordinary end users manually providing `credentials.json` as the normal OCR onboarding path
 - the app uses an app-owner-controlled production Google Cloud project and production desktop OAuth client
-- the bundled production runtime contract no longer depends on `client_secret`
-- the production auth path remains direct desktop/system-browser OAuth, but under a public-client PKCE contract rather than a runtime secret-bearing contract
+- the bundled production runtime contract includes the owner-provided desktop OAuth client material the app needs at runtime, including `client_secret`
+- the production auth path remains direct desktop/system-browser OAuth with loopback callback + PKCE
 - the app still uses system-browser OAuth
 - the app still requests only `drive.file`
 - the app still uses the end user's Google account at runtime for OCR authorization
@@ -235,31 +241,32 @@ After this transition:
 
 - [ ] `Mandatory (Project)` Remove manual end-user `credentials.json` import as the normal production onboarding path.
   - Why: the current runtime still supports manual import, but the chosen production target is `app-owner-owned` plus `bundled with the app`.
-  - Clarification for this document: this removal also means ordinary users are no longer expected to provide a runtime credential file whose contract depends on `client_secret`.
+  - Clarification for this document: ordinary users are no longer expected to provide or import runtime OAuth client material themselves, even though the bundled production desktop client configuration includes `client_secret`.
   - Sources:
     - [issue_53.md](./issue_53.md)
     - [issue_53_access_model_options.md](./issue_53_access_model_options.md)
     - [import_extract_ocr_activation_ipc.js](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
 
 - [ ] `Mandatory (Project)` Decide the packaging shape for the production client/configuration.
-  - The repo must settle where the owner-provided bundled public-client configuration lives at runtime in production.
+  - The repo must settle where the owner-provided bundled desktop OAuth client/configuration lives at runtime in production.
   - At minimum, the implementation must avoid making ordinary users obtain, install, or browse for `credentials.json`.
-  - For this document, the chosen production runtime contract is the direct desktop public-client PKCE shape and does **not** require `client_secret`.
-  - Therefore, the bundled runtime material must match the public-client PKCE contract actually used by the shipped app, not a testing-era local `credentials.json` contract that assumes `client_secret`.
+  - For this document, the chosen production runtime contract is the direct desktop OAuth client shape actually used by the shipped app: system browser + loopback callback + PKCE + bundled `client_secret`.
+  - Therefore, the bundled runtime material must match that desktop OAuth contract, not the previously attempted no-secret variant that failed in live testing for this project.
 
 - [ ] `Mandatory (Project)` Update the OCR readiness/activation flow so production setup failures match the new bundled-client model.
   - Example: "missing bundled production client/configuration" is a packaging/config problem, not a normal end-user onboarding step.
-  - Example: "runtime config still assumes `client_secret`" is also a packaging/implementation contract problem, not a user setup step.
+  - Example: "bundled config is missing required desktop OAuth fields such as `client_secret`" is a packaging/implementation contract problem, not a user setup step.
 
 - [ ] `Mandatory (Project)` Re-review disconnect behavior and wording against the new production client/configuration delivery model.
   - Current wording says the app keeps `credentials.json` so the user can reconnect later.
-  - That wording may remain technically true in some implementation shapes, but it must stop implying that the user owns or provides the normal production client file, or that the normal production runtime contract includes a user-visible `client_secret` file.
+  - That wording may remain technically true in some implementation shapes, but it must stop implying that the user owns or provides the normal production client file, even though the bundled production configuration itself includes `client_secret`.
   - Sources:
     - [import_extract_ocr_disconnect_ipc.js](../../electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js)
     - [PRIVACY.md](../../PRIVACY.md)
 
 - [ ] `Mandatory (Project)` Keep these behaviors unchanged unless separately re-decided:
   - system-browser OAuth
+  - loopback callback + PKCE
   - pre-consent disclosure immediately before OAuth
   - minimum practical scope (`drive.file`)
   - end-user Google account at runtime
@@ -328,7 +335,8 @@ Current testing-oriented path:
 Target production path:
 
 - the app already contains the owner-provided client/configuration
-- the bundled runtime contract does not require the user to provide `credentials.json` or any runtime `client_secret` file
+- the bundled runtime contract includes the owner-provided desktop OAuth client/configuration, including `client_secret`
+- the user does not provide `credentials.json` or manually manage runtime OAuth client material
 - the user accepts the disclosure
 - the user authorizes in the system browser
 
