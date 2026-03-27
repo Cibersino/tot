@@ -4,7 +4,7 @@
 
 This issue captures four overlap problems in the Google Drive OCR / activation / setup area that are strong enough to create real behavior conflicts or credible maintenance risk from the current code alone.
 
-The goal of this document is to preserve the exact conflict surface before any fix work starts.
+The goal of this document is to preserve the conflict surface and track the fix status of each item.
 
 This is not a cleanup issue.
 This is a contract-alignment issue.
@@ -18,6 +18,12 @@ The affected code currently contains:
 
 Three of those are confirmed active contract conflicts from code alone.
 One is a strong duplication/risk item that should be resolved before it becomes active drift.
+
+Current status:
+
+- Problem 1 is fixed.
+- Problems 2 and 3 remain open confirmed conflicts.
+- Problem 4 remains open as a suspicion / maintenance-risk overlap.
 
 ## Scope
 
@@ -38,17 +44,24 @@ Out of scope:
 
 ## Confirmed Problems Vs Suspicion
 
-Confirmed active contract or behavior conflicts:
+Open confirmed active contract or behavior conflicts:
 
-1. refresh-only token contract drift across activation, validation, and runtime
-2. `ocr_activation_required` overloaded for both user cancellation and broken local token state
-3. credentials validation contract disagrees with OAuth client construction on `redirect_uris`
+1. `ocr_activation_required` overloaded for both user cancellation and broken local token state
+2. credentials validation contract disagrees with OAuth client construction on `redirect_uris`
 
 Strong suspicion / maintenance-risk overlap:
 
-4. duplicate OCR preflight path in `import_extract_ocr_gate_ipc.js` versus the active prepare path
+3. duplicate OCR preflight path in `import_extract_ocr_gate_ipc.js` versus the active prepare path
+
+Resolved confirmed conflict:
+
+1. refresh-only token contract drift across activation, validation, and runtime
 
 ## Problem 1: Refresh-Only Token Contract Drift
+
+### Status
+
+Resolved on March 27, 2026.
 
 ### Files
 
@@ -126,6 +139,35 @@ The final token-readiness rule must be shared by:
 - setup validation
 - runtime OCR route execution
 - disconnect/revocation
+
+### Implemented Resolution
+
+The repo now uses one shared minimal persisted-token contract:
+
+- acceptable persisted token shape means the stored payload has `access_token` or `refresh_token`
+
+Implemented alignment:
+
+- setup validation no longer treats missing materialized `access_token` as immediate auth failure
+- setup validation now probes through the same OAuth-client path runtime uses
+- activation persistence, setup validation, runtime preflight, and revocation token selection all consume the same shared persisted-token helper
+
+Implementation anchors:
+
+- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js:37`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js#L37)
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:336`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js#L336)
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:501`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js#L501)
+- [`electron/import_extract_platform/ocr_google_drive_route.js:384`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js#L384)
+- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:308`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L308)
+
+### Resolution Notes
+
+The validator probe now runs through the OAuth client and preserves one timeout/cancellation boundary across both:
+
+- token refresh
+- Drive API request
+
+That behavior is implemented by temporarily wrapping the validation-local OAuth client transporter rather than introducing a new direct dependency.
 
 ## Problem 2: `ocr_activation_required` Is Overloaded
 
@@ -355,11 +397,10 @@ Any implementation that fixes this issue should satisfy all of the following:
 
 ## Recommended Work Order
 
-1. Freeze and centralize the shared token contract.
-2. Split token-state failure codes from user-cancel codes.
-3. Centralize credentials validation and redirect-URI selection.
-4. Remove or collapse the duplicate gate path.
-5. Re-check every producer and consumer in:
+1. Split token-state failure codes from user-cancel codes.
+2. Centralize credentials validation and redirect-URI selection.
+3. Remove or collapse the duplicate gate path.
+4. Re-check every producer and consumer in:
    - activation
    - setup validation
    - OCR runtime route
@@ -382,8 +423,11 @@ Any implementation that fixes this issue should satisfy all of the following:
 
 These are the items already strong enough to prove a real active contract or behavior conflict without external assumptions:
 
-1. refresh-only token contract drift
-2. overloaded `ocr_activation_required`
-3. credentials validation versus runtime redirect-URI selection
+1. overloaded `ocr_activation_required`
+2. credentials validation versus runtime redirect-URI selection
 
 The duplicate gate path is still important, but it is included as a maintenance-risk issue rather than a proven active conflict.
+
+Resolved item:
+
+1. refresh-only token contract drift
