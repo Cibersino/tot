@@ -25,6 +25,17 @@ function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
+function resolveCanonicalRedirectUri(redirectUris) {
+  if (!Array.isArray(redirectUris)) return '';
+
+  for (const candidate of redirectUris) {
+    if (!hasNonEmptyString(candidate)) continue;
+    return String(candidate).trim();
+  }
+
+  return '';
+}
+
 function readGoogleCredentialsFile(credentialsPath) {
   if (!hasNonEmptyString(credentialsPath)) {
     throw new Error('Google credentials path is invalid.');
@@ -58,9 +69,7 @@ function buildGoogleOAuthClient(credentialsJson, tokenJson) {
     throw new Error('Google credentials missing client_id/client_secret.');
   }
 
-  const redirectUri = Array.isArray(root.redirect_uris) && root.redirect_uris.length
-    ? String(root.redirect_uris[0] || '')
-    : '';
+  const redirectUri = resolveCanonicalRedirectUri(root.redirect_uris);
 
   const oauthClient = new google.auth.OAuth2(
     String(root.client_id),
