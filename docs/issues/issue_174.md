@@ -9,20 +9,21 @@ The goal of this document is to preserve the conflict surface and track the fix 
 This is not a cleanup issue.
 This is a contract-alignment issue.
 
-The affected code currently contains:
+The affected code currently contains or recently contained:
 
 - overlapping token-readiness contracts
 - overlapping activation-failure semantics
 - overlapping credentials-validation rules
 - overlapping OCR preflight decision paths
 
-Three of those are confirmed active contract conflicts from code alone.
-One is a strong duplication/risk item that should be resolved before it becomes active drift.
+Two of those confirmed contract conflicts are now resolved.
+One confirmed active contract conflict remains open.
+One is still a strong duplication/risk item that should be resolved before it becomes active drift.
 
 Current status:
 
-- Problem 1 is fixed.
-- Problems 2 and 3 remain open confirmed conflicts.
+- Problems 1 and 2 are fixed.
+- Problem 3 remains an open confirmed conflict.
 - Problem 4 remains open as a suspicion / maintenance-risk overlap.
 
 ## Scope
@@ -46,16 +47,16 @@ Out of scope:
 
 Open confirmed active contract or behavior conflicts:
 
-1. `ocr_activation_required` overloaded for both user cancellation and broken local token state
-2. credentials validation contract disagrees with OAuth client construction on `redirect_uris`
+1. credentials validation contract disagrees with OAuth client construction on `redirect_uris`
 
 Strong suspicion / maintenance-risk overlap:
 
 3. duplicate OCR preflight path in `import_extract_ocr_gate_ipc.js` versus the active prepare path
 
-Resolved confirmed conflict:
+Resolved confirmed conflicts:
 
 1. refresh-only token contract drift across activation, validation, and runtime
+2. activation-failure code separation around `ocr_activation_required`
 
 ## Problem 1: Refresh-Only Token Contract Drift
 
@@ -171,54 +172,51 @@ That behavior is implemented by temporarily wrapping the validation-local OAuth 
 
 ## Problem 2: `ocr_activation_required` Is Overloaded
 
+### Status
+
+Resolved on March 27, 2026.
+
 ### Files
 
 - [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js)
+- [`electron/import_extract_platform/ocr_google_drive_activation_state.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_activation_state.js)
 - [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js)
+- [`electron/import_extract_platform/ocr_google_drive_route.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js)
+- [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_prepare_execute_core.js)
+- [`electron/import_extract_platform/import_extract_ocr_gate_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_gate_ipc.js)
+- [`public/js/import_extract_ocr_activation_recovery.js`](c:\Users\manue\Documents\toT\tot\public\js\import_extract_ocr_activation_recovery.js)
 
 ### Identifiers
 
 - `mapCodeToAlertKey(...)`
 - `mapAuthenticateError(...)`
 - `mapValidationToActivationResult(...)`
+- `resolveGoogleDriveOcrAvailability(...)`
 - `validateGoogleDriveOcrSetup(...)`
+- `runGoogleDriveOcrRoute(...)`
 
-### Producer And Consumer Anchors
+### Original Conflict
 
-Producer anchors:
+Before the fix, the code used `ocr_activation_required` for:
 
-- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:173`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L173)
-- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:184`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L184)
-- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:503`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js#L503)
-- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:506`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js#L506)
+- browser-auth cancellation/denial
+- missing token state
+- broken persisted token state
 
-Consumer anchors:
+That overlap let a broken local token state surface as the same cancelled path used for an actual user OAuth cancel/deny.
 
-- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:78`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L78)
-- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:82`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L82)
-- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:94`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L94)
+### Why This Was A Real Problem
 
-### What Overlaps
-
-The code currently uses `ocr_activation_required` for two different meanings:
-
-- the user cancelled or denied the browser-based OAuth flow
-- the saved local token state is missing, invalid, or undecryptable
-
-Activation result mapping then converts both meanings into the same user-facing cancelled path.
-
-### Why This Is A Real Problem
-
-A post-OAuth local token problem can surface as:
+A post-OAuth local token problem could surface as:
 
 - `code: 'ocr_activation_required'`
 - alert key: `renderer.alerts.import_extract_ocr_activation_cancelled`
 
-That is a false behavior diagnosis.
+That was a false behavior diagnosis.
 The user did not cancel.
-The local token state is broken.
+The local token state was broken.
 
-This makes recovery guidance incorrect and hides actual token-storage or token-shape failures behind a cancel semantic.
+It made recovery guidance incorrect and hid token-storage or token-shape failures behind a cancel semantic.
 
 ### Type
 
@@ -237,6 +235,46 @@ Minimum required separation:
 `ocr_activation_required` should not remain the catch-all code for all three.
 
 Activation result mapping and renderer-facing alert mapping must preserve that separation.
+
+### Implemented Resolution
+
+The repo now uses a split token/activation taxonomy:
+
+- `ocr_activation_cancelled` for browser-auth cancellation/denial
+- `ocr_activation_required` for missing token state / not yet activated
+- `ocr_token_state_invalid` for broken persisted token material
+- `platform_runtime_failed` for token-storage/runtime failures that are not a broken saved token payload, such as storage read failures or secure-storage unavailability
+
+Consumer alert mapping now preserves that separation:
+
+- cancelled remains cancelled
+- activation-required remains activation-required
+- broken persisted token state gets its own renderer-facing path
+
+### Implementation Anchors
+
+- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:83`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L83)
+- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:192`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L192)
+- [`electron/import_extract_platform/ocr_google_drive_activation_state.js:45`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_activation_state.js#L45)
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:347`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js#L347)
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:538`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js#L538)
+- [`electron/import_extract_platform/ocr_google_drive_route.js:149`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js#L149)
+- [`electron/import_extract_platform/ocr_google_drive_route.js:399`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js#L399)
+- [`electron/import_extract_platform/import_extract_prepare_execute_core.js:218`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_prepare_execute_core.js#L218)
+- [`electron/import_extract_platform/import_extract_ocr_gate_ipc.js:115`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_gate_ipc.js#L115)
+- [`public/js/import_extract_ocr_activation_recovery.js:34`](c:\Users\manue\Documents\toT\tot\public\js\import_extract_ocr_activation_recovery.js#L34)
+
+### Resolution Notes
+
+The final split intentionally does not equate every token-read failure with “saved token state is invalid.”
+
+The code now distinguishes:
+
+- missing token file
+- malformed/undecryptable token state
+- storage/runtime failure while attempting to read token state
+
+That keeps `ocr_token_state_invalid` limited to failures that actually describe broken persisted token material.
 
 ## Problem 3: Credentials Validation Contract Conflicts With OAuth Client Construction
 
@@ -423,11 +461,11 @@ Any implementation that fixes this issue should satisfy all of the following:
 
 These are the items already strong enough to prove a real active contract or behavior conflict without external assumptions:
 
-1. overloaded `ocr_activation_required`
-2. credentials validation versus runtime redirect-URI selection
+1. credentials validation versus runtime redirect-URI selection
 
 The duplicate gate path is still important, but it is included as a maintenance-risk issue rather than a proven active conflict.
 
-Resolved item:
+Resolved items:
 
 1. refresh-only token contract drift
+2. overloaded `ocr_activation_required`
