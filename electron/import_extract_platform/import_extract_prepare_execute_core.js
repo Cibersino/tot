@@ -791,7 +791,6 @@ async function executePreparedImport({
 // =============================================================================
 
 module.exports = {
-  buildRouteMetadata,
   executePreparedImport,
   getFileInfo,
   isAuthorizedSender,

@@ -36,7 +36,7 @@ Additional findings after the OCR gate removal:
 - no additional dead preload bridges were found
 - no proven renderer-to-missing-handler IPC mismatches were found
 - one backend IPC contract looks unused from current runtime surfaces
-- three exported symbols are provably unused inside the repo
+- two exported symbols remain provably unused inside the repo
 - two duplicated policy surfaces remain as drift risks
 - historical Issue 53 docs still describe the retired OCR gate as live
 
@@ -126,7 +126,9 @@ Historical context that suggests a staged seam rather than accidental dead code:
 
 ### Current Status
 
-Proven dead inside the repo.
+Evaluated.
+Dead exported surface removed.
+The helper remains live as a same-file implementation detail.
 
 ### Why It Looks Dead
 
@@ -135,10 +137,10 @@ Only same-file internal callers use it.
 
 ### Evidence
 
-Definition and export:
+Pre-removal evidence:
 
 - [`electron/import_extract_platform/import_extract_prepare_execute_core.js:152`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js#L152)
-- [`electron/import_extract_platform/import_extract_prepare_execute_core.js:794`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js#L794)
+- former export from [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js) removed after evaluation
 
 Search string used:
 
@@ -150,6 +152,11 @@ Search result summary:
 - hits same-file internal calls
 - hits the export
 - no external module import or call site
+
+Current state after fix:
+
+- dead export removed from [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js)
+- helper remains live only through same-file internal callers
 
 ### What Could Be Lost If Removed
 
@@ -404,14 +411,12 @@ The repo should not mix “probably dead” and “safe to remove” without a r
 
 ## Recommended Work Order
 
-1. Evaluate dead exports first:
-   - `buildRouteMetadata`
+1. Evaluate remaining dead exports:
    - `cleanupExpiredRecords`
    - `probeGoogleDriveApiPath`
-2. Decide whether the backend-only setup-validation IPC is a kept seam or a retired contract.
-3. Collapse duplicated credentials-validation logic if the owner can be defined cleanly.
-4. Collapse duplicated token-read classification if the owner can be defined cleanly.
-5. Decide whether historical docs need annotation, not deletion.
+2. Collapse duplicated credentials-validation logic if the owner can be defined cleanly.
+3. Collapse duplicated token-read classification if the owner can be defined cleanly.
+4. Decide whether historical docs need annotation, not deletion.
 
 ## Acceptance Criteria
 
