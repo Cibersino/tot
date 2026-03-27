@@ -21,6 +21,7 @@ const path = require('path');
 const { BrowserWindow } = require('electron');
 const { authenticate } = require('@google-cloud/local-auth');
 const Log = require('../log');
+const { readGoogleOAuthCredentialsFile } = require('./ocr_google_drive_credentials_file');
 const { describePersistedGoogleToken } = require('./ocr_google_drive_oauth_client');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
 const { writeEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
@@ -45,30 +46,6 @@ function safeErrorName(err) {
 
 function safeErrorMessage(err) {
   return String(err && err.message ? err.message : err || '');
-}
-
-function hasFile(filePath) {
-  return typeof filePath === 'string' && filePath.trim() !== '' && fs.existsSync(filePath);
-}
-
-function hasNonEmptyString(value) {
-  return typeof value === 'string' && value.trim() !== '';
-}
-
-function hasValidCredentialsShape(parsedCredentials) {
-  if (!parsedCredentials || typeof parsedCredentials !== 'object') return false;
-
-  const candidate = parsedCredentials.installed || parsedCredentials.web;
-  if (!candidate || typeof candidate !== 'object') return false;
-  if (!hasNonEmptyString(candidate.client_id)) return false;
-  if (!hasNonEmptyString(candidate.client_secret)) return false;
-  if (!Array.isArray(candidate.redirect_uris)) return false;
-  return candidate.redirect_uris.some(hasNonEmptyString);
-}
-
-function readJsonFileStrict(filePath) {
-  const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-  return JSON.parse(raw);
 }
 
 function ensureParentDir(filePath) {
@@ -242,7 +219,8 @@ function mapAuthenticateError(err) {
 }
 
 function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_validate' } = {}) {
-  if (!hasFile(credentialsPath)) {
+  const credentialsRead = readGoogleOAuthCredentialsFile(credentialsPath);
+  if (!credentialsRead.ok && credentialsRead.code === 'missing_file') {
     return buildFailure({
       state: 'setup_incomplete',
       code: 'setup_incomplete',
@@ -253,10 +231,7 @@ function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_v
     });
   }
 
-  let parsed = null;
-  try {
-    parsed = readJsonFileStrict(credentialsPath);
-  } catch (err) {
+  if (!credentialsRead.ok && credentialsRead.code !== 'invalid_shape') {
     return buildFailure({
       state: 'setup_incomplete',
       code: 'credentials_missing',
@@ -264,13 +239,13 @@ function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_v
       detailsSafeForLogs: {
         stage,
         reason: 'read_failed',
-        errorName: safeErrorName(err),
-        errorMessage: safeErrorMessage(err),
+        errorName: credentialsRead.errorName || '',
+        errorMessage: credentialsRead.errorMessage || '',
       },
     });
   }
 
-  if (!hasValidCredentialsShape(parsed)) {
+  if (!credentialsRead.ok) {
     return buildFailure({
       state: 'setup_incomplete',
       code: 'credentials_missing',
@@ -284,7 +259,7 @@ function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_v
 
   return {
     ok: true,
-    parsed,
+    parsed: credentialsRead.parsed,
   };
 }
 

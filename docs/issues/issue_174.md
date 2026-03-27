@@ -35,7 +35,7 @@ Additional findings after the OCR gate removal review and current state:
 - no additional proven dead files were found
 - no additional dead preload bridges were found
 - no proven renderer-to-missing-handler IPC mismatches were found
-- two duplicated policy surfaces remain as drift risks
+- one duplicated policy surface remains as a drift risk
 
 ## Negative Findings
 
@@ -64,9 +64,8 @@ Credentials-shape validation helpers across:
 
 ### Current Status
 
-Strong suspicion.
-The duplication is real.
-An active behavior conflict is not currently proven.
+Resolved.
+Implemented as a collapse into a canonical owner.
 
 ### Why It Looks Dead
 
@@ -98,6 +97,28 @@ Search strings used:
 ### Recommended Action
 
 `collapse into canonical owner`
+
+### Decision
+
+`collapsed into canonical owner`
+
+### Implementation Outcome
+
+Canonical owner:
+
+- [`electron/import_extract_platform/ocr_google_drive_credentials_file.js`](../../electron/import_extract_platform/ocr_google_drive_credentials_file.js)
+
+Current consumer boundaries:
+
+- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js) keeps activation-phase result shaping and alert mapping.
+- [`electron/import_extract_platform/ocr_google_drive_bundled_credentials.js`](../../electron/import_extract_platform/ocr_google_drive_bundled_credentials.js) keeps bundled-bootstrap/runtime-mirror mapping.
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js) keeps setup-validation result shaping and its stricter outward diagnostics surface.
+
+Compatibility notes:
+
+- the shared helper exports only `readGoogleOAuthCredentialsFile(...)`
+- empty-file parse diagnostics are centralized in the helper, not reimplemented in callers
+- setup validation still leaves `credentialsErrorName` empty for `empty_file` and `invalid_json`
 
 ## Candidate 2: Duplicated Persisted-Token Read Classification
 

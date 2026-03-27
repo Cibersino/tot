@@ -16,10 +16,10 @@
 // Imports
 // =============================================================================
 
-const fs = require('fs');
 const { google } = require('googleapis');
 
 const { resolveGoogleDriveOcrAvailability } = require('./ocr_google_drive_activation_state');
+const { readGoogleOAuthCredentialsFile } = require('./ocr_google_drive_credentials_file');
 const {
   buildGoogleOAuthClient,
   describePersistedGoogleToken,
@@ -158,38 +158,6 @@ function safeErrorMessage(err) {
   if (!err || typeof err !== 'object') return String(err || '');
   const candidate = String(err.message || '').trim();
   return candidate || '';
-}
-
-function safeReadJson(filePath) {
-  try {
-    const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-    if (!raw.trim()) {
-      return { ok: false, code: 'empty_file' };
-    }
-    return { ok: true, data: JSON.parse(raw) };
-  } catch (err) {
-    if (err && err.code === 'ENOENT') return { ok: false, code: 'missing_file' };
-    if (err instanceof SyntaxError) return { ok: false, code: 'invalid_json' };
-    return {
-      ok: false,
-      code: 'read_failed',
-      errorName: safeErrorName(err),
-      errorMessage: safeErrorMessage(err),
-    };
-  }
-}
-
-function hasValidCredentialsShape(parsedCredentials) {
-  if (!parsedCredentials || typeof parsedCredentials !== 'object') return false;
-
-  const candidate = parsedCredentials.installed || parsedCredentials.web;
-  if (!candidate || typeof candidate !== 'object') return false;
-
-  if (!hasNonEmptyString(candidate.client_id)) return false;
-  if (!hasNonEmptyString(candidate.client_secret)) return false;
-
-  if (!Array.isArray(candidate.redirect_uris)) return false;
-  return candidate.redirect_uris.some(hasNonEmptyString);
 }
 
 function maybeParseGoogleApiError(rawBody) {
@@ -498,15 +466,17 @@ async function validateGoogleDriveOcrSetup({
     });
   }
 
-  const credentialsRead = safeReadJson(credentialsPath);
-  if (!credentialsRead.ok || !hasValidCredentialsShape(credentialsRead.data)) {
+  const credentialsRead = readGoogleOAuthCredentialsFile(credentialsPath);
+  if (!credentialsRead.ok) {
     return buildFailureResult({
       code: 'credentials_missing',
       summary: 'Google OCR credentials are missing or invalid.',
       checks,
       detailsSafeForLogs: {
         credentialsReadCode: credentialsRead.code || 'invalid_shape',
-        credentialsErrorName: credentialsRead.errorName || '',
+        credentialsErrorName: credentialsRead.code === 'read_failed'
+          ? (credentialsRead.errorName || '')
+          : '',
       },
     });
   }
@@ -573,7 +543,7 @@ async function validateGoogleDriveOcrSetup({
 
   let oauthClient = null;
   try {
-    oauthClient = buildGoogleOAuthClient(credentialsRead.data, tokenRead.data);
+    oauthClient = buildGoogleOAuthClient(credentialsRead.parsed, tokenRead.data);
   } catch (err) {
     return buildFailureResult({
       code: 'platform_runtime_failed',
