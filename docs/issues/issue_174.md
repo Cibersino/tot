@@ -124,7 +124,7 @@ Compatibility notes:
 
 ### Candidate
 
-`classifyPersistedTokenReadFailure(...)` duplication across:
+`INVALID_PERSISTED_TOKEN_CODES` and `classifyPersistedTokenReadFailure(...)` duplication across:
 
 - [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js)
 - [`electron/import_extract_platform/ocr_google_drive_route.js`](../../electron/import_extract_platform/ocr_google_drive_route.js)
@@ -135,33 +135,58 @@ Compatibility notes:
 
 ### Current Status
 
-Strong suspicion.
-Both paths are live.
-The risk is future drift, not proven deadness.
+Confirmed drift risk.
+Both paths are live and currently behaviorally aligned.
+This is not proven deadness; it is duplicated token-read policy that can drift.
 
 ### Why It Looks Dead
 
-Two active consumers still own the same token-read classification logic separately.
-That is the same maintenance pattern that previously produced contract drift elsewhere.
+Two active consumers still own the same token-read failure policy separately.
+That duplicated policy includes both the invalid-token code set and the classifier mapping.
+The two copies currently agree on semantic result-code mapping, but they can drift independently.
 
 ### Evidence
 
+Duplicated invalid-token code sets:
+
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:56`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js#L56)
+- [`electron/import_extract_platform/ocr_google_drive_route.js:67`](../../electron/import_extract_platform/ocr_google_drive_route.js#L67)
+
 Duplicated classifiers:
 
-- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:347`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js#L347)
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:315`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js#L315)
 - [`electron/import_extract_platform/ocr_google_drive_route.js:149`](../../electron/import_extract_platform/ocr_google_drive_route.js#L149)
 
-Search string used:
+Current call sites using the duplicated mapping:
 
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:508`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js#L508)
+- [`electron/import_extract_platform/ocr_google_drive_route.js:399`](../../electron/import_extract_platform/ocr_google_drive_route.js#L399)
+
+Search strings used:
+
+- `INVALID_PERSISTED_TOKEN_CODES`
 - `classifyPersistedTokenReadFailure`
 
 ### What Could Be Lost If Removed
 
-- route-specific summary strings and stage-specific wording
+- setup-validation summary wording
+- route-specific summary/message wording
 
 ### Recommended Action
 
 `collapse into canonical owner`
+
+### Decision
+
+`collapse into canonical owner`
+
+### Proposed Action
+
+Introduce one shared helper that owns token-read failure category mapping from token-storage read codes.
+Keep caller-specific summary/message shaping in:
+
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js)
+- [`electron/import_extract_platform/ocr_google_drive_route.js`](../../electron/import_extract_platform/ocr_google_drive_route.js)
 
 ## Decision Rules
 
