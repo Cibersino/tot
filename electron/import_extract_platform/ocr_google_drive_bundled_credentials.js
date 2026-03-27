@@ -1,3 +1,4 @@
+// electron/import_extract_platform/ocr_google_drive_bundled_credentials.js
 'use strict';
 
 // =============================================================================
@@ -112,6 +113,7 @@ function materializeBundledCredentials({
     };
   }
 
+  const repairedRuntimeMirror = runtimeValidation.code !== 'missing_file';
   const bundledValidation = validateCredentialsFile(bundledCredentialsPath);
   if (!bundledValidation.ok) {
     const detailsSafeForLogs = {
@@ -131,7 +133,7 @@ function materializeBundledCredentials({
     return {
       ok: false,
       copied: false,
-      repairedRuntimeMirror: runtimeValidation.code !== 'missing_file',
+      repairedRuntimeMirror,
       reason: 'bundled_credentials_unavailable',
       detailsSafeForLogs,
     };
@@ -140,7 +142,6 @@ function materializeBundledCredentials({
   try {
     ensureParentDir(runtimeCredentialsPath);
     fs.writeFileSync(runtimeCredentialsPath, JSON.stringify(bundledValidation.parsed, null, 2), 'utf8');
-    const repairedRuntimeMirror = runtimeValidation.code !== 'missing_file';
 
     log.info('Google OCR bundled credentials materialized into canonical runtime path:', {
       runtimeCredentialsPath,
@@ -167,7 +168,7 @@ function materializeBundledCredentials({
     return {
       ok: false,
       copied: false,
-      repairedRuntimeMirror: runtimeValidation.code !== 'missing_file',
+      repairedRuntimeMirror,
       reason: 'runtime_materialization_failed',
       detailsSafeForLogs,
     };
