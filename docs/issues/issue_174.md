@@ -16,14 +16,13 @@ The affected code currently contains or recently contained:
 - overlapping credentials-validation rules
 - overlapping OCR preflight decision paths
 
-Two of those confirmed contract conflicts are now resolved.
-One confirmed active contract conflict remains open.
+Three of those confirmed contract conflicts are now resolved.
+No confirmed active contract conflict remains open.
 One is still a strong duplication/risk item that should be resolved before it becomes active drift.
 
 Current status:
 
-- Problems 1 and 2 are fixed.
-- Problem 3 remains an open confirmed conflict.
+- Problems 1, 2, and 3 are fixed.
 - Problem 4 remains open as a suspicion / maintenance-risk overlap.
 
 ## Scope
@@ -47,7 +46,7 @@ Out of scope:
 
 Open confirmed active contract or behavior conflicts:
 
-1. credentials validation contract disagrees with OAuth client construction on `redirect_uris`
+- None currently.
 
 Strong suspicion / maintenance-risk overlap:
 
@@ -57,6 +56,7 @@ Resolved confirmed conflicts:
 
 1. refresh-only token contract drift across activation, validation, and runtime
 2. activation-failure code separation around `ocr_activation_required`
+3. credentials validation contract versus runtime redirect-URI selection
 
 ## Problem 1: Refresh-Only Token Contract Drift
 
@@ -278,6 +278,10 @@ That keeps `ocr_token_state_invalid` limited to failures that actually describe 
 
 ## Problem 3: Credentials Validation Contract Conflicts With OAuth Client Construction
 
+### Status
+
+Resolved on March 27, 2026.
+
 ### Files
 
 - [`electron/import_extract_platform/ocr_google_drive_bundled_credentials.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_bundled_credentials.js)
@@ -299,14 +303,14 @@ That keeps `ocr_token_state_invalid` limited to failures that actually describe 
 Producer anchors:
 
 - [`electron/import_extract_platform/ocr_google_drive_bundled_credentials.js:47`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_bundled_credentials.js#L47)
-- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:57`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L57)
-- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:165`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js#L165)
+- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js:58`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js#L58)
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:182`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js#L182)
 
 Consumer anchors:
 
-- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js:37`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js#L37)
-- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js:49`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js#L49)
-- [`electron/import_extract_platform/ocr_google_drive_route.js:385`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js#L385)
+- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js:28`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js#L28)
+- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js:60`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js#L60)
+- [`electron/import_extract_platform/ocr_google_drive_route.js:436`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js#L436)
 - [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js:160`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js#L160)
 
 ### What Overlaps
@@ -345,6 +349,33 @@ The final contract must answer one explicit question:
 
 If the first URI is required, validators must enforce that.
 If any non-empty URI is acceptable, runtime must select the same one deterministically.
+
+### Implemented Resolution
+
+The repo now aligns runtime OAuth client construction with the currently accepted validation rule:
+
+- credentials remain valid when `redirect_uris` contains at least one non-empty entry
+- runtime now selects the first non-empty trimmed redirect URI instead of blindly using `redirect_uris[0]`
+
+Implemented alignment:
+
+- the shared OAuth client builder now resolves one canonical redirect URI from the array before constructing the OAuth client
+- setup validation, runtime OCR, and disconnect all inherit that same redirect-URI selection behavior because they already consume the shared builder
+
+Implementation anchors:
+
+- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js:28`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js#L28)
+- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js:60`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js#L60)
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:576`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js#L576)
+- [`electron/import_extract_platform/ocr_google_drive_route.js:436`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js#L436)
+- [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js:160`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js#L160)
+
+### Resolution Notes
+
+This resolves the active contract split without broadening the change into a larger credentials-validation refactor.
+
+The duplicated validator helpers still exist, so there is still some maintenance duplication in this area.
+But the confirmed runtime mismatch is no longer present because the shared consumer path now follows the same redirect-URI rule the validators already accept.
 
 ## Problem 4: Duplicate OCR Preflight Decision Path
 
@@ -461,7 +492,7 @@ Any implementation that fixes this issue should satisfy all of the following:
 
 These are the items already strong enough to prove a real active contract or behavior conflict without external assumptions:
 
-1. credentials validation versus runtime redirect-URI selection
+- None currently.
 
 The duplicate gate path is still important, but it is included as a maintenance-risk issue rather than a proven active conflict.
 
@@ -469,3 +500,4 @@ Resolved items:
 
 1. refresh-only token contract drift
 2. overloaded `ocr_activation_required`
+3. credentials validation versus runtime redirect-URI selection
