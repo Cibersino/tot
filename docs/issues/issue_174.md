@@ -35,11 +35,6 @@ Additional findings after the OCR gate removal review and current state:
 - no additional proven dead files were found
 - no additional dead preload bridges were found
 - no proven renderer-to-missing-handler IPC mismatches were found
-- two backend IPC contracts have now been removed from current runtime surfaces:
-  - the stale OCR gate IPC removed before this follow-up audit
-  - the backend-only OCR setup validation IPC removed during this issue
-- two exported symbols have now been removed as dead exported surfaces
-- one exported symbol remains provably unused inside the repo
 - two duplicated policy surfaces remain as drift risks
 - historical Issue 53 docs still describe the retired OCR gate as live
 
@@ -54,220 +49,7 @@ These checks did not produce additional dead-surface candidates:
   - [`public/js/import_extract_ocr_disconnect.js`](../../public/js/import_extract_ocr_disconnect.js)
 - no live renderer caller was found for a channel that lacks current main registration
 
-## Candidate 1: Backend-Only OCR Setup Validation IPC
-
-### Candidate
-
-`ocr-google-drive-validate-setup`
-
-### Category
-
-`dead IPC contract`
-
-### Current Status
-
-Evaluated.
-Dead in the current shipped contract surface.
-Safe to remove because the validator remains live through prepare/activation flows.
-
-### Why It Looks Dead
-
-The handler was registered in main, but there was no preload bridge and no in-repo renderer caller.
-
-In the current shipped renderer architecture, that meant the contract was not part of the live app flow.
-
-### Evidence
-
-Pre-removal evidence:
-
-- former main registration in [`electron/main.js`](../../electron/main.js)
-- dedicated handler module removed after evaluation
-
-Search strings used:
-
-- `ocr-google-drive-validate-setup`
-- `ocrGoogleDriveSetupValidationIpc`
-
-Search result summary:
-
-- found registration and dedicated handler module before removal
-- found historical issue-doc references
-- found no preload exposure in [`electron/preload.js`](../../electron/preload.js)
-- found no renderer call sites in `public/*`
-
-Current state after fix:
-
-- standalone IPC registration removed from [`electron/main.js`](../../electron/main.js)
-- dead wrapper module deleted
-- shared validator remains live through:
-  - [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js)
-  - [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
-
-Historical context that suggests a staged seam rather than accidental dead code:
-
-- [`docs/issues/issue_53_operation_tracker.md:6103`](./issue_53_operation_tracker.md#L6103)
-- [`docs/issues/issue_53_operation_tracker.md:6145`](./issue_53_operation_tracker.md#L6145)
-
-### What Could Be Lost If Removed
-
-- a backend seam for a future OCR diagnostics/settings flow
-- a reusable structured validation IPC if the product later wants explicit setup diagnostics in UI
-
-### Recommended Action
-
-`delete`
-
-## Candidate 2: Exported `buildRouteMetadata`
-
-### Candidate
-
-`buildRouteMetadata` export from [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js)
-
-### Category
-
-`dead export`
-
-### Current Status
-
-Evaluated.
-Dead exported surface removed.
-The helper remains live as a same-file implementation detail.
-
-### Why It Looks Dead
-
-The function is exported, but there is no external in-repo consumer.
-Only same-file internal callers use it.
-
-### Evidence
-
-Pre-removal evidence:
-
-- [`electron/import_extract_platform/import_extract_prepare_execute_core.js:152`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js#L152)
-- former export from [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js) removed after evaluation
-
-Search string used:
-
-- `buildRouteMetadata`
-
-Search result summary:
-
-- hits only the definition
-- hits same-file internal calls
-- hits the export
-- no external module import or call site
-
-Current state after fix:
-
-- dead export removed from [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js)
-- helper remains live only through same-file internal callers
-
-### What Could Be Lost If Removed
-
-- nothing in the current repo or shipping package surface
-
-### Recommended Action
-
-`delete`
-
-## Candidate 3: Exported `cleanupExpiredRecords`
-
-### Candidate
-
-`cleanupExpiredRecords` export from [`electron/import_extract_platform/import_extract_prepared_store.js`](../../electron/import_extract_platform/import_extract_prepared_store.js)
-
-### Category
-
-`dead export`
-
-### Current Status
-
-Evaluated.
-Dead exported surface removed.
-The helper remains live as a same-file implementation detail.
-
-### Why It Looks Dead
-
-The function is exported, but only the prepared-store module itself calls it.
-
-### Evidence
-
-Pre-removal evidence:
-
-- [`electron/import_extract_platform/import_extract_prepared_store.js:51`](../../electron/import_extract_platform/import_extract_prepared_store.js#L51)
-- [`electron/import_extract_platform/import_extract_prepared_store.js:130`](../../electron/import_extract_platform/import_extract_prepared_store.js#L130)
-
-Search string used:
-
-- `cleanupExpiredRecords`
-
-Search result summary:
-
-- hits only the definition
-- hits same-file internal calls
-- hits the export
-- no external module import or call site
-
-Current state after fix:
-
-- dead export removed from [`electron/import_extract_platform/import_extract_prepared_store.js`](../../electron/import_extract_platform/import_extract_prepared_store.js)
-- helper remains live only through same-file internal callers
-
-### What Could Be Lost If Removed
-
-- nothing in the current repo or shipping package surface
-
-### Recommended Action
-
-`delete`
-
-## Candidate 4: Exported `probeGoogleDriveApiPath`
-
-### Candidate
-
-`probeGoogleDriveApiPath` export from [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js)
-
-### Category
-
-`dead export`
-
-### Current Status
-
-Pending.
-Still proven dead inside the repo as an exported surface.
-Not yet removed.
-
-### Why It Looks Dead
-
-The function is live internally as the default `apiProbe`, but the export itself has no in-repo consumer.
-
-### Evidence
-
-Definition, internal use, and export:
-
-- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:371`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js#L371)
-- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:469`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js#L469)
-- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js:650`](../../electron/import_extract_platform/ocr_google_drive_setup_validation.js#L650)
-
-Search string used:
-
-- `probeGoogleDriveApiPath`
-
-Search result summary:
-
-- hits only the definition
-- hits same-file default-parameter use
-- hits the export
-- no external module import or call site
-
-### What Could Be Lost If Removed
-
-- nothing in the current repo or shipping package surface
-
-### Recommended Action
-
-`delete`
-
-## Candidate 5: Duplicated Credentials Validation Policy
+## Candidate 1: Duplicated Credentials Validation Policy
 
 ### Candidate
 
@@ -318,7 +100,7 @@ Search strings used:
 
 `collapse into canonical owner`
 
-## Candidate 6: Duplicated Persisted-Token Read Classification
+## Candidate 2: Duplicated Persisted-Token Read Classification
 
 ### Candidate
 
@@ -361,7 +143,7 @@ Search string used:
 
 `collapse into canonical owner`
 
-## Candidate 7: Historical Docs That Still Describe The Retired OCR Gate As Live
+## Candidate 3: Historical Docs That Still Describe The Retired OCR Gate As Live
 
 ### Candidate
 
@@ -414,7 +196,6 @@ Search strings used:
 
 For each candidate above, the decision must be one of:
 
-- `delete`
 - `keep but document`
 - `collapse into canonical owner`
 - `needs explicit compatibility decision`
@@ -423,17 +204,13 @@ The repo should not mix “probably dead” and “safe to remove” without a r
 
 ## Recommended Work Order
 
-1. Remove remaining dead export:
-   - `probeGoogleDriveApiPath`
-2. Collapse duplicated credentials-validation logic if the owner can be defined cleanly.
-3. Collapse duplicated token-read classification if the owner can be defined cleanly.
-4. Decide whether historical docs need annotation, not deletion.
+1. Collapse duplicated credentials-validation logic if the owner can be defined cleanly.
+2. Collapse duplicated token-read classification if the owner can be defined cleanly.
+3. Decide whether historical docs need annotation, not deletion.
 
 ## Acceptance Criteria
 
 - Every candidate in this issue has an explicit decision.
-- No candidate is deleted only because it “looks unused.”
-- Any deleted surface has evidence that no live in-repo consumer depends on it.
 - Any kept dormant surface is documented as intentional.
 - Any collapsed policy surface ends with one clear canonical owner.
 - Live inventory docs do not describe removed surfaces as active.
@@ -442,6 +219,4 @@ The repo should not mix “probably dead” and “safe to remove” without a r
 ## Notes
 
 - This issue intentionally separates safe cleanup candidates from compatibility/architecture seams.
-- The backend-only OCR setup-validation IPC was the most important decision item during review because it was the clearest unused contract with plausible seam value.
-- The remaining concrete delete candidate is the dead `probeGoogleDriveApiPath` export.
 - The duplicated policy helpers are not automatically deletion candidates; they are first-class drift-risk items.
