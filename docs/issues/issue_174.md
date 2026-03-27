@@ -30,13 +30,16 @@ Out of scope:
 
 ## Audit Result Overview
 
-Additional findings after the OCR gate removal:
+Additional findings after the OCR gate removal review and current state:
 
 - no additional proven dead files were found
 - no additional dead preload bridges were found
 - no proven renderer-to-missing-handler IPC mismatches were found
-- one backend IPC contract looks unused from current runtime surfaces
-- two exported symbols remain provably unused inside the repo
+- two backend IPC contracts have now been removed from current runtime surfaces:
+  - the stale OCR gate IPC removed before this follow-up audit
+  - the backend-only OCR setup validation IPC removed during this issue
+- two exported symbols have now been removed as dead exported surfaces
+- one exported symbol remains provably unused inside the repo
 - two duplicated policy surfaces remain as drift risks
 - historical Issue 53 docs still describe the retired OCR gate as live
 
@@ -160,7 +163,7 @@ Current state after fix:
 
 ### What Could Be Lost If Removed
 
-- only out-of-repo direct importers, if any exist outside this repo
+- nothing in the current repo or shipping package surface
 
 ### Recommended Action
 
@@ -178,7 +181,9 @@ Current state after fix:
 
 ### Current Status
 
-Proven dead inside the repo.
+Evaluated.
+Dead exported surface removed.
+The helper remains live as a same-file implementation detail.
 
 ### Why It Looks Dead
 
@@ -186,7 +191,7 @@ The function is exported, but only the prepared-store module itself calls it.
 
 ### Evidence
 
-Definition and export:
+Pre-removal evidence:
 
 - [`electron/import_extract_platform/import_extract_prepared_store.js:51`](../../electron/import_extract_platform/import_extract_prepared_store.js#L51)
 - [`electron/import_extract_platform/import_extract_prepared_store.js:130`](../../electron/import_extract_platform/import_extract_prepared_store.js#L130)
@@ -202,9 +207,14 @@ Search result summary:
 - hits the export
 - no external module import or call site
 
+Current state after fix:
+
+- dead export removed from [`electron/import_extract_platform/import_extract_prepared_store.js`](../../electron/import_extract_platform/import_extract_prepared_store.js)
+- helper remains live only through same-file internal callers
+
 ### What Could Be Lost If Removed
 
-- only out-of-repo direct importers, if any exist outside this repo
+- nothing in the current repo or shipping package surface
 
 ### Recommended Action
 
@@ -222,7 +232,9 @@ Search result summary:
 
 ### Current Status
 
-Proven dead inside the repo as an exported surface.
+Pending.
+Still proven dead inside the repo as an exported surface.
+Not yet removed.
 
 ### Why It Looks Dead
 
@@ -249,7 +261,7 @@ Search result summary:
 
 ### What Could Be Lost If Removed
 
-- only out-of-repo direct importers, if any exist outside this repo
+- nothing in the current repo or shipping package surface
 
 ### Recommended Action
 
@@ -411,8 +423,7 @@ The repo should not mix “probably dead” and “safe to remove” without a r
 
 ## Recommended Work Order
 
-1. Evaluate remaining dead exports:
-   - `cleanupExpiredRecords`
+1. Remove remaining dead export:
    - `probeGoogleDriveApiPath`
 2. Collapse duplicated credentials-validation logic if the owner can be defined cleanly.
 3. Collapse duplicated token-read classification if the owner can be defined cleanly.
@@ -431,5 +442,6 @@ The repo should not mix “probably dead” and “safe to remove” without a r
 ## Notes
 
 - This issue intentionally separates safe cleanup candidates from compatibility/architecture seams.
-- The backend-only OCR setup-validation IPC is the most important decision item because it is the clearest current unused contract but may still be an intentional future seam.
+- The backend-only OCR setup-validation IPC was the most important decision item during review because it was the clearest unused contract with plausible seam value.
+- The remaining concrete delete candidate is the dead `probeGoogleDriveApiPath` export.
 - The duplicated policy helpers are not automatically deletion candidates; they are first-class drift-risk items.

@@ -127,7 +127,6 @@ function consumePreparedRecord(prepareId) {
 // =============================================================================
 
 module.exports = {
-  cleanupExpiredRecords,
   consumePreparedRecord,
   createPreparedRecord,
   peekPreparedRecord,
