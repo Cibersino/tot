@@ -36,7 +36,6 @@ Additional findings after the OCR gate removal review and current state:
 - no additional dead preload bridges were found
 - no proven renderer-to-missing-handler IPC mismatches were found
 - two duplicated policy surfaces remain as drift risks
-- historical Issue 53 docs still describe the retired OCR gate as live
 
 ## Negative Findings
 
