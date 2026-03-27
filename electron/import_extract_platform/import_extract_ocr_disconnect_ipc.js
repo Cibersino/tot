@@ -141,7 +141,7 @@ async function confirmDisconnect(mainWin) {
   );
 
   const result = await dialog.showMessageBox(mainWin || null, {
-    type: 'warning',
+    type: 'none',
     buttons: [yesLabel, noLabel],
     defaultId: 1,
     cancelId: 1,
