@@ -6,7 +6,7 @@
 
 - Archivos ya ordenados y limpiados (0): 
 
-- Faltan (8): `electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js`, `electron\import_extract_platform\ocr_google_drive_oauth_client.js`, `public\js\import_extract_ocr_disconnect.js`, `public\js\import_extract_ocr_activation_disclosure_modal.js`, `electron\import_extract_platform\ocr_google_drive_token_storage.js`, `electron\import_extract_platform\import_extract_ocr_activation_ipc.js`, `public\js\import_extract_ocr_activation_recovery.js`, `electron\fs_storage.js`
+- Faltan (10): `electron\import_extract_platform\ocr_google_drive_setup_validation.js`, `electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js`, `electron\import_extract_platform\ocr_google_drive_oauth_client.js`, `public\js\import_extract_ocr_disconnect.js`, `public\js\import_extract_ocr_activation_disclosure_modal.js`, `electron\import_extract_platform\ocr_google_drive_token_storage.js`, `electron\import_extract_platform\import_extract_ocr_activation_ipc.js`, `public\js\import_extract_ocr_activation_recovery.js`, `electron\import_extract_platform\ocr_google_drive_route.js`, `electron\fs_storage.js`.
 
 ## Principios base de comportamiento (normativo)
 

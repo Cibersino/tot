@@ -34,6 +34,18 @@ function readGoogleCredentialsFile(credentialsPath) {
   return JSON.parse(raw);
 }
 
+function describePersistedGoogleToken(tokenPayload) {
+  const payload = tokenPayload && typeof tokenPayload === 'object' ? tokenPayload : null;
+  const hasAccessToken = hasNonEmptyString(payload && payload.access_token);
+  const hasRefreshToken = hasNonEmptyString(payload && payload.refresh_token);
+
+  return {
+    hasAccessToken,
+    hasRefreshToken,
+    acceptablePersistedTokenShape: hasAccessToken || hasRefreshToken,
+  };
+}
+
 function buildGoogleOAuthClient(credentialsJson, tokenJson) {
   const root = credentialsJson && typeof credentialsJson === 'object'
     ? (credentialsJson.installed || credentialsJson.web || null)
@@ -61,7 +73,8 @@ function buildGoogleOAuthClient(credentialsJson, tokenJson) {
 
 function selectPreferredRevocationToken(tokenPayload) {
   const payload = tokenPayload && typeof tokenPayload === 'object' ? tokenPayload : {};
-  const refreshToken = hasNonEmptyString(payload.refresh_token) ? payload.refresh_token.trim() : '';
+  const tokenState = describePersistedGoogleToken(payload);
+  const refreshToken = tokenState.hasRefreshToken ? payload.refresh_token.trim() : '';
   if (refreshToken) {
     return {
       token: refreshToken,
@@ -69,7 +82,7 @@ function selectPreferredRevocationToken(tokenPayload) {
     };
   }
 
-  const accessToken = hasNonEmptyString(payload.access_token) ? payload.access_token.trim() : '';
+  const accessToken = tokenState.hasAccessToken ? payload.access_token.trim() : '';
   if (accessToken) {
     return {
       token: accessToken,
@@ -88,6 +101,7 @@ function selectPreferredRevocationToken(tokenPayload) {
 // =============================================================================
 
 module.exports = {
+  describePersistedGoogleToken,
   readGoogleCredentialsFile,
   buildGoogleOAuthClient,
   selectPreferredRevocationToken,
