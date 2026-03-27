@@ -50,7 +50,7 @@ Open confirmed active contract or behavior conflicts:
 
 Strong suspicion / maintenance-risk overlap:
 
-3. duplicate OCR preflight path in `import_extract_ocr_gate_ipc.js` versus the active prepare path
+4. Duplicate OCR preflight path in `import_extract_ocr_gate_ipc.js` versus the active prepare path
 
 Resolved confirmed conflicts:
 
