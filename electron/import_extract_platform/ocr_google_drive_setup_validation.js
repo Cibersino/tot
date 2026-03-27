@@ -83,6 +83,13 @@ const ERROR_SURFACE = {
       'Google OCR is not activated yet. Sign in to continue.',
     userActionKey: 'ocr.google_drive.validation.sign_in',
   },
+  ocr_token_state_invalid: {
+    issueType: 'token_state',
+    userMessageKey: 'ocr.google_drive.validation.token_state_invalid',
+    userMessageFallback:
+      'Google OCR saved sign-in state is invalid. Reconnect your Google account.',
+    userActionKey: 'ocr.google_drive.validation.reconnect',
+  },
   auth_failed: {
     issueType: 'auth',
     userMessageKey: 'ocr.google_drive.validation.auth_failed',
@@ -499,10 +506,24 @@ async function validateGoogleDriveOcrSetup({
     };
   }
   const tokenState = describePersistedGoogleToken(tokenRead.data);
-  if (!tokenRead.ok || !tokenState.acceptablePersistedTokenShape) {
+  if (!tokenRead.ok) {
+    const tokenMissing = tokenRead.code === 'missing_file';
     return buildFailureResult({
-      code: 'ocr_activation_required',
-      summary: 'Google OCR token state is missing/invalid or cannot be decrypted.',
+      code: tokenMissing ? 'ocr_activation_required' : 'ocr_token_state_invalid',
+      summary: tokenMissing
+        ? 'Google OCR setup validation blocked because activation is required.'
+        : 'Google OCR token state is invalid or cannot be decrypted.',
+      checks,
+      detailsSafeForLogs: {
+        tokenReadCode: tokenRead.code || 'token_read_failed',
+        tokenErrorName: tokenRead.errorName || '',
+      },
+    });
+  }
+  if (!tokenState.acceptablePersistedTokenShape) {
+    return buildFailureResult({
+      code: 'ocr_token_state_invalid',
+      summary: 'Google OCR token state is invalid or cannot be decrypted.',
       checks,
       detailsSafeForLogs: {
         tokenReadCode: tokenRead.code || 'invalid_shape',
