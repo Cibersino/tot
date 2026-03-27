@@ -143,55 +143,6 @@ Search string used:
 
 `collapse into canonical owner`
 
-## Candidate 3: Historical Docs That Still Describe The Retired OCR Gate As Live
-
-### Candidate
-
-Historical Issue 53 tracker/evidence references to the removed OCR gate surface.
-
-### Category
-
-`stale docs`
-
-### Current Status
-
-Not dead / intentional.
-These docs appear to preserve historical implementation state rather than acting as live inventory.
-
-### Why It Looks Dead
-
-The docs still contain present-tense descriptions of:
-
-- `evaluateImportExtractOcrGate`
-- `import_extract_ocr_gate_ipc.js`
-
-Those are no longer live surfaces in the current repo.
-
-### Evidence
-
-Examples:
-
-- [`docs/issues/issue_53_operation_tracker.md:5739`](./issue_53_operation_tracker.md#L5739)
-- [`docs/issues/issue_53_operation_tracker.md:5742`](./issue_53_operation_tracker.md#L5742)
-- [`docs/issues/issue_53_operation_tracker.md:5767`](./issue_53_operation_tracker.md#L5767)
-- [`docs/issues/issue_53_section5_evidence.md:885`](./issue_53_section5_evidence.md#L885)
-- [`docs/issues/issue_53_section5_evidence.md:1084`](./issue_53_section5_evidence.md#L1084)
-
-Search strings used:
-
-- `evaluateImportExtractOcrGate`
-- `import_extract_ocr_gate_ipc`
-
-### What Could Be Lost If Removed
-
-- historical evidence trail
-- implementation chronology
-- prior acceptance evidence tied to earlier contract shapes
-
-### Recommended Action
-
-`keep but document`
-
 ## Decision Rules
 
 For each candidate above, the decision must be one of:
@@ -206,15 +157,12 @@ The repo should not mix “probably dead” and “safe to remove” without a r
 
 1. Collapse duplicated credentials-validation logic if the owner can be defined cleanly.
 2. Collapse duplicated token-read classification if the owner can be defined cleanly.
-3. Decide whether historical docs need annotation, not deletion.
 
 ## Acceptance Criteria
 
 - Every candidate in this issue has an explicit decision.
 - Any kept dormant surface is documented as intentional.
 - Any collapsed policy surface ends with one clear canonical owner.
-- Live inventory docs do not describe removed surfaces as active.
-- Historical evidence docs are preserved unless there is a deliberate archival decision.
 
 ## Notes
 
