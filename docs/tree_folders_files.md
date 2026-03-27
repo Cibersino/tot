@@ -95,7 +95,6 @@ tot/
 │ │ ├── ocr_google_drive_bundled_credentials.js
 │ │ ├── ocr_google_drive_oauth_client.js
 │ │ ├── ocr_google_drive_setup_validation.js
-│ │ ├── ocr_google_drive_setup_validation_ipc.js
 │ │ ├── ocr_google_drive_token_storage.js
 │ │ ├── ocr_google_drive_route.js
 │ │ └── ocr_image_normalization.js
@@ -272,7 +271,6 @@ tot/
 - `electron/import_extract_platform/ocr_google_drive_bundled_credentials.js` — Bootstrap del modelo OCR de producción: valida las credenciales OAuth desktop empaquetadas y materializa/repara el espejo runtime bajo `config/ocr_google_drive/credentials.json` sin pedir importación manual al usuario.
 - `electron/import_extract_platform/ocr_google_drive_oauth_client.js` — Helpers compartidos OAuth para OCR: lectura de `credentials.json`, construcción del cliente OAuth2 y selección del token preferido para revocación.
 - `electron/import_extract_platform/ocr_google_drive_setup_validation.js` — Validación técnica del setup OCR (credenciales, token y reachability de Google Drive).
-- `electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js` — Handler IPC para consultar/diagnosticar el estado de setup OCR desde la UI.
 - `electron/import_extract_platform/ocr_google_drive_token_storage.js` — Lectura/escritura/borrado protegido del token OCR usando `safeStorage` de Electron.
 - `electron/import_extract_platform/ocr_google_drive_route.js` — Ruta OCR Google Drive/Docs: upload, conversión, export a texto, cleanup y taxonomía explícita de errores.
 - `electron/import_extract_platform/ocr_image_normalization.js` — Normalización local de imágenes para OCR antes del upload cuando el formato lo requiere.
