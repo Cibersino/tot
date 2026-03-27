@@ -112,6 +112,20 @@ function mapValidationBlock(validationResult, fileInfo) {
     };
   }
 
+  if (code === 'ocr_token_state_invalid') {
+    return {
+      ok: true,
+      canProceed: false,
+      ocrSetupState: state,
+      blockCategory: 'unavailable',
+      alertKey: 'renderer.alerts.import_extract_ocr_token_state_invalid',
+      sourceFileExt: fileInfo.sourceFileExt,
+      sourceFileKind: fileInfo.sourceFileKind,
+      code,
+      issueType,
+    };
+  }
+
   if (code === 'quota_or_rate_limited') {
     return {
       ok: true,

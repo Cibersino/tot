@@ -364,17 +364,23 @@ async function runGoogleDriveOcrRoute({
   try {
     tokenJson = readEncryptedTokenFile(tokenPath);
   } catch (err) {
+    const tokenReadCode = String(err && err.code ? err.code : '');
+    const tokenMissing = tokenReadCode === 'missing_file';
     return buildResult({
       state: 'failure',
-      summary: 'OCR route failed before upload: token missing or invalid.',
+      summary: tokenMissing
+        ? 'OCR route failed before upload: activation is required.'
+        : 'OCR route failed before upload: saved token state is invalid.',
       provenance,
       error: buildError(
-        'ocr_activation_required',
-        'OCR activation is required before running extraction.',
+        tokenMissing ? 'ocr_activation_required' : 'ocr_token_state_invalid',
+        tokenMissing
+          ? 'OCR activation is required before running extraction.'
+          : 'Saved Google OCR sign-in state is invalid. Reconnect and try again.',
         {
           stage: 'preflight',
           reason: 'token_read_failed',
-          tokenReadCode: String(err && err.code ? err.code : ''),
+          tokenReadCode,
           errorName: toSafeErrorName(err),
         }
       ),
@@ -385,11 +391,11 @@ async function runGoogleDriveOcrRoute({
   if (!tokenState.acceptablePersistedTokenShape) {
     return buildResult({
       state: 'failure',
-      summary: 'OCR route failed before upload: token missing or invalid.',
+      summary: 'OCR route failed before upload: saved token state is invalid.',
       provenance,
       error: buildError(
-        'ocr_activation_required',
-        'OCR activation is required before running extraction.',
+        'ocr_token_state_invalid',
+        'Saved Google OCR sign-in state is invalid. Reconnect and try again.',
         {
           stage: 'preflight',
           reason: 'invalid_token_shape',

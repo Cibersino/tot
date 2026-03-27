@@ -80,8 +80,14 @@ function mapCodeToAlertKey(code) {
   if (code === 'setup_incomplete' || code === 'credentials_missing') {
     return 'renderer.alerts.import_extract_ocr_setup_missing_credentials';
   }
-  if (code === 'ocr_activation_required') {
+  if (code === 'ocr_activation_cancelled') {
     return 'renderer.alerts.import_extract_ocr_activation_cancelled';
+  }
+  if (code === 'ocr_activation_required') {
+    return 'renderer.alerts.import_extract_ocr_activation_required';
+  }
+  if (code === 'ocr_token_state_invalid') {
+    return 'renderer.alerts.import_extract_ocr_token_state_invalid';
   }
   if (code === 'connectivity_failed') {
     return 'renderer.alerts.import_extract_ocr_connectivity_failed';
@@ -182,8 +188,8 @@ function mapAuthenticateError(err) {
     || lowered.includes('denied')
     || lowered.includes('consent')) {
     return buildFailure({
-      state: 'ocr_activation_required',
-      code: 'ocr_activation_required',
+      state: 'cancelled',
+      code: 'ocr_activation_cancelled',
       alertKey: 'renderer.alerts.import_extract_ocr_activation_cancelled',
       detailsSafeForLogs: {
         stage: 'oauth_authenticate',
@@ -468,7 +474,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         });
       } catch (authErr) {
         const authFailure = mapAuthenticateError(authErr);
-        if (authFailure.code === 'ocr_activation_required') {
+        if (authFailure.code === 'ocr_activation_cancelled') {
           log.info('import/extract OCR activation cancelled during authentication:', {
             state: authFailure.state,
             code: authFailure.code,
