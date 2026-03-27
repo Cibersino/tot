@@ -64,6 +64,14 @@ const NETWORK_ERROR_CODES = new Set([
   'request_timeout',
 ]);
 
+const INVALID_PERSISTED_TOKEN_CODES = new Set([
+  'empty_file',
+  'invalid_json',
+  'invalid_token_format',
+  'decrypt_failed',
+  'invalid_token_payload',
+]);
+
 const SOURCE_MIME_BY_EXT = Object.freeze({
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -135,6 +143,29 @@ function buildResult({
     summary,
     provenance,
     error,
+  };
+}
+
+function classifyPersistedTokenReadFailure(tokenReadCode) {
+  const normalized = String(tokenReadCode || '').trim();
+  if (normalized === 'missing_file') {
+    return {
+      code: 'ocr_activation_required',
+      summary: 'OCR route failed before upload: activation is required.',
+      message: 'OCR activation is required before running extraction.',
+    };
+  }
+  if (INVALID_PERSISTED_TOKEN_CODES.has(normalized)) {
+    return {
+      code: 'ocr_token_state_invalid',
+      summary: 'OCR route failed before upload: saved token state is invalid.',
+      message: 'Saved Google OCR sign-in state is invalid. Reconnect and try again.',
+    };
+  }
+  return {
+    code: 'platform_runtime_failed',
+    summary: 'OCR route failed before upload: token state could not be read.',
+    message: 'Google OCR token state could not be read due to a runtime/platform error.',
   };
 }
 
@@ -365,18 +396,14 @@ async function runGoogleDriveOcrRoute({
     tokenJson = readEncryptedTokenFile(tokenPath);
   } catch (err) {
     const tokenReadCode = String(err && err.code ? err.code : '');
-    const tokenMissing = tokenReadCode === 'missing_file';
+    const tokenFailure = classifyPersistedTokenReadFailure(tokenReadCode);
     return buildResult({
       state: 'failure',
-      summary: tokenMissing
-        ? 'OCR route failed before upload: activation is required.'
-        : 'OCR route failed before upload: saved token state is invalid.',
+      summary: tokenFailure.summary,
       provenance,
       error: buildError(
-        tokenMissing ? 'ocr_activation_required' : 'ocr_token_state_invalid',
-        tokenMissing
-          ? 'OCR activation is required before running extraction.'
-          : 'Saved Google OCR sign-in state is invalid. Reconnect and try again.',
+        tokenFailure.code,
+        tokenFailure.message,
         {
           stage: 'preflight',
           reason: 'token_read_failed',

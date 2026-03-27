@@ -53,6 +53,14 @@ const SETUP_REASON_CODES = new Set([
   'serviceDisabled',
 ]);
 
+const INVALID_PERSISTED_TOKEN_CODES = new Set([
+  'empty_file',
+  'invalid_json',
+  'invalid_token_format',
+  'decrypt_failed',
+  'invalid_token_payload',
+]);
+
 const AUTH_REASON_CODES = new Set([
   'authError',
   'forbidden',
@@ -336,6 +344,26 @@ function buildFailureResult({
   };
 }
 
+function classifyPersistedTokenReadFailure(tokenReadCode) {
+  const normalized = String(tokenReadCode || '').trim();
+  if (normalized === 'missing_file') {
+    return {
+      code: 'ocr_activation_required',
+      summary: 'Google OCR setup validation blocked because activation is required.',
+    };
+  }
+  if (INVALID_PERSISTED_TOKEN_CODES.has(normalized)) {
+    return {
+      code: 'ocr_token_state_invalid',
+      summary: 'Google OCR token state is invalid or cannot be decrypted.',
+    };
+  }
+  return {
+    code: 'platform_runtime_failed',
+    summary: 'Google OCR token state could not be read due to a runtime/platform error.',
+  };
+}
+
 // =============================================================================
 // API probe helper
 // =============================================================================
@@ -507,12 +535,10 @@ async function validateGoogleDriveOcrSetup({
   }
   const tokenState = describePersistedGoogleToken(tokenRead.data);
   if (!tokenRead.ok) {
-    const tokenMissing = tokenRead.code === 'missing_file';
+    const tokenFailure = classifyPersistedTokenReadFailure(tokenRead.code);
     return buildFailureResult({
-      code: tokenMissing ? 'ocr_activation_required' : 'ocr_token_state_invalid',
-      summary: tokenMissing
-        ? 'Google OCR setup validation blocked because activation is required.'
-        : 'Google OCR token state is invalid or cannot be decrypted.',
+      code: tokenFailure.code,
+      summary: tokenFailure.summary,
       checks,
       detailsSafeForLogs: {
         tokenReadCode: tokenRead.code || 'token_read_failed',
