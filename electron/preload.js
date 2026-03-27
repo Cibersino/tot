@@ -20,7 +20,6 @@ const api = {
     openImportExtractPicker: () => ipcRenderer.invoke('import-extract-open-picker'),
     getPathForFile: (file) => webUtils.getPathForFile(file),
     checkImportExtractPreconditions: () => ipcRenderer.invoke('import-extract-check-preconditions'),
-    evaluateImportExtractOcrGate: (payload) => ipcRenderer.invoke('import-extract-evaluate-ocr-gate', payload),
     prepareImportExtractOcrActivation: () => ipcRenderer.invoke('import-extract-prepare-ocr-activation'),
     launchImportExtractOcrActivation: () => ipcRenderer.invoke('import-extract-launch-ocr-activation'),
     disconnectImportExtractOcr: (payload) => ipcRenderer.invoke('import-extract-disconnect-ocr', payload),

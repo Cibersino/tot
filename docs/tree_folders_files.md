@@ -82,7 +82,6 @@ tot/
 │ │ ├── import_extract_file_picker_ipc.js
 │ │ ├── import_extract_preconditions_ipc.js
 │ │ ├── import_extract_processing_mode_ipc.js
-│ │ ├── import_extract_ocr_gate_ipc.js
 │ │ ├── import_extract_ocr_activation_ipc.js
 │ │ ├── import_extract_ocr_disconnect_ipc.js
 │ │ ├── import_extract_prepare_execute_core.js
@@ -260,7 +259,6 @@ tot/
 - `electron/import_extract_platform/import_extract_file_picker_ipc.js` — File picker nativo del flujo import/extract; resuelve carpeta por defecto/persistida y guarda la última carpeta usada.
 - `electron/import_extract_platform/import_extract_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.
 - `electron/import_extract_platform/import_extract_processing_mode_ipc.js` — Controlador/IPC del processing mode de import/extract: lock state, broadcast al renderer y solicitud de abort.
-- `electron/import_extract_platform/import_extract_ocr_gate_ipc.js` — Clasifica elegibilidad OCR por tipo de archivo y estado de disponibilidad/activación del OCR.
 - `electron/import_extract_platform/import_extract_ocr_activation_ipc.js` — Activación OCR Google vía navegador del sistema, separada en dos fases IPC: preparación de credenciales (`prepareImportExtractOcrActivation`, sin abrir navegador) y lanzamiento OAuth (`launchImportExtractOcrActivation`, persiste el token local y valida el setup).
 - `electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js` — Desconexión OCR desde menú: confirmación nativa, revocación del token OAuth guardado y borrado del token local tras revocación exitosa.
 - `electron/import_extract_platform/import_extract_prepare_execute_core.js` — Núcleo compartido del prepare/execute: clasificación de archivo, triage PDF, selección de ruta y ejecución.
