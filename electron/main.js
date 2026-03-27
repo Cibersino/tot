@@ -45,7 +45,6 @@ const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
-const ocrGoogleDriveSetupValidationIpc = require('./import_extract_platform/ocr_google_drive_setup_validation_ipc');
 const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
 const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
 const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
@@ -1585,10 +1584,6 @@ app.whenReady().then(() => {
   });
 
   // Import/extract + OCR integration points.
-  ocrGoogleDriveSetupValidationIpc.registerIpc(ipcMain, {
-    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
-  });
-
   importExtractProcessingModeIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,

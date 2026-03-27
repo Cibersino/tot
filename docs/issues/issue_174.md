@@ -63,22 +63,22 @@ These checks did not produce additional dead-surface candidates:
 
 ### Current Status
 
-Strong suspicion.
-Not proven intentional runtime surface.
-Not proven safe to remove without an explicit compatibility decision.
+Evaluated.
+Dead in the current shipped contract surface.
+Safe to remove because the validator remains live through prepare/activation flows.
 
 ### Why It Looks Dead
 
-The handler is registered in main, but there is no preload bridge and no in-repo renderer caller.
+The handler was registered in main, but there was no preload bridge and no in-repo renderer caller.
 
-In the current shipped renderer architecture, that means the contract is not part of the live app flow.
+In the current shipped renderer architecture, that meant the contract was not part of the live app flow.
 
 ### Evidence
 
-Registration and handler:
+Pre-removal evidence:
 
-- [`electron/main.js:1588`](../../electron/main.js#L1588)
-- [`electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js:80`](../../electron/import_extract_platform/ocr_google_drive_setup_validation_ipc.js#L80)
+- former main registration in [`electron/main.js`](../../electron/main.js)
+- dedicated handler module removed after evaluation
 
 Search strings used:
 
@@ -87,10 +87,18 @@ Search strings used:
 
 Search result summary:
 
-- found registration and handler
+- found registration and dedicated handler module before removal
 - found historical issue-doc references
 - found no preload exposure in [`electron/preload.js`](../../electron/preload.js)
 - found no renderer call sites in `public/*`
+
+Current state after fix:
+
+- standalone IPC registration removed from [`electron/main.js`](../../electron/main.js)
+- dead wrapper module deleted
+- shared validator remains live through:
+  - [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](../../electron/import_extract_platform/import_extract_prepare_execute_core.js)
+  - [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](../../electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
 
 Historical context that suggests a staged seam rather than accidental dead code:
 
@@ -104,7 +112,7 @@ Historical context that suggests a staged seam rather than accidental dead code:
 
 ### Recommended Action
 
-`needs explicit compatibility decision`
+`delete`
 
 ## Candidate 2: Exported `buildRouteMetadata`
 
