@@ -647,7 +647,6 @@ async function validateGoogleDriveOcrSetup({
 
 module.exports = {
   validateGoogleDriveOcrSetup,
-  probeGoogleDriveApiPath,
 };
 
 // =============================================================================
