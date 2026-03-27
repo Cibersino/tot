@@ -17,9 +17,13 @@
 // =============================================================================
 
 const fs = require('fs');
-const https = require('https');
+const { google } = require('googleapis');
 
 const { resolveGoogleDriveOcrAvailability } = require('./ocr_google_drive_activation_state');
+const {
+  buildGoogleOAuthClient,
+  describePersistedGoogleToken,
+} = require('./ocr_google_drive_oauth_client');
 const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 
 // =============================================================================
@@ -29,8 +33,6 @@ const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 const DEFAULT_TIMEOUT_MS = 10000;
 const MAX_TIMEOUT_MS = 20000;
 const MIN_TIMEOUT_MS = 1000;
-const DRIVE_REACHABILITY_URL =
-  'https://www.googleapis.com/drive/v3/files?pageSize=1&fields=files(id)';
 
 const QUOTA_REASON_CODES = new Set([
   'dailyLimitExceeded',
@@ -175,47 +177,52 @@ function hasValidCredentialsShape(parsedCredentials) {
   return candidate.redirect_uris.some(hasNonEmptyString);
 }
 
-function parseTokenShape(parsedToken) {
-  if (!parsedToken || typeof parsedToken !== 'object') {
-    return {
-      valid: false,
-      hasAccessToken: false,
-      hasRefreshToken: false,
-    };
+function maybeParseGoogleApiError(rawBody) {
+  if (!rawBody) return {};
+
+  if (typeof rawBody === 'string') {
+    if (!hasNonEmptyString(rawBody)) return {};
+    try {
+      return maybeParseGoogleApiError(JSON.parse(rawBody));
+    } catch {
+      return {};
+    }
   }
 
-  const hasAccessToken = hasNonEmptyString(parsedToken.access_token);
-  const hasRefreshToken = hasNonEmptyString(parsedToken.refresh_token);
+  if (typeof rawBody !== 'object') return {};
+
+  const root = rawBody && typeof rawBody.error === 'object' ? rawBody.error : null;
+  if (!root || typeof root !== 'object') return {};
+
+  const nested = Array.isArray(root.errors) && root.errors.length ? root.errors[0] : null;
+  const reasonCode = nested && typeof nested.reason === 'string' ? nested.reason.trim() : '';
+  const message = nested && typeof nested.message === 'string'
+    ? nested.message.trim()
+    : (typeof root.message === 'string' ? root.message.trim() : '');
 
   return {
-    valid: hasAccessToken || hasRefreshToken,
-    hasAccessToken,
-    hasRefreshToken,
+    reasonCode,
+    providerMessage: message,
+    providerStatus: typeof root.status === 'string' ? root.status.trim() : '',
   };
 }
 
-function maybeParseGoogleApiError(rawBody) {
-  if (!hasNonEmptyString(rawBody)) return {};
+function parseProbeFailure(err) {
+  const statusCode = Number(
+    err && err.response && err.response.status
+      ? err.response.status
+      : (typeof err.code === 'number' ? err.code : 0)
+  ) || 0;
 
-  try {
-    const parsed = JSON.parse(rawBody);
-    const root = parsed && typeof parsed === 'object' ? parsed.error : null;
-    if (!root || typeof root !== 'object') return {};
+  const parsed = maybeParseGoogleApiError(err && err.response ? err.response.data : null);
 
-    const nested = Array.isArray(root.errors) && root.errors.length ? root.errors[0] : null;
-    const reasonCode = nested && typeof nested.reason === 'string' ? nested.reason.trim() : '';
-    const message = nested && typeof nested.message === 'string'
-      ? nested.message.trim()
-      : (typeof root.message === 'string' ? root.message.trim() : '');
-
-    return {
-      reasonCode,
-      providerMessage: message,
-      providerStatus: typeof root.status === 'string' ? root.status.trim() : '',
-    };
-  } catch {
-    return {};
-  }
+  return {
+    statusCode,
+    reasonCode: String(parsed.reasonCode || ''),
+    providerMessage: String(parsed.providerMessage || safeErrorMessage(err)),
+    providerStatus: String(parsed.providerStatus || ''),
+    networkErrorCode: typeof err.code === 'string' ? err.code.trim() : '',
+  };
 }
 
 function classifyApiFailure({ statusCode, reasonCode, networkErrorCode }) {
@@ -326,102 +333,93 @@ function buildFailureResult({
 // API probe helper
 // =============================================================================
 
-function probeGoogleDriveApiPath({ accessToken, timeoutMs = DEFAULT_TIMEOUT_MS }) {
+async function probeGoogleDriveApiPath({ oauthClient, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   const effectiveTimeoutMs = clampTimeoutMs(timeoutMs);
+  const abortController = new AbortController();
+  const drive = google.drive({ version: 'v3', auth: oauthClient });
+  const originalTransporter = oauthClient && typeof oauthClient === 'object'
+    ? oauthClient.transporter
+    : null;
+  let timeoutTriggered = false;
+  let timeoutHandle = null;
 
-  return new Promise((resolve) => {
-    let settled = false;
-
-    const settle = (result) => {
-      if (settled) return;
-      settled = true;
-      resolve(result);
+  if (!originalTransporter || typeof originalTransporter.request !== 'function') {
+    return {
+      ok: false,
+      statusCode: 400,
+      reasonCode: '',
+      providerMessage: 'OAuth client transporter is unavailable.',
+      providerStatus: '',
+      networkErrorCode: '',
     };
+  }
 
-    let req = null;
-    try {
-      req = https.request(
-        DRIVE_REACHABILITY_URL,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: 'application/json',
-          },
-        },
-        (res) => {
-          let body = '';
-          res.setEncoding('utf8');
-          res.on('data', (chunk) => {
-            if (body.length < 32768) {
-              body += String(chunk || '');
-            }
-          });
-          res.on('end', () => {
-            const statusCode = Number(res.statusCode || 0);
-            if (statusCode >= 200 && statusCode < 300) {
-              settle({
-                ok: true,
-                statusCode,
-                reasonCode: '',
-                providerMessage: '',
-                providerStatus: '',
-              });
-              return;
-            }
+  const wrappedTransporter = Object.create(originalTransporter);
+  wrappedTransporter.request = (opts = {}) => originalTransporter.request.call(
+    originalTransporter,
+    {
+      ...opts,
+      signal: opts.signal || abortController.signal,
+      timeout: Number.isFinite(opts.timeout) && opts.timeout > 0
+        ? opts.timeout
+        : effectiveTimeoutMs,
+    }
+  );
 
-            const parsed = maybeParseGoogleApiError(body);
-            settle({
-              ok: false,
-              statusCode,
-              reasonCode: parsed.reasonCode || '',
-              providerMessage: parsed.providerMessage || '',
-              providerStatus: parsed.providerStatus || '',
-              networkErrorCode: '',
-            });
-          });
-        }
-      );
-    } catch (err) {
-      settle({
+  oauthClient.transporter = wrappedTransporter;
+  timeoutHandle = setTimeout(() => {
+    timeoutTriggered = true;
+    abortController.abort();
+  }, effectiveTimeoutMs);
+
+  try {
+    const response = await drive.files.list(
+      {
+        pageSize: 1,
+        fields: 'files(id)',
+      },
+      {
+        signal: abortController.signal,
+        timeout: effectiveTimeoutMs,
+      }
+    );
+    const statusCode = Number(response && response.status ? response.status : 200) || 200;
+
+    return {
+      ok: true,
+      statusCode,
+      reasonCode: '',
+      providerMessage: '',
+      providerStatus: '',
+      networkErrorCode: '',
+    };
+  } catch (err) {
+    if (timeoutTriggered) {
+      return {
         ok: false,
         statusCode: 0,
         reasonCode: '',
-        providerMessage: safeErrorMessage(err),
+        providerMessage: 'request_timeout',
         providerStatus: '',
-        networkErrorCode: 'request_init_failed',
-      });
-      return;
+        networkErrorCode: 'request_timeout',
+      };
     }
 
-    req.setTimeout(effectiveTimeoutMs, () => {
-      try {
-        req.destroy(new Error('request_timeout'));
-      } catch {
-        settle({
-          ok: false,
-          statusCode: 0,
-          reasonCode: '',
-          providerMessage: 'request_timeout',
-          providerStatus: '',
-          networkErrorCode: 'request_timeout',
-        });
-      }
-    });
-
-    req.on('error', (err) => {
-      settle({
-        ok: false,
-        statusCode: 0,
-        reasonCode: '',
-        providerMessage: safeErrorMessage(err),
-        providerStatus: '',
-        networkErrorCode: String(err && err.code ? err.code : 'request_error'),
-      });
-    });
-
-    req.end();
-  });
+    const parsedFailure = parseProbeFailure(err);
+    return {
+      ok: false,
+      statusCode: parsedFailure.statusCode,
+      reasonCode: parsedFailure.reasonCode,
+      providerMessage: parsedFailure.providerMessage,
+      providerStatus: parsedFailure.providerStatus,
+      networkErrorCode: parsedFailure.networkErrorCode,
+    };
+  } finally {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
+    oauthClient.transporter = originalTransporter;
+  }
 }
 
 // =============================================================================
@@ -500,8 +498,8 @@ async function validateGoogleDriveOcrSetup({
       data: null,
     };
   }
-  const tokenShape = parseTokenShape(tokenRead.data);
-  if (!tokenRead.ok || !tokenShape.valid) {
+  const tokenState = describePersistedGoogleToken(tokenRead.data);
+  if (!tokenRead.ok || !tokenState.acceptablePersistedTokenShape) {
     return buildFailureResult({
       code: 'ocr_activation_required',
       summary: 'Google OCR token state is missing/invalid or cannot be decrypted.',
@@ -513,8 +511,8 @@ async function validateGoogleDriveOcrSetup({
     });
   }
   checks.tokenValid = true;
-  checks.tokenHasAccessToken = tokenShape.hasAccessToken;
-  checks.tokenHasRefreshToken = tokenShape.hasRefreshToken;
+  checks.tokenHasAccessToken = tokenState.hasAccessToken;
+  checks.tokenHasRefreshToken = tokenState.hasRefreshToken;
 
   if (!probeApiPath) {
     return {
@@ -526,13 +524,17 @@ async function validateGoogleDriveOcrSetup({
     };
   }
 
-  if (!checks.tokenHasAccessToken) {
+  let oauthClient = null;
+  try {
+    oauthClient = buildGoogleOAuthClient(credentialsRead.data, tokenRead.data);
+  } catch (err) {
     return buildFailureResult({
-      code: 'auth_failed',
-      summary: 'Google OCR token is missing an access token for API reachability validation.',
+      code: 'platform_runtime_failed',
+      summary: 'Google OCR OAuth client initialization failed for setup validation.',
       checks,
       detailsSafeForLogs: {
-        reason: 'access_token_missing',
+        reason: 'oauth_client_init_failed',
+        errorName: safeErrorName(err),
       },
     });
   }
@@ -550,7 +552,7 @@ async function validateGoogleDriveOcrSetup({
 
   checks.apiProbeAttempted = true;
   const probeResult = await apiProbe({
-    accessToken: tokenRead.data.access_token,
+    oauthClient,
     timeoutMs,
   });
 
@@ -564,7 +566,7 @@ async function validateGoogleDriveOcrSetup({
     return {
       ok: true,
       state: 'ready',
-      summary: 'Google OCR setup validated and API path reachable.',
+      summary: 'Google OCR setup validated and API path reachable through OAuth client.',
       checks,
       error: null,
     };

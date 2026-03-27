@@ -21,6 +21,7 @@ const path = require('path');
 const { BrowserWindow } = require('electron');
 const { authenticate } = require('@google-cloud/local-auth');
 const Log = require('../log');
+const { describePersistedGoogleToken } = require('./ocr_google_drive_oauth_client');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
 const { writeEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 
@@ -310,9 +311,8 @@ function extractSerializableCredentials(authClient) {
     : null;
   if (!candidate || typeof candidate !== 'object') return null;
 
-  const hasAccessToken = hasNonEmptyString(candidate.access_token);
-  const hasRefreshToken = hasNonEmptyString(candidate.refresh_token);
-  if (!hasAccessToken && !hasRefreshToken) return null;
+  const tokenState = describePersistedGoogleToken(candidate);
+  if (!tokenState.acceptablePersistedTokenShape) return null;
 
   return { ...candidate };
 }

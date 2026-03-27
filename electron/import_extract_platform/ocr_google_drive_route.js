@@ -23,6 +23,7 @@ const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 const { normalizeImageForOcrUpload } = require('./ocr_image_normalization');
 const {
   buildGoogleOAuthClient,
+  describePersistedGoogleToken,
 } = require('./ocr_google_drive_oauth_client');
 
 // =============================================================================
@@ -375,6 +376,23 @@ async function runGoogleDriveOcrRoute({
           reason: 'token_read_failed',
           tokenReadCode: String(err && err.code ? err.code : ''),
           errorName: toSafeErrorName(err),
+        }
+      ),
+    });
+  }
+
+  const tokenState = describePersistedGoogleToken(tokenJson);
+  if (!tokenState.acceptablePersistedTokenShape) {
+    return buildResult({
+      state: 'failure',
+      summary: 'OCR route failed before upload: token missing or invalid.',
+      provenance,
+      error: buildError(
+        'ocr_activation_required',
+        'OCR activation is required before running extraction.',
+        {
+          stage: 'preflight',
+          reason: 'invalid_token_shape',
         }
       ),
     });
