@@ -85,6 +85,8 @@ Hard evidence:
 
 The current overload conflict is proven by code. But this issue does not by itself settle which exact Google provider signals should replace that overloaded code. Any provider-side replacement used in the fix must be based on documented or captured Google signals.
 
+Because this problem crosses both internal contract behavior and user-facing alert/remediation behavior, any contract-level fix must remain consistent with the UI-facing outcome. Any UI-facing change introduced by the fix must also close its `en` and `es` i18n surface.
+
 ### 2. Google OAuth credentials validation is duplicated with different acceptance rules
 
 Type:
