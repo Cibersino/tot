@@ -83,6 +83,8 @@ Hard evidence:
 - [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js) produces `setup_incomplete` for provider-side API-not-configured conditions
 - [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js) collapses that code into the missing-credentials alert
 
+The current overload conflict is proven by code. But this issue does not by itself settle which exact Google provider signals should replace that overloaded code. Any provider-side replacement used in the fix must be based on documented or captured Google signals.
+
 ### 2. Google OAuth credentials validation is duplicated with different acceptance rules
 
 Type:
