@@ -87,6 +87,8 @@ The current overload conflict is proven by code. But this issue does not by itse
 
 Because this problem crosses both internal contract behavior and user-facing alert/remediation behavior, any contract-level fix must remain consistent with the UI-facing outcome. Any UI-facing change introduced by the fix must also close its `en` and `es` i18n surface.
 
+The final fix must not leave dead code or unused contract/UI surface behind.
+
 ### 2. Google OAuth credentials validation is duplicated with different acceptance rules
 
 Type:
