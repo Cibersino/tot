@@ -8,9 +8,9 @@ It excludes harmless duplication, stylistic repetition, and speculative cleanup.
 
 The current code shows:
 
-- no confirmed active contract/behavior conflicts remaining from the original findings
+- no confirmed reproduced user-facing contract/behavior conflicts remaining from the original findings
 - three resolved overlap/behavior records retained here as closure records
-- one bounded suspicion where duplicated provider-failure classification is likely to drift further
+- one confirmed live code-level drift in duplicated post-parse provider-failure classification
 
 ## Scope
 
@@ -76,8 +76,8 @@ Why this closes the original problem:
 
 Residual note:
 
-- the bounded suspicion below about duplicated provider-failure taxonomy remains a separate question
-- that suspicion should not be promoted back into this closure record without new code evidence showing a live setup/execute mismatch for the same provider failure shape
+- the remaining live problem below about duplicated post-parse provider-failure classification remains a separate question
+- that problem should not be promoted back into this closure record without new code evidence showing a live setup/execute mismatch for the same provider failure shape
 
 ### 2. OCR disconnect mixes a strict credentials contract with a token-centric revocation contract
 
@@ -209,57 +209,78 @@ Verification already observed:
 - `.jpg` still prepared and executed on the OCR route
 - `.pdf` still followed the existing choice-required PDF triage and executed successfully on the chosen route
 
-## Suspicion
+## Remaining Live Problem
 
-### 4. Setup-time and execute-time Google API failure classifiers are duplicated and already structurally drifted
+### 4. Post-parse Google API failure classification is duplicated and already drifted
 
 Type:
 
-- near-duplication
-- same domain, different contract
+- confirmed live code-level drift
+- same domain, split policy
 
 Files:
 
+- [`electron/import_extract_platform/ocr_google_drive_provider_failure.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_provider_failure.js)
 - [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js)
 - [`electron/import_extract_platform/ocr_google_drive_route.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js)
+- [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_prepare_execute_core.js)
+- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js)
 
 Identifiers:
 
+- `parseGoogleProviderFailure(...)`
 - `classifyApiFailure(...)`
 - `classifyCommonFailure(...)`
 
 Producer anchors:
 
-- setup validation uses `classifyApiFailure(...)`
-- OCR execute uses `classifyCommonFailure(...)`
+- setup validation parses provider probe failures through `parseGoogleProviderFailure(...)` and then applies `classifyApiFailure(...)`
+- OCR execute parses provider runtime failures through `parseGoogleProviderFailure(...)` and then applies `classifyCommonFailure(...)`
 
 Consumer anchors:
 
 - activation and prepare consume setup-validation classifications
-- runtime execute consumes route classifications
+- runtime execute consumes route classifications and falls back to stage-specific OCR failure codes when no common classification matches
 
-What overlaps exactly:
+Why this is narrower than the old suspicion wording:
 
-- both modules own the same Google provider-failure taxonomy locally
-- they do not classify all inputs the same way
+- provider payload parsing and `provider_api_disabled` normalization are already centralized in [`electron/import_extract_platform/ocr_google_drive_provider_failure.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_provider_failure.js)
+- the remaining duplication is the post-parse classification policy, not the raw provider parser itself
 
-Why this is a credible maintenance risk:
+Current code evidence of live drift:
 
+- setup and execute still duplicate quota/auth reason tables locally
 - setup treats any non-empty string `networkErrorCode` as connectivity failure
 - execute only treats a fixed network-code whitelist that way
-- setup also collapses unknown `4xx` responses into `platform_runtime_failed`
-- execute can fall through to stage-specific OCR conversion/export codes instead
+- setup keeps billing reasons in a separate local set while execute folds those reasons into its quota/rate-limit set
+- setup collapses remaining `statusCode >= 400` probe failures into `platform_runtime_failed`
+- execute leaves those remaining cases outside the common classifier and falls back to `ocr_conversion_failed` or `ocr_export_failed`
+- prepare and activation consume setup-time codes directly, while execute maps unmatched route failures through a different runtime alert path
 
-Why this remains a suspicion instead of a confirmed active conflict:
+Why this is confirmed now but still bounded:
 
-- the code shows structural drift now
-- but proving one exact provider error already surfaces differently in both paths would require a specific shared error shape reaching both code paths
+- current code already proves the same normalized provider-failure fields are sent through two different post-parse rule sets
+- that is enough to confirm live code-level drift and maintenance risk
+- current code does not yet prove that one exact provider payload is already producing a reproduced user-facing mismatch across both paths
 
-## Current Status vs Suspicion
+Proposal:
 
-Confirmed active:
+- unify the shared post-parse classification layer
+- move the shared reason-code tables and common classification rules into one helper adjacent to [`electron/import_extract_platform/ocr_google_drive_provider_failure.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_provider_failure.js)
+- have that helper return only the common provider/runtime codes such as `connectivity_failed`, `provider_api_disabled`, `quota_or_rate_limited`, `auth_failed`, `platform_runtime_failed`, or no common classification
+- keep setup-specific behavior in [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js), including `issueSubtype` and setup-oriented reporting
+- keep execute-specific behavior in [`electron/import_extract_platform/ocr_google_drive_route.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js), including fallback to `ocr_conversion_failed` / `ocr_export_failed` when no common provider/runtime classification applies
+- do not force full setup and execute identity; the modules serve different stage contracts
 
-- none from the original findings
+## Current Status
+
+Confirmed active code-level drift:
+
+- duplicated post-parse Google API failure classification with observable rule drift between setup validation and OCR execute
+
+Not yet confirmed as a reproduced user-facing bug:
+
+- one exact shared provider failure payload surfacing differently across both paths
 
 Resolved closure records:
 
@@ -267,31 +288,32 @@ Resolved closure records:
 - disconnect now has an explicit token-revocation contract
 - native prepare/execute support mismatch removed from live import/extract flow
 
-Suspicion:
-
-- duplicated Google API failure taxonomy between setup validation and OCR execute
-
 ## Current Code Reading
 
-- The original active conflicts captured by this issue are no longer live in current code.
-- The only remaining live item under this issue is the bounded suspicion above about duplicated Google API failure classification between setup validation and OCR execute.
-- That suspicion should stay bounded unless one concrete provider failure shape is shown to surface differently across both paths.
+- Problems 1, 2, and 3 are no longer live in current code.
+- Problem 4 is live as duplicated post-parse Google API failure classification with observable rule drift.
+- Current code is sufficient to confirm code-level drift and maintenance risk.
+- Current code is not sufficient to claim a reproduced user-facing mismatch for one exact shared provider payload.
 
 ## Direction
 
 The remaining live part of this issue is narrower:
 
-- either unify setup-time and execute-time provider-failure classification
-- or keep both classifiers with an explicit reason and a bounded, intentional behavioral difference
+- unify the shared post-parse provider/runtime classification layer
+- do not force full setup and execute identity
+- keep setup-specific reporting and execute-specific fallback codes where they belong
 
 ## Acceptance Criteria
 
 - no regression reintroduces the retired `setup_incomplete` overload
 - no regression lets prepare advertise a native route that execute rejects for the same file type
-- any remaining duplicated provider-failure classifier is either unified or kept with an explicit reason and bounded difference
+- shared post-parse provider/runtime classification policy is centralized for setup and execute
+- setup retains setup-specific subtype/reporting behavior and execute retains stage-specific fallback codes
+- if any split remains, it is explicit, bounded, and justified by stage-specific contract rather than duplicated reason tables
 
 ## Notes
 
 - This issue is diagnosis-derived and intentionally excludes harmless duplication.
 - Problems 1, 2, and 3 are retained above as closure records.
-- The suspicion above should not be treated as a confirmed bug without further evidence.
+- Problem 4 remains open as a confirmed live code-level drift, not as a reproduced user-facing bug.
+- Current code alone does not prove that one exact shared provider payload already surfaces differently across both paths.
