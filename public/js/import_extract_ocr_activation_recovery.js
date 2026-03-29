@@ -21,6 +21,9 @@
   }
   const log = window.getLogger('import-extract-ocr-activation-recovery');
   log.debug('Import/extract OCR activation recovery helpers starting...');
+  if (!window.Notify || typeof window.Notify.notifyMain !== 'function') {
+    throw new Error('[import-extract-ocr-activation-recovery] Notify.notifyMain unavailable; cannot continue');
+  }
 
   // =============================================================================
   // Helpers
@@ -73,21 +76,16 @@
     return fallbackKey;
   }
 
-  function safeNotify(notifyMain, alertKey) {
-    if (typeof notifyMain !== 'function') return;
-    try {
-      notifyMain(alertKey);
-    } catch (err) {
-      log.error('Failed to notify OCR recovery alert:', alertKey, err);
-    }
-  }
-
-  async function promptActivationDisclosure() {
+  function getActivationDisclosurePrompt() {
     const modalApi = window.ImportExtractOcrActivationDisclosureModal;
     if (!modalApi || typeof modalApi.promptDisclosure !== 'function') {
-      throw new Error('ImportExtractOcrActivationDisclosureModal.promptDisclosure unavailable.');
+      log.warnOnce(
+        'importExtractOcrActivationRecovery.disclosure.unavailable',
+        'ImportExtractOcrActivationDisclosureModal.promptDisclosure unavailable; OCR activation recovery cannot continue.'
+      );
+      return null;
     }
-    return await modalApi.promptDisclosure();
+    return modalApi.promptDisclosure.bind(modalApi);
   }
 
   // =============================================================================
@@ -98,7 +96,6 @@
     preparation,
     retryPrepare,
     getOptionalElectronMethod,
-    notifyMain,
     routePreference = '',
   } = {}) {
     if (!preparation || preparation.ok !== true) {
@@ -133,7 +130,7 @@
       prepareResult = await prepareImportExtractOcrActivation();
     } catch (err) {
       log.error('import/extract OCR activation prepare IPC failed:', err);
-      safeNotify(notifyMain, 'renderer.alerts.import_extract_ocr_activation_failed');
+      window.Notify.notifyMain('renderer.alerts.import_extract_ocr_activation_failed');
       return { preparation, handled: true };
     }
 
@@ -142,7 +139,7 @@
         prepareResult && prepareResult.alertKey,
         'renderer.alerts.import_extract_ocr_activation_failed'
       );
-      safeNotify(notifyMain, failureAlertKey);
+      window.Notify.notifyMain(failureAlertKey);
       log.warn('import/extract OCR activation prepare step did not complete:', {
         ok: prepareResult ? prepareResult.ok : false,
         ready: prepareResult ? prepareResult.ready : false,
@@ -151,12 +148,18 @@
       return { preparation, handled: true };
     }
 
+    const promptDisclosure = getActivationDisclosurePrompt();
+    if (!promptDisclosure) {
+      window.Notify.notifyMain('renderer.alerts.import_extract_ocr_activation_failed');
+      return { preparation, handled: true };
+    }
+
     let disclosureAccepted = false;
     try {
-      disclosureAccepted = await promptActivationDisclosure();
+      disclosureAccepted = await promptDisclosure();
     } catch (err) {
       log.error('import/extract OCR activation disclosure modal failed:', err);
-      safeNotify(notifyMain, 'renderer.alerts.import_extract_ocr_activation_failed');
+      window.Notify.notifyMain('renderer.alerts.import_extract_ocr_activation_failed');
       return { preparation, handled: true };
     }
 
@@ -175,7 +178,7 @@
       activationResult = await launchImportExtractOcrActivation();
     } catch (err) {
       log.error('import/extract OCR activation launch IPC failed:', err);
-      safeNotify(notifyMain, 'renderer.alerts.import_extract_ocr_activation_failed');
+      window.Notify.notifyMain('renderer.alerts.import_extract_ocr_activation_failed');
       return { preparation, handled: true };
     }
 
@@ -184,7 +187,7 @@
         activationResult && activationResult.alertKey,
         'renderer.alerts.import_extract_ocr_activation_failed'
       );
-      safeNotify(notifyMain, failureAlertKey);
+      window.Notify.notifyMain(failureAlertKey);
       log.warn('import/extract OCR activation launch step did not complete:', {
         ok: activationResult ? activationResult.ok : false,
         state: activationResult ? activationResult.state : '',
@@ -193,8 +196,7 @@
       return { preparation, handled: true };
     }
 
-    safeNotify(
-      notifyMain,
+    window.Notify.notifyMain(
       resolveImportExtractAlertKey(
         activationResult.alertKey,
         'renderer.alerts.import_extract_ocr_activation_success'
