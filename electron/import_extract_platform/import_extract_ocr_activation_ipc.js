@@ -21,6 +21,7 @@ const path = require('path');
 const { BrowserWindow } = require('electron');
 const { authenticate } = require('@google-cloud/local-auth');
 const Log = require('../log');
+const { PROVIDER_API_DISABLED_CODE } = require('./ocr_google_drive_provider_failure');
 const { readGoogleOAuthCredentialsFile } = require('./ocr_google_drive_credentials_file');
 const { describePersistedGoogleToken } = require('./ocr_google_drive_oauth_client');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
@@ -54,8 +55,14 @@ function ensureParentDir(filePath) {
 }
 
 function mapCodeToAlertKey(code) {
-  if (code === 'setup_incomplete' || code === 'credentials_missing') {
+  if (code === 'credentials_missing') {
     return 'renderer.alerts.import_extract_ocr_setup_missing_credentials';
+  }
+  if (code === 'credentials_invalid') {
+    return 'renderer.alerts.import_extract_ocr_setup_invalid_credentials';
+  }
+  if (code === PROVIDER_API_DISABLED_CODE) {
+    return 'renderer.alerts.import_extract_ocr_unavailable';
   }
   if (code === 'ocr_activation_cancelled') {
     return 'renderer.alerts.import_extract_ocr_activation_cancelled';
@@ -218,12 +225,30 @@ function mapAuthenticateError(err) {
   });
 }
 
-function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_validate' } = {}) {
+function validateStoredCredentialsFile({
+  credentialsPath,
+  bundledCredentialsFailureCode = '',
+  bundledCredentialsFailureReason = '',
+  bundledCredentialsFailureDetailsSafeForLogs = {},
+  stage = 'credentials_validate',
+} = {}) {
+  if (bundledCredentialsFailureCode) {
+    return buildFailure({
+      state: 'failure',
+      code: bundledCredentialsFailureCode,
+      detailsSafeForLogs: {
+        stage,
+        reason: bundledCredentialsFailureReason || 'bundled_credentials_unavailable',
+        ...bundledCredentialsFailureDetailsSafeForLogs,
+      },
+    });
+  }
+
   const credentialsRead = readGoogleOAuthCredentialsFile(credentialsPath);
   if (!credentialsRead.ok && credentialsRead.code === 'missing_file') {
     return buildFailure({
-      state: 'setup_incomplete',
-      code: 'setup_incomplete',
+      state: 'failure',
+      code: 'credentials_missing',
       detailsSafeForLogs: {
         stage,
         reason: 'credentials_missing',
@@ -233,8 +258,8 @@ function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_v
 
   if (!credentialsRead.ok && credentialsRead.code !== 'invalid_shape') {
     return buildFailure({
-      state: 'setup_incomplete',
-      code: 'credentials_missing',
+      state: 'failure',
+      code: 'credentials_invalid',
       alertKey: 'renderer.alerts.import_extract_ocr_setup_invalid_credentials',
       detailsSafeForLogs: {
         stage,
@@ -247,8 +272,8 @@ function validateStoredCredentialsFile({ credentialsPath, stage = 'credentials_v
 
   if (!credentialsRead.ok) {
     return buildFailure({
-      state: 'setup_incomplete',
-      code: 'credentials_missing',
+      state: 'failure',
+      code: 'credentials_invalid',
       alertKey: 'renderer.alerts.import_extract_ocr_setup_invalid_credentials',
       detailsSafeForLogs: {
         stage,
@@ -303,6 +328,18 @@ function resolveRuntimePaths(resolvePaths) {
   return {
     credentialsPath: String(paths && paths.credentialsPath ? paths.credentialsPath : ''),
     tokenPath: String(paths && paths.tokenPath ? paths.tokenPath : ''),
+    bundledCredentialsFailureCode: String(
+      paths && paths.bundledCredentialsFailureCode ? paths.bundledCredentialsFailureCode : ''
+    ),
+    bundledCredentialsFailureReason: String(
+      paths && paths.bundledCredentialsFailureReason ? paths.bundledCredentialsFailureReason : ''
+    ),
+    bundledCredentialsFailureDetailsSafeForLogs:
+      paths
+      && paths.bundledCredentialsFailureDetailsSafeForLogs
+      && typeof paths.bundledCredentialsFailureDetailsSafeForLogs === 'object'
+        ? paths.bundledCredentialsFailureDetailsSafeForLogs
+        : {},
   };
 }
 
@@ -343,7 +380,13 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         });
       }
 
-      const { credentialsPath, tokenPath } = resolveRuntimePaths(resolvePaths);
+      const {
+        credentialsPath,
+        tokenPath,
+        bundledCredentialsFailureCode,
+        bundledCredentialsFailureReason,
+        bundledCredentialsFailureDetailsSafeForLogs,
+      } = resolveRuntimePaths(resolvePaths);
       if (!credentialsPath || !tokenPath) {
         log.error('import/extract OCR activation prepare runtime paths unavailable:', {
           stage: 'resolve_paths',
@@ -361,6 +404,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
 
       const readiness = validateStoredCredentialsFile({
         credentialsPath,
+        bundledCredentialsFailureCode,
+        bundledCredentialsFailureReason,
+        bundledCredentialsFailureDetailsSafeForLogs,
         stage: 'credentials_prepare_validate',
       });
       if (!readiness.ok) {
@@ -411,7 +457,13 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         });
       }
 
-      const { credentialsPath, tokenPath } = resolveRuntimePaths(resolvePaths);
+      const {
+        credentialsPath,
+        tokenPath,
+        bundledCredentialsFailureCode,
+        bundledCredentialsFailureReason,
+        bundledCredentialsFailureDetailsSafeForLogs,
+      } = resolveRuntimePaths(resolvePaths);
       if (!credentialsPath || !tokenPath) {
         log.error('import/extract OCR activation launch runtime paths unavailable:', {
           stage: 'resolve_paths',
@@ -430,6 +482,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
 
       const credentialsValidation = validateStoredCredentialsFile({
         credentialsPath,
+        bundledCredentialsFailureCode,
+        bundledCredentialsFailureReason,
+        bundledCredentialsFailureDetailsSafeForLogs,
         stage: 'credentials_launch_validate',
       });
       if (!credentialsValidation.ok) {

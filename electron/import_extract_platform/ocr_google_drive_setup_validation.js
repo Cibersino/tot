@@ -21,6 +21,10 @@ const { google } = require('googleapis');
 const { resolveGoogleDriveOcrAvailability } = require('./ocr_google_drive_activation_state');
 const { readGoogleOAuthCredentialsFile } = require('./ocr_google_drive_credentials_file');
 const {
+  PROVIDER_API_DISABLED_CODE,
+  parseGoogleProviderFailure,
+} = require('./ocr_google_drive_provider_failure');
+const {
   buildGoogleOAuthClient,
   describePersistedGoogleToken,
 } = require('./ocr_google_drive_oauth_client');
@@ -48,11 +52,6 @@ const BILLING_REASON_CODES = new Set([
   'projectBillingNotFound',
 ]);
 
-const SETUP_REASON_CODES = new Set([
-  'accessNotConfigured',
-  'serviceDisabled',
-]);
-
 const INVALID_PERSISTED_TOKEN_CODES = new Set([
   'empty_file',
   'invalid_json',
@@ -69,70 +68,18 @@ const AUTH_REASON_CODES = new Set([
   'unauthorized',
 ]);
 
-const ERROR_SURFACE = {
-  setup_incomplete: {
-    issueType: 'setup',
-    userMessageKey: 'ocr.google_drive.validation.setup_incomplete',
-    userMessageFallback:
-      'Google OCR is unavailable because this app build is missing bundled Google OAuth credentials.',
-    userActionKey: 'ocr.google_drive.validation.check_app_build',
-  },
-  credentials_missing: {
-    issueType: 'credentials',
-    userMessageKey: 'ocr.google_drive.validation.credentials_missing',
-    userMessageFallback:
-      'Google OCR is unavailable because the bundled Google OAuth credentials are missing or invalid in this app instance.',
-    userActionKey: 'ocr.google_drive.validation.check_app_build',
-  },
-  ocr_activation_required: {
-    issueType: 'activation',
-    userMessageKey: 'ocr.google_drive.validation.activation_required',
-    userMessageFallback:
-      'Google OCR is not activated yet. Sign in to continue.',
-    userActionKey: 'ocr.google_drive.validation.sign_in',
-  },
-  ocr_token_state_invalid: {
-    issueType: 'token_state',
-    userMessageKey: 'ocr.google_drive.validation.token_state_invalid',
-    userMessageFallback:
-      'Google OCR saved sign-in state is invalid. Reconnect your Google account.',
-    userActionKey: 'ocr.google_drive.validation.reconnect',
-  },
-  auth_failed: {
-    issueType: 'auth',
-    userMessageKey: 'ocr.google_drive.validation.auth_failed',
-    userMessageFallback:
-      'Google OCR authentication failed. Reconnect your Google account.',
-    userActionKey: 'ocr.google_drive.validation.reconnect',
-  },
-  quota_or_rate_limited: {
-    issueType: 'quota_or_rate',
-    userMessageKey: 'ocr.google_drive.validation.quota_or_rate_limited',
-    userMessageFallback:
-      'Google OCR is temporarily unavailable due to quota/rate limits. Wait and retry.',
-    userActionKey: 'ocr.google_drive.validation.wait_then_retry',
-  },
-  connectivity_failed: {
-    issueType: 'connectivity',
-    userMessageKey: 'ocr.google_drive.validation.connectivity_failed',
-    userMessageFallback:
-      'Google OCR validation failed due to a network/connectivity problem.',
-    userActionKey: 'ocr.google_drive.validation.retry',
-  },
-  platform_runtime_failed: {
-    issueType: 'platform_runtime',
-    userMessageKey: 'ocr.google_drive.validation.platform_runtime_failed',
-    userMessageFallback:
-      'Google OCR validation failed due to a runtime/platform error.',
-    userActionKey: 'ocr.google_drive.validation.retry',
-  },
-  unknown: {
-    issueType: 'unknown',
-    userMessageKey: 'ocr.google_drive.validation.unknown',
-    userMessageFallback: 'Google OCR validation failed due to an unknown error.',
-    userActionKey: 'ocr.google_drive.validation.retry',
-  },
-};
+const ERROR_SURFACE = Object.freeze({
+  credentials_missing: true,
+  credentials_invalid: true,
+  [PROVIDER_API_DISABLED_CODE]: true,
+  ocr_activation_required: true,
+  ocr_token_state_invalid: true,
+  auth_failed: true,
+  quota_or_rate_limited: true,
+  connectivity_failed: true,
+  platform_runtime_failed: true,
+  unknown: true,
+});
 
 // =============================================================================
 // Helpers
@@ -160,55 +107,18 @@ function safeErrorMessage(err) {
   return candidate || '';
 }
 
-function maybeParseGoogleApiError(rawBody) {
-  if (!rawBody) return {};
-
-  if (typeof rawBody === 'string') {
-    if (!hasNonEmptyString(rawBody)) return {};
-    try {
-      return maybeParseGoogleApiError(JSON.parse(rawBody));
-    } catch {
-      return {};
-    }
-  }
-
-  if (typeof rawBody !== 'object') return {};
-
-  const root = rawBody && typeof rawBody.error === 'object' ? rawBody.error : null;
-  if (!root || typeof root !== 'object') return {};
-
-  const nested = Array.isArray(root.errors) && root.errors.length ? root.errors[0] : null;
-  const reasonCode = nested && typeof nested.reason === 'string' ? nested.reason.trim() : '';
-  const message = nested && typeof nested.message === 'string'
-    ? nested.message.trim()
-    : (typeof root.message === 'string' ? root.message.trim() : '');
-
-  return {
-    reasonCode,
-    providerMessage: message,
-    providerStatus: typeof root.status === 'string' ? root.status.trim() : '',
-  };
-}
-
 function parseProbeFailure(err) {
-  const statusCode = Number(
-    err && err.response && err.response.status
-      ? err.response.status
-      : (typeof err.code === 'number' ? err.code : 0)
-  ) || 0;
-
-  const parsed = maybeParseGoogleApiError(err && err.response ? err.response.data : null);
-
-  return {
-    statusCode,
-    reasonCode: String(parsed.reasonCode || ''),
-    providerMessage: String(parsed.providerMessage || safeErrorMessage(err)),
-    providerStatus: String(parsed.providerStatus || ''),
-    networkErrorCode: typeof err.code === 'string' ? err.code.trim() : '',
-  };
+  return parseGoogleProviderFailure(err, safeErrorMessage(err));
 }
 
-function classifyApiFailure({ statusCode, reasonCode, networkErrorCode }) {
+function classifyApiFailure({
+  statusCode,
+  errorsReason,
+  errorInfoReason,
+  normalizedCategory,
+  reasonConflict,
+  networkErrorCode,
+}) {
   if (hasNonEmptyString(networkErrorCode)) {
     return {
       code: 'connectivity_failed',
@@ -216,19 +126,19 @@ function classifyApiFailure({ statusCode, reasonCode, networkErrorCode }) {
     };
   }
 
-  const normalizedReason = String(reasonCode || '').trim();
+  const normalizedReason = String(errorsReason || errorInfoReason || '').trim();
+
+  if (normalizedCategory === PROVIDER_API_DISABLED_CODE) {
+    return {
+      code: PROVIDER_API_DISABLED_CODE,
+      issueSubtype: 'provider_api_disabled',
+    };
+  }
 
   if (statusCode === 429) {
     return {
       code: 'quota_or_rate_limited',
       issueSubtype: 'rate_limit',
-    };
-  }
-
-  if (SETUP_REASON_CODES.has(normalizedReason)) {
-    return {
-      code: 'setup_incomplete',
-      issueSubtype: 'api_not_configured',
     };
   }
 
@@ -260,6 +170,13 @@ function classifyApiFailure({ statusCode, reasonCode, networkErrorCode }) {
     };
   }
 
+  if (reasonConflict) {
+    return {
+      code: 'platform_runtime_failed',
+      issueSubtype: 'provider_reason_conflict',
+    };
+  }
+
   if (statusCode >= 500) {
     return {
       code: 'connectivity_failed',
@@ -281,14 +198,10 @@ function classifyApiFailure({ statusCode, reasonCode, networkErrorCode }) {
 }
 
 function buildErrorSurface(code, detailsSafeForLogs) {
-  const surface = ERROR_SURFACE[code] || ERROR_SURFACE.unknown;
+  const normalizedCode = ERROR_SURFACE[code] ? code : 'unknown';
 
   return {
-    code,
-    issueType: surface.issueType,
-    userMessageKey: surface.userMessageKey,
-    userMessageFallback: surface.userMessageFallback,
-    userActionKey: surface.userActionKey,
+    code: normalizedCode,
     detailsSafeForLogs,
   };
 }
@@ -299,9 +212,7 @@ function buildFailureResult({
   checks,
   detailsSafeForLogs,
 }) {
-  const state = code === 'setup_incomplete'
-    ? 'setup_incomplete'
-    : (code === 'ocr_activation_required' ? 'ocr_activation_required' : 'failure');
+  const state = code === 'ocr_activation_required' ? 'ocr_activation_required' : 'failure';
 
   return {
     ok: false,
@@ -350,9 +261,14 @@ async function probeGoogleDriveApiPath({ oauthClient, timeoutMs = DEFAULT_TIMEOU
     return {
       ok: false,
       statusCode: 400,
-      reasonCode: '',
+      errorsReason: '',
+      errorInfoReason: '',
+      normalizedCategory: '',
+      reasonConflict: false,
       providerMessage: 'OAuth client transporter is unavailable.',
       providerStatus: '',
+      providerService: '',
+      providerConsumer: '',
       networkErrorCode: '',
     };
   }
@@ -391,9 +307,14 @@ async function probeGoogleDriveApiPath({ oauthClient, timeoutMs = DEFAULT_TIMEOU
     return {
       ok: true,
       statusCode,
-      reasonCode: '',
+      errorsReason: '',
+      errorInfoReason: '',
+      normalizedCategory: '',
+      reasonConflict: false,
       providerMessage: '',
       providerStatus: '',
+      providerService: '',
+      providerConsumer: '',
       networkErrorCode: '',
     };
   } catch (err) {
@@ -401,9 +322,14 @@ async function probeGoogleDriveApiPath({ oauthClient, timeoutMs = DEFAULT_TIMEOU
       return {
         ok: false,
         statusCode: 0,
-        reasonCode: '',
+        errorsReason: '',
+        errorInfoReason: '',
+        normalizedCategory: '',
+        reasonConflict: false,
         providerMessage: 'request_timeout',
         providerStatus: '',
+        providerService: '',
+        providerConsumer: '',
         networkErrorCode: 'request_timeout',
       };
     }
@@ -412,9 +338,14 @@ async function probeGoogleDriveApiPath({ oauthClient, timeoutMs = DEFAULT_TIMEOU
     return {
       ok: false,
       statusCode: parsedFailure.statusCode,
-      reasonCode: parsedFailure.reasonCode,
+      errorsReason: String(parsedFailure.errorsReason || ''),
+      errorInfoReason: String(parsedFailure.errorInfoReason || ''),
+      normalizedCategory: String(parsedFailure.normalizedCategory || ''),
+      reasonConflict: !!parsedFailure.reasonConflict,
       providerMessage: parsedFailure.providerMessage,
       providerStatus: parsedFailure.providerStatus,
+      providerService: String(parsedFailure.providerService || ''),
+      providerConsumer: String(parsedFailure.providerConsumer || ''),
       networkErrorCode: parsedFailure.networkErrorCode,
     };
   } finally {
@@ -432,6 +363,9 @@ async function probeGoogleDriveApiPath({ oauthClient, timeoutMs = DEFAULT_TIMEOU
 async function validateGoogleDriveOcrSetup({
   credentialsPath,
   tokenPath,
+  bundledCredentialsFailureCode = '',
+  bundledCredentialsFailureReason = '',
+  bundledCredentialsFailureDetailsSafeForLogs = {},
   probeApiPath = true,
   timeoutMs = DEFAULT_TIMEOUT_MS,
   apiProbe = probeGoogleDriveApiPath,
@@ -455,9 +389,21 @@ async function validateGoogleDriveOcrSetup({
     apiIssueSubtype: '',
   };
 
+  if (bundledCredentialsFailureCode) {
+    return buildFailureResult({
+      code: bundledCredentialsFailureCode,
+      summary: 'Google OCR setup validation blocked because bundled credentials are unavailable.',
+      checks,
+      detailsSafeForLogs: {
+        reason: bundledCredentialsFailureReason || 'bundled_credentials_unavailable',
+        ...bundledCredentialsFailureDetailsSafeForLogs,
+      },
+    });
+  }
+
   if (!availability.available) {
     return buildFailureResult({
-      code: availability.errorCode || 'setup_incomplete',
+      code: availability.errorCode || 'credentials_missing',
       summary: 'Google OCR setup validation blocked before API probe.',
       checks,
       detailsSafeForLogs: {
@@ -468,8 +414,11 @@ async function validateGoogleDriveOcrSetup({
 
   const credentialsRead = readGoogleOAuthCredentialsFile(credentialsPath);
   if (!credentialsRead.ok) {
+    const credentialsCode = credentialsRead.code === 'missing_file'
+      ? 'credentials_missing'
+      : 'credentials_invalid';
     return buildFailureResult({
-      code: 'credentials_missing',
+      code: credentialsCode,
       summary: 'Google OCR credentials are missing or invalid.',
       checks,
       detailsSafeForLogs: {
@@ -576,7 +525,9 @@ async function validateGoogleDriveOcrSetup({
   checks.apiStatusCode = Number.isFinite(probeResult && probeResult.statusCode)
     ? Number(probeResult.statusCode)
     : null;
-  checks.apiReasonCode = String((probeResult && probeResult.reasonCode) || '');
+  checks.apiReasonCode = String(
+    (probeResult && (probeResult.errorsReason || probeResult.errorInfoReason)) || ''
+  );
 
   if (probeResult && probeResult.ok) {
     checks.apiReachable = true;
@@ -591,7 +542,10 @@ async function validateGoogleDriveOcrSetup({
 
   const classification = classifyApiFailure({
     statusCode: checks.apiStatusCode || 0,
-    reasonCode: checks.apiReasonCode,
+    errorsReason: String((probeResult && probeResult.errorsReason) || ''),
+    errorInfoReason: String((probeResult && probeResult.errorInfoReason) || ''),
+    normalizedCategory: String((probeResult && probeResult.normalizedCategory) || ''),
+    reasonConflict: !!(probeResult && probeResult.reasonConflict),
     networkErrorCode: String((probeResult && probeResult.networkErrorCode) || ''),
   });
   checks.apiIssueSubtype = classification.issueSubtype;
@@ -603,8 +557,13 @@ async function validateGoogleDriveOcrSetup({
     detailsSafeForLogs: {
       statusCode: checks.apiStatusCode,
       reasonCode: checks.apiReasonCode,
+      errorsReason: String((probeResult && probeResult.errorsReason) || ''),
+      errorInfoReason: String((probeResult && probeResult.errorInfoReason) || ''),
       issueSubtype: classification.issueSubtype,
       providerStatus: String((probeResult && probeResult.providerStatus) || ''),
+      providerService: String((probeResult && probeResult.providerService) || ''),
+      providerConsumer: String((probeResult && probeResult.providerConsumer) || ''),
+      reasonConflict: !!(probeResult && probeResult.reasonConflict),
       networkErrorCode: String((probeResult && probeResult.networkErrorCode) || ''),
       providerMessagePresent: hasNonEmptyString(probeResult && probeResult.providerMessage),
     },

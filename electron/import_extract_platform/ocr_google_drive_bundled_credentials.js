@@ -83,6 +83,7 @@ function materializeBundledCredentials({
       copied: false,
       repairedRuntimeMirror: false,
       reason: 'runtime_ready',
+      errorCode: '',
     };
   }
 
@@ -108,6 +109,9 @@ function materializeBundledCredentials({
       copied: false,
       repairedRuntimeMirror,
       reason: 'bundled_credentials_unavailable',
+      errorCode: bundledValidation.code === 'missing_file'
+        ? 'credentials_missing'
+        : 'credentials_invalid',
       detailsSafeForLogs,
     };
   }
@@ -128,6 +132,7 @@ function materializeBundledCredentials({
       copied: true,
       repairedRuntimeMirror,
       reason: repairedRuntimeMirror ? 'runtime_repaired_from_bundle' : 'runtime_created_from_bundle',
+      errorCode: '',
     };
   } catch (err) {
     const detailsSafeForLogs = {
@@ -143,6 +148,7 @@ function materializeBundledCredentials({
       copied: false,
       repairedRuntimeMirror,
       reason: 'runtime_materialization_failed',
+      errorCode: 'platform_runtime_failed',
       detailsSafeForLogs,
     };
   }
