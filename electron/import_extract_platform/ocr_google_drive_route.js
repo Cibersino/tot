@@ -30,6 +30,7 @@ const {
   buildGoogleOAuthClient,
   describePersistedGoogleToken,
 } = require('./ocr_google_drive_oauth_client');
+const { getOcrSourceMimeTypeForExt } = require('./import_extract_supported_formats');
 
 // =============================================================================
 // Constants / config
@@ -72,15 +73,6 @@ const INVALID_PERSISTED_TOKEN_CODES = new Set([
   'invalid_token_payload',
 ]);
 
-const SOURCE_MIME_BY_EXT = Object.freeze({
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.bmp': 'image/bmp',
-  '.pdf': 'application/pdf',
-});
-
 const MAX_RATE_LIMIT_ATTEMPTS = 3;
 const BASE_RETRY_DELAY_MS = 300;
 const MAX_RETRY_DELAY_MS = 1500;
@@ -100,7 +92,7 @@ function toSafeErrorName(err) {
 function getFileInfo(filePath) {
   const absoluteFilePath = path.resolve(String(filePath || ''));
   const extWithDot = path.extname(absoluteFilePath).toLowerCase();
-  const sourceMimeType = SOURCE_MIME_BY_EXT[extWithDot] || '';
+  const sourceMimeType = getOcrSourceMimeTypeForExt(extWithDot);
   const sourceFileKind = extWithDot === '.pdf'
     ? 'pdf'
     : (sourceMimeType.startsWith('image/') ? 'image' : 'unknown');
