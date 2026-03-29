@@ -25,10 +25,11 @@
   // =============================================================================
   let deps = null;
 
-  function configure(nextDeps = {}) {
+  function configure({
+    getOptionalElectronMethod = null,
+  } = {}) {
     deps = {
-      getOptionalElectronMethod: null,
-      ...nextDeps,
+      getOptionalElectronMethod,
     };
   }
 
