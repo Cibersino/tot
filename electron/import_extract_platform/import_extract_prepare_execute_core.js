@@ -24,12 +24,10 @@ const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_valida
 const { runGoogleDriveOcrRoute } = require('./ocr_google_drive_route');
 const { runNativeExtractionRoute } = require('./native_extraction_route');
 const { probeNativePdfSelectableText } = require('./native_pdf_selectable_text_probe');
-
-// =============================================================================
-// Constants / config
-// =============================================================================
-
-const OCR_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'bmp']);
+const {
+  getNativeParserForExt,
+  getOcrSourceMimeTypeForExt,
+} = require('./import_extract_supported_formats');
 
 // =============================================================================
 // Boundary normalization + shared metadata helpers
@@ -62,9 +60,10 @@ function getFileInfo(filePath) {
   const fileName = path.basename(resolvedPath);
   const extWithDot = path.extname(resolvedPath).toLowerCase();
   const sourceFileExt = extWithDot.startsWith('.') ? extWithDot.slice(1) : extWithDot;
+  const sourceMimeType = getOcrSourceMimeTypeForExt(extWithDot);
   const sourceFileKind = sourceFileExt === 'pdf'
     ? 'pdf'
-    : (OCR_IMAGE_EXTENSIONS.has(sourceFileExt) ? 'image' : 'text_document');
+    : (sourceMimeType.startsWith('image/') ? 'image' : 'text_document');
 
   return {
     filePath: normalizedPath,
@@ -276,6 +275,32 @@ function buildNativePrepareFailure({
     primaryAlertKey,
     warningAlertKeys: [],
     error: probeResult && probeResult.error ? probeResult.error : null,
+  });
+}
+
+function buildUnsupportedFormatPrepareFailure(fileInfo) {
+  return buildPrepareFailure({
+    routeKind: null,
+    routeMetadata: buildRouteMetadata({
+      fileInfo,
+      availableRoutes: [],
+      chosenRoute: null,
+      pdfTriage: 'not_pdf',
+      triageReason: 'unsupported_format',
+      ocrSetupState: 'not_checked',
+    }),
+    primaryAlertKey: 'renderer.alerts.import_extract_native_unsupported_format',
+    warningAlertKeys: [],
+    error: {
+      code: 'unsupported_format',
+      message: 'Selected file format is not supported by import/extract.',
+      detailsSafeForLogs: {
+        stage: 'prepare',
+        reason: 'unsupported_extension',
+        sourceFileExt: fileInfo.sourceFileExt,
+        sourceFileKind: fileInfo.sourceFileKind,
+      },
+    },
   });
 }
 
@@ -497,6 +522,10 @@ async function prepareSelectedFile({
       resolvePaths,
       log,
     });
+  }
+
+  if (!getNativeParserForExt(fileInfo.sourceFileExt)) {
+    return buildUnsupportedFormatPrepareFailure(fileInfo);
   }
 
   return resolveNonPdfNativePreparation(fileInfo, ocrLanguage);
