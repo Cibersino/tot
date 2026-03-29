@@ -96,7 +96,6 @@
       "columns": {
         "texto": "Texto",
         "tiempo": "Tempo",
-        "tempo": "Tempo",
         "percent": "%",
         "falta": "F",
         "tipo": "Tipo",
@@ -279,7 +278,7 @@
         "import_extract_ocr_connectivity_failed": "O OCR exige conexão com a internet. Verifique sua conexão e tente novamente.",
         "import_extract_ocr_setup_missing_credentials": "Falta credentials.json na configuração do OCR. Selecione um arquivo válido de credenciais do Google OAuth e tente novamente.",
         "import_extract_ocr_setup_invalid_credentials": "O arquivo de credenciais selecionado é inválido para o Google OAuth. Escolha um credentials.json válido e tente novamente.",
-        "import_extract_ocr_setup_cancelled": "A configuração do OCR foi cancelada antes da seleção de credentials.json.",
+        "import_extract_ocr_token_state_invalid": "O estado salvo de acesso do Google OCR é inválido. Reconecte o Google OCR e tente novamente.",
         "import_extract_ocr_restricted": "A rota OCR é restrita para este tipo de arquivo.",
         "import_extract_ocr_quota_or_rate_limited": "O OCR está temporariamente bloqueado por limites de cota/taxa. Aguarde e tente novamente.",
         "import_extract_ocr_runtime_error": "Ocorreu um erro de execução do OCR durante a importação/extração. Verifique o console e tente novamente.",

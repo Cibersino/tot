@@ -278,7 +278,7 @@
         "import_extract_ocr_connectivity_failed": "L'OCR nécessite une connexion Internet. Vérifiez votre connexion et réessayez.",
         "import_extract_ocr_setup_missing_credentials": "La configuration OCR ne contient pas credentials.json. Sélectionnez un fichier d'identifiants Google OAuth valide et réessayez.",
         "import_extract_ocr_setup_invalid_credentials": "Le fichier d'identifiants sélectionné n'est pas valide pour Google OAuth. Choisissez un credentials.json valide et réessayez.",
-        "import_extract_ocr_setup_cancelled": "La configuration OCR a été annulée avant la sélection de credentials.json.",
+        "import_extract_ocr_token_state_invalid": "L'état de connexion Google OCR enregistré est invalide. Reconnectez Google OCR et réessayez.",
         "import_extract_ocr_restricted": "La route OCR est limitée pour ce type de fichier.",
         "import_extract_ocr_quota_or_rate_limited": "L'OCR est temporairement bloqué par des limites de quota/de débit. Attendez puis réessayez.",
         "import_extract_ocr_runtime_error": "Une erreur d'exécution OCR s'est produite pendant l'importation/extraction. Vérifiez la console et réessayez.",
