@@ -173,7 +173,7 @@ function resolveGoogleDriveOcrRuntimePaths() {
   const tokenPath = getOcrGoogleDriveTokenFile();
   const bundledCredentialsPath = getBundledOcrGoogleDriveCredentialsFile();
 
-  materializeBundledCredentials({
+  const bundledCredentialsBootstrap = materializeBundledCredentials({
     runtimeCredentialsPath: credentialsPath,
     bundledCredentialsPath,
   });
@@ -181,6 +181,19 @@ function resolveGoogleDriveOcrRuntimePaths() {
   return {
     credentialsPath,
     tokenPath,
+    bundledCredentialsFailureCode: bundledCredentialsBootstrap && bundledCredentialsBootstrap.ok !== true
+      ? String(bundledCredentialsBootstrap.errorCode || '')
+      : '',
+    bundledCredentialsFailureReason: bundledCredentialsBootstrap && bundledCredentialsBootstrap.ok !== true
+      ? String(bundledCredentialsBootstrap.reason || '')
+      : '',
+    bundledCredentialsFailureDetailsSafeForLogs:
+      bundledCredentialsBootstrap
+      && bundledCredentialsBootstrap.ok !== true
+      && bundledCredentialsBootstrap.detailsSafeForLogs
+      && typeof bundledCredentialsBootstrap.detailsSafeForLogs === 'object'
+        ? bundledCredentialsBootstrap.detailsSafeForLogs
+        : {},
   };
 }
 

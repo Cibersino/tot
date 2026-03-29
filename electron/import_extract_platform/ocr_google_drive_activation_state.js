@@ -36,7 +36,7 @@ function resolveGoogleDriveOcrAvailability({ credentialsPath, tokenPath } = {}) 
   if (!credentialsPresent) {
     return {
       available: false,
-      errorCode: 'setup_incomplete',
+      errorCode: 'credentials_missing',
       reason: 'credentials_missing',
       checks: { credentialsPresent, tokenPresent },
     };

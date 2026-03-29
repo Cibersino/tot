@@ -40,6 +40,7 @@ Type:
 
 Files:
 
+- [`electron/import_extract_platform/ocr_google_drive_provider_failure.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_provider_failure.js)
 - [`electron/import_extract_platform/ocr_google_drive_activation_state.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_activation_state.js)
 - [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js)
 - [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js)
@@ -92,6 +93,124 @@ Follow the log policy of the `log.js` files.
 The final fix must not leave dead code or unused contract/UI surface behind.
 
 Any deviation from the plan must be recorded and explained.
+
+Proposed plan:
+
+**Contract Shape**
+- Retire `setup_incomplete` as a live detailed code everywhere in problem-1 paths.
+- Split failures into:
+  - `credentials_missing`
+  - `credentials_invalid`
+  - `provider_api_disabled`
+- Keep these existing real/operative codes unchanged:
+  - `ocr_activation_required`
+  - `ocr_token_state_invalid`
+  - `auth_failed`
+  - `connectivity_failed`
+  - `quota_or_rate_limited`
+- Do not keep `setup_incomplete` as a fallback state bucket.
+
+**Provider Boundary**
+- One shared parser/classifier for setup validation and execute.
+- It must read both documented Google shapes:
+  - `error.errors[].reason`
+  - `error.details[]` `google.rpc.ErrorInfo.reason`
+- Use neutral names:
+  - `errorsReason`
+  - `errorInfoReason`
+- It must recognize:
+  - `accessNotConfigured`
+  - `API_DISABLED`
+  - `SERVICE_DISABLED`
+- Do not include `serviceDisabled` without captured evidence.
+- If both `errorsReason` and `errorInfoReason` are present:
+  - if structured `errorInfoReason` is a recognized provider-disabled signal, prefer that classification
+  - otherwise, if legacy `errorsReason` is recognized and structured is empty or unrecognized, use the legacy classification
+  - preserve both raw fields for diagnostics and log the mismatch once
+  - fall back to a generic provider/runtime failure only when neither side yields a recognized actionable category
+
+**Implementation**
+1. [ocr_google_drive_provider_failure.js](/c:/Users/manue/Documents/toT/tot/electron/import_extract_platform/ocr_google_drive_provider_failure.js)
+- own the shared parser/classifier for `errorsReason` + `errorInfoReason`
+- recognize documented provider-disabled signals and expose one normalized provider-disabled category without opening extra dead surface
+
+2. [ocr_google_drive_activation_state.js](/c:/Users/manue/Documents/toT/tot/electron/import_extract_platform/ocr_google_drive_activation_state.js)
+- missing credentials -> `credentials_missing`
+
+3. [import_extract_ocr_activation_ipc.js](/c:/Users/manue/Documents/toT/tot/electron/import_extract_platform/import_extract_ocr_activation_ipc.js)
+- `missing_file` -> `credentials_missing`
+- invalid/read/shape failures -> `credentials_invalid`
+- alert mapping:
+  - `credentials_missing` -> missing alert
+  - `credentials_invalid` -> invalid alert
+  - `provider_api_disabled` -> generic OCR unavailable
+- remove `setup_incomplete`
+
+4. [ocr_google_drive_setup_validation.js](/c:/Users/manue/Documents/toT/tot/electron/import_extract_platform/ocr_google_drive_setup_validation.js)
+- use the shared provider parser
+- provider-disabled probe result -> `provider_api_disabled`
+- conflicting provider signals must not discard a recognized actionable provider-disabled classification
+- local credentials failures -> `credentials_missing` / `credentials_invalid`
+- remove `ERROR_SURFACE.setup_incomplete`
+- add explicit `ERROR_SURFACE` entries for:
+  - `credentials_invalid`
+  - `provider_api_disabled`
+- ensure no emitted code falls through to `unknown`
+- remove `state: 'setup_incomplete'`
+- remove dead validator-facing message/action/fallback surface if there is no live consumer
+
+5. [ocr_google_drive_route.js](/c:/Users/manue/Documents/toT/tot/electron/import_extract_platform/ocr_google_drive_route.js)
+- use the shared provider parser
+- provider-disabled execute failures -> `provider_api_disabled`
+- conflicting provider signals must not discard a recognized actionable provider-disabled classification
+- local credentials preflight failure -> `credentials_missing` / `credentials_invalid`
+- use the shared credentials reader so local mapping matches setup/activation
+
+6. [import_extract_prepare_execute_core.js](/c:/Users/manue/Documents/toT/tot/electron/import_extract_platform/import_extract_prepare_execute_core.js)
+- remove `setup_incomplete` handling
+- map:
+  - `credentials_missing` -> missing alert
+  - `credentials_invalid` -> invalid alert
+  - `provider_api_disabled` -> generic OCR unavailable
+- leave:
+  - `auth_failed`
+  - `connectivity_failed`
+  - `quota_or_rate_limited`
+  as they are
+
+7. [import_extract_ocr_activation_recovery.js](/c:/Users/manue/Documents/toT/tot/public/js/import_extract_ocr_activation_recovery.js)
+- stop using `setup_incomplete`
+- recoverable set:
+  - `ocr_activation_required`
+  - `ocr_token_state_invalid`
+  - `auth_failed`
+- do not treat local credentials failures or provider-disabled failures as recoverable activation flows
+
+**Closure Requirements**
+- No new renderer alert keys.
+- Reuse existing:
+  - missing credentials
+  - invalid credentials
+  - generic OCR unavailable
+- Do not leave dead validator-facing `userMessageKey`, `userActionKey`, `userMessageFallback`, or `issueType` surface behind when the live flow routes by `error.code`.
+- No emitted validator code may degrade to `unknown`.
+
+**Verification**
+- shared provider parser tests:
+  - `accessNotConfigured`
+  - `API_DISABLED`
+  - `SERVICE_DISABLED`
+  - matching `errorsReason` + `errorInfoReason`
+  - `errorsReason=rateLimitExceeded`, `errorInfoReason=API_DISABLED`
+  - `errorsReason=unknown_legacy_reason`, `errorInfoReason=SERVICE_DISABLED`
+  - `errorsReason=accessNotConfigured`, `errorInfoReason=API_DISABLED`
+- validator-surface test:
+  every emitted validation code has an explicit `ERROR_SURFACE`
+- mapping checks:
+  - local invalid -> invalid alert
+  - provider disabled -> generic OCR unavailable
+  - recognized provider-disabled signals do not degrade to `platform_runtime_failed` only because both raw fields are present
+- grep confirms no live `setup_incomplete` branches remain in problem-1 paths
 
 ### 2. Google OAuth credentials validation is duplicated with different acceptance rules
 
