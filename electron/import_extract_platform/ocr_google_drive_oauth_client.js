@@ -6,15 +6,14 @@
 // =============================================================================
 // Shared Google OAuth helpers for OCR activation/runtime/disconnect flows.
 // Responsibilities:
-// - Read and parse Google OAuth credentials JSON from disk.
 // - Build a configured OAuth2 client from credentials + stored token payload.
+// - Build a token-only OAuth2 client for explicit disconnect-time revocation.
 // - Select the preferred token to revoke for explicit disconnect flows.
 
 // =============================================================================
 // Imports
 // =============================================================================
 
-const fs = require('fs');
 const { google } = require('googleapis');
 
 // =============================================================================
@@ -34,15 +33,6 @@ function resolveCanonicalRedirectUri(redirectUris) {
   }
 
   return '';
-}
-
-function readGoogleCredentialsFile(credentialsPath) {
-  if (!hasNonEmptyString(credentialsPath)) {
-    throw new Error('Google credentials path is invalid.');
-  }
-
-  const raw = fs.readFileSync(String(credentialsPath), 'utf8').replace(/^\uFEFF/, '');
-  return JSON.parse(raw);
 }
 
 function describePersistedGoogleToken(tokenPayload) {
@@ -80,6 +70,12 @@ function buildGoogleOAuthClient(credentialsJson, tokenJson) {
   return oauthClient;
 }
 
+function buildGoogleTokenRevocationClient(tokenJson) {
+  const oauthClient = new google.auth.OAuth2();
+  oauthClient.setCredentials(tokenJson && typeof tokenJson === 'object' ? tokenJson : {});
+  return oauthClient;
+}
+
 function selectPreferredRevocationToken(tokenPayload) {
   const payload = tokenPayload && typeof tokenPayload === 'object' ? tokenPayload : {};
   const tokenState = describePersistedGoogleToken(payload);
@@ -111,8 +107,8 @@ function selectPreferredRevocationToken(tokenPayload) {
 
 module.exports = {
   describePersistedGoogleToken,
-  readGoogleCredentialsFile,
   buildGoogleOAuthClient,
+  buildGoogleTokenRevocationClient,
   selectPreferredRevocationToken,
 };
 

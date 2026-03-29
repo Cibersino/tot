@@ -16,7 +16,6 @@
 // =============================================================================
 
 const { BrowserWindow, dialog } = require('electron');
-const { google } = require('googleapis');
 const Log = require('../log');
 const { DEFAULT_LANG } = require('../constants_main');
 const settingsState = require('../settings');
@@ -26,8 +25,7 @@ const {
   deleteEncryptedTokenFile,
 } = require('./ocr_google_drive_token_storage');
 const {
-  readGoogleCredentialsFile,
-  buildGoogleOAuthClient,
+  buildGoogleTokenRevocationClient,
   selectPreferredRevocationToken,
 } = require('./ocr_google_drive_oauth_client');
 
@@ -154,25 +152,11 @@ async function confirmDisconnect(mainWin) {
   return !!(result && result.response === 0);
 }
 
-function buildRevocationClient({ credentialsPath, tokenJson }) {
-  try {
-    const credentialsJson = readGoogleCredentialsFile(credentialsPath);
-    return buildGoogleOAuthClient(credentialsJson, tokenJson);
-  } catch (err) {
-    log.warn(
-      'Falling back to generic OAuth client for OCR token revocation:',
-      {
-        errorName: safeErrorName(err),
-        errorMessage: safeErrorMessage(err),
-      }
-    );
-    const oauthClient = new google.auth.OAuth2();
-    oauthClient.setCredentials(tokenJson && typeof tokenJson === 'object' ? tokenJson : {});
-    return oauthClient;
-  }
+function buildRevocationClient(tokenJson) {
+  return buildGoogleTokenRevocationClient(tokenJson);
 }
 
-async function revokeStoredToken({ credentialsPath, tokenJson }) {
+async function revokeStoredToken({ tokenJson }) {
   const selected = selectPreferredRevocationToken(tokenJson);
   if (!selected.token) {
     const err = new Error('No revocable Google OCR token is available.');
@@ -180,7 +164,7 @@ async function revokeStoredToken({ credentialsPath, tokenJson }) {
     throw err;
   }
 
-  const oauthClient = buildRevocationClient({ credentialsPath, tokenJson });
+  const oauthClient = buildRevocationClient(tokenJson);
   await oauthClient.revokeToken(selected.token);
   return {
     revokedTokenKind: selected.kind,
@@ -222,7 +206,6 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       }
 
       const paths = resolvePaths();
-      const credentialsPath = String(paths && paths.credentialsPath ? paths.credentialsPath : '');
       const tokenPath = String(paths && paths.tokenPath ? paths.tokenPath : '');
       if (!tokenPath) {
         log.error('import/extract OCR disconnect runtime paths unavailable:', {
@@ -298,7 +281,6 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       let revocation = null;
       try {
         revocation = await revokeStoredToken({
-          credentialsPath,
           tokenJson,
         });
       } catch (err) {
