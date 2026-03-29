@@ -5,7 +5,8 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Recover import/extract OCR flow when setup/activation blocks prepare-stage routing.
+// - Recover import/extract OCR flow when setup/activation blocks prepare-stage OCR routing
+//   or a user-selected OCR route.
 // - Prepare credentials readiness, show disclosure consent, and then launch OCR activation.
 // - Retry preparation after successful OCR activation without bloating renderer orchestration.
 // =============================================================================
@@ -35,6 +36,41 @@
     return code === 'ocr_activation_required'
       || code === 'ocr_token_state_invalid'
       || code === 'auth_failed';
+  }
+
+  function resolveRecoveryCode({ preparation, routePreference } = {}) {
+    if (!preparation || preparation.ok !== true) return '';
+
+    if (preparation.prepareFailed === true) {
+      if (preparation.routeKind !== 'ocr') return '';
+      return preparation.error && typeof preparation.error.code === 'string'
+        ? preparation.error.code
+        : '';
+    }
+
+    if (routePreference !== 'ocr') return '';
+
+    const routeMetadata = preparation.routeMetadata && typeof preparation.routeMetadata === 'object'
+      ? preparation.routeMetadata
+      : null;
+    if (!routeMetadata) return '';
+
+    const availableRoutes = Array.isArray(routeMetadata.availableRoutes)
+      ? routeMetadata.availableRoutes
+      : [];
+    if (!availableRoutes.includes('ocr')) return '';
+
+    const setupState = typeof routeMetadata.ocrSetupState === 'string'
+      ? routeMetadata.ocrSetupState
+      : '';
+    if (setupState === 'ready') return '';
+
+    const setupCode = typeof routeMetadata.ocrSetupCode === 'string'
+      ? routeMetadata.ocrSetupCode.trim()
+      : '';
+    if (setupCode) return setupCode;
+    if (setupState === 'ocr_activation_required') return 'ocr_activation_required';
+    return '';
   }
 
   function safeNotify(notifyMain, alertKey) {
@@ -72,11 +108,9 @@
     retryPrepare,
     getOptionalElectronMethod,
     notifyMain,
+    routePreference = '',
   } = {}) {
-    if (!preparation || preparation.ok !== true || preparation.prepareFailed !== true) {
-      return { preparation, handled: false };
-    }
-    if (preparation.routeKind !== 'ocr') {
+    if (!preparation || preparation.ok !== true) {
       return { preparation, handled: false };
     }
     if (typeof retryPrepare !== 'function') {
@@ -86,10 +120,7 @@
       return { preparation, handled: false };
     }
 
-    const failureCode = preparation.error
-      && typeof preparation.error.code === 'string'
-      ? preparation.error.code
-      : '';
+    const failureCode = resolveRecoveryCode({ preparation, routePreference });
     if (!isRecoverableImportExtractOcrSetupCode(failureCode)) {
       return { preparation, handled: false };
     }
