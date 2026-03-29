@@ -75,10 +75,10 @@
     try {
       const result = await api.openAppDoc('privacy-policy');
       if (!result || result.ok !== true) {
-        log.warn('OCR activation disclosure privacy doc blocked or failed:', result);
+        log.warn('openAppDoc("privacy-policy") failed (ignored):', result);
       }
     } catch (err) {
-      log.warn('OCR activation disclosure privacy doc request failed:', err);
+      log.warn('openAppDoc("privacy-policy") request failed (ignored):', err);
     }
   }
 
