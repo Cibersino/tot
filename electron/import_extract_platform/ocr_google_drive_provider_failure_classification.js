@@ -1,7 +1,24 @@
 // electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Shared Google provider-failure classification helpers.
+// Responsibilities:
+// - Map parsed provider failure signals into app-owned common failure codes.
+// - Keep quota, billing, auth, and provider-disabled reason sets centralized.
+// - Expose a small retryability helper derived from the common classifier.
+
+// =============================================================================
+// Imports
+// =============================================================================
+
 const { PROVIDER_API_DISABLED_CODE } = require('./ocr_google_drive_provider_failure');
+
+// =============================================================================
+// Constants
+// =============================================================================
 
 const QUOTA_REASON_CODES = new Set([
   'dailyLimitExceeded',
@@ -24,6 +41,10 @@ const AUTH_REASON_CODES = new Set([
   'invalidCredentials',
   'unauthorized',
 ]);
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
@@ -129,7 +150,15 @@ function isRetryableGoogleProviderRateLimit(parsedFailure = {}) {
   return classifyCommonGoogleProviderFailure(parsedFailure).code === 'quota_or_rate_limited';
 }
 
+// =============================================================================
+// Exports
+// =============================================================================
+
 module.exports = {
   classifyCommonGoogleProviderFailure,
   isRetryableGoogleProviderRateLimit,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js
+// =============================================================================
