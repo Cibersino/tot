@@ -1751,14 +1751,6 @@ async function maybeRecoverImportExtractOcrSetupAndRetry({
     return { preparation, handled: false };
   }
 
-  if (!window.Notify || typeof window.Notify.notifyMain !== 'function') {
-    log.warnOnce(
-      'renderer.importExtract.notify.unavailable',
-      'Notify.notifyMain unavailable; OCR setup auto-recovery notifications disabled.'
-    );
-    return { preparation, handled: false };
-  }
-
   try {
     return await recoveryApi.recoverAfterSetupFailure({
       preparation,
@@ -1769,7 +1761,6 @@ async function maybeRecoverImportExtractOcrSetupAndRetry({
         });
       },
       getOptionalElectronMethod,
-      notifyMain: window.Notify.notifyMain.bind(window.Notify),
       routePreference,
     });
   } catch (err) {
