@@ -119,3 +119,35 @@ The important constraint is this:
 - This issue is about prepare/recovery contract behavior, not about forcing OCR by default.
 - The problem is narrower than "route choice modal broken"; current code is doing exactly what it encodes.
 - The problem is that the encoded `native_only` branch suppresses OCR activation reachability for one class of PDFs.
+
+## Proposal
+
+Selectable-text PDF triage should not remove the OCR route merely because OCR setup is not currently ready. Native text detection and OCR setup validation should both remain part of prepare, but when native selectable text is detected, prepare should preserve both routes.
+
+### Producer contract
+
+- [`electron/import_extract_platform/import_extract_prepare_execute_core.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_prepare_execute_core.js) should stop collapsing `nativeAvailable && !ocrReady` to `native_only`.
+- `resolvePdfPreparation(...)` should return a dual-route prepare surface whenever native selectable text is detected, regardless of current OCR readiness:
+  - `pdfTriage = 'both'`
+  - `availableRoutes = ['native', 'ocr']`
+  - `chosenRoute = null`
+  - `requiresRouteChoice = true`
+  - `routeChoiceOptions = ['native', 'ocr']`
+- OCR setup validation should still run during prepare.
+- Prepare-time route metadata should retain the OCR setup outcome even when prepare succeeds. The renderer needs enough information to distinguish at least:
+  - OCR is ready and can execute immediately
+  - OCR is not ready and activation/recovery should be attempted first
+  - OCR is selectable but may still fail explicitly if executed
+- Successful dual-route prepare results do not require new OCR failure codes or new OCR failure detail structures. They only need to retain enough of the existing OCR setup outcome for the renderer to decide whether selecting OCR should attempt recovery first. At minimum, that can be the existing OCR setup state if the renderer only needs to distinguish ready from not-ready. If more is needed, it should reuse the existing setup-validation error code rather than inventing new codes or new detail payloads.
+- Native execution must remain immediately available from the same prepare result.
+
+### Renderer contract
+
+- [`public/js/import_extract_entry.js`](c:\Users\manue\Documents\toT\tot\public\js\import_extract_entry.js) should still prompt for route choice whenever a selectable-text PDF advertises both routes.
+- [`public/js/import_extract_route_choice_modal.js`](c:\Users\manue\Documents\toT\tot\public\js\import_extract_route_choice_modal.js) should keep its current title, message, and button wording. This issue does not change the route-choice modal copy.
+- Recovery should not run automatically during prepare for selectable-text PDFs. Recovery should run only after the user explicitly selects the `ocr` route.
+- If the user selects `native`, the flow should execute native directly.
+- If the user selects `ocr` and the retained OCR setup metadata indicates that OCR is not ready, the flow should invoke the existing OCR activation recovery helper before execute.
+- If activation succeeds, the flow should rerun prepare for the same file and OCR language, obtain a fresh prepare result and fresh `prepareId`, and then continue with OCR. This second prepare pass is required because activation changes the OCR setup state and the earlier prepare result was computed before that change.
+- If activation is declined or activation fails, the flow should stop in a bounded state and should not silently fall back to native.
+- If the user selects `ocr` and OCR still cannot run, the flow should surface the OCR-side failure explicitly. Silent substitution of the selected OCR route with native execution is not acceptable.

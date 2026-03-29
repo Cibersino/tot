@@ -102,6 +102,14 @@ function resolveSetupState(validationResult) {
   return 'failure';
 }
 
+function resolveSetupCode(validationResult) {
+  return validationResult
+    && validationResult.error
+    && typeof validationResult.error.code === 'string'
+    ? validationResult.error.code
+    : '';
+}
+
 // =============================================================================
 // Prepare/build helpers
 // =============================================================================
@@ -157,6 +165,7 @@ function buildRouteMetadata({
   pdfTriage = 'not_pdf',
   triageReason = '',
   ocrSetupState = 'not_checked',
+  ocrSetupCode = '',
   nativeProbeCode = '',
   nativeProbeErrorName = '',
   nativeProbeErrorCode = '',
@@ -171,6 +180,7 @@ function buildRouteMetadata({
     pdfTriage,
     triageReason,
     ocrSetupState,
+    ocrSetupCode,
     nativeProbeCode,
     nativeProbeErrorName,
     nativeProbeErrorCode,
@@ -208,9 +218,7 @@ function buildOcrPrepareFailure({
   chosenRoute = 'ocr',
 }) {
   const state = resolveSetupState(validationResult);
-  const code = validationResult && validationResult.error && typeof validationResult.error.code === 'string'
-    ? validationResult.error.code
-    : 'platform_runtime_failed';
+  const code = resolveSetupCode(validationResult) || 'platform_runtime_failed';
 
   let primaryAlertKey = 'renderer.alerts.import_extract_ocr_unavailable';
   if (state === 'ocr_activation_required' || code === 'ocr_activation_required') {
@@ -236,6 +244,7 @@ function buildOcrPrepareFailure({
       pdfTriage,
       triageReason,
       ocrSetupState: state,
+      ocrSetupCode: code,
     }),
     primaryAlertKey,
     warningAlertKeys: [],
@@ -444,6 +453,7 @@ async function resolvePdfPreparation({
   const ocrValidation = await validateOcrSetup(resolvePaths, log);
   const ocrReady = !!(ocrValidation && ocrValidation.ok === true);
   const ocrSetupState = resolveSetupState(ocrValidation);
+  const ocrSetupCode = resolveSetupCode(ocrValidation);
 
   let pdfTriage = 'ocr_only';
   let triageReason = 'no_native_text_layer_detected';
@@ -452,18 +462,15 @@ async function resolvePdfPreparation({
   let requiresRouteChoice = false;
   let routeChoiceOptions = [];
 
-  if (nativeAvailable && ocrReady) {
+  if (nativeAvailable) {
     pdfTriage = 'both';
-    triageReason = 'native_text_detected_and_ocr_ready_choice_required';
+    triageReason = ocrReady
+      ? 'native_text_detected_and_ocr_ready_choice_required'
+      : 'native_text_detected_choice_required_ocr_not_ready';
     availableRoutes = ['native', 'ocr'];
     chosenRoute = null;
     requiresRouteChoice = true;
     routeChoiceOptions = ['native', 'ocr'];
-  } else if (nativeAvailable && !ocrReady) {
-    pdfTriage = 'native_only';
-    triageReason = 'native_text_detected_ocr_unavailable';
-    availableRoutes = ['native'];
-    chosenRoute = 'native';
   } else if (!nativeAvailable && ocrReady) {
     pdfTriage = 'ocr_only';
     triageReason = 'no_native_text_layer_detected';
@@ -485,6 +492,7 @@ async function resolvePdfPreparation({
     pdfTriage,
     triageReason,
     ocrSetupState,
+    ocrSetupCode,
     nativeProbeSelectableText: nativeProbeSuccess ? nativeProbeSuccess.selectableText : '',
     nativeProbeMetadata: nativeProbeSuccess ? nativeProbeSuccess.metadataSafeForLogs : null,
   });
@@ -784,7 +792,6 @@ async function executePreparedImport({
           ...preparedRecord.routeMetadata,
           chosenRoute: routeKind,
           executedRoute: routeKind,
-          ocrSetupState: 'ready',
         },
       };
     }
