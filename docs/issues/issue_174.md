@@ -212,7 +212,7 @@ Proposed plan:
   - recognized provider-disabled signals do not degrade to `platform_runtime_failed` only because both raw fields are present
 - grep confirms no live `setup_incomplete` branches remain in problem-1 paths
 
-### 2. Google OAuth credentials validation is duplicated with different acceptance rules
+### 2. OCR disconnect still uses a looser Google credentials path than activation, setup validation, and execute
 
 Type:
 
@@ -233,38 +233,43 @@ Identifiers:
 - `hasValidCredentialsShape(...)`
 - `readGoogleOAuthCredentialsFile(...)`
 - `readGoogleCredentialsFile(...)`
-- `readJsonFile(...)`
 - `buildGoogleOAuthClient(...)`
 - `buildRevocationClient(...)`
 
 Producer anchors:
 
-- [`electron/import_extract_platform/ocr_google_drive_credentials_file.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_credentials_file.js) is the strict validator and requires a non-empty `redirect_uris` entry.
-- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js) has its own raw reader and its own client builder.
-- [`electron/import_extract_platform/ocr_google_drive_route.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js) bypasses the strict validator and reads raw JSON directly before calling `buildGoogleOAuthClient(...)`.
+- [`electron/import_extract_platform/ocr_google_drive_credentials_file.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_credentials_file.js) is the shared strict validator and requires `client_id`, `client_secret`, and at least one non-empty `redirect_uris` entry.
+- [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js) uses that strict validator before activation can proceed.
+- [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js) uses that strict validator before setup validation can proceed.
+- [`electron/import_extract_platform/ocr_google_drive_route.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js) uses that strict validator before OCR execute can proceed.
+- [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js) reads raw credentials JSON through `readGoogleCredentialsFile(...)`, then falls back to a generic OAuth client if credential-based client construction fails.
 
 Consumer anchors:
 
-- setup validation and activation consume the strict validator
-- OCR execute consumes raw JSON plus the OAuth client builder
-- disconnect consumes another raw parse path and then falls back to a generic OAuth client if credential-based client construction fails
+- activation prepare and launch consume the strict validator.
+- setup validation consumes the strict validator.
+- OCR execute consumes the strict validator.
+- disconnect consumes the raw parse path and fallback revocation path.
 
 What overlaps exactly:
 
-- the same credentials contract is validated and consumed by multiple local implementations
-- those implementations do not require the same shape and do not fail the same way
+- activation, setup validation, and execute now share one strict credentials contract.
+- disconnect still uses a separate credentials-read and client-construction path.
+- disconnect does not fail the same way when credentials are malformed, incomplete, or unreadable.
 
 Why this is a real problem:
 
-- a credentials file can be rejected in setup/activation but still be accepted later by execute/disconnect paths
-- the repo already has divergent rules around `redirect_uris`
-- that means future credential-shape changes must be updated in several places or behavior will keep drifting
+- the same local credentials state is treated differently across flows.
+- missing or invalid credentials block activation, setup validation, and execute, but disconnect can still continue because it catches credential/client-build failures and falls back to a generic OAuth client.
+- credential-shape changes still have to stay aligned across two implementations instead of one.
 
 Hard evidence:
 
-- [`electron/import_extract_platform/ocr_google_drive_credentials_file.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_credentials_file.js) requires at least one non-empty redirect URI
-- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js) accepts the first redirect URI if present, otherwise `''`
-- [`electron/import_extract_platform/ocr_google_drive_route.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js) does not use the strict validator before building the client
+- [`electron/import_extract_platform/ocr_google_drive_credentials_file.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_credentials_file.js) rejects credentials unless `redirect_uris` contains at least one non-empty string.
+- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js) resolves the redirect URI to `''` when no usable redirect URI exists.
+- [`electron/import_extract_platform/ocr_google_drive_oauth_client.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js) builds an OAuth client without enforcing the strict `redirect_uris` rule used by the shared validator.
+- [`electron/import_extract_platform/ocr_google_drive_route.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js) no longer bypasses the strict validator before execute.
+- [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js) still bypasses that validator and can proceed through fallback revocation behavior.
 
 ### 3. Prepare-time native-route eligibility is broader than execute-time native-route support
 
@@ -365,7 +370,7 @@ Why this remains a suspicion instead of a confirmed active conflict:
 Confirmed:
 
 - overloaded `setup_incomplete` meaning
-- duplicated credentials contract with different acceptance rules
+- disconnect-specific credentials consumption still diverges from the shared strict contract
 - prepare/execute native support mismatch
 
 Suspicion:
