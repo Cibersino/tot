@@ -212,7 +212,7 @@ Proposed plan:
   - recognized provider-disabled signals do not degrade to `platform_runtime_failed` only because both raw fields are present
 - grep confirms no live `setup_incomplete` branches remain in problem-1 paths
 
-### 2. OCR disconnect still uses a looser Google credentials path than activation, setup validation, and execute
+### 2. OCR disconnect mixes a strict credentials contract with a token-centric revocation contract
 
 Type:
 
@@ -235,6 +235,7 @@ Identifiers:
 - `readGoogleCredentialsFile(...)`
 - `buildGoogleOAuthClient(...)`
 - `buildRevocationClient(...)`
+- `selectPreferredRevocationToken(...)`
 
 Producer anchors:
 
@@ -242,34 +243,44 @@ Producer anchors:
 - [`electron/import_extract_platform/import_extract_ocr_activation_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_activation_ipc.js) uses that strict validator before activation can proceed.
 - [`electron/import_extract_platform/ocr_google_drive_setup_validation.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_setup_validation.js) uses that strict validator before setup validation can proceed.
 - [`electron/import_extract_platform/ocr_google_drive_route.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js) uses that strict validator before OCR execute can proceed.
-- [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js) reads raw credentials JSON through `readGoogleCredentialsFile(...)`, then falls back to a generic OAuth client if credential-based client construction fails.
+- [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js) reads the stored token first, then attempts raw credentials JSON + credential-based client construction, then falls back to a generic OAuth client for revocation if that step fails.
 
 Consumer anchors:
 
 - activation prepare and launch consume the strict validator.
 - setup validation consumes the strict validator.
 - OCR execute consumes the strict validator.
-- disconnect consumes the raw parse path and fallback revocation path.
+- disconnect consumes the selected revocation token and only a best-effort credentials/client path.
 
 What overlaps exactly:
 
 - activation, setup validation, and execute now share one strict credentials contract.
-- disconnect still uses a separate credentials-read and client-construction path.
-- disconnect does not fail the same way when credentials are malformed, incomplete, or unreadable.
+- disconnect still owns a separate credentials-read and client-construction path.
+- disconnect does not treat that credentials path as authoritative, because revocation can continue through a generic OAuth client.
+- the same local credentials domain is therefore represented in two places, but only one path is contract-defining.
 
-Why this is a real problem:
+Why this is the real problem:
 
-- the same local credentials state is treated differently across flows.
-- missing or invalid credentials block activation, setup validation, and execute, but disconnect can still continue because it catches credential/client-build failures and falls back to a generic OAuth client.
-- credential-shape changes still have to stay aligned across two implementations instead of one.
+- the current code does prove a contract mismatch, but it does not prove that disconnect should be blocked by the same strict validator as activation, setup validation, and execute.
+- disconnect already behaves as a best-effort token cleanup flow, not as a credentials-gated setup flow.
+- the defect is that disconnect mixes a non-authoritative credentials path with a token-centric fallback, leaving the disconnect boundary ambiguous.
+- credential-shape changes still have to stay aligned across two implementations even though only one is authoritative for activation, setup validation, and execute.
 
 Hard evidence:
 
 - [`electron/import_extract_platform/ocr_google_drive_credentials_file.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_credentials_file.js) rejects credentials unless `redirect_uris` contains at least one non-empty string.
 - [`electron/import_extract_platform/ocr_google_drive_oauth_client.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js) resolves the redirect URI to `''` when no usable redirect URI exists.
 - [`electron/import_extract_platform/ocr_google_drive_oauth_client.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_oauth_client.js) builds an OAuth client without enforcing the strict `redirect_uris` rule used by the shared validator.
-- [`electron/import_extract_platform/ocr_google_drive_route.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\ocr_google_drive_route.js) no longer bypasses the strict validator before execute.
-- [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js) still bypasses that validator and can proceed through fallback revocation behavior.
+- [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js) requires `tokenPath` up front but does not require `credentialsPath` before disconnect can proceed.
+- [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js) selects the revocation token before building the revocation client, which makes the flow operationally token-led.
+- [`electron/import_extract_platform/import_extract_ocr_disconnect_ipc.js`](c:\Users\manue\Documents\toT\tot\electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js) catches credential-read/client-build failures inside `buildRevocationClient(...)` and falls back to `new google.auth.OAuth2()` before `revokeToken(...)` is attempted.
+
+Proposed direction:
+
+- make disconnect explicitly token-centric.
+- keep the strict credentials validator as the canonical local credentials contract for activation, setup validation, and execute.
+- remove disconnect's raw credentials parse / credential-based client branch unless revocation is proven to require validated credentials as a hard provider constraint.
+- if revocation truly requires credentials, make that an explicit intentional exception instead of keeping the current mixed contract plus fallback behavior.
 
 ### 3. Prepare-time native-route eligibility is broader than execute-time native-route support
 
@@ -370,7 +381,7 @@ Why this remains a suspicion instead of a confirmed active conflict:
 Confirmed:
 
 - overloaded `setup_incomplete` meaning
-- disconnect-specific credentials consumption still diverges from the shared strict contract
+- disconnect mixes non-authoritative credentials handling with token-centric revocation behavior
 - prepare/execute native support mismatch
 
 Suspicion:
@@ -416,7 +427,7 @@ So the route contract is internally inconsistent before any external assumption 
 This issue should be resolved by making the shared contracts explicit and singular:
 
 - one canonical code set for OCR setup/auth/provider failures
-- one canonical credentials contract shared by activation, setup, execute, and disconnect
+- one explicit Google OCR boundary between strict credentials-gated setup/execute flows and disconnect's token-revocation flow
 - one canonical native-route capability contract shared by picker, prepare, drag/drop, and execute
 - one intentional decision on whether setup-time and execute-time provider-failure classification are truly shared or intentionally separate
 
@@ -424,7 +435,7 @@ This issue should be resolved by making the shared contracts explicit and singul
 
 - local missing credentials and remote provider setup failure do not share one ambiguous status code
 - OCR activation, prepare, and execute do not map the same failure code to conflicting user actions
-- Google OAuth credentials are validated and consumed through one canonical contract
+- activation, setup validation, and execute share one canonical credentials contract, and disconnect has one explicit token-revocation contract instead of a mixed credentials/fallback path
 - prepare cannot advertise a native route that execute will reject for the same file type
 - any remaining duplicated provider-failure classifier is either unified or kept with an explicit reason and bounded difference
 
