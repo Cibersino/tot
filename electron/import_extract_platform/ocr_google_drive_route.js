@@ -23,6 +23,10 @@ const {
   PROVIDER_API_DISABLED_CODE,
   parseGoogleProviderFailure,
 } = require('./ocr_google_drive_provider_failure');
+const {
+  classifyCommonGoogleProviderFailure,
+  isRetryableGoogleProviderRateLimit,
+} = require('./ocr_google_drive_provider_failure_classification');
 const { readGoogleOAuthCredentialsFile } = require('./ocr_google_drive_credentials_file');
 const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 const { normalizeImageForOcrUpload } = require('./ocr_image_normalization');
@@ -35,35 +39,6 @@ const { getOcrSourceMimeTypeForExt } = require('./import_extract_supported_forma
 // =============================================================================
 // Constants / config
 // =============================================================================
-
-const QUOTA_REASON_CODES = new Set([
-  'dailyLimitExceeded',
-  'downloadQuotaExceeded',
-  'quotaExceeded',
-  'rateLimitExceeded',
-  'sharingRateLimitExceeded',
-  'userRateLimitExceeded',
-  'billingNotEnabled',
-  'projectBillingNotFound',
-]);
-
-const AUTH_REASON_CODES = new Set([
-  'authError',
-  'forbidden',
-  'insufficientPermissions',
-  'invalidCredentials',
-  'unauthorized',
-]);
-
-const NETWORK_ERROR_CODES = new Set([
-  'ECONNRESET',
-  'ECONNREFUSED',
-  'ENOTFOUND',
-  'ETIMEDOUT',
-  'EAI_AGAIN',
-  'ERR_SOCKET_TIMEOUT',
-  'request_timeout',
-]);
 
 const INVALID_PERSISTED_TOKEN_CODES = new Set([
   'empty_file',
@@ -161,35 +136,11 @@ function parseProviderFailure(err) {
 }
 
 function classifyCommonFailure(parsedFailure) {
-  const reasonCode = String(parsedFailure.errorsReason || parsedFailure.errorInfoReason || '').trim();
-  const statusCode = Number(parsedFailure.statusCode || 0);
-  const networkErrorCode = String(parsedFailure.networkErrorCode || '').trim();
-
-  if (networkErrorCode && NETWORK_ERROR_CODES.has(networkErrorCode)) {
-    return 'connectivity_failed';
-  }
-  if (parsedFailure.normalizedCategory === PROVIDER_API_DISABLED_CODE) {
-    return PROVIDER_API_DISABLED_CODE;
-  }
-  if (statusCode === 429 || QUOTA_REASON_CODES.has(reasonCode)) {
-    return 'quota_or_rate_limited';
-  }
-  if (statusCode === 401 || AUTH_REASON_CODES.has(reasonCode)) {
-    return 'auth_failed';
-  }
-  if (parsedFailure.reasonConflict) {
-    return 'platform_runtime_failed';
-  }
-  if (statusCode >= 500) {
-    return 'connectivity_failed';
-  }
-  return '';
+  return classifyCommonGoogleProviderFailure(parsedFailure).code;
 }
 
 function isRetryableRateLimit(parsedFailure) {
-  const reasonCode = String(parsedFailure.errorsReason || parsedFailure.errorInfoReason || '').trim();
-  const statusCode = Number(parsedFailure.statusCode || 0);
-  return statusCode === 429 || QUOTA_REASON_CODES.has(reasonCode);
+  return isRetryableGoogleProviderRateLimit(parsedFailure);
 }
 
 function sleep(ms) {

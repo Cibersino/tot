@@ -96,6 +96,7 @@ tot/
 │ │ ├── ocr_google_drive_bundled_credentials.js
 │ │ ├── ocr_google_drive_credentials_file.js
 │ │ ├── ocr_google_drive_oauth_client.js
+│ │ ├── ocr_google_drive_provider_failure_classification.js
 │ │ ├── ocr_google_drive_provider_failure.js
 │ │ ├── ocr_google_drive_setup_validation.js
 │ │ ├── ocr_google_drive_token_storage.js
@@ -271,14 +272,15 @@ tot/
 - `electron/import_extract_platform/import_extract_supported_formats.js` — Contrato compartido de formatos soportados por import/extract: centraliza extensiones nativas, extensiones OCR y helpers reutilizados por picker, prepare y rutas de ejecución.
 - `electron/import_extract_platform/native_extraction_route.js` — Ruta de extracción nativa para `txt`, `md`, `html`, `docx` y PDFs con text layer; consume el contrato compartido de formatos y mantiene el pipeline de normalización.
 - `electron/import_extract_platform/native_pdf_selectable_text_probe.js` — Probe de PDF para detectar si existe texto seleccionable utilizable antes de decidir la ruta.
-- `electron/import_extract_platform/ocr_google_drive_activation_state.js` — Estado local de disponibilidad OCR (`setup_incomplete`, `ocr_activation_required`, `ready`) a partir de `credentials.json`/`token.json`.
+- `electron/import_extract_platform/ocr_google_drive_activation_state.js` — Estado grueso de disponibilidad OCR a partir de presencia de `credentials.json`/`token.json`; distingue `credentials_missing`, `ocr_activation_required` y `ready` antes de validaciones más profundas.
 - `electron/import_extract_platform/ocr_google_drive_bundled_credentials.js` — Bootstrap del modelo OCR de producción: consume el lector compartido de `credentials.json`, valida las credenciales OAuth desktop empaquetadas y materializa/repara el espejo runtime bajo `config/ocr_google_drive/credentials.json` sin pedir importación manual al usuario.
 - `electron/import_extract_platform/ocr_google_drive_credentials_file.js` — Lector/validador low-level compartido para `credentials.json`: lectura BOM-safe, parse JSON, clasificación (`missing_file`/`empty_file`/`invalid_json`/`invalid_shape`/`read_failed`) y validación de la shape OAuth desktop/web.
 - `electron/import_extract_platform/ocr_google_drive_oauth_client.js` — Helpers compartidos OAuth para OCR: lectura de `credentials.json`, construcción del cliente OAuth2 y selección del token preferido para revocación.
-- `electron/import_extract_platform/ocr_google_drive_provider_failure.js` — Parser/clasificador compartido de fallas provider-side de Google para OCR: lee tanto `error.errors[].reason` como `google.rpc.ErrorInfo.reason`, reconoce señales documentadas de API deshabilitada y preserva diagnóstico de conflictos entre ambos formatos.
-- `electron/import_extract_platform/ocr_google_drive_setup_validation.js` — Validación técnica del setup OCR (credenciales, token y reachability de Google Drive); consume el lector compartido de credenciales pero preserva su propia superficie diagnóstica externa.
+- `electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js` — Clasificación compartida post-parse de fallas provider/runtime de Google OCR: centraliza tablas de razones y la política común para `connectivity_failed`, `provider_api_disabled`, `quota_or_rate_limited`, `auth_failed` y `platform_runtime_failed`.
+- `electron/import_extract_platform/ocr_google_drive_provider_failure.js` — Parser compartido de fallas provider-side de Google para OCR: lee tanto `error.errors[].reason` como `google.rpc.ErrorInfo.reason`, normaliza señales documentadas de API deshabilitada y preserva diagnóstico de conflictos entre ambos formatos.
+- `electron/import_extract_platform/ocr_google_drive_setup_validation.js` — Validación técnica del setup OCR (credenciales, token y reachability de Google Drive); consume el parser compartido y la clasificación post-parse común, pero conserva subtipos y fallback propios del flujo de setup.
 - `electron/import_extract_platform/ocr_google_drive_token_storage.js` — Lectura/escritura/borrado protegido del token OCR usando `safeStorage` de Electron.
-- `electron/import_extract_platform/ocr_google_drive_route.js` — Ruta OCR Google Drive/Docs: consume el contrato compartido de formatos para soportar solo imágenes/PDFs, y luego realiza upload, conversión, export a texto, cleanup y taxonomía explícita de errores.
+- `electron/import_extract_platform/ocr_google_drive_route.js` — Ruta OCR Google Drive/Docs: consume el contrato compartido de formatos para soportar solo imágenes/PDFs, usa la clasificación post-parse común para fallas provider/runtime y conserva sus fallbacks propios de etapa (`ocr_conversion_failed` / `ocr_export_failed`).
 - `electron/import_extract_platform/ocr_image_normalization.js` — Normalización local de imágenes para OCR antes del upload cuando el formato lo requiere.
 - `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
 - `electron/updater.js` — Lógica de actualización (comparación de versión, diálogos y apertura de URL de descarga).

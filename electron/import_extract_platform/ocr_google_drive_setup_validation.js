@@ -25,6 +25,9 @@ const {
   parseGoogleProviderFailure,
 } = require('./ocr_google_drive_provider_failure');
 const {
+  classifyCommonGoogleProviderFailure,
+} = require('./ocr_google_drive_provider_failure_classification');
+const {
   buildGoogleOAuthClient,
   describePersistedGoogleToken,
 } = require('./ocr_google_drive_oauth_client');
@@ -38,34 +41,12 @@ const DEFAULT_TIMEOUT_MS = 10000;
 const MAX_TIMEOUT_MS = 20000;
 const MIN_TIMEOUT_MS = 1000;
 
-const QUOTA_REASON_CODES = new Set([
-  'dailyLimitExceeded',
-  'downloadQuotaExceeded',
-  'quotaExceeded',
-  'rateLimitExceeded',
-  'sharingRateLimitExceeded',
-  'userRateLimitExceeded',
-]);
-
-const BILLING_REASON_CODES = new Set([
-  'billingNotEnabled',
-  'projectBillingNotFound',
-]);
-
 const INVALID_PERSISTED_TOKEN_CODES = new Set([
   'empty_file',
   'invalid_json',
   'invalid_token_format',
   'decrypt_failed',
   'invalid_token_payload',
-]);
-
-const AUTH_REASON_CODES = new Set([
-  'authError',
-  'forbidden',
-  'insufficientPermissions',
-  'invalidCredentials',
-  'unauthorized',
 ]);
 
 const ERROR_SURFACE = Object.freeze({
@@ -111,79 +92,55 @@ function parseProbeFailure(err) {
   return parseGoogleProviderFailure(err, safeErrorMessage(err));
 }
 
-function classifyApiFailure({
-  statusCode,
-  errorsReason,
-  errorInfoReason,
-  normalizedCategory,
-  reasonConflict,
-  networkErrorCode,
-}) {
-  if (hasNonEmptyString(networkErrorCode)) {
+function classifyApiFailure(parsedFailure) {
+  const classification = classifyCommonGoogleProviderFailure(parsedFailure);
+
+  if (classification.code === 'connectivity_failed') {
     return {
       code: 'connectivity_failed',
-      issueSubtype: 'network',
+      issueSubtype: classification.matchedBy === 'http_5xx'
+        ? 'provider_unavailable'
+        : 'network',
     };
   }
 
-  const normalizedReason = String(errorsReason || errorInfoReason || '').trim();
-
-  if (normalizedCategory === PROVIDER_API_DISABLED_CODE) {
+  if (classification.code === PROVIDER_API_DISABLED_CODE) {
     return {
       code: PROVIDER_API_DISABLED_CODE,
       issueSubtype: 'provider_api_disabled',
     };
   }
 
-  if (statusCode === 429) {
+  if (classification.code === 'quota_or_rate_limited') {
+    let issueSubtype = 'rate_limit';
+    if (classification.matchedBy === 'billing_reason') {
+      issueSubtype = 'billing';
+    } else if (classification.matchedBy === 'quota_reason') {
+      issueSubtype = 'quota';
+    }
     return {
       code: 'quota_or_rate_limited',
-      issueSubtype: 'rate_limit',
+      issueSubtype,
     };
   }
 
-  if (BILLING_REASON_CODES.has(normalizedReason)) {
-    return {
-      code: 'quota_or_rate_limited',
-      issueSubtype: 'billing',
-    };
-  }
-
-  if (QUOTA_REASON_CODES.has(normalizedReason)) {
-    return {
-      code: 'quota_or_rate_limited',
-      issueSubtype: 'quota',
-    };
-  }
-
-  if (statusCode === 401) {
+  if (classification.code === 'auth_failed') {
     return {
       code: 'auth_failed',
-      issueSubtype: 'invalid_token',
+      issueSubtype: classification.matchedBy === 'http_401'
+        ? 'invalid_token'
+        : 'permission',
     };
   }
 
-  if (AUTH_REASON_CODES.has(normalizedReason)) {
-    return {
-      code: 'auth_failed',
-      issueSubtype: 'permission',
-    };
-  }
-
-  if (reasonConflict) {
+  if (classification.code === 'platform_runtime_failed') {
     return {
       code: 'platform_runtime_failed',
       issueSubtype: 'provider_reason_conflict',
     };
   }
 
-  if (statusCode >= 500) {
-    return {
-      code: 'connectivity_failed',
-      issueSubtype: 'provider_unavailable',
-    };
-  }
-
+  const statusCode = Number(parsedFailure && parsedFailure.statusCode || 0);
   if (statusCode >= 400) {
     return {
       code: 'platform_runtime_failed',
