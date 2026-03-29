@@ -20,6 +20,10 @@
   }
   const log = window.getLogger('import-extract-apply-modal');
   log.debug('Import/extract apply modal starting...');
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
+    throw new Error('[import-extract-apply-modal] RendererI18n.tRenderer unavailable; cannot continue');
+  }
+  const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
   // UI elements
@@ -55,13 +59,6 @@
       && btnClose);
   }
 
-  function translate(tRenderer, key, fallback) {
-    if (typeof tRenderer === 'function') {
-      return tRenderer(key, fallback);
-    }
-    return fallback;
-  }
-
   function normalizeRepeatForModal(rawValue, maxRepeat) {
     if (window.TextApplyCanonical && typeof window.TextApplyCanonical.normalizeRepeat === 'function') {
       return window.TextApplyCanonical.normalizeRepeat(rawValue, { maxRepeat });
@@ -76,7 +73,6 @@
   // =============================================================================
 
   async function promptApplyChoice({
-    tRenderer,
     elapsedText = '',
     defaultRepeat = 1,
     maxRepeat = 1,
@@ -91,38 +87,31 @@
       : 1;
     const initialRepeat = normalizeRepeatForModal(defaultRepeat, safeMaxRepeat);
 
-    const titleText = translate(
-      tRenderer,
+    const titleText = tRenderer(
       'renderer.alerts.import_extract_apply_modal_title',
       'Apply extracted text'
     );
-    const messageText = translate(
-      tRenderer,
+    const messageText = tRenderer(
       'renderer.alerts.import_extract_apply_modal_message',
       'Choose how to apply the extracted text.'
     );
-    const repeatLabelText = translate(
-      tRenderer,
+    const repeatLabelText = tRenderer(
       'renderer.alerts.import_extract_apply_modal_repeat_label',
       'Repetitions'
     );
-    const overwriteText = translate(
-      tRenderer,
+    const overwriteText = tRenderer(
       'renderer.alerts.import_extract_apply_modal_overwrite_button',
       'Overwrite'
     );
-    const appendText = translate(
-      tRenderer,
+    const appendText = tRenderer(
       'renderer.alerts.import_extract_apply_modal_append_button',
       'Append'
     );
-    const cancelText = translate(
-      tRenderer,
+    const cancelText = tRenderer(
       'renderer.alerts.import_extract_apply_modal_cancel_button',
       'Cancel'
     );
-    const closeAriaText = translate(
-      tRenderer,
+    const closeAriaText = tRenderer(
       'renderer.alerts.import_extract_apply_modal_close_aria',
       'Close apply extracted text dialog'
     );
