@@ -19,16 +19,15 @@
 const path = require('path');
 const { BrowserWindow } = require('electron');
 
+const { PROVIDER_API_DISABLED_CODE } = require('./ocr_google_drive_provider_failure');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
 const { runGoogleDriveOcrRoute } = require('./ocr_google_drive_route');
 const { runNativeExtractionRoute } = require('./native_extraction_route');
 const { probeNativePdfSelectableText } = require('./native_pdf_selectable_text_probe');
-
-// =============================================================================
-// Constants / config
-// =============================================================================
-
-const OCR_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'bmp']);
+const {
+  getNativeParserForExt,
+  getOcrSourceMimeTypeForExt,
+} = require('./import_extract_supported_formats');
 
 // =============================================================================
 // Boundary normalization + shared metadata helpers
@@ -61,9 +60,10 @@ function getFileInfo(filePath) {
   const fileName = path.basename(resolvedPath);
   const extWithDot = path.extname(resolvedPath).toLowerCase();
   const sourceFileExt = extWithDot.startsWith('.') ? extWithDot.slice(1) : extWithDot;
+  const sourceMimeType = getOcrSourceMimeTypeForExt(extWithDot);
   const sourceFileKind = sourceFileExt === 'pdf'
     ? 'pdf'
-    : (OCR_IMAGE_EXTENSIONS.has(sourceFileExt) ? 'image' : 'text_document');
+    : (sourceMimeType.startsWith('image/') ? 'image' : 'text_document');
 
   return {
     filePath: normalizedPath,
@@ -98,7 +98,7 @@ function resolveSetupState(validationResult) {
   const state = validationResult && typeof validationResult.state === 'string'
     ? validationResult.state
     : 'failure';
-  if (state === 'setup_incomplete' || state === 'ocr_activation_required') return state;
+  if (state === 'ocr_activation_required') return state;
   return 'failure';
 }
 
@@ -215,6 +215,12 @@ function buildOcrPrepareFailure({
   let primaryAlertKey = 'renderer.alerts.import_extract_ocr_unavailable';
   if (state === 'ocr_activation_required' || code === 'ocr_activation_required') {
     primaryAlertKey = 'renderer.alerts.import_extract_ocr_activation_required';
+  } else if (code === 'credentials_missing') {
+    primaryAlertKey = 'renderer.alerts.import_extract_ocr_setup_missing_credentials';
+  } else if (code === 'credentials_invalid') {
+    primaryAlertKey = 'renderer.alerts.import_extract_ocr_setup_invalid_credentials';
+  } else if (code === 'ocr_token_state_invalid') {
+    primaryAlertKey = 'renderer.alerts.import_extract_ocr_token_state_invalid';
   } else if (code === 'connectivity_failed') {
     primaryAlertKey = 'renderer.alerts.import_extract_ocr_connectivity_failed';
   } else if (code === 'quota_or_rate_limited') {
@@ -272,6 +278,32 @@ function buildNativePrepareFailure({
   });
 }
 
+function buildUnsupportedFormatPrepareFailure(fileInfo) {
+  return buildPrepareFailure({
+    routeKind: null,
+    routeMetadata: buildRouteMetadata({
+      fileInfo,
+      availableRoutes: [],
+      chosenRoute: null,
+      pdfTriage: 'not_pdf',
+      triageReason: 'unsupported_format',
+      ocrSetupState: 'not_checked',
+    }),
+    primaryAlertKey: 'renderer.alerts.import_extract_native_unsupported_format',
+    warningAlertKeys: [],
+    error: {
+      code: 'unsupported_format',
+      message: 'Selected file format is not supported by import/extract.',
+      detailsSafeForLogs: {
+        stage: 'prepare',
+        reason: 'unsupported_extension',
+        sourceFileExt: fileInfo.sourceFileExt,
+        sourceFileKind: fileInfo.sourceFileKind,
+      },
+    },
+  });
+}
+
 function buildOcrSetupValidationRuntimeFailure(err) {
   return {
     ok: false,
@@ -296,6 +328,9 @@ async function validateOcrSetup(resolvePaths, log) {
     return validateGoogleDriveOcrSetup({
       credentialsPath: paths.credentialsPath,
       tokenPath: paths.tokenPath,
+      bundledCredentialsFailureCode: paths.bundledCredentialsFailureCode,
+      bundledCredentialsFailureReason: paths.bundledCredentialsFailureReason,
+      bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
       probeApiPath: true,
     });
   } catch (err) {
@@ -489,6 +524,10 @@ async function prepareSelectedFile({
     });
   }
 
+  if (!getNativeParserForExt(fileInfo.sourceFileExt)) {
+    return buildUnsupportedFormatPrepareFailure(fileInfo);
+  }
+
   return resolveNonPdfNativePreparation(fileInfo, ocrLanguage);
 }
 
@@ -516,10 +555,12 @@ function resolvePrimaryAlertKey(routeKind, result) {
   if (state === 'success') return 'renderer.alerts.import_extract_ocr_apply_pending';
   if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.alerts.import_extract_ocr_cancelled';
   if (code === 'ocr_activation_required') return 'renderer.alerts.import_extract_ocr_activation_required';
+  if (code === 'credentials_missing') return 'renderer.alerts.import_extract_ocr_setup_missing_credentials';
+  if (code === 'credentials_invalid') return 'renderer.alerts.import_extract_ocr_setup_invalid_credentials';
+  if (code === 'ocr_token_state_invalid') return 'renderer.alerts.import_extract_ocr_token_state_invalid';
   if (code === 'connectivity_failed') return 'renderer.alerts.import_extract_ocr_connectivity_failed';
   if (code === 'quota_or_rate_limited') return 'renderer.alerts.import_extract_ocr_quota_or_rate_limited';
-  if (code === 'setup_incomplete'
-    || code === 'credentials_missing'
+  if (code === PROVIDER_API_DISABLED_CODE
     || code === 'auth_failed'
     || code === 'platform_runtime_failed'
     || code === 'ocr_unavailable') {
@@ -722,6 +763,9 @@ async function executePreparedImport({
         filePath: fileInfo.filePath,
         credentialsPath: paths.credentialsPath,
         tokenPath: paths.tokenPath,
+        bundledCredentialsFailureCode: paths.bundledCredentialsFailureCode,
+        bundledCredentialsFailureReason: paths.bundledCredentialsFailureReason,
+        bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
         ocrLanguage: preparedRecord.ocrLanguage,
         log,
         isAborted: () => !controller.isActive(),
@@ -788,7 +832,6 @@ async function executePreparedImport({
 // =============================================================================
 
 module.exports = {
-  buildRouteMetadata,
   executePreparedImport,
   getFileInfo,
   isAuthorizedSender,

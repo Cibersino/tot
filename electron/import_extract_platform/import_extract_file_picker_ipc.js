@@ -20,6 +20,10 @@ const { dialog, app, BrowserWindow } = require('electron');
 const Log = require('../log');
 const { getImportExtractStateFile, loadJson, saveJson } = require('../fs_storage');
 const { getImportExtractPlatformAdapter } = require('./import_extract_platform_adapter');
+const {
+  getSupportedNativeExtensions,
+  getSupportedOcrSourceExtensions,
+} = require('./import_extract_supported_formats');
 
 const log = Log.get('import-extract-picker');
 const platformAdapter = getImportExtractPlatformAdapter(process.platform);
@@ -105,6 +109,14 @@ function isAuthorizedSender(event, mainWin) {
   }
 }
 
+function getSupportedPickerExtensions() {
+  const ordered = [
+    ...getSupportedOcrSourceExtensions(),
+    ...getSupportedNativeExtensions(),
+  ];
+  return ordered.filter((extension, index) => ordered.indexOf(extension) === index);
+}
+
 // =============================================================================
 // IPC registration / handlers
 // =============================================================================
@@ -137,11 +149,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         filters: [
           {
             name: 'Supported files',
-            extensions: [
-              'jpg', 'jpeg', 'png', 'webp', 'bmp',
-              'pdf',
-              'txt', 'md', 'html', 'htm', 'docx',
-            ],
+            extensions: getSupportedPickerExtensions(),
           },
           { name: 'All files', extensions: ['*'] },
         ],

@@ -19,58 +19,34 @@
 const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
+const {
+  PROVIDER_API_DISABLED_CODE,
+  parseGoogleProviderFailure,
+} = require('./ocr_google_drive_provider_failure');
+const {
+  classifyCommonGoogleProviderFailure,
+  isRetryableGoogleProviderRateLimit,
+} = require('./ocr_google_drive_provider_failure_classification');
+const { readGoogleOAuthCredentialsFile } = require('./ocr_google_drive_credentials_file');
 const { readEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
 const { normalizeImageForOcrUpload } = require('./ocr_image_normalization');
 const {
   buildGoogleOAuthClient,
+  describePersistedGoogleToken,
 } = require('./ocr_google_drive_oauth_client');
+const { getOcrSourceMimeTypeForExt } = require('./import_extract_supported_formats');
 
 // =============================================================================
 // Constants / config
 // =============================================================================
 
-const QUOTA_REASON_CODES = new Set([
-  'dailyLimitExceeded',
-  'downloadQuotaExceeded',
-  'quotaExceeded',
-  'rateLimitExceeded',
-  'sharingRateLimitExceeded',
-  'userRateLimitExceeded',
-  'billingNotEnabled',
-  'projectBillingNotFound',
+const INVALID_PERSISTED_TOKEN_CODES = new Set([
+  'empty_file',
+  'invalid_json',
+  'invalid_token_format',
+  'decrypt_failed',
+  'invalid_token_payload',
 ]);
-
-const AUTH_REASON_CODES = new Set([
-  'authError',
-  'forbidden',
-  'insufficientPermissions',
-  'invalidCredentials',
-  'unauthorized',
-]);
-
-const SETUP_REASON_CODES = new Set([
-  'accessNotConfigured',
-  'serviceDisabled',
-]);
-
-const NETWORK_ERROR_CODES = new Set([
-  'ECONNRESET',
-  'ECONNREFUSED',
-  'ENOTFOUND',
-  'ETIMEDOUT',
-  'EAI_AGAIN',
-  'ERR_SOCKET_TIMEOUT',
-  'request_timeout',
-]);
-
-const SOURCE_MIME_BY_EXT = Object.freeze({
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.bmp': 'image/bmp',
-  '.pdf': 'application/pdf',
-});
 
 const MAX_RATE_LIMIT_ATTEMPTS = 3;
 const BASE_RETRY_DELAY_MS = 300;
@@ -88,15 +64,10 @@ function toSafeErrorName(err) {
   return String(err && err.name ? err.name : 'Error');
 }
 
-function readJsonFile(filePath) {
-  const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-  return JSON.parse(raw);
-}
-
 function getFileInfo(filePath) {
   const absoluteFilePath = path.resolve(String(filePath || ''));
   const extWithDot = path.extname(absoluteFilePath).toLowerCase();
-  const sourceMimeType = SOURCE_MIME_BY_EXT[extWithDot] || '';
+  const sourceMimeType = getOcrSourceMimeTypeForExt(extWithDot);
   const sourceFileKind = extWithDot === '.pdf'
     ? 'pdf'
     : (sourceMimeType.startsWith('image/') ? 'image' : 'unknown');
@@ -137,67 +108,39 @@ function buildResult({
   };
 }
 
-function parseProviderFailure(err) {
-  const statusCode = Number(
-    err && err.response && err.response.status
-      ? err.response.status
-      : (typeof err.code === 'number' ? err.code : 0)
-  ) || 0;
-
-  const networkErrorCode = typeof err.code === 'string' ? err.code.trim() : '';
-
-  let reasonCode = '';
-  let providerMessage = '';
-  try {
-    const responseData = err && err.response ? err.response.data : null;
-    const root = responseData && typeof responseData === 'object' ? responseData.error : null;
-    const nested = root && Array.isArray(root.errors) && root.errors.length ? root.errors[0] : null;
-    reasonCode = typeof (nested && nested.reason) === 'string'
-      ? nested.reason.trim()
-      : '';
-    providerMessage = typeof (nested && nested.message) === 'string'
-      ? nested.message.trim()
-      : (typeof (root && root.message) === 'string' ? root.message.trim() : '');
-  } catch {
-    reasonCode = '';
-    providerMessage = '';
+function classifyPersistedTokenReadFailure(tokenReadCode) {
+  const normalized = String(tokenReadCode || '').trim();
+  if (normalized === 'missing_file') {
+    return {
+      code: 'ocr_activation_required',
+      summary: 'OCR route failed before upload: activation is required.',
+      message: 'OCR activation is required before running extraction.',
+    };
   }
-
+  if (INVALID_PERSISTED_TOKEN_CODES.has(normalized)) {
+    return {
+      code: 'ocr_token_state_invalid',
+      summary: 'OCR route failed before upload: saved token state is invalid.',
+      message: 'Saved Google OCR sign-in state is invalid. Reconnect and try again.',
+    };
+  }
   return {
-    statusCode,
-    reasonCode,
-    providerMessage,
-    networkErrorCode,
+    code: 'platform_runtime_failed',
+    summary: 'OCR route failed before upload: token state could not be read.',
+    message: 'Google OCR token state could not be read due to a runtime/platform error.',
   };
 }
 
-function classifyCommonFailure(parsedFailure) {
-  const reasonCode = String(parsedFailure.reasonCode || '').trim();
-  const statusCode = Number(parsedFailure.statusCode || 0);
-  const networkErrorCode = String(parsedFailure.networkErrorCode || '').trim();
+function parseProviderFailure(err) {
+  return parseGoogleProviderFailure(err, toSafeErrorMessage(err));
+}
 
-  if (networkErrorCode && NETWORK_ERROR_CODES.has(networkErrorCode)) {
-    return 'connectivity_failed';
-  }
-  if (statusCode === 429 || QUOTA_REASON_CODES.has(reasonCode)) {
-    return 'quota_or_rate_limited';
-  }
-  if (SETUP_REASON_CODES.has(reasonCode)) {
-    return 'setup_incomplete';
-  }
-  if (statusCode === 401 || AUTH_REASON_CODES.has(reasonCode)) {
-    return 'auth_failed';
-  }
-  if (statusCode >= 500) {
-    return 'connectivity_failed';
-  }
-  return '';
+function classifyCommonFailure(parsedFailure) {
+  return classifyCommonGoogleProviderFailure(parsedFailure).code;
 }
 
 function isRetryableRateLimit(parsedFailure) {
-  const reasonCode = String(parsedFailure.reasonCode || '').trim();
-  const statusCode = Number(parsedFailure.statusCode || 0);
-  return statusCode === 429 || QUOTA_REASON_CODES.has(reasonCode);
+  return isRetryableGoogleProviderRateLimit(parsedFailure);
 }
 
 function sleep(ms) {
@@ -233,7 +176,7 @@ async function runWithRateLimitRetry({ operationName, log, isAborted, fn }) {
           attempt,
           nextAttemptInMs: waitMs,
           statusCode: parsedFailure.statusCode,
-          reasonCode: parsedFailure.reasonCode,
+          reasonCode: String(parsedFailure.errorsReason || parsedFailure.errorInfoReason || ''),
         });
         await sleep(waitMs);
         continue;
@@ -248,17 +191,31 @@ async function runWithRateLimitRetry({ operationName, log, isAborted, fn }) {
 function buildFailureResult({ stage, provenance, parsedFailure, error }) {
   const commonCode = classifyCommonFailure(parsedFailure);
   if (commonCode) {
+    let message = 'OCR extraction failed due to auth/quota/connectivity constraints.';
+    if (commonCode === PROVIDER_API_DISABLED_CODE) {
+      message =
+        'OCR extraction failed because the required Google API/service is disabled for the configured Google project.';
+    } else if (parsedFailure.reasonConflict) {
+      message = 'OCR extraction failed due to conflicting provider error signals.';
+    }
+
     return buildResult({
       state: 'failure',
       summary: 'OCR route failed due to provider/runtime constraints.',
       provenance,
       error: buildError(
         commonCode,
-        'OCR extraction failed due to auth/quota/connectivity constraints.',
+        message,
         {
           stage,
           statusCode: parsedFailure.statusCode,
-          reasonCode: parsedFailure.reasonCode,
+          reasonCode: String(parsedFailure.errorsReason || parsedFailure.errorInfoReason || ''),
+          errorsReason: String(parsedFailure.errorsReason || ''),
+          errorInfoReason: String(parsedFailure.errorInfoReason || ''),
+          providerStatus: String(parsedFailure.providerStatus || ''),
+          providerService: String(parsedFailure.providerService || ''),
+          providerConsumer: String(parsedFailure.providerConsumer || ''),
+          reasonConflict: !!parsedFailure.reasonConflict,
           networkErrorCode: parsedFailure.networkErrorCode,
           providerMessagePresent: !!parsedFailure.providerMessage,
         }
@@ -292,6 +249,9 @@ async function runGoogleDriveOcrRoute({
   filePath,
   credentialsPath,
   tokenPath,
+  bundledCredentialsFailureCode = '',
+  bundledCredentialsFailureReason = '',
+  bundledCredentialsFailureDetailsSafeForLogs = {},
   ocrLanguage = '',
   log,
   isAborted,
@@ -338,43 +298,89 @@ async function runGoogleDriveOcrRoute({
     });
   }
 
+  if (bundledCredentialsFailureCode) {
+    const message = bundledCredentialsFailureCode === 'credentials_missing'
+      ? 'OCR credentials are missing.'
+      : (bundledCredentialsFailureCode === 'credentials_invalid'
+        ? 'OCR credentials are invalid.'
+        : 'OCR credentials could not be prepared due to a runtime/platform error.');
+    return buildResult({
+      state: 'failure',
+      summary: 'OCR route failed before upload: bundled credentials are unavailable.',
+      provenance,
+      error: buildError(
+        bundledCredentialsFailureCode,
+        message,
+        {
+          stage: 'preflight',
+          reason: bundledCredentialsFailureReason || 'bundled_credentials_unavailable',
+          ...bundledCredentialsFailureDetailsSafeForLogs,
+        }
+      ),
+    });
+  }
+
   let credentialsJson = null;
   let tokenJson = null;
 
-  try {
-    credentialsJson = readJsonFile(credentialsPath);
-  } catch (err) {
+  const credentialsRead = readGoogleOAuthCredentialsFile(credentialsPath);
+  if (!credentialsRead.ok) {
+    const credentialsCode = credentialsRead.code === 'missing_file'
+      ? 'credentials_missing'
+      : 'credentials_invalid';
     return buildResult({
       state: 'failure',
       summary: 'OCR route failed before upload: credentials missing or invalid.',
       provenance,
       error: buildError(
-        'setup_incomplete',
+        credentialsCode,
         'OCR credentials are missing or invalid.',
         {
           stage: 'preflight',
-          reason: 'credentials_read_failed',
+          reason: credentialsCode,
+          credentialsReadCode: credentialsRead.code || 'invalid_shape',
+          errorName: credentialsRead.errorName || '',
+          errorMessage: credentialsRead.errorMessage || '',
+        }
+      ),
+    });
+  }
+  credentialsJson = credentialsRead.parsed;
+
+  try {
+    tokenJson = readEncryptedTokenFile(tokenPath);
+  } catch (err) {
+    const tokenReadCode = String(err && err.code ? err.code : '');
+    const tokenFailure = classifyPersistedTokenReadFailure(tokenReadCode);
+    return buildResult({
+      state: 'failure',
+      summary: tokenFailure.summary,
+      provenance,
+      error: buildError(
+        tokenFailure.code,
+        tokenFailure.message,
+        {
+          stage: 'preflight',
+          reason: 'token_read_failed',
+          tokenReadCode,
           errorName: toSafeErrorName(err),
         }
       ),
     });
   }
 
-  try {
-    tokenJson = readEncryptedTokenFile(tokenPath);
-  } catch (err) {
+  const tokenState = describePersistedGoogleToken(tokenJson);
+  if (!tokenState.acceptablePersistedTokenShape) {
     return buildResult({
       state: 'failure',
-      summary: 'OCR route failed before upload: token missing or invalid.',
+      summary: 'OCR route failed before upload: saved token state is invalid.',
       provenance,
       error: buildError(
-        'ocr_activation_required',
-        'OCR activation is required before running extraction.',
+        'ocr_token_state_invalid',
+        'Saved Google OCR sign-in state is invalid. Reconnect and try again.',
         {
           stage: 'preflight',
-          reason: 'token_read_failed',
-          tokenReadCode: String(err && err.code ? err.code : ''),
-          errorName: toSafeErrorName(err),
+          reason: 'invalid_token_shape',
         }
       ),
     });
@@ -564,7 +570,10 @@ async function runGoogleDriveOcrRoute({
           tempDocumentId,
           warning: `cleanup:${cleanupCode}`,
           statusCode: parsedCleanupFailure.statusCode,
-          reasonCode: parsedCleanupFailure.reasonCode,
+          reasonCode: String(parsedCleanupFailure.errorsReason || parsedCleanupFailure.errorInfoReason || ''),
+          providerStatus: String(parsedCleanupFailure.providerStatus || ''),
+          providerService: String(parsedCleanupFailure.providerService || ''),
+          providerConsumer: String(parsedCleanupFailure.providerConsumer || ''),
           networkErrorCode: parsedCleanupFailure.networkErrorCode,
         });
       }

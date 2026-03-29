@@ -20,19 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
-
-// =============================================================================
-// Constants / parser selection
-// =============================================================================
-
-const NATIVE_PARSER_BY_EXT = Object.freeze({
-  '.txt': 'plain_text',
-  '.md': 'markdown_text',
-  '.html': 'html_text',
-  '.htm': 'html_text',
-  '.docx': 'docx_text',
-  '.pdf': 'pdf_text_layer',
-});
+const { getNativeParserForExt } = require('./import_extract_supported_formats');
 
 // =============================================================================
 // Text normalization helpers
@@ -218,7 +206,7 @@ function getSourceInfo(filePath) {
     fileExt,
     fileExtWithDot,
     sourceFileKind,
-    parserType: NATIVE_PARSER_BY_EXT[fileExtWithDot] || '',
+    parserType: getNativeParserForExt(fileExtWithDot),
   };
 }
 
