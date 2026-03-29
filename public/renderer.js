@@ -1835,7 +1835,6 @@ function configureImportExtractModules() {
     && typeof importExtractOcrDisconnect.configure === 'function') {
     importExtractOcrDisconnect.configure({
       getOptionalElectronMethod,
-      notifyMain,
     });
   } else {
     log.warnOnce(
