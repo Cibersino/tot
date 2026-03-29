@@ -1740,6 +1740,7 @@ async function maybeRecoverImportExtractOcrSetupAndRetry({
   preparation,
   preparationRequest,
   prepareImportExtractSelectedFile,
+  routePreference = '',
 }) {
   const recoveryApi = window.ImportExtractOcrActivationRecovery;
   if (!recoveryApi || typeof recoveryApi.recoverAfterSetupFailure !== 'function') {
@@ -1769,6 +1770,7 @@ async function maybeRecoverImportExtractOcrSetupAndRetry({
       },
       getOptionalElectronMethod,
       notifyMain: window.Notify.notifyMain.bind(window.Notify),
+      routePreference,
     });
   } catch (err) {
     log.error('import/extract OCR setup recovery module failed unexpectedly:', err);
