@@ -38,14 +38,30 @@ const ENSURE_DIR_OPTIONS = { recursive: true };
 
 function initStorage(app) {
   if (!app || typeof app.getPath !== 'function') {
-    throw new Error('[fs_storage] initStorage requires Electron app');
+    throw new Error("[fs_storage] initStorage requires Electron app.getPath('userData')");
   }
-  if (typeof app.isReady === 'function' && !app.isReady()) {
+  if (typeof app.getAppPath !== 'function') {
+    throw new Error('[fs_storage] initStorage requires Electron app.getAppPath');
+  }
+  if (typeof app.isReady !== 'function') {
+    throw new Error('[fs_storage] initStorage requires Electron app.isReady');
+  }
+  if (app.isReady() !== true) {
     throw new Error('[fs_storage] initStorage called before app is ready');
   }
 
-  CONFIG_DIR = path.join(app.getPath('userData'), 'config');
-  APP_ROOT_DIR = app.getAppPath();
+  const userDataPath = app.getPath('userData');
+  if (typeof userDataPath !== 'string' || userDataPath.length === 0) {
+    throw new Error("[fs_storage] initStorage app.getPath('userData') returned invalid path");
+  }
+
+  const appRootDir = app.getAppPath();
+  if (typeof appRootDir !== 'string' || appRootDir.length === 0) {
+    throw new Error('[fs_storage] initStorage app.getAppPath() returned invalid path');
+  }
+
+  CONFIG_DIR = path.join(userDataPath, 'config');
+  APP_ROOT_DIR = appRootDir;
 }
 
 function getConfigDir() {
