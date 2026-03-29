@@ -294,7 +294,7 @@
       "import_extract_ocr_quota_or_rate_limited": "OCR is temporarily blocked by quota/rate limits. Wait and retry.",
       "import_extract_ocr_runtime_error": "An OCR runtime error occurred during import/extract. Check console and retry.",
       "import_extract_ocr_cancelled": "OCR import/extract was cancelled.",
-      "import_extract_ocr_cleanup_warning": "OCR finished but temporary remote cleanup failed. Retry or check account status.",
+      "import_extract_ocr_cleanup_warning": "OCR finished, but temporary remote file cleanup failed. Check your Google Drive folder.",
       "import_extract_ocr_apply_pending": "OCR extraction completed. Post-extraction apply flow is pending implementation.",
       "import_extract_native_runtime_error": "A native extraction runtime error occurred during import/extract. Check console and retry.",
       "import_extract_native_unreadable_or_corrupt": "The selected file is unreadable or corrupt for native extraction.",

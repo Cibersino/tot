@@ -283,7 +283,7 @@
       "import_extract_ocr_quota_or_rate_limited": "OCR cuota/rate limit mew pichi antü bloqueadongey. Pichi alünnge ka wiño küdaw.",
       "import_extract_ocr_runtime_error": "Importar/extraer mew OCR runtime welulkuy. Kintunge consola ka wiño küdaw.",
       "import_extract_ocr_cancelled": "OCR extracción katrüntuy.",
-      "import_extract_ocr_cleanup_warning": "OCR afmatuy, welu remote temporal cleanup welulkuy. Wiño küdaw kam cuenta estado kintunge.",
+      "import_extract_ocr_cleanup_warning": "OCR afi tañi küdaw, welu pepilay lifeltuam ti chillka kamapu mu. Adkintunge mi carpeta Google Drive mu.",
       "import_extract_ocr_apply_pending": "OCR extracción afmatuy. Inan püneal rüpü petu implementation mu müley.",
       "import_extract_native_runtime_error": "Importar/extraer mew extracción nativa runtime welulkuy. Kintunge consola ka wiño küdaw.",
       "import_extract_native_unreadable_or_corrupt": "Düllingelu archivo no pepikawün kam corrupto müley extracción nativa mew.",

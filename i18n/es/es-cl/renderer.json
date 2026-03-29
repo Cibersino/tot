@@ -283,7 +283,7 @@
       "import_extract_ocr_quota_or_rate_limited": "OCR quedó bloqueado por cuota o rate limit. Espera un rato y prueba otra vez.",
       "import_extract_ocr_runtime_error": "Hubo un cagazo en la ejecución OCR durante importar/extraer. Lorea la consola y prueba otra vez.",
       "import_extract_ocr_cancelled": "La extracción OCR quedó cancelada.",
-      "import_extract_ocr_cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota. Prueba otra vez o revisa la cuenta.",
+      "import_extract_ocr_cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
       "import_extract_ocr_apply_pending": "La extracción OCR terminó, pero la parte de aplicar el resultado después todavía está pendiente.",
       "import_extract_native_runtime_error": "Hubo un cagazo en la extracción nativa durante importar/extraer. Lorea la consola y prueba otra vez.",
       "import_extract_native_unreadable_or_corrupt": "El archivo elegido no se puede leer o está hecho bolsa pa' extracción nativa.",

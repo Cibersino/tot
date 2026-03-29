@@ -283,7 +283,7 @@
         "import_extract_ocr_quota_or_rate_limited": "OCR ist vorübergehend durch Quoten-/Ratenlimits blockiert. Warten Sie und versuchen Sie es erneut.",
         "import_extract_ocr_runtime_error": "Während des Importierens/Extrahierens ist ein OCR-Laufzeitfehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
         "import_extract_ocr_cancelled": "OCR-Importieren/Extrahieren wurde abgebrochen.",
-        "import_extract_ocr_cleanup_warning": "OCR wurde abgeschlossen, aber die temporäre Remote-Bereinigung ist fehlgeschlagen. Versuchen Sie es erneut oder prüfen Sie den Kontostatus.",
+        "import_extract_ocr_cleanup_warning": "OCR wurde abgeschlossen, aber die temporäre entfernte Dateibereinigung ist fehlgeschlagen. Prufen Sie Ihren Google-Drive-Ordner.",
         "import_extract_ocr_apply_pending": "Die OCR-Extraktion ist abgeschlossen. Die Anwendung des extrahierten Textes nach der Extraktion ist noch nicht implementiert.",
         "import_extract_native_runtime_error": "Während des Importierens/Extrahierens ist ein Laufzeitfehler bei der nativen Extraktion aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
         "import_extract_native_unreadable_or_corrupt": "Die ausgewählte Datei ist für die native Extraktion unlesbar oder beschädigt.",

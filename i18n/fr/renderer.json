@@ -283,7 +283,7 @@
         "import_extract_ocr_quota_or_rate_limited": "L'OCR est temporairement bloqué par des limites de quota/de débit. Attendez puis réessayez.",
         "import_extract_ocr_runtime_error": "Une erreur d'exécution OCR s'est produite pendant l'importation/extraction. Vérifiez la console et réessayez.",
         "import_extract_ocr_cancelled": "L'importation/extraction OCR a été annulée.",
-        "import_extract_ocr_cleanup_warning": "L'OCR est terminé, mais le nettoyage distant temporaire a échoué. Réessayez ou vérifiez l'état du compte.",
+        "import_extract_ocr_cleanup_warning": "L'OCR est termine, mais le nettoyage temporaire du fichier distant a echoue. Verifiez votre dossier Google Drive.",
         "import_extract_ocr_apply_pending": "L'extraction OCR est terminée. Le flux d'application post-extraction n'est pas encore implémenté.",
         "import_extract_native_runtime_error": "Une erreur d'exécution de l'extraction native s'est produite pendant l'importation/extraction. Vérifiez la console et réessayez.",
         "import_extract_native_unreadable_or_corrupt": "Le fichier sélectionné est illisible ou corrompu pour l'extraction native.",
