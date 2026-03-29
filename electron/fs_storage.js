@@ -30,6 +30,8 @@ log.debug('FS storage starting...');
 let CONFIG_DIR = null;
 let APP_ROOT_DIR = null;
 
+const ENSURE_DIR_OPTIONS = { recursive: true };
+
 // =============================================================================
 // Storage initialization
 // =============================================================================
@@ -140,10 +142,16 @@ function getBundledOcrGoogleDriveCredentialsFile() {
 // Directory ensure helpers
 // =============================================================================
 
+function ensureDirExists(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, ENSURE_DIR_OPTIONS);
+  }
+}
+
 function ensureConfigDir() {
   try {
     const dir = getConfigDir();
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    ensureDirExists(dir);
   } catch (err) {
     log.error('ensureConfigDir failed:', CONFIG_DIR || '(uninitialized)', err);
   }
@@ -153,9 +161,7 @@ function ensureConfigPresetsDir() {
   let presetsDir = null;
   try {
     presetsDir = getConfigPresetsDir();
-    if (!fs.existsSync(presetsDir)) {
-      fs.mkdirSync(presetsDir, { recursive: true });
-    }
+    ensureDirExists(presetsDir);
   } catch (err) {
     log.error('ensureConfigPresetsDir failed:', presetsDir || '(uninitialized)', err);
   }
@@ -165,9 +171,7 @@ function ensureCurrentTextSnapshotsDir() {
   let snapshotsDir = null;
   try {
     snapshotsDir = getCurrentTextSnapshotsDir();
-    if (!fs.existsSync(snapshotsDir)) {
-      fs.mkdirSync(snapshotsDir, { recursive: true });
-    }
+    ensureDirExists(snapshotsDir);
   } catch (err) {
     log.error('ensureCurrentTextSnapshotsDir failed:', snapshotsDir || '(uninitialized)', err);
   }
@@ -179,8 +183,8 @@ function ensureTasksDirs() {
   try {
     tasksDir = getTasksDir();
     listsDir = getTasksListsDir();
-    if (!fs.existsSync(tasksDir)) fs.mkdirSync(tasksDir, { recursive: true });
-    if (!fs.existsSync(listsDir)) fs.mkdirSync(listsDir, { recursive: true });
+    ensureDirExists(tasksDir);
+    ensureDirExists(listsDir);
   } catch (err) {
     log.error('ensureTasksDirs failed:', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', err);
   }
@@ -190,7 +194,7 @@ function ensureOcrGoogleDriveDir() {
   let ocrDir = null;
   try {
     ocrDir = getOcrGoogleDriveDir();
-    if (!fs.existsSync(ocrDir)) fs.mkdirSync(ocrDir, { recursive: true });
+    ensureDirExists(ocrDir);
   } catch (err) {
     log.error('ensureOcrGoogleDriveDir failed:', ocrDir || '(uninitialized)', err);
   }
@@ -200,12 +204,22 @@ function ensureOcrGoogleDriveDir() {
 // JSON helpers
 // =============================================================================
 
-const LOAD_JSON_KNOWN_FILES = new Set([
-  'current_text.json',
-  'user_settings.json',
-  'editor_state.json',
-  'task_editor_position.json',
-]);
+const LOAD_JSON_FILE_METADATA = Object.freeze({
+  'current_text.json': {
+    missingNote: ' (note: may be normal on first run; file is created on quit)',
+  },
+  'user_settings.json': {
+    missingNote: ' (note: may be normal on first run; file is created during startup)',
+  },
+  'editor_state.json': {
+    missingNote: ' (note: may be normal on first run; file is created when editor window is opened for the first time)',
+  },
+  'task_editor_position.json': {
+    missingNote: ' (note: may be normal on first run; file is created after the task editor window is opened and position is saved)',
+  },
+});
+
+const LOAD_JSON_KNOWN_FILES = new Set(Object.keys(LOAD_JSON_FILE_METADATA));
 
 function getLoadJsonOnceKey(kind, filePath) {
   const baseName = path.basename(String(filePath));
@@ -213,25 +227,19 @@ function getLoadJsonOnceKey(kind, filePath) {
   return `fs_storage.loadJson.${kind}.${variant}`;
 }
 
+function getLoadJsonMissingNote(filePath) {
+  const baseName = path.basename(String(filePath));
+  const metadata = LOAD_JSON_FILE_METADATA[baseName];
+  return metadata ? metadata.missingNote : '';
+}
+
 function loadJson(filePath, fallback = {}) {
   try {
     // Missing file is recoverable: callers decide what the fallback should be.
     if (!fs.existsSync(filePath)) {
-      const baseName = path.basename(String(filePath));
-      let note = '';
-      if (baseName === 'current_text.json') {
-        note = ' (note: may be normal on first run; file is created on quit)';
-      } else if (baseName === 'user_settings.json') {
-        note = ' (note: may be normal on first run; file is created during startup)';
-      } else if (baseName === 'editor_state.json') {
-        note = ' (note: may be normal on first run; file is created when editor window is opened for the first time)';
-      } else if (baseName === 'task_editor_position.json') {
-        note = ' (note: may be normal on first run; file is created after the task editor window is opened and position is saved)';
-      }
-
       log.warnOnce(
         getLoadJsonOnceKey('missing', filePath),
-        `loadJson missing (using fallback):${note}`,
+        `loadJson missing (using fallback):${getLoadJsonMissingNote(filePath)}`,
         filePath
       );
       return fallback;
@@ -269,9 +277,7 @@ function saveJson(filePath, obj) {
   try {
     // Ensure the parent folder exists so callers do not depend on init ordering.
     const parentDir = path.dirname(filePath);
-    if (!fs.existsSync(parentDir)) {
-      fs.mkdirSync(parentDir, { recursive: true });
-    }
+    ensureDirExists(parentDir);
 
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
   } catch (err) {
