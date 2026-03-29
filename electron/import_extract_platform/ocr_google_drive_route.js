@@ -561,7 +561,7 @@ async function runGoogleDriveOcrRoute({
         const parsedCleanupFailure = parseProviderFailure(cleanupErr);
         const cleanupCode = classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed';
         cleanupWarnings.push(`cleanup:${cleanupCode}`);
-        log.warn('OCR cleanup failed:', {
+        log.warn('OCR cleanup delete temp document failed (ignored):', {
           tempDocumentId,
           warning: `cleanup:${cleanupCode}`,
           statusCode: parsedCleanupFailure.statusCode,
