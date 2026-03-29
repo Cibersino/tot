@@ -229,7 +229,7 @@
         return;
       }
 
-      const latestAttemptId = preparationRun ? preparationRun.attemptId : 0;
+      let latestAttemptId = preparationRun ? preparationRun.attemptId : 0;
       const hasAttemptFreshnessGuard = typeof isLatestImportExtractPrepareAttempt === 'function';
       if (!hasAttemptFreshnessGuard) {
         log.warn('isLatestImportExtractPrepareAttempt dependency unavailable; stale prepare protection disabled.');
@@ -248,6 +248,45 @@
         }
         if (routePreference !== 'native' && routePreference !== 'ocr') {
           log.info('import/extract route-choice cancelled by user.');
+          return;
+        }
+      }
+
+      if (routePreference === 'ocr') {
+        const ocrRouteRecovery = await maybeRecoverImportExtractOcrSetupAndRetry({
+          preparation,
+          preparationRequest,
+          prepareImportExtractSelectedFile,
+          routePreference,
+        });
+        if (ocrRouteRecovery && ocrRouteRecovery.handled) {
+          return;
+        }
+        if (ocrRouteRecovery && Object.prototype.hasOwnProperty.call(ocrRouteRecovery, 'preparationRun')) {
+          preparationRun = ocrRouteRecovery.preparationRun;
+          if (preparationRun && preparationRun.stale === true) {
+            log.info('import/extract OCR route prepare retry ignored because a newer prepare attempt exists.');
+            return;
+          }
+          preparation = preparationRun ? preparationRun.preparation : null;
+        } else if (ocrRouteRecovery && Object.prototype.hasOwnProperty.call(ocrRouteRecovery, 'preparation')) {
+          preparation = ocrRouteRecovery.preparation;
+        }
+
+        if (!preparation || preparation.ok !== true) {
+          log.error('import/extract OCR route recovery prepare IPC failed:', preparation);
+          notifyMain(resolvePrimaryAlertKey(preparation));
+          return;
+        }
+
+        if (preparation.prepareFailed === true) {
+          notifyMain(resolvePrimaryAlertKey(preparation));
+          return;
+        }
+
+        latestAttemptId = preparationRun ? preparationRun.attemptId : latestAttemptId;
+        if (hasAttemptFreshnessGuard && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
+          log.info('import/extract OCR route preparation ignored because a newer prepare attempt exists.');
           return;
         }
       }
