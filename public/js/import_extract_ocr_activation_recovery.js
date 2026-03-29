@@ -32,8 +32,8 @@
   }
 
   function isRecoverableImportExtractOcrSetupCode(code) {
-    return code === 'setup_incomplete'
-      || code === 'ocr_activation_required'
+    return code === 'ocr_activation_required'
+      || code === 'ocr_token_state_invalid'
       || code === 'auth_failed';
   }
 

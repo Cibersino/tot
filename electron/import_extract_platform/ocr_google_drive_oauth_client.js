@@ -6,15 +6,14 @@
 // =============================================================================
 // Shared Google OAuth helpers for OCR activation/runtime/disconnect flows.
 // Responsibilities:
-// - Read and parse Google OAuth credentials JSON from disk.
 // - Build a configured OAuth2 client from credentials + stored token payload.
+// - Build a token-only OAuth2 client for explicit disconnect-time revocation.
 // - Select the preferred token to revoke for explicit disconnect flows.
 
 // =============================================================================
 // Imports
 // =============================================================================
 
-const fs = require('fs');
 const { google } = require('googleapis');
 
 // =============================================================================
@@ -25,13 +24,27 @@ function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
-function readGoogleCredentialsFile(credentialsPath) {
-  if (!hasNonEmptyString(credentialsPath)) {
-    throw new Error('Google credentials path is invalid.');
+function resolveCanonicalRedirectUri(redirectUris) {
+  if (!Array.isArray(redirectUris)) return '';
+
+  for (const candidate of redirectUris) {
+    if (!hasNonEmptyString(candidate)) continue;
+    return String(candidate).trim();
   }
 
-  const raw = fs.readFileSync(String(credentialsPath), 'utf8').replace(/^\uFEFF/, '');
-  return JSON.parse(raw);
+  return '';
+}
+
+function describePersistedGoogleToken(tokenPayload) {
+  const payload = tokenPayload && typeof tokenPayload === 'object' ? tokenPayload : null;
+  const hasAccessToken = hasNonEmptyString(payload && payload.access_token);
+  const hasRefreshToken = hasNonEmptyString(payload && payload.refresh_token);
+
+  return {
+    hasAccessToken,
+    hasRefreshToken,
+    acceptablePersistedTokenShape: hasAccessToken || hasRefreshToken,
+  };
 }
 
 function buildGoogleOAuthClient(credentialsJson, tokenJson) {
@@ -46,9 +59,7 @@ function buildGoogleOAuthClient(credentialsJson, tokenJson) {
     throw new Error('Google credentials missing client_id/client_secret.');
   }
 
-  const redirectUri = Array.isArray(root.redirect_uris) && root.redirect_uris.length
-    ? String(root.redirect_uris[0] || '')
-    : '';
+  const redirectUri = resolveCanonicalRedirectUri(root.redirect_uris);
 
   const oauthClient = new google.auth.OAuth2(
     String(root.client_id),
@@ -59,9 +70,16 @@ function buildGoogleOAuthClient(credentialsJson, tokenJson) {
   return oauthClient;
 }
 
+function buildGoogleTokenRevocationClient(tokenJson) {
+  const oauthClient = new google.auth.OAuth2();
+  oauthClient.setCredentials(tokenJson && typeof tokenJson === 'object' ? tokenJson : {});
+  return oauthClient;
+}
+
 function selectPreferredRevocationToken(tokenPayload) {
   const payload = tokenPayload && typeof tokenPayload === 'object' ? tokenPayload : {};
-  const refreshToken = hasNonEmptyString(payload.refresh_token) ? payload.refresh_token.trim() : '';
+  const tokenState = describePersistedGoogleToken(payload);
+  const refreshToken = tokenState.hasRefreshToken ? payload.refresh_token.trim() : '';
   if (refreshToken) {
     return {
       token: refreshToken,
@@ -69,7 +87,7 @@ function selectPreferredRevocationToken(tokenPayload) {
     };
   }
 
-  const accessToken = hasNonEmptyString(payload.access_token) ? payload.access_token.trim() : '';
+  const accessToken = tokenState.hasAccessToken ? payload.access_token.trim() : '';
   if (accessToken) {
     return {
       token: accessToken,
@@ -88,8 +106,9 @@ function selectPreferredRevocationToken(tokenPayload) {
 // =============================================================================
 
 module.exports = {
-  readGoogleCredentialsFile,
+  describePersistedGoogleToken,
   buildGoogleOAuthClient,
+  buildGoogleTokenRevocationClient,
   selectPreferredRevocationToken,
 };
 

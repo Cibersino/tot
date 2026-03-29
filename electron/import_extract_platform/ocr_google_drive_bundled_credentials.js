@@ -1,3 +1,4 @@
+// electron/import_extract_platform/ocr_google_drive_bundled_credentials.js
 'use strict';
 
 // =============================================================================
@@ -17,6 +18,7 @@
 const fs = require('fs');
 const path = require('path');
 const Log = require('../log');
+const { readGoogleOAuthCredentialsFile } = require('./ocr_google_drive_credentials_file');
 
 const log = Log.get('ocr-google-drive-bundled-credentials');
 
@@ -43,55 +45,27 @@ function ensureParentDir(filePath) {
   }
 }
 
-function hasValidCredentialsShape(parsedCredentials) {
-  if (!parsedCredentials || typeof parsedCredentials !== 'object') return false;
-
-  const candidate = parsedCredentials.installed || parsedCredentials.web;
-  if (!candidate || typeof candidate !== 'object') return false;
-  if (!hasNonEmptyString(candidate.client_id)) return false;
-  if (!hasNonEmptyString(candidate.client_secret)) return false;
-  if (!Array.isArray(candidate.redirect_uris)) return false;
-  return candidate.redirect_uris.some(hasNonEmptyString);
-}
-
-function readJsonFileStrict(filePath) {
-  const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-  return JSON.parse(raw);
-}
-
 function validateCredentialsFile(filePath) {
-  if (!hasNonEmptyString(filePath) || !fs.existsSync(filePath)) {
-    return {
-      ok: false,
-      code: 'missing_file',
-      parsed: null,
-    };
-  }
-
-  try {
-    const parsed = readJsonFileStrict(filePath);
-    if (!hasValidCredentialsShape(parsed)) {
-      return {
-        ok: false,
-        code: 'invalid_shape',
-        parsed: null,
-      };
-    }
-
+  const credentialsRead = readGoogleOAuthCredentialsFile(filePath);
+  if (credentialsRead.ok) {
     return {
       ok: true,
       code: '',
-      parsed,
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      code: 'read_failed',
-      parsed: null,
-      errorName: safeErrorName(err),
-      errorMessage: safeErrorMessage(err),
+      parsed: credentialsRead.parsed,
     };
   }
+
+  return {
+    ok: false,
+    code: credentialsRead.code === 'empty_file'
+      || credentialsRead.code === 'invalid_json'
+      || credentialsRead.code === 'read_failed'
+      ? 'read_failed'
+      : String(credentialsRead.code || 'read_failed'),
+    parsed: null,
+    errorName: credentialsRead.errorName || '',
+    errorMessage: credentialsRead.errorMessage || '',
+  };
 }
 
 // =============================================================================
@@ -109,9 +83,11 @@ function materializeBundledCredentials({
       copied: false,
       repairedRuntimeMirror: false,
       reason: 'runtime_ready',
+      errorCode: '',
     };
   }
 
+  const repairedRuntimeMirror = runtimeValidation.code !== 'missing_file';
   const bundledValidation = validateCredentialsFile(bundledCredentialsPath);
   if (!bundledValidation.ok) {
     const detailsSafeForLogs = {
@@ -131,8 +107,11 @@ function materializeBundledCredentials({
     return {
       ok: false,
       copied: false,
-      repairedRuntimeMirror: runtimeValidation.code !== 'missing_file',
+      repairedRuntimeMirror,
       reason: 'bundled_credentials_unavailable',
+      errorCode: bundledValidation.code === 'missing_file'
+        ? 'credentials_missing'
+        : 'credentials_invalid',
       detailsSafeForLogs,
     };
   }
@@ -140,7 +119,6 @@ function materializeBundledCredentials({
   try {
     ensureParentDir(runtimeCredentialsPath);
     fs.writeFileSync(runtimeCredentialsPath, JSON.stringify(bundledValidation.parsed, null, 2), 'utf8');
-    const repairedRuntimeMirror = runtimeValidation.code !== 'missing_file';
 
     log.info('Google OCR bundled credentials materialized into canonical runtime path:', {
       runtimeCredentialsPath,
@@ -154,6 +132,7 @@ function materializeBundledCredentials({
       copied: true,
       repairedRuntimeMirror,
       reason: repairedRuntimeMirror ? 'runtime_repaired_from_bundle' : 'runtime_created_from_bundle',
+      errorCode: '',
     };
   } catch (err) {
     const detailsSafeForLogs = {
@@ -167,8 +146,9 @@ function materializeBundledCredentials({
     return {
       ok: false,
       copied: false,
-      repairedRuntimeMirror: runtimeValidation.code !== 'missing_file',
+      repairedRuntimeMirror,
       reason: 'runtime_materialization_failed',
+      errorCode: 'platform_runtime_failed',
       detailsSafeForLogs,
     };
   }

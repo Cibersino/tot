@@ -282,6 +282,7 @@
       "import_extract_ocr_activation_disclosure_close_aria": "Cerrar diálogo de activación de Google OCR",
       "import_extract_ocr_activation_success": "Activación OCR completada. Reintentando extracción.",
       "import_extract_ocr_activation_cancelled": "La activación OCR fue cancelada. Importar/extraer no continuó.",
+      "import_extract_ocr_token_state_invalid": "El estado guardado de inicio de sesión de Google OCR es inválido. Reconecta Google OCR y vuelve a intentarlo.",
       "import_extract_ocr_activation_failed": "La activación OCR falló. Revisa setup/auth y vuelve a intentarlo.",
       "import_extract_ocr_disconnect_success": "Google OCR fue desconectado. El token guardado de Google fue revocado y se eliminó el estado local de inicio de sesión.",
       "import_extract_ocr_disconnect_not_connected": "Google OCR no está conectado actualmente en esta instancia de la app.",

@@ -45,11 +45,9 @@ const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
-const ocrGoogleDriveSetupValidationIpc = require('./import_extract_platform/ocr_google_drive_setup_validation_ipc');
 const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
 const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
 const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
-const importExtractOcrGateIpc = require('./import_extract_platform/import_extract_ocr_gate_ipc');
 const importExtractOcrActivationIpc = require('./import_extract_platform/import_extract_ocr_activation_ipc');
 const importExtractOcrDisconnectIpc = require('./import_extract_platform/import_extract_ocr_disconnect_ipc');
 const importExtractPrepareIpc = require('./import_extract_platform/import_extract_prepare_ipc');
@@ -175,7 +173,7 @@ function resolveGoogleDriveOcrRuntimePaths() {
   const tokenPath = getOcrGoogleDriveTokenFile();
   const bundledCredentialsPath = getBundledOcrGoogleDriveCredentialsFile();
 
-  materializeBundledCredentials({
+  const bundledCredentialsBootstrap = materializeBundledCredentials({
     runtimeCredentialsPath: credentialsPath,
     bundledCredentialsPath,
   });
@@ -183,6 +181,19 @@ function resolveGoogleDriveOcrRuntimePaths() {
   return {
     credentialsPath,
     tokenPath,
+    bundledCredentialsFailureCode: bundledCredentialsBootstrap && bundledCredentialsBootstrap.ok !== true
+      ? String(bundledCredentialsBootstrap.errorCode || '')
+      : '',
+    bundledCredentialsFailureReason: bundledCredentialsBootstrap && bundledCredentialsBootstrap.ok !== true
+      ? String(bundledCredentialsBootstrap.reason || '')
+      : '',
+    bundledCredentialsFailureDetailsSafeForLogs:
+      bundledCredentialsBootstrap
+      && bundledCredentialsBootstrap.ok !== true
+      && bundledCredentialsBootstrap.detailsSafeForLogs
+      && typeof bundledCredentialsBootstrap.detailsSafeForLogs === 'object'
+        ? bundledCredentialsBootstrap.detailsSafeForLogs
+        : {},
   };
 }
 
@@ -1586,10 +1597,6 @@ app.whenReady().then(() => {
   });
 
   // Import/extract + OCR integration points.
-  ocrGoogleDriveSetupValidationIpc.registerIpc(ipcMain, {
-    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
-  });
-
   importExtractProcessingModeIpc.registerIpc(ipcMain, {
     getWindows: () => ({
       mainWin,
@@ -1623,13 +1630,6 @@ app.whenReady().then(() => {
         stopwatchRunning: !!(crono && crono.running),
       };
     },
-  });
-
-  importExtractOcrGateIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
   });
 
   importExtractOcrActivationIpc.registerIpc(ipcMain, {
