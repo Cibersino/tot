@@ -152,10 +152,6 @@ async function confirmDisconnect(mainWin) {
   return !!(result && result.response === 0);
 }
 
-function buildRevocationClient(tokenJson) {
-  return buildGoogleTokenRevocationClient(tokenJson);
-}
-
 async function revokeStoredToken({ tokenJson }) {
   const selected = selectPreferredRevocationToken(tokenJson);
   if (!selected.token) {
@@ -164,7 +160,7 @@ async function revokeStoredToken({ tokenJson }) {
     throw err;
   }
 
-  const oauthClient = buildRevocationClient(tokenJson);
+  const oauthClient = buildGoogleTokenRevocationClient(tokenJson);
   await oauthClient.revokeToken(selected.token);
   return {
     revokedTokenKind: selected.kind,
@@ -301,6 +297,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           },
         });
       }
+      const revokedTokenKind = revocation && revocation.revokedTokenKind
+        ? revocation.revokedTokenKind
+        : '';
 
       try {
         deleteEncryptedTokenFile(tokenPath);
@@ -308,7 +307,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         log.error('import/extract OCR disconnect failed after revocation: token delete failed.', {
           source: request.source,
           reason: request.reason,
-          revokedTokenKind: revocation && revocation.revokedTokenKind ? revocation.revokedTokenKind : '',
+          revokedTokenKind,
           errorName: safeErrorName(err),
           errorMessage: safeErrorMessage(err),
         });
@@ -316,7 +315,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           detailsSafeForLogs: {
             stage: 'token_delete',
             reason: 'delete_failed',
-            revokedTokenKind: revocation && revocation.revokedTokenKind ? revocation.revokedTokenKind : '',
+            revokedTokenKind,
             errorName: safeErrorName(err),
             errorMessage: safeErrorMessage(err),
             source: request.source,
@@ -328,13 +327,13 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       log.info('import/extract OCR disconnected successfully:', {
         source: request.source,
         reason: request.reason,
-        revokedTokenKind: revocation && revocation.revokedTokenKind ? revocation.revokedTokenKind : '',
+        revokedTokenKind,
       });
       return buildSuccess({
         detailsSafeForLogs: {
           source: request.source,
           requestReason: request.reason,
-          revokedTokenKind: revocation && revocation.revokedTokenKind ? revocation.revokedTokenKind : '',
+          revokedTokenKind,
         },
       });
     } catch (err) {
