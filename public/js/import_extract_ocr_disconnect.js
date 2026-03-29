@@ -65,7 +65,7 @@
     try {
       disconnectImportExtractOcr = getDisconnectMethod();
     } catch (err) {
-      log.error('Error requesting disconnectImportExtractOcr:', err);
+      log.error('Error resolving disconnectImportExtractOcr bridge:', err);
       window.Notify.notifyMain(failureAlertKey);
       return;
     }
@@ -82,7 +82,7 @@
         reason: 'user_disconnect_google_ocr',
       });
     } catch (err) {
-      log.error('Error requesting disconnectImportExtractOcr:', err);
+      log.error('Error invoking disconnectImportExtractOcr:', err);
       window.Notify.notifyMain(failureAlertKey);
       return;
     }
