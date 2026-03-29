@@ -26,18 +26,6 @@
   // Helpers
   // =============================================================================
 
-  function resolveImportExtractAlertKey(rawKey, fallbackKey) {
-    const normalized = typeof rawKey === 'string' ? rawKey.trim() : '';
-    if (normalized) return normalized;
-    return fallbackKey;
-  }
-
-  function isRecoverableImportExtractOcrSetupCode(code) {
-    return code === 'ocr_activation_required'
-      || code === 'ocr_token_state_invalid'
-      || code === 'auth_failed';
-  }
-
   function resolveRecoveryCode({ preparation, routePreference } = {}) {
     if (!preparation || preparation.ok !== true) return '';
 
@@ -73,6 +61,18 @@
     return '';
   }
 
+  function isRecoverableImportExtractOcrSetupCode(code) {
+    return code === 'ocr_activation_required'
+      || code === 'ocr_token_state_invalid'
+      || code === 'auth_failed';
+  }
+
+  function resolveImportExtractAlertKey(rawKey, fallbackKey) {
+    const normalized = typeof rawKey === 'string' ? rawKey.trim() : '';
+    if (normalized) return normalized;
+    return fallbackKey;
+  }
+
   function safeNotify(notifyMain, alertKey) {
     if (typeof notifyMain !== 'function') return;
     try {
@@ -80,15 +80,6 @@
     } catch (err) {
       log.error('Failed to notify OCR recovery alert:', alertKey, err);
     }
-  }
-
-  function buildDisclosureDeclinedResult() {
-    return {
-      ok: false,
-      cancelled: true,
-      code: 'ocr_activation_disclosure_declined',
-      alertKey: '',
-    };
   }
 
   async function promptActivationDisclosure() {
@@ -170,9 +161,8 @@
     }
 
     if (!disclosureAccepted) {
-      const declineResult = buildDisclosureDeclinedResult();
       log.info('import/extract OCR activation disclosure declined by user:', {
-        code: declineResult.code,
+        code: 'ocr_activation_disclosure_declined',
       });
       return {
         preparation,
