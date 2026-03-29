@@ -28,7 +28,6 @@
   function configure(nextDeps = {}) {
     deps = {
       getOptionalElectronMethod: null,
-      notifyMain: null,
       ...nextDeps,
     };
   }
@@ -41,19 +40,6 @@
       throw new Error('[import-extract-ocr-disconnect] configure() must run before using the disconnect flow');
     }
     return deps;
-  }
-
-  function notifyMain(alertKey) {
-    const { notifyMain: notify } = requireConfiguredDeps();
-    if (typeof notify !== 'function') {
-      log.warnOnce(
-        'importExtractOcrDisconnect.notifyMain.unavailable',
-        'notifyMain dependency unavailable; alert notification skipped:',
-        alertKey
-      );
-      return;
-    }
-    notify(alertKey);
   }
 
   function getDisconnectMethod() {
@@ -75,7 +61,7 @@
     try {
       const disconnectImportExtractOcr = getDisconnectMethod();
       if (!disconnectImportExtractOcr) {
-        notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
+        window.Notify.notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
         return;
       }
 
@@ -85,7 +71,7 @@
       });
 
       if (!result || typeof result !== 'object') {
-        notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
+        window.Notify.notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
         return;
       }
 
@@ -98,10 +84,10 @@
         : (result.ok === true
           ? 'renderer.alerts.import_extract_ocr_disconnect_success'
           : 'renderer.alerts.import_extract_ocr_disconnect_failed');
-      notifyMain(alertKey);
+      window.Notify.notifyMain(alertKey);
     } catch (err) {
       log.error('Error requesting disconnectImportExtractOcr:', err);
-      notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
+      window.Notify.notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
     }
   }
 

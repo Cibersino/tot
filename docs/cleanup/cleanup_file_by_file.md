@@ -2,11 +2,11 @@
 
 ## Elección de archivo: 
 
-- En proceso: `electron\import_extract_platform\ocr_google_drive_route.js`
+- En proceso: `public\js\import_extract_ocr_disconnect.js`
 
-- Archivos ya ordenados y limpiados (10): `electron\import_extract_platform\ocr_google_drive_bundled_credentials.js`, `electron\import_extract_platform\import_extract_supported_formats.js`, `electron\import_extract_platform\ocr_google_drive_provider_failure.js`, `electron\import_extract_platform\ocr_google_drive_provider_failure_classification.js`, `electron\import_extract_platform\ocr_google_drive_credentials_file.js`, `electron\import_extract_platform\ocr_google_drive_setup_validation.js`, `electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js`, `electron\import_extract_platform\ocr_google_drive_oauth_client.js`, `electron\import_extract_platform\ocr_google_drive_token_storage.js`, `electron\import_extract_platform\import_extract_ocr_activation_ipc.js`.
+- Archivos ya ordenados y limpiados (11): `electron\import_extract_platform\ocr_google_drive_bundled_credentials.js`, `electron\import_extract_platform\import_extract_supported_formats.js`, `electron\import_extract_platform\ocr_google_drive_provider_failure.js`, `electron\import_extract_platform\ocr_google_drive_provider_failure_classification.js`, `electron\import_extract_platform\ocr_google_drive_credentials_file.js`, `electron\import_extract_platform\ocr_google_drive_setup_validation.js`, `electron\import_extract_platform\import_extract_ocr_disconnect_ipc.js`, `electron\import_extract_platform\ocr_google_drive_oauth_client.js`, `electron\import_extract_platform\ocr_google_drive_token_storage.js`, `electron\import_extract_platform\import_extract_ocr_activation_ipc.js`, `electron\import_extract_platform\ocr_google_drive_route.js`.
 
-- Faltan (4): `public\js\import_extract_ocr_disconnect.js`, `public\js\import_extract_ocr_activation_disclosure_modal.js`, `public\js\import_extract_ocr_activation_recovery.js`, `electron\fs_storage.js`.
+- Faltan (3): `public\js\import_extract_ocr_activation_disclosure_modal.js`, `public\js\import_extract_ocr_activation_recovery.js`, `electron\fs_storage.js`.
 
 ## Principios base de comportamiento (normativo)
 
