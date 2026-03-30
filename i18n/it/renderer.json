@@ -27,6 +27,8 @@
         "snapshot_save": "Salva il testo corrente in uno snapshot",
         "task_new": "Crea una nuova attività",
         "task_load": "Carica un'attività",
+        "cibersino_website": "Apri il sito di Cibersino",
+        "cibersino_patreon": "Apri il Patreon di Cibersino",
         "new_preset": "Crea un nuovo preset",
         "edit_preset": "Modifica il preset selezionato",
         "delete_preset": "Elimina il preset selezionato",

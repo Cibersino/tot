@@ -31,6 +31,7 @@ const ALLOWED_EXTERNAL_HOSTS = new Set([
   'doi.org',
   'totapp.org',
   'www.totapp.org',
+  'www.patreon.com',
 ]);
 const ALLOWED_MAILTO_ADDRESS = 'cibersino@gmail.com';
 const APP_DOC_FILES = Object.freeze({

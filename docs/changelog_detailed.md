@@ -56,6 +56,7 @@ Reglas:
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
 - Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
 - Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
+- Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino` y ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente.
 
 ### Cambiado
 
@@ -77,6 +78,14 @@ Reglas:
   - `public/renderer.js`: se unifica la renderización del tiempo estimado en un helper compartido para que `#resTime` y el multiplicador reciban exactamente la misma base canónica desde `updatePreviewAndResults(...)` y `updateTimeOnlyFromStats()`.
   - `public/style.css`: ajuste mínimo de layout para la nueva fila del multiplicador; además se reduce un poco la tipografía y el gap vertical de `Words` / `Characters` / `Characters (no spaces)`, se achica el espacio bajo la caja rosada del tiempo estimado y se desplaza levemente la fila del multiplicador hacia la derecha.
   - i18n renderer (`en` / `es`): no se agregan keys nuevas para esta UI final; el chrome del multiplicador queda fijo como `x` a la izquierda y `:` en la salida derivada.
+- Branding/header principal (Issue #174):
+  - `public/index.html`: la franja superior deja de ocultar el bloque de logos con `aria-hidden`, mantiene `toT` como logo no interactivo y envuelve los logos de Cibersino y Patreon en controles clickeables con tooltip/aria-label.
+  - `public/style.css`: se ajusta el layout del header para soportar los logos clickeables y el nuevo símbolo de Patreon sin inflar el resto de la UI.
+  - `public/js/main_logo_links.js` (nuevo): módulo renderer dedicado que hace el binding de los links fijos del header, aplica tooltips i18n (`es` / `en`) y enruta ambos destinos vía `electronAPI.openExternalUrl(...)`.
+  - `public/renderer.js`: integración mínima del nuevo módulo para aplicar traducciones y registrar el binding, manteniendo el wiring fuera del entry file principal.
+  - `electron/link_openers.js`: se amplía de forma acotada la allowlist de `open-external-url` para incluir `www.patreon.com`; `totapp.org` ya seguía permitido por la misma superficie.
+  - `public/assets/patreon.png`: se agrega asset runtime local para el logo de Patreon, copiado desde `tools_local` en lugar de reutilizar el asset del sitio web.
+  - i18n renderer (`en` / `es`): nuevas keys `renderer.main.tooltips.cibersino_website` y `renderer.main.tooltips.cibersino_patreon`.
 
 ### Arreglado
 
@@ -95,6 +104,11 @@ Reglas:
   - nuevos IDs `resultsTimeMultiplierLabel`, `resultsTimeMultiplierInput` y `resultsTimeMultiplierOutput` en la ventana principal.
   - nueva superficie global renderer `window.ResultsTimeMultiplier` con entrypoint `setBaseTimeParts(...)`.
   - sin cambios de IPC, preload, storage o persistencia.
+- Branding/header principal:
+  - nueva superficie global renderer `window.MainLogoLinks` con entrypoints `applyTranslations(...)` y `bindBrandLinks(...)`.
+  - `open-external-url` mantiene el contrato de `https` + allowlist, pero ahora contempla `www.patreon.com` además de `totapp.org` para las superficies fijas de branding.
+  - nuevos IDs renderer `devLogoLink`, `patreonLogoLink` y `patreonLogo` en la ventana principal.
+  - nuevas keys i18n `renderer.main.tooltips.cibersino_website` y `renderer.main.tooltips.cibersino_patreon` solo en `en` y `es`.
 
 ### Archivos
 
@@ -103,7 +117,9 @@ Reglas:
 - `public/index.html`
 - `public/style.css`
 - `public/js/results_time_multiplier.js`
+- `public/js/main_logo_links.js`
 - `public/js/constants.js`
+- `public/assets/patreon.png`
 - `i18n/arn/renderer.json`
 - `i18n/de/renderer.json`
 - `i18n/en/renderer.json`
@@ -113,6 +129,8 @@ Reglas:
 - `i18n/it/renderer.json`
 - `i18n/pt/renderer.json`
 - `docs/test_suite.md`
+- `docs/tree_folders_files.md`
+- `docs/issues/issue_174.md`
 - `public/info/instrucciones.es.html`
 - `public/info/instrucciones.en.html`
 

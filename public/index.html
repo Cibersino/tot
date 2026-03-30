@@ -14,9 +14,16 @@
 
 <body>
   <!-- Logos -->
-  <div class="logo-container" aria-hidden="true">
+  <div class="logo-container">
     <img id="appLogo" src="./assets/logo-tot.svg" alt="toT" />
-    <img id="devLogo" src="./assets/logo-cibersino.svg" alt="@Cibersino" />
+    <button id="devLogoLink" class="logo-link logo-link--dev" type="button"
+      title="Abrir sitio de Cibersino" aria-label="Abrir sitio de Cibersino">
+      <img id="devLogo" src="./assets/logo-cibersino.svg" alt="" aria-hidden="true" />
+    </button>
+    <button id="patreonLogoLink" class="logo-link logo-link--patreon" type="button"
+      title="Abrir Patreon de Cibersino" aria-label="Abrir Patreon de Cibersino">
+      <img id="patreonLogo" src="./assets/patreon.png" alt="" aria-hidden="true" />
+    </button>
   </div>
 
   <!-- Main container -->
@@ -245,6 +252,7 @@
   <script src="./js/results_time_multiplier.js"></script>
   <script src="./js/crono.js"></script>
   <script src="./js/info_modal_links.js"></script>
+  <script src="./js/main_logo_links.js"></script>
   <script src="./js/current_text_snapshots.js"></script>
   <script src="./js/text_apply_canonical.js"></script>
   <script src="./js/import_extract_status_ui.js"></script>

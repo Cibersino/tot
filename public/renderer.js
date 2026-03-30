@@ -83,6 +83,7 @@ if (!importExtractStatusUi
 }
 const btnImportExtractAbort = importExtractStatusUi.getAbortButton();
 const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
+const mainLogoLinks = window.MainLogoLinks || null;
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
   || typeof resultsTimeMultiplier.setBaseTimeParts !== 'function') {
@@ -421,6 +422,14 @@ function applyTranslations() {
   };
   importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
   importExtractDragDrop.applyTranslations({ tRenderer });
+  if (mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
+    mainLogoLinks.applyTranslations({ tRenderer });
+  } else {
+    log.warnOnce(
+      'renderer.mainLogoLinks.applyTranslations.unavailable',
+      'MainLogoLinks.applyTranslations unavailable; brand logo labels will use defaults.'
+    );
+  }
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
@@ -1835,6 +1844,15 @@ function configureImportExtractModules() {
 }
 
 configureImportExtractModules();
+
+if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
+  mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });
+} else {
+  log.warnOnce(
+    'renderer.mainLogoLinks.bindBrandLinks.unavailable',
+    'MainLogoLinks.bindBrandLinks unavailable; brand logo links disabled.'
+  );
+}
 
 // =============================================================================
 // Import/extract entrypoint wiring
