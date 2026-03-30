@@ -25,11 +25,11 @@
   // =============================================================================
   let deps = null;
 
-  function configure(nextDeps = {}) {
+  function configure({
+    getOptionalElectronMethod = null,
+  } = {}) {
     deps = {
-      getOptionalElectronMethod: null,
-      notifyMain: null,
-      ...nextDeps,
+      getOptionalElectronMethod,
     };
   }
 
@@ -41,19 +41,6 @@
       throw new Error('[import-extract-ocr-disconnect] configure() must run before using the disconnect flow');
     }
     return deps;
-  }
-
-  function notifyMain(alertKey) {
-    const { notifyMain: notify } = requireConfiguredDeps();
-    if (typeof notify !== 'function') {
-      log.warnOnce(
-        'importExtractOcrDisconnect.notifyMain.unavailable',
-        'notifyMain dependency unavailable; alert notification skipped:',
-        alertKey
-      );
-      return;
-    }
-    notify(alertKey);
   }
 
   function getDisconnectMethod() {
@@ -72,37 +59,54 @@
   // Public entrypoint
   // =============================================================================
   async function startFromPreferencesMenu() {
-    try {
-      const disconnectImportExtractOcr = getDisconnectMethod();
-      if (!disconnectImportExtractOcr) {
-        notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
-        return;
-      }
+    const failureAlertKey = 'renderer.alerts.import_extract_ocr_disconnect_failed';
 
-      const result = await disconnectImportExtractOcr({
+    let disconnectImportExtractOcr = null;
+    try {
+      disconnectImportExtractOcr = getDisconnectMethod();
+    } catch (err) {
+      log.error('Error resolving disconnectImportExtractOcr bridge:', err);
+      window.Notify.notifyMain(failureAlertKey);
+      return;
+    }
+
+    if (!disconnectImportExtractOcr) {
+      window.Notify.notifyMain(failureAlertKey);
+      return;
+    }
+
+    let result = null;
+    try {
+      result = await disconnectImportExtractOcr({
         source: 'preferences_menu',
         reason: 'user_disconnect_google_ocr',
       });
-
-      if (!result || typeof result !== 'object') {
-        notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
-        return;
-      }
-
-      if (result.cancelled === true) {
-        return;
-      }
-
-      const alertKey = typeof result.alertKey === 'string' && result.alertKey.trim()
-        ? result.alertKey.trim()
-        : (result.ok === true
-          ? 'renderer.alerts.import_extract_ocr_disconnect_success'
-          : 'renderer.alerts.import_extract_ocr_disconnect_failed');
-      notifyMain(alertKey);
     } catch (err) {
-      log.error('Error requesting disconnectImportExtractOcr:', err);
-      notifyMain('renderer.alerts.import_extract_ocr_disconnect_failed');
+      log.error('Error invoking disconnectImportExtractOcr:', err);
+      window.Notify.notifyMain(failureAlertKey);
+      return;
     }
+
+    if (!result || typeof result !== 'object') {
+      log.error('disconnectImportExtractOcr returned invalid result:', result);
+      window.Notify.notifyMain(failureAlertKey);
+      return;
+    }
+
+    if (result.cancelled === true) {
+      return;
+    }
+
+    const alertKey = typeof result.alertKey === 'string'
+      ? result.alertKey.trim()
+      : '';
+    if (!alertKey) {
+      log.warn('disconnectImportExtractOcr returned invalid alertKey; using fallback alert key:', result);
+    }
+
+    window.Notify.notifyMain(alertKey || (result.ok === true
+      ? 'renderer.alerts.import_extract_ocr_disconnect_success'
+      : failureAlertKey));
   }
 
   // =============================================================================

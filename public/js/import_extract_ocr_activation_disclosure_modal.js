@@ -21,6 +21,10 @@
   }
   const log = window.getLogger('import-extract-ocr-activation-disclosure-modal');
   log.debug('Import/extract OCR activation disclosure modal starting...');
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
+    throw new Error('[import-extract-ocr-activation-disclosure-modal] RendererI18n.tRenderer unavailable; cannot continue');
+  }
+  const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
   // UI elements
@@ -58,13 +62,6 @@
       && btnClose);
   }
 
-  function translate(key, fallback) {
-    if (window.RendererI18n && typeof window.RendererI18n.tRenderer === 'function') {
-      return window.RendererI18n.tRenderer(key, fallback);
-    }
-    return fallback;
-  }
-
   async function openPrivacyPolicy() {
     const api = window.electronAPI;
     if (!api || typeof api.openAppDoc !== 'function') {
@@ -78,53 +75,53 @@
     try {
       const result = await api.openAppDoc('privacy-policy');
       if (!result || result.ok !== true) {
-        log.warn('OCR activation disclosure privacy doc blocked or failed:', result);
+        log.warn('openAppDoc("privacy-policy") failed (ignored):', result);
       }
     } catch (err) {
-      log.warn('OCR activation disclosure privacy doc request failed:', err);
+      log.warn('openAppDoc("privacy-policy") request failed (ignored):', err);
     }
   }
 
   function applyModalCopy() {
-    title.textContent = translate(
+    title.textContent = tRenderer(
       'renderer.alerts.import_extract_ocr_activation_disclosure_title',
       'Review Google OCR activation'
     );
-    intro.textContent = translate(
+    intro.textContent = tRenderer(
       'renderer.alerts.import_extract_ocr_activation_disclosure_intro',
       'toT uses Google services for OCR. Continuing will open your browser so you can authorize this app.'
     );
-    itemSelectedFiles.textContent = translate(
+    itemSelectedFiles.textContent = tRenderer(
       'renderer.alerts.import_extract_ocr_activation_disclosure_selected_files',
       'Only files you choose for OCR are sent to Google.'
     );
-    itemLocalStorage.textContent = translate(
+    itemLocalStorage.textContent = tRenderer(
       'renderer.alerts.import_extract_ocr_activation_disclosure_local_storage',
       'This app stores app-managed Google OAuth credentials for OCR and local Google token state in this app instance.'
     );
-    itemRemoteCleanup.textContent = translate(
+    itemRemoteCleanup.textContent = tRenderer(
       'renderer.alerts.import_extract_ocr_activation_disclosure_remote_cleanup',
       'After export, the app attempts to remove the temporary Google document from your Google Drive.'
     );
-    itemDisconnect.textContent = translate(
+    itemDisconnect.textContent = tRenderer(
       'renderer.alerts.import_extract_ocr_activation_disclosure_disconnect',
       'You can later disconnect via Preferences > Disconnect Google OCR.'
     );
-    privacyLink.textContent = translate(
+    privacyLink.textContent = tRenderer(
       'renderer.alerts.import_extract_ocr_activation_disclosure_privacy_link',
       'Open privacy policy'
     );
-    btnProceed.textContent = translate(
+    btnProceed.textContent = tRenderer(
       'renderer.alerts.import_extract_ocr_activation_disclosure_proceed_button',
       'Continue to Google'
     );
-    btnCancel.textContent = translate(
+    btnCancel.textContent = tRenderer(
       'renderer.alerts.import_extract_ocr_activation_disclosure_cancel_button',
       'Cancel'
     );
     btnClose.setAttribute(
       'aria-label',
-      translate(
+      tRenderer(
         'renderer.alerts.import_extract_ocr_activation_disclosure_close_aria',
         'Close OCR activation disclosure dialog'
       )

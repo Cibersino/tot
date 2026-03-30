@@ -20,6 +20,10 @@
   }
   const log = window.getLogger('import-extract-drag-drop');
   log.debug('Import/extract drag/drop module starting...');
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
+    throw new Error('[import-extract-drag-drop] RendererI18n.tRenderer unavailable; cannot continue');
+  }
+  const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
   // Shared state
@@ -29,7 +33,6 @@
   let listenersAttached = false;
   let overlay = null;
   let overlayTitle = null;
-  let tRendererRef = null;
 
   // =============================================================================
   // Helpers
@@ -39,13 +42,6 @@
       throw new Error('[import-extract-drag-drop] configure() must run before drag/drop handling');
     }
     return deps;
-  }
-
-  function translate(key, fallback) {
-    if (typeof tRendererRef === 'function') {
-      return tRendererRef(key, fallback);
-    }
-    return fallback;
   }
 
   function ensureOverlay() {
@@ -68,7 +64,7 @@
   function syncOverlayText() {
     ensureOverlay();
     if (overlayTitle) {
-      overlayTitle.textContent = translate(
+      overlayTitle.textContent = tRenderer(
         'renderer.main.processing.import_extract_drop_here',
         'Drop file to import/extract text'
       );
@@ -260,8 +256,7 @@
     attachListeners();
   }
 
-  function applyTranslations({ tRenderer } = {}) {
-    tRendererRef = typeof tRenderer === 'function' ? tRenderer : null;
+  function applyTranslations() {
     syncOverlayText();
   }
 

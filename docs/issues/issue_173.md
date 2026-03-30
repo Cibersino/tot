@@ -21,6 +21,10 @@ This issue is to define and apply one renderer-side rule:
 - renderer call sites should use one consistent `window.Notify.*` surface
 - call sites should not carry local fallback, guard, or wrapper logic for the same underlying dialog behavior
 
+In this issue, “owned by `notify.js`” means more than adding a new alias under `window.Notify`.
+It means `notify.js` becomes the clear maintained public entry point for the renderer dialog behavior,
+so centralization reduces surface fragmentation instead of only moving the same indirection to a new file.
+
 ## Scope
 
 This issue covers renderer-process dialog flows only.
@@ -115,7 +119,7 @@ Concrete problems:
 - some flows call `window.Notify` directly while others wrap it locally
 - some flows inject notify functions as dependencies while others reach into `window.Notify`
 - some flows carry local fallback behavior and some do not
-- some renderer dialogs are centralized, others are feature-local APIs
+- some renderer dialogs are centralized, while others still expose separate feature-local public APIs
 
 This makes the dialog layer harder to maintain because there is no single place to answer questions like:
 
@@ -135,7 +139,10 @@ That means:
 - `window.Notify` becomes the single public renderer dialog surface
 - renderer call sites use `window.Notify.*` directly instead of local wrappers for the same dialog behavior
 - renderer alert and confirm behavior is exposed from `notify.js`, not from direct browser globals at feature call sites
-- renderer-owned custom DOM modal flows are also surfaced through `window.Notify` instead of separate feature-local dialog APIs
+- renderer-owned custom DOM modal flows are also integrated into `notify.js` as maintained public dialog entry points, instead of remaining separate feature-local public APIs
+
+For custom modals, the goal is real ownership consolidation, not a thin forwarding alias that leaves the feature-local API as the practical owner.
+If `Notify` becomes the new public surface, the old scattered public path should stop being the intended integration point.
 
 This issue is intentionally broader than only replacing `alert(...)` and `confirm(...)`.
 
@@ -151,7 +158,7 @@ The target is a single renderer dialog architecture, not just a smaller count of
 - blocking confirmation dialogs
 - renderer-owned custom modal prompts
 
-The API names should be explicit and internally consistent.
+The API names should be explicit and internally consistent, and the module should be the real public owner of those flows rather than a simple re-export layer over scattered feature globals.
 
 ### 2. Remove direct browser dialog calls from renderer features
 
@@ -167,12 +174,15 @@ If a helper remains, it must represent real feature-specific behavior, not API i
 
 ### 4. Fold renderer custom modal ownership into the central API
 
-Custom renderer modal flows should still be allowed where the UI needs them, but their public access path should be centralized through `window.Notify` rather than scattered per-feature globals.
+Custom renderer modal flows should still be allowed where the UI needs them, but their maintained public access path should be centralized through `window.Notify` rather than scattered per-feature globals.
 
 This includes both:
 
 - main-window custom modal flows
 - task-editor custom modal flows
+
+The intent here is to reduce the number of renderer dialog surfaces that callers need to know about.
+Adding a thin `window.Notify.*` forwarder without consolidating ownership or deprecating the old public path does not fully solve the problem described in this issue.
 
 ### 5. Remove call-site guards and fallbacks around renderer dialog access
 
@@ -194,7 +204,7 @@ The renderer dialog surface should be a stable contract. Call sites should use i
 
 2. Design the final `window.Notify` renderer API so those categories have one explicit home.
 
-3. Move or wrap existing custom modal modules under that API without changing their user-facing flow unnecessarily.
+3. Move existing custom modal modules under that API in a way that makes `Notify` the clear public owner, without changing their user-facing flow unnecessarily.
 
 4. Remove direct browser dialog calls from renderer feature files.
 
@@ -213,7 +223,7 @@ The renderer dialog surface should be a stable contract. Call sites should use i
 - Renderer feature files do not call browser `confirm(...)` directly.
 - Renderer dialog access is centralized in [`public/js/notify.js`](c:\Users\manue\Documents\toT\tot\public\js\notify.js).
 - `window.Notify` is the single renderer dialog API surface.
-- Renderer-owned custom modal flows are exposed through the same central API surface.
+- Renderer-owned custom modal flows are exposed through the same central API surface, and no longer rely on scattered feature-local public dialog APIs as the intended integration path.
 - Renderer call sites do not contain local notify fallbacks or availability guards for the standard dialog API.
 - The final renderer dialog API is consistent enough that a new renderer dialog flow has one obvious integration path.
 

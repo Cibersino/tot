@@ -108,6 +108,22 @@ function buildResult({
   };
 }
 
+function buildResultWithError({
+  state = 'failure',
+  summary = '',
+  provenance,
+  code,
+  message,
+  detailsSafeForLogs = {},
+}) {
+  return buildResult({
+    state,
+    summary,
+    provenance,
+    error: buildError(code, message, detailsSafeForLogs),
+  });
+}
+
 function classifyPersistedTokenReadFailure(tokenReadCode) {
   const normalized = String(tokenReadCode || '').trim();
   if (normalized === 'missing_file') {
@@ -155,6 +171,16 @@ function ensureNotAborted(isAborted) {
     abortError.code = 'aborted_by_user';
     throw abortError;
   }
+}
+
+function getErrorCode(err) {
+  return String(err && err.code ? err.code : '');
+}
+
+function getErrorDetailsSafeForLogs(err) {
+  return err && err.detailsSafeForLogs && typeof err.detailsSafeForLogs === 'object'
+    ? err.detailsSafeForLogs
+    : {};
 }
 
 async function runWithRateLimitRetry({ operationName, log, isAborted, fn }) {
@@ -266,35 +292,29 @@ async function runGoogleDriveOcrRoute({
   };
 
   if (!fileInfo.absoluteFilePath || !fs.existsSync(fileInfo.absoluteFilePath)) {
-    return buildResult({
-      state: 'failure',
+    return buildResultWithError({
       summary: 'OCR route failed before upload: source file is missing.',
       provenance,
-      error: buildError(
-        'unreadable_or_corrupt',
-        'Selected file is missing or unreadable.',
-        {
-          stage: 'preflight',
-          reason: 'missing_source_file',
-        }
-      ),
+      code: 'unreadable_or_corrupt',
+      message: 'Selected file is missing or unreadable.',
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: 'missing_source_file',
+      },
     });
   }
 
   if (!fileInfo.sourceMimeType) {
-    return buildResult({
-      state: 'failure',
+    return buildResultWithError({
       summary: 'OCR route blocked: unsupported source format.',
       provenance,
-      error: buildError(
-        'unsupported_format',
-        'Selected file format is not supported by OCR route.',
-        {
-          stage: 'preflight',
-          reason: 'unsupported_extension',
-          sourceFileExt: fileInfo.sourceFileExt,
-        }
-      ),
+      code: 'unsupported_format',
+      message: 'Selected file format is not supported by OCR route.',
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: 'unsupported_extension',
+        sourceFileExt: fileInfo.sourceFileExt,
+      },
     });
   }
 
@@ -304,19 +324,16 @@ async function runGoogleDriveOcrRoute({
       : (bundledCredentialsFailureCode === 'credentials_invalid'
         ? 'OCR credentials are invalid.'
         : 'OCR credentials could not be prepared due to a runtime/platform error.');
-    return buildResult({
-      state: 'failure',
+    return buildResultWithError({
       summary: 'OCR route failed before upload: bundled credentials are unavailable.',
       provenance,
-      error: buildError(
-        bundledCredentialsFailureCode,
-        message,
-        {
-          stage: 'preflight',
-          reason: bundledCredentialsFailureReason || 'bundled_credentials_unavailable',
-          ...bundledCredentialsFailureDetailsSafeForLogs,
-        }
-      ),
+      code: bundledCredentialsFailureCode,
+      message,
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: bundledCredentialsFailureReason || 'bundled_credentials_unavailable',
+        ...bundledCredentialsFailureDetailsSafeForLogs,
+      },
     });
   }
 
@@ -328,21 +345,18 @@ async function runGoogleDriveOcrRoute({
     const credentialsCode = credentialsRead.code === 'missing_file'
       ? 'credentials_missing'
       : 'credentials_invalid';
-    return buildResult({
-      state: 'failure',
+    return buildResultWithError({
       summary: 'OCR route failed before upload: credentials missing or invalid.',
       provenance,
-      error: buildError(
-        credentialsCode,
-        'OCR credentials are missing or invalid.',
-        {
-          stage: 'preflight',
-          reason: credentialsCode,
-          credentialsReadCode: credentialsRead.code || 'invalid_shape',
-          errorName: credentialsRead.errorName || '',
-          errorMessage: credentialsRead.errorMessage || '',
-        }
-      ),
+      code: credentialsCode,
+      message: 'OCR credentials are missing or invalid.',
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: credentialsCode,
+        credentialsReadCode: credentialsRead.code || 'invalid_shape',
+        errorName: credentialsRead.errorName || '',
+        errorMessage: credentialsRead.errorMessage || '',
+      },
     });
   }
   credentialsJson = credentialsRead.parsed;
@@ -352,37 +366,31 @@ async function runGoogleDriveOcrRoute({
   } catch (err) {
     const tokenReadCode = String(err && err.code ? err.code : '');
     const tokenFailure = classifyPersistedTokenReadFailure(tokenReadCode);
-    return buildResult({
-      state: 'failure',
+    return buildResultWithError({
       summary: tokenFailure.summary,
       provenance,
-      error: buildError(
-        tokenFailure.code,
-        tokenFailure.message,
-        {
-          stage: 'preflight',
-          reason: 'token_read_failed',
-          tokenReadCode,
-          errorName: toSafeErrorName(err),
-        }
-      ),
+      code: tokenFailure.code,
+      message: tokenFailure.message,
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: 'token_read_failed',
+        tokenReadCode,
+        errorName: toSafeErrorName(err),
+      },
     });
   }
 
   const tokenState = describePersistedGoogleToken(tokenJson);
   if (!tokenState.acceptablePersistedTokenShape) {
-    return buildResult({
-      state: 'failure',
+    return buildResultWithError({
       summary: 'OCR route failed before upload: saved token state is invalid.',
       provenance,
-      error: buildError(
-        'ocr_token_state_invalid',
-        'Saved Google OCR sign-in state is invalid. Reconnect and try again.',
-        {
-          stage: 'preflight',
-          reason: 'invalid_token_shape',
-        }
-      ),
+      code: 'ocr_token_state_invalid',
+      message: 'Saved Google OCR sign-in state is invalid. Reconnect and try again.',
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: 'invalid_token_shape',
+      },
     });
   }
 
@@ -390,19 +398,16 @@ async function runGoogleDriveOcrRoute({
   try {
     oauthClient = buildGoogleOAuthClient(credentialsJson, tokenJson);
   } catch (err) {
-    return buildResult({
-      state: 'failure',
+    return buildResultWithError({
       summary: 'OCR route failed before upload: OAuth client initialization failed.',
       provenance,
-      error: buildError(
-        'auth_failed',
-        'OCR authentication is invalid. Reconnect your account.',
-        {
-          stage: 'preflight',
-          reason: 'oauth_client_init_failed',
-          errorName: toSafeErrorName(err),
-        }
-      ),
+      code: 'auth_failed',
+      message: 'OCR authentication is invalid. Reconnect your account.',
+      detailsSafeForLogs: {
+        stage: 'preflight',
+        reason: 'oauth_client_init_failed',
+        errorName: toSafeErrorName(err),
+      },
     });
   }
 
@@ -491,57 +496,47 @@ async function runGoogleDriveOcrRoute({
       error: null,
     });
   } catch (err) {
-    if (String(err && err.code || '') === 'aborted_by_user') {
-      result = buildResult({
+    const errorCode = getErrorCode(err);
+
+    if (errorCode === 'aborted_by_user') {
+      result = buildResultWithError({
         state: 'cancelled',
         summary: 'OCR route cancelled by user.',
         provenance,
-        error: buildError(
-          'aborted_by_user',
-          'OCR extraction was cancelled by user.',
-          {
-            stage: 'runtime',
-            reason: 'user_abort',
-          }
-        ),
+        code: 'aborted_by_user',
+        message: 'OCR extraction was cancelled by user.',
+        detailsSafeForLogs: {
+          stage: 'runtime',
+          reason: 'user_abort',
+        },
       });
-    } else if (String(err && err.code || '') === 'image_normalizer_unavailable') {
-      result = buildResult({
-        state: 'failure',
+    } else if (errorCode === 'image_normalizer_unavailable') {
+      result = buildResultWithError({
         summary: 'OCR route failed before upload: image normalizer is unavailable.',
         provenance,
-        error: buildError(
-          'platform_runtime_failed',
-          'OCR preprocessing runtime is unavailable in this app build.',
-          {
-            stage: 'preflight',
-            reason: 'image_normalizer_unavailable',
-            errorName: toSafeErrorName(err),
-            errorMessage: toSafeErrorMessage(err),
-            ...(err && err.detailsSafeForLogs && typeof err.detailsSafeForLogs === 'object'
-              ? err.detailsSafeForLogs
-              : {}),
-          }
-        ),
+        code: 'platform_runtime_failed',
+        message: 'OCR preprocessing runtime is unavailable in this app build.',
+        detailsSafeForLogs: {
+          stage: 'preflight',
+          reason: 'image_normalizer_unavailable',
+          errorName: toSafeErrorName(err),
+          errorMessage: toSafeErrorMessage(err),
+          ...getErrorDetailsSafeForLogs(err),
+        },
       });
-    } else if (String(err && err.code || '') === 'webp_to_png_conversion_failed') {
-      result = buildResult({
-        state: 'failure',
+    } else if (errorCode === 'webp_to_png_conversion_failed') {
+      result = buildResultWithError({
         summary: 'OCR route failed before upload: WEBP normalization failed.',
         provenance,
-        error: buildError(
-          'unreadable_or_corrupt',
-          'Selected WEBP file could not be converted for OCR upload.',
-          {
-            stage: 'preflight',
-            reason: 'webp_to_png_conversion_failed',
-            errorName: toSafeErrorName(err),
-            errorMessage: toSafeErrorMessage(err),
-            ...(err && err.detailsSafeForLogs && typeof err.detailsSafeForLogs === 'object'
-              ? err.detailsSafeForLogs
-              : {}),
-          }
-        ),
+        code: 'unreadable_or_corrupt',
+        message: 'Selected WEBP file could not be converted for OCR upload.',
+        detailsSafeForLogs: {
+          stage: 'preflight',
+          reason: 'webp_to_png_conversion_failed',
+          errorName: toSafeErrorName(err),
+          errorMessage: toSafeErrorMessage(err),
+          ...getErrorDetailsSafeForLogs(err),
+        },
       });
     } else {
       const stage = tempDocumentId ? 'export' : 'upload_convert';
@@ -566,7 +561,7 @@ async function runGoogleDriveOcrRoute({
         const parsedCleanupFailure = parseProviderFailure(cleanupErr);
         const cleanupCode = classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed';
         cleanupWarnings.push(`cleanup:${cleanupCode}`);
-        log.warn('OCR cleanup failed:', {
+        log.warn('OCR cleanup delete temp document failed (ignored):', {
           tempDocumentId,
           warning: `cleanup:${cleanupCode}`,
           statusCode: parsedCleanupFailure.statusCode,
@@ -591,18 +586,15 @@ async function runGoogleDriveOcrRoute({
   }
 
   if (!result) {
-    result = buildResult({
-      state: 'failure',
+    result = buildResultWithError({
       summary: 'OCR route failed unexpectedly.',
       provenance,
-      error: buildError(
-        'unknown',
-        'OCR extraction failed due to an unknown runtime error.',
-        {
-          stage: 'runtime',
-          reason: 'missing_result',
-        }
-      ),
+      code: 'unknown',
+      message: 'OCR extraction failed due to an unknown runtime error.',
+      detailsSafeForLogs: {
+        stage: 'runtime',
+        reason: 'missing_result',
+      },
     });
   }
 
