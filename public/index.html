@@ -91,8 +91,13 @@
     <!-- 3) COUNTING RESULTS -->
     <aside class="results" aria-labelledby="results-title">
       <h4 id="results-title" class="section-title">RESULTADOS DEL CONTEO</h4>
-      <div class="result-highlight" role="status" aria-live="polite">
-        <div class="big-time" id="resTime">⏱ Tiempo estimado de lectura: 0h 0m 0s</div>
+      <div class="result-highlight">
+        <div class="big-time" id="resTime" role="status" aria-live="polite">⏱ Tiempo estimado de lectura: 0h 0m 0s</div>
+        <div class="results-multiplier-row">
+          <label id="resultsTimeMultiplierLabel" for="resultsTimeMultiplierInput">x</label>
+          <input id="resultsTimeMultiplierInput" type="number" min="1" step="1" value="1" />
+          <output id="resultsTimeMultiplierOutput" aria-live="polite">: 0h 0m 0s</output>
+        </div>
       </div>
       <!-- Row: results (left) + toggle (right) -->
       <div class="results-row">
@@ -237,6 +242,7 @@
   <script src="./js/presets.js"></script>
   <script src="./js/count.js"></script>
   <script src="./js/format.js"></script>
+  <script src="./js/results_time_multiplier.js"></script>
   <script src="./js/crono.js"></script>
   <script src="./js/info_modal_links.js"></script>
   <script src="./js/current_text_snapshots.js"></script>
