@@ -27,6 +27,8 @@
         "snapshot_save": "Elkünun wirin snapshot weyel tati",
         "task_new": "Dewman we tarea",
         "task_load": "Kintun tarea",
+        "cibersino_website": "Cibersino web mew",
+        "cibersino_patreon": "Cibersino Patreon mew",
         "new_preset": "Dewman we preset",
         "edit_preset": "Wirin düllilu preset",
         "delete_preset": "Ñamümün düllilu preset",
@@ -291,15 +293,11 @@
       "import_extract_native_cancelled": "Extracción nativa katrüntuy.",
       "import_extract_native_unsupported_format": "Tüfachi archivo formato no soportadongey extracción nativa rüpü mew.",
       "import_extract_native_apply_pending": "Extracción nativa afmatuy. Inan püneal rüpü petu implementation mu müley.",
-      "wip_test_velocidad": "WIP: Faw nülai test lef chillkatun küpalechi version mu.",
       "wip_diseno_skins": "WIP: Faw nülai düllin skins küpalechi version mu.",
       "wip_diseno_crono": "WIP: Faw nülai configuration üngümwe küpalechi version mu.",
       "wip_diseno_fuentes": "WIP: Faw nülai düllin wirintun küpalechi version mu.",
       "wip_diseno_colores": "WIP: Faw nülai düllin vvün küpalechi version mu.",
-      "wip_shortcuts": "WIP: Faw nülai düllin shortcuts küpalechi version mu.",
-      "wip_avisos": "WIP: Faw pengelai we dungu küpalechi version mu.",
-      "wip_discord": "WIP: Faw nülai Discord küpalechi version mu.",
-      "wip_colabora": "WIP: Faw pengelai chumngechi kelluafui küpalechi version mu."
+      "wip_shortcuts": "WIP: Faw nülai düllin shortcuts küpalechi version mu."
     },
     "editor_alerts": {
       "paste_too_big": "Wirin rume fütra pültrüal. Püne tati botones ventana mu.",

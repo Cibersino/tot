@@ -27,6 +27,8 @@
         "snapshot_save": "Speichern Sie den aktuellen Text in einem Snapshot",
         "task_new": "Neue Aufgabe",
         "task_load": "Aufgabe laden",
+        "cibersino_website": "Cibersino-Website öffnen",
+        "cibersino_patreon": "Cibersino-Patreon öffnen",
         "new_preset": "Erstellen Sie ein neues Preset",
         "edit_preset": "Bearbeiten Sie das ausgewählte Preset",
         "delete_preset": "Löschen Sie das ausgewählte Preset",
@@ -291,15 +293,11 @@
         "import_extract_native_cancelled": "Die native Extraktion wurde abgebrochen.",
         "import_extract_native_unsupported_format": "Dieses Dateiformat wird von der nativen Extraktionsroute nicht unterstützt.",
         "import_extract_native_apply_pending": "Die native Extraktion ist abgeschlossen. Die Anwendung des extrahierten Textes nach der Extraktion ist noch nicht implementiert.",
-        "wip_test_velocidad": "WIP: Der Lesegeschwindigkeitstest wird hier in einer zukünftigen Version geöffnet.",
         "wip_diseno_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",
         "wip_diseno_crono": "WIP: Die Einstellungen für die schwebende Stoppuhr werden hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_fuentes": "WIP: Der Schriftarten-Selektor wird hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_colores": "WIP: Der Farb-Selektor wird hier in einer zukünftigen Version geöffnet.",
-      "wip_shortcuts": "WIP: Der Tastenkombinations-Selektor wird hier in einer zukünftigen Version geöffnet.",
-      "wip_avisos": "WIP: Die Ankündigungen und Neuigkeiten werden hier in einer zukünftigen Version angezeigt.",
-      "wip_discord": "WIP: Der Discord-Link wird hier in einer zukünftigen Version geöffnet.",
-      "wip_colabora": "WIP: Informationen zum Mitwirken werden hier in einer zukünftigen Version angezeigt."
+      "wip_shortcuts": "WIP: Der Tastenkombinations-Selektor wird hier in einer zukünftigen Version geöffnet."
     },
       "editor_alerts": {
         "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",

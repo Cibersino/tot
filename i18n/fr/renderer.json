@@ -27,6 +27,8 @@
         "snapshot_save": "Sauvegarder le texte actuel dans un snapshot",
         "task_new": "Créer une nouvelle tâche",
         "task_load": "Charger une tâche",
+        "cibersino_website": "Ouvrir le site de Cibersino",
+        "cibersino_patreon": "Ouvrir le Patreon de Cibersino",
         "new_preset": "Créer un nouveau preset",
         "edit_preset": "Modifier le preset sélectionné",
         "delete_preset": "Supprimer le preset sélectionné",
@@ -291,15 +293,11 @@
         "import_extract_native_cancelled": "L'extraction native a été annulée.",
         "import_extract_native_unsupported_format": "Ce format de fichier n'est pas pris en charge par la route d'extraction native.",
         "import_extract_native_apply_pending": "L'extraction native est terminée. Le flux d'application post-extraction n'est pas encore implémenté.",
-        "wip_test_velocidad": "WIP : Le test de vitesse de lecture s'ouvrira ici dans une version future.",
         "wip_diseno_skins": "WIP : Le sélecteur de skins s'ouvrira ici dans une version future.",
         "wip_diseno_crono": "WIP : Les paramètres du chronomètre flottant s'ouvriront ici dans une version future.",
       "wip_diseno_fuentes": "WIP : Le sélecteur de polices de caractères s'ouvrira ici dans une version future.",
       "wip_diseno_colores": "WIP : Le sélecteur de couleurs s'ouvrira ici dans une version future.",
-      "wip_shortcuts": "WIP : Le sélecteur de raccourcis clavier s'ouvrira ici dans une version future.",
-      "wip_avisos": "WIP : Les annonces et nouvelles apparaîtront ici dans une version future.",
-      "wip_discord": "WIP : Le lien Discord s'ouvrira ici dans une version future.",
-      "wip_colabora": "WIP : Les informations sur la manière de collaborer apparaîtront ici dans une version future."
+      "wip_shortcuts": "WIP : Le sélecteur de raccourcis clavier s'ouvrira ici dans une version future."
     },
       "editor_alerts": {
         "paste_too_big": "Le texte est trop volumineux pour être collé directement. Utilisez les boutons de la fenêtre principale.",
