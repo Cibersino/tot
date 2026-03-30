@@ -20,6 +20,10 @@
   }
   const log = window.getLogger('import-extract-route-choice-modal');
   log.debug('Import/extract route-choice modal starting...');
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
+    throw new Error('[import-extract-route-choice-modal] RendererI18n.tRenderer unavailable; cannot continue');
+  }
+  const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
   // UI elements
@@ -56,18 +60,11 @@
     return options.includes('native') && options.includes('ocr');
   }
 
-  function translate(tRenderer, key, fallback) {
-    if (typeof tRenderer === 'function') {
-      return tRenderer(key, fallback);
-    }
-    return fallback;
-  }
-
   // =============================================================================
   // Public entrypoints
   // =============================================================================
 
-  async function promptRouteChoice({ preparation, tRenderer } = {}) {
+  async function promptRouteChoice({ preparation } = {}) {
     if (!hasDualRouteOptions(preparation)) {
       return '';
     }
@@ -76,33 +73,27 @@
       return '';
     }
 
-    const titleText = translate(
-      tRenderer,
+    const titleText = tRenderer(
       'renderer.alerts.import_extract_route_choice_title',
       'Choose extraction route'
     );
-    const messageText = translate(
-      tRenderer,
+    const messageText = tRenderer(
       'renderer.alerts.import_extract_route_choice_message',
       'Both extraction routes are available for this PDF. Choose one to continue.'
     );
-    const nativeText = translate(
-      tRenderer,
+    const nativeText = tRenderer(
       'renderer.alerts.import_extract_route_choice_native_button',
       'Use native'
     );
-    const ocrText = translate(
-      tRenderer,
+    const ocrText = tRenderer(
       'renderer.alerts.import_extract_route_choice_ocr_button',
       'Use OCR'
     );
-    const cancelText = translate(
-      tRenderer,
+    const cancelText = tRenderer(
       'renderer.alerts.import_extract_route_choice_cancel_button',
       'Cancel'
     );
-    const closeAriaText = translate(
-      tRenderer,
+    const closeAriaText = tRenderer(
       'renderer.alerts.import_extract_route_choice_close_aria',
       'Close extraction route dialog'
     );

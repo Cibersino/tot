@@ -115,6 +115,365 @@ As of 2026-03-26:
 
 ## Log
 
+### OP-0171
+
+- Date/time: 2026-03-30 00:38:28 -03:00
+- Operation: Align the public website homepage copy with the shipped Issue 53 import/extract feature.
+- Why:
+  - After the issue acceptance-closeout reconciliation, the next agreed scope is the website.
+  - The website homepages still describe the app generically as analysis/counting/OCR tooling and do not present import/extract as a shipped feature.
+- Changes made:
+  - Updated `website/public/index.html` metadata to describe the app as a file-import/extraction + OCR + reading-planning tool.
+  - Updated `website/public/es/index.html` metadata to describe the shipped import/extract feature more accurately.
+  - Updated `website/public/es/index.html` body copy to mention text import/extraction from text files, images, and PDFs.
+  - Updated `website/public/en/index.html` metadata to describe the shipped import/extract feature more accurately.
+  - Updated `website/public/en/index.html` body copy to mention text import/extraction from text files, images, and PDFs.
+- Checklist updates:
+  - No checkbox toggles yet in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `website/public/index.html`
+  - `website/public/es/index.html`
+  - `website/public/en/index.html`
+- Evidence:
+  - `website/public/index.html` still says `analysis, counting, and OCR tools` in metadata.
+  - `website/public/es/index.html` still says `análisis, conteo y herramientas OCR` in metadata and its body copy does not mention import/extract.
+  - `website/public/en/index.html` still says `analysis, counting, and OCR tools` in metadata and its body copy does not mention import/extract.
+- Outcome / next step:
+  - Website homepage copy now reflects import/extract as a shipped feature instead of generic OCR tooling.
+  - Next step is to continue Section 8 closeout from the remaining changelog/release-note work when requested.
+
+### OP-0170
+
+- Date/time: 2026-03-30 00:34:19 -03:00
+- Operation: Reconcile the Issue 53 waiting-UX acceptance-closeout by recording the Section 6 drift in the same style already used for the PDF route-choice drift.
+- Why:
+  - The user explicitly requested a redo after the previous attempt replaced the old wording instead of recording the drift.
+  - `docs/issues/issue_53.md` still contains the original `progress` / `ETA` wording, while the authoritative Section 6 decision is already locked in `docs/issues/issue_53_implementation_plan.md`.
+- Changes made:
+  - Added a dated drift note under `## Processing UX` in `docs/issues/issue_53.md`.
+  - Preserved the original `progress` / `ETA` wording as decision history instead of replacing it.
+  - Recorded the locked shipped baseline as honest waiting UI + elapsed processing time.
+  - Recorded the interpretation impact for later user-flow / observability / acceptance / open-workstream references.
+  - Added downstream clarification notes under:
+    - `## User flow`
+    - `## Observability`
+    - `## Acceptance criteria`
+    - `## Open workstreams`
+  - Kept the historical downstream `progress` / `ETA` wording in place while making the acceptance-closeout interpretation explicit.
+- Checklist updates:
+  - No checkbox toggles yet in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Existing issue wording still says:
+    - `progress must be shown`
+    - `ETA must be shown and should be realistic`
+    - user flow step 7 says `visible progress and ETA`
+    - acceptance criteria says OCR files must be processed with `visible progress, realistic ETA`
+  - Existing authoritative Section 6 lock in `docs/issues/issue_53_implementation_plan.md` says:
+    - no dedicated progress for Issue 53
+    - no ETA for Issue 53
+    - honest waiting UI + elapsed processing time instead
+- Outcome / next step:
+  - Waiting-UX drift is now recorded in the same style as the earlier PDF route-choice drift.
+  - Next step is to continue Section 8 closeout from the remaining open documentation/release-note items when requested.
+
+### OP-0168
+
+- Date/time: 2026-03-30 00:15:35 -03:00
+- Operation: Update the README screenshot asset reference to use the basic-guide GIF instead of the static main-window images.
+- Why:
+  - The user explicitly preferred `public/assets/instrucciones/guia-basica.gif` for the README.
+  - The README currently points to static screenshots in both language sections.
+- Changes made:
+  - Replaced the Spanish README screenshot reference under `## Capturas de pantalla`.
+  - Replaced the English README screenshot reference under `## Screenshots`.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `README.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Current README screenshot references before edit:
+    - `README.md:85` -> `public/assets/instrucciones/ventana-principal-completa.png`
+    - `README.md:247` -> `public/assets/instrucciones/ventana-principal-completa.en.png`
+  - Post-edit verification:
+    - `README.md:85` -> `public/assets/instrucciones/guia-basica.gif`
+    - `README.md:247` -> `public/assets/instrucciones/guia-basica.gif`
+    - `git diff --check -- README.md docs/issues/issue_53_operation_tracker.md` -> clean
+- Outcome / next step:
+  - README now uses the same GIF in both language sections.
+  - Next step is user review or any further README polish requested.
+
+### OP-0167
+
+- Date/time: 2026-03-30 00:09:00 -03:00
+- Operation: Fix the staged `README.md` Issue 53 inaccuracies identified in OP-0166.
+- Why:
+  - The user agreed with the staged README review findings and asked for the fixes.
+  - The current staged README still understates supported formats and incorrectly describes OCR as local.
+- Changes made:
+  - Updated the ES/EN feature bullets to remove `OCR local` / `local OCR`.
+  - Expanded the explicit ES/EN format lists to include `.md`, `.html`, `.htm`, and `.bmp`.
+  - Tightened the `drive.file` runtime note so it reads as user-facing README text.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `README.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - OP-0166 findings:
+    - `README.md:24` / `README.md:183` used inaccurate `OCR local` / `local OCR` wording
+    - those same bullets omitted `.md`, `.html`, `.htm`, and `.bmp`
+    - `README.md:59` / `README.md:221` used a terse `drive.file` note
+  - Post-edit verification:
+    - `README.md:24` now lists `txt`, `md`, `html`, `htm`, `docx`, `pdf`, `png`, `jpg`, `jpeg`, `webp`, `bmp` and says `con OCR`
+    - `README.md:59` now says `El OCR con Google usa el alcance drive.file`
+    - `README.md:183` now lists `txt`, `md`, `html`, `htm`, `docx`, `pdf`, `png`, `jpg`, `jpeg`, `webp`, `bmp` and says `with OCR`
+    - `README.md:221` now says `Google-based OCR uses the drive.file scope`
+    - `git diff --check -- README.md docs/issues/issue_53_operation_tracker.md` -> clean
+- Outcome / next step:
+  - README inaccuracies fixed in the working tree.
+  - Next step is user review of the staged-vs-working-tree README wording or additional documentation cleanup if requested.
+
+### OP-0166
+
+- Date/time: 2026-03-30 00:09:00 -03:00
+- Operation: Review the staged `README.md` changes for Issue 53 documentation consistency and user-facing accuracy.
+- Why:
+  - The user asked for a review of the staged README changes.
+  - The Issue 53 operational policy requires the review evidence to be recorded in the tracker.
+- Changes made:
+  - Read-only review of the staged `README.md` diff against the current working tree and the current Issue 53 documentation baseline.
+  - Drift disclosure:
+    - read-only evidence collection started shortly before this OP entry was written.
+    - impact: no repository content was modified during the pre-entry read phase.
+    - handling: the review evidence and findings are recorded explicitly here.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `git diff --staged -- README.md` shows README additions for:
+    - import/extract in the top summary
+    - feature bullets for file import/OCR
+    - runtime note `OCR uses Google’s drive.file`
+    - quick-action bullet for `📥`
+  - Current staged wording still includes:
+    - `OCR local` / `local OCR` phrasing in both ES and EN
+    - support lists that omit `.md`, `.html`, `.htm`, and `.bmp`
+- Outcome / next step:
+  - Review complete.
+  - Next step is to present findings to the user or patch the staged README if requested.
+
+### OP-0165
+
+- Date/time: 2026-03-30 00:01:23 -03:00
+- Operation: Update the Route 1A trust/external-processing note in the English and Spanish instruction manuals.
+- Why:
+  - The user approved a tighter note that prioritizes the real trust boundary: the OCR file is not sent to the developers and is not exposed to other people as part of that process.
+  - The previous note was too generic and did not reduce suspicion effectively.
+- Changes made:
+  - Replaced the Route 1A note in `public/info/instrucciones.en.html`.
+  - Replaced the corresponding Route 1A note in `public/info/instrucciones.es.html`.
+  - Kept the source-quality warning while removing the incorrect/weak `content permissions` wording.
+- Checklist updates:
+  - No checkbox toggles planned in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/info/instrucciones.en.html`
+  - `public/info/instrucciones.es.html`
+- Evidence:
+  - Current note locations before edit:
+    - `public/info/instrucciones.en.html:231`
+    - `public/info/instrucciones.es.html:225`
+  - User-approved direction in chat:
+    - emphasize that the uploaded OCR file is not sent to the developers
+    - emphasize that nobody else gets access to it as part of that process
+    - keep the source-quality warning
+  - Post-edit verification:
+    - `public/info/instrucciones.en.html:231` now states the Google-auth reason plus the `not sent to the developers / not shared with other people` boundary and keeps the source-quality warning
+    - `public/info/instrucciones.es.html:225` now states the same boundary in Spanish and keeps the source-quality warning
+    - `git diff --check -- public/info/instrucciones.en.html public/info/instrucciones.es.html docs/issues/issue_53_operation_tracker.md` -> clean
+- Outcome / next step:
+  - Route 1A trust/external-processing note updated in both manuals.
+  - Next step is user review of the wording in context, or further tightening if requested.
+
+### OP-0164
+
+- Date/time: 2026-03-29 23:39:27 -03:00
+- Operation: Re-execute the Spanish manual alignment by covering the full English change span instead of a partial subset.
+- Why:
+  - The user identified the real failure in the previous Spanish pass: it was incomplete and left ES/EN mismatches because not all English-touched lines were mirrored in the corresponding Spanish sections.
+  - A fresh pass is required using the full `git diff HEAD -- public/info/instrucciones.en.html` span as the source boundary.
+- Changes made:
+  - Updated `public/info/instrucciones.es.html` across the full corresponding English change region:
+    - added the opening intro paragraph below the section nav
+    - replaced the basic-guide opening block with the import-model-page + clipboard flow
+    - removed the obsolete `Esta app es para ti` / old app-summary prose and replaced the app-capabilities list
+    - replaced Step 1 opening with the import-files route, preserved the selectable-text PDF `nativo / OCR` wording, added the clipboard repetitions note, and relettered the following routes
+    - updated the later duplication note in the practical example section to match the English change
+  - Preserved the already-recorded PDF route-choice drift reflected in both issue docs and the English manual.
+- Checklist updates:
+  - No checkbox toggles planned in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/info/instrucciones.es.html`
+- Evidence:
+  - `git diff HEAD -- public/info/instrucciones.en.html` shows the authoritative English change span extends beyond the initial opening blocks and includes:
+    - removal of the old intro/app-summary lines
+    - full Step 1 replacement/relettering
+    - the later duplication-note change around the practical example section
+  - `git diff -- public/info/instrucciones.es.html` now shows the corresponding Spanish updates for those same regions.
+  - `git diff --check -- public/info/instrucciones.es.html docs/issues/issue_53_operation_tracker.md` -> clean.
+- Outcome / next step:
+  - The Spanish file now covers the full corresponding English change region rather than a partial subset.
+  - Next step is user review of the prose quality, or further tightening if the wording still needs refinement.
+
+### OP-0163
+
+- Date/time: 2026-03-29 23:29:15 -03:00
+- Operation: Align `public/info/instrucciones.es.html` with the corrected English instructions baseline for the corresponding Issue 53 documentation sections.
+- Why:
+  - The user requested that the Spanish instructions match the corrected English manual.
+  - Read-only inspection showed the Spanish manual is still on the older structure in the opening/basic-guide and Step 1 sections, so narrow wording-only edits would leave ES/EN materially out of sync.
+- Changes made:
+  - Updated `public/info/instrucciones.es.html` to align the corresponding sections with the corrected English manual:
+    - added the opening intro paragraph
+    - updated the basic-guide first steps to the import-model-page + clipboard flow
+    - updated the app-capabilities list to the current import/extract-oriented wording
+    - replaced Step 1 opening with the import-files route and shifted route lettering accordingly
+    - added the clipboard repetitions note
+    - preserved the selectable-text PDF `nativo / OCR` route-choice wording consistent with the recorded drift and the English manual
+  - The Spanish privacy FAQ block already matched the corrected English baseline closely enough for this pass, so no privacy-block edits were needed there.
+- Checklist updates:
+  - No checkbox toggles planned in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/info/instrucciones.es.html`
+- Evidence:
+  - `public/info/instrucciones.es.html` still uses the older opening flow:
+    - basic guide starts with `Carga el texto`
+    - full instructions still start Step 1 at `Ruta 1A — Usar portapapeles`
+    - app-capabilities list still describes the pre-import/extract wording
+  - `public/info/instrucciones.en.html` now contains the corrected import/extract-oriented baseline for those same sections.
+  - Post-edit verification:
+    - `public/info/instrucciones.es.html` now includes the intro paragraph under the nav
+    - basic guide now starts with `Importa una página modelo (flujo de onboarding recomendado)`
+    - full instructions Step 1 now starts with `Ruta 1A — Importar archivos (ruta primaria recomendada)`
+    - route lettering now continues as `Ruta 1B` / `1C` / `1D` / `1E`
+    - `git diff --check -- public/info/instrucciones.es.html docs/issues/issue_53_operation_tracker.md` -> clean
+- Outcome / next step:
+  - The Spanish manual now matches the corrected English baseline for the intended sections.
+  - Next step is to continue Section 8 documentation work or review the remaining ES/EN manual sections for any smaller wording mismatches if requested.
+
+### OP-0162
+
+- Date/time: 2026-03-29 23:25:25 -03:00
+- Operation: Re-execute the English instructions fixes narrowly after re-checking the current working-tree state and correct the tracker record for the earlier incomplete pass.
+- Why:
+  - The user requested that the work be redone seriously.
+  - Re-checking the current file state showed the agreed English-manual issues still present in `public/info/instrucciones.en.html`.
+  - OP-0161 recorded a completion state for the manual that does not match the current working tree and therefore needs explicit correction in the audit trail.
+- Changes made:
+  - Updated `public/info/instrucciones.en.html` only at the agreed issue points:
+    - replaced underlisted support enumerations with the current shipped sets where support is explicitly listed
+    - removed the incorrect `local OCR` wording
+    - removed the duplicated privacy FAQ internet-action bullets
+    - removed trailing whitespace
+  - Kept the already-recorded PDF route-choice drift in `docs/issues/issue_53.md` unchanged.
+  - Recorded in this OP that OP-0161's claimed completed manual end-state was inaccurate relative to the current working tree observed at the start of this operation.
+- Checklist updates:
+  - No checkbox toggles planned in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/info/instrucciones.en.html`
+- Evidence:
+  - Current `public/info/instrucciones.en.html` still contains:
+    - `with local OCR for images and scanned PDFs`
+    - support lists that omit `.md`, `.html`, `.htm`, and `.bmp`
+    - duplicated privacy bullets under `Does the app protect my privacy?`
+  - `docs/issues/issue_53.md` already contains the requested PDF route-choice drift note.
+  - Post-edit verification:
+    - `public/info/instrucciones.en.html` basic-guide support list now includes `.md`, `.html`, `.htm`, and `.bmp`
+    - `public/info/instrucciones.en.html` app-capabilities list now says `with OCR for images and scanned PDFs`
+    - `public/info/instrucciones.en.html` Route 1A support list now includes `.md`, `.html`, `.htm`, and `.bmp`
+    - `public/info/instrucciones.en.html` privacy FAQ internet-action list no longer repeats the external-link/update bullets
+    - `git diff --check -- public/info/instrucciones.en.html docs/issues/issue_53.md docs/issues/issue_53_operation_tracker.md` -> clean
+- Outcome / next step:
+  - The agreed English-manual fixes are now actually present in the working tree.
+  - Next step is to continue Section 8 documentation work or perform a fresh review of the remaining manual content if requested.
+
+### OP-0161
+
+- Date/time: 2026-03-29 23:13:08 -03:00
+- Operation: Record the intentional PDF route-choice drift in the Issue 53 source doc and fix the staged English instructions file to match the shipped behavior.
+- Why:
+  - The user explicitly confirmed that the narrower `PDF choice only when both routes are viable` wording is obsolete for the current implementation and asked that the issue doc record the drift.
+  - The staged `public/info/instrucciones.en.html` changes still needed accuracy fixes before they should be kept as the current instructions baseline.
+- Changes made:
+  - Updated `docs/issues/issue_53.md` to record the intentional PDF route-choice drift explicitly under `## PDF policy`.
+  - Updated `docs/issues/issue_53.md` `## User flow` step 6 from the narrower `both routes are available` wording to `selected file exposes route choice`.
+  - Updated `public/info/instrucciones.en.html` to:
+    - remove incorrect `local OCR` wording
+    - align supported-format wording with current shipped support (`.md`, `.html`, `.htm`, `.bmp` added where support is enumerated)
+    - keep selectable-text PDFs as an explicit `Native` / `OCR` route-choice case
+    - remove the duplicated FAQ internet-action bullets
+    - remove trailing whitespace
+- Checklist updates:
+  - No checkbox toggles planned in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `public/info/instrucciones.en.html`
+- Evidence:
+  - User direction in chat:
+    - keep the PDF route-choice wording as an intentional implementation drift
+    - record that drift in the issue
+    - then fix `public/info/instrucciones.en.html`
+  - `docs/issues/issue_53.md` now contains an explicit `Intentional implementation drift recorded on 2026-03-29` note under `## PDF policy`.
+  - `git diff --check -- docs/issues/issue_53.md docs/issues/issue_53_operation_tracker.md public/info/instrucciones.en.html` -> clean.
+  - `public/info/instrucciones.en.html` no longer claims `local OCR` and now reflects the current enumerated import/extract support set more accurately.
+- Outcome / next step:
+  - Requested issue/manual updates are complete.
+  - Next step is to restage the touched docs and continue Section 8 documentation work from the corrected baseline.
+
+### OP-0160
+
+- Date/time: 2026-03-29 23:06:07 -03:00
+- Operation: Review the staged `public/info/instrucciones.en.html` edits for Issue 53 instructions/assets accuracy and release readiness.
+- Why:
+  - The user asked for a review of the staged English instructions update before continuing Section 8 documentation work.
+  - The Issue 53 operational policy requires tracker evidence even for read-only review operations.
+- Changes made:
+  - Reviewed the staged diff for `public/info/instrucciones.en.html`.
+  - Cross-checked staged claims against:
+    - `docs/issues/issue_53.md`
+    - `electron/import_extract_platform/import_extract_supported_formats.js`
+    - current repo evidence for drag/drop, route-choice labels, and Disconnect Google OCR surfaces
+  - Drift disclosure:
+    - read-only review evidence collection started shortly before this OP entry was written.
+    - impact: no repository content was modified during the pre-entry read phase.
+    - handling: the review evidence and conclusions are recorded explicitly here.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `git diff --staged -- public/info/instrucciones.en.html` shows the staged English-manual rewrite introducing import/extract onboarding, route descriptions, and updated privacy wording.
+  - `git diff --staged --check -- public/info/instrucciones.en.html` reports trailing whitespace at `public/info/instrucciones.en.html:679`.
+  - `docs/issues/issue_53.md` confirms:
+    - OCR is the Google Drive / Google Docs conversion route, not local OCR
+    - PDFs must be triaged into `native only` / `ocr only` / `both`
+    - route choice is required only when both routes are viable
+  - `electron/import_extract_platform/import_extract_supported_formats.js` confirms current shipped support includes:
+    - native: `.txt`, `.md`, `.html`, `.htm`, `.docx`, `.pdf`
+    - OCR: `.jpg`, `.jpeg`, `.png`, `.webp`, `.bmp`, `.pdf`
+- Outcome / next step:
+  - Review completed with concrete documentation-accuracy findings for the user.
+  - Next step is to decide whether to revise the staged English instructions now and then mirror any approved wording corrections into related docs/assets as needed.
+
 ### OP-0159
 
 - Date/time: 2026-03-26 20:30:38 -03:00

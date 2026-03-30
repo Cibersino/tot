@@ -1,9 +1,27 @@
 // electron/import_extract_platform/ocr_google_drive_provider_failure.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Shared Google provider-failure parsing helpers.
+// Responsibilities:
+// - Parse provider error payloads from Google API failures.
+// - Normalize selected provider reason signals into app-owned categories.
+// - Surface bounded diagnostics when provider reason sources conflict.
+// - Expose the provider_api_disabled code used by downstream classification.
+
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const Log = require('../log');
 
 const log = Log.get('ocr-google-drive-provider-failure');
+
+// =============================================================================
+// Constants
+// =============================================================================
 
 const PROVIDER_API_DISABLED_CODE = 'provider_api_disabled';
 const OTHER_REASON_CATEGORY = 'other';
@@ -16,6 +34,10 @@ const ERROR_INFO_REASON_TO_CATEGORY = Object.freeze({
   API_DISABLED: PROVIDER_API_DISABLED_CODE,
   SERVICE_DISABLED: PROVIDER_API_DISABLED_CODE,
 });
+
+// =============================================================================
+// Helpers
+// =============================================================================
 
 function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
@@ -179,7 +201,15 @@ function parseGoogleProviderFailure(err, fallbackMessage = '') {
   };
 }
 
+// =============================================================================
+// Exports
+// =============================================================================
+
 module.exports = {
   PROVIDER_API_DISABLED_CODE,
   parseGoogleProviderFailure,
 };
+
+// =============================================================================
+// End of electron/import_extract_platform/ocr_google_drive_provider_failure.js
+// =============================================================================

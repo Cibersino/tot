@@ -21,6 +21,12 @@
   }
   const log = window.getLogger('import-extract-status-ui');
   log.debug('Import/extract status UI starting...');
+  if (!window.RendererI18n
+    || typeof window.RendererI18n.tRenderer !== 'function'
+    || typeof window.RendererI18n.msgRenderer !== 'function') {
+    throw new Error('[import-extract-status-ui] RendererI18n.tRenderer/msgRenderer unavailable; cannot continue');
+  }
+  const { tRenderer, msgRenderer } = window.RendererI18n;
 
   // =============================================================================
   // UI elements
@@ -38,7 +44,7 @@
   // =============================================================================
 
   const ELAPSED_TICK_MS = 250;
-  const OCR_WAITING_COPY_DELAY_MS = 12000;
+  const OCR_WAITING_COPY_DELAY_MS = 60000;
 
   // =============================================================================
   // Shared state
@@ -55,26 +61,10 @@
   let pendingExecutionRoute = '';
   let lastExecutionElapsedMs = null;
   let elapsedTimerId = null;
-  let tRendererRef = null;
-  let msgRendererRef = null;
 
   // =============================================================================
   // Helpers
   // =============================================================================
-
-  function translate(key, fallback) {
-    if (typeof tRendererRef === 'function') {
-      return tRendererRef(key, fallback);
-    }
-    return fallback;
-  }
-
-  function translateMessage(key, params, fallback) {
-    if (typeof msgRendererRef === 'function') {
-      return msgRendererRef(key, params, fallback);
-    }
-    return fallback;
-  }
 
   function normalizeRouteKind(rawRoute) {
     const routeKind = typeof rawRoute === 'string' ? rawRoute.trim() : '';
@@ -138,7 +128,7 @@
   function buildProcessingElapsedText(rawElapsedMs) {
     if (rawElapsedMs === null) return '';
     const formattedElapsed = formatElapsedTime(rawElapsedMs);
-    return translateMessage(
+    return msgRenderer(
       'renderer.main.processing.import_extract_elapsed',
       { time: formattedElapsed },
       `Elapsed: ${formattedElapsed}`
@@ -147,7 +137,7 @@
 
   function getProcessingLabelText() {
     if (pendingExecutionRoute === 'native') {
-      return translate(
+      return tRenderer(
         'renderer.main.processing.import_extract_waiting_native',
         'Extracting text from file...'
       );
@@ -155,17 +145,17 @@
     if (pendingExecutionRoute === 'ocr') {
       const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
       if (elapsedMs !== null && elapsedMs >= OCR_WAITING_COPY_DELAY_MS) {
-        return translate(
+        return tRenderer(
           'renderer.main.processing.import_extract_waiting_ocr_delayed',
           'Running OCR. Some files take longer.'
         );
       }
-      return translate(
+      return tRenderer(
         'renderer.main.processing.import_extract_waiting_ocr',
         'Running OCR extraction...'
       );
     }
-    return translate(
+    return tRenderer(
       'renderer.main.processing.import_extract_placeholder',
       importExtractProcessingLabel ? importExtractProcessingLabel.textContent || 'Extracting text...' : 'Extracting text...'
     );
@@ -173,15 +163,15 @@
 
   function syncAbortButtonUi() {
     if (!btnImportExtractAbort) return;
-    btnImportExtractAbort.textContent = translate(
+    btnImportExtractAbort.textContent = tRenderer(
       'renderer.main.buttons.import_extract_abort',
       btnImportExtractAbort.textContent || ''
     );
-    btnImportExtractAbort.title = translate(
+    btnImportExtractAbort.title = tRenderer(
       'renderer.main.tooltips.import_extract_abort',
       btnImportExtractAbort.title || ''
     );
-    const abortAria = translate(
+    const abortAria = tRenderer(
       'renderer.main.aria.import_extract_abort',
       btnImportExtractAbort.getAttribute('aria-label') || ''
     );
@@ -196,7 +186,7 @@
     importExtractPrepareStatus.hidden = !active;
     importExtractPrepareStatus.setAttribute('aria-hidden', active ? 'false' : 'true');
     if (active) {
-      importExtractPrepareStatus.textContent = translate(
+      importExtractPrepareStatus.textContent = tRenderer(
         'renderer.main.processing.import_extract_preparing',
         importExtractPrepareStatus.textContent || 'Preparing import/extract route...'
       );
@@ -257,9 +247,7 @@
   // Public entrypoints
   // =============================================================================
 
-  function applyTranslations({ tRenderer, msgRenderer } = {}) {
-    tRendererRef = typeof tRenderer === 'function' ? tRenderer : null;
-    msgRendererRef = typeof msgRenderer === 'function' ? msgRenderer : null;
+  function applyTranslations() {
     syncAbortButtonUi();
     syncPrepareStatusUi();
     syncProcessingUi();
@@ -324,7 +312,7 @@
     const elapsedMs = getFinalElapsedMs();
     if (elapsedMs === null) return '';
     const formattedElapsed = formatElapsedTime(elapsedMs);
-    return translateMessage(
+    return msgRenderer(
       'renderer.alerts.import_extract_apply_modal_elapsed',
       { time: formattedElapsed },
       `Execution time: ${formattedElapsed}`
