@@ -115,6 +115,67 @@ As of 2026-03-26:
 
 ## Log
 
+### OP-0167
+
+- Date/time: 2026-03-30 00:09:00 -03:00
+- Operation: Fix the staged `README.md` Issue 53 inaccuracies identified in OP-0166.
+- Why:
+  - The user agreed with the staged README review findings and asked for the fixes.
+  - The current staged README still understates supported formats and incorrectly describes OCR as local.
+- Changes made:
+  - Updated the ES/EN feature bullets to remove `OCR local` / `local OCR`.
+  - Expanded the explicit ES/EN format lists to include `.md`, `.html`, `.htm`, and `.bmp`.
+  - Tightened the `drive.file` runtime note so it reads as user-facing README text.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `README.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - OP-0166 findings:
+    - `README.md:24` / `README.md:183` used inaccurate `OCR local` / `local OCR` wording
+    - those same bullets omitted `.md`, `.html`, `.htm`, and `.bmp`
+    - `README.md:59` / `README.md:221` used a terse `drive.file` note
+  - Post-edit verification:
+    - `README.md:24` now lists `txt`, `md`, `html`, `htm`, `docx`, `pdf`, `png`, `jpg`, `jpeg`, `webp`, `bmp` and says `con OCR`
+    - `README.md:59` now says `El OCR con Google usa el alcance drive.file`
+    - `README.md:183` now lists `txt`, `md`, `html`, `htm`, `docx`, `pdf`, `png`, `jpg`, `jpeg`, `webp`, `bmp` and says `with OCR`
+    - `README.md:221` now says `Google-based OCR uses the drive.file scope`
+    - `git diff --check -- README.md docs/issues/issue_53_operation_tracker.md` -> clean
+- Outcome / next step:
+  - README inaccuracies fixed in the working tree.
+  - Next step is user review of the staged-vs-working-tree README wording or additional documentation cleanup if requested.
+
+### OP-0166
+
+- Date/time: 2026-03-30 00:09:00 -03:00
+- Operation: Review the staged `README.md` changes for Issue 53 documentation consistency and user-facing accuracy.
+- Why:
+  - The user asked for a review of the staged README changes.
+  - The Issue 53 operational policy requires the review evidence to be recorded in the tracker.
+- Changes made:
+  - Read-only review of the staged `README.md` diff against the current working tree and the current Issue 53 documentation baseline.
+  - Drift disclosure:
+    - read-only evidence collection started shortly before this OP entry was written.
+    - impact: no repository content was modified during the pre-entry read phase.
+    - handling: the review evidence and findings are recorded explicitly here.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - `git diff --staged -- README.md` shows README additions for:
+    - import/extract in the top summary
+    - feature bullets for file import/OCR
+    - runtime note `OCR uses Google’s drive.file`
+    - quick-action bullet for `📥`
+  - Current staged wording still includes:
+    - `OCR local` / `local OCR` phrasing in both ES and EN
+    - support lists that omit `.md`, `.html`, `.htm`, and `.bmp`
+- Outcome / next step:
+  - Review complete.
+  - Next step is to present findings to the user or patch the staged README if requested.
+
 ### OP-0165
 
 - Date/time: 2026-03-30 00:01:23 -03:00
