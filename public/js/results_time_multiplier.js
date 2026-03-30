@@ -23,6 +23,7 @@
   const labelEl = document.getElementById('resultsTimeMultiplierLabel');
   const inputEl = document.getElementById('resultsTimeMultiplierInput');
   const outputEl = document.getElementById('resultsTimeMultiplierOutput');
+  const MAX_MULTIPLIER = 9999n;
 
   // =============================================================================
   // Shared state
@@ -51,7 +52,7 @@
     if (!/^\d+$/.test(text)) return null;
     try {
       const value = BigInt(text);
-      return value > 0n ? value : null;
+      return (value > 0n && value <= MAX_MULTIPLIER) ? value : null;
     } catch {
       return null;
     }
@@ -138,6 +139,7 @@
   function bindEvents() {
     if (!ensureElements('bindEvents')) return;
     inputEl.min = '1';
+    inputEl.max = MAX_MULTIPLIER.toString();
     inputEl.step = '1';
     inputEl.value = normalizeMultiplierValue(inputEl.value);
     inputEl.setAttribute('aria-invalid', 'false');
