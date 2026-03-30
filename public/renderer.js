@@ -1441,9 +1441,6 @@ setupToggleModoPreciso();
     registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
     registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
     registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
-    registerMenuActionGuarded('test_velocidad', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP
-    });
     registerMenuActionGuarded('diseno_skins', () => {
       window.Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
     });
@@ -1500,18 +1497,7 @@ setupToggleModoPreciso();
       await importExtractOcrDisconnect.startFromPreferencesMenu();
     });
 
-    registerMenuActionGuarded('avisos', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_avisos'); // WIP
-    });
-    registerMenuActionGuarded('discord', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_discord'); // WIP
-    });
-
     registerMenuActionGuarded('links_interes', () => { showInfoModal('links_interes') });
-
-    registerMenuActionGuarded('colabora', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_colabora'); // WIP
-    });
 
     registerMenuActionGuarded('actualizar_version', async () => {
       try {
