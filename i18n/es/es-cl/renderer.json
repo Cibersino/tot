@@ -291,15 +291,11 @@
       "import_extract_native_cancelled": "La extracción nativa quedó cancelada.",
       "import_extract_native_unsupported_format": "Ese formato de archivo no está soportado por la ruta nativa.",
       "import_extract_native_apply_pending": "La extracción nativa terminó, pero la parte de aplicar el resultado después todavía está pendiente.",
-      "wip_test_velocidad": "WIP: Aquí se viene el test de los víos.",
       "wip_diseno_skins": "WIP: Aquí vamos a cambiar las pilchas.",
       "wip_diseno_crono": "WIP: Aquí vamos a arreglar el reloj porfiado.",
       "wip_diseno_fuentes": "WIP: Aquí elegís el tipo de letra.",
       "wip_diseno_colores": "WIP: Aquí le tirái pintura.",
-      "wip_shortcuts": "WIP: Aquí configurái los atajos del teclao.",
-      "wip_avisos": "WIP: Aquí te contamos los chismes nuevos.",
-      "wip_discord": "WIP: Aquí te mandamos al Discord.",
-      "wip_colabora": "WIP: Aquí nos haremos millonarios ($)."
+      "wip_shortcuts": "WIP: Aquí configurái los atajos del teclao."
     },
     "editor_alerts": {
       "paste_too_big": "La custión es muy grande. Usa los botones de afuera.",

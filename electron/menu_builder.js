@@ -339,15 +339,6 @@ function buildAppMenu(lang, opts = {}) {
             ],
         },
         {
-            label: resolveMenuLabel(m, 'herramientas', 'Tools'),
-            submenu: [
-                {
-                    label: resolveMenuLabel(m, 'test_velocidad', 'Speed test'),
-                    click: () => sendMenuClick('test_velocidad'),
-                },
-            ],
-        },
-        {
             label: resolveMenuLabel(m, 'preferencias', 'Preferences'),
             submenu: [
                 {
@@ -409,25 +400,8 @@ function buildAppMenu(lang, opts = {}) {
             ],
         },
         {
-            label: resolveMenuLabel(m, 'comunidad', 'Community'),
-            submenu: [
-                {
-                    label: resolveMenuLabel(m, 'discord', 'Discord'),
-                    click: () => sendMenuClick('discord'),
-                },
-                {
-                    label: resolveMenuLabel(m, 'avisos', 'News & updates'),
-                    click: () => sendMenuClick('avisos'),
-                },
-            ],
-        },
-        {
             label: resolveMenuLabel(m, 'links_interes', 'Links'),
             click: () => sendMenuClick('links_interes'),
-        },
-        {
-            label: resolveMenuLabel(m, 'colabora', '($)'),
-            click: () => sendMenuClick('colabora'),
         },
         {
             label: resolveMenuLabel(m, 'ayuda', '?'),
