@@ -83,6 +83,12 @@ if (!importExtractStatusUi
 }
 const btnImportExtractAbort = importExtractStatusUi.getAbortButton();
 const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
+const resultsTimeMultiplier = window.ResultsTimeMultiplier;
+if (!resultsTimeMultiplier
+  || typeof resultsTimeMultiplier.applyTranslations !== 'function'
+  || typeof resultsTimeMultiplier.setBaseTimeParts !== 'function') {
+  throw new Error('[renderer] ResultsTimeMultiplier unavailable; cannot continue');
+}
 
 // =============================================================================
 // UI keys and static lists
@@ -416,6 +422,7 @@ function applyTranslations() {
   };
   importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
   importExtractDragDrop.applyTranslations({ tRenderer });
+  resultsTimeMultiplier.applyTranslations({ tRenderer, msgRenderer });
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
@@ -584,6 +591,14 @@ if (!getTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
 // =============================================================================
 let currentTextStats = null;
 
+function renderEstimatedTime({ hours, minutes, seconds }) {
+  resTime.textContent = msgRenderer(
+    'renderer.main.results.time',
+    { h: hours, m: minutes, s: seconds }
+  );
+  resultsTimeMultiplier.setBaseTimeParts({ hours, minutes, seconds });
+}
+
 async function updatePreviewAndResults(text) {
   const normalizedText = normalizeText(text);
   const displayText = normalizedText.replace(/\r?\n/g, '   ');
@@ -615,7 +630,7 @@ async function updatePreviewAndResults(text) {
   resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
 
   const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
-  resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
+  renderEstimatedTime({ hours, minutes, seconds });
 }
 
 function startPreviewAndResultsUpdate(text, reason) {
@@ -633,7 +648,7 @@ function updateTimeOnlyFromStats() {
     return;
   }
   const { hours, minutes, seconds } = getTimeParts(currentTextStats.palabras, wpm);
-  resTime.textContent = msgRenderer('renderer.main.results.time', { h: hours, m: minutes, s: seconds });
+  renderEstimatedTime({ hours, minutes, seconds });
 }
 
 function installCurrentTextState(text) {
