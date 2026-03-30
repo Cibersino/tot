@@ -115,6 +115,34 @@ As of 2026-03-26:
 
 ## Log
 
+### OP-0171
+
+- Date/time: 2026-03-30 00:38:28 -03:00
+- Operation: Align the public website homepage copy with the shipped Issue 53 import/extract feature.
+- Why:
+  - After the issue acceptance-closeout reconciliation, the next agreed scope is the website.
+  - The website homepages still describe the app generically as analysis/counting/OCR tooling and do not present import/extract as a shipped feature.
+- Changes made:
+  - Updated `website/public/index.html` metadata to describe the app as a file-import/extraction + OCR + reading-planning tool.
+  - Updated `website/public/es/index.html` metadata to describe the shipped import/extract feature more accurately.
+  - Updated `website/public/es/index.html` body copy to mention text import/extraction from text files, images, and PDFs.
+  - Updated `website/public/en/index.html` metadata to describe the shipped import/extract feature more accurately.
+  - Updated `website/public/en/index.html` body copy to mention text import/extraction from text files, images, and PDFs.
+- Checklist updates:
+  - No checkbox toggles yet in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+  - `website/public/index.html`
+  - `website/public/es/index.html`
+  - `website/public/en/index.html`
+- Evidence:
+  - `website/public/index.html` still says `analysis, counting, and OCR tools` in metadata.
+  - `website/public/es/index.html` still says `análisis, conteo y herramientas OCR` in metadata and its body copy does not mention import/extract.
+  - `website/public/en/index.html` still says `analysis, counting, and OCR tools` in metadata and its body copy does not mention import/extract.
+- Outcome / next step:
+  - Website homepage copy now reflects import/extract as a shipped feature instead of generic OCR tooling.
+  - Next step is to continue Section 8 closeout from the remaining changelog/release-note work when requested.
+
 ### OP-0170
 
 - Date/time: 2026-03-30 00:34:19 -03:00
