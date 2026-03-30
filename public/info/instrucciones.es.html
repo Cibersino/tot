@@ -63,11 +63,11 @@
                 conectado a una cuenta de Google, sigue los pasos para autorizar y conectar el servicio OCR de Google con
                 Google Drive.</li>
               <li>La extracción de texto desde la imagen comenzará. Cuando termine, en el modal final de aplicación
-                elige <strong>Sobrescribir</strong>, y en <strong>Repeticiones</strong> ingresa la cantidad total de
-                páginas del libro.</li>
-              <li>Confirma: la app aplicará e iterará esa página modelo para aproximar palabras/caracteres totales y el
-                tiempo estimado de lectura. Abre el <strong>Editor manual</strong> (⌨) para inspeccionar el resultado
-                extraído.</li>
+                elige <strong>Sobrescribir</strong> y aplica esa página representativa una sola vez.</li>
+              <li>Abre el <strong>Editor manual</strong> (⌨) para inspeccionar el resultado extraído. Si hace falta,
+                haz ajustes.</li>
+              <li>Luego, en la sección de resultados, usa el multiplicador bajo el tiempo estimado con la cantidad total
+                de páginas del libro para proyectar la estimación completa.</li>
             </ul>
           </li>
 
@@ -114,6 +114,8 @@
             <ul>
               <li>Revisa <strong>palabras</strong>, <strong>caracteres</strong> y el <strong>tiempo estimado</strong>.
               </li>
+              <li>Usa el multiplicador bajo el tiempo estimado cuando quieras proyectar esa misma estimación
+                <strong>N</strong> veces sin duplicar el texto actual.</li>
               <li>Si el tiempo “no cuadra”, vuelve a (2) y (3), o alterna (4) para comparar.</li>
             </ul>
           </li>
@@ -218,8 +220,10 @@
             (recomendación: prueba primero el nativo, es más rápido).</li>
           <li>Cuando el texto esté listo, en el modal final de aplicación elige <strong>Sobrescribir</strong> o
             <strong>Anexar</strong>.</li>
-          <li>Si quieres aproximar un libro completo a partir de una página modelo, en ese mismo modal fija
-            <strong>Repeticiones</strong> según la cantidad total de páginas del libro y confirma.</li>
+          <li>El modal final de aplicación también incluye <strong>Repeticiones</strong> si quieres repetir el texto
+            extraído antes de aplicarlo.</li>
+          <li>Si quieres aproximar un libro completo a partir de una página modelo, aplica esa página una sola vez y
+            luego usa el multiplicador bajo el tiempo estimado con la cantidad total de páginas del libro.</li>
         </ol>
 
         <p><strong>Nota:</strong> esta ruta puede pedir autorización de Google porque la extracción OCR se realiza con
@@ -469,8 +473,10 @@
 我喜欢读书因为它很有趣
 Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
-        <p>Recuerda que puedes duplicar texto con <strong>Repeticiones</strong>, ya sea desde el selector principal
-          (<strong>📋↺</strong>/<strong>📋+</strong>) o desde el modal final de aplicación de importación/OCR.</p>
+        <p>Recuerda que <strong>Repeticiones</strong> duplica texto dentro del texto actual, ya sea desde el selector
+          principal (<strong>📋↺</strong>/<strong>📋+</strong>) o desde el modal final de aplicación de
+          importación/OCR. Usa el multiplicador bajo el tiempo estimado cuando quieras proyectar tiempo sin expandir el
+          texto actual.</p>
 
         <p><strong>Qué observar:</strong></p>
         <ul>
@@ -497,6 +503,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ul>
           <li>Revisa <strong>palabras</strong>, <strong>caracteres con/sin espacios</strong>.</li>
           <li>Revisa <strong>tiempo estimado</strong>.</li>
+          <li>Usa el multiplicador bajo el tiempo estimado si quieres proyectar esa misma estimación
+            <strong>N</strong> veces sin duplicar el texto actual (por ejemplo, una página representativa multiplicada
+            por la cantidad total de páginas).</li>
         </ul>
 
         <p>Si el tiempo estimado “no tiene sentido”:</p>

@@ -55,6 +55,7 @@ Reglas:
 
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
 - Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
+- Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
 
 ### Cambiado
 
@@ -70,6 +71,12 @@ Reglas:
   - `public/index.html` y `public/style.css`: renombre a `clipboard-repeat-input` y estilo de advertencia (borde/fondo rojo suave + foco rojo) para `N > 1`.
   - i18n renderer: renombre de key `renderer.main.tooltips/aria.append_repeat*` a `renderer.main.tooltips/aria.clipboard_repeat_count` en todos los locales.
   - `docs/test_suite.md` e instrucciones (`public/info/instrucciones.es.html`, `public/info/instrucciones.en.html`): actualización de casos y texto para dejar explícito que `N` aplica a `📋↺` y `📋+`.
+- Resultados del conteo (Issue #178):
+  - `public/index.html`: se agrega una nueva fila debajo de `#resTime` con label fijo `x`, input numérico (`min="1"`, `step="1"`) y salida derivada a la derecha.
+  - `public/js/results_time_multiplier.js` (nuevo): módulo renderer dedicado que valida números naturales, multiplica a partir de los mismos `{ hours, minutes, seconds }` redondeados que ya ve el usuario y limpia/normaliza estados inválidos (`empty`, `0`, negativos, decimales) al salir del input.
+  - `public/renderer.js`: se unifica la renderización del tiempo estimado en un helper compartido para que `#resTime` y el multiplicador reciban exactamente la misma base canónica desde `updatePreviewAndResults(...)` y `updateTimeOnlyFromStats()`.
+  - `public/style.css`: ajuste mínimo de layout para la nueva fila del multiplicador; además se reduce un poco la tipografía y el gap vertical de `Words` / `Characters` / `Characters (no spaces)`, se achica el espacio bajo la caja rosada del tiempo estimado y se desplaza levemente la fila del multiplicador hacia la derecha.
+  - i18n renderer (`en` / `es`): no se agregan keys nuevas para esta UI final; el chrome del multiplicador queda fijo como `x` a la izquierda y `:` en la salida derivada.
 
 ### Arreglado
 
@@ -84,6 +91,10 @@ Reglas:
   - ID/clase de input de repetición renombrados a `clipboardRepeatInput` / `clipboard-repeat-input`.
   - Keys i18n renombradas a `renderer.main.tooltips.clipboard_repeat_count` y `renderer.main.aria.clipboard_repeat_count`.
   - Sin cambios de contratos IPC/storage asociados al flujo de repetición.
+- Resultados del conteo (renderer/UI):
+  - nuevos IDs `resultsTimeMultiplierLabel`, `resultsTimeMultiplierInput` y `resultsTimeMultiplierOutput` en la ventana principal.
+  - nueva superficie global renderer `window.ResultsTimeMultiplier` con entrypoint `setBaseTimeParts(...)`.
+  - sin cambios de IPC, preload, storage o persistencia.
 
 ### Archivos
 
@@ -91,6 +102,7 @@ Reglas:
 - `public/renderer.js`
 - `public/index.html`
 - `public/style.css`
+- `public/js/results_time_multiplier.js`
 - `public/js/constants.js`
 - `i18n/arn/renderer.json`
 - `i18n/de/renderer.json`
