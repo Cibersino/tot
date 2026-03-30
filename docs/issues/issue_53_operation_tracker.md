@@ -115,6 +115,33 @@ As of 2026-03-26:
 
 ## Log
 
+### OP-0168
+
+- Date/time: 2026-03-30 00:15:35 -03:00
+- Operation: Update the README screenshot asset reference to use the basic-guide GIF instead of the static main-window images.
+- Why:
+  - The user explicitly preferred `public/assets/instrucciones/guia-basica.gif` for the README.
+  - The README currently points to static screenshots in both language sections.
+- Changes made:
+  - Replaced the Spanish README screenshot reference under `## Capturas de pantalla`.
+  - Replaced the English README screenshot reference under `## Screenshots`.
+- Checklist updates:
+  - No checkbox toggles in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `README.md`
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Current README screenshot references before edit:
+    - `README.md:85` -> `public/assets/instrucciones/ventana-principal-completa.png`
+    - `README.md:247` -> `public/assets/instrucciones/ventana-principal-completa.en.png`
+  - Post-edit verification:
+    - `README.md:85` -> `public/assets/instrucciones/guia-basica.gif`
+    - `README.md:247` -> `public/assets/instrucciones/guia-basica.gif`
+    - `git diff --check -- README.md docs/issues/issue_53_operation_tracker.md` -> clean
+- Outcome / next step:
+  - README now uses the same GIF in both language sections.
+  - Next step is user review or any further README polish requested.
+
 ### OP-0167
 
 - Date/time: 2026-03-30 00:09:00 -03:00

@@ -82,7 +82,7 @@ Accesos rápidos visibles en la ventana principal:
 
 ## Capturas de pantalla
 
-![Ventana principal completa](public/assets/instrucciones/ventana-principal-completa.png)
+![Guía básica animada](public/assets/instrucciones/guia-basica.gif)
 
 ---
 
@@ -244,7 +244,7 @@ Quick actions in the main window:
 
 ## Screenshots
 
-![Main window overview](public/assets/instrucciones/ventana-principal-completa.en.png)
+![Animated basic guide](public/assets/instrucciones/guia-basica.gif)
 
 ---
 
