@@ -454,6 +454,33 @@ select#presets {
   font-size: 18px;
 }
 
+.results-multiplier-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+.results-multiplier-row label {
+  flex: 0 0 auto;
+}
+
+.results-multiplier-row input {
+  width: 58px;
+  min-width: 58px;
+}
+
+.results-multiplier-row output {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.results-multiplier-row input.is-invalid {
+  border-color: #c62828;
+  outline-color: #c62828;
+}
+
 /* Row containing the results list (left) and the toggle (right) */
 .results-row {
   display: flex;
