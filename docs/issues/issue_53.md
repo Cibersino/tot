@@ -126,6 +126,18 @@ While extraction is running:
 - when the window is not minimized, progress and ETA are visible in the main window
 - the window and app menu must be blocked for normal interaction
 
+Intentional implementation drift recorded on 2026-03-30:
+- current shipped behavior does not expose dedicated progress or ETA for Issue 53
+- current shipped behavior uses an honest waiting state in the main window, shows elapsed processing time during execution, and shows final elapsed processing time in the success apply modal
+- rationale:
+  - the later Section 6 evaluation locked dedicated progress and ETA out of scope for Issue 53
+  - native execution was judged too fast to justify dedicated progress/ETA UX
+  - OCR execution was judged too opaque/provider-dominated to support credible progress or ETA promises
+- impact/risk:
+  - the later user-flow, observability, acceptance, and open-workstream references to `progress` / `ETA` remain as decision history
+  - Issue 53 acceptance-closeout should interpret those references according to the locked Section 6 shipped baseline above, not as a requirement for dedicated progress or ETA UI
+  - user-facing docs should describe honest waiting UI + elapsed time, not dedicated progress or ETA
+
 Allowed actions during processing:
 - close window
 - minimize window
@@ -136,6 +148,11 @@ This processing lock must be treated as its own mode.
 It must not be conflated with the startup lock.
 
 ## User flow
+
+Clarification for current shipped behavior:
+- step 7 below remains historical `progress` / `ETA` wording
+- for Issue 53 acceptance-closeout, interpret it according to the 2026-03-30 `Processing UX` drift note above
+- the shipped Section 6 baseline is honest waiting UI + elapsed time, not dedicated progress or ETA
 
 1. User clicks the import/extract button.
 2. App opens the native file picker.
@@ -322,6 +339,11 @@ Clarification:
 
 ## Observability
 
+Clarification for current shipped behavior:
+- the `ETA` reference below remains historical wording
+- for Issue 53 acceptance-closeout, interpret it according to the 2026-03-30 `Processing UX` drift note above
+- the shipped Section 6 baseline is waiting-UX / elapsed-time observability, not dedicated ETA observability
+
 Must log:
 - selected file type
 - available routes
@@ -339,6 +361,11 @@ Must log:
 - abort events
 
 ## Acceptance criteria
+
+Clarification for current shipped behavior:
+- the `visible progress, realistic ETA` wording below remains historical wording
+- for Issue 53 acceptance-closeout, interpret it according to the 2026-03-30 `Processing UX` drift note above
+- the shipped Section 6 baseline is honest waiting UI + elapsed processing time, not dedicated progress or ETA UI
 
 - extraction starts from the dedicated button in the text-selector button row
 - the native file picker uses default/persisted folder behavior
@@ -364,6 +391,11 @@ Must log:
 - required setup/billing/compliance surfaces are defined for the chosen substrate and chosen access model
 
 ## Open workstreams
+
+Clarification for current shipped behavior:
+- the `progress, ETA` wording below remains historical wording
+- this section is retained as decision history and does not override the 2026-03-30 `Processing UX` drift note above
+- the shipped Section 6 baseline is honest waiting UX + elapsed time
 
 - benchmark corpus definition, with emphasis on photographed book pages
 - substrate evaluation, starting with Document AI

@@ -115,6 +115,42 @@ As of 2026-03-26:
 
 ## Log
 
+### OP-0170
+
+- Date/time: 2026-03-30 00:34:19 -03:00
+- Operation: Reconcile the Issue 53 waiting-UX acceptance-closeout by recording the Section 6 drift in the same style already used for the PDF route-choice drift.
+- Why:
+  - The user explicitly requested a redo after the previous attempt replaced the old wording instead of recording the drift.
+  - `docs/issues/issue_53.md` still contains the original `progress` / `ETA` wording, while the authoritative Section 6 decision is already locked in `docs/issues/issue_53_implementation_plan.md`.
+- Changes made:
+  - Added a dated drift note under `## Processing UX` in `docs/issues/issue_53.md`.
+  - Preserved the original `progress` / `ETA` wording as decision history instead of replacing it.
+  - Recorded the locked shipped baseline as honest waiting UI + elapsed processing time.
+  - Recorded the interpretation impact for later user-flow / observability / acceptance / open-workstream references.
+  - Added downstream clarification notes under:
+    - `## User flow`
+    - `## Observability`
+    - `## Acceptance criteria`
+    - `## Open workstreams`
+  - Kept the historical downstream `progress` / `ETA` wording in place while making the acceptance-closeout interpretation explicit.
+- Checklist updates:
+  - No checkbox toggles yet in `docs/issues/issue_53_implementation_plan.md`.
+- Files touched:
+  - `docs/issues/issue_53_operation_tracker.md`
+- Evidence:
+  - Existing issue wording still says:
+    - `progress must be shown`
+    - `ETA must be shown and should be realistic`
+    - user flow step 7 says `visible progress and ETA`
+    - acceptance criteria says OCR files must be processed with `visible progress, realistic ETA`
+  - Existing authoritative Section 6 lock in `docs/issues/issue_53_implementation_plan.md` says:
+    - no dedicated progress for Issue 53
+    - no ETA for Issue 53
+    - honest waiting UI + elapsed processing time instead
+- Outcome / next step:
+  - Waiting-UX drift is now recorded in the same style as the earlier PDF route-choice drift.
+  - Next step is to continue Section 8 closeout from the remaining open documentation/release-note items when requested.
+
 ### OP-0168
 
 - Date/time: 2026-03-30 00:15:35 -03:00
