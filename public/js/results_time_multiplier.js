@@ -11,6 +11,9 @@
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Logger / DOM bindings
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[results-time-multiplier] window.getLogger unavailable; cannot continue');
   }
@@ -21,8 +24,14 @@
   const inputEl = document.getElementById('resultsTimeMultiplierInput');
   const outputEl = document.getElementById('resultsTimeMultiplierOutput');
 
+  // =============================================================================
+  // Shared state
+  // =============================================================================
   let baseTimeParts = null;
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function hasRequiredElements() {
     return !!(labelEl && inputEl && outputEl);
   }
@@ -88,6 +97,9 @@
     return `: ${timeParts.hours}h ${timeParts.minutes}m ${timeParts.seconds}s`;
   }
 
+  // =============================================================================
+  // Rendering / UI state
+  // =============================================================================
   function renderMultipliedTime() {
     if (!ensureElements('renderMultipliedTime')) return;
 
@@ -110,6 +122,9 @@
     outputEl.textContent = getMultipliedTimeText(multipliedTimeParts);
   }
 
+  // =============================================================================
+  // Event wiring
+  // =============================================================================
   function handleInput() {
     renderMultipliedTime();
   }
@@ -130,6 +145,9 @@
     inputEl.addEventListener('blur', handleBlur);
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   function setBaseTimeParts(nextBaseTimeParts) {
     if (!ensureElements('setBaseTimeParts')) return;
     if (!hasValidBaseTimeParts(nextBaseTimeParts)) {

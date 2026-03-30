@@ -135,6 +135,7 @@ tot/
 │ │ ├── menu_actions.js
 │ │ ├── current_text_snapshots.js
 │ │ ├── format.js
+│ │ ├── results_time_multiplier.js
 │ │ ├── i18n.js
 │ │ ├── constants.js
 │ │ ├── wpm_curve.js
@@ -303,6 +304,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/text_apply_canonical.js` — Helpers canónicos de aplicar texto (`overwrite` / `append` / repeticiones) reutilizados por clipboard e import/extract.
+- `public/js/results_time_multiplier.js` — Controla el multiplicador de tiempo bajo el resultado estimado: valida el input como numero natural, conserva el estado base recibido desde `public/renderer.js` y renderiza el tiempo multiplicado en la ventana principal.
 - `public/js/import_extract_status_ui.js` — Superficie visual del flujo import/extract en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido y botón abort.
 - `public/js/import_extract_route_choice_modal.js` — Modal de elección de ruta (`native` / `ocr`) cuando un PDF soporta ambas.
 - `public/js/import_extract_apply_modal.js` — Modal post-extracción para decidir overwrite/append y repeticiones antes de aplicar el texto extraído.
