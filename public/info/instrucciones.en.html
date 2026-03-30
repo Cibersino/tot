@@ -62,10 +62,12 @@
                 connected to a Google account, follow the steps to authorize and connect the Google OCR service to
                 Google Drive.</li>
               <li>The text extraction from the image will begin. When it finishes, in the final apply modal choose
-                <strong>Overwrite</strong>, and in <strong>Repetitions</strong> enter the book's total page count.
+                <strong>Overwrite</strong> and apply that representative page once.
               </li>
-              <li>Confirm: the app will apply and iterate that model page to approximate total words/characters and
-                estimated reading time. Open the <strong>Manual Editor</strong> (⌨) to inspect the extracted result.
+              <li>Open the <strong>Manual Editor</strong> (⌨) to inspect the extracted result. If necessary, make
+                adjustments.</li>
+              <li>Then, in the results section, use the multiplier below the estimated time with the book's total page
+                count to project the full estimate.
               </li>
             </ul>
           </li>
@@ -114,6 +116,9 @@
             <p><strong>Read the results</strong></p>
             <ul>
               <li>Check <strong>words</strong>, <strong>characters</strong> and the <strong>estimated time</strong></li>
+              <li>Use the multiplier below the estimated time when you want to project that same estimate
+                <strong>N</strong> times without duplicating the current text.
+              </li>
               <li>If the time “doesn't add up”, go back to (2) and (3), or toggle (4) to compare.</li>
             </ul>
           </li>
@@ -172,7 +177,8 @@
         <ul>
           <li>Import or extract text from <code>txt</code>, <code>md</code>, <code>html</code>, <code>htm</code>,
             <code>docx</code>, <code>pdf</code>, and image files (<code>png</code>, <code>jpg</code>,
-            <code>jpeg</code>, <code>webp</code>, <code>bmp</code>), with OCR for images and scanned PDFs.</li>
+            <code>jpeg</code>, <code>webp</code>, <code>bmp</code>), with OCR for images and scanned PDFs.
+          </li>
           <li>Text can be entered by pasting it from the clipboard and/or manually.</li>
           <li>Full-text editor with find.</li>
           <li>Reading-time estimation with configurable WPM (words per minute).</li>
@@ -207,9 +213,11 @@
 
         <ul>
           <li><strong>Text/document files:</strong> <code>.txt</code>, <code>.md</code>, <code>.html</code>,
-            <code>.htm</code>, <code>.docx</code>.</li>
+            <code>.htm</code>, <code>.docx</code>.
+          </li>
           <li><strong>Images:</strong> <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>,
-            <code>.bmp</code> (OCR).</li>
+            <code>.bmp</code> (OCR).
+          </li>
           <li><strong>PDF with selectable text:</strong> choose Native or OCR extraction.
           </li>
           <li><strong>Scanned PDF without selectable text:</strong> OCR extraction.</li>
@@ -223,12 +231,16 @@
           </li>
           <li>When text is ready, in the final apply modal choose <strong>Overwrite</strong> or <strong>Append</strong>.
           </li>
-          <li>If you want to approximate a full book from one model page, in that same modal set
-            <strong>Repetitions</strong> to the book's total page count and confirm.
+          <li>The final apply modal also includes <strong>Repetitions</strong> if you want to repeat the extracted text
+            before applying it.
+          </li>
+          <li>If you want to approximate a full book from one model page, apply that page once and then use the
+            multiplier below the estimated time with the book's total page count.
           </li>
         </ol>
 
-        <p><strong>Note:</strong> this route may ask for Google authorization because OCR extraction is performed through
+        <p><strong>Note:</strong> this route may ask for Google authorization because OCR extraction is performed
+          through
           Google. The file you choose for OCR is not sent to the developers and is not shared with other people as part
           of that process. Final quality still depends on source quality (photo/PDF/format).</p>
 
@@ -475,8 +487,9 @@
 我喜欢读书因为它很有趣
 Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
-        <p>Remember that you can duplicate text with <strong>Repetitions</strong>, either from the main selector
-          (<strong>📋↺</strong>/<strong>📋+</strong>) or from the import/OCR final apply modal.</p>
+        <p>Remember that <strong>Repetitions</strong> duplicates text in the current text, either from the main selector
+          (<strong>📋↺</strong>/<strong>📋+</strong>) or from the import/OCR final apply modal. Use the multiplier below
+          the estimated time when you want to project time without expanding the current text.</p>
 
         <p><strong>What to see:</strong></p>
         <ul>
@@ -502,6 +515,10 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <ul>
           <li>Check <strong>words</strong>, <strong>characters with/without spaces</strong>.</li>
           <li>Check <strong>estimated time</strong>.</li>
+          <li>Use the multiplier below the estimated time if you want to project that same estimate
+            <strong>N</strong> times without duplicating the current text (for example, one representative page times a
+            total page count).
+          </li>
         </ul>
 
         <p>If estimated time “does not make sense”:</p>
@@ -681,11 +698,13 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         </ul>
 
         <p>If you only want to disconnect Google OCR without deleting the rest of the app configuration, use
-          <strong>Menu &gt; Preferences &gt; Disconnect Google OCR</strong>. On success, the app revokes the saved Google token and
+          <strong>Menu &gt; Preferences &gt; Disconnect Google OCR</strong>. On success, the app revokes the saved
+          Google token and
           deletes the local OCR token file. App-managed local Google OAuth credentials may remain so OCR can
           reconnect later.
           As an external fallback/control, you can also revoke the app's access from your Google Account
-          permissions/security controls.</p>
+          permissions/security controls.
+        </p>
 
         <h4>8.2 Total cleanup (clean reinstallation) — with paths per system</h4>
 
@@ -830,8 +849,10 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           that open an external site expose to that service your IP address and normal connection metadata (as in any
           browser). In addition, if you choose to use OCR, the files you explicitly select for OCR are sent to Google
           for that operation; they are not sent to the developers or to other third parties as part of the OCR flow. The
-          app also attempts immediate remote cleanup of the temporary converted Google document after export. If you want
-          to disconnect Google OCR only, use <strong>Menu &gt; Preferences &gt; Disconnect Google OCR</strong>. On success, the app
+          app also attempts immediate remote cleanup of the temporary converted Google document after export. If you
+          want
+          to disconnect Google OCR only, use <strong>Menu &gt; Preferences &gt; Disconnect Google OCR</strong>. On
+          success, the app
           revokes the saved Google token and deletes the local OCR token file. App-managed local Google OAuth
           credentials may remain so OCR can reconnect later. If you also want to
           remove the app's access from Google's side, revoke it from your Google Account permissions/security controls.
