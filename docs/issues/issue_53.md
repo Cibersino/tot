@@ -89,6 +89,16 @@ The app must not assume that a PDF with some selectable text should automaticall
 
 If both routes are viable, the user chooses.
 
+Intentional implementation drift recorded on 2026-03-29:
+- current shipped behavior intentionally surfaces explicit `Native` / `OCR` route choice for PDFs with detectable selectable text
+- this is broader than the narrower wording above that tied explicit choice only to the strict `both routes are viable` interpretation
+- rationale:
+  - preserve explicit user control for mixed/ambiguous PDFs
+  - avoid opaque route narrowing when users may reasonably prefer OCR despite selectable text being present
+- impact/risk:
+  - user-facing docs should describe selectable-text PDFs as an explicit route-choice case
+  - the stricter wording above remains as decision history, not as the current shipped UX baseline
+
 ## Preconditions
 
 No extraction process may start while:
@@ -132,7 +142,7 @@ It must not be conflated with the startup lock.
 3. User selects a file.
 4. App checks preconditions.
 5. App determines available extraction routes.
-6. If both routes are available, the app asks the user which one to use.
+6. If the selected file exposes route choice, the app asks the user which one to use.
 7. App runs extraction in processing mode with visible progress and ETA.
 8. If extraction succeeds, app opens a post-extraction modal.
 9. User chooses:
