@@ -83,6 +83,7 @@ if (!importExtractStatusUi
 }
 const btnImportExtractAbort = importExtractStatusUi.getAbortButton();
 const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
+const mainLogoLinks = window.MainLogoLinks || null;
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
   || typeof resultsTimeMultiplier.setBaseTimeParts !== 'function') {
@@ -421,6 +422,14 @@ function applyTranslations() {
   };
   importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
   importExtractDragDrop.applyTranslations({ tRenderer });
+  if (mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
+    mainLogoLinks.applyTranslations({ tRenderer });
+  } else {
+    log.warnOnce(
+      'renderer.mainLogoLinks.applyTranslations.unavailable',
+      'MainLogoLinks.applyTranslations unavailable; brand logo labels will use defaults.'
+    );
+  }
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
@@ -1441,9 +1450,6 @@ setupToggleModoPreciso();
     registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
     registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
     registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
-    registerMenuActionGuarded('test_velocidad', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_test_velocidad'); // WIP
-    });
     registerMenuActionGuarded('diseno_skins', () => {
       window.Notify.notifyMain('renderer.alerts.wip_diseno_skins'); // WIP
     });
@@ -1500,18 +1506,7 @@ setupToggleModoPreciso();
       await importExtractOcrDisconnect.startFromPreferencesMenu();
     });
 
-    registerMenuActionGuarded('avisos', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_avisos'); // WIP
-    });
-    registerMenuActionGuarded('discord', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_discord'); // WIP
-    });
-
     registerMenuActionGuarded('links_interes', () => { showInfoModal('links_interes') });
-
-    registerMenuActionGuarded('colabora', () => {
-      window.Notify.notifyMain('renderer.alerts.wip_colabora'); // WIP
-    });
 
     registerMenuActionGuarded('actualizar_version', async () => {
       try {
@@ -1849,6 +1844,15 @@ function configureImportExtractModules() {
 }
 
 configureImportExtractModules();
+
+if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
+  mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });
+} else {
+  log.warnOnce(
+    'renderer.mainLogoLinks.bindBrandLinks.unavailable',
+    'MainLogoLinks.bindBrandLinks unavailable; brand logo links disabled.'
+  );
+}
 
 // =============================================================================
 // Import/extract entrypoint wiring

@@ -6,8 +6,8 @@
 
   /* Dimensions */
   --sidebar-width: 420px;
-  --logo-width: 220px;
   --logo-height: 56px;
+  --patreon-logo-height: 44px;
 
   /* Padding */
   --section-padding-vertical: 4px;
@@ -318,12 +318,11 @@ body.import-extract-drop-active .app-container {
   position: fixed;
   top: 6px;
   left: 4px;
-  width: var(--logo-width);
   height: var(--logo-height);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 6px;
   z-index: 30;
-  pointer-events: none;
 }
 
 #appLogo {
@@ -331,7 +330,35 @@ body.import-extract-drop-active .app-container {
   height: 100%;
   object-fit: contain;
   display: block;
-  pointer-events: auto;
+}
+
+.logo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+}
+
+.logo-link:hover {
+  opacity: 0.92;
+}
+
+.logo-link:focus {
+  outline: 3px solid rgb(30 130 230 / .12);
+  outline-offset: 2px;
+}
+
+.logo-link--dev {
+  height: 100%;
+}
+
+.logo-link--patreon {
+  height: var(--patreon-logo-height);
+  margin-left: 6px;
 }
 
 #devLogo {
@@ -339,7 +366,13 @@ body.import-extract-drop-active .app-container {
   height: 100%;
   object-fit: contain;
   display: block;
-  pointer-events: auto;
+}
+
+#patreonLogo {
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 /* TEXT SELECTOR SECTION */

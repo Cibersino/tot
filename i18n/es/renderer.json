@@ -27,6 +27,8 @@
         "snapshot_save": "Guardar el texto actual en un snapshot",
         "task_new": "Nueva tarea",
         "task_load": "Cargar tarea",
+        "cibersino_website": "Abrir sitio de Cibersino",
+        "cibersino_patreon": "Abrir Patreon de Cibersino",
         "new_preset": "Crear un nuevo preset",
         "edit_preset": "Editar preset seleccionado",
         "delete_preset": "Eliminar preset seleccionado",
@@ -302,15 +304,11 @@
       "import_extract_native_cancelled": "La extracción nativa fue cancelada.",
       "import_extract_native_unsupported_format": "Este formato de archivo no está soportado por la ruta de extracción nativa.",
       "import_extract_native_apply_pending": "La extracción nativa terminó. El flujo de aplicar resultado posterior sigue pendiente de implementación.",
-      "wip_test_velocidad": "WIP: Aquí se abrirá el test de velocidad de lectura en una futura versión.",
       "wip_diseno_skins": "WIP: Aquí se abrirá el selector de skins en una futura versión.",
       "wip_diseno_crono": "WIP: Aquí se abrirá la configuración del cronómetro flotante en una futura versión.",
       "wip_diseno_fuentes": "WIP: Aquí se abrirá el selector de fuentes en una futura versión.",
       "wip_diseno_colores": "WIP: Aquí se abrirá el selector de colores en una futura versión.",
-      "wip_shortcuts": "WIP: Aquí se abrirá el selector de atajos del teclado en una futura versión.",
-      "wip_avisos": "WIP: Aquí se mostrarán los avisos y novedades en una futura versión.",
-      "wip_discord": "WIP: Aquí se abrirá el enlace a Discord en una futura versión.",
-      "wip_colabora": "WIP: Aquí se mostrará la información para colaborar en una futura versión."
+      "wip_shortcuts": "WIP: Aquí se abrirá el selector de atajos del teclado en una futura versión."
     },
     "editor_alerts": {
       "paste_too_big": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
