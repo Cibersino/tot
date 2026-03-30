@@ -21,8 +21,6 @@
   const inputEl = document.getElementById('resultsTimeMultiplierInput');
   const outputEl = document.getElementById('resultsTimeMultiplierOutput');
 
-  let translate = null;
-  let translateMsg = null;
   let baseTimeParts = null;
 
   function hasRequiredElements() {
@@ -86,19 +84,8 @@
     };
   }
 
-  function getMultipliedTimeText(multiplierValue, timeParts) {
-    const fallback = `x${multiplierValue}: ${timeParts.hours}h ${timeParts.minutes}m ${timeParts.seconds}s`;
-    if (typeof translateMsg !== 'function') return fallback;
-    return translateMsg(
-      'renderer.main.results.multiplied_time',
-      {
-        n: multiplierValue,
-        h: timeParts.hours,
-        m: timeParts.minutes,
-        s: timeParts.seconds,
-      },
-      fallback
-    );
+  function getMultipliedTimeText(timeParts) {
+    return `: ${timeParts.hours}h ${timeParts.minutes}m ${timeParts.seconds}s`;
   }
 
   function renderMultipliedTime() {
@@ -120,10 +107,7 @@
 
     const multipliedSeconds = getBaseTotalSeconds(baseTimeParts) * multiplierValue;
     const multipliedTimeParts = getTimePartsFromSeconds(multipliedSeconds);
-    outputEl.textContent = getMultipliedTimeText(
-      multiplierValue.toString(),
-      multipliedTimeParts
-    );
+    outputEl.textContent = getMultipliedTimeText(multipliedTimeParts);
   }
 
   function handleInput() {
@@ -146,16 +130,9 @@
     inputEl.addEventListener('blur', handleBlur);
   }
 
-  function applyTranslations({ tRenderer, msgRenderer } = {}) {
+  function applyTranslations() {
     if (!ensureElements('applyTranslations')) return;
-    translate = typeof tRenderer === 'function' ? tRenderer : translate;
-    translateMsg = typeof msgRenderer === 'function' ? msgRenderer : translateMsg;
-    if (typeof translate === 'function') {
-      labelEl.textContent = translate(
-        'renderer.main.results.multiplier',
-        labelEl.textContent || 'Multiplier'
-      );
-    }
+    labelEl.textContent = 'x';
     if (baseTimeParts) {
       renderMultipliedTime();
     }

@@ -60,8 +60,6 @@
       "results": {
         "title": "COUNT RESULTS",
         "time": "⏱ Estimated reading time: {h}h {m}m {s}s",
-        "multiplier": "Multiplier",
-        "multiplied_time": "x{n}: {h}h {m}m {s}s",
         "words": "Words: {n}",
         "chars_no_space": "Characters (no spaces): {n}",
         "chars": "Characters: {n}",

@@ -60,8 +60,6 @@
       "results": {
         "title": "RESULTADOS DEL CONTEO",
         "time": "⏱ Tiempo estimado de lectura: {h}h {m}m {s}s",
-        "multiplier": "Multiplicador",
-        "multiplied_time": "x{n}: {h}h {m}m {s}s",
         "words": "Palabras: {n}",
         "chars_no_space": "Caracteres (sin espacios): {n}",
         "chars": "Caracteres: {n}",
