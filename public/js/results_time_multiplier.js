@@ -130,14 +130,6 @@
     inputEl.addEventListener('blur', handleBlur);
   }
 
-  function applyTranslations() {
-    if (!ensureElements('applyTranslations')) return;
-    labelEl.textContent = 'x';
-    if (baseTimeParts) {
-      renderMultipliedTime();
-    }
-  }
-
   function setBaseTimeParts(nextBaseTimeParts) {
     if (!ensureElements('setBaseTimeParts')) return;
     if (!hasValidBaseTimeParts(nextBaseTimeParts)) {
@@ -159,7 +151,6 @@
   bindEvents();
 
   window.ResultsTimeMultiplier = {
-    applyTranslations,
     setBaseTimeParts,
   };
 })();
