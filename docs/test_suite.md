@@ -6,6 +6,10 @@
 
 **Scope coverage (app-level):**
 - Startup + first-run language selection
+- Import/extract from file picker + drag/drop
+- Native extraction routes (`txt`, `md`, `html`, `docx`, PDF text layer)
+- OCR extraction routes (images + scanned PDFs), including OCR activation/disconnect
+- Import/extract route choice, apply modal, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
@@ -23,7 +27,7 @@
 ## 0) Definitions
 
 - **Release smoke:** 5–15 minutes, minimum confidence gate for publishing.
-- **Full regression:** 30–60 minutes, end-to-end validation across all primary windows/flows.
+- **Full regression:** 45–90 minutes, end-to-end validation across all primary windows/flows.
 
 ---
 
@@ -38,7 +42,10 @@
 ### 1.2 Required conditions
 
 - Clipboard access available (to test overwrite/append).
-- Network access available for updater check (GitHub API).
+- A local sample-file set available for import/extract:
+  - native samples: `txt`, `md`, `html`, `docx`, PDF with selectable text
+  - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`) and one scanned PDF
+- Network access available for updater check (GitHub API) and OCR activation/runtime checks.
 
 ### 1.3 Dev vs packaged caveats (important)
 
@@ -60,8 +67,12 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - `user_settings.json`
 - `current_text.json`
 - `editor_state.json`
+- `import_extract_state.json` (last picker directory)
 - `presets_defaults/*.json` (runtime defaults copies)
 - `saved_current_texts/*.json` (saved text snapshots)
+- `ocr_google_drive/`
+  - `ocr_google_drive/credentials.json` (runtime mirrored OAuth client; app-managed)
+  - `ocr_google_drive/token.json` (local OCR sign-in state; present only after activation)
 - `tasks/` (created on first use of the task editor)
   - `tasks/lists/*.json` (saved task lists)
   - `tasks/library.json` (task row library)
@@ -98,6 +109,24 @@ Esto es una prueba: 1,234.56 — ¿funciona?
 ### 3.2 Large text (edge-case only)
 
 Any text large enough to stress editor limits and truncation messaging (see Edge cases).
+
+### 3.3 Import/extract sample files
+
+Prepare a small local sample set whose expected text is known ahead of time:
+- Native text docs:
+  - `sample.txt`
+  - `sample.md`
+  - `sample.html`
+  - `sample.docx`
+- PDFs:
+  - `sample_selectable.pdf` (contains selectable/native text)
+  - `sample_scanned.pdf` (image/scanned PDF; no usable text layer)
+- OCR images:
+  - at least one of `sample.jpg`, `sample.png`, `sample.webp`, or `sample.bmp`
+
+Recommended content for the text-like samples:
+- reuse the “Small text” content from 3.1 so count/preview expectations are easy to compare
+- for PDF/image OCR samples, use content that is visibly legible and easy to recognize after extraction
 
 ---
 
@@ -187,7 +216,35 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Main window reflects editor changes.
 - No crash; no stuck “editor loader”.
 
-### SM-09 Stopwatch + floating window quick check
+### SM-09 Import/extract: native quick check
+**Goal:** picker-based import/extract works for a native-supported file and reaches the apply modal.
+1. Click **📥**.
+2. Select a native-supported file such as `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, or `sample_selectable.pdf`.
+3. If the apply modal appears, leave repetitions at `1` and choose **Sobrescribir**.
+4. Observe preview and results.
+
+**Expected:**
+- File picker opens and accepts supported formats.
+- The app may briefly show prepare/progress UI during the run.
+- The apply modal appears after successful extraction.
+- After **Sobrescribir**, preview/results reflect the extracted text.
+
+### SM-10 Import/extract: OCR/route-choice quick check
+**Goal:** OCR-capable files follow the correct route and can be applied.
+1. Click **📥** and select either:
+   - an OCR-capable image, or
+   - a PDF known to have both selectable text and OCR available.
+2. If route choice appears, choose either **Usar nativa** or **Usar OCR** as appropriate for the file being tested.
+3. If OCR activation disclosure appears, confirm it is understandable and either complete activation or cancel deliberately.
+4. On success, apply the extracted text with **Sobrescribir** or **Agregar**.
+
+**Expected:**
+- OCR-only files do not offer the native route.
+- Dual-route PDFs show the route-choice modal.
+- OCR activation/disclosure appears only when required.
+- Successful extraction reaches the apply modal and updates current text after apply.
+
+### SM-11 Stopwatch + floating window quick check
 **Goal:** stopwatch runs and floating window reflects state.
 1. With non-empty text, press ▶ to start stopwatch.
 2. Wait ~2–3 seconds; press pause.
@@ -198,7 +255,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Stopwatch display increments while running.
 - Main and floating window remain synchronized after pause/resume actions from either window.
 
-### SM-10 Menu: About + Updater
+### SM-12 Menu: About + Updater
 **Goal:** About modal loads and updater check is reachable.
 1. Menu → open **About**.
 2. Confirm modal opens and contains content.
@@ -208,7 +265,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - About modal opens and content is readable; version/environment fields hydrate when available.
 - Updater shows a dialog (up-to-date / update available / failure).
 
-### SM-11 Current text snapshots (Save/Load)
+### SM-13 Current text snapshots (Save/Load)
 **Goal:** save and load a snapshot via native dialogs.
 1. Set non-empty text (SM-03).
 2. Click **💾** and save as `smoke_snapshot.json` under `config/saved_current_texts/`.
@@ -220,7 +277,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Current text is overwritten; preview/results update.
 - Stopwatch behavior follows REG-CRONO-02 semantics (non-empty restore: no reset; empty restore: reset).
 
-### SM-12 Task editor: open + basic save
+### SM-14 Task editor: open + basic save
 **Goal:** save and load tasks.
 1. From the main window, click **📝** (new task) to open the task editor.
 2. Add one row with required text (and any numeric fields as desired).
@@ -318,6 +375,191 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Invalid values (`''`, `0`, `-3`, decimal, text) are treated as `N=1` (no crash, no broken flow).
 - Values above max are clamped to the app max (`MAX_CLIPBOARD_REPEAT` / UI max).
 - Both clipboard actions still use a single IPC write path (observable as normal success/failure behavior, not repeated dialog/error bursts).
+
+---
+
+### REG-IMPORT/EXTRACT — Picker, drag/drop, routes, apply, and processing mode
+
+#### REG-IMPORT-01 Picker entry + supported format list
+**Goal:** the main import/extract entrypoint is available and the picker accepts the supported file set.
+1. Click **📥**.
+2. Inspect the native picker filter and confirm it allows supported native and OCR-capable formats.
+3. Cancel the picker.
+
+**Expected:**
+- The button is present in the main controls row.
+- The picker opens to a reasonable default/persisted folder.
+- Supported formats include native text docs plus OCR-capable images/PDFs.
+- Cancelling the picker is a no-op.
+
+#### REG-IMPORT-02 Drag/drop happy path
+**Goal:** dropping one supported local file starts the same shared flow as the picker.
+1. Drag one supported local file over the main window.
+2. Confirm the full-window drop affordance appears.
+3. Drop the file.
+4. Complete the flow through apply.
+
+**Expected:**
+- Overlay appears only while a valid file drag is active.
+- Drop starts prepare/execution/apply without opening the file picker.
+- Result matches the same file processed through the picker path.
+
+#### REG-IMPORT-03 Drag/drop invalid payload guardrails
+**Goal:** drag/drop rejects unsupported payload shapes safely.
+1. Drag two files at once over the main window and drop them.
+2. Drag a non-file payload (if available, e.g. selected text from another app) over the window.
+3. If feasible, drag an item that resolves to no valid local path.
+
+**Expected:**
+- Two-file drop is rejected with a user-facing “single file only” style notice.
+- Non-file drags do not start import/extract.
+- Invalid local-path resolution fails safely with user feedback.
+
+#### REG-IMPORT-04 Preconditions block import/extract
+**Goal:** import/extract refuses to start when a secondary window is open or the stopwatch is running.
+1. Start the stopwatch and try **📥**.
+2. Stop the stopwatch.
+3. Open a secondary window (editor, task editor, or floating window if it counts in the current build) and try **📥** again.
+
+**Expected:**
+- The flow does not start while blocked.
+- User-facing guidance indicates that secondary windows must be closed and the stopwatch stopped before import/extract can start.
+
+#### REG-IMPORT-05 Native extraction across supported formats
+**Goal:** each native-supported format extracts text and reaches the apply modal.
+1. Run import/extract for:
+   - `sample.txt`
+   - `sample.md`
+   - `sample.html`
+   - `sample.docx`
+   - `sample_selectable.pdf`
+2. For each successful run, use **Sobrescribir** with repetitions `1`.
+
+**Expected:**
+- Each file completes through the native route.
+- Extracted text is normalized into usable app text (preview/counts/time update).
+- `sample_selectable.pdf` does not require OCR if native text is available and OCR is not explicitly chosen.
+
+#### REG-IMPORT-06 PDF route choice when both routes are available
+**Goal:** a dual-route PDF requires an explicit route choice and both choices are honored.
+1. Use a PDF with selectable text while OCR is available.
+2. Start import/extract and confirm the route-choice modal appears.
+3. Cancel once.
+4. Start again, choose **Usar nativa**, complete apply, note the result.
+5. Start again, choose **Usar OCR**, complete apply, note the result.
+
+**Expected:**
+- Route-choice modal appears only for PDFs with both native and OCR routes available.
+- Cancel is a no-op.
+- Native and OCR choices both execute the selected route and reach the apply modal.
+
+#### REG-IMPORT-07 OCR-only routing for images and scanned PDFs
+**Goal:** OCR-only inputs skip native route selection and use the OCR path.
+1. Run import/extract on one OCR-capable image.
+2. Run import/extract on `sample_scanned.pdf`.
+
+**Expected:**
+- No native-route option is offered for OCR-only inputs.
+- If OCR is ready, extraction proceeds to the apply modal.
+- If OCR is not ready, the app surfaces the correct OCR setup/activation failure instead of a generic error.
+
+#### REG-IMPORT-08 Apply modal semantics
+**Goal:** apply modal supports overwrite/append/cancel and repeat normalization.
+1. Complete an extraction successfully so the apply modal appears.
+2. Cancel once and confirm current text does not change.
+3. Re-run extraction and choose **Sobrescribir** with repetitions `1`.
+4. Re-run extraction and choose **Agregar** with repetitions `2`.
+5. Re-run extraction and test invalid repeat values (`0`, `-1`, `abc`, decimal, very large number`) before blur/submit.
+
+**Expected:**
+- Cancel is a no-op.
+- Overwrite replaces current text; append adds to it.
+- Repeat input normalizes/clamps like the canonical text-apply path.
+- On successful apply, preview/results update through the normal current-text subscription flow.
+
+#### REG-IMPORT-09 Processing mode lock + abort
+**Goal:** processing mode blocks main-window interactions until completion or abort, and abort exits cleanly.
+1. Start an import/extract run that lasts long enough to observe the processing bar (OCR path is the easiest).
+2. While processing is active, try other main-window actions such as clipboard overwrite, editor open, snapshot load, or task open.
+3. Click **⛔** to abort.
+
+**Expected:**
+- Main controls are replaced by the processing UI while active.
+- Main-window actions are blocked with user-facing feedback until processing ends or abort is requested.
+- Abort stops the run, exits processing mode, restores normal controls, and leaves current text unchanged by the cancelled run.
+
+#### REG-IMPORT-10 Delayed OCR waiting copy
+**Goal:** long OCR runs update the waiting copy without breaking elapsed-time reporting.
+1. Start a long OCR run and wait at least ~60 seconds if possible.
+2. Observe the processing label and elapsed text while the run is active.
+
+**Expected:**
+- Elapsed time remains visible and updates during processing.
+- OCR waiting copy shifts to the delayed wording after the long-running threshold.
+
+---
+
+### REG-OCR — Activation, disconnect, and OCR-specific outcomes
+
+#### REG-OCR-01 Activation disclosure + cancel path
+**Goal:** first OCR use can require activation, shows disclosure, and honors cancel safely.
+1. Ensure OCR is not yet connected in this app instance (or disconnect first).
+2. Start an OCR-required import/extract run.
+3. When the disclosure modal appears, review:
+   - intro copy
+   - selected-files disclosure
+   - local-storage disclosure
+   - remote-cleanup disclosure
+   - disconnect guidance
+4. Click the privacy-policy link.
+5. Cancel the disclosure.
+
+**Expected:**
+- Disclosure modal appears before browser OAuth launch.
+- Privacy policy opens through the app-doc path.
+- Cancel leaves OCR disconnected and the import/extract flow does not continue.
+
+#### REG-OCR-02 Activation success + automatic retry
+**Goal:** successful OCR activation retries the blocked extraction automatically.
+1. Start an OCR-required import/extract run while disconnected.
+2. Accept the disclosure and complete Google auth in the system browser.
+3. Return to the app and observe the original extraction flow.
+
+**Expected:**
+- Activation success is surfaced to the user.
+- The app retries preparation automatically after activation.
+- The original OCR extraction continues without requiring manual restart.
+
+#### REG-OCR-03 Token-invalid recovery path
+**Goal:** invalid saved OCR sign-in state produces recovery instead of a dead-end generic error.
+1. (Advanced) Corrupt or invalidate the saved OCR token state.
+2. Start an OCR-required import/extract run.
+
+**Expected:**
+- The app identifies invalid OCR sign-in state.
+- Recovery path routes back through activation/disclosure instead of silently failing.
+
+#### REG-OCR-04 Disconnect from Preferences
+**Goal:** the Preferences menu disconnect action revokes the saved sign-in state and reports the result clearly.
+1. Ensure OCR is connected.
+2. Menu → Preferences → **Disconnect Google OCR**.
+3. Cancel once.
+4. Run the same menu action again and confirm disconnect.
+5. Attempt an OCR-required import/extract run after disconnect.
+
+**Expected:**
+- Cancel leaves OCR connected.
+- Confirm disconnect removes the saved OCR sign-in state and shows success feedback.
+- A later OCR run requires activation again.
+
+#### REG-OCR-05 Disconnect when not connected
+**Goal:** disconnect behaves safely when there is no saved OCR token.
+1. Ensure OCR is not connected.
+2. Menu → Preferences → **Disconnect Google OCR**.
+
+**Expected:**
+- The app reports that Google OCR is not connected in this app instance.
+- No crash and no misleading success state.
 
 ---
 
@@ -635,6 +877,16 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Only HTTPS + allowlisted hosts are opened externally (GitHub/DOI set).
 - App docs open via OS viewer; missing docs yield safe failure.
 
+#### REG-MENU-04 OCR disconnect menu action reachable
+**Goal:** Preferences exposes the OCR disconnect action when the feature is present.
+1. Open the Preferences menu.
+2. Locate **Disconnect Google OCR**.
+3. Trigger it and follow either the cancel path or the success/not-connected path.
+
+**Expected:**
+- Menu action is reachable from Preferences.
+- It routes into the same disconnect flow covered by REG-OCR-04/05.
+
 ---
 
 ### REG-PERSIST — Persistence sanity
@@ -642,9 +894,9 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-PERSIST-01 Files created as expected (clean run)
 **Goal:** app creates minimal state files.
 1. Clean run launch.
-2. Perform: set text, change mode, select a preset, open editor once.
+2. Perform: set text, change mode, select a preset, open editor once, and complete one valid picker-based import/extract selection.
 3. Close app.
-4. Verify config files exist (`user_settings.json`, `current_text.json`, `editor_state.json`).
+4. Verify config files exist (`user_settings.json`, `current_text.json`, `editor_state.json`, `import_extract_state.json`).
 
 **Expected:**
 - Files exist; JSON is valid; no zero-byte corruption.
@@ -696,6 +948,22 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - All files above exist and are valid JSON.
 - Tasks state (position, column widths, library, allowed hosts) persists across restart.
+
+#### REG-PERSIST-05 Import/extract picker + OCR runtime state persistence
+**Goal:** import/extract persists its picker folder and OCR runtime state files correctly.
+1. Use **📥** to open a file from a non-default folder and complete or cancel the run after selection.
+2. If OCR is part of the build, complete OCR activation once.
+3. Close the app.
+4. Inspect config:
+   - `import_extract_state.json` exists and records the last used directory
+   - `ocr_google_drive/credentials.json` exists in OCR-enabled builds
+   - `ocr_google_drive/token.json` exists after successful OCR activation
+5. Relaunch the app and open **📥** again.
+
+**Expected:**
+- Picker state persists and reopens in the last-used directory when that directory still exists.
+- OCR runtime files exist only when the relevant state has actually been created.
+- Relaunch preserves OCR-connected state until disconnect is requested.
 
 ---
 
@@ -787,6 +1055,37 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - If text limit is already reached, append is blocked with text-limit behavior.
 - Current text is not corrupted and app remains responsive.
 
+### EDGE-06 Import/extract unsupported format
+**Goal:** unsupported files fail with a specific user-visible message and no broken UI state.
+1. Try import/extract with an unsupported file extension.
+2. Repeat via picker and, if possible, via drag/drop.
+
+**Expected:**
+- Unsupported format is rejected safely.
+- Processing mode does not get stuck.
+- Current text remains unchanged.
+
+### EDGE-07 Import/extract prepared state invalidation
+**Goal:** stale prepared runs do not execute against changed/expired source state.
+1. Start a flow that reaches route choice or other post-prepare UI.
+2. Before continuing, modify, replace, move, or delete the source file if feasible.
+3. Continue the flow.
+
+**Expected:**
+- Execution is rejected safely if the prepared state is invalid/expired/reused or the source fingerprint changed.
+- No stale text is applied.
+
+### EDGE-08 OCR offline/setup failure paths
+**Goal:** OCR-specific setup/runtime failures stay specific and recoverable.
+1. Disable network and start an OCR-required import/extract run.
+2. Re-enable network and try again.
+3. If you have a build without bundled OCR credentials, attempt the same run there.
+
+**Expected:**
+- Offline OCR shows a connectivity-style failure, not a generic crash.
+- Re-running after network restoration can succeed.
+- Missing/invalid bundled-credentials builds report the specific setup problem.
+
 ---
 
 ## 7) Result Recording
@@ -800,6 +1099,7 @@ Create a short log entry for each run (store wherever the release process stores
 - OS:
 - Config state: clean first-run / existing
 - Network: on/off (if updater tested)
+- OCR state before run: disconnected / connected / not available in build
 
 ### 7.2 Checklist result
 - Release smoke: Pass / Fail
