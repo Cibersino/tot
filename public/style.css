@@ -446,7 +446,7 @@ select#presets {
   padding: 6px;
   border-radius: 6px;
   margin-top: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .big-time {
@@ -495,11 +495,11 @@ select#presets {
 .result-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1 1 auto;             /* occupies the available space on the left */
   min-width: 0;               /* avoids overflow in small containers */
   color: var(--text-color);
-  font-size: 1.00rem;
+  font-size: 0.90rem;
 }
 
 /* Right-aligned toggle wrapper */
