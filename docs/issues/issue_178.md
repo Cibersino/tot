@@ -130,3 +130,106 @@ Update `public/style.css` so the new control fits the existing results panel lay
 
 - Unless product direction says otherwise, the simplest default is for the multiplier input to start at `1`.
 - This issue is about exposing a derived planning value in the UI, not about changing the underlying time-estimation model.
+
+## Implementation Plan
+
+This section refines the implementation direction above and should be treated as the working plan for the issue.
+
+### 1. Preserve one canonical estimate path
+
+- The multiplier feature must not introduce a second canonical `words -> time` path.
+- The existing estimated time already comes from `getTimeParts(...)` in `public/renderer.js` and is rendered into `#resTime`.
+- The multiplier feature should use that same already-rounded `{ hours, minutes, seconds }` result as its base input.
+- This avoids drift between the visible base estimate and the multiplied estimate.
+
+### 2. Add a dedicated renderer module
+
+- Create a focused renderer module under `public/js/` for the time-multiplier feature.
+- That module should own:
+  - DOM handling for the multiplier controls
+  - natural-number validation
+  - invalid visual state
+  - multiplied-time rendering
+  - translation application for its own UI
+- Keep the module surface small and explicit, for example:
+  - `applyTranslations({ tRenderer, msgRenderer })`
+  - `setBaseTimeParts({ hours, minutes, seconds })`
+
+### 3. Keep `public/renderer.js` as wiring, not feature owner
+
+- `public/renderer.js` should not own the multiplier feature logic.
+- Its responsibility should be limited to:
+  - checking that the dedicated module is available
+  - delegating translation application to that module
+  - passing canonical base time parts to that module
+- Replace the duplicated `#resTime` update lines with one small helper in `renderer.js` that:
+  - renders the base estimated time
+  - passes the exact same `{ hours, minutes, seconds }` to the multiplier module
+- Call that helper from both existing estimate update paths:
+  - `updatePreviewAndResults(...)`
+  - `updateTimeOnlyFromStats()`
+
+### 4. Keep scope renderer-only
+
+- This feature should remain renderer-owned.
+- Do not add IPC.
+- Do not add `main.js` work.
+- Do not add persistence in this issue unless scope changes explicitly.
+
+### 5. Keep CSS changes minimal
+
+- Limit `public/style.css` changes to the minimum needed for:
+  - the new multiplier row
+  - the derived-result placement
+  - the invalid input state
+- Do not broaden this issue into a larger results-panel layout cleanup.
+- If the panel fit or spacing needs more polish, leave that to follow-up work.
+
+### 6. Limit i18n scope to `en` and `es`
+
+- Add only the required new keys to:
+  - `i18n/en/renderer.json`
+  - `i18n/es/renderer.json`
+- Keep the key set minimal:
+  - multiplier label
+  - multiplied-time result text
+
+### 7. Define input behavior explicitly
+
+- Default multiplier: `1`
+- Valid settled values: integers `>= 1`
+- While typing:
+  - valid input updates the multiplied result immediately
+  - invalid or empty input clears the multiplied result and marks the input invalid
+- On blur:
+  - normalize invalid settled input back to `1`
+  - rerender the multiplied result
+
+### 8. Follow the logging policy narrowly
+
+- Do not log ordinary invalid user typing.
+- Only log real runtime faults, such as:
+  - missing required DOM
+  - missing required module exports
+- Any such logs must follow the existing logging policy in `public/js/log.js`.
+
+### 9. Deliberate non-changes
+
+This issue should not, in its first implementation pass, expand into changes in:
+
+- `electron/main.js`
+- `public/js/format.js`
+- `public/js/text_apply_canonical.js`
+- renderer locale files other than `en` and `es`
+
+### 10. Verification
+
+1. Run `npm run lint`.
+2. Manually verify:
+   - startup
+   - text changes
+   - WPM slider changes
+   - WPM input normalization
+   - preset-driven WPM changes
+   - precise-mode recount changes
+   - invalid multiplier states: empty, `0`, negative, decimal
