@@ -85,7 +85,6 @@ const btnImportExtractAbort = importExtractStatusUi.getAbortButton();
 const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
-  || typeof resultsTimeMultiplier.applyTranslations !== 'function'
   || typeof resultsTimeMultiplier.setBaseTimeParts !== 'function') {
   throw new Error('[renderer] ResultsTimeMultiplier unavailable; cannot continue');
 }
@@ -422,7 +421,6 @@ function applyTranslations() {
   };
   importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
   importExtractDragDrop.applyTranslations({ tRenderer });
-  resultsTimeMultiplier.applyTranslations({ tRenderer, msgRenderer });
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
