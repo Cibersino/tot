@@ -7,7 +7,7 @@
 
 # toT — de Texto a Tiempo
 
-**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas y cronómetro para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
+**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina importación/extracción de texto desde archivos de texto e imagen, presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas y cronómetro para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
 
 *¿No te atreves a empezar ciertas lecturas debido a no saber cuánto trabajo realmente te tomará?*
 *¿Te cuesta terminar las lecturas y las abandonas en la mitad?*
@@ -21,6 +21,7 @@
 
 ## Funcionalidades
 
+* Importar o extraer texto desde archivos `txt`, `md`, `html`, `htm`, `docx`, `pdf` e imágenes (`png`, `jpg`, `jpeg`, `webp`, `bmp`), con OCR para imágenes y PDF escaneados.
 * El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.
 * Editor de texto completo con búsqueda.
 * Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.
@@ -55,6 +56,7 @@
 Notas:
 * Este es un **build portable** (sin instalador).
 * El estado/configuración se almacena localmente en `app.getPath('userData')/config` (sin dependencia de servicios en la nube).
+* El OCR con Google usa el alcance `drive.file`. Los usuarios requieren una cuenta de Google para usarlo.
 
 ---
 
@@ -63,6 +65,7 @@ Notas:
 Las instrucciones de uso están incluidas en el menú de la app (“¿Cómo usar la app?”).
 
 Accesos rápidos visibles en la ventana principal:
+* `📥`: importar o extraer texto desde archivo (incluye flujo OCR cuando aplica).
 * `📋↺` / `📋+`: reemplazar o agregar texto desde portapapeles.
 * `⌨`: abrir editor de texto completo.
 * `💾` / `📂`: guardar/cargar snapshot del texto actual.
@@ -163,7 +166,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 # toT — from Text to Time
 
-**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines configurable WPM presets, precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings with less guesswork.
+**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines file text import/extraction from text and image files, configurable WPM presets, precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings with less guesswork.
 
 *Are you hesitant to start certain readings because you don't know how much work it will really take?*
 *Do you find it hard to finish reading and abandon them in the middle?*
@@ -177,6 +180,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 ## Features
 
+* Import or extract text from `txt`, `md`, `html`, `htm`, `docx`, `pdf`, and image files (`png`, `jpg`, `jpeg`, `webp`, `bmp`), with OCR for images and scanned PDFs.
 * Text can be entered by pasting it from the clipboard and/or manually.
 * Full-text editor with find.
 * Reading-time estimation with configurable WPM (words per minute).
@@ -214,6 +218,7 @@ Notes:
 
 * This is a **portable build** (no installer).
 * User settings/state are stored locally in `app.getPath('userData')/config` (no cloud service dependency).
+* Google-based OCR uses the `drive.file` scope. Users need a Google account to use it.
 
 ---
 
@@ -222,6 +227,7 @@ Notes:
 Usage instructions are included in the app menu (“How to use?”).
 
 Quick actions in the main window:
+* `📥`: import or extract text from file (includes OCR flow when needed).
 * `📋↺` / `📋+`: replace or append clipboard text.
 * `⌨`: open full-text editor.
 * `💾` / `📂`: save/load current-text snapshot.
