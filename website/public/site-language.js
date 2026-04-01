@@ -1,5 +1,6 @@
 (function () {
   var KEY = "tot-preferred-lang";
+  var LANGUAGE_LINK_SELECTOR = ".lang-switch a[lang], .landing-actions a[data-lang][lang]";
 
   function normalizeLanguage(lang) {
     if (!lang) return "";
@@ -53,10 +54,10 @@
     return getSavedLanguage() || getBrowserLanguage() || "es";
   }
 
-  function bindLanguageSwitch(root) {
+  function bindLanguageLinks(root) {
     if (!root || typeof root.querySelectorAll !== "function") return;
 
-    var links = root.querySelectorAll(".lang-switch a[lang]");
+    var links = root.querySelectorAll(LANGUAGE_LINK_SELECTOR);
     for (var i = 0; i < links.length; i += 1) {
       (function (link) {
         link.addEventListener("click", function () {
@@ -66,17 +67,44 @@
     }
   }
 
-  window.ToTSiteLanguage = {
-    bindLanguageSwitch: bindLanguageSwitch,
-    getPreferredLanguage: getPreferredLanguage,
-    saveLanguage: saveLanguage
-  };
+  function highlightPreferredLanguage(root) {
+    if (!root || typeof root.querySelector !== "function") return;
+
+    var preferredLanguage = getPreferredLanguage();
+    var preferredLink = root.querySelector('.landing-actions a[data-lang="' + preferredLanguage + '"]');
+    if (!preferredLink) return;
+
+    preferredLink.classList.add("recommended");
+  }
+
+  function redirectLanguageRoute(root) {
+    if (!root || !root.dataset) return;
+
+    var esTarget = root.dataset.languageRedirectEs || "";
+    var enTarget = root.dataset.languageRedirectEn || "";
+    if (!esTarget && !enTarget) return;
+
+    var preferredLanguage = getPreferredLanguage();
+    var targetPath = preferredLanguage === "en" ? enTarget : esTarget;
+    if (!targetPath) {
+      targetPath = esTarget || enTarget;
+    }
+    if (!targetPath) return;
+
+    window.location.replace(targetPath + window.location.search + window.location.hash);
+  }
+
+  function init(root) {
+    redirectLanguageRoute(root);
+    bindLanguageLinks(root);
+    highlightPreferredLanguage(root);
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
-      bindLanguageSwitch(document);
+      init(document);
     });
   } else {
-    bindLanguageSwitch(document);
+    init(document);
   }
 })();

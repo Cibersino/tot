@@ -86,7 +86,7 @@ const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
 const mainLogoLinks = window.MainLogoLinks || null;
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
-  || typeof resultsTimeMultiplier.setBaseTimeParts !== 'function') {
+  || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function') {
   throw new Error('[renderer] ResultsTimeMultiplier unavailable; cannot continue');
 }
 
@@ -588,8 +588,8 @@ function setModoConteo(nuevoModo) {
 // =============================================================================
 // Time formatting
 // =============================================================================
-const { getTimeParts, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
-if (!getTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
+const { getExactTotalSeconds, getDisplayTimeParts, obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
+if (!getExactTotalSeconds || !getDisplayTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
   throw new Error('[renderer] FormatUtils unavailable; cannot continue');
 }
 
@@ -598,12 +598,13 @@ if (!getTimeParts || !obtenerSeparadoresDeNumeros || !formatearNumero) {
 // =============================================================================
 let currentTextStats = null;
 
-function renderEstimatedTime({ hours, minutes, seconds }) {
+function renderEstimatedTime(totalSeconds) {
+  const { hours, minutes, seconds } = getDisplayTimeParts(totalSeconds);
   resTime.textContent = msgRenderer(
     'renderer.main.results.time',
     { h: hours, m: minutes, s: seconds }
   );
-  resultsTimeMultiplier.setBaseTimeParts({ hours, minutes, seconds });
+  resultsTimeMultiplier.setBaseTotalSeconds(totalSeconds);
 }
 
 async function updatePreviewAndResults(text) {
@@ -636,8 +637,8 @@ async function updatePreviewAndResults(text) {
   resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado }, `Chars w/o space: ${caracteresSinEspaciosFormateado}`);
   resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
 
-  const { hours, minutes, seconds } = getTimeParts(stats.palabras, wpm);
-  renderEstimatedTime({ hours, minutes, seconds });
+  const totalSeconds = getExactTotalSeconds(stats.palabras, wpm);
+  renderEstimatedTime(totalSeconds);
 }
 
 function startPreviewAndResultsUpdate(text, reason) {
@@ -654,8 +655,8 @@ function updateTimeOnlyFromStats() {
     );
     return;
   }
-  const { hours, minutes, seconds } = getTimeParts(currentTextStats.palabras, wpm);
-  renderEstimatedTime({ hours, minutes, seconds });
+  const totalSeconds = getExactTotalSeconds(currentTextStats.palabras, wpm);
+  renderEstimatedTime(totalSeconds);
 }
 
 function installCurrentTextState(text) {
