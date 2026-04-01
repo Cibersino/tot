@@ -7,18 +7,22 @@
 // Responsibilities:
 // - Own the main-window time multiplier UI below the estimated-time result.
 // - Validate multiplier input as a natural number.
-// - Render the multiplied time from canonical rounded base time parts.
+// - Render the multiplied time from canonical exact base seconds.
 // =============================================================================
 
 (() => {
   // =============================================================================
-  // Logger / DOM bindings
+  // Logger / dependencies / DOM bindings
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[results-time-multiplier] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('results-time-multiplier');
   log.debug('Results time multiplier starting...');
+  if (!window.FormatUtils || typeof window.FormatUtils.getDisplayTimeParts !== 'function') {
+    throw new Error('[results-time-multiplier] FormatUtils.getDisplayTimeParts unavailable; cannot continue');
+  }
+  const { getDisplayTimeParts } = window.FormatUtils;
 
   const labelEl = document.getElementById('resultsTimeMultiplierLabel');
   const inputEl = document.getElementById('resultsTimeMultiplierInput');
@@ -28,7 +32,7 @@
   // =============================================================================
   // Shared state
   // =============================================================================
-  let baseTimeParts = null;
+  let baseTotalSeconds = null;
 
   // =============================================================================
   // Helpers
@@ -69,29 +73,9 @@
     inputEl.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
   }
 
-  function hasValidBaseTimeParts(parts) {
-    if (!parts || typeof parts !== 'object') return false;
-    const { hours, minutes, seconds } = parts;
-    return Number.isInteger(hours)
-      && Number.isInteger(minutes)
-      && Number.isInteger(seconds)
-      && hours >= 0
-      && minutes >= 0
-      && seconds >= 0;
-  }
-
-  function getBaseTotalSeconds(parts) {
-    return (BigInt(parts.hours) * 3600n)
-      + (BigInt(parts.minutes) * 60n)
-      + BigInt(parts.seconds);
-  }
-
-  function getTimePartsFromSeconds(totalSeconds) {
-    return {
-      hours: (totalSeconds / 3600n).toString(),
-      minutes: ((totalSeconds % 3600n) / 60n).toString(),
-      seconds: (totalSeconds % 60n).toString(),
-    };
+  function hasValidBaseTotalSeconds(value) {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) && numericValue >= 0;
   }
 
   function getMultipliedTimeText(timeParts) {
@@ -113,13 +97,13 @@
 
     setInputInvalidState(false);
 
-    if (!baseTimeParts) {
+    if (baseTotalSeconds === null) {
       outputEl.textContent = '';
       return;
     }
 
-    const multipliedSeconds = getBaseTotalSeconds(baseTimeParts) * multiplierValue;
-    const multipliedTimeParts = getTimePartsFromSeconds(multipliedSeconds);
+    const multipliedSeconds = baseTotalSeconds * Number(multiplierValue);
+    const multipliedTimeParts = getDisplayTimeParts(multipliedSeconds);
     outputEl.textContent = getMultipliedTimeText(multipliedTimeParts);
   }
 
@@ -150,28 +134,24 @@
   // =============================================================================
   // Exports / module surface
   // =============================================================================
-  function setBaseTimeParts(nextBaseTimeParts) {
-    if (!ensureElements('setBaseTimeParts')) return;
-    if (!hasValidBaseTimeParts(nextBaseTimeParts)) {
+  function setBaseTotalSeconds(nextBaseTotalSeconds) {
+    if (!ensureElements('setBaseTotalSeconds')) return;
+    if (!hasValidBaseTotalSeconds(nextBaseTotalSeconds)) {
       log.errorOnce(
-        'results-time-multiplier.baseTime.invalid',
-        'Invalid base time parts received for results time multiplier:',
-        nextBaseTimeParts
+        'results-time-multiplier.baseTotalSeconds.invalid',
+        'Invalid base total seconds received for results time multiplier:',
+        nextBaseTotalSeconds
       );
       return;
     }
-    baseTimeParts = {
-      hours: nextBaseTimeParts.hours,
-      minutes: nextBaseTimeParts.minutes,
-      seconds: nextBaseTimeParts.seconds,
-    };
+    baseTotalSeconds = Number(nextBaseTotalSeconds);
     renderMultipliedTime();
   }
 
   bindEvents();
 
   window.ResultsTimeMultiplier = {
-    setBaseTimeParts,
+    setBaseTotalSeconds,
   };
 })();
 
