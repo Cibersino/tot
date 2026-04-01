@@ -229,7 +229,7 @@ p {
 }
 
 .site-home .wrap {
-  max-width: 1120px;
+  max-width: 920px;
 }
 
 .landing-shell {
@@ -237,13 +237,17 @@ p {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 24px;
 }
 
 .landing-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-  gap: 28px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  align-items: stretch;
 }
 
 .landing-copy {
@@ -322,6 +326,7 @@ p {
   border: 1px solid rgba(184, 148, 95, 0.3);
   border-radius: 24px;
   box-shadow: var(--shadow-soft);
+  max-width: 920px;
 }
 
 .landing-demo img {
@@ -361,11 +366,5 @@ p {
 
   .landing-button {
     width: 100%;
-  }
-}
-
-@media (max-width: 900px) {
-  .landing-hero {
-    grid-template-columns: 1fr;
   }
 }
