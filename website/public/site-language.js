@@ -77,7 +77,25 @@
     preferredLink.classList.add("recommended");
   }
 
+  function redirectLanguageRoute(root) {
+    if (!root || !root.dataset) return;
+
+    var esTarget = root.dataset.languageRedirectEs || "";
+    var enTarget = root.dataset.languageRedirectEn || "";
+    if (!esTarget && !enTarget) return;
+
+    var preferredLanguage = getPreferredLanguage();
+    var targetPath = preferredLanguage === "en" ? enTarget : esTarget;
+    if (!targetPath) {
+      targetPath = esTarget || enTarget;
+    }
+    if (!targetPath) return;
+
+    window.location.replace(targetPath + window.location.search + window.location.hash);
+  }
+
   function init(root) {
+    redirectLanguageRoute(root);
     bindLanguageLinks(root);
     highlightPreferredLanguage(root);
   }
