@@ -276,8 +276,8 @@ p {
 .landing-title {
   margin: 16px 0 14px;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.7rem, 6vw, 4.8rem);
-  line-height: 0.96;
+  font-size: clamp(2.1rem, 4.6vw, 3.2rem);
+  line-height: 1.02;
 }
 
 .landing-copy p {
@@ -301,13 +301,8 @@ p {
 }
 
 .landing-button--secondary {
-  background: transparent;
-  border-color: var(--border-strong);
-  color: var(--text-color);
-}
-
-.landing-button--secondary:hover,
-.landing-button--secondary:focus-visible {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
   color: #fff;
 }
 
@@ -361,7 +356,7 @@ p {
   }
 
   .landing-title {
-    font-size: clamp(2.4rem, 13vw, 3.6rem);
+    font-size: clamp(1.9rem, 10vw, 2.6rem);
   }
 
   .landing-button {
