@@ -6,7 +6,8 @@
 // =============================================================================
 // Renderer-side formatting helpers.
 // Responsibilities:
-// - Convert word counts to time parts and formatted duration strings.
+// - Convert word counts to exact duration values.
+// - Convert exact duration values to rounded display time parts.
 // - Resolve number-format separators from settings and language fallbacks.
 // - Format numeric values for display using provided separators.
 
@@ -33,19 +34,24 @@
   // =============================================================================
   // Helpers (time formatting)
   // =============================================================================
-  function getTimeParts(words, wpm) {
-    if (!wpm || wpm <= 0) return { hours: 0, minutes: 0, seconds: 0 };
-    const totalSeconds = Math.round((words / wpm) * 60);
-    return {
-      hours: Math.floor(totalSeconds / 3600),
-      minutes: Math.floor((totalSeconds % 3600) / 60),
-      seconds: totalSeconds % 60
-    };
+  function getExactTotalSeconds(words, wpm) {
+    const numericWords = Number(words);
+    const numericWpm = Number(wpm);
+    if (!Number.isFinite(numericWords) || numericWords <= 0) return 0;
+    if (!Number.isFinite(numericWpm) || numericWpm <= 0) return 0;
+    return (numericWords / numericWpm) * 60;
   }
 
-  function formatTimeFromWords(words, wpm) {
-    const { hours, minutes, seconds } = getTimeParts(words, wpm);
-    return `${hours}h ${minutes}m ${seconds}s`;
+  function getDisplayTimeParts(totalSeconds) {
+    const numericTotalSeconds = Number(totalSeconds);
+    const roundedTotalSeconds = Number.isFinite(numericTotalSeconds) && numericTotalSeconds > 0
+      ? Math.round(numericTotalSeconds)
+      : 0;
+    return {
+      hours: Math.floor(roundedTotalSeconds / 3600),
+      minutes: Math.floor((roundedTotalSeconds % 3600) / 60),
+      seconds: roundedTotalSeconds % 60
+    };
   }
 
   // =============================================================================
@@ -91,8 +97,8 @@
   // Exports / module surface
   // =============================================================================
   window.FormatUtils = {
-    getTimeParts,
-    formatTimeFromWords,
+    getExactTotalSeconds,
+    getDisplayTimeParts,
     obtenerSeparadoresDeNumeros,
     formatearNumero
   };
