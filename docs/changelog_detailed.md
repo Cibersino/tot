@@ -53,10 +53,22 @@ Reglas:
 
 ### Resumen
 
+- Importación/extracción/OCR: la ventana principal incorpora un flujo único por `📥` y drag/drop para importar texto desde archivos de texto/documento (`.txt`, `.md`, `.html`, `.htm`, `.docx`), extraer desde imágenes (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`) y procesar PDFs con elección entre ruta nativa u OCR cuando el PDF tiene texto seleccionable.
+- Sitio web de la app: se agrega una landing pública mínima en `https://totapp.org/` y una página dedicada `https://totapp.org/app-privacy/` para la política de privacidad general de la app y del OCR con Google.
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
 - Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
 - Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
 - Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino` y ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente.
+
+### Agregado
+
+- Importación/extracción/OCR:
+  - `public/index.html`: nuevo botón `📥` en el selector de texto, estado visible de preparación/procesamiento, barra de ejecución con tiempo transcurrido y botón de cancelación, modal de elección de ruta para PDFs con doble opción, modal final para aplicar el texto extraído (`Sobrescribir` / `Agregar`) con `Repeticiones`, y modal de disclosure previo a la activación de Google OCR.
+  - `public/js/import_extract_entry.js`, `public/js/import_extract_drag_drop.js`, `public/js/import_extract_status_ui.js`, `public/js/import_extract_route_choice_modal.js` y `public/js/import_extract_apply_modal.js` (nuevos): flujo compartido selector/drag-drop → preparación → elección de ruta → ejecución → aplicación, incluyendo overlay visual de drop, textos de espera específicos por ruta y captura del tiempo final para el modal de aplicación.
+  - `public/js/import_extract_ocr_activation_disclosure_modal.js`, `public/js/import_extract_ocr_activation_recovery.js` y `public/js/import_extract_ocr_disconnect.js` (nuevos): activación OCR con disclosure y link a privacidad antes de abrir OAuth, reintento automático del prepare tras conexión exitosa y acción de desconexión accesible desde `Menú > Preferencias > Desconectar Google OCR`.
+- Sitio web:
+  - `website/public/index.html` (nuevo): landing pública mínima con metadatos `canonical` / Open Graph, posicionamiento de la app como herramienta de estimación de lectura + OCR y enlace directo a privacidad.
+  - `website/public/app-privacy/index.html` (nuevo): página web específica de privacidad para la app, incluyendo alcance local-first, uso opcional de Google OCR, almacenamiento/protección, retención/eliminación y contacto.
 
 ### Cambiado
 
@@ -86,6 +98,14 @@ Reglas:
   - `electron/link_openers.js`: se amplía de forma acotada la allowlist de `open-external-url` para incluir `www.patreon.com`; `totapp.org` ya seguía permitido por la misma superficie.
   - `public/assets/patreon.png`: se agrega asset runtime local para el logo de Patreon, copiado desde `tools_local` en lugar de reutilizar el asset del sitio web.
   - i18n renderer (`en` / `es`): nuevas keys `renderer.main.tooltips.cibersino_website` y `renderer.main.tooltips.cibersino_patreon`.
+- Importación/extracción/OCR:
+  - `public/renderer.js`: deja de contener la mayor parte de la orquestación inline y pasa a cablear módulos dedicados del flujo `📥` / drag/drop, integra el bloqueo por processing-mode, el botón `⛔` de cancelación, la acción de menú `disconnect_google_ocr` y la ruta canónica compartida de aplicación de texto para portapapeles e import/extract.
+  - `public/js/text_apply_canonical.js` (nuevo): centraliza `overwrite` / `append` / `repetitions` para que el portapapeles y el modal final de importación/OCR apliquen exactamente la misma semántica de joins, normalización de `N`, proyección de tamaño y escritura vía `set-current-text`.
+  - `electron/preload.js`: incorpora la superficie bridge necesaria para el flujo completo (`openImportExtractPicker`, `getPathForFile`, `checkImportExtractPreconditions`, `prepareImportExtractOcrActivation`, `launchImportExtractOcrActivation`, `disconnectImportExtractOcr`, `prepareImportExtractSelectedFile`, `executePreparedImportExtract`, `getImportExtractProcessingMode`, `requestImportExtractAbort`, `onImportExtractProcessingModeChanged`).
+  - `electron/menu_builder.js`: `Preferencias` incorpora `Disconnect Google OCR` y el menú pasa a poder avisar al renderer cuando una acción queda bloqueada por processing-mode.
+- Páginas informativas / documentación in-app:
+  - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`: se documentan el flujo `📥` / drag/drop, los formatos soportados, la decisión nativa/OCR para PDF, el modal final con `Repeticiones`, la privacidad del flujo OCR y la ruta de desconexión de Google OCR.
+  - `public/info/acerca_de.html`: se actualizan sitio web, conectividad, privacidad y licencias de componentes incorporados para importación/extracción, OCR, PDF, DOCX y procesamiento de imágenes.
 
 ### Arreglado
 
@@ -109,15 +129,33 @@ Reglas:
   - `open-external-url` mantiene el contrato de `https` + allowlist, pero ahora contempla `www.patreon.com` además de `totapp.org` para las superficies fijas de branding.
   - nuevos IDs renderer `devLogoLink`, `patreonLogoLink` y `patreonLogo` en la ventana principal.
   - nuevas keys i18n `renderer.main.tooltips.cibersino_website` y `renderer.main.tooltips.cibersino_patreon` solo en `en` y `es`.
+- Importación/extracción/OCR:
+  - `window.electronAPI` agrega métodos/handlers `openImportExtractPicker()`, `getPathForFile(file)`, `checkImportExtractPreconditions()`, `prepareImportExtractOcrActivation()`, `launchImportExtractOcrActivation()`, `disconnectImportExtractOcr(payload)`, `prepareImportExtractSelectedFile(payload)`, `executePreparedImportExtract(payload)`, `getImportExtractProcessingMode()`, `requestImportExtractAbort(payload)` y `onImportExtractProcessingModeChanged(cb)`.
+  - nueva action ID de menú `disconnect_google_ocr`.
+  - nuevos IDs renderer `btnImportExtract`, `importExtractPrepareStatus`, `selectorControlsProcessing`, `importExtractProcessingLabel`, `importExtractProcessingElapsed`, `btnImportExtractAbort`, `importExtractRouteModal*`, `importExtractApplyModal*` e `importExtractOcrActivationDisclosure*`.
+  - nuevas superficies globales renderer `window.ImportExtractEntry`, `window.ImportExtractDragDrop`, `window.ImportExtractStatusUi`, `window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal`, `window.ImportExtractOcrActivationDisclosureModal`, `window.ImportExtractOcrActivationRecovery`, `window.ImportExtractOcrDisconnect` y `window.TextApplyCanonical`.
+- Sitio web:
+  - nuevas rutas públicas `/` y `/app-privacy/` dentro del bundle `website/public`.
 
 ### Archivos
 
 - `electron/text_state.js`
+- `electron/preload.js`
+- `electron/menu_builder.js`
 - `public/renderer.js`
 - `public/index.html`
 - `public/style.css`
 - `public/js/results_time_multiplier.js`
 - `public/js/main_logo_links.js`
+- `public/js/import_extract_entry.js`
+- `public/js/import_extract_drag_drop.js`
+- `public/js/import_extract_status_ui.js`
+- `public/js/import_extract_route_choice_modal.js`
+- `public/js/import_extract_apply_modal.js`
+- `public/js/import_extract_ocr_activation_disclosure_modal.js`
+- `public/js/import_extract_ocr_activation_recovery.js`
+- `public/js/import_extract_ocr_disconnect.js`
+- `public/js/text_apply_canonical.js`
 - `public/js/constants.js`
 - `public/assets/patreon.png`
 - `i18n/arn/renderer.json`
@@ -131,8 +169,11 @@ Reglas:
 - `docs/test_suite.md`
 - `docs/tree_folders_files.md`
 - `docs/issues/issue_174.md`
+- `public/info/acerca_de.html`
 - `public/info/instrucciones.es.html`
 - `public/info/instrucciones.en.html`
+- `website/public/index.html`
+- `website/public/app-privacy/index.html`
 
 ---
 
