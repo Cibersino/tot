@@ -1098,8 +1098,7 @@ if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowTo
 if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
   window.taskEditorAPI.onInit((payload) => {
     if (dirty) {
-      const msg = tr('renderer.tasks.confirm.discard_changes', 'Discard unsaved changes?');
-      if (!window.confirm(msg)) return;
+      if (!window.Notify.confirmMain('renderer.tasks.confirm.discard_changes')) return;
     }
     applyTaskPayload(payload);
   });
@@ -1117,8 +1116,7 @@ if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'func
       window.taskEditorAPI.confirmClose();
       return;
     }
-    const msg = tr('renderer.tasks.confirm.close_unsaved', 'Close without saving?');
-    if (window.confirm(msg)) {
+    if (window.Notify.confirmMain('renderer.tasks.confirm.close_unsaved')) {
       window.taskEditorAPI.confirmClose();
     }
   });
