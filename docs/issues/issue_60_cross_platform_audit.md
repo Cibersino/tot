@@ -202,6 +202,11 @@ At minimum:
 * update app doc opening logic to resolve platform-specific runtime docs;
 * update legal baseline docs to stop being Windows-only in this section.
 
+Important practical constraint:
+
+* on a Windows machine, local `node_modules` only exposes the Windows native `@img/sharp-*` runtime package;
+* macOS/Linux runtime legal files should be captured from native installs/builds on those platforms, not guessed.
+
 ### Fix group 4: validate or patch platform icon behavior
 
 After first native packaging runs:
