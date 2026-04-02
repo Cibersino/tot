@@ -19,7 +19,6 @@
   --velocity-bg: var(--bg-color);
   --results-bg: var(--bg-color);
   --cron-bg: var(--bg-color);
-  --reading-tools-bg: var(--bg-color);
   --section-border: #e9e6de;
   --section-radius: 6px;
   --section-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
@@ -662,28 +661,6 @@ select#presets {
   line-height: 1;
 }
 
-/* READING TOOLS SECTION */
-.reading-tools {
-  top: 325px;
-  left: 241px;
-  height: 98px;
-  width: 320px;
-  background: var(--reading-tools-bg);
-  border: 1px dashed #f0f0f0;
-  padding: 4px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.reading-tools > .btn-standard {
-  font-size: 16px;
-  white-space: normal;
-  text-align: center;
-  max-width: 320px;
-}
-
 /* Menu modal info */
 .info-modal {
   display: none;
@@ -1039,8 +1016,7 @@ select#presets {
   .selector-text,
   .velocity,
   .results,
-  .cronometro,
-  .reading-tools {
+  .cronometro {
     position: relative;
     width: 100%;
   }
