@@ -61,6 +61,7 @@ Reglas:
 - Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino`, ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente y el bloque fijo de branding se reubica a la esquina inferior derecha de la ventana principal en orden visual `Patreon | Cibersino | toT`, eliminando la reserva superior que quedó obsoleta.
 - Info modal / links (Issue #165): los fallos al abrir links externos y `appdoc:` desde el info modal dejan de quedar solo en logs y pasan a mostrarse al usuario con una taxonomía final explícita de notificaciones alineada con los reasons reales del runtime.
 - Modal de presets / WPM: se corrige la discrepancia entre el mensaje de validación y el rango realmente aceptado al guardar; el warning renderer deja de hardcodear `50..500`, se alinea con el rango operativo vigente `10..700` y main agrega una validación server-side equivalente para persistencia.
+- Límite del texto vigente: `MAX_TEXT_CHARS` aumenta de `10_000_000` a `50_000_000` y el límite seguro IPC derivado (`MAX_IPC_CHARS`) aumenta en la misma proporción, de `40_000_000` a `200_000_000`.
 - Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
 - Preload listener APIs (Issue #161): se completa una auditoría repo-wide de preloads y se normalizan los listeners driftados al estándar `onX(cb) -> unsubscribe`, dejando explícitos los casos válidos de replay/buffer sin cambiar canales, payloads ni timing saludable.
 
@@ -178,6 +179,9 @@ Reglas:
   - `create-preset` y `edit-preset` mantienen canal y shape healthy-path, pero endurecen failure-path para rechazar presets con `wpm` fuera del rango canónico `10..700` también desde main.
 - Preload listener APIs (Issue #161):
   - `window.editorAPI.onInitText(cb)`, `window.editorAPI.onExternalUpdate(cb)` y `window.editorAPI.onForceClear(cb)` pasan a seguir el contrato `onX(cb) -> unsubscribe`, manteniendo canales (`editor-init-text`, `editor-text-updated`, `editor-force-clear`), payloads y timing healthy-path.
+- IPC `get-app-config`:
+  - mantiene el mismo shape `{ ok, maxTextChars, maxIpcChars }`.
+  - actualiza sus valores efectivos a `maxTextChars = 50_000_000` y `maxIpcChars = 200_000_000`.
   - `window.electronAPI.onCurrentTextUpdated(cb)` y `window.electronAPI.onPresetCreated(cb)` pasan a seguir el contrato `onX(cb) -> unsubscribe`, manteniendo canales (`current-text-updated`, `preset-created`) y payloads healthy-path.
   - `window.presetAPI.onInit(cb)`, `window.taskEditorAPI.onInit(cb)`, `window.editorFindAPI.onInit(cb)` y `window.editorFindAPI.onState(cb)` quedan explícitamente documentados como listeners de replay/buffer; no cambia su semántica observable de replay asíncrono.
 - Sitio web:
