@@ -15,6 +15,9 @@
         "task_new": "📝",
         "task_load": "🗃️"
       },
+      "reading_tools": {
+        "reading_speed_test": "Prueba tu ritmo de lectura"
+      },
       "tooltips": {
         "import_extract": "Traerse o sacarle texto a un archivo",
         "import_extract_abort": "Parar la sacadera",
@@ -297,7 +300,8 @@
       "wip_diseno_crono": "WIP: Aquí vamos a arreglar el reloj porfiado.",
       "wip_diseno_fuentes": "WIP: Aquí elegís el tipo de letra.",
       "wip_diseno_colores": "WIP: Aquí le tirái pintura.",
-      "wip_shortcuts": "WIP: Aquí configurái los atajos del teclao."
+      "wip_shortcuts": "WIP: Aquí configurái los atajos del teclao.",
+      "wip_reading_speed_test": "WIP: Aquí podís probar tu ritmo de lectura y comparar con el resto de los mortales."
     },
     "editor_alerts": {
       "paste_too_big": "La custión es muy grande. Usa los botones de afuera.",
