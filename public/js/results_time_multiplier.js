@@ -33,6 +33,7 @@
   // Shared state
   // =============================================================================
   let baseTotalSeconds = null;
+  let interactionLocked = false;
 
   // =============================================================================
   // Helpers
@@ -82,6 +83,12 @@
     return `: ${timeParts.hours}h ${timeParts.minutes}m ${timeParts.seconds}s`;
   }
 
+  function syncInteractionLockUi() {
+    if (!ensureElements('syncInteractionLockUi')) return;
+    inputEl.disabled = interactionLocked;
+    inputEl.setAttribute('aria-disabled', interactionLocked ? 'true' : 'false');
+  }
+
   // =============================================================================
   // Rendering / UI state
   // =============================================================================
@@ -127,6 +134,7 @@
     inputEl.step = '1';
     inputEl.value = normalizeMultiplierValue(inputEl.value);
     inputEl.setAttribute('aria-invalid', 'false');
+    syncInteractionLockUi();
     inputEl.addEventListener('input', handleInput);
     inputEl.addEventListener('blur', handleBlur);
   }
@@ -148,10 +156,17 @@
     renderMultipliedTime();
   }
 
+  function setInteractionLocked(nextLocked) {
+    if (!ensureElements('setInteractionLocked')) return;
+    interactionLocked = nextLocked === true;
+    syncInteractionLockUi();
+  }
+
   bindEvents();
 
   window.ResultsTimeMultiplier = {
     setBaseTotalSeconds,
+    setInteractionLocked,
   };
 })();
 

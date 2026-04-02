@@ -87,7 +87,8 @@ const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
 const mainLogoLinks = window.MainLogoLinks || null;
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
-  || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function') {
+  || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function'
+  || typeof resultsTimeMultiplier.setInteractionLocked !== 'function') {
   throw new Error('[renderer] ResultsTimeMultiplier unavailable; cannot continue');
 }
 
@@ -205,6 +206,10 @@ function isRendererReady() {
 
 function isProcessingModeActive() {
   return importExtractStatusUi.isProcessingModeActive();
+}
+
+function syncResultsTimeMultiplierLock() {
+  resultsTimeMultiplier.setInteractionLocked(isProcessingModeActive());
 }
 
 function startImportExtractPrepareAttempt() {
@@ -929,6 +934,7 @@ function armIpcSubscriptions() {
       window.electronAPI.onImportExtractProcessingModeChanged((state) => {
         try {
           importExtractStatusUi.applyProcessingModeState(state, { source: 'ipc_event' });
+          syncResultsTimeMultiplierLock();
         } catch (err) {
           log.error('Error handling import-extract-processing-mode-changed:', err);
         }
@@ -1117,15 +1123,20 @@ async function runStartupOrchestrator() {
         const processingMode = await getImportExtractProcessingMode();
         if (processingMode && processingMode.ok === true) {
           importExtractStatusUi.applyProcessingModeState(processingMode.state, { source: 'startup_query' });
+          syncResultsTimeMultiplierLock();
         } else {
           log.warn(
             'BOOTSTRAP: getImportExtractProcessingMode returned non-ok result; keeping processing mode inactive:',
             processingMode
           );
+          syncResultsTimeMultiplierLock();
         }
       } catch (err) {
         log.warn('BOOTSTRAP: getImportExtractProcessingMode failed; keeping processing mode inactive:', err);
+        syncResultsTimeMultiplierLock();
       }
+    } else {
+      syncResultsTimeMultiplierLock();
     }
 
     // Load presets and save them to the cache
