@@ -199,7 +199,10 @@
       }
 
       if (!Number.isFinite(wpm) || wpm < WPM_MIN || wpm > WPM_MAX) {
-        window.Notify.notifyMain('renderer.preset_alerts.wpm_invalid');
+        window.Notify.notifyMain('renderer.preset_alerts.wpm_invalid', {
+          min: WPM_MIN,
+          max: WPM_MAX
+        });
         return null;
       }
 

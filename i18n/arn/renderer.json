@@ -318,7 +318,7 @@
     },
     "preset_alerts": {
       "name_empty": "Üi welli mülelay.",
-      "wpm_invalid": "WPM müley 50 ka 500 mu.",
+      "wpm_invalid": "WPM müley {min} ka {max} mu.",
       "create_error": "Welulkuy dewman preset mu. Kintunge consola.",
       "edit_error": "Welulkuy wirin preset mu. Kintunge consola.",
       "process_error": "Welulkuy küzaw preset mu. Kintunge consola."
