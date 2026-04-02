@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint \".\" --ext .js",
     "dist": "electron-builder",
-    "dist:win": "electron-builder --win --x64"
+    "dist:win": "electron-builder --win --x64",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:linux": "electron-builder --linux AppImage"
   },
   "keywords": [],
   "author": "Cibersino",
@@ -32,7 +34,7 @@
     ],
     "directories": {
       "output": "build-output",
-      "buildResources": "public/assets"
+      "buildResources": "build-resources"
     },
     "files": [
       "package.json",
@@ -43,7 +45,8 @@
       "PRIVACY.md"
     ],
     "win": {
-      "icon": "public/assets/logo-cibersino.ico",
+      "artifactName": "toT-${version}-win-${arch}.${ext}",
+      "icon": "logo-cibersino.ico",
       "target": [
         {
           "target": "zip",
@@ -53,7 +56,26 @@
         }
       ]
     },
-    "artifactName": "toT-${version}-win-${arch}.${ext}"
+    "mac": {
+      "artifactName": "toT-${version}-mac-${arch}.${ext}",
+      "icon": "logo-cibersino.icns",
+      "target": [
+        "dmg"
+      ]
+    },
+    "linux": {
+      "artifactName": "toT-${version}-linux-${arch}.${ext}",
+      "category": "Utility",
+      "icon": "logo-cibersino.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
   },
   "dependencies": {
     "@google-cloud/local-auth": "^2.1.0",

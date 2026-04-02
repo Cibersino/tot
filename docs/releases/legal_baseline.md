@@ -134,8 +134,15 @@ Checklist:
   * `public/extraction_feature_licenses/LICENSE_mammoth_1.11.0.txt`
   * `public/extraction_feature_licenses/LICENSE_pdf-parse_1.1.1.txt`
   * `public/extraction_feature_licenses/LICENSE_sharp_0.34.4.txt`
-  * `public/extraction_feature_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
-  * `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
+  * licencia/notices del runtime nativo empaquetado real de `sharp` para la plataforma/arquitectura inspeccionada (ejemplos posibles según release):
+    * `public/extraction_feature_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+    * `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
+    * `public/extraction_feature_licenses/LICENSE_@img_sharp-darwin-x64_0.34.4.txt`
+    * `public/extraction_feature_licenses/NOTICE_@img_sharp-darwin-x64_0.34.4.txt`
+    * `public/extraction_feature_licenses/LICENSE_@img_sharp-darwin-arm64_0.34.4.txt`
+    * `public/extraction_feature_licenses/NOTICE_@img_sharp-darwin-arm64_0.34.4.txt`
+    * `public/extraction_feature_licenses/LICENSE_@img_sharp-linux-x64_0.34.4.txt`
+    * `public/extraction_feature_licenses/NOTICE_@img_sharp-linux-x64_0.34.4.txt`
 * [PENDING] El material OAuth desktop empaquetado del owner/propietario queda inventariado como **configuración distribuida controlada**, no como “notice de tercero”, con ruta y tratamiento separados de las licencias.
 * [PENDING] Cada tercero tiene trazabilidad completa:
   * `componente | origen | licencia | obligación | archivo notice/doc`
@@ -164,7 +171,7 @@ Checklist:
     * `mammoth@1.11.0` — `BSD-2-Clause`
     * `pdf-parse@1.1.1` — `MIT`
     * `sharp@0.34.4` — `Apache-2.0`
-    * runtime nativo de `sharp` para la plataforma empaquetada (por ejemplo `@img/sharp-win32-x64@0.34.4`) — verificar licencia/notice entregados para la plataforma real
+    * runtime nativo de `sharp` para la plataforma empaquetada (por ejemplo `@img/sharp-win32-x64@0.34.4`, `@img/sharp-darwin-x64@0.34.4`, `@img/sharp-darwin-arm64@0.34.4` o `@img/sharp-linux-x64@0.34.4`) — verificar licencia/notice entregados para la plataforma real
 * [PENDING] Si no hay deps runtime: registrar la expectativa explícitamente para validar contra artefacto en Post-packaging.
 * [PENDING] Cualquier dependencia efectiva encontrada en artefacto queda cubierta por esta sección y por documentos de §6.
 
@@ -194,9 +201,9 @@ Checklist:
   * `public/extraction_feature_licenses/LICENSE_mammoth_1.11.0.txt`
   * `public/extraction_feature_licenses/LICENSE_pdf-parse_1.1.1.txt`
   * `public/extraction_feature_licenses/LICENSE_sharp_0.34.4.txt`
-  * licencia/notices del runtime nativo de `sharp` para la plataforma empaquetada (ej. Windows x64):
-    * `public/extraction_feature_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
+  * licencia/notices del runtime nativo de `sharp` para la plataforma empaquetada real del release (ej. Windows x64, macOS x64/arm64, Linux x64):
+    * registrar el archivo exacto correspondiente a la plataforma inspeccionada;
+    * no asumir Windows por defecto cuando el artefacto sea macOS o Linux.
 * [PENDING] `public/info/acerca_de.html` (u otra UI equivalente) es consistente con el inventario legal anterior.
 * [PENDING] `PRIVACY.md`, `public/info/acerca_de.html` y `public/info/instrucciones.*.html` describen coherentemente:
   * que OCR usa Google solo cuando el usuario elige esa ruta,
