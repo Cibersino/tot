@@ -306,7 +306,7 @@ body.import-extract-drop-active .app-container {
 .logo-container {
   position: fixed;
   right: 4px;
-  bottom: 6px;
+  bottom: 8px;
   height: var(--logo-height);
   display: flex;
   align-items: center;
