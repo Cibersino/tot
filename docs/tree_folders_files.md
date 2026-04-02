@@ -13,6 +13,10 @@ tot/
 │ ├── settings.json
 │ └── tasks.json
 ├── build-output/                  # {vacío} {carpeta ignorada por git}
+├── build-resources/               # recursos solo de packaging (electron-builder)
+│ ├── logo-cibersino.ico
+│ ├── logo-cibersino.png
+│ └── README.md
 ├── config/                        # {generada en primer arranque} {carpeta ignorada por git}
 │ ├── presets_defaults/
 │ │ ├── defaults_presets.json   
@@ -113,8 +117,6 @@ tot/
 ├── public/
 │ ├── assets/
 │ │ ├── instrucciones/             # {capturas/GIFs usados por public/info/instrucciones.*.html}
-│ │ ├── logo-cibersino.ico
-│ │ ├── logo-cibersino.png
 │ │ ├── logo-cibersino.svg
 │ │ ├── logo-tot.png
 │ │ ├── logo-tot.svg
@@ -394,8 +396,13 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 ### 6.2) Branding local en la app (public/assets)
 
 - `public/assets/logo-tot.svg` / `public/assets/logo-tot.png` — Branding de la app usado en la ventana principal.
-- `public/assets/logo-cibersino.svg` / `public/assets/logo-cibersino.png` / `public/assets/logo-cibersino.ico` — Branding del desarrollador usado en la app y en metadata/build de Windows.
+- `public/assets/logo-cibersino.svg` — Branding del desarrollador usado en la ventana principal.
 - `public/assets/patreon.png` — Símbolo de Patreon usado en la ventana principal junto al logo de Cibersino; asset runtime copiado desde `tools_local` para mantener la procedencia local/original separada del sitio web.
+
+### 6.3) Recursos de packaging (build-resources)
+
+- `build-resources/logo-cibersino.ico` — Icono de packaging para Windows.
+- `build-resources/logo-cibersino.png` — Fuente raster canónica de branding para packaging; también usable como input para Linux y para generar `logo-cibersino.icns` en macOS.
 
 ### 7) Política de actualización de este archivo
 

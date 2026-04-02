@@ -34,7 +34,7 @@
     ],
     "directories": {
       "output": "build-output",
-      "buildResources": "public/assets"
+      "buildResources": "build-resources"
     },
     "files": [
       "package.json",
@@ -46,7 +46,7 @@
     ],
     "win": {
       "artifactName": "toT-${version}-win-${arch}.${ext}",
-      "icon": "public/assets/logo-cibersino.ico",
+      "icon": "logo-cibersino.ico",
       "target": [
         {
           "target": "zip",
@@ -58,7 +58,7 @@
     },
     "mac": {
       "artifactName": "toT-${version}-mac-${arch}.${ext}",
-      "icon": "public/assets/logo-cibersino.icns",
+      "icon": "logo-cibersino.icns",
       "target": [
         "dmg"
       ]
@@ -66,7 +66,7 @@
     "linux": {
       "artifactName": "toT-${version}-linux-${arch}.${ext}",
       "category": "Utility",
-      "icon": "public/assets/logo-cibersino.png",
+      "icon": "logo-cibersino.png",
       "target": [
         {
           "target": "AppImage",
