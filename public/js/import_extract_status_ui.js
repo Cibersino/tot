@@ -34,7 +34,6 @@
 
   const selectorControlsNormal = document.getElementById('selectorControlsNormal');
   const selectorControlsProcessing = document.getElementById('selectorControlsProcessing');
-  const importExtractPrepareStatus = document.getElementById('importExtractPrepareStatus');
   const importExtractProcessingLabel = document.getElementById('importExtractProcessingLabel');
   const importExtractProcessingElapsed = document.getElementById('importExtractProcessingElapsed');
   const btnImportExtractAbort = document.getElementById('btnImportExtractAbort');
@@ -104,6 +103,10 @@
     return processingModeState.active === true;
   }
 
+  function isPrepareActive() {
+    return prepareActiveCount > 0;
+  }
+
   function getElapsedMsSince(rawSinceEpochMs) {
     const sinceEpochMs = Number(rawSinceEpochMs);
     if (!Number.isFinite(sinceEpochMs) || sinceEpochMs <= 0) return null;
@@ -135,7 +138,13 @@
     );
   }
 
-  function getProcessingLabelText() {
+  function getBusyLabelText() {
+    if (isPrepareActive()) {
+      return tRenderer(
+        'renderer.main.processing.import_extract_preparing',
+        'Preparing import/extract route...'
+      );
+    }
     if (pendingExecutionRoute === 'native') {
       return tRenderer(
         'renderer.main.processing.import_extract_waiting_native',
@@ -181,22 +190,12 @@
   }
 
   function syncPrepareStatusUi() {
-    if (!importExtractPrepareStatus) return;
-    const active = prepareActiveCount > 0;
-    importExtractPrepareStatus.hidden = !active;
-    importExtractPrepareStatus.setAttribute('aria-hidden', active ? 'false' : 'true');
-    if (active) {
-      importExtractPrepareStatus.textContent = tRenderer(
-        'renderer.main.processing.import_extract_preparing',
-        importExtractPrepareStatus.textContent || 'Preparing import/extract route...'
-      );
-      return;
-    }
-    importExtractPrepareStatus.textContent = '';
+    syncProcessingUi();
   }
 
   function syncProcessingUi() {
-    const active = isProcessingModeActive();
+    const processingActive = isProcessingModeActive();
+    const active = processingActive || isPrepareActive();
 
     if (selectorControlsNormal) {
       selectorControlsNormal.hidden = active;
@@ -207,17 +206,17 @@
       selectorControlsProcessing.setAttribute('aria-hidden', active ? 'false' : 'true');
     }
     if (btnImportExtractAbort) {
-      btnImportExtractAbort.hidden = !active;
-      btnImportExtractAbort.disabled = !active;
-      btnImportExtractAbort.setAttribute('aria-hidden', active ? 'false' : 'true');
-      btnImportExtractAbort.tabIndex = active ? 0 : -1;
+      btnImportExtractAbort.hidden = !processingActive;
+      btnImportExtractAbort.disabled = !processingActive;
+      btnImportExtractAbort.setAttribute('aria-hidden', processingActive ? 'false' : 'true');
+      btnImportExtractAbort.tabIndex = processingActive ? 0 : -1;
     }
     if (importExtractProcessingLabel) {
-      importExtractProcessingLabel.textContent = getProcessingLabelText();
+      importExtractProcessingLabel.textContent = getBusyLabelText();
     }
     if (!importExtractProcessingElapsed) return;
 
-    const elapsedText = active
+    const elapsedText = processingActive
       ? buildProcessingElapsedText(getElapsedMsSince(processingModeState.sinceEpochMs))
       : '';
     const showElapsed = !!elapsedText;
