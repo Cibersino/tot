@@ -1,22 +1,123 @@
 <!doctype html>
-<html lang="es" data-language-redirect-es="/es/app-privacy/" data-language-redirect-en="/en/app-privacy/">
+<html lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>toT - Política de privacidad de la app</title>
-  <meta name="description" content="Ruta neutral hacia la política de privacidad de la app de escritorio toT.">
+  <title>toT - App Privacy Policy</title>
+  <meta name="description" content="App privacy policy for toT, including Google OCR privacy details.">
   <meta name="robots" content="noindex, nofollow">
   <link rel="canonical" href="https://totapp.org/app-privacy/">
-  <link rel="alternate" hreflang="es" href="https://totapp.org/es/app-privacy/">
-  <link rel="alternate" hreflang="en" href="https://totapp.org/en/app-privacy/">
-  <link rel="alternate" hreflang="x-default" href="https://totapp.org/app-privacy/">
-  <meta http-equiv="refresh" content="0; url=/es/app-privacy/">
-  <script src="/site-language.js"></script>
+  <meta property="og:url" content="https://totapp.org/app-privacy/">
+  <meta property="og:title" content="toT - App Privacy Policy">
+  <meta property="og:description" content="App privacy policy for toT, including Google OCR privacy details.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://totapp.org/og-image.png">
+  <meta property="og:image:alt" content="toT desktop app interface">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body>
-  <p>Redirigiendo...</p>
+  <main class="page-shell">
+    <article class="panel panel--policy">
+      <p class="eyebrow">Privacy</p>
+      <h1>toT App Privacy Policy</h1>
+      <p class="lead">
+        This page covers both the general privacy policy for the toT desktop app and the specific privacy details for the optional Google OCR feature.
+      </p>
+
+      <section class="policy-section" aria-labelledby="general-privacy">
+        <h2 id="general-privacy">General App Privacy</h2>
+        <p>
+          toT is designed to be local-first for writing, editing, counting, reading-time estimation, snapshots, task management, and most day-to-day use.
+          Most app content stays on your device unless you choose a feature that connects to a third-party service.
+        </p>
+        <h3>Data the app stores or processes locally</h3>
+        <ul>
+          <li>current text, saved text snapshots, settings, window state, and task-related data on your device</li>
+          <li>local OCR connection and token state when you choose to use Google OCR</li>
+        </ul>
+        <h3>How the app uses this data</h3>
+        <p>
+          The app uses locally stored data to provide its writing, counting, planning, snapshot, task, and window-state features.
+          The app may connect to external services only for user-triggered actions such as opening user-requested links, checking release or update information, or running optional OCR flows.
+        </p>
+        <h3>Third-party sharing</h3>
+        <p>
+          The app does not send your local text, snapshots, settings, task data, or window state to the developer.
+          If you contact the developer through email or GitHub Issues, the developer receives only the information you choose to include in that support request.
+        </p>
+        <h3>Storage and protection</h3>
+        <p>
+          Local app data is stored in the app's local data directory on your device.
+          Protection of that local data depends on your device, operating system, and account security.
+          Google OCR token state is stored locally and protected using Electron safeStorage and the operating system encryption facilities available on your platform.
+        </p>
+        <h3>Retention and deletion</h3>
+        <p>
+          Local app data remains on your device until you edit it, delete it, remove the app's local data, or uninstall the app.
+          Support messages and any files or text you voluntarily send to the developer may be retained only as long as reasonably necessary to respond, troubleshoot, or comply with legal obligations.
+          You can request deletion of developer-controlled support data by contacting <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.
+        </p>
+      </section>
+
+      <section class="policy-section" aria-labelledby="google-ocr-privacy">
+        <h2 id="google-ocr-privacy">Google OCR Privacy</h2>
+        <p>
+          Google OCR applies only when you choose that OCR route inside the app.
+          The OCR route uses the end user's Google account and requests the Google Drive scope <code>drive.file</code>.
+          toT uses an owner-provided Google Cloud project and OAuth client distributed with the app.
+        </p>
+        <h3>1. Data Accessed</h3>
+        <ul>
+          <li>basic Google authorization and token data needed to connect the app to your Google account for this OCR feature</li>
+          <li>the Google Drive file access granted by the <code>drive.file</code> scope</li>
+          <li>only the image or PDF files you explicitly choose for OCR</li>
+          <li>a temporary converted Google document created during the OCR workflow so text can be exported back to the app</li>
+          <li>the extracted text returned from Google to the app after export</li>
+        </ul>
+        <h3>2. Data Usage</h3>
+        <p>
+          The app uses this data to authenticate the Google OCR connection, upload and convert the selected file, export extracted text back to the app,
+          reuse the saved connection for future OCR runs, and attempt cleanup of the temporary Google document after export.
+        </p>
+        <h3>3. Data Sharing</h3>
+        <p>
+          Selected OCR files, the temporary converted document, and the related Google authorization data are shared with Google only to provide the Google OCR workflow.
+          The app does not send OCR files or extracted OCR text to the developer.
+          Other than Google services required for OCR and any information you separately choose to send to the developer for support, this feature does not share Google user data with other third parties.
+        </p>
+        <h3>4. Data Storage and Protection</h3>
+        <p>
+          The app stores Google OCR token state locally on your device so the connection can be reused.
+          That token state is protected using Electron safeStorage and the operating system encryption facilities available on your platform.
+          Local app data and OCR results stored by the app remain in the app's local data area on your device, and protection of that data also depends on your device, operating system, and account security.
+          The app attempts to delete the temporary converted Google document from Google after text export.
+        </p>
+        <h3>5. Data Retention and Deletion</h3>
+        <p>
+          The local OCR token state remains until you disconnect Google OCR, remove local app data, or uninstall the app.
+          When the disconnect action completes successfully in the app, it revokes the saved token and deletes the local token file.
+          You can also revoke the app's Google access from your Google Account permissions and security controls.
+          The app attempts to delete the temporary converted Google document immediately after export.
+          This OCR feature does not send OCR files or extracted OCR text to the developer, and it does not create a separate developer copy of that OCR content.
+        </p>
+      </section>
+
+      <section class="policy-section" aria-labelledby="contact">
+        <h2 id="contact">Contact</h2>
+        <p>
+          For privacy questions or deletion requests regarding support communications you intentionally sent to the developer, contact
+          <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.
+        </p>
+      </section>
+
+      <p class="meta-note">Last updated: April 1, 2026.</p>
+      <p><a class="primary-link" href="/">Back to Home</a></p>
+    </article>
+  </main>
 </body>
 
 </html>
