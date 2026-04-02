@@ -108,6 +108,10 @@ Reglas:
   - `public/js/info_modal_links.js`: agrega mapeo explícito de reasons IPC a claves de notificación renderer en vez de reutilizar suffixes crudos del runtime; `open-external-url` colapsa a `renderer.info.external.{blocked,error}` y `open-app-doc` colapsa a `renderer.info.appdoc.{blocked,missing,error}`.
   - El flujo renderer ahora dispara `window.Notify.notifyMain(...)` cuando falla la apertura de links externos o docs `appdoc:` desde el info modal, manteniendo el logging estructurado existente.
   - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): se elimina la key obsoleta `renderer.info.external.missing` y se preserva la taxonomía final alcanzable para external/appdoc.
+- Notificaciones / diálogos renderer (Issue #173):
+  - `public/js/notify.js` se consolida como owner público único de la superficie de diálogos renderer; `public/renderer.js`, `public/editor.js`, `public/task_editor.js`, `public/preset_modal.js`, `public/js/current_text_snapshots.js`, `public/js/import_extract_entry.js` y `public/js/import_extract_drag_drop.js` pasan a consumir `window.Notify.*` directamente.
+  - Los prompts custom de import/extract dejan de publicarse como globals de feature (`window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal`, `window.ImportExtractOcrActivationDisclosureModal`) y pasan a exponerse como `window.Notify.promptImportExtractRouteChoice(...)`, `window.Notify.promptImportExtractApplyChoice(...)` y `window.Notify.promptImportExtractOcrActivationDisclosure(...)`.
+  - Se eliminan wrappers/fallbacks locales (`notifyMain(...)`, `showNotice(...)`, `showEditorNotice(...)`, guards repetidos de disponibilidad de `window.Notify`) sin cambiar la semántica healthy-path de los avisos existentes.
 - Reading tools / test de velocidad de lectura:
   - `public/index.html` y `public/style.css`: la antigua sección reservada/“available” se renombra a `reading-tools`; el botón ya no cubre toda el área y queda centrado como control normal.
   - i18n renderer (`en`, `es`, `es-cl`, `arn`, `de`, `fr`, `it`, `pt`): se alinea el orden interno de secciones para dejar `reading_tools` antes de `processing`, y en `en` además se reordenan `editor`, `editor_find`, `tasks` y `modal_preset` para mantener consistencia estructural con el resto de locales.
@@ -151,6 +155,10 @@ Reglas:
   - nueva action ID de menú `disconnect_google_ocr`.
   - nuevos IDs renderer `btnImportExtract`, `importExtractPrepareStatus`, `selectorControlsProcessing`, `importExtractProcessingLabel`, `importExtractProcessingElapsed`, `btnImportExtractAbort`, `importExtractRouteModal*`, `importExtractApplyModal*` e `importExtractOcrActivationDisclosure*`.
   - nuevas superficies globales renderer `window.ImportExtractEntry`, `window.ImportExtractDragDrop`, `window.ImportExtractStatusUi`, `window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal`, `window.ImportExtractOcrActivationDisclosureModal`, `window.ImportExtractOcrActivationRecovery`, `window.ImportExtractOcrDisconnect` y `window.TextApplyCanonical`.
+- Notificaciones / diálogos renderer:
+  - `window.Notify` se formaliza como superficie pública única de diálogos renderer para avisos bloqueantes, confirmaciones y prompts custom de import/extract.
+  - `window.Notify` agrega/expone `confirmMain(...)`, `promptImportExtractRouteChoice(...)`, `promptImportExtractApplyChoice(...)` y `promptImportExtractOcrActivationDisclosure(...)` como entrypoints públicos consolidados.
+  - `window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal` y `window.ImportExtractOcrActivationDisclosureModal` dejan de ser parte de la superficie pública runtime; el wiring interno de esos modales permanece en sus módulos renderer dedicados.
 - Sitio web:
   - nuevas rutas públicas `/` y `/app-privacy/` dentro del bundle `website/public`.
 
@@ -165,6 +173,7 @@ Reglas:
 - `public/js/results_time_multiplier.js`
 - `public/js/main_logo_links.js`
 - `public/js/info_modal_links.js`
+- `public/js/notify.js`
 - `public/js/import_extract_entry.js`
 - `public/js/import_extract_drag_drop.js`
 - `public/js/import_extract_status_ui.js`
@@ -174,8 +183,12 @@ Reglas:
 - `public/js/import_extract_ocr_activation_recovery.js`
 - `public/js/import_extract_ocr_disconnect.js`
 - `public/js/text_apply_canonical.js`
+- `public/js/current_text_snapshots.js`
 - `public/js/constants.js`
 - `public/assets/patreon.png`
+- `public/preset_modal.js`
+- `public/editor.js`
+- `public/task_editor.js`
 - `i18n/arn/renderer.json`
 - `i18n/de/renderer.json`
 - `i18n/en/renderer.json`
