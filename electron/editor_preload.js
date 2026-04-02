@@ -3,28 +3,56 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
+function subscribeWithUnsub(channel, cb, callbackErrorMessage, removeErrorMessage) {
+  const listener = (_event, payload) => {
+    try {
+      cb(payload);
+    } catch (err) {
+      console.error(callbackErrorMessage, err);
+    }
+  };
+
+  ipcRenderer.on(channel, listener);
+
+  return () => {
+    try {
+      ipcRenderer.removeListener(channel, listener);
+    } catch (err) {
+      console.error(removeErrorMessage, err);
+    }
+  };
+}
+
 const api = {
   getCurrentText: () => ipcRenderer.invoke('get-current-text'),
   setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
   getAppConfig: () => ipcRenderer.invoke('get-app-config'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
-  onInitText: (cb) => {
-    ipcRenderer.on('editor-init-text', (_e, text) => cb(text));
-  },
-  onExternalUpdate: (cb) => {
-    ipcRenderer.on('editor-text-updated', (_e, text) => cb(text));
-  },
-  onSettingsChanged: (cb) => {
-    const listener = (_e, settings) => {
-      try { cb(settings); } catch (err) { console.error('settings callback error:', err); }
-    };
-    ipcRenderer.on('settings-updated', listener);
-    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error (settings-updated):', err); } };
-  },
+  onInitText: (cb) => subscribeWithUnsub(
+    'editor-init-text',
+    cb,
+    'editor-init-text callback error:',
+    'removeListener error (editor-init-text):'
+  ),
+  onExternalUpdate: (cb) => subscribeWithUnsub(
+    'editor-text-updated',
+    cb,
+    'editor-text-updated callback error:',
+    'removeListener error (editor-text-updated):'
+  ),
+  onSettingsChanged: (cb) => subscribeWithUnsub(
+    'settings-updated',
+    cb,
+    'settings callback error:',
+    'removeListener error (settings-updated):'
+  ),
   // Listener to force clear content (main will send 'editor-force-clear')
-  onForceClear: (cb) => {
-    ipcRenderer.on('editor-force-clear', (_e, payload) => cb(payload));
-  }
+  onForceClear: (cb) => subscribeWithUnsub(
+    'editor-force-clear',
+    cb,
+    'editor-force-clear callback error:',
+    'removeListener error (editor-force-clear):'
+  )
 };
 
 contextBridge.exposeInMainWorld('editorAPI', api);
