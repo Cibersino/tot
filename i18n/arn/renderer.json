@@ -15,6 +15,9 @@
         "task_new": "📝",
         "task_load": "🗃️"
       },
+      "reading_tools": {
+        "reading_speed_test": "Chillkatun ñi matun pepilun"
+      },
       "tooltips": {
         "import_extract": "Archivo mew wirin importar/extraer",
         "import_extract_abort": "Abortar extracción",
@@ -297,7 +300,8 @@
       "wip_diseno_crono": "WIP: Faw nülai configuration üngümwe küpalechi version mu.",
       "wip_diseno_fuentes": "WIP: Faw nülai düllin wirintun küpalechi version mu.",
       "wip_diseno_colores": "WIP: Faw nülai düllin vvün küpalechi version mu.",
-      "wip_shortcuts": "WIP: Faw nülai düllin shortcuts küpalechi version mu."
+      "wip_shortcuts": "WIP: Faw nülai düllin shortcuts küpalechi version mu.",
+      "wip_reading_speed_test": "WIP: Faw nülaay chi chillkatun ñi matun pepilun küpalechi wirintukun mew."
     },
     "editor_alerts": {
       "paste_too_big": "Wirin rume fütra pültrüal. Püne tati botones ventana mu.",
