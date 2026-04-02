@@ -21,6 +21,29 @@ Windows packaging is already in place:
 
 macOS and Linux packaging are still pending.
 
+Additional work already completed in this issue:
+
+* first-pass cross-platform compatibility audit documented in `docs/issues/issue_60_cross_platform_audit.md`;
+* packaging resource separation started:
+  * runtime assets remain under `public/assets`;
+  * packaging-only resources now live under `build-resources/`;
+* `package.json` already includes:
+  * `dist:mac`
+  * `dist:linux`
+  * macOS `.dmg` target
+  * Linux `AppImage` target
+* packaging runbooks now exist for:
+  * Windows
+  * macOS
+  * Linux
+
+Current remaining blockers before claiming cross-platform packaging ready:
+
+* native packaging still has not been executed on a real Mac;
+* native packaging still has not been executed on a real Linux environment;
+* macOS still needs the final/generated `build-resources/logo-cibersino.icns`;
+* platform-specific native-runtime legal coverage for packaged `sharp` still needs to be collected from native installs/builds.
+
 ## Scope
 
 ### In scope
@@ -79,12 +102,17 @@ Only after that should we decide whether macOS signing/notarization is mandatory
 
 ### Pre-packaging audit / design
 
-* Audit current code and assets for Windows/macOS/Linux compatibility.
-* List platform-sensitive runtime behaviors and packaging-sensitive files.
-* Propose compatibility fixes before native packaging runs.
-* Decide what remains shared between all platform builds.
-* Decide what should be separated or generated specifically per platform build.
-* Define the post-build test list required for each platform artifact.
+Completed:
+
+* compatibility audit written in `docs/issues/issue_60_cross_platform_audit.md`;
+* shared vs platform-specific resource policy defined;
+* post-build test list drafted;
+* packaging-only resources separated from runtime assets at the repo-structure level.
+
+Pending:
+
+* implement the remaining compatibility fixes exposed by native packaging runs;
+* complete platform-specific native-runtime legal coverage from native environments.
 
 ### Windows
 
@@ -96,10 +124,15 @@ Current Windows work:
 
 ### macOS
 
-* Review runtime/platform assumptions that may break on macOS.
-* Add macOS packaging config to the build toolchain.
-* Add required macOS asset(s), especially the app icon format used by macOS packaging.
-* Add/update a packaging runbook for macOS.
+Completed:
+
+* macOS packaging target added to `package.json`;
+* macOS packaging runbook added.
+
+Pending:
+
+* generate/provide `build-resources/logo-cibersino.icns` on a real Mac;
+* review runtime/platform assumptions that may break on macOS during native validation;
 * Build the first unsigned macOS artifact on a real Mac.
 * Smoke-test the packaged build on macOS.
 * Record friction observed from an unsigned macOS build.
@@ -107,10 +140,15 @@ Current Windows work:
 
 ### Linux
 
-* Review runtime/platform assumptions that may break on Linux.
-* Add Linux packaging config to the build toolchain.
-* Add required Linux packaging assets/metadata.
-* Add/update a packaging runbook for Linux if needed.
+Completed:
+
+* Linux packaging target added to `package.json`;
+* Linux packaging runbook added;
+* canonical Linux packaging icon/input defined under `build-resources/`.
+
+Pending:
+
+* review runtime/platform assumptions that may break on Linux during native validation;
 * Build the first Linux `AppImage`.
 * Smoke-test the packaged build on Linux.
 
@@ -132,25 +170,28 @@ Current Windows work:
 * macOS packaging requires access to a real Mac for build and validation.
 * macOS unsigned builds may trigger Gatekeeper friction on first launch.
 * Linux packaging still requires native validation; config alone is not enough.
-* Some current runtime assets and packaging-only assets may still be mixed together and need separation.
+* platform-specific native-runtime legal files for packaged `sharp` still need native evidence from macOS/Linux installs.
 * Cross-platform packaging can fail even if config is correct, due to runtime assumptions in code or native deps.
 * Cross-platform support is not complete until native smoke tests pass for each target OS.
 * Platform-specific icon caching can complicate validation and must be checked carefully.
 
 ## Breakdown
 
-- [ ] Audit current cross-platform compatibility (code, assets, packaging assumptions)
-- [ ] Decide what remains shared vs platform-specific between builds
+- [x] Audit current cross-platform compatibility (code, assets, packaging assumptions)
+- [x] Decide what remains shared vs platform-specific between builds
 - [ ] List and implement required compatibility fixes before native packaging runs
-- [ ] Define the post-build test matrix for Windows, macOS, and Linux
+- [x] Define the post-build test matrix for Windows, macOS, and Linux
 - [x] Confirm Windows packaging baseline and existing release documentation
 - [ ] Add macOS packaging config and assets
 - [x] Add `tools_local/packaging_macos_generic.md`
+- [ ] Generate/provide `build-resources/logo-cibersino.icns`
 - [ ] Produce first unsigned macOS artifact on a real Mac
 - [ ] Smoke-test macOS packaged build
-- [ ] Add Linux packaging config and assets
+- [x] Add Linux packaging config and base assets
+- [x] Add `tools_local/packaging_linux_generic.md`
 - [ ] Produce first Linux `AppImage`
 - [ ] Smoke-test Linux packaged build
+- [ ] Capture macOS/Linux native-runtime legal evidence for packaged `sharp`
 - [ ] Decide whether macOS signing/notarization is required for `1.0.0`
 - [ ] Update README + release docs for the final `1.0.0` support matrix
 - [ ] Run release packaging for `1.0.0` on all in-scope platforms
