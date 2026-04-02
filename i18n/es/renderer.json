@@ -15,9 +15,6 @@
         "task_new": "📝",
         "task_load": "🗃️"
       },
-      "reading_tools": {
-        "reading_speed_test": "Test de velocidad de lectura"
-      },
       "tooltips": {
         "import_extract": "Importar/extraer texto desde archivo",
         "import_extract_abort": "Abortar extracción",
@@ -82,6 +79,17 @@
           "tip7": "'El habla escrita exige una doble abstracción: del aspecto sonoro del lenguaje y del interlocutor.' (Vigotski)"
         }
       },
+      "crono": {
+        "title": "CRONÓMETRO",
+        "speed": "Velocidad:",
+        "controls_label": "Controles del cronómetro",
+        "flotante_short": "VF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Test de velocidad de lectura"
+      },
       "processing": {
         "import_extract_placeholder": "Procesando extracción...",
         "import_extract_preparing": "Preparando la ruta de importar/extraer...",
@@ -90,15 +98,28 @@
         "import_extract_waiting_ocr_delayed": "Ejecutando OCR. Algunos archivos tardan más.",
         "import_extract_elapsed": "Transcurrido: {time}",
         "import_extract_drop_here": "Suelta el archivo para importar o extraer texto"
-      },
-      "crono": {
-        "title": "CRONÓMETRO",
-        "speed": "Velocidad:",
-        "controls_label": "Controles del cronómetro",
-        "flotante_short": "VF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
       }
+    },
+    "editor": {
+      "title": "toT — Texto completo",
+      "placeholder": "Escribe o pega aquí...",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Auto-guardar y auto-recalcular mientras escribes",
+      "clear": "🗑",
+      "clear_title": "Vaciar"
+    },
+    "editor_find": {
+      "label": "Buscar",
+      "input_placeholder": "Buscar...",
+      "input_aria": "Buscar en el texto",
+      "prev": "Anterior",
+      "next": "Siguiente",
+      "close": "🗙",
+      "prev_title": "Coincidencia anterior",
+      "next_title": "Coincidencia siguiente",
+      "close_title": "Cerrar barra de busqueda",
+      "status_no_matches": "Sin coincidencias",
+      "status_empty_query": "Escribe para buscar"
     },
     "tasks": {
       "title": "toT — Tareas",
@@ -197,27 +218,6 @@
       "hint": "Los presets personalizados se guardan en la configuración del usuario.",
       "cancel": "Cancelar",
       "save": "Guardar"
-    },
-    "editor": {
-      "title": "toT — Texto completo",
-      "placeholder": "Escribe o pega aquí...",
-      "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-guardar y auto-recalcular mientras escribes",
-      "clear": "🗑",
-      "clear_title": "Vaciar"
-    },
-    "editor_find": {
-      "label": "Buscar",
-      "input_placeholder": "Buscar...",
-      "input_aria": "Buscar en el texto",
-      "prev": "Anterior",
-      "next": "Siguiente",
-      "close": "🗙",
-      "prev_title": "Coincidencia anterior",
-      "next_title": "Coincidencia siguiente",
-      "close_title": "Cerrar barra de busqueda",
-      "status_no_matches": "Sin coincidencias",
-      "status_empty_query": "Escribe para buscar"
     },
     "alerts": {
       "clipboard_too_large": "El texto del portapapeles es demasiado grande para procesarlo. Redúcelo e inténtalo de nuevo.",

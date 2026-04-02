@@ -15,9 +15,6 @@
         "task_new": "📝",
         "task_load": "🗃️"
       },
-      "reading_tools": {
-        "reading_speed_test": "Chillkatun ñi matun pepilun"
-      },
       "tooltips": {
         "import_extract": "Archivo mew wirin importar/extraer",
         "import_extract_abort": "Abortar extracción",
@@ -38,6 +35,21 @@
         "reset_presets": "Wiño elual presets",
         "help_button": "Pengelün kellu dungu",
         "flotante_window": "Ventana weñyefe"
+      },
+      "aria": {
+        "import_extract": "Archivo mew wirin importar kam extraer",
+        "import_extract_abort": "Abortar extracción",
+        "clipboard_repeat_count": "Pültrün repeticiones",
+        "wpm_input": "Dungu kiñe minuto mu",
+        "wpm_slider": "WPM slider",
+        "speed_presets": "Lef preset",
+        "precise_mode_toggle": "Rüf rakiduam",
+        "crono_controls": "Üngümwe küzawtuwe",
+        "crono_display": "Üngümwe pengelün",
+        "crono_toggle": "Amulal kam mütüntual üngümwe",
+        "crono_reset": "Wiño püneal üngümwe",
+        "floating_window_toggle": "Ventana weñyefe",
+        "floating_window_group": "Ventana weñyefe küzawtuwe"
       },
       "speed": {
         "title": "LEF CHILLKATUN",
@@ -64,20 +76,8 @@
         "play_symbol": "▶",
         "pause_symbol": "⏸"
       },
-      "aria": {
-        "import_extract": "Archivo mew wirin importar kam extraer",
-        "import_extract_abort": "Abortar extracción",
-        "clipboard_repeat_count": "Pültrün repeticiones",
-        "wpm_input": "Dungu kiñe minuto mu",
-        "wpm_slider": "WPM slider",
-        "speed_presets": "Lef preset",
-        "precise_mode_toggle": "Rüf rakiduam",
-        "crono_controls": "Üngümwe küzawtuwe",
-        "crono_display": "Üngümwe pengelün",
-        "crono_toggle": "Amulal kam mütüntual üngümwe",
-        "crono_reset": "Wiño püneal üngümwe",
-        "floating_window_toggle": "Ventana weñyefe",
-        "floating_window_group": "Ventana weñyefe küzawtuwe"
+      "reading_tools": {
+        "reading_speed_test": "Chillkatun ñi matun pepilun"
       },
       "processing": {
         "import_extract_placeholder": "Extracción amuley...",
@@ -88,6 +88,27 @@
         "import_extract_elapsed": "Amuln antü: {time}",
         "import_extract_drop_here": "Eltunge archivo faw, wirin importar kam extraer aal"
       }
+    },
+    "editor": {
+      "title": "toT — Kom wirin",
+      "placeholder": "Wiringe faw...",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Auto-elkünun ka auto-calcular wirin wirintukun mew",
+      "clear": "🗑",
+      "clear_title": "Lifün"
+    },
+    "editor_find": {
+      "label": "Kintun",
+      "input_placeholder": "Kintun...",
+      "input_aria": "Kintun wirintukun mew",
+      "prev": "Wünen",
+      "next": "Inan",
+      "close": "🗙",
+      "prev_title": "Wünen kintun",
+      "next_title": "Inan kintun",
+      "close_title": "Nürüfün kintun wechun",
+      "status_no_matches": "Chem no rume kintulay",
+      "status_empty_query": "Wiringe kintuael"
     },
     "tasks": {
       "title": "toT — Tareas",
@@ -121,12 +142,12 @@
         "library_row_save": "💾",
         "library_row_load": "📥",
         "library_row_delete": "🗑",
+        "snapshot": "📥",
         "select_snapshot": "Kintun snapshot",
         "clear_snapshot": "🗙",
         "cancel": "Katrüntun",
         "yes": "May",
-        "no": "No",
-        "snapshot": "📥"
+        "no": "No"
       },
       "tooltips": {
         "move_up": "Wünen ruka",
@@ -186,27 +207,6 @@
       "hint": "Preset elkünütuymi tami configuración mew.",
       "cancel": "Katrüntun",
       "save": "Elkünun"
-    },
-    "editor": {
-      "title": "toT — Kom wirin",
-      "placeholder": "Wiringe faw...",
-      "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-elkünun ka auto-calcular wirin wirintukun mew",
-      "clear": "🗑",
-      "clear_title": "Lifün"
-    },
-    "editor_find": {
-      "label": "Kintun",
-      "input_placeholder": "Kintun...",
-      "input_aria": "Kintun wirintukun mew",
-      "prev": "Wünen",
-      "next": "Inan",
-      "close": "🗙",
-      "prev_title": "Wünen kintun",
-      "next_title": "Inan kintun",
-      "close_title": "Nürüfün kintun wechun",
-      "status_no_matches": "Chem no rume kintulay",
-      "status_empty_query": "Wiringe kintuael"
     },
     "alerts": {
       "clipboard_too_large": "Portapapeles wirin rume fütra. Pichikünunge ka wiño pültrünnge.",
@@ -310,11 +310,11 @@
       "drop_no_text": "Küpalyelu: nielay wirin faw.",
       "type_limit": "Pewfala wirin: afiy tachi fütra wirin.",
       "paste_limit": "Pewfala pültrün: afiy tachi fütra wirin.",
+      "drop_limit": "Pepi ngelay nütrofal kangelu: afiy tachi fütra límite.",
       "paste_truncated": "Pültrün wirin pichikünutuy.",
       "drop_truncated": "Küpalyelu wirin afiy ka pichikünutuy.",
       "text_truncated": "Wirin pichikünutuy tachi app mew.",
-      "calc_error": "Welulkuy rakiduam mu. Kintunge consola.",
-      "drop_limit": "Pepi ngelay nütrofal kangelu: afiy tachi fütra límite."
+      "calc_error": "Welulkuy rakiduam mu. Kintunge consola."
     },
     "preset_alerts": {
       "name_empty": "Üi welli mülelay.",
@@ -324,6 +324,16 @@
       "process_error": "Welulkuy küzaw preset mu. Kintunge consola."
     },
     "info": {
+      "external": {
+        "blocked": "Link bloqueado",
+        "missing": "Link nielay",
+        "error": "Welulkuy nülal link"
+      },
+      "appdoc": {
+        "blocked": "Documento bloqueado",
+        "missing": "Documento nielay",
+        "error": "Welulkuy nülal documento"
+      },
       "acerca_de": {
         "app_name": "toT",
         "title": "Dungu mu",
@@ -338,16 +348,6 @@
         "app_name": "toT",
         "title": "Ayüfalchi links",
         "section_biblio_label": "Inatun chillka"
-      },
-      "external": {
-        "blocked": "Link bloqueado",
-        "missing": "Link nielay",
-        "error": "Welulkuy nülal link"
-      },
-      "appdoc": {
-        "blocked": "Documento bloqueado",
-        "missing": "Documento nielay",
-        "error": "Welulkuy nülal documento"
       }
     }
   }
