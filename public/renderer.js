@@ -87,8 +87,7 @@ const importExtractOcrDisconnect = window.ImportExtractOcrDisconnect || null;
 const mainLogoLinks = window.MainLogoLinks || null;
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
-  || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function'
-  || typeof resultsTimeMultiplier.setInteractionLocked !== 'function') {
+  || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function') {
   throw new Error('[renderer] ResultsTimeMultiplier unavailable; cannot continue');
 }
 
@@ -101,6 +100,7 @@ const resChars = document.getElementById('resChars');
 const resCharsNoSpace = document.getElementById('resCharsNoSpace');
 const resWords = document.getElementById('resWords');
 const resTime = document.getElementById('resTime');
+const resultsTimeMultiplierInput = document.getElementById('resultsTimeMultiplierInput');
 
 const toggleModoPreciso = document.getElementById('toggleModoPreciso');
 
@@ -208,8 +208,26 @@ function isProcessingModeActive() {
   return importExtractStatusUi.isProcessingModeActive();
 }
 
-function syncResultsTimeMultiplierLock() {
-  resultsTimeMultiplier.setInteractionLocked(isProcessingModeActive());
+function setControlInteractionLocked(element, locked) {
+  if (!element) return;
+  element.disabled = locked;
+  element.setAttribute('aria-disabled', locked ? 'true' : 'false');
+}
+
+function syncMainInteractionLockUi() {
+  const locked = !isRendererReady() || isProcessingModeActive();
+
+  setControlInteractionLocked(wpmInput, locked);
+  setControlInteractionLocked(wpmSlider, locked);
+  setControlInteractionLocked(presetsSelect, locked);
+  setControlInteractionLocked(btnNewPreset, locked);
+  setControlInteractionLocked(btnEditPreset, locked);
+  setControlInteractionLocked(btnDeletePreset, locked);
+  setControlInteractionLocked(btnResetDefaultPresets, locked);
+  setControlInteractionLocked(btnReadingSpeedTest, locked);
+  setControlInteractionLocked(resultsTimeMultiplierInput, locked);
+  setControlInteractionLocked(toggleModoPreciso, locked);
+  setControlInteractionLocked(toggleVF, locked);
 }
 
 function startImportExtractPrepareAttempt() {
@@ -336,6 +354,7 @@ function maybeUnblockReady() {
   }
 
   sendSplashRemoved();
+  syncMainInteractionLockUi();
 }
 
 function markRendererInvariantsReady() {
@@ -934,7 +953,7 @@ function armIpcSubscriptions() {
       window.electronAPI.onImportExtractProcessingModeChanged((state) => {
         try {
           importExtractStatusUi.applyProcessingModeState(state, { source: 'ipc_event' });
-          syncResultsTimeMultiplierLock();
+          syncMainInteractionLockUi();
         } catch (err) {
           log.error('Error handling import-extract-processing-mode-changed:', err);
         }
@@ -1123,21 +1142,17 @@ async function runStartupOrchestrator() {
         const processingMode = await getImportExtractProcessingMode();
         if (processingMode && processingMode.ok === true) {
           importExtractStatusUi.applyProcessingModeState(processingMode.state, { source: 'startup_query' });
-          syncResultsTimeMultiplierLock();
         } else {
           log.warn(
             'BOOTSTRAP: getImportExtractProcessingMode returned non-ok result; keeping processing mode inactive:',
             processingMode
           );
-          syncResultsTimeMultiplierLock();
         }
       } catch (err) {
         log.warn('BOOTSTRAP: getImportExtractProcessingMode failed; keeping processing mode inactive:', err);
-        syncResultsTimeMultiplierLock();
       }
-    } else {
-      syncResultsTimeMultiplierLock();
     }
+    syncMainInteractionLockUi();
 
     // Load presets and save them to the cache
     await loadPresets({ settingsSnapshot });
@@ -2334,6 +2349,7 @@ const initCronoController = () => {
 initCronoController();
 
 uiListenersArmed = true;
+syncMainInteractionLockUi();
 runStartupOrchestrator();
 
 // =============================================================================
