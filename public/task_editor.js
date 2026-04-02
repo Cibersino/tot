@@ -253,24 +253,12 @@ function wireModalClose(modalEl, ...closeTriggers) {
   });
 }
 
-function showEditorNotice(key, opts = {}) {
-  try {
-    if (typeof window.Notify?.notifyEditor === 'function') {
-      window.Notify.notifyEditor(key, opts);
-      return;
-    }
-    log.warnOnce('task_editor.notify.missing', 'window.Notify.notifyEditor unavailable (ignored).');
-  } catch (err) {
-    log.warn('window.Notify.notifyEditor failed:', err);
-  }
-}
-
 // Shared guard for taskEditorAPI methods; emits a user notice and warnOnce on missing APIs.
 function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.task_unavailable') {
   const api = window.taskEditorAPI;
   if (!api || typeof api[methodName] !== 'function') {
     log.warnOnce(`task_editor.api.missing.${methodName}`, 'taskEditorAPI missing method (ignored):', methodName);
-    if (missingNoticeKey) showEditorNotice(missingNoticeKey);
+    if (missingNoticeKey) window.Notify.notifyEditor(missingNoticeKey);
     return null;
   }
   return api;
@@ -297,16 +285,16 @@ async function selectSnapshotForPendingCommentRow() {
     if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
     log.warn('selectTaskRowSnapshot failed:', { code, response: res || null });
     if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
-      showEditorNotice('renderer.tasks.alerts.link_blocked');
+      window.Notify.notifyEditor('renderer.tasks.alerts.link_blocked');
       return;
     }
-    showEditorNotice('renderer.tasks.alerts.library_load_error');
+    window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
   const safeRel = normalizeSnapshotRelPath(res.snapshotRelPath || '');
   if (!safeRel) {
     log.warn('selectTaskRowSnapshot returned invalid snapshotRelPath:', { snapshotRelPath: res.snapshotRelPath || '' });
-    showEditorNotice('renderer.tasks.alerts.library_load_error');
+    window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
   pendingCommentSnapshotRelPath = safeRel;
@@ -330,14 +318,14 @@ async function loadSnapshotForRow(row) {
     if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
     log.warn('loadTaskRowSnapshot failed:', { code, snapshotRelPath, response: res || null });
     if (code === 'NOT_FOUND') {
-      showEditorNotice('renderer.tasks.alerts.link_missing');
+      window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
       return;
     }
     if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
-      showEditorNotice('renderer.tasks.alerts.link_blocked');
+      window.Notify.notifyEditor('renderer.tasks.alerts.link_blocked');
       return;
     }
-    showEditorNotice('renderer.tasks.alerts.link_error');
+    window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
     return;
   }
 }
@@ -494,14 +482,14 @@ function renderRow(row) {
       const code = res && res.code ? res.code : 'ERROR';
       if (code === 'CONFIRM_DENIED') return;
       if (code === 'LINK_MISSING') {
-        showEditorNotice('renderer.tasks.alerts.link_missing');
+        window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
         return;
       }
       if (code === 'LINK_BLOCKED') {
-        showEditorNotice('renderer.tasks.alerts.link_blocked');
+        window.Notify.notifyEditor('renderer.tasks.alerts.link_blocked');
         return;
       }
-      showEditorNotice('renderer.tasks.alerts.link_error');
+      window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
       return;
     }
   });
@@ -749,12 +737,12 @@ function validateBeforeSave() {
   const name = clampTaskName(taskNameInput.value).trim();
   if (taskNameInput.value !== name) taskNameInput.value = name;
   if (!name) {
-    showEditorNotice('renderer.tasks.alerts.name_required');
+    window.Notify.notifyEditor('renderer.tasks.alerts.name_required');
     return null;
   }
   for (const row of rows) {
     if (!String(row.texto || '').trim()) {
-      showEditorNotice('renderer.tasks.alerts.row_text_required');
+      window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
       return null;
     }
   }
@@ -787,30 +775,30 @@ async function saveTask() {
     const code = res && res.code ? res.code : 'WRITE_FAILED';
     if (code === 'CANCELLED') return;
     if (code === 'NAME_REQUIRED') {
-      showEditorNotice('renderer.tasks.alerts.name_required');
+      window.Notify.notifyEditor('renderer.tasks.alerts.name_required');
       return;
     }
     if (code === 'PATH_OUTSIDE_TASKS') {
-      showEditorNotice('renderer.tasks.alerts.task_path_outside');
+      window.Notify.notifyEditor('renderer.tasks.alerts.task_path_outside');
       return;
     }
     if (code === 'INVALID_SCHEMA') {
-      showEditorNotice('renderer.tasks.alerts.task_invalid_rows');
+      window.Notify.notifyEditor('renderer.tasks.alerts.task_invalid_rows');
       return;
     }
-    showEditorNotice('renderer.tasks.alerts.task_save_error');
+    window.Notify.notifyEditor('renderer.tasks.alerts.task_save_error');
     return;
   }
 
   if (res.meta) meta = res.meta;
   if (res.path) sourcePath = res.path;
   resetDirty();
-  showEditorNotice('renderer.tasks.alerts.task_save_success');
+  window.Notify.notifyEditor('renderer.tasks.alerts.task_save_success');
 }
 
 async function deleteTask() {
   if (!sourcePath) {
-    showEditorNotice('renderer.tasks.alerts.task_delete_unavailable');
+    window.Notify.notifyEditor('renderer.tasks.alerts.task_delete_unavailable');
     return;
   }
   const api = getTaskEditorApi('deleteTaskList');
@@ -819,7 +807,7 @@ async function deleteTask() {
   if (!res || res.ok === false) {
     const code = res && res.code ? res.code : 'WRITE_FAILED';
     if (code === 'CONFIRM_DENIED') return;
-    showEditorNotice('renderer.tasks.alerts.task_delete_error');
+    window.Notify.notifyEditor('renderer.tasks.alerts.task_delete_error');
     return;
   }
 
@@ -883,7 +871,7 @@ function renderLibraryItems(items) {
       if (!delRes || delRes.ok === false) {
         const code = delRes && delRes.code ? delRes.code : 'WRITE_FAILED';
         if (code === 'CONFIRM_DENIED') return;
-        showEditorNotice('renderer.tasks.alerts.library_delete_error');
+        window.Notify.notifyEditor('renderer.tasks.alerts.library_delete_error');
         return;
       }
       await refreshLibraryList();
@@ -922,7 +910,7 @@ async function refreshLibraryList() {
   if (!api) return;
   const res = await api.listLibrary();
   if (!res || res.ok === false) {
-    showEditorNotice('renderer.tasks.alerts.library_load_error');
+    window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
 
@@ -935,7 +923,7 @@ async function saveRowToLibrary(includeComment) {
   closeModal(includeCommentModal);
   if (!row) return;
   if (!String(row.texto || '').trim()) {
-    showEditorNotice('renderer.tasks.alerts.row_text_required');
+    window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
     return;
   }
   const api = getTaskEditorApi('saveLibraryRow');
@@ -944,10 +932,10 @@ async function saveRowToLibrary(includeComment) {
   if (!res || res.ok === false) {
     const code = res && res.code ? res.code : 'WRITE_FAILED';
     if (code === 'CONFIRM_DENIED') return;
-    showEditorNotice('renderer.tasks.alerts.library_save_error');
+    window.Notify.notifyEditor('renderer.tasks.alerts.library_save_error');
     return;
   }
-  showEditorNotice('renderer.tasks.alerts.library_save_success');
+  window.Notify.notifyEditor('renderer.tasks.alerts.library_save_success');
 }
 
 // =============================================================================

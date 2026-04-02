@@ -189,9 +189,7 @@
   // Exports / module surface
   // =============================================================================
 
-  window.ImportExtractOcrActivationDisclosureModal = {
-    promptDisclosure,
-  };
+  window.Notify.promptImportExtractOcrActivationDisclosure = promptDisclosure;
 })();
 
 // =============================================================================

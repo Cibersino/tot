@@ -254,9 +254,7 @@ function maybeNotifyProcessingLock(actionId) {
   const now = Date.now();
   if ((now - lastProcessingLockNoticeAt) < PROCESSING_LOCK_NOTICE_THROTTLE_MS) return;
   lastProcessingLockNoticeAt = now;
-  if (window.Notify && typeof window.Notify.notifyMain === 'function') {
-    window.Notify.notifyMain('renderer.alerts.import_extract_processing_locked');
-  }
+  window.Notify.notifyMain('renderer.alerts.import_extract_processing_locked');
   log.warnOnce(
     `renderer.processing_lock.${actionId}`,
     'Renderer action ignored (processing-mode lock active):',
@@ -1705,55 +1703,6 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
 // =============================================================================
 // Import/extract integration helpers
 // =============================================================================
-async function promptImportExtractRouteChoice(preparation) {
-  const routeChoiceModal = window.ImportExtractRouteChoiceModal;
-  if (!routeChoiceModal || typeof routeChoiceModal.promptRouteChoice !== 'function') {
-    log.warnOnce(
-      'renderer.importExtract.routeChoiceModal.unavailable',
-      'ImportExtractRouteChoiceModal.promptRouteChoice unavailable; route choice cannot continue.'
-    );
-    window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
-    return '';
-  }
-  try {
-    return await routeChoiceModal.promptRouteChoice({
-      preparation,
-      tRenderer,
-    });
-  } catch (err) {
-    log.error('import/extract route-choice modal failed:', err);
-    window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
-    return '';
-  }
-}
-
-async function promptImportExtractApplyChoice({
-  defaultRepeat = 1,
-  elapsedText = '',
-} = {}) {
-  const applyModal = window.ImportExtractApplyModal;
-  if (!applyModal || typeof applyModal.promptApplyChoice !== 'function') {
-    log.warnOnce(
-      'renderer.importExtract.applyModal.unavailable',
-      'ImportExtractApplyModal.promptApplyChoice unavailable; apply flow cannot continue.'
-    );
-    window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
-    return null;
-  }
-  try {
-    return await applyModal.promptApplyChoice({
-      tRenderer,
-      elapsedText,
-      defaultRepeat,
-      maxRepeat: MAX_CLIPBOARD_REPEAT,
-    });
-  } catch (err) {
-    log.error('import/extract apply modal failed:', err);
-    window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
-    return null;
-  }
-}
-
 async function maybeRecoverImportExtractOcrSetupAndRetry({
   preparation,
   preparationRequest,
@@ -1812,10 +1761,6 @@ async function resolveDroppedFilePath(file) {
 // renderer.js owns only app-level feature wiring here.
 // The shared import/extract flow stays in the delegated window modules.
 function configureImportExtractModules() {
-  const notifyMain = window.Notify && typeof window.Notify.notifyMain === 'function'
-    ? window.Notify.notifyMain.bind(window.Notify)
-    : null;
-
   importExtractEntry.configure({
     applyTextViaCanonicalPath,
     getClipboardRepeatCount,
@@ -1827,15 +1772,11 @@ function configureImportExtractModules() {
     importExtractStatusUi,
     isLatestImportExtractPrepareAttempt,
     maybeRecoverImportExtractOcrSetupAndRetry,
-    notifyMain,
-    promptImportExtractApplyChoice,
-    promptImportExtractRouteChoice,
     requestPreparedImport,
   });
 
   importExtractDragDrop.configure({
     canAcceptDrop: canAcceptImportExtractDrop,
-    notifyMain,
     resolveDroppedFilePath,
     startFromFilePath: importExtractEntry.startFromFilePath,
   });
@@ -2159,9 +2100,7 @@ if (btnHelp) {
     const tipCount = helpTipKeys.length;
     if (!tipCount) {
       log.error('Help tip list is empty.');
-      if (typeof window.Notify?.notifyMain === 'function') {
-        window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
-      }
+      window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
       return;
     }
 
@@ -2175,24 +2114,14 @@ if (btnHelp) {
     const tipKey = helpTipKeys[idx];
 
     try {
-      if (typeof window.Notify?.toastMain === 'function') {
+      try {
         window.Notify.toastMain(tipKey);
-      } else if (typeof window.Notify?.notifyMain === 'function') {
+      } catch (err) {
+        log.error('Error showing help tip toast:', err);
         window.Notify.notifyMain(tipKey);
-      } else {
-        log.error('Notify API unavailable for help tips.');
       }
     } catch (err) {
-      log.error('Error showing help tip:', err);
-      try {
-        if (typeof window.Notify?.notifyMain === 'function') {
-          window.Notify.notifyMain(tipKey);
-        } else {
-          log.error('Notify notifyMain unavailable for help tip fallback.');
-        }
-      } catch (fallbackErr) {
-        log.error('Help tip fallback failed:', fallbackErr);
-      }
+      log.error('Help tip fallback failed:', err);
     }
   });
 }

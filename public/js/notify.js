@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Resolve renderer i18n keys to displayable text.
-// - Show blocking alerts for main-window notices.
+// - Show blocking alerts and confirms for main-window notices.
 // - Show toast notifications for main and editor contexts.
 // - Provide a small, stable window.Notify surface for callers.
 // =============================================================================
