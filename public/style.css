@@ -54,7 +54,7 @@ body {
 .app-container {
   position: relative;
   height: 100vh;
-  padding: 8px;
+  padding: 4px;
 }
 
 /* Startup splash overlay (blocks interaction until READY) */
@@ -396,7 +396,7 @@ pre#textPreview {
 
 /* READING SPEED SECTION */
 .velocity {
-  top: 228px;
+  top: 165px;
   left: 4px;
   height: 155px;
   width: 398px;
@@ -449,7 +449,7 @@ select#presets {
 /* COUNTING RESULTS SECTION */
 .results {
   position: relative;          /* needed for .help-row absolute to work */
-  top: 228px;
+  top: 165px;
   left: 407px;
   height: 155px;
   width: 416px;
@@ -597,7 +597,7 @@ select#presets {
 
 /* CHRONOMETER SECTION */
 .cronometro {
-  top: 388px;
+  top: 325px;
   left: 4px;
   height: 98px;
   width: 232px;
@@ -664,7 +664,7 @@ select#presets {
 
 /* READING TOOLS SECTION */
 .reading-tools {
-  top: 388px;
+  top: 325px;
   left: 241px;
   height: 98px;
   width: 320px;
