@@ -21,7 +21,12 @@ const Log = require('./log');
 
 const log = Log.get('presets-main');
 log.debug('Presets main starting...');
-const { DEFAULT_LANG, MAX_PRESET_STR_CHARS } = require('./constants_main');
+const {
+  DEFAULT_LANG,
+  MAX_PRESET_STR_CHARS,
+  PRESET_WPM_MIN,
+  PRESET_WPM_MAX
+} = require('./constants_main');
 const { getConfigPresetsDir, ensureConfigPresetsDir } = require('./fs_storage');
 const settingsState = require('./settings');
 const { normalizeLangTag, normalizeLangBase } = settingsState;
@@ -78,11 +83,16 @@ function sanitizePresetInput(raw) {
     return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET' };
   }
 
+  const roundedWpm = Math.round(wpmNum);
+  if (roundedWpm < PRESET_WPM_MIN || roundedWpm > PRESET_WPM_MAX) {
+    return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET' };
+  }
+
   return {
     ok: true,
     preset: {
       name,
-      wpm: Math.round(wpmNum),
+      wpm: roundedWpm,
       description,
     },
   };

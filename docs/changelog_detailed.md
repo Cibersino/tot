@@ -60,6 +60,7 @@ Reglas:
 - Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
 - Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino`, ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente y el bloque fijo de branding se reubica a la esquina inferior derecha de la ventana principal en orden visual `Patreon | Cibersino | toT`, eliminando la reserva superior que quedó obsoleta.
 - Info modal / links (Issue #165): los fallos al abrir links externos y `appdoc:` desde el info modal dejan de quedar solo en logs y pasan a mostrarse al usuario con una taxonomía final explícita de notificaciones alineada con los reasons reales del runtime.
+- Modal de presets / WPM: se corrige la discrepancia entre el mensaje de validación y el rango realmente aceptado al guardar; el warning renderer deja de hardcodear `50..500`, se alinea con el rango operativo vigente `10..700` y main agrega una validación server-side equivalente para persistencia.
 - Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
 - Preload listener APIs (Issue #161): se completa una auditoría repo-wide de preloads y se normalizan los listeners driftados al estándar `onX(cb) -> unsubscribe`, dejando explícitos los casos válidos de replay/buffer sin cambiar canales, payloads ni timing saludable.
 
@@ -113,6 +114,11 @@ Reglas:
   - `public/js/notify.js` se consolida como owner público único de la superficie de diálogos renderer; `public/renderer.js`, `public/editor.js`, `public/task_editor.js`, `public/preset_modal.js`, `public/js/current_text_snapshots.js`, `public/js/import_extract_entry.js` y `public/js/import_extract_drag_drop.js` pasan a consumir `window.Notify.*` directamente.
   - Los prompts custom de import/extract dejan de publicarse como globals de feature (`window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal`, `window.ImportExtractOcrActivationDisclosureModal`) y pasan a exponerse como `window.Notify.promptImportExtractRouteChoice(...)`, `window.Notify.promptImportExtractApplyChoice(...)` y `window.Notify.promptImportExtractOcrActivationDisclosure(...)`.
   - Se eliminan wrappers/fallbacks locales (`notifyMain(...)`, `showNotice(...)`, `showEditorNotice(...)`, guards repetidos de disponibilidad de `window.Notify`) sin cambiar la semántica healthy-path de los avisos existentes.
+  - `window.Notify.notifyMain(...)`, `confirmMain(...)`, `toastMain(...)` y `notifyEditor(...)` pasan a aceptar params opcionales de interpolación i18n, evitando mensajes renderer con límites numéricos hardcodeados cuando la UI ya depende de constantes runtime.
+- Modal de presets / validación WPM:
+  - `public/preset_modal.js`: el aviso `renderer.preset_alerts.wpm_invalid` pasa a interpolar `{min,max}` desde `WPM_MIN/WPM_MAX` en vez de depender de texto fijo desalineado.
+  - `electron/constants_main.js` y `electron/presets_main.js`: se agrega validación server-side explícita para presets fuera del rango operativo `10..700`, endureciendo la persistencia para que no diverja del renderer healthy-path.
+  - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): `renderer.preset_alerts.wpm_invalid` deja de codificar `50..500` y pasa a usar placeholders `{min}` / `{max}`.
 - Reading tools / test de velocidad de lectura:
   - `public/index.html` y `public/style.css`: la antigua sección reservada/“available” se renombra a `reading-tools`; el botón ya no cubre toda el área y queda centrado como control normal.
   - i18n renderer (`en`, `es`, `es-cl`, `arn`, `de`, `fr`, `it`, `pt`): se alinea el orden interno de secciones para dejar `reading_tools` antes de `processing`, y en `en` además se reordenan `editor`, `editor_find`, `tasks` y `modal_preset` para mantener consistencia estructural con el resto de locales.
@@ -134,6 +140,7 @@ Reglas:
 
 - Se corrige una brecha de defensa en profundidad: `set-current-text` no aplicaba control de autorización por sender, a diferencia de otros handlers sensibles.
 - Info modal / links (Issue #165): los fallos de apertura para links externos y documentos `appdoc:` ya no quedan invisibles para el usuario; ahora se notifican en la UI principal con el mismo outcome final que define la taxonomía i18n vigente.
+- Modal de presets / WPM: se corrige el drift entre la validación visible (`renderer.preset_alerts.wpm_invalid`) y la aceptación real al guardar presets; el warning ya no anuncia `50..500` cuando la UI opera con `10..700`, y la persistencia rechaza valores fuera del mismo rango canónico del renderer.
 
 ### Contratos tocados
 
@@ -164,7 +171,11 @@ Reglas:
 - Notificaciones / diálogos renderer:
   - `window.Notify` se formaliza como superficie pública única de diálogos renderer para avisos bloqueantes, confirmaciones y prompts custom de import/extract.
   - `window.Notify` agrega/expone `confirmMain(...)`, `promptImportExtractRouteChoice(...)`, `promptImportExtractApplyChoice(...)` y `promptImportExtractOcrActivationDisclosure(...)` como entrypoints públicos consolidados.
+  - `window.Notify.notifyMain(...)`, `confirmMain(...)`, `toastMain(...)` y `notifyEditor(...)` extienden contrato para aceptar params opcionales de interpolación i18n; llamadas existentes sin params conservan semántica.
   - `window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal` y `window.ImportExtractOcrActivationDisclosureModal` dejan de ser parte de la superficie pública runtime; el wiring interno de esos modales permanece en sus módulos renderer dedicados.
+- Modal de presets / validación WPM:
+  - `renderer.preset_alerts.wpm_invalid` mantiene la misma key, pero su semántica final pasa a depender de placeholders `{min}` / `{max}` resueltos en runtime en vez de texto estático.
+  - `create-preset` y `edit-preset` mantienen canal y shape healthy-path, pero endurecen failure-path para rechazar presets con `wpm` fuera del rango canónico `10..700` también desde main.
 - Preload listener APIs (Issue #161):
   - `window.editorAPI.onInitText(cb)`, `window.editorAPI.onExternalUpdate(cb)` y `window.editorAPI.onForceClear(cb)` pasan a seguir el contrato `onX(cb) -> unsubscribe`, manteniendo canales (`editor-init-text`, `editor-text-updated`, `editor-force-clear`), payloads y timing healthy-path.
   - `window.electronAPI.onCurrentTextUpdated(cb)` y `window.electronAPI.onPresetCreated(cb)` pasan a seguir el contrato `onX(cb) -> unsubscribe`, manteniendo canales (`current-text-updated`, `preset-created`) y payloads healthy-path.
@@ -175,6 +186,7 @@ Reglas:
 ### Archivos
 
 - `electron/text_state.js`
+- `electron/constants_main.js`
 - `electron/preload.js`
 - `electron/editor_preload.js`
 - `electron/menu_builder.js`

@@ -318,7 +318,7 @@
     },
     "preset_alerts": {
       "name_empty": "O nome não pode estar vazio.",
-      "wpm_invalid": "WPM deve ser um número entre 50 e 500.",
+      "wpm_invalid": "WPM deve ser um número entre {min} e {max}.",
       "create_error": "Ocorreu um erro ao criar o preset. Verifique o console.",
       "edit_error": "Ocorreu um erro ao editar o preset. Verifique o console.",
       "process_error": "Ocorreu um erro ao processar o preset. Verifique o console."
