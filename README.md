@@ -31,7 +31,7 @@
 * Cronómetro con cálculo de WPM real + ventana flotante.
 * Snapshots de textos: guardar/cargar los textos actuales.
 * Editor de tareas: organizador de listas de textos para planificar lecturas.
-* Interfaz multi-idioma: `es`, `es-cl`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
+* Interfaz multi-idioma: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
 
 ---
 
@@ -190,7 +190,7 @@ MIT — ver [`LICENSE`](LICENSE).
 * Stopwatch with real WPM calculation; optional floating window.
 * Text snapshots: save/load current texts.
 * Task editor: text list organizer to plan readings.
-* Multi-language UI: `es`, `es-cl`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
+* Multi-language UI: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
 
 ---
 

@@ -52,6 +52,7 @@ const btnSaveSnapshot = document.getElementById('btnSaveSnapshot');
 const btnNewTask = document.getElementById('btnNewTask');
 const btnLoadTask = document.getElementById('btnLoadTask');
 const btnHelp = document.getElementById('btnHelp');
+const btnReadingSpeedTest = document.getElementById('btnReadingSpeedTest');
 
 const importExtractEntry = window.ImportExtractEntry;
 if (!importExtractEntry
@@ -472,6 +473,14 @@ function applyTranslations() {
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
   if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title', resultsTitle.textContent || '');
   if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title', cronTitle.textContent || '');
+  if (btnReadingSpeedTest) {
+    const label = tRenderer('renderer.main.reading_tools.reading_speed_test', btnReadingSpeedTest.textContent || '');
+    btnReadingSpeedTest.textContent = label;
+    if (label) {
+      btnReadingSpeedTest.title = label;
+      btnReadingSpeedTest.setAttribute('aria-label', label);
+    }
+  }
   // Speed selector labels
   const wpmLabel = document.querySelector('.wpm-row span');
   if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label', wpmLabel.textContent || '');
@@ -2185,6 +2194,16 @@ if (btnHelp) {
         log.error('Help tip fallback failed:', fallbackErr);
       }
     }
+  });
+}
+
+// =============================================================================
+// Reading tools
+// =============================================================================
+if (btnReadingSpeedTest) {
+  btnReadingSpeedTest.addEventListener('click', () => {
+    if (!guardUserAction('reading-speed-test')) return;
+    window.Notify.notifyMain('renderer.alerts.wip_reading_speed_test');
   });
 }
 

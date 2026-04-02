@@ -79,6 +79,17 @@
           "tip7": "'Writing requires a double abstraction: abstraction from the sound of speech and abstraction from the interlocutor.' (Vygotsky)"
         }
       },
+      "crono": {
+        "title": "STOPWATCH",
+        "speed": "Speed:",
+        "controls_label": "Stopwatch controls",
+        "flotante_short": "FW",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Reading speed test"
+      },
       "processing": {
         "import_extract_placeholder": "Extracting text...",
         "import_extract_preparing": "Preparing import/extract route...",
@@ -87,15 +98,28 @@
         "import_extract_waiting_ocr_delayed": "Running OCR. Some files take longer.",
         "import_extract_elapsed": "Elapsed: {time}",
         "import_extract_drop_here": "Drop file to import/extract text"
-      },
-      "crono": {
-        "title": "STOPWATCH",
-        "speed": "Speed:",
-        "controls_label": "Stopwatch controls",
-        "flotante_short": "FW",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
       }
+    },
+    "editor": {
+      "title": "toT — Full text",
+      "placeholder": "Type or paste here...",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Auto-save and auto-recalculate as you type",
+      "clear": "🗑",
+      "clear_title": "Clear"
+    },
+    "editor_find": {
+      "label": "Find",
+      "input_placeholder": "Find...",
+      "input_aria": "Find in text",
+      "prev": "Prev",
+      "next": "Next",
+      "close": "🗙",
+      "prev_title": "Previous match",
+      "next_title": "Next match",
+      "close_title": "Close find bar",
+      "status_no_matches": "No matches",
+      "status_empty_query": "Type to search"
     },
     "tasks": {
       "title": "toT — Tasks",
@@ -195,27 +219,6 @@
       "cancel": "Cancel",
       "save": "Save"
     },
-    "editor": {
-      "title": "toT — Full text",
-      "placeholder": "Type or paste here...",
-      "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-save and auto-recalculate as you type",
-      "clear": "🗑",
-      "clear_title": "Clear"
-    },
-    "editor_find": {
-      "label": "Find",
-      "input_placeholder": "Find...",
-      "input_aria": "Find in text",
-      "prev": "Prev",
-      "next": "Next",
-      "close": "🗙",
-      "prev_title": "Previous match",
-      "next_title": "Next match",
-      "close_title": "Close find bar",
-      "status_no_matches": "No matches",
-      "status_empty_query": "Type to search"
-    },
     "alerts": {
       "clipboard_too_large": "Clipboard text is too large to process. Reduce it and try again.",
       "append_too_large": "Resulting text is too large to process. Reduce it and try again.",
@@ -308,7 +311,8 @@
       "wip_diseno_crono": "WIP: Floating stopwatch settings will open here in a future version.",
       "wip_diseno_fuentes": "WIP: The fonts selector will open here in a future version.",
       "wip_diseno_colores": "WIP: The colors selector will open here in a future version.",
-      "wip_shortcuts": "WIP: The keyboard shortcuts selector will open here in a future version."
+      "wip_shortcuts": "WIP: The keyboard shortcuts selector will open here in a future version.",
+      "wip_reading_speed_test": "WIP: The reading speed test will open here in a future version."
     },
     "editor_alerts": {
       "paste_too_big": "Text too large to paste directly. Use the main window buttons.",
