@@ -15,6 +15,9 @@
         "task_new": "📝",
         "task_load": "🗃️"
       },
+      "reading_tools": {
+        "reading_speed_test": "Lesegeschwindigkeitstest"
+      },
       "tooltips": {
         "import_extract": "Text aus Datei importieren/extrahieren",
         "import_extract_abort": "Extraktion abbrechen",
@@ -297,7 +300,8 @@
         "wip_diseno_crono": "WIP: Die Einstellungen für die schwebende Stoppuhr werden hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_fuentes": "WIP: Der Schriftarten-Selektor wird hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_colores": "WIP: Der Farb-Selektor wird hier in einer zukünftigen Version geöffnet.",
-      "wip_shortcuts": "WIP: Der Tastenkombinations-Selektor wird hier in einer zukünftigen Version geöffnet."
+      "wip_shortcuts": "WIP: Der Tastenkombinations-Selektor wird hier in einer zukünftigen Version geöffnet.",
+      "wip_reading_speed_test": "WIP: Der Lesegeschwindigkeitstest wird hier in einer zukünftigen Version geöffnet."
     },
       "editor_alerts": {
         "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",
