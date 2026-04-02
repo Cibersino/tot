@@ -9,6 +9,8 @@
 
 **toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina importación/extracción de texto desde archivos de texto e imagen, presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas y cronómetro para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
 
+![Guía básica animada](public/assets/instrucciones/guia-basica.gif)
+
 *¿No te atreves a empezar ciertas lecturas debido a no saber cuánto trabajo realmente te tomará?*
 *¿Te cuesta terminar las lecturas y las abandonas en la mitad?*
 *¿Quieres superar tus dificultades y desarrollar tu capacidad de lectura apoyándote en herramientas de medición y organización científicas?*
@@ -77,12 +79,6 @@ Accesos rápidos visibles en la ventana principal:
 
 * Sitio: [https://totapp.org/es/](https://totapp.org/es/)
 * Contacto: [GitHub Issues](https://github.com/Cibersino/tot/issues) o [cibersino@gmail.com](mailto:cibersino@gmail.com)
-
----
-
-## Capturas de pantalla
-
-![Guía básica animada](public/assets/instrucciones/guia-basica.gif)
 
 ---
 
@@ -168,6 +164,8 @@ MIT — ver [`LICENSE`](LICENSE).
 
 **toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines file text import/extraction from text and image files, configurable WPM presets, precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings with less guesswork.
 
+![Animated basic guide](public/assets/instrucciones/guia-basica.gif)
+
 *Are you hesitant to start certain readings because you don't know how much work it will really take?*
 *Do you find it hard to finish reading and abandon them in the middle?*
 *Do you want to overcome your difficulties and develop your reading skills using scientific measurement and organization tools?*
@@ -239,12 +237,6 @@ Quick actions in the main window:
 
 * Website: [https://totapp.org/en/](https://totapp.org/en/)
 * Contact: [GitHub Issues](https://github.com/Cibersino/tot/issues) or [cibersino@gmail.com](mailto:cibersino@gmail.com)
-
----
-
-## Screenshots
-
-![Animated basic guide](public/assets/instrucciones/guia-basica.gif)
 
 ---
 
