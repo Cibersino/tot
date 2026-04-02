@@ -377,9 +377,7 @@ body.import-extract-drop-active .app-container {
 
 /* TEXT SELECTOR SECTION */
 .selector-text {
-  top: 67px;
   left: 4px;
-  right: 0;
   height: 156px;
   width: 819px;
   background: var(--selector-bg);
@@ -398,7 +396,6 @@ pre#textPreview {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-break: break-word;
-  margin: 0;
   box-sizing: border-box;
   font-size: 14px;
   line-height: 1.15;
