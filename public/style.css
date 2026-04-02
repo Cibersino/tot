@@ -7,6 +7,7 @@
   /* Dimensions */
   --sidebar-width: 420px;
   --logo-height: 90px;
+  --logo-links-scale: 0.7;
   --patreon-logo-scale: 0.7778;
 
   /* Padding */
@@ -314,6 +315,13 @@ body.import-extract-drop-active .app-container {
   z-index: 30;
 }
 
+.logo-links-group {
+  height: calc(var(--logo-height) * var(--logo-links-scale));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 #appLogo {
   width: auto;
   height: 100%;
@@ -350,7 +358,6 @@ body.import-extract-drop-active .app-container {
 
 .logo-link--patreon {
   height: 100%;
-  margin-right: 6px;
 }
 
 #devLogo {
