@@ -1,0 +1,17 @@
+Placeholder for the macOS app icon required by electron-builder.
+
+Expected final file:
+
+`public/assets/logo-cibersino.icns`
+
+Current status:
+
+* `package.json` already points macOS packaging to `logo-cibersino.icns`.
+* The real `.icns` file still needs to be created/exported from the branded source asset.
+* macOS packaging is expected to fail until this file exists.
+
+Suggested next step:
+
+* generate/export the final `.icns` from the approved Cibersino branding asset;
+* place it at `public/assets/logo-cibersino.icns`;
+* keep this placeholder note only if it remains useful, otherwise delete it.

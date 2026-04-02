@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint \".\" --ext .js",
     "dist": "electron-builder",
-    "dist:win": "electron-builder --win --x64"
+    "dist:win": "electron-builder --win --x64",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:linux": "electron-builder --linux AppImage"
   },
   "keywords": [],
   "author": "Cibersino",
@@ -43,6 +45,7 @@
       "PRIVACY.md"
     ],
     "win": {
+      "artifactName": "toT-${version}-win-${arch}.${ext}",
       "icon": "public/assets/logo-cibersino.ico",
       "target": [
         {
@@ -53,7 +56,26 @@
         }
       ]
     },
-    "artifactName": "toT-${version}-win-${arch}.${ext}"
+    "mac": {
+      "artifactName": "toT-${version}-mac-${arch}.${ext}",
+      "icon": "public/assets/logo-cibersino.icns",
+      "target": [
+        "dmg"
+      ]
+    },
+    "linux": {
+      "artifactName": "toT-${version}-linux-${arch}.${ext}",
+      "category": "Utility",
+      "icon": "public/assets/logo-cibersino.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
   },
   "dependencies": {
     "@google-cloud/local-auth": "^2.1.0",
