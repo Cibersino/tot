@@ -50,7 +50,11 @@ const api = {
         const listener = (_e, text) => {
             try { cb(text); } catch (err) { console.error('current-text-updated callback error:', err); }
         };
-        ipcRenderer.on('current-text-updated', listener);
+        return subscribeWithUnsub(
+            'current-text-updated',
+            listener,
+            'removeListener error (current-text-updated):'
+        );
     },
     onEditorReady: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('editor-ready callback error:', err); } };
@@ -81,7 +85,10 @@ const api = {
     requestRestoreDefaults: () => ipcRenderer.invoke('request-restore-defaults'),
     notifyNoSelectionEdit: () => ipcRenderer.invoke('notify-no-selection-edit'),
     onPresetCreated: (cb) => {
-        ipcRenderer.on('preset-created', (_e, preset) => cb(preset));
+        const listener = (_e, preset) => {
+            try { cb(preset); } catch (err) { console.error('preset-created callback error:', err); }
+        };
+        return subscribeWithUnsub('preset-created', listener, 'removeListener error (preset-created):');
     },
 
     // Task editor
