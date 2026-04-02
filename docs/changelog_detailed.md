@@ -61,6 +61,7 @@ Reglas:
 - Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino` y ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente.
 - Info modal / links (Issue #165): los fallos al abrir links externos y `appdoc:` desde el info modal dejan de quedar solo en logs y pasan a mostrarse al usuario con una taxonomía final explícita de notificaciones alineada con los reasons reales del runtime.
 - Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
+- Preload listener APIs (Issue #161): se completa una auditoría repo-wide de preloads y se normalizan los listeners driftados al estándar `onX(cb) -> unsubscribe`, dejando explícitos los casos válidos de replay/buffer sin cambiar canales, payloads ni timing saludable.
 
 ### Agregado
 
@@ -120,6 +121,11 @@ Reglas:
   - `public/js/text_apply_canonical.js` (nuevo): centraliza `overwrite` / `append` / `repetitions` para que el portapapeles y el modal final de importación/OCR apliquen exactamente la misma semántica de joins, normalización de `N`, proyección de tamaño y escritura vía `set-current-text`.
   - `electron/preload.js`: incorpora la superficie bridge necesaria para el flujo completo (`openImportExtractPicker`, `getPathForFile`, `checkImportExtractPreconditions`, `prepareImportExtractOcrActivation`, `launchImportExtractOcrActivation`, `disconnectImportExtractOcr`, `prepareImportExtractSelectedFile`, `executePreparedImportExtract`, `getImportExtractProcessingMode`, `requestImportExtractAbort`, `onImportExtractProcessingModeChanged`).
   - `electron/menu_builder.js`: `Preferencias` incorpora `Disconnect Google OCR` y el menú pasa a poder avisar al renderer cuando una acción queda bloqueada por processing-mode.
+- Preload listener APIs (Issue #161):
+  - `electron/editor_preload.js`: `onInitText`, `onExternalUpdate` y `onForceClear` se alinean con el estándar repo `onX(cb) -> unsubscribe`, aislando errores del callback y del `removeListener(...)` local.
+  - `electron/preload.js`: `onCurrentTextUpdated` y `onPresetCreated` pasan a retornar unsubscribe; `onPresetCreated` además deja de propagar errores síncronos del callback al preload.
+  - `electron/preset_preload.js`, `electron/task_editor_preload.js` y `electron/editor_find_preload.js`: se conservan como casos compliant de replay/buffer explícito, con captura temprana + replay asíncrono para sus payloads de init/estado.
+  - `electron/flotante_preload.js` y `electron/language_preload.js`: auditados sin cambios; el primero ya cumplía el contrato de listeners y el segundo no expone listeners.
 - Páginas informativas / documentación in-app:
   - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`: se documentan el flujo `📥` / drag/drop, los formatos soportados, la decisión nativa/OCR para PDF, el modal final con `Repeticiones`, la privacidad del flujo OCR y la ruta de desconexión de Google OCR.
   - `public/info/acerca_de.html`: se actualizan sitio web, conectividad, privacidad y licencias de componentes incorporados para importación/extracción, OCR, PDF, DOCX y procesamiento de imágenes.
@@ -159,6 +165,10 @@ Reglas:
   - `window.Notify` se formaliza como superficie pública única de diálogos renderer para avisos bloqueantes, confirmaciones y prompts custom de import/extract.
   - `window.Notify` agrega/expone `confirmMain(...)`, `promptImportExtractRouteChoice(...)`, `promptImportExtractApplyChoice(...)` y `promptImportExtractOcrActivationDisclosure(...)` como entrypoints públicos consolidados.
   - `window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal` y `window.ImportExtractOcrActivationDisclosureModal` dejan de ser parte de la superficie pública runtime; el wiring interno de esos modales permanece en sus módulos renderer dedicados.
+- Preload listener APIs (Issue #161):
+  - `window.editorAPI.onInitText(cb)`, `window.editorAPI.onExternalUpdate(cb)` y `window.editorAPI.onForceClear(cb)` pasan a seguir el contrato `onX(cb) -> unsubscribe`, manteniendo canales (`editor-init-text`, `editor-text-updated`, `editor-force-clear`), payloads y timing healthy-path.
+  - `window.electronAPI.onCurrentTextUpdated(cb)` y `window.electronAPI.onPresetCreated(cb)` pasan a seguir el contrato `onX(cb) -> unsubscribe`, manteniendo canales (`current-text-updated`, `preset-created`) y payloads healthy-path.
+  - `window.presetAPI.onInit(cb)`, `window.taskEditorAPI.onInit(cb)`, `window.editorFindAPI.onInit(cb)` y `window.editorFindAPI.onState(cb)` quedan explícitamente documentados como listeners de replay/buffer; no cambia su semántica observable de replay asíncrono.
 - Sitio web:
   - nuevas rutas públicas `/` y `/app-privacy/` dentro del bundle `website/public`.
 
@@ -166,6 +176,7 @@ Reglas:
 
 - `electron/text_state.js`
 - `electron/preload.js`
+- `electron/editor_preload.js`
 - `electron/menu_builder.js`
 - `public/renderer.js`
 - `public/index.html`
