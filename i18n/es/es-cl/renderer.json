@@ -318,7 +318,7 @@
     },
     "preset_alerts": {
       "name_empty": "No podís dejar el nombre vacío.",
-      "wpm_invalid": "El WPM tiene que ser entre 50 y 500, no seas pajarón.",
+      "wpm_invalid": "El WPM tiene que ser entre {min} y {max}, no seas pajarón.",
       "create_error": "Cagó la creación del preset. Lorea la consola.",
       "edit_error": "Mala volá al editar el preset. Lorea la consola.",
       "process_error": "Drama al procesar el preset. Lorea la consola."

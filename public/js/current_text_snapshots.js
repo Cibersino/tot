@@ -27,30 +27,18 @@
     unavailable: 'renderer.alerts.snapshot_unavailable',
   });
 
-  function toast(key, opts = {}) {
-    if (typeof window.Notify?.toastMain === 'function') {
-      window.Notify.toastMain(key, opts);
-      return;
-    }
-    if (typeof window.Notify?.notifyMain === 'function') {
-      window.Notify.notifyMain(key);
-      return;
-    }
-    log.warn('Notify API unavailable; toast dropped.');
-  }
-
   function handleSaveResult(res) {
     if (!res || res.ok === false) {
       const code = res && res.code ? res.code : 'WRITE_FAILED';
       if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
       if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
-        toast(TOAST_KEYS.outside, { type: 'warn' });
+        window.Notify.toastMain(TOAST_KEYS.outside, { type: 'warn' });
         return;
       }
-      toast(TOAST_KEYS.saveError, { type: 'error' });
+      window.Notify.toastMain(TOAST_KEYS.saveError, { type: 'error' });
       return;
     }
-    toast(TOAST_KEYS.saveSuccess, { type: 'info', duration: 2500 });
+    window.Notify.toastMain(TOAST_KEYS.saveSuccess, { type: 'info', duration: 2500 });
   }
 
   function handleLoadResult(res) {
@@ -58,15 +46,15 @@
       const code = res && res.code ? res.code : 'READ_FAILED';
       if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
       if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
-        toast(TOAST_KEYS.outside, { type: 'warn' });
+        window.Notify.toastMain(TOAST_KEYS.outside, { type: 'warn' });
         return;
       }
-      toast(TOAST_KEYS.loadError, { type: 'error' });
+      window.Notify.toastMain(TOAST_KEYS.loadError, { type: 'error' });
       return;
     }
-    toast(TOAST_KEYS.loadSuccess, { type: 'info', duration: 2500 });
+    window.Notify.toastMain(TOAST_KEYS.loadSuccess, { type: 'info', duration: 2500 });
     if (res.truncated) {
-      toast(TOAST_KEYS.truncated, { type: 'warn', duration: 3500 });
+      window.Notify.toastMain(TOAST_KEYS.truncated, { type: 'warn', duration: 3500 });
     }
   }
 
@@ -74,7 +62,7 @@
     try {
       if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
         log.warn('saveCurrentTextSnapshot unavailable in electronAPI');
-        toast(TOAST_KEYS.unavailable, { type: 'error' });
+        window.Notify.toastMain(TOAST_KEYS.unavailable, { type: 'error' });
         return { ok: false, code: 'WRITE_FAILED' };
       }
       const res = await window.electronAPI.saveCurrentTextSnapshot();
@@ -82,7 +70,7 @@
       return res;
     } catch (err) {
       log.error('snapshot save failed:', err);
-      toast(TOAST_KEYS.saveError, { type: 'error' });
+      window.Notify.toastMain(TOAST_KEYS.saveError, { type: 'error' });
       return { ok: false, code: 'WRITE_FAILED', error: String(err) };
     }
   }
@@ -91,7 +79,7 @@
     try {
       if (!window.electronAPI || typeof window.electronAPI.loadCurrentTextSnapshot !== 'function') {
         log.warn('loadCurrentTextSnapshot unavailable in electronAPI');
-        toast(TOAST_KEYS.unavailable, { type: 'error' });
+        window.Notify.toastMain(TOAST_KEYS.unavailable, { type: 'error' });
         return { ok: false, code: 'READ_FAILED' };
       }
       const res = await window.electronAPI.loadCurrentTextSnapshot();
@@ -99,7 +87,7 @@
       return res;
     } catch (err) {
       log.error('snapshot load failed:', err);
-      toast(TOAST_KEYS.loadError, { type: 'error' });
+      window.Notify.toastMain(TOAST_KEYS.loadError, { type: 'error' });
       return { ok: false, code: 'READ_FAILED', error: String(err) };
     }
   }

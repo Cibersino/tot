@@ -1461,7 +1461,7 @@ ipcMain.handle('get-app-config', () => {
     return { ok: true, maxTextChars: MAX_TEXT_CHARS, maxIpcChars: MAX_IPC_CHARS };
   } catch (err) {
     log.error('Error processing get-app-config:', err);
-    return { ok: false, error: String(err), maxTextChars: 1e7, maxIpcChars: MAX_IPC_CHARS };
+    return { ok: false, error: String(err), maxTextChars: MAX_TEXT_CHARS, maxIpcChars: MAX_IPC_CHARS };
   }
 });
 

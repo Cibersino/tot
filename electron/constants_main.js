@@ -3,11 +3,13 @@
 
 const DEFAULT_LANG = 'es'; // Default language for the app. It must match 'public/js/constants.js'. This can be overridden by user settings.
 
-const MAX_TEXT_CHARS = 10000000; // Maximum number of characters allowed in the current text. This is a hard limit to prevent performance issues and memory overflow in the main process. The renderer process can have a lower limit (see constants.js) for better user experience, but this is the absolute maximum.
+const MAX_TEXT_CHARS = 50_000_000; // Maximum number of characters allowed in the current text. This is a hard limit to prevent performance issues and memory overflow in the main process. The renderer process can have a lower limit (see constants.js) for better user experience, but this is the absolute maximum.
 const MAX_IPC_MULTIPLIER = 4;
 const MAX_IPC_CHARS = MAX_TEXT_CHARS * MAX_IPC_MULTIPLIER; // Safety limit of characters that can be sent via IPC to prevent memory overflow.
 const MAX_PRESET_STR_CHARS = 65536; // Safety limit for preset name and description strings to prevent memory overflow.
 const MAX_META_STR_CHARS = 4096; // Safety limit for metadata strings (like title, author) to prevent memory overflow.
+const PRESET_WPM_MIN = 10; // Minimum WPM allowed when persisting presets.
+const PRESET_WPM_MAX = 700; // Maximum WPM allowed when persisting presets.
 const TASK_NAME_MAX_CHARS = 50; // Max chars for task list name.
 const TASK_ROW_TEXT_MAX_CHARS = 200; // Max chars for task row "text" (texto).
 const TASK_ROW_TYPE_MAX_CHARS = 50; // Max chars for task row "type" (tipo).
@@ -20,6 +22,8 @@ module.exports = {
   MAX_IPC_CHARS,
   MAX_PRESET_STR_CHARS,
   MAX_META_STR_CHARS,
+  PRESET_WPM_MIN,
+  PRESET_WPM_MAX,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_TYPE_MAX_CHARS,

@@ -30,7 +30,7 @@
 
 1. **UPPER_SNAKE_CASE only for true constants (`const`)** at module scope (paths, URLs, intervals, fixed caps, enums/dicts).
 
-   * Example (main): `const MAX_TEXT_CHARS = 10000000;` (`electron/constants_main.js`).
+   * Example (main): `const MAX_TEXT_CHARS = 50_000_000;` (`electron/constants_main.js`).
 
 2. **Defaults must be explicit and immutable.**
 
@@ -68,7 +68,7 @@
 
 `electron/constants_main.js`:
 
-* `const MAX_TEXT_CHARS = 10000000;`
+* `const MAX_TEXT_CHARS = 50_000_000;`
 * Imported by `electron/main.js` to populate the IPC config and inject into text state.
 
 ### Example B — IPC payload key (OK)

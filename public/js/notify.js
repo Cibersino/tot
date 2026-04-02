@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Resolve renderer i18n keys to displayable text.
-// - Show blocking alerts for main-window notices.
+// - Show blocking alerts and confirms for main-window notices.
 // - Show toast notifications for main and editor contexts.
 // - Provide a small, stable window.Notify surface for callers.
 // =============================================================================
@@ -24,7 +24,7 @@
   // =============================================================================
   // Helpers (i18n + toast rendering)
   // =============================================================================
-  function resolveText(key) {
+  function resolveText(key, params = {}) {
     const { RendererI18n } = window || {};
     // If it fails, we return the key itself. No fallback.
     if (!RendererI18n || typeof RendererI18n.msgRenderer !== 'function') {
@@ -34,7 +34,7 @@
       );
       return key;
     }
-    const txt = RendererI18n.msgRenderer(key, {}, key);
+    const txt = RendererI18n.msgRenderer(key, params, key);
     return txt || key;
   }
 
@@ -133,13 +133,18 @@
   // =============================================================================
   // Entry points (public API)
   // =============================================================================
-  function notifyMain(key) {
-    const msg = resolveText(key);
+  function notifyMain(key, params = {}) {
+    const msg = resolveText(key, params);
     alert(msg);
   }
 
-  function toastMain(key, { type = 'info', duration = 9000 } = {}) {
-    const msg = resolveText(key);
+  function confirmMain(key, params = {}) {
+    const msg = resolveText(key, params);
+    return confirm(msg);
+  }
+
+  function toastMain(key, { type = 'info', duration = 9000, params = {} } = {}) {
+    const msg = resolveText(key, params);
     try {
       toastText(msg, { containerId: 'totMainToastContainer', position: 'top-right', type, duration });
     } catch (err) {
@@ -172,8 +177,8 @@
     }
   }
 
-  function notifyEditor(key, { type = 'info', duration = 4500 } = {}) {
-    const msg = resolveText(key);
+  function notifyEditor(key, { type = 'info', duration = 4500, params = {} } = {}) {
+    const msg = resolveText(key, params);
     try {
       toastEditorText(msg, { type, duration });
     } catch (err) {
@@ -190,6 +195,7 @@
   // Exports / module surface
   // =============================================================================
   window.Notify = {
+    confirmMain,
     notifyMain,
     notifyEditor,
     toastMain,
