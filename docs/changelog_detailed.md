@@ -59,6 +59,7 @@ Reglas:
 - Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
 - Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
 - Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino` y ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente.
+- Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
 
 ### Agregado
 
@@ -69,6 +70,10 @@ Reglas:
 - Sitio web:
   - `website/public/index.html` (nuevo): landing pública mínima con metadatos `canonical` / Open Graph, posicionamiento de la app como herramienta de estimación de lectura + OCR y enlace directo a privacidad.
   - `website/public/app-privacy/index.html` (nuevo): página web específica de privacidad para la app, incluyendo alcance local-first, uso opcional de Google OCR, almacenamiento/protección, retención/eliminación y contacto.
+- Reading tools / test de velocidad de lectura:
+  - `public/index.html`: la sección inferior derecha pasa a contener un botón centrado `Test de velocidad de lectura`.
+  - `public/renderer.js`: se agrega wiring renderer para traducir la etiqueta del botón y mostrar `renderer.alerts.wip_reading_speed_test` al hacer click, respetando `guardUserAction(...)`.
+  - i18n renderer: se agregan `renderer.main.reading_tools.reading_speed_test` y `renderer.alerts.wip_reading_speed_test` en todos los locales con `renderer.json`.
 
 ### Cambiado
 
@@ -98,6 +103,9 @@ Reglas:
   - `electron/link_openers.js`: se amplía de forma acotada la allowlist de `open-external-url` para incluir `www.patreon.com`; `totapp.org` ya seguía permitido por la misma superficie.
   - `public/assets/patreon.png`: se agrega asset runtime local para el logo de Patreon, copiado desde `tools_local` en lugar de reutilizar el asset del sitio web.
   - i18n renderer (`en` / `es`): nuevas keys `renderer.main.tooltips.cibersino_website` y `renderer.main.tooltips.cibersino_patreon`.
+- Reading tools / test de velocidad de lectura:
+  - `public/index.html` y `public/style.css`: la antigua sección reservada/“available” se renombra a `reading-tools`; el botón ya no cubre toda el área y queda centrado como control normal.
+  - i18n renderer (`en`, `es`, `es-cl`, `arn`, `de`, `fr`, `it`, `pt`): se alinea el orden interno de secciones para dejar `reading_tools` antes de `processing`, y en `en` además se reordenan `editor`, `editor_find`, `tasks` y `modal_preset` para mantener consistencia estructural con el resto de locales.
 - Importación/extracción/OCR:
   - `public/renderer.js`: deja de contener la mayor parte de la orquestación inline y pasa a cablear módulos dedicados del flujo `📥` / drag/drop, integra el bloqueo por processing-mode, el botón `⛔` de cancelación, la acción de menú `disconnect_google_ocr` y la ruta canónica compartida de aplicación de texto para portapapeles e import/extract.
   - `public/js/text_apply_canonical.js` (nuevo): centraliza `overwrite` / `append` / `repetitions` para que el portapapeles y el modal final de importación/OCR apliquen exactamente la misma semántica de joins, normalización de `N`, proyección de tamaño y escritura vía `set-current-text`.
@@ -174,6 +182,7 @@ Reglas:
 - `public/info/instrucciones.en.html`
 - `website/public/index.html`
 - `website/public/app-privacy/index.html`
+- `docs/changelog_detailed.md`
 
 ---
 
