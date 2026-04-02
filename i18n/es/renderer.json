@@ -15,6 +15,9 @@
         "task_new": "📝",
         "task_load": "🗃️"
       },
+      "reading_tools": {
+        "reading_speed_test": "Test de velocidad de lectura"
+      },
       "tooltips": {
         "import_extract": "Importar/extraer texto desde archivo",
         "import_extract_abort": "Abortar extracción",
@@ -308,7 +311,8 @@
       "wip_diseno_crono": "WIP: Aquí se abrirá la configuración del cronómetro flotante en una futura versión.",
       "wip_diseno_fuentes": "WIP: Aquí se abrirá el selector de fuentes en una futura versión.",
       "wip_diseno_colores": "WIP: Aquí se abrirá el selector de colores en una futura versión.",
-      "wip_shortcuts": "WIP: Aquí se abrirá el selector de atajos del teclado en una futura versión."
+      "wip_shortcuts": "WIP: Aquí se abrirá el selector de atajos del teclado en una futura versión.",
+      "wip_reading_speed_test": "WIP: Aquí se abrirá el test de velocidad de lectura en una futura versión."
     },
     "editor_alerts": {
       "paste_too_big": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
