@@ -198,6 +198,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
           routeKind: execution.routeKind,
           state: execution.result && execution.result.state ? execution.result.state : '',
           code: execution.result && execution.result.error ? execution.result.error.code : '',
+          warnings: Array.isArray(execution.result && execution.result.warnings)
+            ? execution.result.warnings
+            : [],
           pdfTriage: execution.routeMetadata ? execution.routeMetadata.pdfTriage : 'not_pdf',
           triageReason: execution.routeMetadata ? execution.routeMetadata.triageReason : '',
           availableRoutes: execution.routeMetadata ? execution.routeMetadata.availableRoutes : [],
