@@ -748,6 +748,10 @@ function applyTaskPayload(payload) {
 function validateBeforeSave() {
   const name = clampTaskName(taskNameInput.value).trim();
   if (taskNameInput.value !== name) taskNameInput.value = name;
+  if (!name) {
+    showEditorNotice('renderer.tasks.alerts.name_required');
+    return null;
+  }
   for (const row of rows) {
     if (!String(row.texto || '').trim()) {
       showEditorNotice('renderer.tasks.alerts.row_text_required');
@@ -763,7 +767,7 @@ async function saveTask() {
   const name = validateBeforeSave();
   if (name === null) return;
 
-  meta.name = name || '';
+  meta.name = name;
   const payload = {
     meta,
     rows: rows.map((r) => ({
@@ -782,6 +786,10 @@ async function saveTask() {
   if (!res || res.ok === false) {
     const code = res && res.code ? res.code : 'WRITE_FAILED';
     if (code === 'CANCELLED') return;
+    if (code === 'NAME_REQUIRED') {
+      showEditorNotice('renderer.tasks.alerts.name_required');
+      return;
+    }
     if (code === 'PATH_OUTSIDE_TASKS') {
       showEditorNotice('renderer.tasks.alerts.task_path_outside');
       return;

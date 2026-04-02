@@ -201,12 +201,15 @@ function normalizeLibraryEntry(raw, includeComment) {
   return { ok: true, entry };
 }
 
-function normalizeTaskMeta(rawMeta, { preserveCreatedAt } = {}) {
+function normalizeTaskMeta(rawMeta, { preserveCreatedAt, requireName } = {}) {
   const meta = rawMeta && typeof rawMeta === 'object' ? rawMeta : {};
   const rawName = String(meta.name || '').trim();
   const name = rawName.length > TASK_NAME_MAX_CHARS
     ? rawName.slice(0, TASK_NAME_MAX_CHARS)
     : rawName;
+  if (requireName && !name) {
+    return { ok: false, code: 'NAME_REQUIRED' };
+  }
 
   let createdAt = '';
   if (typeof meta.createdAt === 'string' && meta.createdAt.trim()) {
@@ -463,8 +466,8 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         normalizedRows.push(res.row);
       }
 
-      const metaRes = normalizeTaskMeta(payload.meta || {});
-      if (!metaRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: metaRes.code };
+      const metaRes = normalizeTaskMeta(payload.meta || {}, { requireName: true });
+      if (!metaRes.ok) return { ok: false, code: metaRes.code, message: metaRes.code };
 
       const defaultName = getDefaultTaskFileName(root, metaRes.meta.name);
       const defaultPath = path.join(root, defaultName);
