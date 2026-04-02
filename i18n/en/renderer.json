@@ -15,9 +15,6 @@
         "task_new": "📝",
         "task_load": "🗃️"
       },
-      "reading_tools": {
-        "reading_speed_test": "Reading speed test"
-      },
       "tooltips": {
         "import_extract": "Import/extract text from file",
         "import_extract_abort": "Abort extraction",
@@ -82,6 +79,17 @@
           "tip7": "'Writing requires a double abstraction: abstraction from the sound of speech and abstraction from the interlocutor.' (Vygotsky)"
         }
       },
+      "crono": {
+        "title": "STOPWATCH",
+        "speed": "Speed:",
+        "controls_label": "Stopwatch controls",
+        "flotante_short": "FW",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Reading speed test"
+      },
       "processing": {
         "import_extract_placeholder": "Extracting text...",
         "import_extract_preparing": "Preparing import/extract route...",
@@ -90,15 +98,28 @@
         "import_extract_waiting_ocr_delayed": "Running OCR. Some files take longer.",
         "import_extract_elapsed": "Elapsed: {time}",
         "import_extract_drop_here": "Drop file to import/extract text"
-      },
-      "crono": {
-        "title": "STOPWATCH",
-        "speed": "Speed:",
-        "controls_label": "Stopwatch controls",
-        "flotante_short": "FW",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
       }
+    },
+    "editor": {
+      "title": "toT — Full text",
+      "placeholder": "Type or paste here...",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Auto-save and auto-recalculate as you type",
+      "clear": "🗑",
+      "clear_title": "Clear"
+    },
+    "editor_find": {
+      "label": "Find",
+      "input_placeholder": "Find...",
+      "input_aria": "Find in text",
+      "prev": "Prev",
+      "next": "Next",
+      "close": "🗙",
+      "prev_title": "Previous match",
+      "next_title": "Next match",
+      "close_title": "Close find bar",
+      "status_no_matches": "No matches",
+      "status_empty_query": "Type to search"
     },
     "tasks": {
       "title": "toT — Tasks",
@@ -197,27 +218,6 @@
       "hint": "Custom presets are stored in user settings.",
       "cancel": "Cancel",
       "save": "Save"
-    },
-    "editor": {
-      "title": "toT — Full text",
-      "placeholder": "Type or paste here...",
-      "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-save and auto-recalculate as you type",
-      "clear": "🗑",
-      "clear_title": "Clear"
-    },
-    "editor_find": {
-      "label": "Find",
-      "input_placeholder": "Find...",
-      "input_aria": "Find in text",
-      "prev": "Prev",
-      "next": "Next",
-      "close": "🗙",
-      "prev_title": "Previous match",
-      "next_title": "Next match",
-      "close_title": "Close find bar",
-      "status_no_matches": "No matches",
-      "status_empty_query": "Type to search"
     },
     "alerts": {
       "clipboard_too_large": "Clipboard text is too large to process. Reduce it and try again.",

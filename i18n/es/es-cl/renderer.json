@@ -15,9 +15,6 @@
         "task_new": "📝",
         "task_load": "🗃️"
       },
-      "reading_tools": {
-        "reading_speed_test": "Prueba tu ritmo de lectura"
-      },
       "tooltips": {
         "import_extract": "Traerse o sacarle texto a un archivo",
         "import_extract_abort": "Parar la sacadera",
@@ -71,6 +68,17 @@
         "precise_mode": "Modo fino",
         "precise_tooltip": "Contar de forma pulenta y elegante"
       },
+      "crono": {
+        "title": "CRONÓMETRO DE LUJO",
+        "speed": "Ritmo:",
+        "controls_label": "Botones del reloj",
+        "flotante_short": "VF",
+        "play_symbol": "▶",
+        "pause_symbol": "⏸"
+      },
+      "reading_tools": {
+        "reading_speed_test": "Prueba tu ritmo de lectura"
+      },
       "processing": {
         "import_extract_placeholder": "Sacando texto...",
         "import_extract_preparing": "Preparando importar/extraer...",
@@ -79,15 +87,28 @@
         "import_extract_waiting_ocr_delayed": "Corriendo OCR. Algunas custiones se demoran más.",
         "import_extract_elapsed": "Tiempo corrido: {time}",
         "import_extract_drop_here": "Suelta el archivo pa importar o sacarle texto"
-      },
-      "crono": {
-        "title": "CRONÓMETRO DE LUJO",
-        "speed": "Ritmo:",
-        "controls_label": "Botones del reloj",
-        "flotante_short": "VF",
-        "play_symbol": "▶",
-        "pause_symbol": "⏸"
       }
+    },
+    "editor": {
+      "title": "toT — El texto completito",
+      "placeholder": "Escribe o pega la custión aquí...",
+      "calc_button": "CALC/SAVE",
+      "calc_while_typing": "Auto-salvar y auto-contar mientras escribís",
+      "clear": "🗑",
+      "clear_title": "Pitiarse too"
+    },
+    "editor_find": {
+      "label": "Pillar",
+      "input_placeholder": "Pilla algo...",
+      "input_aria": "Pillar palabras en la custión",
+      "prev": "Atrás",
+      "next": "Siguiente",
+      "close": "🗙",
+      "prev_title": "La de atrás",
+      "next_title": "La que sigue",
+      "close_title": "Pitiarse la barra de búsqueda",
+      "status_no_matches": "No pillamos niuna custión",
+      "status_empty_query": "Escribe algo po"
     },
     "tasks": {
       "title": "toT — Misiones",
@@ -186,27 +207,6 @@
       "hint": "Los presets quedan guardaos en el sistema.",
       "cancel": "Ni cagando",
       "save": "Guardar"
-    },
-    "editor": {
-      "title": "toT — El texto completito",
-      "placeholder": "Escribe o pega la custión aquí...",
-      "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-salvar y auto-contar mientras escribís",
-      "clear": "🗑",
-      "clear_title": "Pitiarse too"
-    },
-    "editor_find": {
-      "label": "Pillar",
-      "input_placeholder": "Pilla algo...",
-      "input_aria": "Pillar palabras en la custión",
-      "prev": "Atrás",
-      "next": "Siguiente",
-      "close": "🗙",
-      "prev_title": "La de atrás",
-      "next_title": "La que sigue",
-      "close_title": "Pitiarse la barra de búsqueda",
-      "status_no_matches": "No pillamos niuna custión",
-      "status_empty_query": "Escribe algo po"
     },
     "alerts": {
       "clipboard_too_large": "Chaaa, el texto del portapapeles es demasiado grande pa' procesarlo. Achícalo y prueba otra vez.",
