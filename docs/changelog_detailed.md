@@ -59,6 +59,7 @@ Reglas:
 - Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
 - Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
 - Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino` y ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente.
+- Info modal / links (Issue #165): los fallos al abrir links externos y `appdoc:` desde el info modal dejan de quedar solo en logs y pasan a mostrarse al usuario con una taxonomía final explícita de notificaciones alineada con los reasons reales del runtime.
 - Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
 
 ### Agregado
@@ -103,6 +104,10 @@ Reglas:
   - `electron/link_openers.js`: se amplía de forma acotada la allowlist de `open-external-url` para incluir `www.patreon.com`; `totapp.org` ya seguía permitido por la misma superficie.
   - `public/assets/patreon.png`: se agrega asset runtime local para el logo de Patreon, copiado desde `tools_local` en lugar de reutilizar el asset del sitio web.
   - i18n renderer (`en` / `es`): nuevas keys `renderer.main.tooltips.cibersino_website` y `renderer.main.tooltips.cibersino_patreon`.
+- Info modal / links (Issue #165):
+  - `public/js/info_modal_links.js`: agrega mapeo explícito de reasons IPC a claves de notificación renderer en vez de reutilizar suffixes crudos del runtime; `open-external-url` colapsa a `renderer.info.external.{blocked,error}` y `open-app-doc` colapsa a `renderer.info.appdoc.{blocked,missing,error}`.
+  - El flujo renderer ahora dispara `window.Notify.notifyMain(...)` cuando falla la apertura de links externos o docs `appdoc:` desde el info modal, manteniendo el logging estructurado existente.
+  - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): se elimina la key obsoleta `renderer.info.external.missing` y se preserva la taxonomía final alcanzable para external/appdoc.
 - Reading tools / test de velocidad de lectura:
   - `public/index.html` y `public/style.css`: la antigua sección reservada/“available” se renombra a `reading-tools`; el botón ya no cubre toda el área y queda centrado como control normal.
   - i18n renderer (`en`, `es`, `es-cl`, `arn`, `de`, `fr`, `it`, `pt`): se alinea el orden interno de secciones para dejar `reading_tools` antes de `processing`, y en `en` además se reordenan `editor`, `editor_find`, `tasks` y `modal_preset` para mantener consistencia estructural con el resto de locales.
@@ -118,6 +123,7 @@ Reglas:
 ### Arreglado
 
 - Se corrige una brecha de defensa en profundidad: `set-current-text` no aplicaba control de autorización por sender, a diferencia de otros handlers sensibles.
+- Info modal / links (Issue #165): los fallos de apertura para links externos y documentos `appdoc:` ya no quedan invisibles para el usuario; ahora se notifican en la UI principal con el mismo outcome final que define la taxonomía i18n vigente.
 
 ### Contratos tocados
 
@@ -137,6 +143,9 @@ Reglas:
   - `open-external-url` mantiene el contrato de `https` + allowlist, pero ahora contempla `www.patreon.com` además de `totapp.org` para las superficies fijas de branding.
   - nuevos IDs renderer `devLogoLink`, `patreonLogoLink` y `patreonLogo` en la ventana principal.
   - nuevas keys i18n `renderer.main.tooltips.cibersino_website` y `renderer.main.tooltips.cibersino_patreon` solo en `en` y `es`.
+- Info modal / links (renderer/UI):
+  - `open-external-url` y `open-app-doc` mantienen sus responses/reasons IPC existentes; el cambio contractual ocurre en renderer, que ahora los mapea explícitamente a `renderer.info.external.{blocked,error}` y `renderer.info.appdoc.{blocked,missing,error}`.
+  - `renderer.info.external.missing` deja de ser parte de la taxonomía alcanzable del info modal.
 - Importación/extracción/OCR:
   - `window.electronAPI` agrega métodos/handlers `openImportExtractPicker()`, `getPathForFile(file)`, `checkImportExtractPreconditions()`, `prepareImportExtractOcrActivation()`, `launchImportExtractOcrActivation()`, `disconnectImportExtractOcr(payload)`, `prepareImportExtractSelectedFile(payload)`, `executePreparedImportExtract(payload)`, `getImportExtractProcessingMode()`, `requestImportExtractAbort(payload)` y `onImportExtractProcessingModeChanged(cb)`.
   - nueva action ID de menú `disconnect_google_ocr`.
@@ -155,6 +164,7 @@ Reglas:
 - `public/style.css`
 - `public/js/results_time_multiplier.js`
 - `public/js/main_logo_links.js`
+- `public/js/info_modal_links.js`
 - `public/js/import_extract_entry.js`
 - `public/js/import_extract_drag_drop.js`
 - `public/js/import_extract_status_ui.js`
