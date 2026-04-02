@@ -217,6 +217,111 @@ The renderer dialog surface should be a stable contract. Call sites should use i
    - preset modal
    - import/extract feature modules
 
+## Design Guardrails
+
+The intended direction of this issue is clear, but prior implementation attempts showed that the work can drift if the code change mixes:
+
+- issue-required centralization
+- optional wiring refactors
+- helper moves that are adjacent to dialogs but are not themselves dialog ownership
+
+To avoid losing the architecture intent later, use these guardrails.
+
+### 1. Distinguish required moves from implementation choices
+
+Clearly required by this issue:
+
+- remove direct feature-side `alert(...)`
+- remove direct feature-side `confirm(...)`
+- expose renderer confirmation dialogs from `window.Notify`
+- remove local wrapper functions whose only job is to call `window.Notify`
+- remove availability guards/fallback branches around standard renderer dialog access
+- move renderer-owned custom modal public entry points from feature-local globals to `window.Notify`
+
+Implementation choices that still need explicit review when touched:
+
+- exact `window.Notify.*` method names
+- whether a given helper is actually a dialog public API or only modal-adjacent behavior
+- whether a module should fail fast if `window.Notify` is missing
+- dependency plumbing introduced only to preserve existing behavior after wrapper removal
+- whether a non-dialog helper that happens to live near a modal belongs under `Notify`
+
+### 2. Prefer whole-surface design before code changes
+
+Implementation can happen file-by-file, but only after the target ownership model is mapped for the whole renderer dialog surface.
+
+At minimum, the design pass should answer:
+
+- what is the current public entry point?
+- who calls it today?
+- is it an alert, confirm, custom modal prompt, toast, or non-dialog helper?
+- what is the target `window.Notify.*` entry point?
+- is the old public surface deleted or only deprecated?
+- does the change require behavior-preserving dependency plumbing?
+
+### 3. Keep the issue scoped to dialog ownership
+
+Do not expand this issue into unrelated renderer API cleanup.
+
+Examples:
+
+- moving `confirm(...)` under `Notify` is in scope
+- moving a feature-local pass-through `notifyMain(...)` helper out of a feature module is in scope
+- moving modal prompt public entry points under `Notify` is in scope
+- moving modal-adjacent utilities that are not dialog ownership should be justified explicitly, not assumed
+
+### 4. Read “custom modal flows” narrowly
+
+For this issue, “custom modal flows” should be read narrowly.
+
+It means:
+
+- public entry points that open/show a modal prompt
+- the caller-facing API that waits for user choice
+- the returned prompt result / resolution path
+
+It does not automatically mean:
+
+- every helper used by a modal internally
+- content-routing helpers inside a modal
+- DOM utility code that supports a modal but is not the public dialog surface
+
+This issue should move public modal prompt ownership under `window.Notify`.
+It should not turn `window.Notify` into a general namespace for all modal implementation details.
+
+## Migration Map
+
+This table is the current intended migration target for issue 173.
+It should be treated as the architectural source of truth for the implementation pass.
+
+| Current surface / file | Current caller pattern | Category | Target public surface | Old public surface after migration | Notes |
+| --- | --- | --- | --- | --- | --- |
+| [`window.Notify.notifyMain` in `public/js/notify.js`](c:\Users\manue\Documents\toT\tot\public\js\notify.js) | Direct call from renderer features | blocking message dialog | keep under `window.Notify` | keep | Existing canonical alert/message API. |
+| direct `confirm(...)` in [`public/task_editor.js`](c:\Users\manue\Documents\toT\tot\public\task_editor.js) | feature calls browser global directly | blocking confirmation dialog | add/use `window.Notify.confirmMain(...)` | delete direct browser call sites | Confirmation must become a first-class `Notify` API, parallel to message dialogs. |
+| local `notifyMain(...)` in [`public/preset_modal.js`](c:\Users\manue\Documents\toT\tot\public\preset_modal.js) | local wrapper around `window.Notify` with browser fallback | wrapper over message dialog | direct `window.Notify.notifyMain(...)` at call sites | delete wrapper | The wrapper is pure indirection and should not survive migration. |
+| local `notifyMain(...)` in [`public/js/import_extract_entry.js`](c:\Users\manue\Documents\toT\tot\public\js\import_extract_entry.js) | injected/passed notify dependency | wrapper over message dialog | direct `window.Notify.notifyMain(...)` | delete wrapper | Do not keep notify dependency injection when it only proxies the standard API. |
+| local `notifyMain(...)` in [`public/js/import_extract_drag_drop.js`](c:\Users\manue\Documents\toT\tot\public\js\import_extract_drag_drop.js) | injected/passed notify dependency | wrapper over message dialog | direct `window.Notify.notifyMain(...)` | delete wrapper | Same rule as the shared import/extract entry flow. |
+| local `showNotice(...)` / `notifyEditor(...)` in [`public/editor.js`](c:\Users\manue\Documents\toT\tot\public\editor.js) | wrapper/fallback around editor notice paths | wrapper over editor notice/toast | direct `window.Notify.notifyEditor(...)` or `window.Notify.toastEditorText(...)` | delete wrappers | Keep only real editor behavior, not local API indirection. |
+| local `showEditorNotice(...)` in [`public/task_editor.js`](c:\Users\manue\Documents\toT\tot\public\task_editor.js) | wrapper/fallback around editor notices | wrapper over editor notice/toast | direct `window.Notify.notifyEditor(...)` | delete wrapper | Task editor should use the same renderer dialog contract directly. |
+| guard/fallback patterns in [`public/renderer.js`](c:\Users\manue\Documents\toT\tot\public\renderer.js), [`public/editor.js`](c:\Users\manue\Documents\toT\tot\public\editor.js), [`public/preset_modal.js`](c:\Users\manue\Documents\toT\tot\public\preset_modal.js), [`public/task_editor.js`](c:\Users\manue\Documents\toT\tot\public\task_editor.js) | repeated `typeof window.Notify...` checks | standard dialog access guards | direct `window.Notify.*` usage | delete guard/fallback branches | `Notify` is the stable renderer dialog contract for these windows. |
+| [`window.ImportExtractRouteChoiceModal.promptRouteChoice(...)` in `public/js/import_extract_route_choice_modal.js`](c:\Users\manue\Documents\toT\tot\public\js\import_extract_route_choice_modal.js) | caller reaches feature-local modal global | custom modal prompt | `window.Notify.promptImportExtractRouteChoice(...)` | delete feature-local public global | UI implementation can stay local; public ownership should move to `Notify`. |
+| [`window.ImportExtractApplyModal.promptApplyChoice(...)` in `public/js/import_extract_apply_modal.js`](c:\Users\manue\Documents\toT\tot\public\js\import_extract_apply_modal.js) | caller reaches feature-local modal global | custom modal prompt | `window.Notify.promptImportExtractApplyChoice(...)` | delete feature-local public global | Preserve existing apply semantics and repeat-limit behavior. |
+| [`window.ImportExtractOcrActivationDisclosureModal.promptDisclosure(...)` in `public/js/import_extract_ocr_activation_disclosure_modal.js`](c:\Users\manue\Documents\toT\tot\public\js\import_extract_ocr_activation_disclosure_modal.js) | caller reaches feature-local modal global | custom modal prompt | `window.Notify.promptImportExtractOcrActivationDisclosure(...)` | delete feature-local public global | Same ownership rule as other import/extract modal prompts. |
+| task-editor DOM modals in [`public/task_editor.js`](c:\Users\manue\Documents\toT\tot\public\task_editor.js) | feature-owned local open/close helpers | custom modal handling inside one renderer | review separately | no forced move unless there is a cross-feature public dialog surface | These are in scope as renderer dialog flows, but not every local open/close helper automatically belongs on `Notify`; only public dialog entry points do. |
+| [`window.InfoModalLinks.bindInfoModalLinks(...)` in `public/js/info_modal_links.js`](c:\Users\manue\Documents\toT\tot\public\js\info_modal_links.js) | modal-adjacent helper, not a prompt | non-dialog helper | keep outside `Notify` by default | do not assume move | This is related to a modal, but it is not itself a dialog prompt. Under the intended narrow reading of “custom modal flows”, it stays outside the public `Notify` dialog surface unless a stronger reason appears. |
+
+### Dependency-plumbing caution
+
+If removing a wrapper requires introducing a new value only to preserve existing behavior, document that explicitly in the change.
+
+Example class of change:
+
+- a feature-local wrapper used to pass `maxRepeat`
+- wrapper removal now requires passing that same limit through module config
+
+This can still be acceptable, but it is not “just cleanup”.
+It is behavior-preserving wiring and should be reviewed as such.
+
 ## Acceptance Criteria
 
 - Renderer feature files do not call browser `alert(...)` directly.
