@@ -92,8 +92,3 @@ Result:
 - Existing unnamed task files can be opened.
 - Existing unnamed task files cannot be re-saved without first entering a name.
 - `renderer.tasks.alerts.name_required` is now live and justified by runtime behavior.
-
-## Notes
-
-- This issue exists because the i18n audit surfaced a feature-level inconsistency, not because localization itself was the main problem.
-- This issue should be completed before deciding any further cleanup around task-name-related translations.
