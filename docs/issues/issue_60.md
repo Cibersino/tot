@@ -25,6 +25,9 @@ macOS and Linux packaging are still pending.
 
 ### In scope
 
+* Audit current cross-platform compatibility before further packaging work.
+* Decide what stays shared across all builds and what must be platform-specific.
+* Define and implement compatibility fixes required for macOS/Linux packaging.
 * Keep the existing Windows portable `.zip` release path as the baseline.
 * Implement macOS packaging with `.dmg` as the target artifact.
 * Implement Linux packaging with `AppImage` as the target artifact.
@@ -74,6 +77,15 @@ Only after that should we decide whether macOS signing/notarization is mandatory
 
 ## Pending implementation work
 
+### Pre-packaging audit / design
+
+* Audit current code and assets for Windows/macOS/Linux compatibility.
+* List platform-sensitive runtime behaviors and packaging-sensitive files.
+* Propose compatibility fixes before native packaging runs.
+* Decide what remains shared between all platform builds.
+* Decide what should be separated or generated specifically per platform build.
+* Define the post-build test list required for each platform artifact.
+
 ### Windows
 
 Current Windows work:
@@ -84,6 +96,7 @@ Current Windows work:
 
 ### macOS
 
+* Review runtime/platform assumptions that may break on macOS.
 * Add macOS packaging config to the build toolchain.
 * Add required macOS asset(s), especially the app icon format used by macOS packaging.
 * Add/update a packaging runbook for macOS.
@@ -94,6 +107,7 @@ Current Windows work:
 
 ### Linux
 
+* Review runtime/platform assumptions that may break on Linux.
 * Add Linux packaging config to the build toolchain.
 * Add required Linux packaging assets/metadata.
 * Add/update a packaging runbook for Linux if needed.
@@ -102,6 +116,10 @@ Current Windows work:
 
 ## Acceptance criteria
 
+* A compatibility audit exists before final cross-platform packaging work proceeds.
+* Shared vs platform-specific build resources are defined explicitly.
+* Required compatibility fixes are implemented before final native packaging runs.
+* A platform-specific post-build test list exists for Windows, macOS, and Linux.
 * Windows `.zip`, macOS `.dmg`, and Linux `AppImage` can each be produced from documented steps.
 * Each packaged artifact launches successfully on its native OS.
 * Each packaged artifact reports the correct app version.
@@ -114,11 +132,17 @@ Current Windows work:
 * macOS packaging requires access to a real Mac for build and validation.
 * macOS unsigned builds may trigger Gatekeeper friction on first launch.
 * Linux packaging still requires native validation; config alone is not enough.
+* Some current runtime assets and packaging-only assets may still be mixed together and need separation.
+* Cross-platform packaging can fail even if config is correct, due to runtime assumptions in code or native deps.
 * Cross-platform support is not complete until native smoke tests pass for each target OS.
 * Platform-specific icon caching can complicate validation and must be checked carefully.
 
 ## Breakdown
 
+- [ ] Audit current cross-platform compatibility (code, assets, packaging assumptions)
+- [ ] Decide what remains shared vs platform-specific between builds
+- [ ] List and implement required compatibility fixes before native packaging runs
+- [ ] Define the post-build test matrix for Windows, macOS, and Linux
 - [x] Confirm Windows packaging baseline and existing release documentation
 - [ ] Add macOS packaging config and assets
 - [x] Add `tools_local/packaging_macos_generic.md`
