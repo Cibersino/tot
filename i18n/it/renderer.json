@@ -326,7 +326,6 @@
     "info": {
       "external": {
         "blocked": "Link bloccato",
-        "missing": "Link non trovato",
         "error": "Errore durante l'apertura del link"
       },
       "appdoc": {
