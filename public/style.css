@@ -680,11 +680,21 @@ select#presets {
   top: 388px;
   left: 241px;
   height: 98px;
-  width: 582px;
+  width: 320px;
   background: var(--reading-tools-bg);
   border: 1px dashed #f0f0f0;
   padding: 4px;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reading-tools > .btn-standard {
+  font-size: 16px;
+  white-space: normal;
+  text-align: center;
+  max-width: 320px;
 }
 
 /* Menu modal info */
