@@ -174,6 +174,9 @@ function getImageProcessingRuntimePublicDoc(platform = process.platform) {
   if (!platform || typeof platform !== 'string') {
     return null;
   }
+  // Platform-specific native sharp runtime docs must match the actual packaged target.
+  // At the moment this repo only carries the Windows runtime legal files locally.
+  // macOS/Linux variants should be added from native builds, not guessed from Windows.
   return IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES[platform] || null;
 }
 
@@ -181,6 +184,9 @@ function getImageProcessingRuntimeNoticePublicDoc(platform = process.platform) {
   if (!platform || typeof platform !== 'string') {
     return null;
   }
+  // Platform-specific native sharp runtime notice files must match the actual packaged target.
+  // At the moment this repo only carries the Windows runtime legal files locally.
+  // macOS/Linux variants should be added from native builds, not guessed from Windows.
   return IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES[platform] || null;
 }
 
