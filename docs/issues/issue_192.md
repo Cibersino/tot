@@ -38,14 +38,19 @@ The issue should therefore focus on expanding the **real supported-format matrix
 * Preserve the current route-selection behavior for PDFs and other supported source types.
 * Update tests, sample files, and user-visible supported-format coverage accordingly.
 
-### Proposed first-pass candidates
+### Evaluation set for this issue
 
-* Native extraction candidates:
+The initial evaluation set for this issue is:
+
+* Native-format candidates:
   * `rtf`
   * `odt`
-* OCR source candidates:
+  * legacy Word `.doc`
+* OCR-source candidates:
   * `tif`
   * `tiff`
+
+These entries are **candidates for evaluation**, not pre-approved implementation targets.
 
 ### Explicitly out of scope
 
@@ -108,14 +113,52 @@ Examples:
 
 ### 3. Prefer bounded first-pass additions
 
-The first implementation pass should favor formats that are likely to fit the current product shape:
+Do not finalize the first implementation pass by intuition alone.
+
+Before any candidate extension is accepted into the implementation scope for this issue, record an evidence-based decision against the current architecture and delivery constraints.
+
+Each candidate in the evaluation set should be assessed on:
+
+* route fit:
+  * native
+  * OCR
+  * normalization plus OCR
+* existing repo support:
+  * whether a parser/conversion path already exists in the codebase or dependencies
+* dependency/runtime cost:
+  * whether the format requires a new library, external converter, or provider-specific handling
+* packaging/legal impact:
+  * whether supporting the format introduces new packaged/runtime or license obligations
+* failure-model fit:
+  * whether corrupt, unreadable, unsupported, or partial-support cases can map cleanly into the current structured error contract
+* test burden:
+  * sample files
+  * regression coverage
+  * user-visible supported-format documentation
+
+The issue should then record one explicit outcome per candidate:
+
+* include in this issue
+* defer from this issue
+* reject for this issue
+
+### 3.1 Decision table required
+
+Before implementation begins, add a short decision table for:
 
 * `rtf`
 * `odt`
+* `.doc`
 * `tif`
 * `tiff`
 
-Avoid mixing low-risk static formats with broader classes that would enlarge the product surface too much in one issue.
+Each row should capture:
+
+* intended route
+* evidence summary
+* dependency impact
+* testing impact
+* final decision
 
 ### 4. Exclude spreadsheet semantics
 
@@ -140,7 +183,11 @@ This proposal therefore excludes animated image extensions and any broader anima
 
 ## Acceptance criteria
 
-* A written target matrix exists for newly supported source formats before implementation is claimed complete.
+* A written evaluation table exists for `rtf`, `odt`, `.doc`, `tif`, and `tiff` before implementation scope is claimed final.
+* The issue records a concrete decision for each evaluated candidate:
+  * include in this issue
+  * defer from this issue
+  * reject for this issue
 * Each accepted new extension is wired through the shared format contract, not only the picker.
 * Unsupported spreadsheet and animated-image extensions remain out of scope and are not added implicitly.
 * Native candidates either:
@@ -165,7 +212,7 @@ This proposal therefore excludes animated image extensions and any broader anima
 
 ## Recommended implementation order
 
-1. Define the target extension matrix and confirm which candidates are accepted for this issue.
+1. Evaluate `rtf`, `odt`, `.doc`, `tif`, and `tiff` against the decision criteria and record the outcome in the issue doc.
 2. Add or adjust the shared supported-format contract.
 3. Implement native parser support and/or OCR normalization support per accepted format.
 4. Keep picker filtering derived from the shared contract.
@@ -175,10 +222,11 @@ This proposal therefore excludes animated image extensions and any broader anima
 
 ## Breakdown
 
-- [ ] Confirm the first-pass target matrix for static document/image formats
-- [ ] Decide whether `rtf` support is in scope for this issue
-- [ ] Decide whether `odt` support is in scope for this issue
-- [ ] Decide whether `tif` / `tiff` OCR support is in scope for this issue
+- [ ] Add an evidence-based decision table for `rtf`, `odt`, `.doc`, `tif`, and `tiff`
+- [ ] Decide whether `rtf` is included, deferred, or rejected for this issue
+- [ ] Decide whether `odt` is included, deferred, or rejected for this issue
+- [ ] Decide whether legacy Word `.doc` is included, deferred, or rejected for this issue
+- [ ] Decide whether `tif` / `tiff` OCR support is included, deferred, or rejected for this issue
 - [ ] Update `electron/import_extract_platform/import_extract_supported_formats.js`
 - [ ] Implement any required native parser additions
 - [ ] Implement any required OCR normalization additions
@@ -187,4 +235,3 @@ This proposal therefore excludes animated image extensions and any broader anima
 - [ ] Add/update sample files referenced by `docs/test_suite.md`
 - [ ] Keep spreadsheet extensions explicitly unsupported in this issue
 - [ ] Keep animated image extensions explicitly unsupported in this issue
-
