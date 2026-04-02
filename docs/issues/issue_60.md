@@ -177,21 +177,24 @@ Pending:
 
 ## Breakdown
 
+- [x] Confirm Windows packaging baseline and existing release documentation
 - [x] Audit current cross-platform compatibility (code, assets, packaging assumptions)
 - [x] Decide what remains shared vs platform-specific between builds
-- [ ] List and implement required compatibility fixes before native packaging runs
 - [x] Define the post-build test matrix for Windows, macOS, and Linux
-- [x] Confirm Windows packaging baseline and existing release documentation
-- [ ] Add macOS packaging config and assets
+- [x] Add macOS packaging config and base assets
 - [x] Add `tools_local/packaging_macos_generic.md`
-- [ ] Generate/provide `build-resources/logo-cibersino.icns`
-- [ ] Produce first unsigned macOS artifact on a real Mac
-- [ ] Smoke-test macOS packaged build
 - [x] Add Linux packaging config and base assets
 - [x] Add `tools_local/packaging_linux_generic.md`
+- [ ] List and implement remaining repo-side compatibility fixes before native packaging runs
+- [ ] Generate/provide `build-resources/logo-cibersino.icns`
+- [ ] On a real Mac, run `npm ci` and capture native-runtime legal evidence for packaged `sharp`
+- [ ] On Linux, run `npm ci` and capture native-runtime legal evidence for packaged `sharp`
+- [ ] Create/update the macOS/Linux legal files and UI surface for those native `sharp` runtime docs
+- [ ] Produce first unsigned macOS artifact on a real Mac
+- [ ] Smoke-test macOS packaged build
 - [ ] Produce first Linux `AppImage`
 - [ ] Smoke-test Linux packaged build
-- [ ] Capture macOS/Linux native-runtime legal evidence for packaged `sharp`
+- [ ] Apply fixes exposed by native macOS/Linux packaging and validation
 - [ ] Decide whether macOS signing/notarization is required for `1.0.0`
 - [ ] Update README + release docs for the final `1.0.0` support matrix
 - [ ] Run release packaging for `1.0.0` on all in-scope platforms
