@@ -138,6 +138,11 @@
     alert(msg);
   }
 
+  function confirmMain(key) {
+    const msg = resolveText(key);
+    return confirm(msg);
+  }
+
   function toastMain(key, { type = 'info', duration = 9000 } = {}) {
     const msg = resolveText(key);
     try {
@@ -190,6 +195,7 @@
   // Exports / module surface
   // =============================================================================
   window.Notify = {
+    confirmMain,
     notifyMain,
     notifyEditor,
     toastMain,
