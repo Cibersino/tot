@@ -6,8 +6,8 @@
 
   /* Dimensions */
   --sidebar-width: 420px;
-  --logo-height: 56px;
-  --patreon-logo-height: 44px;
+  --logo-height: 90px;
+  --patreon-logo-scale: 0.7778;
 
   /* Padding */
   --section-padding-vertical: 4px;
@@ -19,7 +19,6 @@
   --velocity-bg: var(--bg-color);
   --results-bg: var(--bg-color);
   --cron-bg: var(--bg-color);
-  --reading-tools-bg: var(--bg-color);
   --section-border: #e9e6de;
   --section-radius: 6px;
   --section-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
@@ -54,7 +53,7 @@ body {
 .app-container {
   position: relative;
   height: 100vh;
-  padding: calc(var(--logo-height) + 8px) 8px 8px 8px;
+  padding: 4px;
 }
 
 /* Startup splash overlay (blocks interaction until READY) */
@@ -149,16 +148,6 @@ body {
 }
 
 .controls-processing[hidden] {
-  display: none;
-}
-
-.import-extract-prepare-status {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #5f5135;
-}
-
-.import-extract-prepare-status[hidden] {
   display: none;
 }
 
@@ -316,8 +305,8 @@ body.import-extract-drop-active .app-container {
 /* Logo (fixed) */
 .logo-container {
   position: fixed;
-  top: 6px;
-  left: 4px;
+  right: 4px;
+  bottom: 8px;
   height: var(--logo-height);
   display: flex;
   align-items: center;
@@ -330,6 +319,7 @@ body.import-extract-drop-active .app-container {
   height: 100%;
   object-fit: contain;
   display: block;
+  margin-right: -6px;
 }
 
 .logo-link {
@@ -341,10 +331,12 @@ body.import-extract-drop-active .app-container {
   background: transparent;
   cursor: pointer;
   appearance: none;
+  transition: opacity 120ms ease, filter 120ms ease, transform 120ms ease;
 }
 
 .logo-link:hover {
-  opacity: 0.92;
+  opacity: 0.82;
+  filter: saturate(1.12) brightness(0.92);
 }
 
 .logo-link:focus {
@@ -357,8 +349,8 @@ body.import-extract-drop-active .app-container {
 }
 
 .logo-link--patreon {
-  height: var(--patreon-logo-height);
-  margin-left: 6px;
+  height: 100%;
+  margin-right: 6px;
 }
 
 #devLogo {
@@ -370,16 +362,14 @@ body.import-extract-drop-active .app-container {
 
 #patreonLogo {
   width: auto;
-  height: 100%;
+  height: calc(100% * var(--patreon-logo-scale));
   object-fit: contain;
   display: block;
 }
 
 /* TEXT SELECTOR SECTION */
 .selector-text {
-  top: 67px;
   left: 4px;
-  right: 0;
   height: 156px;
   width: 819px;
   background: var(--selector-bg);
@@ -398,7 +388,6 @@ pre#textPreview {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-break: break-word;
-  margin: 0;
   box-sizing: border-box;
   font-size: 14px;
   line-height: 1.15;
@@ -409,7 +398,7 @@ pre#textPreview {
 
 /* READING SPEED SECTION */
 .velocity {
-  top: 228px;
+  top: 165px;
   left: 4px;
   height: 155px;
   width: 398px;
@@ -462,7 +451,7 @@ select#presets {
 /* COUNTING RESULTS SECTION */
 .results {
   position: relative;          /* needed for .help-row absolute to work */
-  top: 228px;
+  top: 165px;
   left: 407px;
   height: 155px;
   width: 416px;
@@ -610,7 +599,7 @@ select#presets {
 
 /* CHRONOMETER SECTION */
 .cronometro {
-  top: 388px;
+  top: 325px;
   left: 4px;
   height: 98px;
   width: 232px;
@@ -673,28 +662,6 @@ select#presets {
   user-select: none;
   margin-left: 2px;
   line-height: 1;
-}
-
-/* READING TOOLS SECTION */
-.reading-tools {
-  top: 388px;
-  left: 241px;
-  height: 98px;
-  width: 320px;
-  background: var(--reading-tools-bg);
-  border: 1px dashed #f0f0f0;
-  padding: 4px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.reading-tools > .btn-standard {
-  font-size: 16px;
-  white-space: normal;
-  text-align: center;
-  max-width: 320px;
 }
 
 /* Menu modal info */
@@ -1052,8 +1019,7 @@ select#presets {
   .selector-text,
   .velocity,
   .results,
-  .cronometro,
-  .reading-tools {
+  .cronometro {
     position: relative;
     width: 100%;
   }

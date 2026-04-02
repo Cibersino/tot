@@ -15,15 +15,15 @@
 <body>
   <!-- Logos -->
   <div class="logo-container">
-    <img id="appLogo" src="./assets/logo-tot.svg" alt="toT" />
-    <button id="devLogoLink" class="logo-link logo-link--dev" type="button"
-      title="Abrir sitio de Cibersino" aria-label="Abrir sitio de Cibersino">
-      <img id="devLogo" src="./assets/logo-cibersino.svg" alt="" aria-hidden="true" />
-    </button>
     <button id="patreonLogoLink" class="logo-link logo-link--patreon" type="button"
       title="Abrir Patreon de Cibersino" aria-label="Abrir Patreon de Cibersino">
       <img id="patreonLogo" src="./assets/patreon.png" alt="" aria-hidden="true" />
     </button>
+    <button id="devLogoLink" class="logo-link logo-link--dev" type="button"
+      title="Abrir sitio de Cibersino" aria-label="Abrir sitio de Cibersino">
+      <img id="devLogo" src="./assets/logo-cibersino.svg" alt="" aria-hidden="true" />
+    </button>
+    <img id="appLogo" src="./assets/logo-tot.svg" alt="toT" />
   </div>
 
   <!-- Main container -->
@@ -58,8 +58,9 @@
           <span class="controls-sep" aria-hidden="true"></span>
           <button id="btnNewTask" class="btn-standard" title="Nueva tarea">📝</button>
           <button id="btnLoadTask" class="btn-standard" title="Cargar tarea">🗃️</button>
+          <span class="controls-sep" aria-hidden="true"></span>
+          <button id="btnReadingSpeedTest" class="btn-standard" type="button"></button>
         </div>
-        <div id="importExtractPrepareStatus" class="import-extract-prepare-status" hidden aria-hidden="true" aria-live="polite"></div>
         <div id="selectorControlsProcessing" class="controls-processing" hidden aria-hidden="true">
           <div class="import-extract-processing-bar" role="status" aria-live="polite">
             <div class="import-extract-processing-copy">
@@ -144,11 +145,6 @@
           <span class="vf-label" aria-hidden="true">VF</span>
         </div>
       </div>
-    </section>
-
-    <!-- 5) READING TOOLS SECTION -->
-    <section class="reading-tools" aria-label="Herramientas de lectura">
-      <button id="btnReadingSpeedTest" class="btn-standard" type="button"></button>
     </section>
 
     <!-- MENU INFO MODAL -->

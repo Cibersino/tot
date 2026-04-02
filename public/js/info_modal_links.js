@@ -24,6 +24,35 @@
   // =============================================================================
   // Helpers
   // =============================================================================
+  function mapExternalFailureReasonToKey(reason) {
+    if (reason === 'blocked') return 'renderer.info.external.blocked';
+    return 'renderer.info.external.error';
+  }
+
+  function mapAppDocFailureReasonToKey(reason) {
+    if (reason === 'blocked') return 'renderer.info.appdoc.blocked';
+    if (
+      reason === 'not_found'
+      || reason === 'not_available_in_dev'
+      || reason === 'not_available_on_platform'
+    ) {
+      return 'renderer.info.appdoc.missing';
+    }
+    return 'renderer.info.appdoc.error';
+  }
+
+  function notifyFailure(notificationKey) {
+    if (typeof window.Notify?.notifyMain === 'function') {
+      window.Notify.notifyMain(notificationKey);
+      return;
+    }
+
+    log.warnOnce(
+      'renderer.info.notify.unavailable',
+      'window.Notify.notifyMain unavailable; info modal failure notice dropped.'
+    );
+  }
+
   const escapeSelector = (value) => {
     if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(value);
     log.warnOnce(
@@ -91,6 +120,7 @@
         if (rawHref.startsWith('appdoc:')) {
           const docKey = rawHref.slice('appdoc:'.length).trim();
           if (!api || typeof api.openAppDoc !== 'function') {
+            notifyFailure('renderer.info.appdoc.blocked');
             log.warn(
               'openAppDoc not available; blocked app doc:',
               docKey
@@ -101,10 +131,13 @@
           api.openAppDoc(docKey)
             .then((result) => {
               if (!result || result.ok !== true) {
+                const notificationKey = mapAppDocFailureReasonToKey(result && result.reason);
+                notifyFailure(notificationKey);
                 log.warn('App doc blocked or failed:', docKey, result);
               }
             })
             .catch((err) => {
+              notifyFailure('renderer.info.appdoc.error');
               log.warn('App doc request failed:', docKey, err);
             });
           return;
@@ -112,6 +145,7 @@
 
         const resolvedHref = link.href || rawHref;
         if (!api || typeof api.openExternalUrl !== 'function') {
+          notifyFailure('renderer.info.external.blocked');
           log.warn(
             'openExternalUrl not available; blocked navigation to:',
             resolvedHref
@@ -122,10 +156,13 @@
         api.openExternalUrl(resolvedHref)
           .then((result) => {
             if (!result || result.ok !== true) {
+              const notificationKey = mapExternalFailureReasonToKey(result && result.reason);
+              notifyFailure(notificationKey);
               log.warn('External URL blocked or failed:', resolvedHref, result);
             }
           })
           .catch((err) => {
+            notifyFailure('renderer.info.external.error');
             log.warn('External URL request failed:', resolvedHref, err);
           });
       } catch (err) {
