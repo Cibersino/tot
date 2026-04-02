@@ -243,8 +243,8 @@ Section 6 decision note (locked after item-1 feasibility + utility evaluation):
 - [x] Add/update third-party notices, attributions, and license display surfaces.
 - [x] Add/update privacy and external-processing disclosures for chosen substrate/dependencies.
 - [x] Update instructions and assets.
-- [ ] Update changelog/release notes and related documentation.
-- [ ] Verify all Issue 53 acceptance criteria are covered before closure.
+- [x] Update changelog/release notes and related documentation.
+- [x] Verify all Issue 53 acceptance criteria are covered before closure.
 
 ## 9. Packaging and distribution validation
 
