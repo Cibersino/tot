@@ -152,9 +152,7 @@
   // Exports / module surface
   // =============================================================================
 
-  window.ImportExtractRouteChoiceModal = {
-    promptRouteChoice,
-  };
+  window.Notify.promptImportExtractRouteChoice = promptRouteChoice;
 })();
 
 // =============================================================================

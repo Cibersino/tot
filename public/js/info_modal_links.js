@@ -42,15 +42,7 @@
   }
 
   function notifyFailure(notificationKey) {
-    if (typeof window.Notify?.notifyMain === 'function') {
-      window.Notify.notifyMain(notificationKey);
-      return;
-    }
-
-    log.warnOnce(
-      'renderer.info.notify.unavailable',
-      'window.Notify.notifyMain unavailable; info modal failure notice dropped.'
-    );
+    window.Notify.notifyMain(notificationKey);
   }
 
   const escapeSelector = (value) => {

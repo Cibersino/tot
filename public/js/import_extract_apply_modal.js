@@ -191,9 +191,7 @@
   // Exports / module surface
   // =============================================================================
 
-  window.ImportExtractApplyModal = {
-    promptApplyChoice,
-  };
+  window.Notify.promptImportExtractApplyChoice = promptApplyChoice;
 })();
 
 // =============================================================================

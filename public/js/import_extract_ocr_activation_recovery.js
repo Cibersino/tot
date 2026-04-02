@@ -76,18 +76,6 @@
     return fallbackKey;
   }
 
-  function getActivationDisclosurePrompt() {
-    const modalApi = window.ImportExtractOcrActivationDisclosureModal;
-    if (!modalApi || typeof modalApi.promptDisclosure !== 'function') {
-      log.warnOnce(
-        'importExtractOcrActivationRecovery.disclosure.unavailable',
-        'ImportExtractOcrActivationDisclosureModal.promptDisclosure unavailable; OCR activation recovery cannot continue.'
-      );
-      return null;
-    }
-    return modalApi.promptDisclosure.bind(modalApi);
-  }
-
   // =============================================================================
   // Public entrypoints
   // =============================================================================
@@ -148,15 +136,9 @@
       return { preparation, handled: true };
     }
 
-    const promptDisclosure = getActivationDisclosurePrompt();
-    if (!promptDisclosure) {
-      window.Notify.notifyMain('renderer.alerts.import_extract_ocr_activation_failed');
-      return { preparation, handled: true };
-    }
-
     let disclosureAccepted = false;
     try {
-      disclosureAccepted = await promptDisclosure();
+      disclosureAccepted = await window.Notify.promptImportExtractOcrActivationDisclosure();
     } catch (err) {
       log.error('import/extract OCR activation disclosure modal failed:', err);
       window.Notify.notifyMain('renderer.alerts.import_extract_ocr_activation_failed');
