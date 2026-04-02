@@ -6,8 +6,8 @@
 
   /* Dimensions */
   --sidebar-width: 420px;
-  --logo-height: 56px;
-  --patreon-logo-height: 44px;
+  --logo-height: 90px;
+  --patreon-logo-scale: 0.7778;
 
   /* Padding */
   --section-padding-vertical: 4px;
@@ -346,7 +346,7 @@ body.import-extract-drop-active .app-container {
 }
 
 .logo-link--patreon {
-  height: var(--patreon-logo-height);
+  height: 100%;
   margin-right: 6px;
 }
 
@@ -359,7 +359,7 @@ body.import-extract-drop-active .app-container {
 
 #patreonLogo {
   width: auto;
-  height: 100%;
+  height: calc(100% * var(--patreon-logo-scale));
   object-fit: contain;
   display: block;
 }
