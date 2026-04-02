@@ -19,6 +19,11 @@
   }
   const log = window.getLogger('import-extract-entry');
   log.debug('Import/extract shared entry starting...');
+  const { AppConstants } = window;
+  if (!AppConstants) {
+    throw new Error('[import-extract-entry] AppConstants unavailable; cannot continue');
+  }
+  const { MAX_CLIPBOARD_REPEAT } = AppConstants;
 
   // =============================================================================
   // Shared state + configuration
@@ -37,9 +42,6 @@
       importExtractStatusUi: null,
       isLatestImportExtractPrepareAttempt: null,
       maybeRecoverImportExtractOcrSetupAndRetry: null,
-      notifyMain: null,
-      promptImportExtractApplyChoice: null,
-      promptImportExtractRouteChoice: null,
       requestPreparedImport: null,
       ...nextDeps,
     };
@@ -57,19 +59,6 @@
 
   function normalizeFilePath(rawValue) {
     return typeof rawValue === 'string' ? rawValue.trim() : '';
-  }
-
-  function notifyMain(alertKey) {
-    const { notifyMain: notify } = requireConfiguredDeps();
-    if (typeof notify !== 'function') {
-      log.warnOnce(
-        'importExtractEntry.notifyMain.unavailable',
-        'notifyMain dependency unavailable; alert notification skipped:',
-        alertKey
-      );
-      return;
-    }
-    notify(alertKey);
   }
 
   function hasBlockingModalOpen() {
@@ -124,8 +113,6 @@
       hasCurrentTextSubscription,
       isLatestImportExtractPrepareAttempt,
       maybeRecoverImportExtractOcrSetupAndRetry,
-      promptImportExtractApplyChoice,
-      promptImportExtractRouteChoice,
       requestPreparedImport,
     } = requireConfiguredDeps();
     const importExtractStatusUi = getStatusUi();
@@ -144,7 +131,7 @@
     }
     if (!normalizedFilePath) {
       log.warn('import/extract entry received an empty file path:', { source });
-      notifyMain('renderer.alerts.import_extract_error');
+      window.Notify.notifyMain('renderer.alerts.import_extract_error');
       return;
     }
 
@@ -154,18 +141,18 @@
         unavailableMessage: 'checkImportExtractPreconditions unavailable; import/extract precondition check skipped.'
       });
       if (!checkImportExtractPreconditions) {
-        notifyMain('renderer.alerts.import_extract_precondition_error');
+        window.Notify.notifyMain('renderer.alerts.import_extract_precondition_error');
         return;
       }
 
       const preconditions = await checkImportExtractPreconditions();
       if (!preconditions || preconditions.ok === false) {
         log.error('import/extract precondition check failed:', preconditions);
-        notifyMain('renderer.alerts.import_extract_precondition_error');
+        window.Notify.notifyMain('renderer.alerts.import_extract_precondition_error');
         return;
       }
       if (!preconditions.canStart) {
-        notifyMain(preconditions.guidanceKey || 'renderer.alerts.import_extract_precondition_blocked');
+        window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.alerts.import_extract_precondition_blocked');
         return;
       }
 
@@ -178,7 +165,7 @@
         unavailableMessage: 'executePreparedImportExtract unavailable; import/extract execution cannot continue.'
       });
       if (!prepareImportExtractSelectedFile || !executePreparedImportExtract) {
-        notifyMain('renderer.alerts.import_extract_error');
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
         return;
       }
 
@@ -220,12 +207,12 @@
 
       if (!preparation || preparation.ok !== true) {
         log.error('import/extract prepare IPC failed:', preparation);
-        notifyMain(resolvePrimaryAlertKey(preparation));
+        window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
         return;
       }
 
       if (preparation.prepareFailed === true) {
-        notifyMain(resolvePrimaryAlertKey(preparation));
+        window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
         return;
       }
 
@@ -241,7 +228,13 @@
 
       let routePreference = '';
       if (preparation.requiresRouteChoice === true) {
-        routePreference = await promptImportExtractRouteChoice(preparation);
+        try {
+          routePreference = await window.Notify.promptImportExtractRouteChoice({ preparation });
+        } catch (err) {
+          log.error('import/extract route-choice modal failed:', err);
+          window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
+          return;
+        }
         if (hasAttemptFreshnessGuard && !isLatestImportExtractPrepareAttempt(latestAttemptId)) {
           log.info('import/extract route-choice result ignored because a newer prepare attempt exists.');
           return;
@@ -275,12 +268,12 @@
 
         if (!preparation || preparation.ok !== true) {
           log.error('import/extract OCR route recovery prepare IPC failed:', preparation);
-          notifyMain(resolvePrimaryAlertKey(preparation));
+          window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
           return;
         }
 
         if (preparation.prepareFailed === true) {
-          notifyMain(resolvePrimaryAlertKey(preparation));
+          window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
           return;
         }
 
@@ -305,7 +298,7 @@
           importExtractStatusUi.applyProcessingModeState(execution.state, { source: 'execute_already_active' });
         }
         log.error('import/extract execution IPC failed:', execution);
-        notifyMain(resolvePrimaryAlertKey(execution));
+        window.Notify.notifyMain(resolvePrimaryAlertKey(execution));
         return;
       }
 
@@ -314,7 +307,7 @@
         : [];
       warningAlertKeys.forEach((alertKey) => {
         if (typeof alertKey === 'string' && alertKey.trim()) {
-          notifyMain(alertKey);
+          window.Notify.notifyMain(alertKey);
         }
       });
 
@@ -328,10 +321,18 @@
         const defaultRepeat = typeof getClipboardRepeatCount === 'function'
           ? getClipboardRepeatCount()
           : 1;
-        const applyChoice = await promptImportExtractApplyChoice({
-          defaultRepeat,
-          elapsedText: importExtractStatusUi.getFinalElapsedText(),
-        });
+        let applyChoice = null;
+        try {
+          applyChoice = await window.Notify.promptImportExtractApplyChoice({
+            defaultRepeat,
+            elapsedText: importExtractStatusUi.getFinalElapsedText(),
+            maxRepeat: MAX_CLIPBOARD_REPEAT,
+          });
+        } catch (err) {
+          log.error('import/extract apply modal failed:', err);
+          window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
+          return;
+        }
         if (!applyChoice) {
           log.info('import/extract apply choice cancelled by user.');
           return;
@@ -344,11 +345,11 @@
         });
         if (!applyResult || applyResult.ok !== true) {
           if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-            notifyMain('renderer.alerts.import_extract_apply_too_large');
+            window.Notify.notifyMain('renderer.alerts.import_extract_apply_too_large');
           } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-            notifyMain('renderer.alerts.import_extract_apply_text_limit');
+            window.Notify.notifyMain('renderer.alerts.import_extract_apply_text_limit');
           } else {
-            notifyMain('renderer.alerts.import_extract_apply_error');
+            window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
           }
           return;
         }
@@ -357,7 +358,7 @@
         }
 
         if (applyResult.truncated) {
-          notifyMain('renderer.alerts.import_extract_apply_truncated');
+          window.Notify.notifyMain('renderer.alerts.import_extract_apply_truncated');
         }
         return;
       }
@@ -367,11 +368,11 @@
         || primaryAlertKey === 'renderer.alerts.import_extract_ocr_cancelled') {
         return;
       }
-      notifyMain(primaryAlertKey);
+      window.Notify.notifyMain(primaryAlertKey);
     } catch (err) {
       importExtractStatusUi.clearPendingExecutionContext();
       log.error(`Error handling import/extract ${source} entrypoint:`, err);
-      notifyMain('renderer.alerts.import_extract_error');
+      window.Notify.notifyMain('renderer.alerts.import_extract_error');
     }
   }
 
@@ -397,14 +398,14 @@
         unavailableMessage: 'openImportExtractPicker unavailable; import/extract entrypoint skipped.'
       });
       if (!openImportExtractPicker) {
-        notifyMain('renderer.alerts.import_extract_error');
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
         return;
       }
 
       const picker = await openImportExtractPicker();
       if (!picker || picker.ok === false) {
         log.error('import/extract picker failed:', picker && picker.error ? picker.error : picker);
-        notifyMain('renderer.alerts.import_extract_error');
+        window.Notify.notifyMain('renderer.alerts.import_extract_error');
         return;
       }
       if (picker.canceled) return;
@@ -416,7 +417,7 @@
       });
     } catch (err) {
       log.error('Error handling import/extract picker entrypoint:', err);
-      notifyMain('renderer.alerts.import_extract_error');
+      window.Notify.notifyMain('renderer.alerts.import_extract_error');
     }
   }
 

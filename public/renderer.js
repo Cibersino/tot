@@ -100,6 +100,7 @@ const resChars = document.getElementById('resChars');
 const resCharsNoSpace = document.getElementById('resCharsNoSpace');
 const resWords = document.getElementById('resWords');
 const resTime = document.getElementById('resTime');
+const resultsTimeMultiplierInput = document.getElementById('resultsTimeMultiplierInput');
 
 const toggleModoPreciso = document.getElementById('toggleModoPreciso');
 
@@ -207,6 +208,28 @@ function isProcessingModeActive() {
   return importExtractStatusUi.isProcessingModeActive();
 }
 
+function setControlInteractionLocked(element, locked) {
+  if (!element) return;
+  element.disabled = locked;
+  element.setAttribute('aria-disabled', locked ? 'true' : 'false');
+}
+
+function syncMainInteractionLockUi() {
+  const locked = !isRendererReady() || isProcessingModeActive();
+
+  setControlInteractionLocked(wpmInput, locked);
+  setControlInteractionLocked(wpmSlider, locked);
+  setControlInteractionLocked(presetsSelect, locked);
+  setControlInteractionLocked(btnNewPreset, locked);
+  setControlInteractionLocked(btnEditPreset, locked);
+  setControlInteractionLocked(btnDeletePreset, locked);
+  setControlInteractionLocked(btnResetDefaultPresets, locked);
+  setControlInteractionLocked(btnReadingSpeedTest, locked);
+  setControlInteractionLocked(resultsTimeMultiplierInput, locked);
+  setControlInteractionLocked(toggleModoPreciso, locked);
+  setControlInteractionLocked(toggleVF, locked);
+}
+
 function startImportExtractPrepareAttempt() {
   importExtractPrepareAttemptId += 1;
   return importExtractPrepareAttemptId;
@@ -254,9 +277,7 @@ function maybeNotifyProcessingLock(actionId) {
   const now = Date.now();
   if ((now - lastProcessingLockNoticeAt) < PROCESSING_LOCK_NOTICE_THROTTLE_MS) return;
   lastProcessingLockNoticeAt = now;
-  if (window.Notify && typeof window.Notify.notifyMain === 'function') {
-    window.Notify.notifyMain('renderer.alerts.import_extract_processing_locked');
-  }
+  window.Notify.notifyMain('renderer.alerts.import_extract_processing_locked');
   log.warnOnce(
     `renderer.processing_lock.${actionId}`,
     'Renderer action ignored (processing-mode lock active):',
@@ -333,6 +354,7 @@ function maybeUnblockReady() {
   }
 
   sendSplashRemoved();
+  syncMainInteractionLockUi();
 }
 
 function markRendererInvariantsReady() {
@@ -931,6 +953,7 @@ function armIpcSubscriptions() {
       window.electronAPI.onImportExtractProcessingModeChanged((state) => {
         try {
           importExtractStatusUi.applyProcessingModeState(state, { source: 'ipc_event' });
+          syncMainInteractionLockUi();
         } catch (err) {
           log.error('Error handling import-extract-processing-mode-changed:', err);
         }
@@ -1129,6 +1152,7 @@ async function runStartupOrchestrator() {
         log.warn('BOOTSTRAP: getImportExtractProcessingMode failed; keeping processing mode inactive:', err);
       }
     }
+    syncMainInteractionLockUi();
 
     // Load presets and save them to the cache
     await loadPresets({ settingsSnapshot });
@@ -1705,55 +1729,6 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
 // =============================================================================
 // Import/extract integration helpers
 // =============================================================================
-async function promptImportExtractRouteChoice(preparation) {
-  const routeChoiceModal = window.ImportExtractRouteChoiceModal;
-  if (!routeChoiceModal || typeof routeChoiceModal.promptRouteChoice !== 'function') {
-    log.warnOnce(
-      'renderer.importExtract.routeChoiceModal.unavailable',
-      'ImportExtractRouteChoiceModal.promptRouteChoice unavailable; route choice cannot continue.'
-    );
-    window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
-    return '';
-  }
-  try {
-    return await routeChoiceModal.promptRouteChoice({
-      preparation,
-      tRenderer,
-    });
-  } catch (err) {
-    log.error('import/extract route-choice modal failed:', err);
-    window.Notify.notifyMain('renderer.alerts.import_extract_route_choice_required');
-    return '';
-  }
-}
-
-async function promptImportExtractApplyChoice({
-  defaultRepeat = 1,
-  elapsedText = '',
-} = {}) {
-  const applyModal = window.ImportExtractApplyModal;
-  if (!applyModal || typeof applyModal.promptApplyChoice !== 'function') {
-    log.warnOnce(
-      'renderer.importExtract.applyModal.unavailable',
-      'ImportExtractApplyModal.promptApplyChoice unavailable; apply flow cannot continue.'
-    );
-    window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
-    return null;
-  }
-  try {
-    return await applyModal.promptApplyChoice({
-      tRenderer,
-      elapsedText,
-      defaultRepeat,
-      maxRepeat: MAX_CLIPBOARD_REPEAT,
-    });
-  } catch (err) {
-    log.error('import/extract apply modal failed:', err);
-    window.Notify.notifyMain('renderer.alerts.import_extract_apply_error');
-    return null;
-  }
-}
-
 async function maybeRecoverImportExtractOcrSetupAndRetry({
   preparation,
   preparationRequest,
@@ -1812,10 +1787,6 @@ async function resolveDroppedFilePath(file) {
 // renderer.js owns only app-level feature wiring here.
 // The shared import/extract flow stays in the delegated window modules.
 function configureImportExtractModules() {
-  const notifyMain = window.Notify && typeof window.Notify.notifyMain === 'function'
-    ? window.Notify.notifyMain.bind(window.Notify)
-    : null;
-
   importExtractEntry.configure({
     applyTextViaCanonicalPath,
     getClipboardRepeatCount,
@@ -1827,15 +1798,11 @@ function configureImportExtractModules() {
     importExtractStatusUi,
     isLatestImportExtractPrepareAttempt,
     maybeRecoverImportExtractOcrSetupAndRetry,
-    notifyMain,
-    promptImportExtractApplyChoice,
-    promptImportExtractRouteChoice,
     requestPreparedImport,
   });
 
   importExtractDragDrop.configure({
     canAcceptDrop: canAcceptImportExtractDrop,
-    notifyMain,
     resolveDroppedFilePath,
     startFromFilePath: importExtractEntry.startFromFilePath,
   });
@@ -2159,9 +2126,7 @@ if (btnHelp) {
     const tipCount = helpTipKeys.length;
     if (!tipCount) {
       log.error('Help tip list is empty.');
-      if (typeof window.Notify?.notifyMain === 'function') {
-        window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
-      }
+      window.Notify.notifyMain('renderer.main.tips.results_help.tip1');
       return;
     }
 
@@ -2175,24 +2140,14 @@ if (btnHelp) {
     const tipKey = helpTipKeys[idx];
 
     try {
-      if (typeof window.Notify?.toastMain === 'function') {
+      try {
         window.Notify.toastMain(tipKey);
-      } else if (typeof window.Notify?.notifyMain === 'function') {
+      } catch (err) {
+        log.error('Error showing help tip toast:', err);
         window.Notify.notifyMain(tipKey);
-      } else {
-        log.error('Notify API unavailable for help tips.');
       }
     } catch (err) {
-      log.error('Error showing help tip:', err);
-      try {
-        if (typeof window.Notify?.notifyMain === 'function') {
-          window.Notify.notifyMain(tipKey);
-        } else {
-          log.error('Notify notifyMain unavailable for help tip fallback.');
-        }
-      } catch (fallbackErr) {
-        log.error('Help tip fallback failed:', fallbackErr);
-      }
+      log.error('Help tip fallback failed:', err);
     }
   });
 }
@@ -2394,6 +2349,7 @@ const initCronoController = () => {
 initCronoController();
 
 uiListenersArmed = true;
+syncMainInteractionLockUi();
 runStartupOrchestrator();
 
 // =============================================================================

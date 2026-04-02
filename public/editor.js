@@ -162,74 +162,6 @@ if (typeof window.editorAPI.onSettingsChanged === 'function') {
 }
 
 // =============================================================================
-// Notices
-// =============================================================================
-function showNotice(msg, opts = {}) {
-  const text = (typeof msg === 'string') ? msg : String(msg);
-  let type = 'info';
-  let duration = 4500;
-
-  if (typeof opts === 'number') {
-    duration = opts;
-  } else if (opts && typeof opts === 'object') {
-    if (Object.prototype.hasOwnProperty.call(opts, 'type')) {
-      type = opts.type || 'info';
-    }
-    if (Object.prototype.hasOwnProperty.call(opts, 'duration')) {
-      duration = opts.duration;
-    }
-  }
-
-  try {
-    if (typeof window.Notify?.toastEditorText === 'function') {
-      window.Notify.toastEditorText(text, { type, duration });
-      return;
-    }
-    log.warnOnce(
-      'editor.showNotice.toastEditorText.missing',
-      'showNotice: window.Notify.toastEditorText missing; falling back to window.Notify.notifyMain.'
-    );
-    if (typeof window.Notify?.notifyMain === 'function') {
-      window.Notify.notifyMain(text);
-    } else {
-      log.errorOnce(
-        'editor.showNotice.notifyMain.missing',
-        'showNotice fallback unavailable: window.Notify.notifyMain missing; notice dropped.'
-      );
-    }
-  } catch (err) {
-    log.warn('showNotice failed; attempting fallback:', err);
-    try {
-      if (typeof window.Notify?.notifyMain === 'function') {
-        window.Notify.notifyMain(text);
-      } else {
-        log.errorOnce(
-          'editor.showNotice.notifyMain.missing',
-          'showNotice fallback unavailable: window.Notify.notifyMain missing; notice dropped.'
-        );
-      }
-    } catch (fallbackErr) {
-      log.error('showNotice fallback failed:', fallbackErr);
-    }
-  }
-}
-
-// Expose for cross-script notifications (used by public/js/notify.js)
-window.showNotice = showNotice;
-
-function notifyEditor(key, opts = {}) {
-  if (typeof window.Notify?.notifyEditor === 'function') {
-    window.Notify.notifyEditor(key, opts);
-    return;
-  }
-  log.warnOnce(
-    'editor.notifyEditor.missing',
-    '[editor] window.Notify.notifyEditor missing; falling back to showNotice.'
-  );
-  showNotice(tr(key, key), opts);
-}
-
-// =============================================================================
 // Focus and selection helpers
 // =============================================================================
 function restoreFocusToEditor(pos = null) {
@@ -377,7 +309,7 @@ function sendCurrentTextToMain(action, options = {}) {
 // Truncation notifications
 // =============================================================================
 function notifyTextTruncated() {
-  notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
+  window.Notify.notifyEditor('renderer.editor_alerts.text_truncated', { type: 'warn', duration: 5000 });
 }
 
 // =============================================================================
@@ -417,7 +349,7 @@ function insertTextAtCursor(rawText, options = {}) {
     }
     const available = getInsertionCapacity();
     if (available <= 0) {
-      notifyEditor(limitAlertKey, { type: 'warn' });
+      window.Notify.notifyEditor(limitAlertKey, { type: 'warn' });
       restoreFocusToEditor();
       return { inserted: 0, truncated: false };
     }
@@ -436,7 +368,7 @@ function insertTextAtCursor(rawText, options = {}) {
     sendCurrentTextToMain(action, syncOptions);
 
     if (truncated) {
-      notifyEditor(truncatedAlertKey, { type: 'warn', duration: 5000 });
+      window.Notify.notifyEditor(truncatedAlertKey, { type: 'warn', duration: 5000 });
     }
 
     restoreFocusToEditor();
@@ -484,13 +416,13 @@ function handleTextTransferInsert(ev, transferConfig) {
 
     const text = String(getText(ev) || '');
     if (!text) {
-      notifyEditor(noTextAlertKey, { type: 'warn' });
+      window.Notify.notifyEditor(noTextAlertKey, { type: 'warn' });
       restoreFocusToEditor();
       return;
     }
 
     if (text.length > PASTE_ALLOW_LIMIT) {
-      notifyEditor(tooBigAlertKey, { type: 'warn', duration: 5000 });
+      window.Notify.notifyEditor(tooBigAlertKey, { type: 'warn', duration: 5000 });
       restoreFocusToEditor();
       return;
     }
@@ -750,7 +682,7 @@ if (editor) {
       const available = getInsertionCapacity();
       if (available <= 0) {
         ev.preventDefault();
-        notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+        window.Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
         restoreFocusToEditor(start);
         return;
       }
@@ -758,7 +690,7 @@ if (editor) {
       const incomingLength = getBeforeInputIncomingLength(ev);
       if (incomingLength !== null && incomingLength > available) {
         ev.preventDefault();
-        notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
+        window.Notify.notifyEditor('renderer.editor_alerts.type_limit', { type: 'warn', duration: 5000 });
         restoreFocusToEditor(start);
       }
     } catch (err) {
@@ -808,7 +740,7 @@ if (btnCalc) btnCalc.addEventListener('click', () => {
     // Do not close the modal or ask anything -per spec
   } catch (err) {
     log.error('Error executing CALC/SAVE:', err);
-    notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
+    window.Notify.notifyEditor('renderer.editor_alerts.calc_error', { type: 'error', duration: 5000 });
     restoreFocusToEditor();
   }
 });

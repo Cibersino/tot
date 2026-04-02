@@ -96,18 +96,6 @@
     return predicate() === true;
   }
 
-  function notifyMain(alertKey) {
-    const { notifyMain: notify } = requireConfiguredDeps();
-    if (typeof notify !== 'function') {
-      log.warn(
-        'notifyMain dependency missing; drag/drop alert skipped.',
-        alertKey
-      );
-      return;
-    }
-    notify(alertKey);
-  }
-
   function setDropEffect(event, effect) {
     const dt = event && event.dataTransfer;
     if (!dt) return;
@@ -213,20 +201,20 @@
       return;
     }
     if (files.length !== 1) {
-      notifyMain('renderer.alerts.import_extract_drop_single_file_only');
+      window.Notify.notifyMain('renderer.alerts.import_extract_drop_single_file_only');
       return;
     }
 
     const filePath = await resolveDroppedFilePath(files[0]);
     if (!filePath) {
-      notifyMain('renderer.alerts.import_extract_drop_invalid_file');
+      window.Notify.notifyMain('renderer.alerts.import_extract_drop_invalid_file');
       return;
     }
 
     const { startFromFilePath } = requireConfiguredDeps();
     if (typeof startFromFilePath !== 'function') {
       log.error('startFromFilePath dependency missing; cannot continue dropped import/extract flow.');
-      notifyMain('renderer.alerts.import_extract_error');
+      window.Notify.notifyMain('renderer.alerts.import_extract_error');
       return;
     }
 
@@ -237,7 +225,7 @@
       });
     } catch (err) {
       log.error('Dropped import/extract flow failed unexpectedly:', err);
-      notifyMain('renderer.alerts.import_extract_error');
+      window.Notify.notifyMain('renderer.alerts.import_extract_error');
     }
   }
 
@@ -247,7 +235,6 @@
   function configure(nextDeps = {}) {
     deps = {
       canAcceptDrop: null,
-      notifyMain: null,
       resolveDroppedFilePath: null,
       startFromFilePath: null,
       ...nextDeps,

@@ -58,9 +58,12 @@ Reglas:
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
 - Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
 - Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
-- Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino` y ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente.
+- Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino`, ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente y el bloque fijo de branding se reubica a la esquina inferior derecha de la ventana principal en orden visual `Patreon | Cibersino | toT`, eliminando la reserva superior que quedó obsoleta.
 - Info modal / links (Issue #165): los fallos al abrir links externos y `appdoc:` desde el info modal dejan de quedar solo en logs y pasan a mostrarse al usuario con una taxonomía final explícita de notificaciones alineada con los reasons reales del runtime.
+- Modal de presets / WPM: se corrige la discrepancia entre el mensaje de validación y el rango realmente aceptado al guardar; el warning renderer deja de hardcodear `50..500`, se alinea con el rango operativo vigente `10..700` y main agrega una validación server-side equivalente para persistencia.
+- Límite del texto vigente: `MAX_TEXT_CHARS` aumenta de `10_000_000` a `50_000_000` y el límite seguro IPC derivado (`MAX_IPC_CHARS`) aumenta en la misma proporción, de `40_000_000` a `200_000_000`.
 - Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
+- Preload listener APIs (Issue #161): se completa una auditoría repo-wide de preloads y se normalizan los listeners driftados al estándar `onX(cb) -> unsubscribe`, dejando explícitos los casos válidos de replay/buffer sin cambiar canales, payloads ni timing saludable.
 
 ### Agregado
 
@@ -97,8 +100,8 @@ Reglas:
   - `public/style.css`: ajuste mínimo de layout para la nueva fila del multiplicador; además se reduce un poco la tipografía y el gap vertical de `Words` / `Characters` / `Characters (no spaces)`, se achica el espacio bajo la caja rosada del tiempo estimado y se desplaza levemente la fila del multiplicador hacia la derecha.
   - i18n renderer (`en` / `es`): no se agregan keys nuevas para esta UI final; el chrome del multiplicador queda fijo como `x` a la izquierda y `:` en la salida derivada.
 - Branding/header principal (Issue #174):
-  - `public/index.html`: la franja superior deja de ocultar el bloque de logos con `aria-hidden`, mantiene `toT` como logo no interactivo y envuelve los logos de Cibersino y Patreon en controles clickeables con tooltip/aria-label.
-  - `public/style.css`: se ajusta el layout del header para soportar los logos clickeables y el nuevo símbolo de Patreon sin inflar el resto de la UI.
+  - `public/index.html`: la franja superior deja de ocultar el bloque de logos con `aria-hidden`, mantiene `toT` como logo no interactivo, envuelve los logos de Cibersino y Patreon en controles clickeables con tooltip/aria-label y reordena el bloque visible a `Patreon | Cibersino | toT`.
+  - `public/style.css`: se ajusta el layout del bloque fijo de branding para soportar los logos clickeables y el nuevo símbolo de Patreon, reubicar el conjunto a la esquina inferior derecha de la ventana principal y eliminar el padding superior extra que había quedado reservado para su antigua posición.
   - `public/js/main_logo_links.js` (nuevo): módulo renderer dedicado que hace el binding de los links fijos del header, aplica tooltips i18n (`es` / `en`) y enruta ambos destinos vía `electronAPI.openExternalUrl(...)`.
   - `public/renderer.js`: integración mínima del nuevo módulo para aplicar traducciones y registrar el binding, manteniendo el wiring fuera del entry file principal.
   - `electron/link_openers.js`: se amplía de forma acotada la allowlist de `open-external-url` para incluir `www.patreon.com`; `totapp.org` ya seguía permitido por la misma superficie.
@@ -108,6 +111,15 @@ Reglas:
   - `public/js/info_modal_links.js`: agrega mapeo explícito de reasons IPC a claves de notificación renderer en vez de reutilizar suffixes crudos del runtime; `open-external-url` colapsa a `renderer.info.external.{blocked,error}` y `open-app-doc` colapsa a `renderer.info.appdoc.{blocked,missing,error}`.
   - El flujo renderer ahora dispara `window.Notify.notifyMain(...)` cuando falla la apertura de links externos o docs `appdoc:` desde el info modal, manteniendo el logging estructurado existente.
   - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): se elimina la key obsoleta `renderer.info.external.missing` y se preserva la taxonomía final alcanzable para external/appdoc.
+- Notificaciones / diálogos renderer (Issue #173):
+  - `public/js/notify.js` se consolida como owner público único de la superficie de diálogos renderer; `public/renderer.js`, `public/editor.js`, `public/task_editor.js`, `public/preset_modal.js`, `public/js/current_text_snapshots.js`, `public/js/import_extract_entry.js` y `public/js/import_extract_drag_drop.js` pasan a consumir `window.Notify.*` directamente.
+  - Los prompts custom de import/extract dejan de publicarse como globals de feature (`window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal`, `window.ImportExtractOcrActivationDisclosureModal`) y pasan a exponerse como `window.Notify.promptImportExtractRouteChoice(...)`, `window.Notify.promptImportExtractApplyChoice(...)` y `window.Notify.promptImportExtractOcrActivationDisclosure(...)`.
+  - Se eliminan wrappers/fallbacks locales (`notifyMain(...)`, `showNotice(...)`, `showEditorNotice(...)`, guards repetidos de disponibilidad de `window.Notify`) sin cambiar la semántica healthy-path de los avisos existentes.
+  - `window.Notify.notifyMain(...)`, `confirmMain(...)`, `toastMain(...)` y `notifyEditor(...)` pasan a aceptar params opcionales de interpolación i18n, evitando mensajes renderer con límites numéricos hardcodeados cuando la UI ya depende de constantes runtime.
+- Modal de presets / validación WPM:
+  - `public/preset_modal.js`: el aviso `renderer.preset_alerts.wpm_invalid` pasa a interpolar `{min,max}` desde `WPM_MIN/WPM_MAX` en vez de depender de texto fijo desalineado.
+  - `electron/constants_main.js` y `electron/presets_main.js`: se agrega validación server-side explícita para presets fuera del rango operativo `10..700`, endureciendo la persistencia para que no diverja del renderer healthy-path.
+  - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): `renderer.preset_alerts.wpm_invalid` deja de codificar `50..500` y pasa a usar placeholders `{min}` / `{max}`.
 - Reading tools / test de velocidad de lectura:
   - `public/index.html` y `public/style.css`: la antigua sección reservada/“available” se renombra a `reading-tools`; el botón ya no cubre toda el área y queda centrado como control normal.
   - i18n renderer (`en`, `es`, `es-cl`, `arn`, `de`, `fr`, `it`, `pt`): se alinea el orden interno de secciones para dejar `reading_tools` antes de `processing`, y en `en` además se reordenan `editor`, `editor_find`, `tasks` y `modal_preset` para mantener consistencia estructural con el resto de locales.
@@ -116,6 +128,11 @@ Reglas:
   - `public/js/text_apply_canonical.js` (nuevo): centraliza `overwrite` / `append` / `repetitions` para que el portapapeles y el modal final de importación/OCR apliquen exactamente la misma semántica de joins, normalización de `N`, proyección de tamaño y escritura vía `set-current-text`.
   - `electron/preload.js`: incorpora la superficie bridge necesaria para el flujo completo (`openImportExtractPicker`, `getPathForFile`, `checkImportExtractPreconditions`, `prepareImportExtractOcrActivation`, `launchImportExtractOcrActivation`, `disconnectImportExtractOcr`, `prepareImportExtractSelectedFile`, `executePreparedImportExtract`, `getImportExtractProcessingMode`, `requestImportExtractAbort`, `onImportExtractProcessingModeChanged`).
   - `electron/menu_builder.js`: `Preferencias` incorpora `Disconnect Google OCR` y el menú pasa a poder avisar al renderer cuando una acción queda bloqueada por processing-mode.
+- Preload listener APIs (Issue #161):
+  - `electron/editor_preload.js`: `onInitText`, `onExternalUpdate` y `onForceClear` se alinean con el estándar repo `onX(cb) -> unsubscribe`, aislando errores del callback y del `removeListener(...)` local.
+  - `electron/preload.js`: `onCurrentTextUpdated` y `onPresetCreated` pasan a retornar unsubscribe; `onPresetCreated` además deja de propagar errores síncronos del callback al preload.
+  - `electron/preset_preload.js`, `electron/task_editor_preload.js` y `electron/editor_find_preload.js`: se conservan como casos compliant de replay/buffer explícito, con captura temprana + replay asíncrono para sus payloads de init/estado.
+  - `electron/flotante_preload.js` y `electron/language_preload.js`: auditados sin cambios; el primero ya cumplía el contrato de listeners y el segundo no expone listeners.
 - Páginas informativas / documentación in-app:
   - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`: se documentan el flujo `📥` / drag/drop, los formatos soportados, la decisión nativa/OCR para PDF, el modal final con `Repeticiones`, la privacidad del flujo OCR y la ruta de desconexión de Google OCR.
   - `public/info/acerca_de.html`: se actualizan sitio web, conectividad, privacidad y licencias de componentes incorporados para importación/extracción, OCR, PDF, DOCX y procesamiento de imágenes.
@@ -124,6 +141,7 @@ Reglas:
 
 - Se corrige una brecha de defensa en profundidad: `set-current-text` no aplicaba control de autorización por sender, a diferencia de otros handlers sensibles.
 - Info modal / links (Issue #165): los fallos de apertura para links externos y documentos `appdoc:` ya no quedan invisibles para el usuario; ahora se notifican en la UI principal con el mismo outcome final que define la taxonomía i18n vigente.
+- Modal de presets / WPM: se corrige el drift entre la validación visible (`renderer.preset_alerts.wpm_invalid`) y la aceptación real al guardar presets; el warning ya no anuncia `50..500` cuando la UI opera con `10..700`, y la persistencia rechaza valores fuera del mismo rango canónico del renderer.
 
 ### Contratos tocados
 
@@ -151,13 +169,30 @@ Reglas:
   - nueva action ID de menú `disconnect_google_ocr`.
   - nuevos IDs renderer `btnImportExtract`, `importExtractPrepareStatus`, `selectorControlsProcessing`, `importExtractProcessingLabel`, `importExtractProcessingElapsed`, `btnImportExtractAbort`, `importExtractRouteModal*`, `importExtractApplyModal*` e `importExtractOcrActivationDisclosure*`.
   - nuevas superficies globales renderer `window.ImportExtractEntry`, `window.ImportExtractDragDrop`, `window.ImportExtractStatusUi`, `window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal`, `window.ImportExtractOcrActivationDisclosureModal`, `window.ImportExtractOcrActivationRecovery`, `window.ImportExtractOcrDisconnect` y `window.TextApplyCanonical`.
+- Notificaciones / diálogos renderer:
+  - `window.Notify` se formaliza como superficie pública única de diálogos renderer para avisos bloqueantes, confirmaciones y prompts custom de import/extract.
+  - `window.Notify` agrega/expone `confirmMain(...)`, `promptImportExtractRouteChoice(...)`, `promptImportExtractApplyChoice(...)` y `promptImportExtractOcrActivationDisclosure(...)` como entrypoints públicos consolidados.
+  - `window.Notify.notifyMain(...)`, `confirmMain(...)`, `toastMain(...)` y `notifyEditor(...)` extienden contrato para aceptar params opcionales de interpolación i18n; llamadas existentes sin params conservan semántica.
+  - `window.ImportExtractRouteChoiceModal`, `window.ImportExtractApplyModal` y `window.ImportExtractOcrActivationDisclosureModal` dejan de ser parte de la superficie pública runtime; el wiring interno de esos modales permanece en sus módulos renderer dedicados.
+- Modal de presets / validación WPM:
+  - `renderer.preset_alerts.wpm_invalid` mantiene la misma key, pero su semántica final pasa a depender de placeholders `{min}` / `{max}` resueltos en runtime en vez de texto estático.
+  - `create-preset` y `edit-preset` mantienen canal y shape healthy-path, pero endurecen failure-path para rechazar presets con `wpm` fuera del rango canónico `10..700` también desde main.
+- Preload listener APIs (Issue #161):
+  - `window.editorAPI.onInitText(cb)`, `window.editorAPI.onExternalUpdate(cb)` y `window.editorAPI.onForceClear(cb)` pasan a seguir el contrato `onX(cb) -> unsubscribe`, manteniendo canales (`editor-init-text`, `editor-text-updated`, `editor-force-clear`), payloads y timing healthy-path.
+- IPC `get-app-config`:
+  - mantiene el mismo shape `{ ok, maxTextChars, maxIpcChars }`.
+  - actualiza sus valores efectivos a `maxTextChars = 50_000_000` y `maxIpcChars = 200_000_000`.
+  - `window.electronAPI.onCurrentTextUpdated(cb)` y `window.electronAPI.onPresetCreated(cb)` pasan a seguir el contrato `onX(cb) -> unsubscribe`, manteniendo canales (`current-text-updated`, `preset-created`) y payloads healthy-path.
+  - `window.presetAPI.onInit(cb)`, `window.taskEditorAPI.onInit(cb)`, `window.editorFindAPI.onInit(cb)` y `window.editorFindAPI.onState(cb)` quedan explícitamente documentados como listeners de replay/buffer; no cambia su semántica observable de replay asíncrono.
 - Sitio web:
   - nuevas rutas públicas `/` y `/app-privacy/` dentro del bundle `website/public`.
 
 ### Archivos
 
 - `electron/text_state.js`
+- `electron/constants_main.js`
 - `electron/preload.js`
+- `electron/editor_preload.js`
 - `electron/menu_builder.js`
 - `public/renderer.js`
 - `public/index.html`
@@ -165,6 +200,7 @@ Reglas:
 - `public/js/results_time_multiplier.js`
 - `public/js/main_logo_links.js`
 - `public/js/info_modal_links.js`
+- `public/js/notify.js`
 - `public/js/import_extract_entry.js`
 - `public/js/import_extract_drag_drop.js`
 - `public/js/import_extract_status_ui.js`
@@ -174,8 +210,12 @@ Reglas:
 - `public/js/import_extract_ocr_activation_recovery.js`
 - `public/js/import_extract_ocr_disconnect.js`
 - `public/js/text_apply_canonical.js`
+- `public/js/current_text_snapshots.js`
 - `public/js/constants.js`
 - `public/assets/patreon.png`
+- `public/preset_modal.js`
+- `public/editor.js`
+- `public/task_editor.js`
 - `i18n/arn/renderer.json`
 - `i18n/de/renderer.json`
 - `i18n/en/renderer.json`

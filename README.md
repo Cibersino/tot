@@ -35,6 +35,12 @@
 * Editor de tareas: organizador de listas de textos para planificar lecturas.
 * Interfaz multi-idioma: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
 
+## Lo que viene
+
+Se viene el **test de velocidad de lectura**.
+
+Todavía está en desarrollo, pero apunta a convertirse en una de las próximas funciones fuertes de **toT** para medir tu ritmo real y afinar mejor tus estimaciones.
+
 ---
 
 ## Requisitos
@@ -189,6 +195,12 @@ MIT — ver [`LICENSE`](LICENSE).
 * Text snapshots: save/load current texts.
 * Task editor: text list organizer to plan readings.
 * Multi-language UI: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
+
+## Coming soon
+
+The **reading speed test** is on the way.
+
+It is still in development, but it is shaping up to be one of **toT**'s next standout features for measuring your real pace and dialing in better estimates.
 
 ---
 

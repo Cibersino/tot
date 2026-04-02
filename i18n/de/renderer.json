@@ -318,7 +318,7 @@
     },
     "preset_alerts": {
       "name_empty": "Name darf nicht leer sein.",
-      "wpm_invalid": "WPM muss eine Zahl zwischen 50 und 500 sein.",
+      "wpm_invalid": "WPM muss eine Zahl zwischen {min} und {max} sein.",
       "create_error": "Beim Erstellen des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
       "edit_error": "Beim Bearbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
       "process_error": "Beim Verarbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."

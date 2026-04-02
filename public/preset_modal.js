@@ -78,18 +78,6 @@
     const tr = (path, fallback) => tRenderer(path, fallback);
     const mr = (path, params = {}, fallback = '') => msgRenderer(path, params, fallback);
 
-    function notifyMain(messageKey, fallback = '') {
-      if (window.Notify && typeof window.Notify.notifyMain === 'function') {
-        window.Notify.notifyMain(messageKey);
-        return;
-      }
-      log.warn(
-        'preset-modal.notifyMain.unavailable',
-        '[preset_modal] window.Notify.notifyMain missing; using alert fallback'
-      );
-      alert(tr(messageKey, fallback));
-    }
-
     async function ensurePresetTranslations(lang) {
       const target = (lang || '').toLowerCase() || DEFAULT_LANG;
       if (translationsLoadedFor === target) return;
@@ -206,12 +194,15 @@
       const desc = (descEl.value || '').trim();
 
       if (!name) {
-        notifyMain('renderer.preset_alerts.name_empty');
+        window.Notify.notifyMain('renderer.preset_alerts.name_empty');
         return null;
       }
 
       if (!Number.isFinite(wpm) || wpm < WPM_MIN || wpm > WPM_MAX) {
-        notifyMain('renderer.preset_alerts.wpm_invalid');
+        window.Notify.notifyMain('renderer.preset_alerts.wpm_invalid', {
+          min: WPM_MIN,
+          max: WPM_MAX
+        });
         return null;
       }
 
@@ -248,11 +239,11 @@
               window.close();
             } else {
               if (res && res.code === 'CANCELLED') return;
-              notifyMain('renderer.preset_alerts.edit_error');
+              window.Notify.notifyMain('renderer.preset_alerts.edit_error');
               log.error('Error editing preset (response):', res);
             }
           } else {
-            notifyMain('renderer.preset_alerts.process_error');
+            window.Notify.notifyMain('renderer.preset_alerts.process_error');
             log.errorOnce('preset-modal.editPreset.missing', '[preset_modal] presetAPI.editPreset missing');
           }
         } else {
@@ -261,16 +252,16 @@
             if (res && res.ok) {
               window.close();
             } else {
-              notifyMain('renderer.preset_alerts.create_error');
+              window.Notify.notifyMain('renderer.preset_alerts.create_error');
               log.error('Error creating preset (response):', res);
             }
           } else {
-            notifyMain('renderer.preset_alerts.process_error');
+            window.Notify.notifyMain('renderer.preset_alerts.process_error');
             log.errorOnce('preset-modal.createPreset.missing', '[preset_modal] presetAPI.createPreset missing');
           }
         }
       } catch (err) {
-        notifyMain('renderer.preset_alerts.process_error');
+        window.Notify.notifyMain('renderer.preset_alerts.process_error');
         log.error('Error in save preset:', err);
       }
     });
