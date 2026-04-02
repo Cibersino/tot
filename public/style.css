@@ -330,10 +330,12 @@ body.import-extract-drop-active .app-container {
   background: transparent;
   cursor: pointer;
   appearance: none;
+  transition: opacity 120ms ease, filter 120ms ease, transform 120ms ease;
 }
 
 .logo-link:hover {
-  opacity: 0.92;
+  opacity: 0.82;
+  filter: saturate(1.12) brightness(0.92);
 }
 
 .logo-link:focus {
