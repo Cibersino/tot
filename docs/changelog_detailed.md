@@ -54,6 +54,7 @@ Reglas:
 ### Resumen
 
 - Importación/extracción/OCR: la ventana principal incorpora un flujo único por `📥` y drag/drop para importar texto desde archivos de texto/documento (`.txt`, `.md`, `.html`, `.htm`, `.docx`), extraer desde imágenes (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`) y procesar PDFs con elección entre ruta nativa u OCR cuando el PDF tiene texto seleccionable.
+- OCR de imágenes/fotos de página (Issue #191): la ruta Google OCR deja de propagar un artefacto provider-side que podía anteponer una primera línea compuesta solo por separadores (`_`, `-` o espacios) y el log técnico de cierre de ejecución ahora expone `warnings` para que este saneamiento quede visible en smoke tests con `TOT_LOG_LEVEL`.
 - Sitio web de la app: se agrega una landing pública mínima en `https://totapp.org/` y una página dedicada `https://totapp.org/app-privacy/` para la política de privacidad general de la app y del OCR con Google.
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
 - Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
@@ -128,6 +129,8 @@ Reglas:
   - `public/js/text_apply_canonical.js` (nuevo): centraliza `overwrite` / `append` / `repetitions` para que el portapapeles y el modal final de importación/OCR apliquen exactamente la misma semántica de joins, normalización de `N`, proyección de tamaño y escritura vía `set-current-text`.
   - `electron/preload.js`: incorpora la superficie bridge necesaria para el flujo completo (`openImportExtractPicker`, `getPathForFile`, `checkImportExtractPreconditions`, `prepareImportExtractOcrActivation`, `launchImportExtractOcrActivation`, `disconnectImportExtractOcr`, `prepareImportExtractSelectedFile`, `executePreparedImportExtract`, `getImportExtractProcessingMode`, `requestImportExtractAbort`, `onImportExtractProcessingModeChanged`).
   - `electron/menu_builder.js`: `Preferencias` incorpora `Disconnect Google OCR` y el menú pasa a poder avisar al renderer cuando una acción queda bloqueada por processing-mode.
+  - `electron/import_extract_platform/ocr_google_drive_route.js`: se agrega un post-procesado acotado al healthy-path OCR que detecta y elimina solo una primera línea compuesta exclusivamente por separadores (`^[ _-]{6,}$`), ignorando un posible BOM UTF-8 y absorbiendo también la línea en blanco inmediata que seguía al artefacto provider-side.
+  - `electron/import_extract_platform/import_extract_execute_prepared_ipc.js`: el log main-process `import/extract execute completed` pasa a incluir `warnings` del resultado para que saneamientos no fatales como `ocr_leading_separator_artifact_stripped` queden observables desde terminal sin volverlos notificación UI.
 - Preload listener APIs (Issue #161):
   - `electron/editor_preload.js`: `onInitText`, `onExternalUpdate` y `onForceClear` se alinean con el estándar repo `onX(cb) -> unsubscribe`, aislando errores del callback y del `removeListener(...)` local.
   - `electron/preload.js`: `onCurrentTextUpdated` y `onPresetCreated` pasan a retornar unsubscribe; `onPresetCreated` además deja de propagar errores síncronos del callback al preload.
@@ -140,6 +143,7 @@ Reglas:
 ### Arreglado
 
 - Se corrige una brecha de defensa en profundidad: `set-current-text` no aplicaba control de autorización por sender, a diferencia de otros handlers sensibles.
+- OCR de imágenes/fotos de página (Issue #191): se corrige la aparición de una línea espuria inicial formada solo por separadores en algunos resultados OCR; la app ahora sanea ese artefacto provider-side antes de aplicar el texto, sin tocar la ruta nativa ni introducir avisos UI nuevos.
 - Info modal / links (Issue #165): los fallos de apertura para links externos y documentos `appdoc:` ya no quedan invisibles para el usuario; ahora se notifican en la UI principal con el mismo outcome final que define la taxonomía i18n vigente.
 - Modal de presets / WPM: se corrige el drift entre la validación visible (`renderer.preset_alerts.wpm_invalid`) y la aceptación real al guardar presets; el warning ya no anuncia `50..500` cuando la UI opera con `10..700`, y la persistencia rechaza valores fuera del mismo rango canónico del renderer.
 
