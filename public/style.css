@@ -316,8 +316,8 @@ body.import-extract-drop-active .app-container {
 /* Logo (fixed) */
 .logo-container {
   position: fixed;
-  top: 6px;
-  left: 4px;
+  right: 4px;
+  bottom: 6px;
   height: var(--logo-height);
   display: flex;
   align-items: center;
@@ -358,7 +358,7 @@ body.import-extract-drop-active .app-container {
 
 .logo-link--patreon {
   height: var(--patreon-logo-height);
-  margin-left: 6px;
+  margin-right: 6px;
 }
 
 #devLogo {
