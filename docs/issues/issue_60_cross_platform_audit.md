@@ -73,23 +73,23 @@ The app already preserves the standard Electron/macOS behavior of recreating a w
 
 ### Finding 1: packaging-only assets and runtime assets are mixed together
 
-Current build config uses:
+Current build config needs a clear separation between:
 
-* `directories.buildResources = public/assets`
-* `files` includes `public/**`
+* runtime assets under `public/**`;
+* packaging-only resources under `build-resources/`.
 
 Implication:
 
-* runtime UI assets and packaging-only resources currently live under the same tree;
-* anything under `public/**` is eligible to be packaged into every platform build.
+* if packaging-only files live under `public/**`, they can leak into every platform build;
+* runtime UI assets should stay in `public/**`, but packaging-only files should not.
 
 This is acceptable for true runtime assets, but it is not a clean design for packaging-only resources such as platform icon files or temporary packaging inputs.
 
 ### Finding 2: macOS packaging is configured but not yet self-contained
 
-Current config expects:
+Current macOS config expects:
 
-* `public/assets/logo-cibersino.icns`
+* `build-resources/logo-cibersino.icns`
 
 But the repo does not yet contain the final `.icns`.
 
@@ -175,7 +175,7 @@ Prefer not to track:
 
 ### Fix group 1: asset/resource separation
 
-Create a dedicated build-resources location for packaging-only files.
+Create and keep a dedicated `build-resources/` location for packaging-only files.
 
 Goal:
 
