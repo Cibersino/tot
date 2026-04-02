@@ -183,6 +183,48 @@ function getErrorDetailsSafeForLogs(err) {
     : {};
 }
 
+function stripUtf8BomPrefix(text) {
+  return String(text || '').replace(/^\uFEFF/, '');
+}
+
+function isLeadingSeparatorOnlyLine(lineText) {
+  return /^[ _-]{6,}$/.test(stripUtf8BomPrefix(lineText));
+}
+
+function sanitizeLeadingOcrSeparatorArtifact(rawText) {
+  const normalizedText = String(rawText || '');
+  if (!normalizedText) {
+    return {
+      text: normalizedText,
+      strippedLeadingSeparator: false,
+    };
+  }
+
+  const newlineMatch = normalizedText.match(/\r\n|\r|\n/);
+  const newline = newlineMatch ? newlineMatch[0] : '\n';
+  const normalizedNewlines = normalizedText
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+  const lines = normalizedNewlines.split('\n');
+
+  if (!isLeadingSeparatorOnlyLine(lines[0] || '')) {
+    return {
+      text: normalizedText,
+      strippedLeadingSeparator: false,
+    };
+  }
+
+  let startIndex = 1;
+  if ((lines[1] || '') === '') {
+    startIndex = 2;
+  }
+
+  return {
+    text: lines.slice(startIndex).join(newline),
+    strippedLeadingSeparator: true,
+  };
+}
+
 async function runWithRateLimitRetry({ operationName, log, isAborted, fn }) {
   let attempt = 0;
 
@@ -482,14 +524,18 @@ async function runGoogleDriveOcrRoute({
     ensureNotAborted(isAborted);
 
     const extractedText = Buffer.from(exportResponse.data || '').toString('utf8');
+    const sanitizedExtraction = sanitizeLeadingOcrSeparatorArtifact(extractedText);
     const warnings = [];
-    if (!extractedText.trim()) {
+    if (sanitizedExtraction.strippedLeadingSeparator) {
+      warnings.push('ocr_leading_separator_artifact_stripped');
+    }
+    if (!sanitizedExtraction.text.trim()) {
       warnings.push('empty_extraction');
     }
 
     result = buildResult({
       state: 'success',
-      text: extractedText,
+      text: sanitizedExtraction.text,
       warnings,
       summary: 'OCR route succeeded.',
       provenance,
