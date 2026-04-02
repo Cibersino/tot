@@ -27,6 +27,32 @@ Current target matrix:
 * macOS: `.dmg`
 * Linux: `AppImage`
 
+## Status update
+
+Completed after this audit:
+
+* packaging-only resources were separated from runtime assets:
+  * runtime assets remain under `public/assets`;
+  * packaging-only assets now live under `build-resources/`;
+* `package.json` now includes:
+  * `dist:mac`
+  * `dist:linux`
+  * macOS `.dmg` target
+  * Linux `AppImage` target
+* macOS packaging runbook added:
+  * `tools_local/packaging_macos_generic.md`
+* Linux packaging runbook added:
+  * `tools_local/packaging_linux_generic.md`
+* platform packaging guides now include the step to collect native `sharp` runtime legal evidence from the real target OS before final release packaging.
+
+Still pending:
+
+* generate/provide `build-resources/logo-cibersino.icns` on a real Mac;
+* execute first native macOS packaging run;
+* execute first native Linux packaging run;
+* collect real macOS/Linux native-runtime legal files for packaged `sharp`;
+* validate whether Linux needs explicit window-icon wiring in code.
+
 ## What already looks cross-platform-safe
 
 ### 1. Shared packaged app contents
@@ -71,19 +97,16 @@ The app already preserves the standard Electron/macOS behavior of recreating a w
 
 ## Main findings from the audit
 
-### Finding 1: packaging-only assets and runtime assets are mixed together
+### Finding 1: packaging-only assets and runtime assets required separation
 
-Current build config needs a clear separation between:
+Resolution already applied:
 
-* runtime assets under `public/**`;
-* packaging-only resources under `build-resources/`.
+* runtime UI assets stay under `public/**`;
+* packaging-only resources now live under `build-resources/`.
 
-Implication:
+Remaining implication:
 
-* if packaging-only files live under `public/**`, they can leak into every platform build;
-* runtime UI assets should stay in `public/**`, but packaging-only files should not.
-
-This is acceptable for true runtime assets, but it is not a clean design for packaging-only resources such as platform icon files or temporary packaging inputs.
+* keep future packaging-only files out of `public/**` so they do not leak into every platform build.
 
 ### Finding 2: macOS packaging is configured but not yet self-contained
 
@@ -175,9 +198,9 @@ Prefer not to track:
 
 ### Fix group 1: asset/resource separation
 
-Create and keep a dedicated `build-resources/` location for packaging-only files.
+Status: repo-side separation already applied.
 
-Goal:
+Rule to preserve:
 
 * keep true runtime assets in `public/assets`;
 * keep packaging-only assets out of the shared runtime asset tree.
@@ -216,7 +239,7 @@ After first native packaging runs:
 
 ### Fix group 5: Linux packaging runbook
 
-Add a Linux packaging document parallel to the existing Windows and macOS runbooks.
+Status: completed.
 
 ## Proposed implementation order
 
@@ -300,9 +323,9 @@ The next implementation step should be:
 
 ## Suggested follow-up tasks
 
-* Refactor packaging-only resources into a dedicated build-resources folder.
-* Remove temporary/placeholder macOS packaging artifacts from the runtime asset tree.
-* Add Linux packaging runbook.
-* Extend legal/runtime doc coverage beyond Windows native `sharp` runtime.
+* Generate or provide `build-resources/logo-cibersino.icns` on a real Mac.
+* Capture native `sharp` runtime legal evidence on macOS and Linux.
+* Extend app/runtime legal doc coverage beyond Windows native `sharp` runtime.
 * Validate whether Linux needs explicit window icon wiring.
 * Execute native packaging/tests on macOS and Linux.
+* Update README and release docs after native validation passes.
