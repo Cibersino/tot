@@ -99,6 +99,180 @@ That smoke layer should stay intentionally small in this issue.
 
 The automated suite should explicitly reference the relevant sections or IDs from `docs/test_suite.md` so coverage can expand from a known source instead of drifting into a separate undocumented test map.
 
+## Concrete implementation plan
+
+### Recommended first-pass stack
+
+Use the smallest stack that matches the repo as it exists today:
+
+* **Unit/integration:** Node built-in test runner (`node --test`) + `node:assert/strict`
+* **Smoke/e2e:** defer initially, or add Playwright-for-Electron only after the unit baseline is stable
+
+Why this is the right first pass:
+
+* no existing test harness needs to be migrated;
+* the repo is already CommonJS, so `node --test` fits without transpilation;
+* several first-wave targets do not need DOM or Electron window automation;
+* this avoids adding a large test framework before the repo has even wired `npm test`.
+
+This issue should therefore treat **Node test runner as required** and **Electron UI automation as phase 2 / optional within the same issue**.
+
+### Recommended repo layout
+
+Add a small, explicit structure:
+
+* `test/unit/electron/`
+* `test/unit/shared/` only if shared helpers appear later
+* `test/fixtures/` for sample JSON/text/temp inputs used by tests
+* `test/helpers/` for reusable test utilities if needed
+* `test/smoke/` only if a first Electron smoke layer is added
+
+The key point is to separate:
+
+* low-friction Node-accessible contract tests;
+* later real-app launch tests.
+
+### Recommended script layout
+
+Replace the placeholder test command with something like:
+
+* `test`: run the stable baseline only
+* `test:unit`: run `node --test test/unit/**/*.test.js`
+* `test:smoke`: reserved for later Electron smoke coverage
+
+Initial policy:
+
+* `npm test` should point to the deterministic unit/integration subset;
+* smoke automation should not block the baseline until it is stable enough.
+
+### Recommended CI target for the first pass
+
+The repo currently has **no `.github/workflows/` directory**, so this issue should create CI from scratch.
+
+For the first pass, use a minimal GitHub Actions workflow that:
+
+* runs on Windows
+* checks out the repo
+* runs `npm ci`
+* runs `npm test`
+
+Windows is the pragmatic starting point because:
+
+* Windows is the currently supported desktop target;
+* it matches the most realistic contributor/release path for the app today;
+* it avoids pretending cross-platform automated confidence already exists when it does not.
+
+### Recommended first test files
+
+These should be the first concrete files added:
+
+* `test/unit/electron/import_extract_supported_formats.test.js`
+* `test/unit/electron/ocr_google_drive_activation_state.test.js`
+* `test/unit/electron/ocr_google_drive_provider_failure.test.js`
+* `test/unit/electron/ocr_google_drive_provider_failure_classification.test.js`
+* `test/unit/electron/import_extract_prepared_store.test.js`
+* `test/unit/electron/settings.test.js`
+
+These are the best first targets because they already expose stable `module.exports` surfaces and most of their behavior is contract-oriented rather than UI-oriented.
+
+### What each first test file should cover
+
+#### `import_extract_supported_formats.test.js`
+
+Assert:
+
+* extension normalization with and without leading dot;
+* native parser lookup for supported/unsupported extensions;
+* OCR MIME lookup for supported/unsupported extensions;
+* supported-extension lists stay aligned with the contract.
+
+#### `ocr_google_drive_activation_state.test.js`
+
+Assert:
+
+* missing credentials returns `credentials_missing`;
+* credentials present but token missing returns `ocr_activation_required`;
+* both present returns `available: true`.
+
+This is a clean first example of state-classification testing with almost no setup burden.
+
+#### `ocr_google_drive_provider_failure.test.js`
+
+Assert:
+
+* provider payload parsing from object and JSON-string inputs;
+* `errors[].reason` extraction;
+* `google.rpc.ErrorInfo` extraction;
+* `provider_api_disabled` normalization;
+* bounded conflict behavior when provider reason sources disagree.
+
+#### `ocr_google_drive_provider_failure_classification.test.js`
+
+Assert:
+
+* quota/rate-limit classification by HTTP `429`;
+* quota/rate-limit classification by known provider reason codes;
+* auth classification by HTTP `401` and auth-related reasons;
+* connectivity classification for network error code / `5xx`;
+* retryability helper behavior.
+
+#### `import_extract_prepared_store.test.js`
+
+Assert:
+
+* created records receive `prepareId` and TTL fields;
+* `peekPreparedRecord` returns active records;
+* `consumePreparedRecord` marks records as used;
+* reused IDs return `reused`;
+* very short TTL expiry path behaves correctly;
+* `shortPrepareId` truncates safely.
+
+This module is stateful in-memory, so tests should keep each case self-contained and avoid hidden cross-test coupling.
+
+#### `settings.test.js`
+
+Start with the exported pure-ish surface instead of full IPC coverage.
+
+Assert:
+
+* `normalizeLangTag`, `normalizeLangBase`, `getLangBase`, and `deriveLangKey`;
+* `init` + `getSettings` + `saveSettings` with injected fake `loadJson` / `saveJson`;
+* invalid or partial settings normalize to safe defaults;
+* language-keyed buckets are preserved or materialized correctly;
+* `set-mode-conteo`-style normalization can be validated indirectly through saved settings where practical.
+
+The first pass should avoid heavy Electron IPC mocking and focus on the normalization contract the module already owns.
+
+### Renderer plan for phase 1.5
+
+Do **not** start by testing `public/js/count.js` and `public/js/format.js` through a fake `window`.
+
+Instead, if coverage is still wanted in this issue:
+
+* extract the pure logic into importable helper modules under a shared renderer-safe path;
+* leave the current renderer wrappers responsible only for wiring to `window`.
+
+That keeps the tests focused on counting/formatting behavior instead of bootstrapping noise.
+
+Suggested follow-up files if that extraction is accepted:
+
+* `public/js/lib/count_core.js`
+* `public/js/lib/format_core.js`
+* `test/unit/shared/count_core.test.js`
+* `test/unit/shared/format_core.test.js`
+
+### Smoke automation plan
+
+Only after the unit baseline is passing should this issue consider a minimal smoke layer.
+
+If added in this issue, keep it to:
+
+* app launches;
+* main window is visible;
+* one simple text-entry / result-calculation path works.
+
+Do not include OCR, updater, external-linking, or multi-window breadth in the first smoke slice.
+
 ## Proposed first-wave targets
 
 ### Strong first candidates
@@ -195,15 +369,39 @@ Do not make the repo harder to merge by gating on flaky first-pass UI automation
 
 ## Breakdown
 
-- [ ] Choose the baseline automated test stack for this repo
-- [ ] Replace the placeholder `npm test` command in `package.json`
-- [ ] Add a documented test directory/layout convention
-- [ ] Add first-wave tests for `electron/settings.js`
-- [ ] Add first-wave tests for `electron/import_extract_platform/import_extract_supported_formats.js`
-- [ ] Add first-wave tests for selected import/extract decision helpers
-- [ ] Add first-wave tests for at least one provider-failure classification module
-- [ ] Decide whether `public/js/count.js` should be extracted into a directly testable pure helper module in this issue
-- [ ] Decide whether `public/js/format.js` should be extracted into a directly testable pure helper module in this issue
+- [x] Choose the baseline automated test stack for this repo
+- [x] Replace the placeholder `npm test` command in `package.json`
+- [x] Add a documented test directory/layout convention
+- [x] Add first-wave tests for `electron/settings.js`
+- [x] Add first-wave tests for `electron/import_extract_platform/import_extract_supported_formats.js`
+- [x] Add first-wave tests for selected import/extract decision helpers
+- [x] Add first-wave tests for at least one provider-failure classification module
+- [x] Decide whether `public/js/count.js` should be extracted into a directly testable pure helper module in this issue
+- [x] Decide whether `public/js/format.js` should be extracted into a directly testable pure helper module in this issue
 - [ ] Add a minimal Electron smoke suite only if it remains stable and narrow
-- [ ] Add CI execution for the stable automated subset
-- [ ] Document how automated coverage maps back to `docs/test_suite.md`
+- [x] Add CI execution for the stable automated subset
+- [x] Document how automated coverage maps back to `docs/test_suite.md`
+
+## Progress update
+
+Current implementation completed in the repo:
+
+* `package.json` now runs the Node built-in test runner via `npm test`.
+* A first repo test layout exists under `test/`.
+* A first Windows GitHub Actions workflow exists under `.github/workflows/test.yml`.
+* The current automated baseline covers:
+  * `electron/settings.js`
+  * `electron/import_extract_platform/import_extract_supported_formats.js`
+  * `electron/import_extract_platform/import_extract_prepare_execute_core.js` (decision-helper slice)
+  * `electron/import_extract_platform/ocr_google_drive_activation_state.js`
+  * `electron/import_extract_platform/ocr_google_drive_provider_failure.js`
+  * `electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js`
+  * `electron/import_extract_platform/import_extract_prepared_store.js`
+  * extracted renderer pure logic for counting and formatting via:
+    * `public/js/lib/count_core.js`
+    * `public/js/lib/format_core.js`
+
+Still pending in this issue:
+
+* any real Electron smoke automation;
+* the current manual-suite linkage is in place; no further docs-linkage work is required for this baseline.
