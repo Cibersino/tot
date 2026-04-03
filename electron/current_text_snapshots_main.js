@@ -236,6 +236,21 @@ function validateSelectedSnapshot(rootReal, selectedPath) {
   return { ok: true, selectedReal, stats, snapshotRelPath };
 }
 
+async function promptForSnapshotSelection(ownerWin, root, rootReal) {
+  const dialogResult = await dialog.showOpenDialog(ownerWin, {
+    defaultPath: root,
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+    properties: ['openFile'],
+  });
+
+  if (!dialogResult || dialogResult.canceled || !dialogResult.filePaths || !dialogResult.filePaths.length) {
+    return { ok: false, code: 'CANCELLED' };
+  }
+
+  const selectedPath = String(dialogResult.filePaths[0] || '');
+  return validateSelectedSnapshot(rootReal, selectedPath);
+}
+
 function sanitizeSnapshotTags(rawTags, { allowMissing = false } = {}) {
   if (rawTags == null) {
     return allowMissing
@@ -415,18 +430,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;
 
-      const dialogRes = await dialog.showOpenDialog(resolveOwnerWin(event, resolveMainWin), {
-        defaultPath: root,
-        filters: [{ name: 'JSON', extensions: ['json'] }],
-        properties: ['openFile'],
-      });
-
-      if (!dialogRes || dialogRes.canceled || !dialogRes.filePaths || !dialogRes.filePaths.length) {
-        return { ok: false, code: 'CANCELLED' };
-      }
-
-      const selectedPath = String(dialogRes.filePaths[0] || '');
-      const selectedInfo = validateSelectedSnapshot(rootReal, selectedPath);
+      const selectedInfo = await promptForSnapshotSelection(
+        resolveOwnerWin(event, resolveMainWin),
+        root,
+        rootReal
+      );
       if (!selectedInfo.ok) return selectedInfo;
 
       return {
@@ -465,17 +473,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         stats = selectedInfo.stats;
         snapshotRelPath = selectedInfo.snapshotRelPath;
       } else {
-        const dialogRes = await dialog.showOpenDialog(resolveOwnerWin(event, resolveMainWin), {
-          defaultPath: root,
-          filters: [{ name: 'JSON', extensions: ['json'] }],
-          properties: ['openFile'],
-        });
-        if (!dialogRes || dialogRes.canceled || !dialogRes.filePaths || !dialogRes.filePaths.length) {
-          return { ok: false, code: 'CANCELLED' };
-        }
-
-        const selectedPath = String(dialogRes.filePaths[0] || '');
-        const selectedInfo = validateSelectedSnapshot(rootReal, selectedPath);
+        const selectedInfo = await promptForSnapshotSelection(
+          resolveOwnerWin(event, resolveMainWin),
+          root,
+          rootReal
+        );
         if (!selectedInfo.ok) return selectedInfo;
         selectedReal = selectedInfo.selectedReal;
         stats = selectedInfo.stats;
