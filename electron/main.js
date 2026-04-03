@@ -1509,10 +1509,13 @@ ipcMain.handle('get-app-runtime-info', () => {
     return {
       platform: process.platform,
       arch: process.arch,
+      electronVersion: String((process.versions && process.versions.electron) || '').trim(),
+      chromeVersion: String((process.versions && process.versions.chrome) || '').trim(),
+      nodeVersion: String((process.versions && process.versions.node) || '').trim(),
     };
   } catch (err) {
     log.error('Error processing get-app-runtime-info:', err);
-    return { platform: '', arch: '' };
+    return { platform: '', arch: '', electronVersion: '', chromeVersion: '', nodeVersion: '' };
   }
 });
 
@@ -1641,6 +1644,9 @@ app.whenReady().then(() => {
   });
 
   importExtractPreconditionsIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
     getPreconditionContext: () => {
       const secondaryWindows = [
         { id: 'editor', label: 'editor', ref: editorWin },

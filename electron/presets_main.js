@@ -39,6 +39,22 @@ const menuBuilder = require('./menu_builder');
 const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
 const PRESETS_SOURCE_DIR_RESOLVED = path.resolve(PRESETS_SOURCE_DIR);
 
+function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
+  try {
+    const senderWin = event && event.sender
+      ? require('electron').BrowserWindow.fromWebContents(event.sender)
+      : null;
+    if (expectedWin && senderWin && senderWin !== expectedWin) {
+      log.warnOnce(logKey, logMessage);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    log.warn('Preset sender validation failed:', err);
+    return false;
+  }
+}
+
 // =============================================================================
 // Helpers
 // =============================================================================
@@ -249,6 +265,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     typeof getWindows === 'function'
       ? () => getWindows() || {}
       : () => getWindows || {};
+
+  const resolveMainWin = () => resolveWindows().mainWin || null;
+  const resolvePresetWin = () => resolveWindows().presetWin || null;
 
   // Best-effort: seed user config defaults on startup.
   copyDefaultPresetsIfMissing();
@@ -473,8 +492,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: create or overwrite a user preset and broadcast changes.
-  ipcMain.handle('create-preset', (_event, preset) => {
+  ipcMain.handle('create-preset', (event, preset) => {
     try {
+      const presetWin = resolvePresetWin();
+      if (
+        !isAuthorizedSender(
+          event,
+          presetWin,
+          'presets_main.create.unauthorized',
+          'create-preset unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
+
       const sanitized = sanitizePresetInput(preset);
       if (!sanitized.ok) {
         log.warnOnce(
@@ -522,8 +551,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: confirm deletion with a native dialog, then persist changes.
-  ipcMain.handle('request-delete-preset', async (_event, name) => {
+  ipcMain.handle('request-delete-preset', async (event, name) => {
     try {
+      const mainWin = resolveMainWin();
+      if (
+        !isAuthorizedSender(
+          event,
+          mainWin,
+          'presets_main.delete.unauthorized',
+          'request-delete-preset unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
+
       if (typeof name !== 'undefined' && name !== null && typeof name !== 'string') {
         log.warnOnce(
           'presets_main.request-delete-preset.invalid_name',
@@ -573,7 +612,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       // Ask confirmation (native dialog)
-      const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
         buttons: [yesLabel, noLabel],
@@ -642,13 +680,22 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: confirm and restore defaults for the current language.
-  ipcMain.handle('request-restore-defaults', async () => {
+  ipcMain.handle('request-restore-defaults', async (event) => {
     try {
+      const mainWin = resolveMainWin();
+      if (
+        !isAuthorizedSender(
+          event,
+          mainWin,
+          'presets_main.restore.unauthorized',
+          'request-restore-defaults unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
+
       let settings = settingsState.getSettings();
       const { lang, dialogLang, dialogTexts } = getDialogContext(settings);
       const { yesLabel, noLabel } = getYesNoLabels(dialogTexts);
 
-      const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
         buttons: [yesLabel, noLabel],
@@ -724,12 +771,21 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: show info dialog when edit is requested with no selection.
-  ipcMain.handle('notify-no-selection-edit', async () => {
+  ipcMain.handle('notify-no-selection-edit', async (event) => {
     try {
+      const mainWin = resolveMainWin();
+      if (
+        !isAuthorizedSender(
+          event,
+          mainWin,
+          'presets_main.notifyNoSelectionEdit.unauthorized',
+          'notify-no-selection-edit unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
+
       const settings = settingsState.getSettings();
       const { dialogTexts } = getDialogContext(settings);
 
-      const { mainWin } = resolveWindows();
       await dialog.showMessageBox(mainWin || null, {
         type: 'none',
         buttons: [resolveDialogText(dialogTexts, 'ok', 'OK')],
@@ -752,8 +808,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 
   // IPC: confirm edit, replace preset, and broadcast.
-  ipcMain.handle('edit-preset', async (_event, payload) => {
+  ipcMain.handle('edit-preset', async (event, payload) => {
     try {
+      const presetWin = resolvePresetWin();
+      if (
+        !isAuthorizedSender(
+          event,
+          presetWin,
+          'presets_main.edit.unauthorized',
+          'edit-preset unauthorized (ignored).'
+        )
+      ) return { ok: false, code: 'UNAUTHORIZED' };
+
       const originalName =
         isPlainObject(payload) && Object.prototype.hasOwnProperty.call(payload, 'originalName')
           ? String(payload.originalName || '').trim()
@@ -778,7 +844,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { lang, dialogTexts } = getDialogContext(settings);
 
       const { yesLabel, noLabel } = getYesNoLabels(dialogTexts);
-      const { mainWin } = resolveWindows();
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
         buttons: [yesLabel, noLabel],

@@ -186,7 +186,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-02 First-run language selection reachable (clean run only)
 **Goal:** first-run language path is reachable and applies.
 1. (Clean run) Launch app after removing config.
-2. If language window appears, search/filter list and select **Español achilenao (`es-cl`)** (or any other language available).
+2. If language window appears, search/filter list and select **Español (`es`)** (or any other language available).
 3. Confirm window closes and app continues.
 
 **Expected:**
