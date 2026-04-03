@@ -154,21 +154,16 @@ function getDialogTexts() {
   }
 }
 
-async function confirmOverwrite(kind, ownerWin, name = '') {
+async function confirmLoadOverwrite(ownerWin, name = '') {
   const dialogTexts = getDialogTexts();
   const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
   const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-  const messageKey = kind === 'save'
-    ? 'snapshot_overwrite_save'
-    : 'snapshot_overwrite_load';
   let message = resolveDialogText(
     dialogTexts,
-    messageKey,
-    kind === 'save'
-      ? 'Overwrite existing snapshot file?'
-      : 'Replace current text with the selected snapshot?'
+    'snapshot_overwrite_load',
+    'Replace current text with the selected snapshot?'
   );
-  if (kind === 'load' && name) {
+  if (name) {
     message = message.replace('{name}', String(name));
   }
 
@@ -520,7 +515,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         snapshotRelPath = selectedInfo.snapshotRelPath;
       }
 
-      const confirmed = await confirmOverwrite('load', resolveOwnerWin(event, resolveMainWin), path.basename(selectedReal));
+      const confirmed = await confirmLoadOverwrite(resolveOwnerWin(event, resolveMainWin), path.basename(selectedReal));
       if (!confirmed) {
         return { ok: false, code: 'CONFIRM_DENIED' };
       }
