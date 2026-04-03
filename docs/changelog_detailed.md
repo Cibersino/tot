@@ -8,25 +8,20 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 
 ## Política
 
-### 1) Corte histórico
-- Las entradas `0.0.*` (hasta e incluyendo `0.0.930`) se consideran **históricas** y se mantienen con su formato actual.
-- Desde la versión **0.1.0** se adopta **SemVer estricto** y un formato mecánico nuevo.
-
-### 2) SemVer estricto (post-0.0.930)
+### 1) SemVer estricto
 - Formato obligatorio: `MAJOR.MINOR.PATCH` (tres componentes), por ejemplo `0.1.0`, `0.1.1`, `0.2.0`, `1.0.0`.
 - Regla de incremento (SemVer):
   - **MAJOR**: cambios incompatibles (breaking) en contratos/UX/datos persistidos.
   - **MINOR**: nuevas capacidades **compatibles** (features) o ampliaciones de contratos sin romper.
   - **PATCH**: fixes compatibles, ajustes menores y refactors sin impacto contractual.
-- Se prohíbe volver a usar el “patch como build counter” (ej. `0.0.930`, `0.0.901`, etc.) en nuevas versiones.
 - Pre-releases permitidos cuando aplique: `-alpha.N`, `-beta.N`, `-rc.N` (manteniendo `MAJOR.MINOR.PATCH` base).
 
-### 3) Fuente de verdad y tags (post-0.0.930)
+### 2) Fuente de verdad y tags
 - Fuente de verdad única de versión: `package.json` (`app.getVersion()`).
 - Tag de release obligatorio en GitHub: `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`) o `vMAJOR.MINOR.PATCH-rc.N` (p. ej. `v0.2.0-rc.1`).
 - Regla estricta: el updater requiere prefijo `v` (minúscula) en el `tag_name` de la latest release.
 
-### 4) Formato mecánico (post-0.0.930)
+### 3) Formato mecánico
 Cada versión nueva debe usar este esqueleto (secciones en este orden; **omitir** las que no apliquen):
 
 - `## [TAG] (opcional: título de la versión)`
@@ -51,11 +46,16 @@ Reglas:
 
 ## Unreleased
 
+---
+
+## [1.0.0] toT - Sofías fármakon
+
 ### Resumen
 
 - Importación/extracción/OCR: la ventana principal incorpora un flujo único por `📥` y drag/drop para importar texto desde archivos de texto/documento (`.txt`, `.md`, `.html`, `.htm`, `.docx`, `.rtf`, `.odt`), extraer desde imágenes (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.tif`, `.tiff`) y procesar PDFs con elección entre ruta nativa u OCR cuando el PDF tiene texto seleccionable.
-- OCR de imágenes/fotos de página (Issue #191): la ruta Google OCR deja de propagar un artefacto provider-side que podía anteponer una primera línea compuesta solo por separadores (`_`, `-` o espacios) y el log técnico de cierre de ejecución ahora expone `warnings` para que este saneamiento quede visible en smoke tests con `TOT_LOG_LEVEL`.
 - Sitio web de la app: se agrega una landing pública mínima en `https://totapp.org/` y una página dedicada `https://totapp.org/app-privacy/` para la política de privacidad general de la app y del OCR con Google.
+- Delta legal del release `1.0.0`: se explicita la postura de import/extract + Google OCR (OCR opcional, OAuth desktop en navegador externo, envío solo de archivos elegidos por el usuario y opción de desconexión), se actualizan las licencias redistribuidas de `@google-cloud/local-auth@3.0.1` y `googleapis@171.4.0`, y `Acerca de` pasa a enumerar los artefactos versionados efectivamente redistribuidos para import/extract.
+- Delta de seguridad del release `1.0.0`: se introduce la nueva superficie `import/extract` + OCR opcional con bridges preload/IPC explícitos y enforcement en main, persistencia app-owned bajo `config/import_extract_state.json` y `config/ocr_google_drive/*`, OAuth Google en navegador del sistema con scope fijo `drive.file`, restricciones de sender/límites para presets, Task Editor e import/extract, y sanity post-packaging del runtime de producción sin vulnerabilidades reportadas por `npm audit --omit=dev`.
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
 - Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
 - Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
@@ -66,6 +66,7 @@ Reglas:
 - Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
 - Preload listener APIs (Issue #161): se completa una auditoría repo-wide de preloads y se normalizan los listeners driftados al estándar `onX(cb) -> unsubscribe`, dejando explícitos los casos válidos de replay/buffer sin cambiar canales, payloads ni timing saludable.
 - Testing automatizado / CI (Issue #193): el repo deja de tener `npm test` como placeholder y pasa a contar con una baseline automatizada real basada en `node --test`, cobertura inicial de contratos en `electron/**`, extracción de núcleos puros para `count`/`format`, smoke local mínimo de arranque Electron y workflow Windows en GitHub Actions para ejecutar la suite estable.
+- Runtime / packaging baseline del release `1.0.0`: se actualiza el runtime a `electron@39.8.6` y el pipeline de empaquetado a `electron-builder@26.8.1`.
 
 ### Agregado
 
@@ -152,6 +153,11 @@ Reglas:
 - Páginas informativas / documentación in-app:
   - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`: se documentan el flujo `📥` / drag/drop, los formatos soportados, la decisión nativa/OCR para PDF, el modal final con `Repeticiones`, la privacidad del flujo OCR y la ruta de desconexión de Google OCR.
   - `public/info/acerca_de.html`: se actualizan sitio web, conectividad, privacidad y licencias de componentes incorporados para importación/extracción, OCR, PDF, DOCX y procesamiento de imágenes.
+  - Delta legal del release `1.0.0`: se deja explícita la postura documental/legal de import/extract + Google OCR (OCR opcional, OAuth desktop en navegador externo, envío solo de archivos elegidos por el usuario y opción de desconexión dentro de la app), se alinean los archivos redistribuidos de licencias de Google con las versiones efectivas `@google-cloud/local-auth@3.0.1` y `googleapis@171.4.0`, y `Acerca de` pasa a enumerar los artefactos versionados efectivamente redistribuidos para import/extract (`@google-cloud/local-auth@3.0.1`, `googleapis@171.4.0`, `mammoth@1.11.0`, `pdf-parse@1.1.1`, `sharp@0.34.4` y el runtime nativo de `sharp` con su license/notice correspondiente).
+- Runtime / packaging baseline del release `1.0.0`:
+  - `package.json`: upgrade de `electron` a `39.8.6`, `electron-builder` a `26.8.1`, y alineación de dependencias directas de Google OCR a `@google-cloud/local-auth@3.0.1` + `googleapis@171.4.0`.
+  - `package-lock.json`: refresh del árbol runtime/build para dejar el audit de producción en `0 vulnerabilities`, sacar a `Electron` del audit full y reducir el remanente a tooling/dev deps.
+  - Validación del baseline: `npm test`, `npm run test:smoke`, `npm run lint`, `npm run dist:win`, `Release smoke` y `Full regression` sobre el release candidate pasan en Windows.
 
 ### Arreglado
 
@@ -1431,14 +1437,16 @@ Reglas:
 
 ### Notas
 
-- `electron/updater.js` depende de tags `vMAJOR.MINOR.PATCH` (prefijo `v` minúscula) en la **latest release**.
-- Validar encoding del string `productName` en `package.json` (se observa riesgo de encoding del em dash en diffs).
-- `appdoc:license-electron` y `appdoc:licenses-chromium` están previstos: si se habilitan, asegurar que `LICENSE.electron.txt` y `LICENSES.chromium.html` estén efectivamente incluidos en el ZIP final (según checklist de release).
+- Queda una advertencia conocida `DEP0040` (`punycode`) al arrancar la app, rastreada al path de `@google-cloud/local-auth`; no aparece en `npm audit --omit=dev`, no bloqueó `Release smoke` / `Full regression`, y se deja como deuda técnica separada de la baseline runtime/packaging cerrada en `1.0.0`.
 
 ---
 
-## [0.0.930] - 2025-12-11
-### Modularización del proceso principal (Electron)
+## Históricos
+
+Sin SemVer estricto
+
+### [0.0.930] - 2025-12-11
+#### Modularización del proceso principal (Electron)
 
 - `electron/main.js`
   - Reduce su rol a orquestar la app: creación de ventanas, wiring de IPC y construcción del menú.
@@ -1483,10 +1491,10 @@ Reglas:
 
 ---
 
-## [0.0.920] - 2025-12-09
-### Depuración y orden del código
+### [0.0.920] - 2025-12-09
+#### Depuración y orden del código
 
-#### Modularización de renderer
+##### Modularización de renderer
 - Nuevos módulos:
   - `constants.js` — centraliza constantes.
   - `count.js` — centraliza cálculos de conteo.
@@ -1499,7 +1507,7 @@ Reglas:
 - Limpieza de duplicados, vestigios y fallbacks innecesarios.
 - Solución de bugs y fixes menores.
 
-#### i18n unificado
+##### i18n unificado
 - `preset_modal.js` y `manual.js` pasan a depender de `RendererI18n` (vía `js/i18n.js` en los HTML), eliminando cargadores/cachés propios.
 - Modal de presets:
   - Una sola aplicación de traducciones al recibir `preset-init`, respetando modo (new/edit) e idioma del usuario.
@@ -1514,8 +1522,8 @@ Reglas:
 
 ---
 
-## [0.0.910] - 2025-12-07
-### Internacionalización
+### [0.0.910] - 2025-12-07
+#### Internacionalización
 
 - Implementación de arquitectura multi-lenguaje.
 - UI principal y modales traducidos (renderer/main), incluyendo tooltips y alertas persistentes.
@@ -1525,8 +1533,8 @@ Reglas:
 
 ---
 
-## [0.0.901] - 2025-12-06
-### UI / Info modal
+### [0.0.901] - 2025-12-06
+#### UI / Info modal
 
 - Unificación de Guía básica, Instrucciones completas y FAQ en un solo HTML con secciones.
 - Mejoras de diseño del infomodal (compartido con Readme y Acerca de).
@@ -1535,14 +1543,14 @@ Reglas:
 
 ---
 
-## [0.0.9] - 2025-12-05
-### Ventana flotante del cronómetro + migración del cronómetro a main process
+### [0.0.9] - 2025-12-05
+#### Ventana flotante del cronómetro + migración del cronómetro a main process
 
-#### Resumen ejecutivo
+##### Resumen ejecutivo
 Se implementó una ventana flotante (VF) funcional y controlable que requirió mover la autoría del cronómetro al main process.
 Resultado: cronómetro fiable y sincronizado entre ventana principal y VF, con UX y recursos optimizados.
 
-#### Resultado final (arquitectura)
+##### Resultado final (arquitectura)
 - Cronómetro autoritativo en `main`; `renderer` y `flotante` operan como clientes:
   - comandos → `main`
   - `crono-state` desde `main` → clientes
@@ -1550,7 +1558,7 @@ Resultado: cronómetro fiable y sincronizado entre ventana principal y VF, con U
 - Interacción inmediata desde VF: comandos aplican en `main` y el estado se difunde a ambas vistas.
 - UX replicada respecto a la versión anterior (cronómetro en renderer), pero robusta frente a throttling/background.
 
-#### Archivos afectados
+##### Archivos afectados
 - `main.js`
   - Añadido cronómetro central (`crono`), handlers `crono-toggle`, `crono-reset`, `crono-set-elapsed`,
     broadcast (`crono-state`) y `createFloatingWindow()` actualizado (posicionamiento).
@@ -1566,28 +1574,28 @@ Resultado: cronómetro fiable y sincronizado entre ventana principal y VF, con U
   - Reemplazo del botón VF por el `switch` y reutilización de estilos `.switch` / `.slider`;
     estilos de cronómetro y `timer-controls` simplificados.
 
-#### Bugs abiertos / observaciones
+##### Bugs abiertos / observaciones
 - VF puede desaparecer al hacer clic sobre ella cuando hay otra aplicación en fullscreen (p. ej., slideshow/juego) — prioridad baja.
 - Observación: comportamiento dependiente del SO/gestor de ventanas; por diseño se permitió que la VF ceda topmost en fullscreen (requisito inicial).
   Queda por decidir si se fuerza visibilidad (posibles conflictos UX/OS).
 
-#### Nota técnica (decisión clave)
+##### Nota técnica (decisión clave)
 - Mantener timekeeping en `main` (Date.now + interval) resolvió sincronización y throttling.
 - Se priorizó fiabilidad y consistencia por sobre mantener cronómetro en renderer.
 
 ---
 
-## [0.0.8] - 2025-12-03
-### Nueva funcionalidad: modo de conteo de texto (y avance multilenguaje)
+### [0.0.8] - 2025-12-03
+#### Nueva funcionalidad: modo de conteo de texto (y avance multilenguaje)
 
-#### Modo preciso vs. modo simple (UI)
+##### Modo preciso vs. modo simple (UI)
 - Se añadió un switch “Modo preciso” en **Resultados del conteo**.
 - Activado → conteo **preciso**; desactivado → conteo **simple**.
 - Cambiar el modo recalcula automáticamente el texto vigente.
 - La preferencia se guarda de forma persistente en `user_settings.json`.
 - La configuración se aplica al inicio de la app, garantizando coherencia.
 
-#### Funciones de conteo
+##### Funciones de conteo
 - `contarTextoSimple(texto)`
   - Basado en regex y `length`.
   - Bajo costo computacional.
@@ -1610,14 +1618,14 @@ Ambas retornan un objeto uniforme:
 }
 ```
 
-#### Soporte multilenguaje
+##### Soporte multilenguaje
 
 * Variable global `idiomaActual` cargada desde `settingsCache.language`.
 * Función `setIdiomaActual(nuevoIdioma)` permite cambios dinámicos de idioma.
 * `Intl.Segmenter` utiliza el idioma correcto.
 * La app puede cambiar idioma dinámicamente y el conteo se adapta sin reinicio.
 
-#### Persistencia y sincronización
+##### Persistencia y sincronización
 
 * `modeConteo` agregado a `user_settings.json`.
 * Cambios emitidos vía IPC (`settings-updated`) para refrescar UI.
@@ -1629,7 +1637,7 @@ Ambas retornan un objeto uniforme:
   * `request-delete-preset`
   * `request-restore-defaults`
 
-#### Funciones auxiliares
+##### Funciones auxiliares
 
 ```js
 function setModoConteo(nuevoModo) {
@@ -1645,7 +1653,7 @@ function setIdiomaActual(nuevoIdioma) {
 }
 ```
 
-#### Resumen técnico
+##### Resumen técnico
 
 * Dos sistemas de conteo coexistentes.
 * Modo preciso Unicode-aware.
@@ -1655,16 +1663,16 @@ function setIdiomaActual(nuevoIdioma) {
 
 ---
 
-## [0.0.7] - 2025-12-02
+### [0.0.7] - 2025-12-02
 
-### Robustez del texto vigente + mejoras del flujo con editor
+#### Robustez del texto vigente + mejoras del flujo con editor
 
-#### Mejoras principales
+##### Mejoras principales
 
 * Límite de tamaño máximo del texto vigente: `MAX_TEXT_CHARS = 10_000_000`.
 * Truncado automático y mejor robustez del flujo de edición entre ventana principal y modal editor.
 
-#### Cambios en `main.js`
+##### Cambios en `main.js`
 
 * Añadido `MAX_TEXT_CHARS = 10_000_000` y truncado automático al cargar `current_text.json`.
 * Exposición de `MAX_TEXT_CHARS` vía `get-app-config` (IPC) como fuente de verdad para UI y modal.
@@ -1674,13 +1682,13 @@ function setIdiomaActual(nuevoIdioma) {
 * `manual-init-text` y `manual-text-updated` envían `{ text, meta }` para que el editor aplique actualizaciones diferenciales cuando corresponda (preservando undo/redo).
 * Compatibilidad hacia atrás: `set-current-text` sigue aceptando strings.
 
-#### Cambios en `renderer.js`
+##### Cambios en `renderer.js`
 
 * UI principal envía `setCurrentText` con `{ text, meta }` y consume `{ ok, truncated, length, text }` para sincronizar preview y avisos.
 * `btnAppendClipboardNewLine` corta el texto añadido a la capacidad restante para evitar exceder el límite.
 * Mejor interoperabilidad con el editor gracias a metadata (`source`, `action`) en payloads.
 
-#### Cambios en `manual.js`
+##### Cambios en `manual.js`
 
 * Introduce `showNotice` para mensajes no bloqueantes en el editor.
 * Inserciones pequeñas por paste/drop usan técnicas nativas (execCommand / setRangeText) para mantener undo/redo cuando sea posible.
@@ -1690,11 +1698,11 @@ function setIdiomaActual(nuevoIdioma) {
 
 ---
 
-## [0.0.6] - 2025-11-28
+### [0.0.6] - 2025-11-28
 
-### Menú (habilitación funcional) + presets por defecto
+#### Menú (habilitación funcional) + presets por defecto
 
-#### Menú / barra superior (funcional)
+##### Menú / barra superior (funcional)
 
 * Botones informativos habilitados:
 
@@ -1704,13 +1712,13 @@ function setIdiomaActual(nuevoIdioma) {
   * Si no se encuentra el HTML, muestra aviso: “No hay contenido disponible para ...”.
 * Archivos agregados: `guia_basica.html`, `instrucciones.html`, `faq.html`, `readme.html`, `acerca_de.html`.
 
-#### Notas (CSP / contenido)
+##### Notas (CSP / contenido)
 
 * Por el momento esos HTML contienen texto de prueba.
 * Al editarlos, verificar que ningún HTML dentro de `public/info/` incluya scripts inline para cumplir CSP
   (con el setup actual no debería generar problemas, pero es una restricción a mantener).
 
-#### Presets por defecto (carpeta editable)
+##### Presets por defecto (carpeta editable)
 
 * Botón “Presets por defecto” abre `config/presets_defaults` en el explorador del sistema operativo.
 * El usuario puede modificar/eliminar `.json` sin romper la app.
@@ -1723,18 +1731,18 @@ function setIdiomaActual(nuevoIdioma) {
 * Se usa `shell.openPath(...)`. En entornos empaquetados (asar) funciona si la ruta está fuera del asar
   (la carpeta `config/` está fuera), por lo que no debería presentar problemas.
 
-#### Otros
+##### Otros
 
 * Modificaciones menores de diseño para ajustar layout.
 * El preset default general cambió su WPM de 240 a 250 y tiene nueva descripción.
 
 ---
 
-## [0.0.5] - 2025-11-27
+### [0.0.5] - 2025-11-27
 
-### Menú/barra superior (estructura) + selector de idioma + presets
+#### Menú/barra superior (estructura) + selector de idioma + presets
 
-#### Menú / barra superior (UI)
+##### Menú / barra superior (UI)
 
 * Se habilitó la barra superior reemplazando la barra por defecto de Electron.
 * Botones creados (visualmente), agrupados por secciones:
@@ -1746,7 +1754,7 @@ function setIdiomaActual(nuevoIdioma) {
   * Links de interés; COLABORA ($)
   * ? → Actualizar a última versión; Readme; Acerca de
 
-#### Menú (flujo técnico inicial)
+##### Menú (flujo técnico inicial)
 
 * Se habilitó un sistema de flujo (por ahora sin funciones reales).
 * Flujo: main → preload → `menu.js` → renderer (acciones).
@@ -1761,16 +1769,16 @@ function setIdiomaActual(nuevoIdioma) {
   * `renderer.js`: acciones temporales (avisos WIP) para botones nuevos.
 * `index.html`: se agregó `<script src="./js/menu.js"></script>` antes de `renderer.js` para garantizar registro previo del router.
 
-#### Idioma (primer arranque)
+##### Idioma (primer arranque)
 
 * Nuevo selector de idioma en primer arranque.
 
-#### Presets (optimización sin cambios funcionales buscados)
+##### Presets (optimización sin cambios funcionales buscados)
 
 * Se eliminó la inclusión de `preset_modal.js` en `index.html`; ahora se carga solo en `preset_modal.html`.
 * Lógica del modal envuelta en `DOMContentLoaded` y con chequeos de existencia de elementos para evitar errores.
 
-#### Otros
+##### Otros
 
 * Calibración del rango del WMP de 100-500 a 50-500.
 
@@ -1781,9 +1789,9 @@ function setIdiomaActual(nuevoIdioma) {
 
 ---
 
-## [0.0.4] - 2025-11-24
+### [0.0.4] - 2025-11-24
 
-### Renovación completa de UI + nuevos botones
+#### Renovación completa de UI + nuevos botones
 
 * Renovación completa del diseño visual de la pantalla principal, la ventana de texto completo y los modales de presets.
 
@@ -1813,15 +1821,15 @@ function setIdiomaActual(nuevoIdioma) {
 
 ---
 
-## [0.0.3] - 2025-11-22
+### [0.0.3] - 2025-11-22
 
-### Presets + botón Editar
+#### Presets + botón Editar
 
 * Implementación del botón **Editar** con confirmación nativa.
 * Consolidación de flujos de presets: Nuevo, Borrar, Restaurar y handlers IPC asociados.
 * Funcionalidad estable y retrocompatible de editor y cronómetro.
 
-## Before [0.0.3]
+### Before [0.0.3]
 
   Tempus edax rerum
   

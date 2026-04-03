@@ -16,6 +16,7 @@
 // Imports / logger
 // =============================================================================
 
+const { BrowserWindow } = require('electron');
 const Log = require('../log');
 
 const log = Log.get('import-extract-preconditions');
@@ -98,20 +99,52 @@ function buildReadyResult() {
   };
 }
 
+function isAuthorizedSender(event, mainWin) {
+  try {
+    const senderWin = event && event.sender
+      ? BrowserWindow.fromWebContents(event.sender)
+      : null;
+    if (!mainWin || senderWin !== mainWin) {
+      log.warnOnce(
+        'import_extract_preconditions.unauthorized',
+        'import-extract-check-preconditions unauthorized (ignored).'
+      );
+      return false;
+    }
+    return true;
+  } catch (err) {
+    log.warn('import-extract-check-preconditions sender validation failed:', err);
+    return false;
+  }
+}
+
 // =============================================================================
 // IPC registration / handler
 // =============================================================================
 
-function registerIpc(ipcMain, { getPreconditionContext } = {}) {
+function registerIpc(ipcMain, { getWindows, getPreconditionContext } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[import_extract_preconditions] registerIpc requires ipcMain');
+  }
+  if (typeof getWindows !== 'function') {
+    throw new Error('[import_extract_preconditions] registerIpc requires getWindows()');
   }
   if (typeof getPreconditionContext !== 'function') {
     throw new Error('[import_extract_preconditions] registerIpc requires getPreconditionContext()');
   }
 
-  ipcMain.handle('import-extract-check-preconditions', async () => {
+  const resolveMainWin = () => {
+    const windows = getWindows() || {};
+    return windows.mainWin || null;
+  };
+
+  ipcMain.handle('import-extract-check-preconditions', async (event) => {
     try {
+      const mainWin = resolveMainWin();
+      if (!isAuthorizedSender(event, mainWin)) {
+        return { ok: false, code: 'UNAUTHORIZED' };
+      }
+
       const context = getPreconditionContext();
       assertValidPreconditionContext(context);
       const openSecondaryWindows = normalizeWindowEntries(context.openSecondaryWindows);

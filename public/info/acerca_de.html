@@ -21,6 +21,7 @@
         <li><strong>Versión:</strong> <span id="appVersion"></span></li>
         <li><strong>Plataforma:</strong> Desktop (Electron)</li>
         <li><strong>Entorno:</strong> <span id="appEnv"></span></li>
+        <li><strong>Runtime:</strong> <span id="appRuntimeVersions"></span></li>
       </ul>
     </section>
 
@@ -92,26 +93,44 @@
           ver <code><a href="appdoc:license-app">LICENSE</a></code>.
         </li>
         <li>
-          <strong>Tipografía Baskervville</strong> — SIL Open Font License 1.1 (OFL):
+          <strong>Baskervville</strong> — SIL Open Font License 1.1 (OFL):
           ver <code><a href="appdoc:license-baskervville">LICENSE_Baskervville_OFL.txt</a></code>.
         </li>
         <li>
-          <strong>Electron / Chromium</strong> — avisos y licencias del runtime:
-          ver <code><a href="appdoc:license-electron">LICENSE.electron.txt</a></code> y
+          <strong>Electron runtime del build</strong> — licencia/avisos del runtime empaquetado:
+          ver <code><a href="appdoc:license-electron">LICENSE.electron.txt</a></code>.
+        </li>
+        <li>
+          <strong>Chromium runtime del build</strong> — avisos/licencias del runtime empaquetado:
           <code><a href="appdoc:licenses-chromium">LICENSES.chromium.html</a></code>.
         </li>
         <li>
-          <strong>Función de importación y extracción de archivos</strong> — licencias de componentes incorporados para
-          OCR, extracción PDF, extracción DOCX y procesamiento de imágenes:
-          ver <code><a href="appdoc:license-import-extract-google-auth">Google OAuth local</a></code>,
-          <code><a href="appdoc:license-import-extract-google-apis">cliente de Google APIs</a></code>,
-          <code><a href="appdoc:license-import-extract-docx">librería DOCX</a></code>,
-          <code><a href="appdoc:license-import-extract-pdf">librería PDF</a></code>,
-          <code><a href="appdoc:license-import-extract-image-processing">librería de procesamiento de imágenes</a></code>
-          y
-          <code><a href="appdoc:license-import-extract-image-processing-runtime">runtime nativo de procesamiento de imágenes</a></code>.
-          El aviso de componentes incorporados de ese runtime puede verse en
-          <code><a href="appdoc:notice-import-extract-image-processing-runtime">aviso de componentes incorporados del runtime nativo de procesamiento de imágenes</a></code>.
+          <strong>@google-cloud/local-auth@3.0.1</strong> — Apache-2.0:
+          ver <code><a href="appdoc:license-import-extract-google-auth">LICENSE_@google-cloud_local-auth_3.0.1.txt</a></code>.
+        </li>
+        <li>
+          <strong>googleapis@171.4.0</strong> — Apache-2.0:
+          ver <code><a href="appdoc:license-import-extract-google-apis">LICENSE_googleapis_171.4.0.txt</a></code>.
+        </li>
+        <li>
+          <strong>mammoth@1.11.0</strong> — BSD-2-Clause:
+          ver <code><a href="appdoc:license-import-extract-docx">LICENSE_mammoth_1.11.0.txt</a></code>.
+        </li>
+        <li>
+          <strong>pdf-parse@1.1.1</strong> — MIT:
+          ver <code><a href="appdoc:license-import-extract-pdf">LICENSE_pdf-parse_1.1.1.txt</a></code>.
+        </li>
+        <li>
+          <strong>sharp@0.34.4</strong> — Apache-2.0:
+          ver <code><a href="appdoc:license-import-extract-image-processing">LICENSE_sharp_0.34.4.txt</a></code>.
+        </li>
+        <li id="sharpRuntimeLicenseRow">
+          <strong><span id="sharpRuntimePackageName">@img/sharp-<plataforma>-<arquitectura>@0.34.4</span></strong> — licencia del runtime nativo empaquetado para esta plataforma:
+          ver <code><a href="appdoc:license-import-extract-image-processing-runtime">licencia del runtime nativo de sharp</a></code>.
+        </li>
+        <li id="sharpRuntimeNoticeRow">
+          <strong><span id="sharpRuntimeNoticePackageName">@img/sharp-<plataforma>-<arquitectura>@0.34.4</span></strong> — aviso de componentes incorporados del runtime nativo:
+          ver <code><a href="appdoc:notice-import-extract-image-processing-runtime">aviso del runtime nativo de sharp</a></code>.
         </li>
       </ul>
     </section>

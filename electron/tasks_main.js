@@ -25,7 +25,10 @@ const { normalizeSnapshotRelPath } = require('./current_text_snapshots_main');
 const {
   DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
+  TASK_LIST_MAX_ROWS,
+  TASK_LIBRARY_MAX_ITEMS,
   TASK_ROW_TEXT_MAX_CHARS,
+  TASK_ROW_COMMENT_MAX_CHARS,
   TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 } = require('./constants_main');
@@ -172,6 +175,7 @@ function normalizeRow(raw) {
   const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
   if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   const comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
+  if (comentario.length > TASK_ROW_COMMENT_MAX_CHARS) return { ok: false, code: 'COMENTARIO_TOO_LONG' };
   const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
   return {
     ok: true,
@@ -194,6 +198,7 @@ function normalizeLibraryEntry(raw, includeComment) {
   if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   let comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
   if (!includeComment) comentario = '';
+  if (comentario.length > TASK_ROW_COMMENT_MAX_CHARS) return { ok: false, code: 'COMENTARIO_TOO_LONG' };
   const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
   const entry = { texto, tiempoSeconds, tipo, enlace };
   if (comentario) entry.comentario = comentario;
@@ -232,6 +237,9 @@ function normalizeTaskList(raw) {
   if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_SCHEMA' };
   const rowsRaw = Array.isArray(raw.rows) ? raw.rows : null;
   if (!rowsRaw) return { ok: false, code: 'INVALID_SCHEMA' };
+  if (rowsRaw.length > TASK_LIST_MAX_ROWS) {
+    return { ok: false, code: 'ROWS_TOO_MANY' };
+  }
 
   const normalizedRows = [];
   for (const r of rowsRaw) {
@@ -267,6 +275,9 @@ function loadLibraryData() {
     return { ok: false, code: res.code };
   }
   if (!Array.isArray(res.data)) return { ok: false, code: 'INVALID_SCHEMA' };
+  if (res.data.length > TASK_LIBRARY_MAX_ITEMS) {
+    return { ok: false, code: 'LIBRARY_TOO_LARGE' };
+  }
   return { ok: true, items: res.data };
 }
 
@@ -458,6 +469,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
 
       const rowsRaw = payload && Array.isArray(payload.rows) ? payload.rows : null;
       if (!rowsRaw) return { ok: false, code: 'INVALID_SCHEMA' };
+      if (rowsRaw.length > TASK_LIST_MAX_ROWS) {
+        return { ok: false, code: 'ROWS_TOO_MANY' };
+      }
 
       const normalizedRows = [];
       for (const r of rowsRaw) {
@@ -652,6 +666,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         }
         items.splice(existingIdx, 1, resEntry.entry);
       } else {
+        if (items.length >= TASK_LIBRARY_MAX_ITEMS) {
+          return { ok: false, code: 'LIBRARY_TOO_LARGE' };
+        }
         items.push(resEntry.entry);
       }
 

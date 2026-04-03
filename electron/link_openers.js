@@ -49,17 +49,17 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     relativePath: path.join(
       'public',
       'extraction_feature_licenses',
-      'LICENSE_@google-cloud_local-auth_2.1.0.txt'
+      'LICENSE_@google-cloud_local-auth_3.0.1.txt'
     ),
-    tempName: 'tot_LICENSE_@google-cloud_local-auth_2.1.0.txt',
+    tempName: 'tot_LICENSE_@google-cloud_local-auth_3.0.1.txt',
   },
   'license-import-extract-google-apis': {
     relativePath: path.join(
       'public',
       'extraction_feature_licenses',
-      'LICENSE_googleapis_105.0.0.txt'
+      'LICENSE_googleapis_171.4.0.txt'
     ),
-    tempName: 'tot_LICENSE_googleapis_105.0.0.txt',
+    tempName: 'tot_LICENSE_googleapis_171.4.0.txt',
   },
   'license-import-extract-docx': {
     relativePath: path.join(
@@ -94,7 +94,7 @@ const IMAGE_PROCESSING_RUNTIME_NOTICE_DOC_KEYS = new Set([
   'notice-import-extract-image-processing-runtime',
 ]);
 const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
-  win32: {
+  'win32:x64': {
     relativePath: path.join(
       'public',
       'extraction_feature_licenses',
@@ -102,15 +102,63 @@ const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
     ),
     tempName: 'tot_LICENSE_@img_sharp-win32-x64_0.34.4.txt',
   },
+  'darwin:x64': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'LICENSE_@img_sharp-darwin-x64_0.34.4.txt'
+    ),
+    tempName: 'tot_LICENSE_@img_sharp-darwin-x64_0.34.4.txt',
+  },
+  'darwin:arm64': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'LICENSE_@img_sharp-darwin-arm64_0.34.4.txt'
+    ),
+    tempName: 'tot_LICENSE_@img_sharp-darwin-arm64_0.34.4.txt',
+  },
+  'linux:x64': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'LICENSE_@img_sharp-linux-x64_0.34.4.txt'
+    ),
+    tempName: 'tot_LICENSE_@img_sharp-linux-x64_0.34.4.txt',
+  },
 });
 const IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES = Object.freeze({
-  win32: {
+  'win32:x64': {
     relativePath: path.join(
       'public',
       'extraction_feature_licenses',
       'NOTICE_@img_sharp-win32-x64_0.34.4.txt'
     ),
     tempName: 'tot_NOTICE_@img_sharp-win32-x64_0.34.4.txt',
+  },
+  'darwin:x64': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'NOTICE_@img_sharp-darwin-x64_0.34.4.txt'
+    ),
+    tempName: 'tot_NOTICE_@img_sharp-darwin-x64_0.34.4.txt',
+  },
+  'darwin:arm64': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'NOTICE_@img_sharp-darwin-arm64_0.34.4.txt'
+    ),
+    tempName: 'tot_NOTICE_@img_sharp-darwin-arm64_0.34.4.txt',
+  },
+  'linux:x64': {
+    relativePath: path.join(
+      'public',
+      'extraction_feature_licenses',
+      'NOTICE_@img_sharp-linux-x64_0.34.4.txt'
+    ),
+    tempName: 'tot_NOTICE_@img_sharp-linux-x64_0.34.4.txt',
   },
 });
 
@@ -170,24 +218,58 @@ async function openBundledPublicDoc(app, shell, rawKey, relativePath, tempName) 
   return openPathWithLog(shell, rawKey, tempPath);
 }
 
-function getImageProcessingRuntimePublicDoc(platform = process.platform) {
-  if (!platform || typeof platform !== 'string') {
-    return null;
+function getImageProcessingRuntimeKey(platform = process.platform, arch = process.arch) {
+  const normalizedPlatform = typeof platform === 'string' ? platform.trim() : '';
+  const normalizedArch = typeof arch === 'string' ? arch.trim() : '';
+  if (!normalizedPlatform || !normalizedArch) {
+    return '';
   }
-  // Platform-specific native sharp runtime docs must match the actual packaged target.
-  // At the moment this repo only carries the Windows runtime legal files locally.
-  // macOS/Linux variants should be added from native builds, not guessed from Windows.
-  return IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES[platform] || null;
+  return `${normalizedPlatform}:${normalizedArch}`;
 }
 
-function getImageProcessingRuntimeNoticePublicDoc(platform = process.platform) {
-  if (!platform || typeof platform !== 'string') {
+function getImageProcessingRuntimePublicDoc(platform = process.platform, arch = process.arch) {
+  const runtimeKey = getImageProcessingRuntimeKey(platform, arch);
+  if (!runtimeKey) {
     return null;
   }
-  // Platform-specific native sharp runtime notice files must match the actual packaged target.
-  // At the moment this repo only carries the Windows runtime legal files locally.
-  // macOS/Linux variants should be added from native builds, not guessed from Windows.
-  return IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES[platform] || null;
+  return IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES[runtimeKey] || null;
+}
+
+function getImageProcessingRuntimeNoticePublicDoc(platform = process.platform, arch = process.arch) {
+  const runtimeKey = getImageProcessingRuntimeKey(platform, arch);
+  if (!runtimeKey) {
+    return null;
+  }
+  return IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES[runtimeKey] || null;
+}
+
+async function getAppDocAvailability(app, rawKey) {
+  const normalizedKey = typeof rawKey === 'string' ? rawKey.trim() : '';
+  if (!normalizedKey) {
+    return { ok: false, available: false, reason: 'blocked' };
+  }
+
+  if (IMAGE_PROCESSING_RUNTIME_DOC_KEYS.has(normalizedKey)) {
+    const runtimeDoc = getImageProcessingRuntimePublicDoc(process.platform, process.arch);
+    if (!runtimeDoc) {
+      return { ok: true, available: false, reason: 'not_available_on_platform' };
+    }
+    const srcPath = path.join(app.getAppPath(), runtimeDoc.relativePath);
+    const available = await fileExists(srcPath);
+    return { ok: true, available, reason: available ? '' : 'not_found' };
+  }
+
+  if (IMAGE_PROCESSING_RUNTIME_NOTICE_DOC_KEYS.has(normalizedKey)) {
+    const runtimeNoticeDoc = getImageProcessingRuntimeNoticePublicDoc(process.platform, process.arch);
+    if (!runtimeNoticeDoc) {
+      return { ok: true, available: false, reason: 'not_available_on_platform' };
+    }
+    const srcPath = path.join(app.getAppPath(), runtimeNoticeDoc.relativePath);
+    const available = await fileExists(srcPath);
+    return { ok: true, available, reason: available ? '' : 'not_found' };
+  }
+
+  return { ok: false, available: false, reason: 'unsupported_doc' };
 }
 
 // =============================================================================
@@ -341,6 +423,15 @@ function registerLinkIpc({ ipcMain, app, shell }) {
     } catch (err) {
       log.error('Error processing open-app-doc:', err);
       return { ok: false, reason: 'error' };
+    }
+  });
+
+  ipcMain.handle('get-app-doc-availability', async (_e, docKey) => {
+    try {
+      return await getAppDocAvailability(app, docKey);
+    } catch (err) {
+      log.error('Error processing get-app-doc-availability:', err);
+      return { ok: false, available: false, reason: 'error' };
     }
   });
 }
