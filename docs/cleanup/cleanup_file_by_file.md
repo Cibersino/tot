@@ -2,11 +2,11 @@
 
 ## Elección de archivo: 
 
-- En proceso: `electron\current_text_snapshots_main.js`
+- En proceso: `public\js\current_text_snapshots.js`
 
-- Archivos ya ordenados y limpiados:
+- Archivos ya ordenados y limpiados: `electron\current_text_snapshots_main.js`
 
-- Faltan: `public\js\current_text_snapshots.js`, `public\js\snapshot_save_tags_modal.js`, `public\js\lib\snapshot_tag_catalog.js`.
+- Faltan: `public\js\snapshot_save_tags_modal.js`, `public\js\lib\snapshot_tag_catalog.js`.
 
 ## Principios base de comportamiento (normativo)
 
