@@ -21,7 +21,7 @@
   "devDependencies": {
     "depcheck": "^1.4.7",
     "electron": "^39.8.6",
-    "electron-builder": "^26.4.0",
+    "electron-builder": "^26.8.1",
     "eslint": "^8.57.0",
     "knip": "^5.76.3",
     "madge": "^8.0.0"
