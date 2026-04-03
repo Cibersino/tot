@@ -194,6 +194,56 @@
         "close_unsaved": "Existem mudanças não salvas. Deseja fechar sem salvar?"
       }
     },
+    "snapshot_save_tags": {
+      "title": "Salvar snapshot de texto",
+      "message": "Opcionalmente marque este snapshot de texto antes de escolher onde salvá-lo.",
+      "labels": {
+        "language": "Idioma",
+        "type": "Tipo",
+        "difficulty": "Dificuldade"
+      },
+      "empty": {
+        "language": "Sem tag de idioma",
+        "type": "Sem tag de tipo",
+        "difficulty": "Sem tag de dificuldade"
+      },
+      "buttons": {
+        "confirm": "Salvar snapshot de texto",
+        "cancel": "Cancelar"
+      },
+      "close_aria": "Fechar diálogo para salvar snapshot de texto",
+      "options": {
+        "language": {
+          "es": "Espanhol",
+          "en": "Inglês",
+          "pt": "Português",
+          "fr": "Francês",
+          "de": "Alemão",
+          "it": "Italiano",
+          "arn": "Mapudungun",
+          "ja": "Japonês",
+          "ko": "Coreano",
+          "ru": "Russo",
+          "tr": "Turco",
+          "id": "Indonésio",
+          "hi": "Hindi",
+          "bn": "Bengali",
+          "ur": "Urdu",
+          "ar": "Árabe",
+          "zh_hans": "Chinês simplificado",
+          "zh_hant": "Chinês tradicional"
+        },
+        "type": {
+          "fiction": "Ficção",
+          "non_fiction": "Não ficção"
+        },
+        "difficulty": {
+          "easy": "Fácil",
+          "normal": "Normal",
+          "hard": "Difícil"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "Novo preset",
       "title_edit": "Editar preset",

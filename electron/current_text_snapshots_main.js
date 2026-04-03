@@ -6,8 +6,11 @@
 // =============================================================================
 // Responsibilities:
 // - Provide save/load snapshot flows for current text via native dialogs.
+// - Persist optional snapshot tag metadata on save.
 // - Enforce snapshot path containment under config/saved_current_texts.
-// - Validate snapshot JSON schema { text: "<string>" }.
+// - Validate legacy and tagged snapshot JSON schemas:
+//   { text: "<string>" }
+//   { text: "<string>", tags?: { language?, type?, difficulty? } }
 // - Apply loaded snapshots through text_state (same semantics as overwrite).
 // - Register IPC handlers: current-text-snapshot-save / current-text-snapshot-select / current-text-snapshot-load.
 // =============================================================================
@@ -20,6 +23,7 @@ const path = require('path');
 const { dialog, BrowserWindow } = require('electron');
 const Log = require('./log');
 const { DEFAULT_LANG } = require('./constants_main');
+const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const {
   getCurrentTextSnapshotsDir,
   ensureCurrentTextSnapshotsDir,
@@ -31,12 +35,21 @@ const menuBuilder = require('./menu_builder');
 
 const log = Log.get('current-text-snapshots');
 log.debug('Current text snapshots main starting...');
+if (!snapshotTagCatalog
+  || !Array.isArray(snapshotTagCatalog.TAG_KEYS)
+  || typeof snapshotTagCatalog.isPlainObject !== 'function'
+  || typeof snapshotTagCatalog.normalizeLanguageTag !== 'function'
+  || typeof snapshotTagCatalog.normalizeTypeTag !== 'function'
+  || typeof snapshotTagCatalog.normalizeDifficultyTag !== 'function') {
+  throw new Error('[current_text_snapshots] SnapshotTagCatalog unavailable; cannot continue');
+}
 
 // =============================================================================
 // Constants / config
 // =============================================================================
 const SNAPSHOT_EXT = '.json';
 const SNAPSHOT_NAME_RE = /^current_text_(\d+)\.json$/i;
+const { TAG_KEYS: SNAPSHOT_TAG_KEYS } = snapshotTagCatalog;
 
 // =============================================================================
 // Helpers (paths + dialogs)
@@ -243,7 +256,69 @@ function parseSnapshotFile(selectedReal) {
     log.warn('snapshot schema invalid:', { selectedReal });
     return { ok: false, code: 'INVALID_SCHEMA', message: 'invalid snapshot schema' };
   }
-  return { ok: true, text: parsed.text };
+
+  const tagsInfo = sanitizeSnapshotTags(parsed.tags, { allowMissing: true });
+  if (!tagsInfo.ok) {
+    log.warn('snapshot tags schema invalid:', { selectedReal, message: tagsInfo.message });
+    return { ok: false, code: 'INVALID_SCHEMA', message: tagsInfo.message };
+  }
+
+  return { ok: true, text: parsed.text, tags: tagsInfo.tags };
+}
+
+function sanitizeSnapshotTags(rawTags, { allowMissing = false } = {}) {
+  if (rawTags == null) {
+    return allowMissing
+      ? { ok: true, tags: null }
+      : { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags missing' };
+  }
+  if (!snapshotTagCatalog.isPlainObject(rawTags)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags must be an object' };
+  }
+
+  const rawKeys = Object.keys(rawTags);
+  if (rawKeys.some((key) => !SNAPSHOT_TAG_KEYS.includes(key))) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags contain unsupported keys' };
+  }
+
+  const tags = {};
+
+  if (Object.prototype.hasOwnProperty.call(rawTags, 'language')) {
+    const language = snapshotTagCatalog.normalizeLanguageTag(rawTags.language);
+    if (!language) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot language tag invalid' };
+    }
+    tags.language = language;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(rawTags, 'type')) {
+    const type = snapshotTagCatalog.normalizeTypeTag(rawTags.type);
+    if (!type) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot type tag invalid' };
+    }
+    tags.type = type;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(rawTags, 'difficulty')) {
+    const difficulty = snapshotTagCatalog.normalizeDifficultyTag(rawTags.difficulty);
+    if (!difficulty) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot difficulty tag invalid' };
+    }
+    tags.difficulty = difficulty;
+  }
+
+  return { ok: true, tags: Object.keys(tags).length ? tags : null };
+}
+
+function sanitizeSnapshotSavePayload(payload) {
+  if (payload == null) return { ok: true, tags: null };
+  if (!snapshotTagCatalog.isPlainObject(payload)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot save payload must be an object' };
+  }
+  if (!Object.prototype.hasOwnProperty.call(payload, 'tags')) {
+    return { ok: true, tags: null };
+  }
+  return sanitizeSnapshotTags(payload.tags, { allowMissing: true });
 }
 
 // =============================================================================
@@ -262,8 +337,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return null;
   };
 
-  ipcMain.handle('current-text-snapshot-save', async (event) => {
+  ipcMain.handle('current-text-snapshot-save', async (event, payload) => {
     try {
+      const payloadInfo = sanitizeSnapshotSavePayload(payload);
+      if (!payloadInfo.ok) {
+        log.warn('snapshot save payload invalid:', { message: payloadInfo.message });
+        return payloadInfo;
+      }
+
       const rootInfo = getSnapshotsRoot('write');
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;
@@ -300,7 +381,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const text = textState.getCurrentText() || '';
-      saveJson(candidateResolved, { text: String(text) });
+      const snapshotData = { text: String(text) };
+      if (payloadInfo.tags) snapshotData.tags = payloadInfo.tags;
+      saveJson(candidateResolved, snapshotData);
 
       if (!fs.existsSync(candidateResolved)) {
         log.error('snapshot save reported success but file missing:', { candidateResolved });
@@ -318,6 +401,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         bytes: stats.size,
         mtime: stats.mtimeMs,
         length: String(text).length,
+        tags: payloadInfo.tags,
       };
     } catch (err) {
       log.error('snapshot save failed:', err);
