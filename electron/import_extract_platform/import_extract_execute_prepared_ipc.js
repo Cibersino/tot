@@ -176,10 +176,11 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         prepareId: shortPrepareId(request.prepareId),
         sourceFileExt: preparedRecord.fileInfo.sourceFileExt,
         sourceFileKind: preparedRecord.fileInfo.sourceFileKind,
+        executionKind: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.executionKind : null,
         pdfTriage: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.pdfTriage : 'not_pdf',
         triageReason: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.triageReason : '',
         availableRoutes: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.availableRoutes : [],
-        chosenRoute: routeResolution.routeKind,
+        chosenRoute: routeResolution.productRoute,
         ocrSetupState: preparedRecord.routeMetadata ? preparedRecord.routeMetadata.ocrSetupState : 'not_checked',
         ...getNativeProbeLogFields(preparedRecord.routeMetadata),
       });
@@ -195,7 +196,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
       if (execution && execution.ok === true) {
         log.info('import/extract execute completed:', {
           prepareId: shortPrepareId(request.prepareId),
-          routeKind: execution.routeKind,
+          executionKind: execution.executionKind,
           state: execution.result && execution.result.state ? execution.result.state : '',
           code: execution.result && execution.result.error ? execution.result.error.code : '',
           warnings: Array.isArray(execution.result && execution.result.warnings)

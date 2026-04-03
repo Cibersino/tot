@@ -4,9 +4,9 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Google Drive OCR execution route for import/extract.
+// Google Drive-backed extraction execution route for import/extract.
 // Responsibilities:
-// - Read source-file metadata and reject unsupported OCR inputs.
+// - Read source-file metadata and reject unsupported Google-backed inputs.
 // - Build Google OAuth and Drive clients from stored credentials and token data.
 // - Upload/convert source files, export extracted text, and retry rate-limited steps.
 // - Classify provider/runtime failures into stable route result codes.
@@ -70,7 +70,7 @@ function getFileInfo(filePath) {
   const sourceMimeType = getOcrSourceMimeTypeForExt(extWithDot);
   const sourceFileKind = extWithDot === '.pdf'
     ? 'pdf'
-    : (sourceMimeType.startsWith('image/') ? 'image' : 'unknown');
+    : (sourceMimeType.startsWith('image/') ? 'image' : (sourceMimeType ? 'text_document' : 'unknown'));
 
   return {
     absoluteFilePath,
@@ -570,15 +570,18 @@ async function runGoogleDriveOcrRoute({
           ...getErrorDetailsSafeForLogs(err),
         },
       });
-    } else if (errorCode === 'webp_to_png_conversion_failed') {
+    } else if (errorCode === 'source_to_png_conversion_failed') {
+      const sourceFileExtUpper = String(
+        getErrorDetailsSafeForLogs(err).sourceFileExt || fileInfo.sourceFileExt || 'image'
+      ).toUpperCase();
       result = buildResultWithError({
-        summary: 'OCR route failed before upload: WEBP normalization failed.',
+        summary: `OCR route failed before upload: ${sourceFileExtUpper}-to-PNG normalization failed.`,
         provenance,
         code: 'unreadable_or_corrupt',
-        message: 'Selected WEBP file could not be converted for OCR upload.',
+        message: `Selected ${sourceFileExtUpper} file could not be converted for OCR upload.`,
         detailsSafeForLogs: {
           stage: 'preflight',
-          reason: 'webp_to_png_conversion_failed',
+          reason: 'source_to_png_conversion_failed',
           errorName: toSafeErrorName(err),
           errorMessage: toSafeErrorMessage(err),
           ...getErrorDetailsSafeForLogs(err),

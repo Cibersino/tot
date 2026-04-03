@@ -23,7 +23,7 @@
 
 ## Funcionalidades
 
-* Importar o extraer texto desde archivos `txt`, `md`, `html`, `htm`, `docx`, `pdf` e imágenes (`png`, `jpg`, `jpeg`, `webp`, `bmp`), con OCR para imágenes y PDF escaneados.
+* Importar texto directamente desde `txt`, `md`, `html`, `htm`, `docx` y `pdf` con texto seleccionable; extraer texto mediante la ruta respaldada por Google desde `rtf` y `odt`; y aplicar OCR a imágenes (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) y PDF escaneados o aplanados.
 * El texto se puede introducir pegándolo desde el portapapeles y/o manualmente.
 * Editor de texto completo con búsqueda.
 * Estimación de tiempo de lectura con WPM (palabras por minuto) configurable.
@@ -184,7 +184,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 ## Features
 
-* Import or extract text from `txt`, `md`, `html`, `htm`, `docx`, `pdf`, and image files (`png`, `jpg`, `jpeg`, `webp`, `bmp`), with OCR for images and scanned PDFs.
+* Import text directly from `txt`, `md`, `html`, `htm`, `docx`, and `pdf` with selectable text; extract text through the Google-backed path from `rtf` and `odt`; and run OCR on images (`png`, `jpg`, `jpeg`, `webp`, `bmp`, `tif`, `tiff`) and scanned or flattened PDFs.
 * Text can be entered by pasting it from the clipboard and/or manually.
 * Full-text editor with find.
 * Reading-time estimation with configurable WPM (words per minute).

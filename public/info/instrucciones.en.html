@@ -49,8 +49,10 @@
             <p><strong>Import a model page (recommended onboarding flow)</strong></p>
             <ul>
               <li><strong>Supported sources:</strong> clipboard, text/document files (<code>.txt</code>,
-                <code>.md</code>, <code>.html</code>, <code>.htm</code>, <code>.docx</code>), images
-                (<code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>, <code>.bmp</code>),
+                <code>.md</code>, <code>.html</code>, <code>.htm</code>, <code>.docx</code>, <code>.rtf</code>,
+                <code>.odt</code>), images
+                (<code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>, <code>.bmp</code>,
+                <code>.tif</code>, <code>.tiff</code>),
                 and PDFs (selectable-text PDFs + scanned PDFs via OCR).
               </li>
               <li>Take a good photo of a representative page from any book and save it in any folder on your computer.
@@ -176,8 +178,9 @@
         <p>This app is designed for:</p>
         <ul>
           <li>Import or extract text from <code>txt</code>, <code>md</code>, <code>html</code>, <code>htm</code>,
-            <code>docx</code>, <code>pdf</code>, and image files (<code>png</code>, <code>jpg</code>,
-            <code>jpeg</code>, <code>webp</code>, <code>bmp</code>), with OCR for images and scanned PDFs.
+            <code>docx</code>, <code>rtf</code>, <code>odt</code>, <code>pdf</code>, and image files
+            (<code>png</code>, <code>jpg</code>, <code>jpeg</code>, <code>webp</code>, <code>bmp</code>,
+            <code>tif</code>, <code>tiff</code>), with OCR for images and scanned PDFs.
           </li>
           <li>Text can be entered by pasting it from the clipboard and/or manually.</li>
           <li>Full-text editor with find.</li>
@@ -213,10 +216,10 @@
 
         <ul>
           <li><strong>Text/document files:</strong> <code>.txt</code>, <code>.md</code>, <code>.html</code>,
-            <code>.htm</code>, <code>.docx</code>.
+            <code>.htm</code>, <code>.docx</code>, <code>.rtf</code>, <code>.odt</code>.
           </li>
           <li><strong>Images:</strong> <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>,
-            <code>.bmp</code> (OCR).
+            <code>.bmp</code>, <code>.tif</code>, <code>.tiff</code> (OCR).
           </li>
           <li><strong>PDF with selectable text:</strong> choose Native or OCR extraction.
           </li>
@@ -239,9 +242,10 @@
           </li>
         </ol>
 
-        <p><strong>Note:</strong> this route may ask for Google authorization because OCR extraction is performed
-          through Google. The file you choose for OCR is not sent to the developers and is not shared with other people
-          as part of that process. Final quality still depends on source quality (photo/PDF/format).</p>
+        <p><strong>Note:</strong> this route may ask for Google authorization because some extraction paths are
+          performed through Google, including OCR. The file you choose for that Google-backed extraction is not sent to
+          the developers and is not shared with other people as part of that process. Final quality still depends on
+          source quality (photo/PDF/format).</p>
 
         <p><strong>Recommendations for better OCR results:</strong></p>
         <ul>
@@ -836,8 +840,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>Saved text snapshots</strong> (optional library under
                 <code>config/saved_current_texts/</code>).
               </li>
-              <li><strong>Google OCR setup state</strong>: app-managed local Google OAuth credentials and, when OCR is
-                connected, the local Google OCR token state.</li>
+              <li><strong>Google extraction setup state</strong>: app-managed local Google OAuth credentials and, when
+                the Google-backed extraction path is connected, the local Google token state.</li>
               <li><strong>Saved tasks</strong> (task lists, task library and link allowlist).</li>
             </ul>
           </li>
@@ -847,16 +851,17 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li>open external links clicked by the user (including links opened from info pages and links opened from
                 Tasks),</li>
               <li>check/open update information (e.g. on GitHub),</li>
-              <li>if you choose to use OCR: authorize Google in the system browser and send the files you explicitly
-                selected for OCR processing.</li>
+              <li>if you choose to use a Google-backed extraction path: authorize Google in the system browser and send
+                the files you explicitly selected for that processing.</li>
             </ul>
           </li>
         </ul>
         <p>Practical implication: ordinary pasted/typed text handling in <em>toT</em> remains local. However, actions
           that open an external site expose to that service your IP address and normal connection metadata (as in any
-          browser). In addition, if you choose to use OCR, the files you explicitly select for OCR are sent to Google
-          for that operation; they are not sent to the developers or to other third parties as part of the OCR flow. The
-          app also attempts immediate remote cleanup of the temporary converted Google document after export. If you
+          browser). In addition, if you choose to use a Google-backed extraction path, the files you explicitly select
+          for that processing are sent to Google for the operation; they are not sent to the developers or to other
+          third parties as part of that flow. The app also attempts immediate remote cleanup of the temporary converted
+          Google document after export. If you
           want
           to disconnect Google OCR only, use <strong>Menu &gt; Preferences &gt; Disconnect Google OCR</strong>. On
           success, the app
