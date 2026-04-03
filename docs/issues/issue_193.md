@@ -374,7 +374,7 @@ Do not make the repo harder to merge by gating on flaky first-pass UI automation
 - [x] Add a documented test directory/layout convention
 - [x] Add first-wave tests for `electron/settings.js`
 - [x] Add first-wave tests for `electron/import_extract_platform/import_extract_supported_formats.js`
-- [ ] Add first-wave tests for selected import/extract decision helpers
+- [x] Add first-wave tests for selected import/extract decision helpers
 - [x] Add first-wave tests for at least one provider-failure classification module
 - [ ] Decide whether `public/js/count.js` should be extracted into a directly testable pure helper module in this issue
 - [ ] Decide whether `public/js/format.js` should be extracted into a directly testable pure helper module in this issue
@@ -392,6 +392,7 @@ Current implementation completed in the repo:
 * The current automated baseline covers:
   * `electron/settings.js`
   * `electron/import_extract_platform/import_extract_supported_formats.js`
+  * `electron/import_extract_platform/import_extract_prepare_execute_core.js` (decision-helper slice)
   * `electron/import_extract_platform/ocr_google_drive_activation_state.js`
   * `electron/import_extract_platform/ocr_google_drive_provider_failure.js`
   * `electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js`
@@ -399,7 +400,6 @@ Current implementation completed in the repo:
 
 Still pending in this issue:
 
-* import/extract decision-helper coverage for the heavier prepare/execute core;
 * any renderer pure-logic extraction (`count.js`, `format.js`);
 * any real Electron smoke automation;
 * explicit docs linkage back to `docs/test_suite.md`.
