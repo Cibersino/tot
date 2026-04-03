@@ -13,7 +13,8 @@ The current feature already has an explicit supported-format boundary in:
 That boundary currently includes:
 
 * native extraction: `txt`, `md`, `html`, `htm`, `docx`, `pdf`
-* OCR sources: `jpg`, `jpeg`, `png`, `webp`, `bmp`, `pdf`
+* Google-backed document extraction: `rtf`, `odt`
+* OCR sources: `jpg`, `jpeg`, `png`, `webp`, `bmp`, `tif`, `tiff`, `pdf`
 
 The issue exists because support questions about additional extensions should be answered deliberately, not by ad hoc picker expansion or implicit assumptions about what "should probably work."
 
@@ -250,12 +251,12 @@ This proposal therefore excludes animated image extensions and any broader anima
   * external evidence
   * dependency impact
   * testing impact
-- [ ] Update `electron/import_extract_platform/import_extract_supported_formats.js` for `rtf`, `odt`, `tif`, and `tiff`
-- [ ] Extend the current Drive-backed extraction path for `rtf` and `odt`
-- [ ] Extend local normalization for `tif` and `tiff`
-- [ ] Verify `electron/import_extract_platform/import_extract_file_picker_ipc.js` stays aligned automatically with the format contract
-- [ ] Extend prepare/execute regression coverage for `rtf`, `odt`, `tif`, and `tiff`
-- [ ] Add/update sample files referenced by `docs/test_suite.md` for `rtf`, `odt`, `tif`, and `tiff`
+- [x] Update `electron/import_extract_platform/import_extract_supported_formats.js` for `rtf`, `odt`, `tif`, and `tiff`
+- [x] Extend the current Drive-backed extraction path for `rtf` and `odt`
+- [x] Extend local normalization for `tif` and `tiff`
+- [x] Verify `electron/import_extract_platform/import_extract_file_picker_ipc.js` stays aligned automatically with the format contract
+- [x] Extend prepare/execute regression coverage for `rtf`, `odt`, `tif`, and `tiff`
+- [x] Add/update sample files referenced by `docs/test_suite.md` for `rtf`, `odt`, `tif`, and `tiff`
 - [ ] Keep legacy Word `.doc` deferred in this issue
 - [ ] Keep spreadsheet extensions explicitly unsupported in this issue
 - [ ] Keep animated image extensions explicitly unsupported in this issue

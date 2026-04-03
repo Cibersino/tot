@@ -53,7 +53,7 @@ Reglas:
 
 ### Resumen
 
-- Importación/extracción/OCR: la ventana principal incorpora un flujo único por `📥` y drag/drop para importar texto desde archivos de texto/documento (`.txt`, `.md`, `.html`, `.htm`, `.docx`), extraer desde imágenes (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`) y procesar PDFs con elección entre ruta nativa u OCR cuando el PDF tiene texto seleccionable.
+- Importación/extracción/OCR: la ventana principal incorpora un flujo único por `📥` y drag/drop para importar texto desde archivos de texto/documento (`.txt`, `.md`, `.html`, `.htm`, `.docx`, `.rtf`, `.odt`), extraer desde imágenes (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.tif`, `.tiff`) y procesar PDFs con elección entre ruta nativa u OCR cuando el PDF tiene texto seleccionable.
 - OCR de imágenes/fotos de página (Issue #191): la ruta Google OCR deja de propagar un artefacto provider-side que podía anteponer una primera línea compuesta solo por separadores (`_`, `-` o espacios) y el log técnico de cierre de ejecución ahora expone `warnings` para que este saneamiento quede visible en smoke tests con `TOT_LOG_LEVEL`.
 - Sitio web de la app: se agrega una landing pública mínima en `https://totapp.org/` y una página dedicada `https://totapp.org/app-privacy/` para la política de privacidad general de la app y del OCR con Google.
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
