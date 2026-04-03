@@ -1,7 +1,7 @@
 # Política de privacidad — toT
 
-Fecha de vigencia: `2026-03-21`  
-Versión app: `0.1.6`
+Fecha de vigencia: `2026-04-03`  
+Versión app: `1.0.0`
 
 ## 1. Resumen
 
