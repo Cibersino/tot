@@ -7,7 +7,7 @@
 // OCR upload image normalization helper.
 // Responsibilities:
 // - Pass through already upload-ready image inputs without rewriting them.
-// - Convert WEBP inputs into temporary PNG files for OCR upload compatibility.
+// - Convert normalization-required image inputs into temporary PNG files for OCR upload compatibility.
 // - Surface normalization/runtime failures through typed errors for the OCR route.
 // - Return upload metadata plus a caller-owned cleanup callback for temp artifacts.
 
@@ -54,9 +54,11 @@ function cleanupTempDir(tempDirPath) {
     }
     return '';
   } catch {
-    return 'cleanup:webp_normalization_cleanup_failed';
+    return 'cleanup:image_normalization_cleanup_failed';
   }
 }
+
+const PNG_NORMALIZATION_REQUIRED_EXTS = new Set(['webp', 'tif', 'tiff']);
 
 // =============================================================================
 // Upload result shaping
@@ -85,7 +87,7 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
     );
   }
 
-  if (fileInfo.sourceFileExt !== 'webp') {
+  if (!PNG_NORMALIZATION_REQUIRED_EXTS.has(fileInfo.sourceFileExt)) {
     return passthroughUpload(fileInfo);
   }
 
@@ -95,16 +97,17 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
   } catch (err) {
     throw buildNormalizationError(
       'image_normalizer_unavailable',
-      'Sharp dependency is unavailable for WEBP normalization.',
+      'Sharp dependency is unavailable for required image normalization.',
       {
         reason: 'sharp_require_failed',
+        sourceFileExt: fileInfo.sourceFileExt,
         errorName: toSafeErrorName(err),
         errorMessage: toSafeErrorMessage(err),
       }
     );
   }
 
-  const tempDirPath = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-ocr-webp-'));
+  const tempDirPath = fs.mkdtempSync(path.join(os.tmpdir(), 'tot-ocr-image-'));
   const uploadFileName = `${createBaseName(fileInfo.sourceFileName)}.png`;
   const uploadFilePath = path.join(tempDirPath, uploadFileName);
 
@@ -121,10 +124,10 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
   } catch (err) {
     cleanupTempDir(tempDirPath);
     throw buildNormalizationError(
-      'webp_to_png_conversion_failed',
-      'WEBP-to-PNG normalization failed.',
+      'source_to_png_conversion_failed',
+      'Source-image-to-PNG normalization failed.',
       {
-        reason: 'sharp_webp_to_png_failed',
+        reason: 'sharp_source_to_png_failed',
         sourceFileExt: fileInfo.sourceFileExt,
         errorName: toSafeErrorName(err),
         errorMessage: toSafeErrorMessage(err),
@@ -137,7 +140,7 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
     uploadFileName,
     uploadMimeType: 'image/png',
     metadataSafeForLogs: {
-      normalizedFrom: 'webp',
+      normalizedFrom: fileInfo.sourceFileExt,
       uploadFileExt: 'png',
       uploadMimeType: 'image/png',
     },

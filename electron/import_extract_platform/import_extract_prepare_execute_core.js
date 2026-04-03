@@ -513,6 +513,8 @@ async function prepareSelectedFile({
   log,
 }) {
   const fileInfo = getFileInfo(filePath);
+  const nativeParser = getNativeParserForExt(fileInfo.sourceFileExt);
+  const driveSourceMimeType = getOcrSourceMimeTypeForExt(fileInfo.sourceFileExt);
 
   if (fileInfo.sourceFileKind === 'pdf') {
     return resolvePdfPreparation({
@@ -532,7 +534,16 @@ async function prepareSelectedFile({
     });
   }
 
-  if (!getNativeParserForExt(fileInfo.sourceFileExt)) {
+  if (!nativeParser && driveSourceMimeType) {
+    return resolveNonPdfOcrPreparation({
+      fileInfo,
+      ocrLanguage,
+      resolvePaths,
+      log,
+    });
+  }
+
+  if (!nativeParser) {
     return buildUnsupportedFormatPrepareFailure(fileInfo);
   }
 
