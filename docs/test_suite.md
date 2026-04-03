@@ -29,6 +29,42 @@
 - **Release smoke:** 5–15 minutes, minimum confidence gate for publishing.
 - **Full regression:** 45–90 minutes, end-to-end validation across all primary windows/flows.
 
+### 0.1 Automated coverage status
+
+This document remains the **manual** app-level source of truth.
+
+The current automated baseline does **not** replace the release smoke or full regression flows in this document. It currently covers only a small contract-focused slice under `test/unit/electron/`.
+
+Current automated coverage maps back to this manual suite roughly as follows:
+
+* `electron/settings.js`
+  * supports parts of `REG-PERSIST`
+  * supports parts of `REG-I18N`
+* `electron/import_extract_platform/import_extract_supported_formats.js`
+  * supports parts of `SM-09`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT/EXTRACT`
+* `electron/import_extract_platform/import_extract_prepare_execute_core.js`
+  * supports parts of `SM-09`
+  * supports parts of `SM-10`
+  * supports parts of `REG-IMPORT/EXTRACT`
+* `electron/import_extract_platform/import_extract_prepared_store.js`
+  * supports parts of `REG-IMPORT/EXTRACT`
+* `electron/import_extract_platform/ocr_google_drive_activation_state.js`
+  * supports parts of `SM-10`
+  * supports parts of `REG-OCR`
+* `electron/import_extract_platform/ocr_google_drive_provider_failure.js`
+  * supports parts of `REG-OCR`
+* `electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js`
+  * supports parts of `REG-OCR`
+
+Important limitations:
+
+* no real Electron window smoke automation exists yet;
+* no renderer/UI automation exists yet;
+* OCR network/provider behavior is still primarily validated through the manual suite;
+* packaged-build behaviors in this document are still manual-only.
+
 ---
 
 ## 1) Preconditions / Test Environments

@@ -19,3 +19,8 @@ This repo currently uses the Node built-in test runner for the stable automated 
 
 The first automated slice is intentionally focused on low-friction contract tests for `electron/**`.
 Renderer-heavy flows and real Electron smoke automation can be added later without blocking this baseline.
+
+See also:
+
+* `docs/test_suite.md` - manual release smoke + regression source of truth
+  * The manual suite now includes a short "Automated coverage status" section showing which areas have partial automated backing today.
