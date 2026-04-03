@@ -6,21 +6,27 @@ Evaluate and define support for additional **static document/image source format
 
 ## Why this issue is worth opening
 
-The current feature is organized around a clear central supported-format contract in:
+The current feature already has an explicit supported-format boundary in:
 
 * `electron/import_extract_platform/import_extract_supported_formats.js`
 
-That contract currently allows:
+That boundary currently includes:
 
 * native extraction: `txt`, `md`, `html`, `htm`, `docx`, `pdf`
 * OCR sources: `jpg`, `jpeg`, `png`, `webp`, `bmp`, `pdf`
 
-This is a strong design baseline, but it leaves out several common static source formats that users may reasonably expect to import:
+The issue exists because support questions about additional extensions should be answered deliberately, not by ad hoc picker expansion or implicit assumptions about what "should probably work."
 
-* text-like documents such as `rtf` and `odt`
-* scanned image formats such as `tif` / `tiff`
+The current supported set excludes several static formats that are reasonable candidates for evaluation, including:
 
-The issue should therefore focus on expanding the **real supported-format matrix**, not just the picker filter.
+* document formats such as `rtf`, `odt`, and legacy Word `.doc`
+* image formats such as `tif` / `tiff`
+
+The issue should therefore determine, for each candidate extension:
+
+* whether it should be supported at all
+* what implementation path would be required
+* what testing and maintenance burden that decision would create
 
 ## Scope
 
@@ -93,7 +99,7 @@ Any newly supported extension must be represented in the shared format contract 
 * execution-time route validation
 * tests and sample fixtures
 
-### 2. Preserve route honesty
+### 2. Preserve support honesty
 
 The app must not imply that a file is supported unless there is a real implementation path that can execute successfully and fail coherently.
 
@@ -182,11 +188,18 @@ This proposal therefore excludes animated image extensions and any broader anima
   * include in this issue
   * defer from this issue
   * reject for this issue
+* The issue records the basis for each decision:
+  * current behavior
+  * possible paths
+  * repo evidence
+  * external evidence
+  * dependency impact
+  * testing impact
 * Each accepted new extension is wired through the shared format contract, not only the picker.
 * Unsupported spreadsheet and animated-image extensions remain out of scope and are not added implicitly.
 * Each included candidate has at least one implementation path that is explicit, justified, and testable.
 * The test suite and sample-file set are updated to reflect the actual supported extensions.
-* User-facing behavior remains honest:
+* The user-visible supported set matches the actual implementation:
   * no false-positive picker support
   * no generic-error fallback for known unsupported formats
 
