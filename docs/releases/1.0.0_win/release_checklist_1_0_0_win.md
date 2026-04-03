@@ -2,15 +2,14 @@
 
 Checklist mecánico para preparar y publicar una nueva versión.
 
-Fecha: `<YYYY-MM-DD>`
-Tag objetivo (GitHub): `v<MAJOR.MINOR.PATCH>`
+Fecha: `2026-04-03`
+Tag objetivo (GitHub): `v1.0.0`
 Commit freeze (Git): `<SHA_COMMIT>`
 Artefacto inspeccionado: `<ZIP/INSTALLER>`
 SHA256(artefacto): `<SHA256>`
 
 ## 0. Regla de versión (SemVer)
-* Desde `0.1.0` en adelante, usar SemVer estricto: `MAJOR.MINOR.PATCH`.
-* No volver a usar `0.0.XYY` como contador de builds.
+* Usar SemVer estricto: `MAJOR.MINOR.PATCH`.
 * Si aplica pre-release: `-alpha.N`, `-beta.N`, `-rc.N` (sobre base `MAJOR.MINOR.PATCH`).
 * Tag de release obligatorio en GitHub: `vX.Y.Z` (p. ej. `v0.1.0`), o `vX.Y.Z-rc.N` si aplica.
 
