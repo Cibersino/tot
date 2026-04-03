@@ -33,9 +33,9 @@
     unavailable: 'renderer.alerts.snapshot_unavailable',
   });
 
-  function handleSaveResult(res) {
-    if (!res || res.ok === false) {
-      const code = res && res.code ? res.code : 'WRITE_FAILED';
+  function handleSaveResult(result) {
+    if (!result || result.ok === false) {
+      const code = result && result.code ? result.code : 'WRITE_FAILED';
       if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
       if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
         window.Notify.toastMain(TOAST_KEYS.outside, { type: 'warn' });
@@ -47,9 +47,9 @@
     window.Notify.toastMain(TOAST_KEYS.saveSuccess, { type: 'info', duration: 2500 });
   }
 
-  function handleLoadResult(res) {
-    if (!res || res.ok === false) {
-      const code = res && res.code ? res.code : 'READ_FAILED';
+  function handleLoadResult(result) {
+    if (!result || result.ok === false) {
+      const code = result && result.code ? result.code : 'READ_FAILED';
       if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
       if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
         window.Notify.toastMain(TOAST_KEYS.outside, { type: 'warn' });
@@ -59,7 +59,7 @@
       return;
     }
     window.Notify.toastMain(TOAST_KEYS.loadSuccess, { type: 'info', duration: 2500 });
-    if (res.truncated) {
+    if (result.truncated) {
       window.Notify.toastMain(TOAST_KEYS.truncated, { type: 'warn', duration: 3500 });
     }
   }
@@ -90,11 +90,11 @@
       }
 
       const normalizedTags = snapshotTagCatalog.normalizeTags(payload.tags);
-      const res = await window.electronAPI.saveCurrentTextSnapshot(
+      const saveResult = await window.electronAPI.saveCurrentTextSnapshot(
         normalizedTags ? { tags: normalizedTags } : {}
       );
-      handleSaveResult(res);
-      return res;
+      handleSaveResult(saveResult);
+      return saveResult;
     } catch (err) {
       log.error('snapshot save failed:', err);
       window.Notify.toastMain(TOAST_KEYS.saveError, { type: 'error' });
@@ -109,9 +109,9 @@
         window.Notify.toastMain(TOAST_KEYS.unavailable, { type: 'error' });
         return { ok: false, code: 'READ_FAILED' };
       }
-      const res = await window.electronAPI.loadCurrentTextSnapshot();
-      handleLoadResult(res);
-      return res;
+      const loadResult = await window.electronAPI.loadCurrentTextSnapshot();
+      handleLoadResult(loadResult);
+      return loadResult;
     } catch (err) {
       log.error('snapshot load failed:', err);
       window.Notify.toastMain(TOAST_KEYS.loadError, { type: 'error' });
