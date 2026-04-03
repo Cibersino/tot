@@ -22,6 +22,12 @@
   if (!snapshotTagCatalog || typeof snapshotTagCatalog.normalizeTags !== 'function') {
     throw new Error('[current-text-snapshots] SnapshotTagCatalog unavailable; cannot continue');
   }
+  if (!window.Notify || typeof window.Notify.toastMain !== 'function') {
+    throw new Error('[current-text-snapshots] Notify.toastMain unavailable; cannot continue');
+  }
+  if (typeof window.Notify.promptSnapshotSaveTags !== 'function') {
+    throw new Error('[current-text-snapshots] Notify.promptSnapshotSaveTags unavailable; cannot continue');
+  }
 
   const TOAST_KEYS = Object.freeze({
     saveSuccess: 'renderer.alerts.snapshot_save_success',
@@ -65,11 +71,6 @@
   }
 
   async function promptSnapshotSaveTags() {
-    if (!window.Notify || typeof window.Notify.promptSnapshotSaveTags !== 'function') {
-      log.warn('promptSnapshotSaveTags unavailable in Notify');
-      window.Notify.toastMain(TOAST_KEYS.unavailable, { type: 'error' });
-      return null;
-    }
     return window.Notify.promptSnapshotSaveTags();
   }
 
