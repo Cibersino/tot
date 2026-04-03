@@ -20,7 +20,7 @@
   "type": "commonjs",
   "devDependencies": {
     "depcheck": "^1.4.7",
-    "electron": "^39.2.2",
+    "electron": "^39.8.6",
     "electron-builder": "^26.4.0",
     "eslint": "^8.57.0",
     "knip": "^5.76.3",
@@ -80,8 +80,8 @@
     }
   },
   "dependencies": {
-    "@google-cloud/local-auth": "^2.1.0",
-    "googleapis": "^105.0.0",
+    "@google-cloud/local-auth": "^3.0.1",
+    "googleapis": "^171.4.0",
     "mammoth": "^1.11.0",
     "pdf-parse": "^1.1.1",
     "sharp": "^0.34.4"
