@@ -205,6 +205,56 @@
         "close_unsaved": "There are unsaved changes. Close without saving?"
       }
     },
+    "snapshot_save_tags": {
+      "title": "Save text snapshot",
+      "message": "Optionally tag this text snapshot before choosing where to save it.",
+      "labels": {
+        "language": "Language",
+        "type": "Type",
+        "difficulty": "Difficulty"
+      },
+      "empty": {
+        "language": "No language tag",
+        "type": "No type tag",
+        "difficulty": "No difficulty tag"
+      },
+      "buttons": {
+        "confirm": "Save Text Snapshot",
+        "cancel": "Cancel"
+      },
+      "close_aria": "Close save text snapshot dialog",
+      "options": {
+        "language": {
+          "es": "Spanish",
+          "en": "English",
+          "pt": "Portuguese",
+          "fr": "French",
+          "de": "German",
+          "it": "Italian",
+          "arn": "Mapudungun",
+          "ja": "Japanese",
+          "ko": "Korean",
+          "ru": "Russian",
+          "tr": "Turkish",
+          "id": "Indonesian",
+          "hi": "Hindi",
+          "bn": "Bengali",
+          "ur": "Urdu",
+          "ar": "Arabic",
+          "zh_hans": "Chinese (Simplified)",
+          "zh_hant": "Chinese (Traditional)"
+        },
+        "type": {
+          "fiction": "Fiction",
+          "non_fiction": "Non-fiction"
+        },
+        "difficulty": {
+          "easy": "Easy",
+          "normal": "Normal",
+          "hard": "Hard"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "New preset",
       "title_edit": "Edit preset",

@@ -44,7 +44,7 @@ const api = {
     forceClearEditor: () => ipcRenderer.invoke('force-clear-editor'),
     getCurrentText: () => ipcRenderer.invoke('get-current-text'),
     setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
-    saveCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-save'),
+    saveCurrentTextSnapshot: (payload) => ipcRenderer.invoke('current-text-snapshot-save', payload),
     loadCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-load'),
     onCurrentTextUpdated: (cb) => {
         const listener = (_e, text) => {

@@ -194,6 +194,56 @@
         "close_unsaved": "Wirintukun petu elkünungelay. ¿Nürüfimi elkünunon?"
       }
     },
+    "snapshot_save_tags": {
+      "title": "Elkünun textu snapshot",
+      "message": "Münafülchi tañi textu snapshot müley ta küme ngünekan mew ka chumgechi elkünuael.",
+      "labels": {
+        "language": "Dungun",
+        "type": "Az",
+        "difficulty": "Rume newen"
+      },
+      "empty": {
+        "language": "Dungun tag mülenolu",
+        "type": "Az tag mülenolu",
+        "difficulty": "Rume newen tag mülenolu"
+      },
+      "buttons": {
+        "confirm": "Elkünun textu snapshot",
+        "cancel": "Ngelay"
+      },
+      "close_aria": "Ngeykülen textu snapshot elkünun nütram",
+      "options": {
+        "language": {
+          "es": "Wingkañol",
+          "en": "Inglés",
+          "pt": "Portugués",
+          "fr": "Francés",
+          "de": "Alemán",
+          "it": "Italiano",
+          "arn": "Mapudungun",
+          "ja": "Japonés",
+          "ko": "Coreano",
+          "ru": "Ruso",
+          "tr": "Turco",
+          "id": "Indonesio",
+          "hi": "Hindi",
+          "bn": "Bengalí",
+          "ur": "Urdu",
+          "ar": "Árabe",
+          "zh_hans": "Chino simplificado",
+          "zh_hant": "Chino tradicional"
+        },
+        "type": {
+          "fiction": "Ficción",
+          "non_fiction": "No ficción"
+        },
+        "difficulty": {
+          "easy": "Pichi",
+          "normal": "Normalküle",
+          "hard": "Fentren"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "We preset",
       "title_edit": "Wirin preset",

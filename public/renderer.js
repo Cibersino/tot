@@ -248,6 +248,7 @@ function hasBlockingMainWindowModalOpen() {
   return isAriaHiddenElementVisible('infoModal')
     || isAriaHiddenElementVisible('importExtractRouteModal')
     || isAriaHiddenElementVisible('importExtractApplyModal')
+    || isAriaHiddenElementVisible('snapshotSaveTagsModal')
     || isAriaHiddenElementVisible('importExtractOcrActivationDisclosureModal');
 }
 

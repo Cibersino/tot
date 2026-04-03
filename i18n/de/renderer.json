@@ -194,6 +194,56 @@
         "close_unsaved": "Es gibt ungespeicherte Änderungen. Ohne Speichern schließen?"
       }
     },
+    "snapshot_save_tags": {
+      "title": "Text-Snapshot speichern",
+      "message": "Markieren Sie diesen Text-Snapshot optional, bevor Sie auswählen, wo er gespeichert werden soll.",
+      "labels": {
+        "language": "Sprache",
+        "type": "Typ",
+        "difficulty": "Schwierigkeit"
+      },
+      "empty": {
+        "language": "Kein Sprach-Tag",
+        "type": "Kein Typ-Tag",
+        "difficulty": "Kein Schwierigkeits-Tag"
+      },
+      "buttons": {
+        "confirm": "Text-Snapshot speichern",
+        "cancel": "Abbrechen"
+      },
+      "close_aria": "Dialog zum Speichern des Text-Snapshots schließen",
+      "options": {
+        "language": {
+          "es": "Spanisch",
+          "en": "Englisch",
+          "pt": "Portugiesisch",
+          "fr": "Französisch",
+          "de": "Deutsch",
+          "it": "Italienisch",
+          "arn": "Mapudungun",
+          "ja": "Japanisch",
+          "ko": "Koreanisch",
+          "ru": "Russisch",
+          "tr": "Türkisch",
+          "id": "Indonesisch",
+          "hi": "Hindi",
+          "bn": "Bengalisch",
+          "ur": "Urdu",
+          "ar": "Arabisch",
+          "zh_hans": "Chinesisch (vereinfacht)",
+          "zh_hant": "Chinesisch (traditionell)"
+        },
+        "type": {
+          "fiction": "Fiktion",
+          "non_fiction": "Sachbuch"
+        },
+        "difficulty": {
+          "easy": "Leicht",
+          "normal": "Normal",
+          "hard": "Schwer"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "Neues Preset",
       "title_edit": "Preset bearbeiten",

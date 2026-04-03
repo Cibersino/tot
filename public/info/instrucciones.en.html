@@ -363,15 +363,18 @@
         </p>
 
         <ul>
-          <li><strong>💾</strong>: opens a native “save file” dialog rooted at <code>config/saved_current_texts/</code>.
-            You can save into <strong>subfolders</strong> (and create folders) as long as you stay inside that snapshots
-            tree. The snapshot is saved as JSON.</li>
+          <li><strong>💾</strong>: first opens an in-app modal where you can optionally tag the snapshot by
+            <strong>language</strong>, <strong>type</strong>, and <strong>difficulty</strong>. After you confirm there,
+            the app opens a native “save file” dialog rooted at <code>config/saved_current_texts/</code>. You can save
+            into <strong>subfolders</strong> (and create folders) as long as you stay inside that snapshots tree. The
+            snapshot is saved as JSON.</li>
           <li><strong>📂</strong>: opens a native “open file” dialog and lets you pick any snapshot file inside
             <code>config/saved_current_texts/</code> (including subfolders). The app will ask for confirmation because
             it will overwrite the current text.
           </li>
           <li>A loaded snapshot becomes the new <strong>current text</strong> (same semantics as other overwrite
-            actions) and the preview/results update immediately.</li>
+            actions) and the preview/results update immediately. Saved snapshot tags remain in the snapshot file; they
+            are not transferred into the current-text state.</li>
         </ul>
 
         <hr />

@@ -6,8 +6,11 @@
 // =============================================================================
 // Responsibilities:
 // - Provide save/load snapshot flows for current text via native dialogs.
+// - Persist optional snapshot tag metadata on save.
 // - Enforce snapshot path containment under config/saved_current_texts.
-// - Validate snapshot JSON schema { text: "<string>" }.
+// - Validate legacy and tagged snapshot JSON schemas:
+//   { text: "<string>" }
+//   { text: "<string>", tags?: { language?, type?, difficulty? } }
 // - Apply loaded snapshots through text_state (same semantics as overwrite).
 // - Register IPC handlers: current-text-snapshot-save / current-text-snapshot-select / current-text-snapshot-load.
 // =============================================================================
@@ -20,6 +23,7 @@ const path = require('path');
 const { dialog, BrowserWindow } = require('electron');
 const Log = require('./log');
 const { DEFAULT_LANG } = require('./constants_main');
+const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const {
   getCurrentTextSnapshotsDir,
   ensureCurrentTextSnapshotsDir,
@@ -31,12 +35,21 @@ const menuBuilder = require('./menu_builder');
 
 const log = Log.get('current-text-snapshots');
 log.debug('Current text snapshots main starting...');
+if (!snapshotTagCatalog
+  || !Array.isArray(snapshotTagCatalog.TAG_KEYS)
+  || typeof snapshotTagCatalog.isPlainObject !== 'function'
+  || typeof snapshotTagCatalog.normalizeLanguageTag !== 'function'
+  || typeof snapshotTagCatalog.normalizeTypeTag !== 'function'
+  || typeof snapshotTagCatalog.normalizeDifficultyTag !== 'function') {
+  throw new Error('[current_text_snapshots] SnapshotTagCatalog unavailable; cannot continue');
+}
 
 // =============================================================================
 // Constants / config
 // =============================================================================
 const SNAPSHOT_EXT = '.json';
 const SNAPSHOT_NAME_RE = /^current_text_(\d+)\.json$/i;
+const { TAG_KEYS: SNAPSHOT_TAG_KEYS } = snapshotTagCatalog;
 
 // =============================================================================
 // Helpers (paths + dialogs)
@@ -141,43 +154,53 @@ function getDialogTexts() {
   }
 }
 
-async function confirmOverwrite(kind, mainWin, name = '') {
+async function confirmLoadOverwrite(ownerWin, name = '') {
   const dialogTexts = getDialogTexts();
   const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
   const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-  const messageKey = kind === 'save'
-    ? 'snapshot_overwrite_save'
-    : 'snapshot_overwrite_load';
   let message = resolveDialogText(
     dialogTexts,
-    messageKey,
-    kind === 'save'
-      ? 'Overwrite existing snapshot file?'
-      : 'Replace current text with the selected snapshot?'
+    'snapshot_overwrite_load',
+    'Replace current text with the selected snapshot?'
   );
-  if (kind === 'load' && name) {
+  if (name) {
     message = message.replace('{name}', String(name));
   }
 
-  const res = await dialog.showMessageBox(mainWin || null, {
+  const dialogResult = await dialog.showMessageBox(ownerWin || null, {
     type: 'none',
     buttons: [yesLabel, noLabel],
     defaultId: 1,
     cancelId: 1,
     message,
   });
-  return res && res.response === 0;
+  return dialogResult && dialogResult.response === 0;
 }
 
 function resolveOwnerWin(event, resolveMainWin) {
-  try {
-    const senderWin = event && event.sender
-      ? BrowserWindow.fromWebContents(event.sender)
-      : null;
-    return senderWin || resolveMainWin();
-  } catch {
-    return resolveMainWin();
+  if (event && event.sender) {
+    try {
+      const senderWin = BrowserWindow.fromWebContents(event.sender);
+      if (senderWin) return senderWin;
+      log.warnOnce(
+        'current_text_snapshots.owner_window.sender_window_missing',
+        'Dialog owner fallback: BrowserWindow.fromWebContents returned no window; using mainWin or unowned dialog.'
+      );
+    } catch (err) {
+      log.warnOnce(
+        'current_text_snapshots.owner_window.sender_resolve_failed',
+        'Dialog owner fallback: failed to resolve sender BrowserWindow; using mainWin or unowned dialog.',
+        err
+      );
+    }
+  } else {
+    log.warnOnce(
+      'current_text_snapshots.owner_window.sender_missing',
+      'Dialog owner fallback: IPC event sender unavailable; using mainWin or unowned dialog.'
+    );
   }
+
+  return resolveMainWin();
 }
 
 function getSnapshotsRoot(mode = 'read') {
@@ -223,6 +246,76 @@ function validateSelectedSnapshot(rootReal, selectedPath) {
   return { ok: true, selectedReal, stats, snapshotRelPath };
 }
 
+async function promptForSnapshotSelection(ownerWin, root, rootReal) {
+  const dialogResult = await dialog.showOpenDialog(ownerWin, {
+    defaultPath: root,
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+    properties: ['openFile'],
+  });
+
+  if (!dialogResult || dialogResult.canceled || !dialogResult.filePaths || !dialogResult.filePaths.length) {
+    return { ok: false, code: 'CANCELLED' };
+  }
+
+  const selectedPath = String(dialogResult.filePaths[0] || '');
+  return validateSelectedSnapshot(rootReal, selectedPath);
+}
+
+function sanitizeSnapshotTags(rawTags, { allowMissing = false } = {}) {
+  if (rawTags == null) {
+    return allowMissing
+      ? { ok: true, tags: null }
+      : { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags missing' };
+  }
+  if (!snapshotTagCatalog.isPlainObject(rawTags)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags must be an object' };
+  }
+
+  const rawKeys = Object.keys(rawTags);
+  if (rawKeys.some((key) => !SNAPSHOT_TAG_KEYS.includes(key))) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags contain unsupported keys' };
+  }
+
+  const tags = {};
+
+  if (Object.prototype.hasOwnProperty.call(rawTags, 'language')) {
+    const language = snapshotTagCatalog.normalizeLanguageTag(rawTags.language);
+    if (!language) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot language tag invalid' };
+    }
+    tags.language = language;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(rawTags, 'type')) {
+    const type = snapshotTagCatalog.normalizeTypeTag(rawTags.type);
+    if (!type) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot type tag invalid' };
+    }
+    tags.type = type;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(rawTags, 'difficulty')) {
+    const difficulty = snapshotTagCatalog.normalizeDifficultyTag(rawTags.difficulty);
+    if (!difficulty) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot difficulty tag invalid' };
+    }
+    tags.difficulty = difficulty;
+  }
+
+  return { ok: true, tags: Object.keys(tags).length ? tags : null };
+}
+
+function sanitizeSnapshotSavePayload(payload) {
+  if (payload == null) return { ok: true, tags: null };
+  if (!snapshotTagCatalog.isPlainObject(payload)) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot save payload must be an object' };
+  }
+  if (!Object.prototype.hasOwnProperty.call(payload, 'tags')) {
+    return { ok: true, tags: null };
+  }
+  return sanitizeSnapshotTags(payload.tags, { allowMissing: true });
+}
+
 function parseSnapshotFile(selectedReal) {
   let raw = fs.readFileSync(selectedReal, 'utf8');
   raw = raw.replace(/^\uFEFF/, '');
@@ -243,7 +336,14 @@ function parseSnapshotFile(selectedReal) {
     log.warn('snapshot schema invalid:', { selectedReal });
     return { ok: false, code: 'INVALID_SCHEMA', message: 'invalid snapshot schema' };
   }
-  return { ok: true, text: parsed.text };
+
+  const tagsInfo = sanitizeSnapshotTags(parsed.tags, { allowMissing: true });
+  if (!tagsInfo.ok) {
+    log.warn('snapshot tags schema invalid:', { selectedReal, message: tagsInfo.message });
+    return { ok: false, code: 'INVALID_SCHEMA', message: tagsInfo.message };
+  }
+
+  return { ok: true, text: parsed.text, tags: tagsInfo.tags };
 }
 
 // =============================================================================
@@ -255,15 +355,42 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const wins = getWindows() || {};
-      return wins.mainWin || null;
+    if (typeof getWindows !== 'function') {
+      log.warnOnce(
+        'current_text_snapshots.owner_window.get_windows_missing',
+        'Dialog owner fallback: getWindows unavailable; using unowned dialog.'
+      );
+      return null;
     }
-    return null;
+
+    const wins = getWindows();
+    if (!wins || typeof wins !== 'object') {
+      log.warnOnce(
+        'current_text_snapshots.owner_window.windows_invalid',
+        'Dialog owner fallback: getWindows returned no windows object; using unowned dialog.'
+      );
+      return null;
+    }
+
+    if (!wins.mainWin) {
+      log.warnOnce(
+        'current_text_snapshots.owner_window.main_window_missing',
+        'Dialog owner fallback: mainWin unavailable; using unowned dialog.'
+      );
+      return null;
+    }
+
+    return wins.mainWin;
   };
 
-  ipcMain.handle('current-text-snapshot-save', async (event) => {
+  ipcMain.handle('current-text-snapshot-save', async (event, payload) => {
     try {
+      const payloadInfo = sanitizeSnapshotSavePayload(payload);
+      if (!payloadInfo.ok) {
+        log.warn('snapshot save payload invalid:', { message: payloadInfo.message });
+        return payloadInfo;
+      }
+
       const rootInfo = getSnapshotsRoot('write');
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;
@@ -300,7 +427,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const text = textState.getCurrentText() || '';
-      saveJson(candidateResolved, { text: String(text) });
+      const snapshotData = { text: String(text) };
+      if (payloadInfo.tags) snapshotData.tags = payloadInfo.tags;
+      saveJson(candidateResolved, snapshotData);
 
       if (!fs.existsSync(candidateResolved)) {
         log.error('snapshot save reported success but file missing:', { candidateResolved });
@@ -318,6 +447,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         bytes: stats.size,
         mtime: stats.mtimeMs,
         length: String(text).length,
+        tags: payloadInfo.tags,
       };
     } catch (err) {
       log.error('snapshot save failed:', err);
@@ -331,18 +461,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;
 
-      const dialogRes = await dialog.showOpenDialog(resolveOwnerWin(event, resolveMainWin), {
-        defaultPath: root,
-        filters: [{ name: 'JSON', extensions: ['json'] }],
-        properties: ['openFile'],
-      });
-
-      if (!dialogRes || dialogRes.canceled || !dialogRes.filePaths || !dialogRes.filePaths.length) {
-        return { ok: false, code: 'CANCELLED' };
-      }
-
-      const selectedPath = String(dialogRes.filePaths[0] || '');
-      const selectedInfo = validateSelectedSnapshot(rootReal, selectedPath);
+      const selectedInfo = await promptForSnapshotSelection(
+        resolveOwnerWin(event, resolveMainWin),
+        root,
+        rootReal
+      );
       if (!selectedInfo.ok) return selectedInfo;
 
       return {
@@ -381,24 +504,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         stats = selectedInfo.stats;
         snapshotRelPath = selectedInfo.snapshotRelPath;
       } else {
-        const dialogRes = await dialog.showOpenDialog(resolveOwnerWin(event, resolveMainWin), {
-          defaultPath: root,
-          filters: [{ name: 'JSON', extensions: ['json'] }],
-          properties: ['openFile'],
-        });
-        if (!dialogRes || dialogRes.canceled || !dialogRes.filePaths || !dialogRes.filePaths.length) {
-          return { ok: false, code: 'CANCELLED' };
-        }
-
-        const selectedPath = String(dialogRes.filePaths[0] || '');
-        const selectedInfo = validateSelectedSnapshot(rootReal, selectedPath);
+        const selectedInfo = await promptForSnapshotSelection(
+          resolveOwnerWin(event, resolveMainWin),
+          root,
+          rootReal
+        );
         if (!selectedInfo.ok) return selectedInfo;
         selectedReal = selectedInfo.selectedReal;
         stats = selectedInfo.stats;
         snapshotRelPath = selectedInfo.snapshotRelPath;
       }
 
-      const confirmed = await confirmOverwrite('load', resolveOwnerWin(event, resolveMainWin), path.basename(selectedReal));
+      const confirmed = await confirmLoadOverwrite(resolveOwnerWin(event, resolveMainWin), path.basename(selectedReal));
       if (!confirmed) {
         return { ok: false, code: 'CONFIRM_DENIED' };
       }
@@ -406,7 +523,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const parsed = parseSnapshotFile(selectedReal);
       if (!parsed.ok) return parsed;
 
-      const res = textState.applyCurrentText(parsed.text, {
+      const applyResult = textState.applyCurrentText(parsed.text, {
         source: 'main-window',
         action: 'load_snapshot',
       });
@@ -418,8 +535,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         filename: path.basename(selectedReal),
         bytes: stats.size,
         mtime: stats.mtimeMs,
-        length: res && typeof res.length === 'number' ? res.length : parsed.text.length,
-        truncated: !!(res && res.truncated),
+        length: applyResult && typeof applyResult.length === 'number' ? applyResult.length : parsed.text.length,
+        truncated: !!(applyResult && applyResult.truncated),
       };
     } catch (err) {
       log.error('snapshot load failed:', err);
