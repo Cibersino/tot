@@ -55,6 +55,7 @@ function buildPrepareRouteLogFields(fileInfo, routeMetadata, { ocrSetupStateFall
   return {
     sourceFileExt: fileInfo.sourceFileExt,
     sourceFileKind: fileInfo.sourceFileKind,
+    executionKind: routeMetadata ? routeMetadata.executionKind : null,
     pdfTriage: routeMetadata ? routeMetadata.pdfTriage : 'not_pdf',
     triageReason: routeMetadata ? routeMetadata.triageReason : '',
     availableRoutes: routeMetadata ? routeMetadata.availableRoutes : [],
@@ -136,7 +137,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         return {
           ok: true,
           prepareFailed: true,
-          routeKind: null,
+          executionKind: null,
           routeMetadata: preparation.routeMetadata || null,
           primaryAlertKey: 'renderer.alerts.import_extract_error',
           warningAlertKeys: [],
@@ -172,6 +173,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         ok: true,
         prepareId: preparedRecord.prepareId,
         expiresAtEpochMs: preparedRecord.expiresAtEpochMs,
+        executionKind: preparation.executionKind || null,
         routeMetadata,
         requiresRouteChoice: preparation.requiresRouteChoice === true,
         routeChoiceOptions: Array.isArray(preparation.routeChoiceOptions)

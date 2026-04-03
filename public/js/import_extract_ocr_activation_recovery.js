@@ -32,23 +32,22 @@
   function resolveRecoveryCode({ preparation, routePreference } = {}) {
     if (!preparation || preparation.ok !== true) return '';
 
+    const routeMetadata = preparation.routeMetadata && typeof preparation.routeMetadata === 'object'
+      ? preparation.routeMetadata
+      : null;
+    const availableRoutes = Array.isArray(routeMetadata && routeMetadata.availableRoutes)
+      ? routeMetadata.availableRoutes
+      : [];
+
     if (preparation.prepareFailed === true) {
-      if (preparation.routeKind !== 'ocr') return '';
+      if (!availableRoutes.includes('ocr')) return '';
       return preparation.error && typeof preparation.error.code === 'string'
         ? preparation.error.code
         : '';
     }
 
     if (routePreference !== 'ocr') return '';
-
-    const routeMetadata = preparation.routeMetadata && typeof preparation.routeMetadata === 'object'
-      ? preparation.routeMetadata
-      : null;
     if (!routeMetadata) return '';
-
-    const availableRoutes = Array.isArray(routeMetadata.availableRoutes)
-      ? routeMetadata.availableRoutes
-      : [];
     if (!availableRoutes.includes('ocr')) return '';
 
     const setupState = typeof routeMetadata.ocrSetupState === 'string'
