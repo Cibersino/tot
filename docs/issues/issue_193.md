@@ -376,8 +376,8 @@ Do not make the repo harder to merge by gating on flaky first-pass UI automation
 - [x] Add first-wave tests for `electron/import_extract_platform/import_extract_supported_formats.js`
 - [x] Add first-wave tests for selected import/extract decision helpers
 - [x] Add first-wave tests for at least one provider-failure classification module
-- [ ] Decide whether `public/js/count.js` should be extracted into a directly testable pure helper module in this issue
-- [ ] Decide whether `public/js/format.js` should be extracted into a directly testable pure helper module in this issue
+- [x] Decide whether `public/js/count.js` should be extracted into a directly testable pure helper module in this issue
+- [x] Decide whether `public/js/format.js` should be extracted into a directly testable pure helper module in this issue
 - [ ] Add a minimal Electron smoke suite only if it remains stable and narrow
 - [x] Add CI execution for the stable automated subset
 - [x] Document how automated coverage maps back to `docs/test_suite.md`
@@ -397,9 +397,11 @@ Current implementation completed in the repo:
   * `electron/import_extract_platform/ocr_google_drive_provider_failure.js`
   * `electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js`
   * `electron/import_extract_platform/import_extract_prepared_store.js`
+  * extracted renderer pure logic for counting and formatting via:
+    * `public/js/lib/count_core.js`
+    * `public/js/lib/format_core.js`
 
 Still pending in this issue:
 
-* any renderer pure-logic extraction (`count.js`, `format.js`);
 * any real Electron smoke automation;
 * the current manual-suite linkage is in place; no further docs-linkage work is required for this baseline.
