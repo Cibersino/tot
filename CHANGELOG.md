@@ -12,6 +12,22 @@ Antes de publicar una nueva versión, seguir `docs/release_checklist.md`.
 - **Fuente de verdad:** la versión de la app proviene de `package.json` (`app.getVersion()`).
 - **Tags de release (GitHub):** se publican como `vMAJOR.MINOR.PATCH` (p. ej. `v0.1.0`). El updater requiere el prefijo `v` (minúscula).
 
+## [1.0.0] toT - Sofías fármakon
+- Fecha: `2026-04-03`
+
+- Importación/extracción/OCR: la ventana principal incorpora un flujo único por `📥` y drag/drop para importar texto desde archivos de texto/documento (`.txt`, `.md`, `.html`, `.htm`, `.docx`, `.rtf`, `.odt`), extraer desde imágenes (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.tif`, `.tiff`) y procesar PDFs con elección entre ruta nativa u OCR cuando el PDF tiene texto seleccionable.
+- Sitio web de la app: se agrega una landing pública mínima en `https://totapp.org/` y una página dedicada `https://totapp.org/app-privacy/` para la política de privacidad general de la app y del OCR con Google.
+- Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
+- Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
+- Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
+- Branding/header principal (Issue #174): el logo de Cibersino pasa a ser clickeable hacia `https://totapp.org/`, se agrega un logo de Patreon clickeable hacia `https://www.patreon.com/Cibersino`, ambos clicks se enrutan por la misma pasarela segura de enlaces externos ya existente y el bloque fijo de branding se reubica a la esquina inferior derecha de la ventana principal en orden visual `Patreon | Cibersino | toT`, eliminando la reserva superior que quedó obsoleta.
+- Info modal / links (Issue #165): los fallos al abrir links externos y `appdoc:` desde el info modal dejan de quedar solo en logs y pasan a mostrarse al usuario con una taxonomía final explícita de notificaciones alineada con los reasons reales del runtime.
+- Modal de presets / WPM: se corrige la discrepancia entre el mensaje de validación y el rango realmente aceptado al guardar; el warning renderer deja de hardcodear `50..500`, se alinea con el rango operativo vigente `10..700` y main agrega una validación server-side equivalente para persistencia.
+- Límite del texto vigente: `MAX_TEXT_CHARS` aumenta de `10_000_000` a `50_000_000` y el límite seguro IPC derivado (`MAX_IPC_CHARS`) aumenta en la misma proporción, de `40_000_000` a `200_000_000`.
+- Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
+- Preload listener APIs (Issue #161): se completa una auditoría repo-wide de preloads y se normalizan los listeners driftados al estándar `onX(cb) -> unsubscribe`, dejando explícitos los casos válidos de replay/buffer sin cambiar canales, payloads ni timing saludable.
+- Testing automatizado / CI (Issue #193): el repo deja de tener `npm test` como placeholder y pasa a contar con una baseline automatizada real basada en `node --test`, cobertura inicial de contratos en `electron/**`, extracción de núcleos puros para `count`/`format`, smoke local mínimo de arranque Electron y workflow Windows en GitHub Actions para ejecutar la suite estable.
+
 ## [0.1.6] toT - Iteraciones
 - Fecha: `2026-02-19`
 
