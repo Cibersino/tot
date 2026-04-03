@@ -49,17 +49,17 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     relativePath: path.join(
       'public',
       'extraction_feature_licenses',
-      'LICENSE_@google-cloud_local-auth_2.1.0.txt'
+      'LICENSE_@google-cloud_local-auth_3.0.1.txt'
     ),
-    tempName: 'tot_LICENSE_@google-cloud_local-auth_2.1.0.txt',
+    tempName: 'tot_LICENSE_@google-cloud_local-auth_3.0.1.txt',
   },
   'license-import-extract-google-apis': {
     relativePath: path.join(
       'public',
       'extraction_feature_licenses',
-      'LICENSE_googleapis_105.0.0.txt'
+      'LICENSE_googleapis_171.4.0.txt'
     ),
-    tempName: 'tot_LICENSE_googleapis_105.0.0.txt',
+    tempName: 'tot_LICENSE_googleapis_171.4.0.txt',
   },
   'license-import-extract-docx': {
     relativePath: path.join(
