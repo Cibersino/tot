@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>toT - Privacidad de Google OCR</title>
+  <meta name="description" content="Información de privacidad específica de Google OCR para la app de escritorio toT.">
+  <link rel="canonical" href="https://totapp.org/es/app-privacy/google-ocr/">
+  <link rel="alternate" hreflang="es" href="https://totapp.org/es/app-privacy/google-ocr/">
+  <link rel="alternate" hreflang="en" href="https://totapp.org/en/app-privacy/google-ocr/">
+  <link rel="alternate" hreflang="x-default" href="https://totapp.org/es/app-privacy/google-ocr/">
+  <meta property="og:url" content="https://totapp.org/es/app-privacy/google-ocr/">
+  <meta property="og:title" content="toT - Privacidad de Google OCR">
+  <meta property="og:description"
+    content="Información de privacidad específica de Google OCR para la app de escritorio toT.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://totapp.org/og-image.png">
+  <meta property="og:image:alt" content="Captura de la interfaz de estimación de tiempo de lectura de toT">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+  <main class="wrap">
+    <nav class="lang-switch" aria-label="Selector de idioma">
+      <a href="/es/app-privacy/google-ocr/" lang="es" aria-current="page">ES</a>
+      <a href="/en/app-privacy/google-ocr/" lang="en">EN</a>
+    </nav>
+
+    <header class="brand-header">
+      <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="Logo de toT">
+      <div class="brand-copy">
+        <h1>toT</h1>
+        <p><strong>Privacidad de Google OCR</strong></p>
+      </div>
+    </header>
+
+    <div class="box">
+      <p><strong>Google OCR</strong> solo aplica cuando eliges esa ruta OCR dentro de la app. La ruta OCR usa la Cuenta
+        de Google del usuario final y solicita el permiso de Google Drive <code>drive.file</code>.</p>
+      <p><strong>toT</strong> usa un proyecto de Google Cloud y un cliente OAuth proporcionados por el propietario de la
+        app y distribuidos con la app. Los usuarios normales no necesitan obtener ni importar manualmente credenciales
+        de cliente OAuth.</p>
+      <p><strong>1. Datos a los que se accede</strong></p>
+      <ul>
+        <li>datos básicos de autorización y token de Google necesarios para conectar la app con tu Cuenta de Google para
+          esta función OCR</li>
+        <li>el acceso a archivos de Google Drive concedido por el permiso <code>drive.file</code></li>
+        <li>solo las imágenes o PDFs que eliges explícitamente para OCR</li>
+        <li>un documento temporal convertido en Google que se crea durante el flujo OCR para poder exportar el texto de
+          vuelta a la app</li>
+        <li>el texto extraído que Google devuelve a la app después de la exportación</li>
+      </ul>
+      <p><strong>2. Cómo se usan estos datos</strong>: la app usa estos datos para autenticar la conexión con Google
+        OCR, subir y convertir el archivo seleccionado, exportar el texto extraído de vuelta a la app, reutilizar la
+        conexión guardada en futuros usos de OCR e intentar limpiar el documento temporal de Google después de la
+        exportación.</p>
+      <p><strong>3. Compartición con terceros</strong>: los archivos seleccionados para OCR, el documento temporal
+        convertido y los datos de autorización relacionados con Google se comparten con Google solo para prestar el
+        flujo de Google OCR. La app no envía al desarrollador archivos OCR ni texto OCR extraído. Fuera de los
+        servicios de Google necesarios para OCR y de la información que decidas enviar por separado al desarrollador
+        para soporte, este flujo no comparte datos de usuario de Google con otros terceros.</p>
+      <p><strong>4. Almacenamiento y protección</strong>: la app guarda el estado local del token de Google OCR en tu
+        dispositivo para poder reutilizar la conexión. Ese estado del token se protege usando Electron safeStorage y las
+        facilidades de cifrado del sistema operativo disponibles en tu plataforma. Los datos locales de la app y los
+        resultados OCR que la app guarde permanecen en el área local de datos de la app en tu dispositivo; la protección
+        de esos datos también depende de tu dispositivo, sistema operativo y seguridad de tu cuenta. La app intenta
+        eliminar el documento temporal convertido de Google después de exportar el texto.</p>
+      <p><strong>5. Retención y eliminación</strong>: el estado local del token OCR permanece hasta que desconectes
+        Google OCR, elimines los datos locales de la app o desinstales la app. Cuando la acción de desconexión termina
+        correctamente dentro de la app, la app revoca el token guardado y elimina el archivo local del token. También
+        puedes revocar el acceso de la app desde los controles de permisos/seguridad de tu Cuenta de Google. La app
+        intenta eliminar el documento temporal convertido inmediatamente después de la exportación. La app no envía al
+        desarrollador archivos OCR ni texto OCR extraído, y esta función OCR no crea una copia separada de ese
+        contenido OCR para el desarrollador. Si quieres solicitar la eliminación de mensajes de soporte o de cualquier
+        dato que hayas enviado intencionalmente al desarrollador, escribe a <a
+          href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.</p>
+      <p class="muted">Última actualización: 1 de abril de 2026.</p>
+    </div>
+
+    <footer class="site-footer" aria-label="Información del operador y contacto">
+      <p class="muted">
+        Contacto: <a href="https://github.com/Cibersino/tot/issues">GitHub Issues</a> o
+        <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>.
+      </p>
+      <p class="muted">
+        <a href="/es/privacy-cookies/">Privacidad / Cookies del sitio</a>
+        ·
+        <a href="/es/">Volver</a>
+      </p>
+    </footer>
+  </main>
+  <script src="/site-language.js"></script>
+</body>
+
+</html>
