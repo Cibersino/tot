@@ -6,7 +6,7 @@
 // =============================================================================
 // Shared supported-format helpers for import/extract routing.
 // Responsibilities:
-// - Keep native parser support and OCR upload support in one lightweight module.
+// - Keep native parser support and Google-backed upload/conversion support in one lightweight module.
 // - Provide normalized extension lookups without pulling route/runtime dependencies.
 // - Expose stable extension lists for picker and prepare-time capability checks.
 
@@ -24,11 +24,15 @@ const NATIVE_PARSER_BY_EXT = Object.freeze({
 });
 
 const OCR_SOURCE_MIME_BY_EXT = Object.freeze({
+  '.rtf': 'application/rtf',
+  '.odt': 'application/vnd.oasis.opendocument.text',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.webp': 'image/webp',
   '.bmp': 'image/bmp',
+  '.tif': 'image/tiff',
+  '.tiff': 'image/tiff',
   '.pdf': 'application/pdf',
 });
 

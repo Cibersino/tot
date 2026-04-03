@@ -8,7 +8,7 @@
 - Startup + first-run language selection
 - Import/extract from file picker + drag/drop
 - Native extraction routes (`txt`, `md`, `html`, `docx`, PDF text layer)
-- OCR extraction routes (images + scanned PDFs), including OCR activation/disconnect
+- Google-backed extraction routes (`rtf`, `odt`, images, scanned PDFs), including OCR activation/disconnect
 - Import/extract route choice, apply modal, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
@@ -44,7 +44,8 @@
 - Clipboard access available (to test overwrite/append).
 - A local sample-file set available for import/extract:
   - native samples: `txt`, `md`, `html`, `docx`, PDF with selectable text
-  - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`) and one scanned PDF
+  - Google-backed document samples: `rtf`, `odt`
+  - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`) and one scanned PDF
 - Network access available for updater check (GitHub API) and OCR activation/runtime checks.
 
 ### 1.3 Dev vs packaged caveats (important)
@@ -118,11 +119,14 @@ Prepare a small local sample set whose expected text is known ahead of time:
   - `sample.md`
   - `sample.html`
   - `sample.docx`
+- Google-backed document samples:
+  - `sample.rtf`
+  - `sample.odt`
 - PDFs:
   - `sample_selectable.pdf` (contains selectable/native text)
   - `sample_scanned.pdf` (image/scanned PDF; no usable text layer)
 - OCR images:
-  - at least one of `sample.jpg`, `sample.png`, `sample.webp`, or `sample.bmp`
+  - at least one of `sample.jpg`, `sample.png`, `sample.webp`, `sample.bmp`, `sample.tif`, or `sample.tiff`
 
 Recommended content for the text-like samples:
 - reuse the “Small text” content from 3.1 so count/preview expectations are easy to compare
@@ -216,10 +220,10 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Main window reflects editor changes.
 - No crash; no stuck “editor loader”.
 
-### SM-09 Import/extract: native quick check
-**Goal:** picker-based import/extract works for a native-supported file and reaches the apply modal.
+### SM-09 Import/extract: supported non-PDF quick check
+**Goal:** picker-based import/extract works for a supported non-PDF file and reaches the apply modal.
 1. Click **📥**.
-2. Select a native-supported file such as `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, or `sample_selectable.pdf`.
+2. Select a supported non-PDF file such as `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, `sample.rtf`, or `sample.odt`.
 3. If the apply modal appears, leave repetitions at `1` and choose **Sobrescribir**.
 4. Observe preview and results.
 
@@ -389,7 +393,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - The button is present in the main controls row.
 - The picker opens to a reasonable default/persisted folder.
-- Supported formats include native text docs plus OCR-capable images/PDFs.
+- Supported formats include native text docs, Google-backed document formats, and OCR-capable images/PDFs.
 - Cancelling the picker is a no-op.
 
 #### REG-IMPORT-02 Drag/drop happy path
@@ -425,18 +429,21 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The flow does not start while blocked.
 - User-facing guidance indicates that secondary windows must be closed and the stopwatch stopped before import/extract can start.
 
-#### REG-IMPORT-05 Native extraction across supported formats
-**Goal:** each native-supported format extracts text and reaches the apply modal.
+#### REG-IMPORT-05 Supported text/document extraction across declared formats
+**Goal:** each declared text/document format extracts text and reaches the apply modal.
 1. Run import/extract for:
    - `sample.txt`
    - `sample.md`
    - `sample.html`
    - `sample.docx`
+   - `sample.rtf`
+   - `sample.odt`
    - `sample_selectable.pdf`
 2. For each successful run, use **Sobrescribir** with repetitions `1`.
 
 **Expected:**
-- Each file completes through the native route.
+- `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, and `sample_selectable.pdf` complete through the native route unless the user explicitly chooses OCR for the PDF.
+- `sample.rtf` and `sample.odt` complete through the connected Google-backed extraction path.
 - Extracted text is normalized into usable app text (preview/counts/time update).
 - `sample_selectable.pdf` does not require OCR if native text is available and OCR is not explicitly chosen.
 
@@ -455,7 +462,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORT-07 OCR-only routing for images and scanned PDFs
 **Goal:** OCR-only inputs skip native route selection and use the OCR path.
-1. Run import/extract on one OCR-capable image.
+1. Run import/extract on one OCR-capable image, ideally including one of `sample.tif` or `sample.tiff`.
 2. Run import/extract on `sample_scanned.pdf`.
 
 **Expected:**
