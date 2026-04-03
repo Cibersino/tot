@@ -162,6 +162,16 @@ Each row should capture:
 * testing impact
 * final decision
 
+## Evaluation table
+
+| Candidate | Current behavior | Possible paths | Repo evidence | External evidence | Dependency impact | Testing impact | Final decision |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `rtf` | Rejected today because it is not present in the shared supported-format contract. | 1. Route through the existing Drive upload-convert-export path. 2. Add a native parser path. | The current Drive-backed path uploads a file with a caller-supplied MIME type, creates a Google Doc, then exports `text/plain`. The current gates block `rtf` before that path is reached. The repo has no native `rtf` parser today. | Google Drive documents the following common import formats to Google Docs: Microsoft Word, OpenDocument Text, HTML, RTF, plain text. It also states that supported conversions should be checked through `about.importFormats`. | No new dependency is required if the Drive conversion path is used. A native path would require a new parser dependency. | Needs at least one `rtf` fixture, negative-path coverage, and support-matrix updates in docs/tests. | **Include in this issue.** Preferred path: use the existing Drive conversion pipeline, not a new native parser. |
+| `odt` | Rejected today because it is not present in the shared supported-format contract. | 1. Route through the existing Drive upload-convert-export path. 2. Add a native parser path. | The repo has no native `odt` parser today. The current Drive-backed path is technically compatible with format conversion, but `odt` is blocked by the current gates before execution. | Google Drive documents OpenDocument Text as a common import format to Google Docs and states that supported conversions should be checked through `about.importFormats`. | No new dependency is required if the Drive conversion path is used. A native path would require a new parser dependency. | Needs at least one `odt` fixture, negative-path coverage, and support-matrix updates in docs/tests. | **Include in this issue.** Preferred path: use the existing Drive conversion pipeline, not a new native parser. |
+| `.doc` | Rejected today because it is not present in the shared supported-format contract. | 1. Route through the existing Drive upload-convert-export path if legacy Word is confirmed for the exact MIME used by this app. 2. Add a native legacy-Word parser path. | The repo has no native legacy Word parser today. The current Drive-backed path could be used if the relevant legacy MIME is confirmed through the documented conversion mechanism. | Google Drive documents Microsoft Word as a common import format to Google Docs and says supported conversions should be checked through `about.importFormats`. The sources used in this pass do not explicitly distinguish legacy `.doc` from `.docx`. | No new dependency is required if the Drive conversion path is valid for legacy `.doc`. A native path would require a new parser dependency. | Needs at least one `.doc` fixture plus an explicit verification step for the exact conversion path before implementation is claimed safe. | **Defer from this issue.** Reason: legacy `.doc` support is plausible, but not established precisely enough by the evidence gathered here. |
+| `tif` | Rejected today because it is not present in the shared supported-format contract. | 1. Normalize locally to PNG, then use the existing Drive image/OCR path. 2. Use direct Drive conversion only if TIFF support is verified explicitly. | The repo already has an OCR image-normalization layer and already ships `sharp`. That layer currently converts `webp` to PNG before upload. The current Drive-backed path already handles supported image uploads plus `ocrLanguage`. | Google Drive documents JPEG, PNG, GIF, BMP, and PDF as common image/PDF imports to Google Docs. TIFF is not listed there. Sharp documents TIFF input support and PNG output support. | No new dependency is required for a local TIFF-to-PNG normalization path because `sharp` is already present. | Needs `.tif` fixture coverage for normalization success/failure, prepare-time gating, and end-to-end extraction. | **Include in this issue.** Preferred path: local normalization to PNG, then existing Drive-backed extraction. |
+| `tiff` | Rejected today because it is not present in the shared supported-format contract. | 1. Normalize locally to PNG, then use the existing Drive image/OCR path. 2. Use direct Drive conversion only if TIFF support is verified explicitly. | Same repo evidence as `tif`: existing normalization layer plus existing `sharp` dependency. | Same external evidence as `tif`: TIFF is not listed in the Drive common import formats used here, while Sharp documents TIFF input support and PNG output support. | No new dependency is required for a local TIFF-to-PNG normalization path because `sharp` is already present. | Needs `.tiff` fixture coverage for normalization success/failure, prepare-time gating, and end-to-end extraction. | **Include in this issue.** Preferred path: local normalization to PNG, then existing Drive-backed extraction. |
+
 ### 4. Exclude spreadsheet semantics
 
 Spreadsheet files are a different product problem from text extraction.
@@ -215,33 +225,37 @@ This proposal therefore excludes animated image extensions and any broader anima
 
 ## Recommended implementation order
 
-1. Evaluate `rtf`, `odt`, `.doc`, `tif`, and `tiff` against the decision criteria and record the outcome in the issue doc.
-2. Add or adjust the shared supported-format contract.
-3. Implement the chosen path for each accepted format.
-4. Keep picker filtering derived from the shared contract.
-5. Add sample files for each newly supported format.
-6. Extend regression coverage for picker, prepare, and execution.
-7. Verify unsupported spreadsheet and animated-image extensions still fail cleanly.
+1. Record the evaluation outcomes for `rtf`, `odt`, `.doc`, `tif`, and `tiff` in this issue.
+2. Update the shared supported-format contract for the included candidates: `rtf`, `odt`, `tif`, `tiff`.
+3. Extend the current Drive-backed extraction path to cover `rtf` and `odt`.
+4. Extend local normalization to cover `tif` and `tiff` before upload.
+5. Keep picker filtering derived from the shared contract.
+6. Add sample files for each included extension.
+7. Extend regression coverage for picker, prepare, normalization, and execution.
+8. Verify `.doc` remains deferred and unsupported in this issue.
+9. Verify unsupported spreadsheet and animated-image extensions still fail cleanly.
 
 ## Breakdown
 
-- [ ] Add an evaluation table covering `rtf`, `odt`, `.doc`, `tif`, and `tiff`
-- [ ] Record a decision for `rtf`
-- [ ] Record a decision for `odt`
-- [ ] Record a decision for legacy Word `.doc`
-- [ ] Record a decision for `tif`
-- [ ] Record a decision for `tiff`
-- [ ] Record the basis for each decision:
+- [x] Add an evaluation table covering `rtf`, `odt`, `.doc`, `tif`, and `tiff`
+- [x] Record a decision for `rtf`
+- [x] Record a decision for `odt`
+- [x] Record a decision for legacy Word `.doc`
+- [x] Record a decision for `tif`
+- [x] Record a decision for `tiff`
+- [x] Record the basis for each decision:
   * current behavior
   * possible paths
   * repo evidence
   * external evidence
   * dependency impact
   * testing impact
-- [ ] Update `electron/import_extract_platform/import_extract_supported_formats.js`
-- [ ] Implement the chosen path for each accepted extension
+- [ ] Update `electron/import_extract_platform/import_extract_supported_formats.js` for `rtf`, `odt`, `tif`, and `tiff`
+- [ ] Extend the current Drive-backed extraction path for `rtf` and `odt`
+- [ ] Extend local normalization for `tif` and `tiff`
 - [ ] Verify `electron/import_extract_platform/import_extract_file_picker_ipc.js` stays aligned automatically with the format contract
-- [ ] Extend prepare/execute regression coverage for each accepted extension
-- [ ] Add/update sample files referenced by `docs/test_suite.md`
+- [ ] Extend prepare/execute regression coverage for `rtf`, `odt`, `tif`, and `tiff`
+- [ ] Add/update sample files referenced by `docs/test_suite.md` for `rtf`, `odt`, `tif`, and `tiff`
+- [ ] Keep legacy Word `.doc` deferred in this issue
 - [ ] Keep spreadsheet extensions explicitly unsupported in this issue
 - [ ] Keep animated image extensions explicitly unsupported in this issue
