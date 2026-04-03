@@ -2,9 +2,9 @@
 
 Fecha: `2026-04-03`
 Tag objetivo (GitHub): `v1.0.0`
-Commit freeze (Git): `<SHA_COMMIT>`
-Artefacto inspeccionado: `<ZIP/INSTALLER>`
-SHA256(artefacto): `<SHA256>`
+Commit freeze (Git): `aff7cf9c87a6081804f72ac84b2f7d86da0bbef9`
+Artefacto inspeccionado: `toT-1.0.0-win-x64.zip`
+SHA256(artefacto): `9F2E2B215A9339F870ABB80A0471D3891FF765590DD6BA2EF10E0945FA7CFB87`
 
 Pregunta única que responde este documento: **¿La app es suficientemente segura para ser distribuida en este release?**
 
@@ -429,6 +429,6 @@ La app queda marcada como **“suficientemente segura para distribuir este relea
 * Post-packaging Gate: todo PASS (incluyendo dependencias runtime listadas y revisadas).
 
 Veredicto final: `PASS`  
-Artefacto validado: `<nombre exacto>`
+Artefacto validado: `toT-1.0.0-win-x64.zip`
 
 ---
