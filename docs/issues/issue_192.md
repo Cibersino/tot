@@ -2,13 +2,7 @@
 
 ## Objective
 
-Expand the import, extraction, and OCR feature to support additional **static document/image source formats** without weakening the current route-selection contract or confusing the user about what is actually supported.
-
-This proposal is intentionally limited to formats that fit the current import/extract architecture:
-
-* native extraction formats that can reasonably yield plain text;
-* OCR source formats that represent static page/image content;
-* normalization work required to make those static formats usable by the existing OCR provider flow.
+Evaluate and define support for additional **static document/image source formats** in the import, extraction, and OCR feature.
 
 ## Why this issue is worth opening
 
@@ -32,23 +26,21 @@ The issue should therefore focus on expanding the **real supported-format matrix
 
 ### In scope
 
-* Evaluate and add support for additional static source formats that fit the current route model.
+* Evaluate candidate static source formats and decide whether each one should be supported.
 * Keep the shared format contract as the single source of truth for picker, prepare, and execution routing.
 * Add any required parser or normalization work for new formats.
-* Preserve the current route-selection behavior for PDFs and other supported source types.
+* Preserve correct behavior for already supported source types.
 * Update tests, sample files, and user-visible supported-format coverage accordingly.
 
 ### Evaluation set for this issue
 
 The initial evaluation set for this issue is:
 
-* Native-format candidates:
-  * `rtf`
-  * `odt`
-  * legacy Word `.doc`
-* OCR-source candidates:
-  * `tif`
-  * `tiff`
+* `rtf`
+* `odt`
+* legacy Word `.doc`
+* `tif`
+* `tiff`
 
 These entries are **candidates for evaluation**, not pre-approved implementation targets.
 
@@ -103,12 +95,12 @@ Any newly supported extension must be represented in the shared format contract 
 
 ### 2. Preserve route honesty
 
-The app must not imply that a file is supported unless the corresponding native or OCR route can actually run.
+The app must not imply that a file is supported unless there is a real implementation path that can execute successfully and fail coherently.
 
 Examples:
 
-* if a new text-document extension is native-only, it must not appear as OCR-capable unless OCR support is real;
-* if a new image format requires normalization before OCR upload, that normalization must be explicit and tested;
+* if a candidate format requires local normalization before upload, that normalization must be explicit and tested;
+* if a candidate format would only work through a cloud-backed conversion path, that must be evaluated explicitly rather than assumed;
 * unsupported formats must continue to fail with the existing structured unsupported-format path instead of generic runtime errors.
 
 ### 3. Prefer bounded first-pass additions
@@ -119,10 +111,10 @@ Before any candidate extension is accepted into the implementation scope for thi
 
 Each candidate in the evaluation set should be assessed on:
 
-* route fit:
-  * native
-  * OCR
-  * normalization plus OCR
+* current repo behavior:
+  * how the format is classified or rejected today
+* possible implementation paths:
+  * one path, multiple paths, or no credible path
 * existing repo support:
   * whether a parser/conversion path already exists in the codebase or dependencies
 * dependency/runtime cost:
@@ -154,8 +146,10 @@ Before implementation begins, add a short decision table for:
 
 Each row should capture:
 
-* intended route
-* evidence summary
+* current behavior
+* possible paths
+* repo evidence
+* external evidence
 * dependency impact
 * testing impact
 * final decision
@@ -190,16 +184,10 @@ This proposal therefore excludes animated image extensions and any broader anima
   * reject for this issue
 * Each accepted new extension is wired through the shared format contract, not only the picker.
 * Unsupported spreadsheet and animated-image extensions remain out of scope and are not added implicitly.
-* Native candidates either:
-  * extract usable text successfully, or
-  * are rejected with a clear structured unsupported/runtime path during development until fully supported.
-* OCR image candidates either:
-  * upload successfully through the existing OCR pipeline, or
-  * receive the required normalization layer plus regression coverage.
+* Each included candidate has at least one implementation path that is explicit, justified, and testable.
 * The test suite and sample-file set are updated to reflect the actual supported extensions.
 * User-facing behavior remains honest:
   * no false-positive picker support
-  * no route-choice regressions
   * no generic-error fallback for known unsupported formats
 
 ## Risks / constraints
@@ -214,10 +202,10 @@ This proposal therefore excludes animated image extensions and any broader anima
 
 1. Evaluate `rtf`, `odt`, `.doc`, `tif`, and `tiff` against the decision criteria and record the outcome in the issue doc.
 2. Add or adjust the shared supported-format contract.
-3. Implement native parser support and/or OCR normalization support per accepted format.
+3. Implement the chosen path for each accepted format.
 4. Keep picker filtering derived from the shared contract.
 5. Add sample files for each newly supported format.
-6. Extend regression coverage for picker, prepare, route selection, and execution.
+6. Extend regression coverage for picker, prepare, and execution.
 7. Verify unsupported spreadsheet and animated-image extensions still fail cleanly.
 
 ## Breakdown
@@ -226,10 +214,9 @@ This proposal therefore excludes animated image extensions and any broader anima
 - [ ] Decide whether `rtf` is included, deferred, or rejected for this issue
 - [ ] Decide whether `odt` is included, deferred, or rejected for this issue
 - [ ] Decide whether legacy Word `.doc` is included, deferred, or rejected for this issue
-- [ ] Decide whether `tif` / `tiff` OCR support is included, deferred, or rejected for this issue
+- [ ] Decide whether `tif` / `tiff` are included, deferred, or rejected for this issue
 - [ ] Update `electron/import_extract_platform/import_extract_supported_formats.js`
-- [ ] Implement any required native parser additions
-- [ ] Implement any required OCR normalization additions
+- [ ] Implement the chosen path for each accepted extension
 - [ ] Verify `electron/import_extract_platform/import_extract_file_picker_ipc.js` stays aligned automatically with the format contract
 - [ ] Extend prepare/execute regression coverage for each accepted extension
 - [ ] Add/update sample files referenced by `docs/test_suite.md`
