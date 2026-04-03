@@ -4,12 +4,15 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Shared snapshot tag catalog for renderer and main-process consumers.
 // Responsibilities:
+// - Expose one shared snapshot tag catalog for renderer and main-process consumers.
 // - Define the canonical snapshot tag option sets.
 // - Normalize language/type/difficulty tag values.
 // - Support both browser-script and CommonJS consumers.
 
+// =============================================================================
+// Module bootstrapping
+// =============================================================================
 (function initSnapshotTagCatalog(root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) {
@@ -19,6 +22,9 @@
     root.SnapshotTagCatalog = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+  // =============================================================================
+  // Constants / config
+  // =============================================================================
   const LANGUAGE_OPTIONS = Object.freeze([
     Object.freeze({ value: 'es', labelKey: 'renderer.snapshot_save_tags.options.language.es', fallback: 'Español' }),
     Object.freeze({ value: 'en', labelKey: 'renderer.snapshot_save_tags.options.language.en', fallback: 'English' }),
@@ -61,6 +67,9 @@
   const TYPE_VALUE_SET = new Set(TYPE_OPTIONS.map((option) => option.value));
   const DIFFICULTY_VALUE_SET = new Set(DIFFICULTY_OPTIONS.map((option) => option.value));
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function isPlainObject(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
@@ -103,6 +112,9 @@
     return Object.keys(tags).length ? tags : null;
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   return {
     TAG_KEYS,
     LANGUAGE_OPTIONS,
