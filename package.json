@@ -7,6 +7,7 @@
     "start": "electron .",
     "test": "npm run test:unit",
     "test:unit": "node --test --test-isolation=none \"test/unit/**/*.test.js\"",
+    "test:smoke": "node --test --test-isolation=none \"test/smoke/**/*.test.js\"",
     "lint": "eslint \".\" --ext .js",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win --x64",

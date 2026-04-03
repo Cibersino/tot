@@ -60,7 +60,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
 
 Important limitations:
 
-* no real Electron window smoke automation exists yet;
+* a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
 * no renderer/UI automation exists yet;
 * OCR network/provider behavior is still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
