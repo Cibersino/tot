@@ -26,6 +26,7 @@ const {
   DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
+  TASK_ROW_COMMENT_MAX_CHARS,
   TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 } = require('./constants_main');
@@ -172,6 +173,7 @@ function normalizeRow(raw) {
   const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
   if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   const comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
+  if (comentario.length > TASK_ROW_COMMENT_MAX_CHARS) return { ok: false, code: 'COMENTARIO_TOO_LONG' };
   const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
   return {
     ok: true,
@@ -194,6 +196,7 @@ function normalizeLibraryEntry(raw, includeComment) {
   if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
   let comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
   if (!includeComment) comentario = '';
+  if (comentario.length > TASK_ROW_COMMENT_MAX_CHARS) return { ok: false, code: 'COMENTARIO_TOO_LONG' };
   const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
   const entry = { texto, tiempoSeconds, tipo, enlace };
   if (comentario) entry.comentario = comentario;

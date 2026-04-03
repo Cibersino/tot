@@ -12,6 +12,7 @@ const PRESET_WPM_MIN = 10; // Minimum WPM allowed when persisting presets.
 const PRESET_WPM_MAX = 700; // Maximum WPM allowed when persisting presets.
 const TASK_NAME_MAX_CHARS = 50; // Max chars for task list name.
 const TASK_ROW_TEXT_MAX_CHARS = 200; // Max chars for task row "text" (texto).
+const TASK_ROW_COMMENT_MAX_CHARS = 1200; // Max chars for task row "comment" (comentario).
 const TASK_ROW_TYPE_MAX_CHARS = 50; // Max chars for task row "type" (tipo).
 const TASK_ROW_LINK_MAX_CHARS = 1000; // Max chars for task row "link" (enlace).
 
@@ -26,6 +27,7 @@ module.exports = {
   PRESET_WPM_MAX,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
+  TASK_ROW_COMMENT_MAX_CHARS,
   TASK_ROW_TYPE_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 };
