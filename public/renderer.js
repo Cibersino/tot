@@ -1288,11 +1288,15 @@ setupToggleModoPreciso();
 
   async function hydrateAboutEnvironment(container) {
     const envEl = container ? container.querySelector('#appEnv') : null;
+    const runtimeEl = container ? container.querySelector('#appRuntimeVersions') : null;
+    const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
+    const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
     if (!envEl) return;
 
     if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
       log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
       envEl.textContent = 'N/A';
+      if (runtimeEl) runtimeEl.textContent = 'N/A';
       return;
     }
 
@@ -1300,8 +1304,25 @@ setupToggleModoPreciso();
       const info = await window.electronAPI.getAppRuntimeInfo();
       const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
       const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
+      const electronVersion = info && typeof info.electronVersion === 'string'
+        ? info.electronVersion.trim()
+        : '';
+      const chromeVersion = info && typeof info.chromeVersion === 'string'
+        ? info.chromeVersion.trim()
+        : '';
+      const nodeVersion = info && typeof info.nodeVersion === 'string'
+        ? info.nodeVersion.trim()
+        : '';
       const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
       const osLabel = platformMap[platform] || platform;
+      const sharpRuntimePackageMap = {
+        'win32:x64': '@img/sharp-win32-x64@0.34.4',
+        'darwin:x64': '@img/sharp-darwin-x64@0.34.4',
+        'darwin:arm64': '@img/sharp-darwin-arm64@0.34.4',
+        'linux:x64': '@img/sharp-linux-x64@0.34.4',
+      };
+      const sharpRuntimePackage = sharpRuntimePackageMap[`${platform}:${arch}`]
+        || '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
 
       if (!osLabel || !arch) {
         log.warnOnce(
@@ -1309,13 +1330,28 @@ setupToggleModoPreciso();
           'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
         );
         envEl.textContent = 'N/A';
+        if (runtimeEl) runtimeEl.textContent = 'N/A';
+        if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+        if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
         return;
       }
 
       envEl.textContent = `${osLabel} (${arch})`;
+      if (sharpRuntimeEl) sharpRuntimeEl.textContent = sharpRuntimePackage;
+      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = sharpRuntimePackage;
+      if (runtimeEl) {
+        const runtimeParts = [];
+        runtimeParts.push(electronVersion ? `Electron ${electronVersion}` : 'Electron N/A');
+        runtimeParts.push(chromeVersion ? `Chromium ${chromeVersion}` : 'Chromium N/A');
+        runtimeParts.push(nodeVersion ? `Node.js ${nodeVersion}` : 'Node.js N/A');
+        runtimeEl.textContent = runtimeParts.join(' | ');
+      }
     } catch (err) {
       log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
       envEl.textContent = 'N/A';
+      if (runtimeEl) runtimeEl.textContent = 'N/A';
+      if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
     }
   }
 
