@@ -1644,6 +1644,9 @@ app.whenReady().then(() => {
   });
 
   importExtractPreconditionsIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
     getPreconditionContext: () => {
       const secondaryWindows = [
         { id: 'editor', label: 'editor', ref: editorWin },
