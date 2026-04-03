@@ -369,15 +369,37 @@ Do not make the repo harder to merge by gating on flaky first-pass UI automation
 
 ## Breakdown
 
-- [ ] Choose the baseline automated test stack for this repo
-- [ ] Replace the placeholder `npm test` command in `package.json`
-- [ ] Add a documented test directory/layout convention
-- [ ] Add first-wave tests for `electron/settings.js`
-- [ ] Add first-wave tests for `electron/import_extract_platform/import_extract_supported_formats.js`
+- [x] Choose the baseline automated test stack for this repo
+- [x] Replace the placeholder `npm test` command in `package.json`
+- [x] Add a documented test directory/layout convention
+- [x] Add first-wave tests for `electron/settings.js`
+- [x] Add first-wave tests for `electron/import_extract_platform/import_extract_supported_formats.js`
 - [ ] Add first-wave tests for selected import/extract decision helpers
-- [ ] Add first-wave tests for at least one provider-failure classification module
+- [x] Add first-wave tests for at least one provider-failure classification module
 - [ ] Decide whether `public/js/count.js` should be extracted into a directly testable pure helper module in this issue
 - [ ] Decide whether `public/js/format.js` should be extracted into a directly testable pure helper module in this issue
 - [ ] Add a minimal Electron smoke suite only if it remains stable and narrow
-- [ ] Add CI execution for the stable automated subset
+- [x] Add CI execution for the stable automated subset
 - [ ] Document how automated coverage maps back to `docs/test_suite.md`
+
+## Progress update
+
+Current implementation completed in the repo:
+
+* `package.json` now runs the Node built-in test runner via `npm test`.
+* A first repo test layout exists under `test/`.
+* A first Windows GitHub Actions workflow exists under `.github/workflows/test.yml`.
+* The current automated baseline covers:
+  * `electron/settings.js`
+  * `electron/import_extract_platform/import_extract_supported_formats.js`
+  * `electron/import_extract_platform/ocr_google_drive_activation_state.js`
+  * `electron/import_extract_platform/ocr_google_drive_provider_failure.js`
+  * `electron/import_extract_platform/ocr_google_drive_provider_failure_classification.js`
+  * `electron/import_extract_platform/import_extract_prepared_store.js`
+
+Still pending in this issue:
+
+* import/extract decision-helper coverage for the heavier prepare/execute core;
+* any renderer pure-logic extraction (`count.js`, `format.js`);
+* any real Electron smoke automation;
+* explicit docs linkage back to `docs/test_suite.md`.
