@@ -65,6 +65,7 @@ Reglas:
 - Límite del texto vigente: `MAX_TEXT_CHARS` aumenta de `10_000_000` a `50_000_000` y el límite seguro IPC derivado (`MAX_IPC_CHARS`) aumenta en la misma proporción, de `40_000_000` a `200_000_000`.
 - Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
 - Preload listener APIs (Issue #161): se completa una auditoría repo-wide de preloads y se normalizan los listeners driftados al estándar `onX(cb) -> unsubscribe`, dejando explícitos los casos válidos de replay/buffer sin cambiar canales, payloads ni timing saludable.
+- Testing automatizado / CI (Issue #193): el repo deja de tener `npm test` como placeholder y pasa a contar con una baseline automatizada real basada en `node --test`, cobertura inicial de contratos en `electron/**`, extracción de núcleos puros para `count`/`format`, smoke local mínimo de arranque Electron y workflow Windows en GitHub Actions para ejecutar la suite estable.
 
 ### Agregado
 
@@ -79,6 +80,12 @@ Reglas:
   - `public/index.html`: la sección inferior derecha pasa a contener un botón centrado `Test de velocidad de lectura`.
   - `public/renderer.js`: se agrega wiring renderer para traducir la etiqueta del botón y mostrar `renderer.alerts.wip_reading_speed_test` al hacer click, respetando `guardUserAction(...)`.
   - i18n renderer: se agregan `renderer.main.reading_tools.reading_speed_test` y `renderer.alerts.wip_reading_speed_test` en todos los locales con `renderer.json`.
+- Testing automatizado / CI (Issue #193):
+  - `.github/workflows/test.yml` (nuevo): workflow mínimo `Test` sobre `windows-latest` que ejecuta `npm ci` y `npm test` en push y pull request.
+  - `test/README.md` (nuevo) y estructura `test/unit/**` + `test/smoke/**`: baseline documentada para tests de contrato Node-accessible y smoke local de arranque Electron.
+  - `test/unit/electron/*.test.js`: primera ola de cobertura para `settings`, formatos soportados de import/extract, estado de activación OCR, parsing/clasificación de fallos provider-side, prepared store y helpers de decisión de `import_extract_prepare_execute_core`.
+  - `test/unit/shared/count_core.test.js` y `test/unit/shared/format_core.test.js` (nuevos): cobertura de los núcleos puros extraídos desde renderer para conteo y formateo.
+  - `test/smoke/electron_launch_smoke.test.js` (nuevo): smoke local acotado que lanza la app real con perfil aislado, espera `TOT_SMOKE_READY` y valida cierre limpio sin meter esta ruta en CI.
 
 ### Cambiado
 
@@ -136,6 +143,12 @@ Reglas:
   - `electron/preload.js`: `onCurrentTextUpdated` y `onPresetCreated` pasan a retornar unsubscribe; `onPresetCreated` además deja de propagar errores síncronos del callback al preload.
   - `electron/preset_preload.js`, `electron/task_editor_preload.js` y `electron/editor_find_preload.js`: se conservan como casos compliant de replay/buffer explícito, con captura temprana + replay asíncrono para sus payloads de init/estado.
   - `electron/flotante_preload.js` y `electron/language_preload.js`: auditados sin cambios; el primero ya cumplía el contrato de listeners y el segundo no expone listeners.
+- Testing automatizado / renderer utilities (Issue #193):
+  - `package.json`: `npm test` deja de fallar por placeholder y pasa a ejecutar la baseline estable; además se reservan `test:unit` y `test:smoke` como entrypoints explícitos.
+  - `public/js/lib/count_core.js` y `public/js/lib/format_core.js` (nuevos): el comportamiento puro de conteo y formateo se extrae a módulos reutilizables compatibles con browser-script y CommonJS, sin mover la responsabilidad de wiring fuera del renderer.
+  - `public/js/count.js` y `public/js/format.js`: se reducen a wrappers de arranque que validan dependencias obligatorias (`window.getLogger`, `window.AppConstants`, `window.CountCore` / `window.FormatCore`, y `window.RendererI18n` en `format`) y publican `window.CountUtils` / `window.FormatUtils` sin cambiar la surface healthy-path.
+  - `public/index.html`: carga los nuevos núcleos antes de sus wrappers para mantener el contrato global y permitir cobertura unitaria directa sobre la lógica pura.
+  - `electron/main.js`: agrega un hook de smoke local controlado por `TOT_SMOKE_TEST` / `TOT_SMOKE_USER_DATA_DIR` para validar launch+READY con perfil aislado, sin alterar el startup normal fuera de tests.
 - Páginas informativas / documentación in-app:
   - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`: se documentan el flujo `📥` / drag/drop, los formatos soportados, la decisión nativa/OCR para PDF, el modal final con `Repeticiones`, la privacidad del flujo OCR y la ruta de desconexión de Google OCR.
   - `public/info/acerca_de.html`: se actualizan sitio web, conectividad, privacidad y licencias de componentes incorporados para importación/extracción, OCR, PDF, DOCX y procesamiento de imágenes.
