@@ -154,7 +154,7 @@ function getDialogTexts() {
   }
 }
 
-async function confirmOverwrite(kind, mainWin, name = '') {
+async function confirmOverwrite(kind, ownerWin, name = '') {
   const dialogTexts = getDialogTexts();
   const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
   const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
@@ -172,14 +172,14 @@ async function confirmOverwrite(kind, mainWin, name = '') {
     message = message.replace('{name}', String(name));
   }
 
-  const res = await dialog.showMessageBox(mainWin || null, {
+  const dialogResult = await dialog.showMessageBox(ownerWin || null, {
     type: 'none',
     buttons: [yesLabel, noLabel],
     defaultId: 1,
     cancelId: 1,
     message,
   });
-  return res && res.response === 0;
+  return dialogResult && dialogResult.response === 0;
 }
 
 function resolveOwnerWin(event, resolveMainWin) {
@@ -236,36 +236,6 @@ function validateSelectedSnapshot(rootReal, selectedPath) {
   return { ok: true, selectedReal, stats, snapshotRelPath };
 }
 
-function parseSnapshotFile(selectedReal) {
-  let raw = fs.readFileSync(selectedReal, 'utf8');
-  raw = raw.replace(/^\uFEFF/, '');
-  if (!raw.trim()) {
-    log.warn('snapshot file is empty:', { selectedReal });
-    return { ok: false, code: 'INVALID_JSON', message: 'empty snapshot file' };
-  }
-
-  let parsed = null;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (err) {
-    log.warn('snapshot JSON parse failed:', { selectedReal, err: String(err) });
-    return { ok: false, code: 'INVALID_JSON', message: String(err) };
-  }
-
-  if (!parsed || typeof parsed !== 'object' || typeof parsed.text !== 'string') {
-    log.warn('snapshot schema invalid:', { selectedReal });
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'invalid snapshot schema' };
-  }
-
-  const tagsInfo = sanitizeSnapshotTags(parsed.tags, { allowMissing: true });
-  if (!tagsInfo.ok) {
-    log.warn('snapshot tags schema invalid:', { selectedReal, message: tagsInfo.message });
-    return { ok: false, code: 'INVALID_SCHEMA', message: tagsInfo.message };
-  }
-
-  return { ok: true, text: parsed.text, tags: tagsInfo.tags };
-}
-
 function sanitizeSnapshotTags(rawTags, { allowMissing = false } = {}) {
   if (rawTags == null) {
     return allowMissing
@@ -319,6 +289,36 @@ function sanitizeSnapshotSavePayload(payload) {
     return { ok: true, tags: null };
   }
   return sanitizeSnapshotTags(payload.tags, { allowMissing: true });
+}
+
+function parseSnapshotFile(selectedReal) {
+  let raw = fs.readFileSync(selectedReal, 'utf8');
+  raw = raw.replace(/^\uFEFF/, '');
+  if (!raw.trim()) {
+    log.warn('snapshot file is empty:', { selectedReal });
+    return { ok: false, code: 'INVALID_JSON', message: 'empty snapshot file' };
+  }
+
+  let parsed = null;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    log.warn('snapshot JSON parse failed:', { selectedReal, err: String(err) });
+    return { ok: false, code: 'INVALID_JSON', message: String(err) };
+  }
+
+  if (!parsed || typeof parsed !== 'object' || typeof parsed.text !== 'string') {
+    log.warn('snapshot schema invalid:', { selectedReal });
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'invalid snapshot schema' };
+  }
+
+  const tagsInfo = sanitizeSnapshotTags(parsed.tags, { allowMissing: true });
+  if (!tagsInfo.ok) {
+    log.warn('snapshot tags schema invalid:', { selectedReal, message: tagsInfo.message });
+    return { ok: false, code: 'INVALID_SCHEMA', message: tagsInfo.message };
+  }
+
+  return { ok: true, text: parsed.text, tags: tagsInfo.tags };
 }
 
 // =============================================================================
@@ -490,7 +490,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const parsed = parseSnapshotFile(selectedReal);
       if (!parsed.ok) return parsed;
 
-      const res = textState.applyCurrentText(parsed.text, {
+      const applyResult = textState.applyCurrentText(parsed.text, {
         source: 'main-window',
         action: 'load_snapshot',
       });
@@ -502,8 +502,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         filename: path.basename(selectedReal),
         bytes: stats.size,
         mtime: stats.mtimeMs,
-        length: res && typeof res.length === 'number' ? res.length : parsed.text.length,
-        truncated: !!(res && res.truncated),
+        length: applyResult && typeof applyResult.length === 'number' ? applyResult.length : parsed.text.length,
+        truncated: !!(applyResult && applyResult.truncated),
       };
     } catch (err) {
       log.error('snapshot load failed:', err);
