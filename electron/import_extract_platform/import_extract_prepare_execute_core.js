@@ -162,6 +162,7 @@ function buildRouteMetadata({
   availableRoutes,
   chosenRoute,
   executedRoute = null,
+  executionKind = null,
   pdfTriage = 'not_pdf',
   triageReason = '',
   ocrSetupState = 'not_checked',
@@ -177,6 +178,7 @@ function buildRouteMetadata({
     availableRoutes: Array.isArray(availableRoutes) ? availableRoutes : [],
     chosenRoute,
     executedRoute,
+    executionKind,
     pdfTriage,
     triageReason,
     ocrSetupState,
@@ -192,7 +194,7 @@ function buildRouteMetadata({
 }
 
 function buildPrepareFailure({
-  routeKind,
+  executionKind,
   routeMetadata,
   primaryAlertKey,
   warningAlertKeys = [],
@@ -201,7 +203,7 @@ function buildPrepareFailure({
   return {
     ok: true,
     prepareFailed: true,
-    routeKind,
+    executionKind,
     routeMetadata,
     primaryAlertKey,
     warningAlertKeys,
@@ -236,11 +238,12 @@ function buildOcrPrepareFailure({
   }
 
   return buildPrepareFailure({
-    routeKind: 'ocr',
+    executionKind: 'google_drive',
     routeMetadata: buildRouteMetadata({
       fileInfo,
       availableRoutes,
       chosenRoute,
+      executionKind: 'google_drive',
       pdfTriage,
       triageReason,
       ocrSetupState: state,
@@ -267,11 +270,12 @@ function buildNativePrepareFailure({
   }
 
   return buildPrepareFailure({
-    routeKind: 'native',
+    executionKind: 'native',
     routeMetadata: buildRouteMetadata({
       fileInfo,
       availableRoutes: ['native'],
       chosenRoute: 'native',
+      executionKind: 'native',
       pdfTriage: 'native_only',
       triageReason,
       ocrSetupState: 'not_checked',
@@ -289,11 +293,12 @@ function buildNativePrepareFailure({
 
 function buildUnsupportedFormatPrepareFailure(fileInfo) {
   return buildPrepareFailure({
-    routeKind: null,
+    executionKind: null,
     routeMetadata: buildRouteMetadata({
       fileInfo,
       availableRoutes: [],
       chosenRoute: null,
+      executionKind: null,
       pdfTriage: 'not_pdf',
       triageReason: 'unsupported_format',
       ocrSetupState: 'not_checked',
@@ -351,6 +356,7 @@ async function validateOcrSetup(resolvePaths, log) {
 function buildPrepareReadyResult({
   fileInfo,
   ocrLanguage,
+  executionKind = null,
   routeMetadata,
   requiresRouteChoice = false,
   routeChoiceOptions = [],
@@ -358,6 +364,7 @@ function buildPrepareReadyResult({
   return {
     ok: true,
     prepareReady: true,
+    executionKind,
     preparedPayload: {
       fileInfo,
       ocrLanguage,
@@ -376,6 +383,7 @@ function resolveNonPdfNativePreparation(fileInfo, ocrLanguage) {
     fileInfo,
     availableRoutes: ['native'],
     chosenRoute: 'native',
+    executionKind: 'native',
     pdfTriage: 'not_pdf',
     triageReason: 'non_pdf',
     ocrSetupState: 'not_checked',
@@ -384,6 +392,7 @@ function resolveNonPdfNativePreparation(fileInfo, ocrLanguage) {
   return buildPrepareReadyResult({
     fileInfo,
     ocrLanguage,
+    executionKind: 'native',
     routeMetadata,
   });
 }
@@ -408,6 +417,7 @@ async function resolveNonPdfOcrPreparation({
     fileInfo,
     availableRoutes: ['ocr'],
     chosenRoute: 'ocr',
+    executionKind: 'google_drive',
     pdfTriage: 'not_pdf',
     triageReason: 'non_pdf',
     ocrSetupState: 'ready',
@@ -416,6 +426,7 @@ async function resolveNonPdfOcrPreparation({
   return buildPrepareReadyResult({
     fileInfo,
     ocrLanguage,
+    executionKind: 'google_drive',
     routeMetadata,
   });
 }
@@ -489,6 +500,9 @@ async function resolvePdfPreparation({
     fileInfo,
     availableRoutes,
     chosenRoute,
+    executionKind: chosenRoute === 'native'
+      ? 'native'
+      : (chosenRoute === 'ocr' ? 'google_drive' : null),
     pdfTriage,
     triageReason,
     ocrSetupState,
@@ -500,6 +514,7 @@ async function resolvePdfPreparation({
   return buildPrepareReadyResult({
     fileInfo,
     ocrLanguage,
+    executionKind: routeMetadata.executionKind,
     routeMetadata,
     requiresRouteChoice,
     routeChoiceOptions,
@@ -663,12 +678,12 @@ function resolvePreparedRoute(preparedRecord, routePreference) {
     : null;
 
   if (chosenRoute === 'native' || chosenRoute === 'ocr') {
-    return { ok: true, routeKind: chosenRoute };
+    return { ok: true, productRoute: chosenRoute };
   }
 
   if (routePreference === 'native' || routePreference === 'ocr') {
     if (availableRoutes.includes(routePreference)) {
-      return { ok: true, routeKind: routePreference };
+      return { ok: true, productRoute: routePreference };
     }
     return { ok: false, reason: 'requested_route_unavailable' };
   }
@@ -680,12 +695,12 @@ function resolvePreparedRoute(preparedRecord, routePreference) {
   return { ok: false, reason: 'route_resolution_failed' };
 }
 
-function buildUnexpectedRuntimeResult(fileInfo, routeKind, routeMetadata, err) {
+function buildUnexpectedRuntimeResult(fileInfo, productRoute, executionKind, routeMetadata, err) {
   return {
-    routeKind,
+    executionKind,
     result: {
       state: 'failure',
-      executedRoute: routeKind,
+      executedRoute: productRoute,
       text: '',
       warnings: [],
       summary: 'Import/extract route failed due to an unexpected runtime error.',
@@ -693,7 +708,7 @@ function buildUnexpectedRuntimeResult(fileInfo, routeKind, routeMetadata, err) {
         sourceFileName: fileInfo.fileName,
         sourceFileExt: fileInfo.sourceFileExt,
         sourceFileKind: fileInfo.sourceFileKind,
-        ocrProvider: routeKind === 'ocr'
+        ocrProvider: executionKind === 'google_drive'
           ? 'google_drive_docs_conversion'
           : null,
         metadataSafeForLogs: {},
@@ -708,8 +723,9 @@ function buildUnexpectedRuntimeResult(fileInfo, routeKind, routeMetadata, err) {
     },
     routeMetadata: {
       ...routeMetadata,
-      chosenRoute: routeKind,
-      executedRoute: routeKind,
+      chosenRoute: productRoute,
+      executedRoute: productRoute,
+      executionKind,
     },
   };
 }
@@ -736,7 +752,7 @@ async function executePreparedImport({
     };
   }
 
-  const routeKind = resolvedRoute.routeKind;
+  const productRoute = resolvedRoute.productRoute;
   const fileInfo = preparedRecord.fileInfo;
   const enterTransition = controller.enter({
     source: 'import_extract_execution',
@@ -754,7 +770,7 @@ async function executePreparedImport({
   let executionResult = null;
 
   try {
-    if (routeKind === 'native') {
+    if (productRoute === 'native') {
       const nativeResult = await runNativeExtractionRoute({
         filePath: fileInfo.filePath,
         isAborted: () => !controller.isActive(),
@@ -768,12 +784,13 @@ async function executePreparedImport({
         log,
       });
       executionResult = {
-        routeKind,
+        executionKind: 'native',
         result: safeNativeResult,
         routeMetadata: {
           ...preparedRecord.routeMetadata,
-          chosenRoute: routeKind,
-          executedRoute: routeKind,
+          chosenRoute: productRoute,
+          executedRoute: productRoute,
+          executionKind: 'native',
         },
       };
     } else {
@@ -797,12 +814,13 @@ async function executePreparedImport({
         log,
       });
       executionResult = {
-        routeKind,
+        executionKind: 'google_drive',
         result: safeOcrResult,
         routeMetadata: {
           ...preparedRecord.routeMetadata,
-          chosenRoute: routeKind,
-          executedRoute: routeKind,
+          chosenRoute: productRoute,
+          executedRoute: productRoute,
+          executionKind: 'google_drive',
         },
       };
     }
@@ -810,7 +828,8 @@ async function executePreparedImport({
     log.error('import/extract execution failed unexpectedly:', err);
     executionResult = buildUnexpectedRuntimeResult(
       fileInfo,
-      routeKind,
+      productRoute,
+      productRoute === 'native' ? 'native' : 'google_drive',
       preparedRecord.routeMetadata,
       err
     );
@@ -819,7 +838,9 @@ async function executePreparedImport({
       controller.exit({
         source: 'import_extract_execution',
         reason: resolveExitReason(
-          executionResult && executionResult.routeKind ? executionResult.routeKind : routeKind,
+          executionResult && executionResult.routeMetadata
+            ? executionResult.routeMetadata.executedRoute
+            : productRoute,
           executionResult ? executionResult.result : null
         ),
       });
@@ -827,17 +848,17 @@ async function executePreparedImport({
   }
 
   const primaryAlertKey = resolvePrimaryAlertKey(
-    executionResult.routeKind,
+    executionResult.routeMetadata ? executionResult.routeMetadata.executedRoute : productRoute,
     executionResult.result
   );
   const warningAlertKeys = resolveWarningAlertKeys(
-    executionResult.routeKind,
+    executionResult.routeMetadata ? executionResult.routeMetadata.executedRoute : productRoute,
     executionResult.result
   );
 
   return {
     ok: true,
-    routeKind: executionResult.routeKind,
+    executionKind: executionResult.executionKind,
     result: executionResult.result,
     routeMetadata: executionResult.routeMetadata || null,
     primaryAlertKey,
