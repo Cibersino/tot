@@ -25,6 +25,8 @@ const { normalizeSnapshotRelPath } = require('./current_text_snapshots_main');
 const {
   DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
+  TASK_LIST_MAX_ROWS,
+  TASK_LIBRARY_MAX_ITEMS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_COMMENT_MAX_CHARS,
   TASK_ROW_TYPE_MAX_CHARS,
@@ -235,6 +237,9 @@ function normalizeTaskList(raw) {
   if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_SCHEMA' };
   const rowsRaw = Array.isArray(raw.rows) ? raw.rows : null;
   if (!rowsRaw) return { ok: false, code: 'INVALID_SCHEMA' };
+  if (rowsRaw.length > TASK_LIST_MAX_ROWS) {
+    return { ok: false, code: 'ROWS_TOO_MANY' };
+  }
 
   const normalizedRows = [];
   for (const r of rowsRaw) {
@@ -270,6 +275,9 @@ function loadLibraryData() {
     return { ok: false, code: res.code };
   }
   if (!Array.isArray(res.data)) return { ok: false, code: 'INVALID_SCHEMA' };
+  if (res.data.length > TASK_LIBRARY_MAX_ITEMS) {
+    return { ok: false, code: 'LIBRARY_TOO_LARGE' };
+  }
   return { ok: true, items: res.data };
 }
 
@@ -461,6 +469,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
 
       const rowsRaw = payload && Array.isArray(payload.rows) ? payload.rows : null;
       if (!rowsRaw) return { ok: false, code: 'INVALID_SCHEMA' };
+      if (rowsRaw.length > TASK_LIST_MAX_ROWS) {
+        return { ok: false, code: 'ROWS_TOO_MANY' };
+      }
 
       const normalizedRows = [];
       for (const r of rowsRaw) {
@@ -655,6 +666,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         }
         items.splice(existingIdx, 1, resEntry.entry);
       } else {
+        if (items.length >= TASK_LIBRARY_MAX_ITEMS) {
+          return { ok: false, code: 'LIBRARY_TOO_LARGE' };
+        }
         items.push(resEntry.entry);
       }
 
