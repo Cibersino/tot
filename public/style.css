@@ -911,6 +911,79 @@ select#presets {
   min-width: 110px;
 }
 
+.snapshot-save-tags-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(560px, calc(100% - 32px));
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+
+.snapshot-save-tags-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.snapshot-save-tags-modal-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.snapshot-save-tags-modal-body {
+  margin-top: 12px;
+}
+
+.snapshot-save-tags-modal-body p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.snapshot-save-tags-form {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.snapshot-save-tags-field {
+  display: grid;
+  gap: 4px;
+}
+
+.snapshot-save-tags-field label {
+  font-size: 0.95rem;
+}
+
+.snapshot-save-tags-field select {
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  background: #fff;
+  color: #222;
+  box-sizing: border-box;
+}
+
+.snapshot-save-tags-modal-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.snapshot-save-tags-modal-actions .btn-standard {
+  min-width: 138px;
+}
+
 .import-extract-ocr-activation-disclosure-panel {
   position: relative;
   z-index: 1001;

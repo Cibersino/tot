@@ -361,7 +361,9 @@
           utilizando los botones <strong>💾</strong> y <strong>📂</strong>.</p>
 
         <ul>
-          <li><strong>💾</strong>: abre un cuadro de diálogo nativo para “guardar archivo”, ubicado en
+          <li><strong>💾</strong>: primero abre un modal interno donde puedes etiquetar opcionalmente el snapshot por
+            <strong>idioma</strong>, <strong>tipo</strong> y <strong>dificultad</strong>. Después de confirmar ahí, la
+            app abre un cuadro de diálogo nativo para “guardar archivo”, ubicado en
             <code>config/saved_current_texts/</code>. Puedes guardar en <strong>subcarpetas</strong> (y crear carpetas)
             siempre que permanezcas dentro del árbol de snapshots. El snapshot se guarda como JSON.
           </li>
@@ -369,7 +371,8 @@
             cualquier archivo de snapshot dentro de <code>config/saved_current_texts/</code> (incluidas las
             subcarpetas). La app solicitará confirmación porque sobrescribirá el texto actual.</li>
           <li>Un snapshot cargado se convierte en el nuevo <strong>texto actual</strong> (la misma semántica que otras
-            acciones de sobrescritura) y la vista previa y resultados se actualizan inmediatamente.</li>
+            acciones de sobrescritura) y la vista previa y resultados se actualizan inmediatamente. Las etiquetas del
+            snapshot quedan guardadas en el archivo del snapshot; no se transfieren al estado del texto actual.</li>
         </ul>
 
         <hr />

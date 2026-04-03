@@ -1,42 +1,80 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>toT</title>
-  <meta name="description" content="toT is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads.">
+  <title>toT — de Texto a Tiempo</title>
+  <meta name="description"
+    content="toT es una app de escritorio para estimar tiempo de lectura. Elige español o inglés desde la portada y mira una vista previa de la app en acción.">
   <link rel="canonical" href="https://totapp.org/">
+  <link rel="alternate" hreflang="es" href="https://totapp.org/es/">
+  <link rel="alternate" hreflang="en" href="https://totapp.org/en/">
+  <link rel="alternate" hreflang="x-default" href="https://totapp.org/">
   <meta property="og:url" content="https://totapp.org/">
-  <meta property="og:title" content="toT">
-  <meta property="og:description" content="toT is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads.">
+  <meta property="og:title" content="toT — de Texto a Tiempo">
+  <meta property="og:description"
+    content="Elige español o inglés desde la portada de toT y mira una vista previa de la app en acción.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://totapp.org/og-image.png">
-  <meta property="og:image:alt" content="toT desktop app interface">
+  <meta property="og:image:alt" content="Captura de la app toT mostrando su interfaz de estimación de tiempo de lectura">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
   <link rel="icon" href="/favicon.ico">
   <link rel="stylesheet" href="/styles.css">
+  <script src="/site-language.js"></script>
 </head>
 
-<body>
-  <main class="page-shell">
-    <section class="panel panel--landing" aria-label="toT landing page">
-      <p class="eyebrow">Desktop App</p>
-      <h1>toT</h1>
-      <p class="lead">
-        toT is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads.
-      </p>
-      <p>
-        It combines file text import/extraction from text and image files, configurable WPM presets, precise counting,
-        text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings with less guesswork.
-      </p>
-      <p class="meta-note">
-        Google Drive access is used for OCR when you extract text from scanned PDFs or images.
-      </p>
-      <p>
-        <a class="primary-link" href="/app-privacy/">Read the App Privacy Policy</a>
-      </p>
+<body class="site-home">
+  <main class="wrap landing-shell">
+    <header class="brand-header">
+      <img class="brand-logo brand-logo--app" src="/assets/brand/logo-tot.svg" alt="toT logo">
+      <div class="brand-copy">
+        <h1>toT</h1>
+        <p><strong>de Texto a Tiempo / from Text to Time</strong></p>
+      </div>
+    </header>
+
+    <section class="landing-hero" aria-label="Bienvenida a toT">
+      <div class="landing-copy">
+        <p class="landing-kicker">Desktop app / Aplicación de escritorio</p>
+        <h2 class="landing-title">Bienvenido. Welcome.</h2>
+        <p>
+          <strong>toT</strong> convierte texto en tiempo de lectura y te ayuda a planificar cargas reales de lectura con herramientas de importación, extracción, OCR, conteo y organización.
+        </p>
+        <p>
+          Elige tu idioma para entrar al sitio completo. Choose your language to continue to the full site.
+        </p>
+        <nav class="landing-actions" aria-label="Botones de entrada por idioma">
+          <a class="cta-button landing-button" href="/es/" lang="es" data-lang="es">Entrar</a>
+          <a class="cta-button landing-button landing-button--secondary" href="/en/" lang="en" data-lang="en">Enter</a>
+        </nav>
+        <p class="landing-note muted">
+          Puedes volver a cambiar de idioma más adelante desde cualquier página.
+        </p>
+      </div>
+
+      <figure class="landing-demo">
+        <img src="/assets/demo/guia-basica.gif"
+          alt="Demostración animada de la app de escritorio toT importando texto, estimando tiempo de lectura y recorriendo sus herramientas principales.">
+        <figcaption class="muted">Vista rápida de la app en acción.</figcaption>
+      </figure>
     </section>
+
+    <footer class="site-footer" aria-label="Operador y contacto">
+      <p class="muted operator-line">
+        <img class="brand-logo brand-logo--dev" src="/assets/brand/logo-cibersino.svg" alt="Cibersino logo">
+        <span>toT es desarrollado y operado por Cibersino, desarrollador independiente.</span>
+      </p>
+      <p class="muted">
+        Contacto / Contact:
+        <a href="https://github.com/Cibersino/tot/issues">GitHub Issues</a>
+        o
+        <a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>
+      </p>
+      <p class="muted">
+        <a href="/es/privacy-cookies/">Privacidad / Cookies · Privacy / Cookies</a>
+      </p>
+    </footer>
   </main>
 </body>
 

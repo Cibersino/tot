@@ -46,6 +46,72 @@ Reglas:
 
 ## Unreleased
 
+### Resumen
+
+- Snapshots del texto vigente (Issue #201): el botón `💾` de la ventana principal deja de abrir inmediatamente el diálogo nativo y pasa a mostrar primero un modal renderer con tags opcionales `language`, `type` y `difficulty`; al confirmar, recién entonces se abre el save dialog nativo.
+- Persistencia de snapshots: el formato deja de ser únicamente `{ "text": "<string>" }` y pasa a aceptar también snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`, manteniendo compatibilidad de lectura con los archivos legacy ya guardados.
+- Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro.
+
+### Agregado
+
+- Snapshots / UI:
+  - `public/index.html`: nuevo modal renderer `snapshotSaveTagsModal*` con selects opcionales para `language`, `type` y `difficulty`, botón `Save Text Snapshot` y cierre/cancelación explícitos antes del diálogo nativo de guardado.
+  - `public/js/snapshot_save_tags_modal.js` (nuevo): módulo renderer dedicado al modal previo al save; aplica i18n, pobla el catálogo de tags y devuelve `{ tags }` o cancelación.
+- Shared catalog:
+  - `public/js/lib/snapshot_tag_catalog.js` (nuevo): módulo dual browser/CommonJS que define el catálogo canónico de tags de snapshot, incluyendo el set ampliado de idiomas (`es`, `en`, `pt`, `fr`, `de`, `it`, `arn`, `ja`, `ko`, `ru`, `tr`, `id`, `hi`, `bn`, `ur`, `ar`, `zh-Hans`, `zh-Hant`) y los normalizadores reutilizados por renderer y main.
+- i18n/documentación:
+  - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): nuevas keys `renderer.snapshot_save_tags.*` para título, mensaje, labels, botones, accesibilidad y opciones visibles del catálogo de idiomas/tipos/dificultades.
+  - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`: se documenta que `💾` abre primero un modal de tags y que las etiquetas quedan persistidas en el archivo del snapshot pero no se transfieren al estado de texto actual al cargar.
+
+### Cambiado
+
+- `public/js/current_text_snapshots.js`:
+  - `saveSnapshot()` deja de saltar directo a IPC y pasa a invocar primero el modal `promptSnapshotSaveTags(...)`.
+  - La metadata opcional del snapshot se normaliza contra el catálogo compartido antes de invocar `electronAPI.saveCurrentTextSnapshot(...)`.
+- `electron/preload.js`:
+  - `saveCurrentTextSnapshot(...)` deja de ser un invoke sin argumentos y pasa a aceptar un payload opcional con metadata de save.
+- `electron/current_text_snapshots_main.js`:
+  - el handler `current-text-snapshot-save` valida payloads opcionales de tags, persiste `tags` cuando existen y mantiene la misma política de diálogos nativos / contención bajo `config/saved_current_texts/`.
+  - el parser/validador de snapshots deja de aceptar solo `{ text }` y pasa a tolerar también `{ text, tags }`, rechazando shapes inválidas de `tags` de forma explícita.
+  - la carga de snapshots mantiene la semántica vigente: solo `text` se aplica al current-text state; `tags` quedan como metadata persistida del archivo.
+- `public/renderer.js`:
+  - el nuevo modal de tags pasa a formar parte del set de blocking modals de la ventana principal para no cruzarse con drag/drop o con otros flujos que ya respetan `guardUserAction(...)`.
+
+### Contratos tocados
+
+- IPC `current-text-snapshot-save`:
+  - antes: sin payload.
+  - ahora: acepta payload opcional `{ tags?: { language?, type?, difficulty? } }`.
+  - failure-path nuevo: payloads/tag shapes inválidos responden `{ ok:false, code:'INVALID_SCHEMA' }`.
+- Storage `config/saved_current_texts/*.json`:
+  - antes: shape efectiva `{ "text": "<string>" }`.
+  - ahora: shape admitida:
+    - `{ "text": "<string>" }`
+    - `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`
+  - `language` se persiste en forma canónica; en esta iteración incluye `zh-Hans` y `zh-Hant` como valores distintos.
+- Renderer/UI:
+  - nuevos IDs `snapshotSaveTagsModal`, `snapshotSaveTagsModalBackdrop`, `snapshotSaveTagsModalTitle`, `snapshotSaveTagsModalMessage`, `snapshotSaveTagsLanguage`, `snapshotSaveTagsType`, `snapshotSaveTagsDifficulty`, `snapshotSaveTagsModalConfirm`, `snapshotSaveTagsModalCancel` y `snapshotSaveTagsModalClose`.
+  - nueva superficie pública renderer `window.Notify.promptSnapshotSaveTags(...)`.
+  - nueva superficie shared `window.SnapshotTagCatalog` / módulo CommonJS `snapshot_tag_catalog.js`.
+- Semántica explícita:
+  - cargar un snapshot etiquetado **no** transfiere `tags` al estado activo de current-text; solo aplica `text`.
+
+### Archivos
+
+- `public/index.html`
+- `public/style.css`
+- `public/renderer.js`
+- `public/js/current_text_snapshots.js`
+- `public/js/snapshot_save_tags_modal.js`
+- `public/js/lib/snapshot_tag_catalog.js`
+- `electron/preload.js`
+- `electron/current_text_snapshots_main.js`
+- `i18n/*/renderer.json`
+- `public/info/instrucciones.es.html`
+- `public/info/instrucciones.en.html`
+- `docs/test_suite.md`
+- `docs/tree_folders_files.md`
+
 ---
 
 ## [1.0.0] toT - Sofías fármakon
