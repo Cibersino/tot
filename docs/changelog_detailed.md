@@ -54,6 +54,8 @@ Reglas:
 
 - Importación/extracción/OCR: la ventana principal incorpora un flujo único por `📥` y drag/drop para importar texto desde archivos de texto/documento (`.txt`, `.md`, `.html`, `.htm`, `.docx`, `.rtf`, `.odt`), extraer desde imágenes (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.tif`, `.tiff`) y procesar PDFs con elección entre ruta nativa u OCR cuando el PDF tiene texto seleccionable.
 - Sitio web de la app: se agrega una landing pública mínima en `https://totapp.org/` y una página dedicada `https://totapp.org/app-privacy/` para la política de privacidad general de la app y del OCR con Google.
+- Delta legal del release `1.0.0`: se explicita la postura de import/extract + Google OCR (OCR opcional, OAuth desktop en navegador externo, envío solo de archivos elegidos por el usuario y opción de desconexión), se actualizan las licencias redistribuidas de `@google-cloud/local-auth@3.0.1` y `googleapis@171.4.0`, y `Acerca de` pasa a enumerar los artefactos versionados efectivamente redistribuidos para import/extract.
+- Delta de seguridad del release `1.0.0`: se introduce la nueva superficie `import/extract` + OCR opcional con bridges preload/IPC explícitos y enforcement en main, persistencia app-owned bajo `config/import_extract_state.json` y `config/ocr_google_drive/*`, OAuth Google en navegador del sistema con scope fijo `drive.file`, restricciones de sender/límites para presets, Task Editor e import/extract, y sanity post-packaging del runtime de producción sin vulnerabilidades reportadas por `npm audit --omit=dev`.
 - Hardening de seguridad/consistencia en `set-current-text`: ahora valida sender IPC en main y deja de confiar `meta.source` proveniente del renderer.
 - Selector de texto: la repetición de pegado se unifica para ambos flujos de portapapeles (`📋↺` overwrite y `📋+` append) y se agrega estado visual de advertencia cuando `N > 1`.
 - Resultados del conteo (Issue #178): se agrega un multiplicador de tiempo en la ventana principal, debajo del tiempo estimado, para proyectar la misma estimación base `N` veces sin introducir una segunda ruta canónica de cálculo.
@@ -64,6 +66,7 @@ Reglas:
 - Reading tools / test de velocidad de lectura: la ventana principal deja atrás la noción de “available/spare section”, renombra esa zona como `reading tools` y agrega un botón centrado `Test de velocidad de lectura` que por ahora muestra un aviso WIP bloqueado por los mismos gates de startup/processing de la ventana principal.
 - Preload listener APIs (Issue #161): se completa una auditoría repo-wide de preloads y se normalizan los listeners driftados al estándar `onX(cb) -> unsubscribe`, dejando explícitos los casos válidos de replay/buffer sin cambiar canales, payloads ni timing saludable.
 - Testing automatizado / CI (Issue #193): el repo deja de tener `npm test` como placeholder y pasa a contar con una baseline automatizada real basada en `node --test`, cobertura inicial de contratos en `electron/**`, extracción de núcleos puros para `count`/`format`, smoke local mínimo de arranque Electron y workflow Windows en GitHub Actions para ejecutar la suite estable.
+- Runtime / packaging baseline del release `1.0.0`: se actualiza el runtime a `electron@39.8.6` y el pipeline de empaquetado a `electron-builder@26.8.1`.
 
 ### Agregado
 
@@ -150,6 +153,11 @@ Reglas:
 - Páginas informativas / documentación in-app:
   - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`: se documentan el flujo `📥` / drag/drop, los formatos soportados, la decisión nativa/OCR para PDF, el modal final con `Repeticiones`, la privacidad del flujo OCR y la ruta de desconexión de Google OCR.
   - `public/info/acerca_de.html`: se actualizan sitio web, conectividad, privacidad y licencias de componentes incorporados para importación/extracción, OCR, PDF, DOCX y procesamiento de imágenes.
+  - Delta legal del release `1.0.0`: se deja explícita la postura documental/legal de import/extract + Google OCR (OCR opcional, OAuth desktop en navegador externo, envío solo de archivos elegidos por el usuario y opción de desconexión dentro de la app), se alinean los archivos redistribuidos de licencias de Google con las versiones efectivas `@google-cloud/local-auth@3.0.1` y `googleapis@171.4.0`, y `Acerca de` pasa a enumerar los artefactos versionados efectivamente redistribuidos para import/extract (`@google-cloud/local-auth@3.0.1`, `googleapis@171.4.0`, `mammoth@1.11.0`, `pdf-parse@1.1.1`, `sharp@0.34.4` y el runtime nativo de `sharp` con su license/notice correspondiente).
+- Runtime / packaging baseline del release `1.0.0`:
+  - `package.json`: upgrade de `electron` a `39.8.6`, `electron-builder` a `26.8.1`, y alineación de dependencias directas de Google OCR a `@google-cloud/local-auth@3.0.1` + `googleapis@171.4.0`.
+  - `package-lock.json`: refresh del árbol runtime/build para dejar el audit de producción en `0 vulnerabilities`, sacar a `Electron` del audit full y reducir el remanente a tooling/dev deps.
+  - Validación del baseline: `npm test`, `npm run test:smoke`, `npm run lint`, `npm run dist:win`, `Release smoke` y `Full regression` sobre el release candidate pasan en Windows.
 
 ### Arreglado
 
@@ -1429,9 +1437,7 @@ Reglas:
 
 ### Notas
 
-- `electron/updater.js` depende de tags `vMAJOR.MINOR.PATCH` (prefijo `v` minúscula) en la **latest release**.
-- Validar encoding del string `productName` en `package.json` (se observa riesgo de encoding del em dash en diffs).
-- `appdoc:license-electron` y `appdoc:licenses-chromium` están previstos: si se habilitan, asegurar que `LICENSE.electron.txt` y `LICENSES.chromium.html` estén efectivamente incluidos en el ZIP final (según checklist de release).
+- Queda una advertencia conocida `DEP0040` (`punycode`) al arrancar la app, rastreada al path de `@google-cloud/local-auth`; no aparece en `npm audit --omit=dev`, no bloqueó `Release smoke` / `Full regression`, y se deja como deuda técnica separada de la baseline runtime/packaging cerrada en `1.0.0`.
 
 ---
 
