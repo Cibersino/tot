@@ -69,7 +69,9 @@ These entries are **candidates for evaluation**, not pre-approved implementation
 
 ## Current implementation constraints
 
-The current implementation is intentionally extension-gated in several layers:
+The current implementation makes support decisions through explicit extension and capability gates. For this issue, that matters for one reason: adding an extension is not complete unless every relevant layer agrees on the same decision.
+
+The main layers involved are:
 
 * shared format contract:
   * `electron/import_extract_platform/import_extract_supported_formats.js`
@@ -84,7 +86,7 @@ The current implementation is intentionally extension-gated in several layers:
 * OCR preprocessing:
   * `electron/import_extract_platform/ocr_image_normalization.js`
 
-That means support for a new extension is not complete unless all relevant layers are aligned.
+Therefore, this issue must treat “support” as a whole-feature decision, not as a single-file or picker-only change.
 
 ## Design requirements
 
@@ -223,11 +225,19 @@ This proposal therefore excludes animated image extensions and any broader anima
 
 ## Breakdown
 
-- [ ] Add an evidence-based decision table for `rtf`, `odt`, `.doc`, `tif`, and `tiff`
-- [ ] Decide whether `rtf` is included, deferred, or rejected for this issue
-- [ ] Decide whether `odt` is included, deferred, or rejected for this issue
-- [ ] Decide whether legacy Word `.doc` is included, deferred, or rejected for this issue
-- [ ] Decide whether `tif` / `tiff` are included, deferred, or rejected for this issue
+- [ ] Add an evaluation table covering `rtf`, `odt`, `.doc`, `tif`, and `tiff`
+- [ ] Record a decision for `rtf`
+- [ ] Record a decision for `odt`
+- [ ] Record a decision for legacy Word `.doc`
+- [ ] Record a decision for `tif`
+- [ ] Record a decision for `tiff`
+- [ ] Record the basis for each decision:
+  * current behavior
+  * possible paths
+  * repo evidence
+  * external evidence
+  * dependency impact
+  * testing impact
 - [ ] Update `electron/import_extract_platform/import_extract_supported_formats.js`
 - [ ] Implement the chosen path for each accepted extension
 - [ ] Verify `electron/import_extract_platform/import_extract_file_picker_ipc.js` stays aligned automatically with the format contract
