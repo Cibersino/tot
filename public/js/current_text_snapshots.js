@@ -13,6 +13,9 @@
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Imports / logger
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[current-text-snapshots] window.getLogger unavailable; cannot continue');
   }
@@ -29,6 +32,9 @@
     throw new Error('[current-text-snapshots] Notify.promptSnapshotSaveTags unavailable; cannot continue');
   }
 
+  // =============================================================================
+  // Constants / config
+  // =============================================================================
   const TOAST_KEYS = Object.freeze({
     saveSuccess: 'renderer.alerts.snapshot_save_success',
     saveError: 'renderer.alerts.snapshot_save_error',
@@ -39,6 +45,9 @@
     unavailable: 'renderer.alerts.snapshot_unavailable',
   });
 
+  // =============================================================================
+  // Helpers
+  // =============================================================================
   function handleSaveResult(result) {
     if (!result || result.ok === false) {
       const code = result && result.code ? result.code : 'WRITE_FAILED';
@@ -120,6 +129,9 @@
     }
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.CurrentTextSnapshots = {
     saveSnapshot,
     loadSnapshot,
