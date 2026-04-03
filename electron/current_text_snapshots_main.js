@@ -183,14 +183,29 @@ async function confirmOverwrite(kind, ownerWin, name = '') {
 }
 
 function resolveOwnerWin(event, resolveMainWin) {
-  try {
-    const senderWin = event && event.sender
-      ? BrowserWindow.fromWebContents(event.sender)
-      : null;
-    return senderWin || resolveMainWin();
-  } catch {
-    return resolveMainWin();
+  if (event && event.sender) {
+    try {
+      const senderWin = BrowserWindow.fromWebContents(event.sender);
+      if (senderWin) return senderWin;
+      log.warnOnce(
+        'current_text_snapshots.owner_window.sender_window_missing',
+        'Dialog owner fallback: BrowserWindow.fromWebContents returned no window; using mainWin or unowned dialog.'
+      );
+    } catch (err) {
+      log.warnOnce(
+        'current_text_snapshots.owner_window.sender_resolve_failed',
+        'Dialog owner fallback: failed to resolve sender BrowserWindow; using mainWin or unowned dialog.',
+        err
+      );
+    }
+  } else {
+    log.warnOnce(
+      'current_text_snapshots.owner_window.sender_missing',
+      'Dialog owner fallback: IPC event sender unavailable; using mainWin or unowned dialog.'
+    );
   }
+
+  return resolveMainWin();
 }
 
 function getSnapshotsRoot(mode = 'read') {
@@ -345,11 +360,32 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   }
 
   const resolveMainWin = () => {
-    if (typeof getWindows === 'function') {
-      const wins = getWindows() || {};
-      return wins.mainWin || null;
+    if (typeof getWindows !== 'function') {
+      log.warnOnce(
+        'current_text_snapshots.owner_window.get_windows_missing',
+        'Dialog owner fallback: getWindows unavailable; using unowned dialog.'
+      );
+      return null;
     }
-    return null;
+
+    const wins = getWindows();
+    if (!wins || typeof wins !== 'object') {
+      log.warnOnce(
+        'current_text_snapshots.owner_window.windows_invalid',
+        'Dialog owner fallback: getWindows returned no windows object; using unowned dialog.'
+      );
+      return null;
+    }
+
+    if (!wins.mainWin) {
+      log.warnOnce(
+        'current_text_snapshots.owner_window.main_window_missing',
+        'Dialog owner fallback: mainWin unavailable; using unowned dialog.'
+      );
+      return null;
+    }
+
+    return wins.mainWin;
   };
 
   ipcMain.handle('current-text-snapshot-save', async (event, payload) => {
