@@ -30,78 +30,19 @@
   }
   const { DEFAULT_LANG } = window.AppConstants;
   const { normalizeLangTag, getLangBase } = window.RendererI18n;
-
-  // =============================================================================
-  // Helpers (time formatting)
-  // =============================================================================
-  function getExactTotalSeconds(words, wpm) {
-    const numericWords = Number(words);
-    const numericWpm = Number(wpm);
-    if (!Number.isFinite(numericWords) || numericWords <= 0) return 0;
-    if (!Number.isFinite(numericWpm) || numericWpm <= 0) return 0;
-    return (numericWords / numericWpm) * 60;
+  if (!window.FormatCore || typeof window.FormatCore.createFormatUtils !== 'function') {
+    throw new Error('[format] window.FormatCore.createFormatUtils unavailable; cannot continue');
   }
-
-  function getDisplayTimeParts(totalSeconds) {
-    const numericTotalSeconds = Number(totalSeconds);
-    const roundedTotalSeconds = Number.isFinite(numericTotalSeconds) && numericTotalSeconds > 0
-      ? Math.round(numericTotalSeconds)
-      : 0;
-    return {
-      hours: Math.floor(roundedTotalSeconds / 3600),
-      minutes: Math.floor((roundedTotalSeconds % 3600) / 60),
-      seconds: roundedTotalSeconds % 60
-    };
-  }
-
-  // =============================================================================
-  // Helpers (number formatting)
-  // =============================================================================
-  const obtenerSeparadoresDeNumeros = async (idioma, settingsCache) => {
-    if (settingsCache === null) {
-      log.warnOnce(
-        'format.numberFormatting.settingsCacheNull',
-        'settingsCache null; using hardcoded defaults.'
-      );
-      return { separadorMiles: '.', separadorDecimal: ',' };
-    }
-    const tag = normalizeLangTag(idioma) || DEFAULT_LANG;
-    const langKey = getLangBase(tag) || DEFAULT_LANG;
-    const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
-    if (nf && nf[langKey]) return nf[langKey];
-
-    const defaultKey = getLangBase(DEFAULT_LANG) || DEFAULT_LANG;
-    if (nf && nf[defaultKey]) {
-      log.warnOnce(
-        `format.numberFormatting.fallback:${langKey}`,
-        'Missing numberFormatting for langKey; using default:',
-        { langKey, defaultKey }
-      );
-      return nf[defaultKey];
-    }
-
-    log.warnOnce(
-      'format.numberFormatting.missing',
-      'numberFormatting missing; using hardcoded defaults.'
-    );
-    return { separadorMiles: '.', separadorDecimal: ',' };
-  };
-
-  const formatearNumero = (numero, separadorMiles, separadorDecimal) => {
-    let [entero, decimal] = numero.toFixed(0).split('.');
-    entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, separadorMiles);
-    return decimal ? `${entero}${separadorDecimal}${decimal}` : entero;
-  };
 
   // =============================================================================
   // Exports / module surface
   // =============================================================================
-  window.FormatUtils = {
-    getExactTotalSeconds,
-    getDisplayTimeParts,
-    obtenerSeparadoresDeNumeros,
-    formatearNumero
-  };
+  window.FormatUtils = window.FormatCore.createFormatUtils({
+    DEFAULT_LANG,
+    normalizeLangTag,
+    getLangBase,
+    log
+  });
 })();
 
 // =============================================================================
