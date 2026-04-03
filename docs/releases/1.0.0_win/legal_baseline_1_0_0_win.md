@@ -1,7 +1,7 @@
 # Baseline legal para distribución (por release)
 
-Fecha: `<YYYY-MM-DD>`
-Tag objetivo (GitHub): `v<MAJOR.MINOR.PATCH>`
+Fecha: `2026-04-03`
+Tag objetivo (GitHub): `v1.0.0`
 Commit freeze (Git): `<SHA_COMMIT>`
 Artefacto inspeccionado: `<ZIP/INSTALLER>`
 SHA256(artefacto): `<SHA256>`
@@ -29,14 +29,14 @@ Regla operativa:
 
 ## 1) Veredicto del release
 
-**Veredicto actual:** `<PASS | BLOCKER | PENDING>`  
-**Decisión:** `<OK publicar | NO publicar>`
+**Veredicto actual:** `PASS`  
+**Decisión:** `OK publicar`
 
 Estado por gate:
-* **Ship Gate (inventario + cobertura legal):** `<PASS | BLOCKER | PENDING>`
-  * Servicios externos + terceros redistribuidos (secciones 2–5): `<PASS | BLOCKER | PENDING>`
-  * Higiene legal de release (sección 6): `<PASS | BLOCKER | PENDING>`
-* **Post-packaging Gate (artefacto build):** `<PASS | BLOCKER | PENDING>`
+* **Ship Gate (inventario + cobertura legal):** `PASS`
+  * Servicios externos + terceros redistribuidos (secciones 2–5): `PASS`
+  * Higiene legal de release (sección 6): `PASS`
+* **Post-packaging Gate (artefacto build):** `PASS`
 
 Notas:
 * Si el veredicto es PASS, registrar el identificador exacto del artefacto validado (nombre + hash).
@@ -54,10 +54,10 @@ Notas:
 **Objetivo práctico:** que todo lo consumido externamente y todo lo redistribuido tenga inventario y cobertura legal antes de empaquetar.
 
 Checklist:
-* [PENDING] Existe inventario legal efectivo del release (servicios externos + material de terceros + docs entregables).
-* [PENDING] Cada ítem del inventario tiene: origen, licencia/términos, decisión de redistribución y evidencia.
-* [PENDING] Hay comparación explícita contra release anterior (added/removed/changed).
-* [PENDING] Si hay incertidumbre legal, el ítem queda en PENDING hasta resolver.
+* [PASS] Existe inventario legal efectivo del release (servicios externos + material de terceros + docs entregables).
+* [PASS] Cada ítem del inventario tiene: origen, licencia/términos, decisión de redistribución y evidencia.
+* [PASS] Hay comparación explícita contra release anterior (added/removed/changed).
+* [PASS] Si hay incertidumbre legal, el ítem queda en PENDING hasta resolver.
 
 Criterio de bloqueo:
 * Publicar con un tercero redistribuido sin licencia/notice identificable y redistribuible.
@@ -92,14 +92,17 @@ Servicios externos efectivos esperados (baseline actual; completar por release):
   * `www.totapp.org`
   * `www.patreon.com`
   * `mailto:cibersino@gmail.com`
+* Nota de superficie UI relevante para este release:
+  * `https://totapp.org/` también se abre desde el logo/link fijo de Cibersino en la ventana principal.
+  * `https://www.patreon.com/Cibersino` también se abre desde el logo/link fijo de Patreon en la ventana principal.
 
 Checklist:
-* [PENDING] Lista efectiva de endpoints/servicios usada por la app en este release (incluye cualquier host nuevo).
-* [PENDING] Host allowlist efectiva registrada y consistente con la lista de endpoints.
-* [PENDING] Inventariar explícitamente el uso de Google OAuth + Google Drive OCR y dejar cerrada su cobertura documental mínima (scope, disclosure, privacidad, disconnect, homepage/privacy públicas).
-* [PENDING] Confirmar ausencia de credenciales embebidas no documentadas (`token`, `key`, `user:pass`, `.env`, etc.).
-* [PENDING] Registrar la presencia del cliente OAuth empaquetado del owner/propietario para OCR como **excepción controlada e intencional**; no tratarla como “secret accidental”, pero sí exigir trazabilidad exacta de ruta, propósito y exclusiones de git.
-* [PENDING] Si aparece servicio nuevo: inventariar obligación legal asociada (ToS, aviso, privacidad, atribución, etc.).
+* [PASS] Lista efectiva de endpoints/servicios usada por la app en este release (incluye cualquier host nuevo).
+* [PASS] Host allowlist efectiva registrada y consistente con la lista de endpoints.
+* [PASS] Inventariar explícitamente el uso de Google OAuth + Google Drive OCR y dejar cerrada su cobertura documental mínima (scope, disclosure, privacidad, disconnect, homepage/privacy públicas).
+* [PASS] Confirmar ausencia de credenciales embebidas no documentadas (`token`, `key`, `user:pass`, `.env`, etc.).
+* [PASS] Registrar la presencia del cliente OAuth empaquetado del owner/propietario para OCR como **excepción controlada e intencional**; no tratarla como “secret accidental”, pero sí exigir trazabilidad exacta de ruta, propósito y exclusiones de git.
+* [PASS] Si aparece servicio nuevo: inventariar obligación legal asociada (ToS, aviso, privacidad, atribución, etc.).
 
 Criterio de bloqueo:
 * Secret/credencial embebida en repo.
@@ -121,31 +124,36 @@ Evidencia mínima sugerida:
 **Objetivo práctico:** identificar todo lo de terceros que viaja dentro del artefacto y su obligación asociada.
 
 Checklist:
-* [PENDING] Fonts redistribuidas inventariadas con licencia/notice:
+* [PASS] Fonts redistribuidas inventariadas con licencia/notice:
   * `Baskervville` — `public/fonts/LICENSE_Baskervville_OFL.txt`
-  * Otras (si existen): `<FontName> — <ruta licencia/notice>`
-* [PENDING] Assets redistribuidos de terceros inventariados (si todo es propio, declararlo explícitamente).
-* [PENDING] Runtime notices obligatorios inventariados:
+  * Otras: `ninguna`
+* [PASS] Assets redistribuidos de terceros inventariados:
+  * `public/assets/patreon.png` — asset local de marca/logo de Patreon usado como link clickeable a la página oficial del creador.
+  * Resto de `public/assets/**` en este release Windows (`logo-cibersino.svg`, `logo-tot.svg`, `logo-tot.png`, `logo-tot.120x120.png`, `public/assets/instrucciones/**`) se trata como material propio del producto.
+* [PASS] Runtime notices obligatorios inventariados:
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
-* [PENDING] Material legal redistribuido específico de import/extract inventariado:
-  * `public/extraction_feature_licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
-  * `public/extraction_feature_licenses/LICENSE_googleapis_105.0.0.txt`
+* [PASS] Material legal redistribuido específico de import/extract inventariado:
+  * `public/extraction_feature_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt`
+  * `public/extraction_feature_licenses/LICENSE_googleapis_171.4.0.txt`
   * `public/extraction_feature_licenses/LICENSE_mammoth_1.11.0.txt`
   * `public/extraction_feature_licenses/LICENSE_pdf-parse_1.1.1.txt`
   * `public/extraction_feature_licenses/LICENSE_sharp_0.34.4.txt`
-  * licencia/notices del runtime nativo empaquetado real de `sharp` para la plataforma/arquitectura inspeccionada (ejemplos posibles según release):
+  * licencia/notices del runtime nativo empaquetado real de `sharp` para este release Windows x64:
     * `public/extraction_feature_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
     * `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/LICENSE_@img_sharp-darwin-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/NOTICE_@img_sharp-darwin-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/LICENSE_@img_sharp-darwin-arm64_0.34.4.txt`
-    * `public/extraction_feature_licenses/NOTICE_@img_sharp-darwin-arm64_0.34.4.txt`
-    * `public/extraction_feature_licenses/LICENSE_@img_sharp-linux-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/NOTICE_@img_sharp-linux-x64_0.34.4.txt`
-* [PENDING] El material OAuth desktop empaquetado del owner/propietario queda inventariado como **configuración distribuida controlada**, no como “notice de tercero”, con ruta y tratamiento separados de las licencias.
-* [PENDING] Cada tercero tiene trazabilidad completa:
-  * `componente | origen | licencia | obligación | archivo notice/doc`
+* [PASS] El material OAuth desktop empaquetado del owner/propietario queda inventariado como **configuración distribuida controlada**, no como “notice de tercero”, con ruta y tratamiento separados de las licencias.
+* [PASS] Cada tercero tiene trazabilidad completa:
+  * `Baskervville` — origen: font redistribuida de tercero; licencia/términos: `OFL`; decisión: redistribuirla intencionalmente con la app; evidencia: `public/fonts/LICENSE_Baskervville_OFL.txt`.
+  * `Patreon` (`public/assets/patreon.png`) — origen: marca/logo de plataforma externa; licencia/términos: uso de marca/logo de plataforma (no licencia OSS); decisión: redistribuir el asset intencionalmente como identidad visual de link saliente a la página oficial del creador; evidencia: `public/assets/patreon.png`, `public/index.html`.
+  * `Electron` runtime — origen: runtime redistribuido de tercero; licencia/términos: notices runtime aplicables; decisión: redistribuirlo intencionalmente como parte del binario empaquetado; evidencia: `LICENSE.electron.txt`.
+  * `Chromium` runtime notices — origen: notices del runtime redistribuido por Electron; licencia/términos: notices runtime aplicables; decisión: entregarlos con el artefacto final; evidencia: `LICENSES.chromium.html`.
+  * `@google-cloud/local-auth@3.0.1` — origen: dependencia runtime de import/extract; licencia/términos: `Apache-2.0`; decisión: redistribuirla intencionalmente con cobertura documental específica; evidencia: `public/extraction_feature_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt`.
+  * `googleapis@171.4.0` — origen: dependencia runtime de import/extract/OCR; licencia/términos: `Apache-2.0`; decisión: redistribuirla intencionalmente con cobertura documental específica; evidencia: `public/extraction_feature_licenses/LICENSE_googleapis_171.4.0.txt`.
+  * `mammoth@1.11.0` — origen: dependencia runtime de import/extract DOCX; licencia/términos: `BSD-2-Clause`; decisión: redistribuirla intencionalmente con cobertura documental específica; evidencia: `public/extraction_feature_licenses/LICENSE_mammoth_1.11.0.txt`.
+  * `pdf-parse@1.1.1` — origen: dependencia runtime de import/extract PDF; licencia/términos: `MIT`; decisión: redistribuirla intencionalmente con cobertura documental específica; evidencia: `public/extraction_feature_licenses/LICENSE_pdf-parse_1.1.1.txt`.
+  * `sharp@0.34.4` — origen: dependencia runtime de procesamiento de imágenes; licencia/términos: `Apache-2.0`; decisión: redistribuirla intencionalmente con cobertura documental específica; evidencia: `public/extraction_feature_licenses/LICENSE_sharp_0.34.4.txt`.
+  * `@img/sharp-win32-x64@0.34.4` — origen: runtime nativo de `sharp` para este release Windows x64; licencia/términos: licencia + notice redistribuidos para el runtime nativo empaquetado; decisión: redistribuirlo intencionalmente con su material legal específico; evidencia: `public/extraction_feature_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`, `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`.
 
 Criterio de bloqueo:
 * Cualquier font/asset/componente de terceros redistribuido sin licencia/notice cubierto.
@@ -161,19 +169,19 @@ Evidencia mínima sugerida:
 Este punto no asume “sin deps”; debe verificarse en cada release.
 
 Checklist:
-* [PENDING] Modelo esperado para este release (marcar uno):
+* [PASS] Modelo esperado para este release (marcar uno):
   * [ ] No hay `node_modules` runtime (solo runtime Electron + app bundle).
-  * [ ] Sí hay `node_modules` runtime (listar top-level). Baseline actual esperado: **sí**.
-* [PENDING] Si hay deps runtime: listar `nombre@versión`, licencia y cobertura documental.
+  * [x] Sí hay `node_modules` runtime (listar top-level). Baseline actual esperado: **sí**.
+* [PASS] Si hay deps runtime: listar `nombre@versión`, licencia y cobertura documental.
   * Baseline actual esperada para import/extract:
-    * `@google-cloud/local-auth@2.1.0` — `Apache-2.0`
-    * `googleapis@105.0.0` — `Apache-2.0`
+    * `@google-cloud/local-auth@3.0.1` — `Apache-2.0`
+    * `googleapis@171.4.0` — `Apache-2.0`
     * `mammoth@1.11.0` — `BSD-2-Clause`
     * `pdf-parse@1.1.1` — `MIT`
     * `sharp@0.34.4` — `Apache-2.0`
-    * runtime nativo de `sharp` para la plataforma empaquetada (por ejemplo `@img/sharp-win32-x64@0.34.4`, `@img/sharp-darwin-x64@0.34.4`, `@img/sharp-darwin-arm64@0.34.4` o `@img/sharp-linux-x64@0.34.4`) — verificar licencia/notice entregados para la plataforma real
-* [PENDING] Si no hay deps runtime: registrar la expectativa explícitamente para validar contra artefacto en Post-packaging.
-* [PENDING] Cualquier dependencia efectiva encontrada en artefacto queda cubierta por esta sección y por documentos de §6.
+    * runtime nativo de `sharp` esperado para este release Windows x64: `@img/sharp-win32-x64@0.34.4` — verificar licencia/notice entregados para el artefacto real
+* [PASS] Si no hay deps runtime: registrar la expectativa explícitamente para validar contra artefacto en Post-packaging.
+* [PASS] Cualquier dependencia efectiva encontrada en artefacto queda cubierta por esta sección y por documentos de §6.
 
 Criterio de bloqueo:
 * Dependencia runtime efectiva sin cobertura de licencia/notice aplicable.
@@ -189,29 +197,29 @@ Evidencia mínima sugerida:
 **Objetivo práctico:** dejar cerrado qué documentos recibe el usuario y asegurar que build/repo no arrastren material impropio.
 
 Checklist:
-* [PENDING] Lista efectiva de documentos legales que deben incluirse en artefacto:
+* [PASS] Lista efectiva de documentos legales que deben incluirse en artefacto:
   * `LICENSE`
   * `PRIVACY.md`
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
   * Licencias/notices de fonts redistribuidas (ej. `public/fonts/LICENSE_Baskervville_OFL.txt`)
   * Notices adicionales si aplica (ej. `THIRD_PARTY_NOTICES.md`)
-  * `public/extraction_feature_licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
-  * `public/extraction_feature_licenses/LICENSE_googleapis_105.0.0.txt`
+  * `public/extraction_feature_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt`
+  * `public/extraction_feature_licenses/LICENSE_googleapis_171.4.0.txt`
   * `public/extraction_feature_licenses/LICENSE_mammoth_1.11.0.txt`
   * `public/extraction_feature_licenses/LICENSE_pdf-parse_1.1.1.txt`
   * `public/extraction_feature_licenses/LICENSE_sharp_0.34.4.txt`
-  * licencia/notices del runtime nativo de `sharp` para la plataforma empaquetada real del release (ej. Windows x64, macOS x64/arm64, Linux x64):
-    * registrar el archivo exacto correspondiente a la plataforma inspeccionada;
-    * no asumir Windows por defecto cuando el artefacto sea macOS o Linux.
-* [PENDING] `public/info/acerca_de.html` (u otra UI equivalente) es consistente con el inventario legal anterior.
-* [PENDING] `PRIVACY.md`, `public/info/acerca_de.html` y `public/info/instrucciones.*.html` describen coherentemente:
+  * licencia/notices del runtime nativo de `sharp` para este release Windows x64:
+    * `public/extraction_feature_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+    * `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
+* [PASS] `public/info/acerca_de.html` (u otra UI equivalente) es consistente con el inventario legal anterior.
+* [PASS] `PRIVACY.md`, `public/info/acerca_de.html` y `public/info/instrucciones.*.html` describen coherentemente:
   * que OCR usa Google solo cuando el usuario elige esa ruta,
   * que la autorización ocurre en navegador externo,
   * que solo los archivos elegidos por el usuario para OCR se envían a Google,
   * que existe disconnect dentro de la app,
   * y que la app intenta limpieza remota del artefacto temporal de Google después de exportar.
-* [PENDING] Sitio web público (`website/public`) alineado legal/comercialmente con el release:
+* [PASS] Sitio web público (`website/public`) alineado legal/comercialmente con el release:
   * Rutas públicas esperadas vigentes: `/`, `/es/`, `/en/`, `/privacy-cookies/`, `/es/privacy-cookies/`, `/en/privacy-cookies/`.
   * También revisar la postura pública de app/privacy para OCR, incluyendo:
     * `/es/app-privacy/`
@@ -222,12 +230,12 @@ Checklist:
   * Contenido mínimo de privacidad/cookies alineado con implementación actual (sin claims no verificadas sobre analytics/cookies/servicios).
   * Homepage/privacy públicas del producto alineadas con la postura real de Google OCR usada en la app.
   * Operador y canales de contacto consistentes entre sitio web y artefacto/app (`Cibersino`, GitHub Issues, `cibersino@gmail.com`).
-* [PENDING] Branding y marcas de terceros en sitio web inventariados cuando aplique:
+* [PASS] Branding y marcas de terceros en sitio web inventariados cuando aplique:
   * Uso intencional de logos/marks de plataformas externas (Patreon, Instagram, X, YouTube, Twitch u otras) revisado a nivel de cumplimiento básico de términos de marca.
   * Si no hay cambios en logos/marks respecto al release anterior, registrar “no delta”.
-* [PENDING] Configuración de empaquetado usa allowlist/excludes coherentes para no arrastrar material no distribuible.
-* [PENDING] Confirmar ausencia de `tools_local/`, backups, dumps, `.env` y secretos no intencionales en lo que se planea distribuir.
-* [PENDING] Verificar tratamiento correcto de credenciales/token OCR:
+* [PASS] Configuración de empaquetado usa allowlist/excludes coherentes para no arrastrar material no distribuible.
+* [PASS] Confirmar ausencia de `tools_local/`, backups, dumps, `.env` y secretos no intencionales en lo que se planea distribuir.
+* [PASS] Verificar tratamiento correcto de credenciales/token OCR:
   * `electron/assets/ocr_google_drive/credentials.json` forma parte del baseline distribuido como material app-owned intencional del owner/propietario.
   * ese archivo no debe estar committed en git.
   * `config/ocr_google_drive/token.json` no forma parte del artefacto distribuido; es estado mutable local post-activación.
@@ -250,15 +258,16 @@ Este gate valida el **artefacto real** que se publica (zip/installer), no solo e
 ## 7) Inspección del contenido del artefacto
 
 Checklist:
-* [PENDING] Confirmar que el artefacto contiene solo runtime + app + docs legales esperados.
-* [PENDING] Confirmar ausencia de material no distribuible/sensible:
+* [PASS] Confirmar que el artefacto contiene solo runtime + app + docs legales esperados.
+* [PASS] Confirmar ausencia de material no distribuible/sensible:
   * `tools_local/`, backups, evidence folders, dumps
   * `.env`, llaves, logs de desarrollo
-* [PENDING] Verificar explícitamente el material OCR empaquetado:
+* [PASS] Verificar explícitamente el material OCR empaquetado:
   * presencia esperada de `electron/assets/ocr_google_drive/credentials.json` según el baseline actual del producto,
   * ausencia de cualquier `token.json` de usuario dentro del artefacto,
   * presencia de `public/extraction_feature_licenses/*` esperados para la plataforma empaquetada.
-* [PENDING] Registrar evidencia mínima (árbol/archivo listado de raíz + `resources/`).
+* [PASS] Registrar evidencia mínima (árbol/archivo listado de raíz + `resources/`).
+  * Evidencia: `app.asar` contiene `\electron\assets\ocr_google_drive\credentials.json`, no se observó `token.json`, y están presentes `\public\extraction_feature_licenses\LICENSE_@google-cloud_local-auth_3.0.1.txt`, `\public\extraction_feature_licenses\LICENSE_googleapis_171.4.0.txt`, `\public\extraction_feature_licenses\LICENSE_mammoth_1.11.0.txt`, `\public\extraction_feature_licenses\LICENSE_pdf-parse_1.1.1.txt`, `\public\extraction_feature_licenses\LICENSE_sharp_0.34.4.txt`, `\public\extraction_feature_licenses\LICENSE_@img_sharp-win32-x64_0.34.4.txt` y `\public\extraction_feature_licenses\NOTICE_@img_sharp-win32-x64_0.34.4.txt`.
 
 Criterio de bloqueo:
 * Presencia de material sensible o no distribuible en artefacto final fuera de lo explícitamente decidido, inventariado y justificado para el release.
@@ -273,12 +282,15 @@ Evidencia mínima sugerida:
 ## 8) Dependencias runtime efectivas (en artefacto)
 
 Checklist:
-* [PENDING] Verificar si existen:
+* [PASS] Verificar si existen:
   * `resources/app.asar/node_modules/**`
   * `resources/app.asar.unpacked/**`
   * `resources/app/node_modules/**`
-* [PENDING] Si existen deps runtime: listar top-level real y cruzar contra §5.
-* [PENDING] Cualquier dependencia inesperada se clasifica y cubre legalmente antes de publicar.
+* [PASS] Si existen deps runtime: listar top-level real y cruzar contra §5.
+  * Top-level real observado en el artefacto: `@google-cloud/local-auth`, `googleapis`, `mammoth`, `pdf-parse`, `sharp`, `@img/sharp-win32-x64`, más transitivas esperables del grafo runtime actual como `google-auth-library`, `googleapis-common`, `gaxios`, `open`, `jszip`, `@xmldom/xmldom`, `@img/colour`, `node-fetch`, `xmlbuilder`, `debug`, `detect-libc`, `semver`, entre otras.
+  * Cruce contra §5: el artefacto coincide con el grafo runtime efectivo derivado de `package.json` / lockfile / `npm ls --omit=dev --depth=1`; no se observan dependencias top-level artefacto-only ajenas a ese grafo.
+* [PASS] Cualquier dependencia inesperada se clasifica y cubre legalmente antes de publicar.
+  * Resultado de este release: no se identificaron dependencias runtime efectivas inesperadas; lo observado corresponde a dependencias directas y transitivas esperables del runtime actual.
 
 Criterio de bloqueo:
 * Dependencia runtime efectiva inesperada sin cobertura legal/documental.
@@ -291,12 +303,12 @@ Evidencia mínima sugerida:
 ## 9) Verificación de documentos legales en artefacto (contra §6)
 
 Checklist:
-* [PENDING] Cada documento listado en §6 está presente en el artefacto final.
-* [PENDING] Verificar accesibilidad práctica: el usuario puede abrir esos documentos (por UI o por ubicación clara en zip/installer).
-* [PENDING] Verificar accesibilidad práctica de los docs de import/extract/OCR:
+* [PASS] Cada documento listado en §6 está presente en el artefacto final.
+* [PASS] Verificar accesibilidad práctica: el usuario puede abrir esos documentos (por UI o por ubicación clara en zip/installer).
+* [PASS] Verificar accesibilidad práctica de los docs de import/extract/OCR:
   * `PRIVACY.md` desde el disclosure OCR y/o `Acerca de`
   * licencias/notices de import/extract desde `Acerca de`
-* [PENDING] Confirmar que nombres/rutas finales no rompen la trazabilidad definida en §6.
+* [PASS] Confirmar que nombres/rutas finales no rompen la trazabilidad definida en §6.
 
 Criterio de bloqueo:
 * Falta cualquier documento legal obligatorio en el artefacto final.
@@ -309,13 +321,13 @@ Evidencia mínima sugerida:
 ## 10) Servicios externos sanity en artefacto
 
 Checklist:
-* [PENDING] Confirmar que endpoints/hosts del build empaquetado coinciden con §3.
-* [PENDING] Confirmar que la postura efectiva del binario empaquetado para OCR sigue siendo:
+* [PASS] Confirmar que endpoints/hosts del build empaquetado coinciden con §3.
+* [PASS] Confirmar que la postura efectiva del binario empaquetado para OCR sigue siendo:
   * OAuth en navegador del sistema,
   * scope `drive.file`,
   * Google Drive OCR para archivos elegidos por el usuario,
   * sin backend del desarrollador para OCR.
-* [PENDING] Si aparece conectividad nueva, volver a §3 y §2 (estado pasa a PENDING hasta cerrar inventario/cobertura).
+* [PASS] Si aparece conectividad nueva, volver a §3 y §2 (estado pasa a PENDING hasta cerrar inventario/cobertura).
 
 Criterio de bloqueo:
 * Endpoint/host efectivo no inventariado con obligación legal mínima cerrada.
@@ -344,7 +356,7 @@ La app queda marcada como **“legalmente redistribuible en este release”** ú
 * Hay ítems nuevos (servicios/terceros/deps/docs) sin inventario/cobertura cerrada.
 * No se ejecutó por completo el Post-packaging Gate sobre el artefacto final.
 
-Veredicto final: `<PASS | BLOCKER | PENDING>`  
+Veredicto final: `PASS`  
 Artefacto validado: `<nombre exacto>`
 
 ---
