@@ -107,48 +107,49 @@
 
   <script src="/site-language.js"></script>
   <script>
-    (function () {
-      var windowsStableUrl = "https://github.com/Cibersino/tot/releases/download/v0.1.6/toT-0.1.6-win-x64.zip";
-      var releasesUrl = "https://github.com/Cibersino/tot/releases/latest";
-      var messageEl = document.getElementById("os-message");
-      var ctaEl = document.getElementById("primary-download");
-
-      function detectOs() {
-        var ua = (navigator.userAgent || "").toLowerCase();
-        var platform = (navigator.platform || "").toLowerCase();
-        var source = platform + " " + ua;
-
-        if (source.indexOf("win") !== -1) return "windows";
-        if (source.indexOf("mac") !== -1 && source.indexOf("iphone") === -1 && source.indexOf("ipad") === -1 && source.indexOf("ipod") === -1) return "macos";
-        if (source.indexOf("linux") !== -1 || source.indexOf("x11") !== -1) return "linux";
-        return "unknown";
-      }
-
-      var os = detectOs();
-
-      if (ctaEl) {
-        if (os === "windows") {
-          ctaEl.href = windowsStableUrl;
-          ctaEl.textContent = "Descargar para Windows (estable)";
-        } else {
-          ctaEl.href = releasesUrl;
-          ctaEl.textContent = "Ver últimas versiones en GitHub";
+    window.totDownloadConfig = {
+      releaseApiUrl: "https://api.github.com/repos/Cibersino/tot/releases/latest",
+      releasesUrl: "https://github.com/Cibersino/tot/releases/latest",
+      labels: {
+        direct: {
+          windows: "Descargar para Windows (estable)",
+          macos: "Descargar para macOS (estable)",
+          linux: "Descargar para Linux (estable)"
+        },
+        fallback: "Ver últimas versiones en GitHub",
+        loading: {
+          windows: "Buscando descarga para Windows...",
+          macos: "Buscando descarga para macOS...",
+          linux: "Buscando descarga para Linux..."
         }
+      },
+      messages: {
+        direct: {
+          windows: "Detectamos Windows. Descarga directa de la versión estable más reciente para Windows.",
+          macos: "Detectamos macOS. Descarga directa de la versión estable más reciente para macOS.",
+          linux: "Detectamos Linux. Descarga directa de la versión estable más reciente para Linux."
+        },
+        fallback: {
+          windows: "Detectamos Windows, pero la versión estable más reciente no publica una descarga directa para Windows. Revisa las últimas versiones en GitHub.",
+          macos: "Detectamos macOS, pero la versión estable más reciente no publica una descarga directa para macOS. Revisa las últimas versiones en GitHub.",
+          linux: "Detectamos Linux, pero la versión estable más reciente no publica una descarga directa para Linux. Revisa las últimas versiones en GitHub."
+        },
+        loading: {
+          windows: "Detectamos Windows. Buscando la descarga estable más reciente para Windows...",
+          macos: "Detectamos macOS. Buscando la descarga estable más reciente para macOS...",
+          linux: "Detectamos Linux. Buscando la descarga estable más reciente para Linux..."
+        },
+        error: {
+          windows: "Detectamos Windows, pero no pudimos verificar automáticamente la descarga estable más reciente. Revisa las últimas versiones en GitHub.",
+          macos: "Detectamos macOS, pero no pudimos verificar automáticamente la descarga estable más reciente. Revisa las últimas versiones en GitHub.",
+          linux: "Detectamos Linux, pero no pudimos verificar automáticamente la descarga estable más reciente. Revisa las últimas versiones en GitHub.",
+          unknown: "No pudimos verificar automáticamente la descarga estable más reciente. Revisa las últimas versiones en GitHub."
+        },
+        unknown: "No pudimos detectar tu sistema operativo. Revisa las últimas versiones en GitHub."
       }
-
-      if (messageEl) {
-        if (os === "windows") {
-          messageEl.textContent = "Detectamos Windows. Descarga directa de la versión estable más reciente para Windows.";
-        } else if (os === "macos") {
-          messageEl.textContent = "Detectamos macOS. Aún no hay descarga directa estable para macOS. Revisa las últimas versiones en GitHub.";
-        } else if (os === "linux") {
-          messageEl.textContent = "Detectamos Linux. Aún no hay descarga directa estable para Linux. Revisa las últimas versiones en GitHub.";
-        } else {
-          messageEl.textContent = "No pudimos detectar tu sistema operativo. Revisa las últimas versiones en GitHub.";
-        }
-      }
-    })();
+    };
   </script>
+  <script src="/download-resolver.js"></script>
 </body>
 
 </html>
