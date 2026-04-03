@@ -67,6 +67,7 @@ const api = {
     getAppConfig: () => ipcRenderer.invoke('get-app-config'),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     getAppRuntimeInfo: () => ipcRenderer.invoke('get-app-runtime-info'),
+    getAppDocAvailability: (docKey) => ipcRenderer.invoke('get-app-doc-availability', docKey),
     onSettingsChanged: (cb) => {
         const listener = (ev, newSettings) => {
             try { cb(newSettings); } catch (err) { console.error('settings callback error:', err); }

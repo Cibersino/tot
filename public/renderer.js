@@ -1289,6 +1289,8 @@ setupToggleModoPreciso();
   async function hydrateAboutEnvironment(container) {
     const envEl = container ? container.querySelector('#appEnv') : null;
     const runtimeEl = container ? container.querySelector('#appRuntimeVersions') : null;
+    const sharpRuntimeLicenseRow = container ? container.querySelector('#sharpRuntimeLicenseRow') : null;
+    const sharpRuntimeNoticeRow = container ? container.querySelector('#sharpRuntimeNoticeRow') : null;
     const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
     const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
     if (!envEl) return;
@@ -1297,6 +1299,8 @@ setupToggleModoPreciso();
       log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
       envEl.textContent = 'N/A';
       if (runtimeEl) runtimeEl.textContent = 'N/A';
+      if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+      if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
       return;
     }
 
@@ -1333,6 +1337,8 @@ setupToggleModoPreciso();
         if (runtimeEl) runtimeEl.textContent = 'N/A';
         if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
         if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
         return;
       }
 
@@ -1346,12 +1352,29 @@ setupToggleModoPreciso();
         runtimeParts.push(nodeVersion ? `Node.js ${nodeVersion}` : 'Node.js N/A');
         runtimeEl.textContent = runtimeParts.join(' | ');
       }
+
+      if (
+        window.electronAPI
+        && typeof window.electronAPI.getAppDocAvailability === 'function'
+      ) {
+        const [licenseAvailability, noticeAvailability] = await Promise.all([
+          window.electronAPI.getAppDocAvailability('license-import-extract-image-processing-runtime'),
+          window.electronAPI.getAppDocAvailability('notice-import-extract-image-processing-runtime'),
+        ]);
+        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !(licenseAvailability && licenseAvailability.available);
+        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !(noticeAvailability && noticeAvailability.available);
+      } else {
+        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
+      }
     } catch (err) {
       log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
       envEl.textContent = 'N/A';
       if (runtimeEl) runtimeEl.textContent = 'N/A';
       if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
       if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+      if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
+      if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
     }
   }
 
