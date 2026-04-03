@@ -79,10 +79,6 @@
     }
   }
 
-  async function promptSnapshotSaveTags() {
-    return window.Notify.promptSnapshotSaveTags();
-  }
-
   async function saveSnapshot(rawPayload = null) {
     try {
       if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
@@ -93,7 +89,7 @@
 
       let payload = rawPayload;
       if (!payload) {
-        payload = await promptSnapshotSaveTags();
+        payload = await window.Notify.promptSnapshotSaveTags();
         if (!payload) {
           return { ok: false, code: 'CANCELLED' };
         }
