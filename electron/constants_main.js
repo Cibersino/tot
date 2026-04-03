@@ -11,6 +11,8 @@ const MAX_META_STR_CHARS = 4096; // Safety limit for metadata strings (like titl
 const PRESET_WPM_MIN = 10; // Minimum WPM allowed when persisting presets.
 const PRESET_WPM_MAX = 700; // Maximum WPM allowed when persisting presets.
 const TASK_NAME_MAX_CHARS = 50; // Max chars for task list name.
+const TASK_LIST_MAX_ROWS = 200; // Max rows allowed in a persisted task list payload.
+const TASK_LIBRARY_MAX_ITEMS = 12000; // Max items allowed in the persisted task library.
 const TASK_ROW_TEXT_MAX_CHARS = 200; // Max chars for task row "text" (texto).
 const TASK_ROW_COMMENT_MAX_CHARS = 1200; // Max chars for task row "comment" (comentario).
 const TASK_ROW_TYPE_MAX_CHARS = 50; // Max chars for task row "type" (tipo).
@@ -26,6 +28,8 @@ module.exports = {
   PRESET_WPM_MIN,
   PRESET_WPM_MAX,
   TASK_NAME_MAX_CHARS,
+  TASK_LIST_MAX_ROWS,
+  TASK_LIBRARY_MAX_ITEMS,
   TASK_ROW_TEXT_MAX_CHARS,
   TASK_ROW_COMMENT_MAX_CHARS,
   TASK_ROW_TYPE_MAX_CHARS,
