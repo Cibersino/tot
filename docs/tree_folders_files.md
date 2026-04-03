@@ -9,6 +9,9 @@ No es un inventario exhaustivo de cada archivo.
 
 ```ASCII
 tot/
+├── .github/
+│ └── workflows/
+│   └── test.yml                  # workflow GitHub Actions del baseline automatizado (`npm test` en Windows)
 ├── .vscode/                       # {carpeta ignorada por git}
 │ ├── settings.json
 │ └── tasks.json
@@ -132,6 +135,9 @@ tot/
 │ │ ├── instrucciones.en.html
 │ │ └── links_interes.html
 │ ├── js/
+│ │ ├── lib/
+│ │ │ ├── count_core.js
+│ │ │ └── format_core.js
 │ │ ├── count.js
 │ │ ├── presets.js
 │ │ ├── crono.js
@@ -174,6 +180,22 @@ tot/
 │ ├── task_editor.css
 │ ├── flotante.css
 │ └── style.css
+├── test/
+│ ├── smoke/
+│ │ └── electron_launch_smoke.test.js
+│ ├── unit/
+│ │ ├── electron/
+│ │ │ ├── import_extract_prepare_execute_core.test.js
+│ │ │ ├── import_extract_prepared_store.test.js
+│ │ │ ├── import_extract_supported_formats.test.js
+│ │ │ ├── ocr_google_drive_activation_state.test.js
+│ │ │ ├── ocr_google_drive_provider_failure_classification.test.js
+│ │ │ ├── ocr_google_drive_provider_failure.test.js
+│ │ │ └── settings.test.js
+│ │ └── shared/
+│ │   ├── count_core.test.js
+│ │   └── format_core.test.js
+│ └── README.md
 ├── website/                       # {sitio web}
 │ └── public/
 │   ├── assets/
@@ -292,6 +314,7 @@ tot/
 - `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts, incluyendo `totapp.org` y `www.patreon.com` para superficies fijas de la app) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
 - `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique).
 - `electron/log.js` — Logger del proceso principal (política de logs/fallbacks).
+- `electron/main.js` — Además del arranque normal, contiene un hook de smoke test local controlado por env vars (`TOT_SMOKE_TEST`, `TOT_SMOKE_USER_DATA_DIR`) para validar el startup mínimo con perfil aislado.
 
 ### 3) Módulos del renderer (public/js)
 
@@ -299,8 +322,10 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `public/js/constants.js` — Constantes compartidas del renderer.
 - `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
-- `public/js/count.js` — Cálculos de conteo (palabras/caracteres; modo simple/preciso).
-- `public/js/format.js` — Helpers de formateo (tiempo y numeros); expone `window.FormatUtils`.
+- `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.
+- `public/js/lib/format_core.js` — Núcleo puro/importable de formateo (tiempo estimado, partes de tiempo y separadores numéricos) reutilizado por el wrapper renderer y por la suite automatizada.
+- `public/js/count.js` — Wrapper renderer de conteo: valida dependencias del `window`, construye `window.CountUtils` desde `count_core.js` y conserva la superficie pública existente.
+- `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
 - `public/js/presets.js` — UX del selector y flujos de presets en UI (sin IPC directo; usa `electronAPI.getDefaultPresets` / `electronAPI.setSelectedPreset`).
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
@@ -320,6 +345,14 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/import_extract_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de archivos al entry flow compartido.
 - `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
+
+### 3.1) Testing automatizado
+
+- `.github/workflows/test.yml` — Workflow GitHub Actions del baseline automatizado actual; corre `npm ci` + `npm test` sobre `windows-latest`.
+- `test/README.md` — Convenciones del layout de tests y separación entre baseline unitario y smoke suite local.
+- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo import/extract (`settings`, formatos soportados, prepared store, parsing/clasificación OCR, decision helpers).
+- `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`).
+- `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; no forma parte de `npm test` ni del workflow CI base.
 
 ### 4) i18n (estructura y responsabilidades)
 
@@ -369,9 +402,15 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `docs/releases/<version>/` — Baselines y checklists versionados por release.
 - `docs/changelog_detailed.md` — Changelog detallado (técnico/narrativo; post-0.0.930 con formato mecánico).
 - `docs/issues/` — Issues relevantes y actuales que requieren seguimiento en Github.
+- `docs/test_suite.md` — Suite manual app-level; incluye una sección breve de “Automated coverage status” para mapear la cobertura automatizada vigente sin reemplazar el smoke/regression manual.
 - `CHANGELOG.md` — Changelog corto (resumen por versión).
 - `ToDo.md` (o `docs/` / Project) — Roadmap/índice (si aplica; evitar duplicación con GitHub Project/Issues).
 - `docs/cleanup/` — Protocolos y evidencia de cleanup (incluye `_evidence/`, `no_silence.md`, `bridge_failure_mode_convention.md`, `preload_listener_api_standard.md`, etc.).
+
+### 6.0) Tooling raíz
+
+- `package.json` — Manifiesto npm/electron-builder; además del arranque y packaging, define `npm test`, `npm run test:unit` y `npm run test:smoke`.
+- `package-lock.json` — Lockfile npm usado también por el workflow CI (`npm ci`).
 
 ### 6.1) Sitio web estático (website/public)
 
