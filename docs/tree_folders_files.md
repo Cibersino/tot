@@ -137,12 +137,14 @@ tot/
 │ ├── js/
 │ │ ├── lib/
 │ │ │ ├── count_core.js
-│ │ │ └── format_core.js
+│ │ │ ├── format_core.js
+│ │ │ └── snapshot_tag_catalog.js
 │ │ ├── count.js
 │ │ ├── presets.js
 │ │ ├── crono.js
 │ │ ├── menu_actions.js
 │ │ ├── current_text_snapshots.js
+│ │ ├── snapshot_save_tags_modal.js
 │ │ ├── format.js
 │ │ ├── results_time_multiplier.js
 │ │ ├── i18n.js
@@ -280,7 +282,7 @@ tot/
 - `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`, estado del picker import/extract, credenciales/tokens OCR runtime y ruta de credenciales OCR empaquetadas en `electron/assets/ocr_google_drive/credentials.json`.
 - `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset` y difunde cambios vía `settings-updated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`).
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
-- `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): diálogos nativos, lectura/escritura JSON `{ "text": "<string>" }` bajo `config/saved_current_texts/` (incluye subcarpetas), confirmación de overwrite y chequeo de contención (realpath/relative) para evitar escapes fuera del árbol.
+- `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): valida payloads del flujo save, abre diálogos nativos, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots legacy `{ "text": "<string>" }` y snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
 - `electron/editor_find_main.js` — Coordinador del buscador nativo del editor: ciclo de vida de la ventana de búsqueda, atajos (`Ctrl/Cmd+F`, `F3`, `Shift+F3`, `Esc`), IPC autorizado y sincronización de estado con `found-in-page`.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
@@ -324,13 +326,15 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
 - `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.
 - `public/js/lib/format_core.js` — Núcleo puro/importable de formateo (tiempo estimado, partes de tiempo y separadores numéricos) reutilizado por el wrapper renderer y por la suite automatizada.
+- `public/js/lib/snapshot_tag_catalog.js` — Catálogo puro/importable compartido de tags de snapshot: define los valores canónicos/opciones de `language` / `type` / `difficulty` y centraliza la normalización reutilizada por renderer y main para evitar drift.
 - `public/js/count.js` — Wrapper renderer de conteo: valida dependencias del `window`, construye `window.CountUtils` desde `count_core.js` y conserva la superficie pública existente.
 - `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
 - `public/js/presets.js` — UX del selector y flujos de presets en UI (sin IPC directo; usa `electronAPI.getDefaultPresets` / `electronAPI.setSelectedPreset`).
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
-- `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
+- `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca el modal previo de tags al guardar, normaliza metadata opcional de snapshot vía `snapshot_tag_catalog`, llama `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
+- `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: muestra selects opcionales para `language` / `type` / `difficulty`, aplica i18n y devuelve tags normalizados o cancelación.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Patreon a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n (`es` / `en`) y mantiene este wiring fuera de `public/renderer.js`.
 - `public/js/text_apply_canonical.js` — Helpers canónicos de aplicar texto (`overwrite` / `append` / repeticiones) reutilizados por clipboard e import/extract.
@@ -372,7 +376,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/import_extract_state.json` — Estado local del picker de import/extract (por ejemplo, última carpeta utilizada).
 - `config/ocr_google_drive/credentials.json` — Espejo/copia runtime gestionado por la app para la configuración OAuth de Google OCR; en el modelo actual se materializa desde credenciales empaquetadas de la app y no forma parte del onboarding manual del usuario.
 - `config/ocr_google_drive/token.json` — Estado local del token OAuth del usuario final para la ruta OCR de Google Drive/Docs; se elimina al desconectar Google OCR tras revocación exitosa.
-- `config/saved_current_texts/` — Carpeta runtime con snapshots del texto vigente (archivos JSON `{ "text": ... }`; puede contener subcarpetas).
+- `config/saved_current_texts/` — Carpeta runtime con snapshots del texto vigente; admite JSON legacy `{ "text": ... }` y snapshots etiquetados `{ "text": ..., "tags"?: { "language"?, "type"?, "difficulty"? } }`; puede contener subcarpetas.
 - `config/tasks/lists/*.json` — Listas de tareas guardadas por el usuario.
 - `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).
 - `config/tasks/allowed_hosts.json` — Allowlist de hosts confiables para enlaces remotos.

@@ -308,13 +308,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-13 Current text snapshots (Save/Load)
 **Goal:** save and load a snapshot via native dialogs.
 1. Set non-empty text (SM-03).
-2. Click **💾** and save as `smoke_snapshot.json` under `config/saved_current_texts/`.
-3. Change current text (SM-04 or edit in editor).
-4. Click **📂**, select `smoke_snapshot.json`, and confirm overwrite.
+2. Click **💾** and verify an in-app modal appears before any native save dialog.
+3. Leave all selectors empty, click **Save Text Snapshot**, and save as `smoke_snapshot.json` under `config/saved_current_texts/`.
+4. Repeat **💾**, choose tags such as `es` + `fiction` + `easy`, and save as `smoke_snapshot_tagged.json`.
+5. Change current text (SM-04 or edit in editor).
+6. Click **📂**, select `smoke_snapshot.json`, and confirm overwrite.
+7. Repeat load with `smoke_snapshot_tagged.json` and confirm overwrite.
 
 **Expected:**
-- Snapshot file is created.
+- Snapshot save modal appears before the native save dialog.
+- Snapshot files are created.
+- Tagged snapshot JSON persists the selected tags.
 - Current text is overwritten; preview/results update.
+- Tagged snapshot metadata is not transferred into current-text state.
 - Stopwatch behavior follows REG-CRONO-02 semantics (non-empty restore: no reset; empty restore: reset).
 
 ### SM-14 Task editor: open + basic save

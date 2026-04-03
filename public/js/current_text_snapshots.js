@@ -6,6 +6,8 @@
 // =============================================================================
 // Renderer helper for current text snapshots.
 // Responsibilities:
+// - Prompt the pre-save snapshot tags modal before saving.
+// - Normalize optional snapshot tag metadata before invoking IPC.
 // - Call electronAPI save/load snapshot IPC.
 // - Map { ok, code } responses to Notify toasts (no DOM wiring).
 // =============================================================================
@@ -16,6 +18,10 @@
   }
   const log = window.getLogger('current-text-snapshots');
   log.debug('Current text snapshots starting...');
+  const snapshotTagCatalog = window.SnapshotTagCatalog || null;
+  if (!snapshotTagCatalog || typeof snapshotTagCatalog.normalizeTags !== 'function') {
+    throw new Error('[current-text-snapshots] SnapshotTagCatalog unavailable; cannot continue');
+  }
 
   const TOAST_KEYS = Object.freeze({
     saveSuccess: 'renderer.alerts.snapshot_save_success',
@@ -58,14 +64,35 @@
     }
   }
 
-  async function saveSnapshot() {
+  async function promptSnapshotSaveTags() {
+    if (!window.Notify || typeof window.Notify.promptSnapshotSaveTags !== 'function') {
+      log.warn('promptSnapshotSaveTags unavailable in Notify');
+      window.Notify.toastMain(TOAST_KEYS.unavailable, { type: 'error' });
+      return null;
+    }
+    return window.Notify.promptSnapshotSaveTags();
+  }
+
+  async function saveSnapshot(rawPayload = null) {
     try {
       if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
         log.warn('saveCurrentTextSnapshot unavailable in electronAPI');
         window.Notify.toastMain(TOAST_KEYS.unavailable, { type: 'error' });
         return { ok: false, code: 'WRITE_FAILED' };
       }
-      const res = await window.electronAPI.saveCurrentTextSnapshot();
+
+      let payload = rawPayload;
+      if (!payload) {
+        payload = await promptSnapshotSaveTags();
+        if (!payload) {
+          return { ok: false, code: 'CANCELLED' };
+        }
+      }
+
+      const normalizedTags = snapshotTagCatalog.normalizeTags(payload.tags);
+      const res = await window.electronAPI.saveCurrentTextSnapshot(
+        normalizedTags ? { tags: normalizedTags } : {}
+      );
       handleSaveResult(res);
       return res;
     } catch (err) {
