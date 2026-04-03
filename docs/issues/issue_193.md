@@ -380,7 +380,7 @@ Do not make the repo harder to merge by gating on flaky first-pass UI automation
 - [ ] Decide whether `public/js/format.js` should be extracted into a directly testable pure helper module in this issue
 - [ ] Add a minimal Electron smoke suite only if it remains stable and narrow
 - [x] Add CI execution for the stable automated subset
-- [ ] Document how automated coverage maps back to `docs/test_suite.md`
+- [x] Document how automated coverage maps back to `docs/test_suite.md`
 
 ## Progress update
 
@@ -402,4 +402,4 @@ Still pending in this issue:
 
 * any renderer pure-logic extraction (`count.js`, `format.js`);
 * any real Electron smoke automation;
-* explicit docs linkage back to `docs/test_suite.md`.
+* the current manual-suite linkage is in place; no further docs-linkage work is required for this baseline.
