@@ -163,6 +163,16 @@
     difficultySelect.value = '';
   }
 
+  function restorePreviousFocus(previousFocus) {
+    if (!previousFocus || !document.contains(previousFocus)) return;
+
+    try {
+      previousFocus.focus();
+    } catch (err) {
+      log.warn('Could not restore previous focus after snapshot save tags modal:', err);
+    }
+  }
+
   // =============================================================================
   // Public entrypoint
   // =============================================================================
@@ -188,13 +198,7 @@
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
-        if (previousFocus && document.contains(previousFocus)) {
-          try {
-            previousFocus.focus();
-          } catch (err) {
-            log.warn('Could not restore previous focus after snapshot save tags modal:', err);
-          }
-        }
+        restorePreviousFocus(previousFocus);
       };
 
       const finish = (result) => {
