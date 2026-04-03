@@ -14,11 +14,14 @@ This repo currently uses the Node built-in test runner for the stable automated 
 
 * `npm test` - runs the stable baseline suite
 * `npm run test:unit` - runs the same unit baseline directly
+* `npm run test:smoke` - runs the local-only Electron launch smoke suite
 
 ## Current scope
 
 The first automated slice is intentionally focused on low-friction contract tests for `electron/**`.
 Renderer-heavy flows and real Electron smoke automation can be added later without blocking this baseline.
+
+The smoke suite is intentionally separate from `npm test` and CI for now. It launches the real Electron app in an isolated temporary profile and is meant to prove a minimal startup path without turning the baseline gate flaky.
 
 See also:
 

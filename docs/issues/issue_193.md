@@ -378,7 +378,7 @@ Do not make the repo harder to merge by gating on flaky first-pass UI automation
 - [x] Add first-wave tests for at least one provider-failure classification module
 - [x] Decide whether `public/js/count.js` should be extracted into a directly testable pure helper module in this issue
 - [x] Decide whether `public/js/format.js` should be extracted into a directly testable pure helper module in this issue
-- [ ] Add a minimal Electron smoke suite only if it remains stable and narrow
+- [x] Add a minimal Electron smoke suite only if it remains stable and narrow
 - [x] Add CI execution for the stable automated subset
 - [x] Document how automated coverage maps back to `docs/test_suite.md`
 
@@ -387,8 +387,10 @@ Do not make the repo harder to merge by gating on flaky first-pass UI automation
 Current implementation completed in the repo:
 
 * `package.json` now runs the Node built-in test runner via `npm test`.
+* `package.json` also exposes a separate local-only `npm run test:smoke` Electron launch smoke.
 * A first repo test layout exists under `test/`.
 * A first Windows GitHub Actions workflow exists under `.github/workflows/test.yml`.
+* The first GitHub Actions run for the new workflow has been validated successfully.
 * The current automated baseline covers:
   * `electron/settings.js`
   * `electron/import_extract_platform/import_extract_supported_formats.js`
@@ -400,8 +402,11 @@ Current implementation completed in the repo:
   * extracted renderer pure logic for counting and formatting via:
     * `public/js/lib/count_core.js`
     * `public/js/lib/format_core.js`
+  * a minimal real-app Electron smoke path via:
+    * `test/smoke/electron_launch_smoke.test.js`
+    * test-only smoke hooks in `electron/main.js`
 
 Still pending in this issue:
 
-* any real Electron smoke automation;
+* the current Electron smoke suite remains local-only and is not part of CI;
 * the current manual-suite linkage is in place; no further docs-linkage work is required for this baseline.

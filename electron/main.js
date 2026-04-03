@@ -59,6 +59,19 @@ const {
 const log = Log.get('main');
 log.debug('Main process starting...');
 
+const IS_SMOKE_TEST = process.env.TOT_SMOKE_TEST === '1';
+const SMOKE_USER_DATA_DIR = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
+  ? process.env.TOT_SMOKE_USER_DATA_DIR.trim()
+  : '';
+
+if (IS_SMOKE_TEST && SMOKE_USER_DATA_DIR) {
+  try {
+    app.setPath('userData', path.resolve(SMOKE_USER_DATA_DIR));
+  } catch (err) {
+    log.error('Failed to override userData path for smoke test mode:', err);
+  }
+}
+
 // =============================================================================
 // Import/extract orchestration (shared controller)
 // =============================================================================
@@ -747,6 +760,23 @@ function handleSplashRemoved() {
   }
   splashRemoved = true;
   menuEnabled = true;
+
+  if (IS_SMOKE_TEST) {
+    try {
+      console.log('TOT_SMOKE_READY');
+    } catch (err) {
+      log.error('Failed to emit smoke-test ready marker:', err);
+    }
+
+    setTimeout(() => {
+      try {
+        app.quit();
+      } catch (err) {
+        log.error('Failed to quit app after smoke-test ready marker:', err);
+      }
+    }, 0);
+    return;
+  }
 
   try {
     updater.scheduleInitialCheck();
