@@ -9,8 +9,7 @@ Artefacto inspeccionado: `<ZIP/INSTALLER>`
 SHA256(artefacto): `<SHA256>`
 
 ## 0. Regla de versión (SemVer)
-* Desde `0.1.0` en adelante, usar SemVer estricto: `MAJOR.MINOR.PATCH`.
-* No volver a usar `0.0.XYY` como contador de builds.
+* Usar SemVer estricto: `MAJOR.MINOR.PATCH`.
 * Si aplica pre-release: `-alpha.N`, `-beta.N`, `-rc.N` (sobre base `MAJOR.MINOR.PATCH`).
 * Tag de release obligatorio en GitHub: `vX.Y.Z` (p. ej. `v0.1.0`), o `vX.Y.Z-rc.N` si aplica.
 
@@ -60,7 +59,7 @@ git diff "$base..HEAD" --output $outFile -- . ':(exclude)docs/'
 * [ ] Privacidad/Cookies del sitio:
   * [ ] Rutas vigentes: `/privacy-cookies/`, `/es/privacy-cookies/`, `/en/privacy-cookies/`.
 * [ ] Descargas:
-  * [ ] CTA de Windows apunta al artefacto estable correcto del release vigente.
+  * [ ] CTA del SO apunta al artefacto estable correcto del release vigente.
   * [ ] Fallback manual a `https://github.com/Cibersino/tot/releases/latest` funciona.
 * [ ] Enlaces externos del sitio:
   * [ ] Redes/social/support vigentes (Patreon, Instagram, X, YouTube, Twitch) y sin enlaces rotos.
