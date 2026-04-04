@@ -244,6 +244,40 @@
         }
       }
     },
+    "reading_test": {
+      "entry": {
+        "title": "Test di velocità di lettura",
+        "intro": "Questo test è pensato per l'auto-calibrazione.",
+        "overwrite_warning": "Avviare con il testo del pool sovrascriverà il testo corrente.",
+        "edit_notice": "Modificare il testo durante il test è consentito, ma influirà sul risultato misurato.",
+        "eligible_count": "File idonei: {count}",
+        "pool_exhausted_message": "Non ci sono più file di test non usati. Reimposta il pool o aggiungi altri file.",
+        "close_aria": "Chiudi la finestra di dialogo del test di velocità di lettura",
+        "reset_confirm": "Questo reimposterà l'intero pool del test e contrassegnerà di nuovo tutti i suoi file come non usati. Vuoi continuare?",
+        "buttons": {
+          "reset_pool": "Reimposta pool",
+          "start": "Avvia",
+          "start_current_text": "Avvia con il testo corrente"
+        }
+      },
+      "questions": {
+        "title": "Domande di comprensione del testo",
+        "intro": "Rispondi alle domande se vuoi verificare la comprensione prima di tornare al flusso principale.",
+        "random_title": "Probabilità casuale",
+        "random_value": "{percentage}% di risposte corrette probabili rispondendo a caso",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "Per reclami:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Devi rispondere a tutte le domande prima di valutare.",
+        "result_summary": "{correct} su {total} corrette ({percentage}%)",
+        "low_score_warning": "La tua percentuale è scesa sotto 5/3 della probabilità casuale ({threshold}%). Potresti aver letto le domande troppo in fretta.",
+        "fatal_invalid": "Il payload delle domande non è valido.",
+        "buttons": {
+          "check": "Verifica risultato",
+          "continue": "Continua"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "Nuovo preset",
       "title_edit": "Modifica preset",
@@ -351,7 +385,17 @@
       "wip_diseno_fuentes": "WIP: Il selettore di font si aprirà qui in una versione futura.",
       "wip_diseno_colores": "WIP: Il selettore di colori si aprirà qui in una versione futura.",
       "wip_shortcuts": "WIP: Il selettore di scorciatoie da tastiera si aprirà qui in una versione futura.",
-      "wip_reading_speed_test": "WIP: Il test di velocità di lettura si aprirà qui in una versione futura."
+      "reading_test_unavailable": "La funzionalità del test di velocità di lettura non è disponibile.",
+      "reading_test_precondition_blocked": "Il test di velocità di lettura può iniziare solo da uno stato stabile dell'app. Chiudi le finestre secondarie e assicurati che il cronometro sia fermo.",
+      "reading_test_pool_error": "Si è verificato un errore durante il controllo del pool del test di velocità di lettura.",
+      "reading_test_no_matching_files": "Non restano file di test non usati che corrispondano alla selezione corrente.",
+      "reading_test_current_text_empty": "Il testo corrente è vuoto. Carica o scrivi prima un testo prima di avviare il test con il testo corrente.",
+      "reading_test_result_invalid": "Il risultato del test non ha potuto essere convertito in un WPM valido. Il flusso è terminato senza aprire la finestra del preset.",
+      "reading_test_preset_unavailable": "La finestra del preset non ha potuto essere aperta dopo il test.",
+      "reading_test_questions_unavailable": "La finestra delle domande di comprensione non ha potuto essere aperta. Il flusso è terminato prima della creazione del preset.",
+      "reading_test_start_failed": "Non è stato possibile avviare il test di velocità di lettura.",
+      "reading_test_cancelled": "Il test di velocità di lettura è stato annullato.",
+      "reading_test_cancelled_window_closed": "Il test di velocità di lettura è stato annullato perché una delle sue finestre di sessione è stata chiusa."
     },
     "editor_alerts": {
       "paste_too_big": "Il testo è troppo grande per essere incollato direttamente. Usa i pulsanti della finestra principale.",

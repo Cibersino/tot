@@ -53,6 +53,7 @@
   const eligibleCount = document.getElementById('readingTestEntryModalEligibleCount');
   const resetButton = document.getElementById('readingTestEntryModalReset');
   const btnStart = document.getElementById('readingTestEntryModalStart');
+  const btnStartCurrentText = document.getElementById('readingTestEntryModalStartCurrentText');
   const btnClose = document.getElementById('readingTestEntryModalClose');
   const languageSection = document.getElementById('readingTestEntryLanguageSection');
   const languageHeading = document.getElementById('readingTestEntryLanguageHeading');
@@ -75,6 +76,7 @@
       && eligibleCount
       && resetButton
       && btnStart
+      && btnStartCurrentText
       && btnClose
       && languageSection
       && languageHeading
@@ -108,6 +110,7 @@
   let selection = filtersCore.normalizeSelection({});
   let filterState = filtersCore.computeFilterState(poolEntries, selection);
   let poolExhausted = false;
+  let currentTextAvailable = false;
   let stabilizing = false;
   let initialized = false;
 
@@ -320,11 +323,11 @@
     );
     intro.textContent = tRenderer(
       'renderer.reading_test.entry.intro',
-      'This test overwrites the current text and is meant for self-calibration.'
+      'This test is meant for self-calibration.'
     );
     overwriteWarning.textContent = tRenderer(
       'renderer.reading_test.entry.overwrite_warning',
-      'The current text will be overwritten when the test starts.'
+      'Starting with pool text will overwrite the current text.'
     );
     editNotice.textContent = tRenderer(
       'renderer.reading_test.entry.edit_notice',
@@ -342,6 +345,10 @@
       'renderer.reading_test.entry.buttons.start',
       'Start'
     );
+    btnStartCurrentText.textContent = tRenderer(
+      'renderer.reading_test.entry.buttons.start_current_text',
+      'Start with current text'
+    );
 
     renderEligibleCount();
     renderWarningBox();
@@ -351,6 +358,7 @@
 
     resetButton.disabled = stabilizing || isSessionActive();
     btnStart.disabled = stabilizing || isSessionActive() || filterState.eligibleCount < 1;
+    btnStartCurrentText.disabled = stabilizing || isSessionActive() || !currentTextAvailable;
 
     modal.dataset.stabilizing = stabilizing ? 'true' : 'false';
   }
@@ -366,6 +374,7 @@
     }
 
     poolExhausted = !!result.poolExhausted;
+    currentTextAvailable = !!result.currentTextAvailable;
     poolEntries = Array.isArray(result.entries) ? result.entries : [];
     rebuildFilterState();
     return true;
@@ -487,7 +496,42 @@
     render();
 
     try {
-      const result = await startReadingTest({ selection });
+      const result = await startReadingTest({ sourceMode: 'pool', selection });
+      stabilizing = false;
+      render();
+
+      if (!result || result.ok !== true) {
+        notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_start_failed');
+        return;
+      }
+
+      closeModal();
+    } catch (err) {
+      stabilizing = false;
+      render();
+      log.error('Reading-test start failed unexpectedly:', err);
+      notifyGuidance('renderer.alerts.reading_test_start_failed');
+    }
+  }
+
+  async function handleStartCurrentText() {
+    if (stabilizing || isSessionActive() || !currentTextAvailable) return;
+
+    const startReadingTest = readElectronMethod('startReadingTest');
+    if (!startReadingTest) {
+      log.warnOnce(
+        'reading-speed-test.start-current-text.missing',
+        'startReadingTest unavailable; current-text reading speed test start skipped.'
+      );
+      notifyUnavailable();
+      return;
+    }
+
+    stabilizing = true;
+    render();
+
+    try {
+      const result = await startReadingTest({ sourceMode: 'current_text' });
       stabilizing = false;
       render();
 
@@ -513,6 +557,9 @@
     });
     btnStart.addEventListener('click', () => {
       void handleStart();
+    });
+    btnStartCurrentText.addEventListener('click', () => {
+      void handleStartCurrentText();
     });
     window.addEventListener('keydown', (event) => {
       if (!isModalOpen()) return;
