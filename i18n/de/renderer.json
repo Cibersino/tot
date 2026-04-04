@@ -256,7 +256,7 @@
         "reset_confirm": "Dadurch wird der gesamte Test-Pool zurückgesetzt und alle Dateien werden wieder als unbenutzt markiert. Möchten Sie fortfahren?",
         "buttons": {
           "reset_pool": "Pool zurücksetzen",
-          "start": "Starten",
+          "start_random_text": "Mit zufälligem Text starten",
           "start_current_text": "Mit aktuellem Text starten"
         }
       },

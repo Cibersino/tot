@@ -256,7 +256,7 @@
         "reset_confirm": "Fey mu wiñotripayay kom trawün (pool) pepiluwal ka kom chillka 'ngelay chillkatun' pingeay. ¿Amuleaymi?",
         "buttons": {
           "reset_pool": "Wiño adkünuwal pool",
-          "start": "Yalltun",
+          "start_random_text": "Yalltun fantepu chillka random mew",
           "start_current_text": "Yalltun fantepu chillka mu"
         }
       },

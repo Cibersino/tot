@@ -342,8 +342,8 @@
       'Reset pool'
     );
     btnStart.textContent = tRenderer(
-      'renderer.reading_test.entry.buttons.start',
-      'Start'
+      'renderer.reading_test.entry.buttons.start_random_text',
+      'Start with random text'
     );
     btnStartCurrentText.textContent = tRenderer(
       'renderer.reading_test.entry.buttons.start_current_text',
