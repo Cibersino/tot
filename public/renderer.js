@@ -90,6 +90,16 @@ if (!resultsTimeMultiplier
   || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function') {
   throw new Error('[renderer] ResultsTimeMultiplier unavailable; cannot continue');
 }
+const readingSpeedTestUi = window.ReadingSpeedTestUi || null;
+if (!readingSpeedTestUi
+  || typeof readingSpeedTestUi.applyTranslations !== 'function'
+  || typeof readingSpeedTestUi.configure !== 'function'
+  || typeof readingSpeedTestUi.hasBlockingModalOpen !== 'function'
+  || typeof readingSpeedTestUi.isInteractionLocked !== 'function'
+  || typeof readingSpeedTestUi.isSessionActive !== 'function'
+  || typeof readingSpeedTestUi.openEntryFlow !== 'function') {
+  throw new Error('[renderer] ReadingSpeedTestUi unavailable; cannot continue');
+}
 
 // =============================================================================
 // UI keys and static lists
@@ -186,6 +196,9 @@ const cronTitle = document.getElementById('cron-title');
 const toggleVF = document.getElementById('toggleVF');
 const editorLoader = document.getElementById('editorLoader');
 const startupSplash = document.getElementById('startupSplash');
+const cronoDisplayInput = document.getElementById('cronoDisplay');
+const cronoToggleBtnMain = document.getElementById('cronoToggle');
+const cronoResetBtnMain = document.getElementById('cronoReset');
 
 // Preset DOM references
 const presetsSelect = document.getElementById('presets');
@@ -214,9 +227,30 @@ function setControlInteractionLocked(element, locked) {
   element.setAttribute('aria-disabled', locked ? 'true' : 'false');
 }
 
-function syncMainInteractionLockUi() {
-  const locked = !isRendererReady() || isProcessingModeActive();
+function isReadingTestInteractionLocked() {
+  return !!(readingSpeedTestUi && readingSpeedTestUi.isInteractionLocked());
+}
 
+function isReadingTestSessionActive() {
+  return !!(readingSpeedTestUi && readingSpeedTestUi.isSessionActive());
+}
+
+function syncMainInteractionLockUi() {
+  const locked = !isRendererReady()
+    || isProcessingModeActive()
+    || isReadingTestInteractionLocked();
+
+  setControlInteractionLocked(btnImportExtract, locked);
+  setControlInteractionLocked(btnOverwriteClipboard, locked);
+  setControlInteractionLocked(btnAppendClipboard, locked);
+  setControlInteractionLocked(clipboardRepeatInput, locked);
+  setControlInteractionLocked(btnEdit, locked);
+  setControlInteractionLocked(btnEmptyMain, locked);
+  setControlInteractionLocked(btnLoadSnapshot, locked);
+  setControlInteractionLocked(btnSaveSnapshot, locked);
+  setControlInteractionLocked(btnNewTask, locked);
+  setControlInteractionLocked(btnLoadTask, locked);
+  setControlInteractionLocked(btnHelp, locked);
   setControlInteractionLocked(wpmInput, locked);
   setControlInteractionLocked(wpmSlider, locked);
   setControlInteractionLocked(presetsSelect, locked);
@@ -228,6 +262,9 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(resultsTimeMultiplierInput, locked);
   setControlInteractionLocked(toggleModoPreciso, locked);
   setControlInteractionLocked(toggleVF, locked);
+  setControlInteractionLocked(cronoDisplayInput, locked);
+  setControlInteractionLocked(cronoToggleBtnMain, locked);
+  setControlInteractionLocked(cronoResetBtnMain, locked);
 }
 
 function startImportExtractPrepareAttempt() {
@@ -249,11 +286,15 @@ function hasBlockingMainWindowModalOpen() {
     || isAriaHiddenElementVisible('importExtractRouteModal')
     || isAriaHiddenElementVisible('importExtractApplyModal')
     || isAriaHiddenElementVisible('snapshotSaveTagsModal')
+    || isAriaHiddenElementVisible('readingTestEntryModal')
     || isAriaHiddenElementVisible('importExtractOcrActivationDisclosureModal');
 }
 
 function canAcceptImportExtractDrop() {
-  return isRendererReady() && !isProcessingModeActive() && !hasBlockingMainWindowModalOpen();
+  return isRendererReady()
+    && !isProcessingModeActive()
+    && !isReadingTestSessionActive()
+    && !hasBlockingMainWindowModalOpen();
 }
 
 async function requestPreparedImport({
@@ -300,6 +341,15 @@ function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
   const isAbortAction = normalizedActionId === 'import-extract-abort';
   if (!allowDuringProcessing && !isAbortAction && isProcessingModeActive()) {
     maybeNotifyProcessingLock(normalizedActionId);
+    return false;
+  }
+
+  if (isReadingTestSessionActive()) {
+    log.warnOnce(
+      `renderer.readingTestLock.${normalizedActionId}`,
+      'Renderer action ignored (reading-test session lock active):',
+      normalizedActionId
+    );
     return false;
   }
 
@@ -446,6 +496,7 @@ function applyTranslations() {
   };
   importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
   importExtractDragDrop.applyTranslations({ tRenderer });
+  readingSpeedTestUi.applyTranslations();
   if (mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
     mainLogoLinks.applyTranslations({ tRenderer });
   } else {
@@ -1673,6 +1724,17 @@ function resetPresetSelection() {
   presetDescription.textContent = '';
 }
 
+function applyReadingTestWpm(rawWpm) {
+  wpm = syncWpmControls(rawWpm);
+  resetPresetSelection();
+  updateTimeOnlyFromStats();
+}
+
+readingSpeedTestUi.configure({
+  onLockChange: syncMainInteractionLockUi,
+  applyWpm: applyReadingTestWpm,
+});
+
 // Keep slider/input in sync and invalidate preset selection
 wpmSlider.addEventListener('input', () => {
   if (!guardUserAction('wpm-slider')) return;
@@ -2216,9 +2278,14 @@ if (btnHelp) {
 // Reading tools
 // =============================================================================
 if (btnReadingSpeedTest) {
-  btnReadingSpeedTest.addEventListener('click', () => {
+  btnReadingSpeedTest.addEventListener('click', async () => {
     if (!guardUserAction('reading-speed-test')) return;
-    window.Notify.notifyMain('renderer.alerts.wip_reading_speed_test');
+    try {
+      await readingSpeedTestUi.openEntryFlow();
+    } catch (err) {
+      log.error('Error opening reading speed test flow:', err);
+      window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
+    }
   });
 }
 

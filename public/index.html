@@ -246,6 +246,44 @@
       </div>
     </div>
 
+    <div id="readingTestEntryModal" class="info-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="readingTestEntryModalTitle" aria-modal="true">
+      <div id="readingTestEntryModalBackdrop" class="info-modal-backdrop"></div>
+      <div class="reading-test-entry-modal-panel" role="document" aria-describedby="readingTestEntryModalIntro">
+        <header class="reading-test-entry-modal-header">
+          <h2 id="readingTestEntryModalTitle">Test de velocidad de lectura</h2>
+          <button id="readingTestEntryModalClose" class="btn-standard" type="button" aria-label="Cerrar diálogo de test de velocidad de lectura">🗙</button>
+        </header>
+        <div class="reading-test-entry-modal-body">
+          <p id="readingTestEntryModalIntro">Este test sobrescribirá el texto actual y está pensado para auto-calibración.</p>
+          <p id="readingTestEntryModalOverwriteWarning">El texto actual será sobrescrito al iniciar el test.</p>
+          <p id="readingTestEntryModalEditNotice">Editar el texto durante el test está permitido, pero afectará el resultado medido.</p>
+          <div id="readingTestEntryModalWarning" class="reading-test-entry-modal-warning" aria-live="polite" hidden></div>
+          <div class="reading-test-entry-modal-toolbar">
+            <div id="readingTestEntryModalEligibleCount" class="reading-test-entry-modal-count" aria-live="polite">Archivos elegibles: 0</div>
+            <button id="readingTestEntryModalReset" class="btn-standard" type="button">Restablecer pool</button>
+          </div>
+          <div class="reading-test-entry-modal-groups">
+            <section id="readingTestEntryLanguageSection" class="reading-test-entry-modal-group" aria-hidden="true" hidden>
+              <h3 id="readingTestEntryLanguageHeading">Idioma</h3>
+              <div id="readingTestEntryLanguageOptions" class="reading-test-entry-modal-options"></div>
+            </section>
+            <section id="readingTestEntryTypeSection" class="reading-test-entry-modal-group" aria-hidden="true" hidden>
+              <h3 id="readingTestEntryTypeHeading">Tipo</h3>
+              <div id="readingTestEntryTypeOptions" class="reading-test-entry-modal-options"></div>
+            </section>
+            <section id="readingTestEntryDifficultySection" class="reading-test-entry-modal-group" aria-hidden="true" hidden>
+              <h3 id="readingTestEntryDifficultyHeading">Dificultad</h3>
+              <div id="readingTestEntryDifficultyOptions" class="reading-test-entry-modal-options"></div>
+            </section>
+          </div>
+          <div class="reading-test-entry-modal-actions">
+            <button id="readingTestEntryModalStart" class="btn-standard" type="button">Iniciar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="importExtractOcrActivationDisclosureModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="importExtractOcrActivationDisclosureTitle"
       aria-describedby="importExtractOcrActivationDisclosureBody" aria-modal="true">
@@ -283,7 +321,9 @@
   <script src="./js/menu_actions.js"></script>
   <script src="./js/i18n.js"></script>
   <script src="./js/lib/snapshot_tag_catalog.js"></script>
+  <script src="./js/lib/reading_test_filters_core.js"></script>
   <script src="./js/snapshot_save_tags_modal.js"></script>
+  <script src="./js/reading_speed_test.js"></script>
   <script src="./js/presets.js"></script>
   <script src="./js/lib/count_core.js"></script>
   <script src="./js/lib/format_core.js"></script>

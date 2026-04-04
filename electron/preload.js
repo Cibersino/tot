@@ -129,6 +129,42 @@ const api = {
         return subscribeWithUnsub('flotante-closed', listener, 'removeListener error:');
     },
 
+    // Reading test
+    getReadingTestEntryData: () => ipcRenderer.invoke('reading-test-get-entry-data'),
+    resetReadingTestPool: () => ipcRenderer.invoke('reading-test-reset-pool'),
+    startReadingTest: (payload) => ipcRenderer.invoke('reading-test-start', payload),
+    getReadingTestState: () => ipcRenderer.invoke('reading-test-get-state'),
+    onReadingTestStateChanged: (cb) => {
+        const listener = (_e, state) => {
+            try { cb(state); } catch (err) { console.error('reading-test-state callback error:', err); }
+        };
+        return subscribeWithUnsub(
+            'reading-test-state-changed',
+            listener,
+            'removeListener error (reading-test-state-changed):'
+        );
+    },
+    onReadingTestNotice: (cb) => {
+        const listener = (_e, notice) => {
+            try { cb(notice); } catch (err) { console.error('reading-test-notice callback error:', err); }
+        };
+        return subscribeWithUnsub(
+            'reading-test-notice',
+            listener,
+            'removeListener error (reading-test-notice):'
+        );
+    },
+    onReadingTestApplyWpm: (cb) => {
+        const listener = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('reading-test-apply-wpm callback error:', err); }
+        };
+        return subscribeWithUnsub(
+            'reading-test-apply-wpm',
+            listener,
+            'removeListener error (reading-test-apply-wpm):'
+        );
+    },
+
     // Startup handshake
     sendStartupRendererCoreReady: () => ipcRenderer.send('startup:renderer-core-ready'),
     onStartupReady: (cb) => {

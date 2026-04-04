@@ -255,6 +255,39 @@
         }
       }
     },
+    "reading_test": {
+      "entry": {
+        "title": "Reading speed test",
+        "intro": "This test overwrites the current text and is meant for self-calibration.",
+        "overwrite_warning": "The current text will be overwritten when the test starts.",
+        "edit_notice": "Editing the text during the test is allowed, but it will affect the measured result.",
+        "eligible_count": "Eligible files: {count}",
+        "pool_exhausted_message": "There are no remaining unused test files. Reset the pool or add more files.",
+        "close_aria": "Close reading speed test dialog",
+        "reset_confirm": "This will reset the whole test pool and mark all of its files as unused again. Do you want to continue?",
+        "buttons": {
+          "reset_pool": "Reset pool",
+          "start": "Start"
+        }
+      },
+      "questions": {
+        "title": "Comprehension questions",
+        "intro": "Answer the questions if you want to review comprehension before returning to the main flow.",
+        "random_title": "Random guess baseline",
+        "random_value": "{percentage}% probable correct answers when guessing randomly",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "For complaints:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "All questions must be answered before evaluating.",
+        "result_summary": "{correct} out of {total} correct ({percentage}%)",
+        "low_score_warning": "Your percentage fell below 5/3 of the random-guess probability ({threshold}%). You may have read the questions too hastily.",
+        "fatal_invalid": "The questions payload is invalid.",
+        "buttons": {
+          "check": "Check result",
+          "continue": "Continue"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "New preset",
       "title_edit": "Edit preset",
@@ -362,7 +395,16 @@
       "wip_diseno_fuentes": "WIP: The fonts selector will open here in a future version.",
       "wip_diseno_colores": "WIP: The colors selector will open here in a future version.",
       "wip_shortcuts": "WIP: The keyboard shortcuts selector will open here in a future version.",
-      "wip_reading_speed_test": "WIP: The reading speed test will open here in a future version."
+      "reading_test_unavailable": "The reading speed test feature is unavailable.",
+      "reading_test_precondition_blocked": "The reading speed test can only start from a steady app state. Close secondary windows and make sure the stopwatch is stopped.",
+      "reading_test_pool_error": "An error occurred while checking the reading speed test pool.",
+      "reading_test_no_matching_files": "There are no remaining unused test files that match the current selection.",
+      "reading_test_result_invalid": "The test result could not be converted into a valid WPM. The flow ended without opening the preset modal.",
+      "reading_test_preset_unavailable": "The preset modal could not be opened after the test.",
+      "reading_test_questions_unavailable": "The comprehension questions modal could not be opened. The flow ended before preset creation.",
+      "reading_test_start_failed": "The reading speed test could not be started.",
+      "reading_test_cancelled": "The reading speed test was cancelled.",
+      "reading_test_cancelled_window_closed": "The reading speed test was cancelled because one of its session windows closed."
     },
     "editor_alerts": {
       "paste_too_big": "Text too large to paste directly. Use the main window buttons.",

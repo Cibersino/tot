@@ -1,0 +1,44 @@
+{
+  "text": "Mara liked stations most when they were almost empty. During the day, the old terminal sounded like a box of loose coins: announcements, rolling luggage, hurried apologies, doors opening too fast. Near midnight, everything reorganized itself. The benches grew longer. The clocks seemed louder. Even the fluorescent lights stopped feeling practical and started looking theatrical, as if the building were waiting for a small, private performance instead of the last regional train.\n\nShe had arrived early on purpose. Her brother Tomas was supposed to come in from the north on the 23:48, and experience had taught her that waiting is easier when you stop pretending it will be short. She bought tea from a machine that always overfilled paper cups and took the seat nearest Track 4. From there she could see the bakery kiosk, the shuttered newspaper stand, and the cleaner with the yellow cart who moved through the main hall in slow diagonal lines. The cleaner paused every few minutes to listen for the next announcement before continuing. Mara admired that, the way some people know how to work inside a rhythm without needing to control it.\n\nOn the bench beside her sat an elderly man with a violin case balanced upright between his shoes. He never opened it, never touched the latch, but kept one gloved hand resting on the handle as if the instrument might otherwise wander away. After a while he asked Mara whether the train from Belmonte was usually late. She said it depended on rain, freight traffic, and the mood of the line, which made him laugh quietly. He said he had not been in this station for twenty years and was relieved to find that it still smelled faintly of metal dust and burnt sugar.\n\nThe board above Track 4 flickered twice before updating. Five minutes late. Then eight. Then twelve. Nobody complained. Midnight delays seemed to belong to a softer category of inconvenience, one accepted by people who had already committed themselves to being awake. The tea cooled. Somewhere deeper in the station, a door banged hard enough to send a flock of pigeons from the rafters to a safer beam. Mara watched them settle and thought about the message Tomas had sent that afternoon: \"Don't leave if I'm delayed. I have something to show you.\" He had refused to say more.\n\nThe thing about Tomas was that he loved suspense in small doses. As children, he hid postcards inside library books, left notes in coat pockets, and once wrapped a key in three layers of newspaper just to make a surprise feel ceremonial. Their mother had called it unnecessary effort. Mara secretly thought it was a way of making ordinary life hold still long enough to be noticed. Even now, sitting under tired station lights, she could feel that old habit approaching before he did.\n\nAt 00:01 the train finally entered like a careful thought, not fast but inevitable. The brakes sighed along the platform. Doors unlocked in sequence. A few passengers stepped down with the resigned posture of people who had already repeated tomorrow's excuses in their heads. Then Tomas appeared at the third door, carrying a small square parcel under one arm and wearing the same dark coat he had promised to replace last winter. He grinned as soon as he saw her, not apologetic at all, just certain that the arrival itself would cover the delay.\n\nWhen he reached the bench, he did not hug her immediately. Instead he placed the parcel in her hands. It was light, tied with blue thread, and warm enough to suggest it had been tucked close to his chest for most of the trip. \"Open it on the way home,\" he said. Mara asked what it was. Tomas glanced toward the old man with the violin case, toward the cleaner wheeling the yellow cart past Track 5, and toward the bakery kiosk where tomorrow's first trays were beginning to arrive. \"Proof,\" he said, \"that some places keep their promises if you come back to them late enough.\" Then he hugged her, and for a moment the station felt less like a waiting room than a room that had been waiting specifically for them.",
+  "tags": {
+    "language": "en",
+    "type": "fiction",
+    "difficulty": "normal",
+    "testUsed": false
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "Near which track did Mara choose to wait?",
+        "correctOptionId": "d",
+        "options": [
+          { "id": "a", "text": "Track 1" },
+          { "id": "b", "text": "Track 2" },
+          { "id": "c", "text": "Track 3" },
+          { "id": "d", "text": "Track 4" }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "What color was the cleaner's cart?",
+        "correctOptionId": "b",
+        "options": [
+          { "id": "a", "text": "Red" },
+          { "id": "b", "text": "Yellow" },
+          { "id": "c", "text": "Green" }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "When did the train finally enter the station?",
+        "correctOptionId": "a",
+        "options": [
+          { "id": "a", "text": "At 00:01" },
+          { "id": "b", "text": "At 23:48" },
+          { "id": "c", "text": "At 00:12" }
+        ]
+      }
+    ]
+  }
+}
