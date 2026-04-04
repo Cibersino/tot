@@ -334,7 +334,7 @@
     );
     intro.textContent = tRenderer(
       'renderer.reading_test.entry.intro',
-      'This test is meant for self-calibration.'
+      'This test is meant to estimate your real reading speed through a guided session. The app will open the text, start the timer, and ask you to read normally; when you finish, press Pause (⏸) in the Floating Window. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.'
     );
     btnClose.setAttribute(
       'aria-label',

@@ -16,12 +16,12 @@
   <!-- Logos -->
   <div class="logo-container">
     <div class="logo-links-group">
-      <button id="patreonLogoLink" class="logo-link logo-link--patreon" type="button"
-        title="Abrir Patreon de Cibersino" aria-label="Abrir Patreon de Cibersino">
+      <button id="patreonLogoLink" class="logo-link logo-link--patreon" type="button" title="Abrir Patreon de Cibersino"
+        aria-label="Abrir Patreon de Cibersino">
         <img id="patreonLogo" src="./assets/patreon.png" alt="" aria-hidden="true" />
       </button>
-      <button id="devLogoLink" class="logo-link logo-link--dev" type="button"
-        title="Abrir sitio de Cibersino" aria-label="Abrir sitio de Cibersino">
+      <button id="devLogoLink" class="logo-link logo-link--dev" type="button" title="Abrir sitio de Cibersino"
+        aria-label="Abrir sitio de Cibersino">
         <img id="devLogo" src="./assets/logo-cibersino.svg" alt="" aria-hidden="true" />
       </button>
     </div>
@@ -43,15 +43,14 @@
       <pre id="textPreview">(vacío)</pre>
       <div class="controls">
         <div id="selectorControlsNormal" class="controls-row">
-          <button id="btnImportExtract" class="btn-standard"
-            title="Importar/extraer texto desde archivo">📥</button>
+          <button id="btnImportExtract" class="btn-standard" title="Importar/extraer texto desde archivo">📥</button>
           <span class="controls-sep" aria-hidden="true"></span>
           <button id="btnOverwriteClipboard" class="btn-standard"
             title="Reemplazar texto actual con el portapapeles">📋↺</button>
           <button id="btnAppendClipboard" class="btn-standard"
             title="Pegar portapapeles al final del texto actual (nueva línea)">📋+</button>
-          <input id="clipboardRepeatInput" class="clipboard-repeat-input" type="number" min="1" max="9999" step="1" value="1"
-            title="Repeticiones de pegado" aria-label="Repeticiones de pegado" />
+          <input id="clipboardRepeatInput" class="clipboard-repeat-input" type="number" min="1" max="9999" step="1"
+            value="1" title="Repeticiones de pegado" aria-label="Repeticiones de pegado" />
           <button id="btnEdit" class="btn-standard" title="Abrir ventana del texto actual completo">⌨</button>
           <button id="btnEmptyMain" class="btn-standard" title="Vaciar texto actual">🗑</button>
           <span class="controls-sep" aria-hidden="true"></span>
@@ -67,7 +66,8 @@
           <div class="import-extract-processing-bar" role="status" aria-live="polite">
             <div class="import-extract-processing-copy">
               <span id="importExtractProcessingLabel">Procesando extracción...</span>
-              <span id="importExtractProcessingElapsed" class="import-extract-processing-elapsed" hidden aria-hidden="true"></span>
+              <span id="importExtractProcessingElapsed" class="import-extract-processing-elapsed" hidden
+                aria-hidden="true"></span>
             </div>
             <span class="import-extract-processing-placeholder-track" aria-hidden="true">
               <span class="import-extract-processing-placeholder-fill"></span>
@@ -171,10 +171,12 @@
       <div class="import-extract-route-modal-panel" role="document" aria-describedby="importExtractRouteModalMessage">
         <header class="import-extract-route-modal-header">
           <h2 id="importExtractRouteModalTitle">Elegir ruta de extracción</h2>
-          <button id="importExtractRouteModalClose" class="btn-standard" aria-label="Cerrar diálogo de ruta de extracción">🗙</button>
+          <button id="importExtractRouteModalClose" class="btn-standard"
+            aria-label="Cerrar diálogo de ruta de extracción">🗙</button>
         </header>
         <div class="import-extract-route-modal-body">
-          <p id="importExtractRouteModalMessage">Este PDF tiene disponibles ambas rutas de extracción. Elige una para continuar.</p>
+          <p id="importExtractRouteModalMessage">Este PDF tiene disponibles ambas rutas de extracción. Elige una para
+            continuar.</p>
           <div class="import-extract-route-modal-actions">
             <button id="importExtractRouteModalNative" class="btn-standard">Usar nativa</button>
             <button id="importExtractRouteModalOcr" class="btn-standard">Usar OCR</button>
@@ -190,11 +192,13 @@
       <div class="import-extract-apply-modal-panel" role="document" aria-describedby="importExtractApplyModalMessage">
         <header class="import-extract-apply-modal-header">
           <h2 id="importExtractApplyModalTitle">Aplicar texto extraído</h2>
-          <button id="importExtractApplyModalClose" class="btn-standard" aria-label="Cerrar diálogo para aplicar texto extraído">🗙</button>
+          <button id="importExtractApplyModalClose" class="btn-standard"
+            aria-label="Cerrar diálogo para aplicar texto extraído">🗙</button>
         </header>
         <div class="import-extract-apply-modal-body">
           <p id="importExtractApplyModalMessage">Elige cómo aplicar el texto extraído.</p>
-          <p id="importExtractApplyModalElapsed" class="import-extract-apply-modal-elapsed" hidden aria-hidden="true"></p>
+          <p id="importExtractApplyModalElapsed" class="import-extract-apply-modal-elapsed" hidden aria-hidden="true">
+          </p>
           <div class="import-extract-apply-repeat-row">
             <label id="importExtractApplyModalRepeatLabel" for="importExtractApplyModalRepeatInput">Repeticiones</label>
             <input id="importExtractApplyModalRepeatInput" type="number" min="1" step="1" value="1" />
@@ -214,10 +218,12 @@
       <div class="snapshot-save-tags-modal-panel" role="document" aria-describedby="snapshotSaveTagsModalMessage">
         <header class="snapshot-save-tags-modal-header">
           <h2 id="snapshotSaveTagsModalTitle">Guardar snapshot de texto</h2>
-          <button id="snapshotSaveTagsModalClose" class="btn-standard" type="button" aria-label="Cerrar diálogo para guardar snapshot de texto">🗙</button>
+          <button id="snapshotSaveTagsModalClose" class="btn-standard" type="button"
+            aria-label="Cerrar diálogo para guardar snapshot de texto">🗙</button>
         </header>
         <div class="snapshot-save-tags-modal-body">
-          <p id="snapshotSaveTagsModalMessage">Etiqueta opcionalmente este snapshot de texto antes de elegir dónde guardarlo.</p>
+          <p id="snapshotSaveTagsModalMessage">Etiqueta opcionalmente este snapshot de texto antes de elegir dónde
+            guardarlo.</p>
           <div class="snapshot-save-tags-form">
             <div class="snapshot-save-tags-field">
               <label id="snapshotSaveTagsLanguageLabel" for="snapshotSaveTagsLanguage">Idioma</label>
@@ -239,7 +245,8 @@
             </div>
           </div>
           <div class="snapshot-save-tags-modal-actions">
-            <button id="snapshotSaveTagsModalConfirm" class="btn-standard" type="button">Guardar snapshot de texto</button>
+            <button id="snapshotSaveTagsModalConfirm" class="btn-standard" type="button">Guardar snapshot de
+              texto</button>
             <button id="snapshotSaveTagsModalCancel" class="btn-standard" type="button">Cancelar</button>
           </div>
         </div>
@@ -251,14 +258,20 @@
       <div id="readingTestEntryModalBackdrop" class="info-modal-backdrop"></div>
       <div class="reading-test-entry-modal-panel" role="document" aria-describedby="readingTestEntryModalIntro">
         <header class="reading-test-entry-modal-header">
-          <button id="readingTestEntryModalClose" class="btn-standard" type="button" aria-label="Cerrar diálogo de test de velocidad de lectura">🗙</button>
+          <button id="readingTestEntryModalClose" class="btn-standard" type="button"
+            aria-label="Cerrar diálogo de test de velocidad de lectura">🗙</button>
         </header>
         <div class="reading-test-entry-modal-body">
           <h2 id="readingTestEntryModalTitle">Test de velocidad de lectura</h2>
-          <p id="readingTestEntryModalIntro">Este test está pensado para auto-calibración.</p>
-          <div id="readingTestEntryModalWarning" class="reading-test-entry-modal-warning" aria-live="polite" hidden></div>
+          <p id="readingTestEntryModalIntro">Este test sirve para estimar tu velocidad real de lectura con una sesión
+            guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando termines, pulsa
+            Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el test. Después podrás
+            revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.</p>
+          <div id="readingTestEntryModalWarning" class="reading-test-entry-modal-warning" aria-live="polite" hidden>
+          </div>
           <div class="reading-test-entry-modal-groups">
-            <section id="readingTestEntryLanguageSection" class="reading-test-entry-modal-group" aria-hidden="true" hidden>
+            <section id="readingTestEntryLanguageSection" class="reading-test-entry-modal-group" aria-hidden="true"
+              hidden>
               <h3 id="readingTestEntryLanguageHeading">Idioma</h3>
               <div id="readingTestEntryLanguageOptions" class="reading-test-entry-modal-options"></div>
             </section>
@@ -266,18 +279,22 @@
               <h3 id="readingTestEntryTypeHeading">Tipo</h3>
               <div id="readingTestEntryTypeOptions" class="reading-test-entry-modal-options"></div>
             </section>
-            <section id="readingTestEntryDifficultySection" class="reading-test-entry-modal-group" aria-hidden="true" hidden>
+            <section id="readingTestEntryDifficultySection" class="reading-test-entry-modal-group" aria-hidden="true"
+              hidden>
               <h3 id="readingTestEntryDifficultyHeading">Dificultad</h3>
               <div id="readingTestEntryDifficultyOptions" class="reading-test-entry-modal-options"></div>
             </section>
           </div>
           <div class="reading-test-entry-modal-toolbar">
-            <div id="readingTestEntryModalEligibleCount" class="reading-test-entry-modal-count" aria-live="polite">Archivos elegibles: 0</div>
+            <div id="readingTestEntryModalEligibleCount" class="reading-test-entry-modal-count" aria-live="polite">
+              Archivos elegibles: 0</div>
             <button id="readingTestEntryModalReset" class="btn-standard" type="button">Restablecer pool</button>
           </div>
           <div class="reading-test-entry-modal-actions">
-            <button id="readingTestEntryModalStart" class="btn-standard" type="button">Iniciar con texto aleatorio</button>
-            <button id="readingTestEntryModalStartCurrentText" class="btn-standard" type="button">Iniciar con texto actual</button>
+            <button id="readingTestEntryModalStart" class="btn-standard" type="button">Iniciar con texto
+              aleatorio</button>
+            <button id="readingTestEntryModalStartCurrentText" class="btn-standard" type="button">Iniciar con texto
+              actual</button>
           </div>
         </div>
       </div>
@@ -290,21 +307,30 @@
       <div class="import-extract-ocr-activation-disclosure-panel" role="document">
         <header class="import-extract-ocr-activation-disclosure-header">
           <h2 id="importExtractOcrActivationDisclosureTitle">Revisar activación de Google OCR</h2>
-          <button id="importExtractOcrActivationDisclosureClose" class="btn-standard" type="button" aria-label="Cerrar diálogo de activación de Google OCR">🗙</button>
+          <button id="importExtractOcrActivationDisclosureClose" class="btn-standard" type="button"
+            aria-label="Cerrar diálogo de activación de Google OCR">🗙</button>
         </header>
         <div id="importExtractOcrActivationDisclosureBody" class="import-extract-ocr-activation-disclosure-body">
-          <p id="importExtractOcrActivationDisclosureIntro">toT usa servicios de Google para OCR. Si continúas, se abrirá el navegador para que autorices esta app.</p>
+          <p id="importExtractOcrActivationDisclosureIntro">toT usa servicios de Google para OCR. Si continúas, se
+            abrirá el navegador para que autorices esta app.</p>
           <ul class="import-extract-ocr-activation-disclosure-list">
-            <li id="importExtractOcrActivationDisclosureSelectedFiles">Solo se envían a Google los archivos que eliges para OCR.</li>
-            <li id="importExtractOcrActivationDisclosureLocalStorage">Esta app guarda un archivo local credentials.json y el estado local del token de Google en esta instancia.</li>
-            <li id="importExtractOcrActivationDisclosureRemoteCleanup">Después de exportar, la app intenta eliminar el documento temporal de Google de tu Google Drive.</li>
-            <li id="importExtractOcrActivationDisclosureDisconnect">Más tarde puedes desconectar esta conexión desde Preferencias &gt; Desconectar Google OCR.</li>
+            <li id="importExtractOcrActivationDisclosureSelectedFiles">Solo se envían a Google los archivos que eliges
+              para OCR.</li>
+            <li id="importExtractOcrActivationDisclosureLocalStorage">Esta app guarda un archivo local credentials.json
+              y el estado local del token de Google en esta instancia.</li>
+            <li id="importExtractOcrActivationDisclosureRemoteCleanup">Después de exportar, la app intenta eliminar el
+              documento temporal de Google de tu Google Drive.</li>
+            <li id="importExtractOcrActivationDisclosureDisconnect">Más tarde puedes desconectar esta conexión desde
+              Preferencias &gt; Desconectar Google OCR.</li>
           </ul>
           <div class="import-extract-ocr-activation-disclosure-actions">
-            <a id="importExtractOcrActivationDisclosurePrivacy" class="import-extract-ocr-activation-disclosure-link" href="#">Abrir política de privacidad</a>
+            <a id="importExtractOcrActivationDisclosurePrivacy" class="import-extract-ocr-activation-disclosure-link"
+              href="#">Abrir política de privacidad</a>
             <div class="import-extract-ocr-activation-disclosure-buttons">
-              <button id="importExtractOcrActivationDisclosureProceed" class="btn-standard" type="button">Continuar con Google</button>
-              <button id="importExtractOcrActivationDisclosureCancel" class="btn-standard" type="button">Cancelar</button>
+              <button id="importExtractOcrActivationDisclosureProceed" class="btn-standard" type="button">Continuar con
+                Google</button>
+              <button id="importExtractOcrActivationDisclosureCancel" class="btn-standard"
+                type="button">Cancelar</button>
             </div>
           </div>
         </div>
