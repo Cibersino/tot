@@ -1000,17 +1000,18 @@ select#presets {
 }
 
 .reading-test-entry-modal-header {
-  position: sticky;
-  top: 0;
+  position: absolute;
+  top: 14px;
+  right: 16px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  background: transparent;
   z-index: 1;
 }
 
 .reading-test-entry-modal-body {
-  margin-top: 12px;
+  margin-top: 0;
+  padding-right: 44px;
 }
 
 .reading-test-entry-modal-body h2 {
