@@ -74,6 +74,15 @@ body {
   border-color: rgba(141, 107, 25, 0.25);
 }
 
+.reading-test-questions__message[data-tone="info"] {
+  background: #e6f6ea;
+  border-color: rgba(49, 122, 67, 0.28);
+  color: #1f5a2d;
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 12px 14px;
+}
+
 .reading-test-questions__message[data-tone="error"] {
   background: #ffe3de;
   border-color: rgba(154, 54, 37, 0.22);
