@@ -256,7 +256,7 @@
         "reset_confirm": "Questo reimposterà l'intero pool del test e contrassegnerà di nuovo tutti i suoi file come non usati. Vuoi continuare?",
         "buttons": {
           "reset_pool": "Reimposta pool",
-          "start": "Avvia",
+          "start_random_text": "Avvia con testo casuale",
           "start_current_text": "Avvia con il testo corrente"
         }
       },

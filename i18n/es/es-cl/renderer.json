@@ -256,7 +256,7 @@
         "reset_confirm": "¿Querís restablecer el pool de archivos elegibles? Esto va a recargar los archivos disponibles pa' iniciar el test, incluyendo los que ya usaste.",
         "buttons": {
           "reset_pool": "Restablecer pool",
-          "start": "Partir",
+          "start_random_text": "Partir con texto random",
           "start_current_text": "Partir con texto actual"
         }
       },
