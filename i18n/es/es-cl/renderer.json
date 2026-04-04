@@ -270,7 +270,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Tenís que responder toas las preguntas pa' ver el resultado.",
         "result_summary": "{correct} de {total} correctas ({percentage}%)",
-        "low_score_warning": "Tu porcentaje quedó por debajo de 5/3 de la probabilidad al achunte ({threshold}%). Remal.",
+        "low_score_warning": "Tu resultado quedó bajo en comparación con una línea base al achunte. Revisa bien, pajarón.",
         "fatal_invalid": "La carga de preguntas es inválida.",
         "buttons": {
           "check": "Ver resultado",

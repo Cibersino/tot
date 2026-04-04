@@ -202,7 +202,7 @@
               threshold: formatPercentage(lastScore.warningThreshold),
               baseline: formatPercentage(lastScore.randomGuessPercentage),
             },
-            'Your score is close to or below random expectation. You may have read the questions too hastily.'
+            'Your result is low compared with a random baseline. You may want to review the questions more carefully.'
           ),
           { tone: 'warn', visible: true }
         );

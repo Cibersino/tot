@@ -270,7 +270,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Sie müssen alle Fragen beantworten, bevor Sie auswerten.",
         "result_summary": "{correct} von {total} richtig ({percentage}%)",
-        "low_score_warning": "Ihr Prozentsatz lag unter 5/3 der Zufallswahrscheinlichkeit ({threshold}%). Möglicherweise haben Sie die Fragen zu hastig gelesen.",
+        "low_score_warning": "Ihr Ergebnis ist im Vergleich zu einer Zufallsbasis niedrig. Vielleicht sollten Sie die Fragen noch einmal sorgfältiger prüfen.",
         "fatal_invalid": "Die Fragendaten sind ungültig.",
         "buttons": {
           "check": "Ergebnis prüfen",

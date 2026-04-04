@@ -281,7 +281,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "All questions must be answered before evaluating.",
         "result_summary": "{correct} out of {total} correct ({percentage}%)",
-        "low_score_warning": "Your percentage fell below 5/3 of the random-guess probability ({threshold}%). You may have read the questions too hastily.",
+        "low_score_warning": "Your result is low compared with a random baseline. You may want to review the questions more carefully.",
         "fatal_invalid": "The questions payload is invalid.",
         "buttons": {
           "check": "Check result",

@@ -270,7 +270,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Devi rispondere a tutte le domande prima di valutare.",
         "result_summary": "{correct} su {total} corrette ({percentage}%)",
-        "low_score_warning": "La tua percentuale è scesa sotto 5/3 della probabilità casuale ({threshold}%). Potresti aver letto le domande troppo in fretta.",
+        "low_score_warning": "Il tuo risultato è basso rispetto a una base casuale. Potresti voler rivedere le domande con più attenzione.",
         "fatal_invalid": "Il payload delle domande non è valido.",
         "buttons": {
           "check": "Verifica risultato",
