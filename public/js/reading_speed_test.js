@@ -188,6 +188,10 @@
 
   function setModalVisible(visible) {
     modal.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    if (visible) {
+      const panel = modal.querySelector('.reading-test-entry-modal-panel');
+      if (panel) panel.scrollTop = 0;
+    }
     syncLockState();
     if (!visible) {
       restorePreviousFocus();
@@ -433,11 +437,6 @@
     rememberPreviousFocus();
     render();
     setModalVisible(true);
-    if (poolExhausted) {
-      resetButton.focus();
-    } else {
-      btnStart.focus();
-    }
   }
 
   async function handleResetPool() {
