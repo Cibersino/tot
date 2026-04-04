@@ -200,8 +200,13 @@ function createController(options = {}) {
     const openSecondaryWindows = Array.isArray(context && context.openSecondaryWindows)
       ? context.openSecondaryWindows.filter((item) => item && item.isOpen)
       : [];
+    const cronoState = getCronoState();
     const stopwatchRunning = !!(context && context.stopwatchRunning);
-    if (openSecondaryWindows.length > 0 || stopwatchRunning) {
+    const stopwatchElapsed = cronoState && typeof cronoState.elapsed === 'number'
+      ? cronoState.elapsed
+      : 0;
+    const stopwatchAtZero = stopwatchElapsed === 0;
+    if (openSecondaryWindows.length > 0 || stopwatchRunning || !stopwatchAtZero) {
       return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PRECONDITION_BLOCKED');
     }
 
@@ -346,6 +351,7 @@ function createController(options = {}) {
       editorWin.maximize();
     }
     await ensureFlotanteWindow();
+    resetCrono();
     startCrono();
   }
 
@@ -381,9 +387,9 @@ function createController(options = {}) {
       let closed = false;
       const win = new BrowserWindow({
         width: 760,
-        height: 680,
+        height: 464,
         minWidth: 680,
-        minHeight: 560,
+        minHeight: 360,
         parent: mainWin,
         modal: true,
         resizable: true,
