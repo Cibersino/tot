@@ -47,8 +47,6 @@
   const backdrop = document.getElementById('readingTestEntryModalBackdrop');
   const title = document.getElementById('readingTestEntryModalTitle');
   const intro = document.getElementById('readingTestEntryModalIntro');
-  const overwriteWarning = document.getElementById('readingTestEntryModalOverwriteWarning');
-  const editNotice = document.getElementById('readingTestEntryModalEditNotice');
   const warningBox = document.getElementById('readingTestEntryModalWarning');
   const eligibleCount = document.getElementById('readingTestEntryModalEligibleCount');
   const resetButton = document.getElementById('readingTestEntryModalReset');
@@ -70,8 +68,6 @@
       && backdrop
       && title
       && intro
-      && overwriteWarning
-      && editNotice
       && warningBox
       && eligibleCount
       && resetButton
@@ -328,14 +324,6 @@
     intro.textContent = tRenderer(
       'renderer.reading_test.entry.intro',
       'This test is meant for self-calibration.'
-    );
-    overwriteWarning.textContent = tRenderer(
-      'renderer.reading_test.entry.overwrite_warning',
-      'Starting with pool text will overwrite the current text.'
-    );
-    editNotice.textContent = tRenderer(
-      'renderer.reading_test.entry.edit_notice',
-      'Editing the text during the test is allowed, but it will affect the measured result.'
     );
     btnClose.setAttribute(
       'aria-label',
