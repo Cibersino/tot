@@ -256,7 +256,7 @@
         "reset_confirm": "Cela réinitialisera tout le pool du test et re-marquerra tous ses fichiers comme non utilisés. Voulez-vous continuer ?",
         "buttons": {
           "reset_pool": "Réinitialiser le pool",
-          "start": "Démarrer",
+          "start_random_text": "Démarrer avec texte aléatoire",
           "start_current_text": "Démarrer avec le texte actuel"
         }
       },
