@@ -267,7 +267,7 @@
         "reset_confirm": "Esto restablecerá todo el pool del test y volverá a marcar todos sus archivos como no usados. ¿Deseas continuar?",
         "buttons": {
           "reset_pool": "Restablecer pool",
-          "start": "Iniciar",
+          "start_random_text": "Iniciar con texto aleatorio",
           "start_current_text": "Iniciar con texto actual"
         }
       },

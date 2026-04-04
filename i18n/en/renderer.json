@@ -267,7 +267,7 @@
         "reset_confirm": "This will reset the whole test pool and mark all of its files as unused again. Do you want to continue?",
         "buttons": {
           "reset_pool": "Reset pool",
-          "start": "Start",
+          "start_random_text": "Start with random text",
           "start_current_text": "Start with current text"
         }
       },
