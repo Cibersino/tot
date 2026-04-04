@@ -258,8 +258,8 @@
     "reading_test": {
       "entry": {
         "title": "Reading speed test",
-        "intro": "This test overwrites the current text and is meant for self-calibration.",
-        "overwrite_warning": "The current text will be overwritten when the test starts.",
+        "intro": "This test is meant for self-calibration.",
+        "overwrite_warning": "Starting with pool text will overwrite the current text.",
         "edit_notice": "Editing the text during the test is allowed, but it will affect the measured result.",
         "eligible_count": "Eligible files: {count}",
         "pool_exhausted_message": "There are no remaining unused test files. Reset the pool or add more files.",
@@ -267,7 +267,8 @@
         "reset_confirm": "This will reset the whole test pool and mark all of its files as unused again. Do you want to continue?",
         "buttons": {
           "reset_pool": "Reset pool",
-          "start": "Start"
+          "start": "Start",
+          "start_current_text": "Start with current text"
         }
       },
       "questions": {
@@ -399,6 +400,7 @@
       "reading_test_precondition_blocked": "The reading speed test can only start from a steady app state. Close secondary windows and make sure the stopwatch is stopped.",
       "reading_test_pool_error": "An error occurred while checking the reading speed test pool.",
       "reading_test_no_matching_files": "There are no remaining unused test files that match the current selection.",
+      "reading_test_current_text_empty": "The current text is empty. Load or type a text before starting the test with current text.",
       "reading_test_result_invalid": "The test result could not be converted into a valid WPM. The flow ended without opening the preset modal.",
       "reading_test_preset_unavailable": "The preset modal could not be opened after the test.",
       "reading_test_questions_unavailable": "The comprehension questions modal could not be opened. The flow ended before preset creation.",
