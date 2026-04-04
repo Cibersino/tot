@@ -244,6 +244,40 @@
         }
       }
     },
+    "reading_test": {
+      "entry": {
+        "title": "Teste de velocidade de leitura",
+        "intro": "Este teste é destinado à auto-calibração.",
+        "overwrite_warning": "Iniciar com texto do pool substituirá o texto atual.",
+        "edit_notice": "Editar o texto durante o teste é permitido, mas isso afetará o resultado medido.",
+        "eligible_count": "Arquivos elegíveis: {count}",
+        "pool_exhausted_message": "Não restam arquivos de teste não usados. Redefina o pool ou adicione mais arquivos.",
+        "close_aria": "Fechar diálogo do teste de velocidade de leitura",
+        "reset_confirm": "Isso redefinirá todo o pool do teste e marcará todos os arquivos dele novamente como não usados. Deseja continuar?",
+        "buttons": {
+          "reset_pool": "Redefinir pool",
+          "start": "Iniciar",
+          "start_current_text": "Iniciar com texto atual"
+        }
+      },
+      "questions": {
+        "title": "Perguntas de compreensão",
+        "intro": "Responda às perguntas se quiser revisar a compreensão antes de voltar ao fluxo principal.",
+        "random_title": "Probabilidade ao acaso",
+        "random_value": "{percentage}% de respostas corretas prováveis ao responder ao acaso",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "Para reclamações:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Você precisa responder todas as perguntas antes de avaliar.",
+        "result_summary": "{correct} de {total} corretas ({percentage}%)",
+        "low_score_warning": "Sua porcentagem ficou abaixo de 5/3 da probabilidade ao acaso ({threshold}%). Talvez você tenha lido as perguntas rápido demais.",
+        "fatal_invalid": "A carga de perguntas é inválida.",
+        "buttons": {
+          "check": "Ver resultado",
+          "continue": "Continuar"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "Novo preset",
       "title_edit": "Editar preset",
@@ -351,7 +385,17 @@
       "wip_diseno_fuentes": "WIP: O seletor de fontes será aberto aqui em uma versão futura.",
       "wip_diseno_colores": "WIP: O seletor de cores será aberto aqui em uma versão futura.",
       "wip_shortcuts": "WIP: O seletor de atalhos de teclado será aberto aqui em uma versão futura.",
-      "wip_reading_speed_test": "WIP: O teste de velocidade de leitura será aberto aqui em uma versão futura."
+      "reading_test_unavailable": "A funcionalidade do teste de velocidade de leitura não está disponível.",
+      "reading_test_precondition_blocked": "O teste de velocidade de leitura só pode ser iniciado a partir de um estado estável do app. Feche as janelas secundárias e certifique-se de que o cronômetro esteja parado.",
+      "reading_test_pool_error": "Ocorreu um erro ao verificar o pool do teste de velocidade de leitura.",
+      "reading_test_no_matching_files": "Não restam arquivos de teste não usados que correspondam à seleção atual.",
+      "reading_test_current_text_empty": "O texto atual está vazio. Carregue ou escreva um texto antes de iniciar o teste com texto atual.",
+      "reading_test_result_invalid": "O resultado do teste não pôde ser convertido em um WPM válido. O fluxo terminou sem abrir o diálogo de preset.",
+      "reading_test_preset_unavailable": "Não foi possível abrir o diálogo de preset após o teste.",
+      "reading_test_questions_unavailable": "Não foi possível abrir o diálogo de perguntas de compreensão. O fluxo terminou antes da criação do preset.",
+      "reading_test_start_failed": "Não foi possível iniciar o teste de velocidade de leitura.",
+      "reading_test_cancelled": "O teste de velocidade de leitura foi cancelado.",
+      "reading_test_cancelled_window_closed": "O teste de velocidade de leitura foi cancelado porque uma das janelas da sessão foi fechada."
     },
     "editor_alerts": {
       "paste_too_big": "Texto muito grande para colar diretamente. Use os botões da janela principal.",

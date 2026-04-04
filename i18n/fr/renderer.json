@@ -244,6 +244,40 @@
         }
       }
     },
+    "reading_test": {
+      "entry": {
+        "title": "Test de vitesse de lecture",
+        "intro": "Ce test est conçu pour l'auto-calibrage.",
+        "overwrite_warning": "Démarrer avec un texte du pool écrasera le texte actuel.",
+        "edit_notice": "Modifier le texte pendant le test est autorisé, mais cela affectera le résultat mesuré.",
+        "eligible_count": "Fichiers éligibles : {count}",
+        "pool_exhausted_message": "Il ne reste plus de fichiers de test inutilisés. Réinitialisez le pool ou ajoutez d'autres fichiers.",
+        "close_aria": "Fermer la boîte de dialogue du test de vitesse de lecture",
+        "reset_confirm": "Cela réinitialisera tout le pool du test et re-marquerra tous ses fichiers comme non utilisés. Voulez-vous continuer ?",
+        "buttons": {
+          "reset_pool": "Réinitialiser le pool",
+          "start": "Démarrer",
+          "start_current_text": "Démarrer avec le texte actuel"
+        }
+      },
+      "questions": {
+        "title": "Questions de compréhension",
+        "intro": "Répondez aux questions si vous souhaitez vérifier la compréhension avant de revenir au flux principal.",
+        "random_title": "Probabilité au hasard",
+        "random_value": "{percentage}% de réponses correctes probables en répondant au hasard",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "Pour les réclamations :",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Vous devez répondre à toutes les questions avant d'évaluer.",
+        "result_summary": "{correct} sur {total} correctes ({percentage}%)",
+        "low_score_warning": "Votre pourcentage est tombé sous 5/3 de la probabilité au hasard ({threshold}%). Vous avez peut-être lu les questions trop vite.",
+        "fatal_invalid": "La charge des questions est invalide.",
+        "buttons": {
+          "check": "Vérifier le résultat",
+          "continue": "Continuer"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "Nouveau preset",
       "title_edit": "Modifier le preset",
@@ -351,7 +385,17 @@
       "wip_diseno_fuentes": "WIP : Le sélecteur de polices de caractères s'ouvrira ici dans une version future.",
       "wip_diseno_colores": "WIP : Le sélecteur de couleurs s'ouvrira ici dans une version future.",
       "wip_shortcuts": "WIP : Le sélecteur de raccourcis clavier s'ouvrira ici dans une version future.",
-      "wip_reading_speed_test": "WIP : Le test de vitesse de lecture s'ouvrira ici dans une version future."
+      "reading_test_unavailable": "La fonctionnalité de test de vitesse de lecture n'est pas disponible.",
+      "reading_test_precondition_blocked": "Le test de vitesse de lecture ne peut démarrer que depuis un état stable de l'application. Fermez les fenêtres secondaires et assurez-vous que le chronomètre est arrêté.",
+      "reading_test_pool_error": "Une erreur s'est produite lors de la vérification du pool du test de vitesse de lecture.",
+      "reading_test_no_matching_files": "Il ne reste plus de fichiers de test inutilisés qui correspondent à la sélection actuelle.",
+      "reading_test_current_text_empty": "Le texte actuel est vide. Chargez ou saisissez d'abord un texte avant de démarrer le test avec le texte actuel.",
+      "reading_test_result_invalid": "Le résultat du test n'a pas pu être converti en WPM valide. Le flux s'est terminé sans ouvrir la boîte de dialogue du preset.",
+      "reading_test_preset_unavailable": "La boîte de dialogue du preset n'a pas pu être ouverte après le test.",
+      "reading_test_questions_unavailable": "La boîte de dialogue des questions de compréhension n'a pas pu être ouverte. Le flux s'est terminé avant la création du preset.",
+      "reading_test_start_failed": "Le test de vitesse de lecture n'a pas pu démarrer.",
+      "reading_test_cancelled": "Le test de vitesse de lecture a été annulé.",
+      "reading_test_cancelled_window_closed": "Le test de vitesse de lecture a été annulé parce qu'une de ses fenêtres de session a été fermée."
     },
     "editor_alerts": {
       "paste_too_big": "Le texte est trop volumineux pour être collé directement. Utilisez les boutons de la fenêtre principale.",
