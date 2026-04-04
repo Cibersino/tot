@@ -49,8 +49,10 @@ Reglas:
 ### Resumen
 
 - Snapshots del texto vigente (Issue #201): el botón `💾` de la ventana principal deja de abrir inmediatamente el diálogo nativo y pasa a mostrar primero un modal renderer con tags opcionales `language`, `type` y `difficulty`; al confirmar, recién entonces se abre el save dialog nativo.
-- Persistencia de snapshots: el formato deja de ser únicamente `{ "text": "<string>" }` y pasa a aceptar también snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`, manteniendo compatibilidad de lectura con los archivos legacy ya guardados.
-- Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro.
+- Persistencia de snapshots: el formato deja de ser únicamente `{ "text": "<string>" }` y pasa a aceptar también snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`; además, la compatibilidad se amplía para tolerar `tags.testUsed` y payload opcional `readingTest`, manteniendo lectura válida de archivos legacy ya guardados.
+- Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro; en esta misma iteración el catálogo incorpora también `testUsed`.
+- Reading speed test (Issue #52): el botón `Test de velocidad de lectura` deja de ser un aviso WIP y pasa a abrir un flujo guiado real con modal de entrada/configuración, selección por combinaciones reales del pool, sesión bloqueante con Editor + Ventana flotante, cálculo autoritativo de WPM en main, paso opcional de preguntas de comprensión y handoff final al modal de presets con payload prellenado.
+- Pool del reading speed test: se agrega un subárbol runtime `config/saved_current_texts/reading_speed_test_pool/`, seeded desde archivos versionados en `electron/reading_test_pool/`; los archivos del pool son snapshots JSON ordinarios con `tags.testUsed` inline y payload opcional `readingTest`, por lo que siguen siendo reutilizables por la funcionalidad normal de snapshots.
 
 ### Agregado
 
@@ -59,42 +61,96 @@ Reglas:
   - `public/js/snapshot_save_tags_modal.js` (nuevo): módulo renderer dedicado al modal previo al save; aplica i18n, pobla el catálogo de tags y devuelve `{ tags }` o cancelación.
 - Shared catalog:
   - `public/js/lib/snapshot_tag_catalog.js` (nuevo): módulo dual browser/CommonJS que define el catálogo canónico de tags de snapshot, incluyendo el set ampliado de idiomas (`es`, `en`, `pt`, `fr`, `de`, `it`, `arn`, `ja`, `ko`, `ru`, `tr`, `id`, `hi`, `bn`, `ur`, `ar`, `zh-Hans`, `zh-Hant`) y los normalizadores reutilizados por renderer y main.
+- Reading speed test:
+  - `public/index.html` y `public/style.css`: nuevo modal renderer `readingTestEntryModal*` para el flujo de entrada/configuración del reading speed test, con warning inline de agotamiento del pool, conteo vivo de archivos elegibles, grupos de checkboxes por `language` / `type` / `difficulty` y acción explícita `Reset pool`.
+  - `public/js/reading_speed_test.js` (nuevo): módulo renderer dedicado al flujo de entrada del reading speed test; sincroniza estado bloqueado con main, refleja combinaciones reales del pool, bloquea interacción durante la estabilización de filtros, ejecuta reset/start por IPC y aplica el WPM medido devuelto por main.
+  - `public/js/lib/reading_test_filters_core.js` (nuevo): núcleo puro/importable para la semántica del selector del reading speed test (OR dentro de categoría, AND entre categorías activas, conteo de elegibles y enabled/disabled state derivado de combinaciones reales).
+  - `public/js/lib/reading_test_questions_core.js` (nuevo): núcleo puro/importable para validar `readingTest.questions`, puntuar respuestas, calcular la probabilidad de acierto al azar y el umbral de warning de bajo puntaje.
+  - `public/reading_test_questions.html`, `public/reading_test_questions.css` y `public/reading_test_questions.js` (nuevos): ventana/modal dedicada para la etapa opcional de preguntas de comprensión, con una sola respuesta por pregunta, resultado agregado, baseline probabilístico y continuación explícita del flujo.
+  - `electron/reading_test_questions_preload.js` (nuevo): preload específico del modal de preguntas; expone `window.readingTestQuestionsAPI` y bufferiza/reproduce el payload init para evitar carreras entre el envío desde main y el registro tardío del listener renderer.
+  - `electron/reading_test_pool.js` y `electron/reading_test_session.js` (nuevos): helpers main-owned para sembrar/escanear el pool, reescribir `tags.testUsed`, validar elegibilidad y orquestar la sesión guiada completa del reading speed test.
+  - `electron/reading_test_pool/*.json` (nuevos): starter files versionados del pool (`2` con preguntas de comprensión y `2` speed-only) que la app copia al subárbol runtime cuando faltan.
 - i18n/documentación:
   - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): nuevas keys `renderer.snapshot_save_tags.*` para título, mensaje, labels, botones, accesibilidad y opciones visibles del catálogo de idiomas/tipos/dificultades.
+  - i18n renderer (`en`, `es`): nuevas keys `renderer.reading_test.*` y `renderer.alerts.reading_test_*` para el modal de entrada, etapa de preguntas, mensajes inline y alertas/notices del flujo guiado.
   - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`: se documenta que `💾` abre primero un modal de tags y que las etiquetas quedan persistidas en el archivo del snapshot pero no se transfieren al estado de texto actual al cargar.
 
 ### Cambiado
 
 - `public/js/current_text_snapshots.js`:
   - `saveSnapshot()` deja de saltar directo a IPC y pasa a invocar primero el modal `promptSnapshotSaveTags(...)`.
-  - La metadata opcional del snapshot se normaliza contra el catálogo compartido antes de invocar `electronAPI.saveCurrentTextSnapshot(...)`.
+  - La metadata opcional del snapshot se normaliza contra el catálogo compartido antes de invocar `electronAPI.saveCurrentTextSnapshot(...)`; el flujo save sigue sin exponer `testUsed` al usuario, pero la persistencia resultante pasa a forzar `testUsed: false` por compatibilidad con el pool del reading speed test.
 - `electron/preload.js`:
   - `saveCurrentTextSnapshot(...)` deja de ser un invoke sin argumentos y pasa a aceptar un payload opcional con metadata de save.
+  - Se agregan nuevos métodos/listeners `getReadingTestEntryData()`, `resetReadingTestPool()`, `startReadingTest(payload)`, `getReadingTestState()`, `onReadingTestStateChanged(cb)`, `onReadingTestNotice(cb)` y `onReadingTestApplyWpm(cb)` sobre `window.electronAPI`.
 - `electron/current_text_snapshots_main.js`:
   - el handler `current-text-snapshot-save` valida payloads opcionales de tags, persiste `tags` cuando existen y mantiene la misma política de diálogos nativos / contención bajo `config/saved_current_texts/`.
   - el parser/validador de snapshots deja de aceptar solo `{ text }` y pasa a tolerar también `{ text, tags }`, rechazando shapes inválidas de `tags` de forma explícita.
-  - la carga de snapshots mantiene la semántica vigente: solo `text` se aplica al current-text state; `tags` quedan como metadata persistida del archivo.
+  - el schema admitido se amplía para aceptar `tags.testUsed` y payload opcional `readingTest`, sin transferir esa metadata al current-text state al cargar.
+  - el flujo save normaliza `testUsed` a `false` incluso cuando el payload entrante omite `tags` o trae metadata parcial, de modo que todo snapshot recién guardado siga siendo compatible con el pool del reading speed test.
 - `public/renderer.js`:
   - el nuevo modal de tags pasa a formar parte del set de blocking modals de la ventana principal para no cruzarse con drag/drop o con otros flujos que ya respetan `guardUserAction(...)`.
+  - el botón `Test de velocidad de lectura` deja de abrir un aviso WIP y pasa a delegar en el módulo `public/js/reading_speed_test.js`; además, la ventana principal incorpora el nuevo lock del reading test dentro de la misma política de `guardUserAction(...)` / blocking modals para impedir acciones concurrentes mientras la sesión guiada está activa.
+- `electron/main.js`:
+  - deja de tratar el reading speed test como placeholder y pasa a integrar un controlador main-owned (`reading_test_session`) que participa del gating global de interacción, del bloqueo de acciones de la ventana principal y de la reinterpretación de comandos de la ventana flotante mientras la sesión está activa.
+- `public/js/lib/snapshot_tag_catalog.js`:
+  - el catálogo deja de limitarse a `language` / `type` / `difficulty` y pasa a incluir también la normalización y serialización de `testUsed`.
+- `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`, `docs/tree_folders_files.md` y `docs/test_suite.md`:
+  - se actualizan para documentar el reading speed test, el nuevo subárbol runtime `reading_speed_test_pool`, la compatibilidad extendida de snapshots y la nueva suite manual/regresión del flujo guiado.
+
+### Arreglado
+
+- Reading speed test / UX:
+  - el agotamiento del pool deja de bloquear el entrypoint con un alert separado; ahora el botón abre el mismo modal de entrada y muestra el warning inline para que el usuario pueda restablecer el pool desde allí.
+  - el cálculo final de WPM deja de abortar el flujo cuando el resultado queda fuera del rango operativo de presets `10..700`; ahora el valor se clamp-ea a ese rango y el flujo continúa hasta preguntas/preset creation.
+  - el modal de entrada deja de recortar sus acciones inferiores en viewports bajos y pasa a usar `max-height` + scroll interno, manteniendo alcanzables `Reset pool` / `Start`.
+- Reading speed test / race conditions:
+  - la ventana de preguntas deja de poder abrir vacía cuando el payload `reading-test-questions-init` llegaba antes de que el renderer registrara su callback; el preload ahora bufferiza y reproduce el último payload init.
 
 ### Contratos tocados
 
 - IPC `current-text-snapshot-save`:
   - antes: sin payload.
   - ahora: acepta payload opcional `{ tags?: { language?, type?, difficulty? } }`.
+  - semántica ampliada: la persistencia resultante fuerza `tags.testUsed = false` para snapshots recién guardados, aunque el caller no mande tags o mande solo metadata parcial.
   - failure-path nuevo: payloads/tag shapes inválidos responden `{ ok:false, code:'INVALID_SCHEMA' }`.
 - Storage `config/saved_current_texts/*.json`:
   - antes: shape efectiva `{ "text": "<string>" }`.
   - ahora: shape admitida:
     - `{ "text": "<string>" }`
-    - `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`
+    - `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"?, "testUsed"? } }`
+    - `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"?, "testUsed"? }, "readingTest"?: { "questions"?: [...] } }`
   - `language` se persiste en forma canónica; en esta iteración incluye `zh-Hans` y `zh-Hant` como valores distintos.
+  - `testUsed` se persiste inline como booleano del snapshot/pool; la carga normal sigue aplicando únicamente `text`.
+- IPC `reading-test-get-entry-data` (nuevo):
+  - request: sin payload.
+  - OK típico: `{ ok:true, canOpen:true, poolExhausted:boolean, entries:[...], poolDirName:string }`.
+  - bloqueado: `{ ok:true, canOpen:false, guidanceKey:string, code:string }`.
+- IPC `reading-test-reset-pool` (nuevo):
+  - request: sin payload.
+  - OK: misma shape que `reading-test-get-entry-data`, ya recomputada tras reescribir `tags.testUsed = false` en todo el pool runtime.
+  - errores: `{ ok:false, code:'UNAUTHORIZED' | 'SESSION_ACTIVE' | 'POOL_RESET_FAILED', guidanceKey?:string }`.
+- IPC `reading-test-start` (nuevo):
+  - request: `{ selection?: { language?: string[], type?: string[], difficulty?: string[] } }`.
+  - OK: `{ ok:true }`.
+  - bloqueos/fallos: `{ ok:false, code:string, guidanceKey?:string }`.
+- IPC `reading-test-get-state` (nuevo):
+  - response: `{ active:boolean, stage:'idle'|'running'|'questions'|'preset', blocked:boolean }`.
+- Eventos main → renderer (nuevos):
+  - `reading-test-state-changed` → state `{ active, stage, blocked }`.
+  - `reading-test-notice` → `{ key:string, params?:object, type?:'info'|'warn'|'error' }`.
+  - `reading-test-apply-wpm` → `{ wpm:number }`.
 - Renderer/UI:
   - nuevos IDs `snapshotSaveTagsModal`, `snapshotSaveTagsModalBackdrop`, `snapshotSaveTagsModalTitle`, `snapshotSaveTagsModalMessage`, `snapshotSaveTagsLanguage`, `snapshotSaveTagsType`, `snapshotSaveTagsDifficulty`, `snapshotSaveTagsModalConfirm`, `snapshotSaveTagsModalCancel` y `snapshotSaveTagsModalClose`.
   - nueva superficie pública renderer `window.Notify.promptSnapshotSaveTags(...)`.
   - nueva superficie shared `window.SnapshotTagCatalog` / módulo CommonJS `snapshot_tag_catalog.js`.
+  - nuevos IDs/entrypoints del reading test en ventana principal: `readingTestEntryModal`, `readingTestEntryModalBackdrop`, `readingTestEntryModalTitle`, `readingTestEntryModalIntro`, `readingTestEntryModalWarning`, `readingTestEntryModalEligibleCount`, `readingTestEntryModalReset`, `readingTestEntryModalStart`, `readingTestEntryLanguageOptions`, `readingTestEntryTypeOptions` y `readingTestEntryDifficultyOptions`.
+  - nueva superficie preload/renderer para el cuestionario: `window.readingTestQuestionsAPI`.
+  - nuevas superficies shared `window.ReadingTestFiltersCore` / `reading_test_filters_core.js` y `window.ReadingTestQuestionsCore` / `reading_test_questions_core.js`.
 - Semántica explícita:
   - cargar un snapshot etiquetado **no** transfiere `tags` al estado activo de current-text; solo aplica `text`.
+  - durante una sesión activa del reading speed test, la ventana principal queda bloqueada y la Ventana flotante deja de operar como cronómetro genérico: `pause` finaliza la sesión y `reset` la cancela.
+  - si una entrada del pool tiene `readingTest.questions` válido, la etapa de preguntas se inserta antes del modal de presets; si no lo tiene, el flujo continúa directo a preset creation.
 
 ### Archivos
 
@@ -104,8 +160,19 @@ Reglas:
 - `public/js/current_text_snapshots.js`
 - `public/js/snapshot_save_tags_modal.js`
 - `public/js/lib/snapshot_tag_catalog.js`
+- `public/js/reading_speed_test.js`
+- `public/js/lib/reading_test_filters_core.js`
+- `public/js/lib/reading_test_questions_core.js`
+- `public/reading_test_questions.html`
+- `public/reading_test_questions.css`
+- `public/reading_test_questions.js`
 - `electron/preload.js`
 - `electron/current_text_snapshots_main.js`
+- `electron/main.js`
+- `electron/reading_test_pool.js`
+- `electron/reading_test_session.js`
+- `electron/reading_test_questions_preload.js`
+- `electron/reading_test_pool/*.json`
 - `i18n/*/renderer.json`
 - `public/info/instrucciones.es.html`
 - `public/info/instrucciones.en.html`
