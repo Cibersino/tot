@@ -103,6 +103,19 @@ function createController(options = {}) {
   let suppressUnexpectedEditorClose = false;
   let suppressUnexpectedFlotanteClose = false;
 
+  function hasCurrentText() {
+    return String(getCurrentText() || '').trim().length > 0;
+  }
+
+  function buildSessionEntry(sourceMode, entry = {}) {
+    return {
+      ...entry,
+      sourceMode,
+      hasValidQuestions: sourceMode === 'pool' && entry.hasValidQuestions === true,
+      questions: Array.isArray(entry.questions) ? entry.questions : [],
+    };
+  }
+
   function getState() {
     return {
       active: !!state.active,
@@ -203,6 +216,7 @@ function createController(options = {}) {
     return {
       ok: true,
       canOpen: true,
+      currentTextAvailable: hasCurrentText(),
       poolExhausted: !hasUnusedEntries,
       entries: entries.map(readingTestPool.serializePoolEntryMeta),
       poolDirName: readingTestPool.POOL_DIR_NAME,
@@ -326,6 +340,36 @@ function createController(options = {}) {
     }
   }
 
+  async function openReadingSessionWindows() {
+    const editorWin = ensureEditorWindow();
+    if (editorWin && !editorWin.isDestroyed() && !editorWin.isMaximized()) {
+      editorWin.maximize();
+    }
+    await ensureFlotanteWindow();
+    startCrono();
+  }
+
+  function cleanupStartFailure({ clearCurrentText = false } = {}) {
+    try {
+      resetCrono();
+    } catch (err) {
+      log.warn('Reading-test start-failure crono reset failed (ignored):', err);
+    }
+
+    closeReadingWindows();
+
+    try {
+      if (clearCurrentText) {
+        applyCurrentText('', { source: 'main-window', action: 'clear' });
+      }
+    } catch (err) {
+      log.warn('Reading-test start-failure current-text clear failed (ignored):', err);
+    } finally {
+      suppressUnexpectedEditorClose = false;
+      suppressUnexpectedFlotanteClose = false;
+    }
+  }
+
   function openQuestionsWindow(questions) {
     return new Promise((resolve) => {
       const mainWin = resolveMainWindow();
@@ -441,16 +485,19 @@ function createController(options = {}) {
   function cancelRunningSession(noticeKey) {
     if (!state.active || state.stage !== 'running') return;
 
+    const shouldClearCurrentText = !state.selectedEntry || state.selectedEntry.sourceMode !== 'current_text';
     resetCrono();
     closeReadingWindows();
-    applyCurrentText('', { source: 'main-window', action: 'clear' });
+    if (shouldClearCurrentText) {
+      applyCurrentText('', { source: 'main-window', action: 'clear' });
+    }
     clearSession();
     if (noticeKey) {
       emitNotice(noticeKey, { type: 'warn' });
     }
   }
 
-  async function startSession(selection) {
+  async function startPoolSession(selection) {
     if (state.active) {
       return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
     }
@@ -478,19 +525,36 @@ function createController(options = {}) {
     }
 
     try {
-      const editorWin = ensureEditorWindow();
-      if (editorWin && !editorWin.isDestroyed() && !editorWin.isMaximized()) {
-        editorWin.maximize();
-      }
-      await ensureFlotanteWindow();
-      startCrono();
+      await openReadingSessionWindows();
     } catch (err) {
       log.error('Reading-test session start window orchestration failed:', err);
-      cancelRunningSession('');
+      cleanupStartFailure({ clearCurrentText: true });
       return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: 'WINDOW_ORCHESTRATION_FAILED' };
     }
 
-    setStage('running', { selectedEntry });
+    setStage('running', { selectedEntry: buildSessionEntry('pool', selectedEntry) });
+    return { ok: true };
+  }
+
+  async function startCurrentTextSession() {
+    if (state.active) {
+      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
+    }
+    if (!hasCurrentText()) {
+      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
+    }
+
+    try {
+      await openReadingSessionWindows();
+    } catch (err) {
+      log.error('Reading-test current-text session start window orchestration failed:', err);
+      cleanupStartFailure({ clearCurrentText: false });
+      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: 'WINDOW_ORCHESTRATION_FAILED' };
+    }
+
+    setStage('running', {
+      selectedEntry: buildSessionEntry('current_text'),
+    });
     return { ok: true };
   }
 
@@ -594,7 +658,10 @@ function createController(options = {}) {
       if (!entryInfo.ok || !entryInfo.canOpen) {
         return { ok: false, code: entryInfo.code || 'PRECONDITION_BLOCKED', guidanceKey: entryInfo.guidanceKey };
       }
-      return startSession(payload && payload.selection);
+      if (payload && payload.sourceMode === 'current_text') {
+        return startCurrentTextSession();
+      }
+      return startPoolSession(payload && payload.selection);
     });
 
     ipcMain.handle('reading-test-get-state', async () => getState());
