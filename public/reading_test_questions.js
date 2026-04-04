@@ -237,12 +237,19 @@
         fieldset.className = 'reading-test-questions__question';
 
         const legend = document.createElement('legend');
-        legend.textContent = mr(
+        const headingText = mr(
           'renderer.reading_test.questions.question_heading',
           { number: index + 1, prompt: question.prompt },
           `${index + 1}. ${question.prompt}`
         );
+        legend.textContent = headingText;
+        legend.className = 'reading-test-questions__legend-sr';
         fieldset.appendChild(legend);
+
+        const heading = document.createElement('div');
+        heading.className = 'reading-test-questions__question-heading';
+        heading.textContent = headingText;
+        fieldset.appendChild(heading);
 
         const optionsList = document.createElement('div');
         optionsList.className = 'reading-test-questions__options';
