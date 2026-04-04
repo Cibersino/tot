@@ -270,7 +270,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Llowkeaymi kom ramtun petu kintual chumngechi tripay.",
         "result_summary": "{correct} ñi {total} küme tripachi ({percentage}%)",
-        "low_score_warning": "Tami küme tripachi nagküley feyti ({threshold}%). Pürüm chillkatufimi ramtun.",
+        "low_score_warning": "Tami tripantu müna pichi wentruwün mew kom küme rakiduam ka zufali ramtun.",
         "fatal_invalid": "Feyti ramtun wedalküley.",
         "buttons": {
           "check": "Kintual chum tripachi",

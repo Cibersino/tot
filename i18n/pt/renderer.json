@@ -270,7 +270,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Você precisa responder todas as perguntas antes de avaliar.",
         "result_summary": "{correct} de {total} corretas ({percentage}%)",
-        "low_score_warning": "Sua porcentagem ficou abaixo de 5/3 da probabilidade ao acaso ({threshold}%). Talvez você tenha lido as perguntas rápido demais.",
+        "low_score_warning": "Seu resultado está baixo em comparação com uma linha de base aleatória. Talvez valha a pena revisar as perguntas com mais cuidado.",
         "fatal_invalid": "A carga de perguntas é inválida.",
         "buttons": {
           "check": "Ver resultado",

@@ -281,7 +281,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Debes responder todas las preguntas antes de evaluar.",
         "result_summary": "{correct} de {total} correctas ({percentage}%)",
-        "low_score_warning": "Tu porcentaje quedó por debajo de 5/3 de la probabilidad al azar ({threshold}%). Puede que hayas leído las preguntas demasiado rápido.",
+        "low_score_warning": "Tu resultado es bajo en comparación con una línea base al azar. Quizá te convenga revisar las preguntas con más cuidado.",
         "fatal_invalid": "La carga de preguntas es inválida.",
         "buttons": {
           "check": "Ver resultado",
