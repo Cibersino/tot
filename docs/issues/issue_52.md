@@ -497,6 +497,81 @@ This epic stitches them into a single guided UX with clear user consent and cons
    - Implement starter-pool seeding and optional distribution link wiring.
    - Add regression/manual coverage for pool exhaustion, schema compatibility, session blocking, finish/cancel behavior, optional questions, and preset handoff.
 
+## Follow-up: use current text directly
+
+- Add a second explicit start action in the first modal:
+  - `Start with current text`
+- This is a parallel entry into the same guided reading-test flow, but it does not replace or restructure the existing pool path.
+- The existing pool UI remains visible exactly as it is:
+  - filters,
+  - live eligible count,
+  - reset pool action.
+- Those pool controls still belong only to the pool path.
+- `Start with current text` ignores the pool filters and pool selection state entirely.
+- `Start with current text` should be enabled only when:
+  - the normal reading-test entry preconditions are satisfied,
+  - current text is non-empty.
+- Current-text start semantics:
+  - use the already loaded current text directly,
+  - do not choose any file from the pool,
+  - do not overwrite current text with a pool file,
+  - do not touch any `testUsed` state,
+  - open Editor + Floating Window and start crono exactly like the pool path.
+- During the active session, trust-model semantics remain the same:
+  - the user may edit the text,
+  - the final result reflects the final text/time state.
+- Finish semantics for current-text mode:
+  - compute WPM the same way as the pool path,
+  - write the computed WPM into the main selector,
+  - open the preset modal prefilled the same way,
+  - skip the questions modal by default.
+- The default follow-up assumption is:
+  - current-text mode does not carry a comprehension/questions payload,
+  - therefore current-text mode is speed-only unless the issue is explicitly extended later.
+- Cancellation semantics for current-text mode differ from the pool path:
+  - stop/reset crono,
+  - close Editor,
+  - close Floating Window,
+  - do not clear current text,
+  - notify cancellation,
+  - unblock the main window.
+- This difference is intentional:
+  - pool mode reveals a selected external test text and owns that replacement,
+  - current-text mode reuses the user's already loaded text and must not destroy it on cancellation.
+
+### Follow-up implementation plan
+
+1. Extend the entry modal with a second action button.
+   - Keep the existing pool controls and pool start action unchanged.
+   - Add `Start with current text` as a separate button in the same action area.
+
+2. Add a current-text start path in the main-owned session controller.
+   - Reuse the same entry precondition check.
+   - Validate that current text is non-empty before starting.
+   - Start the guided session without touching pool selection or `testUsed`.
+
+3. Reuse the same active-session orchestration.
+   - Open Editor + Floating Window.
+   - Maximize Editor if needed.
+   - Start crono.
+   - Keep the same blocking and session-owned Floating Window behavior.
+
+4. Add mode-specific cancellation handling.
+   - Preserve the existing pool cancellation path.
+   - Add a current-text cancellation path that leaves current text unchanged.
+
+5. Reuse the same finish-to-preset handoff.
+   - Compute WPM exactly as in pool mode.
+   - Apply WPM to main.
+   - Open the prefilled preset modal.
+   - Skip questions in current-text mode unless a future extension explicitly adds metadata support for them.
+
+6. Add focused regression/manual coverage.
+   - verify `Start with current text` is disabled when current text is empty,
+   - verify it starts a session without changing pool state,
+   - verify cancellation preserves current text,
+   - verify finish reaches preset creation normally.
+
 ## Implementation constraints
 
 - Avoid inflating [main.js](c:/Users/manue/Documents/toT/tot/electron/main.js) and [renderer.js](c:/Users/manue/Documents/toT/tot/public/renderer.js).
