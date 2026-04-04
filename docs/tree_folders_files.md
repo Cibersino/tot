@@ -37,6 +37,8 @@ tot/
 │ ├── ocr_google_drive/
 │ │ ├── credentials.json
 │ │ └── token.json
+│ ├── saved_current_texts/
+│ │ └── reading_speed_test_pool/  # {pool local del reading speed test; seeded/copied at runtime}
 │ └── user_settings.json
 ├── docs/
 │ ├── cleanup/
@@ -71,6 +73,7 @@ tot/
 │ ├── task_editor_preload.js
 │ ├── preset_preload.js
 │ ├── flotante_preload.js
+│ ├── reading_test_questions_preload.js
 │ ├── fs_storage.js
 │ ├── settings.js
 │ ├── text_state.js
@@ -79,6 +82,9 @@ tot/
 │ ├── task_editor_position.js
 │ ├── editor_state.js
 │ ├── editor_find_main.js
+│ ├── reading_test_pool/          # {starter files versionados del reading speed test}
+│ ├── reading_test_pool.js
+│ ├── reading_test_session.js
 │ ├── import_extract_platform/
 │ │ ├── platform_adapters/
 │ │ │ ├── common.js
@@ -138,6 +144,8 @@ tot/
 │ │ ├── lib/
 │ │ │ ├── count_core.js
 │ │ │ ├── format_core.js
+│ │ │ ├── reading_test_filters_core.js
+│ │ │ ├── reading_test_questions_core.js
 │ │ │ └── snapshot_tag_catalog.js
 │ │ ├── count.js
 │ │ ├── presets.js
@@ -145,6 +153,7 @@ tot/
 │ │ ├── menu_actions.js
 │ │ ├── current_text_snapshots.js
 │ │ ├── snapshot_save_tags_modal.js
+│ │ ├── reading_speed_test.js
 │ │ ├── format.js
 │ │ ├── results_time_multiplier.js
 │ │ ├── i18n.js
@@ -170,6 +179,7 @@ tot/
 │ ├── task_editor.js
 │ ├── preset_modal.js
 │ ├── flotante.js
+│ ├── reading_test_questions.js
 │ ├── index.html
 │ ├── language_window.html
 │ ├── editor.html
@@ -177,10 +187,12 @@ tot/
 │ ├── task_editor.html
 │ ├── preset_modal.html
 │ ├── flotante.html
+│ ├── reading_test_questions.html
 │ ├── editor.css
 │ ├── editor_find.css
 │ ├── task_editor.css
 │ ├── flotante.css
+│ ├── reading_test_questions.css
 │ └── style.css
 ├── test/
 │ ├── smoke/
@@ -267,6 +279,7 @@ tot/
 - `electron/task_editor_preload.js` — Preload del editor de tareas (expone `window.taskEditorAPI` y callbacks como `onInit` / `onRequestClose`).
 - `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` (`setLanguage`, `getAvailableLanguages`) para persistir/seleccionar idioma; `setLanguage` invoca `set-language` y luego emite `language-selected` para destrabar el startup.
 - `electron/flotante_preload.js` — Preload de la ventana flotante del cronómetro.
+- `electron/reading_test_questions_preload.js` — Preload del modal de preguntas del reading speed test; expone `window.readingTestQuestionsAPI` y bufferiza/reproduce el payload init del cuestionario.
 
 **Renderer (UI / ventanas):**
 - `public/renderer.js` — Lógica principal de UI (ventana principal).
@@ -276,6 +289,7 @@ tot/
 - `public/task_editor.js` — Renderer del editor de tareas (UI + tabla + biblioteca + anchos de columnas).
 - `public/flotante.js` — Lógica de la ventana flotante del cronómetro.
 - `public/language_window.js` — Lógica de la ventana de selección de idioma.
+- `public/reading_test_questions.js` — Lógica del modal de preguntas/comprensión del reading speed test.
 
 ### 2) Módulos del proceso principal (Electron)
 
@@ -285,6 +299,8 @@ tot/
 - `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): valida payloads del flujo save, abre diálogos nativos, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots legacy `{ "text": "<string>" }` y snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
 - `electron/editor_find_main.js` — Coordinador del buscador nativo del editor: ciclo de vida de la ventana de búsqueda, atajos (`Ctrl/Cmd+F`, `F3`, `Shift+F3`, `Esc`), IPC autorizado y sincronización de estado con `found-in-page`.
+- `electron/reading_test_pool.js` — Helpers del pool del reading speed test: asegura el subárbol runtime bajo snapshots, copia starter files versionados cuando faltan, escanea/valida JSON del pool, serializa metadata para la UI y reescribe `tags.testUsed` inline.
+- `electron/reading_test_session.js` — Controlador main-owned del reading speed test: precondiciones, bloqueo de interacción, selección aleatoria del pool, ownership de la sesión, reinterpretación de controles flotantes, finish flow, questions step y handoff al modal de presets.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
 - `electron/task_editor_position.js` — Persistencia de posición (x/y) de la ventana del editor de tareas.
@@ -326,7 +342,9 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
 - `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.
 - `public/js/lib/format_core.js` — Núcleo puro/importable de formateo (tiempo estimado, partes de tiempo y separadores numéricos) reutilizado por el wrapper renderer y por la suite automatizada.
-- `public/js/lib/snapshot_tag_catalog.js` — Catálogo puro/importable compartido de tags de snapshot: define los valores canónicos/opciones de `language` / `type` / `difficulty` y centraliza la normalización reutilizada por renderer y main para evitar drift.
+- `public/js/lib/reading_test_filters_core.js` — Núcleo puro/importable del selector del reading speed test: semántica de checkboxes (OR dentro de categoría, AND entre categorías activas), cálculo de elegibles y enabled/disabled state desde combinaciones reales.
+- `public/js/lib/reading_test_questions_core.js` — Núcleo puro/importable del reading speed test para validar payloads `readingTest.questions`, puntuar respuestas y calcular el baseline probabilístico de respuesta al azar.
+- `public/js/lib/snapshot_tag_catalog.js` — Catálogo puro/importable compartido de tags de snapshot: define los valores canónicos/opciones de `language` / `type` / `difficulty` / `testUsed` y centraliza la normalización reutilizada por renderer y main para evitar drift.
 - `public/js/count.js` — Wrapper renderer de conteo: valida dependencias del `window`, construye `window.CountUtils` desde `count_core.js` y conserva la superficie pública existente.
 - `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
@@ -335,6 +353,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto vigente: expone `saveSnapshot()` / `loadSnapshot()`, invoca el modal previo de tags al guardar, normaliza metadata opcional de snapshot vía `snapshot_tag_catalog`, llama `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
 - `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: muestra selects opcionales para `language` / `type` / `difficulty`, aplica i18n y devuelve tags normalizados o cancelación.
+- `public/js/reading_speed_test.js` — Módulo renderer del reading speed test: gestiona el modal de entrada/configuración, refleja combinaciones reales del pool, ejecuta reset/start IPC, muestra warnings inline y sincroniza el lock state / WPM aplicado.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Patreon a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n (`es` / `en`) y mantiene este wiring fuera de `public/renderer.js`.
 - `public/js/text_apply_canonical.js` — Helpers canónicos de aplicar texto (`overwrite` / `append` / repeticiones) reutilizados por clipboard e import/extract.
@@ -376,7 +395,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/import_extract_state.json` — Estado local del picker de import/extract (por ejemplo, última carpeta utilizada).
 - `config/ocr_google_drive/credentials.json` — Espejo/copia runtime gestionado por la app para la configuración OAuth de Google OCR; en el modelo actual se materializa desde credenciales empaquetadas de la app y no forma parte del onboarding manual del usuario.
 - `config/ocr_google_drive/token.json` — Estado local del token OAuth del usuario final para la ruta OCR de Google Drive/Docs; se elimina al desconectar Google OCR tras revocación exitosa.
-- `config/saved_current_texts/` — Carpeta runtime con snapshots del texto vigente; admite JSON legacy `{ "text": ... }` y snapshots etiquetados `{ "text": ..., "tags"?: { "language"?, "type"?, "difficulty"? } }`; puede contener subcarpetas.
+- `config/saved_current_texts/` — Carpeta runtime con snapshots del texto vigente; admite JSON legacy `{ "text": ... }`, snapshots etiquetados `{ "text": ..., "tags"?: { "language"?, "type"?, "difficulty"?, "testUsed"? } }` y archivos con payload opcional `readingTest`; puede contener subcarpetas. La carga normal de snapshots sigue aplicando solo `text` al current text, sin rechazar metadata adicional compatible.
+- `config/saved_current_texts/reading_speed_test_pool/` — Subcarpeta runtime dedicada al pool del reading speed test; recibe starter files copiados desde `electron/reading_test_pool/`, persiste `tags.testUsed` inline y sigue siendo compatible con el flujo normal de snapshots.
 - `config/tasks/lists/*.json` — Listas de tareas guardadas por el usuario.
 - `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).
 - `config/tasks/allowed_hosts.json` — Allowlist de hosts confiables para enlaces remotos.
