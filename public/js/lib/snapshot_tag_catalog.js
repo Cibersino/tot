@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Expose one shared snapshot tag catalog for renderer and main-process consumers.
 // - Define the canonical snapshot tag option sets.
-// - Normalize language/type/difficulty tag values.
+// - Normalize language/type/difficulty/testUsed tag values.
 // - Support both browser-script and CommonJS consumers.
 
 // =============================================================================
@@ -57,7 +57,7 @@
     Object.freeze({ value: 'hard', labelKey: 'renderer.snapshot_save_tags.options.difficulty.hard', fallback: 'Hard' }),
   ]);
 
-  const TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
+  const TAG_KEYS = Object.freeze(['language', 'type', 'difficulty', 'testUsed']);
   const LANGUAGE_RE = /^[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*$/;
   const LANGUAGE_CANONICAL_MAP = Object.freeze(
     Object.fromEntries(
@@ -97,6 +97,10 @@
     return DIFFICULTY_VALUE_SET.has(source) ? source : '';
   }
 
+  function normalizeTestUsedTag(rawValue) {
+    return typeof rawValue === 'boolean' ? rawValue : null;
+  }
+
   function normalizeTags(rawTags) {
     if (!isPlainObject(rawTags)) return null;
     const tags = {};
@@ -104,10 +108,12 @@
     const language = normalizeLanguageTag(rawTags.language);
     const type = normalizeTypeTag(rawTags.type);
     const difficulty = normalizeDifficultyTag(rawTags.difficulty);
+    const testUsed = normalizeTestUsedTag(rawTags.testUsed);
 
     if (language) tags.language = language;
     if (type) tags.type = type;
     if (difficulty) tags.difficulty = difficulty;
+    if (testUsed !== null) tags.testUsed = testUsed;
 
     return Object.keys(tags).length ? tags : null;
   }
@@ -124,6 +130,7 @@
     normalizeLanguageTag,
     normalizeTypeTag,
     normalizeDifficultyTag,
+    normalizeTestUsedTag,
     normalizeTags,
   };
 });

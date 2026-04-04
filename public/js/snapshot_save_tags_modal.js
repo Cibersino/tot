@@ -92,6 +92,14 @@
     });
   }
 
+  function getSortedOptionsByLabel(options) {
+    return [...options].sort((left, right) => {
+      const leftLabel = tRenderer(left.labelKey, left.fallback);
+      const rightLabel = tRenderer(right.labelKey, right.fallback);
+      return leftLabel.localeCompare(rightLabel, undefined, { sensitivity: 'base' });
+    });
+  }
+
   function collectTags() {
     const tags = {};
     const language = typeof languageSelect.value === 'string' ? languageSelect.value.trim() : '';
@@ -144,7 +152,7 @@
 
     setSelectOptions(
       languageSelect,
-      LANGUAGE_OPTIONS,
+      getSortedOptionsByLabel(LANGUAGE_OPTIONS),
       tRenderer('renderer.snapshot_save_tags.empty.language', 'No language tag')
     );
     setSelectOptions(

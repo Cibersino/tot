@@ -45,6 +45,7 @@ const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
+const readingTestSession = require('./reading_test_session');
 const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
 const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
 const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
@@ -140,16 +141,21 @@ function isMainInteractive() {
 }
 
 function isMainMenuInteractive() {
-  return isMainInteractive() && !importExtractProcessingModeController.isActive();
+  return isMainInteractive()
+    && !importExtractProcessingModeController.isActive()
+    && !(readingTestSessionController && readingTestSessionController.isInteractionLocked());
 }
 
 function getMainInteractionBlockReason() {
   if (!isMainInteractive()) return 'pre_ready';
   if (importExtractProcessingModeController.isActive()) return 'processing_mode';
+  if (readingTestSessionController && readingTestSessionController.isInteractionLocked()) {
+    return readingTestSessionController.getInteractionBlockReason() || 'reading_test_session';
+  }
   return '';
 }
 
-function guardMainUserAction(actionId, message, { allowDuringProcessing = false } = {}) {
+function guardMainUserAction(actionId, message, { allowDuringProcessing = false, allowDuringReadingTest = false } = {}) {
   if (!isMainInteractive()) {
     const rawMessage = typeof message === 'string' && message.trim()
       ? message.trim()
@@ -174,11 +180,79 @@ function guardMainUserAction(actionId, message, { allowDuringProcessing = false 
     return false;
   }
 
+  if (!allowDuringReadingTest
+    && readingTestSessionController
+    && readingTestSessionController.isInteractionLocked()) {
+    log.warnOnce(
+      `main.readingTestLock.${actionId}`,
+      'Main action ignored (reading-test session lock active):',
+      actionId
+    );
+    return false;
+  }
+
   return true;
 }
 
 function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
+}
+
+function ensureEditorWindowOpen() {
+  if (!isAliveWindow(editorWin)) {
+    createEditorWindow();
+  } else {
+    editorWin.show();
+
+    try {
+      const initialText = textState.getCurrentText();
+      editorWin.webContents.send('editor-init-text', {
+        text: initialText || '',
+        meta: { source: 'main', action: 'init' },
+      });
+    } catch (err) {
+      log.error('Error sending editor-init-text from ensureEditorWindowOpen:', err);
+    }
+
+    try {
+      if (isAliveWindow(mainWin)) {
+        mainWin.webContents.send('editor-ready');
+      }
+    } catch (err) {
+      log.warn('Unable to notify editor-ready (editor already open):', err);
+    }
+  }
+
+  return editorWin;
+}
+
+function requestCloseEditorWindow() {
+  if (isAliveWindow(editorWin)) {
+    editorWin.close();
+  }
+}
+
+async function ensureFlotanteWindowOpen() {
+  await createFlotanteWindow();
+
+  try {
+    broadcastCronoState();
+  } catch (err) {
+    log.warnOnce(
+      'broadcastCronoState.after.ensureFlotanteWindowOpen',
+      'broadcastCronoState failed after ensureFlotanteWindowOpen (ignored):',
+      err
+    );
+  }
+
+  if (crono.running) ensureCronoInterval();
+  return flotanteWin;
+}
+
+function requestCloseFlotanteWindow() {
+  if (isAliveWindow(flotanteWin)) {
+    flotanteWin.close();
+  }
 }
 
 function resolveGoogleDriveOcrRuntimePaths() {
@@ -223,6 +297,7 @@ let flotanteWin = null; // Floating stopwatch window (flotante.html)
 let taskEditorWin = null; // Task editor window (task_editor.html)
 let taskEditorForceClose = false;
 let pendingMainWindowCloseAfterProcessingAbort = false;
+let readingTestSessionController = null;
 
 // =============================================================================
 // Startup readiness gates + handshake state
@@ -371,6 +446,9 @@ function createMainWindow() {
         'import-extract-processing-mode-changed',
         importExtractProcessingModeController.getState()
       );
+      if (readingTestSessionController) {
+        mainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
+      }
     } catch (err) {
       log.warn('Failed to seed processing-mode state on renderer load (ignored):', err);
     }
@@ -545,6 +623,9 @@ function createEditorWindow() {
 
   // Drop reference on close so the window can be recreated later.
   editorWin.on('closed', () => {
+    if (readingTestSessionController) {
+      readingTestSessionController.handleEditorClosed();
+    }
     editorWin = null;
   });
 }
@@ -625,7 +706,7 @@ function createPresetWindow(initialData) {
     } catch (err) {
       log.error('Error sending init to presetWin already open:', err);
     }
-    return;
+    return presetWin;
   }
 
   presetWin = new BrowserWindow({
@@ -661,6 +742,8 @@ function createPresetWindow(initialData) {
   presetWin.on('closed', () => {
     presetWin = null;
   });
+
+  return presetWin;
 }
 
 /**
@@ -1042,6 +1125,10 @@ async function createFlotanteWindow(options = {}) {
       flotanteWin = null;
     }
 
+    if (readingTestSessionController) {
+      readingTestSessionController.handleFlotanteClosed();
+    }
+
     // Best-effort notification: main renderer may update UI state.
     try {
       if (isAliveWindow(mainWin) && mainWin.webContents && !mainWin.webContents.isDestroyed()) {
@@ -1288,16 +1375,7 @@ ipcMain.handle('flotante-open', async () => {
     return { ok: false, error: 'not ready' };
   }
   try {
-    await createFlotanteWindow();
-
-    // After opening, push current state so UI is immediately consistent.
-    try {
-      broadcastCronoState();
-    } catch (err) {
-      log.warnOnce('broadcastCronoState.after.flotante-open', 'broadcastCronoState failed after flotante-open (ignored):', err);
-    }
-
-    if (crono.running) ensureCronoInterval();
+    await ensureFlotanteWindowOpen();
     return { ok: true };
   } catch (err) {
     log.error('Error processing flotante-open:', err);
@@ -1310,14 +1388,7 @@ ipcMain.handle('flotante-close', () => {
     return { ok: false, error: 'not ready' };
   }
   try {
-    const win = flotanteWin;
-
-    if (isAliveWindow(win)) {
-      // IMPORTANT: do not set flotanteWin = null here.
-      // The 'closed' handler is responsible for clearing the reference.
-      win.close();
-    }
-
+    requestCloseFlotanteWindow();
     return { ok: true };
   } catch (err) {
     log.error('Error processing flotante-close:', err);
@@ -1326,8 +1397,11 @@ ipcMain.handle('flotante-close', () => {
 });
 
 ipcMain.on('flotante-command', (_ev, cmd) => {
-  if (!guardMainUserAction('flotante-command', 'flotante-command ignored (pre-READY).')) return;
+  if (!guardMainUserAction('flotante-command', 'flotante-command ignored (pre-READY).', { allowDuringReadingTest: true })) return;
   try {
+    if (readingTestSessionController && readingTestSessionController.handleFlotanteCommand(cmd)) {
+      return;
+    }
     if (!cmd || !cmd.cmd) {
       log.warnOnce('flotante-command.invalid', 'flotante-command ignored: payload missing cmd (ignored).');
       return;
@@ -1382,32 +1456,7 @@ ipcMain.handle('open-editor', () => {
     return { ok: false, error: 'not ready' };
   }
   try {
-    if (!isAliveWindow(editorWin)) {
-      createEditorWindow();
-    } else {
-      editorWin.show();
-
-      // Re-send current text to ensure editor is in sync (best-effort).
-      try {
-        const initialText = textState.getCurrentText();
-        editorWin.webContents.send('editor-init-text', {
-          text: initialText || '',
-          meta: { source: 'main', action: 'init' },
-        });
-      } catch (err) {
-        log.error('Error sending editor-init-text from open-editor:', err);
-      }
-
-      // Notify main UI that editor is ready (it already is, but keeps state consistent).
-      try {
-        if (isAliveWindow(mainWin)) {
-          mainWin.webContents.send('editor-ready');
-        }
-      } catch (err) {
-        log.warn('Unable to notify editor-ready (editor already open):', err);
-      }
-    }
-
+    ensureEditorWindowOpen();
     return { ok: true };
   } catch (err) {
     log.error('Error processing open-editor:', err);
@@ -1696,6 +1745,38 @@ app.whenReady().then(() => {
     resolvePaths: () => resolveGoogleDriveOcrRuntimePaths(),
     controller: importExtractProcessingModeController,
   });
+
+  readingTestSessionController = readingTestSession.createController({
+    resolveMainWindow: () => resolveMainWindow(),
+    getPreconditionContext: () => {
+      const secondaryWindows = [
+        { id: 'editor', label: 'editor', isOpen: isAliveWindow(editorWin) },
+        { id: 'editor_find', label: 'editor_find', isOpen: isAliveWindow(editorFindMain.getFindWindow()) },
+        { id: 'preset_modal', label: 'preset_modal', isOpen: isAliveWindow(presetWin) },
+        { id: 'language_window', label: 'language_window', isOpen: isAliveWindow(langWin) },
+        { id: 'floating_stopwatch', label: 'floating_stopwatch', isOpen: isAliveWindow(flotanteWin) },
+        { id: 'task_editor', label: 'task_editor', isOpen: isAliveWindow(taskEditorWin) },
+      ];
+
+      return {
+        openSecondaryWindows: secondaryWindows,
+        stopwatchRunning: !!(crono && crono.running),
+      };
+    },
+    isProcessingModeActive: () => importExtractProcessingModeController.isActive(),
+    ensureEditorWindow: () => ensureEditorWindowOpen(),
+    ensureFlotanteWindow: () => ensureFlotanteWindowOpen(),
+    closeEditorWindow: () => requestCloseEditorWindow(),
+    closeFlotanteWindow: () => requestCloseFlotanteWindow(),
+    startCrono: () => startCrono(),
+    resetCrono: () => resetCrono(),
+    stopCrono: () => stopCrono(),
+    getCronoState: () => getCronoState(),
+    getCurrentText: () => textState.getCurrentText(),
+    applyCurrentText: (text, meta) => textState.applyCurrentText(text, meta),
+    openPresetWindow: (initialData) => createPresetWindow(initialData),
+  });
+  readingTestSessionController.registerIpc(ipcMain);
 
   // First run: show language picker before creating the main window.
   if (!settings.language || settings.language === '') {
