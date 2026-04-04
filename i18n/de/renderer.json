@@ -244,6 +244,40 @@
         }
       }
     },
+    "reading_test": {
+      "entry": {
+        "title": "Lesegeschwindigkeitstest",
+        "intro": "Dieser Test dient der Selbstkalibrierung.",
+        "overwrite_warning": "Der Start mit Pool-Text überschreibt den aktuellen Text.",
+        "edit_notice": "Das Bearbeiten des Textes während des Tests ist erlaubt, wirkt sich aber auf das gemessene Ergebnis aus.",
+        "eligible_count": "Geeignete Dateien: {count}",
+        "pool_exhausted_message": "Es sind keine unbenutzten Testdateien mehr vorhanden. Setzen Sie den Pool zurück oder fügen Sie weitere Dateien hinzu.",
+        "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",
+        "reset_confirm": "Dadurch wird der gesamte Test-Pool zurückgesetzt und alle Dateien werden wieder als unbenutzt markiert. Möchten Sie fortfahren?",
+        "buttons": {
+          "reset_pool": "Pool zurücksetzen",
+          "start": "Starten",
+          "start_current_text": "Mit aktuellem Text starten"
+        }
+      },
+      "questions": {
+        "title": "Verständnisfragen",
+        "intro": "Beantworten Sie die Fragen, wenn Sie das Verständnis prüfen möchten, bevor Sie zum Hauptablauf zurückkehren.",
+        "random_title": "Zufallsbasis",
+        "random_value": "{percentage}% wahrscheinliche richtige Antworten bei zufälligem Raten",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "Für Beschwerden:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Sie müssen alle Fragen beantworten, bevor Sie auswerten.",
+        "result_summary": "{correct} von {total} richtig ({percentage}%)",
+        "low_score_warning": "Ihr Prozentsatz lag unter 5/3 der Zufallswahrscheinlichkeit ({threshold}%). Möglicherweise haben Sie die Fragen zu hastig gelesen.",
+        "fatal_invalid": "Die Fragendaten sind ungültig.",
+        "buttons": {
+          "check": "Ergebnis prüfen",
+          "continue": "Weiter"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "Neues Preset",
       "title_edit": "Preset bearbeiten",
@@ -351,7 +385,17 @@
       "wip_diseno_fuentes": "WIP: Der Schriftarten-Selektor wird hier in einer zukünftigen Version geöffnet.",
       "wip_diseno_colores": "WIP: Der Farb-Selektor wird hier in einer zukünftigen Version geöffnet.",
       "wip_shortcuts": "WIP: Der Tastenkombinations-Selektor wird hier in einer zukünftigen Version geöffnet.",
-      "wip_reading_speed_test": "WIP: Der Lesegeschwindigkeitstest wird hier in einer zukünftigen Version geöffnet."
+      "reading_test_unavailable": "Die Funktion für den Lesegeschwindigkeitstest ist nicht verfügbar.",
+      "reading_test_precondition_blocked": "Der Lesegeschwindigkeitstest kann nur aus einem stabilen App-Zustand gestartet werden. Schließen Sie Nebenfenster und stellen Sie sicher, dass die Stoppuhr angehalten ist.",
+      "reading_test_pool_error": "Beim Prüfen des Pools für den Lesegeschwindigkeitstest ist ein Fehler aufgetreten.",
+      "reading_test_no_matching_files": "Es sind keine unbenutzten Testdateien mehr vorhanden, die zur aktuellen Auswahl passen.",
+      "reading_test_current_text_empty": "Der aktuelle Text ist leer. Laden oder schreiben Sie zuerst einen Text, bevor Sie den Test mit aktuellem Text starten.",
+      "reading_test_result_invalid": "Das Testergebnis konnte nicht in einen gültigen WPM-Wert umgewandelt werden. Der Ablauf endete, ohne den Preset-Dialog zu öffnen.",
+      "reading_test_preset_unavailable": "Der Preset-Dialog konnte nach dem Test nicht geöffnet werden.",
+      "reading_test_questions_unavailable": "Der Dialog mit den Verständnisfragen konnte nicht geöffnet werden. Der Ablauf endete vor der Erstellung des Presets.",
+      "reading_test_start_failed": "Der Lesegeschwindigkeitstest konnte nicht gestartet werden.",
+      "reading_test_cancelled": "Der Lesegeschwindigkeitstest wurde abgebrochen.",
+      "reading_test_cancelled_window_closed": "Der Lesegeschwindigkeitstest wurde abgebrochen, weil eines seiner Sitzungsfenster geschlossen wurde."
     },
     "editor_alerts": {
       "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",

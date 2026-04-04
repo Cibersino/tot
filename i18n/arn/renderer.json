@@ -244,6 +244,40 @@
         }
       }
     },
+    "reading_test": {
+      "entry": {
+        "title": "Pepiluwün ñi pürüm chillkatun",
+        "intro": "Tüfachi pepiluwün feypingey kisu adkünuwal.",
+        "overwrite_warning": "Yalltun chillka trawün (pool) mu nentuafulu fantepu chillka.",
+        "edit_notice": "Kümelekefuy wirial chillka pepiluwün mu, welu katrütuay chum tripachi.",
+        "eligible_count": "Dullngechi chillka: {count}",
+        "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
+        "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",
+        "reset_confirm": "Fey mu wiñotripayay kom trawün (pool) pepiluwal ka kom chillka 'ngelay chillkatun' pingeay. ¿Amuleaymi?",
+        "buttons": {
+          "reset_pool": "Wiño adkünuwal pool",
+          "start": "Yalltun",
+          "start_current_text": "Yalltun fantepu chillka mu"
+        }
+      },
+      "questions": {
+        "title": "Kimün ñi ramtun",
+        "intro": "Llownge kom ramtun ayülemi kintual tami kimün petu tami wiñotun mu.",
+        "random_title": "Chumngechi tripayal kisu",
+        "random_value": "{percentage}% küme llowün tripayafuy kisu",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "Düngual:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Llowkeaymi kom ramtun petu kintual chumngechi tripay.",
+        "result_summary": "{correct} ñi {total} küme tripachi ({percentage}%)",
+        "low_score_warning": "Tami küme tripachi nagküley feyti ({threshold}%). Pürüm chillkatufimi ramtun.",
+        "fatal_invalid": "Feyti ramtun wedalküley.",
+        "buttons": {
+          "check": "Kintual chum tripachi",
+          "continue": "Amuleal"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "We preset",
       "title_edit": "Wirin preset",
@@ -351,7 +385,17 @@
       "wip_diseno_fuentes": "WIP: Faw nülai düllin wirintun küpalechi version mu.",
       "wip_diseno_colores": "WIP: Faw nülai düllin vvün küpalechi version mu.",
       "wip_shortcuts": "WIP: Faw nülai düllin shortcuts küpalechi version mu.",
-      "wip_reading_speed_test": "WIP: Faw nülaay chi chillkatun ñi matun pepilun küpalechi wirintukun mew."
+      "reading_test_unavailable": "Pepiluwün ñi pürüm chillkatun müleyay.",
+      "reading_test_precondition_blocked": "Pepiluwün ñi pürüm chillkatun yalltuay müten app llowkülelu mu. Ñafün kachu ventanakuna ka kintunge feyti relüf ñafküley.",
+      "reading_test_pool_error": "Wedalküley kintun trawün (pool) pepiluwal.",
+      "reading_test_no_matching_files": "Ngelay pepiluwal we chillka feypingen mu.",
+      "reading_test_current_text_empty": "Ngelay chillka fantepu. Yafmatunge kam wirintunge chillka petu yalltun.",
+      "reading_test_result_invalid": "Chum tripachi pepiluwün gelay WPM. Amulelay kintual modal preset.",
+      "reading_test_preset_unavailable": "Ngelay kintual modal preset pepiluwün mu.",
+      "reading_test_questions_unavailable": "Ngelay kintual modal ramtun. Amulelay yalltul preset.",
+      "reading_test_start_failed": "Ngelay yalltuwal pepiluwün ñi pürüm chillkatun.",
+      "reading_test_cancelled": "Pepiluwün ñi pürüm chillkatun katrütungey.",
+      "reading_test_cancelled_window_closed": "Pepiluwün ñi pürüm chillkatun katrütungey ñafün mu kiñe ventana."
     },
     "editor_alerts": {
       "paste_too_big": "Wirin rume fütra pültrüal. Püne tati botones ventana mu.",
