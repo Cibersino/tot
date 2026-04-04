@@ -1025,6 +1025,10 @@ select#presets {
   line-height: 1.45;
 }
 
+#readingTestEntryModalIntro {
+  font-size: 0.85rem;
+}
+
 .reading-test-entry-modal-body p + p {
   margin-top: 8px;
 }
