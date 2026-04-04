@@ -247,7 +247,7 @@
     "reading_test": {
       "entry": {
         "title": "Pepiluwün ñi pürüm chillkatun",
-        "intro": "Tüfachi pepiluwün feypingey kisu adkünuwal.",
+        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka, amulnayay tiempo ka feypiaymi tami chillkatuwal chumngechi rumel chillkatuken; afülmi, pañitunge Pausa (⏸) feyti Ventana Flotante mu. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.",
         "eligible_count": "Dullngechi chillka: {count}",
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
         "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",

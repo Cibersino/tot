@@ -247,7 +247,7 @@
     "reading_test": {
       "entry": {
         "title": "Test de ritmo de lectura",
-        "intro": "Este test es pa' medir tu ritmo de lectura actual.",
+        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando terminís, apreta Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.",
         "eligible_count": "Archivos elegibles: {count}",
         "pool_exhausted_message": "Se agotó el pan. Podís restablecer el pool si querís no más.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",
