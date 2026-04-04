@@ -15,6 +15,7 @@
 - Presets CRUD + defaults restore + persistence
 - Manual editor window (open/edit/apply semantics)
 - Text snapshot feature (save, load, persistence)
+- Reading speed test (pool filters, guided session, optional questions modal, preset handoff, pool reset/persistence)
 - Task editor window (task lists, library, links, column widths, window position).
 - Stopwatch (velocity) + floating window behavior (unfocused app)
 - Menu actions: Guide/Instructions/FAQ/About (+ link routing)
@@ -62,6 +63,7 @@ Important limitations:
 
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
 * no renderer/UI automation exists yet;
+* the reading speed test has no dedicated automated coverage yet;
 * OCR network/provider behavior is still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
@@ -107,6 +109,7 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - `import_extract_state.json` (last picker directory)
 - `presets_defaults/*.json` (runtime defaults copies)
 - `saved_current_texts/*.json` (saved text snapshots)
+  - `saved_current_texts/reading_speed_test_pool/*.json` (runtime reading-test pool entries with inline `tags.testUsed`)
 - `ocr_google_drive/`
   - `ocr_google_drive/credentials.json` (runtime mirrored OAuth client; app-managed)
   - `ocr_google_drive/token.json` (local OCR sign-in state; present only after activation)
@@ -167,6 +170,21 @@ Prepare a small local sample set whose expected text is known ahead of time:
 Recommended content for the text-like samples:
 - reuse the “Small text” content from 3.1 so count/preview expectations are easy to compare
 - for PDF/image OCR samples, use content that is visibly legible and easy to recognize after extraction
+
+### 3.4 Reading speed test pool data
+
+Prefer the seeded runtime pool under:
+- `config/saved_current_texts/reading_speed_test_pool/`
+
+Us as starter pool:
+- two entries with comprehension questions
+- two speed-only entries without questions
+
+This is enough to validate:
+- normal entry/filter behavior
+- questions-modal insertion
+- speed-only completion path
+- pool exhaustion + reset
 
 ---
 
@@ -323,7 +341,26 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Tagged snapshot metadata is not transferred into current-text state.
 - Stopwatch behavior follows REG-CRONO-02 semantics (non-empty restore: no reset; empty restore: reset).
 
-### SM-14 Task editor: open + basic save
+### SM-14 Reading speed test quick path
+**Goal:** the guided reading-test flow reaches the preset handoff cleanly, with or without the inserted questions step.
+1. Click the reading speed test button in the main window.
+2. If the modal shows that no unused pool files remain, use **Reset pool** and confirm.
+3. Confirm the modal shows a live eligible-file count.
+4. Select any combination that leaves at least one eligible file, then click **Start**.
+5. Confirm the current text is overwritten, the Editor opens, the Floating Window opens, and the main window becomes blocked.
+6. Use the Floating Window to finish the session with **Pause**.
+7. If a questions modal appears, answer the questions, click **Check result**, then continue with **Continue** or the window close affordance.
+8. Confirm the preset modal opens with a prefilled test preset and a WPM value.
+
+**Expected:**
+- The entry modal opens even if the pool is exhausted; the reset path is available inline in the same modal.
+- The guided session owns current text + stopwatch state until finish/cancel.
+- `Pause` closes the Editor and Floating Window before advancing.
+- If the chosen file has questions, the questions modal appears before the preset modal.
+- If the chosen file has no questions, the flow continues directly to preset creation.
+- The preset modal receives a valid WPM even when the raw measured speed would fall outside the preset range (clamped to supported preset bounds).
+
+### SM-15 Task editor: open + basic save
 **Goal:** save and load tasks.
 1. From the main window, click **📝** (new task) to open the task editor.
 2. Add one row with required text (and any numeric fields as desired).
@@ -897,6 +934,99 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ---
 
+### REG-READING-TEST — Guided reading speed test flow
+
+#### REG-READING-TEST-01 Entry modal: real combinations, live count, and inline exhaustion reset
+**Goal:** the entry modal reflects the actual remaining pool and never strands the user in an impossible state.
+1. Open the reading speed test entry modal.
+2. If the pool is exhausted, confirm the warning appears **inside the modal**, then use **Reset pool** and confirm.
+3. Note the current eligible-file count.
+4. Check and uncheck several filter boxes in different categories.
+5. Try to reach a combination that would leave zero matching files.
+
+**Expected:**
+- The modal opens even when the pool is exhausted.
+- The exhaustion message appears inline in the modal, not as a separate alert.
+- Reset is reachable from the same modal and recomputes availability immediately after confirmation.
+- The eligible-file count updates live as filters change.
+- Checkbox interaction locks briefly during recomputation/stabilization.
+- Impossible boxes end up disabled instead of allowing a dead-end selection.
+
+#### REG-READING-TEST-02 Entry preconditions block the feature cleanly
+**Goal:** the reading test cannot start from a conflicting app state.
+1. Start the main stopwatch and try to open the reading speed test.
+2. Stop the stopwatch.
+3. Open a conflicting secondary window (for example, the editor, task editor, floating window, or preset modal if reachable), then try to open the reading speed test again.
+
+**Expected:**
+- The entry modal does not open while preconditions are blocked.
+- The user receives one generic blocked-state advice, not a granular breakdown of reasons.
+- No reading-test session starts.
+
+#### REG-READING-TEST-03 Start session + active-session ownership + cancel path
+**Goal:** once started, the guided session owns the relevant surfaces and cancel works through the Floating Window.
+1. Open the reading test entry modal and choose any available combination.
+2. Click **Start**.
+3. Confirm the Editor opens, the Floating Window opens, and the main window becomes blocked.
+4. Try to use normal main-window interactions while the session is active.
+5. Use **Reset/Stop** from the Floating Window to cancel the session.
+
+**Expected:**
+- Starting the test overwrites the current text with the selected pool file.
+- The Editor acts as the reading surface and the Floating Window acts as the session-control surface.
+- Main-window interactions, including main stopwatch controls, are blocked while the session is active.
+- Cancel closes the Editor and Floating Window, resets the stopwatch, clears current text, and returns the main window to normal interaction.
+- Cancel does **not** roll back the consumed pool entry; its `tags.testUsed` remains `true`.
+
+#### REG-READING-TEST-04 Finish path with questions modal
+**Goal:** question-backed pool entries insert the comprehension step before preset creation.
+1. Reset the pool if needed.
+2. Start the reading test with a pool entry that has questions.
+3. Finish the session from the Floating Window with **Pause**.
+4. In the questions modal, press **Check result** with at least one unanswered question.
+5. Answer all questions, press **Check result**, then change one or more answers and press **Check result** again.
+6. Continue by using either the dedicated **Continue** button or the normal window close affordance.
+
+**Expected:**
+- `Pause` stops the session and closes the Editor and Floating Window before the questions modal appears.
+- The modal shows single-choice questions, a random-guess baseline, and the developer feedback email.
+- Incomplete answers are rejected for scoring until every question has one selected option.
+- Results are aggregate only (`X / T` and percentage); the UI does not reveal which answers were right or wrong.
+- Re-checking updates the aggregate result without altering the overall guided path.
+- Closing the questions modal behaves the same as pressing **Continue**.
+- After the questions step resolves, the preset modal opens immediately and the measured WPM is already applied in main.
+
+#### REG-READING-TEST-05 Finish path without questions modal
+**Goal:** entries without valid questions skip the inserted step and go directly to preset creation.
+1. Reset the pool if needed.
+2. Start the reading test with a pool entry that does **not** have questions.
+3. Finish the session from the Floating Window with **Pause**.
+
+**Expected:**
+- The Editor and Floating Window close.
+- No questions modal appears.
+- The flow continues directly to the preset modal.
+- If the measured raw WPM falls outside the preset range, the value is clamped rather than aborting the flow.
+
+#### REG-READING-TEST-06 Pool persistence, exhaustion, reset, and snapshot compatibility
+**Goal:** reading-test pool state persists on disk and remains compatible with the normal snapshot flow.
+1. Use or cancel enough reading-test runs to consume all starter pool entries.
+2. Open the reading test again.
+3. Confirm the modal shows the exhausted-pool warning inline and still exposes **Reset pool**.
+4. Inspect one used pool JSON file under `config/saved_current_texts/reading_speed_test_pool/`.
+5. Confirm it contains `tags.testUsed: true`.
+6. Use **Reset pool** and confirm.
+7. Inspect the same file again and confirm `tags.testUsed: false`.
+8. Load one of the pool JSON files through the normal **Load snapshot** flow.
+
+**Expected:**
+- Exhaustion is handled inside the entry modal, not by blocking entry with a separate alert.
+- Pool reset rewrites all pool files in the dedicated pool folder back to `tags.testUsed: false`.
+- Pool files remain ordinary snapshot JSON files.
+- Normal snapshot loading accepts pool files that include `tags.testUsed` and optional `readingTest`, and applies only the `text` to current text.
+
+---
+
 ### REG-MENU — Menu actions and routing (Guide/Instructions/FAQ/About)
 
 #### REG-MENU-01 Open Guide/Instructions/FAQ
@@ -1013,6 +1143,20 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Picker state persists and reopens in the last-used directory when that directory still exists.
 - OCR runtime files exist only when the relevant state has actually been created.
 - Relaunch preserves OCR-connected state until disconnect is requested.
+
+#### REG-PERSIST-06 Reading speed test pool persistence
+**Goal:** the guided reading-test flow persists its pool state and seeded runtime folder correctly across restart.
+1. Start from a config where `config/saved_current_texts/reading_speed_test_pool/` does not exist yet, then launch the app.
+2. Open the reading speed test entry modal once.
+3. Confirm the runtime pool folder now exists under `config/saved_current_texts/`.
+4. Complete one reading-test run or cancel one after text reveal.
+5. Close the app and relaunch.
+6. Re-open the reading test entry modal and inspect the runtime pool files on disk.
+
+**Expected:**
+- The runtime reading-test pool folder is created/seeded automatically when needed.
+- Used entries persist `tags.testUsed` across app restart until a pool reset is requested.
+- The relaunch does not silently restore consumed entries to unused state.
 
 ---
 
@@ -1160,7 +1304,7 @@ For each failure:
 - Observed behavior
 - Expected behavior
 - Repro steps (if different)
-- Issue link created (label: `bug`, plus area label: `i18n` / `presets` / `editor` / `updater` / `crono`)
+- Issue link created (label: `bug`, plus area label: `i18n` / `presets` / `editor` / `updater` / `crono` / `reading-test`)
 
 ---
 

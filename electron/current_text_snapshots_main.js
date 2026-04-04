@@ -10,7 +10,7 @@
 // - Enforce snapshot path containment under config/saved_current_texts.
 // - Validate legacy and tagged snapshot JSON schemas:
 //   { text: "<string>" }
-//   { text: "<string>", tags?: { language?, type?, difficulty? } }
+//   { text: "<string>", tags?: { language?, type?, difficulty?, testUsed? }, readingTest?: { ... } }
 // - Apply loaded snapshots through text_state (same semantics as overwrite).
 // - Register IPC handlers: current-text-snapshot-save / current-text-snapshot-select / current-text-snapshot-load.
 // =============================================================================
@@ -40,7 +40,8 @@ if (!snapshotTagCatalog
   || typeof snapshotTagCatalog.isPlainObject !== 'function'
   || typeof snapshotTagCatalog.normalizeLanguageTag !== 'function'
   || typeof snapshotTagCatalog.normalizeTypeTag !== 'function'
-  || typeof snapshotTagCatalog.normalizeDifficultyTag !== 'function') {
+  || typeof snapshotTagCatalog.normalizeDifficultyTag !== 'function'
+  || typeof snapshotTagCatalog.normalizeTestUsedTag !== 'function') {
   throw new Error('[current_text_snapshots] SnapshotTagCatalog unavailable; cannot continue');
 }
 
@@ -302,18 +303,32 @@ function sanitizeSnapshotTags(rawTags, { allowMissing = false } = {}) {
     tags.difficulty = difficulty;
   }
 
+  if (Object.prototype.hasOwnProperty.call(rawTags, 'testUsed')) {
+    const testUsed = snapshotTagCatalog.normalizeTestUsedTag(rawTags.testUsed);
+    if (testUsed === null) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot testUsed tag invalid' };
+    }
+    tags.testUsed = testUsed;
+  }
+
   return { ok: true, tags: Object.keys(tags).length ? tags : null };
 }
 
 function sanitizeSnapshotSavePayload(payload) {
-  if (payload == null) return { ok: true, tags: null };
+  if (payload == null) return { ok: true, tags: { testUsed: false } };
   if (!snapshotTagCatalog.isPlainObject(payload)) {
     return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot save payload must be an object' };
   }
   if (!Object.prototype.hasOwnProperty.call(payload, 'tags')) {
-    return { ok: true, tags: null };
+    return { ok: true, tags: { testUsed: false } };
   }
-  return sanitizeSnapshotTags(payload.tags, { allowMissing: true });
+  const tagsInfo = sanitizeSnapshotTags(payload.tags, { allowMissing: true });
+  if (!tagsInfo.ok) return tagsInfo;
+  const tags = snapshotTagCatalog.isPlainObject(tagsInfo.tags)
+    ? { ...tagsInfo.tags }
+    : {};
+  tags.testUsed = false;
+  return { ok: true, tags };
 }
 
 function parseSnapshotFile(selectedReal) {
