@@ -24,8 +24,8 @@
 
   <p><strong>toT</strong> es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a
     planificar cargas de lectura realistas. Combina importación/extracción de texto desde archivos de texto e imagen,
-    presets de WPM configurables, conteo preciso, snapshots de texto, editor de tareas y cronómetro para que puedas
-    medir, organizar y completar lecturas con menos margen de adivinación.</p>
+    presets de WPM configurables, conteo preciso, snapshots de texto, editor de tareas, cronómetro y test de velocidad
+    de lectura para que puedas medir, organizar y completar lecturas con menos margen de adivinación.</p>
 
   <article class="instrucciones-document">
 
@@ -41,24 +41,16 @@
             loading="lazy" decoding="async" />
         </figure>
 
-        <p><strong>Objetivo:</strong> en menos de 1 minuto, tener un <strong>texto actual</strong> listo, un
-          <strong>WPM</strong> razonable y una <strong>estimación</strong> útil.
+        <p><strong>Objetivo:</strong> familiarizarte con la app.
         </p>
 
         <ol>
           <li>
             <p><strong>Importa una página modelo (flujo de inicio recomendado)</strong></p>
             <ul>
-              <li><strong>Fuentes compatibles:</strong> portapapeles, archivos de texto/documento
-                (<code>.txt</code>, <code>.md</code>, <code>.html</code>, <code>.htm</code>, <code>.docx</code>,
-                <code>.rtf</code>, <code>.odt</code>),
-                imágenes (<code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>,
-                <code>.bmp</code>, <code>.tif</code>, <code>.tiff</code>) y PDFs (PDFs con texto seleccionable + PDFs escaneados vía OCR).
-              </li>
               <li>Toma una buena foto de una página representativa de cualquier libro y guárdala en cualquier carpeta de
                 tu computador.</li>
-              <li>Para familiarizarte con la app, elige un WPM base usando un preset o el slider/input (un preset por
-                defecto basta para empezar).</li>
+              <li>Elige un WPM base usando un preset o el slider/input (un preset por defecto basta para empezar).</li>
               <li>Pulsa <strong>📥</strong> o arrastra y suelta esa foto sobre la ventana principal.</li>
               <li>Si es tu primera vez usando el OCR de la app (Reconocimiento Óptico de Caracteres) o aún no lo tienes
                 conectado a una cuenta de Google, sigue los pasos para autorizar y conectar el servicio OCR de Google
@@ -69,6 +61,20 @@
                 haz ajustes.</li>
               <li>Luego, en la sección de resultados, usa el multiplicador bajo el tiempo estimado con la cantidad total
                 de páginas del libro para proyectar la estimación completa.</li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>Crea un preset personalizado con el test de velocidad de lectura</strong></p>
+            <ul>
+              <li>Con el texto actual ya listo, pulsa <strong>Test de velocidad de lectura</strong>.</li>
+              <li>En el modal inicial, elige <strong>Iniciar con texto actual</strong>.</li>
+              <li>Lee ese texto en condiciones normales y usa la <strong>Ventana Flotante</strong> para pausar al
+                terminar.</li>
+              <li>Cuando el flujo termine, guarda el preset sugerido a partir del WPM medido.</li>
+              <li><strong>Advertencia:</strong> tests muy cortos, especialmente de una sola página, suelen
+                sobreestimar la velocidad sostenible en textos largos. Úsalo como calibración inicial, no como verdad
+                definitiva.</li>
             </ul>
           </li>
 
@@ -183,6 +189,8 @@
           <li>Conteo de palabras y caracteres (con y sin espacios).</li>
           <li>Segmentación de palabras en “modo preciso” usando <code>Intl.Segmenter</code>.</li>
           <li>Presets de WPM: crear, editar, eliminar y restaurar valores por defecto.</li>
+          <li>Test de velocidad de lectura guiado: usar texto actual o textos del pool, medir WPM, mostrar preguntas
+            opcionales de comprensión y crear presets personalizados.</li>
           <li>Cronómetro con cálculo de WPM real; ventana flotante opcional.</li>
           <li>Snapshots de texto: guardar y cargar textos actuales.</li>
           <li>Editor de tareas: organizador de listas de textos para planificar lecturas.</li>
@@ -402,7 +410,7 @@
 
         <h4>3.1 Elegir un WPM</h4>
 
-        <p>Tienes dos opciones:</p>
+        <p>Tienes tres opciones:</p>
         <ul>
           <li>Ajustar el WPM manualmente. Puedes:
             <ul>
@@ -417,6 +425,9 @@
               <li>Presets personalizados por el usuario.</li>
             </ul>
           </li>
+          <li>Crear un <strong>preset personalizado</strong> a partir del <strong>test de velocidad de lectura</strong>
+            (ver Paso 6), especialmente si ya tienes un texto actual representativo y quieres una calibración guiada.
+          </li>
         </ul>
 
         <p><strong>Recomendación operativa:</strong></p>
@@ -430,16 +441,14 @@
 
         <ul>
           <li><strong>Crear</strong> preset si te falta uno para tu caso típico (técnico, pantalla, idioma, etc.).</li>
+          <li>Los presets personalizados pueden crearse manualmente, por ejemplo tomando como referencia una medición
+            con el cronómetro (ver Paso 8), o de forma más automatizada mediante el test de velocidad de lectura (ver
+            Paso 6).</li>
           <li><strong>Editar</strong> si tu preset está sistemáticamente alto/bajo o quieres editar su nombre o
             descripción. También puedes editar los presets por defecto.</li>
           <li><strong>Eliminar</strong> si se te volvió ruido.</li>
           <li><strong>Restaurar presets por defecto</strong> si quieres volver al set original de presets por defecto
             que fueron editados o “eliminados” (no elimina los personalizados “puros”).</li>
-        </ul>
-
-        <p><strong>Resultado esperado del Paso 3:</strong></p>
-        <ul>
-          <li>El WPM configurado refleja tu intención (conservador/neutral/optimista).</li>
         </ul>
 
         <hr />
@@ -542,7 +551,61 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Paso 6 — Tareas: planear y rastrear lecturas</h3>
+        <h3>Paso 6 — Test de velocidad de lectura</h3>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/test-velocidad-lectura.png" alt="Captura: test de velocidad de lectura"
+            loading="lazy" decoding="async" />
+        </figure>
+
+        <p>Este flujo sirve para calibrar un WPM personalizado con una medición guiada y convertir ese resultado en un
+          preset reutilizable.</p>
+
+        <h4>6.1 Cuándo conviene usarlo</h4>
+        <ul>
+          <li>Cuando quieres pasar de una estimación aproximada a una calibración empírica.</li>
+          <li>Cuando ya tienes un <strong>texto actual</strong> representativo y quieres medir tu ritmo con ese mismo
+            material.</li>
+          <li>Cuando quieres construir presets más realistas para distintos tipos de lectura.</li>
+        </ul>
+
+        <h4>6.2 Ruta “texto actual”</h4>
+        <ol>
+          <li>Deja listo el <strong>texto actual</strong> que realmente quieres usar como muestra.</li>
+          <li>Haz clic en <strong>Test de velocidad de lectura</strong>.</li>
+          <li>En el modal inicial, elige <strong>Iniciar con texto actual</strong>.</li>
+          <li>Se abrirán el <strong>Editor</strong> y la <strong>Ventana Flotante</strong>; lee normalmente.</li>
+          <li>Cuando termines, pausa presionadno <strong>(⏸)</strong> en la Ventana Flotante.</li>
+          <li>La app calculará el WPM y abrirá el modal de preset para que lo guardes como preset personalizado.</li>
+        </ol>
+
+        <p><strong>Nota:</strong> puedes cancelar el test presionando <strong>(⏹)</strong> en la Ventana Flotante. Si cancelas esta ruta, el texto actual se conserva.</p>
+
+        <h4>6.3 Ruta “texto del pool”</h4>
+        <ol>
+          <li>Haz clic en <strong>Test de velocidad de lectura</strong>.</li>
+          <li>En el modal inicial puedes filtrar por <strong>idioma</strong>, <strong>tipo</strong> y
+            <strong>dificultad</strong>.
+          </li>
+          <li>Pulsa <strong>Iniciar</strong> para que la app elija un texto elegible del pool.</li>
+          <li>Lee el texto en la sesión guiada y presiona <strong>(⏸)</strong> en la Ventana Flotante al terminar.</li>
+          <li>Si ese texto incluye preguntas de comprensión, aparecerán antes del modal de presets.</li>
+        </ol>
+
+        <p><strong>Nota:</strong> puedes cancelar el test presionando <strong>(⏹)</strong> en la Ventana Flotante. Si cancelas esta ruta, el texto actual <strong>no</strong> se conserva.</p>
+
+        <h4>6.4 Interpretación y advertencias</h4>
+        <ul>
+          <li>Usa el resultado como calibración empírica, no como verdad definitiva e inmutable.</li>
+          <li>Tests muy cortos, especialmente de una sola página, tienden a sobreestimar la velocidad sostenible en
+            textos largos.</li>
+          <li>Si quieres una medida más representativa para lecturas largas, usa una muestra más extensa y de dificultad
+            parecida a la que sueles leer.</li>
+        </ul>
+
+        <hr />
+
+        <h3>Paso 7 — Tareas: planear y rastrear lecturas</h3>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/editor-tareas.png" alt="Captura: ventana del editor de tareas" loading="lazy"
@@ -554,7 +617,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           con tiempo estimado, progreso y enlaces.
         </p>
 
-        <h4>6.1 Abrir el editor de tareas</h4>
+        <h4>7.1 Abrir el editor de tareas</h4>
         <ul>
           <li>Desde la ventana principal, abre el editor de tareas usando los controles de Tareas: <strong>📝</strong>
             (nueva tarea) o <strong>🗃️</strong> (cargar tarea).</li>
@@ -562,7 +625,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>🗃️</strong> te permite elegir una lista de tareas guardada existente.</li>
         </ul>
 
-        <h4>6.2 Agregar y editar elementos (filas)</h4>
+        <h4>7.2 Agregar y editar elementos (filas)</h4>
         <p>
           Abre el editor de tareas con <strong>📝</strong>. Puedes agregar filas haciendo clic en <strong>“Add
             row”</strong>. Cada fila representa un elemento de lectura con estas columnas: <strong>Texto</strong>,
@@ -583,7 +646,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           </li>
         </ul>
 
-        <h4>6.3 Links</h4>
+        <h4>7.3 Links</h4>
         <p>
           La columna de <strong>Enlace</strong> puede usarse para almacenar una ruta local o una URL HTTPS para el
           elemento.
@@ -602,7 +665,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p><strong>Nota:</strong> Los hosts confiables se recuerdan en una lista que se conserva en la carpeta de
           configuración del usuario.</p>
 
-        <h4>6.4 Guardar, cargar y eliminar tareas</h4>
+        <h4>7.4 Guardar, cargar y eliminar tareas</h4>
         <ul>
           <li>Para guardar una lista de tareas, elige un nombre para tu tarea y haz clic en <strong>“Guardar”</strong>
             en la ventana del editor de tareas. Se abrirá la carpeta de guardado, donde deberás elegir un nombre de
@@ -618,7 +681,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <code>config/tasks/lists/</code>. Puedes administrarlas directamente desde el sistema de archivos si es
           necesario.
 
-        <h4>6.5 Biblioteca (filas reutilizables)</h4>
+        <h4>7.5 Biblioteca (filas reutilizables)</h4>
         <p>
           En la ventana del editor de Tareas, puedes guardar una fila en una <strong>Biblioteca</strong> reutilizable.
           Esto es útil para elementos que leas con frecuencia o utilizas en diferentes tareas. Para guardar una fila en
@@ -632,14 +695,14 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             loading="lazy" decoding="async" />
         </figure>
 
-        <h4>6.6 Anchos de columnas</h4>
+        <h4>7.6 Anchos de columnas</h4>
         <p>
           Puedes redimensionar las columnas de la tabla; los anchos se guardan para el Editor de Tareas.
         </p>
 
         <hr />
 
-        <h3>Paso 7 — Mide tu WPM real con el cronómetro</h3>
+        <h3>Paso 8 — Mide tu WPM real con el cronómetro</h3>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/cronometro.png" alt="Captura: cronómetro y WPM real" loading="lazy"
@@ -648,14 +711,14 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p>Este paso es para calibración o medición real.</p>
 
-        <h4>7.1 Preparación (lo que suele fallar)</h4>
+        <h4>8.1 Preparación (lo que suele fallar)</h4>
         <ul>
           <li>Asegúrate de que el texto actual es exactamente lo que leerás.</li>
           <li>No edites el texto durante la medición.</li>
           <li>Decide si leerás completo o solo una parte (y ajusta el texto actual a esa parte).</li>
         </ul>
 
-        <h4>7.2 Medición</h4>
+        <h4>8.2 Medición</h4>
         <ol>
           <li>Inicia (▶) el cronómetro justo al comenzar a leer.</li>
           <li>Pausa (⏸) al terminar. Ojo: no pulses Stop (⏹) a menos que quieras resetear el cronómetro y volver al
@@ -679,7 +742,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             fracciones de segundo no visualizadas en la estimación y/o el cronómetro, y/o a los redondeos.</li>
         </ul>
 
-        <h4>7.3 Ventana flotante (si lees en otra app)</h4>
+        <h4>8.3 Ventana flotante (si lees en otra app)</h4>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/ventana-flotante.png"
@@ -690,9 +753,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Paso 8 — Guardado local, limpieza y reinstalación “limpia”</h3>
+        <h3>Paso 9 — Guardado local, limpieza y reinstalación “limpia”</h3>
 
-        <h4>8.1 Qué queda guardado localmente</h4>
+        <h4>9.1 Qué queda guardado localmente</h4>
 
         <p>La app guarda datos localmente para mantener tu configuración entre sesiones. En general incluye:</p>
         <ul>
@@ -703,6 +766,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             app y, cuando la ruta de extracción asistida por Google está conectada, el estado local del token de
             Google.</li>
           <li><strong>Presets</strong> (personalizados y estado de presets por defecto).</li>
+          <li><strong>Test de velocidad de lectura</strong>: pool local de textos del test y metadata
+            <code>testUsed</code> en archivos de ese pool.
+          </li>
           <li><strong>Estado de ventanas</strong> (por ejemplo: tamaño/posición del editor).</li>
           <li><strong>Tareas</strong>: listas de tareas, biblioteca de tareas, lista de enlaces permitidos y estado de
             la interfaz de usuario del Editor de tareas (posición y ancho de columna).</li>
@@ -721,7 +787,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           de Google.
         </p>
 
-        <h4>8.2 Limpieza total (reinstalación limpia) — con rutas por sistema</h4>
+        <h4>9.2 Limpieza total (reinstalación limpia) — con rutas por sistema</h4>
 
         <p>Para volver a estado “primera ejecución”:</p>
         <ol>
@@ -746,7 +812,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Paso 9 — Límites y textos muy largos</h3>
+        <h3>Paso 10 — Límites y textos muy largos</h3>
 
         <ul>
           <li>Por seguridad y rendimiento, la app impone un límite duro de tamaño para el texto actual, de 50 millones
@@ -779,8 +845,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         </ul>
         <p>Lo distintivo de <em>toT</em> es que funciona como herramienta <strong>operacional</strong>: construir un
           <strong>texto actual</strong> (portapapeles y/o editor), fijar <strong>WPM/presets</strong>, comparar
-          <strong>Simple vs Preciso</strong>, y <strong>medir WPM real</strong> con cronómetro (incluida la ventana
-          flotante).
+          <strong>Simple vs Preciso</strong>, <strong>medir WPM real</strong> con cronómetro (incluida la ventana
+          flotante), y usar un <strong>test de velocidad de lectura</strong> guiado para calibrar presets con el texto
+          actual o con textos del pool.
         </p>
 
         <hr />
@@ -812,7 +879,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           </li>
         </ul>
         <p>La app incluye cronómetro precisamente para que puedas <strong>medir tu WPM real</strong> y ajustar presets
-          de forma empírica.</p>
+          de forma empírica. Además, el <strong>test de velocidad de lectura</strong> ofrece una ruta más guiada para
+          crear presets personalizados, especialmente útil cuando ya tienes un texto actual representativo.</p>
 
         <hr />
 
@@ -843,6 +911,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>Texto actual</strong> y configuración general (idioma, WPM, modo de conteo, presets).</li>
               <li><strong>Snapshots de texto guardados</strong> (biblioteca opcional bajo
                 <code>config/saved_current_texts/</code>).
+              </li>
+              <li><strong>Test de velocidad de lectura</strong>: pool local de textos del test y metadata
+                <code>testUsed</code> dentro de esos snapshots.
               </li>
               <li><strong>Estado de OCR con Google</strong>: credenciales OAuth de Google locales gestionadas por la app
                 y, cuando OCR está conectado, el estado local del token de Google OCR.</li>

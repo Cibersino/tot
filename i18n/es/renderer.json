@@ -258,8 +258,8 @@
     "reading_test": {
       "entry": {
         "title": "Test de velocidad de lectura",
-        "intro": "Este test sobrescribirá el texto actual y está pensado para auto-calibración.",
-        "overwrite_warning": "El texto actual será sobrescrito al iniciar el test.",
+        "intro": "Este test está pensado para auto-calibración.",
+        "overwrite_warning": "Iniciar con texto del pool sobrescribirá el texto actual.",
         "edit_notice": "Editar el texto durante el test está permitido, pero afectará el resultado medido.",
         "eligible_count": "Archivos elegibles: {count}",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Restablece el pool o agrega más archivos.",
@@ -267,11 +267,12 @@
         "reset_confirm": "Esto restablecerá todo el pool del test y volverá a marcar todos sus archivos como no usados. ¿Deseas continuar?",
         "buttons": {
           "reset_pool": "Restablecer pool",
-          "start": "Iniciar"
+          "start": "Iniciar",
+          "start_current_text": "Iniciar con texto actual"
         }
       },
       "questions": {
-        "title": "Preguntas de comprensión",
+        "title": "Preguntas de comprensión lectora",
         "intro": "Responde las preguntas si deseas revisar la comprensión antes de volver al flujo principal.",
         "random_title": "Probabilidad al azar",
         "random_value": "{percentage}% de respuestas correctas probables al azar",
@@ -399,6 +400,7 @@
       "reading_test_precondition_blocked": "El test de velocidad de lectura solo puede iniciarse desde un estado estable de la app. Cierra las ventanas secundarias y asegúrate de que el cronómetro esté detenido.",
       "reading_test_pool_error": "Ocurrió un error al revisar el pool del test de velocidad de lectura.",
       "reading_test_no_matching_files": "No quedan archivos de test sin usar que coincidan con la selección actual.",
+      "reading_test_current_text_empty": "El texto actual está vacío. Carga o escribe un texto antes de iniciar el test con texto actual.",
       "reading_test_result_invalid": "El resultado del test no pudo convertirse en un WPM válido. El flujo terminó sin abrir el modal de preset.",
       "reading_test_preset_unavailable": "No se pudo abrir el modal de preset después del test.",
       "reading_test_questions_unavailable": "No se pudo abrir el modal de preguntas de comprensión. El flujo terminó antes de crear el preset.",

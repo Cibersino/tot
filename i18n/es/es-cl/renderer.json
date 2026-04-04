@@ -244,6 +244,40 @@
         }
       }
     },
+    "reading_test": {
+      "entry": {
+        "title": "Test de ritmo de lectura",
+        "intro": "Este test es pa' medir tu ritmo de lectura actual.",
+        "overwrite_warning": "Si ya tenís texto, el test lo va a sobreescribir.",
+        "edit_notice": "Hacer trampa es mala volá, pero es tu problema si lo hacís.",
+        "eligible_count": "Archivos elegibles: {count}",
+        "pool_exhausted_message": "Se agotó el pan. Podís restablecer el pool si querís no más.",
+        "close_aria": "Cerrar diálogo de test de ritmo de lectura",
+        "reset_confirm": "¿Querís restablecer el pool de archivos elegibles? Esto va a recargar los archivos disponibles pa' iniciar el test, incluyendo los que ya usaste.",
+        "buttons": {
+          "reset_pool": "Restablecer pool",
+          "start": "Partir",
+          "start_current_text": "Partir con texto actual"
+        }
+      },
+      "questions": {
+        "title": "Preguntas de comprensión lectora",
+        "intro": "Ahora unas preguntitas pa' medir qué tan bien entendiste lo que leíste.",
+        "random_title": "Probabilidad de achuntarle",
+        "random_value": "{percentage}% de respuestas correctas probables al achunte",
+        "feedback_title": "Feedback",
+        "feedback_prefix": "Si te querís quejar:",
+        "question_heading": "{number}. {prompt}",
+        "incomplete_warning": "Tenís que responder toas las preguntas pa' ver el resultado.",
+        "result_summary": "{correct} de {total} correctas ({percentage}%)",
+        "low_score_warning": "Tu porcentaje quedó por debajo de 5/3 de la probabilidad al achunte ({threshold}%). Remal.",
+        "fatal_invalid": "La carga de preguntas es inválida.",
+        "buttons": {
+          "check": "Ver resultado",
+          "continue": "Continuar"
+        }
+      }
+    },
     "modal_preset": {
       "title_new": "Nuevo preset",
       "title_edit": "Editar preset",
@@ -351,7 +385,17 @@
       "wip_diseno_fuentes": "WIP: Aquí elegís el tipo de letra.",
       "wip_diseno_colores": "WIP: Aquí le tirái pintura.",
       "wip_shortcuts": "WIP: Aquí configurái los atajos del teclao.",
-      "wip_reading_speed_test": "WIP: Aquí podís probar tu ritmo de lectura y comparar con el resto de los mortales."
+      "reading_test_unavailable": "El test de ritmo de lectura no está disponible.",
+      "reading_test_precondition_blocked": "Pa' partir el test de ritmo de lectura, cierra toas las ventanas chicas y para el cronómetro.",
+      "reading_test_pool_error": "Cagó la carga del pool de archivos pal' test de ritmo de lectura.",
+      "reading_test_no_matching_files": "No hay más, no insista.",
+      "reading_test_current_text_empty": "El texto actual está pelao. Llenalo con algo y prueba de nuevo, o elige iniciar el test con un archivo del pool.",
+      "reading_test_result_invalid": "El resultao del test de ritmo cagó al procesarlo.",
+      "reading_test_preset_unavailable": "No se pudo cargar el preset de velocidad estimado, estimado.",
+      "reading_test_questions_unavailable": "El perro se comió las preguntas de comprensión lectora.",
+      "reading_test_start_failed": "Cagó el inicio del test de ritmo de lectura.",
+      "reading_test_cancelled": "El test de ritmo de lectura fue cancelado.",
+      "reading_test_cancelled_window_closed": "El test se canceló porque se cerró una de las ventanas necesarias pa' hacerlo."
     },
     "editor_alerts": {
       "paste_too_big": "La custión es muy grande. Usa los botones de afuera.",

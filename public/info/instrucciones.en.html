@@ -24,8 +24,8 @@
 
   <p><strong>toT</strong> is a desktop app that turns text into estimated reading time and helps you plan realistic
     reading workloads. It combines file text import/extraction from text and image files, configurable WPM presets,
-    precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings
-    with less guesswork.</p>
+    precise counting, text snapshots, a task editor, a stopwatch, and a reading speed test so you can measure,
+    organize, and complete readings with less guesswork.</p>
 
   <article class="instrucciones-document">
 
@@ -41,24 +41,15 @@
             loading="lazy" decoding="async" />
         </figure>
 
-        <p><strong>Objective:</strong> in less than 1 minute, to have a <strong>current text</strong> ready, a
-          reasonable <strong>WPM</strong> and a useful <strong>estimate</strong>.</p>
+        <p><strong>Objective:</strong> get familiar with the app.</p>
 
         <ol>
           <li>
             <p><strong>Import a model page (recommended onboarding flow)</strong></p>
             <ul>
-              <li><strong>Supported sources:</strong> clipboard, text/document files (<code>.txt</code>,
-                <code>.md</code>, <code>.html</code>, <code>.htm</code>, <code>.docx</code>, <code>.rtf</code>,
-                <code>.odt</code>), images
-                (<code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>, <code>.bmp</code>,
-                <code>.tif</code>, <code>.tiff</code>),
-                and PDFs (selectable-text PDFs + scanned PDFs via OCR).
-              </li>
               <li>Take a good photo of a representative page from any book and save it in any folder on your computer.
               </li>
-              <li>To get familiar with the app, choose a base WPM using a preset or the slider/input (a default preset
-                is fine to start).</li>
+              <li>Choose a base WPM using a preset or the slider/input (a default preset is fine to start).</li>
               <li>Press <strong>📥</strong> or drag/drop that photo onto the main window.</li>
               <li>If this is your first time using the app's OCR (Optical Character Recognition) or you don't have it
                 connected to a Google account, follow the steps to authorize and connect the Google OCR service to
@@ -71,6 +62,19 @@
               <li>Then, in the results section, use the multiplier below the estimated time with the book's total page
                 count to project the full estimate.
               </li>
+            </ul>
+          </li>
+
+          <li>
+            <p><strong>Create a custom preset with the reading speed test</strong></p>
+            <ul>
+              <li>Once the current text is ready, click <strong>Reading speed test</strong>.</li>
+              <li>In the entry modal, choose <strong>Start with current text</strong>.</li>
+              <li>Read that text under normal conditions and use the <strong>Floating Window</strong> to pause when you
+                finish.</li>
+              <li>When the flow ends, save the suggested preset based on the measured WPM.</li>
+              <li><strong>Warning:</strong> very short tests, especially one-page samples, tend to overestimate
+                sustainable speed on longer texts. Use it as an initial calibration, not as a final truth.</li>
             </ul>
           </li>
 
@@ -188,6 +192,8 @@
           <li>Word and character counting (with/without spaces).</li>
           <li>“Precise mode” word segmentation using <code>Intl.Segmenter</code>.</li>
           <li>WPM presets: create/edit/delete + restore defaults.</li>
+          <li>Guided reading speed test: use the current text or pool texts, measure WPM, show optional comprehension
+            questions, and create custom presets.</li>
           <li>Stopwatch with real WPM calculation; optional floating window.</li>
           <li>Text snapshots: save/load current texts.</li>
           <li>Task editor: text list organizer to plan readings.</li>
@@ -404,7 +410,7 @@
 
         <h4>3.1 Choosing a WPM</h4>
 
-        <p>You have two options:</p>
+        <p>You have three options:</p>
         <ul>
           <li>Adjust the WPM manually. You can:
             <ul>
@@ -418,6 +424,8 @@
               <li>User-customized presets.</li>
             </ul>
           </li>
+          <li>Create a <strong>custom preset</strong> from the <strong>reading speed test</strong> (see Step 6),
+            especially if you already have a representative current text and want a guided calibration.</li>
         </ul>
 
         <p><strong>Operational recommendation:</strong></p>
@@ -432,16 +440,13 @@
         <ul>
           <li><strong>Create</strong> a preset if you are missing one for your typical case (technical, screen,
             language, etc.).</li>
+          <li>Custom presets can be created manually, for example by using a Stopwatch-based measurement (see Step 8),
+            or in a more automated way through the reading speed test (see Step 6).</li>
           <li><strong>Edit</strong> if your preset is systematically high/low or you want to edit its name or
             description. You can also edit the default presets.</li>
           <li><strong>Delete</strong> if it became noisy.</li>
           <li><strong>Restore default presets</strong> if you want to return to the original set of default presets that
             were edited or “deleted” (does not remove “pure” custom presets).</li>
-        </ul>
-
-        <p><strong>Expected result of Step 3:</strong></p>
-        <ul>
-          <li>The configured WPM reflects your intention (conservative/neutral/optimistic).</li>
         </ul>
 
         <hr />
@@ -543,7 +548,61 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Step 6 — Tasks: plan and track readings</h3>
+        <h3>Step 6 — Reading speed test</h3>
+
+        <figure class="instrucciones-media">
+          <img src="./assets/instrucciones/reading-speed-test.png" alt="Screenshot: reading speed test"
+            loading="lazy" decoding="async" />
+        </figure>
+
+        <p>This flow is designed to calibrate a custom WPM through a guided measurement and turn that result into a
+          reusable preset.</p>
+
+        <h4>6.1 When it is useful</h4>
+        <ul>
+          <li>When you want to move from a rough estimate to an empirical calibration.</li>
+          <li>When you already have a representative <strong>current text</strong> and want to measure your pace on
+            that exact material.</li>
+          <li>When you want to build more realistic presets for different types of reading.</li>
+        </ul>
+
+        <h4>6.2 “Current text” path</h4>
+        <ol>
+          <li>Leave the <strong>current text</strong> exactly as the sample you want to use.</li>
+          <li>Click <strong>Reading speed test</strong>.</li>
+          <li>In the entry modal, choose <strong>Start with current text</strong>.</li>
+          <li>The <strong>Editor</strong> and the <strong>Floating Window</strong> will open; read normally.</li>
+          <li>When you finish, pause pressing <strong>(⏸)</strong> in the Floating Window.</li>
+          <li>The app will compute the WPM and open the preset modal so you can save it as a custom preset.</li>
+        </ol>
+
+        <p><strong>Note:</strong> you can cancel the test pressing <strong>(⏹)</strong> in the Floating Window. If you cancel this path, the current text is preserved.</p>
+
+        <h4>6.3 “Pool text” path</h4>
+        <ol>
+          <li>Click <strong>Reading speed test</strong>.</li>
+          <li>In the entry modal you can filter by <strong>language</strong>, <strong>type</strong>, and
+            <strong>difficulty</strong>.
+          </li>
+          <li>Press <strong>Start</strong> so the app chooses an eligible text from the pool.</li>
+          <li>Read that text in the guided session and pause from the Floating Window when you finish.</li>
+          <li>If that text includes comprehension questions, they will appear before the preset modal.</li>
+        </ol>
+
+        <p><strong>Note:</strong> you can cancel the test pressing <strong>(⏹)</strong> in the Floating Window. If you cancel this path, the current text is <strong>not</strong> preserved.</p>
+
+        <h4>6.4 Interpretation and warnings</h4>
+        <ul>
+          <li>Use the result as empirical calibration, not as immutable truth.</li>
+          <li>Very short tests, especially one-page samples, tend to overestimate sustainable speed on longer texts.
+          </li>
+          <li>If you want a more representative measurement for long readings, use a longer sample with difficulty
+            similar to what you normally read.</li>
+        </ul>
+
+        <hr />
+
+        <h3>Step 7 — Tasks: plan and track readings</h3>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/editor-tareas.png" alt="Screenshot: task editor window" loading="lazy"
@@ -555,7 +614,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           estimated time, progress, and links.
         </p>
 
-        <h4>6.1 Open the Task Editor</h4>
+        <h4>7.1 Open the Task Editor</h4>
         <ul>
           <li>From the main window, open the Task Editor using the Tasks controls: <strong>📝</strong> (new task) or
             <strong>🗃️</strong> (load task).
@@ -564,7 +623,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>🗃️</strong> lets you pick an existing saved task list.</li>
         </ul>
 
-        <h4>6.2 Add and edit items (rows)</h4>
+        <h4>7.2 Add and edit items (rows)</h4>
         <p>
           Open de task editor with <strong>📝</strong>. Yo can add rows clicking <strong>“Add row”</strong>. Each row
           represents one reading item with these columns: <strong>Text</strong>, <strong>Time</strong>,
@@ -583,7 +642,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           </li>
         </ul>
 
-        <h4>6.3 Links</h4>
+        <h4>7.3 Links</h4>
         <p>
           The <strong>Link</strong> column can be used to store a local path or an HTTPS URL for the item.
         </p>
@@ -599,7 +658,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p><strong>Note:</strong> The trusted hosts are remembered in a list that is persisted in the user configuration
           folder.</p>
 
-        <h4>6.4 Save, load and delete tasks</h4>
+        <h4>7.4 Save, load and delete tasks</h4>
         <ul>
           <li>To save a task list choose a name for your task and click <strong>“Save”</strong> in the Task editor
             window. It will open the save folder, where you must choose a file name (a JSON file) and click "Save".</li>
@@ -613,7 +672,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         <p><strong>Note:</strong> Saved tasks are stored in the user configuration folder under
           <code>config/tasks/lists/</code>. You can manage them directly from the file system if needed.
 
-        <h4>6.5 Library (reusable rows)</h4>
+        <h4>7.5 Library (reusable rows)</h4>
         <p>
           In the Tasks editor window you can save a row into a reusable <strong>Library</strong>. This is useful for
           items you read frequently or use in different tasks. To save a row to the Library, click the
@@ -627,14 +686,14 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             loading="lazy" decoding="async" />
         </figure>
 
-        <h4>6.6 Column widths</h4>
+        <h4>7.6 Column widths</h4>
         <p>
           You can resize table columns; widths are persisted for the Task Editor.
         </p>
 
         <hr />
 
-        <h3>Step 7 — Measure your real WPM with the Stopwatch</h3>
+        <h3>Step 8 — Measure your real WPM with the Stopwatch</h3>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/cronometro.png" alt="Screenshot: stopwatch and real WPM" loading="lazy"
@@ -643,7 +702,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <p>This step is for calibration or actual measurement.</p>
 
-        <h4>7.1 Preparation (what usually fails)</h4>
+        <h4>8.1 Preparation (what usually fails)</h4>
         <ul>
           <li>Make sure that the current text is exactly what you will read.</li>
           <li>Do not edit the text during the measurement.</li>
@@ -651,7 +710,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             part).</li>
         </ul>
 
-        <h4>7.2 Measurement</h4>
+        <h4>8.2 Measurement</h4>
         <ol>
           <li>Start (▶) the Stopwatch as you begin reading.</li>
           <li>Pause (⏸) at the end. Attention: do not press Stop (⏹) unless you want to reset the Stopwatch and return
@@ -676,7 +735,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           </li>
         </ul>
 
-        <h4>7.3 Floating Window (if you read in another app)</h4>
+        <h4>8.3 Floating Window (if you read in another app)</h4>
 
         <figure class="instrucciones-media">
           <img src="./assets/instrucciones/ventana-flotante.png" alt="Screenshot: Floating Window and stopwatch control"
@@ -687,9 +746,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Step 8 — Local saving, cleaning and “clean” reinstallation</h3>
+        <h3>Step 9 — Local saving, cleaning and “clean” reinstallation</h3>
 
-        <h4>8.1 What is stored locally</h4>
+        <h4>9.1 What is stored locally</h4>
 
         <p>The app saves data locally to maintain your settings between sessions. In general it includes:</p>
         <ul>
@@ -700,6 +759,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           <li><strong>Google OCR setup state</strong>: app-managed local Google OAuth credentials and, when OCR is
             connected, the local Google OCR token state.</li>
           <li><strong>Presets</strong> (custom and default preset status).</li>
+          <li><strong>Reading speed test</strong>: local test-text pool and <code>testUsed</code> metadata in those
+            pool files.</li>
           <li><strong>Status of windows</strong> (e.g. size/position of the editor).</li>
           <li><strong>Tasks</strong>: task lists, task library, link allowlist, and Task Editor UI state (position and
             column widths).</li>
@@ -719,7 +780,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           permissions/security controls.
         </p>
 
-        <h4>8.2 Total cleanup (clean reinstallation) — with paths per system</h4>
+        <h4>9.2 Total cleanup (clean reinstallation) — with paths per system</h4>
 
         <p>To return to “first run” status:</p>
         <ol>
@@ -744,7 +805,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
 
         <hr />
 
-        <h3>Step 9 — Limits and very long texts</h3>
+        <h3>Step 10 — Limits and very long texts</h3>
 
         <ul>
           <li>For security and performance, the app imposes a hard limit on the current text size of 50 million
@@ -777,8 +838,9 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
         </ul>
         <p>What is distinctive about <em>toT</em> is that it works as an <strong>operational</strong> tool: build a
           <strong>current text</strong> (clipboard and/or editor), set <strong>WPM/presets</strong>, compare
-          <strong>Simple vs Precise</strong>, and <strong>measure real WPM</strong> with Stopwatch (including Floating
-          Window).
+          <strong>Simple vs Precise</strong>, <strong>measure real WPM</strong> with Stopwatch (including Floating
+          Window), and use a guided <strong>reading speed test</strong> to calibrate presets from either the current
+          text or pool texts.
         </p>
 
         <hr />
@@ -811,7 +873,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
             “truth”.</li>
         </ul>
         <p>The app includes a Stopwatch precisely so you can <strong>measure your real speed</strong> and adjust presets
-          empirically.</p>
+          empirically. In addition, the <strong>reading speed test</strong> provides a more guided route for creating
+          custom presets, especially useful when you already have a representative current text.</p>
 
         <hr />
 
@@ -843,6 +906,8 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
               <li><strong>Saved text snapshots</strong> (optional library under
                 <code>config/saved_current_texts/</code>).
               </li>
+              <li><strong>Reading speed test</strong>: local test-text pool and <code>testUsed</code> metadata inside
+                those snapshot files.</li>
               <li><strong>Google extraction setup state</strong>: app-managed local Google OAuth credentials and, when
                 the Google-backed extraction path is connected, the local Google token state.</li>
               <li><strong>Saved tasks</strong> (task lists, task library and link allowlist).</li>
@@ -871,7 +936,7 @@ Emojis: 👨‍👩‍👧‍👦 + 📚 + 👍🏽</code></pre>
           revokes the saved Google token and deletes the local OCR token file. App-managed local Google OAuth
           credentials may remain so OCR can reconnect later. If you also want to
           remove the app's access from Google's side, revoke it from your Google Account permissions/security controls.
-          If you want to remove all locally stored data, see Step 8
+          If you want to remove all locally stored data, see Step 9
           (“Local saving, cleaning and “clean” reinstallation”).</p>
 
         <hr />
