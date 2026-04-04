@@ -56,6 +56,7 @@
     const form = document.getElementById('readingTestQuestionsForm');
     const btnCheck = document.getElementById('readingTestQuestionsCheck');
     const btnContinue = document.getElementById('readingTestQuestionsContinue');
+    const actions = document.querySelector('.reading-test-questions__actions');
 
     if (!title
       || !intro
@@ -70,7 +71,8 @@
       || !fatalMessage
       || !form
       || !btnCheck
-      || !btnContinue) {
+      || !btnContinue
+      || !actions) {
       log.error('Reading-test questions window missing required DOM; script aborted.');
       return;
     }
@@ -209,6 +211,18 @@
       }
     }
 
+    function withAnchoredActionsScroll(updateFn) {
+      const beforeTop = actions.getBoundingClientRect().top;
+      updateFn();
+      requestAnimationFrame(() => {
+        const afterTop = actions.getBoundingClientRect().top;
+        const delta = afterTop - beforeTop;
+        if (delta !== 0) {
+          window.scrollBy(0, delta);
+        }
+      });
+    }
+
     function collectSelectedAnswer(questionId) {
       return typeof answersByQuestionId[questionId] === 'string'
         ? answersByQuestionId[questionId]
@@ -322,24 +336,26 @@
     btnCheck.addEventListener('click', () => {
       if (fatalKey) return;
 
-      clearTransientMessages();
+      withAnchoredActionsScroll(() => {
+        clearTransientMessages();
 
-      if (!allQuestionsAnswered()) {
-        lastScore = null;
+        if (!allQuestionsAnswered()) {
+          lastScore = null;
+          updateResultMessages();
+          setMessage(
+            incompleteMessage,
+            tr(
+              'renderer.reading_test.questions.incomplete_warning',
+              'All questions must be answered before evaluating.'
+            ),
+            { tone: 'warn', visible: true }
+          );
+          return;
+        }
+
+        lastScore = questionsCore.scoreQuestions(questions, answersByQuestionId);
         updateResultMessages();
-        setMessage(
-          incompleteMessage,
-          tr(
-            'renderer.reading_test.questions.incomplete_warning',
-            'All questions must be answered before evaluating.'
-          ),
-          { tone: 'warn', visible: true }
-        );
-        return;
-      }
-
-      lastScore = questionsCore.scoreQuestions(questions, answersByQuestionId);
-      updateResultMessages();
+      });
     });
 
     btnContinue.addEventListener('click', () => {
