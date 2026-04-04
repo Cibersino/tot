@@ -218,6 +218,17 @@
   }
 
   function sortOptionsForDisplay(category, options) {
+    if (category === 'difficulty') {
+      const order = new Map(
+        snapshotTagCatalog.DIFFICULTY_OPTIONS.map((option, index) => [option.value, index])
+      );
+      return [...options].sort((left, right) => {
+        const leftIndex = order.has(left.value) ? order.get(left.value) : Number.MAX_SAFE_INTEGER;
+        const rightIndex = order.has(right.value) ? order.get(right.value) : Number.MAX_SAFE_INTEGER;
+        return leftIndex - rightIndex;
+      });
+    }
+
     return [...options].sort((left, right) => {
       const leftLabel = getOptionLabel(category, left.value);
       const rightLabel = getOptionLabel(category, right.value);
