@@ -248,8 +248,6 @@
       "entry": {
         "title": "Lesegeschwindigkeitstest",
         "intro": "Dieser Test dient der Selbstkalibrierung.",
-        "overwrite_warning": "Der Start mit Pool-Text überschreibt den aktuellen Text.",
-        "edit_notice": "Das Bearbeiten des Textes während des Tests ist erlaubt, wirkt sich aber auf das gemessene Ergebnis aus.",
         "eligible_count": "Geeignete Dateien: {count}",
         "pool_exhausted_message": "Es sind keine unbenutzten Testdateien mehr vorhanden. Setzen Sie den Pool zurück oder fügen Sie weitere Dateien hinzu.",
         "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",

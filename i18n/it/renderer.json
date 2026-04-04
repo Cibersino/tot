@@ -248,8 +248,6 @@
       "entry": {
         "title": "Test di velocità di lettura",
         "intro": "Questo test è pensato per l'auto-calibrazione.",
-        "overwrite_warning": "Avviare con il testo del pool sovrascriverà il testo corrente.",
-        "edit_notice": "Modificare il testo durante il test è consentito, ma influirà sul risultato misurato.",
         "eligible_count": "File idonei: {count}",
         "pool_exhausted_message": "Non ci sono più file di test non usati. Reimposta il pool o aggiungi altri file.",
         "close_aria": "Chiudi la finestra di dialogo del test di velocità di lettura",

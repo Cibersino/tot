@@ -248,8 +248,6 @@
       "entry": {
         "title": "Test de ritmo de lectura",
         "intro": "Este test es pa' medir tu ritmo de lectura actual.",
-        "overwrite_warning": "Si ya tenís texto, el test lo va a sobreescribir.",
-        "edit_notice": "Hacer trampa es mala volá, pero es tu problema si lo hacís.",
         "eligible_count": "Archivos elegibles: {count}",
         "pool_exhausted_message": "Se agotó el pan. Podís restablecer el pool si querís no más.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",

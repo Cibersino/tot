@@ -259,8 +259,6 @@
       "entry": {
         "title": "Reading speed test",
         "intro": "This test is meant for self-calibration.",
-        "overwrite_warning": "Starting with pool text will overwrite the current text.",
-        "edit_notice": "Editing the text during the test is allowed, but it will affect the measured result.",
         "eligible_count": "Eligible files: {count}",
         "pool_exhausted_message": "There are no remaining unused test files. Reset the pool or add more files.",
         "close_aria": "Close reading speed test dialog",

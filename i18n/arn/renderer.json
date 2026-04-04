@@ -248,8 +248,6 @@
       "entry": {
         "title": "Pepiluwün ñi pürüm chillkatun",
         "intro": "Tüfachi pepiluwün feypingey kisu adkünuwal.",
-        "overwrite_warning": "Yalltun chillka trawün (pool) mu nentuafulu fantepu chillka.",
-        "edit_notice": "Kümelekefuy wirial chillka pepiluwün mu, welu katrütuay chum tripachi.",
         "eligible_count": "Dullngechi chillka: {count}",
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
         "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",
