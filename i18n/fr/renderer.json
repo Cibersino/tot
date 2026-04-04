@@ -261,7 +261,7 @@
         }
       },
       "questions": {
-        "title": "Questions de compréhension",
+        "title": "Questions de compréhension de lecture",
         "intro": "Répondez aux questions si vous souhaitez vérifier la compréhension avant de revenir au flux principal.",
         "random_title": "Probabilité au hasard",
         "random_value": "{percentage}% de réponses correctes probables en répondant au hasard",

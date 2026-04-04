@@ -272,7 +272,7 @@
         }
       },
       "questions": {
-        "title": "Preguntas de comprensión",
+        "title": "Preguntas de comprensión lectora",
         "intro": "Responde las preguntas si deseas revisar la comprensión antes de volver al flujo principal.",
         "random_title": "Probabilidad al azar",
         "random_value": "{percentage}% de respuestas correctas probables al azar",
