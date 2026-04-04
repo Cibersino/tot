@@ -984,6 +984,132 @@ select#presets {
   min-width: 138px;
 }
 
+.reading-test-entry-modal-panel {
+  position: relative;
+  z-index: 1001;
+  width: min(720px, calc(100% - 32px));
+  max-height: 85vh;
+  overflow: auto;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+
+.reading-test-entry-modal-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg-color);
+  padding-bottom: 6px;
+  z-index: 1;
+}
+
+.reading-test-entry-modal-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.reading-test-entry-modal-body {
+  margin-top: 12px;
+}
+
+.reading-test-entry-modal-body p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.reading-test-entry-modal-body p + p {
+  margin-top: 8px;
+}
+
+.reading-test-entry-modal-warning {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(141, 107, 25, 0.25);
+  border-radius: 8px;
+  background: #fff2cf;
+  color: #5b4510;
+  line-height: 1.4;
+}
+
+.reading-test-entry-modal-toolbar {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reading-test-entry-modal-count {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4c4028;
+}
+
+.reading-test-entry-modal-groups {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.reading-test-entry-modal-group {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.reading-test-entry-modal-group h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.reading-test-entry-modal-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.reading-test-entry-modal-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  font-size: 0.95rem;
+}
+
+.reading-test-entry-modal-option input[type="checkbox"] {
+  margin: 0;
+}
+
+.reading-test-entry-modal-option input[type="checkbox"]:disabled + span {
+  opacity: 0.6;
+}
+
+.reading-test-entry-modal-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reading-test-entry-modal-actions .btn-standard {
+  min-width: 120px;
+}
+
 .import-extract-ocr-activation-disclosure-panel {
   position: relative;
   z-index: 1001;

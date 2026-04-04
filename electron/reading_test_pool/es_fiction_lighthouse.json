@@ -1,0 +1,44 @@
+{
+  "text": "Cada madrugada, antes de que el pueblo despertara por completo, Elias subia los ciento veintidos escalones del faro con una taza de cafe tibio y una libreta en el bolsillo. Lo hacia desde hacia once anos, tanto que sus rodillas ya reconocian la forma de cada peldaño. En la mitad del ascenso siempre habia un punto en que el viento golpeaba el muro oriental y hacia vibrar la baranda de metal. Elias se detenía un segundo, no por cansancio, sino por costumbre, y escuchaba. Decia que el mar no repetia jamas el mismo golpe dos veces.\n\nArriba, la sala de la linterna amanecia con un olor mezclado de sal, bronce y polvo fino. Elias abria primero la ventana angosta que miraba al sur. Luego quitaba con cuidado la cubierta de tela que protegia la lente principal. La tela era gris y estaba remendada en dos esquinas por la hermana del carpintero. La lente, en cambio, seguia luciendo solemne, como si ignorara todas las tormentas que habian pasado frente a ella. Elias la limpiaba con un pano suave, girando alrededor del mecanismo con pasos cortos, sin apuro. Nunca dejaba que nadie mas hiciera ese trabajo, no porque desconfiara de los otros, sino porque creia que las cosas delicadas recordaban la mano que las cuidaba.\n\nCuando el cielo empezaba a aclararse, el puerto de San Jeronimo aparecia como un dibujo hecho con carbon. Primero se recortaban las gruas, despues los techos bajos de las bodegas, y al final las lanchas amarradas en la orilla interna. Los pescadores no levantaban la voz a esa hora. Desde arriba, Elias solo veia pequenos movimientos: una cuerda que se aflojaba, una red extendida, una linterna cerrada con un golpe seco. A veces pensaba que el pueblo entero dependia de esas acciones diminutas, de gestos tan breves que nadie los contaba en la plaza, pero que sostenian el dia como clavos invisibles bajo un tejado.\n\nAquella semana habia llegado una maestra nueva. Se llamaba Ines Robles y aun no aprendia a distinguir a los vecinos por el paso. Dos tardes antes, subio al faro con una carta del municipio y una pregunta inesperada: si el registro antiguo de tormentas seguia alli. Elias le mostro los cuadernos guardados en un armario de madera de lenga. Eran doce, uno por cada ano completo que el llevaba a cargo. Ines los hojeo con una mezcla de respeto y urgencia. Buscaba fechas, nombres de marejadas, dias en que las clases se habian suspendido. Dijo que queria preparar una leccion para los ninos, algo que les hiciera entender que el mar no era solo paisaje, sino tambien calendario, oficio y memoria.\n\nDesde entonces, Elias comenzo a anotar mas cosas en su libreta personal. No solo la direccion del viento o el color de la espuma junto a las rocas negras. Tambien escribia detalles que antes habria dejado escapar: la hora exacta en que las gaviotas cambiaban de sitio, la cantidad de humo que salia de la panaderia junto al muelle, la luz amarilla del taller de remos cuando el resto del pueblo seguia oscuro. Le gustaba imaginar que Ines, al leer algun dia aquellas paginas, entenderia mejor el ritmo secreto del lugar. No uno grande, heroico o tragico, sino el ritmo menor y persistente que permite a una comunidad reconocerse incluso cuando parece quieta.\n\nEsa manana en particular, el mar estaba sereno, pero el horizonte mostraba una franja violeta que Elias no recordaba haber visto en verano. Abajo, un muchacho cargaba cajas de sardinas sobre un carro azul. Mas lejos, dos mujeres sacudian manteles en una azotea. Elias limpio por ultima vez la lente, guardo el pano en el cajon de la derecha y abrio su libreta. Escribio: \"La calma de hoy no es vacio; es una promesa breve\". Luego apoyó la mano sobre el cristal frio y espero el primer destello completo del sol sobre las embarcaciones. Cuando aparecio, el pueblo dejo de parecer un dibujo y volvio a ser lo que siempre habia sido: una suma paciente de personas despiertas demasiado temprano para que otros pudieran orientarse mejor.",
+  "tags": {
+    "language": "es",
+    "type": "fiction",
+    "difficulty": "normal",
+    "testUsed": false
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "¿Que objeto limpiaba Elias cada manana en la sala de la linterna?",
+        "correctOptionId": "b",
+        "options": [
+          { "id": "a", "text": "La baranda de metal" },
+          { "id": "b", "text": "La lente principal" },
+          { "id": "c", "text": "La ventana del sur" }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "¿Para que queria Ines Robles revisar los registros antiguos?",
+        "correctOptionId": "c",
+        "options": [
+          { "id": "a", "text": "Para venderlos al municipio" },
+          { "id": "b", "text": "Para reparar el armario de lenga" },
+          { "id": "c", "text": "Para preparar una leccion para los ninos" },
+          { "id": "d", "text": "Para comparar faros de otros puertos" }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "¿De que color era el carro que transportaba cajas de sardinas?",
+        "correctOptionId": "a",
+        "options": [
+          { "id": "a", "text": "Azul" },
+          { "id": "b", "text": "Rojo" },
+          { "id": "c", "text": "Negro" }
+        ]
+      }
+    ]
+  }
+}

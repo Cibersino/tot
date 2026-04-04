@@ -1,0 +1,140 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f7f1e3;
+  color: #2f2a20;
+}
+
+.reading-test-questions {
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.reading-test-questions__header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.reading-test-questions__header p {
+  margin: 8px 0 0;
+  line-height: 1.45;
+}
+
+.reading-test-questions__meta {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reading-test-questions__card {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.66);
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.reading-test-questions__card h2 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.reading-test-questions__card p {
+  margin: 8px 0 0;
+  line-height: 1.4;
+}
+
+.reading-test-questions__feedback-link {
+  color: #245b89;
+  word-break: break-word;
+}
+
+.reading-test-questions__status {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.reading-test-questions__message {
+  display: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  line-height: 1.4;
+}
+
+.reading-test-questions__message[data-visible="true"] {
+  display: block;
+}
+
+.reading-test-questions__message[data-tone="warn"] {
+  background: #fff2cf;
+  border-color: rgba(141, 107, 25, 0.25);
+}
+
+.reading-test-questions__message[data-tone="error"] {
+  background: #ffe3de;
+  border-color: rgba(154, 54, 37, 0.22);
+}
+
+.reading-test-questions__form {
+  margin-top: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.reading-test-questions__question {
+  margin: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 14px;
+}
+
+.reading-test-questions__question legend {
+  padding: 0 6px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.reading-test-questions__options {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.reading-test-questions__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.reading-test-questions__option input[type="radio"] {
+  margin-top: 2px;
+}
+
+.reading-test-questions__actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reading-test-questions__actions button {
+  min-width: 130px;
+  padding: 7px 12px;
+}
+
+@media (max-width: 680px) {
+  .reading-test-questions {
+    padding: 14px;
+  }
+
+  .reading-test-questions__meta {
+    grid-template-columns: 1fr;
+  }
+}
