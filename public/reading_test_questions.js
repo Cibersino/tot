@@ -56,6 +56,7 @@
     const form = document.getElementById('readingTestQuestionsForm');
     const btnCheck = document.getElementById('readingTestQuestionsCheck');
     const btnContinue = document.getElementById('readingTestQuestionsContinue');
+    const actions = document.querySelector('.reading-test-questions__actions');
 
     if (!title
       || !intro
@@ -70,7 +71,8 @@
       || !fatalMessage
       || !form
       || !btnCheck
-      || !btnContinue) {
+      || !btnContinue
+      || !actions) {
       log.error('Reading-test questions window missing required DOM; script aborted.');
       return;
     }
@@ -200,13 +202,25 @@
               threshold: formatPercentage(lastScore.warningThreshold),
               baseline: formatPercentage(lastScore.randomGuessPercentage),
             },
-            'Your score is close to or below random expectation. You may have read the questions too hastily.'
+            'Your result is low compared with a random baseline. You may want to review the questions more carefully.'
           ),
           { tone: 'warn', visible: true }
         );
       } else {
         setMessage(lowScoreMessage, '', { tone: 'warn', visible: false });
       }
+    }
+
+    function withAnchoredActionsScroll(updateFn) {
+      const beforeTop = actions.getBoundingClientRect().top;
+      updateFn();
+      requestAnimationFrame(() => {
+        const afterTop = actions.getBoundingClientRect().top;
+        const delta = afterTop - beforeTop;
+        if (delta !== 0) {
+          window.scrollBy(0, delta);
+        }
+      });
     }
 
     function collectSelectedAnswer(questionId) {
@@ -223,12 +237,19 @@
         fieldset.className = 'reading-test-questions__question';
 
         const legend = document.createElement('legend');
-        legend.textContent = mr(
+        const headingText = mr(
           'renderer.reading_test.questions.question_heading',
           { number: index + 1, prompt: question.prompt },
           `${index + 1}. ${question.prompt}`
         );
+        legend.textContent = headingText;
+        legend.className = 'reading-test-questions__legend-sr';
         fieldset.appendChild(legend);
+
+        const heading = document.createElement('div');
+        heading.className = 'reading-test-questions__question-heading';
+        heading.textContent = headingText;
+        fieldset.appendChild(heading);
 
         const optionsList = document.createElement('div');
         optionsList.className = 'reading-test-questions__options';
@@ -322,24 +343,26 @@
     btnCheck.addEventListener('click', () => {
       if (fatalKey) return;
 
-      clearTransientMessages();
+      withAnchoredActionsScroll(() => {
+        clearTransientMessages();
 
-      if (!allQuestionsAnswered()) {
-        lastScore = null;
+        if (!allQuestionsAnswered()) {
+          lastScore = null;
+          updateResultMessages();
+          setMessage(
+            incompleteMessage,
+            tr(
+              'renderer.reading_test.questions.incomplete_warning',
+              'All questions must be answered before evaluating.'
+            ),
+            { tone: 'warn', visible: true }
+          );
+          return;
+        }
+
+        lastScore = questionsCore.scoreQuestions(questions, answersByQuestionId);
         updateResultMessages();
-        setMessage(
-          incompleteMessage,
-          tr(
-            'renderer.reading_test.questions.incomplete_warning',
-            'All questions must be answered before evaluating.'
-          ),
-          { tone: 'warn', visible: true }
-        );
-        return;
-      }
-
-      lastScore = questionsCore.scoreQuestions(questions, answersByQuestionId);
-      updateResultMessages();
+      });
     });
 
     btnContinue.addEventListener('click', () => {

@@ -1000,30 +1000,33 @@ select#presets {
 }
 
 .reading-test-entry-modal-header {
-  position: sticky;
-  top: 0;
+  position: absolute;
+  top: 14px;
+  right: 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: var(--bg-color);
-  padding-bottom: 6px;
+  justify-content: flex-end;
   z-index: 1;
 }
 
-.reading-test-entry-modal-header h2 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
+.reading-test-entry-modal-body {
+  margin-top: 0;
+  padding-right: 44px;
 }
 
-.reading-test-entry-modal-body {
-  margin-top: 12px;
+.reading-test-entry-modal-body h2 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .reading-test-entry-modal-body p {
   margin: 0;
   line-height: 1.45;
+}
+
+#readingTestEntryModalIntro {
+  font-size: 0.85rem;
 }
 
 .reading-test-entry-modal-body p + p {

@@ -74,6 +74,15 @@ body {
   border-color: rgba(141, 107, 25, 0.25);
 }
 
+.reading-test-questions__message[data-tone="info"] {
+  background: #e6f6ea;
+  border-color: rgba(49, 122, 67, 0.28);
+  color: #1f5a2d;
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 12px 14px;
+}
+
 .reading-test-questions__message[data-tone="error"] {
   background: #ffe3de;
   border-color: rgba(154, 54, 37, 0.22);
@@ -93,8 +102,19 @@ body {
   padding: 14px;
 }
 
-.reading-test-questions__question legend {
-  padding: 0 6px;
+.reading-test-questions__legend-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.reading-test-questions__question-heading {
   font-weight: 600;
   line-height: 1.35;
 }

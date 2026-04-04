@@ -247,9 +247,7 @@
     "reading_test": {
       "entry": {
         "title": "Test de vitesse de lecture",
-        "intro": "Ce test est conçu pour l'auto-calibrage.",
-        "overwrite_warning": "Démarrer avec un texte du pool écrasera le texte actuel.",
-        "edit_notice": "Modifier le texte pendant le test est autorisé, mais cela affectera le résultat mesuré.",
+        "intro": "Ce test sert à estimer votre vitesse réelle de lecture au moyen d'une session guidée. L'application ouvrira le texte, démarrera le chronométrage et vous demandera de lire normalement ; lorsque vous aurez terminé, appuyez sur Pause (⏸) dans la Fenêtre flottante. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test. Ensuite, vous pourrez consulter des questions de compréhension si le texte en contient et, à la fin, créer un preset à partir du résultat.",
         "eligible_count": "Fichiers éligibles : {count}",
         "pool_exhausted_message": "Il ne reste plus de fichiers de test inutilisés. Réinitialisez le pool ou ajoutez d'autres fichiers.",
         "close_aria": "Fermer la boîte de dialogue du test de vitesse de lecture",
@@ -270,7 +268,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Vous devez répondre à toutes les questions avant d'évaluer.",
         "result_summary": "{correct} sur {total} correctes ({percentage}%)",
-        "low_score_warning": "Votre pourcentage est tombé sous 5/3 de la probabilité au hasard ({threshold}%). Vous avez peut-être lu les questions trop vite.",
+        "low_score_warning": "Votre résultat est faible par rapport à une base aléatoire. Vous pourriez relire les questions plus attentivement.",
         "fatal_invalid": "La charge des questions est invalide.",
         "buttons": {
           "check": "Vérifier le résultat",
