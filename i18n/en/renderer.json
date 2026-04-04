@@ -272,7 +272,7 @@
         }
       },
       "questions": {
-        "title": "Comprehension questions",
+        "title": "Reading Comprehension Questions",
         "intro": "Answer the questions if you want to review comprehension before returning to the main flow.",
         "random_title": "Random guess baseline",
         "random_value": "{percentage}% probable correct answers when guessing randomly",

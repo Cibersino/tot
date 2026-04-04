@@ -261,7 +261,7 @@
         }
       },
       "questions": {
-        "title": "Kimün ñi ramtun",
+        "title": "Ramtun kimün chillkatun mu",
         "intro": "Llownge kom ramtun ayülemi kintual tami kimün petu tami wiñotun mu.",
         "random_title": "Chumngechi tripayal kisu",
         "random_value": "{percentage}% küme llowün tripayafuy kisu",

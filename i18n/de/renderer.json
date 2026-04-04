@@ -261,7 +261,7 @@
         }
       },
       "questions": {
-        "title": "Verständnisfragen",
+        "title": "Fragen zum Leseverständnis",
         "intro": "Beantworten Sie die Fragen, wenn Sie das Verständnis prüfen möchten, bevor Sie zum Hauptablauf zurückkehren.",
         "random_title": "Zufallsbasis",
         "random_value": "{percentage}% wahrscheinliche richtige Antworten bei zufälligem Raten",

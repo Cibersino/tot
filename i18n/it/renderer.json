@@ -261,7 +261,7 @@
         }
       },
       "questions": {
-        "title": "Domande di comprensione",
+        "title": "Domande di comprensione del testo",
         "intro": "Rispondi alle domande se vuoi verificare la comprensione prima di tornare al flusso principale.",
         "random_title": "Probabilità casuale",
         "random_value": "{percentage}% di risposte corrette probabili rispondendo a caso",
