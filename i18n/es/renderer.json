@@ -258,9 +258,7 @@
     "reading_test": {
       "entry": {
         "title": "Test de velocidad de lectura",
-        "intro": "Este test está pensado para auto-calibración.",
-        "overwrite_warning": "Iniciar con texto del pool sobrescribirá el texto actual.",
-        "edit_notice": "Editar el texto durante el test está permitido, pero afectará el resultado medido.",
+        "intro": "Este test sirve para estimar tu velocidad real de lectura con una sesión guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando termines, pulsa Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.",
         "eligible_count": "Archivos elegibles: {count}",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Restablece el pool o agrega más archivos.",
         "close_aria": "Cerrar diálogo de test de velocidad de lectura",
@@ -281,7 +279,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Debes responder todas las preguntas antes de evaluar.",
         "result_summary": "{correct} de {total} correctas ({percentage}%)",
-        "low_score_warning": "Tu porcentaje quedó por debajo de 5/3 de la probabilidad al azar ({threshold}%). Puede que hayas leído las preguntas demasiado rápido.",
+        "low_score_warning": "Tu resultado es bajo en comparación con una línea base al azar. Quizá te convenga revisar las preguntas con más cuidado.",
         "fatal_invalid": "La carga de preguntas es inválida.",
         "buttons": {
           "check": "Ver resultado",

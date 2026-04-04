@@ -47,8 +47,6 @@
   const backdrop = document.getElementById('readingTestEntryModalBackdrop');
   const title = document.getElementById('readingTestEntryModalTitle');
   const intro = document.getElementById('readingTestEntryModalIntro');
-  const overwriteWarning = document.getElementById('readingTestEntryModalOverwriteWarning');
-  const editNotice = document.getElementById('readingTestEntryModalEditNotice');
   const warningBox = document.getElementById('readingTestEntryModalWarning');
   const eligibleCount = document.getElementById('readingTestEntryModalEligibleCount');
   const resetButton = document.getElementById('readingTestEntryModalReset');
@@ -70,8 +68,6 @@
       && backdrop
       && title
       && intro
-      && overwriteWarning
-      && editNotice
       && warningBox
       && eligibleCount
       && resetButton
@@ -188,6 +184,10 @@
 
   function setModalVisible(visible) {
     modal.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    if (visible) {
+      const panel = modal.querySelector('.reading-test-entry-modal-panel');
+      if (panel) panel.scrollTop = 0;
+    }
     syncLockState();
     if (!visible) {
       restorePreviousFocus();
@@ -218,6 +218,17 @@
   }
 
   function sortOptionsForDisplay(category, options) {
+    if (category === 'difficulty') {
+      const order = new Map(
+        snapshotTagCatalog.DIFFICULTY_OPTIONS.map((option, index) => [option.value, index])
+      );
+      return [...options].sort((left, right) => {
+        const leftIndex = order.has(left.value) ? order.get(left.value) : Number.MAX_SAFE_INTEGER;
+        const rightIndex = order.has(right.value) ? order.get(right.value) : Number.MAX_SAFE_INTEGER;
+        return leftIndex - rightIndex;
+      });
+    }
+
     return [...options].sort((left, right) => {
       const leftLabel = getOptionLabel(category, left.value);
       const rightLabel = getOptionLabel(category, right.value);
@@ -323,15 +334,7 @@
     );
     intro.textContent = tRenderer(
       'renderer.reading_test.entry.intro',
-      'This test is meant for self-calibration.'
-    );
-    overwriteWarning.textContent = tRenderer(
-      'renderer.reading_test.entry.overwrite_warning',
-      'Starting with pool text will overwrite the current text.'
-    );
-    editNotice.textContent = tRenderer(
-      'renderer.reading_test.entry.edit_notice',
-      'Editing the text during the test is allowed, but it will affect the measured result.'
+      'This test is meant to estimate your real reading speed through a guided session. The app will open the text, start the timer, and ask you to read normally; when you finish, press Pause (⏸) in the Floating Window. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.'
     );
     btnClose.setAttribute(
       'aria-label',
@@ -433,11 +436,6 @@
     rememberPreviousFocus();
     render();
     setModalVisible(true);
-    if (poolExhausted) {
-      resetButton.focus();
-    } else {
-      btnStart.focus();
-    }
   }
 
   async function handleResetPool() {

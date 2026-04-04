@@ -247,9 +247,7 @@
     "reading_test": {
       "entry": {
         "title": "Test de ritmo de lectura",
-        "intro": "Este test es pa' medir tu ritmo de lectura actual.",
-        "overwrite_warning": "Si ya tenís texto, el test lo va a sobreescribir.",
-        "edit_notice": "Hacer trampa es mala volá, pero es tu problema si lo hacís.",
+        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando terminís, apreta Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.",
         "eligible_count": "Archivos elegibles: {count}",
         "pool_exhausted_message": "Se agotó el pan. Podís restablecer el pool si querís no más.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",
@@ -270,7 +268,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Tenís que responder toas las preguntas pa' ver el resultado.",
         "result_summary": "{correct} de {total} correctas ({percentage}%)",
-        "low_score_warning": "Tu porcentaje quedó por debajo de 5/3 de la probabilidad al achunte ({threshold}%). Remal.",
+        "low_score_warning": "Tu resultado quedó bajo en comparación con una línea base al achunte. Revisa bien, pajarón.",
         "fatal_invalid": "La carga de preguntas es inválida.",
         "buttons": {
           "check": "Ver resultado",

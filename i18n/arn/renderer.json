@@ -247,9 +247,7 @@
     "reading_test": {
       "entry": {
         "title": "Pepiluwün ñi pürüm chillkatun",
-        "intro": "Tüfachi pepiluwün feypingey kisu adkünuwal.",
-        "overwrite_warning": "Yalltun chillka trawün (pool) mu nentuafulu fantepu chillka.",
-        "edit_notice": "Kümelekefuy wirial chillka pepiluwün mu, welu katrütuay chum tripachi.",
+        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka, amulnayay tiempo ka feypiaymi tami chillkatuwal chumngechi rumel chillkatuken; afülmi, pañitunge Pausa (⏸) feyti Ventana Flotante mu. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.",
         "eligible_count": "Dullngechi chillka: {count}",
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
         "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",
@@ -270,7 +268,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Llowkeaymi kom ramtun petu kintual chumngechi tripay.",
         "result_summary": "{correct} ñi {total} küme tripachi ({percentage}%)",
-        "low_score_warning": "Tami küme tripachi nagküley feyti ({threshold}%). Pürüm chillkatufimi ramtun.",
+        "low_score_warning": "Tami tripantu müna pichi wentruwün mew kom küme rakiduam ka zufali ramtun.",
         "fatal_invalid": "Feyti ramtun wedalküley.",
         "buttons": {
           "check": "Kintual chum tripachi",
