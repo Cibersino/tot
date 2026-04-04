@@ -7,7 +7,7 @@
 
 # toT — de Texto a Tiempo
 
-**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina importación/extracción de texto desde archivos de texto e imagen, presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas y cronómetro para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
+**toT** es una app de escritorio que convierte texto en tiempo estimado de lectura y te ayuda a planificar cargas de lectura realistas. Combina importación/extracción de texto desde archivos de texto e imagen, presets de WPM configurables, conteo preciso, snapshots del texto actual, editor de tareas, cronómetro y test de velocidad de lectura para que puedas medir, organizar y terminar lecturas con menos incertidumbre.
 
 ![Guía básica animada](public/assets/instrucciones/guia-basica.gif)
 
@@ -32,14 +32,9 @@
 * Presets de WPM: crear/editar/eliminar + restaurar valores por defecto.
 * Cronómetro con cálculo de WPM real + ventana flotante.
 * Snapshots de textos: guardar/cargar los textos actuales.
+* Test de velocidad de lectura: flujo guiado con texto aleatorio desde pool o con el texto actual, medición de WPM, ventana flotante, preguntas opcionales de comprensión y creación asistida de presets.
 * Editor de tareas: organizador de listas de textos para planificar lecturas.
 * Interfaz multi-idioma: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
-
-## Lo que viene
-
-Se viene el **test de velocidad de lectura**.
-
-Todavía está en desarrollo, pero apunta a convertirse en una de las próximas funciones fuertes de **toT** para medir tu ritmo real y afinar mejor tus estimaciones.
 
 ---
 
@@ -78,6 +73,7 @@ Accesos rápidos visibles en la ventana principal:
 * `⌨`: abrir editor de texto completo.
 * `💾` / `📂`: guardar/cargar snapshot del texto actual.
 * `📝` / `🗃️`: nueva tarea o cargar tarea.
+* `Test de velocidad de lectura`: iniciar un test guiado desde un texto del pool o desde el texto actual.
 
 ---
 
@@ -168,7 +164,7 @@ MIT — ver [`LICENSE`](LICENSE).
 
 # toT — from Text to Time
 
-**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines file text import/extraction from text and image files, configurable WPM presets, precise counting, text snapshots, a task editor, and a stopwatch so you can measure, organize, and complete readings with less guesswork.
+**toT** is a desktop app that turns text into estimated reading time and helps you plan realistic reading workloads. It combines file text import/extraction from text and image files, configurable WPM presets, precise counting, text snapshots, a task editor, a stopwatch, and a reading speed test so you can measure, organize, and complete readings with less guesswork.
 
 ![Animated basic guide](public/assets/instrucciones/guia-basica.gif)
 
@@ -193,14 +189,9 @@ MIT — ver [`LICENSE`](LICENSE).
 * WPM presets: create/edit/delete + restore defaults.
 * Stopwatch with real WPM calculation; optional floating window.
 * Text snapshots: save/load current texts.
+* Reading speed test: guided flow with random pool text or the current text, WPM measurement, floating window, optional comprehension questions, and assisted preset creation.
 * Task editor: text list organizer to plan readings.
 * Multi-language UI: `es`, `arn`, `en`, `fr`, `de`, `it`, `pt`.
-
-## Coming soon
-
-The **reading speed test** is on the way.
-
-It is still in development, but it is shaping up to be one of **toT**'s next standout features for measuring your real pace and dialing in better estimates.
 
 ---
 
@@ -242,6 +233,7 @@ Quick actions in the main window:
 * `⌨`: open full-text editor.
 * `💾` / `📂`: save/load current-text snapshot.
 * `📝` / `🗃️`: new task or load task.
+* `Reading speed test`: start a guided test from pool text or from the current text.
 
 ---
 
