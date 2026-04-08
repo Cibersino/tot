@@ -64,7 +64,7 @@ Important limitations:
 
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
 * no renderer/UI automation exists yet;
-* the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
+* the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool core in `test/unit/electron/reading_test_pool.test.js` and the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
 * OCR network/provider behavior is still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
@@ -110,7 +110,8 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - `import_extract_state.json` (last picker directory)
 - `presets_defaults/*.json` (runtime defaults copies)
 - `saved_current_texts/*.json` (saved text snapshots)
-  - `saved_current_texts/reading_speed_test_pool/*.json` (runtime reading-test pool entries with inline `tags.testUsed`)
+  - `saved_current_texts/reading_speed_test_pool/*.json` (runtime reading-test pool content files; optional `readingTest`, no inline usage state)
+- `reading_test_pool_state.json` (external reading-test pool state: `used` rows + managed bundled starter hashes)
 - `reading_test_pool_import_state.json` (last picker directory for reading-test pool import)
 - `ocr_google_drive/`
   - `ocr_google_drive/credentials.json` (runtime mirrored OAuth client; app-managed)
@@ -995,7 +996,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The Editor acts as the reading surface and the Floating Window acts as the session-control surface.
 - Main-window interactions, including main stopwatch controls, are blocked while the session is active.
 - Cancel closes the Editor and Floating Window, resets the stopwatch, clears current text, and returns the main window to normal interaction.
-- Cancel does **not** roll back the consumed pool entry; its `tags.testUsed` remains `true`.
+- Cancel does **not** roll back the consumed pool entry; its row remains `used: true` in `config/reading_test_pool_state.json`.
 
 #### REG-READING-TEST-04 Finish path with questions modal
 **Goal:** question-backed pool entries insert the comprehension step before preset creation.
@@ -1032,17 +1033,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 1. Use or cancel enough reading-test runs to consume all starter pool entries.
 2. Open the reading test again.
 3. Confirm the modal shows the exhausted-pool warning inline and still exposes **Reset pool**.
-4. Inspect one used pool JSON file under `config/saved_current_texts/reading_speed_test_pool/`.
-5. Confirm it contains `tags.testUsed: true`.
-6. Use **Reset pool** and confirm.
-7. Inspect the same file again and confirm `tags.testUsed: false`.
-8. Load one of the pool JSON files through the normal **Load snapshot** flow.
+4. Inspect `config/reading_test_pool_state.json` and locate one consumed pool entry.
+5. Confirm that entry contains `"used": true`.
+6. Inspect the corresponding pool JSON file under `config/saved_current_texts/reading_speed_test_pool/`.
+7. Confirm the file contains no inline `testUsed`.
+8. Use **Reset pool** and confirm.
+9. Inspect the same state entry again and confirm `"used": false`.
+10. Load one of the pool JSON files through the normal **Load snapshot** flow.
 
 **Expected:**
 - Exhaustion is handled inside the entry modal, not by blocking entry with a separate alert.
-- Pool reset rewrites all pool files in the dedicated pool folder back to `tags.testUsed: false`.
-- Pool files remain ordinary snapshot JSON files.
-- Normal snapshot loading accepts pool files that include `tags.testUsed` and optional `readingTest`, and applies only the `text` to current text.
+- Pool reset clears external `used` state without rewriting the content files in the dedicated pool folder.
+- Pool files remain ordinary snapshot JSON files with optional `readingTest`, but without inline usage state.
+- Normal snapshot loading accepts pool files with optional `readingTest` and applies only the `text` to current text.
 
 #### REG-READING-TEST-07 Pool acquisition/import via Drive link and native picker
 **Goal:** additional pool files can be acquired/imported without manual filesystem navigation.
@@ -1188,16 +1191,17 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-PERSIST-06 Reading speed test pool persistence
 **Goal:** the guided reading-test flow persists its pool state and seeded runtime folder correctly across restart.
-1. Start from a config where `config/saved_current_texts/reading_speed_test_pool/` does not exist yet, then launch the app.
-2. Open the reading speed test entry modal once.
-3. Confirm the runtime pool folder now exists under `config/saved_current_texts/`.
+1. Start from a config where `config/saved_current_texts/reading_speed_test_pool/` and `config/reading_test_pool_state.json` do not exist yet, then launch the app.
+2. Before opening the reading speed test entry modal, inspect config on disk.
+3. Confirm the runtime pool folder now exists under `config/saved_current_texts/` and that `config/reading_test_pool_state.json` was also created.
 4. Complete one reading-test run or cancel one after text reveal.
 5. Close the app and relaunch.
-6. Re-open the reading test entry modal and inspect the runtime pool files on disk.
+6. Re-open the reading test entry modal and inspect `config/reading_test_pool_state.json`.
 
 **Expected:**
-- The runtime reading-test pool folder is created/seeded automatically when needed.
-- Used entries persist `tags.testUsed` across app restart until a pool reset is requested.
+- The runtime reading-test pool folder is created/seeded automatically at startup, before the entry modal is opened.
+- `reading_test_pool_state.json` is also created at startup and stores `used` separately from the pool JSON content.
+- Used entries persist across app restart until a pool reset is requested.
 - The relaunch does not silently restore consumed entries to unused state.
 
 #### REG-PERSIST-07 Reading speed test pool import picker state
