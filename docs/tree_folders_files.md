@@ -133,8 +133,8 @@ tot/
 │ ├── fonts/
 │ │ ├── Baskervville-VariableFont_wght.ttf
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
-│ │ ├── Baskervville.css
-│ │ └── LICENSE_Baskervville_OFL.txt
+│ │ └── Baskervville.css
+│ ├── third_party_licenses/       # {licencias/notices versionados de terceros redistribuidos}
 │ ├── info/
 │ │ ├── acerca_de.html
 │ │ ├── instrucciones.es.html

@@ -53,6 +53,7 @@ Reglas:
 - Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro; en esta misma iteración el catálogo incorpora también `testUsed`.
 - Reading speed test (Issue #52): el botón `Test de velocidad de lectura` deja de ser un aviso WIP y pasa a abrir un flujo guiado real con modal de entrada/configuración, selección por combinaciones reales del pool y una segunda acción explícita `Start with current text`; según la ruta elegida, la sesión usa texto aleatorio del pool o reutiliza directamente el current text ya cargado, manteniendo cálculo autoritativo de WPM en main, paso opcional de preguntas de comprensión y handoff final al modal de presets con payload prellenado.
 - Pool del reading speed test: se agrega un subárbol runtime `config/saved_current_texts/reading_speed_test_pool/`, seeded desde archivos versionados en `electron/reading_test_pool/`; los archivos del pool son snapshots JSON ordinarios con `tags.testUsed` inline y payload opcional `readingTest`, por lo que siguen siendo reutilizables por la funcionalidad normal de snapshots.
+- Adquisición/import del pool (Issue #208): el modal del pool agrega un link oficial a Google Drive y una acción nativa `Import files...` para instalar `.json` y `.zip`; esto introduce `adm-zip@0.5.16` como nueva dependencia runtime redistribuida para inspección local de archivos comprimidos y, por tanto, amplía el inventario de terceros redistribuidos del release.
 
 ### Agregado
 
@@ -69,7 +70,13 @@ Reglas:
   - `public/reading_test_questions.html`, `public/reading_test_questions.css` y `public/reading_test_questions.js` (nuevos): ventana/modal dedicada para la etapa opcional de preguntas de comprensión, con una sola respuesta por pregunta, resultado agregado, baseline probabilístico y continuación explícita del flujo.
   - `electron/reading_test_questions_preload.js` (nuevo): preload específico del modal de preguntas; expone `window.readingTestQuestionsAPI` y bufferiza/reproduce el payload init para evitar carreras entre el envío desde main y el registro tardío del listener renderer.
   - `electron/reading_test_pool.js` y `electron/reading_test_session.js` (nuevos): helpers main-owned para sembrar/escanear el pool, reescribir `tags.testUsed`, validar elegibilidad y orquestar la sesión guiada completa del reading speed test, incluyendo la ruta alternativa que usa current text sin tocar el estado del pool.
+  - `electron/reading_test_pool_import.js` (nuevo): módulo main-owned del follow-up de adquisición/import; valida `.json`, inspecciona `.zip` localmente y escribe solo candidatos válidos dentro del pool runtime.
   - `electron/reading_test_pool/*.json` (nuevos): starter files versionados del pool (`2` con preguntas de comprensión y `2` speed-only) que la app copia al subárbol runtime cuando faltan.
+- Runtime/legal:
+  - `package.json`: se agrega `adm-zip@^0.5.16` como dependencia runtime directa para soportar la importación local de packs `.zip` del pool del reading speed test.
+  - `package-lock.json`: se refresca el grafo runtime para incorporar `adm-zip@0.5.16`.
+  - `public/third_party_licenses/` (nuevo): pasa a ser la carpeta canónica repo-managed de licencias/notices de terceros redistribuidos; absorbe tanto las licencias runtime anteriores del flujo import/extract como la licencia OFL de Baskervville y la nueva licencia `MIT` de `adm-zip@0.5.16`.
+  - `public/info/acerca_de.html` y `electron/link_openers.js`: `Acerca de` pasa a enumerar `adm-zip@0.5.16` como dependencia runtime redistribuida y resuelve todas las licencias repo-managed de terceros desde `public/third_party_licenses/`, manteniendo `LICENSE.electron.txt` y `LICENSES.chromium.html` como notices especiales del artefacto empaquetado.
 - i18n/documentación:
   - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): nuevas keys `renderer.snapshot_save_tags.*` para título, mensaje, labels, botones, accesibilidad y opciones visibles del catálogo de idiomas/tipos/dificultades.
   - i18n renderer (`de`, `en`, `es`, `fr`, `it`, `pt`): nuevas keys `renderer.reading_test.*` y `renderer.alerts.reading_test_*` para el modal de entrada, la acción `Start with current text`, la etapa de preguntas, mensajes inline y alertas/notices del flujo guiado.
@@ -100,6 +107,8 @@ Reglas:
   - el catálogo deja de limitarse a `language` / `type` / `difficulty` y pasa a incluir también la normalización y serialización de `testUsed`.
 - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`, `docs/tree_folders_files.md` y `docs/test_suite.md`:
   - se actualizan para documentar el reading speed test, el nuevo subárbol runtime `reading_speed_test_pool`, la compatibilidad extendida de snapshots y la nueva suite manual/regresión del flujo guiado.
+- Baselines de release:
+  - `docs/releases/legal_baseline.md` y `docs/releases/security_baseline.md`: el baseline reusable pasa a contemplar `adm-zip@0.5.16` dentro del set esperado de dependencias runtime redistribuidas y de la cobertura legal/security post-packaging del release.
 
 ### Arreglado
 
@@ -181,6 +190,13 @@ Reglas:
 - `i18n/*/renderer.json`
 - `public/info/instrucciones.es.html`
 - `public/info/instrucciones.en.html`
+- `public/info/acerca_de.html`
+- `public/third_party_licenses/*`
+- `electron/link_openers.js`
+- `package.json`
+- `package-lock.json`
+- `docs/releases/legal_baseline.md`
+- `docs/releases/security_baseline.md`
 - `docs/test_suite.md`
 - `docs/tree_folders_files.md`
 
