@@ -716,9 +716,9 @@ async function updatePreviewAndResults(text) {
   const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
 
-  resChars.textContent = msgRenderer('renderer.main.results.chars', { n: caracteresFormateado }, `Caracteres: ${caracteresFormateado}`);
-  resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado }, `Chars w/o space: ${caracteresSinEspaciosFormateado}`);
-  resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado }, `Palabras: ${palabrasFormateado}`);
+  resChars.textContent = msgRenderer('renderer.main.results.chars', { n: caracteresFormateado }, `Characters: ${caracteresFormateado}`);
+  resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado }, `Characters (no spaces): ${caracteresSinEspaciosFormateado}`);
+  resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado }, `Words: ${palabrasFormateado}`);
 
   const totalSeconds = getExactTotalSeconds(stats.palabras, wpm);
   renderEstimatedTime(totalSeconds);
@@ -1313,10 +1313,13 @@ setupToggleModoPreciso();
   async function hydrateAboutVersion(container) {
     const versionEl = container ? container.querySelector('#appVersion') : null;
     if (!versionEl) return;
+    const unavailableText = tRenderer
+      ? tRenderer('renderer.info.acerca_de.version.unavailable', 'Unavailable')
+      : 'Unavailable';
 
     if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
       log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
-      versionEl.textContent = 'N/A';
+      versionEl.textContent = unavailableText;
       return;
     }
 
@@ -1328,13 +1331,13 @@ setupToggleModoPreciso();
           'renderer.info.acerca_de.version.empty',
           'getAppVersion returned empty; About modal shows N/A.'
         );
-        versionEl.textContent = 'N/A';
+        versionEl.textContent = unavailableText;
         return;
       }
       versionEl.textContent = cleaned;
     } catch (err) {
       log.warn('getAppVersion failed; About modal shows N/A:', err);
-      versionEl.textContent = 'N/A';
+      versionEl.textContent = unavailableText;
     }
   }
 
@@ -1346,11 +1349,14 @@ setupToggleModoPreciso();
     const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
     const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
     if (!envEl) return;
+    const unavailableText = tRenderer
+      ? tRenderer('renderer.info.acerca_de.env.unavailable', 'Unavailable')
+      : 'Unavailable';
 
     if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
       log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
-      envEl.textContent = 'N/A';
-      if (runtimeEl) runtimeEl.textContent = 'N/A';
+      envEl.textContent = unavailableText;
+      if (runtimeEl) runtimeEl.textContent = unavailableText;
       if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
       if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
       return;
@@ -1385,8 +1391,8 @@ setupToggleModoPreciso();
           'renderer.info.acerca_de.env.missing_fields',
           'getAppRuntimeInfo missing platform/arch; About modal shows N/A.'
         );
-        envEl.textContent = 'N/A';
-        if (runtimeEl) runtimeEl.textContent = 'N/A';
+        envEl.textContent = unavailableText;
+        if (runtimeEl) runtimeEl.textContent = unavailableText;
         if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
         if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
         if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
@@ -1399,9 +1405,9 @@ setupToggleModoPreciso();
       if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = sharpRuntimePackage;
       if (runtimeEl) {
         const runtimeParts = [];
-        runtimeParts.push(electronVersion ? `Electron ${electronVersion}` : 'Electron N/A');
-        runtimeParts.push(chromeVersion ? `Chromium ${chromeVersion}` : 'Chromium N/A');
-        runtimeParts.push(nodeVersion ? `Node.js ${nodeVersion}` : 'Node.js N/A');
+        runtimeParts.push(electronVersion ? `Electron ${electronVersion}` : `Electron ${unavailableText}`);
+        runtimeParts.push(chromeVersion ? `Chromium ${chromeVersion}` : `Chromium ${unavailableText}`);
+        runtimeParts.push(nodeVersion ? `Node.js ${nodeVersion}` : `Node.js ${unavailableText}`);
         runtimeEl.textContent = runtimeParts.join(' | ');
       }
 
@@ -1421,8 +1427,8 @@ setupToggleModoPreciso();
       }
     } catch (err) {
       log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
-      envEl.textContent = 'N/A';
-      if (runtimeEl) runtimeEl.textContent = 'N/A';
+      envEl.textContent = unavailableText;
+      if (runtimeEl) runtimeEl.textContent = unavailableText;
       if (sharpRuntimeEl) sharpRuntimeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
       if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
       if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
