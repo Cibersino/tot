@@ -5,5 +5,171 @@
     "type": "fiction",
     "difficulty": "normal",
     "testUsed": false
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "Las medias rojas importan en el cuento sobre todo porque…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "muestran de forma visible que Ildara aspira a otra vida: no cambian todavía su situación, pero sí revelan su deseo concreto de salir del mundo en que vive."
+          },
+          {
+            "id": "b",
+            "text": "sirven principalmente para mostrar la frivolidad de Ildara, incapaz de medir su pobreza."
+          },
+          {
+            "id": "c",
+            "text": "funcionan como una provocación deliberada contra el padre, cuyo enojo nace de una humillación buscada por la muchacha."
+          },
+          {
+            "id": "d",
+            "text": "son un detalle costumbrista sin especial peso simbólico, usado para volver más plástica la escena aldeana."
+          },
+          {
+            "id": "e",
+            "text": "anticipan que Ildara podrá integrarse sin dificultad al mundo de “las señoritas”, del que ya participa en secreto."
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "La violencia del tío Clodio se vuelve especialmente brutal en el cuento porque…",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "aparece como un estallido puramente irracional, sin vínculo alguno con la pobreza ni con el temor a quedarse solo."
+          },
+          {
+            "id": "b",
+            "text": "se presenta como una reacción moralmente comprensible, aunque excesiva, frente a una hija que quiere abandonar sus deberes."
+          },
+          {
+            "id": "c",
+            "text": "mezcla dominio patriarcal, interés material y miedo a perder a quien sostiene el hogar, de modo que el cuerpo de Ildara queda convertido en el lugar donde él impone su poder."
+          },
+          {
+            "id": "d",
+            "text": "sirve ante todo para revelar que el padre sospecha un vínculo amoroso secreto entre Ildara y el gancho."
+          },
+          {
+            "id": "e",
+            "text": "importa menos por lo que le hace a Ildara que por lo que revela del temperamento irascible del padre."
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "¿Cuál de estas preguntas sobre el cuento está mejor formulada porque abre una interpretación fuerte sin forzar demasiado el texto?",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "¿Por qué demuestra Pardo Bazán que toda joven pobre que quiere ascender socialmente termina castigada?"
+          },
+          {
+            "id": "b",
+            "text": "¿En qué instante exacto decide el padre destruir para siempre la belleza de Ildara?"
+          },
+          {
+            "id": "c",
+            "text": "¿Cómo convierte el cuento un objeto pequeño y visible en el detonante de un conflicto donde se cruzan deseo de emancipación, pobreza y dominio familiar?"
+          },
+          {
+            "id": "d",
+            "text": "¿Qué simbolizan de manera única y definitiva las medias rojas: libertad, sexualidad o vanidad?"
+          },
+          {
+            "id": "e",
+            "text": "¿Por qué Ildara prefiere la fantasía del lujo antes que aceptar humildemente su lugar?"
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "¿Cuál de estas lecturas del final es la menos defendible?",
+        "correctOptionId": "e",
+        "options": [
+          {
+            "id": "a",
+            "text": "El desenlace no solo frustra una ilusión individual: muestra cómo una posibilidad concreta de salida queda anulada por la violencia."
+          },
+          {
+            "id": "b",
+            "text": "La pérdida del ojo y del diente no importa solo como daño físico, sino como destrucción de aquello que hacía viable la emigración soñada por Ildara."
+          },
+          {
+            "id": "c",
+            "text": "El final endurece la lógica del cuento: no basta con castigar a Ildara, también hay que volver inviable su futuro."
+          },
+          {
+            "id": "d",
+            "text": "El hecho de que el barco ya no la reciba vuelve más cruel el desenlace porque traslada el cierre del cuento desde la casa al horizonte perdido."
+          },
+          {
+            "id": "e",
+            "text": "El remate sugiere que, en el fondo, Ildara nunca había tenido una posibilidad real de irse, y que todo lo anterior era solo fantasía adolescente sin base concreta."
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "Cuando el padre habla de “mujeres de bien” y recuerda a la madre, lo más defendible es que…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "convierte una forma heredada de carencia en medida moral, de modo que las medias aparezcan como desviación y no solo como cambio."
+          },
+          {
+            "id": "b",
+            "text": "intenta demostrar que lo verdaderamente intolerable para él es el gasto mismo, mucho más que lo que las medias significan."
+          },
+          {
+            "id": "c",
+            "text": "deja ver que interpreta las medias, ante todo, como anuncio de una sexualidad ya disponible ante los otros."
+          },
+          {
+            "id": "d",
+            "text": "usa la figura de la madre sobre todo como recuerdo afectivo, para conmover a Ildara antes de golpearla."
+          },
+          {
+            "id": "e",
+            "text": "expresa una preocupación protectora sincera, aunque deformada por la violencia del momento."
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "El horizonte de “holganza y lujo” se entiende mejor como…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "un imaginario de ascenso que simplifica el destino americano, pero que para Ildara sigue nombrando una salida real de su vida presente."
+          },
+          {
+            "id": "b",
+            "text": "una promesa básicamente fiable, descrita con exageración verbal pero asentada en expectativas realistas."
+          },
+          {
+            "id": "c",
+            "text": "una fantasía frívola que revela que el deseo de Ildara es, en el fondo, más vanidoso que liberador."
+          },
+          {
+            "id": "d",
+            "text": "un espejismo deliberadamente desacreditado por el cuento antes de la paliza."
+          },
+          {
+            "id": "e",
+            "text": "una forma de decir que la emigración importa menos por escapar de la dependencia que por parecerse a las señoritas."
+          }
+        ]
+      }
+    ]
   }
 }

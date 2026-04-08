@@ -5,5 +5,171 @@
     "type": "fiction",
     "difficulty": "normal",
     "testUsed": false
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "Cuando el cuento insiste en que la carretera está “muerta”, lo más defendible es que ese paisaje funciona como…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "un espacio deshumanizado que no solo enmarca la acción, sino que vuelve la violencia algo casi impersonal, absorbido por un mundo ya arrasado."
+          },
+          {
+            "id": "b",
+            "text": "una denuncia directa de que toda obra de progreso moderno acaba destruyendo la vida rural."
+          },
+          {
+            "id": "c",
+            "text": "un espejo casi exacto del estado interior de la mujer, sin autonomía simbólica propia."
+          },
+          {
+            "id": "d",
+            "text": "un recurso básicamente descriptivo para justificar el cansancio de Quico y el agotamiento de la mujer."
+          },
+          {
+            "id": "e",
+            "text": "una señal de que la llegada de Quico abrirá un camino de rescate que la historia luego frustra."
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "¿Cuál de estas preguntas sobre el cuento está mejor formulada porque abre una interpretación fuerte sin forzar el texto?",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "¿Por qué decide la mujer, en el fondo, que prefiere seguir siendo maltratada antes que aceptar ayuda?"
+          },
+          {
+            "id": "b",
+            "text": "¿En qué momento exacto comprende Quico que va a morir por culpa de la mujer?"
+          },
+          {
+            "id": "c",
+            "text": "¿Cómo transforma el cuento una escena que parece de rescate en otra donde la violencia no desaparece, sino que cambia bruscamente de dirección?"
+          },
+          {
+            "id": "d",
+            "text": "¿Por qué demuestra Bosch que toda mujer pobre termina defendiendo a su agresor?"
+          },
+          {
+            "id": "e",
+            "text": "¿Qué simboliza de manera única y definitiva la piedra con que la mujer golpea a Quico?"
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "¿Cuál de estas lecturas del niño es la menos defendible?",
+        "correctOptionId": "e",
+        "options": [
+          {
+            "id": "a",
+            "text": "Su llanto vuelve imposible leer la escena solo como choque entre adultos."
+          },
+          {
+            "id": "b",
+            "text": "La criatura da una razón concreta del conflicto, porque la leche se destinó a calmar su hambre."
+          },
+          {
+            "id": "c",
+            "text": "El niño intensifica la indefensión de la madre, pero no logra alterar el curso de la violencia."
+          },
+          {
+            "id": "d",
+            "text": "Su presencia hace más difícil separar miseria material y violencia familiar."
+          },
+          {
+            "id": "e",
+            "text": "El niño introduce un principio reparador que termina conteniendo la ferocidad de los adultos."
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "La presencia de Quico en el cuento importa sobre todo porque…",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "introduce una figura de justicia exterior que, aunque fracasa, deja moralmente resuelto quién tenía razón en la escena."
+          },
+          {
+            "id": "b",
+            "text": "funciona como un simple recurso para que el cuento pase de la golpiza inicial a una pelea más intensa."
+          },
+          {
+            "id": "c",
+            "text": "abre por un instante la posibilidad de que una fuerza ajena interrumpa la violencia doméstica, pero el cuento muestra que esa irrupción no basta para fundar una salida estable."
+          },
+          {
+            "id": "d",
+            "text": "demuestra que, incluso en un mundo brutal, la solidaridad masculina termina imponiéndose sobre la barbarie."
+          },
+          {
+            "id": "e",
+            "text": "permite que la mujer descubra en Chepe un valor que antes no había visto, al compararlo con otro hombre."
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "El golpe final de la mujer a Quico se vuelve especialmente perturbador porque el cuento lo presenta como…",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "una decisión moral nítida y plenamente consciente en favor del marido."
+          },
+          {
+            "id": "b",
+            "text": "una pura ingratitud, destinada a mostrar que la víctima no merece ser salvada."
+          },
+          {
+            "id": "c",
+            "text": "una acción nacida en una zona extrema donde miedo, sometimiento, reflejo y necesidad de cortar la escena se mezclan sin dejar una explicación limpia."
+          },
+          {
+            "id": "d",
+            "text": "una prueba de que Quico, al estrangular a Chepe, había pasado a ser exactamente igual que él."
+          },
+          {
+            "id": "e",
+            "text": "un acto de justicia elemental, pues la mujer comprende que ningún hombre tiene derecho a decidir sobre la vida de otro."
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "El cierre, cuando la mujer mira hacia afuera y el cuento responde con que “sobre la gran carretera muerta, totalmente muerta, sólo estaba el sol que la mató”, se entiende mejor como…",
+        "correctOptionId": "b",
+        "options": [
+          {
+            "id": "a",
+            "text": "una apertura final: el mundo sigue vacío, pero ahora la mujer dispone por fin de un horizonte para recomenzar."
+          },
+          {
+            "id": "b",
+            "text": "una manera de restituir el dominio de un mundo impersonal y arrasado, donde el drama humano no encuentra respuesta exterior ni salida visible."
+          },
+          {
+            "id": "c",
+            "text": "una señal de que la historia debe leerse, en el fondo, como castigo cósmico contra todos los personajes."
+          },
+          {
+            "id": "d",
+            "text": "una forma de sugerir que nada de lo ocurrido importa realmente frente a la inmensidad del paisaje."
+          },
+          {
+            "id": "e",
+            "text": "un simple cierre circular, eficaz en lo formal, pero sin peso interpretativo especial."
+          }
+        ]
+      }
+    ]
   }
 }

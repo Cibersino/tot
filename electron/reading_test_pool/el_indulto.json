@@ -5,5 +5,171 @@
     "type": "fiction",
     "difficulty": "easy",
     "testUsed": false
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "¿Cuál de estas preguntas sobre el cuento está mejor formulada porque abre una interpretación fuerte sin forzar demasiado el texto?",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "¿Cómo convierte el cuento un beneficio jurídico en una amenaza para quien nunca había sido realmente protegida?"
+          },
+          {
+            "id": "b",
+            "text": "¿En qué momento exacto comprende Antonia que la ley no existe para ella?"
+          },
+          {
+            "id": "c",
+            "text": "¿Por qué demuestra Pardo Bazán que toda justicia es siempre imposible para las mujeres pobres?"
+          },
+          {
+            "id": "d",
+            "text": "¿Qué significado único tiene la “muerte natural” de Antonia: miedo, castigo o culpa?"
+          },
+          {
+            "id": "e",
+            "text": "¿Cómo ridiculiza el cuento a las vecinas por creer todavía en remedios legales y religiosos?"
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "La serenidad con que el marido come, fuma y se acuesta en la cama de la vieja asesinada resulta especialmente inquietante porque…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "desplaza la violencia del estallido visible al dominio frío del espacio doméstico, como si la amenaza ya no necesitara exaltarse para imponerse."
+          },
+          {
+            "id": "b",
+            "text": "sugiere que el presidio lo ha domesticado y que el terror de Antonia proviene sobre todo del recuerdo, no del presente."
+          },
+          {
+            "id": "c",
+            "text": "indica que su intención principal no es matar, sino simplemente recuperar una vida conyugal interrumpida."
+          },
+          {
+            "id": "d",
+            "text": "vuelve ambiguo el peligro, porque Antonia ya no sabe si está ante una tregua, una prueba o el cumplimiento mismo de la amenaza."
+          },
+          {
+            "id": "e",
+            "text": "muestra que el crimen de la madre ha perdido para él toda importancia emocional y se ha vuelto costumbre."
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "¿Cuál de estas lecturas del desenlace es la menos defendible?",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "La “muerte natural” de Antonia tiene algo de irónico, porque el cuento ha mostrado largamente cómo el miedo puede obrar como fuerza destructiva real."
+          },
+          {
+            "id": "b",
+            "text": "El final evita un asesinato explícito, pero no por eso disminuye la responsabilidad del marido en la catástrofe."
+          },
+          {
+            "id": "c",
+            "text": "La ausencia de lesiones visibles permite absolver en lo esencial al marido, ya que Antonia muere sin agresión física inmediata."
+          },
+          {
+            "id": "d",
+            "text": "La rapidez seca con que se informa la muerte vuelve más brutal, no menos, el remate del cuento."
+          },
+          {
+            "id": "e",
+            "text": "La huida final del marido sugiere menos inocencia que conciencia del desastre que acaba de producirse."
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "La consulta al abogado, cuando Antonia descubre que para separarse tendría primero que probar el maltrato, resulta especialmente perturbadora porque…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "convierte en requisito jurídico aquello mismo que el cuento ha mostrado como casi imposible de probar en el lenguaje que la ley exige."
+          },
+          {
+            "id": "b",
+            "text": "revela que la ley reconoce el peligro, pero solo puede actuar con lentitud por exceso de garantías procesales."
+          },
+          {
+            "id": "c",
+            "text": "obliga a Antonia a comprender que la separación existe solo como palabra técnica, no como salida real para alguien en su situación."
+          },
+          {
+            "id": "d",
+            "text": "muestra que las vecinas se equivocaban al creer que bastaba la buena voluntad de las autoridades para protegerla."
+          },
+          {
+            "id": "e",
+            "text": "sugiere que el cuento critica menos la ley misma que la torpeza del abogado consultado."
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "La frase “Ella era la indultada; su alegría, justa” se entiende mejor como…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "una inversión irónica del sentido jurídico del indulto: el verdadero alivio no sería el del penado liberado, sino el de la mujer que cree librarse de él."
+          },
+          {
+            "id": "b",
+            "text": "una forma de afirmar que Antonia, tras tantos años de sufrimiento, tenía derecho moral a celebrar cualquier noticia favorable."
+          },
+          {
+            "id": "c",
+            "text": "una manera de convertir la falsa noticia en una verdad afectiva más importante que la verdad de los hechos."
+          },
+          {
+            "id": "d",
+            "text": "una prueba de que el narrador adopta por completo el punto de vista de la vecindad y renuncia a toda distancia."
+          },
+          {
+            "id": "e",
+            "text": "una insinuación de que la justicia legal debería haber premiado antes a Antonia por su conducta ejemplar."
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "La insistencia del cuento en el cuerpo de Antonia —su palidez, su abatimiento, su falta de llanto, su anonadamiento y, al final, la imposibilidad de extraerle sangre— se entiende mejor si se piensa que…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "el terror no permanece como miedo abstracto, sino que va inscribiéndose en el cuerpo hasta volverlo casi la forma material de su condena."
+          },
+          {
+            "id": "b",
+            "text": "la fragilidad física de Antonia explica por sí sola el desenlace, por encima de las acciones del marido."
+          },
+          {
+            "id": "c",
+            "text": "el cuento busca sobre todo dar verosimilitud médica a una muerte que de otro modo parecería inaceptable."
+          },
+          {
+            "id": "d",
+            "text": "Pardo Bazán contrapone deliberadamente la debilidad femenina a la brutalidad masculina como esquema moral simple."
+          },
+          {
+            "id": "e",
+            "text": "la enfermedad de Antonia funciona más bien como rasgo secundario de ambiente, no como eje de sentido."
+          }
+        ]
+      }
+    ]
   }
 }
