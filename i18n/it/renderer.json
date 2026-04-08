@@ -252,7 +252,20 @@
         "pool_exhausted_message": "Non ci sono più file di test non usati. Reimposta il pool o aggiungi altri file.",
         "close_aria": "Chiudi la finestra di dialogo del test di velocità di lettura",
         "reset_confirm": "Questo reimposterà l'intero pool del test e contrassegnerà di nuovo tutti i suoi file come non usati. Vuoi continuare?",
+        "import_summary": "Importazione completata. Importati: {imported}. Duplicati saltati: {skippedDuplicates}. Validazioni fallite: {failedValidation}. Voci di archivio fallite: {failedArchiveEntries}. Scritture fallite: {failedWrites}.",
+        "import_conflict": {
+          "title": "Importa file",
+          "message": "Alcuni file importati esistono già nel pool. Come vuoi gestire i duplicati?",
+          "detail": "{count} nome/i file di destinazione esistono già nel pool.",
+          "buttons": {
+            "skip": "Salta duplicati",
+            "replace": "Sostituisci duplicati",
+            "cancel": "Annulla importazione"
+          }
+        },
         "buttons": {
+          "get_more_files": "Ottieni altri file",
+          "import_files": "Importa file...",
           "reset_pool": "Reimposta pool",
           "start_random_text": "Avvia con testo casuale",
           "start_current_text": "Avvia con il testo corrente"
@@ -391,6 +404,7 @@
       "reading_test_result_invalid": "Il risultato del test non ha potuto essere convertito in un WPM valido. Il flusso è terminato senza aprire la finestra del preset.",
       "reading_test_preset_unavailable": "La finestra del preset non ha potuto essere aperta dopo il test.",
       "reading_test_questions_unavailable": "La finestra delle domande di comprensione non ha potuto essere aperta. Il flusso è terminato prima della creazione del preset.",
+      "reading_test_pool_import_failed": "Non è stato possibile importare i file del test di velocità di lettura.",
       "reading_test_start_failed": "Non è stato possibile avviare il test di velocità di lettura.",
       "reading_test_cancelled": "Il test di velocità di lettura è stato annullato.",
       "reading_test_cancelled_window_closed": "Il test di velocità di lettura è stato annullato perché una delle sue finestre di sessione è stata chiusa."

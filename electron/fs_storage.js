@@ -138,6 +138,10 @@ function getImportExtractStateFile() {
   return path.join(getConfigDir(), 'import_extract_state.json');
 }
 
+function getReadingTestPoolImportStateFile() {
+  return path.join(getConfigDir(), 'reading_test_pool_import_state.json');
+}
+
 function getOcrGoogleDriveDir() {
   return path.join(getConfigDir(), 'ocr_google_drive');
 }
@@ -324,6 +328,7 @@ module.exports = {
   getTaskEditorPositionFile,
 
   getImportExtractStateFile,
+  getReadingTestPoolImportStateFile,
   getOcrGoogleDriveDir,
   getOcrGoogleDriveCredentialsFile,
   getOcrGoogleDriveTokenFile,

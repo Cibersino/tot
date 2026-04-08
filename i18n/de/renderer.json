@@ -252,7 +252,20 @@
         "pool_exhausted_message": "Es sind keine unbenutzten Testdateien mehr vorhanden. Setzen Sie den Pool zurück oder fügen Sie weitere Dateien hinzu.",
         "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",
         "reset_confirm": "Dadurch wird der gesamte Test-Pool zurückgesetzt und alle Dateien werden wieder als unbenutzt markiert. Möchten Sie fortfahren?",
+        "import_summary": "Import abgeschlossen. Importiert: {imported}. Doppelte übersprungen: {skippedDuplicates}. Fehlgeschlagene Validierungen: {failedValidation}. Fehlgeschlagene Archiv-Einträge: {failedArchiveEntries}. Fehlgeschlagene Schreibvorgänge: {failedWrites}.",
+        "import_conflict": {
+          "title": "Dateien importieren",
+          "message": "Einige importierte Dateien existieren bereits im Pool. Wie sollen Duplikate behandelt werden?",
+          "detail": "{count} Zieldateiname(n) existieren bereits im Pool.",
+          "buttons": {
+            "skip": "Duplikate überspringen",
+            "replace": "Duplikate ersetzen",
+            "cancel": "Import abbrechen"
+          }
+        },
         "buttons": {
+          "get_more_files": "Weitere Dateien holen",
+          "import_files": "Dateien importieren...",
           "reset_pool": "Pool zurücksetzen",
           "start_random_text": "Mit zufälligem Text starten",
           "start_current_text": "Mit aktuellem Text starten"
@@ -391,6 +404,7 @@
       "reading_test_result_invalid": "Das Testergebnis konnte nicht in einen gültigen WPM-Wert umgewandelt werden. Der Ablauf endete, ohne den Preset-Dialog zu öffnen.",
       "reading_test_preset_unavailable": "Der Preset-Dialog konnte nach dem Test nicht geöffnet werden.",
       "reading_test_questions_unavailable": "Der Dialog mit den Verständnisfragen konnte nicht geöffnet werden. Der Ablauf endete vor der Erstellung des Presets.",
+      "reading_test_pool_import_failed": "Die Dateien für den Lesegeschwindigkeitstest konnten nicht importiert werden.",
       "reading_test_start_failed": "Der Lesegeschwindigkeitstest konnte nicht gestartet werden.",
       "reading_test_cancelled": "Der Lesegeschwindigkeitstest wurde abgebrochen.",
       "reading_test_cancelled_window_closed": "Der Lesegeschwindigkeitstest wurde abgebrochen, weil eines seiner Sitzungsfenster geschlossen wurde."
