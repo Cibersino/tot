@@ -46,6 +46,7 @@ Notas:
   * la postura OAuth/Google Drive del flujo OCR,
   * las rutas persistidas bajo `config/import_extract_state.json` y `config/ocr_google_drive/*`,
   * y el tratamiento del material OCR empaquetado (`electron/assets/ocr_google_drive/credentials.json`).
+  * y cualquier nueva dependencia runtime redistribuida (por ejemplo `adm-zip` para importación local de `.zip` del reading speed test).
 
 ---
 
@@ -315,7 +316,7 @@ Evidencia mínima sugerida:
 * En releases con import/extract/OCR, evidencia específica sobre:
   * presencia esperada de `electron/assets/ocr_google_drive/credentials.json` como material controlado,
   * ausencia de `config/ocr_google_drive/token.json` en repo y en packaging input,
-  * y dependencias runtime nuevas (`@google-cloud/local-auth`, `googleapis`, `mammoth`, `pdf-parse`, `sharp` y runtime nativo asociado).
+  * y dependencias runtime nuevas (`@google-cloud/local-auth`, `googleapis`, `mammoth`, `pdf-parse`, `sharp`, `adm-zip` y runtime nativo asociado cuando aplique).
 
 ---
 
@@ -343,6 +344,7 @@ Checklist:
     * `mammoth`
     * `pdf-parse`
     * `sharp`
+    * `adm-zip`
     * y el runtime nativo de `sharp` correspondiente a la plataforma empaquetada
 
 * [PENDING] Sanity check de vulnerabilidades sobre dependencias runtime (mínimo: ausencia de CVEs críticas conocidas en deps incluidas o justificación/mitigación si existen).

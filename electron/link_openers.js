@@ -43,13 +43,13 @@ const APP_DOC_FILES = Object.freeze({
 });
 const APP_DOC_PUBLIC_FILES = Object.freeze({
   'license-baskervville': {
-    relativePath: path.join('public', 'fonts', 'LICENSE_Baskervville_OFL.txt'),
+    relativePath: path.join('public', 'third_party_licenses', 'LICENSE_Baskervville_OFL.txt'),
     tempName: 'tot_LICENSE_Baskervville_OFL.txt',
   },
   'license-import-extract-google-auth': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'LICENSE_@google-cloud_local-auth_3.0.1.txt'
     ),
     tempName: 'tot_LICENSE_@google-cloud_local-auth_3.0.1.txt',
@@ -57,7 +57,7 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
   'license-import-extract-google-apis': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'LICENSE_googleapis_171.4.0.txt'
     ),
     tempName: 'tot_LICENSE_googleapis_171.4.0.txt',
@@ -65,7 +65,7 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
   'license-import-extract-docx': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'LICENSE_mammoth_1.11.0.txt'
     ),
     tempName: 'tot_LICENSE_mammoth_1.11.0.txt',
@@ -73,7 +73,7 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
   'license-import-extract-pdf': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'LICENSE_pdf-parse_1.1.1.txt'
     ),
     tempName: 'tot_LICENSE_pdf-parse_1.1.1.txt',
@@ -81,10 +81,18 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
   'license-import-extract-image-processing': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'LICENSE_sharp_0.34.4.txt'
     ),
     tempName: 'tot_LICENSE_sharp_0.34.4.txt',
+  },
+  'license-reading-test-zip-import': {
+    relativePath: path.join(
+      'public',
+      'third_party_licenses',
+      'LICENSE_adm-zip_0.5.16.txt'
+    ),
+    tempName: 'tot_LICENSE_adm-zip_0.5.16.txt',
   },
 });
 const IMAGE_PROCESSING_RUNTIME_DOC_KEYS = new Set([
@@ -98,7 +106,7 @@ const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
   'win32:x64': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'LICENSE_@img_sharp-win32-x64_0.34.4.txt'
     ),
     tempName: 'tot_LICENSE_@img_sharp-win32-x64_0.34.4.txt',
@@ -106,7 +114,7 @@ const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
   'darwin:x64': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'LICENSE_@img_sharp-darwin-x64_0.34.4.txt'
     ),
     tempName: 'tot_LICENSE_@img_sharp-darwin-x64_0.34.4.txt',
@@ -114,7 +122,7 @@ const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
   'darwin:arm64': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'LICENSE_@img_sharp-darwin-arm64_0.34.4.txt'
     ),
     tempName: 'tot_LICENSE_@img_sharp-darwin-arm64_0.34.4.txt',
@@ -122,7 +130,7 @@ const IMAGE_PROCESSING_RUNTIME_PUBLIC_FILES = Object.freeze({
   'linux:x64': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'LICENSE_@img_sharp-linux-x64_0.34.4.txt'
     ),
     tempName: 'tot_LICENSE_@img_sharp-linux-x64_0.34.4.txt',
@@ -132,7 +140,7 @@ const IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES = Object.freeze({
   'win32:x64': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'NOTICE_@img_sharp-win32-x64_0.34.4.txt'
     ),
     tempName: 'tot_NOTICE_@img_sharp-win32-x64_0.34.4.txt',
@@ -140,7 +148,7 @@ const IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES = Object.freeze({
   'darwin:x64': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'NOTICE_@img_sharp-darwin-x64_0.34.4.txt'
     ),
     tempName: 'tot_NOTICE_@img_sharp-darwin-x64_0.34.4.txt',
@@ -148,7 +156,7 @@ const IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES = Object.freeze({
   'darwin:arm64': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'NOTICE_@img_sharp-darwin-arm64_0.34.4.txt'
     ),
     tempName: 'tot_NOTICE_@img_sharp-darwin-arm64_0.34.4.txt',
@@ -156,7 +164,7 @@ const IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES = Object.freeze({
   'linux:x64': {
     relativePath: path.join(
       'public',
-      'extraction_feature_licenses',
+      'third_party_licenses',
       'NOTICE_@img_sharp-linux-x64_0.34.4.txt'
     ),
     tempName: 'tot_NOTICE_@img_sharp-linux-x64_0.34.4.txt',
