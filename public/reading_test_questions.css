@@ -83,6 +83,12 @@ body {
   padding: 12px 14px;
 }
 
+.reading-test-questions__message[data-tone="note"] {
+  background: #eef3ff;
+  border-color: rgba(36, 91, 137, 0.25);
+  color: #21486d;
+}
+
 .reading-test-questions__message[data-tone="error"] {
   background: #ffe3de;
   border-color: rgba(154, 54, 37, 0.22);

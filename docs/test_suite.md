@@ -1011,7 +1011,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - `Pause` stops the session and closes the Editor and Floating Window before the questions modal appears.
 - The modal shows single-choice questions, a random-guess baseline, and the developer feedback email.
 - Incomplete answers are rejected for scoring until every question has one selected option.
-- Results are aggregate only (`X / T` and percentage); the UI does not reveal which answers were right or wrong.
+- Results are aggregate only (`X / T` and percentage), plus the chance of getting at least that score by random guessing; the UI does not reveal which answers were right or wrong.
 - Re-checking updates the aggregate result without altering the overall guided path.
 - Closing the questions modal behaves the same as pressing **Continue**.
 - After the questions step resolves, the preset modal opens immediately and the measured WPM is already applied in main.

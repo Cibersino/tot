@@ -51,7 +51,7 @@
     const feedbackLink = document.getElementById('readingTestQuestionsFeedbackLink');
     const incompleteMessage = document.getElementById('readingTestQuestionsIncomplete');
     const resultMessage = document.getElementById('readingTestQuestionsResult');
-    const lowScoreMessage = document.getElementById('readingTestQuestionsLowScore');
+    const chanceMessage = document.getElementById('readingTestQuestionsChance');
     const fatalMessage = document.getElementById('readingTestQuestionsFatal');
     const form = document.getElementById('readingTestQuestionsForm');
     const btnCheck = document.getElementById('readingTestQuestionsCheck');
@@ -67,7 +67,7 @@
       || !feedbackLink
       || !incompleteMessage
       || !resultMessage
-      || !lowScoreMessage
+      || !chanceMessage
       || !fatalMessage
       || !form
       || !btnCheck
@@ -115,7 +115,7 @@
 
     function clearTransientMessages() {
       setMessage(incompleteMessage, '', { tone: 'warn', visible: false });
-      setMessage(lowScoreMessage, '', { tone: 'warn', visible: false });
+      setMessage(chanceMessage, '', { tone: 'note', visible: false });
       setMessage(fatalMessage, '', { tone: 'error', visible: false });
     }
 
@@ -168,14 +168,14 @@
       randomValue.textContent = mr(
         'renderer.reading_test.questions.random_value',
         { percentage: formatPercentage(randomGuessPercentage) },
-        `${formatPercentage(randomGuessPercentage)}%`
+        `Expected score under random guessing: ${formatPercentage(randomGuessPercentage)}%`
       );
     }
 
     function updateResultMessages() {
       if (!lastScore) {
         setMessage(resultMessage, '', { tone: 'info', visible: false });
-        setMessage(lowScoreMessage, '', { tone: 'warn', visible: false });
+        setMessage(chanceMessage, '', { tone: 'note', visible: false });
         return;
       }
 
@@ -193,22 +193,17 @@
         { tone: 'info', visible: true }
       );
 
-      if (lastScore.shouldWarnLowScore) {
-        setMessage(
-          lowScoreMessage,
-          mr(
-            'renderer.reading_test.questions.low_score_warning',
-            {
-              threshold: formatPercentage(lastScore.warningThreshold),
-              baseline: formatPercentage(lastScore.randomGuessPercentage),
-            },
-            'Your result is low compared with a random baseline. You may want to review the questions more carefully.'
-          ),
-          { tone: 'warn', visible: true }
-        );
-      } else {
-        setMessage(lowScoreMessage, '', { tone: 'warn', visible: false });
-      }
+      setMessage(
+        chanceMessage,
+        mr(
+          'renderer.reading_test.questions.chance_at_least_observed',
+          {
+            percentage: formatPercentage(lastScore.probabilityAtLeastObserved * 100),
+          },
+          `Chance of getting at least this score by random guessing: ${formatPercentage(lastScore.probabilityAtLeastObserved * 100)}%`
+        ),
+        { tone: 'note', visible: true }
+      );
     }
 
     function withAnchoredActionsScroll(updateFn) {
