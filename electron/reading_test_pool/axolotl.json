@@ -5,5 +5,171 @@
     "type": "fiction",
     "difficulty": "easy",
     "testUsed": false
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "En el cuento, la insistencia en los ojos de los axolotl cumple sobre todo la función de…",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "convertirlos en un emblema decorativo de rareza exótica."
+          },
+          {
+            "id": "b",
+            "text": "mostrar que el narrador proyecta humanidad en cualquier ser inmóvil."
+          },
+          {
+            "id": "c",
+            "text": "desestabilizar la distancia entre quien mira y quien es mirado, hasta volver incierta la frontera entre ambos."
+          },
+          {
+            "id": "d",
+            "text": "sugerir que los axolotl poseen una inteligencia superior y deliberadamente cruel."
+          },
+          {
+            "id": "e",
+            "text": "reemplazar la acción por una descripción visual intensa, pero sin consecuencias narrativas."
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "Cuando el narrador afirma \"No eran animales\", la lectura más defendible es que…",
+        "correctOptionId": "b",
+        "options": [
+          {
+            "id": "a",
+            "text": "niega el dato zoológico aprendido en la biblioteca y corrige su error anterior."
+          },
+          {
+            "id": "b",
+            "text": "rechaza la categoría tranquilizadora de \"animal\" como forma de mantenerlos a distancia y reducir lo que percibe en ellos."
+          },
+          {
+            "id": "c",
+            "text": "concluye que los axolotl son, sin duda, espíritus aztecas reencarnados."
+          },
+          {
+            "id": "d",
+            "text": "revela que ha perdido el juicio, de modo que desde ahí todo el cuento debe descartarse como interpretación válida."
+          },
+          {
+            "id": "e",
+            "text": "sostiene que los axolotl son literalmente seres humanos encerrados en otro cuerpo."
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "¿Cuál de estas preguntas sobre el cuento está mejor formulada porque abre una interpretación amplia sin falsear el texto?",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "¿Por qué el narrador descubre que, en realidad, los axolotl eran hombres castigados?"
+          },
+          {
+            "id": "b",
+            "text": "¿En qué momento exacto puede demostrarse científicamente que ocurre la metamorfosis?"
+          },
+          {
+            "id": "c",
+            "text": "¿Cómo cambia el sentido de mirar cuando el observador deja de sentirse exterior y superior a lo observado?"
+          },
+          {
+            "id": "d",
+            "text": "¿Por qué el cuento demuestra que los animales son moralmente más puros que los seres humanos?"
+          },
+          {
+            "id": "e",
+            "text": "¿Qué trauma infantil específico explica la obsesión del narrador?"
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "¿Cuál de estas lecturas de la quietud de los axolotl es la menos defendible?",
+        "correctOptionId": "d",
+        "options": [
+          {
+            "id": "a",
+            "text": "La quietud funciona como forma de resistencia a un mundo reducido y mezquino."
+          },
+          {
+            "id": "b",
+            "text": "La quietud vuelve difícil distinguir entre sopor, concentración y sufrimiento."
+          },
+          {
+            "id": "c",
+            "text": "La quietud hace pensar en una temporalidad distinta de la humana."
+          },
+          {
+            "id": "d",
+            "text": "La quietud prueba que los axolotl carecen casi por completo de vida interior."
+          },
+          {
+            "id": "e",
+            "text": "La quietud intensifica la obsesión del narrador porque parece esconder una voluntad secreta."
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "La imagen del \"canibalismo de oro\" nombra mejor que ninguna otra…",
+        "correctOptionId": "b",
+        "options": [
+          {
+            "id": "a",
+            "text": "la idea de que el narrador desea poseer físicamente a los axolotl."
+          },
+          {
+            "id": "b",
+            "text": "el modo en que la contemplación deja de ser dominio unilateral y se convierte en una absorción recíproca de identidades."
+          },
+          {
+            "id": "c",
+            "text": "una simple metáfora hiperbólica sin mayor función en el relato."
+          },
+          {
+            "id": "d",
+            "text": "el carácter maligno y depredador de los axolotl frente al narrador."
+          },
+          {
+            "id": "e",
+            "text": "la comprobación de que el guardián entendió perfectamente lo que estaba ocurriendo."
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "El final, cuando el axolotl piensa que acaso el hombre escribirá el cuento, se entiende mejor como…",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "un cierre que resuelve por completo la ambigüedad y aclara exactamente qué ocurrió."
+          },
+          {
+            "id": "b",
+            "text": "una salida ingeniosa que funciona solo como juego metaliterario."
+          },
+          {
+            "id": "c",
+            "text": "una manera de insinuar que la escritura no supera la fractura entre ambos, pero deja un resto de comunicación indirecta."
+          },
+          {
+            "id": "d",
+            "text": "la prueba de que el hombre recuerda con absoluta fidelidad todo lo vivido como axolotl."
+          },
+          {
+            "id": "e",
+            "text": "una forma de negar retroactivamente la metamorfosis y reducirla a literatura pura."
+          }
+        ]
+      }
+    ]
   }
 }

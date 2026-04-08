@@ -5,5 +5,171 @@
     "type": "fiction",
     "difficulty": "easy",
     "testUsed": false
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "Cuando el indígena termina regalándole la cabeza a Mr. Taylor porque se siente disminuido por no hablar bien inglés, esa escena sugiere sobre todo que…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "una relación desigual ya contaminada por el prestigio extranjero: la mercancía nace bajo la forma de un regalo humillante, y esa asimetría anticipa todo el negocio."
+          },
+          {
+            "id": "b",
+            "text": "que el indígena reconoce sinceramente en Mr. Taylor a un posible protector y por eso le entrega la cabeza."
+          },
+          {
+            "id": "c",
+            "text": "que la violencia posterior surge de un malentendido menor y, por eso, conserva algo de inocente en su origen."
+          },
+          {
+            "id": "d",
+            "text": "que Mr. Taylor, al no comprarla, se mantiene todavía fuera de la lógica comercial que dominará después."
+          },
+          {
+            "id": "e",
+            "text": "que el episodio sirve sobre todo para ridiculizar el mal inglés del indígena, sin mayor peso en el desarrollo del cuento."
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "Cuando el cuento afirma que “Un hogar sin su correspondiente cabeza teníase por un hogar fracasado”, lo que Monterroso deja ver es sobre todo que…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "que el objeto ha dejado de ser una rareza excéntrica para convertirse en criterio social de normalidad y prestigio doméstico."
+          },
+          {
+            "id": "b",
+            "text": "que las cabezas conservan todavía un aura excepcional, reservada a quienes saben apreciarlas con gusto refinado."
+          },
+          {
+            "id": "c",
+            "text": "que la sociedad compra cabezas sobre todo por curiosidad etnográfica, más que por presión social o deseo de distinción."
+          },
+          {
+            "id": "d",
+            "text": "que la difusión del objeto debilita su carga siniestra, porque el uso cotidiano termina neutralizando su origen violento."
+          },
+          {
+            "id": "e",
+            "text": "que el cuento critica ante todo la hipocresía de las familias, pero no el sistema económico que sostiene esa moda."
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "El envío final de la cabeza de Mr. Taylor a Mr. Rolston se entiende mejor como…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "una clausura en que el sistema termina consumiendo a quien lo administraba: Mr. Taylor no sale moralmente absuelto, pero acaba reducido al mismo estatuto de mercancía que ayudó a imponer."
+          },
+          {
+            "id": "b",
+            "text": "una escena de arrepentimiento: al enviarse a sí mismo, Mr. Taylor intenta pedir perdón y reparar, aunque tarde, el daño causado."
+          },
+          {
+            "id": "c",
+            "text": "una venganza pura de la tribu, que restablece sin residuos una justicia nítida entre culpables e inocentes."
+          },
+          {
+            "id": "d",
+            "text": "un golpe de efecto casi gratuito, pensado sobre todo para cerrar el cuento con sorpresa macabra."
+          },
+          {
+            "id": "e",
+            "text": "una prueba de que Mr. Rolston era el único verdadero culpable y de que Taylor había sido, en el fondo, un simple instrumento."
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "Cuando el Ministro de Salud Pública “se sintió sincero” y confiesa a su mujer que no puede elevar la mortalidad a un nivel grato a la Compañía, la escena cobra fuerza principalmente porque…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "una miniatura doméstica donde una meta monstruosa aparece formulada con la naturalidad de una preocupación profesional, y por eso el horror se vuelve todavía más frío."
+          },
+          {
+            "id": "b",
+            "text": "un momento en que el ministro revela por fin un verdadero escrúpulo moral, aunque luego carezca de fuerza para sostenerlo."
+          },
+          {
+            "id": "c",
+            "text": "una escena que desplaza la responsabilidad principal hacia la esposa, más práctica y resuelta que las propias autoridades."
+          },
+          {
+            "id": "d",
+            "text": "un descanso cómico que suspende por un momento la lógica central del cuento para dar variedad al relato."
+          },
+          {
+            "id": "e",
+            "text": "la prueba de que la Compañía ya no controla realmente al Estado, pues el ministro se permite reconocer sin temor sus límites ante la demanda."
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "¿Cuál de estas lecturas del pasaje en que hubo candidatos al premio Nobel entre los médicos que no curaban a nadie es la menos defendible?",
+        "correctOptionId": "d",
+        "options": [
+          {
+            "id": "a",
+            "text": "El cuento lleva al extremo una inversión de valores: una profesión asociada a preservar la vida gana prestigio precisamente cuando deja de hacerlo."
+          },
+          {
+            "id": "b",
+            "text": "El episodio muestra que la lógica patriótica del relato ya no utiliza solo leyes o fusilamientos, sino también profesiones prestigiosas para legitimar la muerte."
+          },
+          {
+            "id": "c",
+            "text": "El chiste funciona porque un premio ligado al mérito parece ahora capaz de consagrar una eficacia perfectamente compatible con el desastre."
+          },
+          {
+            "id": "d",
+            "text": "La mención del Nobel conserva un resto de admiración, aunque torcida, hacia la excelencia profesional de esos médicos: el cuento condena su función, pero no del todo su mérito."
+          },
+          {
+            "id": "e",
+            "text": "El pasaje ayuda a mostrar que la deformación del país alcanza incluso el lenguaje del honor, el reconocimiento y la carrera profesional."
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "¿Cuál de estas preguntas sobre el cuento está mejor formulada porque abre una interpretación fuerte sin forzar indebidamente el texto?",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "¿Cómo usa el narrador la apariencia de una memoria compartida para volver familiar y casi normal lo que cuenta?"
+          },
+          {
+            "id": "b",
+            "text": "¿Por qué el narrador decide ocultar el nombre de la tribu para protegerla de la mirada europea?"
+          },
+          {
+            "id": "c",
+            "text": "¿En qué momento exacto puede comprobarse que el narrador participó personalmente en los hechos y por eso dice “todos recordamos”?"
+          },
+          {
+            "id": "d",
+            "text": "¿Qué símbolo único y definitivo encierran la omisión del nombre de la tribu y el recuerdo de la popularidad de las cabezas?"
+          },
+          {
+            "id": "e",
+            "text": "¿Por qué el narrador demuestra que la sociedad entera aprobó unánimemente el negocio desde el principio?"
+          }
+        ]
+      }
+    ]
   }
 }
