@@ -20,7 +20,7 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
-test('importSelectedFiles imports a valid json file and normalizes stored pool data', async () => {
+test('importSelectedFiles imports a valid json file, normalizes pool data, and preserves valid readingTest questions', async () => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'sample.json');
   const poolDir = path.join(tempDir, 'pool');
@@ -32,10 +32,19 @@ test('importSelectedFiles imports a valid json file and normalizes stored pool d
       language: 'EN',
       type: 'Non fiction',
       difficulty: 'HARD',
-      testUsed: false,
     },
     readingTest: {
-      invalid: true,
+      questions: [
+        {
+          id: 'q1',
+          prompt: 'What happened?',
+          correctOptionId: 'a',
+          options: [
+            { id: 'a', text: 'One thing' },
+            { id: 'b', text: 'Another thing' },
+          ],
+        },
+      ],
     },
     ignored: 'field',
   });
@@ -60,10 +69,50 @@ test('importSelectedFiles imports a valid json file and normalizes stored pool d
     language: 'en',
     type: 'non_fiction',
     difficulty: 'hard',
-    testUsed: false,
   });
-  assert.equal(Object.prototype.hasOwnProperty.call(imported, 'readingTest'), false);
+  assert.deepEqual(imported.readingTest, {
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What happened?',
+        correctOptionId: 'a',
+        options: [
+          { id: 'a', text: 'One thing' },
+          { id: 'b', text: 'Another thing' },
+        ],
+      },
+    ],
+  });
   assert.equal(Object.prototype.hasOwnProperty.call(imported, 'ignored'), false);
+});
+
+test('importSelectedFiles rejects imported json that contains invalid readingTest questions', async () => {
+  const tempDir = makeTempDir();
+  const sourcePath = path.join(tempDir, 'invalid-reading-test.json');
+  const poolDir = path.join(tempDir, 'pool');
+  fs.mkdirSync(poolDir, { recursive: true });
+
+  writeJson(sourcePath, {
+    text: 'Invalid imported text.',
+    tags: {
+      language: 'en',
+      type: 'fiction',
+      difficulty: 'normal',
+    },
+    readingTest: {
+      invalid: true,
+    },
+  });
+
+  const result = await importSelectedFiles({
+    selectedPaths: [sourcePath],
+    poolDir,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.imported, 0);
+  assert.equal(result.failedValidation, 1);
+  assert.equal(fs.existsSync(path.join(poolDir, 'invalid-reading-test.json')), false);
 });
 
 test('importSelectedFiles imports valid zip entries and reports invalid json entries as failed validation', async () => {
@@ -79,7 +128,6 @@ test('importSelectedFiles imports valid zip entries and reports invalid json ent
       language: 'fr',
       type: 'fiction',
       difficulty: 'normal',
-      testUsed: false,
     },
   }, null, 2), 'utf8'));
   zip.addFile('invalid.json', Buffer.from('{invalid', 'utf8'));
@@ -114,7 +162,6 @@ test('importSelectedFiles skips duplicate destination filenames when conflict st
       language: 'es',
       type: 'fiction',
       difficulty: 'easy',
-      testUsed: false,
     },
   });
   writeJson(sourcePath, {
@@ -123,7 +170,6 @@ test('importSelectedFiles skips duplicate destination filenames when conflict st
       language: 'en',
       type: 'fiction',
       difficulty: 'normal',
-      testUsed: false,
     },
   });
 
@@ -154,7 +200,6 @@ test('importSelectedFiles replaces duplicate destination filenames when conflict
       language: 'es',
       type: 'fiction',
       difficulty: 'easy',
-      testUsed: false,
     },
   });
   writeJson(sourcePath, {
@@ -163,7 +208,6 @@ test('importSelectedFiles replaces duplicate destination filenames when conflict
       language: 'pt',
       type: 'non_fiction',
       difficulty: 'normal',
-      testUsed: false,
     },
   });
 
@@ -195,7 +239,6 @@ test('importSelectedFiles reports failed final writes explicitly', async () => {
       language: 'en',
       type: 'fiction',
       difficulty: 'normal',
-      testUsed: false,
     },
   });
 
@@ -214,4 +257,31 @@ test('importSelectedFiles reports failed final writes explicitly', async () => {
   assert.equal(result.failedValidation, 0);
   assert.equal(result.failedArchiveEntries, 0);
   assert.equal(result.failedWrites, 1);
+});
+
+test('importSelectedFiles rejects imported json that contains unsupported tag keys', async () => {
+  const tempDir = makeTempDir();
+  const sourcePath = path.join(tempDir, 'invalid.json');
+  const poolDir = path.join(tempDir, 'pool');
+  fs.mkdirSync(poolDir, { recursive: true });
+
+  writeJson(sourcePath, {
+    text: 'Invalid imported text.',
+    tags: {
+      language: 'en',
+      type: 'fiction',
+      difficulty: 'normal',
+      obsolete: false,
+    },
+  });
+
+  const result = await importSelectedFiles({
+    selectedPaths: [sourcePath],
+    poolDir,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.imported, 0);
+  assert.equal(result.failedValidation, 1);
+  assert.equal(fs.existsSync(path.join(poolDir, 'invalid.json')), false);
 });
