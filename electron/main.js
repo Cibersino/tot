@@ -46,6 +46,7 @@ const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
 const readingTestSession = require('./reading_test_session');
+const readingTestPoolImport = require('./reading_test_pool_import');
 const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
 const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
 const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
@@ -1777,6 +1778,15 @@ app.whenReady().then(() => {
     openPresetWindow: (initialData) => createPresetWindow(initialData),
   });
   readingTestSessionController.registerIpc(ipcMain);
+
+  readingTestPoolImport.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    isReadingTestInteractionLocked: () => (
+      !!(readingTestSessionController && readingTestSessionController.isInteractionLocked())
+    ),
+  });
 
   // First run: show language picker before creating the main window.
   if (!settings.language || settings.language === '') {

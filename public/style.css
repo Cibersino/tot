@@ -1058,6 +1058,37 @@ select#presets {
   color: #4c4028;
 }
 
+.reading-test-entry-modal-management {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reading-test-entry-modal-link {
+  color: #24567a;
+  text-decoration: underline;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.reading-test-entry-modal-link:hover {
+  color: #183d56;
+}
+
+.reading-test-entry-modal-link:focus {
+  outline: 2px solid rgba(36, 86, 122, 0.35);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.reading-test-entry-modal-link[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.55;
+  cursor: default;
+}
+
 .reading-test-entry-modal-groups {
   margin-top: 14px;
   display: grid;

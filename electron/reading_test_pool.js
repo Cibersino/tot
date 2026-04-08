@@ -148,6 +148,35 @@ function sanitizePoolTags(rawTags) {
   return { ok: true, tags: normalizedTags };
 }
 
+function sanitizePoolData(rawData) {
+  if (!rawData || typeof rawData !== 'object' || typeof rawData.text !== 'string' || !rawData.text.length) {
+    return { ok: false, code: 'INVALID_TEXT' };
+  }
+
+  const tagsInfo = sanitizePoolTags(rawData.tags);
+  if (!tagsInfo.ok) return tagsInfo;
+
+  const questionsInfo = readingTestQuestionsCore.validateQuestionsPayload(rawData.readingTest);
+  const hasValidQuestions = !!questionsInfo.ok;
+  const normalizedData = {
+    text: rawData.text,
+    tags: tagsInfo.tags,
+  };
+
+  if (hasValidQuestions) {
+    normalizedData.readingTest = {
+      questions: questionsInfo.questions,
+    };
+  }
+
+  return {
+    ok: true,
+    data: normalizedData,
+    hasValidQuestions,
+    questions: hasValidQuestions ? questionsInfo.questions : [],
+  };
+}
+
 function parsePoolFile(filePath, rootReal) {
   const fileReal = safeRealpath(filePath);
   if (!fileReal) return { ok: false, code: 'REALPATH_FAILED' };
@@ -159,15 +188,8 @@ function parsePoolFile(filePath, rootReal) {
   if (!jsonInfo.ok) return jsonInfo;
   const data = jsonInfo.data;
 
-  if (!data || typeof data !== 'object' || typeof data.text !== 'string' || !data.text.length) {
-    return { ok: false, code: 'INVALID_TEXT' };
-  }
-
-  const tagsInfo = sanitizePoolTags(data.tags);
-  if (!tagsInfo.ok) return tagsInfo;
-
-  const questionsInfo = readingTestQuestionsCore.validateQuestionsPayload(data.readingTest);
-  const hasValidQuestions = !!questionsInfo.ok;
+  const dataInfo = sanitizePoolData(data);
+  if (!dataInfo.ok) return dataInfo;
 
   return {
     ok: true,
@@ -175,11 +197,11 @@ function parsePoolFile(filePath, rootReal) {
       absolutePath: fileReal,
       snapshotRelPath: toSnapshotRelPath(rootReal, fileReal),
       fileName: path.basename(fileReal),
-      text: data.text,
-      tags: tagsInfo.tags,
-      hasValidQuestions,
-      questions: hasValidQuestions ? questionsInfo.questions : [],
-      rawData: data,
+      text: dataInfo.data.text,
+      tags: dataInfo.data.tags,
+      hasValidQuestions: dataInfo.hasValidQuestions,
+      questions: dataInfo.questions,
+      rawData: dataInfo.data,
     },
   };
 }
@@ -302,6 +324,7 @@ module.exports = {
   ensurePoolDir,
   listPoolEntries,
   serializePoolEntryMeta,
+  sanitizePoolData,
   findEntryBySnapshotRelPath,
   rewritePoolEntryTestUsed,
   resetPoolUsageState,
