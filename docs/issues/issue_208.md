@@ -387,3 +387,7 @@ Do not create a special-case browser-opening mechanism. Reuse the current app pa
 * Use `public/js/notify.js` helpers for user-facing notices where appropriate.
 * Do not keep legacy/dead/useless code after implementation.
 * Initial i18n scope can remain limited to the currently shipped app languages already supported by the pool modal.
+
+## Codex policy
+
+After any operation of implementation, any deviation from or resolution (or irresolution) of an ambiguity or omission in the plan MUST be explained.
