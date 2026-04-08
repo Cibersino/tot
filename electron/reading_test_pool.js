@@ -100,6 +100,20 @@ function buildPoolSnapshotRelPath(relativePathWithinPool) {
   return normalizeSnapshotRelPath(`/${POOL_DIR_NAME}/${segments.join('/')}`);
 }
 
+function isPoolSnapshotRelPath(snapshotRelPath) {
+  const normalizedPath = normalizeSnapshotRelPath(snapshotRelPath);
+  return normalizedPath.startsWith(`/${POOL_DIR_NAME}/`);
+}
+
+function resolveRuntimePathFromSnapshotRelPath(snapshotsRootPath, snapshotRelPath) {
+  const normalizedPath = normalizeSnapshotRelPath(snapshotRelPath);
+  if (!snapshotsRootPath || !normalizedPath) return '';
+  const resolvedPath = path.resolve(path.join(snapshotsRootPath, normalizedPath.slice(1)));
+  return isPathInsideRoot(path.resolve(snapshotsRootPath), resolvedPath)
+    ? resolvedPath
+    : '';
+}
+
 function listJsonFilesRecursive(startDir) {
   const results = [];
   if (!startDir || !fs.existsSync(startDir)) return results;
@@ -144,6 +158,17 @@ function loadJsonFileStrict(filePath) {
     return { ok: true, data: JSON.parse(raw) };
   } catch (err) {
     return { ok: false, code: 'INVALID_JSON', error: err };
+  }
+}
+
+function getExistingFileKind(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return 'missing';
+  try {
+    const stats = fs.statSync(filePath);
+    if (stats.isFile()) return 'file';
+    return 'other';
+  } catch {
+    return 'missing';
   }
 }
 
@@ -396,6 +421,59 @@ function resolvePoolContext(options = {}) {
   };
 }
 
+function prunePoolStateEntries(state, {
+  snapshotsRootCanonical,
+  currentBundledSnapshotRelPaths,
+} = {}) {
+  const bundledPaths = currentBundledSnapshotRelPaths instanceof Set
+    ? currentBundledSnapshotRelPaths
+    : new Set();
+  let prunedStateEntries = 0;
+  let removedManagedFiles = 0;
+  let failed = 0;
+
+  for (const snapshotRelPath of Object.keys(state.entries)) {
+    if (!isPoolSnapshotRelPath(snapshotRelPath)) {
+      delete state.entries[snapshotRelPath];
+      prunedStateEntries += 1;
+      continue;
+    }
+
+    const stateEntry = normalizePoolStateEntry(state.entries[snapshotRelPath]);
+    const runtimePath = resolveRuntimePathFromSnapshotRelPath(snapshotsRootCanonical, snapshotRelPath);
+    const runtimeKind = getExistingFileKind(runtimePath);
+    const isManaged = !!stateEntry.managedBundledHash;
+    const isBundledNow = bundledPaths.has(snapshotRelPath);
+
+    if (isManaged && !isBundledNow) {
+      if (runtimeKind === 'file') {
+        try {
+          fs.unlinkSync(runtimePath);
+          removedManagedFiles += 1;
+        } catch (err) {
+          failed += 1;
+          log.warn('Reading-test bundled prune failed to remove retired managed file (ignored):', runtimePath, err);
+          continue;
+        }
+      }
+      delete state.entries[snapshotRelPath];
+      prunedStateEntries += 1;
+      continue;
+    }
+
+    if (runtimeKind !== 'file') {
+      delete state.entries[snapshotRelPath];
+      prunedStateEntries += 1;
+    }
+  }
+
+  return {
+    prunedStateEntries,
+    removedManagedFiles,
+    failed,
+  };
+}
+
 function synchronizeBundledPoolContent(options = {}) {
   const context = resolvePoolContext(options);
   const {
@@ -421,6 +499,7 @@ function synchronizeBundledPoolContent(options = {}) {
   }
 
   const state = loadPoolState({ stateFilePath });
+  const currentBundledSnapshotRelPaths = new Set();
   let copied = 0;
   let updated = 0;
   let skipped = 0;
@@ -438,6 +517,7 @@ function synchronizeBundledPoolContent(options = {}) {
       });
       continue;
     }
+    currentBundledSnapshotRelPaths.add(snapshotRelPath);
 
     const hashInfo = loadJsonFileStrict(sourcePath);
     if (!hashInfo.ok) {
@@ -481,12 +561,20 @@ function synchronizeBundledPoolContent(options = {}) {
     }
   }
 
+  const pruneInfo = prunePoolStateEntries(state, {
+    snapshotsRootCanonical,
+    currentBundledSnapshotRelPaths,
+  });
+  failed += pruneInfo.failed;
+
   savePoolState(state, { stateFilePath });
   return {
     ok: true,
     copied,
     updated,
     skipped,
+    prunedStateEntries: pruneInfo.prunedStateEntries,
+    removedManagedFiles: pruneInfo.removedManagedFiles,
     failed,
   };
 }

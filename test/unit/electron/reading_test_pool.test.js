@@ -137,3 +137,85 @@ test('bundled sync refreshes managed starter content when bundled content hash c
   assert.equal(state.entries[snapshotRelPath].used, false);
   assert.match(state.entries[snapshotRelPath].managedBundledHash, /^sha256:/);
 });
+
+test('startup prune removes stale state entries but leaves existing unmanaged files intact', () => {
+  const tempDir = makeTempDir();
+  const snapshotsRootDir = path.join(tempDir, 'snapshots');
+  const bundledSourceDir = path.join(tempDir, 'bundled');
+  const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
+  const poolDir = path.join(snapshotsRootDir, readingTestPool.POOL_DIR_NAME);
+  const existingCustomRelPath = readingTestPool.buildPoolSnapshotRelPath('custom_story.json');
+  const missingCustomRelPath = readingTestPool.buildPoolSnapshotRelPath('missing_story.json');
+
+  fs.mkdirSync(bundledSourceDir, { recursive: true });
+  writeJson(path.join(poolDir, 'custom_story.json'), {
+    text: 'Imported custom story.',
+    tags: {
+      language: 'en',
+      type: 'fiction',
+      difficulty: 'normal',
+    },
+  });
+  writeJson(stateFilePath, {
+    entries: {
+      [existingCustomRelPath]: { used: true },
+      [missingCustomRelPath]: { used: true },
+    },
+  });
+
+  const syncInfo = readingTestPool.synchronizeBundledPoolContent({
+    snapshotsRootDir,
+    bundledSourceDir,
+    stateFilePath,
+  });
+
+  assert.equal(syncInfo.ok, true);
+  assert.equal(syncInfo.removedManagedFiles, 0);
+  assert.equal(syncInfo.prunedStateEntries, 1);
+  assert.equal(fs.existsSync(path.join(poolDir, 'custom_story.json')), true);
+
+  const state = readingTestPool.loadPoolState({ stateFilePath });
+  assert.deepEqual(state.entries[existingCustomRelPath], { used: true });
+  assert.equal(Object.prototype.hasOwnProperty.call(state.entries, missingCustomRelPath), false);
+});
+
+test('startup prune removes retired managed starter files and their state entries', () => {
+  const tempDir = makeTempDir();
+  const snapshotsRootDir = path.join(tempDir, 'snapshots');
+  const bundledSourceDir = path.join(tempDir, 'bundled');
+  const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
+  const bundledFilePath = path.join(bundledSourceDir, 'starter.json');
+
+  writeJson(bundledFilePath, {
+    text: 'Retired starter.',
+    tags: {
+      language: 'en',
+    },
+  });
+
+  const firstSync = readingTestPool.synchronizeBundledPoolContent({
+    snapshotsRootDir,
+    bundledSourceDir,
+    stateFilePath,
+  });
+  assert.equal(firstSync.ok, true);
+  assert.equal(firstSync.copied, 1);
+
+  fs.unlinkSync(bundledFilePath);
+
+  const secondSync = readingTestPool.synchronizeBundledPoolContent({
+    snapshotsRootDir,
+    bundledSourceDir,
+    stateFilePath,
+  });
+
+  const snapshotRelPath = readingTestPool.buildPoolSnapshotRelPath('starter.json');
+  const runtimeFilePath = path.join(snapshotsRootDir, readingTestPool.POOL_DIR_NAME, 'starter.json');
+  const state = readingTestPool.loadPoolState({ stateFilePath });
+
+  assert.equal(secondSync.ok, true);
+  assert.equal(secondSync.removedManagedFiles, 1);
+  assert.equal(secondSync.prunedStateEntries, 1);
+  assert.equal(fs.existsSync(runtimeFilePath), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(state.entries, snapshotRelPath), false);
+});
