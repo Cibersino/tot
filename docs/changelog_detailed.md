@@ -53,7 +53,7 @@ Reglas:
 - Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro; en esta misma iteración el catálogo incorpora también `testUsed`.
 - Reading speed test (Issue #52): el botón `Test de velocidad de lectura` deja de ser un aviso WIP y pasa a abrir un flujo guiado real con modal de entrada/configuración, selección por combinaciones reales del pool y una segunda acción explícita `Start with current text`; según la ruta elegida, la sesión usa texto aleatorio del pool o reutiliza directamente el current text ya cargado, manteniendo cálculo autoritativo de WPM en main, paso opcional de preguntas de comprensión y handoff final al modal de presets con payload prellenado.
 - Pool del reading speed test: se agrega un subárbol runtime `config/saved_current_texts/reading_speed_test_pool/`, seeded desde archivos versionados en `electron/reading_test_pool/`; los archivos del pool son snapshots JSON ordinarios con `tags.testUsed` inline y payload opcional `readingTest`, por lo que siguen siendo reutilizables por la funcionalidad normal de snapshots.
-- Adquisición/import del pool (Issue #208): el modal del pool agrega un link oficial a Google Drive y una acción nativa `Import files...` para instalar `.json` y `.zip`; esto introduce `adm-zip@0.5.16` como nueva dependencia runtime redistribuida para inspección local de archivos comprimidos y, por tanto, amplía el inventario de terceros redistribuidos del release.
+- Adquisición/import del pool (Issue #208): el modal del pool agrega un link oficial a Google Drive y una acción nativa `Import files...` para instalar `.json` y `.zip`; el importador recuerda la última carpeta usada, resuelve duplicados por nombre de destino dentro del pool runtime y refresca el estado del modal abierto tras cada operación. Esto introduce `adm-zip@0.5.16` como nueva dependencia runtime redistribuida para inspección local de archivos comprimidos y, por tanto, amplía el inventario de terceros redistribuidos del release.
 
 ### Agregado
 
@@ -71,6 +71,7 @@ Reglas:
   - `electron/reading_test_questions_preload.js` (nuevo): preload específico del modal de preguntas; expone `window.readingTestQuestionsAPI` y bufferiza/reproduce el payload init para evitar carreras entre el envío desde main y el registro tardío del listener renderer.
   - `electron/reading_test_pool.js` y `electron/reading_test_session.js` (nuevos): helpers main-owned para sembrar/escanear el pool, reescribir `tags.testUsed`, validar elegibilidad y orquestar la sesión guiada completa del reading speed test, incluyendo la ruta alternativa que usa current text sin tocar el estado del pool.
   - `electron/reading_test_pool_import.js` (nuevo): módulo main-owned del follow-up de adquisición/import; valida `.json`, inspecciona `.zip` localmente y escribe solo candidatos válidos dentro del pool runtime.
+  - `config/reading_test_pool_import_state.json` (nuevo, runtime): persistencia local de la última carpeta usada por `Import files...` en el pool del reading speed test.
   - `electron/reading_test_pool/*.json` (nuevos): starter files versionados del pool (`2` con preguntas de comprensión y `2` speed-only) que la app copia al subárbol runtime cuando faltan.
 - Runtime/legal:
   - `package.json`: se agrega `adm-zip@^0.5.16` como dependencia runtime directa para soportar la importación local de packs `.zip` del pool del reading speed test.
@@ -103,6 +104,10 @@ Reglas:
 - `electron/reading_test_session.js` y `public/js/reading_speed_test.js`:
   - el flujo de entrada deja de asumir que todo test sobrescribe current text y pasa a soportar dos rutas explícitas: `pool` y `current_text`.
   - la ruta `current_text` ignora filtros/estado del pool, no reescribe `tags.testUsed` y cancela la sesión preservando el texto vigente del usuario.
+- `electron/reading_test_pool_import.js` y `public/js/reading_speed_test.js`:
+  - la adquisición/import del pool deja de depender de manipulación manual del filesystem y pasa a soportar link oficial a Google Drive + picker nativo para `.json`/`.zip`.
+  - el picker del importador del pool persiste su última carpeta usada en estado propio, separado de `import_extract_state.json`.
+  - los duplicados se resuelven explícitamente por nombre de destino dentro de `config/saved_current_texts/reading_speed_test_pool/`, con ramas `Skip duplicates` / `Replace duplicates` / cancelación.
 - `public/js/lib/snapshot_tag_catalog.js`:
   - el catálogo deja de limitarse a `language` / `type` / `difficulty` y pasa a incluir también la normalización y serialización de `testUsed`.
 - `public/info/instrucciones.es.html` y `public/info/instrucciones.en.html`, `docs/tree_folders_files.md` y `docs/test_suite.md`:
@@ -149,6 +154,11 @@ Reglas:
   - bloqueos/fallos: `{ ok:false, code:string, guidanceKey?:string }`.
 - IPC `reading-test-get-state` (nuevo):
   - response: `{ active:boolean, stage:'idle'|'running'|'questions'|'preset', blocked:boolean }`.
+- IPC `reading-test-import-pool-files` (nuevo):
+  - request: `{ conflictDialog?: { conflictTitle?: string, conflictMessage?: string, conflictDetail?: string, buttons?: { skip?: string, replace?: string, cancel?: string } } }`.
+  - cancel picker: `{ ok:true, canceled:true }`.
+  - OK import: `{ ok:true, canceled:false, imported:number, skippedDuplicates:number, failedValidation:number, failedArchiveEntries:number, failedWrites:number }`.
+  - error: `{ ok:false, code:'UNAUTHORIZED' | 'SESSION_ACTIVE' | 'IMPORT_FAILED', guidanceKey?:string }`.
 - Eventos main → renderer (nuevos):
   - `reading-test-state-changed` → state `{ active, stage, blocked }`.
   - `reading-test-notice` → `{ key:string, params?:object, type?:'info'|'warn'|'error' }`.
@@ -187,12 +197,14 @@ Reglas:
 - `electron/reading_test_session.js`
 - `electron/reading_test_questions_preload.js`
 - `electron/reading_test_pool/*.json`
+- `electron/reading_test_pool_import.js`
 - `i18n/*/renderer.json`
 - `public/info/instrucciones.es.html`
 - `public/info/instrucciones.en.html`
 - `public/info/acerca_de.html`
 - `public/third_party_licenses/*`
 - `electron/link_openers.js`
+- `config/reading_test_pool_import_state.json` (runtime)
 - `package.json`
 - `package-lock.json`
 - `docs/releases/legal_baseline.md`

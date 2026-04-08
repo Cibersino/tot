@@ -16,6 +16,7 @@
 - Manual editor window (open/edit/apply semantics)
 - Text snapshot feature (save, load, persistence)
 - Reading speed test (pool filters, guided session, optional questions modal, preset handoff, pool reset/persistence)
+- Reading speed test pool acquisition/import (Google Drive link, `.json`/`.zip` import, duplicate handling, picker-state persistence)
 - Task editor window (task lists, library, links, column widths, window position).
 - Stopwatch (velocity) + floating window behavior (unfocused app)
 - Menu actions: Guide/Instructions/FAQ/About (+ link routing)
@@ -63,7 +64,7 @@ Important limitations:
 
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
 * no renderer/UI automation exists yet;
-* the reading speed test has no dedicated automated coverage yet;
+* the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
 * OCR network/provider behavior is still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
@@ -110,6 +111,7 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - `presets_defaults/*.json` (runtime defaults copies)
 - `saved_current_texts/*.json` (saved text snapshots)
   - `saved_current_texts/reading_speed_test_pool/*.json` (runtime reading-test pool entries with inline `tags.testUsed`)
+- `reading_test_pool_import_state.json` (last picker directory for reading-test pool import)
 - `ocr_google_drive/`
   - `ocr_google_drive/credentials.json` (runtime mirrored OAuth client; app-managed)
   - `ocr_google_drive/token.json` (local OCR sign-in state; present only after activation)
@@ -360,7 +362,24 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - If the chosen file has no questions, the flow continues directly to preset creation.
 - The preset modal receives a valid WPM even when the raw measured speed would fall outside the preset range (clamped to supported preset bounds).
 
-### SM-15 Task editor: open + basic save
+### SM-15 Reading speed test pool acquisition/import
+**Goal:** the pool modal can acquire additional files and refresh the pool in place.
+1. Open the reading speed test entry modal.
+2. Confirm the pool-management row exposes `Get more files`, `Import files...`, and `Reset pool`.
+3. Click `Get more files`.
+4. Confirm the official Google Drive folder opens in the browser through the normal external-link path.
+5. Click `Import files...` and select a valid `.json` file whose destination filename does not yet exist in the runtime pool.
+6. Confirm a summary toast reports the import and that the open modal refreshes immediately.
+7. Click `Import files...` again and select a file whose destination filename already exists in the runtime pool.
+8. Confirm duplicate handling appears and that both `Skip duplicates` and `Replace duplicates` complete with a summary toast.
+
+**Expected:**
+- The pool-management row exposes acquisition/import entry points without leaving the modal.
+- The Drive link opens externally using the app's normal allowlisted external-link path.
+- Valid imports update the pool in place without forcing the user to close/reopen the modal.
+- Duplicate handling is explicit and based on destination filename in the runtime pool.
+
+### SM-16 Task editor: open + basic save
 **Goal:** save and load tasks.
 1. From the main window, click **📝** (new task) to open the task editor.
 2. Add one row with required text (and any numeric fields as desired).
@@ -1025,6 +1044,29 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Pool files remain ordinary snapshot JSON files.
 - Normal snapshot loading accepts pool files that include `tags.testUsed` and optional `readingTest`, and applies only the `text` to current text.
 
+#### REG-READING-TEST-07 Pool acquisition/import via Drive link and native picker
+**Goal:** additional pool files can be acquired/imported without manual filesystem navigation.
+1. Open the reading speed test entry modal.
+2. Click `Get more files`.
+3. Confirm the official Google Drive folder opens externally.
+4. Click `Import files...` and choose a valid standalone `.json` whose destination filename is new to the runtime pool.
+5. Confirm the summary toast reports the import and that the live pool state updates in the still-open modal.
+6. Click `Import files...` again and select a `.zip` containing:
+   - at least one valid pool `.json`
+   - at least one invalid/broken `.json`
+7. Confirm the summary distinguishes imported items from validation/archive failures.
+8. Re-import a filename that already exists in the runtime pool and test both duplicate branches:
+   - `Skip duplicates`
+   - `Replace duplicates`
+
+**Expected:**
+- The Drive link uses the app's normal external-link behavior.
+- The native picker accepts mixed `.json`/`.zip` selections.
+- Valid imported files are installed into `config/saved_current_texts/reading_speed_test_pool/`.
+- Invalid JSON/invalid pool candidates are rejected without crashing the flow.
+- Duplicate handling is explicit and keyed by destination filename in the runtime pool.
+- After import, the open modal recomputes the eligible count and available combinations immediately.
+
 ---
 
 ### REG-MENU — Menu actions and routing (Guide/Instructions/FAQ/About)
@@ -1157,6 +1199,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The runtime reading-test pool folder is created/seeded automatically when needed.
 - Used entries persist `tags.testUsed` across app restart until a pool reset is requested.
 - The relaunch does not silently restore consumed entries to unused state.
+
+#### REG-PERSIST-07 Reading speed test pool import picker state
+**Goal:** the reading-test pool import picker remembers its last successful directory independently of import/extract.
+1. Open the reading speed test entry modal.
+2. Use `Import files...` to select any valid import candidate from a non-default folder.
+3. Close the app.
+4. Inspect config and confirm `reading_test_pool_import_state.json` exists.
+5. Relaunch the app, reopen the reading speed test entry modal, and click `Import files...` again.
+
+**Expected:**
+- `reading_test_pool_import_state.json` persists the last successful import directory.
+- The next import picker opens in that same directory when it still exists.
+- This state is separate from `import_extract_state.json`.
 
 ---
 

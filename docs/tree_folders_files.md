@@ -34,6 +34,7 @@ tot/
 │ ├── current_text.json
 │ ├── editor_state.json
 │ ├── import_extract_state.json
+│ ├── reading_test_pool_import_state.json
 │ ├── ocr_google_drive/
 │ │ ├── credentials.json
 │ │ └── token.json
@@ -84,6 +85,7 @@ tot/
 │ ├── editor_find_main.js
 │ ├── reading_test_pool/          # {starter files versionados del reading speed test}
 │ ├── reading_test_pool.js
+│ ├── reading_test_pool_import.js
 │ ├── reading_test_session.js
 │ ├── import_extract_platform/
 │ │ ├── platform_adapters/
@@ -205,6 +207,7 @@ tot/
 │ │ │ ├── ocr_google_drive_activation_state.test.js
 │ │ │ ├── ocr_google_drive_provider_failure_classification.test.js
 │ │ │ ├── ocr_google_drive_provider_failure.test.js
+│ │ │ ├── reading_test_pool_import.test.js
 │ │ │ └── settings.test.js
 │ │ └── shared/
 │ │   ├── count_core.test.js
@@ -300,6 +303,7 @@ tot/
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
 - `electron/editor_find_main.js` — Coordinador del buscador nativo del editor: ciclo de vida de la ventana de búsqueda, atajos (`Ctrl/Cmd+F`, `F3`, `Shift+F3`, `Esc`), IPC autorizado y sincronización de estado con `found-in-page`.
 - `electron/reading_test_pool.js` — Helpers del pool del reading speed test: asegura el subárbol runtime bajo snapshots, copia starter files versionados cuando faltan, escanea/valida JSON del pool, serializa metadata para la UI y reescribe `tags.testUsed` inline.
+- `electron/reading_test_pool_import.js` — Follow-up main-owned de adquisición/import del pool: abre el picker nativo para `.json`/`.zip`, recuerda la última carpeta usada, valida candidatos contra el contrato del pool, resuelve duplicados por nombre de destino y escribe solo snapshots válidos dentro de `config/saved_current_texts/reading_speed_test_pool/`.
 - `electron/reading_test_session.js` — Controlador main-owned del reading speed test: precondiciones, bloqueo de interacción, selección aleatoria del pool, ownership de la sesión, reinterpretación de controles flotantes, finish flow, questions step y handoff al modal de presets.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
@@ -374,6 +378,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `.github/workflows/test.yml` — Workflow GitHub Actions del baseline automatizado actual; corre `npm ci` + `npm test` sobre `windows-latest`.
 - `test/README.md` — Convenciones del layout de tests y separación entre baseline unitario y smoke suite local.
 - `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo import/extract (`settings`, formatos soportados, prepared store, parsing/clasificación OCR, decision helpers).
+- `test/unit/electron/reading_test_pool_import.test.js` — Cobertura del importador del pool del reading speed test: validación de `.json`/`.zip`, duplicados, persistencia de última carpeta y reporte de fallas de escritura.
 - `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`).
 - `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; no forma parte de `npm test` ni del workflow CI base.
 
@@ -393,6 +398,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/current_text.json` — Texto vigente persistido.
 - `config/editor_state.json` — Estado persistido del editor (geometría/maximizado, etc.).
 - `config/import_extract_state.json` — Estado local del picker de import/extract (por ejemplo, última carpeta utilizada).
+- `config/reading_test_pool_import_state.json` — Estado local del picker del importador del pool del reading speed test (última carpeta utilizada).
 - `config/ocr_google_drive/credentials.json` — Espejo/copia runtime gestionado por la app para la configuración OAuth de Google OCR; en el modelo actual se materializa desde credenciales empaquetadas de la app y no forma parte del onboarding manual del usuario.
 - `config/ocr_google_drive/token.json` — Estado local del token OAuth del usuario final para la ruta OCR de Google Drive/Docs; se elimina al desconectar Google OCR tras revocación exitosa.
 - `config/saved_current_texts/` — Carpeta runtime con snapshots del texto vigente; admite JSON legacy `{ "text": ... }`, snapshots etiquetados `{ "text": ..., "tags"?: { "language"?, "type"?, "difficulty"?, "testUsed"? } }` y archivos con payload opcional `readingTest`; puede contener subcarpetas. La carga normal de snapshots sigue aplicando solo `text` al current text, sin rechazar metadata adicional compatible.
