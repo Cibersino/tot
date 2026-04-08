@@ -252,7 +252,20 @@
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
         "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",
         "reset_confirm": "Fey mu wiñotripayay kom trawün (pool) pepiluwal ka kom chillka 'ngelay chillkatun' pingeay. ¿Amuleaymi?",
+        "import_summary": "Importación afmatuy. Koneltuy: {imported}. Duplicados no koneltuy: {skippedDuplicates}. Validación no müley: {failedValidation}. Archivo comprimido mu entradas no müley: {failedArchiveEntries}. Escrituras no müley: {failedWrites}.",
+        "import_conflict": {
+          "title": "Importar archivos",
+          "message": "Kiñeke archivos koneltulu müley trawün mew. ¿Chumgechi küdawaimi duplicados engün?",
+          "detail": "{count} destino archivo üi müley trawün mew.",
+          "buttons": {
+            "skip": "Rupan duplicados",
+            "replace": "Wiño püne duplicados",
+            "cancel": "Katrüntun importación"
+          }
+        },
         "buttons": {
+          "get_more_files": "Pepefinge más archivos",
+          "import_files": "Importar archivos...",
           "reset_pool": "Wiño adkünuwal pool",
           "start_random_text": "Yalltun fantepu chillka random mew",
           "start_current_text": "Yalltun fantepu chillka mu"
@@ -268,7 +281,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Llowkeaymi kom ramtun petu kintual chumngechi tripay.",
         "result_summary": "{correct} ñi {total} küme tripachi ({percentage}%)",
-        "low_score_warning": "Tami tripantu müna pichi wentruwün mew kom küme rakiduam ka zufali ramtun.",
+        "chance_at_least_observed": "¿Chumten müley tüfa kam fey tripan random llowün mu?: {percentage}%",
         "fatal_invalid": "Feyti ramtun wedalküley.",
         "buttons": {
           "check": "Kintual chum tripachi",
@@ -391,6 +404,7 @@
       "reading_test_result_invalid": "Chum tripachi pepiluwün gelay WPM. Amulelay kintual modal preset.",
       "reading_test_preset_unavailable": "Ngelay kintual modal preset pepiluwün mu.",
       "reading_test_questions_unavailable": "Ngelay kintual modal ramtun. Amulelay yalltul preset.",
+      "reading_test_pool_import_failed": "Pepiluwün ñi pürüm chillkatun archivos koneltulay.",
       "reading_test_start_failed": "Ngelay yalltuwal pepiluwün ñi pürüm chillkatun.",
       "reading_test_cancelled": "Pepiluwün ñi pürüm chillkatun katrütungey.",
       "reading_test_cancelled_window_closed": "Pepiluwün ñi pürüm chillkatun katrütungey ñafün mu kiñe ventana."
