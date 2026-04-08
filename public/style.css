@@ -1027,6 +1027,7 @@ select#presets {
 
 #readingTestEntryModalIntro {
   font-size: 0.85rem;
+  white-space: pre-line;
 }
 
 .reading-test-entry-modal-body p + p {

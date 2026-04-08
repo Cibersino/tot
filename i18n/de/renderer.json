@@ -247,7 +247,7 @@
     "reading_test": {
       "entry": {
         "title": "Lesegeschwindigkeitstest",
-        "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text, startet die Zeitmessung und bittet Sie, normal zu lesen; wenn Sie fertig sind, drücken Sie Pause (⏸) im schwebenden Fenster. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.",
+        "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text, startet die Zeitmessung und bittet Sie, normal zu lesen; wenn Sie fertig sind, drücken Sie Pause (⏸) im schwebenden Fenster. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.\nDieser Pool verwendet kurze Texte; behandeln Sie das Ergebnis daher mit Vorsicht. Es sollte nicht direkt auf lange Texte übertragen werden, bei denen in der Regel positive Faktoren wie Lesefluss und Kontextaufbau sowie negative Faktoren wie mentales Rekapitulieren und Ermüdung ins Spiel kommen.",
         "eligible_count": "Geeignete Dateien: {count}",
         "pool_exhausted_message": "Es sind keine unbenutzten Testdateien mehr vorhanden. Setzen Sie den Pool zurück oder fügen Sie weitere Dateien hinzu.",
         "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",
