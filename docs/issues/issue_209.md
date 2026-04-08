@@ -146,6 +146,7 @@ There is no need for one file dedicated only to names and another dedicated only
 * Add one external runtime state file for reading-test pool usage + bundled-hash tracking.
 * Move starter-file sync to app startup.
 * Replace existence-only starter sync with bundled-hash comparison.
+* Prune stale pool-state entries and retired app-managed starter files during startup sync.
 * Refactor pool selection/reset/start logic to use external state.
 * Refactor import handling so imported files do not carry `testUsed`.
 * Refactor snapshot save/load validation accordingly.
@@ -281,6 +282,28 @@ So when bundled content changes and the runtime file is refreshed, its external 
 
 That ensures the updated text is actually available to the reading-speed pool.
 
+### Prune semantics during startup sync
+
+Startup sync should also reconcile stale state and retired managed starter files.
+
+Rules:
+
+* if a state entry points to a pool file that no longer exists on disk:
+  * delete that state entry;
+  * do not delete anything else.
+* if a state entry has `managedBundledHash` but that `snapshotRelPath` is no longer present in the current bundled starter set:
+  * delete the runtime pool file;
+  * delete the state entry.
+* if a runtime pool file exists and does not have `managedBundledHash`:
+  * treat it as unmanaged;
+  * never auto-delete it during startup prune.
+
+So:
+
+* stale state for deleted imported/custom files is cleaned up;
+* retired app-managed starter files are removed;
+* unmanaged imported/custom files are preserved.
+
 ## Import and write semantics
 
 Imported files must not bring `testUsed` into the pool content model.
@@ -387,6 +410,9 @@ Snapshot load must:
 * Bundled starter-file sync runs on app startup.
 * Bundled starter-file refresh is driven by stored bundled content hashes, not filename existence.
 * When bundled starter content changes, the runtime file is refreshed and its `used` state becomes `false`.
+* Startup prune removes stale state entries for missing pool files.
+* Startup prune removes retired app-managed starter files and their state entries.
+* Startup prune does not auto-delete unmanaged imported/custom files.
 * Imported files are not silently pulled back under bundled-hash management.
 * Imported files containing `testUsed` are rejected as invalid.
 * No dead inline-`testUsed` code remains after implementation.
@@ -418,6 +444,7 @@ Snapshot load must:
    * Compute bundled content hashes from canonical JSON serialization.
    * Compare them to stored `managedBundledHash`.
    * Copy/overwrite only according to the new startup rules.
+   * Prune stale state entries and retired managed starter files.
 
 5. Refactor reading-test session behavior.
    * Mark selected entries used in external state.
