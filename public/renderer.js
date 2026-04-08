@@ -1472,15 +1472,8 @@ setupToggleModoPreciso();
     return candidates.map(tag => `./info/instrucciones.${tag}.html`);
   }
 
-  async function showInfoModal(key, opts = {}) {
-    // key: 'instrucciones' | 'guia_basica' | 'faq' | 'acerca_de'
-    const sectionTitles = {
-      instrucciones: 'Instrucciones completas',
-      guia_basica: 'Guia basica',
-      faq: 'Preguntas frecuentes (FAQ)',
-      acerca_de: 'Acerca de'
-    };
-
+  async function showInfoModal(key) {
+    // key: 'instrucciones' | 'guia_basica' | 'faq' | 'links_interes' | 'acerca_de'
     if (!infoModal || !infoModalTitle || !infoModalContent) return;
 
     // Decide which file to load based on the key.
@@ -1491,6 +1484,8 @@ setupToggleModoPreciso();
 
     if (key === 'acerca_de') {
       fileToLoad = './info/acerca_de.html';
+    } else if (key === 'links_interes') {
+      fileToLoad = './info/links_interes.html';
     } else if (isManual) {
       const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
       fileToLoad = getManualFileCandidates(langTag);
@@ -1498,8 +1493,12 @@ setupToggleModoPreciso();
       const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
       sectionId = mapping[key] || 'instrucciones';
     } else {
-      // Compatibility fallback for legacy standalone pages
-      fileToLoad = `./info/${key}.html`;
+      log.warnOnce(
+        'renderer.info.unsupportedKey',
+        'showInfoModal received unsupported key:',
+        key
+      );
+      return;
     }
 
     const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
@@ -1507,7 +1506,7 @@ setupToggleModoPreciso();
     if (isManual) {
       infoModalTitle.textContent = 'Manual de uso';
     } else {
-      const defaultTitle = sectionTitles[key] || (opts.title || 'Información');
+      const defaultTitle = key === 'acerca_de' ? 'Acerca de' : 'Links de interés';
       infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
     }
 
