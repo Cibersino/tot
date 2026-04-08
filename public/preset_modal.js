@@ -152,7 +152,7 @@
             await applyPresetTranslations(mode);
             // Update char count initial
             const currLen = descEl.value ? descEl.value.length : 0;
-            charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) }, `${Math.max(0, descMaxLength - currLen)} caracteres restantes`);
+            charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) }, `${Math.max(0, descMaxLength - currLen)} characters left`);
           } catch (err) {
             log.error('Error applying preset-init data:', err);
           }
@@ -215,7 +215,7 @@
     descEl.addEventListener('input', () => {
       const currentLength = descEl.value.length;
       const remaining = descMaxLength - currentLength;
-      charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining }, `${remaining} caracteres restantes`);
+      charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining }, `${remaining} characters left`);
       if (currentLength >= descMaxLength) {
         descEl.value = descEl.value.substring(0, descMaxLength);
       }
@@ -284,7 +284,7 @@
     // =============================================================================
     (async function initCharCount() {
       const currLen = descEl.value ? descEl.value.length : 0;
-      charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) }, `${Math.max(0, descMaxLength - currLen)} caracteres restantes`);
+      charCountEl.textContent = mr('renderer.modal_preset.char_count', { remaining: Math.max(0, descMaxLength - currLen) }, `${Math.max(0, descMaxLength - currLen)} characters left`);
     })();
 
   }); // DOMContentLoaded
