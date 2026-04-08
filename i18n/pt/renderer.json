@@ -273,7 +273,7 @@
       },
       "questions": {
         "title": "Questões de compreensão de leitura",
-        "intro": "Responda às perguntas se quiser revisar a compreensão antes de voltar ao fluxo principal.",
+        "intro": "Responda às perguntas se quiser revisar a compreensão de leitura antes de voltar ao fluxo principal.",
         "random_title": "Probabilidade ao acaso",
         "random_value": "Pontuação esperada ao responder ao acaso: {percentage}%",
         "feedback_title": "Feedback",

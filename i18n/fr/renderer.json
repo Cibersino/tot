@@ -273,7 +273,7 @@
       },
       "questions": {
         "title": "Questions de compréhension de lecture",
-        "intro": "Répondez aux questions si vous souhaitez vérifier la compréhension avant de revenir au flux principal.",
+        "intro": "Répondez aux questions si vous souhaitez vérifier la compréhension de lecture avant de revenir au flux principal.",
         "random_title": "Probabilité au hasard",
         "random_value": "Score attendu en répondant au hasard : {percentage}%",
         "feedback_title": "Feedback",

@@ -273,7 +273,7 @@
       },
       "questions": {
         "title": "Domande di comprensione del testo",
-        "intro": "Rispondi alle domande se vuoi verificare la comprensione prima di tornare al flusso principale.",
+        "intro": "Rispondi alle domande se vuoi verificare la comprensione della lettura prima di tornare al flusso principale.",
         "random_title": "Probabilità casuale",
         "random_value": "Punteggio atteso rispondendo a caso: {percentage}%",
         "feedback_title": "Feedback",
