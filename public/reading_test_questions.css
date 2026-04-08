@@ -18,6 +18,7 @@ body {
 .reading-test-questions__header p {
   margin: 8px 0 0;
   line-height: 1.45;
+  white-space: pre-line;
 }
 
 .reading-test-questions__meta {

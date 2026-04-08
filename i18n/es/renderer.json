@@ -258,7 +258,7 @@
     "reading_test": {
       "entry": {
         "title": "Test de velocidad de lectura",
-        "intro": "Este test sirve para estimar tu velocidad real de lectura con una sesión guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando termines, pulsa Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.",
+        "intro": "Este test sirve para estimar tu velocidad real de lectura con una sesión guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando termines, pulsa Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nEste pool usa textos breves, así que interpreta el resultado con cautela. No debería extrapolarse directamente a textos largos, donde suelen entrar en juego factores positivos, como la adquisición de fluidez y de contexto, y factores negativos, como la recapitulación mental y la fatiga.",
         "eligible_count": "Archivos elegibles: {count}",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Restablece el pool o agrega más archivos.",
         "close_aria": "Cerrar diálogo de test de velocidad de lectura",
