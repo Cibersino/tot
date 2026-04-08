@@ -132,6 +132,64 @@
     return (expectedCorrectRandom / safeQuestions.length) * 100;
   }
 
+  function getQuestionGuessProbability(question) {
+    const optionCount = Array.isArray(question && question.options)
+      ? question.options.length
+      : 0;
+    return optionCount >= 2 ? (1 / optionCount) : 0;
+  }
+
+  function computeRandomGuessScoreDistribution(questions) {
+    const safeQuestions = Array.isArray(questions) ? questions : [];
+    const total = safeQuestions.length;
+    const pmf = new Array(total + 1).fill(0);
+    pmf[0] = 1;
+
+    let processed = 0;
+    for (const question of safeQuestions) {
+      const probabilityCorrect = getQuestionGuessProbability(question);
+      const next = new Array(total + 1).fill(0);
+      for (let correct = 0; correct <= processed; correct += 1) {
+        const probability = pmf[correct];
+        if (probability === 0) continue;
+        next[correct] += probability * (1 - probabilityCorrect);
+        next[correct + 1] += probability * probabilityCorrect;
+      }
+      for (let correct = 0; correct <= total; correct += 1) {
+        pmf[correct] = next[correct];
+      }
+      processed += 1;
+    }
+
+    return {
+      total,
+      pmf,
+    };
+  }
+
+  function computeTailProbabilityAtOrAbove(distribution, observedCorrect) {
+    const safeDistribution = isPlainObject(distribution) ? distribution : {};
+    const pmf = Array.isArray(safeDistribution.pmf) ? safeDistribution.pmf : [];
+    if (!pmf.length) {
+      return observedCorrect <= 0 ? 1 : 0;
+    }
+
+    const total = Number.isInteger(safeDistribution.total)
+      ? safeDistribution.total
+      : (pmf.length - 1);
+    const normalizedObserved = Number.isFinite(observedCorrect)
+      ? Math.max(0, Math.min(total, Math.floor(observedCorrect)))
+      : 0;
+
+    let tailProbability = 0;
+    for (let correct = normalizedObserved; correct <= total; correct += 1) {
+      tailProbability += Number.isFinite(pmf[correct]) ? pmf[correct] : 0;
+    }
+    if (tailProbability <= 0) return 0;
+    if (tailProbability >= 1) return 1;
+    return tailProbability;
+  }
+
   function scoreQuestions(questions, answersByQuestionId) {
     const safeQuestions = Array.isArray(questions) ? questions : [];
     const safeAnswers = isPlainObject(answersByQuestionId) ? answersByQuestionId : {};
@@ -148,22 +206,29 @@
 
     const percentage = total > 0 ? ((correct / total) * 100) : 0;
     const randomGuessPercentage = computeRandomGuessPercentage(safeQuestions);
-    const warningThreshold = randomGuessPercentage * (5 / 3);
+    const randomGuessDistribution = computeRandomGuessScoreDistribution(safeQuestions);
+    const probabilityAtLeastObserved = computeTailProbabilityAtOrAbove(
+      randomGuessDistribution,
+      correct
+    );
 
     return {
       correct,
       total,
       percentage,
       randomGuessPercentage,
-      warningThreshold,
-      shouldWarnLowScore: total > 0 && percentage < warningThreshold,
+      randomGuessDistribution,
+      probabilityAtLeastObserved,
     };
   }
 
   return {
     isPlainObject,
     validateQuestionsPayload,
+    getQuestionGuessProbability,
     computeRandomGuessPercentage,
+    computeRandomGuessScoreDistribution,
+    computeTailProbabilityAtOrAbove,
     scoreQuestions,
   };
 });
