@@ -122,15 +122,15 @@
     function renderStaticCopy() {
       document.title = tr(
         'renderer.reading_test.questions.title',
-        'Comprehension questions'
+        'Reading Comprehension Questions'
       );
       title.textContent = tr(
         'renderer.reading_test.questions.title',
-        'Comprehension questions'
+        'Reading Comprehension Questions'
       );
       intro.textContent = tr(
         'renderer.reading_test.questions.intro',
-        'Answer the questions if you want to review comprehension before returning to the main flow.'
+        'Answering these reading comprehension questions is optional and does not affect your final score. They are only meant to help you assess the text\'s difficulty and whether your reading pace and style allowed you to reach a basic level of comprehension. Your answers are not saved or sent to the developers or to anyone else.'
       );
       randomTitle.textContent = tr(
         'renderer.reading_test.questions.random_title',
@@ -188,7 +188,7 @@
             total: lastScore.total,
             percentage: formatPercentage(lastScore.percentage),
           },
-          `${lastScore.correct} / ${lastScore.total} (${formatPercentage(lastScore.percentage)}%)`
+          `${lastScore.correct} out of ${lastScore.total} correct (${formatPercentage(lastScore.percentage)}%)`
         ),
         { tone: 'info', visible: true }
       );
