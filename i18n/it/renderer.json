@@ -273,7 +273,7 @@
       },
       "questions": {
         "title": "Domande di comprensione del testo",
-        "intro": "Rispondi alle domande se vuoi verificare la comprensione della lettura prima di tornare al flusso principale.",
+        "intro": "Rispondere a queste domande di comprensione della lettura è facoltativo e non influisce sul punteggio finale. Servono solo ad aiutarti a valutare la difficoltà del testo e a capire se il tuo ritmo e il tuo stile di lettura ti hanno permesso di raggiungere un livello base di comprensione. Le tue risposte non vengono salvate né inviate agli sviluppatori o a nessun altro.",
         "random_title": "Probabilità casuale",
         "random_value": "Punteggio atteso rispondendo a caso: {percentage}%",
         "feedback_title": "Feedback",

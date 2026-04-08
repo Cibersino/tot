@@ -273,7 +273,7 @@
       },
       "questions": {
         "title": "Questões de compreensão de leitura",
-        "intro": "Responda às perguntas se quiser revisar a compreensão de leitura antes de voltar ao fluxo principal.",
+        "intro": "Responder a estas questões de compreensão de leitura é opcional e não afeta sua pontuação final. Elas servem apenas para ajudar você a avaliar a dificuldade do texto e se o seu ritmo e estilo de leitura permitiram alcançar um nível básico de compreensão. Suas respostas não são salvas nem enviadas aos desenvolvedores ou a ninguém.",
         "random_title": "Probabilidade ao acaso",
         "random_value": "Pontuação esperada ao responder ao acaso: {percentage}%",
         "feedback_title": "Feedback",

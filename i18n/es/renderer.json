@@ -284,7 +284,7 @@
       },
       "questions": {
         "title": "Preguntas de comprensión lectora",
-        "intro": "Responde las preguntas si deseas revisar la comprensión lectora antes de volver al flujo principal.",
+        "intro": "Responder estas preguntas de comprensión lectora es opcional y no afecta tu puntaje final. Solo sirven para ayudarte a evaluar la dificultad del texto y si tu ritmo y estilo de lectura te permitieron alcanzar un nivel básico de comprensión. Tus respuestas no se guardan ni se envían a los desarrolladores ni a ninguna otra persona.",
         "random_title": "Probabilidad al azar",
         "random_value": "Puntaje esperado al responder al azar: {percentage}%",
         "feedback_title": "Feedback",

@@ -273,7 +273,7 @@
       },
       "questions": {
         "title": "Fragen zum Leseverständnis",
-        "intro": "Beantworten Sie die Fragen, wenn Sie das Leseverständnis prüfen möchten, bevor Sie zum Hauptablauf zurückkehren.",
+        "intro": "Das Beantworten dieser Fragen zum Leseverständnis ist optional und beeinflusst Ihre Endpunktzahl nicht. Sie dienen nur dazu, Ihnen zu helfen, die Schwierigkeit des Textes einzuschätzen und zu beurteilen, ob Ihr Lesetempo und Ihr Lesestil es Ihnen ermöglicht haben, ein grundlegendes Verständnis zu erreichen. Ihre Antworten werden weder gespeichert noch an die Entwickler oder sonst jemanden gesendet.",
         "random_title": "Zufallsbasis",
         "random_value": "Erwartete Punktzahl bei zufälligem Raten: {percentage}%",
         "feedback_title": "Feedback",

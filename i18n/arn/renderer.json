@@ -260,7 +260,7 @@
       },
       "questions": {
         "title": "Ramtun kimün chillkatun mu",
-        "intro": "Llownge kom ramtun ayülemi kintual tami kimün chillkatun mu petu tami wiñotun mu.",
+        "intro": "Tüfachi ramtun kimün chillkatun mu llowal ayüleymi müten; gelay chumal tami puntaje tripachi. Feyengün müten kelluaymew tami kintual chum fentren müley ti chillka ka chemgechi tami pürüm ka adüm chillkatun eluymi kiñe pichi kimün. Tami llowün gelay elkünun no rume ka amulay desarrolladores püle rume ka iney no rume püle.",
         "random_title": "Chumngechi tripayal kisu",
         "random_value": "{percentage}% küme llowün tripayafuy kisu",
         "feedback_title": "Feedback",
