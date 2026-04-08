@@ -273,7 +273,7 @@
       },
       "questions": {
         "title": "Fragen zum Leseverständnis",
-        "intro": "Beantworten Sie die Fragen, wenn Sie das Verständnis prüfen möchten, bevor Sie zum Hauptablauf zurückkehren.",
+        "intro": "Beantworten Sie die Fragen, wenn Sie das Leseverständnis prüfen möchten, bevor Sie zum Hauptablauf zurückkehren.",
         "random_title": "Zufallsbasis",
         "random_value": "Erwartete Punktzahl bei zufälligem Raten: {percentage}%",
         "feedback_title": "Feedback",

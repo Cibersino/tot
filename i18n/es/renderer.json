@@ -284,7 +284,7 @@
       },
       "questions": {
         "title": "Preguntas de comprensión lectora",
-        "intro": "Responde las preguntas si deseas revisar la comprensión antes de volver al flujo principal.",
+        "intro": "Responde las preguntas si deseas revisar la comprensión lectora antes de volver al flujo principal.",
         "random_title": "Probabilidad al azar",
         "random_value": "Puntaje esperado al responder al azar: {percentage}%",
         "feedback_title": "Feedback",

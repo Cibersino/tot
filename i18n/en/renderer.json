@@ -284,7 +284,7 @@
       },
       "questions": {
         "title": "Reading Comprehension Questions",
-        "intro": "Answer the questions if you want to review comprehension before returning to the main flow.",
+        "intro": "Answer the questions if you want to review reading comprehension before returning to the main flow.",
         "random_title": "Random guess baseline",
         "random_value": "Expected score under random guessing: {percentage}%",
         "feedback_title": "Feedback",
