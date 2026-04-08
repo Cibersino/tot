@@ -52,8 +52,7 @@
 
   function isUnusedEntry(entry) {
     return !!(entry
-      && entry.tags
-      && entry.tags.testUsed === false);
+      && entry.used === false);
   }
 
   function entryMatchesSelection(entry, selection) {

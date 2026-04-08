@@ -216,7 +216,7 @@ function createController(options = {}) {
     }
 
     const entries = poolInfo.entries;
-    const hasUnusedEntries = entries.some((entry) => entry.tags.testUsed === false);
+    const hasUnusedEntries = entries.some((entry) => entry.used === false);
 
     return {
       ok: true,
@@ -524,18 +524,18 @@ function createController(options = {}) {
       return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: 'TEXT_APPLY_FAILED' };
     }
 
-    const writeInfo = readingTestPool.rewritePoolEntryTestUsed(selectedEntry, true);
-    if (!writeInfo.ok) {
-      applyCurrentText('', { source: 'main-window', action: 'clear' });
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: writeInfo.code || 'POOL_WRITE_FAILED' };
-    }
-
     try {
       await openReadingSessionWindows();
     } catch (err) {
       log.error('Reading-test session start window orchestration failed:', err);
       cleanupStartFailure({ clearCurrentText: true });
       return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: 'WINDOW_ORCHESTRATION_FAILED' };
+    }
+
+    const writeInfo = readingTestPool.markPoolEntryUsed(selectedEntry.snapshotRelPath, true);
+    if (!writeInfo.ok) {
+      cleanupStartFailure({ clearCurrentText: true });
+      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: writeInfo.code || 'POOL_WRITE_FAILED' };
     }
 
     setStage('running', { selectedEntry: buildSessionEntry('pool', selectedEntry) });

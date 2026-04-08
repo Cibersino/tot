@@ -3,8 +3,7 @@
   "tags": {
     "language": "es",
     "type": "fiction",
-    "difficulty": "easy",
-    "testUsed": false
+    "difficulty": "easy"
   },
   "readingTest": {
     "questions": [

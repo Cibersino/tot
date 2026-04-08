@@ -288,6 +288,7 @@ async function importSelectedFiles({
         failedValidation: scanInfo.failedValidation,
         failedArchiveEntries: scanInfo.failedArchiveEntries,
         failedWrites: 0,
+        writtenDestinationNames: [],
       };
     }
   }
@@ -296,6 +297,7 @@ async function importSelectedFiles({
   let skippedDuplicates = 0;
   let failedWrites = 0;
   const seenDestinationNames = new Set();
+  const writtenDestinationNames = [];
 
   for (const candidate of candidates) {
     if (seenDestinationNames.has(candidate.destinationName)) {
@@ -315,6 +317,7 @@ async function importSelectedFiles({
     const writeInfo = writeCandidateToPool(destinationDir, candidate);
     if (writeInfo.ok) {
       imported += 1;
+      writtenDestinationNames.push(candidate.destinationName);
     } else {
       failedWrites += 1;
     }
@@ -328,6 +331,7 @@ async function importSelectedFiles({
     failedValidation: scanInfo.failedValidation,
     failedArchiveEntries: scanInfo.failedArchiveEntries,
     failedWrites,
+    writtenDestinationNames,
   };
 }
 
@@ -423,7 +427,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
       }
 
       const dialogCopy = normalizeDialogCopy(payload.conflictDialog);
-      return importSelectedFiles({
+      const result = await importSelectedFiles({
         selectedPaths: normalizedSelectedPaths,
         poolDir: readingTestPool.ensurePoolDir(),
         resolveConflictStrategy: async ({ duplicateCount }) => {
@@ -451,6 +455,18 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
           return IMPORT_CONFLICT_STRATEGY.SKIP;
         },
       });
+
+      if (result && result.ok === true && result.canceled !== true && Array.isArray(result.writtenDestinationNames)) {
+        const importedSnapshotRelPaths = result.writtenDestinationNames
+          .map((destinationName) => readingTestPool.buildPoolSnapshotRelPath(destinationName))
+          .filter(Boolean);
+        const stateUpdate = readingTestPool.clearImportedPoolEntriesState(importedSnapshotRelPaths);
+        if (!stateUpdate || stateUpdate.ok !== true) {
+          log.warn('Reading-test import state update failed (ignored):', stateUpdate);
+        }
+      }
+
+      return result;
     } catch (err) {
       log.error('reading-test-import-pool-files failed:', err);
       return {

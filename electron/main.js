@@ -47,6 +47,7 @@ const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
 const readingTestSession = require('./reading_test_session');
 const readingTestPoolImport = require('./reading_test_pool_import');
+const readingTestPool = require('./reading_test_pool');
 const importExtractFilePickerIpc = require('./import_extract_platform/import_extract_file_picker_ipc');
 const importExtractPreconditionsIpc = require('./import_extract_platform/import_extract_preconditions_ipc');
 const importExtractProcessingModeIpc = require('./import_extract_platform/import_extract_processing_mode_ipc');
@@ -1598,6 +1599,11 @@ app.whenReady().then(() => {
 
   // Ensure config directory exists before any module tries to read/write JSON.
   ensureConfigDir();
+
+  const readingTestPoolSync = readingTestPool.synchronizeBundledPoolContent();
+  if (!readingTestPoolSync || readingTestPoolSync.ok !== true) {
+    log.warn('Reading-test bundled pool startup sync failed (ignored):', readingTestPoolSync);
+  }
 
   const SETTINGS_FILE = getSettingsFile();
   const CURRENT_TEXT_FILE = getCurrentTextFile();
