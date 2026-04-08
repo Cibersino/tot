@@ -260,7 +260,7 @@
       },
       "questions": {
         "title": "Preguntas de comprensión lectora",
-        "intro": "Ahora unas preguntitas pa' medir qué tan bien entendiste lo que leíste.",
+        "intro": "Contestar estas preguntas es opcional y no afecta el resultado final. Solo sirven pa' que tengai una idea de qué tan bien entendiste el texto que leíste. Tus respuestas no se guardan ni se comparten con nadien.",
         "random_title": "Probabilidad de achuntarle",
         "random_value": "Puntaje esperado al responder al achunte: {percentage}%",
         "feedback_title": "Feedback",

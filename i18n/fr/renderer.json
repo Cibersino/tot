@@ -273,7 +273,7 @@
       },
       "questions": {
         "title": "Questions de compréhension de lecture",
-        "intro": "Répondez aux questions si vous souhaitez vérifier la compréhension de lecture avant de revenir au flux principal.",
+        "intro": "Répondre à ces questions de compréhension de lecture est facultatif et n'affecte pas votre score final. Elles servent uniquement à vous aider à évaluer la difficulté du texte et à déterminer si votre rythme et votre style de lecture vous ont permis d'atteindre un niveau de compréhension élémentaire. Vos réponses ne sont ni sauvegardées ni envoyées aux développeurs ou à qui que ce soit d'autre.",
         "random_title": "Probabilité au hasard",
         "random_value": "Score attendu en répondant au hasard : {percentage}%",
         "feedback_title": "Feedback",
