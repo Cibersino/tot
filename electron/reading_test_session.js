@@ -342,7 +342,7 @@ function createController(options = {}) {
       return { ok: false, guidanceKey: 'renderer.alerts.reading_test_no_matching_files', code: 'NO_MATCHING_FILES' };
     }
 
-    return { ok: true, poolEntries: poolInfo.entries, eligibleEntries };
+    return { ok: true, eligibleEntries };
   }
 
   function chooseRandomEntry(entries) {
