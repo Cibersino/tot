@@ -278,6 +278,8 @@
           "get_more_files": "Obtener más archivos",
           "import_files": "Importar archivos...",
           "reset_pool": "Restablecer pool",
+          "show_instructions": "Mostrar instrucciones",
+          "hide_instructions": "Ocultar instrucciones",
           "start_random_text": "Iniciar con texto aleatorio",
           "start_current_text": "Iniciar con texto actual"
         }

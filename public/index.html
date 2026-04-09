@@ -256,17 +256,22 @@
     <div id="readingTestEntryModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="readingTestEntryModalTitle" aria-modal="true">
       <div id="readingTestEntryModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="reading-test-entry-modal-panel" role="document" aria-describedby="readingTestEntryModalIntro">
+      <div class="reading-test-entry-modal-panel" role="document">
         <header class="reading-test-entry-modal-header">
           <button id="readingTestEntryModalClose" class="btn-standard" type="button"
             aria-label="Cerrar diálogo de test de velocidad de lectura">🗙</button>
         </header>
         <div class="reading-test-entry-modal-body">
           <h2 id="readingTestEntryModalTitle">Test de velocidad de lectura</h2>
-          <p id="readingTestEntryModalIntro">Este test sirve para estimar tu velocidad real de lectura con una sesión
-            guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando termines, pulsa
-            Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el test. Después podrás
-            revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.</p>
+          <div class="reading-test-entry-modal-intro-block">
+            <button id="readingTestEntryModalIntroToggle" class="reading-test-entry-modal-toggle" type="button"
+              aria-controls="readingTestEntryModalIntro" aria-expanded="false">Mostrar instrucciones</button>
+            <p id="readingTestEntryModalIntro" hidden>Este test sirve para estimar tu velocidad real de lectura con una
+              sesión guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando
+              termines, pulsa Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el
+              test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset
+              con el resultado.</p>
+          </div>
           <div id="readingTestEntryModalWarning" class="reading-test-entry-modal-warning" aria-live="polite" hidden>
           </div>
           <div class="reading-test-entry-modal-groups">
