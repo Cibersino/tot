@@ -28,7 +28,15 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[editor] AppConstants unavailable; verify constants.js load order');
 }
-const { DEFAULT_LANG, PASTE_ALLOW_LIMIT, SMALL_UPDATE_THRESHOLD } = AppConstants;
+const {
+  DEFAULT_LANG,
+  PASTE_ALLOW_LIMIT,
+  SMALL_UPDATE_THRESHOLD,
+  EDITOR_FONT_SIZE_MIN_PX,
+  EDITOR_FONT_SIZE_MAX_PX,
+  EDITOR_FONT_SIZE_DEFAULT_PX,
+  EDITOR_FONT_SIZE_STEP_PX,
+} = AppConstants;
 let maxTextChars = AppConstants.MAX_TEXT_CHARS; // Absolute editor limit. Local writes must stay within this bound to prevent lags and OOM.
 
 if (!window.editorAPI) {
@@ -70,9 +78,13 @@ if (typeof window.editorAPI.onForceClear !== 'function') {
       if (settings && settings.language) {
         idiomaActual = settings.language || DEFAULT_LANG;
       }
+      spellcheckEnabled = !settings || settings.spellcheckEnabled !== false;
+      editorFontSizePx = clampEditorFontSizePx(settings && settings.editorFontSizePx);
     } else {
       log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
     }
+    setLocalSpellcheckEnabled(spellcheckEnabled);
+    setLocalEditorFontSizePx(editorFontSizePx);
     await applyEditorTranslations();
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
@@ -85,8 +97,16 @@ if (typeof window.editorAPI.onForceClear !== 'function') {
 const editor = document.getElementById('editorArea');
 const btnTrash = document.getElementById('btnTrash');
 const calcWhileTyping = document.getElementById('calcWhileTyping');
+const spellcheckToggle = document.getElementById('spellcheckToggle');
 const btnCalc = document.getElementById('btnCalc');
 const calcLabel = document.querySelector('.calc-label');
+const spellcheckLabel = document.querySelector('.spellcheck-label');
+const textSizeControls = document.getElementById('editorTextSizeControls');
+const textSizeLabel = document.getElementById('editorTextSizeLabel');
+const btnTextSizeDecrease = document.getElementById('btnTextSizeDecrease');
+const btnTextSizeIncrease = document.getElementById('btnTextSizeIncrease');
+const btnTextSizeReset = document.getElementById('btnTextSizeReset');
+const textSizeValue = document.getElementById('editorTextSizeValue');
 const bottomBar = document.getElementById('bottomBar');
 const readingTestCountdownOverlay = document.getElementById('readingTestCountdownOverlay');
 const readingTestCountdownValue = document.getElementById('readingTestCountdownValue');
@@ -99,6 +119,8 @@ const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
 let readingTestCountdownRunId = 0;
 let readingTestCountdownTimeouts = [];
+let spellcheckEnabled = true;
+let editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
 
 // warnOnce keys are editor-scoped; use log.warnOnce directly.
 
@@ -108,12 +130,65 @@ let readingTestCountdownTimeouts = [];
 let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
 
-const { loadRendererTranslations, tRenderer } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer) {
+const { loadRendererTranslations, tRenderer, msgRenderer } = window.RendererI18n || {};
+if (!loadRendererTranslations || !tRenderer || !msgRenderer) {
   throw new Error('[editor] RendererI18n unavailable; cannot continue');
 }
 
 const tr = (path, fallback) => tRenderer(path, fallback);
+const trMsg = (path, params, fallback) => msgRenderer(path, params, fallback);
+
+function applyDocumentLanguage() {
+  const langTag = (idiomaActual || DEFAULT_LANG || 'es').toLowerCase();
+  if (document && document.documentElement) {
+    document.documentElement.lang = langTag;
+  }
+  if (editor) {
+    editor.setAttribute('lang', langTag);
+  }
+}
+
+function setLocalSpellcheckEnabled(enabled) {
+  spellcheckEnabled = enabled !== false;
+  if (spellcheckToggle) spellcheckToggle.checked = spellcheckEnabled;
+  if (editor) {
+    editor.spellcheck = spellcheckEnabled;
+    editor.setAttribute('spellcheck', spellcheckEnabled ? 'true' : 'false');
+  }
+}
+
+function clampEditorFontSizePx(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return EDITOR_FONT_SIZE_DEFAULT_PX;
+  const rounded = Math.round(parsed);
+  return Math.min(
+    EDITOR_FONT_SIZE_MAX_PX,
+    Math.max(EDITOR_FONT_SIZE_MIN_PX, rounded)
+  );
+}
+
+function updateEditorTextSizeUi() {
+  if (textSizeValue) {
+    const valueText = trMsg(
+      'renderer.editor.text_size_value',
+      { value: editorFontSizePx },
+      `${editorFontSizePx} px`
+    );
+    textSizeValue.textContent = valueText;
+    textSizeValue.setAttribute('aria-label', valueText);
+  }
+  if (btnTextSizeDecrease) btnTextSizeDecrease.disabled = editorFontSizePx <= EDITOR_FONT_SIZE_MIN_PX;
+  if (btnTextSizeIncrease) btnTextSizeIncrease.disabled = editorFontSizePx >= EDITOR_FONT_SIZE_MAX_PX;
+  if (btnTextSizeReset) btnTextSizeReset.disabled = editorFontSizePx === EDITOR_FONT_SIZE_DEFAULT_PX;
+}
+
+function setLocalEditorFontSizePx(value) {
+  editorFontSizePx = clampEditorFontSizePx(value);
+  if (document && document.documentElement) {
+    document.documentElement.style.setProperty('--editor-font-size', `${editorFontSizePx}px`);
+  }
+  updateEditorTextSizeUi();
+}
 
 async function ensureEditorTranslations(lang) {
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
@@ -124,6 +199,7 @@ async function ensureEditorTranslations(lang) {
 
 async function applyEditorTranslations() {
   await ensureEditorTranslations(idiomaActual);
+  applyDocumentLanguage();
   document.title = tr('renderer.editor.title', document.title);
   if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder', editor.getAttribute('placeholder') || ''));
   if (btnCalc) {
@@ -136,6 +212,31 @@ async function applyEditorTranslations() {
     calcLabel.setAttribute('data-label', calcWhileTypingText);
     if (calcWhileTyping) calcWhileTyping.setAttribute('aria-label', calcWhileTypingText);
   }
+  if (spellcheckLabel) {
+    const spellcheckText = tr('renderer.editor.spellcheck', spellcheckLabel.getAttribute('data-label') || '');
+    spellcheckLabel.setAttribute('data-label', spellcheckText);
+    if (spellcheckToggle) spellcheckToggle.setAttribute('aria-label', spellcheckText);
+  }
+  if (textSizeControls) {
+    const textSizeGroupText = tr('renderer.editor.text_size_label', textSizeControls.getAttribute('aria-label') || '');
+    textSizeControls.setAttribute('aria-label', textSizeGroupText);
+    if (textSizeLabel) textSizeLabel.textContent = textSizeGroupText;
+  }
+  if (btnTextSizeDecrease) {
+    const decreaseText = tr('renderer.editor.decrease_text_size', btnTextSizeDecrease.title || '');
+    btnTextSizeDecrease.setAttribute('aria-label', decreaseText);
+    btnTextSizeDecrease.title = decreaseText;
+  }
+  if (btnTextSizeIncrease) {
+    const increaseText = tr('renderer.editor.increase_text_size', btnTextSizeIncrease.title || '');
+    btnTextSizeIncrease.setAttribute('aria-label', increaseText);
+    btnTextSizeIncrease.title = increaseText;
+  }
+  if (btnTextSizeReset) {
+    const resetText = tr('renderer.editor.reset_text_size', btnTextSizeReset.title || '');
+    btnTextSizeReset.setAttribute('aria-label', resetText);
+    btnTextSizeReset.title = resetText;
+  }
   if (btnTrash) {
     const clearText = tr('renderer.editor.clear', btnTrash.getAttribute('data-label') || '');
     btnTrash.setAttribute('data-label', clearText);
@@ -145,6 +246,7 @@ async function applyEditorTranslations() {
   if (bottomBar) {
     bottomBar.setAttribute('aria-label', tr('renderer.editor.title', bottomBar.getAttribute('aria-label') || ''));
   }
+  updateEditorTextSizeUi();
 }
 
 // =============================================================================
@@ -154,9 +256,26 @@ if (typeof window.editorAPI.onSettingsChanged === 'function') {
   window.editorAPI.onSettingsChanged(async (settings) => {
     try {
       const nextLang = settings && settings.language ? settings.language : '';
-      if (!nextLang || nextLang === idiomaActual) return;
-      idiomaActual = nextLang;
-      await applyEditorTranslations();
+      const nextSpellcheckEnabled = !settings || settings.spellcheckEnabled !== false;
+      const nextEditorFontSizePx = clampEditorFontSizePx(settings && settings.editorFontSizePx);
+      const languageChanged = !!(nextLang && nextLang !== idiomaActual);
+      const spellcheckChanged = nextSpellcheckEnabled !== spellcheckEnabled;
+      const fontSizeChanged = nextEditorFontSizePx !== editorFontSizePx;
+
+      if (!languageChanged && !spellcheckChanged && !fontSizeChanged) return;
+
+      if (languageChanged) {
+        idiomaActual = nextLang;
+        await applyEditorTranslations();
+      }
+      if (spellcheckChanged) {
+        setLocalSpellcheckEnabled(nextSpellcheckEnabled);
+      }
+      if (fontSizeChanged) {
+        setLocalEditorFontSizePx(nextEditorFontSizePx);
+      } else if (languageChanged) {
+        updateEditorTextSizeUi();
+      }
     } catch (err) {
       log.warn('editor: failed to apply settings update:', err);
     }
@@ -331,6 +450,9 @@ try {
     editor.style.wordBreak = 'break-word';
   }
 } catch (err) { log.warnOnce('editor:wrapStyles:apply_failed', 'editor wrap styles failed (ignored):', err); }
+applyDocumentLanguage();
+setLocalSpellcheckEnabled(spellcheckEnabled);
+setLocalEditorFontSizePx(editorFontSizePx);
 
 // =============================================================================
 // Local insertion (best preserving undo)
@@ -821,6 +943,50 @@ editor.addEventListener('input', () => {
   }
 });
 
+async function persistEditorFontSizePx(nextFontSizePx) {
+  const previousFontSizePx = editorFontSizePx;
+  const normalizedNextFontSizePx = clampEditorFontSizePx(nextFontSizePx);
+
+  if (!window.editorAPI || typeof window.editorAPI.setEditorFontSizePx !== 'function') {
+    log.warnOnce(
+      'editor.fontSize.apiMissing',
+      'editorAPI.setEditorFontSizePx missing; editor text-size update ignored.'
+    );
+    return false;
+  }
+
+  if (normalizedNextFontSizePx === previousFontSizePx) {
+    updateEditorTextSizeUi();
+    return true;
+  }
+
+  setLocalEditorFontSizePx(normalizedNextFontSizePx);
+
+  try {
+    const result = await window.editorAPI.setEditorFontSizePx(normalizedNextFontSizePx);
+    if (!result || result.ok !== true) {
+      throw new Error(result && result.error ? String(result.error) : 'unknown');
+    }
+    return true;
+  } catch (err) {
+    log.error('Error updating editor font size setting:', err);
+    setLocalEditorFontSizePx(previousFontSizePx);
+    return false;
+  }
+}
+
+function decreaseEditorFontSize() {
+  return persistEditorFontSizePx(editorFontSizePx - EDITOR_FONT_SIZE_STEP_PX);
+}
+
+function increaseEditorFontSize() {
+  return persistEditorFontSizePx(editorFontSizePx + EDITOR_FONT_SIZE_STEP_PX);
+}
+
+function resetEditorFontSize() {
+  return persistEditorFontSizePx(EDITOR_FONT_SIZE_DEFAULT_PX);
+}
+
 // =============================================================================
 // Buttons and toggles
 // =============================================================================
@@ -869,6 +1035,58 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     // disable automatic sending; enable CALC/SAVE
   } else btnCalc.disabled = false;
 });
+
+if (spellcheckToggle) {
+  spellcheckToggle.addEventListener('change', async () => {
+    const previousEnabled = spellcheckEnabled;
+    const nextEnabled = !!spellcheckToggle.checked;
+
+    if (!window.editorAPI || typeof window.editorAPI.setSpellcheckEnabled !== 'function') {
+      log.warnOnce(
+        'editor.spellcheck.apiMissing',
+        'editorAPI.setSpellcheckEnabled missing; spellcheck toggle ignored.'
+      );
+      setLocalSpellcheckEnabled(previousEnabled);
+      return;
+    }
+
+    setLocalSpellcheckEnabled(nextEnabled);
+
+    try {
+      const result = await window.editorAPI.setSpellcheckEnabled(nextEnabled);
+      if (!result || result.ok !== true) {
+        throw new Error(result && result.error ? String(result.error) : 'unknown');
+      }
+    } catch (err) {
+      log.error('Error updating spellcheck setting:', err);
+      setLocalSpellcheckEnabled(previousEnabled);
+    }
+  });
+}
+
+if (btnTextSizeDecrease) {
+  btnTextSizeDecrease.addEventListener('click', () => {
+    decreaseEditorFontSize().catch((err) => {
+      log.error('Error decreasing editor font size:', err);
+    });
+  });
+}
+
+if (btnTextSizeIncrease) {
+  btnTextSizeIncrease.addEventListener('click', () => {
+    increaseEditorFontSize().catch((err) => {
+      log.error('Error increasing editor font size:', err);
+    });
+  });
+}
+
+if (btnTextSizeReset) {
+  btnTextSizeReset.addEventListener('click', () => {
+    resetEditorFontSize().catch((err) => {
+      log.error('Error resetting editor font size:', err);
+    });
+  });
+}
 
 // =============================================================================
 // End of public/editor.js

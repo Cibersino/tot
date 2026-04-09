@@ -21,7 +21,12 @@
 const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
-const { DEFAULT_LANG } = require('./constants_main');
+const {
+  DEFAULT_LANG,
+  EDITOR_FONT_SIZE_MIN_PX,
+  EDITOR_FONT_SIZE_MAX_PX,
+  EDITOR_FONT_SIZE_DEFAULT_PX,
+} = require('./constants_main');
 
 const log = Log.get('settings');
 log.debug('Settings starting...');
@@ -53,10 +58,22 @@ const deriveLangKey = (langTag) => getLangBase(langTag);
 // =============================================================================
 const createDefaultSettings = (language = '') => ({
   language,
+  spellcheckEnabled: true,
+  editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
   presets_by_language: {},
   selected_preset_by_language: {},
   disabled_default_presets: {},
 });
+
+function normalizeEditorFontSizePx(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return EDITOR_FONT_SIZE_DEFAULT_PX;
+  const rounded = Math.round(parsed);
+  return Math.min(
+    EDITOR_FONT_SIZE_MAX_PX,
+    Math.max(EDITOR_FONT_SIZE_MIN_PX, rounded)
+  );
+}
 
 // =============================================================================
 // Injected dependencies + cache
@@ -262,6 +279,47 @@ function normalizeSettings(s) {
       { value: s.modeConteo }
     );
     s.modeConteo = 'preciso';
+  }
+
+  // spellcheckEnabled:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof s.spellcheckEnabled === 'undefined') {
+    s.spellcheckEnabled = true;
+  } else if (typeof s.spellcheckEnabled !== 'boolean') {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidSpellcheckEnabled',
+      'Invalid spellcheckEnabled; forcing default:',
+      { type: typeof s.spellcheckEnabled }
+    );
+    s.spellcheckEnabled = true;
+  }
+
+  // editorFontSizePx:
+  // - missing -> default (silent)
+  // - invalid/out of range -> warnOnce + normalized value
+  if (typeof s.editorFontSizePx === 'undefined') {
+    s.editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
+  } else {
+    const nextEditorFontSizePx = normalizeEditorFontSizePx(s.editorFontSizePx);
+    if (!Number.isFinite(Number(s.editorFontSizePx))) {
+      log.warnOnce(
+        'settings.normalizeSettings.invalidEditorFontSizePx',
+        'Invalid editorFontSizePx; forcing default:',
+        { value: s.editorFontSizePx }
+      );
+    } else if (nextEditorFontSizePx !== Math.round(Number(s.editorFontSizePx))) {
+      log.warnOnce(
+        'settings.normalizeSettings.outOfRangeEditorFontSizePx',
+        'Out-of-range editorFontSizePx; clamping:',
+        {
+          value: s.editorFontSizePx,
+          min: EDITOR_FONT_SIZE_MIN_PX,
+          max: EDITOR_FONT_SIZE_MAX_PX,
+        }
+      );
+    }
+    s.editorFontSizePx = nextEditorFontSizePx;
   }
 
   // Normalize language tag and compute its base (e.g., "en-US" -> "en").
@@ -470,6 +528,7 @@ function registerIpc(
   {
     getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin })
     buildAppMenu, // function(lang)
+    onSettingsUpdated, // function(settings)
   } = {}
 ) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -489,6 +548,17 @@ function registerIpc(
       return normalizeSettings(createDefaultSettings(DEFAULT_LANG));
     }
   });
+
+  function publishSettingsUpdated(settings, windows) {
+    try {
+      if (typeof onSettingsUpdated === 'function') {
+        onSettingsUpdated(settings);
+      }
+    } catch (err) {
+      log.warn('onSettingsUpdated callback failed (ignored):', err);
+    }
+    broadcastSettingsUpdated(settings, windows);
+  }
 
   // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
@@ -553,7 +623,7 @@ function registerIpc(
         log.warn('hide menu in secondary windows failed (ignored):', err);
       }
 
-      broadcastSettingsUpdated(settings, windows);
+      publishSettingsUpdated(settings, windows);
 
       return { ok: true, language: chosen };
     } catch (err) {
@@ -570,7 +640,7 @@ function registerIpc(
       settings = saveSettings(settings);
 
       const windows = typeof getWindows === 'function' ? getWindows() : {};
-      broadcastSettingsUpdated(settings, windows);
+      publishSettingsUpdated(settings, windows);
 
       return { ok: true, mode: settings.modeConteo };
     } catch (err) {
@@ -609,6 +679,66 @@ function registerIpc(
       return { ok: true, langKey, name };
     } catch (err) {
       log.error('IPC set-selected-preset failed:', err);
+      return { ok: false, error: String(err) };
+    }
+  });
+
+  // set-spellcheck-enabled: persists spellcheck preference and broadcasts
+  ipcMain.handle('set-spellcheck-enabled', async (_event, enabled) => {
+    try {
+      if (typeof enabled !== 'boolean') {
+        log.warnOnce(
+          'settings.set-spellcheck-enabled.invalid',
+          'set-spellcheck-enabled called with non-boolean value (ignored).',
+          { type: typeof enabled }
+        );
+        return { ok: false, error: 'invalid' };
+      }
+
+      let settings = getSettings();
+      if (settings.spellcheckEnabled === enabled) {
+        return { ok: true, enabled };
+      }
+      settings.spellcheckEnabled = enabled;
+      settings = saveSettings(settings);
+
+      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      publishSettingsUpdated(settings, windows);
+
+      return { ok: true, enabled: settings.spellcheckEnabled };
+    } catch (err) {
+      log.error('IPC set-spellcheck-enabled failed:', err);
+      return { ok: false, error: String(err) };
+    }
+  });
+
+  // set-editor-font-size-px: persists manual-editor textarea font size and broadcasts
+  ipcMain.handle('set-editor-font-size-px', async (_event, fontSizePx) => {
+    try {
+      const parsed = Number(fontSizePx);
+      if (!Number.isFinite(parsed)) {
+        log.warnOnce(
+          'settings.set-editor-font-size-px.invalid',
+          'set-editor-font-size-px called with non-finite value (ignored).',
+          { value: fontSizePx }
+        );
+        return { ok: false, error: 'invalid' };
+      }
+
+      let settings = getSettings();
+      const nextEditorFontSizePx = normalizeEditorFontSizePx(parsed);
+      if (settings.editorFontSizePx === nextEditorFontSizePx) {
+        return { ok: true, editorFontSizePx: nextEditorFontSizePx };
+      }
+      settings.editorFontSizePx = nextEditorFontSizePx;
+      settings = saveSettings(settings);
+
+      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      publishSettingsUpdated(settings, windows);
+
+      return { ok: true, editorFontSizePx: settings.editorFontSizePx };
+    } catch (err) {
+      log.error('IPC set-editor-font-size-px failed:', err);
       return { ok: false, error: String(err) };
     }
   });

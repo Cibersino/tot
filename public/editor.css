@@ -3,8 +3,8 @@
   --toolbar-bg: #f6f6f6;
   --border: #e6e6e6;
   --gap: 8px;
-  --bottom-height: 52px;
-  /* bottom bar height */
+  --bottom-min-height: 52px;
+  --editor-font-size: 20px;
 }
 
 /* Basic Normalize */
@@ -50,7 +50,7 @@ body.reading-test-countdown-active .bottom-bar {
   box-sizing: border-box;
   padding: 12px;
   font-family: 'Baskervville', serif;
-  font-size: 20px;
+  font-size: var(--editor-font-size);
   line-height: 1.45;
   resize: none;
   border: none;
@@ -91,15 +91,14 @@ body.reading-test-countdown-active .bottom-bar {
 
 /* Fixed bottom bar on the foot of the modal */
 .bottom-bar {
-  height: var(--bottom-height);
-  min-height: var(--bottom-height);
+  min-height: var(--bottom-min-height);
   box-sizing: border-box;
   padding: 8px 12px;
   border-top: 1px solid var(--border);
   background: var(--toolbar-bg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: 12px;
 }
 
@@ -107,7 +106,19 @@ body.reading-test-countdown-active .bottom-bar {
 .bottom-bar .left-controls {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  justify-content: flex-start;
   gap: 10px;
+  min-width: 0;
+}
+
+.bottom-bar .right-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  align-self: end;
+  justify-self: end;
 }
 
 /* CALCULATE button */
@@ -130,8 +141,8 @@ body.reading-test-countdown-active .bottom-bar {
   cursor: default;
 }
 
-/* checkbox label */
-.calc-label {
+/* checkbox labels */
+.editor-toggle-label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -140,8 +151,59 @@ body.reading-test-countdown-active .bottom-bar {
   user-select: none;
 }
 
-.calc-label::after {
+.editor-toggle-label::after {
   content: attr(data-label);
+}
+
+.editor-text-size-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.editor-text-size-label {
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
+
+.btn-text-size {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.btn-text-size[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.editor-text-size-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 32px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.55);
+  color: #333;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
 }
 
 /* Trash button (right aligned) */
@@ -169,7 +231,8 @@ body.reading-test-countdown-active .bottom-bar {
 
 /* Simple animation for bottom bar buttons */
 #btnCalc,
-#btnTrash {
+#btnTrash,
+.btn-text-size {
   transition: background 0.12s ease-out,
     border-color 0.12s ease-out,
     transform 0.05s linear;
@@ -183,6 +246,17 @@ body.reading-test-countdown-active .bottom-bar {
 }
 
 #btnCalc:not([disabled]):active {
+  background: #ffe0e0;
+  border-color: #d99b9b;
+  transform: translateY(1px);
+}
+
+.btn-text-size:not([disabled]):hover {
+  background: #fff5f5;
+  border-color: #e6bebe;
+}
+
+.btn-text-size:not([disabled]):active {
   background: #ffe0e0;
   border-color: #d99b9b;
   transform: translateY(1px);
@@ -203,17 +277,27 @@ body.reading-test-countdown-active .bottom-bar {
   }
 
   #btnCalc,
-  #btnTrash {
+  #btnTrash,
+  .btn-text-size {
     padding: 6px 8px;
     height: 32px;
   }
 
-  .calc-label {
+  .editor-toggle-label,
+  .editor-text-size-label {
     font-size: 13px;
   }
 
   #editorArea {
     padding: 10px;
-    font-size: 14px;
+  }
+
+  .editor-text-size-controls {
+    gap: 4px;
+  }
+
+  .editor-text-size-value {
+    min-width: 48px;
+    padding: 0 6px;
   }
 }

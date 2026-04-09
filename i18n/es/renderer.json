@@ -105,6 +105,12 @@
       "placeholder": "Escribe o pega aquí...",
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Auto-guardar y auto-recalcular mientras escribes",
+      "spellcheck": "Corrector ortográfico",
+      "text_size_label": "Tamaño",
+      "decrease_text_size": "Reducir tamaño del texto",
+      "increase_text_size": "Aumentar tamaño del texto",
+      "reset_text_size": "Restablecer tamaño del texto",
+      "text_size_value": "{value} px",
       "clear": "🗑",
       "clear_title": "Vaciar"
     },

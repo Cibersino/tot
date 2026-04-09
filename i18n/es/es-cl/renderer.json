@@ -94,6 +94,12 @@
       "placeholder": "Escribe o pega la custión aquí...",
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Auto-salvar y auto-contar mientras escribís",
+      "spellcheck": "Corrector ortográfico",
+      "text_size_label": "Tamaño",
+      "decrease_text_size": "Achicar el texto",
+      "increase_text_size": "Agrandar el texto",
+      "reset_text_size": "Dejar el tamaño como estaba",
+      "text_size_value": "{value} px",
       "clear": "🗑",
       "clear_title": "Pitiarse too"
     },

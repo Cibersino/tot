@@ -51,6 +51,8 @@ Reglas:
 - Snapshots del texto vigente (Issue #201): el botón `💾` de la ventana principal deja de abrir inmediatamente el diálogo nativo y pasa a mostrar primero un modal renderer con tags opcionales `language`, `type` y `difficulty`; al confirmar, recién entonces se abre el save dialog nativo.
 - Persistencia de snapshots: el formato deja de ser únicamente `{ "text": "<string>" }` y pasa a aceptar también snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`; además, la carga normal tolera payload opcional `readingTest` cuando existe.
 - Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro.
+- Corrector ortográfico del editor (Issue #211): la ventana editor agrega un checkbox persistente, habilitado por defecto, y el spellcheck de Electron deja de depender implícitamente del locale del sistema; ahora sigue el idioma activo de la app cuando existe diccionario soportado y se deshabilita explícitamente en tags UI sin diccionario válido (p.ej. `arn`, `es-cl`).
+- Tamaño de texto del editor (Issue #212): la ventana editor agrega controles locales `A-` / indicador / `A+` / reset para escalar solo el `textarea`, persiste `editorFontSizePx`, soporta `Ctrl/Cmd +`, `Ctrl/Cmd -` y `Ctrl/Cmd 0`, y mueve su orquestación main-owned a `electron/editor_text_size.js` para no seguir inflando `electron/main.js`.
 - Reading speed test (Issue #52): el botón `Test de velocidad de lectura` deja de ser un aviso WIP y pasa a abrir un flujo guiado real con modal de entrada/configuración, selección por combinaciones reales del pool y una segunda acción explícita `Start with current text`; según la ruta elegida, la sesión usa texto aleatorio del pool o reutiliza directamente el current text ya cargado, manteniendo cálculo autoritativo de WPM en main, paso opcional de preguntas de comprensión y handoff final al modal de presets con payload prellenado.
 - Pool del reading speed test (Issue #209): se agrega un subárbol runtime `config/saved_current_texts/reading_speed_test_pool/`, sincronizado al arranque desde archivos versionados en `electron/reading_test_pool/` mediante hashes de contenido bundled; los archivos del pool siguen siendo snapshots JSON ordinarios con payload opcional `readingTest`, mientras que el estado mutable (`used` y `managedBundledHash`) pasa a `config/reading_test_pool_state.json`, permitiendo refresco y prune de starter files gestionados sin mezclar estado inline.
 - Adquisición/import del pool (Issue #208): el modal del pool agrega un link oficial a Google Drive y una acción nativa `Import files...` para instalar `.json` y `.zip`; el importador recuerda la última carpeta usada, resuelve duplicados por nombre de destino dentro del pool runtime y refresca el estado del modal abierto tras cada operación. Esto introduce `adm-zip@0.5.16` como nueva dependencia runtime redistribuida para inspección local de archivos comprimidos y, por tanto, amplía el inventario de terceros redistribuidos del release.
@@ -60,6 +62,14 @@ Reglas:
 - Snapshots / UI:
   - `public/index.html`: nuevo modal renderer `snapshotSaveTagsModal*` con selects opcionales para `language`, `type` y `difficulty`, botón `Save Text Snapshot` y cierre/cancelación explícitos antes del diálogo nativo de guardado.
   - `public/js/snapshot_save_tags_modal.js` (nuevo): módulo renderer dedicado al modal previo al save; aplica i18n, pobla el catálogo de tags y devuelve `{ tags }` o cancelación.
+- Editor / spellcheck:
+  - `electron/spellcheck.js` (nuevo): módulo main-owned que concentra la política y el controller del spellcheck de Electron; resuelve idiomas soportados a partir del idioma activo de la app y aplica la configuración sobre `session.defaultSession`.
+  - `public/editor.html`: el editor agrega un checkbox persistente de corrector ortográfico, habilitado por defecto, dentro de la barra inferior.
+  - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): nueva key `renderer.editor.spellcheck` para la etiqueta del toggle de corrector ortográfico del editor.
+- Editor / text size:
+  - `electron/editor_text_size.js` (nuevo): controller main-owned del tamaño de texto del editor; encapsula `set/increase/decrease/reset`, persiste `editorFontSizePx` vía settings y expone acciones reutilizables para los atajos del editor y del Find.
+  - `public/editor.html`: el editor agrega controles locales `A-`, indicador, `A+` y reset en la barra inferior para escalar solo el `textarea`.
+  - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): nuevas keys `renderer.editor.text_size_label`, `renderer.editor.decrease_text_size`, `renderer.editor.increase_text_size`, `renderer.editor.reset_text_size` y `renderer.editor.text_size_value`.
 - Shared catalog:
   - `public/js/lib/snapshot_tag_catalog.js` (nuevo): módulo dual browser/CommonJS que define el catálogo canónico de tags de snapshot, incluyendo el set ampliado de idiomas (`es`, `en`, `pt`, `fr`, `de`, `it`, `arn`, `ja`, `ko`, `ru`, `tr`, `id`, `hi`, `bn`, `ur`, `ar`, `zh-Hans`, `zh-Hant`) y los normalizadores reutilizados por renderer y main.
 - Reading speed test:
@@ -92,6 +102,13 @@ Reglas:
 - `electron/preload.js`:
   - `saveCurrentTextSnapshot(...)` deja de ser un invoke sin argumentos y pasa a aceptar un payload opcional con metadata de save.
   - Se agregan nuevos métodos/listeners `getReadingTestEntryData()`, `resetReadingTestPool()`, `startReadingTest(payload)`, `getReadingTestState()`, `onReadingTestStateChanged(cb)`, `onReadingTestNotice(cb)` y `onReadingTestApplyWpm(cb)` sobre `window.electronAPI`.
+- `public/editor.js`, `public/editor.html` y `public/editor.css`:
+  - el editor agrega el toggle `spellcheck` en la barra inferior y nuevos controles locales de tamaño de texto para el `textarea`; aplica ambos estados localmente y sincroniza tanto las etiquetas traducidas como `document.documentElement.lang` con `settings-updated`.
+- `electron/editor_preload.js` y `electron/settings.js`:
+  - el bridge del editor agrega `setSpellcheckEnabled(enabled)` y `setEditorFontSizePx(fontSizePx)`; settings incorpora los campos persistentes `spellcheckEnabled` y `editorFontSizePx`, con IPC dedicados `set-spellcheck-enabled` y `set-editor-font-size-px`.
+  - la publicación de settings actualizados sigue saliendo por `settings-updated`, pero ahora también dispara la reaplicación main-owned del spellcheck y del tamaño de texto del editor según corresponda.
+- `electron/editor_find_main.js`, `electron/editor_text_size.js` y `electron/main.js`:
+  - el coordinador del Find deja de ocuparse solo de navegación y pasa a reenviar `Ctrl/Cmd +`, `Ctrl/Cmd -` y `Ctrl/Cmd 0` hacia un controller main-owned separado; `main.js` conserva solo el wiring de ese controller sin absorber la lógica específica del feature.
 - `electron/current_text_snapshots_main.js`:
   - el handler `current-text-snapshot-save` valida payloads opcionales de tags, persiste `tags` cuando existen y mantiene la misma política de diálogos nativos / contención bajo `config/saved_current_texts/`.
   - el parser/validador de snapshots deja de aceptar solo `{ text }` y pasa a tolerar también `{ text, tags }`, rechazando shapes inválidas de `tags` de forma explícita.
@@ -102,6 +119,7 @@ Reglas:
   - el botón `Test de velocidad de lectura` deja de abrir un aviso WIP y pasa a delegar en el módulo `public/js/reading_speed_test.js`; además, la ventana principal incorpora el nuevo lock del reading test dentro de la misma política de `guardUserAction(...)` / blocking modals para impedir acciones concurrentes mientras la sesión guiada está activa.
 - `electron/main.js`:
   - deja de tratar el reading speed test como placeholder y pasa a integrar un controlador main-owned (`reading_test_session`) que participa del gating global de interacción, del bloqueo de acciones de la ventana principal y de la reinterpretación de comandos de la ventana flotante mientras la sesión está activa; además, el arranque sincroniza el starter set del pool antes de que el modal pueda abrirse.
+  - incorpora un controller `spellcheck` separado del wiring genérico del main; el arranque y los cambios de settings reaplican la política de spellcheck sin volver a inflar `main.js`.
 - `electron/reading_test_session.js` y `public/js/reading_speed_test.js`:
   - el flujo de entrada deja de asumir que todo test sobrescribe current text y pasa a soportar dos rutas explícitas: `pool` y `current_text`.
   - la ruta `current_text` ignora filtros/estado del pool, no toca `config/reading_test_pool_state.json` y cancela la sesión preservando el texto vigente del usuario.
@@ -123,6 +141,12 @@ Reglas:
   - el cálculo final de WPM deja de abortar el flujo cuando el resultado queda fuera del rango operativo de presets `10..700`; ahora el valor se clamp-ea a ese rango y el flujo continúa hasta preguntas/preset creation.
   - el modal de entrada deja de recortar sus acciones inferiores en viewports bajos y pasa a usar `max-height` + scroll interno, manteniendo alcanzables `Reset pool` / `Start`.
   - la ruta `Start with current text` deja de requerir hacks manuales sobre el pool para calibrar un texto ya cargado; ahora puede iniciar la misma sesión guiada sin sobrescribir previamente el current text y, si se cancela, preserva ese texto en lugar de vaciarlo.
+- Editor / spellcheck:
+  - el editor deja de depender implícitamente del idioma del sistema operativo para elegir diccionario; en plataformas con `setSpellCheckerLanguages(...)`, el spellcheck sigue el idioma activo de la app cuando existe un match soportado.
+  - tags UI sin diccionario válido (`arn`, `es-cl`) dejan de producir subrayados engañosos por fallback al locale del SO; ahora el spellcheck se deshabilita explícitamente en esos casos.
+  - el campo Find del editor permanece fuera del alcance del spellcheck; la superficie afectada queda acotada al `textarea` principal del editor.
+- Editor / layout:
+  - la barra inferior del editor deja de colapsar el botón de limpiar en una fila huérfana cuando la ventana se angosta; ahora el bloque derecho permanece anclado en la esquina y el wrapping de controles no deja un hueco visual grande debajo de los controles de tamaño de texto.
 - Reading speed test / persistencia:
   - la sincronización del starter set deja de depender de abrir el modal; ahora ocurre al arranque y compara hashes de contenido bundled para refrescar solo starter files gestionados por la app.
   - el consumo/reset del pool deja de mutar estado inline dentro de cada JSON; ahora usa `config/reading_test_pool_state.json`, lo que permite conservar los archivos del pool como contenido puro reutilizable por el flujo normal de snapshots.
@@ -171,6 +195,20 @@ Reglas:
   - `reading-test-state-changed` → state `{ active, stage, blocked }`.
   - `reading-test-notice` → `{ key:string, params?:object, type?:'info'|'warn'|'error' }`.
   - `reading-test-apply-wpm` → `{ wpm:number }`.
+- Storage `config/user_settings.json`:
+  - schema efectivo ampliado con `spellcheckEnabled:boolean` y `editorFontSizePx:number`.
+  - defaults normalizados: `spellcheckEnabled:true` y `editorFontSizePx:20`.
+  - `editorFontSizePx` se clamp-ea al rango `12..36` al cargar settings persistidos.
+- IPC `set-editor-font-size-px` (nuevo):
+  - request: `number` finito en px.
+  - OK: `{ ok:true, editorFontSizePx:number }`.
+  - invalid input: `{ ok:false, error:'invalid' }`.
+- IPC `set-spellcheck-enabled` (nuevo):
+  - request: `boolean`.
+  - OK: `{ ok:true, enabled:boolean }`.
+  - invalid/failure: `{ ok:false, error:'invalid' | string }`.
+- Preload/editor bridge:
+  - nueva superficie `window.editorAPI.setSpellcheckEnabled(enabled)`.
 - Renderer/UI:
   - nuevos IDs `snapshotSaveTagsModal`, `snapshotSaveTagsModalBackdrop`, `snapshotSaveTagsModalTitle`, `snapshotSaveTagsModalMessage`, `snapshotSaveTagsLanguage`, `snapshotSaveTagsType`, `snapshotSaveTagsDifficulty`, `snapshotSaveTagsModalConfirm`, `snapshotSaveTagsModalCancel` y `snapshotSaveTagsModalClose`.
   - nueva superficie pública renderer `window.Notify.promptSnapshotSaveTags(...)`.
@@ -178,11 +216,13 @@ Reglas:
   - nuevos IDs/entrypoints del reading test en ventana principal: `readingTestEntryModal`, `readingTestEntryModalBackdrop`, `readingTestEntryModalTitle`, `readingTestEntryModalIntro`, `readingTestEntryModalWarning`, `readingTestEntryModalEligibleCount`, `readingTestEntryModalReset`, `readingTestEntryModalStart`, `readingTestEntryModalStartCurrentText`, `readingTestEntryLanguageOptions`, `readingTestEntryTypeOptions` y `readingTestEntryDifficultyOptions`.
   - nueva superficie preload/renderer para el cuestionario: `window.readingTestQuestionsAPI`.
   - nuevas superficies shared `window.ReadingTestFiltersCore` / `reading_test_filters_core.js` y `window.ReadingTestQuestionsCore` / `reading_test_questions_core.js`.
+  - nuevo ID renderer `spellcheckToggle` en `public/editor.html`.
 - Semántica explícita:
   - cargar un snapshot etiquetado **no** transfiere `tags` al estado activo de current-text; solo aplica `text`.
   - durante una sesión activa del reading speed test, la ventana principal queda bloqueada y la Ventana flotante deja de operar como cronómetro genérico: `pause` finaliza la sesión y `reset` la cancela.
   - si el reading speed test se inicia con `sourceMode:'current_text'`, el flujo reutiliza el current text ya cargado, no consume entradas del pool y la cancelación deja intacto el texto vigente.
   - si una entrada del pool tiene `readingTest.questions` válido, la etapa de preguntas se inserta antes del modal de presets; si no lo tiene, el flujo continúa directo a preset creation.
+  - el spellcheck del editor sigue el idioma activo de la app cuando existe diccionario soportado; si no existe match soportado para el tag UI activo, se deshabilita en lugar de caer al locale del SO.
 
 ### Archivos
 
@@ -198,9 +238,15 @@ Reglas:
 - `public/reading_test_questions.html`
 - `public/reading_test_questions.css`
 - `public/reading_test_questions.js`
+- `public/editor.html`
+- `public/editor.css`
+- `public/editor.js`
 - `electron/preload.js`
+- `electron/editor_preload.js`
 - `electron/current_text_snapshots_main.js`
 - `electron/main.js`
+- `electron/settings.js`
+- `electron/spellcheck.js`
 - `electron/reading_test_pool.js`
 - `electron/reading_test_session.js`
 - `electron/reading_test_questions_preload.js`
@@ -214,6 +260,11 @@ Reglas:
 - `electron/link_openers.js`
 - `config/reading_test_pool_import_state.json` (runtime)
 - `package.json`
+- `test/unit/electron/settings.test.js`
+- `test/unit/electron/spellcheck.test.js`
+- `test/smoke/electron_launch_smoke.test.js`
+- `docs/tree_folders_files.md`
+- `docs/test_suite.md`
 - `package-lock.json`
 - `docs/releases/legal_baseline.md`
 - `docs/releases/security_baseline.md`

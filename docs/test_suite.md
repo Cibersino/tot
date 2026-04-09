@@ -13,7 +13,7 @@
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
 - Presets CRUD + defaults restore + persistence
-- Manual editor window (open/edit/apply semantics)
+- Manual editor window (open/edit/apply semantics, spellcheck, text-size controls, editor-only zoom shortcuts)
 - Text snapshot feature (save, load, persistence)
 - Reading speed test (pool filters, guided session, optional questions modal, preset handoff, pool reset/persistence)
 - Reading speed test pool acquisition/import (Google Drive link, `.json`/`.zip` import, duplicate handling, picker-state persistence)
@@ -42,6 +42,14 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `electron/settings.js`
   * supports parts of `REG-PERSIST`
   * supports parts of `REG-I18N`
+  * supports parts of `REG-EDITOR`
+* `electron/spellcheck.js`
+  * supports parts of `REG-EDITOR`
+  * supports parts of `REG-I18N`
+  * supports parts of `REG-PERSIST`
+* `test/smoke/electron_launch_smoke.test.js`
+  * supports a minimal startup slice of `SM-01`
+  * supports parts of `REG-PERSIST` by asserting startup tolerates the current settings schema, including `editorFontSizePx`
 * `electron/import_extract_platform/import_extract_supported_formats.js`
   * supports parts of `SM-09`
   * supports parts of `SM-10`
@@ -63,7 +71,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
 Important limitations:
 
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
-* no renderer/UI automation exists yet;
+* no renderer/UI automation exists yet, including the editor spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, and live cross-language spellcheck behavior;
 * the reading speed test has no renderer/UI automation yet; current automated coverage is limited to the pool core in `test/unit/electron/reading_test_pool.test.js` and the pool import core in `test/unit/electron/reading_test_pool_import.test.js`;
 * OCR network/provider behavior is still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
@@ -85,7 +93,7 @@ Important limitations:
   - native samples: `txt`, `md`, `html`, `docx`, PDF with selectable text
   - Google-backed document samples: `rtf`, `odt`
   - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`) and one scanned PDF
-- Network access available for updater check (GitHub API) and OCR activation/runtime checks.
+- Network access available for updater check (GitHub API), OCR activation/runtime checks, and first-time Electron spellchecker dictionary downloads on Windows/Linux.
 
 ### 1.3 Dev vs packaged caveats (important)
 
@@ -104,7 +112,7 @@ You must run tests under both:
 ### 2.1 Where user state lives
 
 Config is stored under Electron `app.getPath('userData')/config` and includes:
-- `user_settings.json`
+- `user_settings.json` (`language`, `modeConteo`, preset selection buckets, `spellcheckEnabled`, `editorFontSizePx`, etc.)
 - `current_text.json`
 - `editor_state.json`
 - `import_extract_state.json` (last picker directory)
@@ -267,14 +275,20 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Time estimate recalculates (same words, different time).
 
 ### SM-08 Editor window open + edit sync
-**Goal:** editor opens and changes propagate to main.
+**Goal:** editor opens, exposes the bottom-bar controls, and changes propagate to main.
 1. Click manual editor (⌨).
-2. Modify text.
-3. Observe main window preview/results.
-4. Close editor.
+2. Confirm the bottom bar shows the spellcheck checkbox plus text-size controls (`A-`, readout, `A+`, reset).
+3. Modify text.
+4. Toggle spellcheck off and back on once.
+5. Click `A+` once, then reset the text size once.
+6. Observe main window preview/results.
+7. Close editor.
 
 **Expected:**
 - Main window reflects editor changes.
+- Spellcheck toggle is visible and does not block editing.
+- Text-size controls are visible and affect only the editor textarea text, not the whole window UI.
+- If the current app language resolves to a supported Electron dictionary, disabling spellcheck removes underline markers from the textarea and re-enabling restores them.
 - No crash; no stuck “editor loader”.
 
 ### SM-09 Import/extract: supported non-PDF quick check
@@ -817,6 +831,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Find opens and focuses the find input.
 - Navigation selects the match and scrolls the textarea so the match is in view.
 - Text is not modifiable while Find is open (readOnly/modal behavior + blocked paste/drop/input).
+- The find input itself remains a plain search control; it must not show spellcheck underlines.
 - Highlight remains visible while focus stays in the find input (overlay-based highlight).
 - Highlight stays aligned while scrolling the textarea.
 - **Esc** closes Find and restores normal editing.
@@ -834,6 +849,67 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Undo/Redo works for typing edits and paste edits in the textarea.
 - Find open/navigate/close does not modify the document.
 - After using Find, **Ctrl+Z** undoes the last real edit (not “selection movement” from Find), and the text remains intact.
+
+#### REG-EDITOR-07 Spellcheck toggle + persistence
+**Goal:** the editor spellcheck toggle applies immediately and persists.
+1. Set the app language to a spellcheck-supported UI language such as `English` or `Español`.
+2. Open editor and confirm the spellcheck checkbox is present.
+3. Type a short line with at least one obvious misspelling and one ordinary word.
+4. Uncheck spellcheck.
+5. Re-check spellcheck.
+6. Close and reopen the editor.
+7. Close and relaunch the app, then reopen the editor.
+
+**Expected:**
+- The spellcheck toggle is visible and interactive in the editor bottom bar.
+- Enabled/disabled state applies immediately to the editor textarea without requiring reopen.
+- When the current app language resolves to a supported Electron dictionary, obvious misspellings are underlined only while spellcheck is enabled.
+- On clean/default settings, the toggle starts enabled.
+- The toggle state persists across editor reopen and app restart.
+
+#### REG-EDITOR-08 Spellcheck follows app language and rejects OS fallback for unsupported app tags
+**Goal:** editor spellcheck follows the active app language rather than the OS locale.
+1. Set the app language to `Español` and open the editor.
+2. Type `corazón neighborhood zzzxxyyqqq`.
+3. Leave the editor open and change the app language to `English`.
+4. Observe the same text again.
+5. Change the app language to `Mapudungun` (or another UI language that resolves to `arn`).
+6. Observe the same text and type another obvious nonsense token.
+
+**Expected:**
+- The editor remains open and updates its translated UI labels after each language change.
+- Supported app-language changes update spellcheck behavior live without requiring the editor to reopen.
+- In Spanish mode, English-only words such as `neighborhood` should normally be underlined while native Spanish words such as `corazón` should normally not be; in English mode the inverse is expected.
+- In unsupported app-language tags such as `arn` or `es-cl`, spellcheck is disabled entirely instead of silently falling back to the OS locale.
+
+#### REG-EDITOR-09 Text size controls + shortcuts + persistence
+**Goal:** manual-editor text scaling affects only the textarea, supports shortcuts, and persists.
+1. Open the editor with a medium-length text.
+2. Confirm the bottom bar shows `A-`, a size readout, `A+`, and reset.
+3. Click `A+` twice and confirm only the textarea text grows.
+4. Click `A-` once and confirm only the textarea text shrinks.
+5. Press `Ctrl+=` (or `Ctrl++`), `Ctrl+-`, and `Ctrl+0`.
+6. Open Find with `Ctrl+F` and repeat `Ctrl+=`, `Ctrl+-`, and `Ctrl+0` while the find UI is open.
+7. Close the editor, reopen it, then close and relaunch the app and reopen the editor again.
+
+**Expected:**
+- The text-size controls are visible and interactive in the editor bottom bar.
+- Only the editor textarea text changes size; the rest of the editor window does not zoom.
+- The size readout updates after button and keyboard actions.
+- `Ctrl+=`/`Ctrl++`, `Ctrl+-`, and `Ctrl+0` work both in the editor and while the find UI is open.
+- The chosen size persists across editor reopen and full app restart.
+
+#### REG-EDITOR-10 Narrow-width editor layout
+**Goal:** the editor bottom bar remains usable when the editor window becomes narrow.
+1. Open the editor and keep the bottom bar visible.
+2. Resize the editor window narrower until the left-side bottom-bar controls wrap.
+3. Observe the layout around the text-size controls and the clear button.
+4. While narrow, use `A+`, `A-`, reset, spellcheck, and clear once each.
+
+**Expected:**
+- The left-side controls may wrap, but the layout remains readable and usable.
+- The clear button stays visually anchored in the corner instead of collapsing into an orphan row with a large empty gap.
+- No controls overlap, disappear, or become unreachable.
 
 ---
 
@@ -1118,12 +1194,13 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-PERSIST-01 Files created as expected (clean run)
 **Goal:** app creates minimal state files.
 1. Clean run launch.
-2. Perform: set text, change mode, select a preset, open editor once, and complete one valid picker-based import/extract selection.
+2. Perform: set text, change mode, select a preset, open editor once, toggle editor spellcheck once, change editor text size once, and complete one valid picker-based import/extract selection.
 3. Close app.
 4. Verify config files exist (`user_settings.json`, `current_text.json`, `editor_state.json`, `import_extract_state.json`).
 
 **Expected:**
 - Files exist; JSON is valid; no zero-byte corruption.
+- `user_settings.json` reflects the current language/mode plus the current `spellcheckEnabled` and `editorFontSizePx` preferences.
 
 #### REG-PERSIST-02 Restore with existing config
 **Goal:** relaunch loads last state.
@@ -1132,6 +1209,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - last text restored
    - last language/mode restored
    - selected preset restored
+   - last spellcheck preference restored
+   - last editor text size restored
 
 **Expected:**
 - State matches prior session (unless intentionally cleared).
@@ -1238,6 +1317,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Each window applies translations without crash.
+- In the editor, the spellcheck toggle label and text-size control labels/tooltips update with the rest of the window text.
 
 ---
 
