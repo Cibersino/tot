@@ -94,6 +94,7 @@
       "placeholder": "Escribe o pega la custión aquí...",
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Auto-salvar y auto-contar mientras escribís",
+      "spellcheck": "Corrector ortográfico",
       "clear": "🗑",
       "clear_title": "Pitiarse too"
     },

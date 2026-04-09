@@ -94,6 +94,7 @@
       "placeholder": "Tapez ou collez ici...",
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Auto-sauvegarder et auto-calculer pendant la saisie",
+      "spellcheck": "Correcteur orthographique",
       "clear": "🗑",
       "clear_title": "Vider"
     },
