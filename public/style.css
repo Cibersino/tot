@@ -1150,6 +1150,12 @@ select#presets {
   gap: 12px;
 }
 
+.reading-test-entry-modal-group-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .reading-test-entry-modal-group {
   display: grid;
   gap: 8px;
@@ -1197,6 +1203,12 @@ select#presets {
 
 .reading-test-entry-modal-actions .btn-standard {
   min-width: 120px;
+}
+
+@media (max-width: 640px) {
+  .reading-test-entry-modal-group-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .import-extract-ocr-activation-disclosure-panel {
