@@ -506,7 +506,7 @@ function registerIpc(
     }
   });
 
-  function notifySettingsUpdated(settings, windows) {
+  function publishSettingsUpdated(settings, windows) {
     try {
       if (typeof onSettingsUpdated === 'function') {
         onSettingsUpdated(settings);
@@ -580,7 +580,7 @@ function registerIpc(
         log.warn('hide menu in secondary windows failed (ignored):', err);
       }
 
-      notifySettingsUpdated(settings, windows);
+      publishSettingsUpdated(settings, windows);
 
       return { ok: true, language: chosen };
     } catch (err) {
@@ -597,7 +597,7 @@ function registerIpc(
       settings = saveSettings(settings);
 
       const windows = typeof getWindows === 'function' ? getWindows() : {};
-      notifySettingsUpdated(settings, windows);
+      publishSettingsUpdated(settings, windows);
 
       return { ok: true, mode: settings.modeConteo };
     } catch (err) {
@@ -660,7 +660,7 @@ function registerIpc(
       settings = saveSettings(settings);
 
       const windows = typeof getWindows === 'function' ? getWindows() : {};
-      notifySettingsUpdated(settings, windows);
+      publishSettingsUpdated(settings, windows);
 
       return { ok: true, enabled: settings.spellcheckEnabled };
     } catch (err) {
