@@ -12,6 +12,10 @@
 // - Compute authoritative WPM in main and coordinate preset handoff.
 // =============================================================================
 
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const path = require('path');
 const { BrowserWindow } = require('electron');
 const Log = require('./log');
@@ -24,6 +28,10 @@ const readingTestPool = require('./reading_test_pool');
 const log = Log.get('reading-test-session');
 log.debug('Reading test session starting...');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const QUESTIONS_WINDOW_PRELOAD = path.join(__dirname, 'reading_test_questions_preload.js');
 const QUESTIONS_WINDOW_HTML = path.join(__dirname, '../public/reading_test_questions.html');
 const DEVELOPER_EMAIL = 'cibersino@gmail.com';
@@ -31,7 +39,12 @@ const PRESTART_COUNTDOWN_SECONDS = 5;
 const PRESTART_COUNTDOWN_STEP_MS = 1000;
 const WINDOW_VISIBLE_TIMEOUT_MS = 5000;
 
+// =============================================================================
+// Controller factory
+// =============================================================================
+
 function createController(options = {}) {
+  // Injected main-process bridges keep session logic local while main.js owns concrete window/runtime wiring.
   const {
     resolveMainWindow,
     getPreconditionContext,
@@ -98,6 +111,10 @@ function createController(options = {}) {
     intlObject: typeof Intl !== 'undefined' ? Intl : null,
   });
 
+  // =============================================================================
+  // Shared state
+  // =============================================================================
+  // All mutable session coordination stays inside the controller; callers see only derived state/methods.
   let state = {
     active: false,
     stage: 'idle',
@@ -106,6 +123,10 @@ function createController(options = {}) {
 
   let suppressUnexpectedEditorClose = false;
   let suppressUnexpectedFlotanteClose = false;
+
+  // =============================================================================
+  // Helpers
+  // =============================================================================
 
   function isAliveWindow(win) {
     return !!(win && !win.isDestroyed());
@@ -346,6 +367,10 @@ function createController(options = {}) {
     }
   }
 
+  // =============================================================================
+  // Session window orchestration
+  // =============================================================================
+
   async function openReadingSessionWindows() {
     resetCrono();
     const editorWin = ensureEditorWindow();
@@ -377,6 +402,10 @@ function createController(options = {}) {
       suppressUnexpectedFlotanteClose = false;
     }
   }
+
+  // =============================================================================
+  // Session flow
+  // =============================================================================
 
   function clearSessionTextIfNeeded(selectedEntry) {
     const shouldClearCurrentText = !selectedEntry || selectedEntry.sourceMode !== 'current_text';
@@ -612,6 +641,7 @@ function createController(options = {}) {
 
     const presetWin = openPresetWindow(buildPrefilledPresetPayload(wpm));
     if (!presetWin || presetWin.isDestroyed()) {
+      log.warn('Reading-test preset window unavailable (ignored): openPresetWindow returned no live window.');
       emitNotice('renderer.alerts.reading_test_preset_unavailable', { type: 'error' });
       clearSession();
       return;
@@ -628,6 +658,10 @@ function createController(options = {}) {
 
     presetWin.on('closed', onClosed);
   }
+
+  // =============================================================================
+  // Session entrypoints
+  // =============================================================================
 
   async function finishRunningSession() {
     if (!state.active || state.stage !== 'running' || !state.selectedEntry) return;
@@ -768,6 +802,10 @@ function createController(options = {}) {
     cancelActiveSession('renderer.alerts.reading_test_cancelled_window_closed');
   }
 
+  // =============================================================================
+  // IPC registration
+  // =============================================================================
+
   function registerIpc(ipcMain) {
     if (!ipcMain || typeof ipcMain.handle !== 'function') {
       throw new Error('[reading-test-session] registerIpc requires ipcMain');
@@ -825,6 +863,10 @@ function createController(options = {}) {
 
     ipcMain.handle('reading-test-get-state', async () => getState());
   }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
 
   return {
     clearSession,
