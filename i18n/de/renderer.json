@@ -267,6 +267,8 @@
           "get_more_files": "Weitere Dateien holen",
           "import_files": "Dateien importieren...",
           "reset_pool": "Pool zurücksetzen",
+          "show_instructions": "Anleitung anzeigen",
+          "hide_instructions": "Anleitung ausblenden",
           "start_random_text": "Mit zufälligem Text starten",
           "start_current_text": "Mit aktuellem Text starten"
         }
