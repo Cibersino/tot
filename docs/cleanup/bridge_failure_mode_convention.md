@@ -35,12 +35,14 @@ Unclassified coexistence is drift and should be treated as a policy violation.
 
 2. Optional capability
 - Missing/invalid handling: Guard the call site and skip the feature.
-- Diagnostics: Emit a deduplicated fallback diagnostic following the logging policy.
+- Diagnostics: Emit a fallback diagnostic following the logging policy.
+  Deduplicate only for high-frequency repeatable misses/failures where additional occurrences add no diagnostic value.
 - Runtime effect: The module continues; capability is disabled.
 
 3. Best-effort side action
 - Missing/invalid handling: Do not crash; drop the action.
-- Diagnostics: If a real intended action is dropped, emit a deduplicated "failed (ignored)" style diagnostic.
+- Diagnostics: If a real intended action is dropped, emit a "failed (ignored)" style diagnostic following the logging policy.
+  Deduplicate only for high-frequency repeatable misses/failures where additional occurrences add no diagnostic value.
 - Runtime effect: Main flow continues.
 
 ## 5. Observability requirements
@@ -70,7 +72,8 @@ if (!window.someAPI || typeof window.someAPI.requiredMethod !== 'function') {
 
 ```js
 if (!window.someAPI || typeof window.someAPI.optionalMethod !== 'function') {
-  // Emit a deduplicated fallback diagnostic per logging policy.
+  // Emit a fallback diagnostic per logging policy.
+  // Use dedupe only if the miss is high-frequency and repetition adds no value.
   return;
 }
 await window.someAPI.optionalMethod(payload);
@@ -82,7 +85,8 @@ await window.someAPI.optionalMethod(payload);
 try {
   target.webContents.send('channel', payload);
 } catch (err) {
-  // Emit a deduplicated "failed (ignored)" diagnostic per logging policy.
+  // Emit a "failed (ignored)" diagnostic per logging policy.
+  // Use dedupe only if the failure is high-frequency and repetition adds no value.
 }
 ```
 
@@ -98,7 +102,7 @@ try {
 1. Is each bridge dependency classified as required, optional, or best-effort?
 2. Does handling match the matrix in Section 4?
 3. Are fallback paths non-silent when they represent real fallback behavior?
-4. Are dedupe keys stable and bounded?
+4. Where dedupe is used, are dedupe keys stable and bounded?
 5. Did the change avoid contract drift (channels, payloads, ordering)?
 6. Did the author cite mature baseline modules, not only recent feature files?
 7. Are warning/error logs and thrown errors in `.js` files English-only (non-UI diagnostics) while keeping proper names/identifiers verbatim?
