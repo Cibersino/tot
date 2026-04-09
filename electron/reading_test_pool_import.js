@@ -355,12 +355,15 @@ function resolvePickerDefaultPath(platformAdapter, app, pickerState) {
   });
 }
 
-function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () => false } = {}) {
+function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[reading_test_pool_import] registerIpc requires ipcMain');
   }
   if (typeof getWindows !== 'function') {
     throw new Error('[reading_test_pool_import] registerIpc requires getWindows');
+  }
+  if (typeof isReadingTestInteractionLocked !== 'function') {
+    throw new Error('[reading_test_pool_import] registerIpc requires isReadingTestInteractionLocked');
   }
 
   const { dialog, BrowserWindow, app } = require('electron');
@@ -376,7 +379,14 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
       const senderWin = event && event.sender
         ? BrowserWindow.fromWebContents(event.sender)
         : null;
-      return !!(mainWin && senderWin === mainWin);
+      if (!mainWin || senderWin !== mainWin) {
+        log.warnOnce(
+          'reading_test_pool_import.unauthorized',
+          'reading-test-import-pool-files unauthorized or mainWin unavailable (ignored).'
+        );
+        return false;
+      }
+      return true;
     } catch (err) {
       log.warn('Reading-test import sender validation failed:', err);
       return false;
@@ -410,7 +420,30 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
         properties: ['openFile', 'multiSelections'],
       });
 
-      if (!dialogResult || dialogResult.canceled || !Array.isArray(dialogResult.filePaths) || !dialogResult.filePaths.length) {
+      if (!dialogResult) {
+        log.error('reading-test-import-pool-files failed: showOpenDialog returned no result.');
+        return {
+          ok: false,
+          code: 'IMPORT_FAILED',
+          guidanceKey: 'renderer.alerts.reading_test_pool_import_failed',
+        };
+      }
+      if (dialogResult.canceled) {
+        return { ok: true, canceled: true };
+      }
+      if (!Array.isArray(dialogResult.filePaths)) {
+        log.error('reading-test-import-pool-files failed: showOpenDialog returned invalid filePaths.');
+        return {
+          ok: false,
+          code: 'IMPORT_FAILED',
+          guidanceKey: 'renderer.alerts.reading_test_pool_import_failed',
+        };
+      }
+      if (!dialogResult.filePaths.length) {
+        log.warnOnce(
+          'reading_test_pool_import.empty_selection',
+          'reading-test-import-pool-files returned empty selection (treated as cancelled).'
+        );
         return { ok: true, canceled: true };
       }
 
@@ -418,6 +451,10 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
         .map((filePath) => platformAdapter.normalizeSelectedFilePath(filePath))
         .filter(Boolean);
       if (!normalizedSelectedPaths.length) {
+        log.warnOnce(
+          'reading_test_pool_import.empty_normalized_selection',
+          'reading-test-import-pool-files returned empty normalized selection (treated as cancelled).'
+        );
         return { ok: true, canceled: true };
       }
 
@@ -447,11 +484,17 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () 
             noLink: true,
           });
 
-          if (!conflictResult || conflictResult.response === 2) {
+          if (!conflictResult || typeof conflictResult.response !== 'number') {
+            throw new Error('reading-test-import-pool-files conflict dialog returned invalid result');
+          }
+          if (conflictResult.response === 2) {
             return IMPORT_CONFLICT_STRATEGY.CANCEL;
           }
           if (conflictResult.response === 1) {
             return IMPORT_CONFLICT_STRATEGY.REPLACE;
+          }
+          if (conflictResult.response !== 0) {
+            throw new Error('reading-test-import-pool-files conflict dialog returned unsupported response');
           }
           return IMPORT_CONFLICT_STRATEGY.SKIP;
         },
