@@ -12,6 +12,10 @@
 // - Scan pool files and return validated metadata for filtering and selection.
 // =============================================================================
 
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -29,10 +33,18 @@ const readingTestQuestionsCore = require('../public/js/lib/reading_test_question
 const log = Log.get('reading-test-pool');
 log.debug('Reading test pool starting...');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const POOL_DIR_NAME = 'reading_speed_test_pool';
 const BUNDLED_POOL_SOURCE_DIR = path.join(__dirname, 'reading_test_pool');
 const POOL_STATE_FALLBACK = Object.freeze({ entries: {} });
 const DESCRIPTIVE_TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
+
+// =============================================================================
+// Helpers: paths, files, and hashing
+// =============================================================================
 
 function safeRealpath(targetPath) {
   try {
@@ -180,6 +192,10 @@ function computeJsonContentHash(data) {
   return `sha256:${digest}`;
 }
 
+// =============================================================================
+// Helpers: pool state persistence
+// =============================================================================
+
 function normalizePoolStateEntry(rawEntry) {
   const source = rawEntry && typeof rawEntry === 'object' && !Array.isArray(rawEntry)
     ? rawEntry
@@ -300,6 +316,10 @@ function resetPoolUsageState(options = {}) {
   };
 }
 
+// =============================================================================
+// Helpers: pool entry validation and shaping
+// =============================================================================
+
 function sanitizePoolTags(rawTags) {
   if (rawTags == null) {
     return { ok: true, tags: {} };
@@ -398,6 +418,10 @@ function parsePoolFile(filePath, rootPath, stateEntry) {
     },
   };
 }
+
+// =============================================================================
+// Pool context and startup synchronization
+// =============================================================================
 
 function ensurePoolDir() {
   ensureCurrentTextSnapshotsDir();
@@ -623,6 +647,10 @@ function listPoolEntries(options = {}) {
 
   return { ok: true, entries };
 }
+
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 
 function serializePoolEntryMeta(entry) {
   return {
