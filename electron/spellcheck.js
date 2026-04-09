@@ -138,10 +138,19 @@ function applySpellCheckerSessionConfig({
   spellcheckEnabled,
   platform = process.platform,
 } = {}) {
-  if (!targetSession || typeof targetSession.setSpellCheckerEnabled !== 'function') {
+  if (!targetSession) {
     return {
       ok: false,
       reason: 'session-unavailable',
+      effectiveEnabled: false,
+      languages: [],
+    };
+  }
+
+  if (typeof targetSession.setSpellCheckerEnabled !== 'function') {
+    return {
+      ok: false,
+      reason: 'set-spellchecker-enabled-unavailable',
       effectiveEnabled: false,
       languages: [],
     };
@@ -188,10 +197,21 @@ function applySpellCheckerSessionConfig({
     };
   }
 
-  targetSession.setSpellCheckerEnabled(true);
-  if (typeof targetSession.setSpellCheckerLanguages === 'function') {
-    targetSession.setSpellCheckerLanguages(resolved.languages);
+  if (typeof targetSession.setSpellCheckerLanguages !== 'function') {
+    targetSession.setSpellCheckerEnabled(false);
+    return {
+      ok: true,
+      supported: false,
+      reason: 'set-spellchecker-languages-unavailable',
+      appLanguage: resolved.appLanguage,
+      appLanguageBase: resolved.appLanguageBase,
+      effectiveEnabled: false,
+      languages: [],
+    };
   }
+
+  targetSession.setSpellCheckerEnabled(true);
+  targetSession.setSpellCheckerLanguages(resolved.languages);
 
   return {
     ok: true,
@@ -225,20 +245,6 @@ function createController({
     throw new Error('[spellcheck] createController requires settingsState.getSettings');
   }
 
-  const logger = log && typeof log === 'object' ? log : null;
-
-  function warnOnce(key, ...args) {
-    if (logger && typeof logger.warnOnce === 'function') {
-      logger.warnOnce(key, ...args);
-    }
-  }
-
-  function error(...args) {
-    if (logger && typeof logger.error === 'function') {
-      logger.error(...args);
-    }
-  }
-
   function getDefaultSession() {
     const source = sessionState || loadElectronSessionState();
     return source && source.defaultSession ? source.defaultSession : null;
@@ -260,7 +266,7 @@ function createController({
       const targetSession = getDefaultSession();
 
       if (!targetSession) {
-        warnOnce(
+        log.warnOnce(
           'main.spellcheck.session.unavailable',
           'Spellcheck configuration skipped: default session unavailable.'
         );
@@ -276,6 +282,15 @@ function createController({
         platform,
       });
 
+      if (result && result.ok === false) {
+        log.warnOnce(
+          `main.spellcheck.session-api.${result.reason || 'unknown'}`,
+          'Spellcheck configuration skipped: required Electron spellchecker session API unavailable.',
+          { reason: result.reason || 'unknown' }
+        );
+        return result;
+      }
+
       if (result && result.ok === true && result.supported === false && effectiveSettings.spellcheckEnabled !== false) {
         const langTag = (
           effectiveSettings
@@ -284,16 +299,32 @@ function createController({
         )
           ? effectiveSettings.language.trim().toLowerCase()
           : 'unset';
-        warnOnce(
-          `main.spellcheck.unsupported.${langTag}.${result.reason || 'unknown'}`,
-          'Spellcheck disabled for current app language: no supported Electron spellchecker language resolved.',
+        const baseKey = (
+          result
+          && typeof result.appLanguageBase === 'string'
+          && PREFERRED_SPELLCHECK_LANGUAGES[result.appLanguageBase]
+        )
+          ? result.appLanguageBase
+          : 'unmapped';
+        const unsupportedKey = (
+          result.reason === 'unsupported-app-language'
+          && UNSUPPORTED_APP_SPELLCHECK_TAGS.has(langTag)
+        )
+          ? langTag
+          : baseKey;
+        const warningMessage = result.reason === 'set-spellchecker-languages-unavailable'
+          ? 'Spellcheck disabled for current app language: session.setSpellCheckerLanguages unavailable.'
+          : 'Spellcheck disabled for current app language: no supported Electron spellchecker language resolved.';
+        log.warnOnce(
+          `main.spellcheck.unsupported.${unsupportedKey}.${result.reason || 'unknown'}`,
+          warningMessage,
           { language: langTag, reason: result.reason || 'unknown' }
         );
       }
 
       return result;
     } catch (err) {
-      error('Failed to apply spellcheck configuration:', err);
+      log.error('Failed to apply spellcheck configuration:', err);
       return { ok: false, reason: 'apply-failed', error: String(err) };
     }
   }
