@@ -48,52 +48,6 @@ function readJsonTextWithBomStrip(filePath) {
   }
 }
 
-function normalizePickerState(rawState) {
-  const state = rawState && typeof rawState === 'object' ? rawState : {};
-  const lastDirectory = typeof state.lastDirectory === 'string'
-    ? state.lastDirectory.trim()
-    : '';
-  return {
-    lastDirectory,
-  };
-}
-
-function readPickerState() {
-  try {
-    const statePath = getReadingTestPoolImportStateFile();
-    const raw = loadJson(statePath, PICKER_STATE_FALLBACK);
-    return {
-      statePath,
-      state: normalizePickerState(raw),
-    };
-  } catch (err) {
-    log.warn('Failed to read reading-test pool import picker state (using defaults):', err);
-    return {
-      statePath: null,
-      state: { ...PICKER_STATE_FALLBACK },
-    };
-  }
-}
-
-function persistPickerState(statePath, nextState) {
-  if (!statePath) return;
-  try {
-    saveJson(statePath, nextState);
-  } catch (err) {
-    log.warn('Failed to persist reading-test pool import picker state (ignored):', err);
-  }
-}
-
-function resolvePickerDefaultPath(platformAdapter, app, pickerState) {
-  const persisted = platformAdapter.normalizePersistedDirectory(pickerState.lastDirectory);
-  if (persisted) return persisted;
-  return platformAdapter.resolveDefaultPickerPath({
-    app,
-    cwd: process.cwd(),
-    log,
-  });
-}
-
 function parseJsonText(jsonText) {
   const source = typeof jsonText === 'string' ? jsonText.trim() : '';
   if (!source) return { ok: false, code: 'INVALID_JSON' };
@@ -353,6 +307,52 @@ function normalizeDialogCopy(rawDialogCopy) {
       cancel: normalize(copy.buttons && copy.buttons.cancel, 'Cancel import'),
     },
   };
+}
+
+function normalizePickerState(rawState) {
+  const state = rawState && typeof rawState === 'object' ? rawState : {};
+  const lastDirectory = typeof state.lastDirectory === 'string'
+    ? state.lastDirectory.trim()
+    : '';
+  return {
+    lastDirectory,
+  };
+}
+
+function readPickerState() {
+  try {
+    const statePath = getReadingTestPoolImportStateFile();
+    const raw = loadJson(statePath, PICKER_STATE_FALLBACK);
+    return {
+      statePath,
+      state: normalizePickerState(raw),
+    };
+  } catch (err) {
+    log.warn('Failed to read reading-test pool import picker state (using defaults):', err);
+    return {
+      statePath: null,
+      state: { ...PICKER_STATE_FALLBACK },
+    };
+  }
+}
+
+function persistPickerState(statePath, nextState) {
+  if (!statePath) return;
+  try {
+    saveJson(statePath, nextState);
+  } catch (err) {
+    log.warn('Failed to persist reading-test pool import picker state (ignored):', err);
+  }
+}
+
+function resolvePickerDefaultPath(platformAdapter, app, pickerState) {
+  const persisted = platformAdapter.normalizePersistedDirectory(pickerState.lastDirectory);
+  if (persisted) return persisted;
+  return platformAdapter.resolveDefaultPickerPath({
+    app,
+    cwd: process.cwd(),
+    log,
+  });
 }
 
 function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked = () => false } = {}) {
