@@ -206,15 +206,14 @@ function createController(options = {}) {
 
   function safeSendToMain(channel, payload) {
     const mainWin = resolveMainWindow();
-    if (!mainWin || mainWin.isDestroyed()) return;
+    if (!mainWin || mainWin.isDestroyed()) {
+      log.warn(`Reading-test main notify failed (ignored): ${channel} main window unavailable.`);
+      return;
+    }
     try {
       mainWin.webContents.send(channel, payload);
     } catch (err) {
-      log.warnOnce(
-        `reading_test_session.send.${channel}`,
-        `reading-test main notify failed (ignored): ${channel}`,
-        err
-      );
+      log.warn(`Reading-test main notify failed (ignored): ${channel}`, err);
     }
   }
 
@@ -495,33 +494,49 @@ function createController(options = {}) {
     return new Promise((resolve) => {
       const mainWin = resolveMainWindow();
       if (!mainWin || mainWin.isDestroyed()) {
+        log.warn('Reading-test questions window unavailable (ignored): main window unavailable.');
         resolve({ ok: false, code: 'MAIN_WINDOW_UNAVAILABLE' });
         return;
       }
 
-      let closed = false;
-      const win = new BrowserWindow({
-        width: 760,
-        height: 464,
-        minWidth: 680,
-        minHeight: 360,
-        parent: mainWin,
-        modal: true,
-        resizable: true,
-        minimizable: false,
-        maximizable: false,
-        show: false,
-        webPreferences: {
-          preload: QUESTIONS_WINDOW_PRELOAD,
-          contextIsolation: true,
-          nodeIntegration: false,
-          sandbox: true,
-        },
-      });
+      let settled = false;
+      let win = null;
+
+      const settle = (result) => {
+        if (settled) return false;
+        settled = true;
+        resolve(result);
+        return true;
+      };
+
+      try {
+        win = new BrowserWindow({
+          width: 760,
+          height: 464,
+          minWidth: 680,
+          minHeight: 360,
+          parent: mainWin,
+          modal: true,
+          resizable: true,
+          minimizable: false,
+          maximizable: false,
+          show: false,
+          webPreferences: {
+            preload: QUESTIONS_WINDOW_PRELOAD,
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: true,
+          },
+        });
+      } catch (err) {
+        log.warn('Reading-test questions window create failed (ignored):', err);
+        settle({ ok: false, code: 'QUESTIONS_WINDOW_CREATE_FAILED' });
+        return;
+      }
 
       win.setMenu(null);
       win.once('ready-to-show', () => {
-        if (win.isDestroyed()) return;
+        if (settled || win.isDestroyed()) return;
         win.show();
         try {
           win.webContents.send('reading-test-questions-init', {
@@ -529,26 +544,30 @@ function createController(options = {}) {
             questions,
           });
         } catch (err) {
-          log.error('Reading-test questions init failed:', err);
+          log.warn('Reading-test questions init failed (ignored):', err);
+          if (settle({ ok: false, code: 'QUESTIONS_WINDOW_INIT_FAILED' })) {
+            try {
+              if (!win.isDestroyed()) win.close();
+            } catch (closeErr) {
+              log.warn('Reading-test questions window forced close failed (ignored):', closeErr);
+            }
+          }
         }
       });
 
       win.on('closed', () => {
-        if (closed) return;
-        closed = true;
-        resolve({ ok: true });
+        if (settled) return;
+        settle({ ok: true });
       });
 
       win.loadFile(QUESTIONS_WINDOW_HTML).catch((err) => {
-        log.error('Reading-test questions window load failed:', err);
-        if (!closed) {
-          closed = true;
+        log.warn('Reading-test questions window load failed (ignored):', err);
+        if (settle({ ok: false, code: 'QUESTIONS_WINDOW_LOAD_FAILED' })) {
           try {
             if (!win.isDestroyed()) win.close();
           } catch (closeErr) {
             log.warn('Reading-test questions window forced close failed (ignored):', closeErr);
           }
-          resolve({ ok: false, code: 'QUESTIONS_WINDOW_LOAD_FAILED' });
         }
       });
     });
@@ -627,9 +646,7 @@ function createController(options = {}) {
       setStage('questions');
       const questionsWindowInfo = await openQuestionsWindow(state.selectedEntry.questions);
       if (!questionsWindowInfo.ok) {
-        emitNotice('renderer.alerts.reading_test_questions_unavailable', { type: 'error' });
-        clearSession();
-        return;
+        emitNotice('renderer.alerts.reading_test_questions_unavailable', { type: 'warn' });
       }
     }
 
