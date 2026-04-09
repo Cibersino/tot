@@ -28,6 +28,7 @@ const api = {
   setCurrentText: (text) => ipcRenderer.invoke('set-current-text', text),
   getAppConfig: () => ipcRenderer.invoke('get-app-config'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
+  setSpellcheckEnabled: (enabled) => ipcRenderer.invoke('set-spellcheck-enabled', enabled),
   onInitText: (cb) => subscribeWithUnsub(
     'editor-init-text',
     cb,

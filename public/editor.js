@@ -70,9 +70,11 @@ if (typeof window.editorAPI.onForceClear !== 'function') {
       if (settings && settings.language) {
         idiomaActual = settings.language || DEFAULT_LANG;
       }
+      spellcheckEnabled = !settings || settings.spellcheckEnabled !== false;
     } else {
       log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
     }
+    setLocalSpellcheckEnabled(spellcheckEnabled);
     await applyEditorTranslations();
   } catch (err) {
     log.warn('BOOTSTRAP: failed to apply initial translations:', err);
@@ -85,8 +87,10 @@ if (typeof window.editorAPI.onForceClear !== 'function') {
 const editor = document.getElementById('editorArea');
 const btnTrash = document.getElementById('btnTrash');
 const calcWhileTyping = document.getElementById('calcWhileTyping');
+const spellcheckToggle = document.getElementById('spellcheckToggle');
 const btnCalc = document.getElementById('btnCalc');
 const calcLabel = document.querySelector('.calc-label');
+const spellcheckLabel = document.querySelector('.spellcheck-label');
 const bottomBar = document.getElementById('bottomBar');
 const readingTestCountdownOverlay = document.getElementById('readingTestCountdownOverlay');
 const readingTestCountdownValue = document.getElementById('readingTestCountdownValue');
@@ -99,6 +103,7 @@ const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
 let readingTestCountdownRunId = 0;
 let readingTestCountdownTimeouts = [];
+let spellcheckEnabled = true;
 
 // warnOnce keys are editor-scoped; use log.warnOnce directly.
 
@@ -115,6 +120,25 @@ if (!loadRendererTranslations || !tRenderer) {
 
 const tr = (path, fallback) => tRenderer(path, fallback);
 
+function applyDocumentLanguage() {
+  const langTag = (idiomaActual || DEFAULT_LANG || 'es').toLowerCase();
+  if (document && document.documentElement) {
+    document.documentElement.lang = langTag;
+  }
+  if (editor) {
+    editor.setAttribute('lang', langTag);
+  }
+}
+
+function setLocalSpellcheckEnabled(enabled) {
+  spellcheckEnabled = enabled !== false;
+  if (spellcheckToggle) spellcheckToggle.checked = spellcheckEnabled;
+  if (editor) {
+    editor.spellcheck = spellcheckEnabled;
+    editor.setAttribute('spellcheck', spellcheckEnabled ? 'true' : 'false');
+  }
+}
+
 async function ensureEditorTranslations(lang) {
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
   if (translationsLoadedFor === target) return;
@@ -124,6 +148,7 @@ async function ensureEditorTranslations(lang) {
 
 async function applyEditorTranslations() {
   await ensureEditorTranslations(idiomaActual);
+  applyDocumentLanguage();
   document.title = tr('renderer.editor.title', document.title);
   if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder', editor.getAttribute('placeholder') || ''));
   if (btnCalc) {
@@ -135,6 +160,11 @@ async function applyEditorTranslations() {
     const calcWhileTypingText = tr('renderer.editor.calc_while_typing', calcLabel.getAttribute('data-label') || '');
     calcLabel.setAttribute('data-label', calcWhileTypingText);
     if (calcWhileTyping) calcWhileTyping.setAttribute('aria-label', calcWhileTypingText);
+  }
+  if (spellcheckLabel) {
+    const spellcheckText = tr('renderer.editor.spellcheck', spellcheckLabel.getAttribute('data-label') || '');
+    spellcheckLabel.setAttribute('data-label', spellcheckText);
+    if (spellcheckToggle) spellcheckToggle.setAttribute('aria-label', spellcheckText);
   }
   if (btnTrash) {
     const clearText = tr('renderer.editor.clear', btnTrash.getAttribute('data-label') || '');
@@ -154,9 +184,19 @@ if (typeof window.editorAPI.onSettingsChanged === 'function') {
   window.editorAPI.onSettingsChanged(async (settings) => {
     try {
       const nextLang = settings && settings.language ? settings.language : '';
-      if (!nextLang || nextLang === idiomaActual) return;
-      idiomaActual = nextLang;
-      await applyEditorTranslations();
+      const nextSpellcheckEnabled = !settings || settings.spellcheckEnabled !== false;
+      const languageChanged = !!(nextLang && nextLang !== idiomaActual);
+      const spellcheckChanged = nextSpellcheckEnabled !== spellcheckEnabled;
+
+      if (!languageChanged && !spellcheckChanged) return;
+
+      if (languageChanged) {
+        idiomaActual = nextLang;
+        await applyEditorTranslations();
+      }
+      if (spellcheckChanged) {
+        setLocalSpellcheckEnabled(nextSpellcheckEnabled);
+      }
     } catch (err) {
       log.warn('editor: failed to apply settings update:', err);
     }
@@ -331,6 +371,8 @@ try {
     editor.style.wordBreak = 'break-word';
   }
 } catch (err) { log.warnOnce('editor:wrapStyles:apply_failed', 'editor wrap styles failed (ignored):', err); }
+applyDocumentLanguage();
+setLocalSpellcheckEnabled(spellcheckEnabled);
 
 // =============================================================================
 // Local insertion (best preserving undo)
@@ -869,6 +911,34 @@ if (calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
     // disable automatic sending; enable CALC/SAVE
   } else btnCalc.disabled = false;
 });
+
+if (spellcheckToggle) {
+  spellcheckToggle.addEventListener('change', async () => {
+    const previousEnabled = spellcheckEnabled;
+    const nextEnabled = !!spellcheckToggle.checked;
+
+    if (!window.editorAPI || typeof window.editorAPI.setSpellcheckEnabled !== 'function') {
+      log.warnOnce(
+        'editor.spellcheck.apiMissing',
+        'editorAPI.setSpellcheckEnabled missing; spellcheck toggle ignored.'
+      );
+      setLocalSpellcheckEnabled(previousEnabled);
+      return;
+    }
+
+    setLocalSpellcheckEnabled(nextEnabled);
+
+    try {
+      const result = await window.editorAPI.setSpellcheckEnabled(nextEnabled);
+      if (!result || result.ok !== true) {
+        throw new Error(result && result.error ? String(result.error) : 'unknown');
+      }
+    } catch (err) {
+      log.error('Error updating spellcheck setting:', err);
+      setLocalSpellcheckEnabled(previousEnabled);
+    }
+  });
+}
 
 // =============================================================================
 // End of public/editor.js

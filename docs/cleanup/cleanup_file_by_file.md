@@ -12,6 +12,7 @@
     `electron\reading_test_pool_import.js`
     `electron\reading_test_questions_preload.js`
     `electron\reading_test_session.js`
+    `electron\spellcheck.js`
     `public\js\lib\reading_test_filters_core.js`
     `public\js\lib\reading_test_questions_core.js`
     `public\js\reading_speed_test.js`

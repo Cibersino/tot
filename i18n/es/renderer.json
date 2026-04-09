@@ -105,6 +105,7 @@
       "placeholder": "Escribe o pega aquí...",
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Auto-guardar y auto-recalcular mientras escribes",
+      "spellcheck": "Corrector ortográfico",
       "clear": "🗑",
       "clear_title": "Vaciar"
     },

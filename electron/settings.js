@@ -53,6 +53,7 @@ const deriveLangKey = (langTag) => getLangBase(langTag);
 // =============================================================================
 const createDefaultSettings = (language = '') => ({
   language,
+  spellcheckEnabled: true,
   presets_by_language: {},
   selected_preset_by_language: {},
   disabled_default_presets: {},
@@ -264,6 +265,20 @@ function normalizeSettings(s) {
     s.modeConteo = 'preciso';
   }
 
+  // spellcheckEnabled:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof s.spellcheckEnabled === 'undefined') {
+    s.spellcheckEnabled = true;
+  } else if (typeof s.spellcheckEnabled !== 'boolean') {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidSpellcheckEnabled',
+      'Invalid spellcheckEnabled; forcing default:',
+      { type: typeof s.spellcheckEnabled }
+    );
+    s.spellcheckEnabled = true;
+  }
+
   // Normalize language tag and compute its base (e.g., "en-US" -> "en").
   const langTag =
     s.language && typeof s.language === 'string' && s.language.trim()
@@ -470,6 +485,7 @@ function registerIpc(
   {
     getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin })
     buildAppMenu, // function(lang)
+    onSettingsUpdated, // function(settings)
   } = {}
 ) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -489,6 +505,17 @@ function registerIpc(
       return normalizeSettings(createDefaultSettings(DEFAULT_LANG));
     }
   });
+
+  function notifySettingsUpdated(settings, windows) {
+    try {
+      if (typeof onSettingsUpdated === 'function') {
+        onSettingsUpdated(settings);
+      }
+    } catch (err) {
+      log.warn('onSettingsUpdated callback failed (ignored):', err);
+    }
+    broadcastSettingsUpdated(settings, windows);
+  }
 
   // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
@@ -553,7 +580,7 @@ function registerIpc(
         log.warn('hide menu in secondary windows failed (ignored):', err);
       }
 
-      broadcastSettingsUpdated(settings, windows);
+      notifySettingsUpdated(settings, windows);
 
       return { ok: true, language: chosen };
     } catch (err) {
@@ -570,7 +597,7 @@ function registerIpc(
       settings = saveSettings(settings);
 
       const windows = typeof getWindows === 'function' ? getWindows() : {};
-      broadcastSettingsUpdated(settings, windows);
+      notifySettingsUpdated(settings, windows);
 
       return { ok: true, mode: settings.modeConteo };
     } catch (err) {
@@ -609,6 +636,35 @@ function registerIpc(
       return { ok: true, langKey, name };
     } catch (err) {
       log.error('IPC set-selected-preset failed:', err);
+      return { ok: false, error: String(err) };
+    }
+  });
+
+  // set-spellcheck-enabled: persists spellcheck preference and broadcasts
+  ipcMain.handle('set-spellcheck-enabled', async (_event, enabled) => {
+    try {
+      if (typeof enabled !== 'boolean') {
+        log.warnOnce(
+          'settings.set-spellcheck-enabled.invalid',
+          'set-spellcheck-enabled called with non-boolean value (ignored).',
+          { type: typeof enabled }
+        );
+        return { ok: false, error: 'invalid' };
+      }
+
+      let settings = getSettings();
+      if (settings.spellcheckEnabled === enabled) {
+        return { ok: true, enabled };
+      }
+      settings.spellcheckEnabled = enabled;
+      settings = saveSettings(settings);
+
+      const windows = typeof getWindows === 'function' ? getWindows() : {};
+      notifySettingsUpdated(settings, windows);
+
+      return { ok: true, enabled: settings.spellcheckEnabled };
+    } catch (err) {
+      log.error('IPC set-spellcheck-enabled failed:', err);
       return { ok: false, error: String(err) };
     }
   });

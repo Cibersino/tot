@@ -45,6 +45,7 @@ const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
+const spellcheck = require('./spellcheck');
 const readingTestSession = require('./reading_test_session');
 const readingTestPoolImport = require('./reading_test_pool_import');
 const readingTestPool = require('./reading_test_pool');
@@ -61,6 +62,11 @@ const {
 
 const log = Log.get('main');
 log.debug('Main process starting...');
+
+const spellcheckController = spellcheck.createController({
+  settingsState,
+  log,
+});
 
 const IS_SMOKE_TEST = process.env.TOT_SMOKE_TEST === '1';
 const SMOKE_USER_DATA_DIR = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
@@ -544,6 +550,8 @@ function createMainWindow() {
  * The editor uses editor_state.js to remember size/position/maximized state.
  */
 function createEditorWindow() {
+  spellcheckController.apply();
+
   // Load last saved window state (size/position/maximized) from editor_state.js.
   const state = editorState.loadInitialState(loadJson);
 
@@ -1626,6 +1634,8 @@ app.whenReady().then(() => {
     settingsFile: SETTINGS_FILE,
   });
 
+  spellcheckController.apply(settings);
+
   // Delegated IPC registration (feature modules).
   // main.js owns windows; feature modules own their IPC contract and internal logic.
   textState.registerIpc(ipcMain, () => ({
@@ -1646,6 +1656,9 @@ app.whenReady().then(() => {
       taskEditorWin,
     }),
     buildAppMenu,
+    onSettingsUpdated: (nextSettings) => {
+      spellcheckController.apply(nextSettings);
+    },
   });
 
   presetsMain.registerIpc(ipcMain, {

@@ -94,6 +94,7 @@
       "placeholder": "Cole ou digite seu texto aqui...",
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Salvar e recalcular automaticamente enquanto você digita",
+      "spellcheck": "Verificação ortográfica",
       "clear": "🗑",
       "clear_title": "Limpar"
     },

@@ -130,8 +130,8 @@ body.reading-test-countdown-active .bottom-bar {
   cursor: default;
 }
 
-/* checkbox label */
-.calc-label {
+/* checkbox labels */
+.editor-toggle-label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -140,7 +140,7 @@ body.reading-test-countdown-active .bottom-bar {
   user-select: none;
 }
 
-.calc-label::after {
+.editor-toggle-label::after {
   content: attr(data-label);
 }
 
@@ -208,7 +208,7 @@ body.reading-test-countdown-active .bottom-bar {
     height: 32px;
   }
 
-  .calc-label {
+  .editor-toggle-label {
     font-size: 13px;
   }
 

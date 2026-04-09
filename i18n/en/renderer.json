@@ -105,6 +105,7 @@
       "placeholder": "Type or paste here...",
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Auto-save and auto-recalculate as you type",
+      "spellcheck": "Spellcheck",
       "clear": "🗑",
       "clear_title": "Clear"
     },
