@@ -247,20 +247,35 @@
     "reading_test": {
       "entry": {
         "title": "Pepiluwün ñi pürüm chillkatun",
-        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka, amulnayay tiempo ka feypiaymi tami chillkatuwal chumngechi rumel chillkatuken; afülmi, pañitunge Pausa (⏸) feyti Ventana Flotante mu. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.",
+        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka, amulnayay tiempo ka feypiaymi tami chillkatuwal chumngechi rumel chillkatuken; afülmi, pañitunge Pausa (⏸) feyti Ventana Flotante mu. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.\nTüfachi pool pichi chillka engün müten müley, feymew küme rakiduamngeymi tami chum tripachi. Kümelay rüf müten tripayal füta chillka mew, felew müten küme dungu, küme amuluwün ka contexto, ka weda dungu, mental recapitulación ka fatigue, mülekey ti chillkatun mu.",
         "eligible_count": "Dullngechi chillka: {count}",
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
         "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",
         "reset_confirm": "Fey mu wiñotripayay kom trawün (pool) pepiluwal ka kom chillka 'ngelay chillkatun' pingeay. ¿Amuleaymi?",
+        "import_summary": "Importación afmatuy. Koneltuy: {imported}. Duplicados no koneltuy: {skippedDuplicates}. Validación no müley: {failedValidation}. Archivo comprimido mu entradas no müley: {failedArchiveEntries}. Escrituras no müley: {failedWrites}.",
+        "import_conflict": {
+          "title": "Importar archivos",
+          "message": "Kiñeke archivos koneltulu müley trawün mew. ¿Chumgechi küdawaimi duplicados engün?",
+          "detail": "{count} destino archivo üi müley trawün mew.",
+          "buttons": {
+            "skip": "Rupan duplicados",
+            "replace": "Wiño püne duplicados",
+            "cancel": "Katrüntun importación"
+          }
+        },
         "buttons": {
+          "get_more_files": "Pepefinge más archivos",
+          "import_files": "Importar archivos...",
           "reset_pool": "Wiño adkünuwal pool",
+          "show_instructions": "Pepefinge instrucciones",
+          "hide_instructions": "Ellkañma instrucciones",
           "start_random_text": "Yalltun fantepu chillka random mew",
           "start_current_text": "Yalltun fantepu chillka mu"
         }
       },
       "questions": {
         "title": "Ramtun kimün chillkatun mu",
-        "intro": "Llownge kom ramtun ayülemi kintual tami kimün petu tami wiñotun mu.",
+        "intro": "Tüfachi ramtun kimün chillkatun mu llowal ayüleymi müten; gelay chumal tami puntaje tripachi. Feyengün müten kelluaymew tami kintual chum fentren müley ti chillka ka chemgechi tami pürüm ka adüm chillkatun eluymi kiñe pichi kimün. Tami llowün gelay elkünun no rume ka amulay desarrolladores püle rume ka iney no rume püle.",
         "random_title": "Chumngechi tripayal kisu",
         "random_value": "{percentage}% küme llowün tripayafuy kisu",
         "feedback_title": "Feedback",
@@ -268,7 +283,7 @@
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Llowkeaymi kom ramtun petu kintual chumngechi tripay.",
         "result_summary": "{correct} ñi {total} küme tripachi ({percentage}%)",
-        "low_score_warning": "Tami tripantu müna pichi wentruwün mew kom küme rakiduam ka zufali ramtun.",
+        "chance_at_least_observed": "¿Chumten müley tüfa kam fey tripan random llowün mu?: {percentage}%",
         "fatal_invalid": "Feyti ramtun wedalküley.",
         "buttons": {
           "check": "Kintual chum tripachi",
@@ -391,6 +406,7 @@
       "reading_test_result_invalid": "Chum tripachi pepiluwün gelay WPM. Amulelay kintual modal preset.",
       "reading_test_preset_unavailable": "Ngelay kintual modal preset pepiluwün mu.",
       "reading_test_questions_unavailable": "Ngelay kintual modal ramtun. Amulelay yalltul preset.",
+      "reading_test_pool_import_failed": "Pepiluwün ñi pürüm chillkatun archivos koneltulay.",
       "reading_test_start_failed": "Ngelay yalltuwal pepiluwün ñi pürüm chillkatun.",
       "reading_test_cancelled": "Pepiluwün ñi pürüm chillkatun katrütungey.",
       "reading_test_cancelled_window_closed": "Pepiluwün ñi pürüm chillkatun katrütungey ñafün mu kiñe ventana."
@@ -416,6 +432,8 @@
       "process_error": "Welulkuy küzaw preset mu. Kintunge consola."
     },
     "info": {
+      "loading": "Cargando...",
+      "missing_content": "Ngelay chi dungu '{name}'.",
       "external": {
         "blocked": "Link bloqueado",
         "error": "Welulkuy nülal link"
@@ -434,6 +452,9 @@
         "env": {
           "unavailable": "Ngelay"
         }
+      },
+      "instrucciones": {
+        "title": "Manual de uso"
       },
       "links_interes": {
         "app_name": "toT",

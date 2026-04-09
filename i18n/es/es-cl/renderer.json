@@ -121,12 +121,12 @@
       },
       "columns": {
         "texto": "Texto",
-        "tiempo": "Ritmo",
+        "tiempo": "Tiempo",
         "percent": "%",
         "falta": "F",
         "tipo": "Clase",
         "enlace": "Ruta",
-        "comentario": "Opinión",
+        "comentario": "",
         "acciones": "Acciones"
       },
       "buttons": {
@@ -175,7 +175,7 @@
         "task_save_error": "No se pudo salvar la misión.",
         "task_save_success": "Misión salvada con éxito.",
         "task_delete_error": "No se pudo pitiarse la misión.",
-        "task_delete_unavailable": "No se puede pitiarse esta misión.",
+        "task_delete_unavailable": "No hay niuna misión guardá pa' pitiarse.",
         "task_invalid_file": "Archivo de misión inválido.",
         "task_invalid_rows": "Hay filas inválidas en la misión.",
         "task_path_outside": "El archivo debe estar aentro de la carpeta de misiones.",
@@ -247,28 +247,43 @@
     "reading_test": {
       "entry": {
         "title": "Test de ritmo de lectura",
-        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando terminís, apreta Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.",
+        "intro": "Este test es pa' estimar tu ritmo real de lectura. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando terminís, apreta Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si querís cancelar el test. Después podís revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nEste pool usa textos cortos, así que toma el resultado con cautela. No deberíai extrapolarlo directamente a textos largos, donde suelen entrar en juego factores positivos, como agarrar fluidez y contexto, y factores negativos, como la recapitulación mental y la fatiga.",
         "eligible_count": "Archivos elegibles: {count}",
-        "pool_exhausted_message": "Se agotó el pan. Podís restablecer el pool si querís no más.",
+        "pool_exhausted_message": "No quedan archivos de test sin usar. Podís restablecer el pool o meter más archivos.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",
         "reset_confirm": "¿Querís restablecer el pool de archivos elegibles? Esto va a recargar los archivos disponibles pa' iniciar el test, incluyendo los que ya usaste.",
+        "import_summary": "Terminó la importación. Entraron: {imported}. Duplicados saltados: {skippedDuplicates}. Validaciones fallidas: {failedValidation}. Entradas fallidas del comprimido: {failedArchiveEntries}. Escrituras fallidas: {failedWrites}.",
+        "import_conflict": {
+          "title": "Importar archivos",
+          "message": "Algunos archivos que querís importar ya están en el pool. ¿Qué hacimos con los duplicados?",
+          "detail": "Ya hay {count} nombre(s) de archivo de destino metidos en el pool.",
+          "buttons": {
+            "skip": "Saltarse duplicados",
+            "replace": "Reemplazar duplicados",
+            "cancel": "Cancelar importación"
+          }
+        },
         "buttons": {
+          "get_more_files": "Traer más archivos",
+          "import_files": "Importar archivos...",
           "reset_pool": "Restablecer pool",
+          "show_instructions": "Mostrar instrucciones",
+          "hide_instructions": "Ocultar instrucciones",
           "start_random_text": "Partir con texto random",
           "start_current_text": "Partir con texto actual"
         }
       },
       "questions": {
         "title": "Preguntas de comprensión lectora",
-        "intro": "Ahora unas preguntitas pa' medir qué tan bien entendiste lo que leíste.",
+        "intro": "Contestar estas preguntas de comprensión lectora es opcional y no afecta tu puntaje final. Solo sirven pa' ayudarte a cachar la dificultad del texto y si tu ritmo y tu manera de leer te alcanzaron pa' llegar a un nivel básico de comprensión. Tus respuestas no se guardan ni se mandan a los desarrolladores ni a nadie más.",
         "random_title": "Probabilidad de achuntarle",
-        "random_value": "{percentage}% de respuestas correctas probables al achunte",
+        "random_value": "Puntaje esperado al responder al achunte: {percentage}%",
         "feedback_title": "Feedback",
         "feedback_prefix": "Si te querís quejar:",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Tenís que responder toas las preguntas pa' ver el resultado.",
         "result_summary": "{correct} de {total} correctas ({percentage}%)",
-        "low_score_warning": "Tu resultado quedó bajo en comparación con una línea base al achunte. Revisa bien, pajarón.",
+        "chance_at_least_observed": "Probabilidad de sacar al menos este puntaje al responder al achunte: {percentage}%",
         "fatal_invalid": "La carga de preguntas es inválida.",
         "buttons": {
           "check": "Ver resultado",
@@ -386,11 +401,12 @@
       "reading_test_unavailable": "El test de ritmo de lectura no está disponible.",
       "reading_test_precondition_blocked": "Pa' partir el test de ritmo de lectura, cierra toas las ventanas chicas y para el cronómetro.",
       "reading_test_pool_error": "Cagó la carga del pool de archivos pal' test de ritmo de lectura.",
-      "reading_test_no_matching_files": "No hay más, no insista.",
+      "reading_test_no_matching_files": "No quedan archivos de test sin usar que calcen con la selección actual.",
       "reading_test_current_text_empty": "El texto actual está pelao. Llenalo con algo y prueba de nuevo, o elige iniciar el test con un archivo del pool.",
-      "reading_test_result_invalid": "El resultao del test de ritmo cagó al procesarlo.",
-      "reading_test_preset_unavailable": "No se pudo cargar el preset de velocidad estimado, estimado.",
-      "reading_test_questions_unavailable": "El perro se comió las preguntas de comprensión lectora.",
+      "reading_test_result_invalid": "El resultado del test no pudo pasar a un WPM válido. La vuelta terminó sin abrir el modal del preset.",
+      "reading_test_preset_unavailable": "No se pudo abrir el modal del preset después del test.",
+      "reading_test_questions_unavailable": "No se pudo abrir el modal de preguntas de comprensión lectora. La vuelta terminó antes de crear el preset.",
+      "reading_test_pool_import_failed": "No se pudieron importar los archivos del test de ritmo de lectura.",
       "reading_test_start_failed": "Cagó el inicio del test de ritmo de lectura.",
       "reading_test_cancelled": "El test de ritmo de lectura fue cancelado.",
       "reading_test_cancelled_window_closed": "El test se canceló porque se cerró una de las ventanas necesarias pa' hacerlo."
@@ -416,6 +432,8 @@
       "process_error": "Drama al procesar el preset. Lorea la consola."
     },
     "info": {
+      "loading": "Cargando...",
+      "missing_content": "No hay contenido pa '{name}'.",
       "external": {
         "blocked": "Enlace bloqueado",
         "error": "Error al abrir el enlace"
@@ -434,6 +452,9 @@
         "env": {
           "unavailable": "No pillado"
         }
+      },
+      "instrucciones": {
+        "title": "Manual de uso"
       },
       "links_interes": {
         "app_name": "toT",

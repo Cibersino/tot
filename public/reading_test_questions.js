@@ -51,7 +51,7 @@
     const feedbackLink = document.getElementById('readingTestQuestionsFeedbackLink');
     const incompleteMessage = document.getElementById('readingTestQuestionsIncomplete');
     const resultMessage = document.getElementById('readingTestQuestionsResult');
-    const lowScoreMessage = document.getElementById('readingTestQuestionsLowScore');
+    const chanceMessage = document.getElementById('readingTestQuestionsChance');
     const fatalMessage = document.getElementById('readingTestQuestionsFatal');
     const form = document.getElementById('readingTestQuestionsForm');
     const btnCheck = document.getElementById('readingTestQuestionsCheck');
@@ -67,7 +67,7 @@
       || !feedbackLink
       || !incompleteMessage
       || !resultMessage
-      || !lowScoreMessage
+      || !chanceMessage
       || !fatalMessage
       || !form
       || !btnCheck
@@ -115,22 +115,22 @@
 
     function clearTransientMessages() {
       setMessage(incompleteMessage, '', { tone: 'warn', visible: false });
-      setMessage(lowScoreMessage, '', { tone: 'warn', visible: false });
+      setMessage(chanceMessage, '', { tone: 'note', visible: false });
       setMessage(fatalMessage, '', { tone: 'error', visible: false });
     }
 
     function renderStaticCopy() {
       document.title = tr(
         'renderer.reading_test.questions.title',
-        'Comprehension questions'
+        'Reading Comprehension Questions'
       );
       title.textContent = tr(
         'renderer.reading_test.questions.title',
-        'Comprehension questions'
+        'Reading Comprehension Questions'
       );
       intro.textContent = tr(
         'renderer.reading_test.questions.intro',
-        'Answer the questions if you want to review comprehension before returning to the main flow.'
+        'Answering these reading comprehension questions is optional and does not affect your final score. They are only meant to help you assess the text\'s difficulty and whether your reading pace and style allowed you to reach a basic level of comprehension. Your answers are not saved or sent to the developers or to anyone else.'
       );
       randomTitle.textContent = tr(
         'renderer.reading_test.questions.random_title',
@@ -168,14 +168,14 @@
       randomValue.textContent = mr(
         'renderer.reading_test.questions.random_value',
         { percentage: formatPercentage(randomGuessPercentage) },
-        `${formatPercentage(randomGuessPercentage)}%`
+        `Expected score under random guessing: ${formatPercentage(randomGuessPercentage)}%`
       );
     }
 
     function updateResultMessages() {
       if (!lastScore) {
         setMessage(resultMessage, '', { tone: 'info', visible: false });
-        setMessage(lowScoreMessage, '', { tone: 'warn', visible: false });
+        setMessage(chanceMessage, '', { tone: 'note', visible: false });
         return;
       }
 
@@ -188,27 +188,22 @@
             total: lastScore.total,
             percentage: formatPercentage(lastScore.percentage),
           },
-          `${lastScore.correct} / ${lastScore.total} (${formatPercentage(lastScore.percentage)}%)`
+          `${lastScore.correct} out of ${lastScore.total} correct (${formatPercentage(lastScore.percentage)}%)`
         ),
         { tone: 'info', visible: true }
       );
 
-      if (lastScore.shouldWarnLowScore) {
-        setMessage(
-          lowScoreMessage,
-          mr(
-            'renderer.reading_test.questions.low_score_warning',
-            {
-              threshold: formatPercentage(lastScore.warningThreshold),
-              baseline: formatPercentage(lastScore.randomGuessPercentage),
-            },
-            'Your result is low compared with a random baseline. You may want to review the questions more carefully.'
-          ),
-          { tone: 'warn', visible: true }
-        );
-      } else {
-        setMessage(lowScoreMessage, '', { tone: 'warn', visible: false });
-      }
+      setMessage(
+        chanceMessage,
+        mr(
+          'renderer.reading_test.questions.chance_at_least_observed',
+          {
+            percentage: formatPercentage(lastScore.probabilityAtLeastObserved * 100),
+          },
+          `Chance of getting at least this score by random guessing: ${formatPercentage(lastScore.probabilityAtLeastObserved * 100)}%`
+        ),
+        { tone: 'note', visible: true }
+      );
     }
 
     function withAnchoredActionsScroll(updateFn) {

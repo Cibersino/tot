@@ -52,6 +52,12 @@ const api = {
     cb,
     'editor-force-clear callback error:',
     'removeListener error (editor-force-clear):'
+  ),
+  onReadingTestCountdown: (cb) => subscribeWithUnsub(
+    'reading-test-prestart-countdown',
+    cb,
+    'reading-test-prestart-countdown callback error:',
+    'removeListener error (reading-test-prestart-countdown):'
   )
 };
 

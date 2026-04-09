@@ -88,6 +88,8 @@ const calcWhileTyping = document.getElementById('calcWhileTyping');
 const btnCalc = document.getElementById('btnCalc');
 const calcLabel = document.querySelector('.calc-label');
 const bottomBar = document.getElementById('bottomBar');
+const readingTestCountdownOverlay = document.getElementById('readingTestCountdownOverlay');
+const readingTestCountdownValue = document.getElementById('readingTestCountdownValue');
 
 // =============================================================================
 // Module state and limits
@@ -95,6 +97,8 @@ const bottomBar = document.getElementById('bottomBar');
 let debounceTimer = null;
 const DEBOUNCE_MS = 300;
 let suppressLocalUpdate = false;
+let readingTestCountdownRunId = 0;
+let readingTestCountdownTimeouts = [];
 
 // warnOnce keys are editor-scoped; use log.warnOnce directly.
 
@@ -161,6 +165,15 @@ if (typeof window.editorAPI.onSettingsChanged === 'function') {
   log.warn('editorAPI.onSettingsChanged missing; live language updates disabled.');
 }
 
+if (readingTestCountdownOverlay) {
+  readingTestCountdownOverlay.addEventListener('keydown', (event) => {
+    if (readingTestCountdownOverlay.getAttribute('aria-hidden') === 'false') {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
+}
+
 // =============================================================================
 // Focus and selection helpers
 // =============================================================================
@@ -178,6 +191,92 @@ function restoreFocusToEditor(pos = null) {
   } catch (err) {
     log.warnOnce('editor:restoreFocus:outer_catch', 'restoreFocusToEditor wrapper failed (ignored):', err);
   }
+}
+
+function clearReadingTestCountdownTimeouts() {
+  for (const timeoutId of readingTestCountdownTimeouts) {
+    clearTimeout(timeoutId);
+  }
+  readingTestCountdownTimeouts = [];
+}
+
+function positionEditorAtTop() {
+  if (!editor) return;
+
+  try {
+    setSelectionSafe(0, 0);
+  } catch (err) {
+    log.warnOnce('editor.readingTestCountdown.selectionTop', 'Failed to set editor selection to top (ignored):', err);
+  }
+
+  try {
+    editor.scrollTop = 0;
+    editor.scrollLeft = 0;
+  } catch (err) {
+    log.warnOnce('editor.readingTestCountdown.scrollTop', 'Failed to scroll editor to top (ignored):', err);
+  }
+}
+
+function setReadingTestCountdownVisible(visible) {
+  if (!readingTestCountdownOverlay) return;
+  document.body.classList.toggle('reading-test-countdown-active', !!visible);
+  readingTestCountdownOverlay.setAttribute('aria-hidden', visible ? 'false' : 'true');
+
+  if (visible) {
+    positionEditorAtTop();
+    try {
+      readingTestCountdownOverlay.focus();
+    } catch (err) {
+      log.warnOnce(
+        'editor.readingTestCountdown.focus',
+        'reading-test countdown focus failed (ignored):',
+        err
+      );
+    }
+    return;
+  }
+  setTimeout(() => {
+    positionEditorAtTop();
+  }, 0);
+}
+
+function startReadingTestCountdown(payload = {}) {
+  if (!readingTestCountdownOverlay || !readingTestCountdownValue) {
+    log.warnOnce(
+      'editor.readingTestCountdown.missingDom',
+      'Reading-test countdown DOM missing; overlay countdown skipped.'
+    );
+    return;
+  }
+
+  const secondsRaw = Number(payload.seconds);
+  const stepMsRaw = Number(payload.stepMs);
+  const seconds = Number.isFinite(secondsRaw) && secondsRaw >= 1
+    ? Math.floor(secondsRaw)
+    : 5;
+  const stepMs = Number.isFinite(stepMsRaw) && stepMsRaw >= 250
+    ? Math.floor(stepMsRaw)
+    : 1000;
+
+  const runId = ++readingTestCountdownRunId;
+  clearReadingTestCountdownTimeouts();
+
+  readingTestCountdownValue.textContent = String(seconds);
+  setReadingTestCountdownVisible(true);
+
+  for (let index = 1; index < seconds; index += 1) {
+    const nextValue = seconds - index;
+    readingTestCountdownTimeouts.push(setTimeout(() => {
+      if (runId !== readingTestCountdownRunId) return;
+      readingTestCountdownValue.textContent = String(nextValue);
+    }, index * stepMs));
+  }
+
+  readingTestCountdownTimeouts.push(setTimeout(() => {
+    if (runId !== readingTestCountdownRunId) return;
+    clearReadingTestCountdownTimeouts();
+    setReadingTestCountdownVisible(false);
+  }, seconds * stepMs));
 }
 
 function getSelectionRange() {
@@ -624,6 +723,14 @@ window.editorAPI.onForceClear(() => {
     restoreFocusToEditor();
   }
 });
+
+if (typeof window.editorAPI.onReadingTestCountdown === 'function') {
+  window.editorAPI.onReadingTestCountdown((payload) => {
+    startReadingTestCountdown(payload);
+  });
+} else {
+  log.warn('editorAPI.onReadingTestCountdown missing; reading-test countdown overlay disabled.');
+}
 
 // =============================================================================
 // Paste / drop handlers

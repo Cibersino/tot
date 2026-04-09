@@ -25,6 +25,11 @@ body {
   gap: 0;
 }
 
+body.reading-test-countdown-active .editor-wrap,
+body.reading-test-countdown-active .bottom-bar {
+  filter: blur(8px);
+}
+
 /* Wrapper for textarea */
 .editor-wrap {
   position: relative;
@@ -53,6 +58,35 @@ body {
   background: #fff;
   color: #222;
   overflow: auto;
+}
+
+.reading-test-countdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 60px 140px 0;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+
+.reading-test-countdown-overlay[aria-hidden="false"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.reading-test-countdown-value {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(96px, 24vw, 176px);
+  font-weight: 700;
+  line-height: 1;
+  color: #181818;
+  text-shadow: 0 3px 16px rgba(255, 255, 255, 0.6);
+  user-select: none;
 }
 
 /* Fixed bottom bar on the foot of the modal */

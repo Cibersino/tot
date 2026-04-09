@@ -1,0 +1,174 @@
+{
+  "text": "Las medias rojas\nEmilia Pardo Bazán\n\nCuando la razapa entró, cargada con el haz de leña que acababa de me rodear en el monte del señor amo, el tío Clodio no levantó la cabeza, entregado a la ocupación de picar un cigarro, sirviéndose, en vez de navaja, de una uña córnea, color de ámbar oscuro, porque la había tostado el fuego de las apuradas colillas.\nIldara soltó el peso en tierra y se atusó el cabello, peinado a la moda «de las señoritas» y revuelto por los enganchones de las ramillas que se agarraban a él. Después, con la lentitud de las faenas aldeanas, preparó el fuego, lo prendió, desgarró las berzas, las echó en el pote negro, en compañía de unas patatas mal troceadas y de unas judías asaz secas, de la cosecha anterior, sin remojar. Al cabo de estas operaciones, tenía el tío Clodio liado su cigarrillo, y lo chupaba desgarbadamente, haciendo en los carrillos dos hoyos como sumideros, grises, entre el azuloso de la descuidada barba\nSin duda la leña estaba húmeda de tanto llover la semana entera, y ardía mal, soltando una humareda acre; pero el labriego no reparaba: al humo ¡bah!, estaba él bien hecho desde niño. Como Ildara se inclinase para sopla y activar la llama, observó el viejo cosa más insólita: algo de color vivo, que emergía de las remendadas y encharcadas sayas de la moza... Una pierna robusta, aprisionada en una media roja, de algodón...\n-¡Ey! ¡Ildara!\n-¡Señor padre!\n-¿Qué novidá es esa?\n-¿Cuál novidá?\n-¿Ahora me gastas medias, como la hirmán del abade?\nIncorporóse la muchacha, y la llama, que empezaba a alzarse, dorada, lamedora de la negra panza del pote, alumbró su cara redonda, bonita, de facciones pequeñas, de boca apetecible, de pupilas claras, golosas de vivir.\n-Gasto medias, gasto medias -repitió sin amilanarse-. Y si las gasto, no se las debo a ninguén.\n-Luego nacen los cuartos en el monte -insistió el tío Clodio con amenazadora sorna.\n-¡No nacen!... Vendí al abade unos huevos, que no dirá menos él... Y con eso merqué las medias.\nUna luz de ira cruzó por los ojos pequeños, engarzados en duros párpados, bajo cejas hirsutas, del labrador... Saltó del banco donde estaba escarrancado, y agarrando a su hija por los hombros, la zarandeó brutalmente, arrojándola contra la pared, mientras barbotaba:\n-¡Engañosa! ¡engañosa! ¡Cluecas andan las gallinas que no ponen!\nIldara, apretando los dientes por no gritar de dolor, se defendía la cara con las manos. Era siempre su temor de mociña guapa y requebrada, que el padre la mancase, como le había sucedido a la Mariola, su prima, señalada por su propia madre en la frente con el aro de la criba, que le desgarró los tejidos. Y tanto más defendía su belleza, hoy que se acercaba el momento de fundar en ella un sueño de porvenir. Cumplida la mayor edad, libre de la autoridad paterna, la esperaba el barco, en cuyas entrañas tanto de su parroquia y de las parroquias circunvecinas se habían ido hacia la suerte, hacia lo desconocido de los lejanos países donde el oro rueda por las calles y no hay sino bajarse para cogerlo. El padre no quería emigrar, cansado de una vida de labor, indiferente de la esperanza tardía: pues que se quedase él... Ella iría sin falta; ya estaba de acuerdo con el gancho, que le adelantaba los pesos para el viaje, y hasta le había dado cinco de señal, de los cuales habían salido las famosas medias... Y el tío Clodio, ladino, sagaz, adivinador o sabedor, sin dejar de tener acorralada y acosada a la moza, repetía:\n-Ya te cansaste de andar descalza de pie y pierna, como las mujeres de bien, ¿eh, condenada? ¿Llevó medias alguna vez tu madre? ¿Peinóse como tú, que siempre estás dale que tienes con el cacho de espejo? Toma, para que te acuerdes...\nY con el cerrado puño hirió primero la cabeza, luego, el rostro, apartando las medrosas manecitas, de forma no alterada aún por el trabajo, con que se escudaba Ildara, trémula. El cachete más violento cayó sobre un ojo, y la rapaza vio como un cielo estrellado, miles de puntos brillantes envueltos en una radiación de intensos coloridos sobre un negro terciopeloso. Luego, el labrador aporreó la nariz, los carrillos. Fue un instante de furor, en que sin escrúpulo la hubiese matado, antes que verla marchar, dejándole a él solo, viudo, casi imposibilitado de cultivar la tierra que llevaba en arriendo, que fecundó con sudores tantos años, a la cual profesaba un cariño maquinal, absurdo. Cesó al fin de pegar; Ildara, aturdida de espanto, ya no chillaba siquiera.\nSalió fuera, silenciosa, y en el regato próximo se lavó la sangre. Un diente bonito, juvenil, le quedó en la mano. Del ojo lastimado, no veía.\nComo que el médico, consultado tarde y de mala gana, según es uso de labriegos, habló de un desprendimiento de la retina, cosa que no entendió la muchacha, pero que consistía... en quedarse tuerta.\nY nunca más el barco la recibió en sus concavidades para llevarla hacia nuevos horizontes de holganza y lujo. Los que allá vayan, han de ir sanos, válidos, y las mujeres, con sus ojos alumbrando y su dentadura completa...",
+  "tags": {
+    "language": "es",
+    "type": "fiction",
+    "difficulty": "normal"
+  },
+  "readingTest": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "Las medias rojas importan en el cuento sobre todo porque…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "muestran de forma visible que Ildara aspira a otra vida: no cambian todavía su situación, pero sí revelan su deseo concreto de salir del mundo en que vive."
+          },
+          {
+            "id": "b",
+            "text": "sirven principalmente para mostrar la frivolidad de Ildara, incapaz de medir su pobreza."
+          },
+          {
+            "id": "c",
+            "text": "funcionan como una provocación deliberada contra el padre, cuyo enojo nace de una humillación buscada por la muchacha."
+          },
+          {
+            "id": "d",
+            "text": "son un detalle costumbrista sin especial peso simbólico, usado para volver más plástica la escena aldeana."
+          },
+          {
+            "id": "e",
+            "text": "anticipan que Ildara podrá integrarse sin dificultad al mundo de “las señoritas”, del que ya participa en secreto."
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "La violencia del tío Clodio se vuelve especialmente brutal en el cuento porque…",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "aparece como un estallido puramente irracional, sin vínculo alguno con la pobreza ni con el temor a quedarse solo."
+          },
+          {
+            "id": "b",
+            "text": "se presenta como una reacción moralmente comprensible, aunque excesiva, frente a una hija que quiere abandonar sus deberes."
+          },
+          {
+            "id": "c",
+            "text": "mezcla dominio patriarcal, interés material y miedo a perder a quien sostiene el hogar, de modo que el cuerpo de Ildara queda convertido en el lugar donde él impone su poder."
+          },
+          {
+            "id": "d",
+            "text": "sirve ante todo para revelar que el padre sospecha un vínculo amoroso secreto entre Ildara y el gancho."
+          },
+          {
+            "id": "e",
+            "text": "importa menos por lo que le hace a Ildara que por lo que revela del temperamento irascible del padre."
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "¿Cuál de estas preguntas sobre el cuento está mejor formulada porque abre una interpretación fuerte sin forzar demasiado el texto?",
+        "correctOptionId": "c",
+        "options": [
+          {
+            "id": "a",
+            "text": "¿Por qué demuestra Pardo Bazán que toda joven pobre que quiere ascender socialmente termina castigada?"
+          },
+          {
+            "id": "b",
+            "text": "¿En qué instante exacto decide el padre destruir para siempre la belleza de Ildara?"
+          },
+          {
+            "id": "c",
+            "text": "¿Cómo convierte el cuento un objeto pequeño y visible en el detonante de un conflicto donde se cruzan deseo de emancipación, pobreza y dominio familiar?"
+          },
+          {
+            "id": "d",
+            "text": "¿Qué simbolizan de manera única y definitiva las medias rojas: libertad, sexualidad o vanidad?"
+          },
+          {
+            "id": "e",
+            "text": "¿Por qué Ildara prefiere la fantasía del lujo antes que aceptar humildemente su lugar?"
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "¿Cuál de estas lecturas del final es la menos defendible?",
+        "correctOptionId": "e",
+        "options": [
+          {
+            "id": "a",
+            "text": "El desenlace no solo frustra una ilusión individual: muestra cómo una posibilidad concreta de salida queda anulada por la violencia."
+          },
+          {
+            "id": "b",
+            "text": "La pérdida del ojo y del diente no importa solo como daño físico, sino como destrucción de aquello que hacía viable la emigración soñada por Ildara."
+          },
+          {
+            "id": "c",
+            "text": "El final endurece la lógica del cuento: no basta con castigar a Ildara, también hay que volver inviable su futuro."
+          },
+          {
+            "id": "d",
+            "text": "El hecho de que el barco ya no la reciba vuelve más cruel el desenlace porque traslada el cierre del cuento desde la casa al horizonte perdido."
+          },
+          {
+            "id": "e",
+            "text": "El remate sugiere que, en el fondo, Ildara nunca había tenido una posibilidad real de irse, y que todo lo anterior era solo fantasía adolescente sin base concreta."
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "Cuando el padre habla de “mujeres de bien” y recuerda a la madre, lo más defendible es que…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "convierte una forma heredada de carencia en medida moral, de modo que las medias aparezcan como desviación y no solo como cambio."
+          },
+          {
+            "id": "b",
+            "text": "intenta demostrar que lo verdaderamente intolerable para él es el gasto mismo, mucho más que lo que las medias significan."
+          },
+          {
+            "id": "c",
+            "text": "deja ver que interpreta las medias, ante todo, como anuncio de una sexualidad ya disponible ante los otros."
+          },
+          {
+            "id": "d",
+            "text": "usa la figura de la madre sobre todo como recuerdo afectivo, para conmover a Ildara antes de golpearla."
+          },
+          {
+            "id": "e",
+            "text": "expresa una preocupación protectora sincera, aunque deformada por la violencia del momento."
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "El horizonte de “holganza y lujo” se entiende mejor como…",
+        "correctOptionId": "a",
+        "options": [
+          {
+            "id": "a",
+            "text": "un imaginario de ascenso que simplifica el destino americano, pero que para Ildara sigue nombrando una salida real de su vida presente."
+          },
+          {
+            "id": "b",
+            "text": "una promesa básicamente fiable, descrita con exageración verbal pero asentada en expectativas realistas."
+          },
+          {
+            "id": "c",
+            "text": "una fantasía frívola que revela que el deseo de Ildara es, en el fondo, más vanidoso que liberador."
+          },
+          {
+            "id": "d",
+            "text": "un espejismo deliberadamente desacreditado por el cuento antes de la paliza."
+          },
+          {
+            "id": "e",
+            "text": "una forma de decir que la emigración importa menos por escapar de la dependencia que por parecerse a las señoritas."
+          }
+        ]
+      }
+    ]
+  }
+}

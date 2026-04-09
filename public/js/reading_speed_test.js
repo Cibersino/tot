@@ -46,9 +46,12 @@
   const modal = document.getElementById('readingTestEntryModal');
   const backdrop = document.getElementById('readingTestEntryModalBackdrop');
   const title = document.getElementById('readingTestEntryModalTitle');
+  const introToggle = document.getElementById('readingTestEntryModalIntroToggle');
   const intro = document.getElementById('readingTestEntryModalIntro');
   const warningBox = document.getElementById('readingTestEntryModalWarning');
   const eligibleCount = document.getElementById('readingTestEntryModalEligibleCount');
+  const getMoreFilesLink = document.getElementById('readingTestEntryModalGetMoreFiles');
+  const importButton = document.getElementById('readingTestEntryModalImport');
   const resetButton = document.getElementById('readingTestEntryModalReset');
   const btnStart = document.getElementById('readingTestEntryModalStart');
   const btnStartCurrentText = document.getElementById('readingTestEntryModalStartCurrentText');
@@ -67,9 +70,12 @@
     return !!(modal
       && backdrop
       && title
+      && introToggle
       && intro
       && warningBox
       && eligibleCount
+      && getMoreFilesLink
+      && importButton
       && resetButton
       && btnStart
       && btnStartCurrentText
@@ -108,7 +114,9 @@
   let poolExhausted = false;
   let currentTextAvailable = false;
   let stabilizing = false;
+  let introExpanded = false;
   let initialized = false;
+  const DRIVE_FOLDER_URL = 'https://drive.google.com/drive/folders/1uvNX53NPITaO-jyzqQvr_uZffp28eP4F?usp=sharing';
 
   // =============================================================================
   // Helpers
@@ -185,8 +193,10 @@
   function setModalVisible(visible) {
     modal.setAttribute('aria-hidden', visible ? 'false' : 'true');
     if (visible) {
+      introExpanded = false;
       const panel = modal.querySelector('.reading-test-entry-modal-panel');
       if (panel) panel.scrollTop = 0;
+      renderIntroVisibility();
     }
     syncLockState();
     if (!visible) {
@@ -327,6 +337,17 @@
     warningBox.textContent = '';
   }
 
+  function renderIntroVisibility() {
+    intro.hidden = !introExpanded;
+    introToggle.setAttribute('aria-expanded', introExpanded ? 'true' : 'false');
+    introToggle.textContent = tRenderer(
+      introExpanded
+        ? 'renderer.reading_test.entry.buttons.hide_instructions'
+        : 'renderer.reading_test.entry.buttons.show_instructions',
+      introExpanded ? 'Hide instructions' : 'Show instructions'
+    );
+  }
+
   function render() {
     title.textContent = tRenderer(
       'renderer.reading_test.entry.title',
@@ -334,11 +355,20 @@
     );
     intro.textContent = tRenderer(
       'renderer.reading_test.entry.intro',
-      'This test is meant to estimate your real reading speed through a guided session. The app will open the text, start the timer, and ask you to read normally; when you finish, press Pause (⏸) in the Floating Window. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.'
+      'This test is meant to estimate your real reading speed through a guided session. The app will open the text, start the timer, and ask you to read normally; when you finish, press Pause (⏸) in the Floating Window. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.'
     );
+    renderIntroVisibility();
     btnClose.setAttribute(
       'aria-label',
       tRenderer('renderer.reading_test.entry.close_aria', 'Close reading speed test dialog')
+    );
+    getMoreFilesLink.textContent = tRenderer(
+      'renderer.reading_test.entry.buttons.get_more_files',
+      'Get more files'
+    );
+    importButton.textContent = tRenderer(
+      'renderer.reading_test.entry.buttons.import_files',
+      'Import files...'
     );
     resetButton.textContent = tRenderer(
       'renderer.reading_test.entry.buttons.reset_pool',
@@ -359,6 +389,9 @@
     renderCategorySection('type', typeSection, typeHeading, typeOptions);
     renderCategorySection('difficulty', difficultySection, difficultyHeading, difficultyOptions);
 
+    const managementDisabled = stabilizing || isSessionActive();
+    getMoreFilesLink.setAttribute('aria-disabled', managementDisabled ? 'true' : 'false');
+    importButton.disabled = managementDisabled;
     resetButton.disabled = stabilizing || isSessionActive();
     btnStart.disabled = stabilizing || isSessionActive() || filterState.eligibleCount < 1;
     btnStartCurrentText.disabled = stabilizing || isSessionActive() || !currentTextAvailable;
@@ -477,6 +510,159 @@
     render();
   }
 
+  function notifyImportSummary(result) {
+    if (!result || result.ok !== true || result.canceled) return;
+
+    const totalFailed = (Number(result.failedValidation) || 0)
+      + (Number(result.failedArchiveEntries) || 0)
+      + (Number(result.failedWrites) || 0);
+    const toastType = (Number(result.imported) || 0) > 0
+      ? 'info'
+      : (totalFailed > 0 || (Number(result.skippedDuplicates) || 0) > 0 ? 'warn' : 'info');
+
+    if (typeof window.Notify.toastMain === 'function') {
+      window.Notify.toastMain('renderer.reading_test.entry.import_summary', {
+        type: toastType,
+        params: {
+          imported: Number(result.imported) || 0,
+          skippedDuplicates: Number(result.skippedDuplicates) || 0,
+          failedValidation: Number(result.failedValidation) || 0,
+          failedArchiveEntries: Number(result.failedArchiveEntries) || 0,
+          failedWrites: Number(result.failedWrites) || 0,
+        },
+      });
+      return;
+    }
+
+    notifyGuidance('renderer.reading_test.entry.import_summary', {
+      imported: Number(result.imported) || 0,
+      skippedDuplicates: Number(result.skippedDuplicates) || 0,
+      failedValidation: Number(result.failedValidation) || 0,
+      failedArchiveEntries: Number(result.failedArchiveEntries) || 0,
+      failedWrites: Number(result.failedWrites) || 0,
+    });
+  }
+
+  function buildImportDialogPayload() {
+    return {
+      conflictDialog: {
+        conflictTitle: tRenderer(
+          'renderer.reading_test.entry.import_conflict.title',
+          'Import files'
+        ),
+        conflictMessage: tRenderer(
+          'renderer.reading_test.entry.import_conflict.message',
+          'Some imported files already exist in the pool. How should duplicates be handled?'
+        ),
+        conflictDetail: msgRenderer(
+          'renderer.reading_test.entry.import_conflict.detail',
+          { count: '{count}' },
+          '{count} destination filename(s) already exist in the pool.'
+        ),
+        buttons: {
+          skip: tRenderer(
+            'renderer.reading_test.entry.import_conflict.buttons.skip',
+            'Skip duplicates'
+          ),
+          replace: tRenderer(
+            'renderer.reading_test.entry.import_conflict.buttons.replace',
+            'Replace duplicates'
+          ),
+          cancel: tRenderer(
+            'renderer.reading_test.entry.import_conflict.buttons.cancel',
+            'Cancel import'
+          ),
+        },
+      },
+    };
+  }
+
+  async function refreshEntryDataAfterPoolMutation() {
+    const result = await requestEntryData();
+    if (!result) return false;
+    if (!await refreshPoolEntriesFromResult(result)) {
+      return false;
+    }
+    rebuildFilterState();
+    render();
+    return true;
+  }
+
+  async function handleImportFiles() {
+    if (stabilizing || isSessionActive()) return;
+
+    const importReadingTestPoolFiles = readElectronMethod('importReadingTestPoolFiles');
+    if (!importReadingTestPoolFiles) {
+      log.warnOnce(
+        'reading-speed-test.import.missing',
+        'importReadingTestPoolFiles unavailable; reading-test pool import skipped.'
+      );
+      notifyUnavailable();
+      return;
+    }
+
+    stabilizing = true;
+    render();
+
+    try {
+      const result = await importReadingTestPoolFiles(buildImportDialogPayload());
+      if (!result || result.ok !== true) {
+        stabilizing = false;
+        render();
+        notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_pool_import_failed');
+        return;
+      }
+
+      if (result.canceled) {
+        stabilizing = false;
+        render();
+        return;
+      }
+
+      stabilizing = false;
+      await refreshEntryDataAfterPoolMutation();
+      notifyImportSummary(result);
+    } catch (err) {
+      stabilizing = false;
+      render();
+      log.error('Reading-test pool import failed unexpectedly:', err);
+      notifyGuidance('renderer.alerts.reading_test_pool_import_failed');
+    }
+  }
+
+  function handleOpenDriveFolder(event) {
+    if (event && typeof event.preventDefault === 'function') {
+      event.preventDefault();
+    }
+    if (stabilizing || isSessionActive()) return;
+
+    const openExternalUrl = readElectronMethod('openExternalUrl');
+    if (!openExternalUrl) {
+      log.warnOnce(
+        'reading-speed-test.external-link.missing',
+        'openExternalUrl unavailable; reading-test external link disabled.'
+      );
+      window.Notify.notifyMain('renderer.info.external.blocked');
+      return;
+    }
+
+    openExternalUrl(DRIVE_FOLDER_URL)
+      .then((result) => {
+        if (!result || result.ok !== true) {
+          window.Notify.notifyMain(
+            result && result.reason === 'blocked'
+              ? 'renderer.info.external.blocked'
+              : 'renderer.info.external.error'
+          );
+          log.warn('Reading-test pool external link blocked or failed:', DRIVE_FOLDER_URL, result);
+        }
+      })
+      .catch((err) => {
+        log.error('Reading-test pool external link request failed:', err);
+        window.Notify.notifyMain('renderer.info.external.error');
+      });
+  }
+
   async function handleStart() {
     if (stabilizing || isSessionActive() || filterState.eligibleCount < 1) return;
 
@@ -550,6 +736,14 @@
   function bindStaticListeners() {
     btnClose.addEventListener('click', closeModal);
     backdrop.addEventListener('click', closeModal);
+    introToggle.addEventListener('click', () => {
+      introExpanded = !introExpanded;
+      renderIntroVisibility();
+    });
+    getMoreFilesLink.addEventListener('click', handleOpenDriveFolder);
+    importButton.addEventListener('click', () => {
+      void handleImportFiles();
+    });
     resetButton.addEventListener('click', () => {
       void handleResetPool();
     });
