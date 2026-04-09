@@ -20,7 +20,12 @@ const { app, BrowserWindow, ipcMain, screen, globalShortcut, shell } = require('
 const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
-const { MAX_TEXT_CHARS, MAX_IPC_CHARS, MAX_META_STR_CHARS, DEFAULT_LANG } = require('./constants_main');
+const {
+  MAX_TEXT_CHARS,
+  MAX_IPC_CHARS,
+  MAX_META_STR_CHARS,
+  DEFAULT_LANG,
+} = require('./constants_main');
 
 const {
   initStorage,
@@ -45,6 +50,7 @@ const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorPosition = require('./task_editor_position');
 const editorFindMain = require('./editor_find_main');
+const editorTextSize = require('./editor_text_size');
 const spellcheck = require('./spellcheck');
 const readingTestSession = require('./reading_test_session');
 const readingTestPoolImport = require('./reading_test_pool_import');
@@ -66,6 +72,10 @@ log.debug('Main process starting...');
 const spellcheckController = spellcheck.createController({
   settingsState,
   log,
+});
+const editorTextSizeController = editorTextSize.createController({
+  settingsState,
+  getWindows: () => getSettingsBroadcastWindows(),
 });
 
 const IS_SMOKE_TEST = process.env.TOT_SMOKE_TEST === '1';
@@ -204,6 +214,18 @@ function guardMainUserAction(actionId, message, { allowDuringProcessing = false,
 
 function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
+}
+
+function getSettingsBroadcastWindows() {
+  return {
+    mainWin,
+    editorWin,
+    editorFindWin: editorFindMain.getFindWindow(),
+    presetWin,
+    langWin,
+    flotanteWin,
+    taskEditorWin,
+  };
 }
 
 function ensureEditorWindowOpen() {
@@ -589,7 +611,7 @@ function createEditorWindow() {
   editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
 
   try {
-    editorFindMain.attachEditorWindow(editorWin);
+    editorFindMain.attachEditorWindow(editorWin, editorTextSizeController.getShortcutActions());
   } catch (err) {
     log.error('Error attaching editor find listeners:', err);
   }
@@ -1646,15 +1668,7 @@ app.whenReady().then(() => {
   editorFindMain.registerIpc(ipcMain);
 
   settingsState.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-      editorWin,
-      editorFindWin: editorFindMain.getFindWindow(),
-      presetWin,
-      langWin,
-      flotanteWin,
-      taskEditorWin,
-    }),
+    getWindows: () => getSettingsBroadcastWindows(),
     buildAppMenu,
     onSettingsUpdated: (nextSettings) => {
       spellcheckController.apply(nextSettings);

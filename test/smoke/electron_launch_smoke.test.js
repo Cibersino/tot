@@ -26,6 +26,7 @@ function writeSmokeSettingsFile(userDataDir) {
       numberFormatting: {},
       modeConteo: 'preciso',
       spellcheckEnabled: true,
+      editorFontSizePx: 20,
     }, null, 2),
     'utf8'
   );

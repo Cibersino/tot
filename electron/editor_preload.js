@@ -29,6 +29,7 @@ const api = {
   getAppConfig: () => ipcRenderer.invoke('get-app-config'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   setSpellcheckEnabled: (enabled) => ipcRenderer.invoke('set-spellcheck-enabled', enabled),
+  setEditorFontSizePx: (fontSizePx) => ipcRenderer.invoke('set-editor-font-size-px', fontSizePx),
   onInitText: (cb) => subscribeWithUnsub(
     'editor-init-text',
     cb,
