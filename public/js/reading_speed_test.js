@@ -46,6 +46,7 @@
   const modal = document.getElementById('readingTestEntryModal');
   const backdrop = document.getElementById('readingTestEntryModalBackdrop');
   const title = document.getElementById('readingTestEntryModalTitle');
+  const introToggle = document.getElementById('readingTestEntryModalIntroToggle');
   const intro = document.getElementById('readingTestEntryModalIntro');
   const warningBox = document.getElementById('readingTestEntryModalWarning');
   const eligibleCount = document.getElementById('readingTestEntryModalEligibleCount');
@@ -69,6 +70,7 @@
     return !!(modal
       && backdrop
       && title
+      && introToggle
       && intro
       && warningBox
       && eligibleCount
@@ -112,6 +114,7 @@
   let poolExhausted = false;
   let currentTextAvailable = false;
   let stabilizing = false;
+  let introExpanded = false;
   let initialized = false;
   const DRIVE_FOLDER_URL = 'https://drive.google.com/drive/folders/1uvNX53NPITaO-jyzqQvr_uZffp28eP4F?usp=sharing';
 
@@ -190,8 +193,10 @@
   function setModalVisible(visible) {
     modal.setAttribute('aria-hidden', visible ? 'false' : 'true');
     if (visible) {
+      introExpanded = false;
       const panel = modal.querySelector('.reading-test-entry-modal-panel');
       if (panel) panel.scrollTop = 0;
+      renderIntroVisibility();
     }
     syncLockState();
     if (!visible) {
@@ -332,6 +337,17 @@
     warningBox.textContent = '';
   }
 
+  function renderIntroVisibility() {
+    intro.hidden = !introExpanded;
+    introToggle.setAttribute('aria-expanded', introExpanded ? 'true' : 'false');
+    introToggle.textContent = tRenderer(
+      introExpanded
+        ? 'renderer.reading_test.entry.buttons.hide_instructions'
+        : 'renderer.reading_test.entry.buttons.show_instructions',
+      introExpanded ? 'Hide instructions' : 'Show instructions'
+    );
+  }
+
   function render() {
     title.textContent = tRenderer(
       'renderer.reading_test.entry.title',
@@ -341,6 +357,7 @@
       'renderer.reading_test.entry.intro',
       'This test is meant to estimate your real reading speed through a guided session. The app will open the text, start the timer, and ask you to read normally; when you finish, press Pause (⏸) in the Floating Window. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.'
     );
+    renderIntroVisibility();
     btnClose.setAttribute(
       'aria-label',
       tRenderer('renderer.reading_test.entry.close_aria', 'Close reading speed test dialog')
@@ -719,6 +736,10 @@
   function bindStaticListeners() {
     btnClose.addEventListener('click', closeModal);
     backdrop.addEventListener('click', closeModal);
+    introToggle.addEventListener('click', () => {
+      introExpanded = !introExpanded;
+      renderIntroVisibility();
+    });
     getMoreFilesLink.addEventListener('click', handleOpenDriveFolder);
     importButton.addEventListener('click', () => {
       void handleImportFiles();
