@@ -431,6 +431,7 @@
     },
     "info": {
       "loading": "Chargement...",
+      "missing_content": "Aucun contenu n'est disponible pour '{name}'.",
       "external": {
         "blocked": "Lien bloqué",
         "error": "Erreur lors de l'ouverture du lien"
@@ -449,6 +450,9 @@
         "env": {
           "unavailable": "Indisponible"
         }
+      },
+      "instrucciones": {
+        "title": "Mode d'emploi"
       },
       "links_interes": {
         "app_name": "toT",

@@ -1507,13 +1507,16 @@ setupToggleModoPreciso();
     }
 
     const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
-    // Manual uses a fixed title; other pages use i18n when available.
-    if (isManual) {
-      infoModalTitle.textContent = 'Manual de uso';
-    } else {
-      const defaultTitle = key === 'acerca_de' ? 'Acerca de' : 'Links de interés';
-      infoModalTitle.textContent = tRenderer ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle) : defaultTitle;
+    let defaultTitle = 'Links de interés';
+    if (translationKey === 'instrucciones') {
+      defaultTitle = 'Manual de uso';
+    } else if (translationKey === 'acerca_de') {
+      defaultTitle = 'Acerca de';
     }
+    const infoDialogLabel = tRenderer
+      ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle)
+      : defaultTitle;
+    infoModalTitle.textContent = infoDialogLabel;
 
     // Open modal early so loading state is visible during fetch
     const loadingText = tRenderer('renderer.info.loading', 'Cargando...');
@@ -1526,8 +1529,14 @@ setupToggleModoPreciso();
       : await fetchText(fileToLoad);
     if (tryHtml === null) {
       // Fallback: show a simple missing-content message
-      infoModalContent.innerHTML =
-        `<p>No hay contenido disponible para '${infoModalTitle.textContent}'.</p>`;
+      const missingContentText = msgRenderer
+        ? msgRenderer(
+          'renderer.info.missing_content',
+          { name: infoDialogLabel },
+          `No hay contenido disponible para '${infoDialogLabel}'.`
+        )
+        : `No hay contenido disponible para '${infoDialogLabel}'.`;
+      infoModalContent.innerHTML = `<p>${missingContentText}</p>`;
       if (infoModalContent && typeof infoModalContent.focus === 'function') infoModalContent.focus();
       return;
     }

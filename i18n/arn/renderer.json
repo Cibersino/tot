@@ -431,6 +431,7 @@
     },
     "info": {
       "loading": "Cargando...",
+      "missing_content": "Ngelay chi dungu '{name}'.",
       "external": {
         "blocked": "Link bloqueado",
         "error": "Welulkuy nülal link"
@@ -449,6 +450,9 @@
         "env": {
           "unavailable": "Ngelay"
         }
+      },
+      "instrucciones": {
+        "title": "Manual de uso"
       },
       "links_interes": {
         "app_name": "toT",
