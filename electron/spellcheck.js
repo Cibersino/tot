@@ -1,3 +1,4 @@
+// electron/spellcheck.js
 'use strict';
 
 const settingsState = require('./settings');
