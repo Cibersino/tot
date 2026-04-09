@@ -43,6 +43,7 @@ let findListeners = null;
 let pendingFocusQuery = false;
 let closingFindWindow = false;
 let editorClosing = false;
+let editorShortcutActions = null;
 
 const state = {
   query: '',
@@ -248,6 +249,45 @@ function isOpenFindShortcut(input) {
   if (!input || input.alt) return false;
   const k = String(input.key || '');
   return (k === 'f' || k === 'F') && isCmdOrCtrl(input);
+}
+
+function isIncreaseTextSizeShortcut(input) {
+  if (!input || input.alt || !isCmdOrCtrl(input)) return false;
+  const key = String(input.key || '');
+  const code = String(input.code || '');
+  return key === '+' || key === '=' || key === 'Add' || code === 'NumpadAdd';
+}
+
+function isDecreaseTextSizeShortcut(input) {
+  if (!input || input.alt || !isCmdOrCtrl(input)) return false;
+  const key = String(input.key || '');
+  const code = String(input.code || '');
+  return key === '-' || key === 'Subtract' || code === 'NumpadSubtract';
+}
+
+function isResetTextSizeShortcut(input) {
+  if (!input || input.alt || !isCmdOrCtrl(input)) return false;
+  const key = String(input.key || '');
+  const code = String(input.code || '');
+  return key === '0' || code === 'Digit0' || code === 'Numpad0';
+}
+
+function runEditorShortcutAction(actionName) {
+  const actions = editorShortcutActions;
+  if (!actions || typeof actions[actionName] !== 'function') {
+    log.warnOnce(
+      `editorFind.shortcutAction.missing:${actionName}`,
+      'Editor shortcut action unavailable (ignored):',
+      actionName
+    );
+    return;
+  }
+
+  try {
+    actions[actionName]();
+  } catch (err) {
+    log.error(`Error running editor shortcut action '${actionName}':`, err);
+  }
 }
 
 function sendFocusQuery() {
@@ -519,6 +559,24 @@ function handleEditorBeforeInput(event, input) {
     return;
   }
 
+  if (isIncreaseTextSizeShortcut(input)) {
+    event.preventDefault();
+    runEditorShortcutAction('onIncreaseTextSize');
+    return;
+  }
+
+  if (isDecreaseTextSizeShortcut(input)) {
+    event.preventDefault();
+    runEditorShortcutAction('onDecreaseTextSize');
+    return;
+  }
+
+  if (isResetTextSizeShortcut(input)) {
+    event.preventDefault();
+    runEditorShortcutAction('onResetTextSize');
+    return;
+  }
+
   if (isEscape(input) && resolveFindWindow()) {
     event.preventDefault();
     closeFindUi({ restoreFocus: true });
@@ -545,6 +603,24 @@ function handleFindBeforeInput(event, input) {
     return;
   }
 
+  if (isIncreaseTextSizeShortcut(input)) {
+    event.preventDefault();
+    runEditorShortcutAction('onIncreaseTextSize');
+    return;
+  }
+
+  if (isDecreaseTextSizeShortcut(input)) {
+    event.preventDefault();
+    runEditorShortcutAction('onDecreaseTextSize');
+    return;
+  }
+
+  if (isResetTextSizeShortcut(input)) {
+    event.preventDefault();
+    runEditorShortcutAction('onResetTextSize');
+    return;
+  }
+
   if (isEscape(input)) {
     event.preventDefault();
     closeFindUi({ restoreFocus: true });
@@ -559,6 +635,7 @@ function onEditorWindowClosed() {
   editorClosing = false;
   pendingFocusQuery = false;
   closingFindWindow = false;
+  editorShortcutActions = null;
   clearStateOnly();
   detachEditorWindow();
   editorWinRef = null;
@@ -639,10 +716,11 @@ function detachEditorWindow() {
   editorListeners = null;
 }
 
-function attachEditorWindow(editorWin) {
+function attachEditorWindow(editorWin, options = {}) {
   detachEditorWindow();
   editorWinRef = null;
   editorClosing = false;
+  editorShortcutActions = options && typeof options === 'object' ? options : null;
 
   if (!isAliveWindow(editorWin)) return;
   editorWinRef = editorWin;

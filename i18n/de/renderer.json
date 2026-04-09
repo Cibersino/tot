@@ -95,6 +95,11 @@
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Automatisches Speichern und Neuberechnen während der Eingabe",
       "spellcheck": "Rechtschreibprüfung",
+      "text_size_label": "Größe",
+      "decrease_text_size": "Textgröße verkleinern",
+      "increase_text_size": "Textgröße vergrößern",
+      "reset_text_size": "Textgröße zurücksetzen",
+      "text_size_value": "{value} px",
       "clear": "🗑",
       "clear_title": "Löschen"
     },

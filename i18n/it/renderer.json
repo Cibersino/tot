@@ -95,6 +95,11 @@
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Auto-salvare e auto-calcolare mentre digiti",
       "spellcheck": "Controllo ortografico",
+      "text_size_label": "Dimensione",
+      "decrease_text_size": "Riduci dimensione del testo",
+      "increase_text_size": "Aumenta dimensione del testo",
+      "reset_text_size": "Reimposta dimensione del testo",
+      "text_size_value": "{value} px",
       "clear": "🗑",
       "clear_title": "Svuota"
     },
