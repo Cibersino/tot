@@ -2,13 +2,12 @@
 
 ## Elección de archivo: 
 
-- En proceso: `electron\reading_test_pool.js`
+- En proceso: `electron\reading_test_pool_import.js`
 
-- Archivos ya ordenados y limpiados:
+- Archivos ya ordenados y limpiados: `electron\reading_test_pool.js`.
 
 - Faltan: 
   - new:
-    `electron\reading_test_pool_import.js`
     `electron\reading_test_questions_preload.js`
     `electron\reading_test_session.js`
     `electron\spellcheck.js`
