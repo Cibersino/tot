@@ -316,39 +316,6 @@ function createController(options = {}) {
     return list[index] || null;
   }
 
-  function buildPrefilledPresetPayload(wpm) {
-    const settings = getSettingsSnapshot();
-    const langBase = settingsState.deriveLangKey(settings.language || DEFAULT_LANG);
-    const userPresets = settings && settings.presets_by_language && Array.isArray(settings.presets_by_language[langBase])
-      ? settings.presets_by_language[langBase]
-      : [];
-
-    let nextNumber = 1;
-    for (const preset of userPresets) {
-      const name = preset && typeof preset.name === 'string' ? preset.name.trim() : '';
-      const match = /^Test\s+(\d+)$/i.exec(name);
-      if (!match) continue;
-      const n = Number(match[1]);
-      if (Number.isFinite(n) && n >= nextNumber) {
-        nextNumber = n + 1;
-      }
-    }
-
-    const name = `Test ${nextNumber}`;
-    const description = langBase === 'en'
-      ? `User tested speed (${name}).`
-      : `Velocidad testeada del usuario (${name}).`;
-
-    return {
-      wpm,
-      preset: {
-        name,
-        wpm,
-        description,
-      },
-    };
-  }
-
   function computeCurrentWpm() {
     const cronoState = getCronoState();
     const elapsed = cronoState && typeof cronoState.elapsed === 'number'
@@ -445,6 +412,17 @@ function createController(options = {}) {
     }
   }
 
+  function clearSessionTextIfNeeded(selectedEntry) {
+    const shouldClearCurrentText = !selectedEntry || selectedEntry.sourceMode !== 'current_text';
+    if (!shouldClearCurrentText) return;
+
+    try {
+      applyCurrentText('', { source: 'main-window', action: 'clear' });
+    } catch (err) {
+      log.warn('Reading-test session current-text clear failed (ignored):', err);
+    }
+  }
+
   function isArmingEntry(entry) {
     return !!(state.active && state.stage === 'arming' && state.selectedEntry === entry);
   }
@@ -458,17 +436,6 @@ function createController(options = {}) {
       seconds: PRESTART_COUNTDOWN_SECONDS,
       stepMs: PRESTART_COUNTDOWN_STEP_MS,
     });
-  }
-
-  function clearSessionTextIfNeeded(selectedEntry) {
-    const shouldClearCurrentText = !selectedEntry || selectedEntry.sourceMode !== 'current_text';
-    if (!shouldClearCurrentText) return;
-
-    try {
-      applyCurrentText('', { source: 'main-window', action: 'clear' });
-    } catch (err) {
-      log.warn('Reading-test session current-text clear failed (ignored):', err);
-    }
   }
 
   function failArmingSession(selectedEntry, noticeKey) {
@@ -573,6 +540,39 @@ function createController(options = {}) {
         }
       });
     });
+  }
+
+  function buildPrefilledPresetPayload(wpm) {
+    const settings = getSettingsSnapshot();
+    const langBase = settingsState.deriveLangKey(settings.language || DEFAULT_LANG);
+    const userPresets = settings && settings.presets_by_language && Array.isArray(settings.presets_by_language[langBase])
+      ? settings.presets_by_language[langBase]
+      : [];
+
+    let nextNumber = 1;
+    for (const preset of userPresets) {
+      const name = preset && typeof preset.name === 'string' ? preset.name.trim() : '';
+      const match = /^Test\s+(\d+)$/i.exec(name);
+      if (!match) continue;
+      const n = Number(match[1]);
+      if (Number.isFinite(n) && n >= nextNumber) {
+        nextNumber = n + 1;
+      }
+    }
+
+    const name = `Test ${nextNumber}`;
+    const description = langBase === 'en'
+      ? `User tested speed (${name}).`
+      : `Velocidad testeada del usuario (${name}).`;
+
+    return {
+      wpm,
+      preset: {
+        name,
+        wpm,
+        description,
+      },
+    };
   }
 
   function beginPresetStep(wpm) {
