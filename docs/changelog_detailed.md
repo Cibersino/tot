@@ -52,6 +52,7 @@ Reglas:
 - Persistencia de snapshots: el formato deja de ser únicamente `{ "text": "<string>" }` y pasa a aceptar también snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }`; además, la carga normal tolera payload opcional `readingTest` cuando existe.
 - Catálogo compartido de tags de snapshot: los valores permitidos y la canonización de `language` / `type` / `difficulty` dejan de estar duplicados entre renderer y main y pasan a centralizarse en un módulo shared/importable único para evitar drift futuro.
 - Corrector ortográfico del editor (Issue #211): la ventana editor agrega un checkbox persistente, habilitado por defecto, y el spellcheck de Electron deja de depender implícitamente del locale del sistema; ahora sigue el idioma activo de la app cuando existe diccionario soportado y se deshabilita explícitamente en tags UI sin diccionario válido (p.ej. `arn`, `es-cl`).
+- Tamaño de texto del editor (Issue #212): la ventana editor agrega controles locales `A-` / indicador / `A+` / reset para escalar solo el `textarea`, persiste `editorFontSizePx`, soporta `Ctrl/Cmd +`, `Ctrl/Cmd -` y `Ctrl/Cmd 0`, y mueve su orquestación main-owned a `electron/editor_text_size.js` para no seguir inflando `electron/main.js`.
 - Reading speed test (Issue #52): el botón `Test de velocidad de lectura` deja de ser un aviso WIP y pasa a abrir un flujo guiado real con modal de entrada/configuración, selección por combinaciones reales del pool y una segunda acción explícita `Start with current text`; según la ruta elegida, la sesión usa texto aleatorio del pool o reutiliza directamente el current text ya cargado, manteniendo cálculo autoritativo de WPM en main, paso opcional de preguntas de comprensión y handoff final al modal de presets con payload prellenado.
 - Pool del reading speed test (Issue #209): se agrega un subárbol runtime `config/saved_current_texts/reading_speed_test_pool/`, sincronizado al arranque desde archivos versionados en `electron/reading_test_pool/` mediante hashes de contenido bundled; los archivos del pool siguen siendo snapshots JSON ordinarios con payload opcional `readingTest`, mientras que el estado mutable (`used` y `managedBundledHash`) pasa a `config/reading_test_pool_state.json`, permitiendo refresco y prune de starter files gestionados sin mezclar estado inline.
 - Adquisición/import del pool (Issue #208): el modal del pool agrega un link oficial a Google Drive y una acción nativa `Import files...` para instalar `.json` y `.zip`; el importador recuerda la última carpeta usada, resuelve duplicados por nombre de destino dentro del pool runtime y refresca el estado del modal abierto tras cada operación. Esto introduce `adm-zip@0.5.16` como nueva dependencia runtime redistribuida para inspección local de archivos comprimidos y, por tanto, amplía el inventario de terceros redistribuidos del release.
@@ -65,6 +66,10 @@ Reglas:
   - `electron/spellcheck.js` (nuevo): módulo main-owned que concentra la política y el controller del spellcheck de Electron; resuelve idiomas soportados a partir del idioma activo de la app y aplica la configuración sobre `session.defaultSession`.
   - `public/editor.html`: el editor agrega un checkbox persistente de corrector ortográfico, habilitado por defecto, dentro de la barra inferior.
   - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): nueva key `renderer.editor.spellcheck` para la etiqueta del toggle de corrector ortográfico del editor.
+- Editor / text size:
+  - `electron/editor_text_size.js` (nuevo): controller main-owned del tamaño de texto del editor; encapsula `set/increase/decrease/reset`, persiste `editorFontSizePx` vía settings y expone acciones reutilizables para los atajos del editor y del Find.
+  - `public/editor.html`: el editor agrega controles locales `A-`, indicador, `A+` y reset en la barra inferior para escalar solo el `textarea`.
+  - i18n renderer (`arn`, `de`, `en`, `es`, `es-cl`, `fr`, `it`, `pt`): nuevas keys `renderer.editor.text_size_label`, `renderer.editor.decrease_text_size`, `renderer.editor.increase_text_size`, `renderer.editor.reset_text_size` y `renderer.editor.text_size_value`.
 - Shared catalog:
   - `public/js/lib/snapshot_tag_catalog.js` (nuevo): módulo dual browser/CommonJS que define el catálogo canónico de tags de snapshot, incluyendo el set ampliado de idiomas (`es`, `en`, `pt`, `fr`, `de`, `it`, `arn`, `ja`, `ko`, `ru`, `tr`, `id`, `hi`, `bn`, `ur`, `ar`, `zh-Hans`, `zh-Hant`) y los normalizadores reutilizados por renderer y main.
 - Reading speed test:
@@ -98,10 +103,12 @@ Reglas:
   - `saveCurrentTextSnapshot(...)` deja de ser un invoke sin argumentos y pasa a aceptar un payload opcional con metadata de save.
   - Se agregan nuevos métodos/listeners `getReadingTestEntryData()`, `resetReadingTestPool()`, `startReadingTest(payload)`, `getReadingTestState()`, `onReadingTestStateChanged(cb)`, `onReadingTestNotice(cb)` y `onReadingTestApplyWpm(cb)` sobre `window.electronAPI`.
 - `public/editor.js`, `public/editor.html` y `public/editor.css`:
-  - el editor agrega el toggle `spellcheck` en la barra inferior, lo aplica localmente sobre el `textarea` y sincroniza tanto la etiqueta traducida como `document.documentElement.lang` con `settings-updated`.
+  - el editor agrega el toggle `spellcheck` en la barra inferior y nuevos controles locales de tamaño de texto para el `textarea`; aplica ambos estados localmente y sincroniza tanto las etiquetas traducidas como `document.documentElement.lang` con `settings-updated`.
 - `electron/editor_preload.js` y `electron/settings.js`:
-  - el bridge del editor agrega `setSpellcheckEnabled(enabled)` y settings incorpora el flag persistente `spellcheckEnabled`, con IPC dedicado `set-spellcheck-enabled`.
-  - la publicación de settings actualizados sigue saliendo por `settings-updated`, pero ahora también dispara la reaplicación main-owned del spellcheck mediante el callback `onSettingsUpdated`.
+  - el bridge del editor agrega `setSpellcheckEnabled(enabled)` y `setEditorFontSizePx(fontSizePx)`; settings incorpora los campos persistentes `spellcheckEnabled` y `editorFontSizePx`, con IPC dedicados `set-spellcheck-enabled` y `set-editor-font-size-px`.
+  - la publicación de settings actualizados sigue saliendo por `settings-updated`, pero ahora también dispara la reaplicación main-owned del spellcheck y del tamaño de texto del editor según corresponda.
+- `electron/editor_find_main.js`, `electron/editor_text_size.js` y `electron/main.js`:
+  - el coordinador del Find deja de ocuparse solo de navegación y pasa a reenviar `Ctrl/Cmd +`, `Ctrl/Cmd -` y `Ctrl/Cmd 0` hacia un controller main-owned separado; `main.js` conserva solo el wiring de ese controller sin absorber la lógica específica del feature.
 - `electron/current_text_snapshots_main.js`:
   - el handler `current-text-snapshot-save` valida payloads opcionales de tags, persiste `tags` cuando existen y mantiene la misma política de diálogos nativos / contención bajo `config/saved_current_texts/`.
   - el parser/validador de snapshots deja de aceptar solo `{ text }` y pasa a tolerar también `{ text, tags }`, rechazando shapes inválidas de `tags` de forma explícita.
@@ -138,6 +145,8 @@ Reglas:
   - el editor deja de depender implícitamente del idioma del sistema operativo para elegir diccionario; en plataformas con `setSpellCheckerLanguages(...)`, el spellcheck sigue el idioma activo de la app cuando existe un match soportado.
   - tags UI sin diccionario válido (`arn`, `es-cl`) dejan de producir subrayados engañosos por fallback al locale del SO; ahora el spellcheck se deshabilita explícitamente en esos casos.
   - el campo Find del editor permanece fuera del alcance del spellcheck; la superficie afectada queda acotada al `textarea` principal del editor.
+- Editor / layout:
+  - la barra inferior del editor deja de colapsar el botón de limpiar en una fila huérfana cuando la ventana se angosta; ahora el bloque derecho permanece anclado en la esquina y el wrapping de controles no deja un hueco visual grande debajo de los controles de tamaño de texto.
 - Reading speed test / persistencia:
   - la sincronización del starter set deja de depender de abrir el modal; ahora ocurre al arranque y compara hashes de contenido bundled para refrescar solo starter files gestionados por la app.
   - el consumo/reset del pool deja de mutar estado inline dentro de cada JSON; ahora usa `config/reading_test_pool_state.json`, lo que permite conservar los archivos del pool como contenido puro reutilizable por el flujo normal de snapshots.
@@ -187,8 +196,13 @@ Reglas:
   - `reading-test-notice` → `{ key:string, params?:object, type?:'info'|'warn'|'error' }`.
   - `reading-test-apply-wpm` → `{ wpm:number }`.
 - Storage `config/user_settings.json`:
-  - schema efectivo ampliado con `spellcheckEnabled:boolean`.
-  - default normalizado: `true`.
+  - schema efectivo ampliado con `spellcheckEnabled:boolean` y `editorFontSizePx:number`.
+  - defaults normalizados: `spellcheckEnabled:true` y `editorFontSizePx:20`.
+  - `editorFontSizePx` se clamp-ea al rango `12..36` al cargar settings persistidos.
+- IPC `set-editor-font-size-px` (nuevo):
+  - request: `number` finito en px.
+  - OK: `{ ok:true, editorFontSizePx:number }`.
+  - invalid input: `{ ok:false, error:'invalid' }`.
 - IPC `set-spellcheck-enabled` (nuevo):
   - request: `boolean`.
   - OK: `{ ok:true, enabled:boolean }`.
