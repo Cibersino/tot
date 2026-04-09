@@ -167,6 +167,14 @@ function createController(options = {}) {
     });
   }
 
+  function tryResetCrono(warningMessage) {
+    try {
+      resetCrono();
+    } catch (err) {
+      log.warn(warningMessage, err);
+    }
+  }
+
   function hasCurrentText() {
     return String(getCurrentText() || '').trim().length > 0;
   }
@@ -186,6 +194,14 @@ function createController(options = {}) {
       stage: String(state.stage || 'idle'),
       blocked: !!state.active,
     };
+  }
+
+  function isInteractionLocked() {
+    return !!state.active;
+  }
+
+  function getInteractionBlockReason() {
+    return state.active ? 'reading_test_session' : '';
   }
 
   function safeSendToMain(channel, payload) {
@@ -316,6 +332,120 @@ function createController(options = {}) {
     return list[index] || null;
   }
 
+  function closeReadingWindows() {
+    suppressUnexpectedEditorClose = true;
+    suppressUnexpectedFlotanteClose = true;
+    try {
+      closeEditorWindow();
+    } catch (err) {
+      log.warn('Reading-test editor close failed (ignored):', err);
+    }
+    try {
+      closeFlotanteWindow();
+    } catch (err) {
+      log.warn('Reading-test floating window close failed (ignored):', err);
+    }
+  }
+
+  async function openReadingSessionWindows() {
+    resetCrono();
+    const editorWin = ensureEditorWindow();
+    if (isAliveWindow(editorWin) && !editorWin.isMaximized()) {
+      editorWin.maximize();
+    }
+    const flotanteWin = await ensureFlotanteWindow();
+    await Promise.all([
+      waitForWindowVisible(editorWin, 'EDITOR'),
+      waitForWindowVisible(flotanteWin, 'FLOTANTE'),
+    ]);
+
+    return { editorWin, flotanteWin };
+  }
+
+  function cleanupStartFailure({ clearCurrentText = false } = {}) {
+    tryResetCrono('Reading-test start-failure crono reset failed (ignored):');
+
+    closeReadingWindows();
+
+    try {
+      if (clearCurrentText) {
+        applyCurrentText('', { source: 'main-window', action: 'clear' });
+      }
+    } catch (err) {
+      log.warn('Reading-test start-failure current-text clear failed (ignored):', err);
+    } finally {
+      suppressUnexpectedEditorClose = false;
+      suppressUnexpectedFlotanteClose = false;
+    }
+  }
+
+  function clearSessionTextIfNeeded(selectedEntry) {
+    const shouldClearCurrentText = !selectedEntry || selectedEntry.sourceMode !== 'current_text';
+    if (!shouldClearCurrentText) return;
+
+    try {
+      applyCurrentText('', { source: 'main-window', action: 'clear' });
+    } catch (err) {
+      log.warn('Reading-test session current-text clear failed (ignored):', err);
+    }
+  }
+
+  function isArmingOrRunningSession() {
+    return !!(state.active && (state.stage === 'arming' || state.stage === 'running'));
+  }
+
+  function isArmingEntry(entry) {
+    return !!(state.active && state.stage === 'arming' && state.selectedEntry === entry);
+  }
+
+  function startEditorCountdown(editorWin) {
+    if (!isAliveWindow(editorWin) || !editorWin.webContents || editorWin.webContents.isDestroyed()) {
+      throw new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_UNAVAILABLE');
+    }
+
+    editorWin.webContents.send('reading-test-prestart-countdown', {
+      seconds: PRESTART_COUNTDOWN_SECONDS,
+      stepMs: PRESTART_COUNTDOWN_STEP_MS,
+    });
+  }
+
+  function failArmingSession(selectedEntry, noticeKey) {
+    if (!isArmingEntry(selectedEntry)) return;
+
+    tryResetCrono('Reading-test arming failure crono reset failed (ignored):');
+
+    closeReadingWindows();
+    clearSessionTextIfNeeded(selectedEntry);
+    clearSession();
+
+    if (noticeKey) {
+      emitNotice(noticeKey, { type: 'error' });
+    }
+  }
+
+  async function continueArmingSession(selectedEntry) {
+    if (!isArmingEntry(selectedEntry)) return;
+
+    try {
+      const { editorWin, flotanteWin } = await openReadingSessionWindows();
+      if (!isArmingEntry(selectedEntry)) return;
+
+      startEditorCountdown(editorWin);
+      await wait(PRESTART_COUNTDOWN_SECONDS * PRESTART_COUNTDOWN_STEP_MS);
+
+      if (!isArmingEntry(selectedEntry)) return;
+      if (!isAliveWindow(editorWin) || !isAliveWindow(flotanteWin)) {
+        throw new Error('READING_TEST_PRESTART_WINDOW_LOST');
+      }
+
+      startCrono();
+      setStage('running', { selectedEntry });
+    } catch (err) {
+      log.error('Reading-test session arming failed:', err);
+      failArmingSession(selectedEntry, 'renderer.alerts.reading_test_start_failed');
+    }
+  }
+
   function computeCurrentWpm() {
     const cronoState = getCronoState();
     const elapsed = cronoState && typeof cronoState.elapsed === 'number'
@@ -359,124 +489,6 @@ function createController(options = {}) {
       wordCount,
       clamped: clampedWpm !== roundedWpm,
     };
-  }
-
-  function closeReadingWindows() {
-    suppressUnexpectedEditorClose = true;
-    suppressUnexpectedFlotanteClose = true;
-    try {
-      closeEditorWindow();
-    } catch (err) {
-      log.warn('Reading-test editor close failed (ignored):', err);
-    }
-    try {
-      closeFlotanteWindow();
-    } catch (err) {
-      log.warn('Reading-test floating window close failed (ignored):', err);
-    }
-  }
-
-  async function openReadingSessionWindows() {
-    resetCrono();
-    const editorWin = ensureEditorWindow();
-    if (isAliveWindow(editorWin) && !editorWin.isMaximized()) {
-      editorWin.maximize();
-    }
-    const flotanteWin = await ensureFlotanteWindow();
-    await Promise.all([
-      waitForWindowVisible(editorWin, 'EDITOR'),
-      waitForWindowVisible(flotanteWin, 'FLOTANTE'),
-    ]);
-
-    return { editorWin, flotanteWin };
-  }
-
-  function cleanupStartFailure({ clearCurrentText = false } = {}) {
-    try {
-      resetCrono();
-    } catch (err) {
-      log.warn('Reading-test start-failure crono reset failed (ignored):', err);
-    }
-
-    closeReadingWindows();
-
-    try {
-      if (clearCurrentText) {
-        applyCurrentText('', { source: 'main-window', action: 'clear' });
-      }
-    } catch (err) {
-      log.warn('Reading-test start-failure current-text clear failed (ignored):', err);
-    } finally {
-      suppressUnexpectedEditorClose = false;
-      suppressUnexpectedFlotanteClose = false;
-    }
-  }
-
-  function clearSessionTextIfNeeded(selectedEntry) {
-    const shouldClearCurrentText = !selectedEntry || selectedEntry.sourceMode !== 'current_text';
-    if (!shouldClearCurrentText) return;
-
-    try {
-      applyCurrentText('', { source: 'main-window', action: 'clear' });
-    } catch (err) {
-      log.warn('Reading-test session current-text clear failed (ignored):', err);
-    }
-  }
-
-  function isArmingEntry(entry) {
-    return !!(state.active && state.stage === 'arming' && state.selectedEntry === entry);
-  }
-
-  function startEditorCountdown(editorWin) {
-    if (!isAliveWindow(editorWin) || !editorWin.webContents || editorWin.webContents.isDestroyed()) {
-      throw new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_UNAVAILABLE');
-    }
-
-    editorWin.webContents.send('reading-test-prestart-countdown', {
-      seconds: PRESTART_COUNTDOWN_SECONDS,
-      stepMs: PRESTART_COUNTDOWN_STEP_MS,
-    });
-  }
-
-  function failArmingSession(selectedEntry, noticeKey) {
-    if (!isArmingEntry(selectedEntry)) return;
-
-    try {
-      resetCrono();
-    } catch (err) {
-      log.warn('Reading-test arming failure crono reset failed (ignored):', err);
-    }
-
-    closeReadingWindows();
-    clearSessionTextIfNeeded(selectedEntry);
-    clearSession();
-
-    if (noticeKey) {
-      emitNotice(noticeKey, { type: 'error' });
-    }
-  }
-
-  async function continueArmingSession(selectedEntry) {
-    if (!isArmingEntry(selectedEntry)) return;
-
-    try {
-      const { editorWin, flotanteWin } = await openReadingSessionWindows();
-      if (!isArmingEntry(selectedEntry)) return;
-
-      startEditorCountdown(editorWin);
-      await wait(PRESTART_COUNTDOWN_SECONDS * PRESTART_COUNTDOWN_STEP_MS);
-
-      if (!isArmingEntry(selectedEntry)) return;
-      if (!isAliveWindow(editorWin) || !isAliveWindow(flotanteWin)) {
-        throw new Error('READING_TEST_PRESTART_WINDOW_LOST');
-      }
-
-      startCrono();
-      setStage('running', { selectedEntry });
-    } catch (err) {
-      log.error('Reading-test session arming failed:', err);
-      failArmingSession(selectedEntry, 'renderer.alerts.reading_test_start_failed');
-    }
   }
 
   function openQuestionsWindow(questions) {
@@ -625,15 +637,11 @@ function createController(options = {}) {
   }
 
   function cancelActiveSession(noticeKey, { type = 'warn' } = {}) {
-    if (!state.active || (state.stage !== 'arming' && state.stage !== 'running')) return;
+    if (!isArmingOrRunningSession()) return;
 
     const selectedEntry = state.selectedEntry;
 
-    try {
-      resetCrono();
-    } catch (err) {
-      log.warn('Reading-test cancel crono reset failed (ignored):', err);
-    }
+    tryResetCrono('Reading-test cancel crono reset failed (ignored):');
 
     closeReadingWindows();
     clearSessionTextIfNeeded(selectedEntry);
@@ -693,16 +701,8 @@ function createController(options = {}) {
     return { ok: true };
   }
 
-  function isInteractionLocked() {
-    return !!state.active;
-  }
-
-  function getInteractionBlockReason() {
-    return state.active ? 'reading_test_session' : '';
-  }
-
   function handleFlotanteCommand(cmd) {
-    if (!state.active || (state.stage !== 'arming' && state.stage !== 'running')) return false;
+    if (!isArmingOrRunningSession()) return false;
     if (!cmd || typeof cmd.cmd !== 'string') return true;
 
     if (state.stage === 'arming') {
@@ -734,7 +734,7 @@ function createController(options = {}) {
   }
 
   function handleEditorClosed() {
-    if (!state.active || (state.stage !== 'arming' && state.stage !== 'running')) return;
+    if (!isArmingOrRunningSession()) return;
     if (suppressUnexpectedEditorClose) {
       suppressUnexpectedEditorClose = false;
       return;
@@ -743,7 +743,7 @@ function createController(options = {}) {
   }
 
   function handleFlotanteClosed() {
-    if (!state.active || (state.stage !== 'arming' && state.stage !== 'running')) return;
+    if (!isArmingOrRunningSession()) return;
     if (suppressUnexpectedFlotanteClose) {
       suppressUnexpectedFlotanteClose = false;
       return;
