@@ -46,19 +46,6 @@ function getCanonicalPath(targetPath) {
   return safeRealpath(targetPath) || path.resolve(targetPath);
 }
 
-function ensurePoolDir() {
-  ensureCurrentTextSnapshotsDir();
-  const poolDir = path.join(getCurrentTextSnapshotsDir(), POOL_DIR_NAME);
-  try {
-    if (!fs.existsSync(poolDir)) {
-      fs.mkdirSync(poolDir, { recursive: true });
-    }
-  } catch (err) {
-    log.error('ensurePoolDir failed:', poolDir, err);
-  }
-  return poolDir;
-}
-
 function normalizeSnapshotRelPath(raw) {
   const source = typeof raw === 'string' ? raw.trim() : '';
   if (!source) return '';
@@ -293,6 +280,26 @@ function clearImportedPoolEntriesState(snapshotRelPaths, options = {}) {
   return { ok: true, updated };
 }
 
+function resetPoolUsageState(options = {}) {
+  const state = loadPoolState(options);
+  let updated = 0;
+  for (const snapshotRelPath of Object.keys(state.entries)) {
+    if (state.entries[snapshotRelPath].used === true) {
+      updated += 1;
+    }
+    state.entries[snapshotRelPath] = {
+      ...state.entries[snapshotRelPath],
+      used: false,
+    };
+  }
+  savePoolState(state, options);
+  return {
+    ok: true,
+    updated,
+    failed: 0,
+  };
+}
+
 function sanitizePoolTags(rawTags) {
   if (rawTags == null) {
     return { ok: true, tags: {} };
@@ -390,6 +397,19 @@ function parsePoolFile(filePath, rootPath, stateEntry) {
       rawData: dataInfo.data,
     },
   };
+}
+
+function ensurePoolDir() {
+  ensureCurrentTextSnapshotsDir();
+  const poolDir = path.join(getCurrentTextSnapshotsDir(), POOL_DIR_NAME);
+  try {
+    if (!fs.existsSync(poolDir)) {
+      fs.mkdirSync(poolDir, { recursive: true });
+    }
+  } catch (err) {
+    log.error('ensurePoolDir failed:', poolDir, err);
+  }
+  return poolDir;
 }
 
 function resolvePoolContext(options = {}) {
@@ -617,26 +637,6 @@ function serializePoolEntryMeta(entry) {
 function findEntryBySnapshotRelPath(entries, snapshotRelPath) {
   const normalizedPath = normalizeSnapshotRelPath(snapshotRelPath);
   return (Array.isArray(entries) ? entries : []).find((entry) => entry.snapshotRelPath === normalizedPath) || null;
-}
-
-function resetPoolUsageState(options = {}) {
-  const state = loadPoolState(options);
-  let updated = 0;
-  for (const snapshotRelPath of Object.keys(state.entries)) {
-    if (state.entries[snapshotRelPath].used === true) {
-      updated += 1;
-    }
-    state.entries[snapshotRelPath] = {
-      ...state.entries[snapshotRelPath],
-      used: false,
-    };
-  }
-  savePoolState(state, options);
-  return {
-    ok: true,
-    updated,
-    failed: 0,
-  };
 }
 
 module.exports = {
