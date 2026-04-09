@@ -773,6 +773,10 @@ select#presets {
   margin: 0 auto;
 }
 
+.info-modal-content .instrucciones-media img {
+  max-height: 280px
+}
+
 .info-section {
   background-color: var(--bg-color);
   text-align: left
