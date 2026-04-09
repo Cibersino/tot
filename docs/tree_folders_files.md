@@ -78,6 +78,7 @@ tot/
 │ ├── reading_test_questions_preload.js
 │ ├── fs_storage.js
 │ ├── settings.js
+│ ├── spellcheck.js
 │ ├── text_state.js
 │ ├── current_text_snapshots_main.js
 │ ├── tasks_main.js
@@ -210,6 +211,7 @@ tot/
 │ │ │ ├── ocr_google_drive_provider_failure.test.js
 │ │ │ ├── reading_test_pool.test.js
 │ │ │ ├── reading_test_pool_import.test.js
+│ │ │ ├── spellcheck.test.js
 │ │ │ └── settings.test.js
 │ │ └── shared/
 │ │   ├── count_core.test.js
@@ -278,7 +280,7 @@ tot/
 **Main process (Electron):**
 - `electron/main.js` — Punto de entrada del proceso principal: ciclo de vida de la app, creación de ventanas, wiring de IPC, orquestación general.
 - `electron/preload.js` — Preload de la ventana principal: expone la API IPC segura hacia `public/renderer.js`.
-- `electron/editor_preload.js` — Preload del editor manual: expone IPC específico del editor hacia `public/editor.js`.
+- `electron/editor_preload.js` — Preload del editor manual: expone IPC específico del editor (texto vigente, settings y toggle de spellcheck) hacia `public/editor.js`.
 - `electron/editor_find_preload.js` — Preload de la ventana de búsqueda del editor: expone `window.editorFindAPI` hacia `public/editor_find.js`.
 - `electron/preset_preload.js` — Preload del modal de presets: expone `window.presetAPI` y maneja `preset-init` (buffer/replay) y `settings-updated` hacia `public/preset_modal.js`.
 - `electron/task_editor_preload.js` — Preload del editor de tareas (expone `window.taskEditorAPI` y callbacks como `onInit` / `onRequestClose`).
@@ -288,7 +290,7 @@ tot/
 
 **Renderer (UI / ventanas):**
 - `public/renderer.js` — Lógica principal de UI (ventana principal).
-- `public/editor.js` — Lógica del editor manual (ventana editor).
+- `public/editor.js` — Lógica del editor manual (ventana editor): edición de texto, autosave/cálculo, toggle local de spellcheck y reacción a `settings-updated`.
 - `public/editor_find.js` — Lógica de la ventana dedicada de búsqueda del editor.
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
 - `public/task_editor.js` — Renderer del editor de tareas (UI + tabla + biblioteca + anchos de columnas).
@@ -299,7 +301,8 @@ tot/
 ### 2) Módulos del proceso principal (Electron)
 
 - `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`, estado del picker import/extract, estado externo del pool del reading speed test, credenciales/tokens OCR runtime y ruta de credenciales OCR empaquetadas en `electron/assets/ocr_google_drive/credentials.json`.
-- `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset` y difunde cambios vía `settings-updated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`).
+- `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`, `set-spellcheck-enabled` y difunde cambios vía `settings-updated` más callback `onSettingsUpdated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`) y persiste `spellcheckEnabled`.
+- `electron/spellcheck.js` — Política/controlador del spellcheck de Electron: resuelve el diccionario a usar según el idioma activo de la app, aplica la configuración sobre `session.defaultSession`, respeta `spellcheckEnabled` y deshabilita spellcheck cuando el tag activo no tiene diccionario soportado (p.ej. `arn`, `es-cl`) en vez de delegar silenciosamente al locale del SO.
 - `electron/text_state.js` — Estado del texto vigente: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshots_main.js` — Snapshots del texto vigente (save/load): valida payloads del flujo save, abre diálogos nativos, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots simples `{ "text": "<string>" }`, snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos compatibles con payload opcional `readingTest`, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
 - `electron/editor_state.js` — Persistencia/estado de la ventana editor (tamaño/posición/maximizado) y su integración con el `BrowserWindow`.
@@ -379,11 +382,12 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 - `.github/workflows/test.yml` — Workflow GitHub Actions del baseline automatizado actual; corre `npm ci` + `npm test` sobre `windows-latest`.
 - `test/README.md` — Convenciones del layout de tests y separación entre baseline unitario y smoke suite local.
-- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo import/extract (`settings`, formatos soportados, prepared store, parsing/clasificación OCR, decision helpers).
+- `test/unit/electron/*.test.js` — Cobertura de contratos Node-accessible del proceso principal y del flujo import/extract (`settings`, `spellcheck`, formatos soportados, prepared store, parsing/clasificación OCR, decision helpers).
 - `test/unit/electron/reading_test_pool.test.js` — Cobertura del pool del reading speed test: sincronización startup del starter set, seguimiento de hashes, estado externo `used` y prune de filas/archivos gestionados obsoletos.
 - `test/unit/electron/reading_test_pool_import.test.js` — Cobertura del importador del pool del reading speed test: validación de `.json`/`.zip`, duplicados, persistencia de última carpeta y reporte de fallas de escritura.
+- `test/unit/electron/spellcheck.test.js` — Cobertura del spellcheck main-owned: resolución de idiomas soportados, aplicación sobre `Session` y controller `createController(...)`/fallbacks de sesión.
 - `test/unit/shared/*.test.js` — Cobertura de núcleos puros extraídos del renderer (`count_core`, `format_core`).
-- `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; no forma parte de `npm test` ni del workflow CI base.
+- `test/smoke/electron_launch_smoke.test.js` — Smoke test local del arranque real de Electron con perfil temporal aislado; además valida que el startup tolere el schema vigente mínimo de settings (incluyendo flags nuevos como `spellcheckEnabled`); no forma parte de `npm test` ni del workflow CI base.
 
 ### 4) i18n (estructura y responsabilidades)
 
@@ -397,7 +401,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 **Nota:** `config/` se crea y usa en runtime. Estos archivos representan **estado local del usuario** y se ignoran por git para no commitear estado de ejecución.
 
-- `config/user_settings.json` — Preferencias del usuario (idioma, modo de conteo, presets personalizados, etc.).
+- `config/user_settings.json` — Preferencias del usuario (idioma, modo de conteo, `spellcheckEnabled`, presets personalizados, etc.).
 - `config/current_text.json` — Texto vigente persistido.
 - `config/editor_state.json` — Estado persistido del editor (geometría/maximizado, etc.).
 - `config/import_extract_state.json` — Estado local del picker de import/extract (por ejemplo, última carpeta utilizada).
