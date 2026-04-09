@@ -13,6 +13,10 @@
 // - Install validated files into the local reading-test pool directory.
 // =============================================================================
 
+// =============================================================================
+// Imports / logger
+// =============================================================================
+
 const fs = require('fs');
 const path = require('path');
 const AdmZip = require('adm-zip');
@@ -28,6 +32,10 @@ const { getImportExtractPlatformAdapter } = require('./import_extract_platform/i
 const log = Log.get('reading-test-pool-import');
 log.debug('Reading test pool import starting...');
 
+// =============================================================================
+// Constants / config
+// =============================================================================
+
 const IMPORT_CONFLICT_STRATEGY = Object.freeze({
   SKIP: 'skip',
   REPLACE: 'replace',
@@ -36,6 +44,10 @@ const IMPORT_CONFLICT_STRATEGY = Object.freeze({
 const PICKER_STATE_FALLBACK = Object.freeze({
   lastDirectory: '',
 });
+
+// =============================================================================
+// Helpers: import candidates and pool writes
+// =============================================================================
 
 function readJsonTextWithBomStrip(filePath) {
   try {
@@ -290,6 +302,10 @@ async function importSelectedFiles({
   };
 }
 
+// =============================================================================
+// Helpers: dialog copy and picker state
+// =============================================================================
+
 function normalizeDialogCopy(rawDialogCopy) {
   const copy = rawDialogCopy && typeof rawDialogCopy === 'object' ? rawDialogCopy : {};
   const normalize = (value, fallback) => {
@@ -354,6 +370,10 @@ function resolvePickerDefaultPath(platformAdapter, app, pickerState) {
     log,
   });
 }
+
+// =============================================================================
+// IPC registration / handler
+// =============================================================================
 
 function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -521,6 +541,10 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
     }
   });
 }
+
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 
 module.exports = {
   IMPORT_CONFLICT_STRATEGY,
