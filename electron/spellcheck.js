@@ -1,8 +1,24 @@
 // electron/spellcheck.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Main-process spellcheck policy/controller for the shared Electron session.
+// Responsibilities:
+// - Map the app language to a supported Electron spellchecker language.
+// - Keep explicit unsupported app-language tags out of misleading OS-locale fallback.
+// - Apply enable/disable state to the target session without changing healthy-path timing.
+// - Expose a small controller used by main.js at startup and on settings updates.
+
+// =============================================================================
+// Imports
+// =============================================================================
 const settingsState = require('./settings');
 
+// =============================================================================
+// Spellcheck policy tables
+// =============================================================================
 const PREFERRED_SPELLCHECK_LANGUAGES = Object.freeze({
   de: Object.freeze(['de-DE', 'de-AT', 'de-CH', 'de']),
   en: Object.freeze(['en-US', 'en-GB', 'en-AU', 'en-CA', 'en']),
@@ -17,6 +33,9 @@ const UNSUPPORTED_APP_SPELLCHECK_TAGS = new Set([
   'es-cl',
 ]);
 
+// =============================================================================
+// Language resolution helpers
+// =============================================================================
 function normalizeLanguageCode(value) {
   return typeof value === 'string'
     ? value.trim().toLowerCase()
@@ -132,6 +151,9 @@ function resolveSpellCheckerLanguages(appLanguage, availableLanguages) {
   };
 }
 
+// =============================================================================
+// Session application
+// =============================================================================
 function applySpellCheckerSessionConfig({
   targetSession,
   appLanguage,
@@ -225,6 +247,9 @@ function applySpellCheckerSessionConfig({
   };
 }
 
+// =============================================================================
+// Electron session access
+// =============================================================================
 function loadElectronSessionState() {
   try {
     const electronModule = require('electron');
@@ -235,6 +260,9 @@ function loadElectronSessionState() {
   return null;
 }
 
+// =============================================================================
+// Controller factory
+// =============================================================================
 function createController({
   settingsState: settingsModule = settingsState,
   log,
@@ -334,6 +362,9 @@ function createController({
   };
 }
 
+// =============================================================================
+// Exports
+// =============================================================================
 module.exports = {
   PREFERRED_SPELLCHECK_LANGUAGES,
   UNSUPPORTED_APP_SPELLCHECK_TAGS,
@@ -341,3 +372,7 @@ module.exports = {
   applySpellCheckerSessionConfig,
   createController,
 };
+
+// =============================================================================
+// End of electron/spellcheck.js
+// =============================================================================
