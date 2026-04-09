@@ -247,28 +247,43 @@
     "reading_test": {
       "entry": {
         "title": "Lesegeschwindigkeitstest",
-        "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text, startet die Zeitmessung und bittet Sie, normal zu lesen; wenn Sie fertig sind, drücken Sie Pause (⏸) im schwebenden Fenster. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.",
+        "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text, startet die Zeitmessung und bittet Sie, normal zu lesen; wenn Sie fertig sind, drücken Sie Pause (⏸) im schwebenden Fenster. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.\nDieser Pool verwendet kurze Texte; behandeln Sie das Ergebnis daher mit Vorsicht. Es sollte nicht direkt auf lange Texte übertragen werden, bei denen in der Regel positive Faktoren wie Lesefluss und Kontextaufbau sowie negative Faktoren wie mentales Rekapitulieren und Ermüdung ins Spiel kommen.",
         "eligible_count": "Geeignete Dateien: {count}",
         "pool_exhausted_message": "Es sind keine unbenutzten Testdateien mehr vorhanden. Setzen Sie den Pool zurück oder fügen Sie weitere Dateien hinzu.",
         "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",
         "reset_confirm": "Dadurch wird der gesamte Test-Pool zurückgesetzt und alle Dateien werden wieder als unbenutzt markiert. Möchten Sie fortfahren?",
+        "import_summary": "Import abgeschlossen. Importiert: {imported}. Doppelte übersprungen: {skippedDuplicates}. Fehlgeschlagene Validierungen: {failedValidation}. Fehlgeschlagene Archiv-Einträge: {failedArchiveEntries}. Fehlgeschlagene Schreibvorgänge: {failedWrites}.",
+        "import_conflict": {
+          "title": "Dateien importieren",
+          "message": "Einige importierte Dateien existieren bereits im Pool. Wie sollen Duplikate behandelt werden?",
+          "detail": "{count} Zieldateiname(n) existieren bereits im Pool.",
+          "buttons": {
+            "skip": "Duplikate überspringen",
+            "replace": "Duplikate ersetzen",
+            "cancel": "Import abbrechen"
+          }
+        },
         "buttons": {
+          "get_more_files": "Weitere Dateien holen",
+          "import_files": "Dateien importieren...",
           "reset_pool": "Pool zurücksetzen",
+          "show_instructions": "Anleitung anzeigen",
+          "hide_instructions": "Anleitung ausblenden",
           "start_random_text": "Mit zufälligem Text starten",
           "start_current_text": "Mit aktuellem Text starten"
         }
       },
       "questions": {
         "title": "Fragen zum Leseverständnis",
-        "intro": "Beantworten Sie die Fragen, wenn Sie das Verständnis prüfen möchten, bevor Sie zum Hauptablauf zurückkehren.",
+        "intro": "Das Beantworten dieser Fragen zum Leseverständnis ist optional und beeinflusst Ihre Endpunktzahl nicht. Sie dienen nur dazu, Ihnen zu helfen, die Schwierigkeit des Textes einzuschätzen und zu beurteilen, ob Ihr Lesetempo und Ihr Lesestil es Ihnen ermöglicht haben, ein grundlegendes Verständnis zu erreichen. Ihre Antworten werden weder gespeichert noch an die Entwickler oder sonst jemanden gesendet.",
         "random_title": "Zufallsbasis",
-        "random_value": "{percentage}% wahrscheinliche richtige Antworten bei zufälligem Raten",
+        "random_value": "Erwartete Punktzahl bei zufälligem Raten: {percentage}%",
         "feedback_title": "Feedback",
         "feedback_prefix": "Für Beschwerden:",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Sie müssen alle Fragen beantworten, bevor Sie auswerten.",
         "result_summary": "{correct} von {total} richtig ({percentage}%)",
-        "low_score_warning": "Ihr Ergebnis ist im Vergleich zu einer Zufallsbasis niedrig. Vielleicht sollten Sie die Fragen noch einmal sorgfältiger prüfen.",
+        "chance_at_least_observed": "Wahrscheinlichkeit, bei zufälligem Raten mindestens diese Punktzahl zu erreichen: {percentage}%",
         "fatal_invalid": "Die Fragendaten sind ungültig.",
         "buttons": {
           "check": "Ergebnis prüfen",
@@ -391,6 +406,7 @@
       "reading_test_result_invalid": "Das Testergebnis konnte nicht in einen gültigen WPM-Wert umgewandelt werden. Der Ablauf endete, ohne den Preset-Dialog zu öffnen.",
       "reading_test_preset_unavailable": "Der Preset-Dialog konnte nach dem Test nicht geöffnet werden.",
       "reading_test_questions_unavailable": "Der Dialog mit den Verständnisfragen konnte nicht geöffnet werden. Der Ablauf endete vor der Erstellung des Presets.",
+      "reading_test_pool_import_failed": "Die Dateien für den Lesegeschwindigkeitstest konnten nicht importiert werden.",
       "reading_test_start_failed": "Der Lesegeschwindigkeitstest konnte nicht gestartet werden.",
       "reading_test_cancelled": "Der Lesegeschwindigkeitstest wurde abgebrochen.",
       "reading_test_cancelled_window_closed": "Der Lesegeschwindigkeitstest wurde abgebrochen, weil eines seiner Sitzungsfenster geschlossen wurde."
@@ -416,6 +432,8 @@
       "process_error": "Beim Verarbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
     },
     "info": {
+      "loading": "Lädt...",
+      "missing_content": "Kein Inhalt verfügbar für '{name}'.",
       "external": {
         "blocked": "Link blockiert",
         "error": "Fehler beim Öffnen des Links"
@@ -434,6 +452,9 @@
         "env": {
           "unavailable": "Nicht verfügbar"
         }
+      },
+      "instrucciones": {
+        "title": "Anleitung"
       },
       "links_interes": {
         "app_name": "toT",

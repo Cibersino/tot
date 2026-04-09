@@ -24,7 +24,7 @@ La app puede guardar localmente, según su configuración y uso:
 - El texto actual y/o último estado de trabajo (si la app ofrece persistencia del texto).
 - La selección y personalización de presets de WPM.
 - Snapshots de texto guardados por el usuario.
-- Estado local del test de velocidad de lectura (por ejemplo, pool local de textos del test, metadata `testUsed` y payloads opcionales de preguntas en los archivos del pool).
+- Estado local del test de velocidad de lectura (por ejemplo, pool local de textos del test, archivo local externo de estado de uso y payloads opcionales de preguntas en los archivos del pool).
 - Datos de tareas guardadas por el usuario (listas, biblioteca, rutas de archivos locales y hosts/URLs permitidos para abrir enlaces).
 
 Todos estos datos quedan solo **en tu equipo**.
@@ -32,7 +32,7 @@ Todos estos datos quedan solo **en tu equipo**.
 ### 2.3 Test de velocidad de lectura
 - El test de velocidad de lectura procesa localmente el texto usado en la sesión para calcular WPM y, cuando corresponde, mostrar preguntas opcionales de comprensión.
 - Si el test se inicia desde el texto actual, ese texto se reutiliza localmente y no se envía a servicios externos.
-- Si el test se inicia desde el pool local de textos del test, la app puede marcar localmente ese archivo como usado (`testUsed`) para evitar repeticiones entre tests hasta que el usuario restablezca el pool.
+- Si el test se inicia desde el pool local de textos del test, la app puede marcar localmente ese texto como usado en su archivo externo de estado de uso para evitar repeticiones entre tests hasta que el usuario restablezca el pool.
 - Ni los resultados del test, ni las respuestas a preguntas de comprensión, ni el WPM medido se envían a Internet.
 
 ## 3. Conectividad y terceros

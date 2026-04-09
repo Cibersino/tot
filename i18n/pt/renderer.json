@@ -247,28 +247,43 @@
     "reading_test": {
       "entry": {
         "title": "Teste de velocidade de leitura",
-        "intro": "Este teste serve para estimar sua velocidade real de leitura por meio de uma sessão guiada. O app abrirá o texto, iniciará o cronômetro e pedirá que você leia normalmente; quando terminar, pressione Pausa (⏸) na Janela flutuante. Use Parar/Redefinir (⏹) somente se quiser cancelar o teste. Depois, você poderá revisar perguntas de compreensão se o texto as incluir e, ao final, criar um preset a partir do resultado.",
+        "intro": "Este teste serve para estimar sua velocidade real de leitura por meio de uma sessão guiada. O app abrirá o texto, iniciará o cronômetro e pedirá que você leia normalmente; quando terminar, pressione Pausa (⏸) na Janela flutuante. Use Parar/Redefinir (⏹) somente se quiser cancelar o teste. Depois, você poderá revisar perguntas de compreensão se o texto as incluir e, ao final, criar um preset a partir do resultado.\nEste pool usa textos curtos, então interprete o resultado com cautela. Ele não deve ser extrapolado diretamente para textos longos, onde normalmente entram em jogo fatores positivos, como a aquisição de fluidez e de contexto, e fatores negativos, como a recapitulação mental e a fadiga.",
         "eligible_count": "Arquivos elegíveis: {count}",
         "pool_exhausted_message": "Não restam arquivos de teste não usados. Redefina o pool ou adicione mais arquivos.",
         "close_aria": "Fechar diálogo do teste de velocidade de leitura",
         "reset_confirm": "Isso redefinirá todo o pool do teste e marcará todos os arquivos dele novamente como não usados. Deseja continuar?",
+        "import_summary": "Importação concluída. Importados: {imported}. Duplicados ignorados: {skippedDuplicates}. Validações com falha: {failedValidation}. Entradas de arquivo compactado com falha: {failedArchiveEntries}. Escritas com falha: {failedWrites}.",
+        "import_conflict": {
+          "title": "Importar arquivos",
+          "message": "Alguns arquivos importados já existem no pool. Como você quer lidar com os duplicados?",
+          "detail": "{count} nome(s) de arquivo de destino já existem no pool.",
+          "buttons": {
+            "skip": "Ignorar duplicados",
+            "replace": "Substituir duplicados",
+            "cancel": "Cancelar importação"
+          }
+        },
         "buttons": {
+          "get_more_files": "Obter mais arquivos",
+          "import_files": "Importar arquivos...",
           "reset_pool": "Redefinir pool",
+          "show_instructions": "Mostrar instruções",
+          "hide_instructions": "Ocultar instruções",
           "start_random_text": "Iniciar com texto aleatório",
           "start_current_text": "Iniciar com texto atual"
         }
       },
       "questions": {
         "title": "Questões de compreensão de leitura",
-        "intro": "Responda às perguntas se quiser revisar a compreensão antes de voltar ao fluxo principal.",
+        "intro": "Responder a estas questões de compreensão de leitura é opcional e não afeta sua pontuação final. Elas servem apenas para ajudar você a avaliar a dificuldade do texto e se o seu ritmo e estilo de leitura permitiram alcançar um nível básico de compreensão. Suas respostas não são salvas nem enviadas aos desenvolvedores ou a ninguém.",
         "random_title": "Probabilidade ao acaso",
-        "random_value": "{percentage}% de respostas corretas prováveis ao responder ao acaso",
+        "random_value": "Pontuação esperada ao responder ao acaso: {percentage}%",
         "feedback_title": "Feedback",
         "feedback_prefix": "Para reclamações:",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Você precisa responder todas as perguntas antes de avaliar.",
         "result_summary": "{correct} de {total} corretas ({percentage}%)",
-        "low_score_warning": "Seu resultado está baixo em comparação com uma linha de base aleatória. Talvez valha a pena revisar as perguntas com mais cuidado.",
+        "chance_at_least_observed": "Probabilidade de obter pelo menos essa pontuação ao responder ao acaso: {percentage}%",
         "fatal_invalid": "A carga de perguntas é inválida.",
         "buttons": {
           "check": "Ver resultado",
@@ -391,6 +406,7 @@
       "reading_test_result_invalid": "O resultado do teste não pôde ser convertido em um WPM válido. O fluxo terminou sem abrir o diálogo de preset.",
       "reading_test_preset_unavailable": "Não foi possível abrir o diálogo de preset após o teste.",
       "reading_test_questions_unavailable": "Não foi possível abrir o diálogo de perguntas de compreensão. O fluxo terminou antes da criação do preset.",
+      "reading_test_pool_import_failed": "Não foi possível importar os arquivos do teste de velocidade de leitura.",
       "reading_test_start_failed": "Não foi possível iniciar o teste de velocidade de leitura.",
       "reading_test_cancelled": "O teste de velocidade de leitura foi cancelado.",
       "reading_test_cancelled_window_closed": "O teste de velocidade de leitura foi cancelado porque uma das janelas da sessão foi fechada."
@@ -416,6 +432,8 @@
       "process_error": "Ocorreu um erro ao processar o preset. Verifique o console."
     },
     "info": {
+      "loading": "Carregando...",
+      "missing_content": "Não há conteúdo disponível para '{name}'.",
       "external": {
         "blocked": "Link bloqueado",
         "error": "Erro ao abrir o link"
@@ -434,6 +452,9 @@
         "env": {
           "unavailable": "Indisponível"
         }
+      },
+      "instrucciones": {
+        "title": "Manual de uso"
       },
       "links_interes": {
         "app_name": "toT",

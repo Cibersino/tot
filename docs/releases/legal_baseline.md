@@ -122,27 +122,28 @@ Evidencia mínima sugerida:
 
 Checklist:
 * [PENDING] Fonts redistribuidas inventariadas con licencia/notice:
-  * `Baskervville` — `public/fonts/LICENSE_Baskervville_OFL.txt`
+  * `Baskervville` — `public/third_party_licenses/LICENSE_Baskervville_OFL.txt`
   * Otras (si existen): `<FontName> — <ruta licencia/notice>`
 * [PENDING] Assets redistribuidos de terceros inventariados (si todo es propio, declararlo explícitamente).
 * [PENDING] Runtime notices obligatorios inventariados:
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
 * [PENDING] Material legal redistribuido específico de import/extract inventariado:
-  * `public/extraction_feature_licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
-  * `public/extraction_feature_licenses/LICENSE_googleapis_105.0.0.txt`
-  * `public/extraction_feature_licenses/LICENSE_mammoth_1.11.0.txt`
-  * `public/extraction_feature_licenses/LICENSE_pdf-parse_1.1.1.txt`
-  * `public/extraction_feature_licenses/LICENSE_sharp_0.34.4.txt`
+  * `public/third_party_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt`
+  * `public/third_party_licenses/LICENSE_googleapis_171.4.0.txt`
+  * `public/third_party_licenses/LICENSE_mammoth_1.11.0.txt`
+  * `public/third_party_licenses/LICENSE_pdf-parse_1.1.1.txt`
+  * `public/third_party_licenses/LICENSE_sharp_0.34.4.txt`
+  * `public/third_party_licenses/LICENSE_adm-zip_0.5.16.txt`
   * licencia/notices del runtime nativo empaquetado real de `sharp` para la plataforma/arquitectura inspeccionada (ejemplos posibles según release):
-    * `public/extraction_feature_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/LICENSE_@img_sharp-darwin-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/NOTICE_@img_sharp-darwin-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/LICENSE_@img_sharp-darwin-arm64_0.34.4.txt`
-    * `public/extraction_feature_licenses/NOTICE_@img_sharp-darwin-arm64_0.34.4.txt`
-    * `public/extraction_feature_licenses/LICENSE_@img_sharp-linux-x64_0.34.4.txt`
-    * `public/extraction_feature_licenses/NOTICE_@img_sharp-linux-x64_0.34.4.txt`
+    * `public/third_party_licenses/LICENSE_@img_sharp-win32-x64_0.34.4.txt`
+    * `public/third_party_licenses/NOTICE_@img_sharp-win32-x64_0.34.4.txt`
+    * `public/third_party_licenses/LICENSE_@img_sharp-darwin-x64_0.34.4.txt`
+    * `public/third_party_licenses/NOTICE_@img_sharp-darwin-x64_0.34.4.txt`
+    * `public/third_party_licenses/LICENSE_@img_sharp-darwin-arm64_0.34.4.txt`
+    * `public/third_party_licenses/NOTICE_@img_sharp-darwin-arm64_0.34.4.txt`
+    * `public/third_party_licenses/LICENSE_@img_sharp-linux-x64_0.34.4.txt`
+    * `public/third_party_licenses/NOTICE_@img_sharp-linux-x64_0.34.4.txt`
 * [PENDING] El material OAuth desktop empaquetado del owner/propietario queda inventariado como **configuración distribuida controlada**, no como “notice de tercero”, con ruta y tratamiento separados de las licencias.
 * [PENDING] Cada tercero tiene trazabilidad completa:
   * `componente | origen | licencia | obligación | archivo notice/doc`
@@ -166,11 +167,12 @@ Checklist:
   * [ ] Sí hay `node_modules` runtime (listar top-level). Baseline actual esperado: **sí**.
 * [PENDING] Si hay deps runtime: listar `nombre@versión`, licencia y cobertura documental.
   * Baseline actual esperada para import/extract:
-    * `@google-cloud/local-auth@2.1.0` — `Apache-2.0`
-    * `googleapis@105.0.0` — `Apache-2.0`
+    * `@google-cloud/local-auth@3.0.1` — `Apache-2.0`
+    * `googleapis@171.4.0` — `Apache-2.0`
     * `mammoth@1.11.0` — `BSD-2-Clause`
     * `pdf-parse@1.1.1` — `MIT`
     * `sharp@0.34.4` — `Apache-2.0`
+    * `adm-zip@0.5.16` — `MIT`
     * runtime nativo de `sharp` para la plataforma empaquetada (por ejemplo `@img/sharp-win32-x64@0.34.4`, `@img/sharp-darwin-x64@0.34.4`, `@img/sharp-darwin-arm64@0.34.4` o `@img/sharp-linux-x64@0.34.4`) — verificar licencia/notice entregados para la plataforma real
 * [PENDING] Si no hay deps runtime: registrar la expectativa explícitamente para validar contra artefacto en Post-packaging.
 * [PENDING] Cualquier dependencia efectiva encontrada en artefacto queda cubierta por esta sección y por documentos de §6.
@@ -194,13 +196,14 @@ Checklist:
   * `PRIVACY.md`
   * `LICENSE.electron.txt`
   * `LICENSES.chromium.html`
-  * Licencias/notices de fonts redistribuidas (ej. `public/fonts/LICENSE_Baskervville_OFL.txt`)
+  * Licencias/notices de fonts redistribuidas (ej. `public/third_party_licenses/LICENSE_Baskervville_OFL.txt`)
   * Notices adicionales si aplica (ej. `THIRD_PARTY_NOTICES.md`)
-  * `public/extraction_feature_licenses/LICENSE_@google-cloud_local-auth_2.1.0.txt`
-  * `public/extraction_feature_licenses/LICENSE_googleapis_105.0.0.txt`
-  * `public/extraction_feature_licenses/LICENSE_mammoth_1.11.0.txt`
-  * `public/extraction_feature_licenses/LICENSE_pdf-parse_1.1.1.txt`
-  * `public/extraction_feature_licenses/LICENSE_sharp_0.34.4.txt`
+  * `public/third_party_licenses/LICENSE_@google-cloud_local-auth_3.0.1.txt`
+  * `public/third_party_licenses/LICENSE_googleapis_171.4.0.txt`
+  * `public/third_party_licenses/LICENSE_mammoth_1.11.0.txt`
+  * `public/third_party_licenses/LICENSE_pdf-parse_1.1.1.txt`
+  * `public/third_party_licenses/LICENSE_sharp_0.34.4.txt`
+  * `public/third_party_licenses/LICENSE_adm-zip_0.5.16.txt`
   * licencia/notices del runtime nativo de `sharp` para la plataforma empaquetada real del release (ej. Windows x64, macOS x64/arm64, Linux x64):
     * registrar el archivo exacto correspondiente a la plataforma inspeccionada;
     * no asumir Windows por defecto cuando el artefacto sea macOS o Linux.
@@ -257,7 +260,7 @@ Checklist:
 * [PENDING] Verificar explícitamente el material OCR empaquetado:
   * presencia esperada de `electron/assets/ocr_google_drive/credentials.json` según el baseline actual del producto,
   * ausencia de cualquier `token.json` de usuario dentro del artefacto,
-  * presencia de `public/extraction_feature_licenses/*` esperados para la plataforma empaquetada.
+  * presencia de `public/third_party_licenses/*` esperados para la plataforma empaquetada.
 * [PENDING] Registrar evidencia mínima (árbol/archivo listado de raíz + `resources/`).
 
 Criterio de bloqueo:

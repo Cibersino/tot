@@ -131,6 +131,7 @@ const api = {
 
     // Reading test
     getReadingTestEntryData: () => ipcRenderer.invoke('reading-test-get-entry-data'),
+    importReadingTestPoolFiles: (payload) => ipcRenderer.invoke('reading-test-import-pool-files', payload),
     resetReadingTestPool: () => ipcRenderer.invoke('reading-test-reset-pool'),
     startReadingTest: (payload) => ipcRenderer.invoke('reading-test-start', payload),
     getReadingTestState: () => ipcRenderer.invoke('reading-test-get-state'),

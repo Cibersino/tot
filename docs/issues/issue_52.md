@@ -253,9 +253,11 @@ This epic stitches them into a single guided UX with clear user consent and cons
   - `randomGuessPercentage = (expectedCorrectRandom / totalQuestions) * 100`.
 - Once the user evaluates the answers, the modal should display:
   - `X` out of `T` correct answers,
-  - the corresponding percentage.
+  - the corresponding percentage,
+  - `P(X >= x)` for that exact test, where:
+    - `x` is the user's number of correct answers,
+    - `X` is the full random-guess score distribution induced by the actual option count of each question.
 - The modal must not reveal which specific answers were correct or incorrect.
-- If the user's percentage of correct answers is below `5 / 3` times the random-guess percentage, the modal should show an internal warning that the user may have read the questions too hastily.
 - Continuing after the modal does not require the user to reach any minimum score; the modal informs but does not block progression.
 - The random-baseline box and feedback box should remain visible regardless of whether the user has already checked a result.
 
@@ -313,7 +315,7 @@ This epic stitches them into a single guided UX with clear user consent and cons
   - detect whether the chosen file has a valid questions payload and route the finish flow accordingly,
   - expose reading-test session state and block state to renderer/menu integrations,
   - expose session state to renderer if needed.
-- The questions modal may compute its own aggregate result and warning threshold locally from the validated selected-file payload; that UI logic does not need to be centralized in the session controller.
+- The questions modal may compute its own aggregate result, random-guess baseline, and exact `P(X >= x)` value locally from the validated selected-file payload; that UI logic does not need to be centralized in the session controller.
 - Reuse existing IPC where sensible:
   - current text apply,
   - crono state / toggle / reset,

@@ -160,7 +160,7 @@
         </header>
         <main id="infoModalContent" class="info-modal-content" tabindex="0">
           <!-- Dynamically loaded content -->
-          <div class="info-loading">Cargando...</div>
+          <div id="infoModalLoading" class="info-loading">Cargando...</div>
         </main>
       </div>
     </div>
@@ -256,17 +256,22 @@
     <div id="readingTestEntryModal" class="info-modal" aria-hidden="true" role="dialog"
       aria-labelledby="readingTestEntryModalTitle" aria-modal="true">
       <div id="readingTestEntryModalBackdrop" class="info-modal-backdrop"></div>
-      <div class="reading-test-entry-modal-panel" role="document" aria-describedby="readingTestEntryModalIntro">
+      <div class="reading-test-entry-modal-panel" role="document">
         <header class="reading-test-entry-modal-header">
           <button id="readingTestEntryModalClose" class="btn-standard" type="button"
             aria-label="Cerrar diálogo de test de velocidad de lectura">🗙</button>
         </header>
         <div class="reading-test-entry-modal-body">
           <h2 id="readingTestEntryModalTitle">Test de velocidad de lectura</h2>
-          <p id="readingTestEntryModalIntro">Este test sirve para estimar tu velocidad real de lectura con una sesión
-            guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando termines, pulsa
-            Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el test. Después podrás
-            revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.</p>
+          <div class="reading-test-entry-modal-intro-block">
+            <button id="readingTestEntryModalIntroToggle" class="reading-test-entry-modal-toggle" type="button"
+              aria-controls="readingTestEntryModalIntro" aria-expanded="false">Mostrar instrucciones</button>
+            <p id="readingTestEntryModalIntro" hidden>Este test sirve para estimar tu velocidad real de lectura con una
+              sesión guiada. La app abrirá el texto, iniciará el tiempo y te pedirá que leas normalmente; cuando
+              termines, pulsa Pausa (⏸) en la Ventana Flotante. Usa Detener/Reiniciar (⏹) solo si quieres cancelar el
+              test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset
+              con el resultado.</p>
+          </div>
           <div id="readingTestEntryModalWarning" class="reading-test-entry-modal-warning" aria-live="polite" hidden>
           </div>
           <div class="reading-test-entry-modal-groups">
@@ -275,20 +280,28 @@
               <h3 id="readingTestEntryLanguageHeading">Idioma</h3>
               <div id="readingTestEntryLanguageOptions" class="reading-test-entry-modal-options"></div>
             </section>
-            <section id="readingTestEntryTypeSection" class="reading-test-entry-modal-group" aria-hidden="true" hidden>
-              <h3 id="readingTestEntryTypeHeading">Tipo</h3>
-              <div id="readingTestEntryTypeOptions" class="reading-test-entry-modal-options"></div>
-            </section>
-            <section id="readingTestEntryDifficultySection" class="reading-test-entry-modal-group" aria-hidden="true"
-              hidden>
-              <h3 id="readingTestEntryDifficultyHeading">Dificultad</h3>
-              <div id="readingTestEntryDifficultyOptions" class="reading-test-entry-modal-options"></div>
-            </section>
+            <div class="reading-test-entry-modal-group-row">
+              <section id="readingTestEntryTypeSection" class="reading-test-entry-modal-group" aria-hidden="true"
+                hidden>
+                <h3 id="readingTestEntryTypeHeading">Tipo</h3>
+                <div id="readingTestEntryTypeOptions" class="reading-test-entry-modal-options"></div>
+              </section>
+              <section id="readingTestEntryDifficultySection" class="reading-test-entry-modal-group"
+                aria-hidden="true" hidden>
+                <h3 id="readingTestEntryDifficultyHeading">Dificultad</h3>
+                <div id="readingTestEntryDifficultyOptions" class="reading-test-entry-modal-options"></div>
+              </section>
+            </div>
           </div>
           <div class="reading-test-entry-modal-toolbar">
             <div id="readingTestEntryModalEligibleCount" class="reading-test-entry-modal-count" aria-live="polite">
               Archivos elegibles: 0</div>
-            <button id="readingTestEntryModalReset" class="btn-standard" type="button">Restablecer pool</button>
+            <div class="reading-test-entry-modal-management">
+              <a id="readingTestEntryModalGetMoreFiles" class="reading-test-entry-modal-link" href="#">Obtener más
+                archivos</a>
+              <button id="readingTestEntryModalImport" class="btn-standard" type="button">Importar archivos...</button>
+              <button id="readingTestEntryModalReset" class="btn-standard" type="button">Restablecer pool</button>
+            </div>
           </div>
           <div class="reading-test-entry-modal-actions">
             <button id="readingTestEntryModalStart" class="btn-standard" type="button">Iniciar con texto

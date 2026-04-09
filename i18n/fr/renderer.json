@@ -247,28 +247,43 @@
     "reading_test": {
       "entry": {
         "title": "Test de vitesse de lecture",
-        "intro": "Ce test sert à estimer votre vitesse réelle de lecture au moyen d'une session guidée. L'application ouvrira le texte, démarrera le chronométrage et vous demandera de lire normalement ; lorsque vous aurez terminé, appuyez sur Pause (⏸) dans la Fenêtre flottante. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test. Ensuite, vous pourrez consulter des questions de compréhension si le texte en contient et, à la fin, créer un preset à partir du résultat.",
+        "intro": "Ce test sert à estimer votre vitesse réelle de lecture au moyen d'une session guidée. L'application ouvrira le texte, démarrera le chronométrage et vous demandera de lire normalement ; lorsque vous aurez terminé, appuyez sur Pause (⏸) dans la Fenêtre flottante. Utilisez Arrêter/Réinitialiser (⏹) uniquement si vous voulez annuler le test. Ensuite, vous pourrez consulter des questions de compréhension si le texte en contient et, à la fin, créer un preset à partir du résultat.\nCe pool utilise des textes courts ; interprétez donc le résultat avec prudence. Il ne devrait pas être extrapolé directement à des textes longs, où entrent habituellement en jeu des facteurs positifs, comme l'acquisition de fluidité et de contexte, et des facteurs négatifs, comme la récapitulation mentale et la fatigue.",
         "eligible_count": "Fichiers éligibles : {count}",
         "pool_exhausted_message": "Il ne reste plus de fichiers de test inutilisés. Réinitialisez le pool ou ajoutez d'autres fichiers.",
         "close_aria": "Fermer la boîte de dialogue du test de vitesse de lecture",
         "reset_confirm": "Cela réinitialisera tout le pool du test et re-marquerra tous ses fichiers comme non utilisés. Voulez-vous continuer ?",
+        "import_summary": "Import terminé. Importés : {imported}. Doublons ignorés : {skippedDuplicates}. Échecs de validation : {failedValidation}. Échecs d'entrées d'archive : {failedArchiveEntries}. Échecs d'écriture : {failedWrites}.",
+        "import_conflict": {
+          "title": "Importer des fichiers",
+          "message": "Certains fichiers importés existent déjà dans le pool. Comment voulez-vous gérer les doublons ?",
+          "detail": "{count} nom(s) de fichier de destination existent déjà dans le pool.",
+          "buttons": {
+            "skip": "Ignorer les doublons",
+            "replace": "Remplacer les doublons",
+            "cancel": "Annuler l'import"
+          }
+        },
         "buttons": {
+          "get_more_files": "Obtenir plus de fichiers",
+          "import_files": "Importer des fichiers...",
           "reset_pool": "Réinitialiser le pool",
+          "show_instructions": "Afficher les instructions",
+          "hide_instructions": "Masquer les instructions",
           "start_random_text": "Démarrer avec texte aléatoire",
           "start_current_text": "Démarrer avec le texte actuel"
         }
       },
       "questions": {
         "title": "Questions de compréhension de lecture",
-        "intro": "Répondez aux questions si vous souhaitez vérifier la compréhension avant de revenir au flux principal.",
+        "intro": "Répondre à ces questions de compréhension de lecture est facultatif et n'affecte pas votre score final. Elles servent uniquement à vous aider à évaluer la difficulté du texte et à déterminer si votre rythme et votre style de lecture vous ont permis d'atteindre un niveau de compréhension élémentaire. Vos réponses ne sont ni sauvegardées ni envoyées aux développeurs ou à qui que ce soit d'autre.",
         "random_title": "Probabilité au hasard",
-        "random_value": "{percentage}% de réponses correctes probables en répondant au hasard",
+        "random_value": "Score attendu en répondant au hasard : {percentage}%",
         "feedback_title": "Feedback",
         "feedback_prefix": "Pour les réclamations :",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Vous devez répondre à toutes les questions avant d'évaluer.",
         "result_summary": "{correct} sur {total} correctes ({percentage}%)",
-        "low_score_warning": "Votre résultat est faible par rapport à une base aléatoire. Vous pourriez relire les questions plus attentivement.",
+        "chance_at_least_observed": "Probabilité d'obtenir au moins ce score en répondant au hasard : {percentage}%",
         "fatal_invalid": "La charge des questions est invalide.",
         "buttons": {
           "check": "Vérifier le résultat",
@@ -391,6 +406,7 @@
       "reading_test_result_invalid": "Le résultat du test n'a pas pu être converti en WPM valide. Le flux s'est terminé sans ouvrir la boîte de dialogue du preset.",
       "reading_test_preset_unavailable": "La boîte de dialogue du preset n'a pas pu être ouverte après le test.",
       "reading_test_questions_unavailable": "La boîte de dialogue des questions de compréhension n'a pas pu être ouverte. Le flux s'est terminé avant la création du preset.",
+      "reading_test_pool_import_failed": "Les fichiers du test de vitesse de lecture n'ont pas pu être importés.",
       "reading_test_start_failed": "Le test de vitesse de lecture n'a pas pu démarrer.",
       "reading_test_cancelled": "Le test de vitesse de lecture a été annulé.",
       "reading_test_cancelled_window_closed": "Le test de vitesse de lecture a été annulé parce qu'une de ses fenêtres de session a été fermée."
@@ -416,6 +432,8 @@
       "process_error": "Une erreur s'est produite lors du traitement du preset. Vérifiez la console."
     },
     "info": {
+      "loading": "Chargement...",
+      "missing_content": "Aucun contenu n'est disponible pour '{name}'.",
       "external": {
         "blocked": "Lien bloqué",
         "error": "Erreur lors de l'ouverture du lien"
@@ -434,6 +452,9 @@
         "env": {
           "unavailable": "Indisponible"
         }
+      },
+      "instrucciones": {
+        "title": "Mode d'emploi"
       },
       "links_interes": {
         "app_name": "toT",
