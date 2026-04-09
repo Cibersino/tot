@@ -774,7 +774,57 @@ select#presets {
 }
 
 .info-modal-content .instrucciones-media img {
-  max-height: 280px
+  max-height: 280px;
+  cursor: zoom-in;
+}
+
+.info-media-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.info-media-lightbox[aria-hidden="false"] {
+  display: flex;
+}
+
+.info-media-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+}
+
+.info-media-lightbox-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(1400px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+}
+
+.info-media-lightbox-image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 48px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.info-media-lightbox-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
 }
 
 .info-section {

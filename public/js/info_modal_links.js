@@ -45,6 +45,70 @@
     window.Notify.notifyMain(notificationKey);
   }
 
+  let lightboxEl = null;
+  let lightboxImageEl = null;
+  let modalStateObserver = null;
+
+  function ensureLightbox() {
+    if (lightboxEl) return lightboxEl;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'info-media-lightbox';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.innerHTML = `
+      <div class="info-media-lightbox-backdrop" data-info-lightbox-close="1"></div>
+      <div class="info-media-lightbox-panel" role="dialog" aria-modal="true" aria-label="Expanded screenshot preview">
+        <button type="button" class="btn-standard info-media-lightbox-close" aria-label="Close preview" data-info-lightbox-close="1">🗙</button>
+        <img class="info-media-lightbox-image" alt="" />
+      </div>
+    `;
+
+    overlay.addEventListener('click', (ev) => {
+      const target = ev.target;
+      if (target && target.dataset && target.dataset.infoLightboxClose === '1') {
+        closeLightbox();
+      }
+    });
+
+    document.body.appendChild(overlay);
+    lightboxEl = overlay;
+    lightboxImageEl = overlay.querySelector('.info-media-lightbox-image');
+    return overlay;
+  }
+
+  function closeLightbox() {
+    if (!lightboxEl) return;
+    lightboxEl.setAttribute('aria-hidden', 'true');
+    if (lightboxImageEl) {
+      lightboxImageEl.removeAttribute('src');
+      lightboxImageEl.alt = '';
+    }
+  }
+
+  function openLightbox(sourceEl) {
+    if (!sourceEl) return;
+    const overlay = ensureLightbox();
+    const source = sourceEl.currentSrc || sourceEl.src;
+    if (!source || !lightboxImageEl) return;
+
+    lightboxImageEl.src = source;
+    lightboxImageEl.alt = sourceEl.alt || '';
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+
+  function ensureModalObserver() {
+    if (modalStateObserver || typeof MutationObserver !== 'function') return;
+    const infoModal = document.getElementById('infoModal');
+    if (!infoModal) return;
+
+    modalStateObserver = new MutationObserver(() => {
+      if (infoModal.getAttribute('aria-hidden') === 'true') {
+        closeLightbox();
+      }
+    });
+    modalStateObserver.observe(infoModal, { attributes: true, attributeFilter: ['aria-hidden'] });
+  }
+
   const escapeSelector = (value) => {
     if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(value);
     log.warnOnce(
@@ -60,6 +124,7 @@
   function bindInfoModalLinks(container, { electronAPI } = {}) {
     if (!container || container.dataset.externalLinksBound === '1') return;
     container.dataset.externalLinksBound = '1';
+    ensureModalObserver();
 
     const api = electronAPI || window.electronAPI;
 
@@ -67,6 +132,14 @@
       try {
         const target = ev.target;
         if (!target || typeof target.closest !== 'function') return;
+
+        const screenshot = target.closest('.instrucciones-media img');
+        if (screenshot && container.contains(screenshot)) {
+          ev.preventDefault();
+          openLightbox(screenshot);
+          return;
+        }
+
         const link = target.closest('a');
         if (!link || !container.contains(link)) return;
 
@@ -162,6 +235,13 @@
       }
     });
   }
+
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape' || !lightboxEl || lightboxEl.getAttribute('aria-hidden') !== 'false') return;
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    closeLightbox();
+  }, true);
 
   window.InfoModalLinks = {
     bindInfoModalLinks
