@@ -58,6 +58,8 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
 
   assert.equal(normalized.language, '');
   assert.equal(normalized.modeConteo, 'preciso');
+  assert.equal(normalized.spellcheckEnabled, true);
+  assert.equal(normalized.editorFontSizePx, 20);
   assert.deepEqual(normalized.presets_by_language.es, []);
   assert.deepEqual(normalized.numberFormatting.es, {
     separadorMiles: '.',
@@ -86,10 +88,14 @@ test('saveSettings normalizes language-scoped buckets and trims selected preset 
     numberFormatting: null,
     disabled_default_presets: null,
     modeConteo: 'invalid-mode',
+    spellcheckEnabled: 'invalid-flag',
+    editorFontSizePx: 200,
   });
 
   assert.equal(normalized.language, 'en-us');
   assert.equal(normalized.modeConteo, 'preciso');
+  assert.equal(normalized.spellcheckEnabled, true);
+  assert.equal(normalized.editorFontSizePx, 36);
   assert.deepEqual(normalized.presets_by_language.en, []);
   assert.equal(normalized.selected_preset_by_language.en, 'my preset');
   assert.deepEqual(normalized.numberFormatting.en, {
@@ -116,11 +122,15 @@ test('getSettings reloads from the backing store and re-normalizes external edit
     disabled_default_presets: {},
     numberFormatting: {},
     modeConteo: 'simple',
+    spellcheckEnabled: false,
+    editorFontSizePx: 11,
   });
 
   const reloaded = settings.getSettings();
   assert.equal(reloaded.language, 'en-us');
   assert.equal(reloaded.modeConteo, 'simple');
+  assert.equal(reloaded.spellcheckEnabled, false);
+  assert.equal(reloaded.editorFontSizePx, 12);
   assert.deepEqual(reloaded.numberFormatting.en, {
     separadorMiles: ',',
     separadorDecimal: '.',

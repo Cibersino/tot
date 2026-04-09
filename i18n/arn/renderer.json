@@ -94,6 +94,12 @@
       "placeholder": "Wiringe faw...",
       "calc_button": "CALC/SAVE",
       "calc_while_typing": "Auto-elkünun ka auto-calcular wirin wirintukun mew",
+      "spellcheck": "Corrector ortográfico",
+      "text_size_label": "Fütra",
+      "decrease_text_size": "Pichikünun wirin",
+      "increase_text_size": "Fütrakünun wirin",
+      "reset_text_size": "Wiño püneal wirin",
+      "text_size_value": "{value} px",
       "clear": "🗑",
       "clear_title": "Lifün"
     },

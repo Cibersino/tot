@@ -18,13 +18,28 @@
     <textarea id="editorArea" placeholder="Escribe o pega aquí..."></textarea>
   </div>
 
-  <!-- Bottom bar: CALC/SAVE | checkbox | TRASH (right aligned) -->
+  <!-- Bottom bar: CALC/SAVE | checkboxes | TRASH (right aligned) -->
   <div id="bottomBar" class="bottom-bar" role="region" aria-label="Controles del editor">
     <div class="left-controls">
       <button id="btnCalc" class="btn-calc" disabled data-label="CALCULAR" aria-label="CALC/SAVE"></button>
-      <label class="calc-label" data-label="Auto-guardar y auto-recalcular mientras escribes"><input
+      <label class="calc-label editor-toggle-label" data-label="Auto-guardar y auto-recalcular mientras escribes"><input
           id="calcWhileTyping" type="checkbox" checked
           aria-label="Auto-guardar y auto-recalcular mientras escribes" /></label>
+      <label class="spellcheck-label editor-toggle-label" data-label="Corrector ortográfico"><input
+          id="spellcheckToggle" type="checkbox" checked
+          aria-label="Corrector ortográfico" /></label>
+      <div
+        id="editorTextSizeControls"
+        class="editor-text-size-controls"
+        role="group"
+        aria-label="Tamaño del texto"
+      >
+        <span id="editorTextSizeLabel" class="editor-text-size-label">Tamaño</span>
+        <button id="btnTextSizeDecrease" class="btn-text-size" type="button" aria-label="Reducir tamaño del texto" title="Reducir tamaño del texto">A-</button>
+        <output id="editorTextSizeValue" class="editor-text-size-value" aria-live="polite">20 px</output>
+        <button id="btnTextSizeIncrease" class="btn-text-size" type="button" aria-label="Aumentar tamaño del texto" title="Aumentar tamaño del texto">A+</button>
+        <button id="btnTextSizeReset" class="btn-text-size btn-text-size-reset" type="button" aria-label="Restablecer tamaño del texto" title="Restablecer tamaño del texto">↺</button>
+      </div>
     </div>
 
     <div class="right-controls">
