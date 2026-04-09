@@ -430,6 +430,7 @@
       "process_error": "Beim Verarbeiten des Presets ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
     },
     "info": {
+      "loading": "Lädt...",
       "external": {
         "blocked": "Link blockiert",
         "error": "Fehler beim Öffnen des Links"

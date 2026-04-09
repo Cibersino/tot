@@ -430,6 +430,7 @@
       "process_error": "Welulkuy küzaw preset mu. Kintunge consola."
     },
     "info": {
+      "loading": "Cargando...",
       "external": {
         "blocked": "Link bloqueado",
         "error": "Welulkuy nülal link"

@@ -430,6 +430,7 @@
       "process_error": "Si è verificato un errore durante il processo del preset. Controlla la console."
     },
     "info": {
+      "loading": "Caricamento...",
       "external": {
         "blocked": "Link bloccato",
         "error": "Errore durante l'apertura del link"
