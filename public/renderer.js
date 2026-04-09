@@ -505,6 +505,10 @@ function applyTranslations() {
       'MainLogoLinks.applyTranslations unavailable; brand logo labels will use defaults.'
     );
   }
+  const infoModalLoading = document.getElementById('infoModalLoading');
+  if (infoModalLoading) {
+    infoModalLoading.textContent = tRenderer('renderer.info.loading', infoModalLoading.textContent || 'Cargando...');
+  }
   // Text selector buttons
   if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
   if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
@@ -1243,7 +1247,8 @@ setupToggleModoPreciso();
     try {
       if (!infoModal || !infoModalContent) return;
       infoModal.setAttribute('aria-hidden', 'true');
-      infoModalContent.innerHTML = '<div class="info-loading">Cargando...</div>';
+      const loadingText = tRenderer('renderer.info.loading', 'Cargando...');
+      infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
     } catch (err) {
       log.error('Error closing modal info:', err);
     }
@@ -1511,6 +1516,8 @@ setupToggleModoPreciso();
     }
 
     // Open modal early so loading state is visible during fetch
+    const loadingText = tRenderer('renderer.info.loading', 'Cargando...');
+    infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
     infoModal.setAttribute('aria-hidden', 'false');
 
     // Fetch HTML (manual pages use a language fallback list)

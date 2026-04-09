@@ -430,6 +430,7 @@
       "process_error": "Drama al procesar el preset. Lorea la consola."
     },
     "info": {
+      "loading": "Cargando...",
       "external": {
         "blocked": "Enlace bloqueado",
         "error": "Error al abrir el enlace"

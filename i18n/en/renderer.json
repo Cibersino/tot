@@ -441,6 +441,7 @@
       "process_error": "An error occurred while processing the preset. Check console."
     },
     "info": {
+      "loading": "Loading...",
       "external": {
         "blocked": "Link blocked",
         "error": "Error opening link"
