@@ -412,8 +412,12 @@ What to do (NO SKIPPING):
    Apply minimal local changes so that EVERY inventory entry’s handling matches the decision matrix:
 
    * Required -> fail fast (do not continue invalid init path; clear diagnostic)
-   * Optional -> guard + continue + deduplicated diagnostic (stable bounded key; no user input in key)
-   * Best-effort -> drop without breaking flow + deduplicated “failed (ignored)” diagnostic when a real intended action is dropped
+   * Optional -> guard + continue + diagnostic per logging policy
+     - Deduplicate ONLY if the miss/failure is high-frequency, repeatable, and additional occurrences add no diagnostic value.
+     - If deduped, use a stable bounded key (no user input or unbounded dynamic data in the key).
+   * Best-effort -> drop without breaking flow + “failed (ignored)” diagnostic when a real intended action is dropped
+     - Deduplicate ONLY if the failure is high-frequency, repeatable, and additional occurrences add no diagnostic value.
+     - If deduped, use a stable bounded key (no user input or unbounded dynamic data in the key).
      “Minimal” means minimal per-site change; coverage must be complete (no cherry-picking).
 
 5. Level 4 evidence (strict boundary):
