@@ -47,6 +47,9 @@ Si una propuesta contradice estos principios, se debe justificar con evidencia d
 
 ### P2) Frontera de modularizacion main vs renderer
 
+Documento relacionado:
+- `docs/cleanup/main_renderer_entrypoint_policy.md`
+
 1. `electron/main.js` es orquestador.
 - Debe concentrar ciclo de vida, ventanas, handshake de startup y wiring de modulos.
 - La logica de feature e IPC de dominio vive preferentemente en modulos delegados con `registerIpc(...)`.
