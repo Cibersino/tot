@@ -257,6 +257,7 @@
         "eligible_count": "Archivos elegibles: {count}",
         "pool_exhausted_message": "No quedan archivos de test sin usar. Podís restablecer el pool o meter más archivos.",
         "close_aria": "Cerrar diálogo de test de ritmo de lectura",
+        "start_random_confirm": "Esto va a pitiarse el texto actual y lo va a cambiar por un texto random elegible del pool. ¿Querís seguir?",
         "reset_confirm": "¿Querís restablecer el pool de archivos elegibles? Esto va a recargar los archivos disponibles pa' iniciar el test, incluyendo los que ya usaste.",
         "import_summary": "Terminó la importación. Entraron: {imported}. Duplicados saltados: {skippedDuplicates}. Validaciones fallidas: {failedValidation}. Entradas fallidas del comprimido: {failedArchiveEntries}. Escrituras fallidas: {failedWrites}.",
         "import_conflict": {
