@@ -8,6 +8,8 @@
 
 - Faltan: 
   - new:
+    `electron\reading_test_session_windows.js`
+    `electron\reading_test_session_flow.js`
     `public\js\reading_speed_test.js`
     `public\js\lib\reading_test_filters_core.js`
     `public\js\lib\reading_test_questions_core.js`
