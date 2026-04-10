@@ -29,7 +29,9 @@
   const { tRenderer, msgRenderer } = window.RendererI18n;
 
   const filtersCore = window.ReadingTestFiltersCore || null;
-  if (!filtersCore || typeof filtersCore.computeFilterState !== 'function') {
+  if (!filtersCore
+    || typeof filtersCore.computeFilterState !== 'function'
+    || typeof filtersCore.normalizeSelection !== 'function') {
     throw new Error('[reading-speed-test] ReadingTestFiltersCore unavailable; cannot continue');
   }
 
