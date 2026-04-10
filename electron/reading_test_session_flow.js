@@ -12,6 +12,10 @@
 // - Reinterpret floating-window commands and close events.
 // =============================================================================
 
+// =============================================================================
+// Session state helpers
+// =============================================================================
+
 function clearSessionTextIfNeeded(selectedEntry, tryClearCurrentText) {
   const shouldClearCurrentText = !selectedEntry || selectedEntry.sourceMode !== 'current_text';
   if (!shouldClearCurrentText) return;
@@ -26,6 +30,10 @@ function isArmingOrRunningSession(state) {
 function isArmingEntry(state, entry) {
   return !!(state.active && state.stage === 'arming' && state.selectedEntry === entry);
 }
+
+// =============================================================================
+// Session flow helpers
+// =============================================================================
 
 function failArmingSession(selectedEntry, noticeKey, options = {}) {
   const {
@@ -445,6 +453,10 @@ function handleEditorClosed(options = {}) {
 function handleFlotanteClosed(options = {}) {
   handleUnexpectedWindowClosed('suppressUnexpectedFlotanteClose', options);
 }
+
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 
 module.exports = {
   clearSessionTextIfNeeded,
