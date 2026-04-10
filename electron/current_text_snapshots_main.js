@@ -156,20 +156,16 @@ function getDialogTexts() {
 
 async function confirmLoadOverwrite(ownerWin, name = '') {
   const dialogTexts = getDialogTexts();
-  const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-  const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-  let message = resolveDialogText(
-    dialogTexts,
-    'snapshot_overwrite_load',
-    'Replace current text with the selected snapshot?'
-  );
+  const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+  const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+  let message = resolveDialogText(dialogTexts, 'snapshot_overwrite_load');
   if (name) {
     message = message.replace('{name}', String(name));
   }
 
   const dialogResult = await dialog.showMessageBox(ownerWin || null, {
     type: 'none',
-    buttons: [yesLabel, noLabel],
+    buttons: [continueLabel, cancelLabel],
     defaultId: 1,
     cancelId: 1,
     message,

@@ -482,16 +482,15 @@ function getHelpTipKeyList() {
 }
 
 const getCronoLabels = () => ({
-  playLabel: tRenderer ? tRenderer('renderer.main.crono.play_symbol', '>') : '>',
-  pauseLabel: tRenderer ? tRenderer('renderer.main.crono.pause_symbol', '||') : '||'
+  playLabel: tRenderer('renderer.main.crono.play_symbol'),
+  pauseLabel: tRenderer('renderer.main.crono.pause_symbol')
 });
 
 function applyTranslations() {
   if (!tRenderer) return;
-  const applyAriaLabel = (el, key, fallback = '') => {
+  const applyAriaLabel = (el, key) => {
     if (!el) return;
-    const defaultValue = fallback || el.getAttribute('aria-label') || '';
-    const aria = tRenderer(key, defaultValue);
+    const aria = tRenderer(key);
     if (aria) el.setAttribute('aria-label', aria);
   };
   importExtractStatusUi.applyTranslations({ tRenderer, msgRenderer });
@@ -507,52 +506,52 @@ function applyTranslations() {
   }
   const infoModalLoading = document.getElementById('infoModalLoading');
   if (infoModalLoading) {
-    infoModalLoading.textContent = tRenderer('renderer.info.loading', infoModalLoading.textContent || 'Cargando...');
+    infoModalLoading.textContent = tRenderer('renderer.info.loading');
   }
   // Text selector buttons
-  if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract', btnImportExtract.textContent || '');
-  if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard', btnOverwriteClipboard.textContent || '');
-  if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
-  if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
-  if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear', btnEmptyMain.textContent || '');
-  if (btnLoadSnapshot) btnLoadSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_load', btnLoadSnapshot.textContent || '');
-  if (btnSaveSnapshot) btnSaveSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_save', btnSaveSnapshot.textContent || '');
-  if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new', btnNewTask.textContent || '');
-  if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load', btnLoadTask.textContent || '');
+  if (btnImportExtract) btnImportExtract.textContent = tRenderer('renderer.main.buttons.import_extract');
+  if (btnOverwriteClipboard) btnOverwriteClipboard.textContent = tRenderer('renderer.main.buttons.overwrite_clipboard');
+  if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard');
+  if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit');
+  if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear');
+  if (btnLoadSnapshot) btnLoadSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_load');
+  if (btnSaveSnapshot) btnSaveSnapshot.textContent = tRenderer('renderer.main.buttons.snapshot_save');
+  if (btnNewTask) btnNewTask.textContent = tRenderer('renderer.main.buttons.task_new');
+  if (btnLoadTask) btnLoadTask.textContent = tRenderer('renderer.main.buttons.task_load');
   // Text selector tooltips
-  if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract', btnImportExtract.title || '');
-  if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
-  if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
+  if (btnImportExtract) btnImportExtract.title = tRenderer('renderer.main.tooltips.import_extract');
+  if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard');
+  if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard');
   applyAriaLabel(btnImportExtract, 'renderer.main.aria.import_extract');
   if (clipboardRepeatInput) {
-    clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count', clipboardRepeatInput.title || '');
+    clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count');
     applyAriaLabel(clipboardRepeatInput, 'renderer.main.aria.clipboard_repeat_count');
   }
-  if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
-  if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
-  if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load', btnLoadSnapshot.title || '');
-  if (btnSaveSnapshot) btnSaveSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_save', btnSaveSnapshot.title || '');
-  if (btnNewTask) btnNewTask.title = tRenderer('renderer.main.tooltips.task_new', btnNewTask.title || '');
-  if (btnLoadTask) btnLoadTask.title = tRenderer('renderer.main.tooltips.task_load', btnLoadTask.title || '');
+  if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit');
+  if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear');
+  if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_load');
+  if (btnSaveSnapshot) btnSaveSnapshot.title = tRenderer('renderer.main.tooltips.snapshot_save');
+  if (btnNewTask) btnNewTask.title = tRenderer('renderer.main.tooltips.task_new');
+  if (btnLoadTask) btnLoadTask.title = tRenderer('renderer.main.tooltips.task_load');
   // Presets
-  if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new', btnNewPreset.textContent || '');
-  if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit', btnEditPreset.textContent || '');
-  if (btnDeletePreset) btnDeletePreset.textContent = tRenderer('renderer.main.speed.delete', btnDeletePreset.textContent || '');
-  if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer('renderer.main.speed.reset_defaults', btnResetDefaultPresets.textContent || '');
-  if (btnNewPreset) btnNewPreset.title = tRenderer('renderer.main.tooltips.new_preset', btnNewPreset.title || '');
-  if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset', btnEditPreset.title || '');
-  if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset', btnDeletePreset.title || '');
-  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets', btnResetDefaultPresets.title || '');
+  if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new');
+  if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit');
+  if (btnDeletePreset) btnDeletePreset.textContent = tRenderer('renderer.main.speed.delete');
+  if (btnResetDefaultPresets) btnResetDefaultPresets.textContent = tRenderer('renderer.main.speed.reset_defaults');
+  if (btnNewPreset) btnNewPreset.title = tRenderer('renderer.main.tooltips.new_preset');
+  if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset');
+  if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset');
+  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets');
   // Floating window toggle
   const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
-  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window', vfSwitchLabel.title || '');
+  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window');
   // Section titles
-  if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title', selectorTitle.textContent || '');
-  if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title', velTitle.textContent || '');
-  if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title', resultsTitle.textContent || '');
-  if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title', cronTitle.textContent || '');
+  if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title');
+  if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title');
+  if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title');
+  if (cronTitle) cronTitle.textContent = tRenderer('renderer.main.crono.title');
   if (btnReadingSpeedTest) {
-    const label = tRenderer('renderer.main.reading_tools.reading_speed_test', btnReadingSpeedTest.textContent || '');
+    const label = tRenderer('renderer.main.reading_tools.reading_speed_test');
     btnReadingSpeedTest.textContent = label;
     if (label) {
       btnReadingSpeedTest.title = label;
@@ -561,32 +560,29 @@ function applyTranslations() {
   }
   // Speed selector labels
   const wpmLabel = document.querySelector('.wpm-row span');
-  if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label', wpmLabel.textContent || '');
+  if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label');
   applyAriaLabel(wpmInput, 'renderer.main.aria.wpm_input');
   applyAriaLabel(wpmSlider, 'renderer.main.aria.wpm_slider');
   applyAriaLabel(presetsSelect, 'renderer.main.aria.speed_presets');
   // Results: precise mode label
   const togglePrecisoLabel = document.querySelector('.toggle-wrapper .toggle-label');
   if (togglePrecisoLabel) {
-    togglePrecisoLabel.textContent = tRenderer('renderer.main.results.precise_mode', togglePrecisoLabel.textContent || '');
-    togglePrecisoLabel.title = tRenderer('renderer.main.results.precise_tooltip', togglePrecisoLabel.title || '');
+    togglePrecisoLabel.textContent = tRenderer('renderer.main.results.precise_mode');
+    togglePrecisoLabel.title = tRenderer('renderer.main.results.precise_tooltip');
     const toggleWrapper = togglePrecisoLabel.closest('.toggle-wrapper');
     if (toggleWrapper) {
-      toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip', toggleWrapper.title || togglePrecisoLabel.title || '');
+      toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip');
     }
   }
-  applyAriaLabel(toggleModoPreciso, 'renderer.main.aria.precise_mode_toggle', togglePrecisoLabel ? togglePrecisoLabel.textContent : '');
+  applyAriaLabel(toggleModoPreciso, 'renderer.main.aria.precise_mode_toggle');
   // Stopwatch: speed label and controls aria-label
   const realWpmLabel = document.querySelector('.realwpm');
   if (realWpmLabel && realWpmLabel.firstChild) {
-    realWpmLabel.firstChild.textContent = tRenderer('renderer.main.crono.speed', realWpmLabel.firstChild.textContent || '');
+    realWpmLabel.firstChild.textContent = tRenderer('renderer.main.crono.speed');
   }
   const cronoControls = document.querySelector('.crono-controls');
   if (cronoControls) {
-    const ariaLabel = tRenderer(
-      'renderer.main.aria.crono_controls',
-      tRenderer('renderer.main.crono.controls_label', cronoControls.getAttribute('aria-label') || '')
-    );
+    const ariaLabel = tRenderer('renderer.main.aria.crono_controls');
     if (ariaLabel) cronoControls.setAttribute('aria-label', ariaLabel);
   }
   const cronoDisplayEl = document.getElementById('cronoDisplay');
@@ -605,12 +601,12 @@ function applyTranslations() {
   // Abbreviated label for the floating window
   const vfLabel = document.querySelector('.vf-label');
   if (vfLabel) {
-    vfLabel.textContent = tRenderer('renderer.main.crono.flotante_short', vfLabel.textContent || vfLabel.textContent);
+    vfLabel.textContent = tRenderer('renderer.main.crono.flotante_short');
   }
 
   // Help button title
   if (btnHelp) {
-    const helpTitle = tRenderer('renderer.main.tooltips.help_button', btnHelp.getAttribute('title') || '');
+    const helpTitle = tRenderer('renderer.main.tooltips.help_button');
     if (helpTitle) btnHelp.setAttribute('title', helpTitle);
   }
 }
@@ -700,7 +696,7 @@ async function updatePreviewAndResults(text) {
   const n = displayText.length;
 
   if (n === 0) {
-    const emptyMsg = tRenderer('renderer.main.selector_empty', '(empty)');
+    const emptyMsg = tRenderer('renderer.main.selector_empty');
     textPreview.textContent = emptyMsg;
   } else if (n <= PREVIEW_INLINE_THRESHOLD) {
     textPreview.textContent = displayText;
@@ -720,9 +716,9 @@ async function updatePreviewAndResults(text) {
   const caracteresSinEspaciosFormateado = formatearNumero(stats.sinEspacios, separadorMiles, separadorDecimal);
   const palabrasFormateado = formatearNumero(stats.palabras, separadorMiles, separadorDecimal);
 
-  resChars.textContent = msgRenderer('renderer.main.results.chars', { n: caracteresFormateado }, `Characters: ${caracteresFormateado}`);
-  resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado }, `Characters (no spaces): ${caracteresSinEspaciosFormateado}`);
-  resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado }, `Words: ${palabrasFormateado}`);
+  resChars.textContent = msgRenderer('renderer.main.results.chars', { n: caracteresFormateado });
+  resCharsNoSpace.textContent = msgRenderer('renderer.main.results.chars_no_space', { n: caracteresSinEspaciosFormateado });
+  resWords.textContent = msgRenderer('renderer.main.results.words', { n: palabrasFormateado });
 
   const totalSeconds = getExactTotalSeconds(stats.palabras, wpm);
   renderEstimatedTime(totalSeconds);
@@ -1247,7 +1243,7 @@ setupToggleModoPreciso();
     try {
       if (!infoModal || !infoModalContent) return;
       infoModal.setAttribute('aria-hidden', 'true');
-      const loadingText = tRenderer('renderer.info.loading', 'Cargando...');
+      const loadingText = tRenderer('renderer.info.loading');
       infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
     } catch (err) {
       log.error('Error closing modal info:', err);
@@ -1294,7 +1290,7 @@ setupToggleModoPreciso();
         const dataKey = el.getAttribute('data-i18n');
         if (!dataKey) return;
         const tKey = `renderer.info.${key}.${dataKey}`;
-        const translated = tRenderer(tKey, el.textContent || '');
+        const translated = tRenderer(tKey);
         if (translated) el.textContent = translated;
       });
       return doc.body.innerHTML;
@@ -1318,9 +1314,7 @@ setupToggleModoPreciso();
   async function hydrateAboutVersion(container) {
     const versionEl = container ? container.querySelector('#appVersion') : null;
     if (!versionEl) return;
-    const unavailableText = tRenderer
-      ? tRenderer('renderer.info.acerca_de.version.unavailable', 'Unavailable')
-      : 'Unavailable';
+    const unavailableText = tRenderer('renderer.info.acerca_de.version.unavailable');
 
     if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
       log.warnOnce('renderer.info.acerca_de.version.unavailable', 'getAppVersion not available for About modal.');
@@ -1354,9 +1348,7 @@ setupToggleModoPreciso();
     const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
     const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
     if (!envEl) return;
-    const unavailableText = tRenderer
-      ? tRenderer('renderer.info.acerca_de.env.unavailable', 'Unavailable')
-      : 'Unavailable';
+    const unavailableText = tRenderer('renderer.info.acerca_de.env.unavailable');
 
     if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
       log.warnOnce('renderer.info.acerca_de.env.unavailable', 'getAppRuntimeInfo not available for About modal.');
@@ -1507,19 +1499,11 @@ setupToggleModoPreciso();
     }
 
     const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
-    let defaultTitle = 'Links de interés';
-    if (translationKey === 'instrucciones') {
-      defaultTitle = 'Manual de uso';
-    } else if (translationKey === 'acerca_de') {
-      defaultTitle = 'Acerca de';
-    }
-    const infoDialogLabel = tRenderer
-      ? tRenderer(`renderer.info.${translationKey}.title`, defaultTitle)
-      : defaultTitle;
+    const infoDialogLabel = tRenderer(`renderer.info.${translationKey}.title`);
     infoModalTitle.textContent = infoDialogLabel;
 
     // Open modal early so loading state is visible during fetch
-    const loadingText = tRenderer('renderer.info.loading', 'Cargando...');
+    const loadingText = tRenderer('renderer.info.loading');
     infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
     infoModal.setAttribute('aria-hidden', 'false');
 
@@ -1532,8 +1516,7 @@ setupToggleModoPreciso();
       const missingContentText = msgRenderer
         ? msgRenderer(
           'renderer.info.missing_content',
-          { name: infoDialogLabel },
-          `No hay contenido disponible para '${infoDialogLabel}'.`
+          { name: infoDialogLabel }
         )
         : `No hay contenido disponible para '${infoDialogLabel}'.`;
       infoModalContent.innerHTML = `<p>${missingContentText}</p>`;

@@ -30,8 +30,8 @@
     },
     "dialog": {
       "ok": "Llowün",
-      "yes": "May, amulepe",
-      "no": "No, katrüntun",
+      "continue_button": "May, amulepe",
+      "cancel_button": "No, katrüntun",
       "snapshot_overwrite_save": "¿Küpal we snapshot chumgechi?",
       "snapshot_overwrite_load": "¿Wiño eluael tachi wirin, tachi snapshot \"{name}\" mew?",
       "task_delete_confirm": "¿Ñamümual tachi lista de tareas \"{name}\"?",

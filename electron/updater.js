@@ -164,15 +164,11 @@ async function checkForUpdates({ lang, manual = false } = {}) {
       manual && mainWin && !mainWin.isDestroyed();
 
     const showUpdateFailureDialog = async () => {
-      const title = resolveDialogText(dlg, 'update_failed_title', 'Update check failed');
-      const message = resolveDialogText(
-        dlg,
-        'update_failed_message',
-        'Could not check for updates. Please check your connection and try again.'
-      );
+      const title = resolveDialogText(dlg, 'update_failed_title');
+      const message = resolveDialogText(dlg, 'update_failed_message');
       await dialog.showMessageBox(mainWin, {
         type: 'none',
-        buttons: [resolveDialogText(dlg, 'ok', 'OK')],
+        buttons: [resolveDialogText(dlg, 'ok')],
         defaultId: 0,
         title,
         message,
@@ -224,16 +220,12 @@ async function checkForUpdates({ lang, manual = false } = {}) {
 
     if (compareSemVer(remoteParsed, localParsed) <= 0) {
       if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = resolveDialogText(dlg, 'update_up_to_date_title', 'You are up to date');
-        const message = resolveDialogText(
-          dlg,
-          'update_up_to_date_message',
-          'You already have the latest version.'
-        )
+        const title = resolveDialogText(dlg, 'update_up_to_date_title');
+        const message = resolveDialogText(dlg, 'update_up_to_date_message')
           .replace('{local}', localVer);
         await dialog.showMessageBox(mainWin, {
           type: 'none',
-          buttons: [resolveDialogText(dlg, 'ok', 'OK')],
+          buttons: [resolveDialogText(dlg, 'ok')],
           defaultId: 0,
           title,
           message,
@@ -247,16 +239,12 @@ async function checkForUpdates({ lang, manual = false } = {}) {
       return;
     }
 
-    const title = resolveDialogText(dlg, 'update_title', 'Update available');
-    const message = resolveDialogText(
-      dlg,
-      'update_message',
-      'A new version is available. Download now?'
-    )
+    const title = resolveDialogText(dlg, 'update_title');
+    const message = resolveDialogText(dlg, 'update_message')
       .replace('{remote}', remoteVer)
       .replace('{local}', localVer);
-    const btnDownload = resolveDialogText(dlg, 'update_download', 'Download');
-    const btnLater = resolveDialogText(dlg, 'update_later', 'Later');
+    const btnDownload = resolveDialogText(dlg, 'update_download');
+    const btnLater = resolveDialogText(dlg, 'update_later');
 
     const res = await dialog.showMessageBox(mainWin, {
       type: 'none',

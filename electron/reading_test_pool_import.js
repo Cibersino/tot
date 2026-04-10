@@ -314,13 +314,13 @@ function normalizeDialogCopy(rawDialogCopy) {
   };
 
   return {
-    conflictTitle: normalize(copy.conflictTitle, 'Import files'),
-    conflictMessage: normalize(copy.conflictMessage, 'Some imported files already exist in the pool. How should duplicates be handled?'),
-    conflictDetail: normalize(copy.conflictDetail, ''),
+    conflictTitle: normalize(copy.conflictTitle, 'renderer.reading_test.entry.import_conflict.title'),
+    conflictMessage: normalize(copy.conflictMessage, 'renderer.reading_test.entry.import_conflict.message'),
+    conflictDetail: normalize(copy.conflictDetail, 'renderer.reading_test.entry.import_conflict.detail'),
     buttons: {
-      skip: normalize(copy.buttons && copy.buttons.skip, 'Skip duplicates'),
-      replace: normalize(copy.buttons && copy.buttons.replace, 'Replace duplicates'),
-      cancel: normalize(copy.buttons && copy.buttons.cancel, 'Cancel import'),
+      skip: normalize(copy.buttons && copy.buttons.skip, 'renderer.reading_test.entry.import_conflict.buttons.skip'),
+      replace: normalize(copy.buttons && copy.buttons.replace, 'renderer.reading_test.entry.import_conflict.buttons.replace'),
+      cancel: normalize(copy.buttons && copy.buttons.cancel, 'renderer.reading_test.entry.import_conflict.buttons.cancel'),
     },
   };
 }

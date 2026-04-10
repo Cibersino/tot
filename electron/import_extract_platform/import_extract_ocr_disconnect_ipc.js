@@ -120,27 +120,15 @@ function resolvePayload(payload) {
 
 async function confirmDisconnect(mainWin) {
   const dialogTexts = getDialogTexts();
-  const yesLabel = resolveDialogText(dialogTexts, 'yes', 'Yes, continue');
-  const noLabel = resolveDialogText(dialogTexts, 'no', 'No, cancel');
-  const title = resolveDialogText(
-    dialogTexts,
-    'disconnect_google_ocr_title',
-    'Disconnect Google OCR'
-  );
-  const message = resolveDialogText(
-    dialogTexts,
-    'disconnect_google_ocr_confirm',
-    'Disconnect Google OCR?'
-  );
-  const detail = resolveDialogText(
-    dialogTexts,
-    'disconnect_google_ocr_detail',
-    'This revokes the saved Google OCR sign-in token and deletes the local token file from this app. App-managed local Google OAuth credentials may remain so OCR can reconnect later.'
-  );
+  const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+  const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+  const title = resolveDialogText(dialogTexts, 'disconnect_google_ocr_title');
+  const message = resolveDialogText(dialogTexts, 'disconnect_google_ocr_confirm');
+  const detail = resolveDialogText(dialogTexts, 'disconnect_google_ocr_detail');
 
   const result = await dialog.showMessageBox(mainWin || null, {
     type: 'none',
-    buttons: [yesLabel, noLabel],
+    buttons: [continueLabel, cancelLabel],
     defaultId: 1,
     cancelId: 1,
     noLink: true,

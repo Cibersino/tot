@@ -42,7 +42,7 @@ if (!loadRendererTranslations || !tRenderer) {
   throw new Error('[task-editor] RendererI18n unavailable; cannot continue');
 }
 
-const tr = (path, fallback) => tRenderer(path, fallback);
+const tr = (path) => tRenderer(path);
 
 async function ensureTaskEditorTranslations(lang) {
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
@@ -356,8 +356,8 @@ function buildActionButton(labelKey, titleKey, onClick) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'icon-btn';
-  btn.textContent = tr(labelKey, btn.textContent || '');
-  const title = tr(titleKey, btn.title || btn.textContent || '');
+  btn.textContent = tr(labelKey);
+  const title = tr(titleKey);
   if (title) btn.title = title;
   btn.addEventListener('click', onClick);
   return btn;
@@ -471,8 +471,8 @@ function renderRow(row) {
   const enlaceBtn = document.createElement('button');
   enlaceBtn.type = 'button';
   enlaceBtn.className = 'icon-btn';
-  enlaceBtn.textContent = tr('renderer.tasks.buttons.link_open', enlaceBtn.textContent || '');
-  enlaceBtn.title = tr('renderer.tasks.tooltips.link_open', enlaceBtn.title || enlaceBtn.textContent || '');
+  enlaceBtn.textContent = tr('renderer.tasks.buttons.link_open');
+  enlaceBtn.title = tr('renderer.tasks.tooltips.link_open');
   enlaceBtn.addEventListener('click', async () => {
     const raw = enlaceInput.value;
     const api = getTaskEditorApi('openTaskLink');
@@ -511,15 +511,15 @@ function renderRow(row) {
       }
     );
     snapshotBtn.classList.add('icon-btn--tiny');
-    const snapshotTitle = tr('renderer.tasks.tooltips.snapshot_load', snapshotBtn.title || snapshotBtn.textContent || '');
+    const snapshotTitle = tr('renderer.tasks.tooltips.snapshot_load');
     snapshotBtn.title = `${snapshotTitle} ${snapshotRelPath}`.trim();
     commentActions.appendChild(snapshotBtn);
   }
   const commentBtn = document.createElement('button');
   commentBtn.type = 'button';
   commentBtn.className = 'icon-btn icon-btn--tiny';
-  commentBtn.textContent = tr('renderer.tasks.buttons.comment', commentBtn.textContent || '');
-  commentBtn.title = tr('renderer.tasks.tooltips.comment', commentBtn.title || commentBtn.textContent || '');
+  commentBtn.textContent = tr('renderer.tasks.buttons.comment');
+  commentBtn.title = tr('renderer.tasks.tooltips.comment');
   commentBtn.addEventListener('click', () => {
     pendingCommentRowId = row.id;
     pendingCommentSnapshotRelPath = snapshotRelPath;
@@ -943,56 +943,50 @@ async function saveRowToLibrary(includeComment) {
 // =============================================================================
 async function applyTaskEditorTranslations() {
   await ensureTaskEditorTranslations(idiomaActual);
-  document.title = tr('renderer.tasks.title', document.title);
-  if (taskNameLabel) taskNameLabel.textContent = tr('renderer.tasks.labels.name', taskNameLabel.textContent || '');
-  if (taskTotalLabel) taskTotalLabel.textContent = tr('renderer.tasks.labels.total', taskTotalLabel.textContent || '');
-  if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.buttons.save', btnTaskSave.textContent || '');
-  if (btnTaskDelete) btnTaskDelete.textContent = tr('renderer.tasks.buttons.delete', btnTaskDelete.textContent || '');
-  if (btnTaskAddRow) btnTaskAddRow.textContent = tr('renderer.tasks.buttons.add_row', btnTaskAddRow.textContent || '');
-  if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.buttons.open_library', btnTaskLoadLibrary.textContent || '');
+  document.title = tr('renderer.tasks.title');
+  if (taskNameLabel) taskNameLabel.textContent = tr('renderer.tasks.labels.name');
+  if (taskTotalLabel) taskTotalLabel.textContent = tr('renderer.tasks.labels.total');
+  if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.buttons.save');
+  if (btnTaskDelete) btnTaskDelete.textContent = tr('renderer.tasks.buttons.delete');
+  if (btnTaskAddRow) btnTaskAddRow.textContent = tr('renderer.tasks.buttons.add_row');
+  if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.buttons.open_library');
 
-  if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto', thTexto.textContent || '');
-  if (thTiempo) thTiempo.textContent = tr('renderer.tasks.columns.tiempo', thTiempo.textContent || '');
-  if (thPercent) thPercent.textContent = tr('renderer.tasks.columns.percent', thPercent.textContent || '');
-  if (thFalta) thFalta.textContent = tr('renderer.tasks.columns.falta', thFalta.textContent || '');
-  if (thTipo) thTipo.textContent = tr('renderer.tasks.columns.tipo', thTipo.textContent || '');
-  if (thEnlace) thEnlace.textContent = tr('renderer.tasks.columns.enlace', thEnlace.textContent || '');
-  if (thComentario) thComentario.textContent = tr('renderer.tasks.columns.comentario', thComentario.textContent || '');
-  if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones', thAcciones.textContent || '');
+  if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto');
+  if (thTiempo) thTiempo.textContent = tr('renderer.tasks.columns.tiempo');
+  if (thPercent) thPercent.textContent = tr('renderer.tasks.columns.percent');
+  if (thFalta) thFalta.textContent = tr('renderer.tasks.columns.falta');
+  if (thTipo) thTipo.textContent = tr('renderer.tasks.columns.tipo');
+  if (thEnlace) thEnlace.textContent = tr('renderer.tasks.columns.enlace');
+  if (thComentario) thComentario.textContent = tr('renderer.tasks.columns.comentario');
+  if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones');
 
-  if (commentTitle) commentTitle.textContent = tr('renderer.tasks.modals.comment_title', commentTitle.textContent || '');
-  if (commentSave) commentSave.textContent = tr('renderer.tasks.buttons.save', commentSave.textContent || '');
-  if (commentCancel) commentCancel.textContent = tr('renderer.tasks.buttons.cancel', commentCancel.textContent || '');
+  if (commentTitle) commentTitle.textContent = tr('renderer.tasks.modals.comment_title');
+  if (commentSave) commentSave.textContent = tr('renderer.tasks.buttons.save');
+  if (commentCancel) commentCancel.textContent = tr('renderer.tasks.buttons.cancel');
   if (commentSnapshotSelect) {
-    commentSnapshotSelect.textContent = tr('renderer.tasks.buttons.select_snapshot', commentSnapshotSelect.textContent || '');
-    commentSnapshotSelect.title = tr(
-      'renderer.tasks.tooltips.snapshot_select',
-      commentSnapshotSelect.title || commentSnapshotSelect.textContent || ''
-    );
+    commentSnapshotSelect.textContent = tr('renderer.tasks.buttons.select_snapshot');
+    commentSnapshotSelect.title = tr('renderer.tasks.tooltips.snapshot_select');
     commentSnapshotSelect.setAttribute('aria-label', commentSnapshotSelect.title || commentSnapshotSelect.textContent || '');
   }
   if (commentSnapshotClear) {
-    commentSnapshotClear.textContent = tr('renderer.tasks.buttons.clear_snapshot', commentSnapshotClear.textContent || '');
-    commentSnapshotClear.title = tr('renderer.tasks.tooltips.snapshot_clear', commentSnapshotClear.title || commentSnapshotClear.textContent || '');
+    commentSnapshotClear.textContent = tr('renderer.tasks.buttons.clear_snapshot');
+    commentSnapshotClear.title = tr('renderer.tasks.tooltips.snapshot_clear');
     commentSnapshotClear.setAttribute('aria-label', commentSnapshotClear.title || commentSnapshotClear.textContent || '');
   }
 
-  if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title', libraryTitle.textContent || '');
-  if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.labels.search', librarySearchLabel.textContent || '');
+  if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.modals.library_title');
+  if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.labels.search');
   if (librarySearchInput) {
-    librarySearchInput.setAttribute(
-      'placeholder',
-      tr('renderer.tasks.labels.search_placeholder', librarySearchInput.getAttribute('placeholder') || '')
-    );
+    librarySearchInput.setAttribute('placeholder', tr('renderer.tasks.labels.search_placeholder'));
   }
 
-  if (includeCommentTitle) includeCommentTitle.textContent = tr('renderer.tasks.modals.library_save_title', includeCommentTitle.textContent || '');
-  if (includeCommentText) includeCommentText.textContent = tr('renderer.tasks.modals.library_save_question', includeCommentText.textContent || '');
-  if (includeCommentYes) includeCommentYes.textContent = tr('renderer.tasks.buttons.yes', includeCommentYes.textContent || '');
-  if (includeCommentNo) includeCommentNo.textContent = tr('renderer.tasks.buttons.no', includeCommentNo.textContent || '');
-  if (includeCommentCancel) includeCommentCancel.textContent = tr('renderer.tasks.buttons.cancel', includeCommentCancel.textContent || '');
+  if (includeCommentTitle) includeCommentTitle.textContent = tr('renderer.tasks.modals.library_save_title');
+  if (includeCommentText) includeCommentText.textContent = tr('renderer.tasks.modals.library_save_question');
+  if (includeCommentYes) includeCommentYes.textContent = tr('renderer.tasks.buttons.yes');
+  if (includeCommentNo) includeCommentNo.textContent = tr('renderer.tasks.buttons.no');
+  if (includeCommentCancel) includeCommentCancel.textContent = tr('renderer.tasks.buttons.cancel');
 
-  if (libraryEmpty) libraryEmpty.textContent = tr('renderer.tasks.labels.empty', libraryEmpty.textContent || '');
+  if (libraryEmpty) libraryEmpty.textContent = tr('renderer.tasks.labels.empty');
 
   renderTable();
 }

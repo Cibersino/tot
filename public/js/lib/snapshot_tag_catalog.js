@@ -26,35 +26,35 @@
   // Constants / config
   // =============================================================================
   const LANGUAGE_OPTIONS = Object.freeze([
-    Object.freeze({ value: 'es', labelKey: 'renderer.snapshot_save_tags.options.language.es', fallback: 'Español' }),
-    Object.freeze({ value: 'en', labelKey: 'renderer.snapshot_save_tags.options.language.en', fallback: 'English' }),
-    Object.freeze({ value: 'pt', labelKey: 'renderer.snapshot_save_tags.options.language.pt', fallback: 'Português' }),
-    Object.freeze({ value: 'fr', labelKey: 'renderer.snapshot_save_tags.options.language.fr', fallback: 'Français' }),
-    Object.freeze({ value: 'de', labelKey: 'renderer.snapshot_save_tags.options.language.de', fallback: 'Deutsch' }),
-    Object.freeze({ value: 'it', labelKey: 'renderer.snapshot_save_tags.options.language.it', fallback: 'Italiano' }),
-    Object.freeze({ value: 'arn', labelKey: 'renderer.snapshot_save_tags.options.language.arn', fallback: 'Mapudungun' }),
-    Object.freeze({ value: 'ja', labelKey: 'renderer.snapshot_save_tags.options.language.ja', fallback: '日本語' }),
-    Object.freeze({ value: 'ko', labelKey: 'renderer.snapshot_save_tags.options.language.ko', fallback: '한국어' }),
-    Object.freeze({ value: 'ru', labelKey: 'renderer.snapshot_save_tags.options.language.ru', fallback: 'Русский' }),
-    Object.freeze({ value: 'tr', labelKey: 'renderer.snapshot_save_tags.options.language.tr', fallback: 'Türkçe' }),
-    Object.freeze({ value: 'id', labelKey: 'renderer.snapshot_save_tags.options.language.id', fallback: 'Bahasa Indonesia' }),
-    Object.freeze({ value: 'hi', labelKey: 'renderer.snapshot_save_tags.options.language.hi', fallback: 'हिन्दी' }),
-    Object.freeze({ value: 'bn', labelKey: 'renderer.snapshot_save_tags.options.language.bn', fallback: 'বাংলা' }),
-    Object.freeze({ value: 'ur', labelKey: 'renderer.snapshot_save_tags.options.language.ur', fallback: 'اردو' }),
-    Object.freeze({ value: 'ar', labelKey: 'renderer.snapshot_save_tags.options.language.ar', fallback: 'العربية' }),
-    Object.freeze({ value: 'zh-Hans', labelKey: 'renderer.snapshot_save_tags.options.language.zh_hans', fallback: '简体中文' }),
-    Object.freeze({ value: 'zh-Hant', labelKey: 'renderer.snapshot_save_tags.options.language.zh_hant', fallback: '繁體中文' }),
+    Object.freeze({ value: 'es', labelKey: 'renderer.snapshot_save_tags.options.language.es' }),
+    Object.freeze({ value: 'en', labelKey: 'renderer.snapshot_save_tags.options.language.en' }),
+    Object.freeze({ value: 'pt', labelKey: 'renderer.snapshot_save_tags.options.language.pt' }),
+    Object.freeze({ value: 'fr', labelKey: 'renderer.snapshot_save_tags.options.language.fr' }),
+    Object.freeze({ value: 'de', labelKey: 'renderer.snapshot_save_tags.options.language.de' }),
+    Object.freeze({ value: 'it', labelKey: 'renderer.snapshot_save_tags.options.language.it' }),
+    Object.freeze({ value: 'arn', labelKey: 'renderer.snapshot_save_tags.options.language.arn' }),
+    Object.freeze({ value: 'ja', labelKey: 'renderer.snapshot_save_tags.options.language.ja' }),
+    Object.freeze({ value: 'ko', labelKey: 'renderer.snapshot_save_tags.options.language.ko' }),
+    Object.freeze({ value: 'ru', labelKey: 'renderer.snapshot_save_tags.options.language.ru' }),
+    Object.freeze({ value: 'tr', labelKey: 'renderer.snapshot_save_tags.options.language.tr' }),
+    Object.freeze({ value: 'id', labelKey: 'renderer.snapshot_save_tags.options.language.id' }),
+    Object.freeze({ value: 'hi', labelKey: 'renderer.snapshot_save_tags.options.language.hi' }),
+    Object.freeze({ value: 'bn', labelKey: 'renderer.snapshot_save_tags.options.language.bn' }),
+    Object.freeze({ value: 'ur', labelKey: 'renderer.snapshot_save_tags.options.language.ur' }),
+    Object.freeze({ value: 'ar', labelKey: 'renderer.snapshot_save_tags.options.language.ar' }),
+    Object.freeze({ value: 'zh-Hans', labelKey: 'renderer.snapshot_save_tags.options.language.zh_hans' }),
+    Object.freeze({ value: 'zh-Hant', labelKey: 'renderer.snapshot_save_tags.options.language.zh_hant' }),
   ]);
 
   const TYPE_OPTIONS = Object.freeze([
-    Object.freeze({ value: 'fiction', labelKey: 'renderer.snapshot_save_tags.options.type.fiction', fallback: 'Fiction' }),
-    Object.freeze({ value: 'non_fiction', labelKey: 'renderer.snapshot_save_tags.options.type.non_fiction', fallback: 'Non-fiction' }),
+    Object.freeze({ value: 'fiction', labelKey: 'renderer.snapshot_save_tags.options.type.fiction' }),
+    Object.freeze({ value: 'non_fiction', labelKey: 'renderer.snapshot_save_tags.options.type.non_fiction' }),
   ]);
 
   const DIFFICULTY_OPTIONS = Object.freeze([
-    Object.freeze({ value: 'easy', labelKey: 'renderer.snapshot_save_tags.options.difficulty.easy', fallback: 'Easy' }),
-    Object.freeze({ value: 'normal', labelKey: 'renderer.snapshot_save_tags.options.difficulty.normal', fallback: 'Normal' }),
-    Object.freeze({ value: 'hard', labelKey: 'renderer.snapshot_save_tags.options.difficulty.hard', fallback: 'Hard' }),
+    Object.freeze({ value: 'easy', labelKey: 'renderer.snapshot_save_tags.options.difficulty.easy' }),
+    Object.freeze({ value: 'normal', labelKey: 'renderer.snapshot_save_tags.options.difficulty.normal' }),
+    Object.freeze({ value: 'hard', labelKey: 'renderer.snapshot_save_tags.options.difficulty.hard' }),
   ]);
 
   const TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
