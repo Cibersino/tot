@@ -144,6 +144,61 @@ Documento relacionado:
 2. Esta regla no aplica a texto user-facing.
 - Mensajes para usuario final siguen i18n/keys del producto.
 
+## Politicas complementarias por tipo de archivo (normativo)
+
+Estas politicas NO reemplazan los Niveles 0-9. Se aplican como overlay obligatorio cuando el archivo o el cambio entra en su scope.
+
+### C1) Overlay de i18n y texto user-facing
+
+Documento relacionado:
+- `docs/cleanup/i18n_language_policy.md`
+
+Aplicar obligatoriamente cuando el archivo:
+- toca texto user-facing,
+- llama helpers i18n (`tRenderer`, `msgRenderer`, `resolveDialogText`, `RendererI18n`, `menu_builder`),
+- modifica bundles bajo `i18n/**`,
+- o cambia owners de texto entre main/native dialog y renderer UI.
+
+Reglas de integracion:
+1. Tratar `DEFAULT_LANG` como unico fallback final hardcoded.
+2. El modulo de feature consume texto por key; no reintroduce fallback chains, strings hardcoded, fallback a DOM actual ni fallback vacio para texto user-facing.
+3. Main/native dialog usa keys de `main.json`; renderer UI usa keys de `renderer.json`.
+4. Si se agrega/renombra/elimina una key, revisar en el mismo cambio el bundle canonico default, los root bundles enviados y cualquier overlay regional afectado.
+5. Si el drift no se puede corregir localmente sin tocar schema/owners cross-file, escalar a Nivel 4 con Evidence/Risk/Validation.
+
+### C2) Overlay de renderer dialog API
+
+Documento relacionado:
+- `docs/cleanup/renderer_dialog_notify_policy.md`
+
+Aplicar obligatoriamente cuando el archivo renderer:
+- dispara alerts/confirms/prompts/modals,
+- expone o consume dialogos renderer,
+- o introduce feedback user-facing por dialog API.
+
+Reglas de integracion:
+1. `public/js/notify.js` es el owner de dialogos renderer y `window.Notify` es la superficie publica mantenida.
+2. Los feature modules deben llamar `window.Notify.*` directamente para dialog behavior estandar.
+3. No introducir wrappers pass-through (`safeNotify`, `notifyMain`, proxies equivalentes) ni guards repetidos sobre `window.Notify`.
+4. No caer a `alert(...)` / `confirm(...)` directo en feature code.
+5. Si un fallback de dialogo realmente pertenece a infraestructura, moverlo al owner (`notify.js`) o escalar a Nivel 4 si requiere cambio de contrato/superficie.
+
+### C3) Overlay de entrypoints main/renderer
+
+Documento relacionado:
+- `docs/cleanup/main_renderer_entrypoint_policy.md`
+
+Aplicar obligatoriamente cuando:
+- el target es `electron/main.js` o `public/renderer.js`,
+- o un cambio agrega logica de feature a esos entrypoints.
+
+Reglas de integracion:
+1. `electron/main.js` y `public/renderer.js` se mantienen como orquestadores.
+2. Si un bloque nuevo introduce vocabulario, workflow, validacion, estado o IPC de dominio, por defecto ese bloque no pertenece al entrypoint.
+3. Preferir extraccion a modulos con contratos explicitos (`registerIpc(...)`, `init(...)`, helpers con owner claro) antes que seguir creciendo el entrypoint.
+4. Mantener inline solo startup glue, wiring, coordinacion transversal real o adaptadores pequenos entre contratos ya existentes.
+5. Si corregir el drift requiere mover ownership o cambiar contratos entre modulos, tratarlo como candidato de Nivel 4.
+
 ## Nivel 0: Diagnóstico mínimo (obligatorio, corto)
 
 **0.1 Mapa de lectura**
@@ -155,6 +210,15 @@ Documento relacionado:
 
 * ¿Qué expone? (exports / entrypoints / side effects).
 * ¿Qué invariantes sugiere? (inputs esperados, errores tolerables, fallbacks).
+
+**0.3 Mapa de politicas aplicables**
+
+* ¿Aplica alguno de estos overlays?:
+  * `i18n_language_policy.md`
+  * `renderer_dialog_notify_policy.md`
+  * `main_renderer_entrypoint_policy.md`
+* Si aplica, ¿cual es el owner canonico que este archivo deberia consumir o preservar?
+* ¿Hay drift visible contra esa politica dentro del archivo o solo evidencia a revisar en niveles posteriores?
 
 **Regla:** aquí no se proponen soluciones todavía; solo se identifica qué estorba.
 
@@ -177,6 +241,11 @@ Hard constraints:
 ## 0.2 Contract map
 - What does the module expose? (exports / public entrypoints / side effects)
 - What invariants does it suggest? (expected inputs, tolerated errors, fallbacks)
+- If one of these policy overlays applies, identify it descriptively only (no fixes yet):
+  - `docs/cleanup/i18n_language_policy.md`
+  - `docs/cleanup/renderer_dialog_notify_policy.md`
+  - `docs/cleanup/main_renderer_entrypoint_policy.md`
+- If a policy applies, name the canonical owner/surface this file should preserve or consume.
 - If present, describe the IPC contract (only what exists in this file):
   A) Exhaustive IPC enumeration (mechanical; list ALL occurrences you can find in the file):
     - List every ipcMain.handle(<channel>), ipcMain.on(<channel>), ipcMain.once(<channel>)
@@ -229,6 +298,7 @@ Default rule:
 Constraints:
 - Preserve behavior and the observable contract as-is (public API, IPC surface, payload/return shapes, side effects).
 - Preserve truncation + persistence behavior and timing.
+- If one of the policy overlays applies (`i18n_language_policy`, `renderer_dialog_notify_policy`, `main_renderer_entrypoint_policy`), keep the file aligned with that owner model without forcing cross-file rewrites at Level 1.
 
 Anti “refactor that makes it worse” rule:
 If a change:
@@ -467,7 +537,9 @@ Ejemplos típicos:
 * separar responsabilidades en otro archivo,
 * cambiar sync↔async,
 * cambiar API pública o semántica de retorno,
-* cambios con impacto en múltiples consumidores.
+* cambios con impacto en múltiples consumidores,
+* mover ownership real entre `main.js` / `renderer.js` y un modulo dedicado,
+* cambios de superficie/owner para `window.Notify`, i18n helpers o bundles canonicos.
 
 **Requisito para Nivel 4:**
 
@@ -484,6 +556,11 @@ Level 4 — Architecture / contract changes (exceptional; evidence-driven).
 
 Objective:
 Only if there is strong evidence of real pain that cannot be addressed in Levels 1–3, propose and (if justified) implement a minimal architecture/contract change that measurably improves the situation.
+
+Typical Level 4 triggers also include policy conflicts that cannot be solved locally, for example:
+- entrypoint logic in `electron/main.js` / `public/renderer.js` that should move to a dedicated owner module,
+- i18n schema/owner drift that requires cross-file bundle or call-site updates,
+- renderer dialog API drift that requires changing the intended public surface (`window.Notify` / `public/js/notify.js`).
 
 Entry criteria (must be satisfied to change code):
 
@@ -723,7 +800,9 @@ Do a careful final pass to ensure `<TARGET_FILE>` is coherent end-to-end after L
 - remove leftovers / dead code / stale patterns introduced by earlier refactors;
 - ensure internal consistency (naming, control flow, invariants, helper usage);
 - ensure logging API usage matches the repo policy (no signature drift);
-- ensure comments and code agree (no drift); while preserving the module’s observable behavior/contract and timing.
+- ensure comments and code agree (no drift);
+- ensure any applicable overlay policy (`i18n_language_policy`, `renderer_dialog_notify_policy`, `main_renderer_entrypoint_policy`) is still respected;
+while preserving the module’s observable behavior/contract and timing.
 
 Constraints:
 - Preserve observable behavior/contract as-is (public API, IPC surface, payload/return shapes, side effects, timing/ordering).
@@ -751,6 +830,10 @@ What to do:
    - If you detect signature drift (e.g., passing a dedupe key to a non-once method), correct it in the smallest way that preserves intended logging behavior and avoids spam.
 4) Comment/code alignment:
    - Ensure comments describe real behavior and constraints; remove or adjust any drift introduced during prior edits.
+5) Overlay policy alignment:
+   - If the file is i18n-sensitive, verify it still consumes canonical i18n owners and does not reintroduce local fallback text/policies.
+   - If the file is a renderer dialog consumer, verify it uses `window.Notify` directly rather than local wrappers or browser globals.
+   - If the file is `electron/main.js`, `public/renderer.js`, or adds feature logic there, verify the entrypoint still reads primarily as orchestration.
 
 Mandatory gate output (for each non-trivial change you apply):
 - Change: one sentence describing what you changed.
