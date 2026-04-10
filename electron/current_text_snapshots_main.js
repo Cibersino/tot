@@ -52,7 +52,7 @@ const SNAPSHOT_NAME_RE = /^current_text_(\d+)\.json$/i;
 const { TAG_KEYS: SNAPSHOT_TAG_KEYS } = snapshotTagCatalog;
 
 // =============================================================================
-// Helpers (paths + dialogs)
+// Helpers (paths)
 // =============================================================================
 function safeRealpath(targetPath) {
   try {
@@ -136,69 +136,6 @@ function normalizeSavePath(filePath) {
   return path.join(dir, `${safeBase}${SNAPSHOT_EXT}`);
 }
 
-function resolveDialogText(dialogTexts, key, fallback) {
-  return menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
-    log,
-    warnPrefix: 'current_text_snapshots.dialog.missing',
-  });
-}
-
-function getDialogTexts() {
-  try {
-    const settings = settingsState.getSettings();
-    const lang = settings && settings.language ? settings.language : DEFAULT_LANG;
-    return menuBuilder.getDialogTexts(lang);
-  } catch (err) {
-    log.warnOnce('current_text_snapshots.dialogTexts', 'Using fallback dialog texts:', err);
-    return {};
-  }
-}
-
-async function confirmLoadOverwrite(ownerWin, name = '') {
-  const dialogTexts = getDialogTexts();
-  const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
-  const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
-  let message = resolveDialogText(dialogTexts, 'snapshot_overwrite_load');
-  if (name) {
-    message = message.replace('{name}', String(name));
-  }
-
-  const dialogResult = await dialog.showMessageBox(ownerWin || null, {
-    type: 'none',
-    buttons: [continueLabel, cancelLabel],
-    defaultId: 1,
-    cancelId: 1,
-    message,
-  });
-  return dialogResult && dialogResult.response === 0;
-}
-
-function resolveOwnerWin(event, resolveMainWin) {
-  if (event && event.sender) {
-    try {
-      const senderWin = BrowserWindow.fromWebContents(event.sender);
-      if (senderWin) return senderWin;
-      log.warnOnce(
-        'current_text_snapshots.owner_window.sender_window_missing',
-        'Dialog owner fallback: BrowserWindow.fromWebContents returned no window; using mainWin or unowned dialog.'
-      );
-    } catch (err) {
-      log.warnOnce(
-        'current_text_snapshots.owner_window.sender_resolve_failed',
-        'Dialog owner fallback: failed to resolve sender BrowserWindow; using mainWin or unowned dialog.',
-        err
-      );
-    }
-  } else {
-    log.warnOnce(
-      'current_text_snapshots.owner_window.sender_missing',
-      'Dialog owner fallback: IPC event sender unavailable; using mainWin or unowned dialog.'
-    );
-  }
-
-  return resolveMainWin();
-}
-
 function getSnapshotsRoot(mode = 'read') {
   const code = mode === 'write' ? 'WRITE_FAILED' : 'READ_FAILED';
   const root = ensureSnapshotsRoot();
@@ -257,6 +194,9 @@ async function promptForSnapshotSelection(ownerWin, root, rootReal) {
   return validateSelectedSnapshot(rootReal, selectedPath);
 }
 
+// =============================================================================
+// Helpers (schema + payloads)
+// =============================================================================
 function sanitizeSnapshotTags(rawTags, { allowMissing = false } = {}) {
   if (rawTags == null) {
     return allowMissing
@@ -348,41 +288,107 @@ function parseSnapshotFile(selectedReal) {
 }
 
 // =============================================================================
+// Helpers (dialogs + owners)
+// =============================================================================
+function resolveDialogText(dialogTexts, key, fallback) {
+  return menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+    log,
+    warnPrefix: 'current_text_snapshots.dialog.missing',
+  });
+}
+
+function getDialogTexts() {
+  try {
+    const settings = settingsState.getSettings();
+    const lang = settings && settings.language ? settings.language : DEFAULT_LANG;
+    return menuBuilder.getDialogTexts(lang);
+  } catch (err) {
+    log.warnOnce('current_text_snapshots.dialogTexts', 'Using fallback dialog texts:', err);
+    return {};
+  }
+}
+
+async function confirmLoadOverwrite(ownerWin, name = '') {
+  const dialogTexts = getDialogTexts();
+  const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+  const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+  let message = resolveDialogText(dialogTexts, 'snapshot_overwrite_load');
+  if (name) {
+    message = message.replace('{name}', String(name));
+  }
+
+  const dialogResult = await dialog.showMessageBox(ownerWin || null, {
+    type: 'none',
+    buttons: [continueLabel, cancelLabel],
+    defaultId: 1,
+    cancelId: 1,
+    message,
+  });
+  return dialogResult && dialogResult.response === 0;
+}
+
+function resolveMainWin(getWindows) {
+  if (typeof getWindows !== 'function') {
+    log.warnOnce(
+      'current_text_snapshots.owner_window.get_windows_missing',
+      'Dialog owner fallback: getWindows unavailable; using unowned dialog.'
+    );
+    return null;
+  }
+
+  const wins = getWindows();
+  if (!wins || typeof wins !== 'object') {
+    log.warnOnce(
+      'current_text_snapshots.owner_window.windows_invalid',
+      'Dialog owner fallback: getWindows returned no windows object; using unowned dialog.'
+    );
+    return null;
+  }
+
+  if (!wins.mainWin) {
+    log.warnOnce(
+      'current_text_snapshots.owner_window.main_window_missing',
+      'Dialog owner fallback: mainWin unavailable; using unowned dialog.'
+    );
+    return null;
+  }
+
+  return wins.mainWin;
+}
+
+function resolveOwnerWin(event, getWindows) {
+  if (event && event.sender) {
+    try {
+      const senderWin = BrowserWindow.fromWebContents(event.sender);
+      if (senderWin) return senderWin;
+      log.warnOnce(
+        'current_text_snapshots.owner_window.sender_window_missing',
+        'Dialog owner fallback: BrowserWindow.fromWebContents returned no window; using mainWin or unowned dialog.'
+      );
+    } catch (err) {
+      log.warnOnce(
+        'current_text_snapshots.owner_window.sender_resolve_failed',
+        'Dialog owner fallback: failed to resolve sender BrowserWindow; using mainWin or unowned dialog.',
+        err
+      );
+    }
+  } else {
+    log.warnOnce(
+      'current_text_snapshots.owner_window.sender_missing',
+      'Dialog owner fallback: IPC event sender unavailable; using mainWin or unowned dialog.'
+    );
+  }
+
+  return resolveMainWin(getWindows);
+}
+
+// =============================================================================
 // IPC registration
 // =============================================================================
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[current_text_snapshots] registerIpc requires ipcMain');
   }
-
-  const resolveMainWin = () => {
-    if (typeof getWindows !== 'function') {
-      log.warnOnce(
-        'current_text_snapshots.owner_window.get_windows_missing',
-        'Dialog owner fallback: getWindows unavailable; using unowned dialog.'
-      );
-      return null;
-    }
-
-    const wins = getWindows();
-    if (!wins || typeof wins !== 'object') {
-      log.warnOnce(
-        'current_text_snapshots.owner_window.windows_invalid',
-        'Dialog owner fallback: getWindows returned no windows object; using unowned dialog.'
-      );
-      return null;
-    }
-
-    if (!wins.mainWin) {
-      log.warnOnce(
-        'current_text_snapshots.owner_window.main_window_missing',
-        'Dialog owner fallback: mainWin unavailable; using unowned dialog.'
-      );
-      return null;
-    }
-
-    return wins.mainWin;
-  };
 
   ipcMain.handle('current-text-snapshot-save', async (event, payload) => {
     try {
@@ -399,7 +405,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const defaultName = getDefaultSnapshotName(root);
       const defaultPath = path.join(root, defaultName);
 
-      const dialogRes = await dialog.showSaveDialog(resolveOwnerWin(event, resolveMainWin), {
+      const dialogRes = await dialog.showSaveDialog(resolveOwnerWin(event, getWindows), {
         defaultPath,
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
@@ -463,7 +469,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { root, rootReal } = rootInfo;
 
       const selectedInfo = await promptForSnapshotSelection(
-        resolveOwnerWin(event, resolveMainWin),
+        resolveOwnerWin(event, getWindows),
         root,
         rootReal
       );
@@ -506,7 +512,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         snapshotRelPath = selectedInfo.snapshotRelPath;
       } else {
         const selectedInfo = await promptForSnapshotSelection(
-          resolveOwnerWin(event, resolveMainWin),
+          resolveOwnerWin(event, getWindows),
           root,
           rootReal
         );
@@ -516,7 +522,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         snapshotRelPath = selectedInfo.snapshotRelPath;
       }
 
-      const confirmed = await confirmLoadOverwrite(resolveOwnerWin(event, resolveMainWin), path.basename(selectedReal));
+      const confirmed = await confirmLoadOverwrite(resolveOwnerWin(event, getWindows), path.basename(selectedReal));
       if (!confirmed) {
         return { ok: false, code: 'CONFIRM_DENIED' };
       }
