@@ -354,7 +354,7 @@
     modal.dataset.stabilizing = stabilizing ? 'true' : 'false';
   }
 
-  async function refreshPoolEntriesFromResult(result) {
+  function refreshPoolEntriesFromResult(result) {
     if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
       log.error('Reading-test entry-flow result invalid:', result);
       window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
@@ -448,7 +448,6 @@
     if (!await refreshPoolEntriesFromResult(result)) {
       return false;
     }
-    rebuildFilterState();
     render();
     return true;
   }
@@ -505,7 +504,6 @@
     }
 
     stabilizing = false;
-    rebuildFilterState();
     render();
   }
 
