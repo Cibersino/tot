@@ -231,16 +231,19 @@
     filterState = filtersCore.computeFilterState(poolEntries, selection);
   }
 
-  async function stabilizeSelection(nextSelection) {
-    stabilizing = true;
-    selection = filtersCore.normalizeSelection(nextSelection);
+  function setStabilizing(nextValue) {
+    stabilizing = nextValue;
     render();
+  }
+
+  async function stabilizeSelection(nextSelection) {
+    setStabilizing(true);
+    selection = filtersCore.normalizeSelection(nextSelection);
 
     await Promise.resolve();
 
     rebuildFilterState();
-    stabilizing = false;
-    render();
+    setStabilizing(false);
   }
 
   function collectNextSelection(category, value, checked) {
@@ -487,14 +490,12 @@
       return;
     }
 
-    stabilizing = true;
-    render();
+    setStabilizing(true);
 
     try {
       const result = await resetPool();
       if (!await refreshPoolEntriesFromResult(result)) {
-        stabilizing = false;
-        render();
+        setStabilizing(false);
         closeModal();
         return;
       }
@@ -503,8 +504,7 @@
       window.Notify.notifyMain('renderer.alerts.reading_test_pool_error');
     }
 
-    stabilizing = false;
-    render();
+    setStabilizing(false);
   }
 
   function notifyImportSummary(result) {
@@ -560,22 +560,19 @@
       return;
     }
 
-    stabilizing = true;
-    render();
+    setStabilizing(true);
 
     try {
       const result = await importReadingTestPoolFiles(buildImportDialogPayload());
       if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
-        stabilizing = false;
-        render();
+        setStabilizing(false);
         log.error('Reading-test pool import result invalid:', result);
         window.Notify.notifyMain('renderer.alerts.reading_test_pool_import_failed');
         return;
       }
 
       if (result.ok !== true) {
-        stabilizing = false;
-        render();
+        setStabilizing(false);
         window.Notify.notifyMain(
           typeof result.guidanceKey === 'string'
             ? result.guidanceKey
@@ -585,17 +582,15 @@
       }
 
       if (result.canceled) {
-        stabilizing = false;
-        render();
+        setStabilizing(false);
         return;
       }
 
-      stabilizing = false;
+      setStabilizing(false);
       await refreshEntryDataAfterPoolMutation();
       notifyImportSummary(result);
     } catch (err) {
-      stabilizing = false;
-      render();
+      setStabilizing(false);
       log.error('Reading-test pool import failed unexpectedly:', err);
       window.Notify.notifyMain('renderer.alerts.reading_test_pool_import_failed');
     }
@@ -641,13 +636,11 @@
   }
 
   async function runStartReadingTest(startReadingTest, payload) {
-    stabilizing = true;
-    render();
+    setStabilizing(true);
 
     try {
       const result = await startReadingTest(payload);
-      stabilizing = false;
-      render();
+      setStabilizing(false);
 
       if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
         log.error('Reading-test start result invalid:', result);
@@ -665,8 +658,7 @@
 
       closeModal();
     } catch (err) {
-      stabilizing = false;
-      render();
+      setStabilizing(false);
       log.error('Reading-test start failed unexpectedly:', err);
       window.Notify.notifyMain('renderer.alerts.reading_test_start_failed');
     }
