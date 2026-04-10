@@ -146,6 +146,13 @@
       state.showIncompleteWarning = false;
     }
 
+    function setInvalidPayloadState() {
+      state.questions = [];
+      state.answersByQuestionId = {};
+      resetEvaluationState();
+      state.fatalKey = INVALID_PAYLOAD_KEY;
+    }
+
     function collectSelectedAnswer(questionId) {
       return typeof state.answersByQuestionId[questionId] === 'string'
         ? state.answersByQuestionId[questionId]
@@ -360,10 +367,7 @@
       });
 
       if (!questionsInfo.ok) {
-        state.questions = [];
-        state.answersByQuestionId = {};
-        resetEvaluationState();
-        state.fatalKey = INVALID_PAYLOAD_KEY;
+        setInvalidPayloadState();
         return;
       }
 
@@ -375,10 +379,7 @@
 
     function handleInitFailure(err) {
       log.error('Reading-test questions init failed:', err);
-      state.questions = [];
-      state.answersByQuestionId = {};
-      resetEvaluationState();
-      state.fatalKey = INVALID_PAYLOAD_KEY;
+      setInvalidPayloadState();
       renderUi();
     }
 
