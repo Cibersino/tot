@@ -409,6 +409,7 @@ Output requirement:
 * Objetivo: **inventariar y clasificar exhaustivamente** (1:1) todas las dependencias bridge/API usadas por el archivo en: **required startup dependency** vs **optional capability** vs **best-effort side action**, y **enforzar** el handling correcto según la convención.
 * Base obligatoria: `docs/cleanup/bridge_failure_mode_convention.md` (matriz + checklist).
 * Evitar drift entre módulos: no mezclar fail-fast, degrade y drop sin **clasificación explícita por call-site**.
+* Si para ese caso ya existe una política más específica sobre cómo debe consumir el feature module una API pública concreta, seguir esa política en el call-site. La clasificación de Nivel 3 no justifica agregar guards o enforcement local que contradigan ese patrón.
 * Política de logging obligatoria en este nivel: mantener el mecanismo de logger del contexto (`Log.get`/`window.getLogger` en main/renderer, `console` en preload) y estilo de call-site directo (`log.warn|warnOnce|error|errorOnce`, sin wrappers/aliases locales).
 * **PASS (requisito mínimo de auditoría por archivo):**
   - Existe un **Bridge Dependency Ledger** (tabla) que enumera **todas** las dependencias/paths bridge del archivo (sin “for example”, sin “other calls exist”).
@@ -445,6 +446,7 @@ Hard constraints:
 * Keep the logger mechanism defined by runtime context (`electron/log.js` and `public/js/log.js` headers): main/renderer keep repo logger usage; preload stays console-based.
 * Call-site style is mandatory: use `log.warn|warnOnce|error|errorOnce` directly; do not add local wrappers/aliases for these methods.
 * Scope edits to `<TARGET_FILE>` only.
+* If a more specific applicable policy already defines how the feature module should consume a public API at the call site, preserve that pattern; do not introduce local guards or enforcement that contradict it.
 * You MAY change failure-path behavior (miswire/missing/invalid bridge) to comply with the convention.
   Do NOT claim “changes failure timing/behavior” as Level 4 evidence unless HEALTHY-PATH changes too.
 
@@ -476,7 +478,8 @@ What to do (NO SKIPPING):
    * unclassified coexistence,
    * silent fallbacks where a real fallback exists,
    * missing dedupe where repetition adds no diagnostic value,
-   * mis-leveled logging (noise on hot paths vs missing diagnostics).
+   * mis-leveled logging (noise on hot paths vs missing diagnostics),
+   * local enforcement added at the feature call site when a more specific policy already defines the intended consumption pattern.
 
 4. Enforcement (required):
    Apply minimal local changes so that EVERY inventory entry’s handling matches the decision matrix:
