@@ -303,6 +303,21 @@ function cancelActiveSession(noticeKey, notifyOptions = {}, options = {}) {
   }
 }
 
+function handleUnexpectedWindowClosed(flagName, options = {}) {
+  const {
+    state,
+    runtimeFlags,
+    cancelActiveSession,
+  } = options;
+
+  if (!isArmingOrRunningSession(state)) return;
+  if (runtimeFlags[flagName]) {
+    runtimeFlags[flagName] = false;
+    return;
+  }
+  cancelActiveSession('renderer.alerts.reading_test_cancelled_window_closed', { type: 'warn' });
+}
+
 async function startPoolSession(selection, options = {}) {
   const {
     state,
@@ -424,33 +439,11 @@ function handleFlotanteCommand(cmd, options = {}) {
 }
 
 function handleEditorClosed(options = {}) {
-  const {
-    state,
-    runtimeFlags,
-    cancelActiveSession,
-  } = options;
-
-  if (!isArmingOrRunningSession(state)) return;
-  if (runtimeFlags.suppressUnexpectedEditorClose) {
-    runtimeFlags.suppressUnexpectedEditorClose = false;
-    return;
-  }
-  cancelActiveSession('renderer.alerts.reading_test_cancelled_window_closed', { type: 'warn' });
+  handleUnexpectedWindowClosed('suppressUnexpectedEditorClose', options);
 }
 
 function handleFlotanteClosed(options = {}) {
-  const {
-    state,
-    runtimeFlags,
-    cancelActiveSession,
-  } = options;
-
-  if (!isArmingOrRunningSession(state)) return;
-  if (runtimeFlags.suppressUnexpectedFlotanteClose) {
-    runtimeFlags.suppressUnexpectedFlotanteClose = false;
-    return;
-  }
-  cancelActiveSession('renderer.alerts.reading_test_cancelled_window_closed', { type: 'warn' });
+  handleUnexpectedWindowClosed('suppressUnexpectedFlotanteClose', options);
 }
 
 module.exports = {
