@@ -28,6 +28,9 @@ const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[editor] AppConstants unavailable; verify constants.js load order');
 }
+if (typeof AppConstants.DEFAULT_LANG !== 'string' || AppConstants.DEFAULT_LANG.trim() === '') {
+  throw new Error('[editor] AppConstants.DEFAULT_LANG unavailable; cannot continue');
+}
 const {
   DEFAULT_LANG,
   PASTE_ALLOW_LIMIT,
@@ -139,7 +142,7 @@ const tr = (path, fallback) => tRenderer(path, fallback);
 const trMsg = (path, params, fallback) => msgRenderer(path, params, fallback);
 
 function applyDocumentLanguage() {
-  const langTag = (idiomaActual || DEFAULT_LANG || 'es').toLowerCase();
+  const langTag = (idiomaActual || DEFAULT_LANG).toLowerCase();
   if (document && document.documentElement) {
     document.documentElement.lang = langTag;
   }

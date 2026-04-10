@@ -26,8 +26,12 @@
     };
   }
 
-  function createCountUtils({ DEFAULT_LANG = 'es', log = null, intlObject = Intl } = {}) {
+  function createCountUtils({ DEFAULT_LANG, log = null, intlObject = Intl } = {}) {
     const safeLog = log && typeof log === 'object' ? log : createNoopLog();
+    const defaultLang = typeof DEFAULT_LANG === 'string' ? DEFAULT_LANG.trim() : '';
+    if (!defaultLang) {
+      throw new Error('[count_core] DEFAULT_LANG is required');
+    }
 
     const HYPHEN_JOINERS = new Set([
       '-',
@@ -60,6 +64,12 @@
       return typeof segment === 'string' && segment.length > 0 && reAlnumOnly.test(segment);
     }
 
+    function resolveLanguage(language) {
+      return typeof language === 'string' && language.trim()
+        ? language.trim()
+        : defaultLang;
+    }
+
     function contarTextoSimple(texto) {
       const conEspacios = texto.length;
       const sinEspacios = texto.replace(/\s+/g, '').length;
@@ -83,12 +93,13 @@
         return contarTextoPrecisoFallback(texto);
       }
 
-      const segGraf = new intlObject.Segmenter(language, { granularity: 'grapheme' });
+      const resolvedLanguage = resolveLanguage(language);
+      const segGraf = new intlObject.Segmenter(resolvedLanguage, { granularity: 'grapheme' });
       const grafemas = [...segGraf.segment(texto)];
       const conEspacios = grafemas.length;
       const sinEspacios = grafemas.filter((g) => !/\s/.test(g.segment)).length;
 
-      const segPal = new intlObject.Segmenter(language, { granularity: 'word' });
+      const segPal = new intlObject.Segmenter(resolvedLanguage, { granularity: 'word' });
 
       let palabras = 0;
       let prevWasJoinableWord = false;
@@ -119,7 +130,7 @@
 
     function contarTexto(texto, opts = {}) {
       const modoConteo = opts.modoConteo === 'simple' ? 'simple' : 'preciso';
-      const idioma = opts.idioma || DEFAULT_LANG;
+      const idioma = resolveLanguage(opts.idioma);
 
       return modoConteo === 'simple'
         ? contarTextoSimple(texto)
