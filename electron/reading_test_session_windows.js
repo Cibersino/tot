@@ -14,6 +14,10 @@
 
 const { BrowserWindow } = require('electron');
 
+function hasLiveWebContents(win) {
+  return !!(win && !win.isDestroyed() && win.webContents && !win.webContents.isDestroyed());
+}
+
 function waitForWindowVisible(win, label, log, timeoutMs) {
   return new Promise((resolve, reject) => {
     if (!win || win.isDestroyed()) {
@@ -65,7 +69,7 @@ function waitForWindowVisible(win, label, log, timeoutMs) {
 }
 
 function isWindowMainFrameLoading(win) {
-  if (!win || win.isDestroyed() || !win.webContents || win.webContents.isDestroyed()) {
+  if (!hasLiveWebContents(win)) {
     return false;
   }
 
@@ -76,7 +80,7 @@ function isWindowMainFrameLoading(win) {
 
 function waitForWindowRendererLoad(win, label, log, timeoutMs) {
   return new Promise((resolve, reject) => {
-    if (!win || win.isDestroyed() || !win.webContents || win.webContents.isDestroyed()) {
+    if (!hasLiveWebContents(win)) {
       reject(new Error(`READING_TEST_${label}_WINDOW_UNAVAILABLE`));
       return;
     }
@@ -159,7 +163,7 @@ function startEditorCountdown(editorWin, options = {}) {
   } = options;
 
   return new Promise((resolve, reject) => {
-    if (!editorWin || editorWin.isDestroyed() || !editorWin.webContents || editorWin.webContents.isDestroyed()) {
+    if (!hasLiveWebContents(editorWin)) {
       reject(new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_UNAVAILABLE'));
       return;
     }
@@ -230,6 +234,14 @@ function openQuestionsWindow(questions, options = {}) {
   } = options;
 
   return new Promise((resolve) => {
+    function tryCloseWindowIfAlive(winToClose) {
+      try {
+        if (!winToClose.isDestroyed()) winToClose.close();
+      } catch (closeErr) {
+        log.warn('Reading-test questions window forced close failed (ignored):', closeErr);
+      }
+    }
+
     const mainWin = resolveMainWindow();
     if (!mainWin || mainWin.isDestroyed()) {
       log.warn('Reading-test questions window unavailable (ignored): main window unavailable.');
@@ -284,11 +296,7 @@ function openQuestionsWindow(questions, options = {}) {
       } catch (err) {
         log.warn('Reading-test questions init failed (ignored):', err);
         if (settle({ ok: false, code: 'QUESTIONS_WINDOW_INIT_FAILED' })) {
-          try {
-            if (!win.isDestroyed()) win.close();
-          } catch (closeErr) {
-            log.warn('Reading-test questions window forced close failed (ignored):', closeErr);
-          }
+          tryCloseWindowIfAlive(win);
         }
       }
     });
@@ -301,11 +309,7 @@ function openQuestionsWindow(questions, options = {}) {
     win.loadFile(questionsWindowHtml).catch((err) => {
       log.warn('Reading-test questions window load failed (ignored):', err);
       if (settle({ ok: false, code: 'QUESTIONS_WINDOW_LOAD_FAILED' })) {
-        try {
-          if (!win.isDestroyed()) win.close();
-        } catch (closeErr) {
-          log.warn('Reading-test questions window forced close failed (ignored):', closeErr);
-        }
+        tryCloseWindowIfAlive(win);
       }
     });
   });
