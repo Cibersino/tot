@@ -221,6 +221,14 @@ function createController(options = {}) {
     }
   }
 
+  function tryClearCurrentText(warningMessage) {
+    try {
+      applyCurrentText('', { source: 'main-window', action: 'clear' });
+    } catch (err) {
+      log.warn(warningMessage, err);
+    }
+  }
+
   function hasCurrentText() {
     return String(getCurrentText() || '').trim().length > 0;
   }
@@ -470,10 +478,8 @@ function createController(options = {}) {
 
     try {
       if (clearCurrentText) {
-        applyCurrentText('', { source: 'main-window', action: 'clear' });
+        tryClearCurrentText('Reading-test start-failure current-text clear failed (ignored):');
       }
-    } catch (err) {
-      log.warn('Reading-test start-failure current-text clear failed (ignored):', err);
     } finally {
       suppressUnexpectedEditorClose = false;
       suppressUnexpectedFlotanteClose = false;
@@ -488,11 +494,7 @@ function createController(options = {}) {
     const shouldClearCurrentText = !selectedEntry || selectedEntry.sourceMode !== 'current_text';
     if (!shouldClearCurrentText) return;
 
-    try {
-      applyCurrentText('', { source: 'main-window', action: 'clear' });
-    } catch (err) {
-      log.warn('Reading-test session current-text clear failed (ignored):', err);
-    }
+    tryClearCurrentText('Reading-test session current-text clear failed (ignored):');
   }
 
   function isArmingOrRunningSession() {
@@ -569,11 +571,7 @@ function createController(options = {}) {
   function failArmingSession(selectedEntry, noticeKey) {
     if (!isArmingEntry(selectedEntry)) return;
 
-    tryResetCrono('Reading-test arming failure crono reset failed (ignored):');
-
-    closeReadingWindows();
-    clearSessionTextIfNeeded(selectedEntry);
-    clearSession();
+    resetAndCloseActiveSession(selectedEntry, 'Reading-test arming failure crono reset failed (ignored):');
 
     if (noticeKey) {
       emitNotice(noticeKey, { type: 'error' });
@@ -821,16 +819,19 @@ function createController(options = {}) {
     beginPresetStep(wpmInfo.wpm);
   }
 
+  function resetAndCloseActiveSession(selectedEntry, resetWarningMessage) {
+    tryResetCrono(resetWarningMessage);
+    closeReadingWindows();
+    clearSessionTextIfNeeded(selectedEntry);
+    clearSession();
+  }
+
   function cancelActiveSession(noticeKey, { type = 'warn' } = {}) {
     if (!isArmingOrRunningSession()) return;
 
     const selectedEntry = state.selectedEntry;
 
-    tryResetCrono('Reading-test cancel crono reset failed (ignored):');
-
-    closeReadingWindows();
-    clearSessionTextIfNeeded(selectedEntry);
-    clearSession();
+    resetAndCloseActiveSession(selectedEntry, 'Reading-test cancel crono reset failed (ignored):');
 
     if (noticeKey) {
       emitNotice(noticeKey, { type });
