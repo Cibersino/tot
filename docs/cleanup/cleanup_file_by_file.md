@@ -2,12 +2,13 @@
 
 ## Elección de archivo: 
 
-- En proceso: `public\js\reading_speed_test.js`
+- En proceso: `electron\reading_test_session.js`
 
-- Archivos ya ordenados y limpiados: `electron\reading_test_pool.js`, `electron\reading_test_pool_import.js`, `electron\reading_test_questions_preload.js`, `electron\reading_test_session.js`, `electron\spellcheck.js`, `electron\editor_text_size.js`, `public\reading_test_questions.js`.
+- Archivos ya ordenados y limpiados: `electron\reading_test_pool.js`, `electron\reading_test_pool_import.js`, `electron\reading_test_questions_preload.js`, `electron\spellcheck.js`, `electron\editor_text_size.js`, `public\reading_test_questions.js`.
 
 - Faltan: 
   - new:
+    `public\js\reading_speed_test.js`
     `public\js\lib\reading_test_filters_core.js`
     `public\js\lib\reading_test_questions_core.js`
   - older:

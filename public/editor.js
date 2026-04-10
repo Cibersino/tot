@@ -321,6 +321,27 @@ function clearReadingTestCountdownTimeouts() {
   readingTestCountdownTimeouts = [];
 }
 
+function notifyReadingTestCountdownReady(token) {
+  if (!token) return;
+  if (!window.editorAPI || typeof window.editorAPI.notifyReadingTestCountdownReady !== 'function') {
+    log.warnOnce(
+      'editor.readingTestCountdown.readyAckMissing',
+      'editorAPI.notifyReadingTestCountdownReady missing; reading-test countdown ready ack skipped.'
+    );
+    return;
+  }
+
+  try {
+    window.editorAPI.notifyReadingTestCountdownReady({ token });
+  } catch (err) {
+    log.warnOnce(
+      'editor.readingTestCountdown.readyAckFailed',
+      'Reading-test countdown ready ack failed (ignored):',
+      err
+    );
+  }
+}
+
 function positionEditorAtTop() {
   if (!editor) return;
 
@@ -378,12 +399,16 @@ function startReadingTestCountdown(payload = {}) {
   const stepMs = Number.isFinite(stepMsRaw) && stepMsRaw >= 250
     ? Math.floor(stepMsRaw)
     : 1000;
+  const token = payload && typeof payload.token === 'string'
+    ? payload.token
+    : '';
 
   const runId = ++readingTestCountdownRunId;
   clearReadingTestCountdownTimeouts();
 
   readingTestCountdownValue.textContent = String(seconds);
   setReadingTestCountdownVisible(true);
+  notifyReadingTestCountdownReady(token);
 
   for (let index = 1; index < seconds; index += 1) {
     const nextValue = seconds - index;

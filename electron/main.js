@@ -216,6 +216,51 @@ function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
 }
 
+function sendEditorInitText(logContext) {
+  if (!isAliveWindow(editorWin) || !editorWin.webContents || editorWin.webContents.isDestroyed()) {
+    return;
+  }
+
+  try {
+    const initialText = textState.getCurrentText();
+    editorWin.webContents.send('editor-init-text', {
+      text: initialText || '',
+      meta: { source: 'main', action: 'init' },
+    });
+  } catch (err) {
+    log.error(`Error sending editor-init-text from ${logContext}:`, err);
+  }
+}
+
+function notifyMainEditorReady(logContext) {
+  try {
+    if (isAliveWindow(mainWin)) {
+      mainWin.webContents.send('editor-ready');
+    }
+  } catch (err) {
+    log.warn(`Unable to notify editor-ready from ${logContext}:`, err);
+  }
+}
+
+function showEditorWindow(options = {}) {
+  if (!isAliveWindow(editorWin)) return null;
+
+  const shouldMaximize = !!(
+    options.maximize === true
+    || (options.useSavedMaximized !== false && editorWin.__totSavedMaximized === true)
+  );
+
+  if (shouldMaximize && typeof editorWin.maximize === 'function' && !editorWin.isMaximized()) {
+    editorWin.maximize();
+  }
+
+  if (typeof editorWin.show === 'function' && !editorWin.isVisible()) {
+    editorWin.show();
+  }
+
+  return editorWin;
+}
+
 function getSettingsBroadcastWindows() {
   return {
     mainWin,
@@ -228,29 +273,17 @@ function getSettingsBroadcastWindows() {
   };
 }
 
-function ensureEditorWindowOpen() {
+function ensureEditorWindowOpen(options = {}) {
+  const deferShow = !!(options && options.deferShow);
+
   if (!isAliveWindow(editorWin)) {
-    createEditorWindow();
+    createEditorWindow({ deferShow });
   } else {
-    editorWin.show();
-
-    try {
-      const initialText = textState.getCurrentText();
-      editorWin.webContents.send('editor-init-text', {
-        text: initialText || '',
-        meta: { source: 'main', action: 'init' },
-      });
-    } catch (err) {
-      log.error('Error sending editor-init-text from ensureEditorWindowOpen:', err);
+    if (!deferShow) {
+      showEditorWindow();
     }
-
-    try {
-      if (isAliveWindow(mainWin)) {
-        mainWin.webContents.send('editor-ready');
-      }
-    } catch (err) {
-      log.warn('Unable to notify editor-ready (editor already open):', err);
-    }
+    sendEditorInitText('ensureEditorWindowOpen');
+    notifyMainEditorReady('ensureEditorWindowOpen');
   }
 
   return editorWin;
@@ -571,8 +604,9 @@ function createMainWindow() {
  * Create the editor window (public/editor.html).
  * The editor uses editor_state.js to remember size/position/maximized state.
  */
-function createEditorWindow() {
+function createEditorWindow(options = {}) {
   spellcheckController.apply();
+  const deferShow = !!(options && options.deferShow);
 
   // Load last saved window state (size/position/maximized) from editor_state.js.
   const state = editorState.loadInitialState(loadJson);
@@ -607,6 +641,7 @@ function createEditorWindow() {
   // The editor window uses custom in-page controls; hide the native menu bar.
   editorWin.setMenu(null);
   editorWin.setMenuBarVisibility(false);
+  editorWin.__totSavedMaximized = !!(state && state.maximized === true);
 
   editorWin.loadFile(path.join(__dirname, '../public/editor.html'));
 
@@ -619,32 +654,11 @@ function createEditorWindow() {
   // When ready, apply maximized state (if needed), show it, and send initial data.
   editorWin.once('ready-to-show', () => {
     try {
-      // If it was last closed maximized, reopen maximized.
-      if (state && state.maximized === true) {
-        editorWin.maximize();
+      if (!deferShow) {
+        showEditorWindow();
       }
-
-      editorWin.show();
-
-      // Send current text so the editor can render and allow editing.
-      try {
-        const initialText = textState.getCurrentText();
-        editorWin.webContents.send('editor-init-text', {
-          text: initialText || '',
-          meta: { source: 'main', action: 'init' },
-        });
-      } catch (err) {
-        log.error('Error sending editor-init-text to editor:', err);
-      }
-
-      // Notify the main window that the editor is ready (UI may enable/refresh controls).
-      try {
-        if (isAliveWindow(mainWin)) {
-          mainWin.webContents.send('editor-ready');
-        }
-      } catch (err) {
-        log.error('Error notifying editor-ready to main window:', err);
-      }
+      sendEditorInitText('createEditorWindow');
+      notifyMainEditorReady('createEditorWindow');
     } catch (err) {
       log.error('Error showing editor:', err);
     }
@@ -1798,7 +1812,8 @@ app.whenReady().then(() => {
       };
     },
     isProcessingModeActive: () => importExtractProcessingModeController.isActive(),
-    ensureEditorWindow: () => ensureEditorWindowOpen(),
+    ensureEditorWindow: (options) => ensureEditorWindowOpen(options),
+    showEditorWindow: (options) => showEditorWindow(options),
     ensureFlotanteWindow: () => ensureFlotanteWindowOpen(),
     closeEditorWindow: () => requestCloseEditorWindow(),
     closeFlotanteWindow: () => requestCloseFlotanteWindow(),
