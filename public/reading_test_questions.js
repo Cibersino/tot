@@ -7,7 +7,7 @@
 // Renderer script for the reading-test questions modal.
 // Responsibilities:
 // - Validate required renderer bridges before the modal boots.
-// - Read initial settings and the modal init payload before rendering.
+// - Serialize initial settings and init-payload updates through one UI sync path.
 // - Render single-choice comprehension questions and local scoring feedback.
 // - Keep this step informative only; Continue always resumes the main flow.
 // =============================================================================
