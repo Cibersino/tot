@@ -104,7 +104,7 @@
       "title": "toT — Full text",
       "placeholder": "Type or paste here...",
       "calc_button": "CALC/SAVE",
-      "calc_while_typing": "Auto-save and auto-recalculate as you type",
+      "calc_while_typing": "Auto-calc",
       "spellcheck": "Spellcheck",
       "text_size_label": "Size",
       "decrease_text_size": "Decrease text size",
