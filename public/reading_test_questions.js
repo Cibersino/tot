@@ -38,6 +38,7 @@
   const questionsCore = window.ReadingTestQuestionsCore || null;
   if (!questionsCore
     || typeof questionsCore.validateQuestionsPayload !== 'function'
+    || typeof questionsCore.computeRandomGuessPercentage !== 'function'
     || typeof questionsCore.scoreQuestions !== 'function') {
     throw new Error('[reading-test-questions] ReadingTestQuestionsCore unavailable; cannot continue');
   }
@@ -342,9 +343,13 @@
     async function ensureTranslationsLoaded() {
       const target = normalizeLanguage(state.currentLanguage);
       if (state.translationsLoadedFor === target) return;
-      await loadRendererTranslations(target);
       state.currentLanguage = target;
-      state.translationsLoadedFor = target;
+      try {
+        await loadRendererTranslations(target);
+        state.translationsLoadedFor = target;
+      } catch (err) {
+        log.warn('Reading-test questions translation load failed (using fallback copy):', err);
+      }
     }
 
     function enqueueUiSync(updateFn) {
@@ -418,11 +423,11 @@
         const settings = await questionsApi.getSettings();
         state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
       } catch (err) {
-        log.warn('Reading-test questions initial settings fetch failed (ignored):', err);
+        log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
         state.currentLanguage = DEFAULT_LANGUAGE;
       }
     }).catch((err) => {
-      log.error('Reading-test questions fallback translation load failed:', err);
+      log.error('BOOTSTRAP: Reading-test questions initial render failed:', err);
     });
   });
 })();
