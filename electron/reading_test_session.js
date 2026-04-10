@@ -135,6 +135,69 @@ function createController(options = {}) {
   // Helpers
   // =============================================================================
 
+  // Session state / main-window signaling
+  function getState() {
+    return {
+      active: !!state.active,
+      stage: String(state.stage || 'idle'),
+      blocked: !!state.active,
+    };
+  }
+
+  function isInteractionLocked() {
+    return !!state.active;
+  }
+
+  function getInteractionBlockReason() {
+    return state.active ? 'reading_test_session' : '';
+  }
+
+  function safeSendToMain(channel, payload) {
+    const mainWin = resolveMainWindow();
+    if (!mainWin || mainWin.isDestroyed()) {
+      log.warn(`Reading-test main notify failed (ignored): ${channel} main window unavailable.`);
+      return;
+    }
+    try {
+      mainWin.webContents.send(channel, payload);
+    } catch (err) {
+      log.warn(`Reading-test main notify failed (ignored): ${channel}`, err);
+    }
+  }
+
+  function broadcastState() {
+    safeSendToMain('reading-test-state-changed', getState());
+  }
+
+  function emitNotice(key, { params = {}, type = 'info' } = {}) {
+    safeSendToMain('reading-test-notice', { key, params, type });
+  }
+
+  function applyMainWindowWpm(wpm) {
+    safeSendToMain('reading-test-apply-wpm', { wpm });
+  }
+
+  function setStage(stage, { selectedEntry = state.selectedEntry } = {}) {
+    state = {
+      active: stage !== 'idle',
+      stage,
+      selectedEntry: selectedEntry || null,
+    };
+    broadcastState();
+  }
+
+  function clearSession() {
+    state = {
+      active: false,
+      stage: 'idle',
+      selectedEntry: null,
+    };
+    suppressUnexpectedEditorClose = false;
+    suppressUnexpectedFlotanteClose = false;
+    broadcastState();
+  }
+
+  // General utilities
   function isAliveWindow(win) {
     return !!(win && !win.isDestroyed());
   }
@@ -145,6 +208,116 @@ function createController(options = {}) {
     });
   }
 
+  function buildCountdownToken() {
+    nextCountdownToken += 1;
+    return `reading-test-countdown-${Date.now()}-${nextCountdownToken}`;
+  }
+
+  function tryResetCrono(warningMessage) {
+    try {
+      resetCrono();
+    } catch (err) {
+      log.warn(warningMessage, err);
+    }
+  }
+
+  function hasCurrentText() {
+    return String(getCurrentText() || '').trim().length > 0;
+  }
+
+  function buildSessionEntry(sourceMode, entry = {}) {
+    return {
+      ...entry,
+      sourceMode,
+      hasValidQuestions: sourceMode === 'pool' && entry.hasValidQuestions === true,
+      questions: Array.isArray(entry.questions) ? entry.questions : [],
+    };
+  }
+
+  function getSettingsSnapshot() {
+    try {
+      return settingsState.getSettings();
+    } catch (err) {
+      log.warn('Reading-test settings fallback applied (ignored):', err);
+      return { language: DEFAULT_LANG, modeConteo: 'preciso', presets_by_language: {} };
+    }
+  }
+
+  function buildBlockedResult(guidanceKey, code) {
+    return {
+      ok: true,
+      canOpen: false,
+      guidanceKey,
+      code,
+    };
+  }
+
+  function chooseRandomEntry(entries) {
+    const list = Array.isArray(entries) ? entries : [];
+    if (!list.length) return null;
+    const index = Math.floor(Math.random() * list.length);
+    return list[index] || null;
+  }
+
+  // Availability / selection helpers
+  function checkEntryAvailability() {
+    if (state.active) {
+      return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'SESSION_ACTIVE');
+    }
+    if (isProcessingModeActive()) {
+      return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PROCESSING_ACTIVE');
+    }
+
+    const context = getPreconditionContext();
+    const openSecondaryWindows = Array.isArray(context && context.openSecondaryWindows)
+      ? context.openSecondaryWindows.filter((item) => item && item.isOpen)
+      : [];
+    const cronoState = getCronoState();
+    const stopwatchRunning = !!(context && context.stopwatchRunning);
+    const stopwatchElapsed = cronoState && typeof cronoState.elapsed === 'number'
+      ? cronoState.elapsed
+      : 0;
+    const stopwatchAtZero = stopwatchElapsed === 0;
+    if (openSecondaryWindows.length > 0 || stopwatchRunning || !stopwatchAtZero) {
+      return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PRECONDITION_BLOCKED');
+    }
+
+    const poolInfo = readingTestPool.listPoolEntries();
+    if (!poolInfo.ok) {
+      return buildBlockedResult('renderer.alerts.reading_test_pool_error', poolInfo.code || 'POOL_SCAN_FAILED');
+    }
+
+    const entries = poolInfo.entries;
+    const hasUnusedEntries = entries.some((entry) => entry.used === false);
+
+    return {
+      ok: true,
+      canOpen: true,
+      currentTextAvailable: hasCurrentText(),
+      poolExhausted: !hasUnusedEntries,
+      entries: entries.map(readingTestPool.serializePoolEntryMeta),
+      poolDirName: readingTestPool.POOL_DIR_NAME,
+    };
+  }
+
+  function ensureEligibleSelection(selection) {
+    const poolInfo = readingTestPool.listPoolEntries();
+    if (!poolInfo.ok) {
+      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_pool_error', code: poolInfo.code };
+    }
+
+    const eligibleEntries = readingTestFiltersCore.getEligibleEntries(
+      poolInfo.entries,
+      readingTestFiltersCore.normalizeSelection(selection)
+    );
+    if (!eligibleEntries.length) {
+      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_no_matching_files', code: 'NO_MATCHING_FILES' };
+    }
+
+    return { ok: true, eligibleEntries };
+  }
+
+  // Window wait helpers
   function waitForWindowVisible(win, label, timeoutMs = WINDOW_VISIBLE_TIMEOUT_MS) {
     return new Promise((resolve, reject) => {
       if (!isAliveWindow(win)) {
@@ -257,175 +430,6 @@ function createController(options = {}) {
         settle(new Error(`READING_TEST_${label}_WINDOW_LOAD_TIMEOUT`));
       }, timeoutMs);
     });
-  }
-
-  function buildCountdownToken() {
-    nextCountdownToken += 1;
-    return `reading-test-countdown-${Date.now()}-${nextCountdownToken}`;
-  }
-
-  function tryResetCrono(warningMessage) {
-    try {
-      resetCrono();
-    } catch (err) {
-      log.warn(warningMessage, err);
-    }
-  }
-
-  function hasCurrentText() {
-    return String(getCurrentText() || '').trim().length > 0;
-  }
-
-  function buildSessionEntry(sourceMode, entry = {}) {
-    return {
-      ...entry,
-      sourceMode,
-      hasValidQuestions: sourceMode === 'pool' && entry.hasValidQuestions === true,
-      questions: Array.isArray(entry.questions) ? entry.questions : [],
-    };
-  }
-
-  function getState() {
-    return {
-      active: !!state.active,
-      stage: String(state.stage || 'idle'),
-      blocked: !!state.active,
-    };
-  }
-
-  function isInteractionLocked() {
-    return !!state.active;
-  }
-
-  function getInteractionBlockReason() {
-    return state.active ? 'reading_test_session' : '';
-  }
-
-  function safeSendToMain(channel, payload) {
-    const mainWin = resolveMainWindow();
-    if (!mainWin || mainWin.isDestroyed()) {
-      log.warn(`Reading-test main notify failed (ignored): ${channel} main window unavailable.`);
-      return;
-    }
-    try {
-      mainWin.webContents.send(channel, payload);
-    } catch (err) {
-      log.warn(`Reading-test main notify failed (ignored): ${channel}`, err);
-    }
-  }
-
-  function broadcastState() {
-    safeSendToMain('reading-test-state-changed', getState());
-  }
-
-  function emitNotice(key, { params = {}, type = 'info' } = {}) {
-    safeSendToMain('reading-test-notice', { key, params, type });
-  }
-
-  function applyMainWindowWpm(wpm) {
-    safeSendToMain('reading-test-apply-wpm', { wpm });
-  }
-
-  function setStage(stage, { selectedEntry = state.selectedEntry } = {}) {
-    state = {
-      active: stage !== 'idle',
-      stage,
-      selectedEntry: selectedEntry || null,
-    };
-    broadcastState();
-  }
-
-  function clearSession() {
-    state = {
-      active: false,
-      stage: 'idle',
-      selectedEntry: null,
-    };
-    suppressUnexpectedEditorClose = false;
-    suppressUnexpectedFlotanteClose = false;
-    broadcastState();
-  }
-
-  function getSettingsSnapshot() {
-    try {
-      return settingsState.getSettings();
-    } catch (err) {
-      log.warn('Reading-test settings fallback applied (ignored):', err);
-      return { language: DEFAULT_LANG, modeConteo: 'preciso', presets_by_language: {} };
-    }
-  }
-
-  function buildBlockedResult(guidanceKey, code) {
-    return {
-      ok: true,
-      canOpen: false,
-      guidanceKey,
-      code,
-    };
-  }
-
-  function checkEntryAvailability() {
-    if (state.active) {
-      return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'SESSION_ACTIVE');
-    }
-    if (isProcessingModeActive()) {
-      return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PROCESSING_ACTIVE');
-    }
-
-    const context = getPreconditionContext();
-    const openSecondaryWindows = Array.isArray(context && context.openSecondaryWindows)
-      ? context.openSecondaryWindows.filter((item) => item && item.isOpen)
-      : [];
-    const cronoState = getCronoState();
-    const stopwatchRunning = !!(context && context.stopwatchRunning);
-    const stopwatchElapsed = cronoState && typeof cronoState.elapsed === 'number'
-      ? cronoState.elapsed
-      : 0;
-    const stopwatchAtZero = stopwatchElapsed === 0;
-    if (openSecondaryWindows.length > 0 || stopwatchRunning || !stopwatchAtZero) {
-      return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PRECONDITION_BLOCKED');
-    }
-
-    const poolInfo = readingTestPool.listPoolEntries();
-    if (!poolInfo.ok) {
-      return buildBlockedResult('renderer.alerts.reading_test_pool_error', poolInfo.code || 'POOL_SCAN_FAILED');
-    }
-
-    const entries = poolInfo.entries;
-    const hasUnusedEntries = entries.some((entry) => entry.used === false);
-
-    return {
-      ok: true,
-      canOpen: true,
-      currentTextAvailable: hasCurrentText(),
-      poolExhausted: !hasUnusedEntries,
-      entries: entries.map(readingTestPool.serializePoolEntryMeta),
-      poolDirName: readingTestPool.POOL_DIR_NAME,
-    };
-  }
-
-  function ensureEligibleSelection(selection) {
-    const poolInfo = readingTestPool.listPoolEntries();
-    if (!poolInfo.ok) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_pool_error', code: poolInfo.code };
-    }
-
-    const eligibleEntries = readingTestFiltersCore.getEligibleEntries(
-      poolInfo.entries,
-      readingTestFiltersCore.normalizeSelection(selection)
-    );
-    if (!eligibleEntries.length) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_no_matching_files', code: 'NO_MATCHING_FILES' };
-    }
-
-    return { ok: true, eligibleEntries };
-  }
-
-  function chooseRandomEntry(entries) {
-    const list = Array.isArray(entries) ? entries : [];
-    if (!list.length) return null;
-    const index = Math.floor(Math.random() * list.length);
-    return list[index] || null;
   }
 
   function closeReadingWindows() {
