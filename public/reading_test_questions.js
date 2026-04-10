@@ -6,13 +6,16 @@
 // =============================================================================
 // Renderer script for the reading-test questions modal.
 // Responsibilities:
-// - Load translations and question init payload.
-// - Render single-choice comprehension questions.
-// - Compute aggregate score + random-guess baseline locally.
-// - Keep the step informative only; Continue always resumes the flow.
+// - Validate required renderer bridges before the modal boots.
+// - Read initial settings and the modal init payload before rendering.
+// - Render single-choice comprehension questions and local scoring feedback.
+// - Keep this step informative only; Continue always resumes the main flow.
 // =============================================================================
 
 (() => {
+  // =============================================================================
+  // Renderer bridges / logger
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[reading-test-questions] window.getLogger unavailable; cannot continue');
   }
@@ -48,7 +51,11 @@
     throw new Error('[reading-test-questions] ReadingTestQuestionsCore unavailable; cannot continue');
   }
 
+  // =============================================================================
+  // DOM bootstrap
+  // =============================================================================
   document.addEventListener('DOMContentLoaded', () => {
+    // Collect required nodes first so the modal aborts before partial wiring.
     const elements = {
       title: document.getElementById('readingTestQuestionsTitle'),
       intro: document.getElementById('readingTestQuestionsIntro'),
@@ -90,6 +97,9 @@
       actions,
     } = elements;
 
+    // =============================================================================
+    // Constants / shared state
+    // =============================================================================
     const DEFAULT_LANG = appConstants.DEFAULT_LANG.trim();
     const DEFAULT_DEVELOPER_EMAIL = 'cibersino@gmail.com';
     const INVALID_PAYLOAD_KEY = 'renderer.reading_test.questions.fatal_invalid';
@@ -106,6 +116,9 @@
     };
     let uiSyncChain = Promise.resolve();
 
+    // =============================================================================
+    // Helpers
+    // =============================================================================
     function tr(path, fallback) {
       return tRenderer(path, fallback);
     }
@@ -172,6 +185,9 @@
       });
     }
 
+    // =============================================================================
+    // Rendering
+    // =============================================================================
     function renderStaticText() {
       document.title = tr(
         'renderer.reading_test.questions.title',
@@ -345,6 +361,9 @@
       renderControls();
     }
 
+    // =============================================================================
+    // UI synchronization
+    // =============================================================================
     async function ensureTranslationsLoaded() {
       const target = normalizeLanguage(state.currentLanguage);
       if (state.translationsLoadedFor === target) return;
@@ -393,6 +412,9 @@
       renderUi();
     }
 
+    // =============================================================================
+    // Event wiring / startup
+    // =============================================================================
     btnCheck.addEventListener('click', () => {
       if (state.fatalKey) return;
 
