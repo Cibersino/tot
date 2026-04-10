@@ -43,48 +43,62 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const title = document.getElementById('readingTestQuestionsTitle');
-    const intro = document.getElementById('readingTestQuestionsIntro');
-    const randomTitle = document.getElementById('readingTestQuestionsRandomTitle');
-    const randomValue = document.getElementById('readingTestQuestionsRandomValue');
-    const feedbackTitle = document.getElementById('readingTestQuestionsFeedbackTitle');
-    const feedbackPrefix = document.getElementById('readingTestQuestionsFeedbackPrefix');
-    const feedbackLink = document.getElementById('readingTestQuestionsFeedbackLink');
-    const incompleteMessage = document.getElementById('readingTestQuestionsIncomplete');
-    const resultMessage = document.getElementById('readingTestQuestionsResult');
-    const chanceMessage = document.getElementById('readingTestQuestionsChance');
-    const fatalMessage = document.getElementById('readingTestQuestionsFatal');
-    const form = document.getElementById('readingTestQuestionsForm');
-    const btnCheck = document.getElementById('readingTestQuestionsCheck');
-    const btnContinue = document.getElementById('readingTestQuestionsContinue');
-    const actions = document.querySelector('.reading-test-questions__actions');
+    const elements = {
+      title: document.getElementById('readingTestQuestionsTitle'),
+      intro: document.getElementById('readingTestQuestionsIntro'),
+      randomTitle: document.getElementById('readingTestQuestionsRandomTitle'),
+      randomValue: document.getElementById('readingTestQuestionsRandomValue'),
+      feedbackTitle: document.getElementById('readingTestQuestionsFeedbackTitle'),
+      feedbackPrefix: document.getElementById('readingTestQuestionsFeedbackPrefix'),
+      feedbackLink: document.getElementById('readingTestQuestionsFeedbackLink'),
+      incompleteMessage: document.getElementById('readingTestQuestionsIncomplete'),
+      resultMessage: document.getElementById('readingTestQuestionsResult'),
+      chanceMessage: document.getElementById('readingTestQuestionsChance'),
+      fatalMessage: document.getElementById('readingTestQuestionsFatal'),
+      form: document.getElementById('readingTestQuestionsForm'),
+      btnCheck: document.getElementById('readingTestQuestionsCheck'),
+      btnContinue: document.getElementById('readingTestQuestionsContinue'),
+      actions: document.querySelector('.reading-test-questions__actions'),
+    };
 
-    if (!title
-      || !intro
-      || !randomTitle
-      || !randomValue
-      || !feedbackTitle
-      || !feedbackPrefix
-      || !feedbackLink
-      || !incompleteMessage
-      || !resultMessage
-      || !chanceMessage
-      || !fatalMessage
-      || !form
-      || !btnCheck
-      || !btnContinue
-      || !actions) {
+    if (Object.values(elements).some((element) => !element)) {
       log.error('Reading-test questions window missing required DOM; script aborted.');
       return;
     }
 
-    let currentLanguage = 'es';
-    let translationsLoadedFor = '';
-    let developerEmail = 'cibersino@gmail.com';
-    let questions = [];
-    let answersByQuestionId = {};
-    let lastScore = null;
-    let fatalKey = '';
+    const {
+      title,
+      intro,
+      randomTitle,
+      randomValue,
+      feedbackTitle,
+      feedbackPrefix,
+      feedbackLink,
+      incompleteMessage,
+      resultMessage,
+      chanceMessage,
+      fatalMessage,
+      form,
+      btnCheck,
+      btnContinue,
+      actions,
+    } = elements;
+
+    const DEFAULT_LANGUAGE = 'es';
+    const DEFAULT_DEVELOPER_EMAIL = 'cibersino@gmail.com';
+    const INVALID_PAYLOAD_KEY = 'renderer.reading_test.questions.fatal_invalid';
+
+    const state = {
+      currentLanguage: DEFAULT_LANGUAGE,
+      translationsLoadedFor: '',
+      developerEmail: DEFAULT_DEVELOPER_EMAIL,
+      questions: [],
+      answersByQuestionId: {},
+      lastScore: null,
+      fatalKey: '',
+      showIncompleteWarning: false,
+    };
+    let uiSyncChain = Promise.resolve();
 
     function tr(path, fallback) {
       return tRenderer(path, fallback);
@@ -94,11 +108,24 @@
       return msgRenderer(path, params, fallback);
     }
 
+    function normalizeLanguage(language, fallback = DEFAULT_LANGUAGE) {
+      const normalized = typeof language === 'string'
+        ? language.trim().toLowerCase()
+        : '';
+      return normalized || fallback;
+    }
+
+    function readSettingsLanguage(settings, fallback = DEFAULT_LANGUAGE) {
+      return settings && typeof settings.language === 'string'
+        ? settings.language
+        : fallback;
+    }
+
     function formatPercentage(value) {
       const numeric = Number(value);
       const safe = Number.isFinite(numeric) ? numeric : 0;
       try {
-        return new Intl.NumberFormat(currentLanguage || 'es', {
+        return new Intl.NumberFormat(state.currentLanguage || DEFAULT_LANGUAGE, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         }).format(safe);
@@ -114,13 +141,25 @@
       element.textContent = visible ? text : '';
     }
 
-    function clearTransientMessages() {
-      setMessage(incompleteMessage, '', { tone: 'warn', visible: false });
-      setMessage(chanceMessage, '', { tone: 'note', visible: false });
-      setMessage(fatalMessage, '', { tone: 'error', visible: false });
+    function resetEvaluationState() {
+      state.lastScore = null;
+      state.showIncompleteWarning = false;
     }
 
-    function renderStaticCopy() {
+    function collectSelectedAnswer(questionId) {
+      return typeof state.answersByQuestionId[questionId] === 'string'
+        ? state.answersByQuestionId[questionId]
+        : '';
+    }
+
+    function allQuestionsAnswered() {
+      return state.questions.every((question) => {
+        const answer = collectSelectedAnswer(question.id);
+        return !!answer;
+      });
+    }
+
+    function renderStaticText() {
       document.title = tr(
         'renderer.reading_test.questions.title',
         'Reading Comprehension Questions'
@@ -153,19 +192,15 @@
         'renderer.reading_test.questions.buttons.continue',
         'Continue'
       );
-      updateRandomSummary();
-      updateResultMessages();
-      if (fatalKey) {
-        setMessage(
-          fatalMessage,
-          tr(fatalKey, 'The questions payload is invalid.'),
-          { tone: 'error', visible: true }
-        );
-      }
     }
 
-    function updateRandomSummary() {
-      const randomGuessPercentage = questionsCore.computeRandomGuessPercentage(questions);
+    function renderFeedbackLink() {
+      feedbackLink.textContent = state.developerEmail;
+      feedbackLink.href = `mailto:${state.developerEmail}`;
+    }
+
+    function renderRandomSummary() {
+      const randomGuessPercentage = questionsCore.computeRandomGuessPercentage(state.questions);
       randomValue.textContent = mr(
         'renderer.reading_test.questions.random_value',
         { percentage: formatPercentage(randomGuessPercentage) },
@@ -173,37 +208,51 @@
       );
     }
 
-    function updateResultMessages() {
-      if (!lastScore) {
+    function renderStatusMessages() {
+      setMessage(
+        incompleteMessage,
+        tr(
+          'renderer.reading_test.questions.incomplete_warning',
+          'All questions must be answered before evaluating.'
+        ),
+        { tone: 'warn', visible: state.showIncompleteWarning }
+      );
+
+      if (!state.lastScore) {
         setMessage(resultMessage, '', { tone: 'info', visible: false });
         setMessage(chanceMessage, '', { tone: 'note', visible: false });
-        return;
+      } else {
+        setMessage(
+          resultMessage,
+          mr(
+            'renderer.reading_test.questions.result_summary',
+            {
+              correct: state.lastScore.correct,
+              total: state.lastScore.total,
+              percentage: formatPercentage(state.lastScore.percentage),
+            },
+            `${state.lastScore.correct} out of ${state.lastScore.total} correct (${formatPercentage(state.lastScore.percentage)}%)`
+          ),
+          { tone: 'info', visible: true }
+        );
+
+        setMessage(
+          chanceMessage,
+          mr(
+            'renderer.reading_test.questions.chance_at_least_observed',
+            {
+              percentage: formatPercentage(state.lastScore.probabilityAtLeastObserved * 100),
+            },
+            `Chance of getting at least this score by random guessing: ${formatPercentage(state.lastScore.probabilityAtLeastObserved * 100)}%`
+          ),
+          { tone: 'note', visible: true }
+        );
       }
 
       setMessage(
-        resultMessage,
-        mr(
-          'renderer.reading_test.questions.result_summary',
-          {
-            correct: lastScore.correct,
-            total: lastScore.total,
-            percentage: formatPercentage(lastScore.percentage),
-          },
-          `${lastScore.correct} out of ${lastScore.total} correct (${formatPercentage(lastScore.percentage)}%)`
-        ),
-        { tone: 'info', visible: true }
-      );
-
-      setMessage(
-        chanceMessage,
-        mr(
-          'renderer.reading_test.questions.chance_at_least_observed',
-          {
-            percentage: formatPercentage(lastScore.probabilityAtLeastObserved * 100),
-          },
-          `Chance of getting at least this score by random guessing: ${formatPercentage(lastScore.probabilityAtLeastObserved * 100)}%`
-        ),
-        { tone: 'note', visible: true }
+        fatalMessage,
+        tr(state.fatalKey || INVALID_PAYLOAD_KEY, 'The questions payload is invalid.'),
+        { tone: 'error', visible: !!state.fatalKey }
       );
     }
 
@@ -219,16 +268,10 @@
       });
     }
 
-    function collectSelectedAnswer(questionId) {
-      return typeof answersByQuestionId[questionId] === 'string'
-        ? answersByQuestionId[questionId]
-        : '';
-    }
-
     function renderQuestions() {
       form.innerHTML = '';
 
-      questions.forEach((question, index) => {
+      state.questions.forEach((question, index) => {
         const fieldset = document.createElement('fieldset');
         fieldset.className = 'reading-test-questions__question';
 
@@ -260,7 +303,7 @@
           input.value = option.id;
           input.checked = collectSelectedAnswer(question.id) === option.id;
           input.addEventListener('change', () => {
-            answersByQuestionId[question.id] = option.id;
+            state.answersByQuestionId[question.id] = option.id;
           });
 
           const text = document.createElement('span');
@@ -276,88 +319,84 @@
       });
     }
 
-    function allQuestionsAnswered() {
-      return questions.every((question) => {
-        const answer = collectSelectedAnswer(question.id);
-        return !!answer;
-      });
+    function renderControls() {
+      btnCheck.disabled = !!state.fatalKey;
     }
 
-    async function ensureTranslations(language) {
-      const target = (language || '').trim().toLowerCase() || 'es';
-      if (translationsLoadedFor === target) return;
-      await loadRendererTranslations(target);
-      currentLanguage = target;
-      translationsLoadedFor = target;
-    }
-
-    async function applyTranslations() {
-      await ensureTranslations(currentLanguage);
-      renderStaticCopy();
+    function renderUi() {
+      renderStaticText();
+      renderFeedbackLink();
+      renderRandomSummary();
       renderQuestions();
+      renderStatusMessages();
+      renderControls();
     }
 
-    function installPayload(payload) {
-      developerEmail = (payload && typeof payload.developerEmail === 'string' && payload.developerEmail.trim())
+    async function ensureTranslationsLoaded() {
+      const target = normalizeLanguage(state.currentLanguage);
+      if (state.translationsLoadedFor === target) return;
+      await loadRendererTranslations(target);
+      state.currentLanguage = target;
+      state.translationsLoadedFor = target;
+    }
+
+    function enqueueUiSync(updateFn) {
+      const runUpdate = async () => {
+        await updateFn();
+        await ensureTranslationsLoaded();
+        renderUi();
+      };
+      uiSyncChain = uiSyncChain.then(runUpdate, runUpdate);
+      return uiSyncChain;
+    }
+
+    function applyPayloadState(payload) {
+      state.developerEmail = (payload && typeof payload.developerEmail === 'string' && payload.developerEmail.trim())
         ? payload.developerEmail.trim()
-        : developerEmail;
-      feedbackLink.textContent = developerEmail;
-      feedbackLink.href = `mailto:${developerEmail}`;
+        : state.developerEmail;
 
       const questionsInfo = questionsCore.validateQuestionsPayload({
         questions: Array.isArray(payload && payload.questions) ? payload.questions : [],
       });
 
       if (!questionsInfo.ok) {
-        questions = [];
-        answersByQuestionId = {};
-        lastScore = null;
-        fatalKey = 'renderer.reading_test.questions.fatal_invalid';
-        form.innerHTML = '';
-        btnCheck.disabled = true;
-        updateRandomSummary();
-        updateResultMessages();
-        setMessage(
-          fatalMessage,
-          tr(fatalKey, 'The questions payload is invalid.'),
-          { tone: 'error', visible: true }
-        );
+        state.questions = [];
+        state.answersByQuestionId = {};
+        resetEvaluationState();
+        state.fatalKey = INVALID_PAYLOAD_KEY;
         return;
       }
 
-      fatalKey = '';
-      questions = questionsInfo.questions;
-      answersByQuestionId = {};
-      lastScore = null;
-      btnCheck.disabled = false;
-      clearTransientMessages();
-      updateRandomSummary();
-      updateResultMessages();
-      renderQuestions();
+      state.fatalKey = '';
+      state.questions = questionsInfo.questions;
+      state.answersByQuestionId = {};
+      resetEvaluationState();
+    }
+
+    function handleInitFailure(err) {
+      log.error('Reading-test questions init failed:', err);
+      state.questions = [];
+      state.answersByQuestionId = {};
+      resetEvaluationState();
+      state.fatalKey = INVALID_PAYLOAD_KEY;
+      renderUi();
     }
 
     btnCheck.addEventListener('click', () => {
-      if (fatalKey) return;
+      if (state.fatalKey) return;
 
       withAnchoredActionsScroll(() => {
-        clearTransientMessages();
+        state.showIncompleteWarning = false;
 
         if (!allQuestionsAnswered()) {
-          lastScore = null;
-          updateResultMessages();
-          setMessage(
-            incompleteMessage,
-            tr(
-              'renderer.reading_test.questions.incomplete_warning',
-              'All questions must be answered before evaluating.'
-            ),
-            { tone: 'warn', visible: true }
-          );
+          state.lastScore = null;
+          state.showIncompleteWarning = true;
+          renderStatusMessages();
           return;
         }
 
-        lastScore = questionsCore.scoreQuestions(questions, answersByQuestionId);
-        updateResultMessages();
+        state.lastScore = questionsCore.scoreQuestions(state.questions, state.answersByQuestionId);
+        renderStatusMessages();
       });
     });
 
@@ -365,60 +404,25 @@
       window.close();
     });
 
-    questionsApi.onInitData(async (payload) => {
-      try {
-        installPayload(payload);
-        await applyTranslations();
-      } catch (err) {
-        log.error('Reading-test questions init failed:', err);
-        setMessage(
-          fatalMessage,
-          tr(
-            'renderer.reading_test.questions.fatal_invalid',
-            'The questions payload is invalid.'
-          ),
-          { tone: 'error', visible: true }
-        );
-      }
+    questionsApi.onInitData((payload) => {
+      enqueueUiSync(async () => {
+        applyPayloadState(payload);
+      }).catch((err) => {
+        handleInitFailure(err);
+      });
     });
 
-    if (typeof questionsApi.onSettingsChanged === 'function') {
-      questionsApi.onSettingsChanged(async (settings) => {
-        try {
-          const nextLanguage = settings && typeof settings.language === 'string'
-            ? settings.language
-            : '';
-          if (!nextLanguage || nextLanguage === currentLanguage) return;
-          currentLanguage = nextLanguage;
-          await applyTranslations();
-        } catch (err) {
-          log.warn('Reading-test questions settings update failed (ignored):', err);
-        }
-      });
-    } else {
-      log.warnOnce(
-        'reading-test-questions.onSettingsChanged.missing',
-        'readingTestQuestionsAPI.onSettingsChanged missing; live language updates disabled.'
-      );
-    }
-
-    (async () => {
+    enqueueUiSync(async () => {
       try {
         const settings = await questionsApi.getSettings();
-        const initialLanguage = settings && typeof settings.language === 'string'
-          ? settings.language
-          : 'es';
-        currentLanguage = initialLanguage;
-        await applyTranslations();
+        state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
       } catch (err) {
         log.warn('Reading-test questions initial settings fetch failed (ignored):', err);
-        try {
-          await applyTranslations();
-        } catch (applyErr) {
-          log.error('Reading-test questions fallback translation load failed:', applyErr);
-        }
+        state.currentLanguage = DEFAULT_LANGUAGE;
       }
-    })();
+    }).catch((err) => {
+      log.error('Reading-test questions fallback translation load failed:', err);
+    });
   });
 })();
 
