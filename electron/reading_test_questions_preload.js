@@ -6,26 +6,6 @@ const { contextBridge, ipcRenderer } = require('electron');
 let latestInitData = null;
 const initDataListeners = new Set();
 
-function subscribeWithUnsub(channel, cb, callbackErrorMessage, removeErrorMessage) {
-  const listener = (_event, payload) => {
-    try {
-      cb(payload);
-    } catch (err) {
-      console.error(callbackErrorMessage, err);
-    }
-  };
-
-  ipcRenderer.on(channel, listener);
-
-  return () => {
-    try {
-      ipcRenderer.removeListener(channel, listener);
-    } catch (err) {
-      console.error(removeErrorMessage, err);
-    }
-  };
-}
-
 ipcRenderer.on('reading-test-questions-init', (_event, payload) => {
   latestInitData = payload;
   for (const listener of initDataListeners) {
@@ -63,10 +43,4 @@ contextBridge.exposeInMainWorld('readingTestQuestionsAPI', {
       }
     };
   },
-  onSettingsChanged: (cb) => subscribeWithUnsub(
-    'settings-updated',
-    cb,
-    'settings-updated callback error:',
-    'removeListener error (settings-updated):'
-  ),
 });
