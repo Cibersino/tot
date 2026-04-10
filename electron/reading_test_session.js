@@ -527,8 +527,8 @@ function createController(options = {}) {
   // =============================================================================
 
   function registerIpc(ipcMain) {
-    if (!ipcMain || typeof ipcMain.handle !== 'function') {
-      throw new Error('[reading-test-session] registerIpc requires ipcMain');
+    if (!ipcMain || typeof ipcMain.handle !== 'function' || typeof ipcMain.on !== 'function') {
+      throw new Error('[reading-test-session] registerIpc requires ipcMain with handle/on');
     }
 
     function isAuthorizedMainSender(event) {
