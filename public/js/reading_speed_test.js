@@ -617,24 +617,12 @@
       });
   }
 
-  async function handleStart() {
-    if (stabilizing || isSessionActive() || filterState.eligibleCount < 1) return;
-
-    const startReadingTest = readElectronMethod('startReadingTest');
-    if (!startReadingTest) {
-      log.warnOnce(
-        'reading-speed-test.start.missing',
-        'startReadingTest unavailable; reading speed test start skipped.'
-      );
-      notifyUnavailable();
-      return;
-    }
-
+  async function runStartReadingTest(startReadingTest, payload) {
     stabilizing = true;
     render();
 
     try {
-      const result = await startReadingTest({ sourceMode: 'pool', selection });
+      const result = await startReadingTest(payload);
       stabilizing = false;
       render();
 
@@ -652,6 +640,22 @@
     }
   }
 
+  async function handleStart() {
+    if (stabilizing || isSessionActive() || filterState.eligibleCount < 1) return;
+
+    const startReadingTest = readElectronMethod('startReadingTest');
+    if (!startReadingTest) {
+      log.warnOnce(
+        'reading-speed-test.start.missing',
+        'startReadingTest unavailable; reading speed test start skipped.'
+      );
+      notifyUnavailable();
+      return;
+    }
+
+    await runStartReadingTest(startReadingTest, { sourceMode: 'pool', selection });
+  }
+
   async function handleStartCurrentText() {
     if (stabilizing || isSessionActive() || !currentTextAvailable) return;
 
@@ -665,26 +669,7 @@
       return;
     }
 
-    stabilizing = true;
-    render();
-
-    try {
-      const result = await startReadingTest({ sourceMode: 'current_text' });
-      stabilizing = false;
-      render();
-
-      if (!result || result.ok !== true) {
-        notifyGuidance((result && result.guidanceKey) || 'renderer.alerts.reading_test_start_failed');
-        return;
-      }
-
-      closeModal();
-    } catch (err) {
-      stabilizing = false;
-      render();
-      log.error('Reading-test start failed unexpectedly:', err);
-      notifyGuidance('renderer.alerts.reading_test_start_failed');
-    }
+    await runStartReadingTest(startReadingTest, { sourceMode: 'current_text' });
   }
 
   function bindStaticListeners() {
