@@ -12,7 +12,15 @@
 // - Open the questions modal window.
 // =============================================================================
 
+// =============================================================================
+// Imports
+// =============================================================================
+
 const { BrowserWindow } = require('electron');
+
+// =============================================================================
+// Window readiness helpers
+// =============================================================================
 
 function hasLiveWebContents(win) {
   return !!(win && !win.isDestroyed() && win.webContents && !win.webContents.isDestroyed());
@@ -131,6 +139,10 @@ function waitForWindowRendererLoad(win, label, log, timeoutMs) {
     }, timeoutMs);
   });
 }
+
+// =============================================================================
+// Window orchestration helpers
+// =============================================================================
 
 async function openReadingSessionWindows(options = {}) {
   const {
@@ -314,6 +326,10 @@ function openQuestionsWindow(questions, options = {}) {
     });
   });
 }
+
+// =============================================================================
+// Exports / module surface
+// =============================================================================
 
 module.exports = {
   waitForWindowVisible,
