@@ -35,6 +35,11 @@
   }
   const { loadRendererTranslations, tRenderer, msgRenderer } = i18nApi;
 
+  const appConstants = window.AppConstants || null;
+  if (!appConstants || typeof appConstants.DEFAULT_LANG !== 'string' || !appConstants.DEFAULT_LANG.trim()) {
+    throw new Error('[reading-test-questions] AppConstants.DEFAULT_LANG unavailable; cannot continue');
+  }
+
   const questionsCore = window.ReadingTestQuestionsCore || null;
   if (!questionsCore
     || typeof questionsCore.validateQuestionsPayload !== 'function'
@@ -85,12 +90,12 @@
       actions,
     } = elements;
 
-    const DEFAULT_LANGUAGE = 'es';
+    const DEFAULT_LANG = appConstants.DEFAULT_LANG.trim();
     const DEFAULT_DEVELOPER_EMAIL = 'cibersino@gmail.com';
     const INVALID_PAYLOAD_KEY = 'renderer.reading_test.questions.fatal_invalid';
 
     const state = {
-      currentLanguage: DEFAULT_LANGUAGE,
+      currentLanguage: DEFAULT_LANG,
       translationsLoadedFor: '',
       developerEmail: DEFAULT_DEVELOPER_EMAIL,
       questions: [],
@@ -109,14 +114,14 @@
       return msgRenderer(path, params, fallback);
     }
 
-    function normalizeLanguage(language, fallback = DEFAULT_LANGUAGE) {
+    function normalizeLanguage(language, fallback = DEFAULT_LANG) {
       const normalized = typeof language === 'string'
         ? language.trim().toLowerCase()
         : '';
       return normalized || fallback;
     }
 
-    function readSettingsLanguage(settings, fallback = DEFAULT_LANGUAGE) {
+    function readSettingsLanguage(settings, fallback = DEFAULT_LANG) {
       return settings && typeof settings.language === 'string'
         ? settings.language
         : fallback;
@@ -126,7 +131,7 @@
       const numeric = Number(value);
       const safe = Number.isFinite(numeric) ? numeric : 0;
       try {
-        return new Intl.NumberFormat(state.currentLanguage || DEFAULT_LANGUAGE, {
+        return new Intl.NumberFormat(state.currentLanguage || DEFAULT_LANG, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         }).format(safe);
@@ -424,7 +429,7 @@
         state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
       } catch (err) {
         log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
-        state.currentLanguage = DEFAULT_LANGUAGE;
+        state.currentLanguage = DEFAULT_LANG;
       }
     }).catch((err) => {
       log.error('BOOTSTRAP: Reading-test questions initial render failed:', err);
