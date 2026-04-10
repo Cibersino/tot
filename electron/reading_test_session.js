@@ -38,6 +38,7 @@ const DEVELOPER_EMAIL = 'cibersino@gmail.com';
 const PRESTART_COUNTDOWN_SECONDS = 5;
 const PRESTART_COUNTDOWN_STEP_MS = 1000;
 const WINDOW_VISIBLE_TIMEOUT_MS = 5000;
+const COUNTDOWN_READY_TIMEOUT_MS = 5000;
 
 // =============================================================================
 // Controller factory
@@ -50,6 +51,7 @@ function createController(options = {}) {
     getPreconditionContext,
     isProcessingModeActive,
     ensureEditorWindow,
+    showEditorWindow,
     ensureFlotanteWindow,
     closeEditorWindow,
     closeFlotanteWindow,
@@ -73,6 +75,9 @@ function createController(options = {}) {
   }
   if (typeof ensureEditorWindow !== 'function') {
     throw new Error('[reading-test-session] createController requires ensureEditorWindow()');
+  }
+  if (typeof showEditorWindow !== 'function') {
+    throw new Error('[reading-test-session] createController requires showEditorWindow()');
   }
   if (typeof ensureFlotanteWindow !== 'function') {
     throw new Error('[reading-test-session] createController requires ensureFlotanteWindow()');
@@ -123,6 +128,8 @@ function createController(options = {}) {
 
   let suppressUnexpectedEditorClose = false;
   let suppressUnexpectedFlotanteClose = false;
+  let nextCountdownToken = 0;
+  const pendingCountdownReadyAcks = new Map();
 
   // =============================================================================
   // Helpers
@@ -186,6 +193,75 @@ function createController(options = {}) {
         settle(new Error(`READING_TEST_${label}_WINDOW_VISIBLE_TIMEOUT`));
       }, timeoutMs);
     });
+  }
+
+  function isWindowMainFrameLoading(win) {
+    if (!isAliveWindow(win) || !win.webContents || win.webContents.isDestroyed()) {
+      return false;
+    }
+
+    return typeof win.webContents.isLoadingMainFrame === 'function'
+      ? win.webContents.isLoadingMainFrame()
+      : win.webContents.isLoading();
+  }
+
+  function waitForWindowRendererLoad(win, label, timeoutMs = WINDOW_VISIBLE_TIMEOUT_MS) {
+    return new Promise((resolve, reject) => {
+      if (!isAliveWindow(win) || !win.webContents || win.webContents.isDestroyed()) {
+        reject(new Error(`READING_TEST_${label}_WINDOW_UNAVAILABLE`));
+        return;
+      }
+
+      const { webContents } = win;
+      if (!isWindowMainFrameLoading(win)) {
+        resolve();
+        return;
+      }
+
+      let settled = false;
+      let timeoutId = null;
+
+      const cleanup = () => {
+        try {
+          webContents.removeListener('did-finish-load', handleDidFinishLoad);
+          webContents.removeListener('destroyed', handleDestroyed);
+          win.removeListener('closed', handleClosed);
+        } catch (err) {
+          log.warn(`Reading-test ${label} renderer-load cleanup failed (ignored):`, err);
+        }
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+      };
+
+      const settle = (err) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      };
+
+      const handleDidFinishLoad = () => settle();
+      const handleDestroyed = () => settle(new Error(`READING_TEST_${label}_WINDOW_WEB_CONTENTS_DESTROYED`));
+      const handleClosed = () => settle(new Error(`READING_TEST_${label}_WINDOW_CLOSED`));
+
+      webContents.once('did-finish-load', handleDidFinishLoad);
+      webContents.once('destroyed', handleDestroyed);
+      win.once('closed', handleClosed);
+      timeoutId = setTimeout(() => {
+        settle(new Error(`READING_TEST_${label}_WINDOW_LOAD_TIMEOUT`));
+      }, timeoutMs);
+    });
+  }
+
+  function buildCountdownToken() {
+    nextCountdownToken += 1;
+    return `reading-test-countdown-${Date.now()}-${nextCountdownToken}`;
   }
 
   function tryResetCrono(warningMessage) {
@@ -373,13 +449,10 @@ function createController(options = {}) {
 
   async function openReadingSessionWindows() {
     resetCrono();
-    const editorWin = ensureEditorWindow();
-    if (isAliveWindow(editorWin) && !editorWin.isMaximized()) {
-      editorWin.maximize();
-    }
+    const editorWin = ensureEditorWindow({ deferShow: true });
     const flotanteWin = await ensureFlotanteWindow();
     await Promise.all([
-      waitForWindowVisible(editorWin, 'EDITOR'),
+      waitForWindowRendererLoad(editorWin, 'EDITOR'),
       waitForWindowVisible(flotanteWin, 'FLOTANTE'),
     ]);
 
@@ -427,13 +500,65 @@ function createController(options = {}) {
   }
 
   function startEditorCountdown(editorWin) {
-    if (!isAliveWindow(editorWin) || !editorWin.webContents || editorWin.webContents.isDestroyed()) {
-      throw new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_UNAVAILABLE');
-    }
+    return new Promise((resolve, reject) => {
+      if (!isAliveWindow(editorWin) || !editorWin.webContents || editorWin.webContents.isDestroyed()) {
+        reject(new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_UNAVAILABLE'));
+        return;
+      }
 
-    editorWin.webContents.send('reading-test-prestart-countdown', {
-      seconds: PRESTART_COUNTDOWN_SECONDS,
-      stepMs: PRESTART_COUNTDOWN_STEP_MS,
+      const { webContents } = editorWin;
+      const token = buildCountdownToken();
+      let settled = false;
+      let timeoutId = null;
+
+      const cleanup = () => {
+        pendingCountdownReadyAcks.delete(token);
+        try {
+          editorWin.removeListener('closed', handleClosed);
+          webContents.removeListener('destroyed', handleDestroyed);
+        } catch (err) {
+          log.warn('Reading-test countdown ack cleanup failed (ignored):', err);
+        }
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+      };
+
+      const settle = (err) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      };
+
+      const handleClosed = () => settle(new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_CLOSED'));
+      const handleDestroyed = () => settle(new Error('READING_TEST_EDITOR_COUNTDOWN_WEB_CONTENTS_DESTROYED'));
+
+      pendingCountdownReadyAcks.set(token, {
+        sender: webContents,
+        settle,
+      });
+
+      editorWin.once('closed', handleClosed);
+      webContents.once('destroyed', handleDestroyed);
+      timeoutId = setTimeout(() => {
+        settle(new Error('READING_TEST_EDITOR_COUNTDOWN_READY_TIMEOUT'));
+      }, COUNTDOWN_READY_TIMEOUT_MS);
+
+      try {
+        webContents.send('reading-test-prestart-countdown', {
+          seconds: PRESTART_COUNTDOWN_SECONDS,
+          stepMs: PRESTART_COUNTDOWN_STEP_MS,
+          token,
+        });
+      } catch (err) {
+        settle(err);
+      }
     });
   }
 
@@ -458,7 +583,12 @@ function createController(options = {}) {
       const { editorWin, flotanteWin } = await openReadingSessionWindows();
       if (!isArmingEntry(selectedEntry)) return;
 
-      startEditorCountdown(editorWin);
+      await startEditorCountdown(editorWin);
+      if (!isArmingEntry(selectedEntry)) return;
+
+      showEditorWindow({ maximize: true });
+      await waitForWindowVisible(editorWin, 'EDITOR');
+
       await wait(PRESTART_COUNTDOWN_SECONDS * PRESTART_COUNTDOWN_STEP_MS);
 
       if (!isArmingEntry(selectedEntry)) return;
@@ -829,6 +959,25 @@ function createController(options = {}) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
       return checkEntryAvailability();
+    });
+
+    ipcMain.on('reading-test-countdown-ready', (event, payload) => {
+      const token = payload && typeof payload.token === 'string'
+        ? payload.token
+        : '';
+      if (!token) return;
+
+      const pendingAck = pendingCountdownReadyAcks.get(token);
+      if (!pendingAck) return;
+      if (pendingAck.sender !== event.sender) {
+        log.warnOnce(
+          'reading-test-session.countdown_ready_sender_mismatch',
+          'Reading-test countdown ready ack ignored: sender mismatch.'
+        );
+        return;
+      }
+
+      pendingAck.settle();
     });
 
     ipcMain.handle('reading-test-reset-pool', async (event) => {
