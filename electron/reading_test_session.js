@@ -269,43 +269,48 @@ function createController(options = {}) {
 
   // Availability / selection helpers
   function checkEntryAvailability() {
-    if (state.active) {
-      return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'SESSION_ACTIVE');
-    }
-    if (isProcessingModeActive()) {
-      return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PROCESSING_ACTIVE');
-    }
+    try {
+      if (state.active) {
+        return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'SESSION_ACTIVE');
+      }
+      if (isProcessingModeActive()) {
+        return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PROCESSING_ACTIVE');
+      }
 
-    const context = getPreconditionContext();
-    const openSecondaryWindows = Array.isArray(context && context.openSecondaryWindows)
-      ? context.openSecondaryWindows.filter((item) => item && item.isOpen)
-      : [];
-    const cronoState = getCronoState();
-    const stopwatchRunning = !!(context && context.stopwatchRunning);
-    const stopwatchElapsed = cronoState && typeof cronoState.elapsed === 'number'
-      ? cronoState.elapsed
-      : 0;
-    const stopwatchAtZero = stopwatchElapsed === 0;
-    if (openSecondaryWindows.length > 0 || stopwatchRunning || !stopwatchAtZero) {
-      return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PRECONDITION_BLOCKED');
+      const context = getPreconditionContext();
+      const openSecondaryWindows = Array.isArray(context && context.openSecondaryWindows)
+        ? context.openSecondaryWindows.filter((item) => item && item.isOpen)
+        : [];
+      const cronoState = getCronoState();
+      const stopwatchRunning = !!(context && context.stopwatchRunning);
+      const stopwatchElapsed = cronoState && typeof cronoState.elapsed === 'number'
+        ? cronoState.elapsed
+        : 0;
+      const stopwatchAtZero = stopwatchElapsed === 0;
+      if (openSecondaryWindows.length > 0 || stopwatchRunning || !stopwatchAtZero) {
+        return buildBlockedResult('renderer.alerts.reading_test_precondition_blocked', 'PRECONDITION_BLOCKED');
+      }
+
+      const poolInfo = readingTestPool.listPoolEntries();
+      if (!poolInfo.ok) {
+        return buildBlockedResult('renderer.alerts.reading_test_pool_error', poolInfo.code || 'POOL_SCAN_FAILED');
+      }
+
+      const entries = poolInfo.entries;
+      const hasUnusedEntries = entries.some((entry) => entry.used === false);
+
+      return {
+        ok: true,
+        canOpen: true,
+        currentTextAvailable: hasCurrentText(),
+        poolExhausted: !hasUnusedEntries,
+        entries: entries.map(readingTestPool.serializePoolEntryMeta),
+        poolDirName: readingTestPool.POOL_DIR_NAME,
+      };
+    } catch (err) {
+      log.error('Reading-test entry availability check failed:', err);
+      throw err;
     }
-
-    const poolInfo = readingTestPool.listPoolEntries();
-    if (!poolInfo.ok) {
-      return buildBlockedResult('renderer.alerts.reading_test_pool_error', poolInfo.code || 'POOL_SCAN_FAILED');
-    }
-
-    const entries = poolInfo.entries;
-    const hasUnusedEntries = entries.some((entry) => entry.used === false);
-
-    return {
-      ok: true,
-      canOpen: true,
-      currentTextAvailable: hasCurrentText(),
-      poolExhausted: !hasUnusedEntries,
-      entries: entries.map(readingTestPool.serializePoolEntryMeta),
-      poolDirName: readingTestPool.POOL_DIR_NAME,
-    };
   }
 
   function ensureEligibleSelection(selection) {
@@ -771,7 +776,15 @@ function createController(options = {}) {
     applyMainWindowWpm(wpm);
     setStage('preset');
 
-    const presetWin = openPresetWindow(buildPrefilledPresetPayload(wpm));
+    let presetWin = null;
+    try {
+      presetWin = openPresetWindow(buildPrefilledPresetPayload(wpm));
+    } catch (err) {
+      log.warn('Reading-test preset window open failed (ignored):', err);
+      emitNotice('renderer.alerts.reading_test_preset_unavailable', { type: 'error' });
+      clearSession();
+      return;
+    }
     if (!presetWin || presetWin.isDestroyed()) {
       log.warn('Reading-test preset window unavailable (ignored): openPresetWindow returned no live window.');
       emitNotice('renderer.alerts.reading_test_preset_unavailable', { type: 'error' });
@@ -798,25 +811,32 @@ function createController(options = {}) {
   async function finishRunningSession() {
     if (!state.active || state.stage !== 'running' || !state.selectedEntry) return;
 
-    stopCrono();
-    closeReadingWindows();
+    const selectedEntry = state.selectedEntry;
 
-    const wpmInfo = computeCurrentWpm();
-    if (!wpmInfo.ok) {
-      emitNotice(wpmInfo.guidanceKey, { type: 'error' });
-      clearSession();
-      return;
-    }
+    try {
+      stopCrono();
+      closeReadingWindows();
 
-    if (state.selectedEntry.hasValidQuestions) {
-      setStage('questions');
-      const questionsWindowInfo = await openQuestionsWindow(state.selectedEntry.questions);
-      if (!questionsWindowInfo.ok) {
-        emitNotice('renderer.alerts.reading_test_questions_unavailable', { type: 'warn' });
+      const wpmInfo = computeCurrentWpm();
+      if (!wpmInfo.ok) {
+        emitNotice(wpmInfo.guidanceKey, { type: 'error' });
+        clearSession();
+        return;
       }
-    }
 
-    beginPresetStep(wpmInfo.wpm);
+      if (selectedEntry.hasValidQuestions) {
+        setStage('questions');
+        const questionsWindowInfo = await openQuestionsWindow(selectedEntry.questions);
+        if (!questionsWindowInfo.ok) {
+          emitNotice('renderer.alerts.reading_test_questions_unavailable', { type: 'warn' });
+        }
+      }
+
+      beginPresetStep(wpmInfo.wpm);
+    } catch (err) {
+      log.error('Reading-test session finish failed:', err);
+      resetAndCloseActiveSession(selectedEntry, 'Reading-test finish failure crono reset failed (ignored):');
+    }
   }
 
   function resetAndCloseActiveSession(selectedEntry, resetWarningMessage) {
@@ -839,52 +859,62 @@ function createController(options = {}) {
   }
 
   async function startPoolSession(selection) {
-    if (state.active) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
+    try {
+      if (state.active) {
+        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
+      }
+
+      const selectionInfo = ensureEligibleSelection(selection);
+      if (!selectionInfo.ok) return selectionInfo;
+
+      const selectedEntry = chooseRandomEntry(selectionInfo.eligibleEntries);
+      if (!selectedEntry) {
+        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_no_matching_files', code: 'NO_MATCHING_FILES' };
+      }
+
+      const applyResult = applyCurrentText(selectedEntry.text, {
+        source: 'main-window',
+        action: 'overwrite',
+      });
+      if (!applyResult || applyResult.ok !== true) {
+        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: 'TEXT_APPLY_FAILED' };
+      }
+
+      const writeInfo = readingTestPool.markPoolEntryUsed(selectedEntry.snapshotRelPath, true);
+      if (!writeInfo.ok) {
+        cleanupStartFailure({ clearCurrentText: true });
+        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: writeInfo.code || 'POOL_WRITE_FAILED' };
+      }
+
+      const sessionEntry = buildSessionEntry('pool', selectedEntry);
+      setStage('arming', { selectedEntry: sessionEntry });
+      void continueArmingSession(sessionEntry);
+      return { ok: true };
+    } catch (err) {
+      log.error('Reading-test pool session start failed:', err);
+      throw err;
     }
-
-    const selectionInfo = ensureEligibleSelection(selection);
-    if (!selectionInfo.ok) return selectionInfo;
-
-    const selectedEntry = chooseRandomEntry(selectionInfo.eligibleEntries);
-    if (!selectedEntry) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_no_matching_files', code: 'NO_MATCHING_FILES' };
-    }
-
-    const applyResult = applyCurrentText(selectedEntry.text, {
-      source: 'main-window',
-      action: 'overwrite',
-    });
-    if (!applyResult || applyResult.ok !== true) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: 'TEXT_APPLY_FAILED' };
-    }
-
-    const writeInfo = readingTestPool.markPoolEntryUsed(selectedEntry.snapshotRelPath, true);
-    if (!writeInfo.ok) {
-      cleanupStartFailure({ clearCurrentText: true });
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: writeInfo.code || 'POOL_WRITE_FAILED' };
-    }
-
-    const sessionEntry = buildSessionEntry('pool', selectedEntry);
-    setStage('arming', { selectedEntry: sessionEntry });
-    void continueArmingSession(sessionEntry);
-    return { ok: true };
   }
 
   async function startCurrentTextSession() {
-    if (state.active) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
-    }
-    if (!hasCurrentText()) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
-    }
+    try {
+      if (state.active) {
+        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
+      }
+      if (!hasCurrentText()) {
+        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
+      }
 
-    const sessionEntry = buildSessionEntry('current_text');
-    setStage('arming', {
-      selectedEntry: sessionEntry,
-    });
-    void continueArmingSession(sessionEntry);
-    return { ok: true };
+      const sessionEntry = buildSessionEntry('current_text');
+      setStage('arming', {
+        selectedEntry: sessionEntry,
+      });
+      void continueArmingSession(sessionEntry);
+      return { ok: true };
+    } catch (err) {
+      log.error('Reading-test current-text session start failed:', err);
+      throw err;
+    }
   }
 
   function handleFlotanteCommand(cmd) {
@@ -970,10 +1000,23 @@ function createController(options = {}) {
       const token = payload && typeof payload.token === 'string'
         ? payload.token
         : '';
-      if (!token) return;
+      if (!token) {
+        log.warnOnce(
+          'reading-test-session.countdown_ready_missing_token',
+          'Reading-test countdown ready ack ignored: missing token.'
+        );
+        return;
+      }
 
       const pendingAck = pendingCountdownReadyAcks.get(token);
-      if (!pendingAck) return;
+      if (!pendingAck) {
+        log.warnOnce(
+          'reading-test-session.countdown_ready_unknown_token',
+          'Reading-test countdown ready ack ignored: token not pending.',
+          { token }
+        );
+        return;
+      }
       if (pendingAck.sender !== event.sender) {
         log.warnOnce(
           'reading-test-session.countdown_ready_sender_mismatch',
