@@ -257,6 +257,7 @@
         "eligible_count": "Dullngechi chillka: {count}",
         "pool_exhausted_message": "Ngelay pepiluwal we chillka. Wiño kintun trawün (pool) kam yafmatunge chillka.",
         "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",
+        "start_random_confirm": "Tüfachi wiño püneay tami felechi chillka ka müley kiñe random chillka feychi trawün mew. ¿Amuleaymi?",
         "reset_confirm": "Fey mu wiñotripayay kom trawün (pool) pepiluwal ka kom chillka 'ngelay chillkatun' pingeay. ¿Amuleaymi?",
         "import_summary": "Importación afmatuy. Koneltuy: {imported}. Duplicados no koneltuy: {skippedDuplicates}. Validación no müley: {failedValidation}. Archivo comprimido mu entradas no müley: {failedArchiveEntries}. Escrituras no müley: {failedWrites}.",
         "import_conflict": {

@@ -257,6 +257,7 @@
         "eligible_count": "Fichiers éligibles : {count}",
         "pool_exhausted_message": "Il ne reste plus de fichiers de test inutilisés. Réinitialisez le pool ou ajoutez d'autres fichiers.",
         "close_aria": "Fermer la boîte de dialogue du test de vitesse de lecture",
+        "start_random_confirm": "Cela remplacera le texte actuel par un texte aléatoire éligible du pool. Voulez-vous continuer ?",
         "reset_confirm": "Cela réinitialisera tout le pool du test et re-marquerra tous ses fichiers comme non utilisés. Voulez-vous continuer ?",
         "import_summary": "Import terminé. Importés : {imported}. Doublons ignorés : {skippedDuplicates}. Échecs de validation : {failedValidation}. Échecs d'entrées d'archive : {failedArchiveEntries}. Échecs d'écriture : {failedWrites}.",
         "import_conflict": {
