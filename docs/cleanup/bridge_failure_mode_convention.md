@@ -20,6 +20,9 @@ Each dependency must be classified before coding:
 
 Unclassified coexistence is drift and should be treated as a policy violation.
 
+Classification answers how a dependency behaves when absent; it does not by itself decide where enforcement must live.
+If another policy defines a stable owner/public surface, feature modules should consume that surface directly and follow the more specific policy for call-site behavior.
+
 ## 3. Definitions
 
 - **Required startup dependency:** Without it, module invariants cannot hold and normal initialization is invalid.
@@ -61,6 +64,9 @@ Unclassified coexistence is drift and should be treated as a policy violation.
 ## 6. Coding patterns
 
 ### 6.1 Required startup dependency (fail fast)
+
+This example shows one valid fail-fast pattern. It does not mean every consumer must add a feature-local availability check.
+If fail-fast ownership belongs to a bootstrap/owner layer defined by a more specific policy, enforce it there and let feature modules consume the stable surface directly.
 
 ```js
 if (!window.someAPI || typeof window.someAPI.requiredMethod !== 'function') {
