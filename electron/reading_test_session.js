@@ -24,6 +24,8 @@ const { DEFAULT_LANG, PRESET_WPM_MIN, PRESET_WPM_MAX } = require('./constants_ma
 const countCore = require('../public/js/lib/count_core');
 const readingTestFiltersCore = require('../public/js/lib/reading_test_filters_core');
 const readingTestPool = require('./reading_test_pool');
+const readingTestSessionWindows = require('./reading_test_session_windows');
+const readingTestSessionFlow = require('./reading_test_session_flow');
 
 const log = Log.get('reading-test-session');
 log.debug('Reading test session starting...');
@@ -120,14 +122,16 @@ function createController(options = {}) {
   // Shared state
   // =============================================================================
   // All mutable session coordination stays inside the controller; callers see only derived state/methods.
-  let state = {
+  const state = {
     active: false,
     stage: 'idle',
     selectedEntry: null,
   };
 
-  let suppressUnexpectedEditorClose = false;
-  let suppressUnexpectedFlotanteClose = false;
+  const runtimeFlags = {
+    suppressUnexpectedEditorClose: false,
+    suppressUnexpectedFlotanteClose: false,
+  };
   let nextCountdownToken = 0;
   const pendingCountdownReadyAcks = new Map();
 
@@ -178,22 +182,18 @@ function createController(options = {}) {
   }
 
   function setStage(stage, { selectedEntry = state.selectedEntry } = {}) {
-    state = {
-      active: stage !== 'idle',
-      stage,
-      selectedEntry: selectedEntry || null,
-    };
+    state.active = stage !== 'idle';
+    state.stage = stage;
+    state.selectedEntry = selectedEntry || null;
     broadcastState();
   }
 
   function clearSession() {
-    state = {
-      active: false,
-      stage: 'idle',
-      selectedEntry: null,
-    };
-    suppressUnexpectedEditorClose = false;
-    suppressUnexpectedFlotanteClose = false;
+    state.active = false;
+    state.stage = 'idle';
+    state.selectedEntry = null;
+    runtimeFlags.suppressUnexpectedEditorClose = false;
+    runtimeFlags.suppressUnexpectedFlotanteClose = false;
     broadcastState();
   }
 
@@ -330,124 +330,24 @@ function createController(options = {}) {
     return { ok: true, eligibleEntries };
   }
 
-  // Window wait helpers
-  function waitForWindowVisible(win, label, timeoutMs = WINDOW_VISIBLE_TIMEOUT_MS) {
-    return new Promise((resolve, reject) => {
-      if (!isAliveWindow(win)) {
-        reject(new Error(`READING_TEST_${label}_WINDOW_UNAVAILABLE`));
-        return;
-      }
-
-      if (typeof win.isVisible === 'function' && win.isVisible()) {
-        resolve();
-        return;
-      }
-
-      let settled = false;
-      let timeoutId = null;
-
-      const cleanup = () => {
-        try {
-          win.removeListener('show', handleShow);
-          win.removeListener('closed', handleClosed);
-        } catch (err) {
-          log.warn(`Reading-test ${label} window visibility cleanup failed (ignored):`, err);
-        }
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-      };
-
-      const settle = (err) => {
-        if (settled) return;
-        settled = true;
-        cleanup();
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve();
-      };
-
-      const handleShow = () => settle();
-      const handleClosed = () => settle(new Error(`READING_TEST_${label}_WINDOW_CLOSED`));
-
-      win.once('show', handleShow);
-      win.once('closed', handleClosed);
-      timeoutId = setTimeout(() => {
-        settle(new Error(`READING_TEST_${label}_WINDOW_VISIBLE_TIMEOUT`));
-      }, timeoutMs);
-    });
+  // Window helpers
+  function waitForWindowVisible(win, label) {
+    return readingTestSessionWindows.waitForWindowVisible(win, label, log, WINDOW_VISIBLE_TIMEOUT_MS);
   }
 
-  function isWindowMainFrameLoading(win) {
-    if (!isAliveWindow(win) || !win.webContents || win.webContents.isDestroyed()) {
-      return false;
-    }
-
-    return typeof win.webContents.isLoadingMainFrame === 'function'
-      ? win.webContents.isLoadingMainFrame()
-      : win.webContents.isLoading();
-  }
-
-  function waitForWindowRendererLoad(win, label, timeoutMs = WINDOW_VISIBLE_TIMEOUT_MS) {
-    return new Promise((resolve, reject) => {
-      if (!isAliveWindow(win) || !win.webContents || win.webContents.isDestroyed()) {
-        reject(new Error(`READING_TEST_${label}_WINDOW_UNAVAILABLE`));
-        return;
-      }
-
-      const { webContents } = win;
-      if (!isWindowMainFrameLoading(win)) {
-        resolve();
-        return;
-      }
-
-      let settled = false;
-      let timeoutId = null;
-
-      const cleanup = () => {
-        try {
-          webContents.removeListener('did-finish-load', handleDidFinishLoad);
-          webContents.removeListener('destroyed', handleDestroyed);
-          win.removeListener('closed', handleClosed);
-        } catch (err) {
-          log.warn(`Reading-test ${label} renderer-load cleanup failed (ignored):`, err);
-        }
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-      };
-
-      const settle = (err) => {
-        if (settled) return;
-        settled = true;
-        cleanup();
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve();
-      };
-
-      const handleDidFinishLoad = () => settle();
-      const handleDestroyed = () => settle(new Error(`READING_TEST_${label}_WINDOW_WEB_CONTENTS_DESTROYED`));
-      const handleClosed = () => settle(new Error(`READING_TEST_${label}_WINDOW_CLOSED`));
-
-      webContents.once('did-finish-load', handleDidFinishLoad);
-      webContents.once('destroyed', handleDestroyed);
-      win.once('closed', handleClosed);
-      timeoutId = setTimeout(() => {
-        settle(new Error(`READING_TEST_${label}_WINDOW_LOAD_TIMEOUT`));
-      }, timeoutMs);
+  function openReadingSessionWindows() {
+    return readingTestSessionWindows.openReadingSessionWindows({
+      resetCrono,
+      ensureEditorWindow,
+      ensureFlotanteWindow,
+      log,
+      timeoutMs: WINDOW_VISIBLE_TIMEOUT_MS,
     });
   }
 
   function closeReadingWindows() {
-    suppressUnexpectedEditorClose = true;
-    suppressUnexpectedFlotanteClose = true;
+    runtimeFlags.suppressUnexpectedEditorClose = true;
+    runtimeFlags.suppressUnexpectedFlotanteClose = true;
     try {
       closeEditorWindow();
     } catch (err) {
@@ -460,22 +360,6 @@ function createController(options = {}) {
     }
   }
 
-  // =============================================================================
-  // Session window orchestration
-  // =============================================================================
-
-  async function openReadingSessionWindows() {
-    resetCrono();
-    const editorWin = ensureEditorWindow({ deferShow: true });
-    const flotanteWin = await ensureFlotanteWindow();
-    await Promise.all([
-      waitForWindowRendererLoad(editorWin, 'EDITOR'),
-      waitForWindowVisible(flotanteWin, 'FLOTANTE'),
-    ]);
-
-    return { editorWin, flotanteWin };
-  }
-
   function cleanupStartFailure({ clearCurrentText = false } = {}) {
     tryResetCrono('Reading-test start-failure crono reset failed (ignored):');
 
@@ -486,485 +370,178 @@ function createController(options = {}) {
         tryClearCurrentText('Reading-test start-failure current-text clear failed (ignored):');
       }
     } finally {
-      suppressUnexpectedEditorClose = false;
-      suppressUnexpectedFlotanteClose = false;
+      runtimeFlags.suppressUnexpectedEditorClose = false;
+      runtimeFlags.suppressUnexpectedFlotanteClose = false;
     }
-  }
-
-  // =============================================================================
-  // Session flow
-  // =============================================================================
-
-  function clearSessionTextIfNeeded(selectedEntry) {
-    const shouldClearCurrentText = !selectedEntry || selectedEntry.sourceMode !== 'current_text';
-    if (!shouldClearCurrentText) return;
-
-    tryClearCurrentText('Reading-test session current-text clear failed (ignored):');
-  }
-
-  function isArmingOrRunningSession() {
-    return !!(state.active && (state.stage === 'arming' || state.stage === 'running'));
-  }
-
-  function isArmingEntry(entry) {
-    return !!(state.active && state.stage === 'arming' && state.selectedEntry === entry);
   }
 
   function startEditorCountdown(editorWin) {
-    return new Promise((resolve, reject) => {
-      if (!isAliveWindow(editorWin) || !editorWin.webContents || editorWin.webContents.isDestroyed()) {
-        reject(new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_UNAVAILABLE'));
-        return;
-      }
-
-      const { webContents } = editorWin;
-      const token = buildCountdownToken();
-      let settled = false;
-      let timeoutId = null;
-
-      const cleanup = () => {
-        pendingCountdownReadyAcks.delete(token);
-        try {
-          editorWin.removeListener('closed', handleClosed);
-          webContents.removeListener('destroyed', handleDestroyed);
-        } catch (err) {
-          log.warn('Reading-test countdown ack cleanup failed (ignored):', err);
-        }
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-      };
-
-      const settle = (err) => {
-        if (settled) return;
-        settled = true;
-        cleanup();
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve();
-      };
-
-      const handleClosed = () => settle(new Error('READING_TEST_EDITOR_COUNTDOWN_WINDOW_CLOSED'));
-      const handleDestroyed = () => settle(new Error('READING_TEST_EDITOR_COUNTDOWN_WEB_CONTENTS_DESTROYED'));
-
-      pendingCountdownReadyAcks.set(token, {
-        sender: webContents,
-        settle,
-      });
-
-      editorWin.once('closed', handleClosed);
-      webContents.once('destroyed', handleDestroyed);
-      timeoutId = setTimeout(() => {
-        settle(new Error('READING_TEST_EDITOR_COUNTDOWN_READY_TIMEOUT'));
-      }, COUNTDOWN_READY_TIMEOUT_MS);
-
-      try {
-        webContents.send('reading-test-prestart-countdown', {
-          seconds: PRESTART_COUNTDOWN_SECONDS,
-          stepMs: PRESTART_COUNTDOWN_STEP_MS,
-          token,
-        });
-      } catch (err) {
-        settle(err);
-      }
+    return readingTestSessionWindows.startEditorCountdown(editorWin, {
+      buildCountdownToken,
+      pendingCountdownReadyAcks,
+      log,
+      countdownReadyTimeoutMs: COUNTDOWN_READY_TIMEOUT_MS,
+      prestartCountdownSeconds: PRESTART_COUNTDOWN_SECONDS,
+      prestartCountdownStepMs: PRESTART_COUNTDOWN_STEP_MS,
     });
-  }
-
-  function failArmingSession(selectedEntry, noticeKey) {
-    if (!isArmingEntry(selectedEntry)) return;
-
-    resetAndCloseActiveSession(selectedEntry, 'Reading-test arming failure crono reset failed (ignored):');
-
-    if (noticeKey) {
-      emitNotice(noticeKey, { type: 'error' });
-    }
-  }
-
-  async function continueArmingSession(selectedEntry) {
-    if (!isArmingEntry(selectedEntry)) return;
-
-    try {
-      const { editorWin, flotanteWin } = await openReadingSessionWindows();
-      if (!isArmingEntry(selectedEntry)) return;
-
-      await startEditorCountdown(editorWin);
-      if (!isArmingEntry(selectedEntry)) return;
-
-      showEditorWindow({ maximize: true });
-      await waitForWindowVisible(editorWin, 'EDITOR');
-
-      await wait(PRESTART_COUNTDOWN_SECONDS * PRESTART_COUNTDOWN_STEP_MS);
-
-      if (!isArmingEntry(selectedEntry)) return;
-      if (!isAliveWindow(editorWin) || !isAliveWindow(flotanteWin)) {
-        throw new Error('READING_TEST_PRESTART_WINDOW_LOST');
-      }
-
-      startCrono();
-      setStage('running', { selectedEntry });
-    } catch (err) {
-      log.error('Reading-test session arming failed:', err);
-      failArmingSession(selectedEntry, 'renderer.alerts.reading_test_start_failed');
-    }
-  }
-
-  function computeCurrentWpm() {
-    const cronoState = getCronoState();
-    const elapsed = cronoState && typeof cronoState.elapsed === 'number'
-      ? cronoState.elapsed
-      : 0;
-    if (!(elapsed > 0)) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_result_invalid', code: 'ELAPSED_INVALID' };
-    }
-
-    const currentText = String(getCurrentText() || '');
-    const settings = getSettingsSnapshot();
-    const stats = countUtils.contarTexto(currentText, {
-      modoConteo: settings.modeConteo === 'simple' ? 'simple' : 'preciso',
-      idioma: settings.language || DEFAULT_LANG,
-    });
-    const wordCount = stats && typeof stats.palabras === 'number' ? stats.palabras : 0;
-    if (!(wordCount > 0)) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_result_invalid', code: 'WORD_COUNT_INVALID' };
-    }
-
-    const rawWpm = (wordCount / (elapsed / 1000)) * 60;
-    if (!Number.isFinite(rawWpm)) {
-      return { ok: false, guidanceKey: 'renderer.alerts.reading_test_result_invalid', code: 'WPM_INVALID' };
-    }
-
-    const roundedWpm = Math.round(rawWpm);
-    const clampedWpm = Math.min(Math.max(roundedWpm, PRESET_WPM_MIN), PRESET_WPM_MAX);
-
-    if (clampedWpm !== roundedWpm) {
-      log.debug(
-        'Reading-test WPM clamped to preset range:',
-        { rawWpm, roundedWpm, clampedWpm, min: PRESET_WPM_MIN, max: PRESET_WPM_MAX }
-      );
-    }
-
-    return {
-      ok: true,
-      wpm: clampedWpm,
-      rawWpm,
-      elapsed,
-      wordCount,
-      clamped: clampedWpm !== roundedWpm,
-    };
   }
 
   function openQuestionsWindow(questions) {
-    return new Promise((resolve) => {
-      const mainWin = resolveMainWindow();
-      if (!mainWin || mainWin.isDestroyed()) {
-        log.warn('Reading-test questions window unavailable (ignored): main window unavailable.');
-        resolve({ ok: false, code: 'MAIN_WINDOW_UNAVAILABLE' });
-        return;
-      }
+    return readingTestSessionWindows.openQuestionsWindow(questions, {
+      resolveMainWindow,
+      log,
+      questionsWindowPreload: QUESTIONS_WINDOW_PRELOAD,
+      questionsWindowHtml: QUESTIONS_WINDOW_HTML,
+      developerEmail: DEVELOPER_EMAIL,
+    });
+  }
 
-      let settled = false;
-      let win = null;
+  // Flow helpers
+  function clearSessionTextIfNeeded(selectedEntry) {
+    return readingTestSessionFlow.clearSessionTextIfNeeded(selectedEntry, tryClearCurrentText);
+  }
 
-      const settle = (result) => {
-        if (settled) return false;
-        settled = true;
-        resolve(result);
-        return true;
-      };
-
-      try {
-        win = new BrowserWindow({
-          width: 760,
-          height: 464,
-          minWidth: 680,
-          minHeight: 360,
-          parent: mainWin,
-          modal: true,
-          resizable: true,
-          minimizable: false,
-          maximizable: false,
-          show: false,
-          webPreferences: {
-            preload: QUESTIONS_WINDOW_PRELOAD,
-            contextIsolation: true,
-            nodeIntegration: false,
-            sandbox: true,
-          },
-        });
-      } catch (err) {
-        log.warn('Reading-test questions window create failed (ignored):', err);
-        settle({ ok: false, code: 'QUESTIONS_WINDOW_CREATE_FAILED' });
-        return;
-      }
-
-      win.setMenu(null);
-      win.once('ready-to-show', () => {
-        if (settled || win.isDestroyed()) return;
-        win.show();
-        try {
-          win.webContents.send('reading-test-questions-init', {
-            developerEmail: DEVELOPER_EMAIL,
-            questions,
-          });
-        } catch (err) {
-          log.warn('Reading-test questions init failed (ignored):', err);
-          if (settle({ ok: false, code: 'QUESTIONS_WINDOW_INIT_FAILED' })) {
-            try {
-              if (!win.isDestroyed()) win.close();
-            } catch (closeErr) {
-              log.warn('Reading-test questions window forced close failed (ignored):', closeErr);
-            }
-          }
-        }
-      });
-
-      win.on('closed', () => {
-        if (settled) return;
-        settle({ ok: true });
-      });
-
-      win.loadFile(QUESTIONS_WINDOW_HTML).catch((err) => {
-        log.warn('Reading-test questions window load failed (ignored):', err);
-        if (settle({ ok: false, code: 'QUESTIONS_WINDOW_LOAD_FAILED' })) {
-          try {
-            if (!win.isDestroyed()) win.close();
-          } catch (closeErr) {
-            log.warn('Reading-test questions window forced close failed (ignored):', closeErr);
-          }
-        }
-      });
+  function computeCurrentWpm() {
+    return readingTestSessionFlow.computeCurrentWpm({
+      getCronoState,
+      getCurrentText,
+      getSettingsSnapshot,
+      countUtils,
+      DEFAULT_LANG,
+      PRESET_WPM_MIN,
+      PRESET_WPM_MAX,
+      log,
     });
   }
 
   function buildPrefilledPresetPayload(wpm) {
-    const settings = getSettingsSnapshot();
-    const langBase = settingsState.deriveLangKey(settings.language || DEFAULT_LANG);
-    const userPresets = settings && settings.presets_by_language && Array.isArray(settings.presets_by_language[langBase])
-      ? settings.presets_by_language[langBase]
-      : [];
-
-    let nextNumber = 1;
-    for (const preset of userPresets) {
-      const name = preset && typeof preset.name === 'string' ? preset.name.trim() : '';
-      const match = /^Test\s+(\d+)$/i.exec(name);
-      if (!match) continue;
-      const n = Number(match[1]);
-      if (Number.isFinite(n) && n >= nextNumber) {
-        nextNumber = n + 1;
-      }
-    }
-
-    const name = `Test ${nextNumber}`;
-    const description = langBase === 'en'
-      ? `User tested speed (${name}).`
-      : `Velocidad testeada del usuario (${name}).`;
-
-    return {
-      wpm,
-      preset: {
-        name,
-        wpm,
-        description,
-      },
-    };
+    return readingTestSessionFlow.buildPrefilledPresetPayload(wpm, {
+      getSettingsSnapshot,
+      settingsState,
+      DEFAULT_LANG,
+    });
   }
 
   function beginPresetStep(wpm) {
-    applyMainWindowWpm(wpm);
-    setStage('preset');
-
-    let presetWin = null;
-    try {
-      presetWin = openPresetWindow(buildPrefilledPresetPayload(wpm));
-    } catch (err) {
-      log.warn('Reading-test preset window open failed (ignored):', err);
-      emitNotice('renderer.alerts.reading_test_preset_unavailable', { type: 'error' });
-      clearSession();
-      return;
-    }
-    if (!presetWin || presetWin.isDestroyed()) {
-      log.warn('Reading-test preset window unavailable (ignored): openPresetWindow returned no live window.');
-      emitNotice('renderer.alerts.reading_test_preset_unavailable', { type: 'error' });
-      clearSession();
-      return;
-    }
-
-    const onClosed = () => {
-      try {
-        presetWin.removeListener('closed', onClosed);
-      } catch (err) {
-        log.warn('Reading-test preset close listener detach failed (ignored):', err);
-      }
-      clearSession();
-    };
-
-    presetWin.on('closed', onClosed);
-  }
-
-  // =============================================================================
-  // Session entrypoints
-  // =============================================================================
-
-  async function finishRunningSession() {
-    if (!state.active || state.stage !== 'running' || !state.selectedEntry) return;
-
-    const selectedEntry = state.selectedEntry;
-
-    try {
-      stopCrono();
-      closeReadingWindows();
-
-      const wpmInfo = computeCurrentWpm();
-      if (!wpmInfo.ok) {
-        emitNotice(wpmInfo.guidanceKey, { type: 'error' });
-        clearSession();
-        return;
-      }
-
-      if (selectedEntry.hasValidQuestions) {
-        setStage('questions');
-        const questionsWindowInfo = await openQuestionsWindow(selectedEntry.questions);
-        if (!questionsWindowInfo.ok) {
-          emitNotice('renderer.alerts.reading_test_questions_unavailable', { type: 'warn' });
-        }
-      }
-
-      beginPresetStep(wpmInfo.wpm);
-    } catch (err) {
-      log.error('Reading-test session finish failed:', err);
-      resetAndCloseActiveSession(selectedEntry, 'Reading-test finish failure crono reset failed (ignored):');
-    }
+    return readingTestSessionFlow.beginPresetStep(wpm, {
+      applyMainWindowWpm,
+      setStage,
+      openPresetWindow,
+      buildPrefilledPresetPayload,
+      emitNotice,
+      clearSession,
+      log,
+    });
   }
 
   function resetAndCloseActiveSession(selectedEntry, resetWarningMessage) {
-    tryResetCrono(resetWarningMessage);
-    closeReadingWindows();
-    clearSessionTextIfNeeded(selectedEntry);
-    clearSession();
+    return readingTestSessionFlow.resetAndCloseActiveSession(selectedEntry, resetWarningMessage, {
+      tryResetCrono,
+      closeReadingWindows,
+      clearSessionTextIfNeeded,
+      clearSession,
+    });
   }
 
-  function cancelActiveSession(noticeKey, { type = 'warn' } = {}) {
-    if (!isArmingOrRunningSession()) return;
-
-    const selectedEntry = state.selectedEntry;
-
-    resetAndCloseActiveSession(selectedEntry, 'Reading-test cancel crono reset failed (ignored):');
-
-    if (noticeKey) {
-      emitNotice(noticeKey, { type });
-    }
+  function failArmingSession(selectedEntry, noticeKey) {
+    return readingTestSessionFlow.failArmingSession(selectedEntry, noticeKey, {
+      state,
+      resetAndCloseActiveSession,
+      emitNotice,
+    });
   }
 
-  async function startPoolSession(selection) {
-    try {
-      if (state.active) {
-        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
-      }
-
-      const selectionInfo = ensureEligibleSelection(selection);
-      if (!selectionInfo.ok) return selectionInfo;
-
-      const selectedEntry = chooseRandomEntry(selectionInfo.eligibleEntries);
-      if (!selectedEntry) {
-        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_no_matching_files', code: 'NO_MATCHING_FILES' };
-      }
-
-      const applyResult = applyCurrentText(selectedEntry.text, {
-        source: 'main-window',
-        action: 'overwrite',
-      });
-      if (!applyResult || applyResult.ok !== true) {
-        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: 'TEXT_APPLY_FAILED' };
-      }
-
-      const writeInfo = readingTestPool.markPoolEntryUsed(selectedEntry.snapshotRelPath, true);
-      if (!writeInfo.ok) {
-        cleanupStartFailure({ clearCurrentText: true });
-        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_start_failed', code: writeInfo.code || 'POOL_WRITE_FAILED' };
-      }
-
-      const sessionEntry = buildSessionEntry('pool', selectedEntry);
-      setStage('arming', { selectedEntry: sessionEntry });
-      void continueArmingSession(sessionEntry);
-      return { ok: true };
-    } catch (err) {
-      log.error('Reading-test pool session start failed:', err);
-      throw err;
-    }
+  function continueArmingSession(selectedEntry) {
+    return readingTestSessionFlow.continueArmingSession(selectedEntry, {
+      state,
+      openReadingSessionWindows,
+      startEditorCountdown,
+      showEditorWindow,
+      waitForWindowVisible,
+      wait,
+      prestartCountdownSeconds: PRESTART_COUNTDOWN_SECONDS,
+      prestartCountdownStepMs: PRESTART_COUNTDOWN_STEP_MS,
+      isAliveWindow,
+      startCrono,
+      setStage,
+      failArmingSession,
+      log,
+    });
   }
 
-  async function startCurrentTextSession() {
-    try {
-      if (state.active) {
-        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_precondition_blocked', code: 'SESSION_ACTIVE' };
-      }
-      if (!hasCurrentText()) {
-        return { ok: false, guidanceKey: 'renderer.alerts.reading_test_current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
-      }
+  function finishRunningSession() {
+    return readingTestSessionFlow.finishRunningSession({
+      state,
+      stopCrono,
+      closeReadingWindows,
+      computeCurrentWpm,
+      emitNotice,
+      clearSession,
+      setStage,
+      openQuestionsWindow,
+      beginPresetStep,
+      resetAndCloseActiveSession,
+      log,
+    });
+  }
 
-      const sessionEntry = buildSessionEntry('current_text');
-      setStage('arming', {
-        selectedEntry: sessionEntry,
-      });
-      void continueArmingSession(sessionEntry);
-      return { ok: true };
-    } catch (err) {
-      log.error('Reading-test current-text session start failed:', err);
-      throw err;
-    }
+  function cancelActiveSession(noticeKey, noticeOptions = { type: 'warn' }) {
+    return readingTestSessionFlow.cancelActiveSession(noticeKey, noticeOptions, {
+      state,
+      resetAndCloseActiveSession,
+      emitNotice,
+    });
+  }
+
+  function startPoolSession(selection) {
+    return readingTestSessionFlow.startPoolSession(selection, {
+      state,
+      ensureEligibleSelection,
+      chooseRandomEntry,
+      applyCurrentText,
+      readingTestPool,
+      cleanupStartFailure,
+      buildSessionEntry,
+      setStage,
+      continueArmingSession,
+      log,
+    });
+  }
+
+  function startCurrentTextSession() {
+    return readingTestSessionFlow.startCurrentTextSession({
+      state,
+      hasCurrentText,
+      buildSessionEntry,
+      setStage,
+      continueArmingSession,
+      log,
+    });
   }
 
   function handleFlotanteCommand(cmd) {
-    if (!isArmingOrRunningSession()) return false;
-    if (!cmd || typeof cmd.cmd !== 'string') return true;
-
-    if (state.stage === 'arming') {
-      if (cmd.cmd === 'reset') {
-        cancelActiveSession('renderer.alerts.reading_test_cancelled');
-      }
-      return true;
-    }
-
-    if (cmd.cmd === 'toggle') {
-      void finishRunningSession();
-      return true;
-    }
-
-    if (cmd.cmd === 'reset') {
-      cancelActiveSession('renderer.alerts.reading_test_cancelled');
-      return true;
-    }
-
-    if (cmd.cmd === 'set') {
-      log.warnOnce(
-        'reading_test_session.flotante_set_blocked',
-        'Reading-test floating set command ignored while session is active.'
-      );
-      return true;
-    }
-
-    return false;
+    return readingTestSessionFlow.handleFlotanteCommand(cmd, {
+      state,
+      cancelActiveSession,
+      finishRunningSession,
+      log,
+    });
   }
 
   function handleEditorClosed() {
-    if (!isArmingOrRunningSession()) return;
-    if (suppressUnexpectedEditorClose) {
-      suppressUnexpectedEditorClose = false;
-      return;
-    }
-    cancelActiveSession('renderer.alerts.reading_test_cancelled_window_closed');
+    return readingTestSessionFlow.handleEditorClosed({
+      state,
+      runtimeFlags,
+      cancelActiveSession,
+    });
   }
 
   function handleFlotanteClosed() {
-    if (!isArmingOrRunningSession()) return;
-    if (suppressUnexpectedFlotanteClose) {
-      suppressUnexpectedFlotanteClose = false;
-      return;
-    }
-    cancelActiveSession('renderer.alerts.reading_test_cancelled_window_closed');
+    return readingTestSessionFlow.handleFlotanteClosed({
+      state,
+      runtimeFlags,
+      cancelActiveSession,
+    });
   }
 
   // =============================================================================
